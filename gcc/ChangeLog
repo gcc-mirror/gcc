@@ -1,3 +1,215 @@
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h: (__ARM_mve_typeid): Add more pointer types.
+	(__ARM_mve_coerce1): Remove.
+	(__ARM_mve_coerce2): Remove.
+	(__ARM_mve_coerce3): Remove.
+	(__ARM_mve_coerce_i_scalar): New.
+	(__ARM_mve_coerce_s8_ptr): New.
+	(__ARM_mve_coerce_u8_ptr): New.
+	(__ARM_mve_coerce_s16_ptr): New.
+	(__ARM_mve_coerce_u16_ptr): New.
+	(__ARM_mve_coerce_s32_ptr): New.
+	(__ARM_mve_coerce_u32_ptr): New.
+	(__ARM_mve_coerce_s64_ptr): New.
+	(__ARM_mve_coerce_u64_ptr): New.
+	(__ARM_mve_coerce_f_scalar): New.
+	(__ARM_mve_coerce_f16_ptr): New.
+	(__ARM_mve_coerce_f32_ptr): New.
+	(__arm_vst4q): Change _coerce_ overloads.
+	(__arm_vbicq): Change _coerce_ overloads.
+	(__arm_vmulq): Change _coerce_ overloads.
+	(__arm_vcmpeqq): Change _coerce_ overloads.
+	(__arm_vcmpneq): Change _coerce_ overloads.
+	(__arm_vmaxnmavq): Change _coerce_ overloads.
+	(__arm_vmaxnmvq): Change _coerce_ overloads.
+	(__arm_vminnmavq): Change _coerce_ overloads.
+	(__arm_vsubq): Change _coerce_ overloads.
+	(__arm_vminnmvq): Change _coerce_ overloads.
+	(__arm_vrshlq): Change _coerce_ overloads.
+	(__arm_vqsubq): Change _coerce_ overloads.
+	(__arm_vqdmulltq): Change _coerce_ overloads.
+	(__arm_vqdmullbq): Change _coerce_ overloads.
+	(__arm_vqdmulhq): Change _coerce_ overloads.
+	(__arm_vqaddq): Change _coerce_ overloads.
+	(__arm_vhaddq): Change _coerce_ overloads.
+	(__arm_vhsubq): Change _coerce_ overloads.
+	(__arm_vqdmlashq): Change _coerce_ overloads.
+	(__arm_vqrdmlahq): Change _coerce_ overloads.
+	(__arm_vmlasq): Change _coerce_ overloads.
+	(__arm_vqdmlahq): Change _coerce_ overloads.
+	(__arm_vmaxnmavq_p): Change _coerce_ overloads.
+	(__arm_vmaxnmvq_p): Change _coerce_ overloads.
+	(__arm_vminnmavq_p): Change _coerce_ overloads.
+	(__arm_vminnmvq_p): Change _coerce_ overloads.
+	(__arm_vfmasq_m): Change _coerce_ overloads.
+	(__arm_vld1q): Change _coerce_ overloads.
+	(__arm_vld1q_z): Change _coerce_ overloads.
+	(__arm_vld2q): Change _coerce_ overloads.
+	(__arm_vld4q): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vst1q_p): Change _coerce_ overloads.
+	(__arm_vst2q): Change _coerce_ overloads.
+	(__arm_vst1q): Change _coerce_ overloads.
+	(__arm_vstrhq): Change _coerce_ overloads.
+	(__arm_vstrhq_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_p): Change _coerce_ overloads.
+	(__arm_vstrwq): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vsetq_lane): Change _coerce_ overloads.
+	(__arm_vcmpneq_m): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_vidupq_x_u8): Change _coerce_ overloads.
+	(__arm_vddupq_x_u8): Change _coerce_ overloads.
+	(__arm_vidupq_x_u16): Change _coerce_ overloads.
+	(__arm_vddupq_x_u16): Change _coerce_ overloads.
+	(__arm_vidupq_x_u32): Change _coerce_ overloads.
+	(__arm_vddupq_x_u32): Change _coerce_ overloads.
+	(__arm_vhaddq_x): Change _coerce_ overloads.
+	(__arm_vhsubq_x): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vqrdmlahq_m): Change _coerce_ overloads.
+	(__arm_vqrdmlashq_m): Change _coerce_ overloads.
+	(__arm_vqdmlashq_m): Change _coerce_ overloads.
+	(__arm_vmlaldavaxq_p): Change _coerce_ overloads.
+	(__arm_vmlasq_m): Change _coerce_ overloads.
+	(__arm_vqdmulhq_m): Change _coerce_ overloads.
+	(__arm_vqdmulltq_m): Change _coerce_ overloads.
+	(__arm_vidupq_u16): Change _coerce_ overloads.
+	(__arm_vidupq_u32): Change _coerce_ overloads.
+	(__arm_vidupq_u8): Change _coerce_ overloads.
+	(__arm_vddupq_u16): Change _coerce_ overloads.
+	(__arm_vddupq_u32): Change _coerce_ overloads.
+	(__arm_vddupq_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_m): Change _coerce_ overloads.
+	(__arm_viwdupq_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_m): Change _coerce_ overloads.
+	(__arm_vdwdupq_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_u32): Change _coerce_ overloads.
+	(__arm_vdwdupq_u8): Change _coerce_ overloads.
+	(__arm_vaddlvaq): Change _coerce_ overloads.
+	(__arm_vaddlvaq_p): Change _coerce_ overloads.
+	(__arm_vaddvaq): Change _coerce_ overloads.
+	(__arm_vaddvaq_p): Change _coerce_ overloads.
+	(__arm_vcmphiq_m): Change _coerce_ overloads.
+	(__arm_vmladavaq_p): Change _coerce_ overloads.
+	(__arm_vmladavaxq): Change _coerce_ overloads.
+	(__arm_vmlaldavaxq): Change _coerce_ overloads.
+	(__arm_vstrbq): Change _coerce_ overloads.
+	(__arm_vstrbq_p): Change _coerce_ overloads.
+	(__arm_vrmlaldavhaq_p): Change _coerce_ overloads.
+	(__arm_vstrbq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrbq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset): Change _coerce_ overloads.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq): Change coerce on
+	scalar constant.
+	(__arm_vmvnq_m): Likewise.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vorrq): Add _n variant.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vadcq_s32): Fix arithmetic.
+	(__arm_vadcq_u32): Likewise.
+	(__arm_vadcq_m_s32): Likewise.
+	(__arm_vadcq_m_u32): Likewise.
+	(__arm_vsbcq_s32): Likewise.
+	(__arm_vsbcq_u32): Likewise.
+	(__arm_vsbcq_m_s32): Likewise.
+	(__arm_vsbcq_m_u32): Likewise.
+	* config/arm/mve.md (get_fpscr_nzcvqc): Make unspec_volatile.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vrndq_m_f<mode>, mve_vrev64q_f<mode>)
+	(mve_vrev32q_fv8hf, mve_vcvttq_f32_f16v4sf)
+	(mve_vcvtbq_f32_f16v4sf, mve_vcvtq_to_f_<supf><mode>)
+	(mve_vrev64q_<supf><mode>, mve_vcvtq_from_f_<supf><mode>)
+	(mve_vmovltq_<supf><mode>, mve_vmovlbq_<supf><mode>)
+	(mve_vcvtpq_<supf><mode>, mve_vcvtnq_<supf><mode>)
+	(mve_vcvtmq_<supf><mode>, mve_vcvtaq_<supf><mode>)
+	(mve_vmvnq_n_<supf><mode>, mve_vrev16q_<supf>v16qi)
+	(mve_vctp<MVE_vctp>q<MVE_vpred>, mve_vbrsrq_n_f<mode>)
+	(mve_vbrsrq_n_<supf><mode>, mve_vandq_f<mode>, mve_vbicq_f<mode>)
+	(mve_vbicq_n_<supf><mode>, mve_vctp<MVE_vctp>q_m<MVE_vpred>)
+	(mve_vcvtbq_f16_f32v8hf, mve_vcvttq_f16_f32v8hf)
+	(mve_veorq_f<mode>, mve_vmlaldavxq_s<mode>, mve_vmlsldavq_s<mode>)
+	(mve_vmlsldavxq_s<mode>, mve_vornq_f<mode>, mve_vorrq_f<mode>)
+	(mve_vrmlaldavhxq_sv4si, mve_vbicq_m_n_<supf><mode>)
+	(mve_vcvtq_m_to_f_<supf><mode>, mve_vshlcq_<supf><mode>)
+	(mve_vmvnq_m_<supf><mode>, mve_vpselq_<supf><mode>)
+	(mve_vcvtbq_m_f16_f32v8hf, mve_vcvtbq_m_f32_f16v4sf)
+	(mve_vcvttq_m_f16_f32v8hf, mve_vcvttq_m_f32_f16v4sf)
+	(mve_vmlaldavq_p_<supf><mode>, mve_vmlsldavaq_s<mode>)
+	(mve_vmlsldavaxq_s<mode>, mve_vmlsldavq_p_s<mode>)
+	(mve_vmlsldavxq_p_s<mode>, mve_vmvnq_m_n_<supf><mode>)
+	(mve_vorrq_m_n_<supf><mode>, mve_vpselq_f<mode>)
+	(mve_vrev32q_m_fv8hf, mve_vrev32q_m_<supf><mode>)
+	(mve_vrev64q_m_f<mode>, mve_vrmlaldavhaxq_sv4si)
+	(mve_vrmlaldavhxq_p_sv4si, mve_vrmlsldavhaxq_sv4si)
+	(mve_vrmlsldavhq_p_sv4si, mve_vrmlsldavhxq_p_sv4si)
+	(mve_vrev16q_m_<supf>v16qi, mve_vrmlaldavhq_p_<supf>v4si)
+	(mve_vrmlsldavhaq_sv4si, mve_vandq_m_<supf><mode>)
+	(mve_vbicq_m_<supf><mode>, mve_veorq_m_<supf><mode>)
+	(mve_vornq_m_<supf><mode>, mve_vorrq_m_<supf><mode>)
+	(mve_vandq_m_f<mode>, mve_vbicq_m_f<mode>, mve_veorq_m_f<mode>)
+	(mve_vornq_m_f<mode>, mve_vorrq_m_f<mode>)
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn)
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn)
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di) : Fix spacing and
+	capitalization in the emitted asm.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/constraints.md (mve_vldrd_immediate): Move it to
+	predicates.md.
+	(Ri): Move constraint definition from predicates.md.
+	(Rl): Define new constraint.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_p_<supf>v4si): Add
+	missing constraint.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Add missing Up constraint
+	for op 1, use mve_vstrw_immediate predicate and Rl constraint for
+	op 2. Fix asm output spacing.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Add missing constraint.
+	* config/arm/predicates.md (Ri) Move constraint to constraints.md
+	(mve_vldrd_immediate): Move it from
+	constraints.md.
+	(mve_vstrw_immediate): New predicate.
+
 2023-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
