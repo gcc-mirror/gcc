@@ -7114,8 +7114,64 @@ package body Exp_Ch3 is
       function Make_Allocator_For_Return (Expr : Node_Id) return Node_Id is
          Alloc      : Node_Id;
          Alloc_Expr : Entity_Id;
+         Alloc_Typ  : Entity_Id;
 
       begin
+         --  If the return object's declaration does not include an expression,
+         --  then we use its subtype for the allocation. Likewise in the case
+         --  of a degenerate expression like a raise expression.
+
+         if No (Expr)
+           or else Nkind (Original_Node (Expr)) = N_Raise_Expression
+         then
+            Alloc_Typ := Typ;
+
+         --  If the return object's declaration includes an expression, then
+         --  there are two cases: either the nominal subtype of the object is
+         --  definite and we can use it for the allocation directly, or it is
+         --  not and Analyze_Object_Declaration should have built an actual
+         --  subtype from the expression.
+
+         --  However, there are exceptions in the latter case for interfaces
+         --  (see Analyze_Object_Declaration), as well as class-wide types and
+         --  types with unknown discriminants if they are additionally limited
+         --  (see Expand_Subtype_From_Expr), so we must cope with them.
+
+         elsif Is_Interface (Typ) then
+            pragma Assert (Is_Class_Wide_Type (Typ));
+
+            --  For interfaces, we use the type of the expression, except if
+            --  we need to put back a conversion that we have removed earlier
+            --  in the processing.
+
+            if Is_Class_Wide_Type (Etype (Expr)) then
+               Alloc_Typ := Typ;
+            else
+               Alloc_Typ := Etype (Expr);
+            end if;
+
+         elsif Is_Class_Wide_Type (Typ) then
+
+            --  For class-wide types, we have to make sure that we use the
+            --  dynamic type of the expression for the allocation, either by
+            --  means of its (static) subtype or through the actual subtype.
+
+            if Has_Tag_Of_Type (Expr) then
+               Alloc_Typ := Etype (Expr);
+
+            else pragma Assert (Ekind (Typ) = E_Class_Wide_Subtype
+              and then Present (Equivalent_Type (Typ)));
+
+               Alloc_Typ := Typ;
+            end if;
+
+         else pragma Assert (Is_Definite_Subtype (Typ)
+           or else (Has_Unknown_Discriminants (Typ)
+                     and then Is_Limited_View (Typ)));
+
+            Alloc_Typ := Typ;
+         end if;
+
          --  If the return object's declaration includes an expression and the
          --  declaration isn't marked as No_Initialization, then we generate an
          --  allocator with a qualified expression. Although this is necessary
@@ -7141,46 +7197,22 @@ package body Exp_Ch3 is
 
             Alloc_Expr := New_Copy_Tree (Expr);
 
-            --  In the constrained array case, deal with a potential sliding.
-            --  In the interface case, put back a conversion that we may have
-            --  removed earlier in the processing.
-
-            if (Ekind (Typ) = E_Array_Subtype
-                 or else (Is_Interface (Typ)
-                           and then Is_Class_Wide_Type (Etype (Alloc_Expr))))
-              and then Typ /= Etype (Alloc_Expr)
-            then
-               Alloc_Expr := Convert_To (Typ, Alloc_Expr);
+            if Etype (Alloc_Expr) /= Alloc_Typ then
+               Alloc_Expr := Convert_To (Alloc_Typ, Alloc_Expr);
             end if;
-
-            --  We always use the type of the expression for the qualified
-            --  expression, rather than the return object's type. We cannot
-            --  always use the return object's type because the expression
-            --  might be of a specific type and the return object might not.
 
             Alloc :=
               Make_Allocator (Loc,
                 Expression =>
                   Make_Qualified_Expression (Loc,
                     Subtype_Mark =>
-                      New_Occurrence_Of (Etype (Alloc_Expr), Loc),
+                      New_Occurrence_Of (Alloc_Typ, Loc),
                     Expression   => Alloc_Expr));
 
          else
-            --  If the return object is of a class-wide type, we cannot use
-            --  its type for the allocator. Instead we use the type of the
-            --  expression, which must be an aggregate of a definite type.
-
-            if Is_Class_Wide_Type (Typ) then
-               Alloc :=
-                 Make_Allocator (Loc,
-                   Expression => New_Occurrence_Of (Etype (Expr), Loc));
-
-            else
-               Alloc :=
-                 Make_Allocator (Loc,
-                   Expression => New_Occurrence_Of (Typ, Loc));
-            end if;
+            Alloc :=
+              Make_Allocator (Loc,
+                Expression => New_Occurrence_Of (Alloc_Typ, Loc));
 
             --  If the return object requires default initialization, then it
             --  will happen later following the elaboration of the renaming.

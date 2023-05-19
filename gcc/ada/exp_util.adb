@@ -7283,6 +7283,7 @@ package body Exp_Util is
             when N_Indexed_Component
               |  N_Selected_Component
               |  N_Aggregate
+              |  N_Extension_Aggregate
             =>
                return True;
 
