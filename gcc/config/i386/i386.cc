@@ -16209,11 +16209,12 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 bool
 ix86_unary_operator_ok (enum rtx_code,
 			machine_mode,
-			rtx operands[2])
+			rtx operands[2],
+			bool use_ndd)
 {
   /* If one of operands is memory, source and destination must match.  */
   if ((MEM_P (operands[0])
-       || MEM_P (operands[1]))
+       || (!use_ndd && MEM_P (operands[1])))
       && ! rtx_equal_p (operands[0], operands[1]))
     return false;
   return true;

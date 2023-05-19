@@ -27,8 +27,25 @@ foo2_##OP_NAME##_##TYPE (TYPE *a, TYPE b) \
 {				 	  \
   TYPE c = *a OP b;		 	  \
   return c;			 	  \
+}
+
+#define F(TYPE, OP_NAME, OP)   \
+TYPE				 \
+__attribute__ ((noipa)) 	 \
+f_##OP_NAME##_##TYPE (TYPE *a) \
+{				 \
+  TYPE b = OP*a;		 \
+  return b;			 \
 }			
 
+#define F1(TYPE, OP_NAME, OP)		 \
+TYPE				  	 \
+__attribute__ ((noipa)) 	  	 \
+f1_##OP_NAME##_##TYPE (TYPE a) \
+{				 	 \
+  TYPE b = OP a;		 	 \
+  return b;			 	 \
+}			
 FOO (char, add, +)
 FOO1 (char, add, +)
 FOO2 (char, add, +)
@@ -50,8 +67,20 @@ FOO (int, sub, -)
 FOO1 (int, sub, -)
 FOO (long, sub, -)
 FOO1 (long, sub, -)
+
+F (char, neg, -)
+F1 (char, neg, -)
+F (short, neg, -)
+F1 (short, neg, -)
+F (int, neg, -)
+F1 (int, neg, -)
+F (long, neg, -)
+F1 (long, neg, -)
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "sub(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "sub(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), %(?:|r|e)di, %(?:|r|e)a(?:x|l)" 4 } } */
+/* { dg-final { scan-assembler-times "negb\[^\n\r]\\(%rdi\\), %(?:|r|e)al" 1 } } */
+/* { dg-final { scan-assembler-times "neg(?:l|w|q)\[^\n\r]\\(%rdi\\), %(?:|r|e)ax" 3 } } */
+/* { dg-final { scan-assembler-times "neg(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)ax" 4 } } */

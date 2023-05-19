@@ -127,7 +127,7 @@ extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
 extern bool ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, machine_mode,
-					rtx[]);
+					rtx[], bool = false);
 extern rtx ix86_build_const_vector (machine_mode, bool, rtx);
 extern rtx ix86_build_signbit_mask (machine_mode, bool, bool);
 extern HOST_WIDE_INT ix86_convert_const_vector_to_integer (rtx,
@@ -147,7 +147,8 @@ extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
+extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2],
+				    bool = false);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern bool ix86_match_ptest_ccmode (rtx);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);

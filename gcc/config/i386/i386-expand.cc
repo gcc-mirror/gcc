@@ -1494,7 +1494,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
 
 void
 ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
-			    rtx operands[])
+			    rtx operands[], bool use_ndd)
 {
   bool matching_memory = false;
   rtx src, dst, op, clob;
@@ -1513,7 +1513,7 @@ ix86_expand_unary_operator (enum rtx_code code, machine_mode mode,
     }
 
   /* When source operand is memory, destination must match.  */
-  if (MEM_P (src) && !matching_memory)
+  if (!use_ndd && MEM_P (src) && !matching_memory)
     src = force_reg (mode, src);
 
   /* Emit the instruction.  */
