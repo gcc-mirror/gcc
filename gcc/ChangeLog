@@ -1,3 +1,7 @@
+2023-05-19  Andreas Schwab  <schwab@suse.de>
+
+	* config/riscv/linux.h (LIB_SPEC): Don't redefine.
+
 2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/arm/arm_mve.h: (__ARM_mve_typeid): Add more pointer types.
