@@ -246,11 +246,22 @@
 
 (define_insn "*<bitmanip_optab>disi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (sign_extend:DI
+        (any_extend:DI
           (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
   [(set_attr "type" "<bitmanip_insn>")
+   (set_attr "mode" "SI")])
+
+;; A SImode clz_ctz_pcnt may be extended to DImode via subreg.
+(define_insn "*<bitmanip_optab>disi2_sext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (and:DI (subreg:DI
+          (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")) 0)
+          (match_operand:DI 2 "const_int_operand")))]
+  "TARGET_64BIT && TARGET_ZBB && ((INTVAL (operands[2]) & 0x3f) == 0x3f)"
+  "<bitmanip_insn>w\t%0,%1"
+  [(set_attr "type" "bitmanip")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>di2"
