@@ -878,7 +878,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 them; we'll be putting them back below if needed.  Likewise for
 	 conversions between record types, except for justified modular types.
 	 But don't do this if the right operand is not BLKmode (for packed
-	 arrays) unless we are not changing the mode.  */
+	 arrays) unless we are not changing the mode, or if both ooperands
+	 are view conversions to the same type.  */
       while ((CONVERT_EXPR_P (left_operand)
 	      || TREE_CODE (left_operand) == VIEW_CONVERT_EXPR)
 	     && (((INTEGRAL_TYPE_P (left_type)
@@ -890,7 +891,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		     && TREE_CODE (operand_type (left_operand)) == RECORD_TYPE
 		     && (TYPE_MODE (right_type) == BLKmode
 			 || TYPE_MODE (left_type)
-			    == TYPE_MODE (operand_type (left_operand))))))
+			    == TYPE_MODE (operand_type (left_operand)))
+		     && !(TREE_CODE (left_operand) == VIEW_CONVERT_EXPR
+			  && TREE_CODE (right_operand) == VIEW_CONVERT_EXPR
+			  && left_type == right_type))))
 	{
 	  left_operand = TREE_OPERAND (left_operand, 0);
 	  left_type = TREE_TYPE (left_operand);
