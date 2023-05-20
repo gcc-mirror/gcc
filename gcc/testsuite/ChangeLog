@@ -1,3 +1,53 @@
+2023-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97340
+	* g++.dg/cpp1y/var-templ80.C: New test.
+	* g++.dg/cpp1y/var-templ81.C: New test.
+
+2023-05-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-run.c: Do not include
+	<stdio.h>.
+	* gcc.target/riscv/rvv/autovec/binop/shift-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vand-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vor-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run-template.h: Removed.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-run-template.h: Removed.
+
+2023-05-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vmv-imm-fixed-rv32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-fixed-rv64.c: New test.
+
+2023-05-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109908
+	* gm2/isolib/run/pass/testdelete.mod: New test.
+
+2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105776
+	* gcc.target/i386/pr105776.c: New test.
+
+2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101856
+	* gcc.dg/tree-ssa/pr101856.c: New test.
+
+2023-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array6.ads: New test.
+
+2023-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-thread-local-2.c: New test.
+
 2023-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx512vl-pr95488-1.c: Adjust

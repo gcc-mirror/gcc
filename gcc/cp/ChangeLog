@@ -1,3 +1,26 @@
+2023-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR driver/33980
+	* lang-specs.h ("@c++-header"): Add %w after
+	the --output-pch.
+	("@c++-system-header"): Likewise.
+	("@c++-user-header"): Likewise.
+
+2023-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (normalize_concept_check): Avoid having to do
+	two norm_cache lookups.  Remove unnecessary early exit for an
+	ill-formed concept definition.
+
+2023-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97340
+	* pt.cc (lookup_and_finish_template_variable): Don't call
+	convert_from_reference.
+	(tsubst_copy_and_build) <case TEMPLATE_ID_EXPR>: Call
+	convert_from_reference on the result of
+	lookup_and_finish_template_variable.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* call.cc (promoted_arithmetic_type_p): Use _P defines from tree.h.

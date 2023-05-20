@@ -1,3 +1,8 @@
+2023-05-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/strings.xml: Move lafstern.org reference to https.
+	* doc/html/manual/strings.html: Regenerate.
+
 2023-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/109883

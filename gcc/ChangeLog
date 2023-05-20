@@ -1,3 +1,53 @@
+2023-05-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR other/99451
+	* opts.h (handle_deferred_dump_options): Declare.
+	* opts-global.cc (handle_common_deferred_options): Do not handle
+	dump options here.
+	(handle_deferred_dump_options): New.
+	* toplev.cc (toplev::main): Call it after plugin init.
+
+2023-05-19  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/riscv/constraints.md (DsS, DsD): Restore agreement
+	with shiftm1 mode attribute.
+
+2023-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR driver/33980
+	* gcc.cc (default_compilers["@c-header"]): Add %w
+	after the --output-pch.
+
+2023-05-19  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_split_integer): if loval is equal
+	to hival, ASHIFT the corresponding regs.
+
+2023-05-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Remove else.
+
+2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105776
+	* tree-ssa-math-opts.cc (arith_overflow_check_p): If cast_stmt is
+	non-NULL, allow division statement to have a cast as single imm use
+	rather than comparison/condition.
+	(match_arith_overflow): In that case remove the cast stmt in addition
+	to the division statement.
+
+2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101856
+	* tree-ssa-math-opts.cc (match_arith_overflow): Pattern detect
+	unsigned __builtin_mul_overflow_p even when umulv4_optab doesn't
+	support it but umul_highpart_optab does.
+
+2023-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.cc (output_constructor_bitfield): Call tree_to_uhwi instead
+	of tree_to_shwi on array indices.  Minor tweaks.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* alias.cc (ref_all_alias_ptr_type_p): Use _P() defines from tree.h.

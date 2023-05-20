@@ -1,3 +1,9 @@
+2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/109904
+	* configure.ac (link_gomp): Include also $DL_LIBS.
+	* configure: Regenerated.
+
 2023-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/target-enter-data-3.f90: Uncomment

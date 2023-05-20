@@ -1,3 +1,11 @@
+2023-05-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* expr.cc (gfc_get_corank): Use CLASS_DATA from gfortran.h.
+	* resolve.cc (resolve_component): Same.
+	(resolve_fl_derived0): Same.
+	* simplify.cc (gfc_simplify_extends_type_of): Same.
+	(simplify_cobound): Same.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* trans-array.cc (is_pointer_array): Use _P() defines from tree.h.
