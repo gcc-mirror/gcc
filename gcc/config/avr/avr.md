@@ -3706,17 +3706,17 @@
 ;;    CSE has problems to operate on hard regs.
 ;;
 (define_insn_and_split "divmodqi4"
-  [(set (match_operand:QI 0 "pseudo_register_operand" "")
-        (div:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                (match_operand:QI 2 "pseudo_register_operand" "")))
-   (set (match_operand:QI 3 "pseudo_register_operand" "")
+  [(set (match_operand:QI 0 "pseudo_register_operand")
+        (div:QI (match_operand:QI 1 "pseudo_register_operand")
+                (match_operand:QI 2 "pseudo_register_operand")))
+   (set (match_operand:QI 3 "pseudo_register_operand")
         (mod:QI (match_dup 1) (match_dup 2)))
    (clobber (reg:QI 22))
    (clobber (reg:QI 23))
    (clobber (reg:QI 24))
    (clobber (reg:QI 25))]
   ""
-  "this divmodqi4 pattern should have been splitted;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:QI 24) (match_dup 1))
    (set (reg:QI 22) (match_dup 2))
@@ -3752,17 +3752,17 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodqi4"
- [(set (match_operand:QI 0 "pseudo_register_operand" "")
-       (udiv:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                (match_operand:QI 2 "pseudo_register_operand" "")))
-       (set (match_operand:QI 3 "pseudo_register_operand" "")
-            (umod:QI (match_dup 1) (match_dup 2)))
-       (clobber (reg:QI 22))
-       (clobber (reg:QI 23))
-       (clobber (reg:QI 24))
-       (clobber (reg:QI 25))]
+ [(set (match_operand:QI 0 "pseudo_register_operand")
+       (udiv:QI (match_operand:QI 1 "pseudo_register_operand")
+                (match_operand:QI 2 "pseudo_register_operand")))
+  (set (match_operand:QI 3 "pseudo_register_operand")
+       (umod:QI (match_dup 1) (match_dup 2)))
+  (clobber (reg:QI 22))
+  (clobber (reg:QI 23))
+  (clobber (reg:QI 24))
+  (clobber (reg:QI 25))]
   ""
-  "this udivmodqi4 pattern should have been splitted;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:QI 24) (match_dup 1))
    (set (reg:QI 22) (match_dup 2))
@@ -3794,17 +3794,17 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "divmodhi4"
-  [(set (match_operand:HI 0 "pseudo_register_operand" "")
-        (div:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                (match_operand:HI 2 "pseudo_register_operand" "")))
-   (set (match_operand:HI 3 "pseudo_register_operand" "")
+  [(set (match_operand:HI 0 "pseudo_register_operand")
+        (div:HI (match_operand:HI 1 "pseudo_register_operand")
+                (match_operand:HI 2 "pseudo_register_operand")))
+   (set (match_operand:HI 3 "pseudo_register_operand")
         (mod:HI (match_dup 1) (match_dup 2)))
    (clobber (reg:QI 21))
    (clobber (reg:HI 22))
    (clobber (reg:HI 24))
    (clobber (reg:HI 26))]
   ""
-  "this should have been splitted;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:HI 24) (match_dup 1))
    (set (reg:HI 22) (match_dup 2))
@@ -3840,17 +3840,17 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodhi4"
-  [(set (match_operand:HI 0 "pseudo_register_operand" "")
-        (udiv:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                 (match_operand:HI 2 "pseudo_register_operand" "")))
-   (set (match_operand:HI 3 "pseudo_register_operand" "")
+  [(set (match_operand:HI 0 "pseudo_register_operand")
+        (udiv:HI (match_operand:HI 1 "pseudo_register_operand")
+                 (match_operand:HI 2 "pseudo_register_operand")))
+   (set (match_operand:HI 3 "pseudo_register_operand")
         (umod:HI (match_dup 1) (match_dup 2)))
    (clobber (reg:QI 21))
    (clobber (reg:HI 22))
    (clobber (reg:HI 24))
    (clobber (reg:HI 26))]
   ""
-  "this udivmodhi4 pattern should have been splitted.;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:HI 24) (match_dup 1))
    (set (reg:HI 22) (match_dup 2))
@@ -4091,14 +4091,14 @@
 ;; implementation works the other way round.
 
 (define_insn_and_split "divmodpsi4"
-  [(parallel [(set (match_operand:PSI 0 "pseudo_register_operand" "")
-                   (div:PSI (match_operand:PSI 1 "pseudo_register_operand" "")
-                            (match_operand:PSI 2 "pseudo_register_operand" "")))
-              (set (match_operand:PSI 3 "pseudo_register_operand" "")
-                   (mod:PSI (match_dup 1)
-                            (match_dup 2)))
-              (clobber (reg:DI 18))
-              (clobber (reg:QI 26))])]
+  [(set (match_operand:PSI 0 "pseudo_register_operand")
+        (div:PSI (match_operand:PSI 1 "pseudo_register_operand")
+                 (match_operand:PSI 2 "pseudo_register_operand")))
+   (set (match_operand:PSI 3 "pseudo_register_operand")
+        (mod:PSI (match_dup 1)
+                 (match_dup 2)))
+   (clobber (reg:DI 18))
+   (clobber (reg:QI 26))]
   ""
   { gcc_unreachable(); }
   ""
@@ -4140,14 +4140,14 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodpsi4"
-  [(parallel [(set (match_operand:PSI 0 "pseudo_register_operand" "")
-                   (udiv:PSI (match_operand:PSI 1 "pseudo_register_operand" "")
-                             (match_operand:PSI 2 "pseudo_register_operand" "")))
-              (set (match_operand:PSI 3 "pseudo_register_operand" "")
-                   (umod:PSI (match_dup 1)
-                             (match_dup 2)))
-              (clobber (reg:DI 18))
-              (clobber (reg:QI 26))])]
+  [(set (match_operand:PSI 0 "pseudo_register_operand")
+        (udiv:PSI (match_operand:PSI 1 "pseudo_register_operand")
+                  (match_operand:PSI 2 "pseudo_register_operand")))
+   (set (match_operand:PSI 3 "pseudo_register_operand")
+        (umod:PSI (match_dup 1)
+                  (match_dup 2)))
+   (clobber (reg:DI 18))
+   (clobber (reg:QI 26))]
   ""
   { gcc_unreachable(); }
   ""
@@ -4191,17 +4191,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn_and_split "divmodsi4"
-  [(parallel [(set (match_operand:SI 0 "pseudo_register_operand" "")
-                   (div:SI (match_operand:SI 1 "pseudo_register_operand" "")
-                           (match_operand:SI 2 "pseudo_register_operand" "")))
-              (set (match_operand:SI 3 "pseudo_register_operand" "")
-                   (mod:SI (match_dup 1) (match_dup 2)))
-              (clobber (reg:SI 18))
-              (clobber (reg:SI 22))
-              (clobber (reg:HI 26))
-              (clobber (reg:HI 30))])]
+  [(set (match_operand:SI 0 "pseudo_register_operand")
+        (div:SI (match_operand:SI 1 "pseudo_register_operand")
+                (match_operand:SI 2 "pseudo_register_operand")))
+   (set (match_operand:SI 3 "pseudo_register_operand")
+        (mod:SI (match_dup 1)
+	        (match_dup 2)))
+   (clobber (reg:SI 18))
+   (clobber (reg:SI 22))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
   ""
-  "this divmodsi4 pattern should have been splitted;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:SI 22) (match_dup 1))
    (set (reg:SI 18) (match_dup 2))
@@ -4237,17 +4238,18 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodsi4"
-  [(parallel [(set (match_operand:SI 0 "pseudo_register_operand" "")
-                   (udiv:SI (match_operand:SI 1 "pseudo_register_operand" "")
-                           (match_operand:SI 2 "pseudo_register_operand" "")))
-              (set (match_operand:SI 3 "pseudo_register_operand" "")
-                   (umod:SI (match_dup 1) (match_dup 2)))
-              (clobber (reg:SI 18))
-              (clobber (reg:SI 22))
-              (clobber (reg:HI 26))
-              (clobber (reg:HI 30))])]
+  [(set (match_operand:SI 0 "pseudo_register_operand")
+        (udiv:SI (match_operand:SI 1 "pseudo_register_operand")
+                 (match_operand:SI 2 "pseudo_register_operand")))
+   (set (match_operand:SI 3 "pseudo_register_operand")
+        (umod:SI (match_dup 1)
+                 (match_dup 2)))
+   (clobber (reg:SI 18))
+   (clobber (reg:SI 22))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
   ""
-  "this udivmodsi4 pattern should have been splitted;"
+  { gcc_unreachable(); }
   ""
   [(set (reg:SI 22) (match_dup 1))
    (set (reg:SI 18) (match_dup 2))
