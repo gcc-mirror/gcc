@@ -12956,7 +12956,7 @@ expand_single_bit_test (location_t loc, enum tree_code code,
   intermediate_type = ops_unsigned ? unsigned_type : signed_type;
   inner = fold_convert_loc (loc, intermediate_type, inner);
 
-  rtx inner0 = expand_expr (inner, target, VOIDmode, EXPAND_NORMAL);
+  rtx inner0 = expand_expr (inner, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   inner0 = extract_bit_field (inner0, 1, bitnum, 1, target,
 			      operand_mode, mode, 0, NULL);
