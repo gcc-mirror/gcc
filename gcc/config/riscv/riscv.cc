@@ -3488,7 +3488,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       && GET_MODE_CLASS (mode) == MODE_INT
       && reg_or_0_operand (cons, mode)
       && reg_or_0_operand (alt, mode)
-      && GET_MODE (op) == mode
+      && (GET_MODE (op) == mode || GET_MODE (op) == E_VOIDmode)
       && GET_MODE (op0) == mode
       && GET_MODE (op1) == mode
       && (code == EQ || code == NE))
@@ -3497,7 +3497,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       return true;
     }
   else if (TARGET_SFB_ALU
-	   && mode == word_mode)
+	   && GET_MODE (op0) == word_mode)
     {
       riscv_emit_int_compare (&code, &op0, &op1);
       rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
