@@ -3633,8 +3633,6 @@ information have to.
 @item
 @uref{#aarch64-x-x,,aarch64*-*-*}
 @item
-@uref{#alpha-x-x,,alpha*-*-*}
-@item
 @uref{#amdgcn-x-amdhsa,,amdgcn-*-amdhsa}
 @item
 @uref{#amd64-x-solaris2,,amd64-*-solaris2*}
@@ -3835,15 +3833,6 @@ types of branch protections.  Conversely,
 @option{--disable-standard-branch-protection} will disable both the
 protections by default.  This mechanism is turned off by default if neither
 of the options are given at configure time.
-
-@html
-<hr />
-@end html
-@anchor{alpha-x-x}
-@heading alpha*-*-*
-This section contains general configuration information for all
-Alpha-based platforms using ELF@.  In addition to reading this
-section, please read all other sections that match your target.
 
 @html
 <hr />
