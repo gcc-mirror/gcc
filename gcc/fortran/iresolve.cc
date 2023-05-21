@@ -2424,7 +2424,7 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
       break;
     }
 
-  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
+  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_array_expr (shape))
     {
       gfc_constructor *c;
       f->shape = gfc_get_shape (f->rank);

@@ -254,12 +254,19 @@ is_constant_array_expr (gfc_expr *e)
 	break;
       }
 
-  /* Check and expand the constructor.  */
-  if (!array_OK && gfc_init_expr_flag && e->rank == 1)
+  /* Check and expand the constructor.  We do this when either
+     gfc_init_expr_flag is set or for not too large array constructors.  */
+  bool expand;
+  expand = (e->rank == 1
+	    && e->shape
+	    && (mpz_cmp_ui (e->shape[0], flag_max_array_constructor) < 0));
+
+  if (!array_OK && (gfc_init_expr_flag || expand) && e->rank == 1)
     {
+      bool saved_init_expr_flag = gfc_init_expr_flag;
       array_OK = gfc_reduce_init_expr (e);
       /* gfc_reduce_init_expr resets the flag.  */
-      gfc_init_expr_flag = true;
+      gfc_init_expr_flag = saved_init_expr_flag;
     }
   else
     return array_OK;
@@ -283,6 +290,13 @@ is_constant_array_expr (gfc_expr *e)
 
   return array_OK;
 }
+
+bool
+gfc_is_constant_array_expr (gfc_expr *e)
+{
+  return is_constant_array_expr (e);
+}
+
 
 /* Test for a size zero array.  */
 bool
@@ -7001,6 +7015,11 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 	  if (npad <= 0)
 	    {
 	      mpz_clear (index);
+	      if (pad == NULL)
+		gfc_error ("Without padding, there are not enough elements "
+			   "in the intrinsic RESHAPE source at %L to match "
+			   "the shape", &source->where);
+	      gfc_free_expr (result);
 	      return NULL;
 	    }
 	  j = j - nsource;

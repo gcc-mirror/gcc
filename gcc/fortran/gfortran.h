@@ -3970,6 +3970,7 @@ bool gfc_fix_implicit_pure (gfc_namespace *);
 
 void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
+bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
 
 /* trans-array.cc  */

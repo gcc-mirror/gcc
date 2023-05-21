@@ -4723,7 +4723,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
     }
 
   gfc_simplify_expr (shape, 0);
-  shape_is_const = gfc_is_constant_expr (shape);
+  shape_is_const = gfc_is_constant_array_expr (shape);
 
   if (shape->expr_type == EXPR_ARRAY && shape_is_const)
     {
@@ -4732,6 +4732,8 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       for (i = 0; i < shape_size; ++i)
 	{
 	  e = gfc_constructor_lookup_expr (shape->value.constructor, i);
+	  if (e == NULL)
+	    break;
 	  if (e->expr_type != EXPR_CONSTANT)
 	    continue;
 
@@ -4764,7 +4766,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       if (!type_check (order, 3, BT_INTEGER))
 	return false;
 
-      if (order->expr_type == EXPR_ARRAY && gfc_is_constant_expr (order))
+      if (order->expr_type == EXPR_ARRAY && gfc_is_constant_array_expr (order))
 	{
 	  int i, order_size, dim, perm[GFC_MAX_DIMENSIONS];
 	  gfc_expr *e;
