@@ -40,9 +40,7 @@ is_builtin (AST::Attribute &attr);
 class ExpandVisitor : public AST::ASTVisitor
 {
 public:
-  ExpandVisitor (MacroExpander &expander, ProcMacroExpander &proc_expander)
-    : expander (expander), proc_expander (proc_expander)
-  {}
+  ExpandVisitor (MacroExpander &expander) : expander (expander) {}
 
   /* Expand all of the macro invocations currently contained in a crate */
   void go (AST::Crate &crate);
@@ -129,12 +127,30 @@ public:
 	value->accept_vis (*this);
 
 	auto final_fragment = expander.take_expanded_fragment ();
+	auto proc_macro_fragment
+	  = expander.take_expanded_proc_macro_fragment ();
 
 	// FIXME: Is that correct? It seems *extremely* dodgy
 	if (final_fragment.should_expand ())
 	  {
 	    it = values.erase (it);
 	    for (auto &node : final_fragment.get_nodes ())
+	      {
+		auto new_node = extractor (node);
+		if (new_node != nullptr)
+		  {
+		    it = values.insert (it, std::move (new_node));
+		    it++;
+		  }
+	      }
+	  }
+	else if (proc_macro_fragment.should_expand ())
+	  {
+	    if (proc_macro_fragment.should_overwrite ())
+	      it = values.erase (it);
+	    else
+	      it++;
+	    for (auto &node : proc_macro_fragment.get_nodes ())
 	      {
 		auto new_node = extractor (node);
 		if (new_node != nullptr)
@@ -368,16 +384,14 @@ public:
   template <typename T> void visit_inner_attrs (T &item);
 
   template <typename T>
-  void expand_derive (const T &item, std::unique_ptr<AST::TokenTree> &trait);
+  void expand_derive (T &item, std::unique_ptr<AST::TokenTree> trait);
 
-  template <typename T>
-  void expand_derive (const T &item, AST::DelimTokenTree &attr);
+  template <typename T> void expand_derive (T &item, AST::DelimTokenTree &attr);
 
   template <typename T> void visit_attrs_with_derive (T &item);
 
 private:
   MacroExpander &expander;
-  ProcMacroExpander &proc_expander;
 };
 
 } // namespace Rust

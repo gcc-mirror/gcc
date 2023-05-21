@@ -93,6 +93,7 @@ GRS_OBJS = \
 	rust/rust-derive-copy.o \
 	rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
+    rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
     rust/rust-hir.o \

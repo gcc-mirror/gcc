@@ -64,7 +64,8 @@ public:
    * Create a complete AST fragment
    */
   Fragment (std::vector<AST::SingleASTNode> nodes,
-	    std::vector<std::unique_ptr<AST::Token>> tokens);
+	    std::vector<std::unique_ptr<AST::Token>> tokens,
+	    bool overwrite = true);
 
   /**
    * Create a complete AST fragment made of a single token
@@ -78,6 +79,7 @@ public:
 
   bool is_error () const;
   bool should_expand () const;
+  bool should_overwrite () const;
 
   bool is_expression_fragment () const;
   bool is_type_fragment () const;
@@ -108,6 +110,12 @@ private:
    * actual tokens of the various nodes that are part of the fragment.
    */
   std::vector<std::unique_ptr<AST::Token>> tokens;
+
+  /**
+   * Whether the fragment should overwrite the original content. In most case
+   * it should overwrite it, but not with derive procedural macros.
+   */
+  bool overwrite;
 
   /**
    * We need to make a special case for Expression and Type fragments as only
