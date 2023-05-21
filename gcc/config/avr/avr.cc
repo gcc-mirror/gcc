@@ -14425,10 +14425,13 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         if (changed)
           return build_call_expr (fndecl, 3, tmap, tbits, tval);
 
-        /* If bits don't change their position we can use vanilla logic
-           to merge the two arguments.  */
+        /* If bits don't change their position, we can use vanilla logic
+           to merge the two arguments...  */
 
-	if (avr_map_metric (map, MAP_NONFIXED_0_7) == 0)
+        if (avr_map_metric (map, MAP_NONFIXED_0_7) == 0
+            // ...except when we are copying just one bit. In that
+            // case, BLD/BST is better than XOR/AND/XOR, see PR90622.
+            && avr_map_metric (map, MAP_FIXED_0_7) != 1)
           {
             int mask_f = avr_map_metric (map, MAP_MASK_PREIMAGE_F);
             tree tres, tmask = build_int_cst (val_type, mask_f ^ 0xff);
