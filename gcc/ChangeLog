@@ -1,3 +1,12 @@
+2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
+
+	PR target/105753
+	Backport from 2023-05-20 https://gcc.gnu.org/r14-1016
+	* config/avr/avr.md (divmodpsi, udivmodpsi, divmodsi, udivmodsi):
+	Remove superfluous "parallel" in insn pattern.
+	([u]divmod<mode>4): Tidy code.  Use gcc_unreachable() instead of
+	printing error text to assembly.
+
 2023-05-19  Andreas Schwab  <schwab@suse.de>
 
 	* config/riscv/linux.h (LIB_SPEC): Don't redefine.

@@ -1,3 +1,9 @@
+2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
+
+	PR target/105753
+	Backport from 2023-05-20 https://gcc.gnu.org/r14-1016
+	* gcc.target/avr/torture/pr105753.c: New test.
+
 2023-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
