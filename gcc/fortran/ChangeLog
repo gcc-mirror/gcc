@@ -1,3 +1,13 @@
+2023-05-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109846
+	* expr.c (gfc_check_vardef_context): Check appropriate pointer
+	attribute for CLASS vs. non-CLASS function result in variable
+	definition context.
+
 2023-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
