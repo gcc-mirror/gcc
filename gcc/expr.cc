@@ -12958,7 +12958,14 @@ expand_single_bit_test (location_t loc, enum tree_code code,
 
   rtx inner0 = expand_expr (inner, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
-  inner0 = extract_bit_field (inner0, 1, bitnum, 1, target,
+  int bitpos = bitnum;
+
+  scalar_int_mode imode = as_a <scalar_int_mode>(GET_MODE (inner0));
+
+  if (BYTES_BIG_ENDIAN)
+    bitpos = GET_MODE_BITSIZE (imode) - 1 - bitpos;
+
+  inner0 = extract_bit_field (inner0, 1, bitpos, 1, target,
 			      operand_mode, mode, 0, NULL);
 
   if (code == EQ_EXPR)
