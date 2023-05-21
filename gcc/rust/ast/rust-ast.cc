@@ -4183,7 +4183,8 @@ Attribute::check_cfg_predicate (const Session &session) const
   if (!is_parsed_to_meta_item ())
     return false;
 
-  return attr_input->check_cfg_predicate (session);
+  auto &meta_item = static_cast<AttrInputMetaItemContainer &> (*attr_input);
+  return meta_item.get_items ().front ()->check_cfg_predicate (session);
 }
 
 std::vector<Attribute>
