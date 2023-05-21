@@ -1,3 +1,23 @@
+2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
+
+	PR target/105753
+	* gcc.target/avr/torture/pr105753.c: New test.
+
+2023-05-20  Die Li  <lidie@eswincomputing.com>
+
+	* gcc.target/riscv/xtheadcondmov-indirect-rv32.c: New test.
+	* gcc.target/riscv/xtheadcondmov-indirect-rv64.c: New test.
+
+2023-05-20  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-bext-02.c: New test.
+
+2023-05-20  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/106888
+	* gcc.target/riscv/pr106888.c: New test.
+	* gcc.target/riscv/zbbw.c: Check for ANDI.
+
 2023-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/97340

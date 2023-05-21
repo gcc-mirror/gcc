@@ -1,3 +1,81 @@
+2023-05-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Remove de facto empty alpha*-*-*
+	section.
+
+2023-05-20  Pan Li  <pan2.li@intel.com>
+
+	* mode-switching.cc (entity_map): Initialize the array to zero.
+	(bb_info): Ditto.
+
+2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
+
+	PR target/105753
+	* config/avr/avr.md (divmodpsi, udivmodpsi, divmodsi, udivmodsi):
+	Remove superfluous "parallel" in insn pattern.
+	([u]divmod<mode>4): Tidy code.  Use gcc_unreachable() instead of
+	printing error text to assembly.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test): Rename to ...
+	(expand_single_bit_test): This and expand directly.
+	(do_store_flag): Update for the rename function.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test): Use BIT_FIELD_REF
+	instead of shift/and.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test): Add an assert
+	and simplify based on code being NE_EXPR or EQ_EXPR.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test): Take inner and bitnum
+	instead of arg0 and arg1. Update the code.
+	(do_store_flag): Don't create a tree when calling
+	fold_single_bit_test instead just call it with the bitnum
+	and the inner tree.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test): Use get_def_for_expr
+	instead of checking the inner's code.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (fold_single_bit_test_into_sign_test): Inline into ...
+	(fold_single_bit_test): This and simplify.
+
+2023-05-20  Andrew Pinski  <apinski@marvell.com>
+
+	* fold-const.cc (fold_single_bit_test_into_sign_test): Move to
+	expr.cc.
+	(fold_single_bit_test): Likewise.
+	* expr.cc (fold_single_bit_test_into_sign_test): Move from fold-const.cc
+	(fold_single_bit_test): Likewise and make static.
+	* fold-const.h (fold_single_bit_test): Remove declaration.
+
+2023-05-20  Die Li  <lidie@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Fix mode
+	checking.
+
+2023-05-20  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (branch<X:mode>_bext): New split pattern.
+
+2023-05-20  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/106888
+	* config/riscv/bitmanip.md
+	(<bitmanip_optab>disi2): Match with any_extend.
+	(<bitmanip_optab>disi2_sext): New pattern to match
+	with sign extend using an ANDI instruction.
+
 2023-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR other/99451
