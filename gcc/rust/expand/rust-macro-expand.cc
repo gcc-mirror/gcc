@@ -24,6 +24,8 @@
 #include "rust-parse.h"
 #include "rust-cfg-strip.h"
 #include "rust-early-name-resolver.h"
+#include "rust-session-manager.h"
+#include "rust-proc-macro.h"
 
 namespace Rust {
 
@@ -1049,4 +1051,92 @@ MacroExpander::transcribe_rule (
 
   return fragment;
 }
+
+// TODO: Move to early name resolver ?
+void
+MacroExpander::import_proc_macros (std::string extern_crate)
+{
+  auto path = session.extern_crates.find (extern_crate);
+  if (path == session.extern_crates.end ())
+    {
+      // Extern crate path is not available.
+      // FIXME: Emit error
+      rust_error_at (Location (), "Cannot find requested proc macro crate");
+      gcc_unreachable ();
+    }
+  auto macros = load_macros (path->second);
+
+  std::string prefix = extern_crate + "::";
+  for (auto &macro : macros)
+    {
+      switch (macro.tag)
+	{
+	case ProcMacro::CUSTOM_DERIVE:
+	  rust_debug ("Found one derive proc macro.");
+	  mappings->insert_derive_proc_macro (
+	    std::make_pair (extern_crate,
+			    macro.payload.custom_derive.trait_name),
+	    macro.payload.custom_derive);
+	  break;
+	case ProcMacro::ATTR:
+	  rust_debug ("Found one attribute proc macro.");
+	  mappings->insert_attribute_proc_macro (
+	    std::make_pair (extern_crate, macro.payload.attribute.name),
+	    macro.payload.attribute);
+	  break;
+	case ProcMacro::BANG:
+	  rust_debug ("Found one bang proc macro.");
+	  mappings->insert_bang_proc_macro (
+	    std::make_pair (extern_crate, macro.payload.bang.name),
+	    macro.payload.bang);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
+void
+MacroExpander::parse_procmacro_output (ProcMacro::TokenStream ts, bool derive)
+{
+  ProcMacroInvocLexer lex (convert (ts));
+  Parser<ProcMacroInvocLexer> parser (lex);
+
+  std::vector<AST::SingleASTNode> nodes;
+  switch (peek_context ())
+    {
+    case ContextType::ITEM:
+      while (lex.peek_token ()->get_id () != END_OF_FILE)
+	{
+	  auto result = parser.parse_item (false);
+	  if (result == nullptr)
+	    break;
+	  nodes.push_back ({std::move (result)});
+	}
+      break;
+    case ContextType::BLOCK:
+      while (lex.peek_token ()->get_id () != END_OF_FILE)
+	{
+	  auto result = parser.parse_stmt ();
+	  if (result == nullptr)
+	    break;
+	  nodes.push_back ({std::move (result)});
+	}
+      break;
+    case ContextType::TRAIT:
+    case ContextType::IMPL:
+    case ContextType::TRAIT_IMPL:
+    case ContextType::EXTERN:
+    case ContextType::TYPE:
+    default:
+      gcc_unreachable ();
+    }
+
+  if (parser.has_errors ())
+    set_expanded_proc_macro_fragment (AST::Fragment::create_error ());
+  else
+    set_expanded_proc_macro_fragment (
+      {nodes, std::vector<std::unique_ptr<AST::Token>> (), !derive});
+}
+
 } // namespace Rust

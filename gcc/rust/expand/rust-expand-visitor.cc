@@ -1553,7 +1553,7 @@ void
 ExpandVisitor::expand_outer_attribute (T &item, AST::SimplePath &path)
 {
   // FIXME: Retrieve path from segments + local use statements instead of string
-  proc_expander.expand_attribute_proc_macro (item, path);
+  expander.expand_attribute_proc_macro (item, path);
 }
 
 template <typename T>
@@ -1588,7 +1588,7 @@ void
 ExpandVisitor::expand_inner_attribute (T &item, AST::SimplePath &path)
 {
   // FIXME: Retrieve path from segments + local use statements instead of string
-  proc_expander.expand_attribute_proc_macro (item, path);
+  expander.expand_attribute_proc_macro (item, path);
 }
 
 template <typename T>
@@ -1621,15 +1621,15 @@ ExpandVisitor::visit_inner_attrs (T &item)
 
 template <typename T>
 void
-ExpandVisitor::expand_derive (const T &item,
-			      std::unique_ptr<AST::TokenTree> &trait)
+ExpandVisitor::expand_derive (T &item, std::unique_ptr<AST::TokenTree> trait)
 {
-  // FIXME: Implement expansion for that particular trait
+  auto trait_name = trait->as_string ();
+  expander.expand_derive_proc_macro (item, trait_name);
 }
 
 template <typename T>
 void
-ExpandVisitor::expand_derive (const T &item, AST::DelimTokenTree &attr)
+ExpandVisitor::expand_derive (T &item, AST::DelimTokenTree &attr)
 {
   // Item is const because even though the tokenstream might be modified, it
   // should appear as the same input for every derive proc macro.
@@ -1640,7 +1640,7 @@ ExpandVisitor::expand_derive (const T &item, AST::DelimTokenTree &attr)
       for (auto it = trees.begin () + 1; it < trees.end () - 1;
 	   it += 2 /* Increment + skip comma */)
 	{
-	  expand_derive (item, *it);
+	  expand_derive (item, std::move (*it));
 	}
     }
 }

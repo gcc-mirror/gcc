@@ -28,6 +28,11 @@
 #include "rust-early-name-resolver.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-invoc-lexer.h"
+#include "rust-proc-macro-invoc-lexer.h"
+#include "rust-token-converter.h"
+#include "rust-ast-collector.h"
+#include "rust-system.h"
+#include "libproc_macro/proc_macro.h"
 
 // Provides objects and method prototypes for macro expansion
 
@@ -231,6 +236,7 @@ struct MacroExpander
     : cfg (cfg), crate (crate), session (session),
       sub_stack (SubstitutionScope ()),
       expanded_fragment (AST::Fragment::create_error ()),
+      expanded_proc_macro_fragment (AST::Fragment::create_error ()),
       has_changed_flag (false), resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
@@ -332,6 +338,126 @@ struct MacroExpander
     return fragment;
   }
 
+  void set_expanded_proc_macro_fragment (AST::Fragment &&fragment)
+  {
+    if (!fragment.is_error ())
+      has_changed_flag = true;
+
+    expanded_proc_macro_fragment = std::move (fragment);
+  }
+
+  AST::Fragment take_expanded_proc_macro_fragment ()
+  {
+    auto fragment = std::move (expanded_proc_macro_fragment);
+    expanded_proc_macro_fragment = AST::Fragment::create_error ();
+
+    return fragment;
+  }
+
+  void import_proc_macros (std::string extern_crate);
+
+  template <typename T>
+  void expand_derive_proc_macro (T &item, std::string &trait_name)
+  {
+    ProcMacro::CustomDerive macro;
+
+    // FIXME: Resolve crate name
+    std::string crate = "";
+    std::string name = trait_name;
+
+    if (!mappings->lookup_derive_proc_macro (std::make_pair (crate, name),
+					     macro))
+      {
+	// FIXME: Resolve this path segment instead of taking it directly.
+	import_proc_macros (crate);
+	if (!mappings->lookup_derive_proc_macro (std::make_pair (crate, name),
+						 macro))
+	  {
+	    rust_error_at (Location (), "procedural macro %s not found",
+			   name.c_str ());
+	    rust_assert (false);
+	  }
+      }
+
+    std::vector<TokenPtr> tokens;
+    AST::TokenCollector collector (tokens);
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    parse_procmacro_output (macro.macro (convert (vec)), true);
+  }
+
+  template <typename T>
+  void expand_bang_proc_macro (T &item, AST::SimplePath &path)
+  {
+    ProcMacro::Bang macro;
+
+    std::string crate = path.get_segments ()[0].get_segment_name ();
+    std::string name = path.get_segments ()[1].get_segment_name ();
+    if (!mappings->lookup_bang_proc_macro (std::make_pair (crate, name), macro))
+      {
+	// FIXME: Resolve this path segment instead of taking it directly.
+	import_proc_macros (crate);
+
+	if (!mappings->lookup_bang_proc_macro (std::make_pair (crate, name),
+					       macro))
+	  {
+	    rust_error_at (Location (), "procedural macro %s not found",
+			   name.c_str ());
+	    rust_assert (false);
+	  }
+      }
+
+    std::vector<TokenPtr> tokens;
+    AST::TokenCollector collector (tokens);
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    parse_procmacro_output (macro.macro (convert (vec)), false);
+  }
+
+  template <typename T>
+  void expand_attribute_proc_macro (T &item, AST::SimplePath &path)
+  {
+    ProcMacro::Attribute macro;
+
+    std::string crate = path.get_segments ()[0].get_segment_name ();
+    std::string name = path.get_segments ()[1].get_segment_name ();
+    if (!mappings->lookup_attribute_proc_macro (std::make_pair (crate, name),
+						macro))
+      {
+	// FIXME: Resolve this path segment instead of taking it directly.
+	import_proc_macros (crate);
+	if (!mappings->lookup_attribute_proc_macro (std::make_pair (crate,
+								    name),
+						    macro))
+	  {
+	    rust_error_at (Location (), "procedural macro %s not found",
+			   name.c_str ());
+	    rust_assert (false);
+	  }
+      }
+
+    std::vector<TokenPtr> tokens;
+    AST::TokenCollector collector (tokens);
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    // FIXME: Handle attributes
+    parse_procmacro_output (
+      macro.macro (ProcMacro::TokenStream::make_tokenstream (), convert (vec)),
+      false);
+  }
+
   /**
    * Has the MacroExpander expanded a macro since its state was last reset?
    */
@@ -347,11 +473,14 @@ struct MacroExpander
   AST::MacroInvocation *get_last_invocation () { return last_invoc; }
 
 private:
+  void parse_procmacro_output (ProcMacro::TokenStream ts, bool derive);
+
   AST::Crate &crate;
   Session &session;
   SubstitutionScope sub_stack;
   std::vector<ContextType> context;
   AST::Fragment expanded_fragment;
+  AST::Fragment expanded_proc_macro_fragment;
   bool has_changed_flag;
 
   AST::MacroRulesDefinition *last_def;
