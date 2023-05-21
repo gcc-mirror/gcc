@@ -130,10 +130,10 @@ namespace __detail
     _Source
     _S_range_begin(_Source __begin) { return __begin; }
 
-  struct __null_terminated { };
+  struct __nul_terminated { };
 
   template<typename _Source>
-    __null_terminated
+    __nul_terminated
     _S_range_end(_Source) { return {}; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -528,11 +528,11 @@ namespace __detail
       struct _Cvt;
 
     static basic_string_view<value_type>
-    _S_convert(value_type* __src, __detail::__null_terminated)
+    _S_convert(value_type* __src, __detail::__nul_terminated)
     { return __src; }
 
     static basic_string_view<value_type>
-    _S_convert(const value_type* __src, __detail::__null_terminated)
+    _S_convert(const value_type* __src, __detail::__nul_terminated)
     { return __src; }
 
     static basic_string_view<value_type>
@@ -554,7 +554,7 @@ namespace __detail
 
     template<typename _InputIterator>
       static string_type
-      _S_convert(_InputIterator __src, __detail::__null_terminated)
+      _S_convert(_InputIterator __src, __detail::__nul_terminated)
       {
 	// Read from iterator into basic_string until a null value is seen:
 	auto __s = _S_string_from_iter(__src);
@@ -576,7 +576,7 @@ namespace __detail
 
     template<typename _InputIterator>
       static string_type
-      _S_convert_loc(_InputIterator __src, __detail::__null_terminated,
+      _S_convert_loc(_InputIterator __src, __detail::__nul_terminated,
 		     const std::locale& __loc)
       {
 	const std::string __s = _S_string_from_iter(__src);
