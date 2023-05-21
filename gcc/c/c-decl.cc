@@ -6490,6 +6490,58 @@ smallest_type_quals_location (const location_t *locations,
   return loc;
 }
 
+
+/* We attach an artificial TYPE_DECL to pointed-to type
+   and arrange for it to be included in a DECL_EXPR.  This
+   forces the sizes evaluation at a safe point and ensures it
+   is not deferred until e.g. within a deeper conditional context.
+
+   PARM contexts have no enclosing statement list that
+   can hold the DECL_EXPR, so we need to use a BIND_EXPR
+   instead, and add it to the list of expressions that
+   need to be evaluated.
+
+   TYPENAME contexts do have an enclosing statement list,
+   but it would be incorrect to use it, as the size should
+   only be evaluated if the containing expression is
+   evaluated.  We might also be in the middle of an
+   expression with side effects on the pointed-to type size
+   "arguments" prior to the pointer declaration point and
+   the fake TYPE_DECL in the enclosing context would force
+   the size evaluation prior to the side effects.  We therefore
+   use BIND_EXPRs in TYPENAME contexts too.  */
+static void
+add_decl_expr (location_t loc, enum decl_context decl_context, tree type,
+	       tree *expr)
+{
+  tree bind = NULL_TREE;
+  if (decl_context == TYPENAME || decl_context == PARM
+      || decl_context == FIELD)
+    {
+      bind = build3 (BIND_EXPR, void_type_node, NULL_TREE, NULL_TREE,
+		     NULL_TREE);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      BIND_EXPR_BODY (bind) = push_stmt_list ();
+      push_scope ();
+    }
+
+  tree decl = build_decl (loc, TYPE_DECL, NULL_TREE, type);
+  pushdecl (decl);
+  DECL_ARTIFICIAL (decl) = 1;
+  add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
+  TYPE_NAME (type) = decl;
+
+  if (bind)
+    {
+      pop_scope ();
+      BIND_EXPR_BODY (bind) = pop_stmt_list (BIND_EXPR_BODY (bind));
+      if (*expr)
+	*expr = build2 (COMPOUND_EXPR, void_type_node, *expr, bind);
+      else
+	*expr = bind;
+    }
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -7474,58 +7526,9 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	       This is expected to happen automatically when the pointed-to
 	       type has a name/declaration of it's own, but special attention
-	       is required if the type is anonymous.
-
-	       We attach an artificial TYPE_DECL to such pointed-to type
-	       and arrange for it to be included in a DECL_EXPR.  This
-	       forces the sizes evaluation at a safe point and ensures it
-	       is not deferred until e.g. within a deeper conditional context.
-
-	       PARM contexts have no enclosing statement list that
-	       can hold the DECL_EXPR, so we need to use a BIND_EXPR
-	       instead, and add it to the list of expressions that
-	       need to be evaluated.
-
-	       TYPENAME contexts do have an enclosing statement list,
-	       but it would be incorrect to use it, as the size should
-	       only be evaluated if the containing expression is
-	       evaluated.  We might also be in the middle of an
-	       expression with side effects on the pointed-to type size
-	       "arguments" prior to the pointer declaration point and
-	       the fake TYPE_DECL in the enclosing context would force
-	       the size evaluation prior to the side effects.  We therefore
-	       use BIND_EXPRs in TYPENAME contexts too.  */
-	    if (!TYPE_NAME (type)
-		&& c_type_variably_modified_p (type))
-	      {
-		tree bind = NULL_TREE;
-		if (decl_context == TYPENAME || decl_context == PARM
-		    || decl_context == FIELD)
-		  {
-		    bind = build3 (BIND_EXPR, void_type_node, NULL_TREE,
-				   NULL_TREE, NULL_TREE);
-		    TREE_SIDE_EFFECTS (bind) = 1;
-		    BIND_EXPR_BODY (bind) = push_stmt_list ();
-		    push_scope ();
-		  }
-		tree decl = build_decl (loc, TYPE_DECL, NULL_TREE, type);
-		pushdecl (decl);
-		DECL_ARTIFICIAL (decl) = 1;
-		add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
-		TYPE_NAME (type) = decl;
-
-		if (bind)
-		  {
-		    pop_scope ();
-		    BIND_EXPR_BODY (bind)
-		      = pop_stmt_list (BIND_EXPR_BODY (bind));
-		    if (*expr)
-		      *expr = build2 (COMPOUND_EXPR, void_type_node, *expr,
-				      bind);
-		    else
-		      *expr = bind;
-		  }
-	      }
+	       is required if the type is anonymous. */
+	    if (!TYPE_NAME (type) && c_type_variably_modified_p (type))
+	      add_decl_expr (loc, decl_context, type, expr);
 
 	    type = c_build_pointer_type (type);
 
@@ -7787,6 +7790,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals, orig_qual_type,
 					     orig_qual_indirect);
+
+	    /* The pointed-to type may need a decl expr (see above).  */
+	    if (!TYPE_NAME (type) && c_type_variably_modified_p (type))
+	      add_decl_expr (loc, decl_context, type, expr);
+
 	    type = c_build_pointer_type (type);
 	    type_quals = array_ptr_quals;
 	    if (type_quals)
