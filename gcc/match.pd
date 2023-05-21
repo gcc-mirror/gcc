@@ -1723,7 +1723,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2) */
 (simplify
   (bit_and (bit_ior @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
-  (bit_ior (bit_and @0 @2) (bit_and @1 @2)))
+  (bit_ior (bit_and @0 @2) (bit_and! @1 @2)))
 
 /* Combine successive equal operations with constants.  */
 (for bitop (bit_and bit_ior bit_xor)
@@ -1732,7 +1732,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!CONSTANT_CLASS_P (@0))
    /* This is the canonical form regardless of whether (bitop @1 @2) can be
       folded to a constant.  */
-   (bitop @0 (bitop @1 @2))
+   (bitop @0 (bitop! @1 @2))
    /* In this case we have three constants and (bitop @0 @1) doesn't fold
       to a constant.  This can happen if @0 or @1 is a POLY_INT_CST and if
       the values involved are such that the operation can't be decided at
@@ -2635,13 +2635,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 forever if something doesn't simplify into a constant.  */
       (if (!CONSTANT_CLASS_P (@0))
        (if (outer_op == PLUS_EXPR)
-	(plus (view_convert @0) (inner_op @2 (view_convert @1)))
-	(minus (view_convert @0) (neg_inner_op @2 (view_convert @1)))))
+	(plus (view_convert @0) (inner_op! @2 (view_convert @1)))
+	(minus (view_convert @0) (neg_inner_op! @2 (view_convert @1)))))
       (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
        (if (outer_op == PLUS_EXPR)
-	(view_convert (plus @0 (inner_op (view_convert @2) @1)))
-	(view_convert (minus @0 (neg_inner_op (view_convert @2) @1))))
+	(view_convert (plus @0 (inner_op! (view_convert @2) @1)))
+	(view_convert (minus @0 (neg_inner_op! (view_convert @2) @1))))
        /* If the constant operation overflows we cannot do the transform
 	  directly as we would introduce undefined overflow, for example
 	  with (a - 1) + INT_MIN.  */
@@ -2672,10 +2672,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
 	forever if something doesn't simplify into a constant.  */
      (if (!CONSTANT_CLASS_P (@0))
-      (minus (outer_op (view_convert @1) @2) (view_convert @0)))
+      (minus (outer_op! (view_convert @1) @2) (view_convert @0)))
      (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	  || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
-      (view_convert (minus (outer_op @1 (view_convert @2)) @0))
+      (view_convert (minus (outer_op! @1 (view_convert @2)) @0))
       (if (types_match (type, @0))
        (with { tree cst = const_binop (outer_op, type, @1, @2); }
 	(if (cst && !TREE_OVERFLOW (cst))
@@ -2691,10 +2691,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
       forever if something doesn't simplify into a constant.  */
     (if (!CONSTANT_CLASS_P (@0))
-     (plus (view_convert @0) (minus @1 (view_convert @2))))
+     (plus (view_convert @0) (minus! @1 (view_convert @2))))
     (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
-     (view_convert (plus @0 (minus (view_convert @1) @2)))
+     (view_convert (plus @0 (minus! (view_convert @1) @2)))
      (if (types_match (type, @0))
       (with { tree cst = const_binop (MINUS_EXPR, type, @1, @2); }
        (if (cst && !TREE_OVERFLOW (cst))
