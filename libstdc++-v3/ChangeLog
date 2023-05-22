@@ -1,3 +1,8 @@
+2023-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/bits/fs_path.h: Rename __null_terminated to __nul_terminated
+	to avoid colliding with a macro in Darwin system headers.
+
 2023-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105844

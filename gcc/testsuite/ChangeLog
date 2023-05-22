@@ -1,3 +1,14 @@
+2023-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-aligned-globals.c: New test.
+	* gcc.dg/darwin-comm-1.c: New test.
+	* gcc.dg/attr-aligned.c: Amend for new alignment values on
+	Darwin.
+	* gcc.target/i386/pr89261.c: Likewise.
+
 2023-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
