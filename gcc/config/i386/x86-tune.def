@@ -335,7 +335,8 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
 /* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
    for bit-manipulation instructions.  */
 DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
-	  m_SANDYBRIDGE | m_CORE_AVX2 | m_TREMONT | m_ALDERLAKE | m_CORE_ATOM
+	  m_SANDYBRIDGE | m_HASWELL | m_SKYLAKE | m_SKYLAKE_AVX512
+	  | m_CANNONLAKE | m_CASCADELAKE | m_COOPERLAKE
 	  | m_LUJIAZUI | m_GENERIC)
 
 /* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
