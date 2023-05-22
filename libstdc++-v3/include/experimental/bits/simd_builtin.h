@@ -2356,12 +2356,12 @@ template <typename _Abi>
 	constexpr size_t _NI = sizeof(__xn) / sizeof(_I);
 	_GLIBCXX_SIMD_USE_CONSTEXPR auto __minn
 	  = __vector_bitcast<_I>(__vector_broadcast<_NI>(__norm_min_v<_Tp>));
-	_GLIBCXX_SIMD_USE_CONSTEXPR auto __infn
-	  = __vector_bitcast<_I>(__vector_broadcast<_NI>(__infinity_v<_Tp>));
 
 	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_normal
 	  = __vector_broadcast<_NI, _I>(FP_NORMAL);
 #if !__FINITE_MATH_ONLY__
+	_GLIBCXX_SIMD_USE_CONSTEXPR auto __infn
+	  = __vector_bitcast<_I>(__vector_broadcast<_NI>(__infinity_v<_Tp>));
 	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_nan
 	  = __vector_broadcast<_NI, _I>(FP_NAN);
 	_GLIBCXX_SIMD_USE_CONSTEXPR auto __fp_infinite

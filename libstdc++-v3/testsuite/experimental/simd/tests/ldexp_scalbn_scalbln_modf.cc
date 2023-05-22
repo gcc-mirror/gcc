@@ -139,7 +139,6 @@ template <typename V>
 	if (modf_is_broken)
 	  return;
 	V integral = {};
-	const V totest = modf(input, &integral);
 	auto&& expected = [&](const auto& v) -> std::pair<const V, const V> {
 	  std::pair<V, V> tmp = {};
 	  using std::modf;
@@ -151,8 +150,9 @@ template <typename V>
 	    }
 	  return tmp;
 	};
-	const auto expect1 = expected(input);
 #ifdef __STDC_IEC_559__
+	const V totest = modf(input, &integral);
+	const auto expect1 = expected(input);
 	COMPARE(isnan(totest), isnan(expect1.first))
 	  << "modf(" << input << ", iptr) = " << totest << " != " << expect1;
 	COMPARE(isnan(integral), isnan(expect1.second))
