@@ -85,18 +85,15 @@ EarlyNameResolver::go (AST::Crate &crate)
   scoped (crate.get_node_id (), [&items, &new_items, this] {
     for (auto &&item : items)
       {
+	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
+
 	if (item->get_ast_kind () == AST::Kind::MODULE)
-	  {
-	    auto macros = accumulate_escaped_macros (
-	      *static_cast<AST::Module *> (item.get ()));
-	    new_items.emplace_back (std::move (item));
-	    std::move (macros.begin (), macros.end (),
-		       std::back_inserter (new_items));
-	  }
-	else
-	  {
-	    new_items.emplace_back (std::move (item));
-	  }
+	  new_macros = accumulate_escaped_macros (
+	    *static_cast<AST::Module *> (item.get ()));
+
+	new_items.emplace_back (std::move (item));
+	std::move (new_macros.begin (), new_macros.end (),
+		   std::back_inserter (new_items));
       }
   });
 
@@ -636,18 +633,15 @@ EarlyNameResolver::visit (AST::Module &module)
   scoped (module.get_node_id (), [&items, &new_items, this] {
     for (auto &&item : items)
       {
+	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
+
 	if (item->get_ast_kind () == AST::Kind::MODULE)
-	  {
-	    auto macros = accumulate_escaped_macros (
-	      *static_cast<AST::Module *> (item.get ()));
-	    new_items.emplace_back (std::move (item));
-	    std::move (macros.begin (), macros.end (),
-		       std::back_inserter (new_items));
-	  }
-	else
-	  {
-	    new_items.emplace_back (std::move (item));
-	  }
+	  new_macros = accumulate_escaped_macros (
+	    *static_cast<AST::Module *> (item.get ()));
+
+	new_items.emplace_back (std::move (item));
+	std::move (new_macros.begin (), new_macros.end (),
+		   std::back_inserter (new_items));
       }
   });
 
