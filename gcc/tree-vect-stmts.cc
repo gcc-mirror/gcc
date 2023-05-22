@@ -8794,14 +8794,17 @@ vectorizable_store (vec_info *vinfo,
 		}
 	      else if (loop_lens)
 		{
-		  tree final_len
-		    = vect_get_loop_len (loop_vinfo, loop_lens,
-					 vec_num * ncopies, vec_num * j + i);
-		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  machine_mode vmode = TYPE_MODE (vectype);
 		  opt_machine_mode new_ovmode
 		    = get_len_load_store_mode (vmode, false);
 		  machine_mode new_vmode = new_ovmode.require ();
+		  unsigned factor
+		    = (new_ovmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vmode);
+		  tree final_len
+		    = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+					 vec_num * ncopies, vectype,
+					 vec_num * j + i, factor);
+		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  /* Need conversion if it's wrapped with VnQI.  */
 		  if (vmode != new_vmode)
 		    {
@@ -10150,17 +10153,20 @@ vectorizable_load (vec_info *vinfo,
 		      }
 		    else if (loop_lens && memory_access_type != VMAT_INVARIANT)
 		      {
-			tree final_len
-			  = vect_get_loop_len (loop_vinfo, loop_lens,
-					       vec_num * ncopies,
-					       vec_num * j + i);
-			tree ptr = build_int_cst (ref_type,
-						  align * BITS_PER_UNIT);
-
 			machine_mode vmode = TYPE_MODE (vectype);
 			opt_machine_mode new_ovmode
 			  = get_len_load_store_mode (vmode, true);
 			machine_mode new_vmode = new_ovmode.require ();
+			unsigned factor = (new_ovmode == vmode)
+					    ? 1
+					    : GET_MODE_UNIT_SIZE (vmode);
+			tree final_len
+			  = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+					       vec_num * ncopies, vectype,
+					       vec_num * j + i, factor);
+			tree ptr
+			  = build_int_cst (ref_type, align * BITS_PER_UNIT);
+
 			tree qi_type = unsigned_intQI_type_node;
 
 			signed char biasval =
