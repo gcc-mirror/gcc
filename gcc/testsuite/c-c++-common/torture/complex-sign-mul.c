@@ -2,6 +2,7 @@
    multiplication.  */
 /* { dg-do run } */
 /* { dg-options "-std=gnu99" { target c } } */
+/* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
 
 #include "complex-sign.h"
 

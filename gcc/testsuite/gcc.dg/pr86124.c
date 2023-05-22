@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fipa-pta" } */
+/* { dg-skip-if "acessing data memory with program memory address" { "avr-*-*" } } */
 
 extern void a (void);
 

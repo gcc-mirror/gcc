@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fno-inline -Os" } */
+/* { dg-skip-if "long double support is incomplete" { "avr-*-*" } } */
 
 void abort(void);
 
