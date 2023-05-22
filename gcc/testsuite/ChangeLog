@@ -1,3 +1,25 @@
+2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/brev-1.c: New 32-bit test case.
+	* gcc.target/nvptx/brev-2.c: Likewise.
+	* gcc.target/nvptx/brevll-1.c: New 64-bit test case.
+	* gcc.target/nvptx/brevll-2.c: Likewise.
+
+2023-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109505
+	* gcc.target/aarch64/sve/pr109505.c: New test.
+
+2023-05-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c: Add
+	test cases for vbool[2|4|8|16|32|64]_t.
+
+2023-05-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/109919
+	* gcc.c-torture/compile/pr109919-1.c: New test.
+
 2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
 
 	PR target/105753

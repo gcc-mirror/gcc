@@ -1,3 +1,78 @@
+2023-05-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/90622
+	* config/avr/avr.cc (avr_fold_builtin) [AVR_BUILTIN_INSERT_BITS]:
+	Don't fold to XOR / AND / XOR if just one bit is copied to the
+	same position.
+
+2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.cc (nvptx_expand_brev): Expand target
+	builtin for bit reversal using brev instruction.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_BREV and
+	NVPTX_BUILTIN_BREVLL.
+	(nvptx_init_builtins): Define "brev" and "brevll".
+	(nvptx_expand_builtin): Expand NVPTX_BUILTIN_BREV and
+	NVPTX_BUILTIN_BREVLL via nvptx_expand_brev function.
+	* doc/extend.texi (Nvidia PTX Builtin-in Functions): New
+	section, document __builtin_nvptx_brev{,ll}.
+
+2023-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109505
+	* match.pd ((x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2),
+	Combine successive equal operations with constants,
+	(A +- CST1) +- CST2 -> A + CST3, (CST1 - A) +- CST2 -> CST3 - A,
+	CST1 - (CST2 - A) -> CST3 + A): Use ! on ops with 2 CONSTANT_CLASS_P
+	operands.
+
+2023-05-21  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (expand_single_bit_test): Correct bitpos for big-endian.
+
+2023-05-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (BOOL_SIZE_LIST): Add the
+	rest bool size, aka 2, 4, 8, 16, 32, 64.
+	* config/riscv/riscv-vector-builtins-functions.def (vreinterpret):
+	Register vbool[2|4|8|16|32|64] interpret function.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_BOOL2_INTERPRET_OPS):
+	New macro for vbool2_t.
+	(DEF_RVV_BOOL4_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL8_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL16_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL32_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL64_INTERPRET_OPS): Likewise.
+	(vint8m1_t): Add the type to bool[2|4|8|16|32|64]_interpret_ops.
+	(vint16m1_t): Likewise.
+	(vint32m1_t): Likewise.
+	(vint64m1_t): Likewise.
+	(vuint8m1_t): Likewise.
+	(vuint16m1_t): Likewise.
+	(vuint32m1_t): Likewise.
+	(vuint64m1_t): Likewise.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_BOOL2_INTERPRET_OPS):
+	New macro for vbool2_t.
+	(DEF_RVV_BOOL4_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL8_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL16_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL32_INTERPRET_OPS): Likewise.
+	(DEF_RVV_BOOL64_INTERPRET_OPS): Likewise.
+	(required_extensions_p): Add vbool[2|4|8|16|32|64] interpret case.
+	* config/riscv/riscv-vector-builtins.def (bool2_interpret): Add
+	vbool2_t interprect to base type.
+	(bool4_interpret): Likewise.
+	(bool8_interpret): Likewise.
+	(bool16_interpret): Likewise.
+	(bool32_interpret): Likewise.
+	(bool64_interpret): Likewise.
+
+2023-05-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/109919
+	* expr.cc (expand_single_bit_test): Don't use the
+	target for expand_expr.
+
 2023-05-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Remove de facto empty alpha*-*-*
