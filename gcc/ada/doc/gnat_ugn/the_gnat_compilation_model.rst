@@ -168,7 +168,7 @@ GNAT also supports several other 8-bit coding schemes:
 
 *ISO 8859-15 (Latin-9)*
   ISO 8859-15 (Latin-9) letters allowed in identifiers, with uppercase and
-  lowercase equivalence
+  lowercase equivalence.
 
 .. index:: code page 437 (IBM PC)
 
@@ -1778,8 +1778,8 @@ default, that contains calls to the elaboration procedures of those
 compilation unit that require them, followed by
 a call to the main program. This Ada program is compiled to generate the
 object file for the main program. The name of
-the Ada file is :file:`b~xxx`.adb` (with the corresponding spec
-:file:`b~xxx`.ads`) where ``xxx`` is the name of the
+the Ada file is :file:`b~xxx.adb` (with the corresponding spec
+:file:`b~xxx.ads`) where ``xxx`` is the name of the
 main program unit.
 
 Finally, the linker is used to build the resulting executable program,
@@ -3590,7 +3590,7 @@ Convention identifiers are recognized by GNAT:
   Ada compiler for further details on elaboration.
 
   However, it is not possible to mix the tasking run time of GNAT and
-  HP Ada 83, All the tasking operations must either be entirely within
+  HP Ada 83, all the tasking operations must either be entirely within
   GNAT compiled sections of the program, or entirely within HP Ada 83
   compiled sections of the program.
 
@@ -3715,14 +3715,14 @@ Convention identifiers are recognized by GNAT:
     to perform dimensional checks:
 
 
-  .. code-block:: ada
+    .. code-block:: ada
 
-      type Distance is new Long_Float;
-      type Time     is new Long_Float;
-      type Velocity is new Long_Float;
-      function "/" (D : Distance; T : Time)
-        return Velocity;
-      pragma Import (Intrinsic, "/");
+        type Distance is new Long_Float;
+        type Time     is new Long_Float;
+        type Velocity is new Long_Float;
+        function "/" (D : Distance; T : Time)
+          return Velocity;
+        pragma Import (Intrinsic, "/");
 
     This common idiom is often programmed with a generic definition and an
     explicit body. The pragma makes it simpler to introduce such declarations.
@@ -3858,7 +3858,7 @@ considered:
 
 
 * Using GNAT and G++ from two different GCC installations: If both
-  compilers are on the :envvar`PATH`, the previous method may be used. It is
+  compilers are on the :envvar:`PATH`, the previous method may be used. It is
   important to note that environment variables such as
   :envvar:`C_INCLUDE_PATH`, :envvar:`GCC_EXEC_PREFIX`,
   :envvar:`BINUTILS_ROOT`, and
