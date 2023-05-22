@@ -3,4 +3,5 @@
 
 #include "vmv-imm-template.h"
 
-/* { dg-final { scan-assembler-times "vmv.v.i" 32 } } */
+/* { dg-final { scan-assembler-times {vmv.v.i} 32 } } */
+/* { dg-final { scan-assembler-times {vmv.v.x} 8 } } */

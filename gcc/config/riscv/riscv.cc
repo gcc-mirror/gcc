@@ -1295,12 +1295,23 @@ riscv_const_insns (rtx x)
 		 * accurately according to BASE && STEP.  */
 		return 1;
 	      }
-	    /* Constants from -16 to 15 can be loaded with vmv.v.i.
-	       The Wc0, Wc1 constraints are already covered by the
-	       vi constraint so we do not need to check them here
-	       separately.  */
-	    if (satisfies_constraint_vi (x))
-	      return 1;
+
+	    rtx elt;
+	    if (const_vec_duplicate_p (x, &elt))
+	      {
+		/* Constants from -16 to 15 can be loaded with vmv.v.i.
+		   The Wc0, Wc1 constraints are already covered by the
+		   vi constraint so we do not need to check them here
+		   separately.  */
+		if (satisfies_constraint_vi (x))
+		  return 1;
+
+		/* A const duplicate vector can always be broadcast from
+		   a general-purpose register.  This means we need as many
+		   insns as it takes to load the constant into the GPR
+		   and one vmv.v.x.  */
+		return 1 + riscv_integer_cost (INTVAL (elt));
+	      }
 	  }
 
 	/* TODO: We may support more const vector in the future.  */
