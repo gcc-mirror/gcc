@@ -1993,21 +1993,6 @@ gt_pch_nx (vrange *x, gt_pointer_operator op, void *cookie)
     gcc_unreachable ();
 }
 
-// ?? These stubs are for ipa-prop.cc which use a value_range in a
-// hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
-// instead of picking up the gt_ggc_mx (T *) version.
-void
-gt_pch_nx (int_range<2> *&x)
-{
-  return gt_pch_nx ((irange *) x);
-}
-
-void
-gt_ggc_mx (int_range<2> *&x)
-{
-  return gt_ggc_mx ((irange *) x);
-}
-
 #define DEFINE_INT_RANGE_INSTANCE(N)					\
   template int_range<N>::int_range(tree_node *,				\
 				   const wide_int &,			\

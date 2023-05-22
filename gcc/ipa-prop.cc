@@ -109,53 +109,53 @@ struct ipa_bit_ggc_hash_traits : public ggc_cache_remove <ipa_bits *>
 /* Hash table for avoid repeated allocations of equal ipa_bits.  */
 static GTY ((cache)) hash_table<ipa_bit_ggc_hash_traits> *ipa_bits_hash_table;
 
-/* Traits for a hash table for reusing value_ranges used for IPA.  Note that
-   the equiv bitmap is not hashed and is expected to be NULL.  */
+/* Traits for a hash table for reusing ranges.  */
 
-struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
+struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <ipa_vr *>
 {
-  typedef value_range *value_type;
-  typedef value_range *compare_type;
+  typedef ipa_vr *value_type;
+  typedef const vrange *compare_type;
   static hashval_t
-  hash (const value_range *p)
+  hash (const ipa_vr *p)
     {
-      tree min, max;
-      value_range_kind kind = get_legacy_range (*p, min, max);
-      inchash::hash hstate (kind);
-      inchash::add_expr (min, hstate);
-      inchash::add_expr (max, hstate);
+      // This never get called, except in the verification code, as
+      // ipa_get_value_range() calculates the hash itself.  This
+      // function is mostly here for completness' sake.
+      Value_Range vr;
+      p->get_vrange (vr);
+      inchash::hash hstate;
+      add_vrange (vr, hstate);
       return hstate.end ();
     }
   static bool
-  equal (const value_range *a, const value_range *b)
+  equal (const ipa_vr *a, const vrange *b)
     {
-      return (types_compatible_p (a->type (), b->type ())
-	      && *a == *b);
+      return a->equal_p (*b);
     }
   static const bool empty_zero_p = true;
   static void
-  mark_empty (value_range *&p)
+  mark_empty (ipa_vr *&p)
     {
       p = NULL;
     }
   static bool
-  is_empty (const value_range *p)
+  is_empty (const ipa_vr *p)
     {
       return p == NULL;
     }
   static bool
-  is_deleted (const value_range *p)
+  is_deleted (const ipa_vr *p)
     {
-      return p == reinterpret_cast<const value_range *> (1);
+      return p == reinterpret_cast<const ipa_vr *> (1);
     }
   static void
-  mark_deleted (value_range *&p)
+  mark_deleted (ipa_vr *&p)
     {
-      p = reinterpret_cast<value_range *> (1);
+      p = reinterpret_cast<ipa_vr *> (1);
     }
 };
 
-/* Hash table for avoid repeated allocations of equal value_ranges.  */
+/* Hash table for avoid repeated allocations of equal ranges.  */
 static GTY ((cache)) hash_table<ipa_vr_ggc_hash_traits> *ipa_vr_hash_table;
 
 /* Holders of ipa cgraph hooks: */
@@ -264,6 +264,22 @@ ipa_vr::dump (FILE *out) const
   else
     fprintf (out, "NO RANGE");
 }
+
+// These stubs are because we use an ipa_vr in a hash_traits and
+// hash-traits.h defines an extern of gt_ggc_mx (T &) instead of
+// picking up the gt_ggc_mx (T *) version.
+void
+gt_pch_nx (ipa_vr *&x)
+{
+  return gt_pch_nx ((ipa_vr *) x);
+}
+
+void
+gt_ggc_mx (ipa_vr *&x)
+{
+  return gt_ggc_mx ((ipa_vr *) x);
+}
+
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -2284,27 +2300,25 @@ ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
   jf->bits = ipa_get_ipa_bits_for_value (value, mask);
 }
 
-/* Return a pointer to a value_range just like *TMP, but either find it in
-   ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
+/* Return a pointer to an ipa_vr just like TMP, but either find it in
+   ipa_vr_hash_table or allocate it in GC memory.  */
 
 static ipa_vr *
 ipa_get_value_range (const vrange &tmp)
 {
-  /* FIXME: Add hashing support.
-  value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
+  inchash::hash hstate;
+  inchash::add_vrange (tmp, hstate);
+  hashval_t hash = hstate.end ();
+  ipa_vr **slot = ipa_vr_hash_table->find_slot_with_hash (&tmp, hash, INSERT);
   if (*slot)
     return *slot;
 
-  value_range *vr = new (ggc_alloc<value_range> ()) value_range;
-  *vr = *tmp;
-  *slot = vr;
-  */
   ipa_vr *vr = new (ggc_alloc<ipa_vr> ()) ipa_vr (tmp);
-
+  *slot = vr;
   return vr;
 }
 
-/* Assign to JF a pointer to a value_range just like TMP but either fetch a
+/* Assign to JF a pointer to a range just like TMP but either fetch a
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
