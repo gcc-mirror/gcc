@@ -1,3 +1,19 @@
+2023-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-05-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Arrange to set min Darwin OS versions from
+	the configured host version.
+	* config/darwin10-unwind-find-enc-func.c: Do not use current
+	headers, but declare the nexessary structures locally to the
+	versions in use for Mac OSX 10.6.
+	* config/t-darwin: Amend to handle configured min OS
+	versions.
+	* config/t-darwin-min-1: New.
+	* config/t-darwin-min-5: New.
+	* config/t-darwin-min-8: New.
+
 2023-05-16  Patrick O'Neill  <patrick@rivosinc.com>
 
 	PR target/104338
