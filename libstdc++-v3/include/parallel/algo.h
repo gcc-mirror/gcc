@@ -996,59 +996,6 @@ namespace __parallel
 			     std::__iterator_category(__begin2));
     }
 
-  // Public interface.
-  template<typename _FIterator1, typename _FIterator2,
-	   typename _BinaryPredicate>
-    inline _FIterator1
-    search(_FIterator1 __begin1, _FIterator1 __end1,
-	   _FIterator2 __begin2, _FIterator2 __end2,
-	   _BinaryPredicate __pred, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_A::search(
-			       __begin1, __end1, __begin2, __end2, __pred); }
-
-  // Parallel algorithm for random access iterator.
-  template<typename _RAIter1, typename _RAIter2,
-	   typename _BinaryPredicate>
-    _RAIter1
-    __search_switch(_RAIter1 __begin1, _RAIter1 __end1,
-		    _RAIter2 __begin2, _RAIter2 __end2,
-		    _BinaryPredicate __pred,
-		    random_access_iterator_tag, random_access_iterator_tag)
-    {
-      if (_GLIBCXX_PARALLEL_CONDITION(
-		static_cast<__gnu_parallel::_SequenceIndex>(__end1 - __begin1)
-	    >= __gnu_parallel::_Settings::get().search_minimal_n))
-	return __gnu_parallel::__search_template(__begin1, __end1,
-					       __begin2, __end2, __pred);
-      else
-	return search(__begin1, __end1, __begin2, __end2, __pred,
-		      __gnu_parallel::sequential_tag());
-    }
-
-  // Sequential fallback for input iterator case
-  template<typename _FIterator1, typename _FIterator2,
-	   typename _BinaryPredicate, typename _IteratorTag1,
-	   typename _IteratorTag2>
-    inline _FIterator1
-    __search_switch(_FIterator1 __begin1, _FIterator1 __end1,
-		    _FIterator2 __begin2, _FIterator2 __end2,
-		    _BinaryPredicate __pred, _IteratorTag1, _IteratorTag2)
-    { return search(__begin1, __end1, __begin2, __end2, __pred,
-		    __gnu_parallel::sequential_tag()); }
-
-  // Public interface
-  template<typename _FIterator1, typename _FIterator2,
-	   typename _BinaryPredicate>
-    inline _FIterator1
-    search(_FIterator1 __begin1, _FIterator1 __end1,
-	   _FIterator2 __begin2, _FIterator2 __end2,
-	   _BinaryPredicate  __pred)
-    {
-      return __search_switch(__begin1, __end1, __begin2, __end2, __pred,
-			     std::__iterator_category(__begin1),
-			     std::__iterator_category(__begin2));
-    }
-
 #if __cplusplus >= 201703L
   /** @brief Search a sequence using a Searcher object.
    *

@@ -140,54 +140,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // count
   // count_if
   // search
-
-  template<typename _ForwardIterator1, typename _ForwardIterator2,
-	   typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
-    _ForwardIterator1
-    __search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-	     _ForwardIterator2 __first2, _ForwardIterator2 __last2,
-	     _BinaryPredicate  __predicate)
-    {
-      // Test for empty ranges
-      if (__first1 == __last1 || __first2 == __last2)
-	return __first1;
-
-      // Test for a pattern of length 1.
-      _ForwardIterator2 __p1(__first2);
-      if (++__p1 == __last2)
-	return std::__find_if(__first1, __last1,
-		__gnu_cxx::__ops::__iter_comp_iter(__predicate, __first2));
-
-      // General case.
-      _ForwardIterator1 __current = __first1;
-
-      for (;;)
-	{
-	  __first1 =
-	    std::__find_if(__first1, __last1,
-		__gnu_cxx::__ops::__iter_comp_iter(__predicate, __first2));
-
-	  if (__first1 == __last1)
-	    return __last1;
-
-	  _ForwardIterator2 __p = __p1;
-	  __current = __first1;
-	  if (++__current == __last1)
-	    return __last1;
-
-	  while (__predicate(__current, __p))
-	    {
-	      if (++__p == __last2)
-		return __first1;
-	      if (++__current == __last1)
-		return __last1;
-	    }
-	  ++__first1;
-	}
-      return __first1;
-    }
-
   // search_n
 
   /**
@@ -4145,48 +4097,6 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
       return std::__search(__first1, __last1, __first2, __last2,
 			   __gnu_cxx::__ops::__iter_equal_to_iter());
-    }
-
-  /**
-   *  @brief Search a sequence for a matching sub-sequence using a predicate.
-   *  @ingroup non_mutating_algorithms
-   *  @param  __first1     A forward iterator.
-   *  @param  __last1      A forward iterator.
-   *  @param  __first2     A forward iterator.
-   *  @param  __last2      A forward iterator.
-   *  @param  __predicate  A binary predicate.
-   *  @return   The first iterator @c i in the range
-   *  @p [__first1,__last1-(__last2-__first2)) such that
-   *  @p __predicate(*(i+N),*(__first2+N)) is true for each @c N in the range
-   *  @p [0,__last2-__first2), or @p __last1 if no such iterator exists.
-   *
-   *  Searches the range @p [__first1,__last1) for a sub-sequence that
-   *  compares equal value-by-value with the sequence given by @p
-   *  [__first2,__last2), using @p __predicate to determine equality,
-   *  and returns an iterator to the first element of the
-   *  sub-sequence, or @p __last1 if no such iterator exists.
-   *
-   *  @see search(_ForwardIter1, _ForwardIter1, _ForwardIter2, _ForwardIter2)
-  */
-  template<typename _ForwardIterator1, typename _ForwardIterator2,
-	   typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
-    inline _ForwardIterator1
-    search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-	   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
-	   _BinaryPredicate  __predicate)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_ForwardIterator1>::value_type,
-	    typename iterator_traits<_ForwardIterator2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_valid_range(__first2, __last2);
-
-      return std::__search(__first1, __last1, __first2, __last2,
-			   __gnu_cxx::__ops::__iter_comp_iter(__predicate));
     }
 
   /**

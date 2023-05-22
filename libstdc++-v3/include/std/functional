@@ -64,7 +64,7 @@
 #  include <vector>
 #  include <array>
 # endif
-# include <bits/stl_algo.h> // std::search
+# include <bits/stl_algobase.h> // std::search
 #endif
 #if __cplusplus >= 202002L
 # include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
