@@ -500,19 +500,20 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		  if (vr.varying_p () || vr.undefined_p ())
 		    break;
 
-		  value_range res;
+		  Value_Range res (op->type);
 		  if (!op->val[0])
 		    {
+		      Value_Range varying (op->type);
+		      varying.set_varying (op->type);
 		      range_op_handler handler (op->code);
 		      if (!handler
 			  || !res.supports_type_p (op->type)
-			  || !handler.fold_range (res, op->type, vr,
-						  value_range (op->type)))
+			  || !handler.fold_range (res, op->type, vr, varying))
 			res.set_varying (op->type);
 		    }
 		  else if (!op->val[1])
 		    {
-		      value_range op0;
+		      Value_Range op0 (op->type);
 		      range_op_handler handler (op->code);
 
 		      ipa_range_set_and_normalize (op0, op->val[0]);
@@ -530,14 +531,14 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		}
 	      if (!vr.varying_p () && !vr.undefined_p ())
 		{
-		  value_range res;
-		  value_range val_vr;
+		  int_range<2> res;
+		  Value_Range val_vr (TREE_TYPE (c->val));
 		  range_op_handler handler (c->code);
 
 		  ipa_range_set_and_normalize (val_vr, c->val);
 
 		  if (!handler
-		      || !res.supports_type_p (boolean_type_node)
+		      || !val_vr.supports_type_p (TREE_TYPE (c->val))
 		      || !handler.fold_range (res, boolean_type_node, vr, val_vr))
 		    res.set_varying (boolean_type_node);
 
@@ -1732,12 +1733,17 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   int bound_limit = opt_for_fn (fbi->node->decl,
 				param_ipa_max_switch_predicate_bounds);
   int bound_count = 0;
-  value_range vr;
+  // This can safely be an integer range, as switches can only hold
+  // integers.
+  int_range<2> vr;
 
   get_range_query (cfun)->range_of_expr (vr, op);
   if (vr.undefined_p ())
     vr.set_varying (TREE_TYPE (op));
   tree vr_min, vr_max;
+  // TODO: This entire function could use a rewrite to use the irange
+  // API, instead of trying to recreate its intersection/union logic.
+  // Any use of get_legacy_range() is a serious code smell.
   value_range_kind vr_type = get_legacy_range (vr, vr_min, vr_max);
   wide_int vr_wmin = wi::to_wide (vr_min);
   wide_int vr_wmax = wi::to_wide (vr_max);

@@ -6294,8 +6294,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	    {
 	      /* If some values generated for self-recursive calls with
 		 arithmetic jump functions fall outside of the known
-		 value_range for the parameter, we can skip them.  VR interface
-		 supports this only for integers now.  */
+		 range for the parameter, we can skip them.  */
 	      if (TREE_CODE (val->value) == INTEGER_CST
 		  && !plats->m_value_range.bottom_p ()
 		  && !ipa_range_contains_p (plats->m_value_range.m_vr,

@@ -2348,7 +2348,6 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
-  value_range vr;
 
   if (arg_num == 0 || args->jump_functions)
     return;
@@ -2379,6 +2378,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    useful_context = true;
 	}
 
+      Value_Range vr (TREE_TYPE (arg));
       if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
 	  bool addr_nonzero = false;
@@ -2404,15 +2404,14 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	{
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      /* Limit the ranger query to integral types as the rest
-		 of this file uses value_range's, which only hold
-		 integers and pointers.  */
+	      && Value_Range::supports_type_p (TREE_TYPE (arg))
+	      && Value_Range::supports_type_p (param_type)
 	      && irange::supports_p (TREE_TYPE (arg))
 	      && irange::supports_p (param_type)
 	      && get_range_query (cfun)->range_of_expr (vr, arg)
 	      && !vr.undefined_p ())
 	    {
-	      value_range resvr = vr;
+	      Value_Range resvr (vr);
 	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, resvr);
