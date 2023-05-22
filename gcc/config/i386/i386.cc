@@ -20565,20 +20565,23 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 			enum rtx_code code,
 			enum machine_mode mode, bool constant_op1,
 			HOST_WIDE_INT op1_val,
-			bool speed,
 			bool and_in_op1,
 			bool shift_and_truncate,
 			bool *skip_op0, bool *skip_op1)
 {
   if (skip_op0)
     *skip_op0 = *skip_op1 = false;
+
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
-      /* V*QImode is emulated with 1-11 insns.  */
-      if (mode == V16QImode || mode == V32QImode)
+      int count;
+      /* Cost of reading the memory.  */
+      int extra;
+
+      switch (mode)
 	{
-	  int count = 11;
-	  if (TARGET_XOP && mode == V16QImode)
+	case V16QImode:
+	  if (TARGET_XOP)
 	    {
 	      /* For XOP we use vpshab, which requires a broadcast of the
 		 value to the variable shift insn.  For constants this
@@ -20586,37 +20589,65 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		 shift with one insn set the cost to prefer paddb.  */
 	      if (constant_op1)
 		{
-		  if (skip_op1)
-		    *skip_op1 = true;
-		  return ix86_vec_cost (mode,
-					cost->sse_op
-					+ (speed
-					   ? 2
-					   : COSTS_N_BYTES
-					       (GET_MODE_UNIT_SIZE (mode))));
+		  extra = cost->sse_load[2];
+		  return ix86_vec_cost (mode, cost->sse_op) + extra;
 		}
-	      count = 3;
+	      else
+		{
+		  count = (code == ASHIFT) ? 2 : 3;
+		  return ix86_vec_cost (mode, cost->sse_op * count);
+		}
 	    }
-	  else if (TARGET_SSSE3)
-	    count = 7;
-	  return ix86_vec_cost (mode, cost->sse_op * count);
+	  /* FALLTHRU */
+	case V32QImode:
+	  extra = (mode == V16QImode) ? cost->sse_load[2] : cost->sse_load[3];
+	  if (constant_op1)
+	    {
+	      if (code == ASHIFTRT)
+		{
+		  count = 4;
+		  extra *= 2;
+		}
+	      else
+		count = 2;
+	    }
+	  else if (TARGET_SSE4_1)
+	    count = 8;
+	  else if (code == ASHIFTRT)
+	    count = 9;
+	  else
+	    count = 8;
+	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
+
+	case V2DImode:
+	case V4DImode:
+	  /* V*DImode arithmetic right shift is emulated.  */
+	  if (code == ASHIFTRT && !TARGET_AVX512VL)
+	    {
+	      if (constant_op1)
+		{
+		  if (op1_val == 63)
+		    count = TARGET_SSE4_2 ? 1 : 2;
+		  else if (TARGET_XOP)
+		    count = 2;
+		  else
+		    count = 4;
+		}
+	      else if (TARGET_XOP)
+		count = 3;
+	      else if (TARGET_SSE4_2)
+		count = 4;
+	      else
+		count = 5;
+
+	      return ix86_vec_cost (mode, cost->sse_op * count);
+	    }
+	  /* FALLTHRU */
+	default:
+	  return ix86_vec_cost (mode, cost->sse_op);
 	}
-      /* V*DImode arithmetic right shift is emulated.  */
-      else if (code == ASHIFTRT
-	       && (mode == V2DImode || mode == V4DImode)
-	       && !TARGET_XOP
-	       && !TARGET_AVX512VL)
-	{
-	  int count = 4;
-	  if (constant_op1 && op1_val == 63 && TARGET_SSE4_2)
-	    count = 2;
-	  else if (constant_op1)
-	    count = 3;
-	  return ix86_vec_cost (mode, cost->sse_op * count);
-	}
-      else
-	return ix86_vec_cost (mode, cost->sse_op);
     }
+
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       if (constant_op1)
@@ -20786,7 +20817,6 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 				       CONSTANT_P (XEXP (x, 1)),
 				       CONST_INT_P (XEXP (x, 1))
 					 ? INTVAL (XEXP (x, 1)) : -1,
-				       speed,
 				       GET_CODE (XEXP (x, 1)) == AND,
 				       SUBREG_P (XEXP (x, 1))
 				       && GET_CODE (XEXP (XEXP (x, 1),
@@ -23558,7 +23588,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		            TREE_CODE (op2) == INTEGER_CST,
 			    cst_and_fits_in_hwi (op2)
 			    ? int_cst_value (op2) : -1,
-		            true, false, false, NULL, NULL);
+			    false, false, NULL, NULL);
 	  }
 	  break;
 	case NOP_EXPR:
