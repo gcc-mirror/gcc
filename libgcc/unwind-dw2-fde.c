@@ -240,6 +240,7 @@ __deregister_frame_info_bases (const void *begin)
 
   // And remove
   ob = btree_remove (&registered_frames, range[0]);
+  bool empty_table = (range[1] - range[0]) == 0;
 #else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -276,9 +277,12 @@ __deregister_frame_info_bases (const void *begin)
 
  out:
   __gthread_mutex_unlock (&object_mutex);
+  const int empty_table = 0; // The non-atomic path stores all tables.
 #endif
 
-  gcc_assert (in_shutdown || ob);
+  // If we didn't find anything in the lookup data structures then they
+  // were either already destroyed or we tried to remove an empty range.
+  gcc_assert (in_shutdown || (empty_table || ob));
   return (void *) ob;
 }
 

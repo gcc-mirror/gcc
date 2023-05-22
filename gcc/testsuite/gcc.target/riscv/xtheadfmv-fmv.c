@@ -1,5 +1,5 @@
 /* { dg-do compile { target { rv32 } } } */
-/* { dg-options "-march=rv32gc_xtheadfmv" } */
+/* { dg-options "-march=rv32gc_xtheadfmv -mabi=ilp32d" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 double

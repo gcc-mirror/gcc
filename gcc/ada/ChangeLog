@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2023-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/109510

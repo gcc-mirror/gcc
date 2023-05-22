@@ -370,7 +370,7 @@ systems' @command{tar} programs will also work, only try GNU
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
-Necessary when targeting Solaris 2 with Solaris @command{ld} and not using
+Necessary when targeting Solaris with Solaris @command{ld} and not using
 @option{--disable-symvers}.
 
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
@@ -1098,8 +1098,7 @@ whether you use the GNU assembler.  On any other system,
 @itemize @bullet
 @item @samp{hppa1.0-@var{any}-@var{any}}
 @item @samp{hppa1.1-@var{any}-@var{any}}
-@item @samp{sparc-sun-solaris2.@var{any}}
-@item @samp{sparc64-@var{any}-solaris2.@var{any}}
+@item @samp{*-*-solaris2.11}
 @end itemize
 
 @item @anchor{with-as}--with-as=@var{pathname}
@@ -1114,13 +1113,12 @@ Unless GCC is being built with a cross compiler, check the
 @var{exec-prefix} defaults to @var{prefix}, which
 defaults to @file{/usr/local} unless overridden by the
 @option{--prefix=@var{pathname}} switch described above.  @var{target}
-is the target system triple, such as @samp{sparc-sun-solaris2.7}, and
+is the target system triple, such as @samp{sparc-sun-solaris2.11}, and
 @var{version} denotes the GCC version, such as 3.0.
 
 @item
 If the target system is the same that you are building on, check
-operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
-Solaris 2).
+operating system specific directories.
 
 @item
 Check in the @env{PATH} for a tool whose name is prefixed by the
@@ -2178,13 +2176,14 @@ forward to maintain the port.
 @itemx --enable-decimal-float=dpd
 @itemx --disable-decimal-float
 Enable (or disable) support for the C decimal floating point extension
-that is in the IEEE 754-2008 standard.  This is enabled by default only
-on PowerPC, i386, and x86_64 GNU/Linux systems.  Other systems may also
-support it, but require the user to specifically enable it.  You can
-optionally control which decimal floating point format is used (either
-@samp{bid} or @samp{dpd}).  The @samp{bid} (binary integer decimal)
-format is default on i386 and x86_64 systems, and the @samp{dpd}
-(densely packed decimal) format is default on PowerPC systems.
+that is in the IEEE 754-2008 standard.  This is enabled by default
+only on AArch64, PowerPC, i386, and x86_64 GNU/Linux systems.  Other
+systems may also support it, but require the user to specifically
+enable it.  You can optionally control which decimal floating point
+format is used (either @samp{bid} or @samp{dpd}).  The @samp{bid}
+(binary integer decimal) format is default on AArch64, i386 and x86_64
+systems, and the @samp{dpd} (densely packed decimal) format is default
+on PowerPC systems.
 
 @item --enable-fixed-point
 @itemx --disable-fixed-point
@@ -3570,13 +3569,6 @@ HP-UX:
 @end itemize
 
 @item
-Solaris 2 (SPARC, Intel):
-@itemize
-@item
-@uref{https://www.opencsw.org/,,OpenCSW}
-@end itemize
-
-@item
 macOS:
 @itemize
 @item
@@ -3798,7 +3790,7 @@ information have to.
 
 @itemize
 @item
-@uref{#elf,,all ELF targets} (SVR4, Solaris 2, etc.)
+@uref{#elf,,all ELF targets} (SVR4, Solaris, etc.)
 @end itemize
 @end ifhtml
 
@@ -4261,24 +4253,6 @@ Use this for Solaris 11.3 or later on x86 and x86-64 systems.  Starting
 with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2*} or
 @samp{x86_64-*-solaris2*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
-
-It is recommended that you configure GCC to use the GNU assembler.  The
-versions included in Solaris 11.3, from GNU binutils 2.23.1 or
-newer (available as @file{/usr/bin/gas} and
-@file{/usr/gnu/bin/as}), work fine.  The current version, from GNU
-binutils 2.34, is known to work.  Recent versions of the Solaris assembler in
-@file{/usr/bin/as} work almost as well, though.
-
-For linking, the Solaris linker is preferred.  If you want to use the GNU
-linker instead, the version in Solaris 11.3, from GNU binutils 2.23.1 or
-newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works,
-as does the latest version, from GNU binutils 2.34.
-
-To use GNU @command{as}, configure with the options
-@option{--with-gnu-as --with-as=@//usr/@/gnu/@/bin/@/as}.  It may be necessary
-to configure with @option{--without-gnu-ld --with-ld=@//usr/@/ccs/@/bin/@/ld} to
-guarantee use of Solaris @command{ld}.
-@c FIXME: why --without-gnu-ld --with-ld?
 
 @html
 <hr />
@@ -4882,10 +4856,6 @@ supported as cross-compilation target only.
 @html
 <hr />
 @end html
-@c Please use Solaris 2 to refer to all release of Solaris, starting
-@c with 2.0 until 2.6, 7, 8, etc.  Solaris 1 was a marketing name for
-@c SunOS 4 releases which we don't use to avoid confusion.  Solaris
-@c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
 Support for Solaris 11.3 and earlier has been obsoleted in GCC 13, but
@@ -4895,60 +4865,63 @@ Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
 GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
 Solaris 11.3 provides GCC 4.5.2, 4.7.3, and 4.8.2 as
-@command{/usr/gcc/4.5/bin/gcc} or similar.  Newer Solaris versions
-provide one or more of GCC 5, 7, and 9.  Alternatively,
-you can install a pre-built GCC to bootstrap and install GCC.  See the
-@uref{binaries.html,,binaries page} for details.
+@command{/usr/gcc/4.5/bin/gcc} or similar.  Solaris 11.4
+provides one or more of GCC 5, 7, 9, 10, 11, and 12.
 
-The Solaris 2 @command{/bin/sh} will often fail to configure
-@samp{libstdc++-v3}.  We therefore recommend using the
-following initial sequence of commands
+You need to install the @code{system/header}, @code{system/linker}, and
+@code{developer/assembler} packages.
 
-@smallexample
-% CONFIG_SHELL=/bin/ksh
-% export CONFIG_SHELL
-@end smallexample
+Trying to use the compatibility tools in @file{/usr/ucb}, from the
+@code{compatibility/ucb} package, to install GCC has been observed to
+cause trouble.  The fix is to remove @file{/usr/ucb} from your
+@env{PATH}.
 
-@noindent
-and proceed as described in @uref{configure.html,,the configure instructions}.
-In addition we strongly recommend specifying an absolute path to invoke
-@command{@var{srcdir}/configure}.
-
-In Solaris 11, you need to check for @code{system/header},
-@code{system/linker}, and @code{developer/assembler} packages.
-
-Trying to use the linker and other tools in
-@file{/usr/ucb} to install GCC has been observed to cause trouble.
-For example, the linker may hang indefinitely.  The fix is to remove
-@file{/usr/ucb} from your @env{PATH}.
-
-The build process works more smoothly with the legacy Solaris tools so, if you
-have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
-@file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
+@c FIXME: Still?  Prefer /usr/gnu/bin instead?
+The build process works more smoothly with the legacy Solaris tools so,
+if you have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that
+you place @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration
+of the build.
 
 We recommend the use of the Solaris assembler or the GNU assembler, in
-conjunction with the Solaris linker.  The GNU @command{as}
-versions included in Solaris 11.3,
-from GNU binutils 2.23.1 or newer (in @file{/usr/bin/gas} and
-@file{/usr/gnu/bin/as}), are known to work.
-The current version, from GNU binutils 2.34,
-is known to work as well.  Note that your mileage may vary
-if you use a combination of the GNU tools and the Solaris tools: while the
-combination GNU @command{as} + Solaris @command{ld} should reasonably work,
-the reverse combination Solaris @command{as} + GNU @command{ld} may fail to
-build or cause memory corruption at runtime in some cases for C++ programs.
-@c FIXME: still?
-GNU @command{ld} usually works as well.  Again, the current
-version (2.34) is known to work, but generally lacks platform specific
-features, so better stay with Solaris @command{ld}.  To use the LTO linker
-plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
-binutils @emph{must} be configured with @option{--enable-largefile}.
+conjunction with the Solaris linker.
 
-To enable symbol versioning in @samp{libstdc++} with the Solaris linker,
-you need to have any version of GNU @command{c++filt}, which is part of
-GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
-appropriate version is found.  Solaris @command{c++filt} from the Solaris
-Studio compilers does @emph{not} work.
+The GNU @command{as} versions included in Solaris 11.3, from GNU
+binutils 2.23.1 or newer (in @file{/usr/bin/gas} and
+@file{/usr/gnu/bin/as}), are known to work.  The version from GNU
+binutils 2.40 is known to work as well.  Recent versions of the Solaris
+assembler in @file{/usr/bin/as} work almost as well, though.  To use GNU
+@command{as}, configure with the options @option{--with-gnu-as
+--with-as=@//usr/@/gnu/@/bin/@/as}.
+
+For linking, the Solaris linker is preferred.  If you want to use the
+GNU linker instead, the version in Solaris 11.3, from GNU binutils
+2.23.1 or newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}),
+works, as does the version from GNU binutils 2.40.  However, it
+generally lacks platform specific features, so better stay with Solaris
+@command{ld}.  To use the LTO linker plugin
+(@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU binutils
+@emph{must} be configured with @option{--enable-largefile}.  To use
+Solaris @command{ld}, we recommend to configure with
+@option{--without-gnu-ld --with-ld=@//usr/@/bin/@/ld} to guarantee the
+right linker is found irrespective of the user's @env{PATH}.
+
+Note that your mileage may vary if you use a combination of the GNU
+tools and the Solaris tools: while the combination GNU @command{as} and
+Solaris @command{ld} works well, the reverse combination Solaris
+@command{as} with GNU @command{ld} may fail to build or cause memory
+corruption at runtime in some cases for C++ programs.
+@c FIXME: still?
+
+To enable symbol versioning in @samp{libstdc++} and other runtime
+libraries with the Solaris linker, you need to have any version of GNU
+@command{c++filt}, which is part of GNU binutils.  Symbol versioning
+will be disabled if no appropriate version is found.  Solaris
+@command{c++filt} from the Solaris Studio compilers does @emph{not}
+work.
+
+In order to build the GNU Ada compiler, GNAT, a working GNAT is needed.
+Since Solaris 11.4 SRU 39, GNAT 11 or 12 is bundled in the
+@code{developer/gcc/gcc-gnat} package.
 
 In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
 needed.  That library wasn't built by default in GCC 9--11 on SPARC, or
@@ -5000,19 +4973,16 @@ information.
 Starting with Solaris 7, the operating system is capable of executing
 64-bit SPARC V9 binaries.  GCC 3.1 and later properly supports
 this; the @option{-m64} option enables 64-bit code generation.
-However, if all you want is code tuned for the UltraSPARC CPU, you
-should try the @option{-mtune=ultrasparc} option instead, which produces
-code that, unlike full 64-bit code, can still run on non-UltraSPARC
-machines.
 
 When configuring the GNU Multiple Precision Library (GMP), the MPFR
-library or the MPC library on a Solaris 7 or later system, the canonical
-target triplet must be specified as the @command{build} parameter on the
-configure line.  This target triplet can be obtained by invoking @command{./config.guess} in the toplevel source directory of GCC (and
-not that of GMP or MPFR or MPC).  For example on a Solaris 11 system:
+library or the MPC library on Solaris, the canonical target triplet must
+be specified as the @command{build} parameter on the @command{configure}
+line.  This target triplet can be obtained by invoking
+@command{./config.guess} in the toplevel source directory of GCC (and
+not that of GMP or MPFR or MPC).  For example:
 
 @smallexample
-% ./configure --build=sparc-sun-solaris2.11 --prefix=xxx
+% @var{srcdir}/configure --build=sparc-sun-solaris2.11 --prefix=@var{dirname}
 @end smallexample
 
 @html
@@ -5026,28 +4996,28 @@ not that of GMP or MPFR or MPC).  For example on a Solaris 11 system:
 @end html
 @anchor{sparc64-x-solaris2}
 @heading sparc64-*-solaris2*
-When configuring a 64-bit-default GCC on Solaris/SPARC, you must use a
-build compiler that generates 64-bit code, either by default or by
-specifying @samp{CC='gcc -m64' CXX='gcc-m64'} to @command{configure}.
-Additionally, you @emph{must} pass @option{--build=sparc64-sun-solaris2.11}
-or @option{--build=sparcv9-sun-solaris2.11} because @file{config.guess}
-misdetects this situation, which can cause build failures.
-
-When configuring the GNU Multiple Precision Library (GMP), the MPFR
-library or the MPC library, the canonical target triplet must be specified
-as the @command{build} parameter on the configure line.  For example
-on a Solaris 11 system:
-
-@smallexample
-% ./configure --build=sparc64-sun-solaris2.11 --prefix=xxx
-@end smallexample
+This is a synonym for @samp{sparcv9-*-solaris2*}.
 
 @html
 <hr />
 @end html
 @anchor{sparcv9-x-solaris2}
 @heading sparcv9-*-solaris2*
-This is a synonym for @samp{sparc64-*-solaris2*}.
+
+When configuring a 64-bit-default GCC on Solaris/SPARC, you must use a
+build compiler that generates 64-bit code, either by default or by
+specifying @samp{CC='gcc -m64' CXX='g++ -m64' GDC='gdc -m64'} to @command{configure}.
+Additionally, you @emph{must} pass @option{--build=sparcv9-sun-solaris2.11}
+or @option{--build=sparc64-sun-solaris2.11} because @file{config.guess}
+misdetects this situation, which can cause build failures.
+
+When configuring the GNU Multiple Precision Library (GMP), the MPFR
+library or the MPC library, the canonical target triplet must be specified
+as the @command{build} parameter on the @command{configure} line.  For example:
+
+@smallexample
+% @var{srcdir}/configure --build=sparcv9-sun-solaris2.11 --prefix=@var{dirname}
+@end smallexample
 
 @html
 <hr />
@@ -5116,8 +5086,8 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @anchor{x86-64-x-solaris2}
 @heading x86_64-*-solaris2*
 GCC also supports the x86-64 architecture implemented by the AMD64
-processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
-Solaris 10 or later.  Unlike other systems, without special options a
+processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}).
+Unlike other systems, without special options a
 bi-arch compiler is built which generates 32-bit code by default, but
 can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
 GCC 4.7, there is also a configuration that defaults to 64-bit code, but
@@ -5283,7 +5253,7 @@ current GCC) is to be found in the GCC texinfo manual.
 <hr />
 @end html
 @anchor{elf}
-@heading all ELF targets (SVR4, Solaris 2, etc.)
+@heading all ELF targets (SVR4, Solaris, etc.)
 C++ support is significantly better on ELF targets if you use the
 @uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of
 inlines, vtables and template instantiations will be discarded

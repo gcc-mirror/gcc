@@ -1,3 +1,569 @@
+2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
+
+	PR target/105753
+	Backport from 2023-05-20 https://gcc.gnu.org/r14-1016
+	* config/avr/avr.md (divmodpsi, udivmodpsi, divmodsi, udivmodsi):
+	Remove superfluous "parallel" in insn pattern.
+	([u]divmod<mode>4): Tidy code.  Use gcc_unreachable() instead of
+	printing error text to assembly.
+
+2023-05-19  Andreas Schwab  <schwab@suse.de>
+
+	* config/riscv/linux.h (LIB_SPEC): Don't redefine.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h: (__ARM_mve_typeid): Add more pointer types.
+	(__ARM_mve_coerce1): Remove.
+	(__ARM_mve_coerce2): Remove.
+	(__ARM_mve_coerce3): Remove.
+	(__ARM_mve_coerce_i_scalar): New.
+	(__ARM_mve_coerce_s8_ptr): New.
+	(__ARM_mve_coerce_u8_ptr): New.
+	(__ARM_mve_coerce_s16_ptr): New.
+	(__ARM_mve_coerce_u16_ptr): New.
+	(__ARM_mve_coerce_s32_ptr): New.
+	(__ARM_mve_coerce_u32_ptr): New.
+	(__ARM_mve_coerce_s64_ptr): New.
+	(__ARM_mve_coerce_u64_ptr): New.
+	(__ARM_mve_coerce_f_scalar): New.
+	(__ARM_mve_coerce_f16_ptr): New.
+	(__ARM_mve_coerce_f32_ptr): New.
+	(__arm_vst4q): Change _coerce_ overloads.
+	(__arm_vbicq): Change _coerce_ overloads.
+	(__arm_vmulq): Change _coerce_ overloads.
+	(__arm_vcmpeqq): Change _coerce_ overloads.
+	(__arm_vcmpneq): Change _coerce_ overloads.
+	(__arm_vmaxnmavq): Change _coerce_ overloads.
+	(__arm_vmaxnmvq): Change _coerce_ overloads.
+	(__arm_vminnmavq): Change _coerce_ overloads.
+	(__arm_vsubq): Change _coerce_ overloads.
+	(__arm_vminnmvq): Change _coerce_ overloads.
+	(__arm_vrshlq): Change _coerce_ overloads.
+	(__arm_vqsubq): Change _coerce_ overloads.
+	(__arm_vqdmulltq): Change _coerce_ overloads.
+	(__arm_vqdmullbq): Change _coerce_ overloads.
+	(__arm_vqdmulhq): Change _coerce_ overloads.
+	(__arm_vqaddq): Change _coerce_ overloads.
+	(__arm_vhaddq): Change _coerce_ overloads.
+	(__arm_vhsubq): Change _coerce_ overloads.
+	(__arm_vqdmlashq): Change _coerce_ overloads.
+	(__arm_vqrdmlahq): Change _coerce_ overloads.
+	(__arm_vmlasq): Change _coerce_ overloads.
+	(__arm_vqdmlahq): Change _coerce_ overloads.
+	(__arm_vmaxnmavq_p): Change _coerce_ overloads.
+	(__arm_vmaxnmvq_p): Change _coerce_ overloads.
+	(__arm_vminnmavq_p): Change _coerce_ overloads.
+	(__arm_vminnmvq_p): Change _coerce_ overloads.
+	(__arm_vfmasq_m): Change _coerce_ overloads.
+	(__arm_vld1q): Change _coerce_ overloads.
+	(__arm_vld1q_z): Change _coerce_ overloads.
+	(__arm_vld2q): Change _coerce_ overloads.
+	(__arm_vld4q): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vst1q_p): Change _coerce_ overloads.
+	(__arm_vst2q): Change _coerce_ overloads.
+	(__arm_vst1q): Change _coerce_ overloads.
+	(__arm_vstrhq): Change _coerce_ overloads.
+	(__arm_vstrhq_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_p): Change _coerce_ overloads.
+	(__arm_vstrwq): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vsetq_lane): Change _coerce_ overloads.
+	(__arm_vcmpneq_m): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_vidupq_x_u8): Change _coerce_ overloads.
+	(__arm_vddupq_x_u8): Change _coerce_ overloads.
+	(__arm_vidupq_x_u16): Change _coerce_ overloads.
+	(__arm_vddupq_x_u16): Change _coerce_ overloads.
+	(__arm_vidupq_x_u32): Change _coerce_ overloads.
+	(__arm_vddupq_x_u32): Change _coerce_ overloads.
+	(__arm_vhaddq_x): Change _coerce_ overloads.
+	(__arm_vhsubq_x): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vqrdmlahq_m): Change _coerce_ overloads.
+	(__arm_vqrdmlashq_m): Change _coerce_ overloads.
+	(__arm_vqdmlashq_m): Change _coerce_ overloads.
+	(__arm_vmlaldavaxq_p): Change _coerce_ overloads.
+	(__arm_vmlasq_m): Change _coerce_ overloads.
+	(__arm_vqdmulhq_m): Change _coerce_ overloads.
+	(__arm_vqdmulltq_m): Change _coerce_ overloads.
+	(__arm_vidupq_u16): Change _coerce_ overloads.
+	(__arm_vidupq_u32): Change _coerce_ overloads.
+	(__arm_vidupq_u8): Change _coerce_ overloads.
+	(__arm_vddupq_u16): Change _coerce_ overloads.
+	(__arm_vddupq_u32): Change _coerce_ overloads.
+	(__arm_vddupq_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_m): Change _coerce_ overloads.
+	(__arm_viwdupq_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_m): Change _coerce_ overloads.
+	(__arm_vdwdupq_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_u32): Change _coerce_ overloads.
+	(__arm_vdwdupq_u8): Change _coerce_ overloads.
+	(__arm_vaddlvaq): Change _coerce_ overloads.
+	(__arm_vaddlvaq_p): Change _coerce_ overloads.
+	(__arm_vaddvaq): Change _coerce_ overloads.
+	(__arm_vaddvaq_p): Change _coerce_ overloads.
+	(__arm_vcmphiq_m): Change _coerce_ overloads.
+	(__arm_vmladavaq_p): Change _coerce_ overloads.
+	(__arm_vmladavaxq): Change _coerce_ overloads.
+	(__arm_vmlaldavaxq): Change _coerce_ overloads.
+	(__arm_vstrbq): Change _coerce_ overloads.
+	(__arm_vstrbq_p): Change _coerce_ overloads.
+	(__arm_vrmlaldavhaq_p): Change _coerce_ overloads.
+	(__arm_vstrbq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrbq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset): Change _coerce_ overloads.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq): Change coerce on
+	scalar constant.
+	(__arm_vmvnq_m): Likewise.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vorrq): Add _n variant.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vadcq_s32): Fix arithmetic.
+	(__arm_vadcq_u32): Likewise.
+	(__arm_vadcq_m_s32): Likewise.
+	(__arm_vadcq_m_u32): Likewise.
+	(__arm_vsbcq_s32): Likewise.
+	(__arm_vsbcq_u32): Likewise.
+	(__arm_vsbcq_m_s32): Likewise.
+	(__arm_vsbcq_m_u32): Likewise.
+	* config/arm/mve.md (get_fpscr_nzcvqc): Make unspec_volatile.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vrndq_m_f<mode>, mve_vrev64q_f<mode>)
+	(mve_vrev32q_fv8hf, mve_vcvttq_f32_f16v4sf)
+	(mve_vcvtbq_f32_f16v4sf, mve_vcvtq_to_f_<supf><mode>)
+	(mve_vrev64q_<supf><mode>, mve_vcvtq_from_f_<supf><mode>)
+	(mve_vmovltq_<supf><mode>, mve_vmovlbq_<supf><mode>)
+	(mve_vcvtpq_<supf><mode>, mve_vcvtnq_<supf><mode>)
+	(mve_vcvtmq_<supf><mode>, mve_vcvtaq_<supf><mode>)
+	(mve_vmvnq_n_<supf><mode>, mve_vrev16q_<supf>v16qi)
+	(mve_vctp<MVE_vctp>q<MVE_vpred>, mve_vbrsrq_n_f<mode>)
+	(mve_vbrsrq_n_<supf><mode>, mve_vandq_f<mode>, mve_vbicq_f<mode>)
+	(mve_vbicq_n_<supf><mode>, mve_vctp<MVE_vctp>q_m<MVE_vpred>)
+	(mve_vcvtbq_f16_f32v8hf, mve_vcvttq_f16_f32v8hf)
+	(mve_veorq_f<mode>, mve_vmlaldavxq_s<mode>, mve_vmlsldavq_s<mode>)
+	(mve_vmlsldavxq_s<mode>, mve_vornq_f<mode>, mve_vorrq_f<mode>)
+	(mve_vrmlaldavhxq_sv4si, mve_vbicq_m_n_<supf><mode>)
+	(mve_vcvtq_m_to_f_<supf><mode>, mve_vshlcq_<supf><mode>)
+	(mve_vmvnq_m_<supf><mode>, mve_vpselq_<supf><mode>)
+	(mve_vcvtbq_m_f16_f32v8hf, mve_vcvtbq_m_f32_f16v4sf)
+	(mve_vcvttq_m_f16_f32v8hf, mve_vcvttq_m_f32_f16v4sf)
+	(mve_vmlaldavq_p_<supf><mode>, mve_vmlsldavaq_s<mode>)
+	(mve_vmlsldavaxq_s<mode>, mve_vmlsldavq_p_s<mode>)
+	(mve_vmlsldavxq_p_s<mode>, mve_vmvnq_m_n_<supf><mode>)
+	(mve_vorrq_m_n_<supf><mode>, mve_vpselq_f<mode>)
+	(mve_vrev32q_m_fv8hf, mve_vrev32q_m_<supf><mode>)
+	(mve_vrev64q_m_f<mode>, mve_vrmlaldavhaxq_sv4si)
+	(mve_vrmlaldavhxq_p_sv4si, mve_vrmlsldavhaxq_sv4si)
+	(mve_vrmlsldavhq_p_sv4si, mve_vrmlsldavhxq_p_sv4si)
+	(mve_vrev16q_m_<supf>v16qi, mve_vrmlaldavhq_p_<supf>v4si)
+	(mve_vrmlsldavhaq_sv4si, mve_vandq_m_<supf><mode>)
+	(mve_vbicq_m_<supf><mode>, mve_veorq_m_<supf><mode>)
+	(mve_vornq_m_<supf><mode>, mve_vorrq_m_<supf><mode>)
+	(mve_vandq_m_f<mode>, mve_vbicq_m_f<mode>, mve_veorq_m_f<mode>)
+	(mve_vornq_m_f<mode>, mve_vorrq_m_f<mode>)
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn)
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn)
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di) : Fix spacing and
+	capitalization in the emitted asm.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/constraints.md (mve_vldrd_immediate): Move it to
+	predicates.md.
+	(Ri): Move constraint definition from predicates.md.
+	(Rl): Define new constraint.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_p_<supf>v4si): Add
+	missing constraint.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Add missing Up constraint
+	for op 1, use mve_vstrw_immediate predicate and Rl constraint for
+	op 2. Fix asm output spacing.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Add missing constraint.
+	* config/arm/predicates.md (Ri) Move constraint to constraints.md
+	(mve_vldrd_immediate): Move it from
+	constraints.md.
+	(mve_vstrw_immediate): New predicate.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109884
+	* config/i386/i386-builtin-types.def (FLOAT128): Use
+	float128t_type_node rather than float128_type_node.
+
+2023-05-16  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* config/riscv/riscv-protos.h: Add helper function stubs.
+	* config/riscv/riscv.cc: Add helper functions for subword masking.
+	* config/riscv/riscv.opt: Add command-line flags
+	-minline-atomics and -mno-inline-atomics.
+	* config/riscv/sync.md: Add masking logic and inline asm for
+	fetch_and_op, fetch_and_nand, CAS, and exchange ops.
+	* doc/invoke.texi: Add blurb regarding new command-line flags
+	-minline-atomics and -mno-inline-atomics.
+
+2023-05-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libstdc++/109816
+	* lto-cgraph.cc (output_symtab): Guard lto_output_toplevel_asms by
+	'!lto_stream_offload_p'.
+
+2023-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109661
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Remove
+	assertion.
+	(aarch64_layout_arg): Likewise.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* wide-int.h (wi::lrotate, wi::rrotate): Call wi::lrshift on
+	wi::zext (x, width) rather than x if width != precision, rather
+	than using wi::zext (right, width) after the shift.
+	* tree-ssa-ccp.cc (bit_value_binop): Call wi::ext on the results
+	of wi::lrotate or wi::rrotate.
+
+2023-05-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108758
+	* config/rs6000/rs6000-builtins.def
+	(__builtin_vsx_scalar_cmp_exp_qp_eq, __builtin_vsx_scalar_cmp_exp_qp_gt
+	__builtin_vsx_scalar_cmp_exp_qp_lt,
+	__builtin_vsx_scalar_cmp_exp_qp_unordered): Move from stanza ieee128-hw
+	to power9-vector.
+
+2023-05-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109069
+	* config/rs6000/altivec.md (sldoi_to_mov<mode>): Replace predicate
+	easy_vector_constant with const_vector_each_byte_same, add
+	handlings in preparation for !easy_vector_constant, and update
+	VECTOR_UNIT_ALTIVEC_OR_VSX_P with VECTOR_MEM_ALTIVEC_OR_VSX_P.
+	* config/rs6000/predicates.md (const_vector_each_byte_same): New
+	predicate.
+
+2023-05-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-05-05  Tobias Burnus  <tobias@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/108098
+	* config/nvptx/mkoffload.cc (process): Emit dummy procedure
+	alongside reverse-offload function table to prevent NULL values
+	of the function addresses.
+
+2023-05-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-05-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/109762
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_switcher::aarch64_simd_switcher):
+	Change argument type to aarch64_feature_flags.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): Change
+	constructor argument type to aarch64_feature_flags.
+	Change m_old_asm_isa_flags to be aarch64_feature_flags.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/109676
+	* config/i386/i386-features.cc (timode_scalar_chain::convert_insn):
+	If src is REG, change its mode to V1TImode and call fix_debug_reg_uses
+	for it only if it still has TImode.  Don't decide whether to call
+	fix_debug_reg_uses based on whether SRC is ever set or not.
+
+2023-05-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-05-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/md.texi (RISC-V): Add vr, vm, vd constarint.
+
+2023-05-04  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-04-20  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+		    kito-cheng  <kito.cheng@sifive.com>
+
+	PR target/109535
+	* config/riscv/riscv-vsetvl.cc (count_regno_occurrences): New function.
+	(pass_vsetvl::cleanup_insns): Fix bug.
+
+2023-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109642
+	PR c++/109640
+	PR c++/109671
+	* doc/invoke.texi: Document that -Wdangling-reference is
+	enabled by -Wextra.
+
+2023-04-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2023-04-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (cmul<conj_op><mode>3): Use gcn_gen_undef.
+	(cml<addsub_as><mode>4): Likewise.
+	(vec_addsub<mode>3): Likewise.
+	(cadd<rot><mode>3): Likewise.
+	(vec_fmaddsub<mode>4): Likewise.
+	(vec_fmsubadd<mode>4): Likewise, and use sub for the odd lanes.
+
+2023-04-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vnsi, VnSI): Add scalar modes.
+	(ldexp<mode>3): Delete.
+	(ldexp<mode>3<exec>): Change "B" to "A".
+
+2023-04-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2023-04-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (SV_SFDF): New iterator.
+	(SV_FP): New iterator.
+	(scalar_mode, SCALAR_MODE): Add identity mappings for scalar modes.
+	(recip<mode>2): Unify the two patterns using SV_FP.
+	(div_scale<mode><exec_vcc>): New insn.
+	(div_fmas<mode><exec>): New insn.
+	(div_fixup<mode><exec>): New insn.
+	(div<mode>3): Unify the two expanders and rewrite using hardfp.
+	* config/gcn/gcn.cc (gcn_md_reorg): Support "vccwait" attribute.
+	* config/gcn/gcn.md (unspec): Add UNSPEC_DIV_SCALE, UNSPEC_DIV_FMAS,
+	and UNSPEC_DIV_FIXUP.
+	(vccwait): New attribute.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109609
+	* attr-fnspec.h (arg_max_access_size_given_by_arg_p):
+	Clarify semantics.
+	* tree-ssa-alias.cc (check_fnspec): Correctly interpret
+	the size given by arg_max_access_size_given_by_arg_p as
+	maximum, not exact, size.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109585
+	* tree-ssa-alias.cc (aliasing_component_refs_p): Fix typo.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109573
+	* tree-vect-loop.cc (vectorizable_live_operation): Allow
+	unhandled SSA copy as well.  Demote assert to checking only.
+
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* config/rs6000/rs6000.cc (rs6000_is_valid_rotate_dot_mask): For
+	!TARGET_64BIT, don't return true if UINTVAL (mask) << (63 - nb)
+	is larger than signed int maximum.
+
+2023-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Consistently use Solaris rather than Solaris 2.
+	Remove explicit Solaris 11 references.
+	Markup fixes.
+	(Options specification, --with-gnu-as): as and gas always differ
+	on Solaris.
+	Remove /usr/ccs/bin reference.
+	(Installing GCC: Binaries, Solaris (SPARC, Intel)): Remove.
+	(i?86-*-solaris2*): Merge assembler, linker recommendations ...
+	(*-*-solaris2*): ... here.
+	Update bundled GCC versions.
+	Don't refer to pre-built binaries.
+	Remove /bin/sh warning.
+	Update assembler, linker recommendations.
+	Document GNAT bootstrap compiler.
+	(sparc-sun-solaris2*): Remove non-UltraSPARC reference.
+	(sparc64-*-solaris2*): Move content...
+	(sparcv9-*-solaris2*): ...here.
+	Add GDC for 64-bit bootstrap compilers.
+
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109583
+	* match.pd (fneg/fadd simplify): Don't call related_vector_mode
+	if vec_mode is not VECTOR_MODE_P.
+
+2023-04-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2023-04-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/extend.texi: Add section for LoongArch Base Built-in functions.
+
+2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2023-04-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109564
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Do no ignore
+	UNDEFINED range names when deciding if all PHI arguments are the same,
+
+2023-04-20  Alejandro Colomar  <alx.manpages@gmail.com>
+
+	* doc/extend.texi (Common Function Attributes): Remove duplicate
+	word.
+
+2023-04-19  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2023-04-19  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* doc/install.texi (enable-decimal-float): Add AArch64.
+
+2023-04-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-04-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/extend.texi (Target Builtins): Add RISC-V Vector
+	Intrinsics.
+	(RISC-V Vector Intrinsics): Document GCC implemented which
+	version of RISC-V vector intrinsics and its reference.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109539
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses):
+	Re-implement pointer relatedness for PHIs.
+
+2023-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107769
+	PR ipa/109318
+	* cgraph.h (symtab_node::find_reference): Add parameter use_type.
+	* ipa-prop.h (ipa_pass_through_data): New flag refdesc_decremented.
+	(ipa_zap_jf_refdesc): New function.
+	(ipa_get_jf_pass_through_refdesc_decremented): Likewise.
+	(ipa_set_jf_pass_through_refdesc_decremented): Likewise.
+	* ipa-cp.cc (ipcp_discover_new_direct_edges): Provide a value for
+	the new parameter of find_reference.
+	(adjust_references_in_caller): Likewise. Make sure the constant jump
+	function is not used to decrement a refdec counter again.  Only
+	decrement refdesc counters when the pass_through jump function allows
+	it.  Added a detailed dump when decrementing refdesc counters.
+	* ipa-prop.cc (ipa_print_node_jump_functions_for_edge): Dump new flag.
+	(ipa_set_jf_simple_pass_through): Initialize the new flag.
+	(ipa_set_jf_unary_pass_through): Likewise.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(remove_described_reference): Provide a value for the new parameter of
+	find_reference.
+	(update_jump_functions_after_inlining): Zap refdesc of new jfunc if
+	the previous pass_through had a flag mandating that we do so.
+	(propagate_controlled_uses): Likewise.  Only decrement refdesc
+	counters when the pass_through jump function allows it.
+	(ipa_edge_args_sum_t::duplicate): Provide a value for the new
+	parameter of find_reference.
+	(ipa_write_jump_function): Assert the new flag does not have to be
+	streamed.
+	* symtab.cc (symtab_node::find_reference): Add parameter use_type, use
+	it in searching.
+
+2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Di Zhao  <di.zhao@amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add AARCH64_EXTRA_TUNE_NO_LDP_COMBINE.
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp):
+	Check for the above tuning option when processing loads.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109524
+	* tree-vrp.cc (remove_unreachable::m_list): Change to a
+	vector of pairs of block indices.
+	(remove_unreachable::maybe_register_block): Adjust.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+	Deal with removed blocks.
+
 2023-04-16  Jeff Law  <jlaw@ventanamicro>
 
 	PR target/109508

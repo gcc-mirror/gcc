@@ -5692,11 +5692,14 @@ c_parser_initializer (c_parser *parser, tree decl)
     {
       struct c_expr ret;
       location_t loc = c_parser_peek_token (parser)->location;
-      if (decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
-	error_at (loc,
-		  "variable-sized object may not be initialized except "
-		  "with an empty initializer");
       ret = c_parser_expr_no_commas (parser, NULL);
+      if (decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
+	{
+	  error_at (loc,
+		    "variable-sized object may not be initialized except "
+		    "with an empty initializer");
+	  ret.set_error ();
+	}
       /* This is handled mostly by gimplify.cc, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
 	 this warning but only if warn_init_self is zero.  */

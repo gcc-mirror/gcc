@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <span>
 #include <utility>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -36,24 +37,31 @@ test01()
 constexpr bool
 test02()
 {
-  std::same_as<ranges::empty_view<const int>> auto v1
-    = views::empty<int> | views::as_const;
-
   int x[] = {1, 2, 3};
-  std::same_as<ranges::as_const_view<ranges::ref_view<int[3]>>> auto v2
-    = x | views::as_const;
-  std::same_as<ranges::ref_view<const int[3]>> auto v3
-    = std::as_const(x) | views::as_const;
-  std::same_as<ranges::ref_view<const int[3]>> auto v4
-    = std::as_const(x) | views::all | views::as_const;
-  std::same_as<std::span<const int>> auto v5
-    = std::span{x, x+3} | views::as_const;
-
-  std::same_as<ranges::as_const_view<ranges::chunk_view<ranges::ref_view<int[3]>>>> auto v6
-     = x | views::chunk(2) | views::as_const;
+  std::same_as<ranges::empty_view<const int>>
+    auto v1 = views::empty<int> | views::as_const;
+  std::same_as<ranges::ref_view<const int[3]>>
+    auto v2 = x | views::as_const;
+  std::same_as<ranges::ref_view<const int[3]>>
+    auto v3 = std::as_const(x) | views::as_const;
+  std::same_as<ranges::ref_view<const int[3]>>
+    auto v4 = std::as_const(x) | views::all | views::as_const;
+  std::same_as<std::span<const int>>
+    auto v5 = std::span{x, x+3} | views::as_const;
+  std::same_as<ranges::as_const_view<ranges::chunk_view<ranges::ref_view<int[3]>>>>
+    auto v6 = x | views::chunk(2) | views::as_const;
   VERIFY( v6.size() == 2 );
 
   return true;
+}
+
+void
+test03()
+{
+  // PR libstdc++/109525
+  std::vector<int> v;
+  std::same_as<ranges::ref_view<const std::vector<int>>>
+    auto r = views::as_const(v);
 }
 
 int
@@ -61,4 +69,5 @@ main()
 {
   static_assert(test01());
   static_assert(test02());
+  test03();
 }

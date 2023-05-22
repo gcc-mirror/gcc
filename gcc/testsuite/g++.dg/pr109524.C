@@ -14,7 +14,7 @@ struct _Guard {
 };
 struct nn {
   int * _M_dataplus;
-  nn(nn &)
+  nn(const nn &)
         {
                 f();
                 _Guard   __guard;

@@ -265,7 +265,9 @@
 #define __cpp_lib_interpolate 201902L
 #if __cpp_lib_concepts
 # define __cpp_lib_move_iterator_concept 202207L
+#if __cplusplus <= 202002L // N.B. updated value in C++23
 # define __cpp_lib_ranges 202110L
+#endif
 #endif
 #define __cpp_lib_shift 201806L
 
@@ -330,6 +332,7 @@
 #define __cpp_lib_reference_from_temporary 202202L
 #define __cpp_lib_to_underlying 202102L
 #define __cpp_lib_unreachable 202202L
+#define __cpp_lib_ranges 202202L
 #define __cpp_lib_ranges_zip 202110L
 #define __cpp_lib_ranges_chunk 202202L
 #define __cpp_lib_ranges_slide 202202L
@@ -341,7 +344,10 @@
 #define __cpp_lib_ranges_as_rvalue 202207L
 #define __cpp_lib_ranges_as_const 202207L
 #define __cpp_lib_ranges_enumerate 202302L
-#define __cpp_lib_fold 202207L
+#define __cpp_lib_ranges_contains 202207L
+#define __cpp_lib_ranges_iota 202202L
+#define __cpp_lib_ranges_find_last 202207L
+#define __cpp_lib_ranges_fold 202207L
 #if __cpp_constexpr_dynamic_alloc
 # if _GLIBCXX_HOSTED
 #  define __cpp_lib_constexpr_bitset 202202L

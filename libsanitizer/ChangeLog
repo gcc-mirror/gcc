@@ -1,3 +1,15 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
+2023-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Unsupport Darwin22+ until a mechanism can be found
+	to locate dyld in the shared cache.
+
 2023-01-31  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR sanitizer/108106

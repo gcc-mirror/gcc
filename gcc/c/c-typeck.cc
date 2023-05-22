@@ -9374,6 +9374,11 @@ pop_init_level (location_t loc, int implicit,
 	{
 	  if (constructor_erroneous || constructor_type == error_mark_node)
 	    ret.value = error_mark_node;
+	  else if (TREE_CODE (constructor_type) == FUNCTION_TYPE)
+	    {
+	      error_init (loc, "invalid initializer");
+	      ret.value = error_mark_node;
+	    }
 	  else if (TREE_CODE (constructor_type) == POINTER_TYPE)
 	    /* Ensure this is a null pointer constant in the case of a
 	       'constexpr' object initialized with {}.  */

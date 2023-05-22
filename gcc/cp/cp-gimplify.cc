@@ -57,6 +57,13 @@ enum fold_flags {
 
 using fold_flags_t = int;
 
+struct cp_fold_data
+{
+  hash_set<tree> pset;
+  fold_flags_t flags;
+  cp_fold_data (fold_flags_t flags): flags (flags) {}
+};
+
 /* Forward declarations.  */
 
 static tree cp_genericize_r (tree *, int *, void *);
@@ -505,8 +512,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = expand_vec_init_expr (NULL_TREE, *expr_p,
 					tf_warning_or_error);
 
-	hash_set<tree> pset;
-	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
+	cp_fold_data data (ff_genericize | ff_mce_false);
+	cp_walk_tree (expr_p, cp_fold_r, &data, NULL);
 	cp_genericize_tree (expr_p, false);
 	copy_if_shared (expr_p);
 	ret = GS_OK;
@@ -1029,13 +1036,6 @@ struct cp_genericize_data
      the middle-end.  As for now we have most foldings only on GENERIC
      in fold-const, we need to perform this before transformation to
      GIMPLE-form.  */
-
-struct cp_fold_data
-{
-  hash_set<tree> pset;
-  fold_flags_t flags;
-  cp_fold_data (fold_flags_t flags): flags (flags) {}
-};
 
 static tree
 cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
@@ -3270,6 +3270,16 @@ process_stmt_assume_attribute (tree std_attrs, tree statement,
   for (; attr; attr = lookup_attribute ("gnu", "assume", TREE_CHAIN (attr)))
     {
       tree args = TREE_VALUE (attr);
+      if (args && PACK_EXPANSION_P (args))
+	{
+	  auto_diagnostic_group d;
+	  error_at (attrs_loc, "pack expansion of %qE attribute",
+		    get_attribute_name (attr));
+	  if (cxx_dialect >= cxx17)
+	    inform (attrs_loc, "use fold expression in the attribute "
+			       "argument instead");
+	  continue;
+	}
       int nargs = list_length (args);
       if (nargs != 1)
 	{

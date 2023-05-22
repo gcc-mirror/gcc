@@ -11409,7 +11409,16 @@ bool
 rs6000_is_valid_rotate_dot_mask (rtx mask, machine_mode mode)
 {
   int nb, ne;
-  return rs6000_is_valid_mask (mask, &nb, &ne, mode) && nb >= ne && ne > 0;
+  if (rs6000_is_valid_mask (mask, &nb, &ne, mode) && nb >= ne && ne > 0)
+    {
+      if (TARGET_64BIT)
+	return true;
+      /* *rotldi3_mask_dot requires for -m32 -mpowerpc64 that the mask is
+	 <= 0x7fffffff.  */
+      return (UINTVAL (mask) << (63 - nb)) <= 0x7fffffff;
+    }
+
+  return false;
 }
 
 /* Return whether MASK (a CONST_INT) is a valid mask for any rlwinm, rldicl,

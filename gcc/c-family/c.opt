@@ -560,7 +560,7 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warn
 Warn for uses of pointers to auto variables whose lifetime has ended.
 
 Wdangling-reference
-C++ ObjC++ Var(warn_dangling_reference) Warning LangEnabledBy(C++ ObjC++, Wall)
+C++ ObjC++ Var(warn_dangling_reference) Warning LangEnabledBy(C++ ObjC++, Wextra)
 Warn when a reference is bound to a temporary whose lifetime has ended.
 
 Wdate-time

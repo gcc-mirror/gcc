@@ -3044,7 +3044,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     res ? "succeeded" : " failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
 
-  if (!main_loop_vinfo && suggested_unroll_factor > 1)
+  if (res && !main_loop_vinfo && suggested_unroll_factor > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -10114,9 +10114,10 @@ vectorizable_live_operation (vec_info *vinfo,
 						use_stmt))
 	      {
 		enum tree_code code = gimple_assign_rhs_code (use_stmt);
-		gcc_assert (code == CONSTRUCTOR
-			    || code == VIEW_CONVERT_EXPR
-			    || CONVERT_EXPR_CODE_P (code));
+		gcc_checking_assert (code == SSA_NAME
+				     || code == CONSTRUCTOR
+				     || code == VIEW_CONVERT_EXPR
+				     || CONVERT_EXPR_CODE_P (code));
 		if (dump_enabled_p ())
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "Using original scalar computation for "

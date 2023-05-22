@@ -1228,7 +1228,8 @@ See RS/6000 and PowerPC Options.
 -mbig-endian  -mlittle-endian
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
--mcsr-check -mno-csr-check}
+-mcsr-check -mno-csr-check
+-minline-atomics  -mno-inline-atomics}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -3816,7 +3817,7 @@ where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
 both references dangle after the end of the full expression that contains
 the call to @code{std::minmax}.
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by @option{-Wextra}.
 
 @opindex Wdelete-non-virtual-dtor
 @opindex Wno-delete-non-virtual-dtor
@@ -6161,6 +6162,7 @@ name is still supported, but the newer name is more descriptive.)
 
 @gccoptlist{-Wclobbered
 -Wcast-function-type
+-Wdangling-reference @r{(C++ only)}
 -Wdeprecated-copy @r{(C++ only)}
 -Wempty-body
 -Wenum-conversion @r{(C only)}
@@ -29076,6 +29078,13 @@ Put global and static data smaller than @var{n} bytes into a special section
 Do or don't use smaller but slower prologue and epilogue code that uses
 library function calls.  The default is to use fast inline prologues and
 epilogues.
+
+@opindex minline-atomics
+@item -minline-atomics
+@itemx -mno-inline-atomics
+Do or don't use smaller but slower subword atomic emulation code that uses
+libatomic function calls.  The default is to use fast inline subword atomics
+that do not require libatomic.
 
 @opindex mshorten-memrefs
 @item -mshorten-memrefs

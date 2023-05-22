@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* bid_binarydecimal.c (CLZ32_MASK16): Delete.

@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2023-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* generated/pack_c10.c (pack_c10): Regenerated.

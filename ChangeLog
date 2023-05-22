@@ -1,3 +1,14 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: For --enable-languages= mentioning explicitly
+	rust emit an error, if included in all etc., silently disable
+	rust.
+	* configure: Regenerated.
+
 2023-04-06  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* MAINTAINERS: Add myself.

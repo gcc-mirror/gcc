@@ -1,3 +1,22 @@
+2023-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine __cpp_auto_cast
+	for C++23.
+
+2023-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109642
+	PR c++/109640
+	PR c++/109671
+	* c.opt (Wdangling-reference): Move from -Wall to -Wextra.
+
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

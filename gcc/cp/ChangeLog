@@ -1,3 +1,160 @@
+2023-05-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109871
+	* call.cc (add_list_candidates): Check for invalid designated
+	initialization sooner and even for types that have a list
+	constructor.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109868
+	* init.cc (build_zero_init_1): Don't initialize zero-width bitfields.
+	For unions only initialize the first FIELD_DECL.
+
+2023-05-16  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109774
+	* typeck.cc (check_return_expr): In a template, return only after
+	suppressing -Wdangling-reference.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109745
+	* typeck2.cc (poison_mutable_constructors): Define.
+	(store_init_value): Use it instead of setting
+	CONSTRUCTOR_MUTABLE_POISON directly.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/83258
+	PR c++/80488
+	PR c++/97700
+	* pt.cc (convert_nontype_argument_function): Remove linkage
+	requirement for C++17 and later.
+	(invalid_tparm_referent_p) <case ADDR_EXPR>: Restrict
+	DECL_ARTIFICIAL rejection test to VAR_DECL.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109761
+	* parser.cc (cp_parser_class_specifier): Don't pass a class
+	context to noexcept_override_late_checks.
+	(noexcept_override_late_checks): Remove 'type' parameter
+	and use DECL_CONTEXT of 'fndecl' instead.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109651
+	* pt.cc (coerce_template_args_for_ttp): Mention we can hit the
+	current_template_parms fallback when level-lowering a bound ttp.
+	(tsubst_template_decl): Add lambda_tparms parameter.  Prefer to
+	use lambda_tparms instead of substituting DECL_TEMPLATE_PARMS.
+	(tsubst_decl) <case TEMPLATE_DECL>: Pass NULL_TREE as lambda_tparms
+	to tsubst_template_decl.
+	(tsubst_lambda_expr): For a generic lambda, substitute
+	DECL_TEMPLATE_PARMS and set current_template_parms to it
+	before substituting the function type.  Pass the substituted
+	DECL_TEMPLATE_PARMS as lambda_tparms to tsubst_template_decl.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* cp-gimplify.cc (process_stmt_assume_attribute): Diagnose pack
+	expansion of assume attribute.
+
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/96604
+	* friend.cc (do_friend): Call check_explicit_specialization here.
+	* decl.cc (grokdeclarator): Not here.
+	* decl2.cc (check_classfn): Or here.
+
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_data): Move definition earlier.
+	(cp_gimplify_expr): Pass address of ff_genericize | ff_mce_false
+	constructed data rather than &pset to cp_walk_tree with cp_fold_r.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2022-05-24  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_fold_indirect_ref): Add default arg.
+	(cxx_eval_call_expression): Call it.
+	(cxx_fold_indirect_ref_1): Handle null empty_base.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109666
+	* name-lookup.cc (maybe_push_to_top_level)
+	(maybe_pop_from_top_level): Split out...
+	* pt.cc (instantiate_body): ...from here.
+	* init.cc (maybe_instantiate_nsdmi_init): Use them.
+	* name-lookup.h: Declare them..
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Don't clear typedef_decl after 'unsigned
+	typedef' pedwarn.  Use c_common_signed_or_unsigned_type.  Also
+	handle 'signed typedef'.
+
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109556
+	* pt.cc (try_class_unification): Don't ggc_free the copy of
+	'targs'.
+
+2023-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109531
+	* pt.cc (tsubst) <case BOUND_TEMPLATE_TEMPLATE_PARM>:
+	In the level-lowering case just use lookup_template_class
+	to rebuild the bound ttp.
+
 2023-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357

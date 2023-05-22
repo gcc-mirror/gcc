@@ -1,20 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vldrb.8	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 uint8x16_t
-foo (uint8_t const * base)
+foo (uint8_t const *base)
 {
   return vld1q_u8 (base);
 }
 
+
+/*
+**foo1:
+**	...
+**	vldrb.8	q[0-9]+, \[(?:ip|fp|r[0-9]+)\](?:	@.*|)
+**	...
+*/
 uint8x16_t
-foo1 (uint8_t const * base)
+foo1 (uint8_t const *base)
 {
   return vld1q (base);
 }
 
-/* { dg-final { scan-assembler-times "vldrb.8" 2 }  } */
+#ifdef __cplusplus
+}
+#endif
+
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

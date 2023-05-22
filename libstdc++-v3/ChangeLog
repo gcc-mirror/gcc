@@ -1,3 +1,380 @@
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc: New test.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* include/c_global/cmath (atan2, fmod, pow): Move
+	__gnu_cxx::__promote_2 using templates after _Float{16,32,64,128} and
+	__gnu_cxx::__bfloat16_t overloads.
+	(copysign, fdim, fmax, fmin, hypot, nextafter, remainder, remquo):
+	Likewise.
+	(fma): Move __gnu_cxx::__promote_3 using template after
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t overloads.
+
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Export basic_string::_S_allocate.
+	* include/bits/basic_string.h: (basic_string::_Alloc_traits_impl):
+	Remove class template.
+	(basic_string::_S_allocate): New static member function.
+	(basic_string::assign): Use _S_allocate.
+	* include/bits/basic_string.tcc (basic_string::_M_create)
+	(basic_string::reserve, basic_string::_M_replace): Likewise.
+
+2023-05-05  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2023-05-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/from_chars/4.cc: Skip long double test06
+	on aarch64-vxworks.
+	* testsuite/20_util/to_chars/long_double.cc: Xfail run on
+	aarch64-vxworks.
+
+2023-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Document
+	libstdc++.so.6.0.32 and GLIBCXX_3.4.32 version.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-05-04  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2023-05-04  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Add
+	GCC_7.0.0, GCC_9.0.0, GCC_11.0, GCC_12.0.0, GCC_13.0.0 for
+	libgcc_s.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++17/floating_from_chars.cc
+	(_ZSt10from_charsPKcS0_RDF128_St12chars_format): New alias to
+	_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format.
+	* src/c++17/floating_to_chars.cc (_ZSt8to_charsPcS_DF128_): New alias to
+	_ZSt8to_charsPcS_u9__ieee128.
+	(_ZSt8to_charsPcS_DF128_St12chars_format): New alias to
+	_ZSt8to_charsPcS_u9__ieee128St12chars_format.
+	(_ZSt8to_charsPcS_DF128_St12chars_formati): New alias to
+	_ZSt8to_charsPcS_u9__ieee128St12chars_formati.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: Updated.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host (abi_baseline_pair): Use powerpc64le-linux-gnu
+	rather than powerpc64-linux-gnu for powerpc64le*-linux*.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Remove
+	_ZTI*DF128_, _ZTI*DF64x symbols and symbols in
+	GLIBCXX_IEEE128_3.4.{29,30,31} and CXXABI_IEEE128_1.3.13 symbol
+	versions.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: New
+	file.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109694
+	* src/c++98/ios_init.cc: Add #pragma GCC diagnostic ignored for
+	-Wattribute-alias.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.32): Export
+	_ZSt21ios_base_library_initv.
+	* testsuite/util/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.32
+	symver and make it the latestp.
+	* src/c++98/ios_init.cc (ios_base_library_init): New alias.
+	* acinclude.m4 (libtool_VERSION): Change to 6:32:0.
+	* include/std/iostream: If init_priority attribute is supported
+	and _GLIBCXX_SYMVER_GNU, force undefined _ZSt21ios_base_library_initv
+	symbol into the object.
+	* configure: Regenerated.
+
+2023-05-03  Kefu Chai  <kefu.chai@scylladb.com>
+
+	Backported from master:
+	2023-05-03  Kefu Chai  <kefu.chai@scylladb.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109703
+	* include/bits/basic_string.h (basic_string(Iter, Iter, Alloc)):
+	Initialize _M_string_length.
+
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_diff_type::operator>>=):
+	Fix propagation of sign bit.
+	* testsuite/std/ranges/iota/max_size_type.cc: Avoid using the
+	non-standard 'signed typedef-name'.  Add some compile-time tests
+	for right-shifting a negative __max_diff_type value by more than
+	one.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (gamma_distribution): Add to the right
+	doxygen group.
+	(discrete_distribution, piecewise_constant_distribution)
+	(piecewise_linear_distribution): Create a new doxygen group and
+	fix the incomplete doxygen comments.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Add to doxygen group.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h: Add missing @file comment.
+	* include/bits/regex.tcc: Remove stray doxygen comments.
+	* include/experimental/memory_resource: Likewise.
+	* include/std/bit: Tweak doxygen @cond comments.
+	* include/std/expected: Likewise.
+	* include/std/numbers: Likewise.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (STRIP_FROM_PATH): Remove prefixes
+	from header paths.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h: Simplify opening/closing namespace std.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h: Improve doxygen comments.
+	* include/std/memory_resource: Likewise.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/40380
+	* include/bits/basic_string.h: Improve doxygen comments.
+	* include/bits/cow_string.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/fs_dir.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/quoted_string.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/std/filesystem: Likewise.
+	* include/std/iomanip: Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix typo in doxygen comment.
+	* include/std/format: Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (SOURCE_BROWSER): Only set to YES for
+	HTML docs.
+	* include/bits/gslice_array.h (_DEFINE_VALARRAY_OPERATOR): Omit
+	from doxygen docs.
+	* include/bits/indirect_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/std/valarray (_DEFINE_VALARRAY_UNARY_OPERATOR)
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_BINARY_OPERATOR): Likewise.
+
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
+2023-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* src/Makefile.am: Move globals_io.cc to here.
+	* src/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am: Remove globals_io.cc from here.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/globals_io.cc [_GLIBCXX_SYMVER_GNU] (cin): Adjust
+	symbol name and then export with GLIBCXX_3.4.31 symver.
+	(cout, cerr, clog, wcin, wcout, wcerr, wclog): Likewise.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/pre/gnu.ver: Add iostream objects to new symver.
+
+2023-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver: Fix preprocessor condition.
+
+2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver: Fix preprocessor condition.
+
+2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* src/Makefile.am: Move globals_io.cc to here.
+	* src/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am: Remove globals_io.cc from here.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/globals_io.cc [_GLIBCXX_SYMVER_GNU] (cin): Adjust
+	symbol name and then export with GLIBCXX_3.4.31 symver.
+	(cout, cerr, clog, wcin, wcout, wcerr, wclog): Likewise.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/pre/gnu.ver: Add iostream objects to new symver.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108827
+	* include/bits/ranges_cmp.h (__cpp_lib_ranges): Bump value
+	for C++23.
+	* include/std/ranges (range_adaptor_closure): Define for C++23.
+	* include/std/version (__cpp_lib_ranges): Bump value for
+	C++23.
+	* testsuite/std/ranges/version_c++23.cc: Bump expected value
+	of __cpp_lib_ranges.
+	* testsuite/std/ranges/range_adaptor_closure.cc: New test.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__cpp_lib_ranges_contains):
+	Define for C++23.
+	(__cpp_lib_ranges_iota): Likewise.
+	(__cpp_lib_ranges_find_last): Likewise.
+	(__cpp_lib_fold): Rename to ...
+	(__cpp_lib_ranges_fold): ... this.
+	* include/std/version: As above.
+	* testsuite/25_algorithms/fold_left/1.cc: Adjust after
+	renaming __cpp_lib_fold.
+	* testsuite/std/ranges/version_c++23.cc: Verify values
+	of the above feature-test macros.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109525
+	* include/std/ranges (views::_AsConst::operator()): Add
+	missing const to constant_range test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test02):
+	Improve formatting.  Adjust expected type of v2.
+	(test03): New test.
+
 2023-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_base.h (const_iterator_t): Define for C++23.

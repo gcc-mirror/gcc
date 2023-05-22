@@ -1,37 +1,47 @@
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vst40.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst41.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst42.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst43.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	...
+*/
 void
-foo (float32_t * addr, float32x4x4_t value)
+foo (float32_t *addr, float32x4x4_t value)
 {
-  vst4q_f32 (addr, value);
+  return vst4q_f32 (addr, value);
 }
 
-/* { dg-final { scan-assembler "vst40.32"  }  } */
-/* { dg-final { scan-assembler "vst41.32"  }  } */
-/* { dg-final { scan-assembler "vst42.32"  }  } */
-/* { dg-final { scan-assembler "vst43.32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vst40.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst41.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst42.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	vst43.32	{q[0-9+], q[0-9+], q[0-9+], q[0-9+]}, \[r[0-9+]\]
+**	...
+*/
 void
-foo1 (float32_t * addr, float32x4x4_t value)
+foo1 (float32_t *addr, float32x4x4_t value)
 {
-  vst4q (addr, value);
+  return vst4q (addr, value);
 }
 
-/* { dg-final { scan-assembler "vst40.32"  }  } */
-/* { dg-final { scan-assembler "vst41.32"  }  } */
-/* { dg-final { scan-assembler "vst42.32"  }  } */
-/* { dg-final { scan-assembler "vst43.32"  }  } */
-
-void
-foo2 (float32_t * addr, float32x4x4_t value)
-{
-  vst4q_f32 (addr, value);
-  addr += 16;
-  vst4q_f32 (addr, value);
+#ifdef __cplusplus
 }
+#endif
 
-/* { dg-final { scan-assembler {vst43.32\s\{.*\}, \[.*\]!}  }  } */
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

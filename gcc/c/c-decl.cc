@@ -2219,7 +2219,14 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
     }
   /* Warn about enum/integer type mismatches.  They are compatible types
      (C2X 6.7.2.2/5), but may pose portability problems.  */
-  else if (enum_and_int_p && TREE_CODE (newdecl) != TYPE_DECL)
+  else if (enum_and_int_p
+	   && TREE_CODE (newdecl) != TYPE_DECL
+	   /* Don't warn about about acc_on_device built-in redeclaration,
+	      the built-in is declared with int rather than enum because
+	      the enum isn't intrinsic.  */
+	   && !(TREE_CODE (olddecl) == FUNCTION_DECL
+		&& fndecl_built_in_p (olddecl, BUILT_IN_ACC_ON_DEVICE)
+		&& !C_DECL_DECLARED_BUILTIN (olddecl)))
     warned = warning_at (DECL_SOURCE_LOCATION (newdecl),
 			 OPT_Wenum_int_mismatch,
 			 "conflicting types for %q+D due to enum/integer "

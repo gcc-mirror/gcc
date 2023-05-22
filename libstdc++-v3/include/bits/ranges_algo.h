@@ -3468,6 +3468,9 @@ namespace ranges
   inline constexpr __prev_permutation_fn prev_permutation{};
 
 #if __cplusplus > 202002L
+
+#define __cpp_lib_ranges_contains 202207L
+
   struct __contains_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -3521,6 +3524,8 @@ namespace ranges
 
   inline constexpr __contains_subrange_fn contains_subrange{};
 
+#define __cpp_lib_ranges_iota 202202L
+
   template<typename _Out, typename _Tp>
     struct out_value_result
     {
@@ -3568,6 +3573,8 @@ namespace ranges
   };
 
   inline constexpr __iota_fn iota{};
+
+#define __cpp_lib_ranges_find_last 202207L
 
   struct __find_last_fn
   {
@@ -3695,7 +3702,7 @@ namespace ranges
 
   inline constexpr __find_last_if_not_fn find_last_if_not{};
 
-#define __cpp_lib_fold 202207L
+#define __cpp_lib_ranges_fold 202207L
 
   template<typename _Iter, typename _Tp>
     struct in_value_result

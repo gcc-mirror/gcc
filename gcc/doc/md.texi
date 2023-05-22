@@ -3535,6 +3535,15 @@ An address that is held in a general-purpose register.
 @item S
 A constraint that matches an absolute symbolic address.
 
+@item vr
+A vector register (if available)..
+
+@item vd
+A vector register, excluding v0 (if available).
+
+@item vm
+A vector register, only v0 (if available).
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}

@@ -15,6 +15,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; {{{ Vector iterators
+; SV iterators include both scalar and vector modes.
 
 ; Vector modes for specific types
 (define_mode_iterator V_QI
@@ -126,6 +127,15 @@
 		       V32SI V32DI
 		       V64SI V64DI])
 
+(define_mode_iterator SV_SFDF
+		      [SF DF
+		       V2SF V2DF
+		       V4SF V4DF
+		       V8SF V8DF
+		       V16SF V16DF
+		       V32SF V32DF
+		       V64SF V64DF])
+
 ; All of above
 (define_mode_iterator V_ALL
 		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF
@@ -156,9 +166,19 @@
 		       V16HF V16SF V16DF
 		       V32HF V32SF V32DF
 		       V64HF V64SF V64DF])
+(define_mode_iterator SV_FP
+		      [HF SF DF
+		       V2HF V2SF V2DF
+		       V4HF V4SF V4DF
+		       V8HF V8SF V8DF
+		       V16HF V16SF V16DF
+		       V32HF V32SF V32DF
+		       V64HF V64SF V64DF])
 
 (define_mode_attr scalar_mode
-  [(V2QI "qi") (V2HI "hi") (V2SI "si")
+  [(QI "qi") (HI "hi") (SI "si")
+   (HF "hf") (SF "sf") (DI "di") (DF "df")
+   (V2QI "qi") (V2HI "hi") (V2SI "si")
    (V2HF "hf") (V2SF "sf") (V2DI "di") (V2DF "df")
    (V4QI "qi") (V4HI "hi") (V4SI "si")
    (V4HF "hf") (V4SF "sf") (V4DI "di") (V4DF "df")
@@ -172,7 +192,9 @@
    (V64HF "hf") (V64SF "sf") (V64DI "di") (V64DF "df")])
 
 (define_mode_attr SCALAR_MODE
-  [(V2QI "QI") (V2HI "HI") (V2SI "SI")
+  [(QI "QI") (HI "HI") (SI "SI")
+   (HF "HF") (SF "SF") (DI "DI") (DF "DF")
+   (V2QI "QI") (V2HI "HI") (V2SI "SI")
    (V2HF "HF") (V2SF "SF") (V2DI "DI") (V2DF "DF")
    (V4QI "QI") (V4HI "HI") (V4SI "SI")
    (V4HF "HF") (V4SF "SF") (V4DI "DI") (V4DF "DF")
@@ -186,7 +208,9 @@
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
 (define_mode_attr vnsi
-  [(V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
+  [(QI "si") (HI "si") (SI "si")
+   (HF "si") (SF "si") (DI "si") (DF "si")
+   (V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
    (V2SF "v2si") (V2DI "v2si") (V2DF "v2si")
    (V4QI "v4si") (V4HI "v4si") (V4HF "v4si") (V4SI "v4si")
    (V4SF "v4si") (V4DI "v4si") (V4DF "v4si")
@@ -200,7 +224,9 @@
    (V64SF "v64si") (V64DI "v64si") (V64DF "v64si")])
 
 (define_mode_attr VnSI
-  [(V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
+  [(QI "SI") (HI "SI") (SI "SI")
+   (HF "SI") (SF "SI") (DI "SI") (DF "SI")
+   (V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
    (V2SF "V2SI") (V2DI "V2SI") (V2DF "V2SI")
    (V4QI "V4SI") (V4HI "V4SI") (V4HF "V4SI") (V4SI "V4SI")
    (V4SF "V4SI") (V4DI "V4SI") (V4DF "V4SI")
@@ -2356,8 +2382,9 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm, dest, even));
-                                                             // a*c-b*d 0
+    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));            // a*c-b*d 0
 
     rtx t2_perm = gen_reg_rtx (<MODE>mode);
     emit_insn (gen_dpp_swap_pairs<mode> (t2_perm, t2));          // b*c a*d
@@ -2401,7 +2428,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm,
+                                    gcn_gen_undef (<MODE>mode), even));
 
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
@@ -2425,7 +2453,8 @@
     rtx dest = operands[0];
     rtx x = operands[1];
     rtx y = operands[2];
-    emit_insn (gen_sub<mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, x, y, gcn_gen_undef (<MODE>mode),
+                                    even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, x, y, dest, odd));
@@ -2452,7 +2481,9 @@
 
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
-    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_<cadd_addsub><mode>3_exec (dest, x, y, dest, odd));
@@ -2472,7 +2503,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
@@ -2492,10 +2524,11 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, odd));
 
     DONE;
   })
@@ -3080,21 +3113,10 @@
 
 ; Implement ldexp pattern
 
-(define_insn "ldexp<mode>3"
-  [(set (match_operand:FP 0 "register_operand"  "=v")
-	(unspec:FP
-	  [(match_operand:FP 1 "gcn_alu_operand" "vB")
-	   (match_operand:SI 2 "gcn_alu_operand" "vSvA")]
-	  UNSPEC_LDEXP))]
-  ""
-  "v_ldexp%i0\t%0, %1, %2"
-  [(set_attr "type" "vop3a")
-   (set_attr "length" "8")])
-
 (define_insn "ldexp<mode>3<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"     "=  v")
-	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand"   "  vB")
+  [(set (match_operand:SV_FP 0 "register_operand"     "=  v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "gcn_alu_operand"   "  vA")
 	   (match_operand:<VnSI> 2 "gcn_alu_operand" "vSvA")]
 	  UNSPEC_LDEXP))]
   ""
@@ -3247,113 +3269,124 @@
 ;; {{{ FP division
 
 (define_insn "recip<mode>2<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"  "=  v")
-	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand" "vSvB")]
+  [(set (match_operand:SV_FP 0 "register_operand"  "=  v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "gcn_alu_operand" "vSvB")]
 	  UNSPEC_RCP))]
   ""
   "v_rcp%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
-(define_insn "recip<mode>2"
-  [(set (match_operand:FP 0 "register_operand"	 "=  v")
-	(unspec:FP
-	  [(match_operand:FP 1 "gcn_alu_operand" "vSvB")]
-	  UNSPEC_RCP))]
+;; v_div_scale takes a numerator (op2) and denominator (op1) and returns the
+;; one that matches op3 adjusted for best results in reciprocal division.
+;; It also emits a VCC mask that is intended for input to v_div_fmas.
+;; The caller is expected to call this twice, once for each input.  The output
+;; VCC is the same in both cases, so the caller may discard one.
+(define_insn "div_scale<mode><exec_vcc>"
+  [(set (match_operand:SV_SFDF 0 "register_operand"   "=v")
+	(unspec:SV_SFDF
+	  [(match_operand:SV_SFDF 1 "gcn_alu_operand" "v")
+	   (match_operand:SV_SFDF 2 "gcn_alu_operand" "v")
+	   (match_operand:SV_SFDF 3 "gcn_alu_operand" "v")]
+	  UNSPEC_DIV_SCALE))
+   (set (match_operand:DI 4 "register_operand"        "=SvcV")
+	(unspec:DI
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	  UNSPEC_DIV_SCALE))]
   ""
-  "v_rcp%i0\t%0, %1"
-  [(set_attr "type" "vop1")
+  "v_div_scale%i0\t%0, %4, %3, %1, %2"
+  [(set_attr "type" "vop3b")
    (set_attr "length" "8")])
 
-;; Do division via a = b * 1/c
-;; The v_rcp_* instructions are not sufficiently accurate on their own,
-;; so we use 2 v_fma_* instructions to do one round of Newton-Raphson
-;; which the ISA manual says is enough to improve the reciprocal accuracy.
-;;
-;; FIXME: This does not handle denormals, NaNs, division-by-zero etc.
+;; v_div_fmas is "FMA and Scale" that uses the VCC output from v_div_scale
+;; to conditionally scale the output of the whole division operation.
+;; This is necessary to counter the adjustments made by v_div_scale and
+;; replaces the last FMA instruction of the Newton Raphson algorithm.
+(define_insn "div_fmas<mode><exec>"
+  [(set (match_operand:SV_SFDF 0 "register_operand"       "=v")
+	(unspec:SV_SFDF
+	  [(plus:SV_SFDF
+	     (mult:SV_SFDF
+	       (match_operand:SV_SFDF 1 "gcn_alu_operand" "v")
+	       (match_operand:SV_SFDF 2 "gcn_alu_operand" "v"))
+	     (match_operand:SV_SFDF 3 "gcn_alu_operand"   "v"))
+	   (match_operand:DI 4 "register_operand"         "cV")]
+	  UNSPEC_DIV_FMAS))]
+  ""
+  "v_div_fmas%i0\t%0, %1, %2, %3; %4"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")
+   (set_attr "vccwait" "5")])
+
+;; v_div_fixup takes the inputs and outputs of a division operation already
+;; completed and cleans up the floating-point sign bit, infinity, underflow,
+;; overflow, and NaN status.  It will also emit any FP exceptions.
+;; op1: quotient,  op2: denominator,  op3: numerator
+(define_insn "div_fixup<mode><exec>"
+  [(set (match_operand:SV_FP 0 "register_operand"    "=v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "register_operand" "v")
+	   (match_operand:SV_FP 2 "gcn_alu_operand"  "v")
+	   (match_operand:SV_FP 3 "gcn_alu_operand"  "v")]
+	  UNSPEC_DIV_FIXUP))]
+  ""
+  "v_div_fixup%i0\t%0, %1, %2, %3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
 
 (define_expand "div<mode>3"
-  [(match_operand:V_FP 0 "gcn_valu_dst_operand")
-   (match_operand:V_FP 1 "gcn_valu_src0_operand")
-   (match_operand:V_FP 2 "gcn_valu_src0_operand")]
-  "flag_reciprocal_math"
+  [(match_operand:SV_SFDF 0 "register_operand")
+   (match_operand:SV_SFDF 1 "gcn_alu_operand")
+   (match_operand:SV_SFDF 2 "gcn_alu_operand")]
+  ""
   {
+    rtx numerator = operands[1];
+    rtx denominator = operands[2];
+
+    /* Scale the inputs if they are close to the FP limits.
+       This will be reversed later.  */
+    rtx vcc = gen_reg_rtx (DImode);
+    rtx discardedvcc = gen_reg_rtx (DImode);
+    rtx scaled_numerator = gen_reg_rtx (<MODE>mode);
+    rtx scaled_denominator = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_div_scale<mode> (scaled_denominator,
+				    denominator, numerator,
+				    denominator, discardedvcc));
+    emit_insn (gen_div_scale<mode> (scaled_numerator,
+				    denominator, numerator,
+				    numerator, vcc));
+
+    /* Find the reciprocal of the denominator, and use Newton-Raphson to
+       improve the accuracy over the basic hardware instruction.  */
     rtx one = gcn_vec_constant (<MODE>mode,
 		  const_double_from_real_value (dconst1, <SCALAR_MODE>mode));
     rtx initrcp = gen_reg_rtx (<MODE>mode);
-    rtx fma = gen_reg_rtx (<MODE>mode);
-    rtx rcp;
-    rtx num = operands[1], denom = operands[2];
+    rtx fma1 = gen_reg_rtx (<MODE>mode);
+    rtx rcp = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_recip<mode>2 (initrcp, scaled_denominator));
+    emit_insn (gen_fma<mode>4_negop2 (fma1, initrcp, scaled_denominator, one));
+    emit_insn (gen_fma<mode>4 (rcp, fma1, initrcp, initrcp));
 
-    bool is_rcp = (GET_CODE (num) == CONST_VECTOR
-		   && real_identical
-		        (CONST_DOUBLE_REAL_VALUE
-			  (CONST_VECTOR_ELT (num, 0)), &dconstm1));
+    /* Do the division "a/b" via "a*1/b" and use Newton-Raphson to improve
+       the accuracy.  The "div_fmas" instruction reverses any scaling
+       performed by "div_scale", above.  */
+    rtx div_est = gen_reg_rtx (<MODE>mode);
+    rtx fma2 = gen_reg_rtx (<MODE>mode);
+    rtx fma3 = gen_reg_rtx (<MODE>mode);
+    rtx fma4 = gen_reg_rtx (<MODE>mode);
+    rtx fmas = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (div_est, scaled_numerator, rcp));
+    emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, scaled_denominator,
+				      scaled_numerator));
+    emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
+    emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, scaled_denominator,
+				      scaled_numerator));
+    emit_insn (gen_div_fmas<mode> (fmas, fma4, rcp, fma3, vcc));
 
-    if (is_rcp)
-      rcp = operands[0];
-    else
-      rcp = gen_reg_rtx (<MODE>mode);
-
-    emit_insn (gen_recip<mode>2 (initrcp, denom));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
-    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
-
-    if (!is_rcp)
-      {
-	rtx div_est = gen_reg_rtx (<MODE>mode);
-	rtx fma2 = gen_reg_rtx (<MODE>mode);
-	rtx fma3 = gen_reg_rtx (<MODE>mode);
-	rtx fma4 = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
-	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
-	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
-	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
-	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
-      }
-
-    DONE;
-  })
-
-(define_expand "div<mode>3"
-  [(match_operand:FP 0 "gcn_valu_dst_operand")
-   (match_operand:FP 1 "gcn_valu_src0_operand")
-   (match_operand:FP 2 "gcn_valu_src0_operand")]
-  "flag_reciprocal_math"
-  {
-    rtx one = const_double_from_real_value (dconst1, <MODE>mode);
-    rtx initrcp = gen_reg_rtx (<MODE>mode);
-    rtx fma = gen_reg_rtx (<MODE>mode);
-    rtx rcp;
-    rtx num = operands[1], denom = operands[2];
-
-    bool is_rcp = (GET_CODE (operands[1]) == CONST_DOUBLE
-		   && real_identical (CONST_DOUBLE_REAL_VALUE (operands[1]),
-				      &dconstm1));
-
-    if (is_rcp)
-      rcp = operands[0];
-    else
-      rcp = gen_reg_rtx (<MODE>mode);
-
-    emit_insn (gen_recip<mode>2 (initrcp, denom));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
-    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
-
-    if (!is_rcp)
-      {
-	rtx div_est = gen_reg_rtx (<MODE>mode);
-	rtx fma2 = gen_reg_rtx (<MODE>mode);
-	rtx fma3 = gen_reg_rtx (<MODE>mode);
-	rtx fma4 = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
-	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
-	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
-	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
-	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
-      }
-
+    /* Finally, use "div_fixup" to get the details right and find errors.  */
+    emit_insn (gen_div_fixup<mode> (operands[0], fmas, denominator,
+				    numerator));
     DONE;
   })
 

@@ -74,6 +74,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  retrieved in logarithmic time.
    *
    *  @ingroup associative_containers
+   *  @headerfile set
+   *  @since C++98
    *
    *  @tparam _Key  Type of key objects.
    *  @tparam _Compare  Comparison function object type, defaults to less<_Key>.

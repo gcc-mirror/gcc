@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    *
    *  @ingroup strings
    *  @ingroup sequences
+   *  @headerfile string
+   *  @since C++98
    *
    *  @tparam _CharT  Type of character
    *  @tparam _Traits  Traits for character type, defaults to
@@ -87,36 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
 	rebind<_CharT>::other _Char_alloc_type;
 
-#if __cpp_lib_constexpr_string < 201907L
       typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Alloc_traits;
-#else
-      template<typename _Traits2, typename _Dummy_for_PR85282>
-	struct _Alloc_traits_impl : __gnu_cxx::__alloc_traits<_Char_alloc_type>
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Base;
-
-	  [[__gnu__::__always_inline__]]
-	  static constexpr typename _Base::pointer
-	  allocate(_Char_alloc_type& __a, typename _Base::size_type __n)
-	  {
-	    pointer __p = _Base::allocate(__a, __n);
-	    if (std::is_constant_evaluated())
-	      // Begin the lifetime of characters in allocated storage.
-	      for (size_type __i = 0; __i < __n; ++__i)
-		std::construct_at(__builtin_addressof(__p[__i]));
-	    return __p;
-	  }
-	};
-
-      template<typename _Dummy_for_PR85282>
-	struct _Alloc_traits_impl<char_traits<_CharT>, _Dummy_for_PR85282>
-	: __gnu_cxx::__alloc_traits<_Char_alloc_type>
-	{
-	  // std::char_traits begins the lifetime of characters.
-	};
-
-      using _Alloc_traits = _Alloc_traits_impl<_Traits, void>;
-#endif
 
       // Types:
     public:
@@ -147,6 +120,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
     private:
+      static _GLIBCXX20_CONSTEXPR pointer
+      _S_allocate(_Char_alloc_type& __a, size_type __n)
+      {
+	pointer __p = _Alloc_traits::allocate(__a, __n);
+#if __cpp_lib_constexpr_string >= 201907L
+	// std::char_traits begins the lifetime of characters,
+	// but custom traits might not, so do it here.
+	if constexpr (!is_same_v<_Traits, char_traits<_CharT>>)
+	  if (std::__is_constant_evaluated())
+	    // Begin the lifetime of characters in allocated storage.
+	    for (size_type __i = 0; __i < __n; ++__i)
+	      std::construct_at(__builtin_addressof(__p[__i]));
+#endif
+	return __p;
+      }
+
 #if __cplusplus >= 201703L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
@@ -758,7 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_GLIBCXX20_CONSTEXPR
         basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc())
-	: _M_dataplus(_M_local_data(), __a)
+	: _M_dataplus(_M_local_data(), __a), _M_string_length(0)
 	{
 #if __cplusplus >= 201103L
 	  _M_construct(__beg, __end, std::__iterator_category(__beg));
@@ -1594,7 +1583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		    const auto __len = __str.size();
 		    auto __alloc = __str._M_get_allocator();
 		    // If this allocation throws there are no effects:
-		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    auto __ptr = _S_allocate(__alloc, __len + 1);
 		    _M_destroy(_M_allocated_capacity);
 		    _M_data(__ptr);
 		    _M_capacity(__len);

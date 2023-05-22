@@ -31,15 +31,17 @@ if ![info exists DEFAULT_CFLAGS] then {
 }
 
 set gcc_march "rv64gcv_zfh"
+set gcc_mabi  "lp64d"
 if [istarget riscv32-*-*] then {
   set gcc_march "rv32gcv_zfh"
+  set gcc_mabi  "ilp32d"
 }
 
 # Initialize `dg'.
 dg-init
 
 # Main loop.
-set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -O3"
+set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -mabi=$gcc_mabi -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \

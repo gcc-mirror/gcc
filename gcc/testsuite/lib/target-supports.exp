@@ -8564,7 +8564,8 @@ proc check_effective_target_vect_call_copysignf { } {
     return [check_cached_effective_target_indexed vect_call_copysignf {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
-	     || [istarget aarch64*-*-*] }}]
+	     || [istarget aarch64*-*-*]
+             || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports hardware square root instructions.
@@ -8600,7 +8601,8 @@ proc check_effective_target_vect_call_sqrtf { } {
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) }}]
+		 && [check_effective_target_s390_vx])
+             || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector lrint calls.
@@ -8645,14 +8647,16 @@ proc check_effective_target_vect_call_ceil { } {
 
 proc check_effective_target_vect_call_ceilf { } {
     return [check_cached_effective_target_indexed vect_call_ceilf {
-      expr { [istarget aarch64*-*-*] }}]
+      expr { [istarget aarch64*-*-*]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector floor calls.
 
 proc check_effective_target_vect_call_floor { } {
     return [check_cached_effective_target_indexed vect_call_floor {
-      expr { [istarget aarch64*-*-*] }}]
+      expr { [istarget aarch64*-*-*]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector floorf calls.
@@ -8708,7 +8712,8 @@ proc check_effective_target_vect_call_roundf { } {
 # Return 1 if the target supports AND, OR and XOR reduction.
 
 proc check_effective_target_vect_logical_reduc { } {
-    return [check_effective_target_aarch64_sve]
+    return [expr { [check_effective_target_aarch64_sve]
+	           || [istarget amdgcn-*-*] }]
 }
 
 # Return 1 if the target supports the fold_extract_last optab.
