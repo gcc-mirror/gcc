@@ -1844,22 +1844,20 @@
   "x<VSv>tsqrt<sd>p %0,%x1"
   [(set_attr "type" "<VStype_simple>")])
 
-;; Fused vector multiply/add instructions. Support the classical Altivec
-;; versions of fma, which allows the target to be a separate register from the
-;; 3 inputs.  Under VSX, the target must be either the addend or the first
-;; multiply.
-
+;; Fused vector multiply/add instructions. Do not generate the Altivec versions
+;; of fma (vmaddfp and vnmsubfp).  These instructions allows the target to be a
+;; separate register from the 3 inputs, but they have different rounding
+;; behaviors than the VSX instructions.
 (define_insn "*vsx_fmav4sf4"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,v")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa")
 	(fma:V4SF
-	  (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa,v")
-	  (match_operand:V4SF 2 "vsx_register_operand" "wa,0,v")
-	  (match_operand:V4SF 3 "vsx_register_operand" "0,wa,v")))]
+	  (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa")
+	  (match_operand:V4SF 2 "vsx_register_operand" "wa,0")
+	  (match_operand:V4SF 3 "vsx_register_operand" "0,wa")))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "@
    xvmaddasp %x0,%x1,%x2
-   xvmaddmsp %x0,%x1,%x3
-   vmaddfp %0,%1,%2,%3"
+   xvmaddmsp %x0,%x1,%x3"
   [(set_attr "type" "vecfloat")])
 
 (define_insn "*vsx_fmav2df4"
@@ -1901,18 +1899,17 @@
   [(set_attr "type" "<VStype_mul>")])
 
 (define_insn "*vsx_nfmsv4sf4"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,v")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa")
 	(neg:V4SF
 	 (fma:V4SF
-	   (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa,v")
-	   (match_operand:V4SF 2 "vsx_register_operand" "wa,0,v")
+	   (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa")
+	   (match_operand:V4SF 2 "vsx_register_operand" "wa,0")
 	   (neg:V4SF
-	     (match_operand:V4SF 3 "vsx_register_operand" "0,wa,v")))))]
+	     (match_operand:V4SF 3 "vsx_register_operand" "0,wa")))))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "@
    xvnmsubasp %x0,%x1,%x2
-   xvnmsubmsp %x0,%x1,%x3
-   vnmsubfp %0,%1,%2,%3"
+   xvnmsubmsp %x0,%x1,%x3"
   [(set_attr "type" "vecfloat")])
 
 (define_insn "*vsx_nfmsv2df4"
