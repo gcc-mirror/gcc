@@ -490,7 +490,7 @@ inline
 int_range<N, RESIZABLE>::~int_range ()
 {
   if (RESIZABLE && m_base != m_ranges)
-    delete m_base;
+    delete[] m_base;
 }
 
 // This is an "infinite" precision irange for use in temporary
