@@ -66,7 +66,7 @@ const_vlmax_p (machine_mode mode)
 template <int MAX_OPERANDS> class insn_expander
 {
 public:
-  insn_expander () : m_opno (0), has_dest(false) {}
+  insn_expander () : m_opno (0), m_has_dest_p(false) {}
   void add_output_operand (rtx x, machine_mode mode)
   {
     create_output_operand (&m_ops[m_opno++], x, mode);
@@ -99,41 +99,41 @@ public:
 
   void set_dest_and_mask (rtx mask, rtx dest, machine_mode mask_mode)
   {
-    dest_mode = GET_MODE (dest);
-    has_dest = true;
+    m_dest_mode = GET_MODE (dest);
+    m_has_dest_p = true;
 
-    add_output_operand (dest, dest_mode);
+    add_output_operand (dest, m_dest_mode);
 
     if (mask)
       add_input_operand (mask, GET_MODE (mask));
     else
       add_all_one_mask_operand (mask_mode);
 
-    add_vundef_operand (dest_mode);
+    add_vundef_operand (m_dest_mode);
   }
 
   void set_len_and_policy (rtx len, bool force_vlmax = false)
     {
       bool vlmax_p = force_vlmax || !len;
-      gcc_assert (has_dest);
+      gcc_assert (m_has_dest_p);
 
-      if (vlmax_p && const_vlmax_p (dest_mode))
+      if (vlmax_p && const_vlmax_p (m_dest_mode))
 	{
 	  /* Optimize VLS-VLMAX code gen, we can use vsetivli instead of the
 	     vsetvli to obtain the value of vlmax.  */
-	  poly_uint64 nunits = GET_MODE_NUNITS (dest_mode);
+	  poly_uint64 nunits = GET_MODE_NUNITS (m_dest_mode);
 	  len = gen_int_mode (nunits, Pmode);
 	  vlmax_p = false; /* It has became NONVLMAX now.  */
 	}
       else if (!len)
 	{
 	  len = gen_reg_rtx (Pmode);
-	  emit_vlmax_vsetvl (dest_mode, len);
+	  emit_vlmax_vsetvl (m_dest_mode, len);
 	}
 
       add_input_operand (len, Pmode);
 
-      if (GET_MODE_CLASS (dest_mode) != MODE_VECTOR_BOOL)
+      if (GET_MODE_CLASS (m_dest_mode) != MODE_VECTOR_BOOL)
 	add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
 
       add_avl_type_operand (vlmax_p ? avl_type::VLMAX : avl_type::NONVLMAX);
@@ -152,8 +152,8 @@ public:
 
 private:
   int m_opno;
-  bool has_dest;
-  machine_mode dest_mode;
+  bool m_has_dest_p;
+  machine_mode m_dest_mode;
   expand_operand m_ops[MAX_OPERANDS];
 };
 
