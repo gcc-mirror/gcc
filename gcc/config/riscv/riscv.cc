@@ -1295,13 +1295,13 @@ riscv_const_insns (rtx x)
 		 * accurately according to BASE && STEP.  */
 		return 1;
 	      }
+	    /* Constants from -16 to 15 can be loaded with vmv.v.i.
+	       The Wc0, Wc1 constraints are already covered by the
+	       vi constraint so we do not need to check them here
+	       separately.  */
+	    if (satisfies_constraint_vi (x))
+	      return 1;
 	  }
-	/* Constants from -16 to 15 can be loaded with vmv.v.i.
-	   The Wc0, Wc1 constraints are already covered by the
-	   vi constraint so we do not need to check them here
-	   separately.  */
-	if (TARGET_VECTOR && satisfies_constraint_vi (x))
-	  return 1;
 
 	/* TODO: We may support more const vector in the future.  */
 	return x == CONST0_RTX (GET_MODE (x)) ? 1 : 0;
