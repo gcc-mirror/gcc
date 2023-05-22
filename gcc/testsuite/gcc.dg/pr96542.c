@@ -1,6 +1,6 @@
 /* { dg-do compile} */
 /* { dg-options "-O2 -fdump-tree-evrp" } */
-
+/* { dg-require-effective-target int32 } */
 
 unsigned char
 foo (unsigned int x)

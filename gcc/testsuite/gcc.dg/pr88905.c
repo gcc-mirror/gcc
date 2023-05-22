@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Og -fno-tree-ccp" } */
 /* { dg-additional-options "-mabm" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target int32plus } */
 
 int a, b, c;
 extern void baz (int);

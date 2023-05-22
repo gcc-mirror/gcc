@@ -1,4 +1,5 @@
 /* PR tree-optimization/108498 */
+/* { dg-require-effective-target int32plus } */
 
 struct U { char c[16]; };
 struct V { char c[16]; };
