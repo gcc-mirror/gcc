@@ -20463,27 +20463,42 @@ ix86_multiplication_cost (const struct processor_costs *cost,
       {
       case V4QImode:
       case V8QImode:
-	/* Partial V*QImode is emulated with 4-5 insns.  */
-	if ((TARGET_AVX512BW && TARGET_AVX512VL) || TARGET_XOP)
+	/* Partial V*QImode is emulated with 4-6 insns.  */
+	if (TARGET_AVX512BW && TARGET_AVX512VL)
 	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
+	else if (TARGET_AVX2)
+	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 5);
+	else if (TARGET_XOP)
+	  return (ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3)
+		  + cost->sse_load[2]);
 	else
-	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 4);
+	  return (ix86_vec_cost (mode, cost->mulss + cost->sse_op * 4)
+		  + cost->sse_load[2]);
 
       case V16QImode:
 	/* V*QImode is emulated with 4-11 insns.  */
 	if (TARGET_AVX512BW && TARGET_AVX512VL)
 	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
+	else if (TARGET_AVX2)
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 8);
 	else if (TARGET_XOP)
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
-	/* FALLTHRU */
+	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5)
+		  + cost->sse_load[2]);
+	else
+	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7)
+		  + cost->sse_load[2]);
+
       case V32QImode:
-	if (TARGET_AVX512BW && mode == V32QImode)
+	if (TARGET_AVX512BW)
 	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
 	else
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7);
+	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7)
+		  + cost->sse_load[3] * 2);
 
       case V64QImode:
-	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 9);
+	return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 9)
+		+ cost->sse_load[3] * 2
+		+ cost->sse_load[4] * 2);
 
       case V4SImode:
 	/* pmulld is used in this case. No emulation is needed.  */
