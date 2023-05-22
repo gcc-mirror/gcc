@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fgimple" } */
+/* { dg-require-effective-target int32plus } */
 
 __attribute__((noipa))
 void __GIMPLE (ssa,startwith("evrp"))

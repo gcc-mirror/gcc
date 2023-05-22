@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 unsigned char uc;
-unsigned short us;
+__UINT16_TYPE__ us;
 
 void testuc() {
   unsigned int g = 0;
@@ -18,9 +18,9 @@ void testuc() {
 }
 
 void testus() {
-  unsigned int g = 0;
-  unsigned int *p1 = &g;
-  unsigned short *p2 = &us;
+  __UINT32_TYPE__ g = 0;
+  __UINT32_TYPE__ *p1 = &g;
+  __UINT16_TYPE__ *p2 = &us;
 
   do {
     (*p1)++;

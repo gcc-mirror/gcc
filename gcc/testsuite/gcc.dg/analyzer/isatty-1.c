@@ -1,4 +1,5 @@
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "" { "avr-*-*" } } */
 
 #include <errno.h>
 #include "analyzer-decls.h"
