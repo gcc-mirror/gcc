@@ -8230,59 +8230,50 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 	noop_p = false;
       mask[index++] = mask_element;
 
-      if (index == count && !noop_p)
-	{
-	  indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
-	  if (!can_vec_perm_const_p (mode, mode, indices))
-	    {
-	      if (dump_p)
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				   vect_location,
-				   "unsupported vect permute { ");
-		  for (i = 0; i < count; ++i)
-		    {
-		      dump_dec (MSG_MISSED_OPTIMIZATION, mask[i]);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, " ");
-		    }
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
-		}
-	      gcc_assert (analyze_only);
-	      return false;
-	    }
-
-	  ++*n_perms;
-	}
-
       if (index == count)
 	{
-	  if (!analyze_only)
+	  if (!noop_p)
 	    {
-	      tree mask_vec = NULL_TREE;
-
-	      if (! noop_p)
-		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
-
-	      if (second_vec_index == -1)
-		second_vec_index = first_vec_index;
-
-	      for (unsigned int ri = 0; ri < nvectors_per_build; ++ri)
+	      indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
+	      if (!can_vec_perm_const_p (mode, mode, indices))
 		{
-		  /* Generate the permute statement if necessary.  */
-		  tree first_vec = dr_chain[first_vec_index + ri];
-		  tree second_vec = dr_chain[second_vec_index + ri];
-		  gimple *perm_stmt;
-		  if (! noop_p)
+		  if (dump_p)
 		    {
-		      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "unsupported vect permute { ");
+		      for (i = 0; i < count; ++i)
+			{
+			  dump_dec (MSG_MISSED_OPTIMIZATION, mask[i]);
+			  dump_printf (MSG_MISSED_OPTIMIZATION, " ");
+			}
+		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
+		    }
+		  gcc_assert (analyze_only);
+		  return false;
+		}
+
+	      ++*n_perms;
+
+	      if (!analyze_only)
+		{
+		  tree mask_vec = vect_gen_perm_mask_checked (vectype, indices);
+
+		  if (second_vec_index == -1)
+		    second_vec_index = first_vec_index;
+
+		  for (unsigned int ri = 0; ri < nvectors_per_build; ++ri)
+		    {
+		      /* Generate the permute statement if necessary.  */
+		      tree first_vec = dr_chain[first_vec_index + ri];
+		      tree second_vec = dr_chain[second_vec_index + ri];
+		      gassign *stmt = as_a<gassign *> (stmt_info->stmt);
 		      tree perm_dest
 			= vect_create_destination_var (gimple_assign_lhs (stmt),
 						       vectype);
 		      perm_dest = make_ssa_name (perm_dest);
-		      perm_stmt
+		      gimple *perm_stmt
 			= gimple_build_assign (perm_dest, VEC_PERM_EXPR,
-					       first_vec, second_vec,
-					       mask_vec);
+					       first_vec, second_vec, mask_vec);
 		      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
 						   gsi);
 		      if (dce_chain)
@@ -8290,15 +8281,23 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 			  bitmap_set_bit (used_defs, first_vec_index + ri);
 			  bitmap_set_bit (used_defs, second_vec_index + ri);
 			}
+
+		      /* Store the vector statement in NODE.  */
+		      SLP_TREE_VEC_STMTS (node) [vect_stmts_counter++]
+			= perm_stmt;
 		    }
-		  else
-		    {
-		      /* If mask was NULL_TREE generate the requested
-			 identity transform.  */
-		      perm_stmt = SSA_NAME_DEF_STMT (first_vec);
-		      if (dce_chain)
-			bitmap_set_bit (used_defs, first_vec_index + ri);
-		    }
+		}
+	    }
+	  else if (!analyze_only)
+	    {
+	      for (unsigned int ri = 0; ri < nvectors_per_build; ++ri)
+		{
+		  tree first_vec = dr_chain[first_vec_index + ri];
+		  /* If mask was NULL_TREE generate the requested
+		     identity transform.  */
+		  gimple *perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+		  if (dce_chain)
+		    bitmap_set_bit (used_defs, first_vec_index + ri);
 
 		  /* Store the vector statement in NODE.  */
 		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
