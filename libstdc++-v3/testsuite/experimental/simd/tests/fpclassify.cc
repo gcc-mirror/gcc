@@ -40,9 +40,11 @@ template <typename V>
   {
     using T = typename V::value_type;
     using intv = std::experimental::fixed_size_simd<int, V::size()>;
+#if __GCC_IEC_559 >= 2
     constexpr T inf = std::__infinity_v<T>;
     constexpr T denorm_min = std::__infinity_v<T>;
     constexpr T nan = std::__quiet_NaN_v<T>;
+#endif
     constexpr T max = std::__finite_max_v<T>;
     constexpr T norm_min = std::__norm_min_v<T>;
     test_values<V>(
