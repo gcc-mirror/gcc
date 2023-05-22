@@ -487,7 +487,7 @@
 	__builtin_abort ();                                                    \
     }
 
-#defitree-vect-loop.ccne run_10(TYPE1, TYPE2, TYPE3)                                             \
+#define run_10(TYPE1, TYPE2, TYPE3)                                             \
   int n_10_##TYPE1_##TYPE2_##TYPE3 = 777;                                       \
   TYPE1 x_10_##TYPE1 = 222;                                                     \
   TYPE1 x2_10_##TYPE1 = 111;                                                    \
