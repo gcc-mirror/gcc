@@ -744,7 +744,7 @@
 
 2023-04-18  Jin Ma  <jinma@linux.alibaba.com>
 
-	* gcc-interface/utils.cc (unchecked_convert): Fixed typo.
+	* gcc-interface/utils.cc (unchecked_convert): Fix typo.
 
 2023-04-17  Martin Liska  <mliska@suse.cz>
 
