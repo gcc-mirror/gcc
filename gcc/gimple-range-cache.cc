@@ -701,12 +701,12 @@ public:
   ~temporal_cache ();
   bool current_p (tree name, tree dep1, tree dep2) const;
   void set_timestamp (tree name);
-  void set_always_current (tree name);
+  void set_always_current (tree name, bool value);
+  bool always_current_p (tree name) const;
 private:
-  unsigned temporal_value (unsigned ssa) const;
-
-  unsigned m_current_time;
-  vec <unsigned> m_timestamp;
+  int temporal_value (unsigned ssa) const;
+  int m_current_time;
+  vec <int> m_timestamp;
 };
 
 inline
@@ -725,12 +725,12 @@ temporal_cache::~temporal_cache ()
 
 // Return the timestamp value for SSA, or 0 if there isn't one.
 
-inline unsigned
+inline int
 temporal_cache::temporal_value (unsigned ssa) const
 {
   if (ssa >= m_timestamp.length ())
     return 0;
-  return m_timestamp[ssa];
+  return abs (m_timestamp[ssa]);
 }
 
 // Return TRUE if the timestamp for NAME is newer than any of its dependents.
@@ -739,13 +739,12 @@ temporal_cache::temporal_value (unsigned ssa) const
 bool
 temporal_cache::current_p (tree name, tree dep1, tree dep2) const
 {
-  unsigned ts = temporal_value (SSA_NAME_VERSION (name));
-  if (ts == 0)
+  if (always_current_p (name))
     return true;
 
   // Any non-registered dependencies will have a value of 0 and thus be older.
   // Return true if time is newer than either dependent.
-
+  int ts = temporal_value (SSA_NAME_VERSION (name));
   if (dep1 && ts < temporal_value (SSA_NAME_VERSION (dep1)))
     return false;
   if (dep2 && ts < temporal_value (SSA_NAME_VERSION (dep2)))
@@ -768,12 +767,28 @@ temporal_cache::set_timestamp (tree name)
 // Set the timestamp to 0, marking it as "always up to date".
 
 inline void
-temporal_cache::set_always_current (tree name)
+temporal_cache::set_always_current (tree name, bool value)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_timestamp.length ())
     m_timestamp.safe_grow_cleared (num_ssa_names + 20);
-  m_timestamp[v] = 0;
+
+  int ts = abs (m_timestamp[v]);
+  // If this does not have a timestamp, create one.
+  if (ts == 0)
+    ts = ++m_current_time;
+  m_timestamp[v] = value ? -ts : ts;
+}
+
+// Return true if NAME is always current.
+
+inline bool
+temporal_cache::always_current_p (tree name) const
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_timestamp.length ())
+    return false;
+  return m_timestamp[v] <= 0;
 }
 
 // --------------------------------------------------------------------------
@@ -970,7 +985,7 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 
   // If the existing value was not current, mark it as always current.
   if (!current_p)
-    m_temporal->set_always_current (name);
+    m_temporal->set_always_current (name, true);
   return had_global;
 }
 
@@ -979,6 +994,8 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 void
 ranger_cache::set_global_range (tree name, const vrange &r)
 {
+  // Setting a range always clears the always_current flag.
+  m_temporal->set_always_current (name, false);
   if (m_globals.set_range (name, r))
     {
       // If there was already a range set, propagate the new value.
