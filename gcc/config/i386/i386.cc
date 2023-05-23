@@ -23690,7 +23690,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
     }
-  else if (kind == vec_construct
+  else if ((kind == vec_construct || kind == scalar_to_vec)
 	   && node
 	   && SLP_TREE_DEF_TYPE (node) == vect_external_def
 	   && INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
@@ -23723,7 +23723,9 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	     Likewise with a BIT_FIELD_REF extracting from a vector
 	     register we can hope to avoid using a GPR.  */
 	  if (!is_gimple_assign (def)
-	      || (!gimple_assign_load_p (def)
+	      || ((!gimple_assign_load_p (def)
+		   || (!TARGET_SSE4_1
+		       && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op))) == 1))
 		  && (gimple_assign_rhs_code (def) != BIT_FIELD_REF
 		      || !VECTOR_TYPE_P (TREE_TYPE
 				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
