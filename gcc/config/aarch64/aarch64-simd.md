@@ -26,7 +26,7 @@
   [(set (match_operand:VDZ 0)
         (match_operand:VDZ 1))]
   "!BYTES_BIG_ENDIAN"
-  [(set (match_operand:<VDBL> 0)
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w")
         (vec_concat:<VDBL>
          (match_dup 1)
          (match_operand:VDZ 2 "aarch64_simd_or_scalar_imm_zero")))])
@@ -35,7 +35,7 @@
   [(set (match_operand:VDZ 0)
         (match_operand:VDZ 1))]
   "BYTES_BIG_ENDIAN"
-  [(set (match_operand:<VDBL> 0)
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w")
         (vec_concat:<VDBL>
          (match_operand:VDZ 2 "aarch64_simd_or_scalar_imm_zero")
          (match_dup 1)))])
