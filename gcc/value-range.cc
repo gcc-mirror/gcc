@@ -2833,14 +2833,6 @@ irange::invert ()
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
   m_nonzero_mask = NULL;
-  if (m_num_ranges == m_max_ranges
-      && lower_bound () != type_min
-      && upper_bound () != type_max)
-    {
-      m_base[1] = wide_int_to_tree (ttype, type_max);
-      m_num_ranges = 1;
-      return;
-    }
 
   // At this point, we need one extra sub-range to represent the
   // inverse.
