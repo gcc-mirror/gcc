@@ -213,8 +213,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      receiver = fn->get_self_type ();
 	      receiver = receiver->destructure ();
 
-	      return resolve_method_address (fn, ref, receiver, final_segment,
-					     mappings, expr_locus);
+	      return resolve_method_address (fn, receiver, expr_locus);
 	    }
 	}
 
