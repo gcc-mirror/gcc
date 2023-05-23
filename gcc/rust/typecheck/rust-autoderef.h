@@ -42,18 +42,15 @@ public:
   // ctor for all adjustments except derefs
   Adjustment (AdjustmentType type, TyTy::BaseType *actual,
 	      TyTy::BaseType *expected)
-    : Adjustment (type, actual, expected, nullptr, nullptr,
-		  AdjustmentType::ERROR)
+    : Adjustment (type, actual, expected, nullptr, AdjustmentType::ERROR)
   {}
 
   static Adjustment get_op_overload_deref_adjustment (
     AdjustmentType type, TyTy::BaseType *actual, TyTy::BaseType *expected,
-    TyTy::FnType *fn, HIR::ImplItem *deref_item,
-    Adjustment::AdjustmentType requires_ref_adjustment)
+    TyTy::FnType *fn, Adjustment::AdjustmentType requires_ref_adjustment)
   {
     rust_assert (type == DEREF || type == DEREF_MUT);
-    return Adjustment (type, actual, expected, fn, deref_item,
-		       requires_ref_adjustment);
+    return Adjustment (type, actual, expected, fn, requires_ref_adjustment);
   }
 
   AdjustmentType get_type () const { return type; }
@@ -107,15 +104,12 @@ public:
     return requires_ref_adjustment;
   }
 
-  HIR::ImplItem *get_deref_hir_item () const { return deref_item; }
-
 private:
   Adjustment (AdjustmentType type, TyTy::BaseType *actual,
 	      TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
-	      HIR::ImplItem *deref_item,
 	      Adjustment::AdjustmentType requires_ref_adjustment)
     : type (type), actual (actual), expected (expected),
-      deref_operator_fn (deref_operator_fn), deref_item (deref_item),
+      deref_operator_fn (deref_operator_fn),
       requires_ref_adjustment (requires_ref_adjustment)
   {}
 
@@ -127,7 +121,6 @@ private:
   //
   // the fn that we are calling
   TyTy::FnType *deref_operator_fn;
-  HIR::ImplItem *deref_item;
   // operator overloads can requre a reference
   Adjustment::AdjustmentType requires_ref_adjustment;
 };

@@ -2367,15 +2367,8 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
   rust_assert (adjustment.has_operator_overload ());
 
   TyTy::FnType *lookup = adjustment.get_deref_operator_fn ();
-  HIR::ImplItem *resolved_item = adjustment.get_deref_hir_item ();
-
-  tree fn_address = error_mark_node;
-  if (!lookup->has_subsititions_defined ())
-    fn_address = CompileInherentImplItem::Compile (resolved_item, ctx, nullptr,
-						   true, locus);
-  else
-    fn_address = CompileInherentImplItem::Compile (resolved_item, ctx, lookup,
-						   true, locus);
+  TyTy::BaseType *receiver = adjustment.get_actual ();
+  tree fn_address = resolve_method_address (lookup, receiver, locus);
 
   // does it need a reference to call
   tree adjusted_argument = expression;
