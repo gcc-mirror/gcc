@@ -1856,14 +1856,6 @@ irange::invert ()
   signop sign = TYPE_SIGN (ttype);
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
-  if (m_num_ranges == m_max_ranges
-      && lower_bound () != type_min
-      && upper_bound () != type_max)
-    {
-      m_base[1] = wide_int_to_tree (ttype, type_max);
-      m_num_ranges = 1;
-      return;
-    }
   // The algorithm is as follows.  To calculate INVERT ([a,b][c,d]), we
   // generate [-MIN, a-1][b+1, c-1][d+1, MAX].
   //
