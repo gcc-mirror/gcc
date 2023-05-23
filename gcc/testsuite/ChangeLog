@@ -1,3 +1,67 @@
+2023-05-22   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* gcc.target/powerpc/pr70243.c: New test.  Back port from master
+	04/10/2023.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108998
+	* g++.dg/cpp2a/lambda-generic11.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100295
+	PR c++/107579
+	* g++.dg/cpp1z/constexpr-if-lambda5.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107864
+	* g++.dg/concepts/explicit-spec1a.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107179
+	* g++.dg/cpp2a/concepts-requires31.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100474
+	* g++.dg/cpp2a/concepts-traits3.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104527
+	* g++.dg/cpp2a/concepts-return-req4.C: New test.
+
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-28  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/92752
+	* g++.dg/warn/Wignored-qualifiers2.C: New test.
+
 2023-05-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

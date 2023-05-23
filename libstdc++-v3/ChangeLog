@@ -1,3 +1,16 @@
+2023-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::_S_iter_concept):
+	Define.
+	(__cpp_lib_move_iterator_concept): Define for C++20.
+	(move_iterator::iterator_concept): Strengthen as per P2520R0.
+	* include/std/version (__cpp_lib_move_iterator_concept): Define
+	for C++20.
+	* testsuite/24_iterators/move_iterator/p2520r0.cc: New test.
+
 2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
