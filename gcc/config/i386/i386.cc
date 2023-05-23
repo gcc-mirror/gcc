@@ -20580,6 +20580,37 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 
       switch (mode)
 	{
+	case V4QImode:
+	case V8QImode:
+	  if (TARGET_AVX2)
+	    /* Use vpbroadcast.  */
+	    extra = cost->sse_op;
+	  else
+	    extra = cost->sse_load[2];
+
+	  if (constant_op1)
+	    {
+	      if (code == ASHIFTRT)
+		{
+		  count = 4;
+		  extra *= 2;
+		}
+	      else
+		count = 2;
+	    }
+	  else if (TARGET_AVX512BW && TARGET_AVX512VL)
+	    {
+	      count = 3;
+	      return ix86_vec_cost (mode, cost->sse_op * count);
+	    }
+	  else if (TARGET_SSE4_1)
+	    count = 4;
+	  else if (code == ASHIFTRT)
+	    count = 5;
+	  else
+	    count = 4;
+	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
+
 	case V16QImode:
 	  if (TARGET_XOP)
 	    {
@@ -20600,7 +20631,12 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	    }
 	  /* FALLTHRU */
 	case V32QImode:
-	  extra = (mode == V16QImode) ? cost->sse_load[2] : cost->sse_load[3];
+	  if (TARGET_AVX2)
+	    /* Use vpbroadcast.  */
+	    extra = cost->sse_op;
+	  else
+	    extra = (mode == V16QImode) ? cost->sse_load[2] : cost->sse_load[3];
+
 	  if (constant_op1)
 	    {
 	      if (code == ASHIFTRT)

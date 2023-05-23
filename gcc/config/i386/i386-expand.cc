@@ -23294,6 +23294,16 @@ ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   else
     qop2 = op2;
 
+  qdest = gen_reg_rtx (V16QImode);
+
+  if (CONST_INT_P (op2)
+      && (code == ASHIFT || code == LSHIFTRT || code == ASHIFTRT)
+      && ix86_expand_vec_shift_qihi_constant (code, qdest, qop1, qop2))
+    {
+      emit_move_insn (dest, gen_lowpart (qimode, qdest));
+      return;
+    }
+
   switch (code)
     {
     case MULT:
@@ -23357,8 +23367,6 @@ ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       rtx qres = gen_lowpart (V16QImode, hres);
       bool ok;
       int i;
-
-      qdest = gen_reg_rtx (V16QImode);
 
       /* Merge the data back into the right place.  */
       d.target = qdest;
