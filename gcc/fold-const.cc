@@ -8360,20 +8360,26 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (fieldsize == 0)
 		continue;
 
+	      /* Prepare to deal with integral bit-fields and filter out other
+		 bit-fields that do not start and end on a byte boundary.  */
 	      if (DECL_BIT_FIELD (field))
 		{
 		  if (!tree_fits_uhwi_p (DECL_FIELD_BIT_OFFSET (field)))
 		    return 0;
-		  fieldsize = TYPE_PRECISION (TREE_TYPE (field));
 		  bpos = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
-		  if (bpos % BITS_PER_UNIT)
-		    bpos %= BITS_PER_UNIT;
-		  else
-		    bpos = 0;
-		  fieldsize += bpos;
-		  epos = fieldsize % BITS_PER_UNIT;
-		  fieldsize += BITS_PER_UNIT - 1;
-		  fieldsize /= BITS_PER_UNIT;
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (field)))
+		    {
+		      bpos %= BITS_PER_UNIT;
+		      fieldsize = TYPE_PRECISION (TREE_TYPE (field)) + bpos;
+		      epos = fieldsize % BITS_PER_UNIT;
+		      fieldsize += BITS_PER_UNIT - 1;
+		      fieldsize /= BITS_PER_UNIT;
+		    }
+		  else if (bpos % BITS_PER_UNIT
+			   || DECL_SIZE (field) == NULL_TREE
+			   || !tree_fits_shwi_p (DECL_SIZE (field))
+			   || tree_to_shwi (DECL_SIZE (field)) % BITS_PER_UNIT)
+		    return 0;
 		}
 
 	      if (off != -1 && pos + fieldsize <= off)
@@ -8382,7 +8388,8 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (val == NULL_TREE)
 		continue;
 
-	      if (DECL_BIT_FIELD (field))
+	      if (DECL_BIT_FIELD (field)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (field)))
 		{
 		  /* FIXME: Handle PDP endian.  */
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
