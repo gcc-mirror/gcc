@@ -1,3 +1,9 @@
+2023-05-22  Iain Sandoe  <iain@sandoe.co.uk>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR libobjc/109913
+	* encoding.c (RECORD_OR_UNION_TYPE_P, VECTOR_TYPE_P): New.
+
 2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (AC_CONFIG_MACRO_DIRS): Instantiate.

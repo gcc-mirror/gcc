@@ -1,3 +1,109 @@
+2023-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-shiftqihi-constant-1.c: Remove XFAILs.
+
+2023-05-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/compile/pr108892.c: Require int32.
+	* gcc.c-torture/compile/pr98199.c: Require int32plus.
+	* gcc.dg/analyzer/call-summaries-pr107072.c: Same.
+	* gcc.dg/analyzer/null-deref-pr105755.c: Same.
+	* gcc.dg/tree-ssa/pr102232.c: Same.
+	* gcc.dg/tree-ssa/pr105860.c: Same.
+	* gcc.dg/tree-ssa/pr96730.c: Same.
+	* gcc.dg/tree-ssa/pr96779-disabled.c: Same.
+	* gcc.dg/tree-ssa/pr96779.c: Same.
+	* gcc.dg/tree-ssa/pr98513.c: Same.
+	* gcc.dg/tree-ssa/ssa-sink-18.c
+	* gcc.dg/analyzer/coreutils-cksum-pr108664.c: Require int32plus,
+	size24plus.
+	* gcc.dg/analyzer/doom-s_sound-pr108867.c: Require size32plus.
+	* gcc.dg/analyzer/malloc-CWE-590-examples.c: Same.
+	* gcc.dg/debug/btf/btf-bitfields-4.c: Same.
+	* gcc.dg/tree-ssa/pr93435.c: Same.
+	* gcc.dg/analyzer/null-deref-pr102671-1.c: Require ptr_eq_long:
+	* gcc.dg/analyzer/null-deref-pr102671-2.c: Same.
+	* gcc.dg/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early-O2.c:
+	Same.
+	* gcc.dg/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Same.
+	* gcc.dg/tree-ssa/pr103345.c: Use uint32_t.
+	* gcc.dg/tree-ssa/ssa-ccp-41.c [sizeof(int)==2]: Same.
+	* gcc.dg/tree-ssa/pr109031-1.c: Use uint16_t, uint32_t.
+	* gcc.dg/tree-ssa/pr109031-2.c: Same.
+	* gcc.dg/Warray-bounds-49.c (dg-warning): Discriminate int != short.
+	* gcc.dg/Warray-bounds-52.c (dg-warning): Discriminate avr.
+	* gcc.dg/Warray-bounds-33.c: Skip target avr.
+	* gcc.dg/analyzer/fd-access-mode-target-headers.c: Same.
+	* gcc.dg/analyzer/flex-with-call-summaries.c: Same.
+	* gcc.dg/analyzer/isatty-1.c: Same.
+	* gcc.dg/analyzer/pipe-glibc.c: Same.
+
+2023-05-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* c-c++-common/pr19807-2.c: Use __SIZEOF_INT__ instead of 4.
+	* gcc.c-torture/compile/pr103813.c: Require size32plus.
+	* gcc.c-torture/execute/pr108498-2.c: Same.
+	* gcc.c-torture/compile/pr96426.c: Condition on
+	__SIZEOF_LONG_LONG__ == __SIZEOF_DOUBLE__.
+	* gcc.c-torture/execute/pr103417.c: Require int32plus.
+	* gcc.dg/pr104198.c: Same.
+	* gcc.dg/pr21137.c: Same.
+	* gcc.dg/pr88905.c: Same.
+	* gcc.dg/pr90838.c: Same.
+	* gcc.dg/pr97317.c: Same.
+	* gcc.dg/pr100292.c: Require int32.
+	* gcc.dg/pr101008.c: Same.
+	* gcc.dg/pr96542.c: Same.
+	* gcc.dg/pr96674.c: Same.
+	* gcc.dg/pr97750.c: Require ptr_eq_long.
+
+2023-05-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* lib/target-supports.exp (check_effective_target_lra) [avr]: Return 0.
+	* gcc.dg/pr19402-2.c: Skip for avr.
+	* gcc.dg/pr86124.c: Same.
+	* gcc.dg/pr94291.c: Same.
+	* gcc.dg/torture/builtin-complex-1.c: Same.
+	* gcc.dg/torture/fp-int-convert-float32x-timode.c: Same.
+	* gcc.dg/torture/fp-int-convert-float32x.c: Same.
+	* gcc.dg/torture/fp-int-convert-float64-timode.c: Same.
+	* gcc.dg/torture/fp-int-convert-float64.c: Same.
+	* gcc.dg/torture/fp-int-convert-long-double.c: Same.
+	* gcc.dg/torture/fp-int-convert-timode.c: Same.
+	* c-c++-common/torture/builtin-convertvector-1.c: Same.
+	* c-c++-common/torture/complex-sign-add.c: Same.
+	* c-c++-common/torture/complex-sign-mixed-add.c: Same.
+	* c-c++-common/torture/complex-sign-mixed-div.c: Same.
+	* c-c++-common/torture/complex-sign-mixed-mul.c: Same.
+	* c-c++-common/torture/complex-sign-mixed-sub.c: Same.
+	* c-c++-common/torture/complex-sign-mul-minus-one.c: Same.
+	* c-c++-common/torture/complex-sign-mul-one.c: Same.
+	* c-c++-common/torture/complex-sign-mul.c: Same.
+	* c-c++-common/torture/complex-sign-sub.c: Same.
+
+2023-05-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-2.h: Fix
+	typo
+
+2023-05-22  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-1.c: New
+	test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-1.h: New
+	test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-2.c: New
+	test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-2.h: New
+	test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_run-2.c:
+	New test.
+
 2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/nvptx/brev-1.c: New 32-bit test case.

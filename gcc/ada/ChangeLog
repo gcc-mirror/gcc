@@ -1,3 +1,294 @@
+2023-05-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* cstand.adb: Use more idiomatic procedure.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (First_Loc): Avoid repeated calls.
+	(Last_Loc): Likewise.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Cleanup_Scopes): Do not propagate the Uses_Sec_Stack
+	flag from original to rewritten protected subprograms here...
+	* exp_ch9.adb (Expand_N_Protected_Body) <N_Subprogram_Body>:
+	...but here instead. Add local variables and remove a useless
+	test.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Body): Call Defining_Entity to get
+	the entity of the body.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Use location of the
+	attribute reference, not of the loop statement.
+
+2023-05-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* par-ch3.adb: Add missing word in comment.
+
+2023-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Install_Null_Excluding_Check): Avoid non-null
+	optimizations when assertions are enabled.
+
+2023-05-22  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_aggr.adb (Process_Transient_Component): Reset Analyzed flag
+	for the copy of the initialization expression.
+	* sem_attr.adb (Validate_Non_Static_Attribute_Function_Call): Skip
+	error emission during Pre_Analyze.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Process_Package_Body): New procedure taken from...
+	(Build_Finalizer.Process_Declarations): ...here.  Call the above
+	procedure to deal with both package bodies and package body stubs.
+
+2023-05-22  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.ads: Remove outdated part of comment.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer): Reverse the test comparing the
+	instantiation and declaration nodes of a package instance, and
+	therefore bail out only when they are equal.  Adjust comments.
+	(Expand_N_Package_Declaration): Do not clear the Finalizer field.
+	* lib-writ.adb: Add with and use clauses for Sem_Util.
+	(Write_Unit_Information): Look at unit nodes to find finalizers.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Beef up the comment
+	about the rewriting of the instantiation node into a declaration.
+
+2023-05-22  Bob Duff  <duff@adacore.com>
+
+	* cstand.adb (Is_Past_Self_Hiding_Point): Rename to be
+	Is_Not_Self_Hidden.
+	* einfo.ads: Likewise.
+	* exp_aggr.adb: Likewise.
+	* gen_il-fields.ads: Likewise.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* sem.adb: Likewise.
+	* sem_aggr.adb: Likewise.
+	* sem_ch11.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_ch7.adb: Likewise.
+	* sem_prag.adb: Likewise.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Create the body
+	as the expanded body of an expression function.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expression_Image): Handle several previously unsupported
+	constructs.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Combine two IF statements that
+	execute code only for references that come from source.
+
+2023-05-22  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads (Is_Past_Self_Hiding_Point): Document.
+	* gen_il-fields.ads (Is_Past_Self_Hiding_Point): Add to list of
+	fields.
+	* gen_il-gen-gen_entities.adb (Is_Past_Self_Hiding_Point): Declare
+	in all entities.
+	* exp_aggr.adb: Set Is_Past_Self_Hiding_Point as appropriate.
+	* sem.adb: Likewise.
+	* sem_aggr.adb: Likewise.
+	* sem_ch11.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch7.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	(Set_Formal_Mode): Minor cleanup: Move from spec.
+	* sem_ch6.ads:
+	(Set_Formal_Mode): Minor cleanup: Move to body.
+	* cstand.adb: Call Set_Is_Past_Self_Hiding_Point on all entities
+	as soon as they are created.
+	* comperr.adb (Compiler_Abort): Minor cleanup -- use 'in' instead
+	of 'or else'.
+	* debug.adb: Minor comment cleanups.
+
+2023-05-22  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Analyze_Expression_With_Actions.Check_Action_Ok):
+	Accept an executable pragma occuring in a declare expression as
+	per AI22-0045. This means Assert and Inspection_Point pragmas as
+	well as any implementation-defined pragmas that the implementation
+	chooses to categorize as executable. Currently Assume and Debug
+	are the only such pragmas.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb
+	(Check_Postcondition_Use_In_Inlined_Subprogram): Mention
+	Subprogram_Variant in the comment.
+	(Analyze_Subprogram_Variant_In_Decl_Part): Warn when contract is
+	ignored because of pragma Inline_Always and frontend inlining.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Postcondition_Use_In_Inlined_Subprogram): Only
+	emit warning when frontend inlining is enabled.
+
+2023-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch3.adb, sem_ch4.adb (P_Discrete_Range, Analyze_Logical_Op,
+	Analyze_Short_Circuit): Add calls to Check_Xtra_Parentheses.
+	* par-ch5.adb (P_Condition): Move logic to Check_Xtra_Parentheses.
+	* style.ads, styleg.adb, styleg.ads (Check_Xtra_Parens): Move logic
+	related to expressions requiring parentheses here.
+
+2023-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali-util.adb, par-endh.adb, par-prag.adb, par-ch2.adb,
+	checks.adb, fmap.adb, libgnat/a-nbnbig.ads, libgnat/g-dynhta.adb,
+	libgnat/s-carun8.adb, libgnat/s-strcom.adb, libgnat/a-dhfina.adb,
+	libgnat/a-direct.adb, libgnat/a-rbtgbo.adb, libgnat/a-strsea.adb,
+	libgnat/a-ststio.adb, libgnat/a-suenco.adb, libgnat/a-costso.adb,
+	libgnat/a-strmap.adb, libgnat/g-alleve.adb,
+	libgnat/g-debpoo.adb, libgnat/g-sercom__linux.adb,
+	libgnat/s-genbig.adb, libgnat/s-mmap.adb, libgnat/s-regpat.adb,
+	par-ch5.adb, sem_case.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch8.adb, sem_eval.adb, sem_prag.adb, sem_type.adb,
+	exp_ch11.adb, exp_ch2.adb, exp_ch3.adb, exp_ch4.adb, exp_ch5.adb,
+	exp_ch6.adb, exp_ch9.adb, exp_put_image.adb, freeze.adb, live.adb,
+	sem_aggr.adb, sem_cat.adb, sem_ch10.adb, sem_ch3.adb, sem_ch6.adb,
+	sem_ch9.adb, sem_disp.adb, sem_elab.adb, sem_res.adb,
+	sem_util.adb, sinput.adb, uintp.adb, bcheck.adb, binde.adb,
+	binderr.adb, einfo-utils.adb, clean.adb, sem_ch4.adb, gnatls.adb,
+	gprep.adb, sem_ch11.adb: Remove extra parentheses.
+
+2023-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb (Get_Value): Use ?? instead of ?.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Aggregate_Size): Remove redundant calls to
+	Present.
+	* exp_ch5.adb (Expand_N_If_Statement): Likewise.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* sem_warn.adb (Find_Var): Likewise.
+
+2023-05-22  Claire Dross  <dross@adacore.com>
+
+	* sem_util.adb (Find_Actual): On calls through dereferences,
+	return the corresponding formal in the designated subprogram
+	profile.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Is_Actual_Tagged_Parameter): Remove spec.
+	* sem_util.adb (Is_Actual_Tagged_Parameter): Remove body.
+
+2023-05-22  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strunb.ads, libgnat/a-strunb__shared.ads
+	(To_Unbounded_String): Add postcondition. Add aspect SPARK_Mode
+	Off on the version that takes a Natural as parameter.
+	(To_String): Complete postcondition.
+	(Set_Unbounded_String): Add postcondition.
+	(Element): Likewise.
+	("="): Likewise.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Do not associate the Finalize_Address
+	routine for a class-wide type if restriction No_Dispatching_Calls
+	is in effect.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-genbig.ads (From_Bignum): New overloaded declarations.
+	* libgnat/s-genbig.adb (LLLI): New subtype.
+	(LLLI_Is_128): New boolean constant.
+	(From_Bignum): Change the return type of the signed implementation
+	to Long_Long_Long_Integer and add support for the case where its
+	size is 128 bits.  Add a wrapper around it for Long_Long_Integer.
+	Add an unsigned implementation returning Unsigned_128 and a wrapper
+	around it for Unsigned_64.
+	(To_Bignum): Test LLLI_Is_128 instead of its size.
+	(To_String.Image): Add qualification to calls to From_Bignum.
+	* libgnat/a-nbnbin.adb (To_Big_Integer): Likewise.
+	(Signed_Conversions.From_Big_Integer): Likewise.
+	(Unsigned_Conversions): Likewise.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Use Copy_Subprogram_Spec
+	to copy the spec from the subprogram to the generated subprogram
+	body.
+	(Freeze_Entity): Do not wrap imported subprograms inside generics.
+
+2023-05-22  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Analyze_Expression_With_Actions.Check_Action_Ok):
+	If Comes_From_Source (A) is False, then look at Original_Node (A)
+	instead of A. In particular, if an (illegal) expression function
+	is transformed into a "vanilla" function, we don't want to allow
+	it just because Comes_From_Source is now False.
+
+2023-05-22  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): In Check_No_Return, call
+	Error_Msg_Ada_2022_Feature in the case of a function. Remove code
+	outside of Check_No_Return that was querying Ada_Version.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions.Process_Action): Do
+	not look into nested blocks.
+
+2023-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object): In a spec expression, also set
+	the Scope of the type, and call Constrain_Array for array subtypes.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expression_Image): Reduce scope of local variables; inline
+	local uncommented constant From_Source; concatenate string with a single
+	character, as it is likely to execute faster; add missing cases to
+	traversal for the rightmost node and assertion to demonstrate that the
+	??? comment is no longer relevant.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expr_Name): Qualify CASE expression with N_Subexpr; add
+	missing alternative for N_Raise_Storage_Error; remove dead alternatives;
+	explicitly list unsupported alternatives.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expr_Name): Exclude DEL from printable range.
+
+2023-05-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (New_Copy_Tree): Update comment.
+	* sem_util.adb (New_Copy_Tree): Update Controlling_Argument, very
+	much like we update the First/Next_Named_Association.
+
+2023-05-22  Bob Duff  <duff@adacore.com>
+
+	* fe.h: Remove Ada_With_Extensions and add commentary.
+	* opt.ads: Rearrange code and add commentary.
+
+2023-05-22  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Process_Type): Stop the recursion.
+	* exp_aggr.adb (Build_Record_Aggr_Code): Add assertion.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use _P defines

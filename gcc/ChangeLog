@@ -1,3 +1,44 @@
+2023-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_shift_rotate_cost): Correct
+	calcuation of integer vector mode costs to reflect generated
+	instruction sequences of different integer vector modes and
+	different target ABIs.  Remove "speed" function argument.
+	(ix86_rtx_costs): Update call for removed function argument.
+	(ix86_vector_costs::add_stmt_cost): Ditto.
+
+2023-05-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (class Value_Range): Implement set_zero,
+	set_nonzero, and nonzero_p.
+
+2023-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_multiplication_cost): Add
+	the cost of a memory read to the cost of V?QImode sequences.
+
+2023-05-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc: Add "m_" prefix.
+
+2023-05-22  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop.cc (vect_get_loop_len): Fix issue for
+	multiple-rgroup of length.
+	* tree-vect-stmts.cc (vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (vect_get_loop_len): Ditto.
+
+2023-05-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Reorganize the
+	codes.
+
+2023-05-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-slp.cc (vect_transform_slp_perm_load_1): Refactor the
+	handling for the case index == count.
+
 2023-05-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/90622

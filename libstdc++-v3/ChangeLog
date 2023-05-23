@@ -1,3 +1,16 @@
+2023-05-22  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_builtin.h (_S_fpclassify): Move
+	__infn into #ifdef'ed block.
+	* testsuite/experimental/simd/tests/fpclassify.cc: Declare
+	constants only when used.
+	* testsuite/experimental/simd/tests/frexp.cc: Likewise.
+	* testsuite/experimental/simd/tests/logarithm.cc: Likewise.
+	* testsuite/experimental/simd/tests/trunc_ceil_floor.cc:
+	Likewise.
+	* testsuite/experimental/simd/tests/ldexp_scalbn_scalbln_modf.cc:
+	Move totest and expect1 into #ifdef'ed block.
+
 2023-05-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/strings.xml: Move lafstern.org reference to https.
