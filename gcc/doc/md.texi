@@ -11502,11 +11502,10 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
-same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
-those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
-means that each @var{int} has to be a constant defined using define_constant
-or define_c_enum.
+@var{inti} if condition @var{condi} is true.  Int iterators can appear in
+only those rtx fields that have `i', `n', `w', or `p' as the specifier.
+This means that each @var{int} has to be a constant defined using
+@samp{define_constant} or @samp{define_c_enum}.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by
@@ -11517,8 +11516,12 @@ It is possible to define attributes for ints as well as for codes and modes.
 Attributes are defined using:
 
 @smallexample
-(define_int_attr @var{name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
+(define_int_attr @var{attr_name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
 @end smallexample
+
+In additon to these user-defined attributes, it is possible to use
+@samp{<@var{name}>} to refer to the current expansion of iterator
+@var{name} (such as @var{int1}, @var{int2}, and so on).
 
 Here's an example of int iterators in action, taken from the ARM port:
 
