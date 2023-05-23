@@ -42,7 +42,8 @@ FFIString
 FFIString::make_ffistring (const unsigned char *data, std::uint64_t len)
 {
   unsigned char *inner = new unsigned char[len];
-  std::memcpy (inner, data, len);
+  // FIXME: UTF-8 Update this with sizeof codepoint instead
+  std::memcpy (inner, data, len * sizeof (unsigned char));
   return {inner, len};
 }
 
@@ -50,7 +51,8 @@ FFIString
 FFIString::clone () const
 {
   unsigned char *inner = new unsigned char[this->len];
-  std::memcpy (inner, this->data, this->len);
+  // FIXME: UTF-8 Update this with sizeof codepoint instead
+  std::memcpy (inner, this->data, this->len * sizeof (unsigned char));
   return {inner, this->len};
 }
 

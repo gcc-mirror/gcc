@@ -56,8 +56,9 @@ Ident
 Ident::clone () const
 {
   unsigned char *val = new unsigned char[this->len];
-  std::memcpy (val, this->val, this->len);
-  return {this->is_raw, val, this->len, this->span};
+  // FIXME: UTF-8 Update this with sizeof codepoint instead
+  std::memcpy (val, this->val, this->len * sizeof (char));
+  return {this->is_raw, val, this->len};
 }
 
 Ident
@@ -73,8 +74,9 @@ Ident::make_ident (const unsigned char *str, std::uint64_t len, Span span,
 		   bool raw)
 {
   unsigned char *val = new unsigned char[len];
-  std::memcpy (val, str, len);
-  return {raw, val, len, span};
+  // FIXME: UTF-8 Update this with sizeof codepoint instead
+  std::memcpy (val, str, len * sizeof (char));
+  return {raw, val, len};
 }
 
 void

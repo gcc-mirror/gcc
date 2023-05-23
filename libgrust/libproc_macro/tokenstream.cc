@@ -51,7 +51,7 @@ TokenStream::grow (std::uint64_t delta)
   auto new_capacity = capacity + (delta != 0 ? delta : 1);
   auto *new_data = new TokenTree[new_capacity];
   capacity = new_capacity;
-  std::memcpy (new_data, data, size);
+  std::memcpy (new_data, data, size * sizeof (TokenTree));
   delete[] data;
   data = new_data;
 }
@@ -107,7 +107,7 @@ extern "C" TokenStream
 TokenStream__clone (const TokenStream *ts)
 {
   auto *data = new TokenTree[ts->capacity];
-  std::memcpy (data, ts->data, ts->size);
+  std::memcpy (data, ts->data, ts->size * sizeof (TokenTree));
   return {data, ts->size, ts->capacity};
 }
 
