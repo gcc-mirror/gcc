@@ -2841,6 +2841,13 @@ CXXABI_1.3.14 {
 
 } CXXABI_1.3.13;
 
+CXXABI_1.3.15 {
+
+  global:
+    __cxa_call_terminate;
+
+} CXXABI_1.3.14;
+
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
 

@@ -64,6 +64,9 @@ init_exception_processing (void)
   tmp = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   call_unexpected_fn
     = push_throw_library_fn (get_identifier ("__cxa_call_unexpected"), tmp);
+  call_terminate_fn
+    = push_library_fn (get_identifier ("__cxa_call_terminate"), tmp, NULL_TREE,
+		       ECF_NORETURN | ECF_COLD | ECF_NOTHROW);
 }
 
 /* Returns an expression to be executed if an unhandled exception is
@@ -76,7 +79,7 @@ cp_protect_cleanup_actions (void)
 
      When the destruction of an object during stack unwinding exits
      using an exception ... void terminate(); is called.  */
-  return terminate_fn;
+  return call_terminate_fn;
 }
 
 static tree

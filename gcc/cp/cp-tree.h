@@ -217,6 +217,7 @@ enum cp_tree_index
        definitions.  */
     CPTI_ALIGN_TYPE,
     CPTI_TERMINATE_FN,
+    CPTI_CALL_TERMINATE_FN,
     CPTI_CALL_UNEXPECTED_FN,
 
     /* These are lazily inited.  */
@@ -358,6 +359,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* Exception handling function declarations.  */
 #define terminate_fn			cp_global_trees[CPTI_TERMINATE_FN]
 #define call_unexpected_fn		cp_global_trees[CPTI_CALL_UNEXPECTED_FN]
+#define call_terminate_fn		cp_global_trees[CPTI_CALL_TERMINATE_FN]
 #define get_exception_ptr_fn		cp_global_trees[CPTI_GET_EXCEPTION_PTR_FN]
 #define begin_catch_fn			cp_global_trees[CPTI_BEGIN_CATCH_FN]
 #define end_catch_fn			cp_global_trees[CPTI_END_CATCH_FN]

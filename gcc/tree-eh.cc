@@ -3382,8 +3382,22 @@ lower_resx (basic_block bb, gresx *stmt,
 	      lab = gimple_block_label (new_bb);
 	      gsi2 = gsi_start_bb (new_bb);
 
+	      /* Handle failure fns that expect either no arguments or the
+		 exception pointer.  */
 	      fn = dst_r->u.must_not_throw.failure_decl;
-	      x = gimple_build_call (fn, 0);
+	      if (TYPE_ARG_TYPES (TREE_TYPE (fn)) != void_list_node)
+		{
+		  tree epfn = builtin_decl_implicit (BUILT_IN_EH_POINTER);
+		  src_nr = build_int_cst (integer_type_node, src_r->index);
+		  x = gimple_build_call (epfn, 1, src_nr);
+		  tree var = create_tmp_var (ptr_type_node);
+		  var = make_ssa_name (var, x);
+		  gimple_call_set_lhs (x, var);
+		  gsi_insert_after (&gsi2, x, GSI_CONTINUE_LINKING);
+		  x = gimple_build_call (fn, 1, var);
+		}
+	      else
+		x = gimple_build_call (fn, 0);
 	      gimple_set_location (x, dst_r->u.must_not_throw.failure_loc);
 	      gsi_insert_after (&gsi2, x, GSI_CONTINUE_LINKING);
 
