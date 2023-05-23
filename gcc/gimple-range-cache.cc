@@ -992,10 +992,18 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 //  Set the global range of NAME to R and give it a timestamp.
 
 void
-ranger_cache::set_global_range (tree name, const vrange &r)
+ranger_cache::set_global_range (tree name, const vrange &r, bool changed)
 {
   // Setting a range always clears the always_current flag.
   m_temporal->set_always_current (name, false);
+  if (!changed)
+    {
+      // If there are dependencies, make sure this is not out of date.
+      if (!m_temporal->current_p (name, m_gori.depend1 (name),
+				 m_gori.depend2 (name)))
+	m_temporal->set_timestamp (name);
+      return;
+    }
   if (m_globals.set_range (name, r))
     {
       // If there was already a range set, propagate the new value.
