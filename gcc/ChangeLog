@@ -1,3 +1,10 @@
+2023-05-22   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* config/rs6000/vsx.md (vsx_fmav4sf4): Do not generate vmaddfp.  Back
+	port from master 04/10/2023.
+	(vsx_nfmsv4sf4): Do not generate vnmsubfp.
+
 2023-05-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
