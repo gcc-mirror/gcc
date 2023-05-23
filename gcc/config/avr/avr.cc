@@ -1019,6 +1019,19 @@ avr_no_gccisr_function_p (tree func)
   return avr_lookup_function_attribute1 (func, "no_gccisr");
 }
 
+
+/* Implement `TARGET_CAN_INLINE_P'.  */
+/* Some options like -mgas_isr_prologues depend on optimization level,
+   and the inliner might think that due to different options, inlining
+   is not permitted; see PR104327.  */
+
+static bool
+avr_can_inline_p (tree /* caller */, tree /* callee */)
+{
+  // No restrictions whatsoever.
+  return true;
+}
+
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
 /* Sanity cheching for above function attributes.  */
 
@@ -14767,6 +14780,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 
 #undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST avr_md_asm_adjust
+
+#undef  TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P avr_can_inline_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
