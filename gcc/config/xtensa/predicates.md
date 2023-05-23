@@ -191,6 +191,9 @@
 (define_predicate "logical_shift_operator"
   (match_code "ashift,lshiftrt"))
 
+(define_predicate "addsub_operator"
+  (match_code "plus,minus"))
+
 (define_predicate "xtensa_cstoresi_operator"
   (match_code "eq,ne,gt,ge,lt,le"))
 

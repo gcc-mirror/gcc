@@ -4355,7 +4355,8 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
       switch (outer_code)
 	{
 	case SET:
-	  if (xtensa_simm12b (INTVAL (x)))
+	  if (xtensa_simm12b (INTVAL (x))
+	      || (current_pass && current_pass->tv_id == TV_IFCVT))
 	    {
 	      *total = speed ? COSTS_N_INSNS (1) : 0;
 	      return true;
