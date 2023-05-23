@@ -1,3 +1,30 @@
+2023-05-22   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* config/rs6000/vsx.md (vsx_fmav4sf4): Do not generate vmaddfp.
+	(vsx_nfmsv4sf4): Do not generate vnmsubfp.  Back port from master
+	04/10/2023 change.
+
+2023-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109505
+	* match.pd ((x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2),
+	Combine successive equal operations with constants,
+	(A +- CST1) +- CST2 -> A + CST3, (CST1 - A) +- CST2 -> CST3 - A,
+	CST1 - (CST2 - A) -> CST3 + A): Use ! on ops with 2 CONSTANT_CLASS_P
+	operands.
+
+2023-05-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-05-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.cc (vect_analyze_loop_1): Don't retry analysis with
+	suggested unroll factor once the previous analysis fails.
+
 2023-05-20  Triffid Hunter  <triffid.hunter@gmail.com>
 
 	PR target/105753
