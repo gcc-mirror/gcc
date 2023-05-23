@@ -132,6 +132,12 @@ namespace riscv_vector {
 #define RVV_VUNDEF(MODE)                                                       \
   gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
 		  UNSPEC_VUNDEF)
+enum insn_type
+{
+  RVV_MISC_OP = 1,
+  RVV_UNOP = 2,
+  RVV_BINOP = 3,
+};
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -163,14 +169,11 @@ rtx expand_builtin (unsigned int, tree, rtx);
 bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 			   tree, unsigned int, tree *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-bool legitimize_move (rtx, rtx, machine_mode);
+bool legitimize_move (rtx, rtx);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
-void emit_vlmax_op (unsigned, rtx, rtx, machine_mode);
-void emit_vlmax_reg_op (unsigned, rtx, rtx, rtx, machine_mode);
-void emit_len_op (unsigned, rtx, rtx, rtx, machine_mode);
-void emit_len_binop (unsigned, rtx, rtx, rtx, rtx, machine_mode,
-		     machine_mode = VOIDmode);
+void emit_vlmax_insn (unsigned, int, rtx *);
+void emit_nonvlmax_insn (unsigned, int, rtx *);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);
@@ -202,7 +205,7 @@ bool neg_simm5_p (rtx);
 #ifdef RTX_CODE
 bool has_vi_variant_p (rtx_code, rtx);
 #endif
-bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
+bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
 rtx gen_scalar_move_mask (machine_mode);
 
@@ -218,7 +221,7 @@ enum vlen_enum
 bool slide1_sew64_helper (int, machine_mode, machine_mode,
 			  machine_mode, rtx *);
 rtx gen_avl_for_scalar_move (rtx);
-void expand_tuple_move (machine_mode, rtx *);
+void expand_tuple_move (rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);

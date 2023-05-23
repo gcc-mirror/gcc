@@ -31,8 +31,8 @@
    (match_operand 3 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_len_op (code_for_pred_mov (<MODE>mode), operands[0],
-			     operands[1], operands[2], <VM>mode);
+  riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
+  				    riscv_vector::RVV_UNOP, operands);
   DONE;
 })
 
@@ -43,8 +43,8 @@
    (match_operand 3 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_len_op (code_for_pred_mov (<MODE>mode), operands[0],
-			     operands[1], operands[2], <VM>mode);
+  riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
+  				    riscv_vector::RVV_UNOP, operands);
   DONE;
 })
 
@@ -118,21 +118,8 @@
      (match_operand:VI 2 "<binop_rhs2_predicate>")))]
   "TARGET_VECTOR"
 {
-  if (!register_operand (operands[2], <MODE>mode))
-    {
-      rtx cst;
-      gcc_assert (const_vec_duplicate_p(operands[2], &cst));
-      riscv_vector::emit_len_binop (code_for_pred_scalar
-				    (<CODE>, <MODE>mode),
-				    operands[0], operands[1], cst,
-				    NULL, <VM>mode,
-				    <VEL>mode);
-    }
-  else
-    riscv_vector::emit_len_binop (code_for_pred
-				  (<CODE>, <MODE>mode),
-				  operands[0], operands[1], operands[2],
-				  NULL, <VM>mode);
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })
 
@@ -151,12 +138,9 @@
      (match_operand:<VEL> 2 "csr_operand")))]
   "TARGET_VECTOR"
 {
-  if (!CONST_SCALAR_INT_P (operands[2]))
-      operands[2] = gen_lowpart (Pmode, operands[2]);
-  riscv_vector::emit_len_binop (code_for_pred_scalar
-				(<CODE>, <MODE>mode),
-				operands[0], operands[1], operands[2],
-				NULL_RTX, <VM>mode, Pmode);
+  operands[2] = gen_lowpart (Pmode, operands[2]);
+  riscv_vector::emit_vlmax_insn (code_for_pred_scalar (<CODE>, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })
 
@@ -174,9 +158,7 @@
      (match_operand:VI 2 "vector_shift_operand")))]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_len_binop (code_for_pred
-				(<CODE>, <MODE>mode),
-				operands[0], operands[1], operands[2],
-				NULL_RTX, <VM>mode);
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })

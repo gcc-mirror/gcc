@@ -7389,9 +7389,6 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	{
 	  rtx target = regno_reg_rtx[regno];
 	  machine_mode mode = GET_MODE (target);
-	  poly_uint16 nunits = GET_MODE_NUNITS (mode);
-	  machine_mode mask_mode
-	    = riscv_vector::get_vector_mode (BImode, nunits).require ();
 
 	  if (!emitted_vlmax_vsetvl)
 	    {
@@ -7399,8 +7396,9 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	      emitted_vlmax_vsetvl = true;
 	    }
 
-	  riscv_vector::emit_vlmax_reg_op (code_for_pred_mov (mode), target,
-					   CONST0_RTX (mode), vl, mask_mode);
+	  rtx ops[3] = {target, CONST0_RTX (mode), vl};
+	  riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode),
+					 riscv_vector::RVV_UNOP, ops);
 
 	  SET_HARD_REG_BIT (zeroed_hardregs, regno);
 	}
