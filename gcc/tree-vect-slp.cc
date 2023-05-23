@@ -6069,6 +6069,7 @@ vect_prologue_cost_for_slp (slp_tree node,
     }
   /* ???  We're just tracking whether vectors in a single node are the same.
      Ideally we'd do something more global.  */
+  bool passed = false;
   for (unsigned int start : starts)
     {
       vect_cost_for_stmt kind;
@@ -6078,7 +6079,15 @@ vect_prologue_cost_for_slp (slp_tree node,
 	kind = scalar_to_vec;
       else
 	kind = vec_construct;
-      record_stmt_cost (cost_vec, 1, kind, node, vectype, 0, vect_prologue);
+      /* The target cost hook has no idea which part of the SLP node
+	 we are costing so avoid passing it down more than once.  Pass
+	 it to the first vec_construct or scalar_to_vec part since for those
+	 the x86 backend tries to account for GPR to XMM register moves.  */
+      record_stmt_cost (cost_vec, 1, kind,
+			(kind != vector_load && !passed) ? node : nullptr,
+			vectype, 0, vect_prologue);
+      if (kind != vector_load)
+	passed = true;
     }
 }
 
