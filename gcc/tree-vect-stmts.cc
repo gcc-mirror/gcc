@@ -6466,8 +6466,8 @@ vectorizable_operation (vec_info *vinfo,
 	{
 	  /* The above vect_model_simple_cost call handles constants
 	     in the prologue and (mis-)costs one of the stmts as
-	     vector stmt.  See tree-vect-generic.cc:do_plus_minus/do_negate
-	     for the actual lowering that will be applied.  */
+	     vector stmt.  See below for the actual lowering that will
+	     be applied.  */
 	  unsigned n
 	    = slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies;
 	  switch (code)
@@ -6481,9 +6481,20 @@ vectorizable_operation (vec_info *vinfo,
 	    case NEGATE_EXPR:
 	      n *= 4;
 	      break;
-	    default:;
+	    default:
+	      /* Bit operations do not have extra cost and are accounted
+		 as vector stmt by vect_model_simple_cost.  */
+	      n = 0;
+	      break;
 	    }
-	  record_stmt_cost (cost_vec, n, scalar_stmt, stmt_info, 0, vect_body);
+	  if (n != 0)
+	    {
+	      /* We also need to materialize two large constants.  */
+	      record_stmt_cost (cost_vec, 2, scalar_stmt, stmt_info,
+				0, vect_prologue);
+	      record_stmt_cost (cost_vec, n, scalar_stmt, stmt_info,
+				0, vect_body);
+	    }
 	}
       return true;
     }
