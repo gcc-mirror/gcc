@@ -1757,9 +1757,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       // lookup compiled functions since it may have already been compiled
       HIR::PathExprSegment method_name = expr.get_method_name ();
       HIR::PathIdentSegment segment_name = method_name.get_segment ();
-      fn_expr
-	= resolve_method_address (fntype, ref, receiver, segment_name,
-				  expr.get_mappings (), expr.get_locus ());
+      fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
     }
 
   // lookup the autoderef mappings
@@ -1899,9 +1897,7 @@ CompileExpr::resolve_operator_overload (
   // lookup compiled functions since it may have already been compiled
   HIR::PathIdentSegment segment_name (
     Analysis::RustLangItem::ToString (lang_item_type));
-  tree fn_expr
-    = resolve_method_address (fntype, ref, receiver, segment_name,
-			      expr.get_mappings (), expr.get_locus ());
+  tree fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
 
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;

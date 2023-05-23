@@ -80,10 +80,7 @@ protected:
   tree resolve_unsized_dyn_adjustment (Resolver::Adjustment &adjustment,
 				       tree expression, Location locus);
 
-  tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
-			       TyTy::BaseType *receiver,
-			       const HIR::PathIdentSegment &segment,
-			       const Analysis::NodeMapping &expr_mappings,
+  tree resolve_method_address (TyTy::FnType *fntype, TyTy::BaseType *receiver,
 			       Location expr_locus);
 
   void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
