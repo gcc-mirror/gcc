@@ -951,7 +951,22 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 		|| m_temporal->current_p (name, m_gori.depend1 (name),
 					  m_gori.depend2 (name));
   else
-    m_globals.set_range (name, r);
+    {
+      // If no global value has been set and value is VARYING, fold the stmt
+      // using just global ranges to get a better initial value.
+      // After inlining we tend to decide some things are constant, so
+      // so not do this evaluation after inlining.
+      if (r.varying_p () && !cfun->after_inlining)
+	{
+	  gimple *s = SSA_NAME_DEF_STMT (name);
+	  if (gimple_get_lhs (s) == name)
+	    {
+	      if (!fold_range (r, s, get_global_range_query ()))
+		gimple_range_global (r, name);
+	    }
+	}
+      m_globals.set_range (name, r);
+    }
 
   // If the existing value was not current, mark it as always current.
   if (!current_p)
