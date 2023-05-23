@@ -575,7 +575,7 @@ is what you see when you use the basic @command{gcov} facility:
 @smallexample
 $ g++ --coverage tmp.cpp -c
 $ g++ --coverage tmp.o
-$ a.out
+$ ./a.out
 $ gcov tmp.cpp -m
 File 'tmp.cpp'
 Lines executed:92.86% of 14
