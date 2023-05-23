@@ -60,7 +60,7 @@ end subroutine
 ! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(always,present,tofrom:b1 \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(to:b \\\[len: 4\\\]\\) map\\(to:b1 \\\[len: 4\\\]\\) map\\(alloc:a \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(always,to:b \\\[len: 4\\\]\\) map\\(always,to:b1 \\\[len: 4\\\]\\) map\\(alloc:a \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(force_present:a \\\[len: 4\\\]\\) map\\(force_present:b \\\[len: 4\\\]\\) map\\(force_present:b1 \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(force_present:b \\\[len: 4\\\]\\) map\\(force_present:b1 \\\[len: 4\\\]\\) map\\(force_present:a \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(force_present:a \\\[len: 4\\\]\\) map\\(always,present,to:b \\\[len: 4\\\]\\) map\\(always,present,to:b1 \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target exit data map\\(from:b1 \\\[len: 4\\\]\\) map\\(delete:a \\\[len: 4\\\]\\) map\\(release:b \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target exit data map\\(always,from:b1 \\\[len: 4\\\]\\) map\\(delete:a \\\[len: 4\\\]\\) map\\(release:b \\\[len: 4\\\]\\)\[\r\n\]" 2 "omplower" } }

@@ -1,5 +1,15 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (omp_segregate_mapping_groups): Handle "present" groups.
+	(gimplify_scan_omp_clauses): Use mapping group functionality to
+	iterate through mapping nodes.  Remove most gimplification of
+	OMP_CLAUSE_MAP nodes from here, but still populate ctx->variables
+	splay tree.
+	(gimplify_adjust_omp_clauses): Move most gimplification of
+	OMP_CLAUSE_MAP nodes here.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (extract_base_bit_offset): Add VARIABLE_OFFSET parameter.
 	(omp_get_attachment, omp_group_last, omp_group_base,
 	omp_directive_maps_explicitly): Add GOMP_MAP_STRUCT_UNORD support.

@@ -1,5 +1,9 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gfortran.dg/gomp/map-12.f90: Adjust scan output.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-comon/gomp/target-implicit-map-2.c: Update expected scan output.
 
 2023-06-19  Julian Brown  <julian@codesourcery.com>
