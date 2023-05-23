@@ -24827,6 +24827,18 @@ aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
     return true;
 
+  /* Allow changes between scalar modes if both modes fit within 64 bits.
+     This is because:
+
+     - We allow all such modes for both FPRs and GPRs.
+     - They occupy a single register for both FPRs and GPRs.
+     - We can reinterpret one mode as another in both types of register.  */
+  if (is_a<scalar_mode> (mode1)
+      && is_a<scalar_mode> (mode2)
+      && known_le (GET_MODE_SIZE (mode1), 8)
+      && known_le (GET_MODE_SIZE (mode2), 8))
+    return true;
+
   /* We specifically want to allow elements of "structure" modes to
      be tieable to the structure.  This more general condition allows
      other rarer situations too.  The reason we don't extend this to
