@@ -617,7 +617,7 @@
 ;; Set VXRM
 (define_insn "vxrmsi"
   [(set (reg:SI VXRM_REGNUM)
-	(match_operand 0 "const_int_operand" "i"))]
+	(match_operand:SI 0 "const_int_operand" "i"))]
   "TARGET_VECTOR"
   "csrwi\tvxrm,%0"
   [(set_attr "type" "wrvxrm")
