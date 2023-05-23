@@ -84,50 +84,46 @@ template <typename _Abi, typename>
     // }}}
     // _S_reduce {{{
     template <typename _Tp, typename _BinaryOperation>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
       _S_reduce(simd<_Tp, _Abi> __x, _BinaryOperation&& __binary_op)
       {
-	constexpr size_t _Np = __x.size();
-	if constexpr (sizeof(__x) == 16 && _Np >= 4
-		      && !_Abi::template _S_is_partial<_Tp>)
+	if (not __builtin_is_constant_evaluated())
 	  {
-	    const auto __halves = split<simd<_Tp, simd_abi::_Neon<8>>>(__x);
-	    const auto __y = __binary_op(__halves[0], __halves[1]);
-	    return _SimdImplNeon<simd_abi::_Neon<8>>::_S_reduce(
-	      __y, static_cast<_BinaryOperation&&>(__binary_op));
+	    constexpr size_t _Np = __x.size();
+	    if constexpr (sizeof(__x) == 16 && _Np >= 4
+			    && !_Abi::template _S_is_partial<_Tp>)
+	      {
+		const auto __halves = split<simd<_Tp, simd_abi::_Neon<8>>>(__x);
+		const auto __y = __binary_op(__halves[0], __halves[1]);
+		return _SimdImplNeon<simd_abi::_Neon<8>>::_S_reduce(
+			 __y, static_cast<_BinaryOperation&&>(__binary_op));
+	      }
+	    else if constexpr (_Np == 8)
+	      {
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<1, 0, 3, 2, 5, 4, 7, 6>(__x._M_data)));
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<3, 2, 1, 0, 7, 6, 5, 4>(__x._M_data)));
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<7, 6, 5, 4, 3, 2, 1, 0>(__x._M_data)));
+		return __x[0];
+	      }
+	    else if constexpr (_Np == 4)
+	      {
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<1, 0, 3, 2>(__x._M_data)));
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<3, 2, 1, 0>(__x._M_data)));
+		return __x[0];
+	      }
+	    else if constexpr (_Np == 2)
+	      {
+		__x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
+					 __vector_permute<1, 0>(__x._M_data)));
+		return __x[0];
+	      }
 	  }
-	else if constexpr (_Np == 8)
-	  {
-	    __x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				     __vector_permute<1, 0, 3, 2, 5, 4, 7, 6>(
-				       __x._M_data)));
-	    __x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				     __vector_permute<3, 2, 1, 0, 7, 6, 5, 4>(
-				       __x._M_data)));
-	    __x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				     __vector_permute<7, 6, 5, 4, 3, 2, 1, 0>(
-				       __x._M_data)));
-	    return __x[0];
-	  }
-	else if constexpr (_Np == 4)
-	  {
-	    __x
-	      = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				   __vector_permute<1, 0, 3, 2>(__x._M_data)));
-	    __x
-	      = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				   __vector_permute<3, 2, 1, 0>(__x._M_data)));
-	    return __x[0];
-	  }
-	else if constexpr (_Np == 2)
-	  {
-	    __x = __binary_op(__x, _Base::template _M_make_simd<_Tp, _Np>(
-				     __vector_permute<1, 0>(__x._M_data)));
-	    return __x[0];
-	  }
-	else
-	  return _Base::_S_reduce(__x,
-				  static_cast<_BinaryOperation&&>(__binary_op));
+	return _Base::_S_reduce(__x, static_cast<_BinaryOperation&&>(__binary_op));
       }
 
     // }}}
