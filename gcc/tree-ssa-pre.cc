@@ -2216,6 +2216,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	}
     }
 
+  /* Dump ANTIC_OUT before it's pruned.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
+
   /* Prune expressions that are clobbered in block and thus become
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
   prune_clobbered_mems (ANTIC_OUT, block);
@@ -2270,9 +2274,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (ANTIC_OUT)
-	print_bitmap_set (dump_file, ANTIC_OUT, "ANTIC_OUT", block->index);
-
       if (changed)
 	fprintf (dump_file, "[changed] ");
       print_bitmap_set (dump_file, ANTIC_IN (block), "ANTIC_IN",
