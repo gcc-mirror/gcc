@@ -2337,11 +2337,40 @@ template <typename _Tp, size_t _Bytes>
 		  "no __intrinsic_type support for 64-bit floating point on PowerPC w/o VSX");
 #endif
 
-    using type =
-      typename __intrinsic_type_impl<
-		 conditional_t<is_floating_point_v<_Tp>,
-			       conditional_t<_S_is_ldouble, double, _Tp>,
-			       __int_for_sizeof_t<_Tp>>>::type;
+    static constexpr auto __element_type()
+    {
+      if constexpr (is_floating_point_v<_Tp>)
+	{
+	  if constexpr (_S_is_ldouble)
+	    return double {};
+	  else
+	    return _Tp {};
+	}
+      else if constexpr (is_signed_v<_Tp>)
+	{
+	  if constexpr (sizeof(_Tp) == sizeof(_SChar))
+	    return _SChar {};
+	  else if constexpr (sizeof(_Tp) == sizeof(short))
+	    return short {};
+	  else if constexpr (sizeof(_Tp) == sizeof(int))
+	    return int {};
+	  else if constexpr (sizeof(_Tp) == sizeof(_LLong))
+	    return _LLong {};
+	}
+      else
+	{
+	  if constexpr (sizeof(_Tp) == sizeof(_UChar))
+	    return _UChar {};
+	  else if constexpr (sizeof(_Tp) == sizeof(_UShort))
+	    return _UShort {};
+	  else if constexpr (sizeof(_Tp) == sizeof(_UInt))
+	    return _UInt {};
+	  else if constexpr (sizeof(_Tp) == sizeof(_ULLong))
+	    return _ULLong {};
+	}
+    }
+
+    using type = typename __intrinsic_type_impl<decltype(__element_type())>::type;
   };
 #endif // __ALTIVEC__
 
