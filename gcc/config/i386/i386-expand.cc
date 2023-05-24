@@ -23133,9 +23133,10 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   /* vpmovwb only available under AVX512BW.  */
   if (!TARGET_AVX512BW)
     return false;
-  if ((qimode == V8QImode || qimode == V16QImode)
-      && !TARGET_AVX512VL)
+
+  if (qimode == V16QImode && !TARGET_AVX512VL)
     return false;
+
   /* Do not generate ymm/zmm instructions when
      target prefers 128/256 bit vector width.  */
   if ((qimode == V16QImode && TARGET_PREFER_AVX128)
@@ -23144,10 +23145,6 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 
   switch (qimode)
     {
-    case E_V8QImode:
-      himode = V8HImode;
-      gen_truncate = gen_truncv8hiv8qi2;
-      break;
     case E_V16QImode:
       himode = V16HImode;
       gen_truncate = gen_truncv16hiv16qi2;

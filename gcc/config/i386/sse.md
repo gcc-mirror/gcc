@@ -24564,17 +24564,6 @@
     }
 })
 
-(define_expand "v<insn>v8qi3"
-  [(set (match_operand:V8QI 0 "register_operand")
-	(any_shift:V8QI
-	  (match_operand:V8QI 1 "register_operand")
-	  (match_operand:V8QI 2 "nonimmediate_operand")))]
-  "TARGET_AVX512BW && TARGET_AVX512VL && TARGET_64BIT"
-{
-  ix86_expand_vecop_qihi (<CODE>, operands[0], operands[1], operands[2]);
-  DONE;
-})
-
 (define_expand "vlshr<mode>3"
   [(set (match_operand:VI48_512 0 "register_operand")
 	(lshiftrt:VI48_512

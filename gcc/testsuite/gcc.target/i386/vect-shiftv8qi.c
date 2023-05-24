@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -ftree-vectorize -msse2" } */
+/* { dg-options "-O2 -msse2" } */
 
 #define N 8
 
