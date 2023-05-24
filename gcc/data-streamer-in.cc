@@ -248,14 +248,22 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
   if (is_a <frange> (vr))
     {
       frange &r = as_a <frange> (vr);
-      REAL_VALUE_TYPE lb, ub;
-      streamer_read_real_value (ib, &lb);
-      streamer_read_real_value (ib, &ub);
+
+      // Stream in NAN bits.
       struct bitpack_d bp = streamer_read_bitpack (ib);
       bool pos_nan = (bool) bp_unpack_value (&bp, 1);
       bool neg_nan = (bool) bp_unpack_value (&bp, 1);
       nan_state nan (pos_nan, neg_nan);
-      r.set (type, lb, ub, nan);
+
+      if (kind == VR_NAN)
+	r.set_nan (type, nan);
+      else
+	{
+	  REAL_VALUE_TYPE lb, ub;
+	  streamer_read_real_value (ib, &lb);
+	  streamer_read_real_value (ib, &ub);
+	  r.set (type, lb, ub, nan);
+	}
       return;
     }
   gcc_unreachable ();

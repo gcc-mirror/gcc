@@ -410,7 +410,7 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
   gcc_checking_assert (!v.undefined_p ());
 
   // Write the common fields to all vranges.
-  value_range_kind kind = v.varying_p () ? VR_VARYING : VR_RANGE;
+  value_range_kind kind = v.m_kind;
   streamer_write_enum (ob->main_stream, value_range_kind, VR_LAST, kind);
   stream_write_tree (ob, v.type (), true);
 
@@ -429,15 +429,22 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
   if (is_a <frange> (v))
     {
       const frange &r = as_a <frange> (v);
-      REAL_VALUE_TYPE lb = r.lower_bound ();
-      REAL_VALUE_TYPE ub = r.upper_bound ();
-      streamer_write_real_value (ob, &lb);
-      streamer_write_real_value (ob, &ub);
+
+      // Stream out NAN bits.
       bitpack_d bp = bitpack_create (ob->main_stream);
       nan_state nan = r.get_nan_state ();
       bp_pack_value (&bp, nan.pos_p (), 1);
       bp_pack_value (&bp, nan.neg_p (), 1);
       streamer_write_bitpack (&bp);
+
+      // Stream out bounds.
+      if (kind != VR_NAN)
+	{
+	  REAL_VALUE_TYPE lb = r.lower_bound ();
+	  REAL_VALUE_TYPE ub = r.upper_bound ();
+	  streamer_write_real_value (ob, &lb);
+	  streamer_write_real_value (ob, &ub);
+	}
       return;
     }
   gcc_unreachable ();
