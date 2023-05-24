@@ -406,14 +406,14 @@ expand_vec_series (rtx dest, rtx base, rtx step)
 	  int shift = exact_log2 (INTVAL (step));
 	  rtx shift_amount = gen_int_mode (shift, Pmode);
 	  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
-	  rtx ops[3] = {step_adj, vid, shift_amount};
-	  emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+	  rtx ops[] = {step_adj, vid, shift_amount};
+	  emit_vlmax_insn (icode, RVV_BINOP, ops);
 	}
       else
 	{
 	  insn_code icode = code_for_pred_scalar (MULT, mode);
-	  rtx ops[3] = {step_adj, vid, step};
-	  emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+	  rtx ops[] = {step_adj, vid, step};
+	  emit_vlmax_insn (icode, RVV_BINOP, ops);
 	}
     }
 
@@ -428,8 +428,8 @@ expand_vec_series (rtx dest, rtx base, rtx step)
     {
       rtx result = gen_reg_rtx (mode);
       insn_code icode = code_for_pred_scalar (PLUS, mode);
-      rtx ops[3] = {result, step_adj, base};
-      emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+      rtx ops[] = {result, step_adj, base};
+      emit_vlmax_insn (icode, RVV_BINOP, ops);
       emit_move_insn (dest, result);
     }
 }
@@ -445,8 +445,8 @@ expand_const_vector (rtx target, rtx src)
       gcc_assert (
 	const_vec_duplicate_p (src, &elt)
 	&& (rtx_equal_p (elt, const0_rtx) || rtx_equal_p (elt, const1_rtx)));
-      rtx ops[2] = {target, src};
-      emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::RVV_UNOP, ops);
+      rtx ops[] = {target, src};
+      emit_vlmax_insn (code_for_pred_mov (mode), RVV_UNOP, ops);
       return;
     }
 
@@ -458,16 +458,14 @@ expand_const_vector (rtx target, rtx src)
 	 we use vmv.v.i instruction.  */
       if (satisfies_constraint_vi (src) || satisfies_constraint_Wc0 (src))
 	{
-	  rtx ops[2] = {tmp, src};
-	  emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::RVV_UNOP,
-			   ops);
+	  rtx ops[] = {tmp, src};
+	  emit_vlmax_insn (code_for_pred_mov (mode), RVV_UNOP, ops);
 	}
       else
 	{
 	  elt = force_reg (elt_mode, elt);
-	  rtx ops[2] = {tmp, elt};
-	  emit_vlmax_insn (code_for_pred_broadcast (mode),
-			   riscv_vector::RVV_UNOP, ops);
+	  rtx ops[] = {tmp, elt};
+	  emit_vlmax_insn (code_for_pred_broadcast (mode), RVV_UNOP, ops);
 	}
 
       if (tmp != target)
@@ -536,9 +534,8 @@ legitimize_move (rtx dest, rtx src)
       rtx tmp = gen_reg_rtx (mode);
       if (MEM_P (src))
 	{
-	  rtx ops[2] = {tmp, src};
-	  emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::RVV_UNOP,
-			   ops);
+	  rtx ops[] = {tmp, src};
+	  emit_vlmax_insn (code_for_pred_mov (mode), RVV_UNOP, ops);
 	}
       else
 	emit_move_insn (tmp, src);
@@ -548,8 +545,8 @@ legitimize_move (rtx dest, rtx src)
   if (satisfies_constraint_vu (src))
     return false;
 
-  rtx ops[2] = {dest, src};
-  emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::RVV_UNOP, ops);
+  rtx ops[] = {dest, src};
+  emit_vlmax_insn (code_for_pred_mov (mode), RVV_UNOP, ops);
   return true;
 }
 
@@ -813,7 +810,7 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
     *scalar_op = force_reg (scalar_mode, *scalar_op);
 
   rtx tmp = gen_reg_rtx (vector_mode);
-  rtx ops[3] = {tmp, *scalar_op, vl};
+  rtx ops[] = {tmp, *scalar_op, vl};
   riscv_vector::emit_nonvlmax_insn (code_for_pred_broadcast (vector_mode),
 					 riscv_vector::RVV_UNOP, ops);
   emit_vector_func (operands, tmp);
@@ -1122,9 +1119,9 @@ expand_tuple_move (rtx *ops)
 
 	      if (fractional_p)
 		{
-		  rtx operands[3] = {subreg, mem, ops[4]};
-		  emit_vlmax_insn (code_for_pred_mov (subpart_mode),
-					riscv_vector::RVV_UNOP, operands);
+		  rtx operands[] = {subreg, mem, ops[4]};
+		  emit_vlmax_insn (code_for_pred_mov (subpart_mode), RVV_UNOP,
+				   operands);
 		}
 	      else
 		emit_move_insn (subreg, mem);
@@ -1147,9 +1144,9 @@ expand_tuple_move (rtx *ops)
 
 	      if (fractional_p)
 		{
-		  rtx operands[3] = {mem, subreg, ops[4]};
-		  emit_vlmax_insn (code_for_pred_mov (subpart_mode),
-					riscv_vector::RVV_UNOP, operands);
+		  rtx operands[] = {mem, subreg, ops[4]};
+		  emit_vlmax_insn (code_for_pred_mov (subpart_mode), RVV_UNOP,
+				   operands);
 		}
 	      else
 		emit_move_insn (mem, subreg);
@@ -1281,8 +1278,8 @@ expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
       unsigned int unspec
 	= FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1DOWN : UNSPEC_VSLIDE1DOWN;
       insn_code icode = code_for_pred_slide (unspec, mode);
-      rtx ops[3] = {target, target, builder.elt (i)};
-      emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+      rtx ops[] = {target, target, builder.elt (i)};
+      emit_vlmax_insn (icode, RVV_BINOP, ops);
     }
 }
 

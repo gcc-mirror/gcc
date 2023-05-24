@@ -7396,7 +7396,7 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	      emitted_vlmax_vsetvl = true;
 	    }
 
-	  rtx ops[3] = {target, CONST0_RTX (mode), vl};
+	  rtx ops[] = {target, CONST0_RTX (mode), vl};
 	  riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode),
 					 riscv_vector::RVV_UNOP, ops);
 
