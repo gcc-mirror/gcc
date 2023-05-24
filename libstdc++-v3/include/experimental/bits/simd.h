@@ -2240,15 +2240,21 @@ template <>
   struct __intrinsic_type<float, 16, void>
   { using type = float32x4_t; };
 
-#if _GLIBCXX_SIMD_HAVE_NEON_A64
 template <>
   struct __intrinsic_type<double, 8, void>
-  { using type = float64x1_t; };
+  {
+#if _GLIBCXX_SIMD_HAVE_NEON_A64
+   using type = float64x1_t;
+#endif
+  };
 
 template <>
   struct __intrinsic_type<double, 16, void>
-  { using type = float64x2_t; };
+  {
+#if _GLIBCXX_SIMD_HAVE_NEON_A64
+    using type = float64x2_t;
 #endif
+  };
 
 #define _GLIBCXX_SIMD_ARM_INTRIN(_Bits, _Np)                                   \
 template <>                                                                    \
