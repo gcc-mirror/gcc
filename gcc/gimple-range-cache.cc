@@ -626,7 +626,7 @@ ssa_cache::dump (FILE *f)
       // Invoke dump_range_query which is a private virtual version of
       // get_range.   This avoids performance impacts on general queries,
       // but allows sharing of the dump routine.
-      if (dump_range_query (r, ssa_name (x)) && !r.varying_p ())
+      if (get_range (r, ssa_name (x)) && !r.varying_p ())
 	{
 	  if (print_header)
 	    {
@@ -648,22 +648,13 @@ ssa_cache::dump (FILE *f)
     fputc ('\n', f);
 }
 
-// Virtual private get_range query for dumping.
+// Return true if NAME has an active range in the cache.
 
 bool
-ssa_cache::dump_range_query (vrange &r, tree name) const
+ssa_lazy_cache::has_range (tree name) const
 {
-  return get_range (r, name);
+  return bitmap_bit_p (active_p, SSA_NAME_VERSION (name));
 }
-
-// Virtual private get_range query for dumping.
-
-bool
-ssa_lazy_cache::dump_range_query (vrange &r, tree name) const
-{
-  return get_range (r, name);
-}
-
 
 // Set range of NAME to R in a lazy cache.  Return FALSE if it did not already
 // have a range.
@@ -682,6 +673,32 @@ ssa_lazy_cache::set_range (tree name, const vrange &r)
     m_tab.safe_grow (num_ssa_names + 1);
   m_tab[v] = m_range_allocator->clone (r);
   return false;
+}
+
+// Return TRUE if NAME has a range, and return it in R.
+
+bool
+ssa_lazy_cache::get_range (vrange &r, tree name) const
+{
+  if (!bitmap_bit_p (active_p, SSA_NAME_VERSION (name)))
+    return false;
+  return ssa_cache::get_range (r, name);
+}
+
+// Remove NAME from the active range list.
+
+void
+ssa_lazy_cache::clear_range (tree name)
+{
+  bitmap_clear_bit (active_p, SSA_NAME_VERSION (name));
+}
+
+// Remove all ranges from the active range list.
+
+void
+ssa_lazy_cache::clear ()
+{
+  bitmap_clear (active_p);
 }
 
 // --------------------------------------------------------------------------
