@@ -16367,11 +16367,12 @@ quarter:
 	emit_move_insn (target, gen_lowpart (mode, words[0]));
       else if (n_words == 2)
 	{
-	  rtx tmp = gen_reg_rtx (mode);
-	  emit_clobber (tmp);
-	  emit_move_insn (gen_lowpart (tmp_mode, tmp), words[0]);
-	  emit_move_insn (gen_highpart (tmp_mode, tmp), words[1]);
-	  emit_move_insn (target, tmp);
+	  gcc_assert (tmp_mode == DImode || tmp_mode == SImode);
+	  machine_mode concat_mode = tmp_mode == DImode ? V2DImode : V2SImode;
+	  rtx tmp = gen_reg_rtx (concat_mode);
+	  vals = gen_rtx_PARALLEL (concat_mode, gen_rtvec_v (2, words));
+	  ix86_expand_vector_init_general (false, concat_mode, tmp, vals);
+	  emit_move_insn (target, gen_lowpart (mode, tmp));
 	}
       else if (n_words == 4)
 	{
