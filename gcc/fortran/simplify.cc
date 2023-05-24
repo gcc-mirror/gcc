@@ -7594,7 +7594,17 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
       if (dim->expr_type != EXPR_CONSTANT)
 	return NULL;
 
-      d = mpz_get_ui (dim->value.integer) - 1;
+      if (array->rank == -1)
+	return NULL;
+
+      d = mpz_get_si (dim->value.integer) - 1;
+      if (d < 0 || d > array->rank - 1)
+	{
+	  gfc_error ("DIM argument (%d) to intrinsic SIZE at %L out of range "
+		     "(1:%d)", d+1, &array->where, array->rank);
+	  return &gfc_bad_expr;
+	}
+
       if (!gfc_array_dimen_size (array, d, &size))
 	return NULL;
     }
