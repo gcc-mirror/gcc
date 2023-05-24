@@ -327,6 +327,7 @@ public:
 	    const nan_state &, value_range_kind = VR_RANGE);
   void set_nan (tree type);
   void set_nan (tree type, bool sign);
+  void set_nan (tree type, const nan_state &);
   virtual void set_varying (tree type) override;
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
@@ -1219,17 +1220,18 @@ frange_val_is_max (const REAL_VALUE_TYPE &r, const_tree type)
   return real_identical (&max, &r);
 }
 
-// Build a signless NAN of type TYPE.
+// Build a NAN with a state of NAN.
 
 inline void
-frange::set_nan (tree type)
+frange::set_nan (tree type, const nan_state &nan)
 {
+  gcc_checking_assert (nan.pos_p () || nan.neg_p ());
   if (HONOR_NANS (type))
     {
       m_kind = VR_NAN;
       m_type = type;
-      m_pos_nan = true;
-      m_neg_nan = true;
+      m_neg_nan = nan.neg_p ();
+      m_pos_nan = nan.pos_p ();
       if (flag_checking)
 	verify_range ();
     }
@@ -1237,22 +1239,22 @@ frange::set_nan (tree type)
     set_undefined ();
 }
 
+// Build a signless NAN of type TYPE.
+
+inline void
+frange::set_nan (tree type)
+{
+  nan_state nan (true);
+  set_nan (type, nan);
+}
+
 // Build a NAN of type TYPE with SIGN.
 
 inline void
 frange::set_nan (tree type, bool sign)
 {
-  if (HONOR_NANS (type))
-    {
-      m_kind = VR_NAN;
-      m_type = type;
-      m_neg_nan = sign;
-      m_pos_nan = !sign;
-      if (flag_checking)
-	verify_range ();
-    }
-  else
-    set_undefined ();
+  nan_state nan (/*pos=*/!sign, /*neg=*/sign);
+  set_nan (type, nan);
 }
 
 // Return TRUE if range is known to be finite.
