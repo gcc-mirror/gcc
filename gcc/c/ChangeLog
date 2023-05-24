@@ -1,3 +1,30 @@
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/109450
+	* c-decl.cc (add_decl_expr): New function.
+	(grokdeclarator): Add decl expr for size expression in
+	types pointed to by parameters declared as arrays.
+
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/70418
+	PR c/106465
+	PR c/107557
+	PR c/108423
+	* c-decl.cc (start_decl): Make sure size expression are
+	evaluated only in correct context.
+	(grokdeclarator): Size expression in fields may need a bind
+	expression, make sure DECL_EXPR is always created.
+	(grokfield, declspecs_add_type): Pass along size expressions.
+	(finish_struct): Remove unneeded DECL_EXPR.
+	(start_function): Evaluate size expressions for nested functions.
+	* c-parser.cc (c_parser_struct_declarations,
+	c_parser_struct_or_union_specifier): Pass along size expressions.
+	(c_parser_declaration_or_fndef): Evaluate size expression.
+	(c_parser_objc_at_property_declaration,
+	c_parser_objc_class_instance_variables): Adapt.
+	* c-tree.h (grokfield): Adapt declaration.
+
 2023-05-19  Martin Uecker  <uecker@tugraz.at>
 
 	* c-decl.cc (set_type_context): Remove.

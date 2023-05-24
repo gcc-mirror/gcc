@@ -1,3 +1,396 @@
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads
+	(Aspect_Id): Add aspect identifier.
+	(Aspect_Argument): New aspect accepts an expression.
+	(Is_Representation_Aspect): New aspect is not a representation
+	aspect.
+	(Aspect_Names): Associate name with the new aspect identifier.
+	(Aspect_Delay): New aspect is never delayed.
+	* contracts.adb
+	(Add_Contract_Item): Store new aspect among contract items.
+	(Analyze_Entry_Or_Subprogram_Contract): Likewise.
+	(Analyze_Subprogram_Body_Stub_Contract): Likewise.
+	(Process_Contract_Cases): Expand new aspect, if present.
+	* contracts.ads
+	(Analyze_Entry_Or_Subprogram_Body_Contract): Mention new aspect in
+	spec.
+	(Analyze_Entry_Or_Subprogram_Contract): Likewise.
+	* einfo-utils.adb
+	(Get_Pragma): Allow new aspect to be picked by the backend.
+	* einfo-utils.ads
+	(Get_Pragma): Mention new aspect in spec.
+	* exp_prag.adb
+	(Expand_Pragma_Exceptional_Cases): Dummy expansion routine.
+	* exp_prag.ads
+	(Expand_Pragma_Exceptional_Cases): Add spec for expansion routine.
+	* inline.adb
+	(Remove_Aspects_And_Pragmas): Remove aspect from bodies to inline.
+	* par-prag.adb
+	(Par.Prag): Accept pragma in the parser, so it will be checked
+	later.
+	* sem_ch12.adb
+	(Implementation of Generic Contracts): Mention new aspect in
+	comment.
+	* sem_ch13.adb
+	(Analyze_Aspect_Specifications): Transform new aspect info a
+	corresponding pragma.
+	* sem_prag.adb
+	(Analyze_Exceptional_Cases_In_Decl_Part): Analyze aspect
+	expression; heavily inspired by the existing code for analysis of
+	Subprogram_Variant and exception handlers.
+	(Analyze_Pragma): Analyze pragma corresponding to the new aspect.
+	(Is_Non_Significant_Pragma_Reference): Add new pragma to the
+	table.
+	* sem_prag.ads
+	(Assertion_Expression_Pragma): New pragma acts as an assertion
+	expression, even though it is not currently expanded.
+	(Analyze_Exceptional_Cases_In_Decl_Part): Add spec.
+	* sem_util.adb
+	(Is_Subprogram_Contract_Annotation): Mark new annotation is a
+	subprogram contract, so the subprogram with it won't be inlined.
+	* sem_util.ads
+	(Is_Subprogram_Contract_Annotation): Mention new aspect in
+	comment.
+	* sinfo.ads
+	(Contract_Test_Cases): Mention new aspect in comment.
+	* snames.ads-tmpl: Add entries for the new name and pragma.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): If the current scope
+	is not that of the type, push this scope and pop it at the end.
+	* sem_util.ads (Current_Scope_No_Loops_No_Blocks): Delete.
+	* sem_util.adb (Current_Scope_No_Loops_No_Blocks): Likewise.
+	(Set_Public_Status): Call again Current_Scope.
+
+2023-05-23  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Might_Have_Tasks): Remove unneeded Etype call from
+	call to Is_Limited_Record, since that flag is now properly
+	inherited by class-wide types.
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Remove call
+	to Make_Class_Wide_Type, which is done too early, and will later
+	be done in Build_Derived_Record_Type after flags such as
+	Is_Limited_Record and Is_Controlled_Active have been set on the
+	derived type.
+
+2023-05-23  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/s-stchop.adb (Stack_Check): Remove redundant parentheses.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Add tag for redundant pragma Pack.
+	* sem_aggr.adb (Resolve_Record_Aggregate): Add tag for redundant OTHERS
+	choice.
+	* sem_ch8.adb (Use_One_Type): Add tag for redundant USE clauses.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch11.adb
+	(Check_Duplication): Fix inconsistent iteration.
+	(Others_Present): Iterate over handlers using First_Non_Pragma and
+	Next_Non_Pragma just like in Check_Duplication.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Delay_Subprogram_Descriptors): Delete.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove
+	Delay_Subprogram_Descriptors.
+	* gen_il-gen-gen_entities.adb (Gen_Entities): Likewise.
+	* gen_il-gen-gen_nodes.adb (N_Entry_Body): Add Corresponding_Spec.
+	* sinfo.ads (Corresponding_Spec): Document new use.
+	(N_Entry_Body): Likewise.
+	* exp_ch6.adb (Expand_Protected_Object_Reference): Be prepared for
+	protected subprograms that have been expanded.
+	* exp_ch7.adb (Expand_Cleanup_Actions): Remove unreachable code.
+	* exp_ch9.adb (Build_Protected_Entry): Add a local variable for the
+	new block and propagate Uses_Sec_Stack from the corresponding spec.
+	(Expand_N_Protected_Body) <N_Subprogram_Body>: Unconditionally reset
+	the scopes of top-level entities in the new body.
+	* inline.adb (Cleanup_Scopes): Do not adjust the scope on the fly.
+	* sem_ch9.adb (Analyze_Entry_Body): Set Corresponding_Spec.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Remove obsolete code
+	setting Delay_Subprogram_Descriptors and tidy up.
+	* sem_util.adb (Scope_Within): Deal with protected subprograms that
+	have been expanded.
+	(Scope_Within_Or_Same): Likewise.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-taskin.ads (Atomic_Address): Delete.
+	(Attribute_Array): Add pragma Atomic_Components.
+	(Ada_Task_Control_Block): Adjust default value of Attributes.
+	* libgnarl/s-tasini.adb (Finalize_Attributes): Adjust type of local
+	variable.
+	* libgnarl/s-tataat.ads (Deallocator): Adjust type of parameter.
+	(To_Attribute): Adjust source type.
+	* libgnarl/a-tasatt.adb: Add clauses for System.Storage_Elements.
+	(New_Attribute): Adjust return type.
+	(Deallocate): Adjust type of parameter.
+	(To_Real_Attribute): Adjust source type.
+	(To_Address): Add target type.
+	(To_Attribute): Adjust source type.
+	(Fast_Path): Adjust tested type.
+	(Finalize): Compare with Null_Address.
+	(Reference): Likewise.
+	(Reinitialize): Likewise.
+	(Set_Value): Likewise.  Add conversion to Integer_Address.
+	(Value): Likewise.
+
+2023-05-23  Raphael Amiard  <amiard@adacore.com>
+
+	* scng.adb (Scan): Replace occurrences of All_Extensions_Allowed
+	by Core_Extensions_Allowed.
+
+2023-05-23  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Use new helpers.
+	* libgnat/s-vauspe.ads (Raw_Unsigned_Starts_As_Based_Ghost,
+	Raw_Unsigned_Is_Based_Ghost): New ghost helper functions.
+	(Is_Raw_Unsigned_Format_Ghost, Scan_Split_No_Overflow_Ghost,
+	Scan_Split_Value_Ghost, Raw_Unsigned_Last_Ghost): Use new
+	helpers.
+
+2023-05-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch5.adb, style.ads, styleg.adb, styleg.ads
+	(Check_Xtra_Parens): Remove extra parameter Enable.
+	(Check_Xtra_Parens_Precedence): New.
+	(P_Case_Statement): Add -gnatyx style check.
+	* sem_ch4.adb: Replace calls to Check_Xtra_Parens by
+	Check_Xtra_Parens_Precedence.
+	* stylesw.ads, stylesw.adb, usage.adb: Add support for
+	-gnatyz.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update -gnatyxzg doc.
+	* sem_prag.adb, libgnat/s-regpat.adb,
+	libgnarl/s-interr__hwint.adb, libgnarl/s-interr__vxworks.adb:
+	Remove extra parens.
+	* par-ch3.adb (P_Discrete_Range): Do not emit a style check if
+	the expression is not a simple expression.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb (Enable_Cache): Use the subtract operator of
+	System.Storage_Elements to compute the offset.
+	(Symbolic_Address): Likewise.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Intrinsic_Operator): Always perform the same
+	resolution for the special mod operator of System.Storage_Elements.
+
+2023-05-23  Raphael Amiard  <amiard@adacore.com>
+
+	* doc/gnat_rm.rst, doc/gnat_rm/gnat_language_extensions.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst:
+	* gnat_rm.texi: Regenerate.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Mod): Adjust the detection of the special
+	operator of System.Storage_Elements.  Do not rewrite it into a rem.
+	* sem_res.adb (Resolve_Intrinsic_Operator): Use the base type of the
+	left operand for the special mod operator of System.Storage_Elements
+
+2023-05-23  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/a-coinho__shared.adb (Constant_Reference): Remove call
+	of Detach
+	(Query_Element): Likewise.
+
+2023-05-23  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_disp.adb: Fix reference to Ada issue in comment.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): In the abstract interface
+	class-wide case, use 'Tag of the object as the controlling tag.
+	(Expand_Interface_Thunk): Perform address arithmetic using operators
+	of System.Storage_Elements.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/i-cpoint.adb: Add clauses for System.Storage_Elements.
+	(Addr): Delete.
+	(Offset): New subtype of Storage_Offset.
+	(To_Offset): New instance of Unchecked_Conversion.
+	(To_Pointer): Adjust.
+	(To_Addr): Likewise.
+	(To_Ptrdiff): Likewise.
+	("+"): Call To_Offset on the offset.
+	("-"): Likewise.
+	* libgnat/s-bituti.adb: Add clauses for System.Storage_Elements.
+	(Val_Bytes): Change type to Storage_Count.
+	(Get_Val_2): Add qualification to second operand of mod operator.
+	(Set_Val_2): Likewise.
+	(Copy_Bitfield): Likewise.  Change type of Src_Adjust & Dest_Adjust.
+	* libgnat/s-stratt.ads (Thin_Pointer): Change to subtype of Address.
+	* libgnat/s-statxd.adb (I_AD): Adjust.
+	(I_AS): Likewise.
+	(W_AS): Likewise.
+
+2023-05-23  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb
+	(Is_Variable): Correctly return False for a selected component
+	name of the form Some_Object.Some_Discriminant, even if
+	Some_Object is a variable. We don't want to allow such a name as
+	an actual parameter in a call if the corresponding formal
+	parameter's mode is not "in".
+
+2023-05-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Check_Node): Add default init on local Id.
+
+2023-05-23  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/i-c.adb (To_Ada): Add loop invariant.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Mod): Deal with the special mod
+	operator of System.Storage_Elements.
+	* exp_intr.adb (Expand_To_Integer): New procedure.
+	(Expand_Intrinsic_Call): Call Expand_To_Integer appropriately.
+	(Expand_To_Address): Deal with an argument with modular type.
+	* sem_ch3.adb (Derive_Subprogram): Also set convention Intrinsic
+	on a derived intrinsic subprogram.
+	* sem_res.adb (Resolve_Arithmetic_Op): Deal with intrinsic
+	operators not coming from source exactly as those coming from
+	source and also generate a reference in both cases.
+	(Resolve_Op_Expon): Likewise.
+	(Resolve_Intrinsic_Operator): Call Implementation_Base_Type to get
+	a nonprivate base type.
+	* snames.ads-tmpl (Name_To_Integer): New intrinsic name.
+	* libgnat/s-stoele.ads: Replace pragma Convention with pragma
+	Import throughout and remove pragma Inline_Always and
+	Pure_Function.
+	* libgnat/s-stoele.adb: Replace entire contents with pragma
+	No_Body.
+	* libgnat/s-atacco.adb: Adjust comment about pragma No_Body.
+
+2023-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition_In_Decl_Part): Remove
+	call to preanalyze class-wide conditions since here it is too
+	early; they must be preanalyzed when full views of private types
+	have been analyzed.
+	* sem_ch7.adb (Analyze_Package_Specification): Preanalyze
+	class-wide conditions of dispatching primitives defined in nested
+	packages.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Last_Sloc): Refactor a heavily repeated "S := S + 1"
+	statement into a subprogram; replace assertions with defensive code;
+	fix few more off-by-one errors.
+
+2023-05-23  Ronan Desplanques  <desplanques@adacore.com>
+
+	* einfo.ads: Mention full name of LSP.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Last_Sloc): Rewrite skipping past numeric literals.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Function_Declaration): Adjust the
+	commentary to the current implementation.
+	* sem_util.ads (Current_Scope_No_Loops): Move around.
+	(Current_Scope_No_Loops_No_Blocks): New declaration.
+	(Add_Block_Identifier): Fix formatting.
+	* sem_util.adb (Add_Block_Identifier): Likewise.
+	(Current_Scope_No_Loops_No_Blocks): New function.
+	(Set_Public_Status): Call Current_Scope_No_Loops_No_Blocks instead
+	of Current_Scope to get the current scope.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc.Build_Assignment): Do not
+	manually generate a predicate check.  Call Unqualify before doing
+	pattern matching on the expression.
+	* sem_ch3.adb (Analyze_Object_Declaration): Also freeze the actual
+	subtype when it is built in the definite case.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/s-interr.adb
+	(Registered_Handler): Remove default expression.
+	(Registered_Handlers): Switch to singly-linked list.
+	(Bind_Interrupt_To_Entry): Sync whitespace with other unit variants.
+	(Is_Registered): Use singly-linked list.
+	(Register_Interrupt_Handler): Use singly-linked list and initialized
+	allocator; sync assertion with other unit variants.
+	* libgnarl/s-interr__sigaction.adb: Likewise.
+	* libgnarl/s-interr__vxworks.adb: Likewise.
+	* libgnarl/s-interr__hwint.adb: Likewise.
+	(Is_Registered): Remove repeated declaration.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expression_Image): Restore some of the old pretty-printing
+	for CodePeer.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (First_And_Last_Nodes): Ignore accessibility parameters.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Ne): Simply don't add extra parens.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expression_Image): Move Count_Parentheses and
+	Fix_Parentheses routines from GNATprove and apply them before
+	returning the slice of a source code buffer.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb
+	(Paren_Required): New subsidiary routine for better handling of
+	parentheses in First_Node/Last_Node.
+	(First_Sloc, Last_Sloc): Use Get_Source_File_Index to correctly
+	handle generic instances and inlined subprograms; tune handling of
+	parentheses; improve handling of literals.
+	* pprint.adb (Expression_Image): Simplify using
+	First_Sloc/Last_Sloc.
+	* sem_ch6.adb (Analyze_Expression_Function): Remove parenthesis
+	when relocating expression from expression function to simple
+	return statement.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Suppress warning for checks of
+	subprogram variants.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* frontend.adb (Frontend): Merge two conditional blocks and adjust.
+
+2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-mmap.adb (Mapped_Region_Record): Fix typo in comment.
+
+2023-05-23  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch7.adb: Remove duplicate comment.
+
+2023-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch10.adb
+	(Analyze_Required_Limited_With_Units): New subprogram.
+	(Depends_On_Limited_Views): New subprogram.
+	(Has_Limited_With_Clauses): New subprogram.
+	(Analyze_Compilation_Unit): Call the new subprogram that performs
+	the full analysis of required limited-with units.
+
 2023-05-22  Ronan Desplanques  <desplanques@adacore.com>
 
 	* cstand.adb: Use more idiomatic procedure.

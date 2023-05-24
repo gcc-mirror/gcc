@@ -1,3 +1,20 @@
+2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103716
+	* resolve.cc (gfc_resolve_ref): Conversion of array_ref into an
+	element should be done for all characters without a len expr,
+	not just deferred lens, and for integer expressions.
+	* trans-expr.cc (conv_inquiry): For len and kind inquiry refs,
+	set the se string_length to NULL_TREE.
+
+2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/97122
+	* decl.cc (variable_decl): Clean up white space issues.
+	(gfc_match_final_decl): Declaration of finalizable derived type
+	is allowed in a submodule.
+
 2023-05-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* expr.cc (gfc_get_corank): Use CLASS_DATA from gfortran.h.

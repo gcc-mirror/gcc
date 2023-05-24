@@ -1,3 +1,47 @@
+2023-05-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109261
+	* include/experimental/bits/simd.h (_SimdWrapper::_M_set):
+	Avoid vector builtin subscripting in constant expressions.
+	(resizing_simd_cast): Avoid memcpy if constant_evaluated.
+	(const_where_expression, where_expression, where)
+	(__extract_part, simd_mask, _SimdIntOperators, simd): Add either
+	_GLIBCXX_SIMD_CONSTEXPR (on public APIs), or constexpr (on
+	internal APIs).
+	* include/experimental/bits/simd_builtin.h (__vector_permute)
+	(__vector_shuffle, __extract_part, _GnuTraits::_SimdCastType1)
+	(_GnuTraits::_SimdCastType2, _SimdImplBuiltin)
+	(_MaskImplBuiltin::_S_store): Add constexpr.
+	(_CommonImplBuiltin::_S_store_bool_array)
+	(_SimdImplBuiltin::_S_load, _SimdImplBuiltin::_S_store)
+	(_SimdImplBuiltin::_S_reduce, _MaskImplBuiltin::_S_load): Add
+	constant_evaluated case.
+	* include/experimental/bits/simd_fixed_size.h
+	(_S_masked_load): Reword comment.
+	(__tuple_element_meta, __make_meta, _SimdTuple::_M_apply_r)
+	(_SimdTuple::_M_subscript_read, _SimdTuple::_M_subscript_write)
+	(__make_simd_tuple, __optimize_simd_tuple, __extract_part)
+	(__autocvt_to_simd, _Fixed::__traits::_SimdBase)
+	(_Fixed::__traits::_SimdCastType, _SimdImplFixedSize): Add
+	constexpr.
+	(_SimdTuple::operator[], _M_set): Add constexpr and add
+	constant_evaluated case.
+	(_MaskImplFixedSize::_S_load): Add constant_evaluated case.
+	* include/experimental/bits/simd_scalar.h: Add constexpr.
+	* include/experimental/bits/simd_x86.h (_CommonImplX86): Add
+	constexpr and add constant_evaluated case.
+	(_SimdImplX86::_S_equal_to, _S_not_equal_to, _S_less)
+	(_S_less_equal): Value-initialize to satisfy constexpr
+	evaluation.
+	(_MaskImplX86::_S_load): Add constant_evaluated case.
+	(_MaskImplX86::_S_store): Add constexpr and constant_evaluated
+	case. Value-initialize local variables.
+	(_MaskImplX86::_S_logical_and, _S_logical_or, _S_bit_not)
+	(_S_bit_and, _S_bit_or, _S_bit_xor): Add constant_evaluated
+	case.
+	* testsuite/experimental/simd/pr109261_constexpr_simd.cc: New
+	test.
+
 2023-05-22  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd_builtin.h (_S_fpclassify): Move

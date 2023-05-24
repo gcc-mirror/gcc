@@ -1,3 +1,155 @@
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/109450
+	* function.cc (gimplify_parm_type): Remove function.
+	(gimplify_parameters): Call gimplify_type_sizes.
+
+2023-05-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*addsubx): Rename from '*addx',
+	and change to also accept '*subx' pattern.
+	(*subx): Remove.
+
+2023-05-23  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (addsub_operator): New.
+	* config/xtensa/xtensa.md (*extzvsi-1bit_ashlsi3,
+	*extzvsi-1bit_addsubx): New insn_and_split patterns.
+	* config/xtensa/xtensa.cc (xtensa_rtx_costs):
+	Add a special case about ifcvt 'noce_try_cmove()' to handle
+	constant loads that do not fit into signed 12 bits in the
+	patterns added above.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109747
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Pass down
+	the SLP node only once to the cost hook.
+
+2023-05-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_insn_cost): New static function.
+	(TARGET_INSN_COST): Define to that function.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/109944
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	For vector construction or splats apply GPR->XMM move
+	costing.  QImode memory can be handled directly only
+	with SSE4.1 pinsrb.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108752
+	* tree-vect-stmts.cc (vectorizable_operation): For bit
+	operations with generic word_mode vectors do not cost
+	an extra stmt.  For plus, minus and negate also cost the
+	constant materialization.
+
+2023-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi_partial):
+	Call ix86_expand_vec_shift_qihi_constant for shifts
+	with constant count operand.
+	* config/i386/i386.cc (ix86_shift_rotate_cost):
+	Handle V4QImode and V8QImode.
+	* config/i386/mmx.md (<insn>v8qi3): New insn pattern.
+	(<insn>v4qi3): Ditto.
+
+2023-05-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Add mode.
+
+2023-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109934
+	* value-range.cc (irange::invert): Remove buggy special case.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.cc (compute_antic_aux): Dump the correct
+	ANTIC_OUT.
+
+2023-05-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109632
+	* config/aarch64/aarch64.cc (aarch64_modes_tieable_p): Allow
+	subregs between any scalars that are 64 bits or smaller.
+	* config/aarch64/iterators.md (SUBDI_BITS): New int iterator.
+	(bits_etype): New int attribute.
+	* config/aarch64/aarch64.md (*insv_reg<mode>_<SUBDI_BITS>)
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>): New patterns.
+	(*aarch64_bfidi<ALLX:mode>_subreg_<SUBDI_BITS>): Likewise.
+
+2023-05-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi: Document that <FOO> can be used to refer to the
+	numerical value of an int iterator FOO.  Tweak other parts of
+	the int iterator documentation.
+	* read-rtl.cc (iterator_group::has_self_attr): New field.
+	(map_attr_string): When has_self_attr is true, make <FOO>
+	expand to the current value of iterator FOO.
+	(initialize_iterators): Set has_self_attr for int iterators.
+
+2023-05-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Refactor the framework of RVV auto-vectorization.
+	* config/riscv/riscv-protos.h (RVV_MISC_OP_NUM): Ditto.
+	(RVV_UNOP_NUM): New macro.
+	(RVV_BINOP_NUM): Ditto.
+	(legitimize_move): Refactor the framework of RVV auto-vectorization.
+	(emit_vlmax_op): Ditto.
+	(emit_vlmax_reg_op): Ditto.
+	(emit_len_op): Ditto.
+	(emit_len_binop): Ditto.
+	(emit_vlmax_tany_many): Ditto.
+	(emit_nonvlmax_tany_many): Ditto.
+	(sew64_scalar_helper): Ditto.
+	(expand_tuple_move): Ditto.
+	* config/riscv/riscv-v.cc (emit_pred_op): Ditto.
+	(emit_pred_binop): Ditto.
+	(emit_vlmax_op): Ditto.
+	(emit_vlmax_tany_many): New function.
+	(emit_len_op): Remove.
+	(emit_nonvlmax_tany_many): New function.
+	(emit_vlmax_reg_op): Remove.
+	(emit_len_binop): Ditto.
+	(emit_index_op): Ditto.
+	(expand_vec_series): Refactor the framework of RVV auto-vectorization.
+	(expand_const_vector): Ditto.
+	(legitimize_move): Ditto.
+	(sew64_scalar_helper): Ditto.
+	(expand_tuple_move): Ditto.
+	(expand_vector_init_insert_elems): Ditto.
+	* config/riscv/riscv.cc (vector_zero_call_used_regs): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-05-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109855
+	* config/aarch64/aarch64-simd.md (add_vec_concat_subst_le): Add predicate
+	and constraint for operand 0.
+	(add_vec_concat_subst_be): Likewise.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109849
+	* tree-ssa-pre.cc (do_hoist_insertion): Compute ANTIC_OUT
+	and use that to determine what to hoist.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (native_encode_initializer) <CONSTRUCTOR>: Apply the
+	specific treatment for bit-fields only if they have an integral type
+	and filter out non-integral bit-fields that do not start and end on
+	a byte boundary.
+
+2023-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109920
+	* value-range.h (RESIZABLE>::~int_range): Use delete[].
+
 2023-05-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.cc (ix86_shift_rotate_cost): Correct

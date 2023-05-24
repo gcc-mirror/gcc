@@ -1,3 +1,82 @@
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/109450
+	* gcc.dg/pr109450-1.c: New test.
+	* gcc.dg/pr109450-2.c: New test.
+	* gcc.dg/vla-26.c: New test.
+
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/70418
+	PR c/106465
+	PR c/107557
+	PR c/108423
+	* gcc.dg/nested-vla-1.c: New test.
+	* gcc.dg/nested-vla-2.c: New test.
+	* gcc.dg/nested-vla-3.c: New test.
+	* gcc.dg/pr70418.c: New test.
+	* gcc.dg/pr106465.c: New test.
+	* gcc.dg/pr107557-1.c: New test.
+	* gcc.dg/pr107557-2.c: New test.
+	* gcc.dg/pr108423-1.c: New test.
+	* gcc.dg/pr108423-2.c: New test.
+	* gcc.dg/pr108423-3.c: New test.
+	* gcc.dg/pr108423-4.c: New test.
+	* gcc.dg/pr108423-5.c: New test.
+	* gcc.dg/pr108423-6.c: New test.
+	* gcc.dg/typename-vla-2.c: New test.
+	* gcc.dg/typename-vla-3.c: New test.
+	* gcc.dg/typename-vla-4.c: New test.
+	* gcc.misc-tests/gcov-pr85350.c: Adapt.
+	* gcc.dg/typename-vla-5.c: New file.
+	* gcc.dg/typename-vla-6.c: New file.
+
+2023-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-shiftv4qi.c: New test.
+	* gcc.target/i386/vect-shiftv8qi.c: New test.
+
+2023-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109934
+	* gcc.dg/tree-ssa/pr109934.c: New test.
+
+2023-05-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ins_bitfield_1.c: New test.
+	* gcc.target/aarch64/ins_bitfield_2.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_3.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_4.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_5.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_6.c: Likewise.
+
+2023-05-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109855
+	* gcc.target/aarch64/pr109855.c: New test.
+
+2023-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109849
+	* gcc.dg/tree-ssa/ssa-hoist-8.c: New testcase.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt101.adb: New test.
+	* gnat.dg/opt101_pkg.ads: New helper.
+
+2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103716
+	* gfortran.dg/pr103716.f90 : New test.
+
+2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/97122
+	* gfortran.dg/finalize_8.f03 : Replace testcase that checks
+	declaration of finalizable derived types in submodules works.
+
 2023-05-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-shiftqihi-constant-1.c: Remove XFAILs.
