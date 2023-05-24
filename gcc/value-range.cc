@@ -359,14 +359,7 @@ frange::set (tree type,
       gcc_unreachable ();
     }
 
-  // Handle NANs.
-  if (real_isnan (&min) || real_isnan (&max))
-    {
-      gcc_checking_assert (real_identical (&min, &max));
-      bool sign = real_isneg (&min);
-      set_nan (type, sign);
-      return;
-    }
+  gcc_checking_assert (!real_isnan (&min) && !real_isnan (&max));
 
   m_kind = kind;
   m_type = type;

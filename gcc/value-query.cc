@@ -189,9 +189,16 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
       {
 	frange &f = as_a <frange> (r);
 	REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (expr);
-	f.set (TREE_TYPE (expr), *rv, *rv);
-	if (!real_isnan (rv))
-	  f.clear_nan ();
+	if (real_isnan (rv))
+	  {
+	    bool sign = real_isneg (rv);
+	    f.set_nan (TREE_TYPE (expr), sign);
+	  }
+	else
+	  {
+	    nan_state nan (false);
+	    f.set (TREE_TYPE (expr), *rv, *rv, nan);
+	  }
 	return true;
       }
 
