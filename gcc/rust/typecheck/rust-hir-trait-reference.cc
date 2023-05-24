@@ -37,7 +37,7 @@ bool
 TraitItemReference::is_optional () const
 {
   return optional_flag;
-};
+}
 
 std::string
 TraitItemReference::get_identifier () const
