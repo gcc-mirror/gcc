@@ -11,8 +11,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if !defined(__APPLE__) && !defined(__DragonFly__)
+#if __has_include(<malloc.h>)
 #include <malloc.h>
+#endif
+#if __has_include(<sys/time.h>)
+#include <sys/time.h>
 #endif
 #include <string.h>
 #include <math.h>
