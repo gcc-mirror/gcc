@@ -162,3 +162,115 @@
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })
+
+;; =========================================================================
+;; == Comparisons and selects
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Select based on masks
+;; -------------------------------------------------------------------------
+;; Includes merging patterns for:
+;; - vmerge.vv
+;; - vmerge.vx
+;; - vfmerge.vf
+;; -------------------------------------------------------------------------
+
+(define_expand "@vcond_mask_<mode><vm>"
+  [(match_operand:V 0 "register_operand")
+   (match_operand:<VM> 3 "register_operand")
+   (match_operand:V 1 "nonmemory_operand")
+   (match_operand:V 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    /* The order of vcond_mask is opposite to pred_merge.  */
+    std::swap (operands[1], operands[2]);
+    riscv_vector::emit_vlmax_merge_insn (code_for_pred_merge (<MODE>mode),
+    			riscv_vector::RVV_MERGE_OP, operands);
+    DONE;
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Comparisons
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vms<eq/ne/ltu/lt/leu/le/gtu/gt>.<vv/vx/vi>
+;; -------------------------------------------------------------------------
+
+(define_expand "vec_cmp<mode><vm>"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(match_operator:<VM> 1 "comparison_operator"
+	  [(match_operand:VI 2 "register_operand")
+	   (match_operand:VI 3 "register_operand")]))]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
+				  operands[2], operands[3]);
+    DONE;
+  }
+)
+
+(define_expand "vec_cmpu<mode><vm>"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(match_operator:<VM> 1 "comparison_operator"
+	  [(match_operand:VI 2 "register_operand")
+	   (match_operand:VI 3 "register_operand")]))]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_cmp (operands[0], GET_CODE (operands[1]),
+				  operands[2], operands[3]);
+    DONE;
+  }
+)
+
+(define_expand "vec_cmp<mode><vm>"
+  [(set (match_operand:<VM> 0 "register_operand")
+	(match_operator:<VM> 1 "comparison_operator"
+	  [(match_operand:VF 2 "register_operand")
+	   (match_operand:VF 3 "register_operand")]))]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_cmp_float (operands[0], GET_CODE (operands[1]),
+				        operands[2], operands[3], false);
+    DONE;
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Compare and select
+;; -------------------------------------------------------------------------
+;; The patterns in this section are synthetic.
+;; -------------------------------------------------------------------------
+
+(define_expand "vcond<V:mode><VI:mode>"
+  [(set (match_operand:V 0 "register_operand")
+	(if_then_else:V
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:VI 4 "register_operand")
+	     (match_operand:VI 5 "register_operand")])
+	  (match_operand:V 1 "register_operand")
+	  (match_operand:V 2 "register_operand")))]
+  "TARGET_VECTOR && known_eq (GET_MODE_NUNITS (<V:MODE>mode),
+  		GET_MODE_NUNITS (<VI:MODE>mode))"
+  {
+    riscv_vector::expand_vcond (operands);
+    DONE;
+  }
+)
+
+(define_expand "vcondu<V:mode><VI:mode>"
+  [(set (match_operand:V 0 "register_operand")
+	(if_then_else:V
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:VI 4 "register_operand")
+	     (match_operand:VI 5 "register_operand")])
+	  (match_operand:V 1 "register_operand")
+	  (match_operand:V 2 "register_operand")))]
+  "TARGET_VECTOR && known_eq (GET_MODE_NUNITS (<V:MODE>mode),
+  		GET_MODE_NUNITS (<VI:MODE>mode))"
+  {
+    riscv_vector::expand_vcond (operands);
+    DONE;
+  }
+)

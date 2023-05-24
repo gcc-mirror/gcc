@@ -382,6 +382,50 @@ emit_nonvlmax_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits merge instruction.  */
+void
+emit_vlmax_merge_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
+		       /*FULLY_UNMASKED_P*/ false,
+		       /*USE_REAL_MERGE_P*/ false, /*HAS_AVL_P*/ true,
+		       /*VLMAX_P*/ true, dest_mode, mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits cmp instruction.  */
+void
+emit_vlmax_cmp_insn (unsigned icode, rtx *ops)
+{
+  machine_mode mode = GET_MODE (ops[0]);
+  insn_expander<11> e (/*OP_NUM*/ RVV_CMP_OP, /*HAS_DEST_P*/ true,
+		       /*FULLY_UNMASKED_P*/ true,
+		       /*USE_REAL_MERGE_P*/ false,
+		       /*HAS_AVL_P*/ true,
+		       /*VLMAX_P*/ true,
+		       /*DEST_MODE*/ mode, /*MASK_MODE*/ mode);
+  e.set_policy (MASK_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits cmp with MU instruction.  */
+void
+emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
+{
+  machine_mode mode = GET_MODE (ops[0]);
+  insn_expander<11> e (/*OP_NUM*/ RVV_CMP_MU_OP, /*HAS_DEST_P*/ true,
+		       /*FULLY_UNMASKED_P*/ false,
+		       /*USE_REAL_MERGE_P*/ true,
+		       /*HAS_AVL_P*/ true,
+		       /*VLMAX_P*/ true,
+		       /*DEST_MODE*/ mode, /*MASK_MODE*/ mode);
+  e.set_policy (MASK_UNDISTURBED);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Expand series const vector.  */
 
 void
@@ -1321,6 +1365,217 @@ expand_vec_init (rtx target, rtx vals)
      situation of vec_init<mode>. Only the cases that are not optimized above
      will fall through here.  */
   expand_vector_init_insert_elems (target, v, nelts);
+}
+
+/* Get insn code for corresponding comparison.  */
+
+static insn_code
+get_cmp_insn_code (rtx_code code, machine_mode mode)
+{
+  insn_code icode;
+  switch (code)
+    {
+    case EQ:
+    case NE:
+    case LE:
+    case LEU:
+    case GT:
+    case GTU:
+    case LTGT:
+      icode = code_for_pred_cmp (mode);
+      break;
+    case LT:
+    case LTU:
+    case GE:
+    case GEU:
+      if (FLOAT_MODE_P (mode))
+	icode = code_for_pred_cmp (mode);
+      else
+	icode = code_for_pred_ltge (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return icode;
+}
+
+/* Expand an RVV comparison.  */
+
+void
+expand_vec_cmp (rtx target, rtx_code code, rtx op0, rtx op1)
+{
+  machine_mode mask_mode = GET_MODE (target);
+  machine_mode data_mode = GET_MODE (op0);
+  insn_code icode = get_cmp_insn_code (code, data_mode);
+
+  if (code == LTGT)
+    {
+      rtx lt = gen_reg_rtx (mask_mode);
+      rtx gt = gen_reg_rtx (mask_mode);
+      expand_vec_cmp (lt, LT, op0, op1);
+      expand_vec_cmp (gt, GT, op0, op1);
+      icode = code_for_pred (IOR, mask_mode);
+      rtx ops[] = {target, lt, gt};
+      emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+      return;
+    }
+
+  rtx cmp = gen_rtx_fmt_ee (code, mask_mode, op0, op1);
+  rtx ops[] = {target, cmp, op0, op1};
+  emit_vlmax_cmp_insn (icode, ops);
+}
+
+void
+expand_vec_cmp (rtx target, rtx_code code, rtx mask, rtx maskoff, rtx op0,
+		rtx op1)
+{
+  machine_mode mask_mode = GET_MODE (target);
+  machine_mode data_mode = GET_MODE (op0);
+  insn_code icode = get_cmp_insn_code (code, data_mode);
+
+  if (code == LTGT)
+    {
+      rtx lt = gen_reg_rtx (mask_mode);
+      rtx gt = gen_reg_rtx (mask_mode);
+      expand_vec_cmp (lt, LT, mask, maskoff, op0, op1);
+      expand_vec_cmp (gt, GT, mask, maskoff, op0, op1);
+      icode = code_for_pred (IOR, mask_mode);
+      rtx ops[] = {target, lt, gt};
+      emit_vlmax_insn (icode, RVV_BINOP, ops);
+      return;
+    }
+
+  rtx cmp = gen_rtx_fmt_ee (code, mask_mode, op0, op1);
+  rtx ops[] = {target, mask, maskoff, cmp, op0, op1};
+  emit_vlmax_cmp_mu_insn (icode, ops);
+}
+
+/* Expand an RVV floating-point comparison:
+
+   If CAN_INVERT_P is true, the caller can also handle inverted results;
+   return true if the result is in fact inverted.  */
+
+bool
+expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
+		      bool can_invert_p)
+{
+  machine_mode mask_mode = GET_MODE (target);
+  machine_mode data_mode = GET_MODE (op0);
+
+  /* If can_invert_p = true:
+     It suffices to implement a u>= b as !(a < b) but with the NaNs masked off:
+
+       vmfeq.vv    v0, va, va
+       vmfeq.vv    v1, vb, vb
+       vmand.mm    v0, v0, v1
+       vmflt.vv    v0, va, vb, v0.t
+       vmnot.m     v0, v0
+
+     And, if !HONOR_SNANS, then you can remove the vmand.mm by masking the
+     second vmfeq.vv:
+
+       vmfeq.vv    v0, va, va
+       vmfeq.vv    v0, vb, vb, v0.t
+       vmflt.vv    v0, va, vb, v0.t
+       vmnot.m     v0, v0
+
+     If can_invert_p = false:
+
+       # Example of implementing isgreater()
+       vmfeq.vv v0, va, va        # Only set where A is not NaN.
+       vmfeq.vv v1, vb, vb        # Only set where B is not NaN.
+       vmand.mm v0, v0, v1        # Only set where A and B are ordered,
+       vmfgt.vv v0, va, vb, v0.t  #  so only set flags on ordered values.
+  */
+
+  rtx eq0 = gen_reg_rtx (mask_mode);
+  rtx eq1 = gen_reg_rtx (mask_mode);
+  switch (code)
+    {
+    case EQ:
+    case NE:
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+    case LTGT:
+      /* There is native support for the comparison.  */
+      expand_vec_cmp (target, code, op0, op1);
+      return false;
+    case UNEQ:
+    case ORDERED:
+    case UNORDERED:
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+      /* vmfeq.vv v0, va, va  */
+      expand_vec_cmp (eq0, EQ, op0, op0);
+      if (HONOR_SNANS (data_mode))
+	{
+	  /*
+	     vmfeq.vv    v1, vb, vb
+	     vmand.mm    v0, v0, v1
+	  */
+	  expand_vec_cmp (eq1, EQ, op1, op1);
+	  insn_code icode = code_for_pred (AND, mask_mode);
+	  rtx ops[] = {eq0, eq0, eq1};
+	  emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, ops);
+	}
+      else
+	{
+	  /* vmfeq.vv    v0, vb, vb, v0.t  */
+	  expand_vec_cmp (eq0, EQ, eq0, eq0, op1, op1);
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (code == ORDERED)
+    {
+      emit_move_insn (target, eq0);
+      return false;
+    }
+
+  /* There is native support for the inverse comparison.  */
+  code = reverse_condition_maybe_unordered (code);
+  if (code == ORDERED)
+    emit_move_insn (target, eq0);
+  else
+    expand_vec_cmp (eq0, code, eq0, eq0, op0, op1);
+
+  if (can_invert_p)
+    {
+      emit_move_insn (target, eq0);
+      return true;
+    }
+  insn_code icode = code_for_pred_not (mask_mode);
+  rtx ops[] = {target, eq0};
+  emit_vlmax_insn (icode, RVV_UNOP, ops);
+  return false;
+}
+
+/* Expand an RVV vcond pattern with operands OPS.  DATA_MODE is the mode
+   of the data being merged and CMP_MODE is the mode of the values being
+   compared.  */
+
+void
+expand_vcond (rtx *ops)
+{
+  machine_mode cmp_mode = GET_MODE (ops[4]);
+  machine_mode data_mode = GET_MODE (ops[1]);
+  machine_mode mask_mode = get_mask_mode (cmp_mode).require ();
+  rtx mask = gen_reg_rtx (mask_mode);
+  if (FLOAT_MODE_P (cmp_mode))
+    {
+      if (expand_vec_cmp_float (mask, GET_CODE (ops[3]), ops[4], ops[5], true))
+	std::swap (ops[1], ops[2]);
+    }
+  else
+    expand_vec_cmp (mask, GET_CODE (ops[3]), ops[4], ops[5]);
+  emit_insn (
+    gen_vcond_mask (data_mode, data_mode, ops[0], ops[1], ops[2], mask));
 }
 
 } // namespace riscv_vector

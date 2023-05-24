@@ -137,6 +137,9 @@ enum insn_type
   RVV_MISC_OP = 1,
   RVV_UNOP = 2,
   RVV_BINOP = 3,
+  RVV_MERGE_OP = 4,
+  RVV_CMP_OP = 4,
+  RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
 };
 enum vlmul_type
 {
@@ -174,6 +177,9 @@ void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
+void emit_vlmax_merge_insn (unsigned, int, rtx *);
+void emit_vlmax_cmp_insn (unsigned, rtx *);
+void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);
@@ -204,6 +210,8 @@ bool simm5_p (rtx);
 bool neg_simm5_p (rtx);
 #ifdef RTX_CODE
 bool has_vi_variant_p (rtx_code, rtx);
+void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
+bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
@@ -226,6 +234,7 @@ machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
+void expand_vcond (rtx *);
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum vxrm_field_enum
 {
