@@ -3625,8 +3625,9 @@ do_hoist_insertion (basic_block block)
 
   /* We have multiple successors, compute ANTIC_OUT by taking the intersection
      of all of ANTIC_IN translating through PHI nodes.  Note we do not have to
-     worry about iteration stability here so just intersect the expression sets
-     as well.  This is a simplification of what we do in compute_antic_aux.  */
+     worry about iteration stability here so just use the expression set
+     from the first set and prune that by sorted_array_from_bitmap_set.
+     This is a simplification of what we do in compute_antic_aux.  */
   bitmap_set_t ANTIC_OUT = bitmap_set_new ();
   bool first = true;
   FOR_EACH_EDGE (e, ei, block->succs)
@@ -3641,15 +3642,10 @@ do_hoist_insertion (basic_block block)
 	  bitmap_set_t tmp = bitmap_set_new ();
 	  phi_translate_set (tmp, ANTIC_IN (e->dest), e);
 	  bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
-	  bitmap_and_into (&ANTIC_OUT->expressions, &tmp->expressions);
 	  bitmap_set_free (tmp);
 	}
       else
-	{
-	  bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
-	  bitmap_and_into (&ANTIC_OUT->expressions,
-			   &ANTIC_IN (e->dest)->expressions);
-	}
+	bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
     }
 
   /* Compute the set of hoistable expressions from ANTIC_OUT.  First compute
