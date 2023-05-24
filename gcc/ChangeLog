@@ -1,3 +1,8 @@
+2023-05-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_insn_cost): New static function.
+	(TARGET_INSN_COST): Define to that function.
+
 2023-05-22   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/70243
