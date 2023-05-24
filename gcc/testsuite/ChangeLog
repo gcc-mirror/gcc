@@ -1,3 +1,8 @@
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt101.adb: New test.
+	* gnat.dg/opt101_pkg.ads: New helper.
+
 2023-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

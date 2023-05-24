@@ -1,3 +1,15 @@
+2023-05-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_insn_cost): New static function.
+	(TARGET_INSN_COST): Define to that function.
+
+2023-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.cc (native_encode_initializer) <CONSTRUCTOR>: Apply the
+	specific treatment for bit-fields only if they have an integral type
+	and filter out non-integral bit-fields that do not start and end on
+	a byte boundary.
+
 2023-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
