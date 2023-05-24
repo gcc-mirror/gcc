@@ -214,9 +214,9 @@ fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 class fur_list : public fur_source
 {
 public:
-  fur_list (vrange &r1);
-  fur_list (vrange &r1, vrange &r2);
-  fur_list (unsigned num, vrange **list);
+  fur_list (vrange &r1, range_query *q = NULL);
+  fur_list (vrange &r1, vrange &r2, range_query *q = NULL);
+  fur_list (unsigned num, vrange **list, range_query *q = NULL);
   virtual bool get_operand (vrange &r, tree expr) override;
   virtual bool get_phi_operand (vrange &r, tree expr, edge e) override;
 private:
@@ -228,7 +228,7 @@ private:
 
 // One range supplied for unary operations.
 
-fur_list::fur_list (vrange &r1) : fur_source (NULL)
+fur_list::fur_list (vrange &r1, range_query *q) : fur_source (q)
 {
   m_list = m_local;
   m_index = 0;
@@ -238,7 +238,7 @@ fur_list::fur_list (vrange &r1) : fur_source (NULL)
 
 // Two ranges supplied for binary operations.
 
-fur_list::fur_list (vrange &r1, vrange &r2) : fur_source (NULL)
+fur_list::fur_list (vrange &r1, vrange &r2, range_query *q) : fur_source (q)
 {
   m_list = m_local;
   m_index = 0;
@@ -249,7 +249,8 @@ fur_list::fur_list (vrange &r1, vrange &r2) : fur_source (NULL)
 
 // Arbitrary number of ranges in a vector.
 
-fur_list::fur_list (unsigned num, vrange **list) : fur_source (NULL)
+fur_list::fur_list (unsigned num, vrange **list, range_query *q)
+  : fur_source (q)
 {
   m_list = list;
   m_index = 0;
@@ -278,20 +279,20 @@ fur_list::get_phi_operand (vrange &r, tree expr, edge e ATTRIBUTE_UNUSED)
 // Fold stmt S into range R using R1 as the first operand.
 
 bool
-fold_range (vrange &r, gimple *s, vrange &r1)
+fold_range (vrange &r, gimple *s, vrange &r1, range_query *q)
 {
   fold_using_range f;
-  fur_list src (r1);
+  fur_list src (r1, q);
   return f.fold_stmt (r, s, src);
 }
 
 // Fold stmt S into range R using R1  and R2 as the first two operands.
 
 bool
-fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2)
+fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2, range_query *q)
 {
   fold_using_range f;
-  fur_list src (r1, r2);
+  fur_list src (r1, r2, q);
   return f.fold_stmt (r, s, src);
 }
 
@@ -299,10 +300,11 @@ fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2)
 // operands encountered.
 
 bool
-fold_range (vrange &r, gimple *s, unsigned num_elements, vrange **vector)
+fold_range (vrange &r, gimple *s, unsigned num_elements, vrange **vector,
+	    range_query *q)
 {
   fold_using_range f;
-  fur_list src (num_elements, vector);
+  fur_list src (num_elements, vector, q);
   return f.fold_stmt (r, s, src);
 }
 
@@ -324,6 +326,108 @@ fold_range (vrange &r, gimple *s, edge on_edge, range_query *q)
   fold_using_range f;
   fur_edge src (on_edge, q);
   return f.fold_stmt (r, s, src);
+}
+
+// Provide a fur_source which can be used to determine any relations on
+// a statement.  It manages the callback from fold_using_ranges to determine
+// a relation_trio for a statement.
+
+class fur_relation : public fur_stmt
+{
+public:
+  fur_relation (gimple *s, range_query *q = NULL);
+  virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
+				  tree op2);
+  virtual void register_relation (edge e, relation_kind k, tree op1,
+				  tree op2);
+  relation_trio trio() const;
+private:
+  relation_kind def_op1, def_op2, op1_op2;
+};
+
+fur_relation::fur_relation (gimple *s, range_query *q) : fur_stmt (s, q)
+{
+  def_op1 = def_op2 = op1_op2 = VREL_VARYING;
+}
+
+// Construct a trio from what is known.
+
+relation_trio
+fur_relation::trio () const
+{
+  return relation_trio (def_op1, def_op2, op1_op2);
+}
+
+// Don't support edges, but avoid a compiler warning by providing the routine.
+
+void
+fur_relation::register_relation (edge, relation_kind, tree, tree)
+{
+}
+
+// Register relation K between OP1 and OP2 on STMT.
+
+void
+fur_relation::register_relation (gimple *stmt, relation_kind k, tree op1,
+				 tree op2)
+{
+  tree lhs = gimple_get_lhs (stmt);
+  tree a1 = NULL_TREE;
+  tree a2 = NULL_TREE;
+  switch (gimple_code (stmt))
+    {
+      case GIMPLE_COND:
+	a1 = gimple_cond_lhs (stmt);
+	a2 = gimple_cond_rhs (stmt);
+	break;
+      case GIMPLE_ASSIGN:
+	a1 = gimple_assign_rhs1 (stmt);
+	if (gimple_num_ops (stmt) >= 3)
+	  a2 = gimple_assign_rhs2 (stmt);
+	break;
+      default:
+	break;
+    }
+  // STMT is of the form LHS = A1 op A2, now map the relation to these
+  // operands, if possible.
+  if (op1 == lhs)
+    {
+      if (op2 == a1)
+	def_op1 = k;
+      else if (op2 == a2)
+	def_op2 = k;
+    }
+  else if (op2 == lhs)
+    {
+      if (op1 == a1)
+	def_op1 = relation_swap (k);
+      else if (op1 == a2)
+	def_op2 = relation_swap (k);
+    }
+  else
+    {
+      if (op1 == a1 && op2 == a2)
+	op1_op2 = k;
+      else if (op2 == a1 && op1 == a2)
+	op1_op2 = relation_swap (k);
+    }
+}
+
+// Return the relation trio for stmt S using query Q.
+
+relation_trio
+fold_relations (gimple *s, range_query *q)
+{
+  fold_using_range f;
+  fur_relation src (s, q);
+  tree lhs = gimple_range_ssa_p (gimple_get_lhs (s));
+  if (lhs)
+    {
+      Value_Range vr(TREE_TYPE (lhs));
+      if (f.fold_stmt (vr, s, src))
+	return src.trio ();
+    }
+  return TRIO_VARYING;
 }
 
 // -------------------------------------------------------------------------
