@@ -1550,9 +1550,10 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
       emit_move_insn (target, eq0);
       return true;
     }
-  insn_code icode = code_for_pred_not (mask_mode);
-  rtx ops[] = {target, eq0};
-  emit_vlmax_insn (icode, RVV_UNOP, ops);
+
+  /* We use one_cmpl<mode>2 to make Combine PASS to combine mask instructions
+     into: vmand.mm/vmnor.mm/vmnand.mm/vmnor.mm/vmxnor.mm.  */
+  emit_insn (gen_rtx_SET (target, gen_rtx_NOT (mask_mode, eq0)));
   return false;
 }
 
