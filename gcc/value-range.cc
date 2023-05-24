@@ -269,14 +269,14 @@ add_vrange (const vrange &v, inchash::hash &hstate,
   if (is_a <frange> (v))
     {
       const frange &r = as_a <frange> (v);
-      if (r.varying_p ())
-	hstate.add_int (VR_VARYING);
+      if (r.known_isnan ())
+	hstate.add_int (VR_NAN);
       else
-	hstate.add_int (VR_RANGE);
-
-      hstate.add_real_value (r.lower_bound ());
-      hstate.add_real_value (r.upper_bound ());
-
+	{
+	  hstate.add_int (r.varying_p () ? VR_VARYING : VR_RANGE);
+	  hstate.add_real_value (r.lower_bound ());
+	  hstate.add_real_value (r.upper_bound ());
+	}
       nan_state nan = r.get_nan_state ();
       hstate.add_int (nan.pos_p ());
       hstate.add_int (nan.neg_p ());
