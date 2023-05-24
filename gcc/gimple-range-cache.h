@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "gimple-range-gori.h" 
 #include "gimple-range-infer.h"
+#include "gimple-range-phi.h"
 
 // This class manages a vector of pointers to ssa_block ranges.  It
 // provides the basis for the "range on entry" cache for all
@@ -136,6 +137,7 @@ private:
   void exit_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
   bool edge_range (vrange &r, edge e, tree name, enum rfd_mode);
 
+  phi_analyzer *m_estimate;
   vec<basic_block> m_workback;
   class update_list *m_update;
 };

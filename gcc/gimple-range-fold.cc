@@ -934,6 +934,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	  }
       }
 
+  bool loop_info_p = false;
   // If SCEV is available, query if this PHI has any known values.
   if (scev_initialized_p ()
       && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
@@ -956,6 +957,32 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 		  fprintf (dump_file, "\n");
 		}
 	      r.intersect (loop_range);
+	      loop_info_p = true;
+	    }
+	}
+    }
+
+  if (!loop_info_p && phi_analysis_available_p ()
+      && irange::supports_p (TREE_TYPE (phi_def)))
+    {
+      phi_group *g = (phi_analysis())[phi_def];
+      if (g && !(g->range ().varying_p ()))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "   PHI group range found for ");
+	      print_generic_expr (dump_file, phi_def, TDF_SLIM);
+	      fprintf (dump_file, ": ");
+	      g->range ().dump (dump_file);
+	      fprintf (dump_file, " and adjusted original range from :");
+	      r.dump (dump_file);
+	    }
+	  r.intersect (g->range ());
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, " to :");
+	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
 	    }
 	}
     }
