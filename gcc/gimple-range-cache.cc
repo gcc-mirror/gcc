@@ -545,6 +545,20 @@ ssa_cache::~ssa_cache ()
   delete m_range_allocator;
 }
 
+// Enable a query to evaluate staements/ramnges based on picking up ranges
+// from just an ssa-cache.
+
+bool
+ssa_cache::range_of_expr (vrange &r, tree expr, gimple *stmt)
+{
+  if (!gimple_range_ssa_p (expr))
+    return get_tree_range (r, expr, stmt);
+
+  if (!get_range (r, expr))
+    gimple_range_global (r, expr, cfun);
+  return true;
+}
+
 // Return TRUE if the global range of NAME has a cache entry.
 
 bool

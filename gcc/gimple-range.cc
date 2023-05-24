@@ -70,6 +70,14 @@ gimple_ranger::~gimple_ranger ()
   m_stmt_list.release ();
 }
 
+// Return a range_query which accesses just the known global values.
+
+range_query &
+gimple_ranger::const_query ()
+{
+  return m_cache.const_query ();
+}
+
 bool
 gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
 {

@@ -52,7 +52,7 @@ private:
 // has been visited during this incarnation.  Once the ranger evaluates
 // a name, it is typically not re-evaluated again.
 
-class ssa_cache
+class ssa_cache : public range_query
 {
 public:
   ssa_cache ();
@@ -63,6 +63,8 @@ public:
   virtual void clear_range (tree name);
   virtual void clear ();
   void dump (FILE *f = stderr);
+  virtual bool range_of_expr (vrange &r, tree expr, gimple *stmt);
+
 protected:
   vec<vrange_storage *> m_tab;
   vrange_allocator *m_range_allocator;
@@ -103,6 +105,7 @@ public:
   bool get_global_range (vrange &r, tree name) const;
   bool get_global_range (vrange &r, tree name, bool &current_p);
   void set_global_range (tree name, const vrange &r, bool changed = true);
+  range_query &const_query () { return m_globals; }
 
   void propagate_updated_value (tree name, basic_block bb);
 
