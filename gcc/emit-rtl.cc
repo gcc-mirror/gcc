@@ -987,6 +987,10 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
+  /* Do not allow SUBREG with stricter alignment than the inner MEM.  */
+  else if (reg && MEM_P (reg) && STRICT_ALIGNMENT
+	   && MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (omode))
+    return false;
 
   /* The outer size must be ordered wrt the register size, otherwise
      we wouldn't know at compile time how many registers the outer
