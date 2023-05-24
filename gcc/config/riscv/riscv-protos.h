@@ -251,7 +251,7 @@ enum frm_field_enum
   FRM_RDN = 0b010,
   FRM_RUP = 0b011,
   FRM_RMM = 0b100,
-  DYN = 0b111
+  FRM_DYN = 0b111
 };
 }
 
