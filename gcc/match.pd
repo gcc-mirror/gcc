@@ -4721,6 +4721,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
+(simplify
+ (cond @0 zero_one_valued_p@1 zero_one_valued_p@2)
+ (switch
+  /* bool0 ? bool1 : 0 -> bool0 & bool1 */
+  (if (integer_zerop (@2))
+   (bit_and (convert @0) @1))
+  /* bool0 ? 0 : bool2 -> (bool0^1) & bool2 */
+  (if (integer_zerop (@1))
+   (bit_and (bit_xor (convert @0) { build_one_cst (type); } ) @2))
+  /* bool0 ? 1 : bool2 -> bool0 | bool2 */
+  (if (integer_onep (@1))
+   (bit_ior (convert @0) @2))
+  /* bool0 ? bool1 : 1 -> (bool0^1) | bool1 */
+  (if (integer_onep (@2))
+   (bit_ior (bit_xor (convert @0) @2) @1))
+ )
+)
+
 /* Optimize
    # x_5 in range [cst1, cst2] where cst2 = cst1 + 1
    x_5 ? cstN ? cst4 : cst3

@@ -14,10 +14,8 @@ _Bool f1(_Bool a, _Bool b)
 }
 
 
-/* There should be only one if, the outer one; the inner one
-   should have been changed to straight line code with the
-   value of b (except that we don't fold ! (b != 0) into b
-   which can be fixed in a different patch).
-   Test this only when known to be !LOGICAL_OP_NON_SHORT_CIRCUIT,
-   otherwise ifcombine may convert this into return a & b;.  */
-/* { dg-final { scan-tree-dump-times "if" 1 "optimized" } } */
+/* There should be no if statements and be fold into just return a & b.
+   This can be done without ifcombine but in phiopt where a ? b : 0 is
+   converted into a & b. */
+/* { dg-final { scan-tree-dump-not "if" "optimized" } } */
+/* { dg-final { scan-tree-dump-times " & " 1 "optimized" } } */
