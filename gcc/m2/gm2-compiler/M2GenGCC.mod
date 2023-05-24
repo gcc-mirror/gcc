@@ -41,6 +41,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         NoOfParam, GetParent, GetDimension, IsAModula2Type,
                         IsModule, IsDefImp, IsType, IsModuleWithinProcedure,
                         IsConstString, GetString, GetStringLength,
+                        IsConstStringCnul, IsConstStringM2nul,
                         IsConst, IsConstSet, IsProcedure, IsProcType,
                         IsVar, IsVarParam, IsTemporary,
                         IsEnumeration,
@@ -5500,7 +5501,12 @@ VAR
    location: location_t ;
 BEGIN
    location := TokenToLocation(GetDeclaredMod(operand)) ;
-   RETURN( GetCardinalZero(location) )
+   IF IsConstString (operand) AND
+      (IsConstStringM2nul (operand) OR IsConstStringCnul (operand))
+   THEN
+      RETURN GetCardinalOne (location)
+   END ;
+   RETURN GetCardinalZero (location)
 END BuildHighFromChar ;
 
 
