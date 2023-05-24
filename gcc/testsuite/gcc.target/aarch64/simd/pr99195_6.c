@@ -25,6 +25,16 @@ MYOP (uint16x8_t, uint16x4_t, int16x4_t, sqadd, u16)
 MYOP (uint32x4_t, uint32x2_t, int32x2_t, sqadd, u32)
 MYOP (uint64x2_t, uint64x1_t, int64x1_t, sqadd, u64)
 
+MYOP (uint8x16_t, uint8x8_t, int8x8_t, shl, u8)
+MYOP (uint16x8_t, uint16x4_t, int16x4_t, shl, u16)
+MYOP (uint32x4_t, uint32x2_t, int32x2_t, shl, u32)
+MYOP (uint64x2_t, uint64x1_t, int64x1_t, shl, u64)
+
+MYOP (uint8x16_t, uint8x8_t, int8x8_t, qshl, u8)
+MYOP (uint16x8_t, uint16x4_t, int16x4_t, qshl, u16)
+MYOP (uint32x4_t, uint32x2_t, int32x2_t, qshl, u32)
+MYOP (uint64x2_t, uint64x1_t, int64x1_t, qshl, u64)
+
 /* { dg-final { scan-assembler-not {\tfmov\t} } }  */
 /* { dg-final { scan-assembler-not {\tmov\t} } }  */
 

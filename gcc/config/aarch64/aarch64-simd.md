@@ -1280,7 +1280,7 @@
   DONE;
 })
 
-(define_insn "aarch64_simd_lshr<mode>"
+(define_insn "aarch64_simd_lshr<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (lshiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "Dr")))]
@@ -1289,7 +1289,7 @@
   [(set_attr "type" "neon_shift_imm<q>")]
 )
 
-(define_insn "aarch64_simd_ashr<mode>"
+(define_insn "aarch64_simd_ashr<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
        (ashiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,w")
 		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "D1,Dr")))]
@@ -1312,7 +1312,7 @@
   [(set_attr "type" "neon_shift_acc<q>")]
 )
 
-(define_insn "aarch64_simd_imm_shl<mode>"
+(define_insn "aarch64_simd_imm_shl<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		   (match_operand:VDQ_I  2 "aarch64_simd_lshift_imm" "Dl")))]
@@ -1321,7 +1321,7 @@
   [(set_attr "type" "neon_shift_imm<q>")]
 )
 
-(define_insn "aarch64_simd_reg_sshl<mode>"
+(define_insn "aarch64_simd_reg_sshl<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		   (match_operand:VDQ_I 2 "register_operand" "w")))]
@@ -1330,7 +1330,7 @@
   [(set_attr "type" "neon_shift_reg<q>")]
 )
 
-(define_insn "aarch64_simd_reg_shl<mode>_unsigned"
+(define_insn "aarch64_simd_reg_shl<mode>_unsigned<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (unspec:VDQ_I [(match_operand:VDQ_I 1 "register_operand" "w")
 		    (match_operand:VDQ_I 2 "register_operand" "w")]
@@ -1340,7 +1340,7 @@
   [(set_attr "type" "neon_shift_reg<q>")]
 )
 
-(define_insn "aarch64_simd_reg_shl<mode>_signed"
+(define_insn "aarch64_simd_reg_shl<mode>_signed<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (unspec:VDQ_I [(match_operand:VDQ_I 1 "register_operand" "w")
 		    (match_operand:VDQ_I 2 "register_operand" "w")]
@@ -1522,7 +1522,7 @@
 )
 
 ;; For 64-bit modes we use ushl/r, as this does not require a SIMD zero.
-(define_insn "vec_shr_<mode>"
+(define_insn "vec_shr_<mode><vczle><vczbe>"
   [(set (match_operand:VD 0 "register_operand" "=w")
         (unspec:VD [(match_operand:VD 1 "register_operand" "w")
 		    (match_operand:SI 2 "immediate_operand" "i")]
@@ -6340,7 +6340,7 @@
 
 ;; vshl
 
-(define_insn "aarch64_<sur>shl<mode>"
+(define_insn "aarch64_<sur>shl<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
         (unspec:VSDQ_I_DI
 	  [(match_operand:VSDQ_I_DI 1 "register_operand" "w")
@@ -6354,7 +6354,7 @@
 
 ;; vqshl
 
-(define_insn "aarch64_<sur>q<r>shl<mode>"
+(define_insn "aarch64_<sur>q<r>shl<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
         (unspec:VSDQ_I
 	  [(match_operand:VSDQ_I 1 "register_operand" "w")
