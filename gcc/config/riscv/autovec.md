@@ -32,7 +32,7 @@
   "TARGET_VECTOR"
 {
   riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
-  				    riscv_vector::RVV_UNOP, operands);
+  				    riscv_vector::RVV_UNOP, operands, operands[2]);
   DONE;
 })
 
@@ -44,7 +44,7 @@
   "TARGET_VECTOR"
 {
   riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
-  				    riscv_vector::RVV_UNOP, operands);
+  				    riscv_vector::RVV_UNOP, operands, operands[2]);
   DONE;
 })
 
