@@ -12026,7 +12026,14 @@ elements in the operand.
 It is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
-@dots{}, an >> bn@}}@. Vector operands must have the same number of
+@dots{}, an >> bn@}}@.  Unlike OpenCL, values of @code{b} are not
+implicitly taken modulo bit width of the base type @code{B}, and the behavior
+is undefined if any @code{bi} is greater than or equal to @code{B}.
+
+In contrast to scalar operations in C and C++, operands of integer vector
+operations do not undergo integer promotions.
+
+Operands of binary vector operations must have the same number of
 elements. 
 
 For convenience, it is allowed to use a binary vector operation
