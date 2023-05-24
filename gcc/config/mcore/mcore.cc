@@ -1182,7 +1182,7 @@ output_inline_const (machine_mode mode, rtx operands[])
   int trick_no;
   rtx out_operands[3];
   char buf[256];
-  char load_op[256];
+  char load_op[128];
   const char *dst_fmt;
   HOST_WIDE_INT value;
 
