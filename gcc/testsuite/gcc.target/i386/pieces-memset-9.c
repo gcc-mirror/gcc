@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64 -mavx512f -mtune=generic" } */
+/* Cope with --enable-frame-pointer.  */
+/* { dg-additional-options "-fomit-frame-pointer" } */
 
 extern char *dst;
 
