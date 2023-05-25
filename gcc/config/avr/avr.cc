@@ -10843,6 +10843,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
             *total += COSTS_N_INSNS (1);
           return true;
         }
+      if (IOR == code
+          && AND == GET_CODE (XEXP (x, 0))
+          && AND == GET_CODE (XEXP (x, 1))
+          && single_zero_operand (XEXP (XEXP (x, 0), 1), mode))
+        {
+          // Open-coded bit transfer.
+          *total = COSTS_N_INSNS (2);
+          return true;
+        }
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
       if (!CONST_INT_P (XEXP (x, 1)))
