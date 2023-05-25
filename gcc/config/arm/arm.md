@@ -7466,7 +7466,7 @@
       && !arm_const_double_rtx (operands[1])
       && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
     {
-      rtx clobreg = gen_reg_rtx (DFmode);
+      rtx clobreg = gen_reg_rtx (DImode);
       emit_insn (gen_no_literal_pool_df_immediate (operands[0], operands[1],
 						   clobreg));
       DONE;
