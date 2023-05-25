@@ -1003,7 +1003,7 @@ public:
 
   Identifier get_name () const { return module_name; }
 
-  Kind get_ast_kind () const override { return Kind::MODULE; }
+  AST::Kind get_ast_kind () const override { return AST::Kind::MODULE; }
 
 private:
   Identifier module_name;

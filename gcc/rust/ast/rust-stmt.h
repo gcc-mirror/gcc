@@ -48,6 +48,8 @@ public:
 
   bool is_item () const override final { return false; }
 
+  Stmt::Kind get_stmt_kind () final { return Stmt::Kind::Empty; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -172,6 +174,7 @@ public:
   }
 
   bool is_item () const override final { return false; }
+  Stmt::Kind get_stmt_kind () final { return Stmt::Kind::Let; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -198,6 +201,8 @@ public:
   void add_semicolon () override final { semicolon_followed = true; }
 
   std::string as_string () const override;
+
+  Stmt::Kind get_stmt_kind () final { return Stmt::Kind::Expr; }
 
   std::vector<LetStmt *> locals;
 
