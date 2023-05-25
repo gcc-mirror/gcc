@@ -1009,8 +1009,7 @@
 	(ashift:SI (match_dup 0)
 		   (match_dup 3)))]
 {
-  int pos = INTVAL (operands[2]),
-      shift = floor_log2 (INTVAL (operands[3]));
+  int pos = INTVAL (operands[2]), shift = floor_log2 (INTVAL (operands[3]));
   switch (GET_CODE (operands[4]))
     {
     case ASHIFT:
@@ -1029,7 +1028,10 @@
 }
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"6")])
+   (set (attr "length")
+        (if_then_else (match_test "TARGET_DENSITY && INTVAL (operands[3]) == 2")
+		      (const_int 5)
+		      (const_int 6)))])
 
 (define_insn_and_split "*extzvsi-1bit_addsubx"
   [(set (match_operand:SI 0 "register_operand" "=a")
@@ -1053,8 +1055,7 @@
 			    (match_dup 4))
 		 (match_dup 2)]))]
 {
-  int pos = INTVAL (operands[3]),
-      shift = floor_log2 (INTVAL (operands[4]));
+  int pos = INTVAL (operands[3]), shift = floor_log2 (INTVAL (operands[4]));
   switch (GET_CODE (operands[6]))
     {
     case ASHIFT:
