@@ -6257,8 +6257,6 @@ arc_call_tls_get_addr (rtx ti)
   return ret;
 }
 
-#define DTPOFF_ZERO_SYM ".tdata"
-
 /* Return a legitimized address for ADDR,
    which is a SYMBOL_REF with tls_model MODEL.  */
 
@@ -6267,36 +6265,16 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
 {
   rtx tmp;
 
-  if (!flag_pic && model == TLS_MODEL_LOCAL_DYNAMIC)
-    model = TLS_MODEL_LOCAL_EXEC;
-
-
   /* The TP pointer needs to be set.  */
   gcc_assert (arc_tp_regno != -1);
 
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
+    case TLS_MODEL_LOCAL_DYNAMIC:
       tmp = gen_reg_rtx (Pmode);
       emit_move_insn (tmp, arc_unspec_offset (addr, UNSPEC_TLS_GD));
       return arc_call_tls_get_addr (tmp);
-
-    case TLS_MODEL_LOCAL_DYNAMIC:
-      rtx base;
-      tree decl;
-      const char *base_name;
-
-      decl = SYMBOL_REF_DECL (addr);
-      base_name = DTPOFF_ZERO_SYM;
-      if (decl && bss_initializer_p (decl))
-	base_name = ".tbss";
-
-      base = gen_rtx_SYMBOL_REF (Pmode, base_name);
-      tmp = gen_reg_rtx (Pmode);
-      emit_move_insn (tmp, arc_unspec_offset (base, UNSPEC_TLS_GD));
-      base = arc_call_tls_get_addr (tmp);
-      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base),
-			   arc_unspec_offset (addr, UNSPEC_TLS_OFF));
 
     case TLS_MODEL_INITIAL_EXEC:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
