@@ -200,9 +200,11 @@ enum riscv_entity
 
 #define MASK_ZFHMIN   (1 << 0)
 #define MASK_ZFH      (1 << 1)
+#define MASK_ZVFHMIN  (1 << 2)
 
-#define TARGET_ZFHMIN ((riscv_zf_subext & MASK_ZFHMIN) != 0)
-#define TARGET_ZFH    ((riscv_zf_subext & MASK_ZFH) != 0)
+#define TARGET_ZFHMIN  ((riscv_zf_subext & MASK_ZFHMIN) != 0)
+#define TARGET_ZFH     ((riscv_zf_subext & MASK_ZFH) != 0)
+#define TARGET_ZVFHMIN ((riscv_zf_subext & MASK_ZVFHMIN) != 0)
 
 #define MASK_ZMMUL      (1 << 0)
 #define TARGET_ZMMUL    ((riscv_zm_subext & MASK_ZMMUL) != 0)
