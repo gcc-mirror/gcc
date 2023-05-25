@@ -117,3 +117,6 @@ VAR1 (BINOP, smuadx, si)
 
 VAR1 (SAT_BINOP_UNSIGNED_IMM, ssat16, si)
 VAR1 (SAT_BINOP_UNSIGNED_IMM, usat16, si)
+
+VAR1 (BSWAP, rbit, si)
+VAR1 (BSWAP, rev16si2, si)
