@@ -199,6 +199,11 @@ begin
    Write_Switch_Char ("eG");
    Write_Line ("Generate preprocessed source");
 
+   --  Line for -gnateH switch
+
+   Write_Switch_Char ("eH");
+   Write_Line ("Set reverse Bit_Order threshold to 64");
+
    --  Line for -gnatei switch
 
    Write_Switch_Char ("einn");

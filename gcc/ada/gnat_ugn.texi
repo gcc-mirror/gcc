@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jun 01, 2023
+GNAT User's Guide for Native Platforms , Jun 16, 2023
 
 AdaCore
 
@@ -9073,6 +9073,18 @@ information.
 @item @code{-gnateG}
 
 Save result of preprocessing in a text file.
+@end table
+
+@geindex -gnateH (gcc)
+
+
+@table @asis
+
+@item @code{-gnateH}
+
+Set the threshold from which the RM 13.5.1(13.3/2) clause applies to 64.
+This is useful only on 64-bit plaforms where this threshold is 128, but
+used to be 64 in earlier versions of the compiler.
 @end table
 
 @geindex -gnatei (gcc)
