@@ -10836,7 +10836,12 @@ vectorizable_condition (vec_info *vinfo,
       if (reduction_type == EXTRACT_LAST_REDUCTION)
 	/* Count one reduction-like operation per vector.  */
 	kind = vec_to_scalar;
-      else if (!expand_vec_cond_expr_p (vectype, comp_vectype, cond_code))
+      else if (!expand_vec_cond_expr_p (vectype, comp_vectype, cond_code)
+	       && (masked
+		   || (!expand_vec_cmp_expr_p (comp_vectype, vec_cmp_type,
+					       cond_code)
+		       || !expand_vec_cond_expr_p (vectype, vec_cmp_type,
+						   ERROR_MARK))))
 	return false;
 
       if (slp_node
