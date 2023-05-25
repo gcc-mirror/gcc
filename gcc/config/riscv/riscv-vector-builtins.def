@@ -94,6 +94,11 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_RVV_VXRM_ENUM(NAME, VALUE)
 #endif
 
+/* Define RVV_FRM rounding mode enum for floating-point intrinsics.  */
+#ifndef DEF_RVV_FRM_ENUM
+#define DEF_RVV_FRM_ENUM(NAME, VALUE)
+#endif
+
 /* SEW/LMUL = 64:
    Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = VNx1BImode when TARGET_MIN_VLEN < 128.
@@ -674,6 +679,12 @@ DEF_RVV_VXRM_ENUM (RNE, VXRM_RNE)
 DEF_RVV_VXRM_ENUM (RDN, VXRM_RDN)
 DEF_RVV_VXRM_ENUM (ROD, VXRM_ROD)
 
+DEF_RVV_FRM_ENUM (RNE, FRM_RNE)
+DEF_RVV_FRM_ENUM (RTZ, FRM_RTZ)
+DEF_RVV_FRM_ENUM (RDN, FRM_RDN)
+DEF_RVV_FRM_ENUM (RUP, FRM_RUP)
+DEF_RVV_FRM_ENUM (RMM, FRM_RMM)
+
 #include "riscv-vector-type-indexer.gen.def"
 
 #undef DEF_RVV_PRED_TYPE
@@ -683,3 +694,4 @@ DEF_RVV_VXRM_ENUM (ROD, VXRM_ROD)
 #undef DEF_RVV_BASE_TYPE
 #undef DEF_RVV_TYPE_INDEX
 #undef DEF_RVV_VXRM_ENUM
+#undef DEF_RVV_FRM_ENUM
