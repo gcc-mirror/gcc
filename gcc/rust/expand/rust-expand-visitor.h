@@ -16,10 +16,25 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef RUST_EXPAND_VISITOR_H
+#define RUST_EXPAND_VISITOR_H
+
 #include "rust-ast-visitor.h"
 #include "rust-macro-expand.h"
 
 namespace Rust {
+
+/**
+ * Whether or not an attribute is a derive attribute
+ */
+bool
+is_derive (AST::Attribute &attr);
+
+/**
+ * Whether or not an attribute is builtin
+ */
+bool
+is_builtin (AST::Attribute &attr);
 
 class ExpandVisitor : public AST::ASTVisitor
 {
@@ -64,6 +79,7 @@ public:
    */
   void expand_qualified_path_type (AST::QualifiedPathType &path_type);
 
+  // FIXME: Add documentation
   void expand_closure_params (std::vector<AST::ClosureParam> &params);
   void expand_self_param (AST::SelfParam &self_param);
   void expand_where_clause (AST::WhereClause &where_clause);
@@ -88,6 +104,20 @@ public:
   {
     expander.push_context (ctx);
 
+    expand_macro_children (values, extractor);
+
+    expander.pop_context ();
+  }
+
+  /**
+   * Same as `expand_macro_children`, but does not push a context. This is
+   * useful if you're already pushing the context manually anyway for proc macro
+   * expansion, like in `expand_inner_{items, stmts}`
+   */
+  template <typename T, typename U>
+  void expand_macro_children (T &values,
+			      std::function<U (AST::SingleASTNode)> extractor)
+  {
     for (auto it = values.begin (); it != values.end ();)
       {
 	auto &value = *it;
@@ -116,9 +146,18 @@ public:
 	    ++it;
 	  }
       }
-
-    expander.pop_context ();
   }
+
+  /**
+   * Perform in-place expansion of procedural macros and macro invocations for
+   * an item container or statement container, such as `AST::Crate`,
+   * `AST::Module` or `AST::BlockExpr`. This function will insert the expanded
+   * nodes in place, and replace macro invocations with their expanded nodes.
+   *
+   * @param values Vector of values to mutate in-place and append into
+   */
+  void expand_inner_items (std::vector<std::unique_ptr<AST::Item>> &values);
+  void expand_inner_stmts (std::vector<std::unique_ptr<AST::Stmt>> &values);
 
   // TODO: See if possible to make more specialization for Impl items, Block
   // stmts etc? This could allow us to remove expand_macro_children or at least
@@ -325,8 +364,6 @@ public:
 
   template <typename T> void visit_inner_attrs (T &item);
 
-  bool is_derive (AST::Attribute &attr);
-
   template <typename T>
   void expand_derive (const T &item, std::unique_ptr<AST::TokenTree> &trait);
 
@@ -335,10 +372,10 @@ public:
 
   template <typename T> void visit_attrs_with_derive (T &item);
 
-  bool is_builtin (AST::Attribute &attr);
-
 private:
   MacroExpander &expander;
 };
 
 } // namespace Rust
+
+#endif // RUST_EXPAND_VISITOR_H

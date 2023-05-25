@@ -11,7 +11,8 @@ macro_rules! nonzero_integers {
             /// assert_eq!(size_of::<Option<std::num::NonZeroU32>>(), size_of::<u32>());
             /// ```
             #[stable(feature = "nonzero", since = "1.28.0")]
-            #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            // not all derive macros are implemented yet, and this test does not test these anyways
+            // #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
             pub struct $Ty(NonZero<$Int>);
 

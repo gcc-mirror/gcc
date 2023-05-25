@@ -876,14 +876,18 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
 		   });
   if (should_be_builtin)
     {
-      auto builtin
+      auto builtin = MacroBuiltin::builtins.lookup (macro->get_rule_name ());
+      if (!MacroBuiltin::builtins.is_iter_ok (builtin))
+	{
+	  rust_error_at (macro->get_locus (),
+			 "cannot find a built-in macro with name %qs",
+			 macro->get_rule_name ().c_str ());
+	  return;
+	}
+
+      auto transcriber
 	= MacroBuiltin::builtin_transcribers.find (macro->get_rule_name ());
-      if (builtin != MacroBuiltin::builtin_transcribers.end ())
-	macro->set_builtin_transcriber (builtin->second);
-      else
-	rust_error_at (macro->get_locus (),
-		       "cannot find a built-in macro with name %qs",
-		       macro->get_rule_name ().c_str ());
+      macro->set_builtin_transcriber (transcriber->second);
     }
 
   auto it = macroMappings.find (macro->get_node_id ());
