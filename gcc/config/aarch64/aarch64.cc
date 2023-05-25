@@ -22332,6 +22332,45 @@ aarch64_unzip_vector_init (machine_mode mode, rtx vals, bool even_p)
   return gen_rtx_PARALLEL (new_mode, vec);
 }
 
+/* Return true if SET is a scalar move.  */
+
+static bool
+scalar_move_insn_p (rtx set)
+{
+  rtx src = SET_SRC (set);
+  rtx dest = SET_DEST (set);
+  return (is_a<scalar_mode> (GET_MODE (dest))
+	  && aarch64_mov_operand (src, GET_MODE (dest)));
+}
+
+/* Similar to seq_cost, but ignore cost for scalar moves.  */
+
+static unsigned
+seq_cost_ignoring_scalar_moves (const rtx_insn *seq, bool speed)
+{
+  unsigned cost = 0;
+
+  for (; seq; seq = NEXT_INSN (seq))
+    if (NONDEBUG_INSN_P (seq))
+      {
+	if (rtx set = single_set (seq))
+	  {
+	    if (!scalar_move_insn_p (set))
+	      cost += set_rtx_cost (set, speed);
+	  }
+	else
+	  {
+	    int this_cost = insn_cost (CONST_CAST_RTX_INSN (seq), speed);
+	    if (this_cost > 0)
+	      cost += this_cost;
+	    else
+	      cost++;
+	  }
+      }
+
+  return cost;
+}
+
 /* Expand a vector initialization sequence, such that TARGET is
    initialized to contain VALS.  */
 
@@ -22367,7 +22406,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       halves[i] = gen_rtx_SUBREG (mode, tmp_reg, 0);
       rtx_insn *rec_seq = get_insns ();
       end_sequence ();
-      costs[i] = seq_cost (rec_seq, !optimize_size);
+      costs[i] = seq_cost_ignoring_scalar_moves (rec_seq, !optimize_size);
       emit_insn (rec_seq);
     }
 
@@ -22384,7 +22423,8 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   start_sequence ();
   aarch64_expand_vector_init_fallback (target, vals);
   rtx_insn *fallback_seq = get_insns ();
-  unsigned fallback_seq_cost = seq_cost (fallback_seq, !optimize_size);
+  unsigned fallback_seq_cost
+    = seq_cost_ignoring_scalar_moves (fallback_seq, !optimize_size);
   end_sequence ();
 
   emit_insn (seq_total_cost < fallback_seq_cost ? seq : fallback_seq);
