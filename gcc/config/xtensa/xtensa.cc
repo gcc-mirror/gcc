@@ -472,6 +472,13 @@ xtensa_b4constu (HOST_WIDE_INT v)
 
 
 bool
+xtensa_m1_or_1_thru_15 (HOST_WIDE_INT v)
+{
+  return v == -1 || IN_RANGE (v, 1, 15);
+}
+
+
+bool
 xtensa_mask_immediate (HOST_WIDE_INT v)
 {
   return IN_RANGE (exact_log2 (v + 1), 1, 16);

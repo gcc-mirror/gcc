@@ -216,6 +216,30 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
+(define_insn_and_split "*subsi3_from_const"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(minus:SI (match_operand:SI 1 "const_int_operand" "i")
+		  (match_operand:SI 2 "register_operand" "r")))]
+  "xtensa_simm8 (-INTVAL (operands[1]))
+   || xtensa_simm8x256 (-INTVAL (operands[1]))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(plus:SI (match_dup 2)
+		 (match_dup 1)))
+   (set (match_dup 0)
+	(neg:SI (match_dup 0)))]
+{
+  operands[1] = GEN_INT (-INTVAL (operands[1]));
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && xtensa_m1_or_1_thru_15 (-INTVAL (operands[1]))")
+		      (const_int 5)
+		      (const_int 6)))])
+
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(minus:SF (match_operand:SF 1 "register_operand" "f")

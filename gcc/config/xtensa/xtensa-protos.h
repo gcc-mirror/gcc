@@ -27,6 +27,7 @@ extern bool xtensa_simm8x256 (HOST_WIDE_INT);
 extern bool xtensa_simm12b (HOST_WIDE_INT);
 extern bool xtensa_b4const_or_zero (HOST_WIDE_INT);
 extern bool xtensa_b4constu (HOST_WIDE_INT);
+extern bool xtensa_m1_or_1_thru_15 (HOST_WIDE_INT);
 extern bool xtensa_mask_immediate (HOST_WIDE_INT);
 extern bool xtensa_mem_offset (unsigned, machine_mode);
 
