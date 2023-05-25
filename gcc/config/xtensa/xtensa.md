@@ -1547,9 +1547,7 @@
    (match_operand:SI 3 "const_int_operand")]
   "!optimize_debug && optimize"
 {
-  if (xtensa_expand_block_set_unrolled_loop (operands))
-    DONE;
-  if (xtensa_expand_block_set_small_loop (operands))
+  if (xtensa_expand_block_set (operands))
     DONE;
   FAIL;
 })
