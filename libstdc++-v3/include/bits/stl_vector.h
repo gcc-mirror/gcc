@@ -388,6 +388,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
     protected:
+
+      __attribute__((__always_inline__))
+      _GLIBCXX20_CONSTEXPR void
+      _M_invariant() const
+      {
+#if __OPTIMIZE__
+	if (this->_M_impl._M_finish < this->_M_impl._M_start)
+	  __builtin_unreachable();
+	if (this->_M_impl._M_finish > this->_M_impl._M_end_of_storage)
+	  __builtin_unreachable();
+
+	size_t __sz = this->_M_impl._M_finish - this->_M_impl._M_start;
+	size_t __cap = this->_M_impl._M_end_of_storage - this->_M_impl._M_start;
+	if (__sz > __cap)
+	  __builtin_unreachable();
+#endif
+      }
+
       _GLIBCXX20_CONSTEXPR
       void
       _M_create_storage(size_t __n)
@@ -987,7 +1005,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
+      {
+	_Base::_M_invariant();
+	return size_type(this->_M_impl._M_finish - this->_M_impl._M_start);
+      }
 
       /**  Returns the size() of the largest possible %vector.  */
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -1073,8 +1094,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
-      { return size_type(this->_M_impl._M_end_of_storage
-			 - this->_M_impl._M_start); }
+      {
+	_Base::_M_invariant();
+	return size_type(this->_M_impl._M_end_of_storage
+			   - this->_M_impl._M_start);
+      }
 
       /**
        *  Returns true if the %vector is empty.  (Thus begin() would
