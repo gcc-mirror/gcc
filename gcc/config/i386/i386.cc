@@ -20497,75 +20497,109 @@ ix86_multiplication_cost (const struct processor_costs *cost,
     return  ix86_vec_cost (mode,
 			   inner_mode == DFmode ? cost->mulsd : cost->mulss);
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-    switch (mode)
-      {
-      case V4QImode:
-      case V8QImode:
-	/* Partial V*QImode is emulated with 4-6 insns.  */
-	if (TARGET_AVX512BW && TARGET_AVX512VL)
-	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
-	else if (TARGET_AVX2)
-	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 5);
-	else if (TARGET_XOP)
-	  return (ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3)
-		  + cost->sse_load[2]);
-	else
-	  return (ix86_vec_cost (mode, cost->mulss + cost->sse_op * 4)
-		  + cost->sse_load[2]);
+    {
+      int nmults, nops;
+      /* Cost of reading the memory.  */
+      int extra;
 
-      case V16QImode:
-	/* V*QImode is emulated with 4-11 insns.  */
-	if (TARGET_AVX512BW && TARGET_AVX512VL)
-	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
-	else if (TARGET_AVX2)
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 8);
-	else if (TARGET_XOP)
-	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5)
-		  + cost->sse_load[2]);
-	else
-	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7)
-		  + cost->sse_load[2]);
+      switch (mode)
+	{
+	case V4QImode:
+	case V8QImode:
+	  /* Partial V*QImode is emulated with 4-6 insns.  */
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
 
-      case V32QImode:
-	if (TARGET_AVX512BW)
-	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
-	else
-	  return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7)
-		  + cost->sse_load[3] * 2);
+	  if (TARGET_AVX512BW && TARGET_AVX512VL)
+	    ;
+	  else if (TARGET_AVX2)
+	    nops += 2;
+	  else if (TARGET_XOP)
+	    extra += cost->sse_load[2];
+	  else
+	    {
+	      nops += 1;
+	      extra += cost->sse_load[2];
+	    }
+	  goto do_qimode;
 
-      case V64QImode:
-	return (ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 9)
-		+ cost->sse_load[3] * 2
-		+ cost->sse_load[4] * 2);
+	case V16QImode:
+	  /* V*QImode is emulated with 4-11 insns.  */
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
 
-      case V4SImode:
-	/* pmulld is used in this case. No emulation is needed.  */
-	if (TARGET_SSE4_1)
-	  goto do_native;
-	/* V4SImode is emulated with 7 insns.  */
-	else
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
+	  if (TARGET_AVX2 && !TARGET_PREFER_AVX128)
+	    {
+	      if (!(TARGET_AVX512BW && TARGET_AVX512VL))
+		nops += 3;
+	    }
+	  else if (TARGET_XOP)
+	    {
+	      nmults += 1;
+	      nops += 2;
+	      extra += cost->sse_load[2];
+	    }
+	  else
+	    {
+	      nmults += 1;
+	      nops += 4;
+	      extra += cost->sse_load[2];
+	    }
+	  goto do_qimode;
 
-      case V2DImode:
-      case V4DImode:
-	/* vpmullq is used in this case. No emulation is needed.  */
-	if (TARGET_AVX512DQ && TARGET_AVX512VL)
-	  goto do_native;
-	/* V*DImode is emulated with 6-8 insns.  */
-	else if (TARGET_XOP && mode == V2DImode)
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 4);
-	/* FALLTHRU */
-      case V8DImode:
-	/* vpmullq is used in this case. No emulation is needed.  */
-	if (TARGET_AVX512DQ && mode == V8DImode)
-	  goto do_native;
-	else
-	  return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
+	case V32QImode:
+	  nmults = 1;
+	  nops = 3;
+	  extra = 0;
 
-      default:
-      do_native:
-	return ix86_vec_cost (mode, cost->mulss);
-      }
+	  if (!TARGET_AVX512BW || TARGET_PREFER_AVX256)
+	    {
+	      nmults += 1;
+	      nops += 4;
+	      extra += cost->sse_load[3] * 2;
+	    }
+	  goto do_qimode;
+
+	case V64QImode:
+	  nmults = 2;
+	  nops = 9;
+	  extra = cost->sse_load[3] * 2 + cost->sse_load[4] * 2;
+
+	do_qimode:
+	  return ix86_vec_cost (mode, cost->mulss * nmults
+				+ cost->sse_op * nops) + extra;
+
+	case V4SImode:
+	  /* pmulld is used in this case. No emulation is needed.  */
+	  if (TARGET_SSE4_1)
+	    goto do_native;
+	  /* V4SImode is emulated with 7 insns.  */
+	  else
+	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
+
+	case V2DImode:
+	case V4DImode:
+	  /* vpmullq is used in this case. No emulation is needed.  */
+	  if (TARGET_AVX512DQ && TARGET_AVX512VL)
+	    goto do_native;
+	  /* V*DImode is emulated with 6-8 insns.  */
+	  else if (TARGET_XOP && mode == V2DImode)
+	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 4);
+	  /* FALLTHRU */
+	case V8DImode:
+	  /* vpmullq is used in this case. No emulation is needed.  */
+	  if (TARGET_AVX512DQ && mode == V8DImode)
+	    goto do_native;
+	  else
+	    return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
+
+	default:
+	do_native:
+	  return ix86_vec_cost (mode, cost->mulss);
+	}
+    }
   else
     return (cost->mult_init[MODE_INDEX (mode)] + cost->mult_bit * 7);
 }
@@ -20637,16 +20671,13 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		count = 2;
 	    }
 	  else if (TARGET_AVX512BW && TARGET_AVX512VL)
-	    {
-	      count = 3;
-	      return ix86_vec_cost (mode, cost->sse_op * count);
-	    }
+	    return ix86_vec_cost (mode, cost->sse_op * 4);
 	  else if (TARGET_SSE4_1)
-	    count = 4;
-	  else if (code == ASHIFTRT)
 	    count = 5;
+	  else if (code == ASHIFTRT)
+	    count = 6;
 	  else
-	    count = 4;
+	    count = 5;
 	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
 
 	case V16QImode:
@@ -20663,7 +20694,7 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		}
 	      else
 		{
-		  count = (code == ASHIFT) ? 2 : 3;
+		  count = (code == ASHIFT) ? 3 : 4;
 		  return ix86_vec_cost (mode, cost->sse_op * count);
 		}
 	    }
@@ -20685,12 +20716,20 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	      else
 		count = 2;
 	    }
+	  else if (TARGET_AVX512BW
+		   && ((mode == V32QImode && !TARGET_PREFER_AVX256)
+		       || (mode == V16QImode && TARGET_AVX512VL
+			   && !TARGET_PREFER_AVX128)))
+	    return ix86_vec_cost (mode, cost->sse_op * 4);
+	  else if (TARGET_AVX2
+		   && mode == V16QImode && !TARGET_PREFER_AVX128)
+	    count = 6;
 	  else if (TARGET_SSE4_1)
-	    count = 8;
-	  else if (code == ASHIFTRT)
 	    count = 9;
+	  else if (code == ASHIFTRT)
+	    count = 10;
 	  else
-	    count = 8;
+	    count = 9;
 	  return ix86_vec_cost (mode, cost->sse_op * count) + extra;
 
 	case V2DImode:
@@ -20704,6 +20743,8 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		    count = TARGET_SSE4_2 ? 1 : 2;
 		  else if (TARGET_XOP)
 		    count = 2;
+		  else if (TARGET_SSE4_1)
+		    count = 3;
 		  else
 		    count = 4;
 		}

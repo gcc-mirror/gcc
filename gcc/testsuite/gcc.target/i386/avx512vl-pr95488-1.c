@@ -1,8 +1,7 @@
 /* PR target/pr95488  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512bw -mavx512vl" }  */
-/* { dg-final { scan-assembler-times "vpmovzxbw" 4 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpunpcklbw" 4 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpmovzxbw" 8 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmullw\[^\n\]*ymm" 2 } } */
 /* { dg-final { scan-assembler-times "vpmullw\[^\n\]*xmm" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpmovwb" 4 { target { ! ia32 } } } } */
