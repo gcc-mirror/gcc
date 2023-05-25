@@ -884,6 +884,15 @@ class MetaListNameValueStr;
 class Stmt : public Node
 {
 public:
+  enum class Kind
+  {
+    Empty,
+    Item,
+    Let,
+    Expr,
+    MacroInvocation,
+  };
+
   // Unique pointer custom clone function
   std::unique_ptr<Stmt> clone_stmt () const
   {
@@ -900,8 +909,10 @@ public:
   virtual bool is_marked_for_strip () const = 0;
   NodeId get_node_id () const { return node_id; }
 
-  virtual bool is_item () const = 0;
+  virtual Kind get_stmt_kind () = 0;
 
+  // TODO: Can we remove these two?
+  virtual bool is_item () const = 0;
   virtual bool is_expr () const { return false; }
 
   virtual void add_semicolon () {}
@@ -930,6 +941,8 @@ public:
   virtual void
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
+
+  Stmt::Kind get_stmt_kind () final { return Stmt::Kind::Item; }
 
   // FIXME: ARTHUR: Is it okay to have removed that final? Is it *required*
   // behavior that we have items that can also be expressions?

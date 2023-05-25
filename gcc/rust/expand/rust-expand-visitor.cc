@@ -97,14 +97,14 @@ get_traits_to_derive (AST::Attribute &attr)
 }
 
 static std::unique_ptr<AST::Item>
-builtin_derive_item (std::unique_ptr<AST::Item> &item,
-		     const AST::Attribute &derive, BuiltinMacro to_derive)
+builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
+		     BuiltinMacro to_derive)
 {
-  return AST::DeriveVisitor::derive (*item, derive, to_derive);
+  return AST::DeriveVisitor::derive (item, derive, to_derive);
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-derive_item (std::unique_ptr<AST::Item> &item, const std::string &to_derive,
+derive_item (AST::Item &item, const std::string &to_derive,
 	     MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
@@ -127,8 +127,8 @@ derive_item (std::unique_ptr<AST::Item> &item, const std::string &to_derive,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-expand_attribute (std::unique_ptr<AST::Item> &item, AST::SimplePath &name,
-		  MacroExpander &expander)
+expand_item_attribute (AST::Item &item, AST::SimplePath &name,
+		       MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
   auto frag = expander.expand_attribute_proc_macro (item, name);
@@ -140,6 +140,29 @@ expand_attribute (std::unique_ptr<AST::Item> &item, AST::SimplePath &name,
 	    {
 	    case AST::SingleASTNode::ITEM:
 	      result.push_back (node.take_item ());
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+  return result;
+}
+
+static std::vector<std::unique_ptr<AST::Stmt>>
+expand_stmt_attribute (AST::Item &item, AST::SimplePath &name,
+		       MacroExpander &expander)
+{
+  std::vector<std::unique_ptr<AST::Stmt>> result;
+  auto frag = expander.expand_attribute_proc_macro (item, name);
+  if (!frag.is_error ())
+    {
+      for (auto &node : frag.get_nodes ())
+	{
+	  switch (node.get_kind ())
+	    {
+	    case AST::SingleASTNode::STMT:
+	      result.push_back (node.take_stmt ());
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -179,7 +202,7 @@ ExpandVisitor::expand_inner_items (
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
-			    = builtin_derive_item (item, current,
+			    = builtin_derive_item (*item, current,
 						   maybe_builtin->second);
 			  // this inserts the derive *before* the item - is it a
 			  // problem?
@@ -188,7 +211,7 @@ ExpandVisitor::expand_inner_items (
 		      else
 			{
 			  auto new_items
-			    = derive_item (item, to_derive, expander);
+			    = derive_item (*item, to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (items, it));
 			}
@@ -204,8 +227,8 @@ ExpandVisitor::expand_inner_items (
 		    {
 		      attr_it = attrs.erase (attr_it);
 		      auto new_items
-			= expand_attribute (item, current.get_path (),
-					    expander);
+			= expand_item_attribute (*item, current.get_path (),
+						 expander);
 		      it = items.erase (it);
 		      std::move (new_items.begin (), new_items.end (),
 				 std::inserter (items, it));
@@ -236,29 +259,74 @@ ExpandVisitor::expand_inner_stmts (
 
   for (auto it = stmts.begin (); it != stmts.end (); it++)
     {
-      // TODO: Eventually we need to derive here as well
+      auto &stmt = *it;
 
-      // auto &stmt = *it;
+      // skip all non-item statements
+      if (stmt->get_stmt_kind () != AST::Stmt::Kind::Item)
+	continue;
 
-      // if (stmt->has_outer_attrs ())
-      // {
-      //   auto traits_to_derive
-      //     = get_traits_to_derive (stmt->get_outer_attrs ());
+      auto &item = static_cast<AST::Item &> (*stmt.get ());
 
-      //   // FIXME: This needs to be reworked absolutely
-      //   static const std::set<std::string> builtin_derives
-      //     = {"Clone", "Copy", "Eq", "PartialEq", "Ord", "PartialOrd"};
+      if (item.has_outer_attrs ())
+	{
+	  auto &attrs = item.get_outer_attrs ();
 
-      //   for (auto &to_derive : traits_to_derive)
-      //     if (builtin_derives.find (to_derive) != builtin_derives.end ())
-      //       {
-      // 	auto new_item = derive_item (
-      // 	  item, item->get_outer_attrs ()[0] /* FIXME: This is wrong */,
-      // 	  to_derive);
-      // 	// this inserts the derive *before* the item - is it a problem?
-      // 	it = items.insert (it, std::move (new_item));
-      //       }
-      // }
+	  for (auto attr_it = attrs.begin (); attr_it != attrs.end ();
+	       /* erase => No increment*/)
+	    {
+	      auto current = *attr_it;
+
+	      if (is_derive (current))
+		{
+		  attr_it = attrs.erase (attr_it);
+		  // Get traits to derive in the current attribute
+		  auto traits_to_derive = get_traits_to_derive (current);
+		  for (auto &to_derive : traits_to_derive)
+		    {
+		      auto maybe_builtin
+			= MacroBuiltin::builtins.lookup (to_derive);
+		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+			{
+			  auto new_item
+			    = builtin_derive_item (item, current,
+						   maybe_builtin->second);
+			  // this inserts the derive *before* the item - is it a
+			  // problem?
+			  it = stmts.insert (it, std::move (new_item));
+			}
+		      else
+			{
+			  auto new_items
+			    = derive_item (item, to_derive, expander);
+			  std::move (new_items.begin (), new_items.end (),
+				     std::inserter (stmts, it));
+			}
+		    }
+		}
+	      else /* Attribute */
+		{
+		  if (is_builtin (current))
+		    {
+		      attr_it++;
+		    }
+		  else
+		    {
+		      attr_it = attrs.erase (attr_it);
+		      auto new_items
+			= expand_stmt_attribute (item, current.get_path (),
+						 expander);
+		      it = stmts.erase (it);
+		      std::move (new_items.begin (), new_items.end (),
+				 std::inserter (stmts, it));
+		      // TODO: Improve this ?
+		      // item is invalid since it refers to now deleted,
+		      // cancel the loop increment and break.
+		      it--;
+		      break;
+		    }
+		}
+	    }
+	}
     }
 
   std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
