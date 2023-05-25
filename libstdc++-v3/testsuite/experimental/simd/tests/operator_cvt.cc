@@ -220,8 +220,6 @@ template <typename V>
 	binary_op_return_type<vldouble, short>();
 	binary_op_return_type<vldouble, ushort>();
 	binary_op_return_type<vldouble, uint>();
-	binary_op_return_type<vldouble, long>();
-	binary_op_return_type<vldouble, ulong>();
 	binary_op_return_type<vldouble, float>();
 	binary_op_return_type<vldouble, double>();
 
@@ -231,8 +229,6 @@ template <typename V>
 	binary_op_return_type<vf64<long double>, ushort>();
 	binary_op_return_type<vf64<long double>, int>();
 	binary_op_return_type<vf64<long double>, uint>();
-	binary_op_return_type<vf64<long double>, long>();
-	binary_op_return_type<vf64<long double>, ulong>();
 	binary_op_return_type<vf64<long double>, float>();
 	binary_op_return_type<vf64<long double>, double>();
 	binary_op_return_type<vf64<long double>, vf64<long double>>();
@@ -245,8 +241,6 @@ template <typename V>
 	binary_op_return_type<simd<long double, A>, ushort>();
 	binary_op_return_type<simd<long double, A>, int>();
 	binary_op_return_type<simd<long double, A>, uint>();
-	binary_op_return_type<simd<long double, A>, long>();
-	binary_op_return_type<simd<long double, A>, ulong>();
 	binary_op_return_type<simd<long double, A>, float>();
 	binary_op_return_type<simd<long double, A>, double>();
 
@@ -258,6 +252,24 @@ template <typename V>
 	    VERIFY((is_substitution_failure<vf64<ldouble>, ullong>));
 	    VERIFY((is_substitution_failure<simd<ldouble, A>, llong>));
 	    VERIFY((is_substitution_failure<simd<ldouble, A>, ullong>));
+	    if constexpr (sizeof(long) == sizeof(llong))
+	      {
+		VERIFY((is_substitution_failure<vldouble, long>));
+		VERIFY((is_substitution_failure<vldouble, ulong>));
+		VERIFY((is_substitution_failure<vf64<ldouble>, long>));
+		VERIFY((is_substitution_failure<vf64<ldouble>, ulong>));
+		VERIFY((is_substitution_failure<simd<ldouble, A>, long>));
+		VERIFY((is_substitution_failure<simd<ldouble, A>, ulong>));
+	      }
+	    else
+	      {
+		binary_op_return_type<vldouble, long>();
+		binary_op_return_type<vldouble, ulong>();
+		binary_op_return_type<vf64<long double>, long>();
+		binary_op_return_type<vf64<long double>, ulong>();
+		binary_op_return_type<simd<long double, A>, long>();
+		binary_op_return_type<simd<long double, A>, ulong>();
+	      }
 	  }
 	else
 	  {
@@ -267,6 +279,12 @@ template <typename V>
 	    binary_op_return_type<vf64<long double>, ullong>();
 	    binary_op_return_type<simd<long double, A>, llong>();
 	    binary_op_return_type<simd<long double, A>, ullong>();
+	    binary_op_return_type<vldouble, long>();
+	    binary_op_return_type<vldouble, ulong>();
+	    binary_op_return_type<vf64<long double>, long>();
+	    binary_op_return_type<vf64<long double>, ulong>();
+	    binary_op_return_type<simd<long double, A>, long>();
+	    binary_op_return_type<simd<long double, A>, ulong>();
 	  }
 
 	VERIFY((is_substitution_failure<vf64<long double>, vldouble>));
