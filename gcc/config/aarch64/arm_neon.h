@@ -7550,42 +7550,42 @@ __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcage_f64 (float64x1_t __a, float64x1_t __b)
 {
-  return vabs_f64 (__a) >= vabs_f64 (__b);
+  return vcreate_u64 (__builtin_aarch64_facgedf_uss (__a[0], __b[0]));
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcages_f32 (float32_t __a, float32_t __b)
 {
-  return __builtin_fabsf (__a) >= __builtin_fabsf (__b) ? -1 : 0;
+  return __builtin_aarch64_facgesf_uss  (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcage_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return vabs_f32 (__a) >= vabs_f32 (__b);
+  return __builtin_aarch64_facgev2sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcageq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return vabsq_f32 (__a) >= vabsq_f32 (__b);
+  return __builtin_aarch64_facgev4sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaged_f64 (float64_t __a, float64_t __b)
 {
-  return __builtin_fabs (__a) >= __builtin_fabs (__b) ? -1 : 0;
+  return __builtin_aarch64_facgedf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcageq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return vabsq_f64 (__a) >= vabsq_f64 (__b);
+  return __builtin_aarch64_facgev2df_uss (__a, __b);
 }
 
 /* vcagt  */
@@ -7594,42 +7594,42 @@ __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagts_f32 (float32_t __a, float32_t __b)
 {
-  return __builtin_fabsf (__a) > __builtin_fabsf (__b) ? -1 : 0;
+  return __builtin_aarch64_facgtsf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagt_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return vabs_f32 (__a) > vabs_f32 (__b);
+  return __builtin_aarch64_facgtv2sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagt_f64 (float64x1_t __a, float64x1_t __b)
 {
-  return vabs_f64 (__a) > vabs_f64 (__b);
+  return vcreate_u64 (__builtin_aarch64_facgtdf_uss (__a[0], __b[0]));
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagtq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return vabsq_f32 (__a) > vabsq_f32 (__b);
+  return __builtin_aarch64_facgtv4sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagtd_f64 (float64_t __a, float64_t __b)
 {
-  return __builtin_fabs (__a) > __builtin_fabs (__b) ? -1 : 0;
+  return __builtin_aarch64_facgtdf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagtq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return vabsq_f64 (__a) > vabsq_f64 (__b);
+  return __builtin_aarch64_facgtv2df_uss (__a, __b);
 }
 
 /* vcale  */
@@ -7638,42 +7638,42 @@ __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcale_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return vabs_f32 (__a) <= vabs_f32 (__b);
+  return __builtin_aarch64_faclev2sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcale_f64 (float64x1_t __a, float64x1_t __b)
 {
-  return vabs_f64 (__a) <= vabs_f64 (__b);
+  return vcreate_u64 (__builtin_aarch64_facledf_uss (__a[0], __b[0]));
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaled_f64 (float64_t __a, float64_t __b)
 {
-  return __builtin_fabs (__a) <= __builtin_fabs (__b) ? -1 : 0;
+  return __builtin_aarch64_facledf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcales_f32 (float32_t __a, float32_t __b)
 {
-  return __builtin_fabsf (__a) <= __builtin_fabsf (__b) ? -1 : 0;
+  return __builtin_aarch64_faclesf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaleq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return vabsq_f32 (__a) <= vabsq_f32 (__b);
+  return __builtin_aarch64_faclev4sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaleq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return vabsq_f64 (__a) <= vabsq_f64 (__b);
+  return __builtin_aarch64_faclev2df_uss (__a, __b);
 }
 
 /* vcalt  */
@@ -7682,42 +7682,42 @@ __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcalt_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return vabs_f32 (__a) < vabs_f32 (__b);
+  return __builtin_aarch64_facltv2sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcalt_f64 (float64x1_t __a, float64x1_t __b)
 {
-  return vabs_f64 (__a) < vabs_f64 (__b);
+  return vcreate_u64 (__builtin_aarch64_facltdf_uss (__a[0], __b[0]));
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaltd_f64 (float64_t __a, float64_t __b)
 {
-  return __builtin_fabs (__a) < __builtin_fabs (__b) ? -1 : 0;
+  return __builtin_aarch64_facltdf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaltq_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return vabsq_f32 (__a) < vabsq_f32 (__b);
+  return __builtin_aarch64_facltv4sf_uss (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaltq_f64 (float64x2_t __a, float64x2_t __b)
 {
-  return vabsq_f64 (__a) < vabsq_f64 (__b);
+  return __builtin_aarch64_facltv2df_uss (__a, __b);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcalts_f32 (float32_t __a, float32_t __b)
 {
-  return __builtin_fabsf (__a) < __builtin_fabsf (__b) ? -1 : 0;
+  return __builtin_aarch64_facltsf_uss (__a, __b);
 }
 
 /* vceq - vector.  */
