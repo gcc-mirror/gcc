@@ -719,6 +719,15 @@ namespace __gnu_test
       friend std::ptrdiff_t operator-(PointerBase l, PointerBase r)
       { return l.value - r.value; }
 
+      friend bool operator<(PointerBase l, PointerBase r)
+      { return l.value < r.value; }
+      friend bool operator>(PointerBase l, PointerBase r)
+      { return l.value > r.value; }
+      friend bool operator<=(PointerBase l, PointerBase r)
+      { return l.value <= r.value; }
+      friend bool operator>=(PointerBase l, PointerBase r)
+      { return l.value >= r.value; }
+
       Derived&
       derived() { return static_cast<Derived&>(*this); }
 
