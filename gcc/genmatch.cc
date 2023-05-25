@@ -3359,6 +3359,21 @@ dt_operand::gen (FILE *f, int indent, bool gimple, int depth)
     }
 }
 
+/* Emit a fprintf to the debug file to the file F, with the INDENT from
+   either the RESULT location or the S's match location if RESULT is null. */
+static void
+emit_debug_printf (FILE *f, int indent, class simplify *s, operand *result)
+{
+  fprintf_indent (f, indent, "if (UNLIKELY (debug_dump)) "
+	   "fprintf (dump_file, \"%s ",
+	   s->kind == simplify::SIMPLIFY
+	   ? "Applying pattern" : "Matching expression");
+  fprintf (f, "%%s:%%d, %%s:%%d\\n\", ");
+  output_line_directive (f,
+			 result ? result->location : s->match->location, true,
+			 true);
+  fprintf (f, ", __FILE__, __LINE__);\n");
+}
 
 /* Generate code for the '(if ...)', '(with ..)' and actual transform
    step of a '(simplify ...)' or '(match ...)'.  This handles everything
@@ -3488,21 +3503,12 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
       needs_label = true;
     }
 
-  fprintf_indent (f, indent, "if (UNLIKELY (debug_dump)) "
-	   "fprintf (dump_file, \"%s ",
-	   s->kind == simplify::SIMPLIFY
-	   ? "Applying pattern" : "Matching expression");
-  fprintf (f, "%%s:%%d, %%s:%%d\\n\", ");
-  output_line_directive (f,
-			 result ? result->location : s->match->location, true,
-			 true);
-  fprintf (f, ", __FILE__, __LINE__);\n");
-
   fprintf_indent (f, indent, "{\n");
   indent += 2;
   if (!result)
     {
       /* If there is no result then this is a predicate implementation.  */
+      emit_debug_printf (f, indent, s, result);
       fprintf_indent (f, indent, "return true;\n");
     }
   else if (gimple)
@@ -3593,6 +3599,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	}
       else
 	gcc_unreachable ();
+      emit_debug_printf (f, indent, s, result);
       fprintf_indent (f, indent, "return true;\n");
     }
   else /* GENERIC */
@@ -3646,7 +3653,10 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 					&cinfo, indexes);
 	    }
 	  if (is_predicate)
-	    fprintf_indent (f, indent, "return true;\n");
+	    {
+	      emit_debug_printf (f, indent, s, result);
+	      fprintf_indent (f, indent, "return true;\n");
+	    }
 	  else
 	    {
 	      fprintf_indent (f, indent, "tree _r;\n");
@@ -3712,6 +3722,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 				  i);
 		}
 	    }
+	  emit_debug_printf (f, indent, s, result);
 	  fprintf_indent (f, indent, "return _r;\n");
 	}
     }
