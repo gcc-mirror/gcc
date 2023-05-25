@@ -150,6 +150,7 @@ ASM_MISA_SPEC
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define BITS_PER_WORD (BITS_PER_UNIT * UNITS_PER_WORD)
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
