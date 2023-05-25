@@ -554,7 +554,7 @@
 ;; to describe the permute that is also required, but even if that is done
 ;; the permute would have been created as a LOAD_LANES which means the values
 ;; in the registers are in the wrong order.
-(define_insn "aarch64_fcadd<rot><mode>"
+(define_insn "aarch64_fcadd<rot><mode><vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		       (match_operand:VHSDF 2 "register_operand" "w")]
@@ -572,25 +572,25 @@
   "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
 )
 
-(define_insn "aarch64_fcmla<rot><mode>"
+(define_insn "aarch64_fcmla<rot><mode><vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
-	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
-		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+	(plus:VHSDF (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
 				   (match_operand:VHSDF 3 "register_operand" "w")]
-				   FCMLA)))]
+				   FCMLA)
+		    (match_operand:VHSDF 1 "register_operand" "0")))]
   "TARGET_COMPLEX"
   "fcmla\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>, #<rot>"
   [(set_attr "type" "neon_fcmla")]
 )
 
 
-(define_insn "aarch64_fcmla_lane<rot><mode>"
+(define_insn "aarch64_fcmla_lane<rot><mode><vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
-	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
-		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
+	(plus:VHSDF (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand" "w")
 				   (match_operand:VHSDF 3 "register_operand" "w")
 				   (match_operand:SI 4 "const_int_operand" "n")]
-				   FCMLA)))]
+				   FCMLA)
+		    (match_operand:VHSDF 1 "register_operand" "0")))]
   "TARGET_COMPLEX"
 {
   operands[4] = aarch64_endian_lane_rtx (<VHALF>mode, INTVAL (operands[4]));
@@ -599,13 +599,13 @@
   [(set_attr "type" "neon_fcmla")]
 )
 
-(define_insn "aarch64_fcmla_laneq<rot>v4hf"
+(define_insn "aarch64_fcmla_laneq<rot>v4hf<vczle><vczbe>"
   [(set (match_operand:V4HF 0 "register_operand" "=w")
-	(plus:V4HF (match_operand:V4HF 1 "register_operand" "0")
-		   (unspec:V4HF [(match_operand:V4HF 2 "register_operand" "w")
+	(plus:V4HF (unspec:V4HF [(match_operand:V4HF 2 "register_operand" "w")
 				 (match_operand:V8HF 3 "register_operand" "w")
 				 (match_operand:SI 4 "const_int_operand" "n")]
-				 FCMLA)))]
+				 FCMLA)
+		   (match_operand:V4HF 1 "register_operand" "0")))]
   "TARGET_COMPLEX"
 {
   operands[4] = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
@@ -616,11 +616,11 @@
 
 (define_insn "aarch64_fcmlaq_lane<rot><mode>"
   [(set (match_operand:VQ_HSF 0 "register_operand" "=w")
-	(plus:VQ_HSF (match_operand:VQ_HSF 1 "register_operand" "0")
-		     (unspec:VQ_HSF [(match_operand:VQ_HSF 2 "register_operand" "w")
+	(plus:VQ_HSF (unspec:VQ_HSF [(match_operand:VQ_HSF 2 "register_operand" "w")
 				     (match_operand:<VHALF> 3 "register_operand" "w")
 				     (match_operand:SI 4 "const_int_operand" "n")]
-				     FCMLA)))]
+				     FCMLA)
+		     (match_operand:VQ_HSF 1 "register_operand" "0")))]
   "TARGET_COMPLEX"
 {
   int nunits = GET_MODE_NUNITS (<VHALF>mode).to_constant ();
