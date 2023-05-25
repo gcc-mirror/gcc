@@ -7072,10 +7072,8 @@
 	     (match_operand 5 "const_int_operand"            "  i,  i,  i,  i")
 	     (match_operand 6 "const_int_operand"            "  i,  i,  i,  i")
 	     (match_operand 7 "const_int_operand"            "  i,  i,  i,  i")
-	     (match_operand 8 "const_int_operand"            "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)
-	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_fix:<VCONVERT>
 	     (match_operand:VF 3 "register_operand"          " vr, vr, vr, vr"))
 	  (match_operand:<VCONVERT> 2 "vector_merge_operand" " vu,  0, vu,  0")))]
@@ -7142,10 +7140,8 @@
 	     (match_operand 5 "const_int_operand"            "    i,    i")
 	     (match_operand 6 "const_int_operand"            "    i,    i")
 	     (match_operand 7 "const_int_operand"            "    i,    i")
-	     (match_operand 8 "const_int_operand"            "    i,    i")
 	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)
-	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_fix:VWCONVERTI
 	     (match_operand:<VNCONVERT> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VWCONVERTI 2 "vector_merge_operand" "   vu,    0")))]
@@ -7233,10 +7229,8 @@
 	     (match_operand 5 "const_int_operand"             "  i,  i,  i,  i,    i,    i")
 	     (match_operand 6 "const_int_operand"             "  i,  i,  i,  i,    i,    i")
 	     (match_operand 7 "const_int_operand"             "  i,  i,  i,  i,    i,    i")
-	     (match_operand 8 "const_int_operand"             "  i,  i,  i,  i,    i,    i")
 	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)
-	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (any_fix:<VNCONVERT>
 	     (match_operand:VF 3 "register_operand"           "  0,  0,  0,  0,   vr,   vr"))
 	  (match_operand:<VNCONVERT> 2 "vector_merge_operand" " vu,  0, vu,  0,   vu,    0")))]
