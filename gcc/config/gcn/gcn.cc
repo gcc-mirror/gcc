@@ -489,7 +489,7 @@ gcn_class_max_nregs (reg_class_t rclass, machine_mode mode)
       if (vgpr_2reg_mode_p (mode))
 	return 2;
       /* TImode is used by DImode compare_and_swap.  */
-      if (mode == TImode)
+      if (vgpr_4reg_mode_p (mode))
 	return 4;
     }
   else if (rclass == VCC_CONDITIONAL_REG && mode == BImode)
@@ -592,9 +592,9 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
        Therefore, we restrict ourselved to aligned registers.  */
     return (vgpr_1reg_mode_p (mode)
 	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
-	    /* TImode is used by DImode compare_and_swap.  */
-	    || (mode == TImode
-		&& !((regno - FIRST_VGPR_REG) & 3)));
+	    /* TImode is used by DImode compare_and_swap,
+	       and by DIVMOD V64DImode libfuncs.  */
+	    || (!((regno - FIRST_VGPR_REG) & 3) && vgpr_4reg_mode_p (mode)));
   return false;
 }
 
@@ -1326,6 +1326,7 @@ GEN_VN (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_TI (GEN_VN (PREFIX, ti##SUFFIX, A(PARAMS), A(ARGS))) \
 static rtx \
 gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
 { \
@@ -1340,6 +1341,8 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
     case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS, merge_src, exec); \
     case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS, merge_src, exec); \
     case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS, merge_src, exec); \
+    case E_TImode: \
+	USE_TI (return gen_##PREFIX##vNti##SUFFIX (ARGS, merge_src, exec);) \
     default: \
       break; \
     } \
@@ -1348,6 +1351,14 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
   return NULL_RTX; \
 }
 
+/* These have TImode support.  */
+#define USE_TI(ARGS) ARGS
+GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
+GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
+
+/* These do not have TImode support.  */
+#undef USE_TI
+#define USE_TI(ARGS)
 GEN_VNM (add,3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_vcc_dup, A(rtx dest, rtx src1, rtx src2, rtx vcc),
@@ -1366,12 +1377,11 @@ GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
 		A(dest, addr, src, exec))
 GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
 	 A(dest, addr, as, vol))
-GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
 GEN_VN (mul,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
-GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
 GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 
+#undef USE_TI
 #undef GEN_VNM
 #undef GEN_VN
 #undef GET_VN_FN
@@ -1405,6 +1415,7 @@ get_code_for_##PREFIX##vN##SUFFIX (int nunits) \
 	CODE_FOR (PREFIX, sf) \
 	CODE_FOR (PREFIX, di) \
 	CODE_FOR (PREFIX, df) \
+	CODE_FOR (PREFIX, ti) \
 static int \
 get_code_for_##PREFIX (machine_mode mode) \
 { \
@@ -1420,6 +1431,7 @@ get_code_for_##PREFIX (machine_mode mode) \
     case E_SFmode: return get_code_for_##PREFIX##vNsf (vf); \
     case E_DImode: return get_code_for_##PREFIX##vNdi (vf); \
     case E_DFmode: return get_code_for_##PREFIX##vNdf (vf); \
+    case E_TImode: return get_code_for_##PREFIX##vNti (vf); \
     default: break; \
     } \
   \
@@ -4895,7 +4907,13 @@ gcn_vector_mode_supported_p (machine_mode mode)
 	  || mode == V4SFmode || mode == V4DFmode
 	  || mode == V2QImode || mode == V2HImode
 	  || mode == V2SImode || mode == V2DImode
-	  || mode == V2SFmode || mode == V2DFmode);
+	  || mode == V2SFmode || mode == V2DFmode
+	  /* TImode vectors are allowed to exist for divmod, but there
+	     are almost no instructions defined for them, and the
+	     autovectorizer does not use them.  */
+	  || mode == V64TImode || mode == V32TImode
+	  || mode == V16TImode || mode == V8TImode
+	  || mode == V4TImode || mode == V2TImode);
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.
@@ -6722,6 +6740,10 @@ print_operand_address (FILE *file, rtx mem)
    O - print offset:n for data share operations.
    ^ - print "_co" suffix for GCN5 mnemonics
    g - print "glc", if appropriate for given MEM
+   L - print low-part of a multi-reg value
+   H - print second part of a multi-reg value (high-part of 2-reg value)
+   J - print third part of a multi-reg value
+   K - print fourth part of a multi-reg value
  */
 
 void
@@ -7260,6 +7282,12 @@ print_operand (FILE *file, rtx x, int code)
       return;
     case 'H':
       print_operand (file, gcn_operand_part (GET_MODE (x), x, 1), 0);
+      return;
+    case 'J':
+      print_operand (file, gcn_operand_part (GET_MODE (x), x, 2), 0);
+      return;
+    case 'K':
+      print_operand (file, gcn_operand_part (GET_MODE (x), x, 3), 0);
       return;
     case 'R':
       /* Print a scalar register number as an integer.  Temporary hack.  */
