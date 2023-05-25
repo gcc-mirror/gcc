@@ -206,8 +206,7 @@ class TestResult(object):
     # Return True if the expiration date of this result has passed.
     expiration_date = self.ExpirationDate()
     if expiration_date:
-      now = datetime.date.today()
-      return now > expiration_date
+      return _OPTIONS.expiry_today_date > expiration_date
 
 
 class ResultSet(set):
@@ -636,6 +635,11 @@ def Main(argv):
                     default=False, help='When used with --produce_manifest, '
                     'it will overwrite an existing manifest file '
                     '(default = False)')
+  parser.add_option('--expiry_date', action='store',
+                    dest='expiry_today_date', default=None,
+                    help='Use provided date YYYYMMDD to decide whether '
+                    'manifest entries with expiry settings have expired '
+                    'or not. (default = Use today date)')
   parser.add_option('--inverse_match', action='store_true',
                     dest='inverse_match', default=False,
                     help='Inverse result sets in comparison. '
@@ -669,6 +673,22 @@ def Main(argv):
                     'Level 5: output debug information.')
   global _OPTIONS
   (_OPTIONS, _) = parser.parse_args(argv[1:])
+
+  # Set "today" date to compare expiration entries against.
+  # Setting expiration date into the future allows re-detection of flaky
+  # tests and creating fresh entries for them before the current flaky entries
+  # expire.
+  if _OPTIONS.expiry_today_date:
+    today_date = re.search(r'(\d\d\d\d)(\d\d)(\d\d)',
+                           _OPTIONS.expiry_today_date)
+    if not today_date:
+        Error('Invalid --expiry_today_date format "%s".  Must be of the form '
+              '"expire=YYYYMMDD"' % _OPTIONS.expiry_today_date)
+    _OPTIONS.expiry_today_date=datetime.date(int(today_date.group(1)),
+                                             int(today_date.group(2)),
+                                             int(today_date.group(3)))
+  else:
+    _OPTIONS.expiry_today_date = datetime.date.today()
 
   if _OPTIONS.produce_manifest:
     retval = ProduceManifest()
