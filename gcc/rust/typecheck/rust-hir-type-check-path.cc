@@ -422,6 +422,11 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 				     TyTy::TyWithLocation (prev_segment),
 				     TyTy::TyWithLocation (impl_block_ty),
 				     seg.get_locus ());
+	  bool ok = prev_segment->get_kind () != TyTy::TypeKind::ERROR;
+	  if (!ok)
+	    {
+	      return;
+	    }
 
 	  if (found_impl_trait)
 	    {
