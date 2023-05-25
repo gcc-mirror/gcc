@@ -1,3 +1,46 @@
+2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (vgpr_4reg_mode_p): New function.
+	* config/gcn/gcn-valu.md (V_4REG, V_4REG_ALT): New iterators.
+	(V_MOV, V_MOV_ALT): Likewise.
+	(scalar_mode, SCALAR_MODE): Add TImode.
+	(vnsi, VnSI, vndi, VnDI): Likewise.
+	(vec_merge, vec_merge_with_clobber, vec_merge_with_vcc): Use V_MOV.
+	(mov<mode>, mov<mode>_unspec): Use V_MOV.
+	(*mov<mode>_4reg): New insn.
+	(mov<mode>_exec): New 4reg variant.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_in<mode>, reload_out<mode>): Use V_MOV.
+	(vec_set<mode>): Likewise.
+	(vec_duplicate<mode><exec>): New 4reg variant.
+	(vec_extract<mode><scalar_mode>): Likewise.
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): Rename to ...
+	(vec_extract<V_MOV:mode><V_MOV_ALT:mode>): ... this, and use V_MOV.
+	(vec_extract<V_4REG:mode><V_4REG_ALT:mode>_nop): New 4reg variant.
+	(fold_extract_last_<mode>): Use V_MOV.
+	(vec_init<V_ALL:mode><V_ALL_ALT:mode>): Rename to ...
+	(vec_init<V_MOV:mode><V_MOV_ALT:mode>): ... this, and use V_MOV.
+	(gather_load<mode><vnsi>, gather<mode>_expr<exec>,
+	gather<mode>_insn_1offset<exec>, gather<mode>_insn_1offset_ds<exec>,
+	gather<mode>_insn_2offsets<exec>): Use V_MOV.
+	(scatter_store<mode><vnsi>, scatter<mode>_expr<exec_scatter>,
+	scatter<mode>_insn_1offset<exec_scatter>,
+	scatter<mode>_insn_1offset_ds<exec_scatter>,
+	scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	(maskload<mode>di, maskstore<mode>di, mask_gather_load<mode><vnsi>,
+	mask_scatter_store<mode><vnsi>): Likewise.
+	* config/gcn/gcn.cc (gcn_class_max_nregs): Use vgpr_4reg_mode_p.
+	(gcn_hard_regno_mode_ok): Likewise.
+	(GEN_VNM): Add TImode support.
+	(USE_TI): New macro. Separate TImode operations from non-TImode ones.
+	(gcn_vector_mode_supported_p): Add V64TImode, V32TImode, V16TImode,
+	V8TImode, and V2TImode.
+	(print_operand):  Add 'J' and 'K' print codes.
+
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (gimplify_adjust_omp_clauses_1): Set
