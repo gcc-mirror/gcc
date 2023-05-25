@@ -8200,7 +8200,6 @@ void
 cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		tree asmspec_tree, int flags)
 {
-  tree type;
   vec<tree, va_gc> *cleanups = NULL;
   const char *asmspec = NULL;
   int was_readonly = 0;
@@ -8220,7 +8219,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   /* Parameters are handled by store_parm_decls, not cp_finish_decl.  */
   gcc_assert (TREE_CODE (decl) != PARM_DECL);
 
-  type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (decl);
   if (type == error_mark_node)
     return;
 
@@ -8410,7 +8409,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  if (decl_maybe_constant_var_p (decl)
 	      /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
 	      && !TYPE_REF_P (type))
-	    TREE_CONSTANT (decl) = 1;
+	    TREE_CONSTANT (decl) = true;
 	}
       /* This is handled mostly by gimplify.cc, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
@@ -8421,6 +8420,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  && !warning_enabled_at (DECL_SOURCE_LOCATION (decl), OPT_Winit_self))
 	suppress_warning (decl, OPT_Winit_self);
     }
+  else if (VAR_P (decl)
+	   && COMPLETE_TYPE_P (type)
+	   && !TYPE_REF_P (type)
+	   && !dependent_type_p (type)
+	   && is_really_empty_class (type, /*ignore_vptr*/false))
+    /* We have no initializer but there's nothing to initialize anyway.
+       Treat DECL as constant due to c++/109876.  */
+    TREE_CONSTANT (decl) = true;
 
   if (flag_openmp
       && TREE_CODE (decl) == FUNCTION_DECL
