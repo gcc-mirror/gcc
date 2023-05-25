@@ -9097,16 +9097,20 @@
   "bst %3,0\;bld %0,%4"
   [(set_attr "length" "2")])
 
-;; Move bit $3.0 into bit $0.0.
-;; For bit 0, combiner generates slightly different pattern.
-(define_insn "*movbitqi.0"
-  [(set (match_operand:QI 0 "register_operand"                     "=r")
-        (ior:QI (and:QI (match_operand:QI 1 "register_operand"      "0")
-                        (match_operand:QI 2 "single_zero_operand"   "n"))
-                (and:QI (match_operand:QI 3 "register_operand"      "r")
-                        (const_int 1))))]
-  "0 == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
-  "bst %3,0\;bld %0,0"
+;; Move bit $3.x into bit $0.x.
+(define_insn "*movbit<mode>.0-6"
+  [(set (match_operand:QISI 0 "register_operand"                       "=r")
+        (ior:QISI (and:QISI (match_operand:QISI 1 "register_operand"    "0")
+                            (match_operand:QISI 2 "single_zero_operand" "n"))
+                  (and:QISI (match_operand:QISI 3 "register_operand"    "r")
+                            (match_operand:QISI 4 "single_one_operand"  "n"))))]
+  "GET_MODE_MASK(<MODE>mode)
+   == (GET_MODE_MASK(<MODE>mode) & (INTVAL(operands[2]) ^ INTVAL(operands[4])))"
+  {
+    auto bitmask = GET_MODE_MASK (<MODE>mode) & UINTVAL (operands[4]);
+    operands[4] = GEN_INT (exact_log2 (bitmask));
+    return "bst %T3%T4" CR_TAB "bld %T0%T4";
+  }
   [(set_attr "length" "2")])
 
 ;; Move bit $2.0 into bit $0.7.
