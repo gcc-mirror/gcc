@@ -111,7 +111,6 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::REF:
     case TyTy::POINTER:
     case TyTy::PARAM:
-    case TyTy::ARRAY:
     case TyTy::SLICE:
     case TyTy::FNDEF:
     case TyTy::FNPTR:
@@ -123,16 +122,16 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::FLOAT:
     case TyTy::USIZE:
     case TyTy::ISIZE:
+    case TyTy::CLOSURE:
+    case TyTy::INFER:
       assemble_builtin_candidate (Analysis::RustLangItem::SIZED);
       break;
 
-      // not-sure about this.... FIXME
-    case TyTy::INFER:
+    case TyTy::ARRAY:
     case TyTy::NEVER:
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
-    case TyTy::CLOSURE:
     case TyTy::ERROR:
       break;
     }

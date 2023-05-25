@@ -151,13 +151,26 @@ UnifyRules::go ()
 	      rtype->debug_str ().c_str ());
 
   // check bounds
-  if (ltype->num_specified_bounds () > 0)
+  bool should_check_bounds = !ltype->is_equal (*rtype);
+  if (should_check_bounds)
     {
-      if (!ltype->bounds_compatible (*rtype, locus, emit_error))
+      if (ltype->num_specified_bounds () > 0)
 	{
-	  // already emitted an error
-	  emit_error = false;
-	  return new TyTy::ErrorType (0);
+	  if (!ltype->bounds_compatible (*rtype, locus, emit_error))
+	    {
+	      // already emitted an error
+	      emit_error = false;
+	      return new TyTy::ErrorType (0);
+	    }
+	}
+      else if (rtype->num_specified_bounds () > 0)
+	{
+	  if (!rtype->bounds_compatible (*ltype, locus, emit_error))
+	    {
+	      // already emitted an error
+	      emit_error = false;
+	      return new TyTy::ErrorType (0);
+	    }
 	}
     }
 

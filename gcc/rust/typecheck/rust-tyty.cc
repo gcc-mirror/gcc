@@ -273,8 +273,11 @@ BaseType::get_locus () const
 
 // FIXME this is missing locus
 bool
-BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
+BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
+			   bool emit_error) const
 {
+  bool is_infer_var = destructure ()->get_kind () == TyTy::TypeKind::INFER;
+
   const Resolver::TraitReference *query = predicate.get ();
   for (const auto &bound : specified_bounds)
     {
@@ -282,6 +285,9 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
       if (item->satisfies_bound (*query))
 	return true;
     }
+
+  if (is_infer_var)
+    return true;
 
   bool satisfied = false;
   auto probed = Resolver::TypeBoundsProbe::Probe (this);
@@ -313,6 +319,11 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
       const HIR::ImplBlock &impl = *(b.second);
       for (const auto &item : impl.get_impl_items ())
 	{
+	  bool is_associated_type = item->get_impl_item_type ()
+				    == HIR::ImplItem::ImplItemType::TYPE_ALIAS;
+	  if (!is_associated_type)
+	    continue;
+
 	  TyTy::BaseType *impl_item_ty = nullptr;
 	  Analysis::NodeMapping i = item->get_impl_mappings ();
 	  bool query_ok = Resolver::query_type (i.get_hirid (), &impl_item_ty);
@@ -331,15 +342,21 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 	  // compare the types
 	  if (!bound_ty->can_eq (impl_item_ty, false))
 	    {
-	      RichLocation r (mappings->lookup_location (get_ref ()));
-	      r.add_range (predicate.get_locus ());
-	      r.add_range (mappings->lookup_location (i.get_hirid ()));
+	      if (!impl_item_ty->can_eq (bound_ty, false))
+		{
+		  if (emit_error)
+		    {
+		      RichLocation r (mappings->lookup_location (get_ref ()));
+		      r.add_range (predicate.get_locus ());
+		      r.add_range (mappings->lookup_location (i.get_hirid ()));
 
-	      rust_error_at (
-		r, "expected %<%s%> got %<%s%>",
-		bound_ty->destructure ()->get_name ().c_str (),
-		impl_item_ty->destructure ()->get_name ().c_str ());
-	      return false;
+		      rust_error_at (
+			r, "expected %<%s%> got %<%s%>",
+			bound_ty->destructure ()->get_name ().c_str (),
+			impl_item_ty->destructure ()->get_name ().c_str ());
+		    }
+		  return false;
+		}
 	    }
 	}
 
@@ -357,7 +374,7 @@ BaseType::bounds_compatible (const BaseType &other, Location locus,
     unsatisfied_bounds;
   for (auto &bound : get_specified_bounds ())
     {
-      if (!other.satisfies_bound (bound))
+      if (!other.satisfies_bound (bound, emit_error))
 	unsatisfied_bounds.push_back (bound);
     }
 

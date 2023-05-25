@@ -114,7 +114,8 @@ public:
   //     2. (For functions) have the same signature
   virtual bool is_equal (const BaseType &other) const;
 
-  bool satisfies_bound (const TypeBoundPredicate &predicate) const;
+  bool satisfies_bound (const TypeBoundPredicate &predicate,
+			bool emit_error) const;
   bool bounds_compatible (const BaseType &other, Location locus,
 			  bool emit_error) const;
   void inherit_bounds (const BaseType &other);
