@@ -272,7 +272,6 @@
 (define_mode_iterator MVE_3 [V16QI V8HI])
 (define_mode_iterator MVE_2 [V16QI V8HI V4SI])
 (define_mode_iterator MVE_5 [V8HI V4SI])
-(define_mode_iterator MVE_6 [V8HI V4SI])
 (define_mode_iterator MVE_7 [V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_V8HF [V8HF])

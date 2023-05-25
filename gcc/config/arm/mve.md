@@ -3732,9 +3732,9 @@
 ;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
 ;;
 (define_insn "mve_vldrhq_gather_offset_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_6 2 "s_register_operand" "w")]
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_5 2 "s_register_operand" "w")]
 	VLDRHGOQ))
   ]
   "TARGET_HAVE_MVE"
@@ -3755,9 +3755,9 @@
 ;; [vldrhq_gather_offset_z_s vldrhq_gather_offset_z_u]
 ;;
 (define_insn "mve_vldrhq_gather_offset_z_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_6 2 "s_register_operand" "w")
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
 	]VLDRHGOQ))
   ]
@@ -3780,9 +3780,9 @@
 ;; [vldrhq_gather_shifted_offset_s vldrhq_gather_shifted_offset_u]
 ;;
 (define_insn "mve_vldrhq_gather_shifted_offset_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_6 2 "s_register_operand" "w")]
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_5 2 "s_register_operand" "w")]
 	VLDRHGSOQ))
   ]
   "TARGET_HAVE_MVE"
@@ -3803,9 +3803,9 @@
 ;; [vldrhq_gather_shifted_offset_z_s vldrhq_gather_shited_offset_z_u]
 ;;
 (define_insn "mve_vldrhq_gather_shifted_offset_z_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=&w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_6 2 "s_register_operand" "w")
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
+		       (match_operand:MVE_5 2 "s_register_operand" "w")
 		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
 	]VLDRHGSOQ))
   ]
@@ -3828,8 +3828,8 @@
 ;; [vldrhq_s, vldrhq_u]
 ;;
 (define_insn "mve_vldrhq_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")]
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")]
 	 VLDRHQ))
   ]
   "TARGET_HAVE_MVE"
@@ -3870,8 +3870,8 @@
 ;; [vldrhq_z_s vldrhq_z_u]
 ;;
 (define_insn "mve_vldrhq_z_<supf><mode>"
-  [(set (match_operand:MVE_6 0 "s_register_operand" "=w")
-	(unspec:MVE_6 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")
+  [(set (match_operand:MVE_5 0 "s_register_operand" "=w")
+	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "mve_memory_operand" "Ux")
 	(match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")]
 	 VLDRHQ))
   ]
@@ -4449,7 +4449,7 @@
 (define_insn "mve_vstrhq_p_<supf><mode>"
   [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
 	(unspec:<MVE_H_ELEM>
-	 [(match_operand:MVE_6 1 "s_register_operand" "w")
+	 [(match_operand:MVE_5 1 "s_register_operand" "w")
 	  (match_operand:<MVE_VPRED> 2 "vpr_register_operand" "Up")
 	  (match_dup 0)]
 	 VSTRHQ))
@@ -4470,8 +4470,8 @@
 ;;
 (define_expand "mve_vstrhq_scatter_offset_p_<supf><mode>"
   [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_6 1 "s_register_operand")
-   (match_operand:MVE_6 2 "s_register_operand")
+   (match_operand:MVE_5 1 "s_register_operand")
+   (match_operand:MVE_5 2 "s_register_operand")
    (match_operand:<MVE_VPRED> 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRHSOQ)]
   "TARGET_HAVE_MVE"
@@ -4489,8 +4489,8 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_6 1 "s_register_operand" "w")
-	   (match_operand:MVE_6 2 "s_register_operand" "w")
+	   (match_operand:MVE_5 1 "s_register_operand" "w")
+	   (match_operand:MVE_5 2 "s_register_operand" "w")
 	   (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	  VSTRHSOQ))]
   "TARGET_HAVE_MVE"
@@ -4502,8 +4502,8 @@
 ;;
 (define_expand "mve_vstrhq_scatter_offset_<supf><mode>"
   [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_6 1 "s_register_operand")
-   (match_operand:MVE_6 2 "s_register_operand")
+   (match_operand:MVE_5 1 "s_register_operand")
+   (match_operand:MVE_5 2 "s_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRHSOQ)]
   "TARGET_HAVE_MVE"
 {
@@ -4518,8 +4518,8 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_6 1 "s_register_operand" "w")
-	   (match_operand:MVE_6 2 "s_register_operand" "w")]
+	   (match_operand:MVE_5 1 "s_register_operand" "w")
+	   (match_operand:MVE_5 2 "s_register_operand" "w")]
 	  VSTRHSOQ))]
   "TARGET_HAVE_MVE"
   "vstrh.<V_sz_elem>\t%q2, [%0, %q1]"
@@ -4530,8 +4530,8 @@
 ;;
 (define_expand "mve_vstrhq_scatter_shifted_offset_p_<supf><mode>"
   [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_6 1 "s_register_operand")
-   (match_operand:MVE_6 2 "s_register_operand")
+   (match_operand:MVE_5 1 "s_register_operand")
+   (match_operand:MVE_5 2 "s_register_operand")
    (match_operand:<MVE_VPRED> 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRHSSOQ)]
   "TARGET_HAVE_MVE"
@@ -4549,8 +4549,8 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_6 1 "s_register_operand" "w")
-	   (match_operand:MVE_6 2 "s_register_operand" "w")
+	   (match_operand:MVE_5 1 "s_register_operand" "w")
+	   (match_operand:MVE_5 2 "s_register_operand" "w")
 	   (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
 	  VSTRHSSOQ))]
   "TARGET_HAVE_MVE"
@@ -4562,8 +4562,8 @@
 ;;
 (define_expand "mve_vstrhq_scatter_shifted_offset_<supf><mode>"
   [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_6 1 "s_register_operand")
-   (match_operand:MVE_6 2 "s_register_operand")
+   (match_operand:MVE_5 1 "s_register_operand")
+   (match_operand:MVE_5 2 "s_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRHSSOQ)]
   "TARGET_HAVE_MVE"
 {
@@ -4579,8 +4579,8 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_6 1 "s_register_operand" "w")
-	   (match_operand:MVE_6 2 "s_register_operand" "w")]
+	   (match_operand:MVE_5 1 "s_register_operand" "w")
+	   (match_operand:MVE_5 2 "s_register_operand" "w")]
 	  VSTRHSSOQ))]
   "TARGET_HAVE_MVE"
   "vstrh.<V_sz_elem>\t%q2, [%0, %q1, uxtw #1]"
@@ -4591,7 +4591,7 @@
 ;;
 (define_insn "mve_vstrhq_<supf><mode>"
   [(set (match_operand:<MVE_H_ELEM> 0 "mve_memory_operand" "=Ux")
-	(unspec:<MVE_H_ELEM> [(match_operand:MVE_6 1 "s_register_operand" "w")]
+	(unspec:<MVE_H_ELEM> [(match_operand:MVE_5 1 "s_register_operand" "w")]
 	 VSTRHQ))
   ]
   "TARGET_HAVE_MVE"
