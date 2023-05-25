@@ -29,10 +29,10 @@
 #include "rust-macro.h"
 #include "rust-parse.h"
 #include "rust-session-manager.h"
-#include "bi-map.h"
 
 namespace Rust {
-static const BiMap<std::string, BuiltinMacro> builtins = {{
+
+const BiMap<std::string, BuiltinMacro> MacroBuiltin::builtins = {{
   {"assert", BuiltinMacro::Assert},
   {"file", BuiltinMacro::File},
   {"line", BuiltinMacro::Line},
@@ -62,6 +62,16 @@ static const BiMap<std::string, BuiltinMacro> builtins = {{
   {"cfg_accessible", BuiltinMacro::CfgAccessible},
   {"RustcEncodable", BuiltinMacro::RustcDecodable},
   {"RustcDecodable", BuiltinMacro::RustcEncodable},
+  {"Clone", BuiltinMacro::Clone},
+  {"Copy", BuiltinMacro::Copy},
+  {"Debug", BuiltinMacro::Debug},
+  {"Default", BuiltinMacro::Default},
+  {"Eq", BuiltinMacro::Eq},
+  {"PartialEq", BuiltinMacro::PartialEq},
+  {"Ord", BuiltinMacro::Ord},
+  {"PartialOrd", BuiltinMacro::PartialOrd},
+  {"Hash", BuiltinMacro::Hash},
+
 }};
 
 std::unordered_map<
@@ -95,16 +105,14 @@ std::unordered_map<
     {"test_case", MacroBuiltin::sorry},
     {"global_allocator", MacroBuiltin::sorry},
     {"cfg_accessible", MacroBuiltin::sorry},
-    {"RustcEncodable", MacroBuiltin::sorry},
-    {"RustcDecodable", MacroBuiltin::sorry},
 };
 
 // FIXME: This should return an Optional
 BuiltinMacro
 builtin_macro_from_string (const std::string &identifier)
 {
-  auto macro = builtins.lookup (identifier);
-  rust_assert (builtins.is_iter_ok (macro));
+  auto macro = MacroBuiltin::builtins.lookup (identifier);
+  rust_assert (MacroBuiltin::builtins.is_iter_ok (macro));
 
   return macro->second;
 }
@@ -113,8 +121,8 @@ namespace {
 std::string
 make_macro_path_str (BuiltinMacro kind)
 {
-  auto str = builtins.lookup (kind);
-  rust_assert (builtins.is_iter_ok (str));
+  auto str = MacroBuiltin::builtins.lookup (kind);
+  rust_assert (MacroBuiltin::builtins.is_iter_ok (str));
 
   return str->second;
 }

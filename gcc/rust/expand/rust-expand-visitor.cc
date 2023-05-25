@@ -18,37 +18,198 @@
 
 #include "rust-expand-visitor.h"
 #include "rust-attributes.h"
+#include "rust-ast.h"
+#include "rust-type.h"
+#include "rust-derive.h"
 
 namespace Rust {
+
+bool
+is_derive (AST::Attribute &attr)
+{
+  auto path = attr.get_path ();
+  return attr.has_attr_input ()
+	 && attr.get_attr_input ().get_attr_input_type ()
+	      == AST::AttrInput::TOKEN_TREE
+	 && path == "derive";
+}
+
+bool
+is_builtin (AST::Attribute &attr)
+{
+  auto &segments = attr.get_path ().get_segments ();
+  return !segments.empty ()
+	 && !Analysis::BuiltinAttributeMappings::get ()
+	       ->lookup_builtin (segments[0].get_segment_name ())
+	       .is_error ();
+}
 
 /* Expand all of the macro invocations currently contained in a crate */
 void
 ExpandVisitor::go (AST::Crate &crate)
 {
-  expander.push_context (MacroExpander::ContextType::ITEM);
+  expand_inner_items (crate.items);
+}
 
-  // expand attributes recursively and strip items if required
-  //  AttrVisitor attr_visitor (*this);
-  auto &items = crate.items;
-  for (auto it = items.begin (); it != items.end ();)
+/**
+ * Returns a list of all the derive macros to apply, as well as the Attribute
+ * they are from.
+ *
+ * ```rust
+ * #[derive(Clone, Copy)] // attr1
+ * struct S;
+ *
+ * // returns [{Clone, &attr1}, {Copy, &attr1}]
+ *
+ * #[derive(Clone)] // attr1
+ * #[derive(Copy, PartialEq, Ord)] // attr2
+ * struct S;
+ *
+ * // returns [{Clone, &attr1}, {Copy, &attr2}, {PartialEq, &attr2}, {Ord,
+ * &attr2}]
+ * ```
+ *
+ * @param outer_attrs The list of attributes on the item to derive
+ */
+static std::vector<
+  std::pair<std::string, std::reference_wrapper<const AST::Attribute>>>
+get_traits_to_derive (std::vector<AST::Attribute> &outer_attrs)
+{
+  std::vector<
+    std::pair<std::string, std::reference_wrapper<const AST::Attribute>>>
+    to_derive;
+  for (auto it = outer_attrs.begin (); it != outer_attrs.end ();)
     {
-      auto &item = *it;
-      item->accept_vis (*this);
+      auto &attr = *it;
 
-      auto fragment = expander.take_expanded_fragment ();
-      if (fragment.should_expand ())
+      if (is_derive (attr))
 	{
-	  // Remove the current expanded invocation
-	  it = items.erase (it);
-	  for (auto &node : fragment.get_nodes ())
+	  auto &input = attr.get_attr_input ();
+	  switch (input.get_attr_input_type ())
 	    {
-	      it = items.insert (it, node.take_item ());
-	      it++;
+	      // isn't there a better way to do this?? like parse it or
+	      // something idk. some function I'm not thinking of?
+	      case AST::AttrInput::TOKEN_TREE: {
+		auto &tokens = static_cast<AST::DelimTokenTree &> (input)
+				 .get_token_trees ();
+
+		// erase the delimiters
+		rust_assert (tokens.size () >= 3);
+		tokens.erase (tokens.begin ());
+		tokens.pop_back ();
+
+		for (auto &token : tokens)
+		  {
+		    // skip commas, as they are part of the token stream
+		    if (token->as_string () == ",")
+		      continue;
+
+		    to_derive.emplace_back (token->as_string (), attr);
+		  }
+		break;
+	      }
+	    case AST::AttrInput::LITERAL:
+	    case AST::AttrInput::META_ITEM:
+	    case AST::AttrInput::MACRO:
+	      gcc_unreachable ();
+	      break;
 	    }
+
+	  it = outer_attrs.erase (it);
 	}
       else
-	it++;
+	{
+	  it++;
+	}
     }
+
+  return to_derive;
+}
+
+static std::unique_ptr<AST::Item>
+derive_item (std::unique_ptr<AST::Item> &item, const AST::Attribute &derive,
+	     BuiltinMacro to_derive)
+{
+  return AST::DeriveVisitor::derive (*item, derive, to_derive);
+}
+
+void
+ExpandVisitor::expand_inner_items (
+  std::vector<std::unique_ptr<AST::Item>> &items)
+{
+  expander.push_context (MacroExpander::ContextType::ITEM);
+
+  for (auto it = items.begin (); it != items.end (); it++)
+    {
+      auto &item = *it;
+      if (item->has_outer_attrs ())
+	{
+	  auto traits_to_derive
+	    = get_traits_to_derive (item->get_outer_attrs ());
+
+	  for (auto &to_derive : traits_to_derive)
+	    {
+	      auto &name = to_derive.first;
+	      auto &attr = to_derive.second;
+
+	      auto maybe_builtin = MacroBuiltin::builtins.lookup (name);
+	      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+		{
+		  auto new_item
+		    = derive_item (item, attr, maybe_builtin->second);
+		  // this inserts the derive *before* the item - is it a
+		  // problem?
+		  it = items.insert (it, std::move (new_item));
+		}
+	    }
+	}
+    }
+
+  std::function<std::unique_ptr<AST::Item> (AST::SingleASTNode)> extractor
+    = [] (AST::SingleASTNode node) { return node.take_item (); };
+
+  expand_macro_children (items, extractor);
+
+  expander.pop_context ();
+}
+
+void
+ExpandVisitor::expand_inner_stmts (
+  std::vector<std::unique_ptr<AST::Stmt>> &stmts)
+{
+  expander.push_context (MacroExpander::ContextType::BLOCK);
+
+  for (auto it = stmts.begin (); it != stmts.end (); it++)
+    {
+      // TODO: Eventually we need to derive here as well
+
+      // auto &stmt = *it;
+
+      // if (stmt->has_outer_attrs ())
+      // {
+      //   auto traits_to_derive
+      //     = get_traits_to_derive (stmt->get_outer_attrs ());
+
+      //   // FIXME: This needs to be reworked absolutely
+      //   static const std::set<std::string> builtin_derives
+      //     = {"Clone", "Copy", "Eq", "PartialEq", "Ord", "PartialOrd"};
+
+      //   for (auto &to_derive : traits_to_derive)
+      //     if (builtin_derives.find (to_derive) != builtin_derives.end ())
+      //       {
+      // 	auto new_item = derive_item (
+      // 	  item, item->get_outer_attrs ()[0] /* FIXME: This is wrong */,
+      // 	  to_derive);
+      // 	// this inserts the derive *before* the item - is it a problem?
+      // 	it = items.insert (it, std::move (new_item));
+      //       }
+      // }
+    }
+
+  std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
+    = [] (AST::SingleASTNode node) { return node.take_stmt (); };
+
+  expand_macro_children (stmts, extractor);
 
   expander.pop_context ();
 }
@@ -544,12 +705,7 @@ ExpandVisitor::visit (AST::ClosureExprInner &expr)
 void
 ExpandVisitor::visit (AST::BlockExpr &expr)
 {
-  visit_outer_attrs (expr);
-  std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
-    = [] (AST::SingleASTNode node) { return node.take_stmt (); };
-
-  expand_macro_children (MacroExpander::ContextType::BLOCK,
-			 expr.get_statements (), extractor);
+  expand_inner_stmts (expr.get_statements ());
 
   expander.push_context (MacroExpander::ContextType::BLOCK);
 
@@ -1404,7 +1560,7 @@ ExpandVisitor::visit_outer_attrs (T &item, std::vector<AST::Attribute> &attrs)
 {
   for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
     {
-      auto current = *it;
+      auto &current = *it;
 
       if (!is_builtin (current) && !is_derive (current))
 	{
@@ -1509,25 +1665,4 @@ ExpandVisitor::visit_attrs_with_derive (T &item)
 	}
     }
 }
-
-bool
-ExpandVisitor::is_derive (AST::Attribute &attr)
-{
-  auto &segments = attr.get_path ().get_segments ();
-  return attr.has_attr_input ()
-	 && attr.get_attr_input ().get_attr_input_type ()
-	      == AST::AttrInput::TOKEN_TREE
-	 && !segments.empty () && "derive" == segments[0].get_segment_name ();
-}
-
-bool
-ExpandVisitor::is_builtin (AST::Attribute &attr)
-{
-  auto &segments = attr.get_path ().get_segments ();
-  return !segments.empty ()
-	 && !Analysis::BuiltinAttributeMappings::get ()
-	       ->lookup_builtin (segments[0].get_segment_name ())
-	       .is_error ();
-}
-
 } // namespace Rust

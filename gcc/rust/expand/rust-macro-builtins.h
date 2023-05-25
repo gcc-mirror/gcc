@@ -22,6 +22,7 @@
 #include "rust-ast.h"
 #include "rust-ast-fragment.h"
 #include "rust-location.h"
+#include "bi-map.h"
 
 namespace Rust {
 
@@ -63,6 +64,15 @@ enum class BuiltinMacro
   CfgAccessible,
   RustcDecodable,
   RustcEncodable,
+  Clone,
+  Copy,
+  Debug,
+  Default,
+  Eq,
+  PartialEq,
+  Ord,
+  PartialOrd,
+  Hash,
 };
 
 BuiltinMacro
@@ -107,6 +117,7 @@ builtin_macro_from_string (const std::string &identifier);
 class MacroBuiltin
 {
 public:
+  static const BiMap<std::string, BuiltinMacro> builtins;
   static std::unordered_map<
     std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
     builtin_transcribers;
