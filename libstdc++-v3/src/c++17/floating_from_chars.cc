@@ -64,7 +64,7 @@
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
 #elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
-      && defined(__GLIBC_PREREQ)
+      && defined(__GLIBC_PREREQ) && defined(USE_STRTOD_FOR_FROM_CHARS)
 #define USE_STRTOF128_FOR_FROM_CHARS 1
 extern "C" _Float128 __strtof128(const char*, char**)
   __asm ("strtof128")
@@ -77,10 +77,6 @@ extern "C" _Float128 __strtof128(const char*, char**)
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
     && __SIZE_WIDTH__ >= 32
 # define USE_LIB_FAST_FLOAT 1
-# if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
-// No need to use strtold.
-#  undef USE_STRTOD_FOR_FROM_CHARS
-# endif
 #endif
 
 #if USE_LIB_FAST_FLOAT
@@ -1261,7 +1257,7 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
-#if ! USE_STRTOD_FOR_FROM_CHARS
+#if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__ || !defined USE_STRTOD_FOR_FROM_CHARS
   // Either long double is the same as double, or we can't use strtold.
   // In the latter case, this might give an incorrect result (e.g. values
   // out of range of double give an error, even if they fit in long double).
@@ -1329,13 +1325,23 @@ _ZSt10from_charsPKcS0_RDF128_St12chars_format(const char* first,
 					      __ieee128& value,
 					      chars_format fmt) noexcept
 __attribute__((alias ("_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format")));
-#elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+#else
 from_chars_result
 from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
 {
+#ifdef USE_STRTOF128_FOR_FROM_CHARS
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.
   return from_chars_strtod(first, last, value, fmt);
+#else
+  // Read a long double. This might give an incorrect result (e.g. values
+  // out of range of long double give an error, even if they fit in _Float128).
+  long double ldbl_val;
+  auto res = std::from_chars(first, last, ldbl_val, fmt);
+  if (res.ec == errc{})
+    value = ldbl_val;
+  return res;
+#endif
 }
 #endif
 
