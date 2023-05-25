@@ -1,3 +1,28 @@
+2023-05-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109949
+	* include/experimental/bits/simd.h (__intrinsic_type): If
+	__ALTIVEC__ is defined, map gnu::vector_size types to their
+	corresponding __vector T types without losing unsignedness of
+	integer types. Also prefer long long over long.
+	* include/experimental/bits/simd_ppc.h (_S_popcount): Cast mask
+	object to the expected unsigned vector type.
+
+2023-05-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109261
+	* include/experimental/bits/simd.h (__intrinsic_type):
+	Specialize __intrinsic_type<double, 8> and
+	__intrinsic_type<double, 16> in any case, but provide the member
+	type only with __aarch64__.
+
+2023-05-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109261
+	* include/experimental/bits/simd_neon.h (_S_reduce): Add
+	constexpr and make NEON implementation conditional on
+	not __builtin_is_constant_evaluated.
+
 2023-05-23  Matthias Kretz  <m.kretz@gsi.de>
 
 	PR libstdc++/109261

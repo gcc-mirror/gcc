@@ -1,3 +1,22 @@
+2023-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104350
+	* simplify.cc (simplify_size): Reject DIM argument of intrinsic SIZE
+	with error when out of valid range.
+
+2023-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103794
+	* check.cc (gfc_check_reshape): Expand constant arguments SHAPE and
+	ORDER before checking.
+	* gfortran.h (gfc_is_constant_array_expr): Add prototype.
+	* iresolve.cc (gfc_resolve_reshape): Expand constant argument SHAPE.
+	* simplify.cc (is_constant_array_expr): If array is determined to be
+	constant, expand small array constructors if needed.
+	(gfc_is_constant_array_expr): Wrapper for is_constant_array_expr.
+	(gfc_simplify_reshape): Fix check for insufficient elements in SOURCE
+	when no padding specified.
+
 2023-05-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/103716

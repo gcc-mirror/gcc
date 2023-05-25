@@ -1,3 +1,127 @@
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107822
+	PR tree-optimization/107986
+	* gcc.dg/pr107822.c: New.
+	* gcc.dg/pr107986-1.c: New.
+
+2023-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104350
+	* gfortran.dg/size_dim_2.f90: New test.
+
+2023-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103794
+	* gfortran.dg/reshape_10.f90: New test.
+	* gfortran.dg/reshape_11.f90: New test.
+
+2023-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/109840
+	* gcc.dg/fold-parity-8.c: New test.
+	* gcc.dg/fold-popcount-11.c: Likewise.
+
+2023-05-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/ipa/pr78121.c: Adjust for vrange::dump use.
+	* gcc.dg/ipa/vrp1.c: Same.
+	* gcc.dg/ipa/vrp2.c: Same.
+	* gcc.dg/ipa/vrp3.c: Same.
+	* gcc.dg/ipa/vrp4.c: Same.
+	* gcc.dg/ipa/vrp5.c: Same.
+	* gcc.dg/ipa/vrp6.c: Same.
+	* gcc.dg/ipa/vrp7.c: Same.
+	* gcc.dg/ipa/vrp8.c: Same.
+
+2023-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vect-shiftv4qi.c (dg-options):
+	Remove -ftree-vectorize.
+	* gcc.target/i386/vect-shiftv8qi.c (dg-options): Ditto.
+	* gcc.target/i386/vect-vshiftv4qi.c: New test.
+	* gcc.target/i386/vect-vshiftv8qi.c: New test.
+
+2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add testing for shifts.
+	* gcc.target/aarch64/simd/pr99195_6.c: Likewise.
+	* gcc.target/aarch64/simd/pr99195_8.c: New test.
+
+2023-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/109944
+	* gcc.target/i386/pr109944-1.c: New testcase.
+	* gcc.target/i386/pr109944-2.c: Likewise.
+
+2023-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109849
+	* gcc.dg/tree-ssa/ssa-hoist-9.c: New testcase.
+
+2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* gm2/pim/run/pass/hightests.mod: New test.
+
+2023-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr109940.c: New test.
+
+2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109939
+	* gcc.target/arm/pr109939.c: New test.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond_run-4.c: New test.
+
+2023-05-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Xfail bogus warning on 32-bit ppc
+	as well.
+
+2023-05-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/signbit-2.c: Add -msse2 on x86.
+
+2023-05-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_sysconf):
+	Check for declaration and _SC_PAGESIZE on vxworks.
+
+2023-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-perm.c: New test.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/riscv/rvv/rvv.exp:
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cmp/vcond_run-3.c: New test.
+
+2023-05-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c:
+	Enrich test cases.
+
+2023-05-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c:
+	Enrich the test cases.
+
+2023-05-24  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr109900.c: New test.
+
 2023-05-23  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/109450

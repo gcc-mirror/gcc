@@ -1,3 +1,314 @@
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/107822
+	PR tree-optimization/107986
+	* Makefile.in (OBJS): Add gimple-range-phi.o.
+	* gimple-range-cache.h (ranger_cache::m_estimate): New
+	phi_analyzer pointer member.
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Use
+	phi_analyzer if no loop info is available.
+	* gimple-range-phi.cc: New file.
+	* gimple-range-phi.h: New file.
+	* tree-vrp.cc (execute_ranger_vrp): Utililze a phi_analyzer.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fur_list::fur_list): Add range_query param
+	to contructors.
+	(fold_range): Add range_query parameter.
+	(fur_relation::fur_relation): New.
+	(fur_relation::trio): New.
+	(fur_relation::register_relation): New.
+	(fold_relations): New.
+	* gimple-range-fold.h (fold_range): Adjust prototypes.
+	(fold_relations): New.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::range_of_expr): New.
+	* gimple-range-cache.h (class ssa_cache): Inherit from range_query.
+	(ranger_cache::const_query): New.
+	* gimple-range.cc (gimple_ranger::const_query): New.
+	* gimple-range.h (gimple_ranger::const_query): New prototype.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::dump): Use get_range.
+	(ssa_cache::dump_range_query): Delete.
+	(ssa_lazy_cache::dump_range_query): Delete.
+	(ssa_lazy_cache::get_range): Move from header file.
+	(ssa_lazy_cache::clear_range): ditto.
+	(ssa_lazy_cache::clear): Ditto.
+	* gimple-range-cache.h (class ssa_cache): Virtualize.
+	(class ssa_lazy_cache): Inherit and virtualize.
+
+2023-05-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (vrange::kind): Remove.
+
+2023-05-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/109840
+	* match.pd <popcount optimizations>: Preserve zero-extension when
+	optimizing popcount((T)bswap(x)) and popcount((T)rotate(x,y)) as
+	popcount((T)x), so the popcount's argument keeps the same type.
+	<parity optimizations>:  Likewise preserve extensions when
+	simplifying parity((T)bswap(x)) and parity((T)rotate(x,y)) as
+	parity((T)x), so that the parity's argument type is the same.
+
+2023-05-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipa_value_range_from_jfunc): Use new ipa_vr API.
+	(ipcp_store_vr_results): Same.
+	* ipa-prop.cc (ipa_vr::ipa_vr): New.
+	(ipa_vr::get_vrange): New.
+	(ipa_vr::set_unknown): New.
+	(ipa_vr::streamer_read): New.
+	(ipa_vr::streamer_write): New.
+	(write_ipcp_transformation_info): Use new ipa_vr API.
+	(read_ipcp_transformation_info): Same.
+	(ipa_vr::nonzero_p): Delete.
+	(ipcp_update_vr): Use new ipa_vr API.
+	* ipa-prop.h (class ipa_vr): Provide an API and hide internals.
+	* ipa-sra.cc (zap_useless_ipcp_results): Use new ipa_vr API.
+
+2023-05-24  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mcore/mcore.cc (output_inline_const) Make buffer smaller to
+	silence overflow warnings later on.
+
+2023-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2):
+	Remove handling of V8QImode.
+	* config/i386/mmx.md (v<insn>v8qi3): Move from sse.md.
+	Call ix86_expand_vecop_qihi_partial.  Enable for TARGET_MMX_WITH_SSE.
+	(v<insn>v4qi3): Ditto.
+	* config/i386/sse.md (v<insn>v8qi3): Remove.
+
+2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_simd_lshr<mode>): Rename to...
+	(aarch64_simd_lshr<mode><vczle><vczbe>): ... This.
+	(aarch64_simd_ashr<mode>): Rename to...
+	(aarch64_simd_ashr<mode><vczle><vczbe>): ... This.
+	(aarch64_simd_imm_shl<mode>): Rename to...
+	(aarch64_simd_imm_shl<mode><vczle><vczbe>): ... This.
+	(aarch64_simd_reg_sshl<mode>): Rename to...
+	(aarch64_simd_reg_sshl<mode><vczle><vczbe>): ... This.
+	(aarch64_simd_reg_shl<mode>_unsigned): Rename to...
+	(aarch64_simd_reg_shl<mode>_unsigned<vczle><vczbe>): ... This.
+	(aarch64_simd_reg_shl<mode>_signed): Rename to...
+	(aarch64_simd_reg_shl<mode>_signed<vczle><vczbe>): ... This.
+	(vec_shr_<mode>): Rename to...
+	(vec_shr_<mode><vczle><vczbe>): ... This.
+	(aarch64_<sur>shl<mode>): Rename to...
+	(aarch64_<sur>shl<mode><vczle><vczbe>): ... This.
+	(aarch64_<sur>q<r>shl<mode>): Rename to...
+	(aarch64_<sur>q<r>shl<mode><vczle><vczbe>): ... This.
+
+2023-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/109944
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_general):
+	Perform final vector composition using
+	ix86_expand_vector_init_general instead of setting
+	the highpart and lowpart which causes spilling.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109695
+	* gimple-range-cache.cc (ranger_cache::get_global_range): Add
+	changed param.
+	* gimple-range-cache.h (ranger_cache::get_global_range): Ditto.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Pass changed
+	flag to set_global_range.
+	(gimple_ranger::prefill_stmt_dependencies): Ditto.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109695
+	* gimple-range-cache.cc (temporal_cache::temporal_value): Return
+	a positive int.
+	(temporal_cache::current_p): Check always_current method.
+	(temporal_cache::set_always_current): Add param and set value
+	appropriately.
+	(temporal_cache::always_current_p): New.
+	(ranger_cache::get_global_range): Adjust.
+	(ranger_cache::set_global_range): set always current first.
+
+2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109695
+	* gimple-range-cache.cc (ranger_cache::get_global_range): Call
+	fold_range with global query to choose an initial value.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum frm_field_enum): Add FRM_
+	prefix.
+
+2023-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109849
+	* tree-ssa-pre.cc (do_hoist_insertion): Do not intersect
+	expressions but take the first sets.
+
+2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* doc/gm2.texi (High procedure function): New node.
+	(Using): New menu entry for High procedure function.
+
+2023-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/109940
+	* early-remat.cc (postorder_index): Rename to...
+	(rpo_index): ...this.
+	(compare_candidates): Sort by decreasing rpo_index rather than
+	increasing postorder_index.
+	(early_remat::sort_candidates): Calculate the forward RPO from
+	DF_FORWARD.
+	(early_remat::local_phase): Follow forward RPO using DF_FORWARD,
+	rather than DF_BACKWARD in reverse.
+
+2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109939
+	* config/arm/arm-builtins.cc (SAT_BINOP_UNSIGNED_IMM_QUALIFIERS): Use
+	qualifier_none for the return operand.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (<optab><mode>3): New pattern.
+	(one_cmpl<mode>2): Ditto.
+	(*<optab>not<mode>): Ditto.
+	(*n<optab><mode>): Ditto.
+	* config/riscv/riscv-v.cc (expand_vec_cmp_float): Change to
+	one_cmpl.
+
+2023-05-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-slp.cc (vect_transform_slp_perm_load_1): Adjust the
+	calculation on n_perms by considering nvectors_per_build.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/riscv/autovec.md (@vcond_mask_<mode><vm>): New pattern.
+	(vec_cmp<mode><vm>): New pattern.
+	(vec_cmpu<mode><vm>): New pattern.
+	(vcond<V:mode><VI:mode>): New pattern.
+	(vcondu<V:mode><VI:mode>): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): Add new enum.
+	(emit_vlmax_merge_insn): New function.
+	(emit_vlmax_cmp_insn): Ditto.
+	(emit_vlmax_cmp_mu_insn): Ditto.
+	(expand_vec_cmp): Ditto.
+	(expand_vec_cmp_float): Ditto.
+	(expand_vcond): Ditto.
+	* config/riscv/riscv-v.cc (emit_vlmax_merge_insn): Ditto.
+	(emit_vlmax_cmp_insn): Ditto.
+	(emit_vlmax_cmp_mu_insn): Ditto.
+	(get_cmp_insn_code): Ditto.
+	(expand_vec_cmp): Ditto.
+	(expand_vec_cmp_float): Ditto.
+	(expand_vcond): Ditto.
+
+2023-05-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (main): Add
+	unsigned_eew*_lmul1_interpret for indexer.
+	* config/riscv/riscv-vector-builtins-functions.def (vreinterpret):
+	Register vuint*m1_t interpret function.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_UNSIGNED_EEW8_LMUL1_INTERPRET_OPS):
+	New macro for vuint8m1_t.
+	(DEF_RVV_UNSIGNED_EEW16_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_UNSIGNED_EEW32_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_UNSIGNED_EEW64_LMUL1_INTERPRET_OPS): Likewise.
+	(vbool1_t): Add to unsigned_eew*_interpret_ops.
+	(vbool2_t): Likewise.
+	(vbool4_t): Likewise.
+	(vbool8_t): Likewise.
+	(vbool16_t): Likewise.
+	(vbool32_t): Likewise.
+	(vbool64_t): Likewise.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_UNSIGNED_EEW8_LMUL1_INTERPRET_OPS):
+	New macro for vuint*m1_t.
+	(DEF_RVV_UNSIGNED_EEW16_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_UNSIGNED_EEW32_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_UNSIGNED_EEW64_LMUL1_INTERPRET_OPS): Likewise.
+	(required_extensions_p): Add vuint*m1_t interpret case.
+	* config/riscv/riscv-vector-builtins.def (unsigned_eew8_lmul1_interpret):
+	Add vuint*m1_t interpret to base type.
+	(unsigned_eew16_lmul1_interpret): Likewise.
+	(unsigned_eew32_lmul1_interpret): Likewise.
+	(unsigned_eew64_lmul1_interpret): Likewise.
+
+2023-05-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (EEW_SIZE_LIST): New macro
+	for the eew size list.
+	(LMUL1_LOG2): New macro for the log2 value of lmul=1.
+	(main): Add signed_eew*_lmul1_interpret for indexer.
+	* config/riscv/riscv-vector-builtins-functions.def (vreinterpret):
+	Register vint*m1_t interpret function.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_SIGNED_EEW8_LMUL1_INTERPRET_OPS):
+	New macro for vint8m1_t.
+	(DEF_RVV_SIGNED_EEW16_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_SIGNED_EEW32_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_SIGNED_EEW64_LMUL1_INTERPRET_OPS): Likewise.
+	(vbool1_t): Add to signed_eew*_interpret_ops.
+	(vbool2_t): Likewise.
+	(vbool4_t): Likewise.
+	(vbool8_t): Likewise.
+	(vbool16_t): Likewise.
+	(vbool32_t): Likewise.
+	(vbool64_t): Likewise.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_SIGNED_EEW8_LMUL1_INTERPRET_OPS):
+	New macro for vint*m1_t.
+	(DEF_RVV_SIGNED_EEW16_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_SIGNED_EEW32_LMUL1_INTERPRET_OPS): Likewise.
+	(DEF_RVV_SIGNED_EEW64_LMUL1_INTERPRET_OPS): Likewise.
+	(required_extensions_p): Add vint8m1_t interpret case.
+	* config/riscv/riscv-vector-builtins.def (signed_eew8_lmul1_interpret):
+	Add vint*m1_t interpret to base type.
+	(signed_eew16_lmul1_interpret): Likewise.
+	(signed_eew32_lmul1_interpret): Likewise.
+	(signed_eew64_lmul1_interpret): Likewise.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Adjust for new interface.
+	* config/riscv/riscv-protos.h (emit_vlmax_insn): Add VL operand.
+	(emit_nonvlmax_insn): Add AVL operand.
+	* config/riscv/riscv-v.cc (emit_vlmax_insn): Add VL operand.
+	(emit_nonvlmax_insn): Add AVL operand.
+	(sew64_scalar_helper): Adjust for new interface.
+	(expand_tuple_move): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-05-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_vec_series): Remove magic number.
+	(expand_const_vector): Ditto.
+	(legitimize_move): Ditto.
+	(sew64_scalar_helper): Ditto.
+	(expand_tuple_move): Ditto.
+	(expand_vector_init_insert_elems): Ditto.
+	* config/riscv/riscv.cc (vector_zero_call_used_regs): Ditto.
+
+2023-05-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/109900
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Fold
+	_mm{,256,512}_abs_{epi8,epi16,epi32,epi64} and
+	_mm_abs_{pi8,pi16,pi32} into gimple ABS_EXPR.
+	(ix86_masked_all_ones): Handle 64-bit mask.
+	* config/i386/i386-builtin.def: Replace icode of related
+	non-mask simd abs builtins with CODE_FOR_nothing.
+
 2023-05-23  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/109450

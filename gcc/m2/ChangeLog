@@ -1,3 +1,14 @@
+2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* Make-maintainer.in: Change header to include emacs file mode.
+	* gm2-compiler/M2GenGCC.mod (BuildHighFromChar): Check whether
+	operand is a constant string and is nul terminated then return one.
+	* gm2-compiler/PCSymBuild.mod (WalkFunction): Add default return
+	TRUE.  Static analysis missing return path fix.
+	* gm2-libs/IO.mod (Init): Rewrite to help static analysis.
+	* target-independent/m2/gm2-libs.texi: Rebuild.
+
 2023-05-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109908
