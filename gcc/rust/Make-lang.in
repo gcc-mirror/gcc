@@ -90,6 +90,7 @@ GRS_OBJS = \
 	rust/rust-ast-builder.o \
 	rust/rust-derive.o \
 	rust/rust-derive-clone.o \
+	rust/rust-derive-copy.o \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
