@@ -1,3 +1,98 @@
+2023-05-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/nested-vla-1.c: Require effective target trampolines.
+	* gcc.dg/nested-vla-2.c: Ditto.
+	* gcc.dg/nested-vla-3.c: Ditto.
+
+2023-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx512vl-pr95488-1.c: Revert 2023-05-18 change.
+
+2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/82931
+	* gcc.target/avr/pr82931.c: New test.
+
+2023-05-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_run-4.c: New test.
+
+2023-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_9.c: New test.
+
+2023-05-25  Chris Sidebottom  <chris.sidebottom@arm.com>
+
+	* gcc.target/arm/acle/data-intrinsics-armv6.c: New test.
+	* gcc.target/arm/acle/data-intrinsics-assembly.c: New test.
+	* gcc.target/arm/acle/data-intrinsics-rbit.c: New test.
+	* gcc.target/arm/acle/data-intrinsics.c: New test.
+
+2023-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/109800
+	* gcc.target/arm/pure-code/pr109800.c: New test.
+
+2023-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/facgt_constpool_1.c: New test.
+
+2023-05-25  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/109173
+	PR target/109174
+	* gcc.target/i386/pr109173-1.c: New test.
+	* gcc.target/i386/pr109174-1.c: Ditto.
+
+2023-05-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/analyzer/data-model-4.c: Exit if fopen returns NULL.
+	* gcc.dg/analyzer/torture/conftest-1.c: Likewise.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100106
+	* gcc.target/powerpc/pr100106-sa.c: New.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/mcount_pic.c: Add dg-require-profiling.
+	* gcc.target/i386/pr104447.c: Likewise.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/pr80481.C: Add explicit pthread requirement.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr103074.c: Require fpic support.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/tsvc/tsvc.h: Test for and conditionally include
+	malloc.h and sys/time.h.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pieces-memcpy-7.c: Add -fomit-frame-pointer.
+	* gcc.target/i386/pieces-memcpy-8.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-9.c: Likewise.
+	* gcc.target/i386/pieces-memset-1.c: Likewise.
+	* gcc.target/i386/pieces-memset-36.c: Likewise.
+	* gcc.target/i386/pieces-memset-4.c: Likewise.
+	* gcc.target/i386/pieces-memset-40.c: Likewise.
+	* gcc.target/i386/pieces-memset-41.c: Likewise.
+	* gcc.target/i386/pieces-memset-7.c: Likewise.
+	* gcc.target/i386/pieces-memset-8.c: Likewise.
+	* gcc.target/i386/pieces-memset-9.c: Likewise.
+	* gcc.target/i386/pr102230.c: Likewise.
+	* gcc.target/i386/pr78103-2.c: Likewise.
+
 2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/107822

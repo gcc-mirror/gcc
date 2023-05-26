@@ -1,3 +1,363 @@
+2023-05-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb
+	(Warn_On_Null_Component_Association): New subprogram.
+	(Empty_Range): Adding missing support for iterated component
+	association node.
+	(Resolve_Array_Aggregate): Report warning on iterated component
+	association that may initialize some component of an array of
+	null-excluding access type components with a null value.
+	* exp_ch4.adb
+	(Expand_N_Expression_With_Actions): Add missing type check since
+	the subtype of the EWA node and the subtype of the expression
+	may differ.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Determining_Expressions): Fix style; fix layout and
+	ordering of pragma names; expect pragma Exceptional_Cases.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo-utils.adb (Write_Entity_Info): Use procedural Next_Index.
+	* sem_aggr.adb (Collect_Aggr_Bounds): Reuse local constant.
+	(Resolve_Null_Array_Aggregate): Use procedural Next_Index.
+
+2023-05-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Protect access to
+	aggregate components when the aggregate is empty.
+
+2023-05-25  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/system-vxworks7-ppc-kernel.ads: Enable
+	Support_Atomic_Primitives.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object): Copy the object definition when
+	building the subtype declaration in the case of a spec expression.
+
+2023-05-25  Tom Tromey  <tromey@adacore.com>
+
+	* Make-generated.in (ada/stamp-snames): Check result of
+	gnatmake.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cstand.adb (Create_Standard): Set the Is_Descendant_Of_Address
+	flag on Standard_Address.
+	* freeze.adb (Freeze_Entity): Copy the modulus of System.Address
+	onto Standard_Address.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-aix.ads (Address): Likewise.
+	* libgnat/system-darwin-arm.ads (Address): Likewise.
+	* libgnat/system-darwin-ppc.ads (Address): Likewise.
+	* libgnat/system-darwin-x86.ads (Address): Likewise.
+	* libgnat/system-djgpp.ads (Address): Likewise.
+	* libgnat/system-dragonfly-x86_64.ads (Address): Likewise.
+	* libgnat/system-freebsd.ads (Address): Likewise.
+	* libgnat/system-hpux-ia64.ads (Address): Likewise.
+	* libgnat/system-hpux.ads (Address): Likewise.
+	* libgnat/system-linux-alpha.ads (Address): Likewise.
+	* libgnat/system-linux-arm.ads (Address): Likewise.
+	* libgnat/system-linux-hppa.ads (Address): Likewise.
+	* libgnat/system-linux-ia64.ads (Address): Likewise.
+	* libgnat/system-linux-m68k.ads (Address): Likewise.
+	* libgnat/system-linux-mips.ads (Address): Likewise.
+	* libgnat/system-linux-ppc.ads (Address): Likewise.
+	* libgnat/system-linux-riscv.ads (Address): Likewise.
+	* libgnat/system-linux-s390.ads (Address): Likewise.
+	* libgnat/system-linux-sh4.ads (Address): Likewise.
+	* libgnat/system-linux-sparc.ads (Address): Likewise.
+	* libgnat/system-linux-x86.ads (Address): Likewise.
+	* libgnat/system-lynxos178-ppc.ads (Address): Likewise.
+	* libgnat/system-lynxos178-x86.ads (Address): Likewise.
+	* libgnat/system-mingw.ads (Address): Likewise.
+	* libgnat/system-qnx-arm.ads (Address): Likewise.
+	* libgnat/system-rtems.ads (Address): Likewise.
+	* libgnat/system-solaris-sparc.ads (Address): Likewise.
+	* libgnat/system-solaris-x86.ads (Address): Likewise.
+	* libgnat/system-vxworks-ppc-kernel.ads (Address): Likewise.
+	* libgnat/system-vxworks-ppc-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks-ppc-rtp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-aarch64.ads (Address): Likewise.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-arm.ads (Address): Likewise.
+	* libgnat/system-vxworks7-ppc-kernel.ads (Address): Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-ppc64-kernel.ads (Address): Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads (Address): Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads (Address): Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads (Address): Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads (Address): Likewise.
+
+2023-05-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): fix format string,
+	use existing local Ident.
+
+2023-05-25  Bob Duff  <duff@adacore.com>
+
+	* atree.adb (Check_Vanishing_Fields): Fix bug in the "blah type
+	only" cases. Remove the special cases for E_Void. Misc cleanup.
+	(Mutate_Nkind): Disallow mutating to the same kind.
+	(Mutate_Ekind): Disallow mutating to E_Void.
+	(From E_Void is still OK -- entities start out as E_Void by
+	default.) Fix bug in statistics gathering -- was setting the wrong
+	count. Enable Check_Vanishing_Fields for entities.
+	* sem_ch8.adb (Is_Self_Hidden): New function.
+	(Find_Direct_Name): Call Is_Self_Hidden to use the new
+	Is_Not_Self_Hidden flag to determine whether a declaration is
+	hidden from all visibility by itself. This replaces the old method
+	of checking E_Void.
+	(Find_Expanded_Name): Likewise.
+	(Find_Selected_Component): Likewise.
+	* sem_util.adb (Enter_Name): Remove setting of Ekind to E_Void.
+	* sem_ch3.adb: Set the Is_Not_Self_Hidden flag in appropriate
+	places. Comment fixes.
+	(Inherit_Component): Remove setting of Ekind to E_Void.
+	* sem_ch9.adb
+	(Analyze_Protected_Type_Declaration): Update comment. Skip Itypes,
+	which should not be turned into components.
+	* atree.ads (Mutate_Nkind): Document error case.
+	(Mutate_Ekind): Remove comments apologizing for E_Void mutations.
+	Document error cases.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-ststio.adb (Set_Mode): Test System.Memory_Size.
+	* libgnat/g-debuti.ads (Address_64): Likewise.
+	* libgnat/i-c.ads: Add with clause for System.
+	(ptrdiff_t): Define based on the size of memory space.
+	(size_t): Likewise.
+	* libgnat/s-crtl.ads (size_t): Likewise.
+	(ssize_t): Likewise.
+	* libgnat/s-memory.ads (size_t): Likewise.
+	* libgnat/s-parame.ads (Size_Type): Likewise.
+	* libgnat/s-parame__hpux.ads (Size_Type): Likewise.
+	* libgnat/s-parame__posix2008.ads (Size_Type): Likewise.
+	* libgnat/s-parame__vxworks.ads (Size_Type): Likewise.
+	* libgnat/s-putima.adb (Signed_Address): Likewise.
+	(Unsigned_Address): Likewise.
+	* libgnat/s-stoele.ads (Storage_Offset): Likewise.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Visit_Node): Decrement EWA_Level with the same condition
+	as when it was incremented.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (New_Copy_Tree): Remove Scopes_In_EWA_OK from spec;
+	adapt comment.
+	* sem_util.adb (New_Copy_Tree): Remove Scopes_In_EWA_OK from body;
+	adapt code.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Update_New_Entities): Remove redundant check for entity
+	map being present.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* atree.adb (Copy_List): Call Copy_Separate_Tree for both entities and
+	other nodes.
+
+2023-05-25  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb
+	(Cached_Streaming_Ops): A new package, providing maps to save
+	previously-generated Read/Write/Input/Output procedures.
+	(Expand_N_Attribute_Reference): When a new subprogram is generated
+	for a Read/Write/Input/Output attribute reference, record that
+	type/subp pair in the appropriate Cached_Streaming_Ops map.
+	(Find_Stream_Subprogram): Check the appropriate
+	Cached_Streaming_Ops map to see if an appropriate subprogram has
+	already been generated. If so, then return it. The appropriateness
+	test includes a call to a new nested subprogram,
+	In_Available_Context.
+	* exp_strm.ads, exp_strm.adb: Do not pass in a Loc parameter (or a
+	source-location-bearing Nod parameter) to the 16 procedures
+	provided for building streaming-related subprograms. Use the
+	source location of the type instead.
+	* exp_dist.adb, exp_ch3.adb: Adapt to Exp_Strm spec changes. For
+	these calls the source location of the type was already being
+	used.
+
+2023-05-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Add missing
+	Is_Access_Type check before accessing the Designated_Type field.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): Remove unused initial value.
+
+2023-05-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Call Record_Rep_Item.
+	(Check_Aspect_At_Freeze_Point): Check the aspect is specified on
+	non-array type only...
+	(Analyze_One_Aspect): ... instead of doing it too early here.
+	* sem_aggr.adb (Resolve_Container_Aggregate): Do nothing in case
+	the parameters failed to resolve.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Internal_Protected_Use): Add standard protection
+	against search going too far.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb
+	(Add_Pre_Post_Condition): Mention new aspects in the comment.
+	* contracts.ads
+	(Add_Contract_Item): Likewise.
+	(Analyze_Subprogram_Body_Stub_Contract): Likewise.
+	* sem_prag.adb
+	(Contract_Freeze_Error): Likewise.
+	(Ensure_Aggregate_Form): Likewise.
+	* sem_prag.ads
+	(Find_Related_Declaration_Or_Body): Likewise.
+	* sinfo.ads
+	(Is_Generic_Contract_Pragma): Likewise.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads
+	(Implementation_Defined_Aspect): Recently added aspects are
+	implementation-defined, just like Contract_Cases.
+	* sem_prag.ads
+	(Aspect_Specifying_Pragma): Recently added aspects have corresponding
+	pragmas, just like Contract_Cases.
+	(Pragma_Significant_To_Subprograms): Recently added aspects are
+	significant to subprograms, just like Contract_Cases.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Tune handling of formal parameters
+	in contract Exceptional_Cases.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch7.adb (P_Package): Remove redundant guard from call to
+	Move_Aspects.
+	* par-ch9.adb (P_Task): Likewise.
+	* sem_ch6.adb (Analyze_Expression_Function, Is_Inline_Pragma): Likewise.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Use Get_Actual_Subtype
+	to retrieve the actual subtype for all actuals and do it in only one
+	place for all unconstrained composite formal types.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Fix references to Exceptional_Cases in
+	code copied from handling of Subprogram_Variant.
+
+2023-05-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Replace_Type): Add more documentation.
+
+2023-05-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Replace_Type): Use existing constant wherever
+	possible.
+
+2023-05-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Replace_Type): Reduce span of variable.
+
+2023-05-25  Bob Duff  <duff@adacore.com>
+
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Set the flag
+	for protected types.
+	(Analyze_Single_Protected_Declaration): Likewise, for singleton
+	protected objects.
+	(Analyze_Task_Type_Declaration): Set the flag for task types.
+	(Analyze_Single_Task_Declaration): Likewise, for singleton task
+	objects.
+	* sem_ch10.adb (Decorate_Type): Set the flag for types treated as
+	incomplete.
+	(Build_Shadow_Entity): Set the flag for shadow entities.
+	(Decorate_State): Set the flag for an abstract state.
+	(Build_Limited_Views): Set the flag for limited view of package.
+	* sem_attr.adb (Check_Not_Incomplete_Type): Disable the check when
+	this is a current instance.
+
+2023-05-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* freeze.adb (Build_DTW_Body): Add appropriate type conversions for
+	controlling access parameters.
+	* sem_util.adb (Build_Overriding_Spec): Fix designated types in
+	controlling access parameters.
+
+2023-05-25  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (E_Label): Add
+	Entry_Cancel_Parameter. This is necessary because
+	Analyze_Implicit_Label_Declaration set the Ekind to E_Label.
+	Without this change, this field would fail the vanishing-fields
+	check in Atree (which is currently commented out).
+	* einfo.ads (Entry_Cancel_Parameter): Document for E_Label.
+	* sem_eval.adb (Why_Not_Static): Protect against previous errors
+	(no need to explain why something is not static if it's already
+	illegal for other reasons).
+	* sem_util.ads (Enter_Name): Fix misleading comment.
+
+2023-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Scope_Depth): Fix circular definition.
+	(Scope_Depth_Value): Fix value for library units.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch11.adb (Analyze_Raise_Expression): Tune warning condition.
+	* libgnat/g-dirope.ads (Open): Remove a potentially inaccurate comment.
+	* libgnat/g-dirope.adb (Open): Remove a potentially useless assignment;
+	the Dir output parameter should be assigned a null value anyway by the
+	preceding call to Free.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Allow aliased parameters; tune
+	error message.
+
+2023-05-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Mark Aggregate aspect as
+	needing delayed resolution and reject the aspect on non-array
+	type.
+
+2023-05-25  Bob Duff  <duff@adacore.com>
+
+	* sinfo-utils.adb: Update comment to refer to
+	New_Node_Debugging_Output.
+
+2023-05-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* rtsfind.adb (Load_RTU.Restore_SPARK_Context): New.
+	(Load_RTU): Use Restore_SPARK_Context on all exit paths.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Initialize local
+	variable to Empty.
+
+2023-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb
+	(Analyze_Attribute_Old_Result): Allow uses of 'Old and 'Result within
+	the new aspect.
+	* sem_res.adb
+	(Within_Exceptional_Cases_Consequence): New utility routine.
+	(Resolve_Entity_Name): Restrict use of formal parameters within the
+	new aspect.
+
 2023-05-23  Piotr Trojanek  <trojanek@adacore.com>
 
 	* aspects.ads

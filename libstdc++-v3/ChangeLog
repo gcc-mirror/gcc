@@ -1,3 +1,13 @@
+2023-05-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (PointerBase): Add
+	relational operators.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/to_chars/long_double.cc: Expect execution
+	fail on x86-vxworks.
+
 2023-05-24  Matthias Kretz  <m.kretz@gsi.de>
 
 	PR libstdc++/109949

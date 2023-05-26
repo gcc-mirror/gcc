@@ -1,3 +1,238 @@
+2023-05-25  Jin Ma  <jinma@linux.alibaba.com>
+
+	* sched-deps.cc (sched_macro_fuse_insns): Insns should not be fusion
+	in different BB blocks.
+
+2023-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2):
+	Rewrite to expand to 2x-wider (e.g. V16QI -> V16HImode)
+	instructions when available.  Emulate truncation via
+	ix86_expand_vec_perm_const_1 when native truncate insn
+	is not available.
+	(ix86_expand_vecop_qihi_partial) <case MULT>: Use pmovzx
+	when available.  Trivially rename some variables.
+	(ix86_expand_vecop_qihi): Unconditionally call ix86_expand_vecop_qihi2.
+	* config/i386/i386.cc (ix86_multiplication_cost): Rewrite cost
+	calculation of V*QImode emulations to account for generation of
+	2x-wider mode instructions.
+	(ix86_shift_rotate_cost): Update cost calculation of V*QImode
+	emulations to account for generation of 2x-wider mode instructions.
+
+2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/104327
+	* config/avr/avr.cc (avr_can_inline_p): New static function.
+	(TARGET_CAN_INLINE_P): Define to that function.
+
+2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/82931
+	* config/avr/avr.md (*movbitqi.0): Rename to *movbit<mode>.0-6.
+	Handle any bit position and use mode QISI.
+	* config/avr/avr.cc (avr_rtx_costs_1) [IOR]: Return a cost
+	of 2 insns for bit-transfer of respective style.
+
+2023-05-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (MVE_6): Remove.
+	* config/arm/mve.md: Replace MVE_6 with MVE_5.
+
+2023-05-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.cc (vect_adjust_loop_lens_control): New
+	function.
+	(vect_set_loop_controls_directly): Add decrement IV support.
+	(vect_set_loop_condition_partial_vectors): Ditto.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): New
+	variable.
+	* tree-vectorizer.h (LOOP_VINFO_USING_DECREMENTING_IV_P): New
+	macro.
+
+2023-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_fcadd<rot><mode>): Rename to...
+	(aarch64_fcadd<rot><mode><vczle><vczbe>): ... This.
+	Fix canonicalization of PLUS operands.
+	(aarch64_fcmla<rot><mode>): Rename to...
+	(aarch64_fcmla<rot><mode><vczle><vczbe>): ... This.
+	Fix canonicalization of PLUS operands.
+	(aarch64_fcmla_lane<rot><mode>): Rename to...
+	(aarch64_fcmla_lane<rot><mode><vczle><vczbe>): ... This.
+	Fix canonicalization of PLUS operands.
+	(aarch64_fcmla_laneq<rot>v4hf): Rename to...
+	(aarch64_fcmla_laneq<rot>v4hf<vczle><vczbe>): ... This.
+	Fix canonicalization of PLUS operands.
+	(aarch64_fcmlaq_lane<rot><mode>): Fix canonicalization of PLUS operands.
+
+2023-05-25  Chris Sidebottom  <chris.sidebottom@arm.com>
+
+	* config/arm/arm.md (rbitsi2): Rename to...
+	(arm_rbit): ... This.
+	(ctzsi2): Adjust for the above.
+	(arm_rev16si2): Convert to define_expand.
+	(arm_rev16si2_alt1): New pattern.
+	(arm_rev16si2_alt): Rename to...
+	(*arm_rev16si2_alt2): ... This.
+	* config/arm/arm_acle.h (__ror, __rorl, __rorll, __clz, __clzl, __clzll,
+	__cls, __clsl, __clsll, __revsh, __rev, __revl, __revll, __rev16,
+	__rev16l, __rev16ll, __rbit, __rbitl, __rbitll): Define intrinsics.
+	* config/arm/arm_acle_builtins.def (rbit, rev16si2): Define builtins.
+
+2023-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/109800
+	* config/arm/arm.md (movdf): Generate temporary pseudo in DImode
+	instead of DFmode.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): Rather than punning an
+	lvalue DFmode pseudo into DImode, use a DImode pseudo and pun it into
+	DFmode as an rvalue.
+
+2023-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR target/109955
+	* tree-vect-stmts.cc (vectorizable_condition): For
+	embedded comparisons also handle the case when the target
+	only provides vec_cmp and vcond_mask.
+
+2023-05-25  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_call_tls_get_addr): Simplify access using
+	TLS Local Dynamic.
+
+2023-05-25  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (scalar_move_insn_p): New function.
+	(seq_cost_ignoring_scalar_moves): Likewise.
+	(aarch64_expand_vector_init): Call seq_cost_ignoring_scalar_moves.
+
+2023-05-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vcage_f64): Reimplement with builtins.
+	(vcage_f32): Likewise.
+	(vcages_f32): Likewise.
+	(vcageq_f32): Likewise.
+	(vcaged_f64): Likewise.
+	(vcageq_f64): Likewise.
+	(vcagts_f32): Likewise.
+	(vcagt_f32): Likewise.
+	(vcagt_f64): Likewise.
+	(vcagtq_f32): Likewise.
+	(vcagtd_f64): Likewise.
+	(vcagtq_f64): Likewise.
+	(vcale_f32): Likewise.
+	(vcale_f64): Likewise.
+	(vcaled_f64): Likewise.
+	(vcales_f32): Likewise.
+	(vcaleq_f32): Likewise.
+	(vcaleq_f64): Likewise.
+	(vcalt_f32): Likewise.
+	(vcalt_f64): Likewise.
+	(vcaltd_f64): Likewise.
+	(vcaltq_f32): Likewise.
+	(vcaltq_f64): Likewise.
+	(vcalts_f32): Likewise.
+
+2023-05-25  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/109173
+	PR target/109174
+	* config/i386/avx512bwintrin.h (_mm512_srli_epi16): Change type from
+	int to const int or const int to const unsigned int.
+	(_mm512_mask_srli_epi16): Ditto.
+	(_mm512_slli_epi16): Ditto.
+	(_mm512_mask_slli_epi16): Ditto.
+	(_mm512_maskz_slli_epi16): Ditto.
+	(_mm512_srai_epi16): Ditto.
+	(_mm512_mask_srai_epi16): Ditto.
+	(_mm512_maskz_srai_epi16): Ditto.
+	* config/i386/avx512fintrin.h (_mm512_slli_epi64): Ditto.
+	(_mm512_mask_slli_epi64): Ditto.
+	(_mm512_maskz_slli_epi64): Ditto.
+	(_mm512_srli_epi64): Ditto.
+	(_mm512_mask_srli_epi64): Ditto.
+	(_mm512_maskz_srli_epi64): Ditto.
+	(_mm512_srai_epi64): Ditto.
+	(_mm512_mask_srai_epi64): Ditto.
+	(_mm512_maskz_srai_epi64): Ditto.
+	(_mm512_slli_epi32): Ditto.
+	(_mm512_mask_slli_epi32): Ditto.
+	(_mm512_maskz_slli_epi32): Ditto.
+	(_mm512_srli_epi32): Ditto.
+	(_mm512_mask_srli_epi32): Ditto.
+	(_mm512_maskz_srli_epi32): Ditto.
+	(_mm512_srai_epi32): Ditto.
+	(_mm512_mask_srai_epi32): Ditto.
+	(_mm512_maskz_srai_epi32): Ditto.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_srai_epi16): Ditto.
+	(_mm256_maskz_srai_epi16): Ditto.
+	(_mm_mask_srai_epi16): Ditto.
+	(_mm_maskz_srai_epi16): Ditto.
+	(_mm256_mask_slli_epi16): Ditto.
+	(_mm256_maskz_slli_epi16): Ditto.
+	(_mm_mask_slli_epi16): Ditto.
+	(_mm_maskz_slli_epi16): Ditto.
+	(_mm_maskz_srli_epi16): Ditto.
+	* config/i386/avx512vlintrin.h (_mm256_mask_srli_epi32): Ditto.
+	(_mm256_maskz_srli_epi32): Ditto.
+	(_mm_mask_srli_epi32): Ditto.
+	(_mm_maskz_srli_epi32): Ditto.
+	(_mm256_mask_srli_epi64): Ditto.
+	(_mm256_maskz_srli_epi64): Ditto.
+	(_mm_mask_srli_epi64): Ditto.
+	(_mm_maskz_srli_epi64): Ditto.
+	(_mm256_mask_srai_epi32): Ditto.
+	(_mm256_maskz_srai_epi32): Ditto.
+	(_mm_mask_srai_epi32): Ditto.
+	(_mm_maskz_srai_epi32): Ditto.
+	(_mm256_srai_epi64): Ditto.
+	(_mm256_mask_srai_epi64): Ditto.
+	(_mm256_maskz_srai_epi64): Ditto.
+	(_mm_srai_epi64): Ditto.
+	(_mm_mask_srai_epi64): Ditto.
+	(_mm_maskz_srai_epi64): Ditto.
+	(_mm_mask_slli_epi32): Ditto.
+	(_mm_maskz_slli_epi32): Ditto.
+	(_mm_mask_slli_epi64): Ditto.
+	(_mm_maskz_slli_epi64): Ditto.
+	(_mm256_mask_slli_epi32): Ditto.
+	(_mm256_maskz_slli_epi32): Ditto.
+	(_mm256_mask_slli_epi64): Ditto.
+	(_mm256_maskz_slli_epi64): Ditto.
+
+2023-05-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Remove FRM_REGNUM dependency in rtz
+	instructions.
+
+2023-05-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer-in.cc (streamer_read_value_range): Handle NANs.
+	* data-streamer-out.cc (streamer_write_vrange): Same.
+	* value-range.h (class vrange): Make streamer_write_vrange a friend.
+
+2023-05-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-query.cc (range_query::get_tree_range): Set NAN directly
+	if necessary.
+	* value-range.cc (frange::set): Assert that bounds are not NAN.
+
+2023-05-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (add_vrange): Handle known NANs.
+
+2023-05-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (frange::set_nan): New.
+
+2023-05-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100106
+	* emit-rtl.cc (validate_subreg): Reject a SUBREG of a MEM that
+	requires stricter alignment than MEM's.
+
 2023-05-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/107822
