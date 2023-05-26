@@ -8,6 +8,7 @@ use Spacing;
 pub struct Punct {
     pub(crate) ch: u32,
     pub(crate) spacing: Spacing,
+    span: Span,
 }
 
 impl Punct {
@@ -15,11 +16,12 @@ impl Punct {
         Punct {
             ch: ch.into(),
             spacing,
+            span: Span::default(),
         }
     }
 
     pub fn span(&self) -> Span {
-        Span {}
+        self.span
     }
 
     pub fn set_span(&mut self, span: Span) {

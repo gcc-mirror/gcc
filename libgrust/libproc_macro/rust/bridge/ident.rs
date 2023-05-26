@@ -4,8 +4,8 @@ use std::ffi::c_uchar;
 use std::fmt;
 
 extern "C" {
-    fn Ident__new(string: *const c_uchar, len: u64) -> Ident;
-    fn Ident__new_raw(string: *const c_uchar, len: u64) -> Ident;
+    fn Ident__new(string: *const c_uchar, len: u64, span: Span) -> Ident;
+    fn Ident__new_raw(string: *const c_uchar, len: u64, span: Span) -> Ident;
     fn Ident__drop(ident: *mut Ident);
     fn Ident__clone(ident: *const Ident) -> Ident;
 }
@@ -16,23 +16,24 @@ pub struct Ident {
     pub(crate) is_raw: bool,
     pub(crate) val: *const c_uchar,
     len: u64,
+    span: Span,
 }
 
 impl Ident {
-    pub fn new(string: &str, _span: Span) -> Self {
-        unsafe { Ident__new(string.as_ptr(), string.len().try_into().unwrap()) }
+    pub fn new(string: &str, span: Span) -> Self {
+        unsafe { Ident__new(string.as_ptr(), string.len().try_into().unwrap(), span) }
     }
 
-    pub fn new_raw(string: &str, _span: Span) -> Self {
-        unsafe { Ident__new_raw(string.as_ptr(), string.len().try_into().unwrap()) }
+    pub fn new_raw(string: &str, span: Span) -> Self {
+        unsafe { Ident__new_raw(string.as_ptr(), string.len().try_into().unwrap(), span) }
     }
 
     pub fn span(&self) -> Span {
-        Span {}
+        self.span
     }
 
     pub fn set_span(&mut self, span: Span) {
-        let _ = span;
+        self.span = span;
     }
 }
 

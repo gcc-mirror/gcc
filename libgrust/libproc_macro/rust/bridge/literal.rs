@@ -29,7 +29,7 @@ pub struct Literal {
     kind: LitKind,
     text: FFIString,
     suffix: FFIString,
-    // FIXME: Add span, cannot add whilst Span remain an empty type
+    span: Span,
 }
 
 macro_rules! suffixed_int_literals {
@@ -38,7 +38,8 @@ macro_rules! suffixed_int_literals {
             Literal {
                 kind : LitKind::Integer,
                 text: FFIString::from(&n.to_string()),
-                suffix: FFIString::from(stringify!($kind))
+                suffix: FFIString::from(stringify!($kind)),
+                span: Span::default(),
             }
         }
     )*)
@@ -50,7 +51,8 @@ macro_rules! unsuffixed_int_literals {
             Literal {
                 kind : LitKind::Integer,
                 text: FFIString::from(&n.to_string()),
-                suffix: FFIString::from("")
+                suffix: FFIString::from(""),
+                span: Span::default(),
             }
         }
     )*)
@@ -97,6 +99,7 @@ impl Literal {
             kind: LitKind::Float,
             text: FFIString::from(&repr),
             suffix: FFIString::from(""),
+            span: Span::default(),
         }
     }
 
@@ -105,6 +108,7 @@ impl Literal {
             kind: LitKind::Float,
             text: FFIString::from(&n.to_string()),
             suffix: FFIString::from("f32"),
+            span: Span::default(),
         }
     }
 
@@ -118,6 +122,7 @@ impl Literal {
             kind: LitKind::Float,
             text: FFIString::from(&repr),
             suffix: FFIString::from(""),
+            span: Span::default(),
         }
     }
 
@@ -126,6 +131,7 @@ impl Literal {
             kind: LitKind::Float,
             text: FFIString::from(&n.to_string()),
             suffix: FFIString::from("f64"),
+            span: Span::default(),
         }
     }
 
@@ -134,6 +140,7 @@ impl Literal {
             kind: LitKind::Str,
             text: FFIString::from(string),
             suffix: FFIString::from(""),
+            span: Span::default(),
         }
     }
 
@@ -142,6 +149,7 @@ impl Literal {
             kind: LitKind::Char,
             text: FFIString::from(&c.to_string()),
             suffix: FFIString::from(""),
+            span: Span::default(),
         }
     }
 
@@ -150,15 +158,16 @@ impl Literal {
             kind: LitKind::ByteStr,
             text: FFIString::from(&bytes.escape_ascii().to_string()),
             suffix: FFIString::from(""),
+            span: Span::default(),
         }
     }
 
     pub fn span(&self) -> Span {
-        Span {}
+        self.span
     }
 
     pub fn set_span(&mut self, span: Span) {
-        let _ = span;
+        self.span = span;
     }
 }
 
@@ -221,6 +230,7 @@ impl FromStr for Literal {
             kind: LitKind::Err,
             text: FFIString::from(""),
             suffix: FFIString::from(""),
+            span: Span::default(),
         };
         // TODO: We might want to pass a LexError by reference to retrieve
         // error information
