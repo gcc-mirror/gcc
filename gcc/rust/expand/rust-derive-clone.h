@@ -20,7 +20,6 @@
 #define RUST_DERIVE_CLONE_H
 
 #include "rust-derive.h"
-#include "rust-ast-builder.h"
 
 namespace Rust {
 namespace AST {
@@ -33,9 +32,7 @@ public:
   std::unique_ptr<AST::Item> go (Item &item);
 
 private:
-  Location loc;
-  std::unique_ptr<AST::Item> expanded;
-  AstBuilder builder;
+  std::unique_ptr<Item> expanded;
 
   /**
    * Create a call to "clone". For now, this creates a call to
