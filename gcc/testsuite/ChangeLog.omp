@@ -1,3 +1,10 @@
+2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Revert:
+	2023-02-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/openmp-simd-8.f90: Remove dump test.
+
 2023-05-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/gomp/target-exit-data.f90: Update expected outputs.
