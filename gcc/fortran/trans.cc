@@ -2453,6 +2453,8 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_dt_end (code);
 	  break;
 
+	case EXEC_OMP_ALLOCATE:
+	case EXEC_OMP_ALLOCATORS:
 	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_BARRIER:

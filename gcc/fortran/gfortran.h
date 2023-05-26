@@ -318,6 +318,8 @@ enum gfc_statement
   ST_OMP_END_MASKED_TASKLOOP, ST_OMP_MASKED_TASKLOOP_SIMD,
   ST_OMP_END_MASKED_TASKLOOP_SIMD, ST_OMP_SCOPE, ST_OMP_END_SCOPE,
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
+  ST_OMP_ALLOCATE, ST_OMP_ALLOCATE_EXEC,
+  ST_OMP_ALLOCATORS, ST_OMP_END_ALLOCATORS,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE
 };
@@ -1365,6 +1367,7 @@ typedef struct gfc_omp_namelist
     {
       struct gfc_omp_namelist_udr *udr;
       gfc_namespace *ns;
+      gfc_expr *allocator;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;
@@ -2177,8 +2180,9 @@ typedef struct gfc_namespace
   /* Linked list of !$omp declare variant constructs.  */
   struct gfc_omp_declare_variant *omp_declare_variant;
 
-  /* OpenMP assumptions.  */
+  /* OpenMP assumptions and allocate for static/stack vars.  */
   struct gfc_omp_assumptions *omp_assumes;
+  struct gfc_omp_namelist *omp_allocate;
 
   /* A hash set for the gfc expressions that have already
      been finalized in this namespace.  */
@@ -2974,7 +2978,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
-  EXEC_OMP_ERROR
+  EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS
 };
 
 typedef struct gfc_code
@@ -3613,6 +3617,7 @@ void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
 void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
+void gfc_resolve_omp_allocate (gfc_namespace *, gfc_omp_namelist *);
 void gfc_resolve_omp_assumptions (gfc_omp_assumptions *);
 void gfc_resolve_omp_directive (gfc_code *, gfc_namespace *);
 void gfc_resolve_do_iterator (gfc_code *, gfc_symbol *, bool);

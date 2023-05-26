@@ -149,6 +149,8 @@ match gfc_match_oacc_routine (void);
 
 /* OpenMP directive matchers.  */
 match gfc_match_omp_eos_error (void);
+match gfc_match_omp_allocate (void);
+match gfc_match_omp_allocators (void);
 match gfc_match_omp_assume (void);
 match gfc_match_omp_assumes (void);
 match gfc_match_omp_atomic (void);

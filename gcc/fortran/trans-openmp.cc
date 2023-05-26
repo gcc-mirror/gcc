@@ -2748,11 +2748,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    tree node = build_omp_clause (input_location,
 						  OMP_CLAUSE_ALLOCATE);
 		    OMP_CLAUSE_DECL (node) = t;
-		    if (n->expr)
+		    if (n->u2.allocator)
 		      {
 			tree allocator_;
 			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, n->expr);
+			gfc_conv_expr (&se, n->u2.allocator);
 			allocator_ = gfc_evaluate_now (se.expr, block);
 			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
 		      }
@@ -6861,6 +6861,8 @@ gfc_split_omp_clauses (gfc_code *code,
 			     p = gfc_get_omp_namelist ();
 			     p->sym = alloc_nl->sym;
 			     p->expr = alloc_nl->expr;
+			     p->u.align = alloc_nl->u.align;
+			     p->u2.allocator = alloc_nl->u2.allocator;
 			     p->where = alloc_nl->where;
 			     if (clausesa[i].lists[OMP_LIST_ALLOCATE] == NULL)
 			       {
@@ -7912,6 +7914,11 @@ gfc_trans_omp_directive (gfc_code *code)
 {
   switch (code->op)
     {
+    case EXEC_OMP_ALLOCATE:
+    case EXEC_OMP_ALLOCATORS:
+      sorry ("%<!$OMP %s%> not yet supported",
+	     code->op == EXEC_OMP_ALLOCATE ? "ALLOCATE" : "ALLOCATORS");
+      return NULL_TREE;
     case EXEC_OMP_ASSUME:
       return gfc_trans_omp_assume (code);
     case EXEC_OMP_ATOMIC:
