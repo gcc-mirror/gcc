@@ -23,15 +23,15 @@ proc torture-init { args } {
     global torture_without_loops global_with_loops
 
     if [info exists torture_without_loops] {
-	error "torture-init: torture_without_loops is not empty as expected"
+	error "torture-init: torture_without_loops is not empty as expected = \"${torture_without_loops}\""
     }
     if [info exists torture_with_loops] {
-	error "torture-init: torture_with_loops is not empty as expected"
+	error "torture-init: torture_with_loops is not empty as expected = \"${torture_with_loops}\""
     }
 
     global LTO_TORTURE_OPTIONS
     if [info exists LTO_TORTURE_OPTIONS] {
-	error "torture-init: LTO_TORTURE_OPTIONS is not empty as expected"
+	error "torture-init: LTO_TORTURE_OPTIONS is not empty as expected =  \"${LTO_TORTURE_OPTIONS}\""
     }
     set LTO_TORTURE_OPTIONS ""
     if [check_effective_target_lto] {
