@@ -1,3 +1,17 @@
+2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/104327
+	* config/avr/avr.cc (avr_can_inline_p): New static function.
+	(TARGET_CAN_INLINE_P): Define to that function.
+
+2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/82931
+	* config/avr/avr.md (*movbitqi.0): Rename to *movbit<mode>.0-6.
+	Handle any bit position and use mode QISI.
+	* config/avr/avr.cc (avr_rtx_costs_1) [IOR]: Return a cost
+	of 2 insns for bit-transfer of respective style.
+
 2023-05-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_insn_cost): New static function.
