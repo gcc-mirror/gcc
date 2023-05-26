@@ -1630,6 +1630,7 @@ TokenCollector::visit (Module &module)
   //	  Item*
   //	}
 
+  visit_items_as_lines (module.get_outer_attrs ());
   visit (module.get_visibility ());
   auto name = module.get_name ();
   tokens.push_back (Rust::Token::make (MOD, module.get_locus ()));
@@ -1660,6 +1661,7 @@ TokenCollector::visit (Module &module)
 void
 TokenCollector::visit (ExternCrate &crate)
 {
+  visit_items_as_lines (crate.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (EXTERN_TOK, crate.get_locus ()));
   tokens.push_back (Rust::Token::make (CRATE, Location ()));
   auto ref = crate.get_referenced_crate ();
@@ -1748,6 +1750,7 @@ TokenCollector::visit (UseTreeRebind &use_tree)
 void
 TokenCollector::visit (UseDeclaration &decl)
 {
+  visit_items_as_lines (decl.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (USE, decl.get_locus ()));
   visit (*decl.get_tree ());
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
@@ -1762,6 +1765,7 @@ TokenCollector::visit (Function &function)
   //      ( FunctionParameters? )
   //      FunctionReturnType? WhereClause?
   //      ( BlockExpression | ; )
+  visit_items_as_lines (function.get_outer_attrs ());
 
   visit (function.get_visibility ());
 
@@ -1801,6 +1805,7 @@ TokenCollector::visit (TypeAlias &type_alias)
 
   // Note: Associated types are handled by `AST::TraitItemType`.
 
+  visit_items_as_lines (type_alias.get_outer_attrs ());
   if (type_alias.has_visibility ())
     visit (type_alias.get_visibility ());
   auto alias_name = type_alias.get_new_type_name ();
@@ -1819,6 +1824,7 @@ TokenCollector::visit (TypeAlias &type_alias)
 void
 TokenCollector::visit (StructStruct &struct_item)
 {
+  visit_items_as_lines (struct_item.get_outer_attrs ());
   if (struct_item.has_visibility ())
     visit (struct_item.get_visibility ());
   auto struct_name = struct_item.get_identifier ();
@@ -1843,6 +1849,7 @@ TokenCollector::visit (StructStruct &struct_item)
 void
 TokenCollector::visit (TupleStruct &tuple_struct)
 {
+  visit_items_as_lines (tuple_struct.get_outer_attrs ());
   auto struct_name = tuple_struct.get_identifier ();
   tokens.push_back (Rust::Token::make (STRUCT_TOK, tuple_struct.get_locus ()));
   tokens.push_back (
@@ -1862,6 +1869,7 @@ TokenCollector::visit (TupleStruct &tuple_struct)
 void
 TokenCollector::visit (EnumItem &item)
 {
+  visit_items_as_lines (item.get_outer_attrs ());
   auto id = item.get_identifier ();
   tokens.push_back (
     Rust::Token::make_identifier (item.get_locus (), std::move (id)));
@@ -1901,6 +1909,7 @@ TokenCollector::visit (EnumItemDiscriminant &item)
 void
 TokenCollector::visit (Enum &enumeration)
 {
+  visit_items_as_lines (enumeration.get_outer_attrs ());
   if (enumeration.has_visibility ())
     visit (enumeration.get_visibility ());
   tokens.push_back (Rust::Token::make (ENUM_TOK, enumeration.get_locus ()));
@@ -1936,6 +1945,7 @@ TokenCollector::visit (Union &union_item)
 void
 TokenCollector::visit (ConstantItem &item)
 {
+  visit_items_as_lines (item.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (CONST, item.get_locus ()));
   if (item.is_unnamed ())
     {
@@ -1960,6 +1970,7 @@ TokenCollector::visit (ConstantItem &item)
 void
 TokenCollector::visit (StaticItem &item)
 {
+  visit_items_as_lines (item.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (STATIC_TOK, item.get_locus ()));
   if (item.is_mutable ())
     tokens.push_back (Rust::Token::make (MUT, Location ()));
@@ -2112,6 +2123,7 @@ TokenCollector::visit (Trait &trait)
 void
 TokenCollector::visit (InherentImpl &impl)
 {
+  visit_items_as_lines (impl.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (IMPL, impl.get_locus ()));
   // FIXME: Handle generics
 
@@ -2128,6 +2140,7 @@ TokenCollector::visit (InherentImpl &impl)
 void
 TokenCollector::visit (TraitImpl &impl)
 {
+  visit_items_as_lines (impl.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (IMPL, impl.get_locus ()));
   visit (impl.get_trait_path ());
   tokens.push_back (Rust::Token::make (FOR, Location ()));
@@ -2202,6 +2215,7 @@ TokenCollector::visit (ExternalFunctionItem &function)
 void
 TokenCollector::visit (ExternBlock &block)
 {
+  visit_items_as_lines (block.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (EXTERN_TOK, block.get_locus ()));
 
   if (block.has_abi ())
