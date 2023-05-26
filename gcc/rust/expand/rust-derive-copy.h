@@ -16,35 +16,41 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef RUST_DERIVE_COPY_H
+#define RUST_DERIVE_COPY_H
+
 #include "rust-derive.h"
-#include "rust-derive-clone.h"
-#include "rust-derive-copy.h"
+#include "rust-ast-builder.h"
 
 namespace Rust {
 namespace AST {
-
-std::unique_ptr<Item>
-DeriveVisitor::derive (Item &item, const Attribute &attr,
-		       BuiltinMacro to_derive)
+class DeriveCopy : DeriveVisitor
 {
-  switch (to_derive)
-    {
-    case BuiltinMacro::Clone:
-      return DeriveClone (attr.get_locus ()).go (item);
-    case BuiltinMacro::Copy:
-      return DeriveCopy (attr.get_locus ()).go (item);
-    case BuiltinMacro::Debug:
-    case BuiltinMacro::Default:
-    case BuiltinMacro::Eq:
-    case BuiltinMacro::PartialEq:
-    case BuiltinMacro::Ord:
-    case BuiltinMacro::PartialOrd:
-    case BuiltinMacro::Hash:
-    default:
-      rust_sorry_at (attr.get_locus (), "uninmplemented builtin derive macro");
-      return nullptr;
-    };
-}
+public:
+  DeriveCopy (Location loc);
+
+  std::unique_ptr<Item> go (Item &);
+
+private:
+  Location loc;
+  AstBuilder builder;
+  std::unique_ptr<Item> expanded;
+
+  /**
+   * Create the Copy impl block for a type. These impl blocks are very simple as
+   * Copy is just a marker trait.
+   *
+   * impl Copy for <type> {}
+   */
+  std::unique_ptr<Item> copy_impl (std::string name);
+
+  virtual void visit_struct (StructStruct &item);
+  virtual void visit_tuple (TupleStruct &item);
+  virtual void visit_enum (Enum &item);
+  virtual void visit_union (Union &item);
+};
 
 } // namespace AST
 } // namespace Rust
+
+#endif // !RUST_DERIVE_COPY_H
