@@ -349,16 +349,16 @@ autovec_use_vlmax_p (void)
 void
 emit_vlmax_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
-  machine_mode data_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (data_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ true,
-					  /*USE_REAL_MERGE_P*/ false,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ true,
-					  /*DEST_MODE*/ data_mode,
-					  /*MASK_MODE*/ mask_mode);
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  dest_mode,
+					  mask_mode);
 
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
@@ -393,16 +393,16 @@ emit_vlmax_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 void
 emit_nonvlmax_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 {
-  machine_mode data_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (data_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ true,
-					  /*USE_REAL_MERGE_P*/ false,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ false,
-					  /*DEST_MODE*/ data_mode,
-					  /*MASK_MODE*/ mask_mode);
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ false,
+					  dest_mode,
+					  mask_mode);
 
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
@@ -416,14 +416,14 @@ emit_vlmax_merge_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ false,
-					  /*USE_REAL_MERGE_P*/ false,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ true,
-					  /*DEST_MODE*/ dest_mode,
-					  /*MASK_MODE*/ mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  dest_mode,
+					  mask_mode);
 
   e.set_policy (TAIL_ANY);
   e.emit_insn ((enum insn_code) icode, ops);
@@ -434,14 +434,14 @@ void
 emit_vlmax_cmp_insn (unsigned icode, rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ RVV_CMP_OP,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ true,
-					  /*USE_REAL_MERGE_P*/ false,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ true,
-					  /*DEST_MODE*/ mode,
-					  /*MASK_MODE*/ mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_CMP_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  mode,
+					  mode);
 
   e.set_policy (MASK_ANY);
   e.emit_insn ((enum insn_code) icode, ops);
@@ -452,14 +452,14 @@ void
 emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ RVV_CMP_MU_OP,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ false,
-					  /*USE_REAL_MERGE_P*/ true,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ true,
-					  /*DEST_MODE*/ mode,
-					  /*MASK_MODE*/ mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_CMP_MU_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  mode,
+					  mode);
 
   e.set_policy (MASK_UNDISTURBED);
   e.emit_insn ((enum insn_code) icode, ops);
@@ -1486,15 +1486,17 @@ expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
 static void
 emit_scalar_move_insn (unsigned icode, rtx *ops)
 {
-  machine_mode data_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (data_mode).require ();
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
   insn_expander<RVV_INSN_OPERANDS_MAX> e (riscv_vector::RVV_SCALAR_MOV_OP,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ false,
 					  /* USE_REAL_MERGE_P */ true,
 					  /* HAS_AVL_P */ true,
 					  /* VLMAX_P */ false,
-					  data_mode, mask_mode);
+					  dest_mode,
+					  mask_mode);
+
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
   e.set_vl (CONST1_RTX (Pmode));
