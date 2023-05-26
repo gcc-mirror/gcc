@@ -351,13 +351,15 @@ emit_vlmax_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode data_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (data_mode).require ();
-  /* We have a maximum of 11 operands for RVV instruction patterns according to
-   * vector.md.  */
-  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ true,
-		       /*USE_REAL_MERGE_P*/ false, /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true,
-		       /*DEST_MODE*/ data_mode, /*MASK_MODE*/ mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ true,
+					  /*USE_REAL_MERGE_P*/ false,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ data_mode,
+					  /*MASK_MODE*/ mask_mode);
+
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
   /* According to LRA mov pattern in vector.md, we have a clobber operand
@@ -393,13 +395,15 @@ emit_nonvlmax_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 {
   machine_mode data_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (data_mode).require ();
-  /* We have a maximum of 11 operands for RVV instruction patterns according to
-   * vector.md.  */
-  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ true,
-		       /*USE_REAL_MERGE_P*/ false, /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ false,
-		       /*DEST_MODE*/ data_mode, /*MASK_MODE*/ mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ true,
+					  /*USE_REAL_MERGE_P*/ false,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false,
+					  /*DEST_MODE*/ data_mode,
+					  /*MASK_MODE*/ mask_mode);
+
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
   e.set_vl (avl);
@@ -412,10 +416,15 @@ emit_vlmax_merge_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ false,
-		       /*USE_REAL_MERGE_P*/ false, /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true, dest_mode, mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ false,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ dest_mode,
+					  /*MASK_MODE*/ mask_mode);
+
   e.set_policy (TAIL_ANY);
   e.emit_insn ((enum insn_code) icode, ops);
 }
@@ -425,12 +434,15 @@ void
 emit_vlmax_cmp_insn (unsigned icode, rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
-  insn_expander<11> e (/*OP_NUM*/ RVV_CMP_OP, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ true,
-		       /*USE_REAL_MERGE_P*/ false,
-		       /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true,
-		       /*DEST_MODE*/ mode, /*MASK_MODE*/ mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ RVV_CMP_OP,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ true,
+					  /*USE_REAL_MERGE_P*/ false,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ mode,
+					  /*MASK_MODE*/ mode);
+
   e.set_policy (MASK_ANY);
   e.emit_insn ((enum insn_code) icode, ops);
 }
@@ -440,12 +452,15 @@ void
 emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
 {
   machine_mode mode = GET_MODE (ops[0]);
-  insn_expander<11> e (/*OP_NUM*/ RVV_CMP_MU_OP, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ false,
-		       /*USE_REAL_MERGE_P*/ true,
-		       /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true,
-		       /*DEST_MODE*/ mode, /*MASK_MODE*/ mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ RVV_CMP_MU_OP,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ mode,
+					  /*MASK_MODE*/ mode);
+
   e.set_policy (MASK_UNDISTURBED);
   e.emit_insn ((enum insn_code) icode, ops);
 }
@@ -479,7 +494,7 @@ expand_vec_series (rtx dest, rtx base, rtx step)
 
   /* Step 1: Generate I = { 0, 1, 2, ... } by vid.v.  */
   rtx vid = gen_reg_rtx (mode);
-  rtx op[1] = {vid};
+  rtx op[] = {vid};
   emit_vlmax_insn (code_for_pred_series (mode), RVV_MISC_OP, op);
 
   /* Step 2: Generate I * STEP.
