@@ -3062,16 +3062,19 @@ package body Errout is
 
             E := Errors.Table (E).Next;
 
-            --  Skip deleted messages.
-            --  Also skip continuation messages, as they have already been
-            --  printed along the message they're attached to.
+            while E /= No_Error_Msg loop
 
-            while E /= No_Error_Msg
-              and then not Errors.Table (E).Deleted
-              and then not Errors.Table (E).Msg_Cont
-            loop
-               Write_Char (',');
-               Output_JSON_Message (E);
+               --  Skip deleted messages.
+               --  Also skip continuation messages, as they have already been
+               --  printed along the message they're attached to.
+
+               if not Errors.Table (E).Deleted
+                 and then not Errors.Table (E).Msg_Cont
+               then
+                  Write_Char (',');
+                  Output_JSON_Message (E);
+               end if;
+
                E := Errors.Table (E).Next;
             end loop;
          end if;
