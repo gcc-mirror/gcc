@@ -32,8 +32,6 @@ public:
   std::unique_ptr<Item> go (Item &);
 
 private:
-  Location loc;
-  AstBuilder builder;
   std::unique_ptr<Item> expanded;
 
   /**

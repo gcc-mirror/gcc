@@ -21,6 +21,7 @@
 
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
+#include "rust-ast-builder.h"
 #include "rust-macro-builtins.h"
 
 namespace Rust {
@@ -35,6 +36,12 @@ class DeriveVisitor : public AST::ASTVisitor
 public:
   static std::unique_ptr<Item> derive (Item &item, const Attribute &derive,
 				       BuiltinMacro to_derive);
+
+protected:
+  DeriveVisitor (Location loc);
+
+  Location loc;
+  AstBuilder builder;
 
 private:
   // the 4 "allowed" visitors, which a derive-visitor can specify and override

@@ -23,6 +23,10 @@
 namespace Rust {
 namespace AST {
 
+DeriveVisitor::DeriveVisitor (Location loc)
+  : loc (loc), builder (AstBuilder (loc))
+{}
+
 std::unique_ptr<Item>
 DeriveVisitor::derive (Item &item, const Attribute &attr,
 		       BuiltinMacro to_derive)

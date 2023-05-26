@@ -22,8 +22,7 @@
 namespace Rust {
 namespace AST {
 
-DeriveCopy::DeriveCopy (Location loc)
-  : loc (loc), builder (AstBuilder (loc)), expanded (nullptr)
+DeriveCopy::DeriveCopy (Location loc) : DeriveVisitor (loc), expanded (nullptr)
 {}
 
 std::unique_ptr<AST::Item>
