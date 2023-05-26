@@ -20822,12 +20822,14 @@ run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 1MB otherwise.
 
 @opindex mxnack
-@item -mxnack
-Compile binaries suitable for devices with the XNACK feature enabled.  Some
-devices always require XNACK and some allow the user to configure XNACK.  The
-compiled code must match the device mode.  The default is @samp{-mno-xnack}.
-At present this option is a placeholder for support that is not yet
-implemented.
+@item -mxnack=on
+@itemx -mxnack=off
+@itemx -mxnack=any
+Compile binaries suitable for devices with the XNACK feature enabled, disabled,
+or either mode.  Some devices always require XNACK and some allow the user to
+configure XNACK.  The compiled code must match the device mode.
+@c The default is @samp{-mxnack=any}.
+At present this option is a placeholder for support that is not yet implemented.
 
 @end table
 

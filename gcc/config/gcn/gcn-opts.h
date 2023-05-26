@@ -54,11 +54,13 @@ extern enum gcn_isa {
 #define TARGET_M0_LDS_LIMIT (TARGET_GCN3)
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS)
 
-enum sram_ecc_type
+#define TARGET_XNACK (flag_xnack != HSACO_ATTR_OFF)
+
+enum hsaco_attr_type
 {
-  SRAM_ECC_OFF,
-  SRAM_ECC_ON,
-  SRAM_ECC_ANY
+  HSACO_ATTR_OFF,
+  HSACO_ATTR_ON,
+  HSACO_ATTR_ANY
 };
 
 #endif
