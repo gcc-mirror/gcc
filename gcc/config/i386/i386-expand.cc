@@ -23457,7 +23457,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       && ix86_expand_vec_shift_qihi_constant (code, dest, op1, op2))
     return;
 
-  if (0 && ix86_expand_vecop_qihi2 (code, dest, op1, op2))
+  if (ix86_expand_vecop_qihi2 (code, dest, op1, op2))
     return;
 
   switch (qimode)
