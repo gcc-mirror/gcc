@@ -8,11 +8,16 @@ use Delimiter;
 pub struct Group {
     delimiter: Delimiter,
     stream: TokenStream,
+    span: Span,
 }
 
 impl Group {
     pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self {
-        Group { delimiter, stream }
+        Group {
+            delimiter,
+            stream,
+            span: Span::default(),
+        }
     }
 
     pub fn delimiter(&self) -> Delimiter {
@@ -20,7 +25,7 @@ impl Group {
     }
 
     pub fn span(&self) -> Span {
-        Span {}
+        self.span
     }
 
     pub fn set_span(&mut self, span: Span) {
