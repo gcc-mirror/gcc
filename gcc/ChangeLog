@@ -1,3 +1,115 @@
+2023-05-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<optab><mode>2): Add vneg/vnot.
+	(abs<mode>2): Add.
+	* config/riscv/riscv-protos.h (emit_vlmax_masked_mu_insn):
+	Declare.
+	* config/riscv/riscv-v.cc (emit_vlmax_masked_mu_insn): New
+	function.
+
+2023-05-26  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (<optab><v_double_trunc><mode>2): New
+	expander.
+	(<optab><v_quad_trunc><mode>2): Dito.
+	(<optab><v_oct_trunc><mode>2): Dito.
+	(trunc<mode><v_double_trunc>2): Dito.
+	(trunc<mode><v_quad_trunc>2): Dito.
+	(trunc<mode><v_oct_trunc>2): Dito.
+	* config/riscv/riscv-protos.h (vectorize_related_mode): Define.
+	(autovectorize_vector_modes): Define.
+	* config/riscv/riscv-v.cc (vectorize_related_mode): Implement
+	hook.
+	(autovectorize_vector_modes): Implement hook.
+	* config/riscv/riscv.cc (riscv_autovectorize_vector_modes):
+	Implement target hook.
+	(riscv_vectorize_related_mode): Implement target hook.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES): Define.
+	(TARGET_VECTORIZE_RELATED_MODE): Define.
+	* config/riscv/vector-iterators.md: Add lowercase versions of
+	mode_attr iterators.
+
+2023-05-26  Andrew Stubbs  <ams@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn-hsa.h (XNACKOPT): New macro.
+	(ASM_SPEC): Use XNACKOPT.
+	* config/gcn/gcn-opts.h (enum sram_ecc_type): Rename to ...
+	(enum hsaco_attr_type): ... this, and generalize the names.
+	(TARGET_XNACK): New macro.
+	* config/gcn/gcn.cc (gcn_option_override): Update to sorry for all
+	but -mxnack=off.
+	(output_file_start): Update xnack handling.
+	(gcn_hsa_declare_function_name): Use TARGET_XNACK.
+	* config/gcn/gcn.opt (-mxnack): Add the "on/off/any" syntax.
+	(sram_ecc_type): Rename to ...
+	(hsaco_attr_type: ... this.)
+	* config/gcn/mkoffload.cc (SET_XNACK_ANY): New macro.
+	(TEST_XNACK): Delete.
+	(TEST_XNACK_ANY): New macro.
+	(TEST_XNACK_ON): New macro.
+	(main): Support the new -mxnack=on/off/any syntax.
+	* doc/invoke.texi (-mxnack): Update for new syntax.
+
+2023-05-26  Andrew Pinski  <apinski@marvell.com>
+
+	* genmatch.cc (emit_debug_printf): New function.
+	(dt_simplify::gen_1): Emit printf into the code
+	before the `return true` or returning the folded result
+	instead of emitting it always.
+
+2023-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h
+	(xtensa_expand_block_set_unrolled_loop,
+	xtensa_expand_block_set_small_loop): Remove.
+	(xtensa_expand_block_set): New prototype.
+	* config/xtensa/xtensa.cc
+	(xtensa_expand_block_set_libcall): New subfunction.
+	(xtensa_expand_block_set_unrolled_loop,
+	xtensa_expand_block_set_small_loop): Rewrite as subfunctions.
+	(xtensa_expand_block_set): New function that calls the above
+	subfunctions.
+	* config/xtensa/xtensa.md (memsetsi): Change to invoke only
+	xtensa_expand_block_set().
+
+2023-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_m1_or_1_thru_15):
+	New prototype.
+	* config/xtensa/xtensa.cc (xtensa_m1_or_1_thru_15):
+	New function.
+	* config/xtensa/constraints.md (O):
+	Change to use the above function.
+	* config/xtensa/xtensa.md (*subsi3_from_const):
+	New insn_and_split pattern.
+
+2023-05-26  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*extzvsi-1bit_ashlsi3):
+	Retract excessive line folding, and correct the value of
+	the "length" insn attribute related to TARGET_DENSITY.
+	(*extzvsi-1bit_addsubx): Ditto.
+
+2023-05-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi):
+	Do not disable call to ix86_expand_vecop_qihi2.
+
+2023-05-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/109610
+	PR target/109858
+	* ira-costs.cc (scan_one_insn): Only use NO_REGS in cost
+	calculation when !hard_regno_mode_ok for GENERAL_REGS and
+	mode, otherwise still use GENERAL_REGS.
+
+2023-05-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (vector_zero_call_used_regs): Add
+	explict VL and drop VL in ops.
+
 2023-05-25  Jin Ma  <jinma@linux.alibaba.com>
 
 	* sched-deps.cc (sched_macro_fuse_insns): Insns should not be fusion

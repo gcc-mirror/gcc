@@ -1,3 +1,88 @@
+2023-05-26  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/pr109970.c: New test.
+
+2023-05-26  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add unop tests.
+	* gcc.target/riscv/rvv/autovec/unop/abs-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/abs-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vnot-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vnot-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vnot-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vnot-template.h: New test.
+
+2023-05-26  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv32gcv.c: Adjust
+	expectation.
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl128b-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/zve64d-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/zve64f-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/zve64x-2.c: Dito.
+	* gcc.target/riscv/rvv/rvv.exp: Add new conversion tests.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-38.c: Do not vectorize.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-47.c: Dito.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-48.c: Dito.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-49.c: Dito.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-8.c: Dito.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vsext-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vsext-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vsext-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vsext-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vzext-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vzext-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vzext-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vzext-template.h: New test.
+
+2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-2.f90: Update dg-error.
+	* gfortran.dg/gomp/allocate-4.f90: New test.
+	* gfortran.dg/gomp/allocate-5.f90: New test.
+	* gfortran.dg/gomp/allocate-6.f90: New test.
+	* gfortran.dg/gomp/allocate-7.f90: New test.
+	* gfortran.dg/gomp/allocators-1.f90: New test.
+	* gfortran.dg/gomp/allocators-2.f90: New test.
+
+2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-4.f90: Remove autoadded file.
+	* gfortran.dg/gomp/allocate-5.f90: Likewise.
+	* gfortran.dg/gomp/allocate-6.f90: Likewise.
+	* gfortran.dg/gomp/allocate-7.f90: Likewise.
+	* gfortran.dg/gomp/allocators-1.f90: Likewise.
+	* gfortran.dg/gomp/allocators-2.f90: Likewise.
+
+2023-05-26  Andrew Stubbs  <ams@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-4.f90: New file.
+	* gfortran.dg/gomp/allocate-5.f90: New file.
+	* gfortran.dg/gomp/allocate-6.f90: New file.
+	* gfortran.dg/gomp/allocate-7.f90: New file.
+	* gfortran.dg/gomp/allocators-1.f90: New file.
+	* gfortran.dg/gomp/allocators-2.f90: New file.
+
 2023-05-25  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.dg/nested-vla-1.c: Require effective target trampolines.

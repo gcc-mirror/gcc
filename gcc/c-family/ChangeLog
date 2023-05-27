@@ -1,3 +1,8 @@
+2023-05-26  Martin Uecker  <uecker@tugraz.at>
+
+	* c-attribs.cc (build_attr_access_from_parms): Split loop to first
+	record all parameters.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* c-ada-spec.cc (has_static_fields): Use _P() defines from tree.h.

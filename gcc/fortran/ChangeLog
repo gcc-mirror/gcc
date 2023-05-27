@@ -1,3 +1,39 @@
+2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Update allocator, fix
+	align dump.
+	(show_omp_node, show_code_node): Handle EXEC_OMP_ALLOCATE.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_ALLOCATE and ..._EXEC.
+	(enum gfc_exec_op): Add EXEC_OMP_ALLOCATE.
+	(struct gfc_omp_namelist): Add 'allocator' to 'u2' union.
+	(struct gfc_namespace): Add omp_allocate.
+	(gfc_resolve_omp_allocate): New.
+	* match.cc (gfc_free_omp_namelist): Free 'u2.allocator'.
+	* match.h (gfc_match_omp_allocate, gfc_match_omp_allocators): New.
+	* openmp.cc (gfc_omp_directives): Uncomment allocate/allocators.
+	(gfc_match_omp_variable_list): Add bool arg for
+	rejecting listening common-block vars separately.
+	(gfc_match_omp_clauses): Update for u2.allocators.
+	(OMP_ALLOCATORS_CLAUSES, gfc_match_omp_allocate,
+	gfc_match_omp_allocators, is_predefined_allocator,
+	gfc_resolve_omp_allocate): New.
+	(resolve_omp_clauses): Update 'allocate' clause checks.
+	(omp_code_to_statement, gfc_resolve_omp_directive): Handle
+	OMP ALLOCATE/ALLOCATORS.
+	* parse.cc (in_exec_part): New global var.
+	(check_omp_allocate_stmt, parse_openmp_allocate_block): New.
+	(decode_omp_directive, case_exec_markers, case_omp_decl,
+	gfc_ascii_statement, parse_omp_structured_block): Handle
+	OMP allocate/allocators.
+	(verify_st_order, parse_executable): Set in_exec_part.
+	* resolve.cc (gfc_resolve_blocks, resolve_codes): Handle
+	allocate/allocators.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans.cc (trans_code): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_directive): Likewise.
+	(gfc_trans_omp_clauses, gfc_split_omp_clauses): Update for
+	u2.allocator, fix for u.align.
+
 2023-05-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104350
