@@ -178,6 +178,7 @@ GRS_OBJS = \
     rust/rust-builtins.o \
     rust/rust-feature.o \
     rust/rust-feature-gate.o \
+    rust/rust-dir-owner.o \
     $(END)
 # removed object files from here
 

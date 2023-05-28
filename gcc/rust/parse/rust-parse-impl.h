@@ -25,6 +25,7 @@
 #define INCLUDE_ALGORITHM
 #include "rust-diagnostics.h"
 #include "rust-make-unique.h"
+#include "rust-dir-owner.h"
 
 namespace Rust {
 // Left binding powers of operations.
@@ -2430,8 +2431,25 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 	// parse inner attributes
 	AST::AttrVec inner_attrs = parse_inner_attributes ();
 
+	std::string default_path = name;
+
+	if (inline_module_stack.empty ())
+	  {
+	    std::string filename = lexer.get_filename ();
+	    auto slash_idx = filename.rfind (file_separator);
+	    if (slash_idx == std::string::npos)
+	      slash_idx = 0;
+	    else
+	      slash_idx++;
+	    filename = filename.substr (slash_idx);
+
+	    std::string subdir;
+	    if (get_file_subdir (filename, subdir))
+	      default_path = subdir + file_separator + name;
+	  }
+
 	std::string module_path_name
-	  = extract_module_path (inner_attrs, outer_attrs, name);
+	  = extract_module_path (inner_attrs, outer_attrs, default_path);
 	InlineModuleStackScope scope (*this, std::move (module_path_name));
 
 	// parse items
