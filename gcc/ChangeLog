@@ -1,3 +1,14 @@
+2023-05-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100711
+	* config/i386/sse.md (*andnot<mode>3): Extend below splitter
+	to VI_AVX2 to cover more modes.
+
+2023-05-27  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI):
+	Remove ATOM and ICELAKE(and later) core processors.
+
 2023-05-26  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* config/riscv/autovec.md (<optab><mode>2): Add vneg/vnot.

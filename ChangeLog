@@ -1,3 +1,7 @@
+2023-05-27  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* MAINTAINERS: New entry.
+
 2023-05-18  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Makefile.tpl: Disable warnings as errors for STAGEautofeedback
