@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-operators.h"
+#include "rust-dir-owner.h"
 
 /* Compilation unit used for various AST-related functions that would make
  * the headers too long if they were defined inline and don't receive any
@@ -3310,21 +3311,37 @@ Module::process_file_path ()
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive
-  std::string including_fname (outer_filename);
+  std::string including_fpath (outer_filename);
 
   std::string expected_file_path = module_name + ".rs";
   std::string expected_dir_path = "mod.rs";
 
-  auto dir_slash_pos = including_fname.rfind (file_separator);
+  auto dir_slash_pos = including_fpath.rfind (file_separator);
   std::string current_directory_name;
+  std::string including_fname;
 
-  // If we haven't found a file_separator, then we have to look for files in the
-  // current directory ('.')
+  // If we haven't found a file_separator, then we may have to look for files in
+  // the current directory ('.')
   if (dir_slash_pos == std::string::npos)
-    current_directory_name = std::string (".") + file_separator;
+    {
+      including_fname = std::move (including_fpath);
+      including_fpath = std::string (".") + file_separator + including_fname;
+      dir_slash_pos = 1;
+    }
   else
-    current_directory_name
-      = including_fname.substr (0, dir_slash_pos) + file_separator;
+    {
+      including_fname = including_fpath.substr (dir_slash_pos + 1);
+    }
+
+  current_directory_name
+    = including_fpath.substr (0, dir_slash_pos) + file_separator;
+
+  auto path_string = filename_from_path_attribute (get_outer_attrs ());
+
+  std::string including_subdir;
+  if (path_string.empty () && module_scope.empty ()
+      && get_file_subdir (including_fname, including_subdir))
+    current_directory_name += including_subdir + file_separator;
 
   // Handle inline module declarations adding path components.
   for (auto const &name : module_scope)
@@ -3333,7 +3350,6 @@ Module::process_file_path ()
       current_directory_name.append (file_separator);
     }
 
-  auto path_string = filename_from_path_attribute (get_outer_attrs ());
   if (!path_string.empty ())
     {
       module_file = current_directory_name + path_string;
