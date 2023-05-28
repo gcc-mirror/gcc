@@ -5600,9 +5600,8 @@ riscv_asan_shadow_offset (void)
   /* We only have libsanitizer support for RV64 at present.
 
      This number must match kRiscv*_ShadowOffset* in the file
-     libsanitizer/asan/asan_mapping.h which is currently 1<<29 for rv64,
-     even though 1<<36 makes more sense.  */
-  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 29) : 0;
+     libsanitizer/asan/asan_mapping.h.  */
+  return TARGET_64BIT ? HOST_WIDE_INT_UC (0xd55550000) : 0;
 }
 
 /* Initialize the GCC target structure.  */
