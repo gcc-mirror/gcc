@@ -355,8 +355,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 void
 TypeCheckItem::visit (HIR::StaticItem &var)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ().get ());
+  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr ().get ());
 
   TyTy::BaseType *unified
     = coercion_site (var.get_mappings ().get_hirid (),
@@ -371,8 +371,9 @@ TypeCheckItem::visit (HIR::StaticItem &var)
 void
 TypeCheckItem::visit (HIR::ConstantItem &constant)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
+  TyTy::BaseType *expr_type
+    = TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
   TyTy::BaseType *unified = unify_site (
     constant.get_mappings ().get_hirid (),
@@ -461,13 +462,12 @@ TypeCheckItem::visit (HIR::Function &function)
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
-      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						     param_tyty));
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
+      params.push_back (std::pair<HIR::Pattern *, TyTy::BaseType *> (
+	param.get_param_name ().get (), param_tyty));
 
       context->insert_type (param.get_mappings (), param_tyty);
-      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
   const CanonicalPath *canonical_path = nullptr;

@@ -51,13 +51,13 @@ CompileStructExprField::Compile (HIR::StructExprField *field, Context *ctx)
 void
 CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value (), ctx);
+  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
 }
 
 void
 CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value (), ctx);
+  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
 }
 
 void

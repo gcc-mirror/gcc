@@ -224,8 +224,8 @@ TypeCheckExpr::visit (HIR::AssignmentExpr &expr)
 {
   infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
-  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
+  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
   coercion_site (expr.get_mappings ().get_hirid (),
 		 TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
@@ -280,8 +280,8 @@ TypeCheckExpr::visit (HIR::LiteralExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
-  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
-  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
+  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
   auto lang_item_type
     = Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
@@ -326,8 +326,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ComparisonExpr &expr)
 {
-  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
-  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
+  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
   unify_site (expr.get_mappings ().get_hirid (),
 	      TyTy::TyWithLocation (lhs, expr.get_lhs ()->get_locus ()),
@@ -341,8 +341,8 @@ TypeCheckExpr::visit (HIR::ComparisonExpr &expr)
 void
 TypeCheckExpr::visit (HIR::LazyBooleanExpr &expr)
 {
-  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
-  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+  auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
+  auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
 
   // we expect the lhs and rhs must be bools at this point
   TyTy::BaseType *boolean_node = nullptr;
@@ -433,8 +433,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
 void
 TypeCheckExpr::visit (HIR::IfExpr &expr)
 {
-  TypeCheckExpr::Resolve (expr.get_if_condition ());
-  TypeCheckExpr::Resolve (expr.get_if_block ());
+  TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+  TypeCheckExpr::Resolve (expr.get_if_block ().get ());
 
   infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 }
@@ -442,9 +442,10 @@ TypeCheckExpr::visit (HIR::IfExpr &expr)
 void
 TypeCheckExpr::visit (HIR::IfExprConseqElse &expr)
 {
-  TypeCheckExpr::Resolve (expr.get_if_condition ());
-  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
-  auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_else_block ());
+  TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ().get ());
+  auto else_blk_resolved
+    = TypeCheckExpr::Resolve (expr.get_else_block ().get ());
 
   if (if_blk_resolved->get_kind () == TyTy::NEVER)
     infered = else_blk_resolved;
@@ -808,11 +809,11 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  auto array_expr_ty = TypeCheckExpr::Resolve (expr.get_array_expr ());
+  auto array_expr_ty = TypeCheckExpr::Resolve (expr.get_array_expr ().get ());
   if (array_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
-  auto index_expr_ty = TypeCheckExpr::Resolve (expr.get_index_expr ());
+  auto index_expr_ty = TypeCheckExpr::Resolve (expr.get_index_expr ().get ());
   if (index_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
 

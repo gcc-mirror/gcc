@@ -59,8 +59,9 @@ TypeCheckStmt::visit (HIR::ExternBlock &extern_block)
 void
 TypeCheckStmt::visit (HIR::ConstantItem &constant)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
+  TyTy::BaseType *expr_type
+    = TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
   infered = coercion_site (
     constant.get_mappings ().get_hirid (),
