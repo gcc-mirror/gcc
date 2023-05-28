@@ -608,7 +608,7 @@ void
 PrivacyReporter::visit (HIR::Function &function)
 {
   for (auto &param : function.get_function_params ())
-    check_type_privacy (param.get_type ());
+    check_type_privacy (param.get_type ().get ());
 
   function.get_definition ()->accept_vis (*this);
 }

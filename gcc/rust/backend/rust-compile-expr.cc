@@ -143,8 +143,8 @@ void
 CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
 
   // this might be an operator overload situation lets check
   TyTy::FnType *fntype;
@@ -155,7 +155,8 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       auto lang_item_type
 	= Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
       translated = resolve_operator_overload (lang_item_type, expr, lhs, rhs,
-					      expr.get_lhs (), expr.get_rhs ());
+					      expr.get_lhs ().get (),
+					      expr.get_rhs ().get ());
       return;
     }
 
@@ -258,8 +259,8 @@ void
 CompileExpr::visit (HIR::ComparisonExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
   auto location = expr.get_locus ();
 
   translated
@@ -270,8 +271,8 @@ void
 CompileExpr::visit (HIR::LazyBooleanExpr &expr)
 {
   auto op = expr.get_expr_type ();
-  auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-  auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+  auto lhs = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
+  auto rhs = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
   auto location = expr.get_locus ();
 
   translated
@@ -908,8 +909,8 @@ CompileExpr::visit (HIR::LiteralExpr &expr)
 void
 CompileExpr::visit (HIR::AssignmentExpr &expr)
 {
-  auto lvalue = CompileExpr::Compile (expr.get_lhs (), ctx);
-  auto rvalue = CompileExpr::Compile (expr.get_rhs (), ctx);
+  auto lvalue = CompileExpr::Compile (expr.get_lhs ().get (), ctx);
+  auto rvalue = CompileExpr::Compile (expr.get_rhs ().get (), ctx);
 
   // assignments are coercion sites so lets convert the rvalue if necessary
   TyTy::BaseType *expected = nullptr;
@@ -2553,8 +2554,9 @@ CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
 void
 CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
-  tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
+  tree array_reference
+    = CompileExpr::Compile (expr.get_array_expr ().get (), ctx);
+  tree index = CompileExpr::Compile (expr.get_index_expr ().get (), ctx);
 
   // this might be an core::ops::index lang item situation
   TyTy::FnType *fntype;
@@ -2565,8 +2567,8 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
       auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
       tree operator_overload_call
 	= resolve_operator_overload (lang_item_type, expr, array_reference,
-				     index, expr.get_array_expr (),
-				     expr.get_index_expr ());
+				     index, expr.get_array_expr ().get (),
+				     expr.get_index_expr ().get ());
 
       tree actual_type = TREE_TYPE (operator_overload_call);
       bool can_indirect = TYPE_PTR_P (actual_type) || TYPE_REF_P (actual_type);

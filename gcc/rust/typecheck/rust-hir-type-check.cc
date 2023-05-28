@@ -259,13 +259,12 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
-      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						     param_tyty));
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
+      params.push_back (std::pair<HIR::Pattern *, TyTy::BaseType *> (
+	param.get_param_name ().get (), param_tyty));
 
       context->insert_type (param.get_mappings (), param_tyty);
-      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
   auto mappings = Analysis::Mappings::get ();

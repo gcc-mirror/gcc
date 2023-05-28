@@ -551,9 +551,9 @@ public:
 
   Location get_locus () const { return locus; }
 
-  Pattern *get_param_name () { return param_name.get (); }
+  std::unique_ptr<Pattern> &get_param_name () { return param_name; }
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
@@ -2129,9 +2129,9 @@ public:
   void accept_vis (HIRImplVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
-  Expr *get_expr () { return const_expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return const_expr; }
 
   Identifier get_identifier () const { return identifier; }
 
@@ -2225,9 +2225,9 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  Expr *get_expr () { return expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   ItemKind get_item_kind () const override { return ItemKind::Static; }
 

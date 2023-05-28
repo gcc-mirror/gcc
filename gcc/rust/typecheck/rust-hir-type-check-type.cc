@@ -604,7 +604,7 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
-  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());
+  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ().get ());
   if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
@@ -619,7 +619,8 @@ TypeCheckType::visit (HIR::ArrayType &type)
 				    type.get_size_expr ()->get_locus ()),
 	      type.get_size_expr ()->get_locus ());
 
-  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
+  TyTy::BaseType *base
+    = TypeCheckType::Resolve (type.get_element_type ().get ());
   translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
 				    type.get_locus (), *type.get_size_expr (),
 				    TyTy::TyVar (base->get_ref ()));

@@ -258,7 +258,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
   Location value_locus = field.get_value ()->get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();
@@ -295,7 +295,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
   Location value_locus = field.get_value ()->get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();

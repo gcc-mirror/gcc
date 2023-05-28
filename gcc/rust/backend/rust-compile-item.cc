@@ -47,7 +47,7 @@ CompileItem::visit (HIR::StaticItem &var)
     var.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
-  HIR::Expr *const_value_expr = var.get_expr ();
+  HIR::Expr *const_value_expr = var.get_expr ().get ();
   ctx->push_const_context ();
   tree value = compile_constant_item (resolved_type, canonical_path,
 				      const_value_expr, var.get_locus ());
@@ -94,7 +94,7 @@ CompileItem::visit (HIR::ConstantItem &constant)
     constant.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
-  HIR::Expr *const_value_expr = constant.get_expr ();
+  HIR::Expr *const_value_expr = constant.get_expr ().get ();
   ctx->push_const_context ();
   tree const_expr
     = compile_constant_item (resolved_type, canonical_path, const_value_expr,
