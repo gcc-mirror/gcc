@@ -2,17 +2,18 @@
 
 namespace Rust {
 
-std::vector<std::unique_ptr<AST::Token>>
-SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
+bool
+SubstituteCtx::substitute_metavar (
+  std::unique_ptr<AST::Token> &metavar,
+  std::vector<std::unique_ptr<AST::Token>> &expanded)
 {
   auto metavar_name = metavar->get_str ();
 
-  std::vector<std::unique_ptr<AST::Token>> expanded;
   auto it = fragments.find (metavar_name);
   if (it == fragments.end ())
     {
-      // Return a copy of the original token
-      expanded.push_back (metavar->clone_token ());
+      // fail to substitute
+      return false;
     }
   else
     {
@@ -28,7 +29,7 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
 	    metavar->get_locus (),
 	    "you probably forgot the repetition operator: %<%s%s%s%>", "$(",
 	    metavar->as_string ().c_str (), ")*");
-	  return expanded;
+	  return true;
 	}
 
       // We only care about the vector when expanding repetitions.
@@ -42,7 +43,7 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
 	}
     }
 
-  return expanded;
+  return true;
 }
 
 bool
@@ -209,14 +210,17 @@ SubstituteCtx::substitute_token (size_t token_idx)
       if (token_id_is_keyword (token->get_id ()))
 	{
 	case IDENTIFIER:
+	  std::vector<std::unique_ptr<AST::Token>> expanded;
+
 	  rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
-	  return {substitute_metavar (token), 1};
+
+	  if (substitute_metavar (token, expanded))
+	    return {std::move (expanded), 2};
 	}
-      rust_error_at (token->get_locus (),
-		     "unexpected token in macro transcribe: expected "
-		     "%<(%> or identifier after %<$%>, got %<%s%>",
-		     get_token_description (token->get_id ()));
-      break;
+
+      // don't substitute, dollar sign is alone/metavar is unknown
+      return {std::vector<std::unique_ptr<AST::Token>> (), 0};
+
       case LEFT_PAREN: {
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
@@ -285,17 +289,11 @@ SubstituteCtx::substitute_token (size_t token_idx)
 
 	return {substitute_repetition (pattern_start, pattern_end,
 				       std::move (separator_token)),
-		pattern_end - pattern_start + to_skip};
+		pattern_end - pattern_start + to_skip + 1};
       }
-      // TODO: We need to check if the $ was alone. In that case, do
-      // not error out: Simply act as if there was an empty identifier
-      // with no associated fragment and paste the dollar sign in the
-      // transcription. Unsure how to do that since we always have at
-      // least the closing curly brace after an empty $...
     }
 
-  // FIXME: gcc_unreachable() error case?
-  return {std::vector<std::unique_ptr<AST::Token>> (), 0};
+  gcc_unreachable ();
 }
 
 std::vector<std::unique_ptr<AST::Token>>
@@ -304,7 +302,7 @@ SubstituteCtx::substitute_tokens ()
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
   rust_debug ("expanding tokens");
 
-  for (size_t i = 0; i < macro.size (); i++)
+  for (size_t i = 0; i < macro.size ();)
     {
       auto &tok = macro.at (i);
       if (tok->get_id () == DOLLAR_SIGN)
@@ -315,6 +313,12 @@ SubstituteCtx::substitute_tokens ()
 	  auto expanded = std::move (p.first);
 	  auto tok_to_skip = p.second;
 
+	  if (!tok_to_skip)
+	    {
+	      replaced_tokens.emplace_back (tok->clone_token ());
+	      tok_to_skip++;
+	    }
+
 	  i += tok_to_skip;
 
 	  for (auto &token : expanded)
@@ -323,6 +327,7 @@ SubstituteCtx::substitute_tokens ()
       else
 	{
 	  replaced_tokens.emplace_back (tok->clone_token ());
+	  i++;
 	}
     }
 

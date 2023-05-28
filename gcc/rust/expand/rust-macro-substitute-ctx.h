@@ -49,12 +49,13 @@ public:
    * i.e. replacing $var with the associated fragment.
    *
    * @param metavar Metavariable to try and replace
+   * @param expanded Reference to a vector upon which expanded tokens will be
+   * pushed
    *
-   * @return A token containing the associated fragment expanded into tokens if
-   * any, or the cloned token if no fragment was associated
+   * @return True iff the substitution succeeded
    */
-  std::vector<std::unique_ptr<AST::Token>>
-  substitute_metavar (std::unique_ptr<AST::Token> &metavar);
+  bool substitute_metavar (std::unique_ptr<AST::Token> &metavar,
+			   std::vector<std::unique_ptr<AST::Token>> &expanded);
 
   /**
    * Substitute a macro repetition by its given fragments
