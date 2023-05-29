@@ -23361,7 +23361,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
     case E_V16QImode:
       himode = V16HImode;
-      if (TARGET_AVX512VL)
+      if (TARGET_AVX512VL && TARGET_AVX512BW)
 	gen_truncate = gen_truncv16hiv16qi2;
       break;
     case E_V32QImode:
