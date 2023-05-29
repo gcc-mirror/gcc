@@ -1342,9 +1342,48 @@
 ;; For RV64, we don't expose the SImode operations to the rtl expanders,
 ;; but SImode versions exist for combine.
 
+(define_expand "and<mode>3"
+  [(set (match_operand:X                0 "register_operand")
+        (and:X (match_operand:X 1 "register_operand")
+                       (match_operand:X 2 "arith_operand_or_mode_mask")))]
+  ""
+{
+  /* If the second operand is a mode mask, emit an extension
+     insn instead.  */
+  if (CONST_INT_P (operands[2]))
+    {
+      enum machine_mode tmode = VOIDmode;
+      if (INTVAL (operands[2]) == GET_MODE_MASK (HImode))
+	tmode = HImode;
+      else if (INTVAL (operands[2]) == GET_MODE_MASK (SImode))
+	tmode = SImode;
+
+      if (tmode != VOIDmode)
+	{
+	  rtx tmp = gen_lowpart (tmode, operands[1]);
+	  emit_insn (gen_extend_insn (operands[0], tmp, <MODE>mode, tmode, 1));
+	  DONE;
+	}
+    }
+  else
+    {
+      emit_move_insn (operands[0], gen_rtx_AND (<MODE>mode, operands[1], operands[2]));
+      DONE;
+    }
+})
+
+(define_insn "*and<mode>3"
+  [(set (match_operand:X                0 "register_operand" "=r,r")
+	(and:X (match_operand:X 1 "register_operand" "%r,r")
+		       (match_operand:X 2 "arith_operand"    " r,I")))]
+  ""
+  "and%i2\t%0,%1,%2"
+  [(set_attr "type" "logical")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<optab><mode>3"
   [(set (match_operand:X                0 "register_operand" "=r,r")
-	(any_bitwise:X (match_operand:X 1 "register_operand" "%r,r")
+	(any_or:X (match_operand:X 1 "register_operand" "%r,r")
 		       (match_operand:X 2 "arith_operand"    " r,I")))]
   ""
   "<insn>%i2\t%0,%1,%2"
