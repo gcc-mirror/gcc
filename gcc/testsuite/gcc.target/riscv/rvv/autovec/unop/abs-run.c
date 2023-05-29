@@ -19,7 +19,6 @@
   vabs_##TYPE (a##TYPE, a##TYPE, SZ);	        \
   for (int i = 0; i < SZ; i++)			\
     {						\
-      printf ("%d %d %d\n", i, a##TYPE[i], i - 64);	\
       if (i & 1)				\
 	assert (a##TYPE[i] == abs (i - 64));    \
       else					\
