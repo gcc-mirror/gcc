@@ -1,3 +1,7 @@
+2023-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS: Replace spaces with tabs.
+
 2023-05-27  Benjamin Priour  <vultkayn@gcc.gnu.org>
 
 	* MAINTAINERS: New entry.

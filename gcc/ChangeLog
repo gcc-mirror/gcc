@@ -1,3 +1,77 @@
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_insn): Eliminate the
+	magic number.
+	(emit_nonvlmax_insn): Ditto.
+	(emit_vlmax_merge_insn): Ditto.
+	(emit_vlmax_cmp_insn): Ditto.
+	(emit_vlmax_cmp_mu_insn): Ditto.
+	(expand_vec_series): Ditto.
+
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (enum insn_type): New type.
+	* config/riscv/riscv-v.cc (RVV_INSN_OPERANDS_MAX): New macro.
+	(rvv_builder::can_duplicate_repeating_sequence_p): Align the referenced
+	class member.
+	(rvv_builder::get_merged_repeating_sequence): Ditto.
+	(rvv_builder::repeating_sequence_use_merge_profitable_p): New function
+	to evaluate the optimization cost.
+	(rvv_builder::get_merge_scalar_mask): New function to get the merge
+	mask.
+	(emit_scalar_move_insn): New function to emit vmv.s.x.
+	(emit_vlmax_integer_move_insn): New function to emit vlmax vmv.v.x.
+	(emit_nonvlmax_integer_move_insn): New function to emit nonvlmax
+	vmv.v.x.
+	(get_repeating_sequence_dup_machine_mode): New function to get the dup
+	machine mode.
+	(expand_vector_init_merge_repeating_sequence): New function to perform
+	the optimization.
+	(expand_vec_init): Add this vector init optimization.
+	* config/riscv/riscv.h (BITS_PER_WORD): New macro.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-manip.cc (create_iv): Try harder to find a SLOC to
+	put onto the increment when it is inserted after the position.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* match.pd ((T)P - (T)(P + A) -> -(T) A): Avoid artificial overflow
+	on constants.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (source_equal_p): Fix ICE.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (fma<mode>4): New pattern.
+	(*fma<mode>): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(emit_vlmax_ternary_insn): New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_ternary_insn): Ditto.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix vimuladd instruction bug.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (global_state_unknown_p): New function.
+	(riscv_mode_after): Fix incorrect VXM.
+
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* common/config/riscv/riscv-common.cc:
+	(riscv_implied_info): Add zvfhmin item.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZVFHMIN): New macro.
+	(TARGET_ZFHMIN): Align indent.
+	(TARGET_ZFH): Ditto.
+	(TARGET_ZVFHMIN): New macro.
+
 2023-05-27  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/100711

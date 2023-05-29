@@ -1,3 +1,289 @@
+2023-05-29  Cedric Landet  <landet@adacore.com>
+
+	* s-oscons-tmplt.c: move the definition of sigset out of the
+	HAVE_SOCKETS bloc.
+
+2023-05-29  Cedric Landet  <landet@adacore.com>
+
+	* Makefile.rtl: Move g-spogwa$(objext) from GNATRTL_NONTASKING_OBJS
+	to GNATRTL_SOCKETS_OBJS
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Use Copy_Subprogram_Spec in
+	both cases to copy the spec of the subprogram.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope.Find_Transient_Context):
+	Bail out for a simple return statement only if the transient scope
+	and the function both require secondary stack management, or else
+	if the function is a thunk.
+	* sem_res.adb (Resolve_Call): Do not create a transient scope when
+	the call is the expression of a simple return statement.
+
+2023-05-29  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/a-excach.adb (Call_Chain): Replace
+	Code_Address_For_AAA/ZZZ functions with AAA/ZZZ'Code_Address.
+	* libgnat/a-except.adb (Code_Address_For_AAA/ZZZ): Delete.
+	(AAA/ZZZ): New null procedures.
+	* libgnat/g-debpoo.adb
+	(Code_Address_For_Allocate_End): Delete.
+	(Code_Address_For_Deallocate_End): Delete.
+	(Code_Address_For_Dereference_End): Delete.
+	(Allocate): Remove label and use Code_Address attribute to
+	determine subprogram addresses.
+	(Dellocate): Likewise.
+	(Dereference): Likewise.
+	(Allocate_End): Convert to null procedure.
+	(Dellocate_End): Likewise.
+	(Dereference_End): Likewise.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Call Insert_Actions
+	consistently when rewriting the expression.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Is_Finalizable_Transient.Is_Indexed_Container):
+	New predicate to detect a temporary created to hold the result of
+	a constant indexing on a container.
+	(Is_Finalizable_Transient.Is_Iterated_Container): Adjust a couple
+	of obsolete comments.
+	(Is_Finalizable_Transient): Return False if Is_Indexed_Container
+	returns True on the object.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Has_Applicable_User_Defined_Literal): Make it clear
+	that the predicate also checks the node itself.
+	(Try_User_Defined_Literal): Move current implementation to...
+	Deal only with literals, named numbers and conditional expressions
+	whose dependent expressions are literals or named numbers.
+	(Try_User_Defined_Literal_For_Operator): ...this.  Remove multiple
+	return False statements and put a single one at the end.
+	(Resolve): Call Try_User_Defined_Literal instead of directly
+	Has_Applicable_User_Defined_Literal for all nodes.  Call
+	Try_User_Defined_Literal_For_Operator for operator nodes.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Invoked_With_Different_Arguments): Use Get_Called_Entity,
+	which properly deals with calls via an access-to-subprogram; fix
+	inconsistent use of a Call object declared in enclosing subprogram.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb
+	(Add_Pre_Post_Condition): Attach pre/post aspects to E_Subprogram_Type
+	entity.
+	(Analyze_Entry_Or_Subprogram_Contract): Adapt to use full type
+	declaration for a contract attached to E_Subprogram_Type entity.
+	* sem_prag.adb
+	(Analyze_Pre_Post_Condition): Add pre/post aspects to the designed type.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Function_Writable_Actuals): Remove guard against
+	a membership test with no alternatives; simplify with a membership test.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst
+	(Some Useful Memory Pools): Remove extra whitespace from examples.
+	* sem_aggr.adb (Make_String_Into_Aggregate): Remove extra whitespace.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Convert_Aggr_In_Allocator): Replace Get_TSS_Name
+	with a high-level Is_TSS.
+	* sem_ch6.adb (Check_Conformance): Replace DECLARE block and
+	nested IF with a call to Get_TSS_Name and a membership test.
+	(Has_Reliable_Extra_Formals): Refactor repeated calls to
+	Get_TSS_Name.
+	* sem_disp.adb (Check_Dispatching_Operation): Replace repeated
+	calls to Get_TSS_Name with a membership test.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): Do not remove the statement
+	if it is the node to be wrapped by a transient scope.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Do not defer
+	anything to the back-end when the main unit is generic.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Try_User_Defined_Literal): Restrict previous change
+	to non-leaf nodes.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Try_User_Defined_Literal): For arithmetic operators,
+	also accept operands whose type is covered by the resolution type.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Initialize_Array_Component): Fix condition detecting
+	the nested case that requires an adjustment.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Deal specifically with a null operand.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Deal with a rewriting
+	of the simple return during the adjustment of its expression.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Distribute simple return
+	statements enclosing the conditional expression into the dependent
+	expressions in almost all cases.
+	(Expand_N_If_Expression): Likewise.
+	(Process_Transient_In_Expression): Adjust to the above distribution.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Deal with calls in the
+	dependent expressions of a conditional expression.
+	* sem_ch6.adb (Analyze_Function_Return): Deal with the rewriting of
+	a simple return statement during the resolution of its expression.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Refine rules for Exceptional_Cases.
+
+2023-05-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Do not mark node for
+	delayed expansion if parent type has the Aggregate aspect.
+	* sem_util.adb (Is_Container_Aggregate): Move...
+	* sem_util.ads (Is_Container_Aggregate): ... here and make it
+	public.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Relax rules for Exceptional_Cases.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.ads (Unresolved_Operator): New procedure.
+	* sem_ch4.adb (Has_Possible_Literal_Aspects): Rename into...
+	(Has_Possible_User_Defined_Literal): ...this.  Tidy up.
+	(Operator_Check): Accept again unresolved operators if they have a
+	possible user-defined literal as operand.  Factor out the handling
+	of the general error message into...
+	(Unresolved_Operator): ...this new procedure.
+	* sem_res.adb (Resolve): Be prepared for unresolved operators on
+	entry in Ada 2022 or later.  If they are still unresolved on exit,
+	call Unresolved_Operator to give the error message.
+	(Try_User_Defined_Literal): Tidy up.
+
+2023-05-29  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.adb
+	(Expand_N_Object_Declaration.Default_Initialize_Object): Add test for
+	specified Default_Component_Value aspect when deciding whether
+	either Initialize_Scalars or Normalize_Scalars impacts default
+	initialization of an array object.
+
+2023-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb
+	(Resolve_Record_Aggregate): For aggregates of derived tagged
+	record types with discriminants, when collecting components
+	from ancestors, pass to subprogram Gather_Components the
+	parent type. Required to report errors on wrong aggregate
+	components.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State): Replace low-level
+	navigation with a high-level Unique_Entity.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State): Properly handle entry
+	bodies.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Fix_Parent): Fir part both for lists and nodes.
+
+2023-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch7.adb: Refine handling of inlining for CCG
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Test the original node kind
+	for the sake of consistency.  For identifiers and other entity
+	names and operators, accept an expanded name as associated node.
+	Replace "or" with "or else" in condtion and fix its formatting.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State): Tune message.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Remove_Formals): Remove.
+	(Preanalyze_Condition): Replace Pop_Scope with End_Scope.
+	* sem_ch13.adb (Build_Discrete_Static_Predicate): Replace
+	Pop_Scope with End_Scope; enclose Install_Formals within
+	Push_Scope/End_Scope.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition): Tune error message.
+
+2023-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* scans.ads (Inside_Interpolated_String_Expression): New variable.
+	* par-ch2.adb (P_Interpolated_String_Literal): Set/clear new
+	variable when parsing interpolated string expressions.
+	* scng.adb (Set_String): Skip processing operator symbols when we
+	arescanning an interpolated string literal.
+
+2023-05-29  Johannes Kliemann  <kliemann@adacore.com>
+
+	* Makefile.rtl (QNX): Use s-parame__qnx.adb for s-parame.adb.
+	* libgnat/s-parame__qnx.adb: Add QNX specific version of
+	System.Parameters.
+
+2023-05-29  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-ngelfu.ads: Restore SPARK_Mode from context.
+
+2023-05-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* contracts.adb (Restore_Original_Selected_Component): Adjust assertion.
+
+2023-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb
+	(Add_Pre_Post_Condition): Adapt to handle pre/post of an
+	access-to-subprogram type.
+	(Analyze_Type_Contract): Analyze pre/post of an
+	access-to-subprogram.
+	* contracts.ads
+	(Analyze_Type_Contract): Adapt comment.
+	* sem_ch3.adb
+	(Build_Access_Subprogram_Wrapper): Copy pre/post aspects to
+	wrapper spec and keep it on the type.
+	* sem_prag.adb
+	(Analyze_Pre_Post_Condition): Expect pre/post aspects on
+	access-to-subprogram and complain if they appear without -gnat2022
+	switch.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Adapt to handle
+	pre/post on an access-to-subprogram type entity.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Likewise.
+	(Result): Likewise.
+
 2023-05-26  Bob Duff  <duff@adacore.com>
 
 	* sem_ch3.adb

@@ -1,3 +1,46 @@
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-run-3.c: New test.
+
+2023-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/storage_offset1.ads: New test.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/pr109974.c: New test.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/unop/abs-run.c: Remove redundant printf.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add ternary tests
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-3.c: New test.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vxrm-11.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-12.c: New test.
+
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/arch-20.c: New test.
+	* gcc.target/riscv/predef-26.c: New test.
+
 2023-05-27  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr100711-2.c: Add v4di/v2di testcases.
