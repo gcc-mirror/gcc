@@ -1,15 +1,13 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=rv32gc_xtheadcondmov -mabi=ilp32 -mriscv-attribute" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Og" } } */
+/* { dg-skip-if "" { *-*-* } {"-O0" "-O1" "-Os" "-Og" "-O3" "-Oz" "-flto"} } */
 /* { dg-final { check-function-bodies "**" ""  } } */
 
 /*
 **ConEmv_imm_imm_reg:
 **	addi	a5,a0,-1000
 **	li	a0,10
-**	th.mvnez	a0,zero,a5
-**	th.mveqz	a1,zero,a5
-**	or	a0,a0,a1
+**	th.mvnez	a0,a1,a5
 **	ret
 */
 int ConEmv_imm_imm_reg(int x, int y){
@@ -20,9 +18,8 @@ int ConEmv_imm_imm_reg(int x, int y){
 /*
 **ConEmv_imm_reg_reg:
 **	addi	a5,a0,-1000
-**	th.mvnez	a1,zero,a5
-**	th.mveqz	a2,zero,a5
-**	or	a0,a1,a2
+**	th.mveqz	a2,a1,a5
+**	mv	a0,a2
 **	ret
 */
 int ConEmv_imm_reg_reg(int x, int y, int z){
@@ -34,9 +31,7 @@ int ConEmv_imm_reg_reg(int x, int y, int z){
 **ConEmv_reg_imm_reg:
 **	sub	a1,a0,a1
 **	li	a0,10
-**	th.mvnez	a0,zero,a1
-**	th.mveqz	a2,zero,a1
-**	or	a0,a0,a2
+**	th.mvnez	a0,a2,a1
 **	ret
 */
 int ConEmv_reg_imm_reg(int x, int y, int z){
@@ -47,9 +42,8 @@ int ConEmv_reg_imm_reg(int x, int y, int z){
 /*
 **ConEmv_reg_reg_reg:
 **	sub	a1,a0,a1
-**	th.mvnez	a2,zero,a1
-**	th.mveqz	a3,zero,a1
-**	or	a0,a2,a3
+**	th.mveqz	a3,a2,a1
+**	mv	a0,a3
 **	ret
 */
 int ConEmv_reg_reg_reg(int x, int y, int z, int n){
@@ -59,12 +53,10 @@ int ConEmv_reg_reg_reg(int x, int y, int z, int n){
 
 /*
 **ConNmv_imm_imm_reg:
-**	li	a5,9998336
-**	addi	a4,a0,-1000
-**	addi	a5,a5,1664
-**	th.mvnez	a1,zero,a4
-**	th.mveqz	a5,zero,a4
-**	or	a0,a1,a5
+**	addi	a5,a0,-1000
+**	li	a0,9998336
+**	addi	a0,a0,1664
+**	th.mveqz	a0,a1,a5
 **	ret
 */
 int ConNmv_imm_imm_reg(int x, int y){
@@ -74,10 +66,9 @@ int ConNmv_imm_imm_reg(int x, int y){
 
 /*
 **ConNmv_imm_reg_reg:
-**	addi	a5,a0,-1000
-**	th.mveqz	a1,zero,a5
-**	th.mvnez	a2,zero,a5
-**	or	a0,a1,a2
+**	addi	a0,a0,-1000
+**	th.mvnez	a2,a1,a0
+**	mv	a0,a2
 **	ret
 */
 int ConNmv_imm_reg_reg(int x, int y, int z){
@@ -89,9 +80,7 @@ int ConNmv_imm_reg_reg(int x, int y, int z){
 **ConNmv_reg_imm_reg:
 **	sub	a1,a0,a1
 **	li	a0,10
-**	th.mveqz	a0,zero,a1
-**	th.mvnez	a2,zero,a1
-**	or	a0,a0,a2
+**	th.mveqz	a0,a2,a1
 **	ret
 */
 int ConNmv_reg_imm_reg(int x, int y, int z){
@@ -101,10 +90,9 @@ int ConNmv_reg_imm_reg(int x, int y, int z){
 
 /*
 **ConNmv_reg_reg_reg:
-**	sub	a1,a0,a1
-**	th.mveqz	a2,zero,a1
-**	th.mvnez	a3,zero,a1
-**	or	a0,a2,a3
+**	sub	a0,a0,a1
+**	th.mvnez	a3,a2,a0
+**	mv	a0,a3
 **	ret
 */
 int ConNmv_reg_reg_reg(int x, int y, int z, int n){

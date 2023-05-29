@@ -3442,37 +3442,6 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
   emit_jump_insn (gen_condjump (condition, label));
 }
 
-/* Helper to emit two one-sided conditional moves for the movecc.  */
-
-static void
-riscv_expand_conditional_move_onesided (rtx dest, rtx cons, rtx alt,
-					rtx_code code, rtx op0, rtx op1)
-{
-  machine_mode mode = GET_MODE (dest);
-
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
-  gcc_assert (reg_or_0_operand (cons, mode));
-  gcc_assert (reg_or_0_operand (alt, mode));
-
-  riscv_emit_int_compare (&code, &op0, &op1, true);
-  rtx cond = gen_rtx_fmt_ee (code, mode, op0, op1);
-
-  rtx tmp1 = gen_reg_rtx (mode);
-  rtx tmp2 = gen_reg_rtx (mode);
-
-  emit_insn (gen_rtx_SET (tmp1, gen_rtx_IF_THEN_ELSE (mode, cond,
-						      cons, const0_rtx)));
-
-  /* We need to expand a sequence for both blocks and we do that such,
-     that the second conditional move will use the inverted condition.
-     We use temporaries that are or'd to the dest register.  */
-  cond = gen_rtx_fmt_ee ((code == EQ) ? NE : EQ, mode, op0, op1);
-  emit_insn (gen_rtx_SET (tmp2, gen_rtx_IF_THEN_ELSE (mode, cond,
-						      alt, const0_rtx)));
-
-  emit_insn (gen_rtx_SET (dest, gen_rtx_IOR (mode, tmp1, tmp2)));
- }
-
 /* Emit a cond move: If OP holds, move CONS to DEST; else move ALT to DEST.
    Return 0 if expansion failed.  */
 
@@ -3483,6 +3452,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
   rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
   rtx op1 = XEXP (op, 1);
+  bool need_eq_ne_p = false;
 
   if (TARGET_XTHEADCONDMOV
       && GET_MODE_CLASS (mode) == MODE_INT
@@ -3492,14 +3462,12 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       && GET_MODE (op0) == mode
       && GET_MODE (op1) == mode
       && (code == EQ || code == NE))
+    need_eq_ne_p = true;
+
+  if (need_eq_ne_p
+      || (TARGET_SFB_ALU && GET_MODE (op0) == word_mode))
     {
-      riscv_expand_conditional_move_onesided (dest, cons, alt, code, op0, op1);
-      return true;
-    }
-  else if (TARGET_SFB_ALU
-	   && GET_MODE (op0) == word_mode)
-    {
-      riscv_emit_int_compare (&code, &op0, &op1);
+      riscv_emit_int_compare (&code, &op0, &op1, need_eq_ne_p);
       rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
 
       /* The expander allows (const_int 0) for CONS for the benefit of
