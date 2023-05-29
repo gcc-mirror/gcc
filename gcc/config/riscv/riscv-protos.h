@@ -141,6 +141,7 @@ enum insn_type
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
   RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
+  RVV_TERNOP = 5,
 };
 enum vlmul_type
 {
@@ -177,6 +178,7 @@ bool legitimize_move (rtx, rtx);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
+void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
 void emit_vlmax_merge_insn (unsigned, int, rtx *);
 void emit_vlmax_cmp_insn (unsigned, rtx *);

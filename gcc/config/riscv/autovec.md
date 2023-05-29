@@ -518,3 +518,68 @@
 					   riscv_vector::RVV_UNOP_MU, ops);
   DONE;
 })
+
+;; =========================================================================
+;; == Ternary arithmetic
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] VMACC and VMADD
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vmacc
+;; - vmadd
+;; -------------------------------------------------------------------------
+
+;; We can't expand FMA for the following reasons:
+;; 1. Before RA, we don't know which multiply-add instruction is the ideal one.
+;;    The vmacc is the ideal instruction when operands[3] overlaps operands[0].
+;;    The vmadd is the ideal instruction when operands[1|2] overlaps operands[0].
+;; 2. According to vector.md, the multiply-add patterns has 'merge' operand which
+;;    is the operands[5]. Since operands[5] should overlap operands[0], this operand
+;;    should be allocated the same regno as operands[1|2|3].
+;; 3. The 'merge' operand is always a real merge operand and we don't allow undefined
+;;    operand.
+;; 4. The operation of FMA pattern needs VLMAX vsetlvi which needs a VL operand.
+;;
+;; In this situation, we design the codegen of FMA as follows:
+;; 1. clobber a scratch in the expand pattern of FMA.
+;; 2. Let's RA decide which input operand (operands[1|2|3]) overlap operands[0].
+;; 3. Generate instructions (vmacc or vmadd) according to the register allocation
+;;    result after reload_completed.
+(define_expand "fma<mode>4"
+  [(parallel
+    [(set (match_operand:VI 0 "register_operand"     "=vr")
+	  (plus:VI
+	    (mult:VI
+	      (match_operand:VI 1 "register_operand" " vr")
+	      (match_operand:VI 2 "register_operand" " vr"))
+	    (match_operand:VI 3 "register_operand"   " vr")))
+     (clobber (match_scratch:SI 4))])]
+  "TARGET_VECTOR"
+  {})
+
+(define_insn_and_split "*fma<mode>"
+  [(set (match_operand:VI 0 "register_operand"     "=vr, vr, ?&vr")
+	(plus:VI
+	  (mult:VI
+	    (match_operand:VI 1 "register_operand" " %0, vr,   vr")
+	    (match_operand:VI 2 "register_operand" " vr, vr,   vr"))
+	  (match_operand:VI 3 "register_operand"   " vr,  0,   vr")))
+   (clobber (match_scratch:SI 4 "=r,r,r"))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    PUT_MODE (operands[4], Pmode);
+    riscv_vector::emit_vlmax_vsetvl (<MODE>mode, operands[4]);
+    if (which_alternative == 2)
+      emit_insn (gen_rtx_SET (operands[0], operands[3]));
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
+    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_mul_plus (<MODE>mode),
+					  riscv_vector::RVV_TERNOP, ops, operands[4]);
+    DONE;
+  }
+  [(set_attr "type" "vimuladd")
+   (set_attr "mode" "<MODE>")])

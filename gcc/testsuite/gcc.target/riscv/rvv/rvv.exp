@@ -69,6 +69,8 @@ foreach op $AUTOVEC_TEST_OPTS {
     "" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/unop/*.\[cS\]]] \
     "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
+    "" "$op"
 }
 
 # VLS-VLMAX tests

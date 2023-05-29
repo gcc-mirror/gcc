@@ -362,6 +362,26 @@ emit_vlmax_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a {VLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
+ * ternary operation which always has a real merge operand.  */
+void
+emit_vlmax_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  /* We have a maximum of 11 operands for RVV instruction patterns according to
+   * vector.md.  */
+  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
+		       /*FULLY_UNMASKED_P*/ true,
+		       /*USE_REAL_MERGE_P*/ true, /*HAS_AVL_P*/ true,
+		       /*VLMAX_P*/ true,
+		       /*DEST_MODE*/ dest_mode, /*MASK_MODE*/ mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a {NONVLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
  * actual operation.  */
 void
