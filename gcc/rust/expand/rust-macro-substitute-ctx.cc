@@ -77,31 +77,33 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 
 	      auto &fragment = it->second;
 
-	      size_t repeat_amount = fragment.get_match_amount ();
-	      if (!first_fragment_found)
+	      if (!fragment.is_single_fragment ())
 		{
-		  first_fragment_found = true;
-		  expected_repetition_amount = repeat_amount;
-		}
-	      else
-		{
-		  if (repeat_amount != expected_repetition_amount
-		      && !fragment.is_single_fragment ())
+		  size_t repeat_amount = fragment.get_match_amount ();
+		  if (!first_fragment_found)
 		    {
-		      rust_error_at (
-			frag_token->get_locus (),
-			"different amount of matches used in merged "
-			"repetitions: expected %lu, got %lu",
-			(unsigned long) expected_repetition_amount,
-			(unsigned long) repeat_amount);
-		      is_valid = false;
+		      first_fragment_found = true;
+		      expected_repetition_amount = repeat_amount;
+		    }
+		  else
+		    {
+		      if (repeat_amount != expected_repetition_amount)
+			{
+			  rust_error_at (
+			    frag_token->get_locus (),
+			    "different amount of matches used in merged "
+			    "repetitions: expected %lu, got %lu",
+			    (unsigned long) expected_repetition_amount,
+			    (unsigned long) repeat_amount);
+			  is_valid = false;
+			}
 		    }
 		}
 	    }
 	}
     }
 
-  return is_valid;
+  return is_valid && first_fragment_found;
 }
 
 std::vector<std::unique_ptr<AST::Token>>
