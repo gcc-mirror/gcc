@@ -1,3 +1,13 @@
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109547
+	* gcc.target/riscv/rvv/vsetvl/pr109547.c: New.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-17.c: Update scan
+	condition.
+
 2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/82931

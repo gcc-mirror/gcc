@@ -1,3 +1,56 @@
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109547
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn): New function.
+	(vector_insn_info::skip_avl_compatible_p): Ditto.
+	(vector_insn_info::merge): Remove default value.
+	(pass_vsetvl::compute_local_backward_infos): Ditto.
+	(pass_vsetvl::cleanup_insns): Add local vsetvl elimination.
+	* config/riscv/riscv-vsetvl.h: Ditto.
+
+2023-05-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-05-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_compute_multilib):
+	Fix wrong select_kind...
+
+2023-05-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-05-12  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_select_multilib_by_abi):
+	Drop unused parameter.
+	(riscv_select_multilib): Ditto.
+	(riscv_compute_multilib): Update call site of
+	riscv_select_multilib_by_abi and riscv_select_multilib_by_abi.
+
+2023-05-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-05-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_select_multilib_by_abi): New.
+	(riscv_select_multilib): New.
+	(riscv_compute_multilib): Extract logic to riscv_select_multilib and
+	also handle select_by_abi.
+	* config/riscv/elf.h (RISCV_USE_CUSTOMISED_MULTI_LIB): Change it
+	to select_by_abi_arch_cmodel from 1.
+	* config/riscv/linux.h (RISCV_USE_CUSTOMISED_MULTI_LIB): Define.
+	* config/riscv/riscv-opts.h (enum riscv_multilib_select_kind): New.
+
+2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix vimuladd instruction bug.
+
 2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/104327
