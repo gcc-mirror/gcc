@@ -1,3 +1,7 @@
+2023-05-29  Release Manager
+
+	* GCC 11.4.0 released.
+
 2023-05-22  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
