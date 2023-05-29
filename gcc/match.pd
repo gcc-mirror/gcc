@@ -3194,6 +3194,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (convert (plus:c @@0 @1)))
    (if (INTEGRAL_TYPE_P (type)
 	&& TYPE_OVERFLOW_UNDEFINED (type)
+	/* For integer literals, using an intermediate unsigned type to avoid
+	   an overflow at run time is counter-productive because it introduces
+	   spurious overflows at compile time, in the form of TREE_OVERFLOW on
+	   the result, which may be problematic in GENERIC for some front-ends:
+	     (T)P - (T)(P + 4) -> (T)(-(U)4) -> (T)(4294967292) -> -4(OVF)
+	   so we use the direct path for them.  */
+	&& TREE_CODE (@1) != INTEGER_CST
 	&& element_precision (type) <= element_precision (TREE_TYPE (@1)))
     (with { tree utype = unsigned_type_for (type); }
      (convert (negate (convert:utype @1))))
@@ -3213,6 +3220,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (convert (pointer_plus @@0 @1)))
    (if (INTEGRAL_TYPE_P (type)
 	&& TYPE_OVERFLOW_UNDEFINED (type)
+	/* See above the rationale for this condition.  */
+	&& TREE_CODE (@1) != INTEGER_CST
 	&& element_precision (type) <= element_precision (TREE_TYPE (@1)))
     (with { tree utype = unsigned_type_for (type); }
      (convert (negate (convert:utype @1))))
