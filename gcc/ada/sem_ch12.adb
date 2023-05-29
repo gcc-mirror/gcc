@@ -6964,8 +6964,61 @@ package body Sem_Ch12 is
      (Instance      : Entity_Id;
       Is_Formal_Box : Boolean)
    is
-      E      : Entity_Id;
+      Gen_Id : constant Entity_Id
+        := (if Is_Generic_Unit (Instance) then
+              Instance
+            elsif Is_Wrapper_Package (Instance) then
+              Generic_Parent
+                (Specification
+                  (Unit_Declaration_Node (Related_Instance (Instance))))
+            else
+              Generic_Parent (Package_Specification (Instance)));
+      --  The generic unit
+
+      Parent_Scope : constant Entity_Id := Scope (Gen_Id);
+      --  The enclosing scope of the generic unit
+
+      procedure Check_Actual_Type (Typ : Entity_Id);
+      --  If the type of the actual is a private type declared in the
+      --  enclosing scope of the generic unit, the body of the generic
+      --  sees the full view of the type (because it has to appear in
+      --  the corresponding package body). If the type is private now,
+      --  exchange views to restore the proper visibility in the instance.
+
+      -----------------------
+      -- Check_Actual_Type --
+      -----------------------
+
+      procedure Check_Actual_Type (Typ : Entity_Id) is
+         Btyp : constant Entity_Id := Base_Type (Typ);
+
+      begin
+         --  The exchange is only needed if the generic is defined
+         --  within a package which is not a common ancestor of the
+         --  scope of the instance, and is not already in scope.
+
+         if Is_Private_Type (Btyp)
+           and then Scope (Btyp) = Parent_Scope
+           and then Ekind (Parent_Scope) in E_Package | E_Generic_Package
+           and then Scope (Instance) /= Parent_Scope
+           and then not Is_Child_Unit (Gen_Id)
+         then
+            Switch_View (Btyp);
+
+            --  If the type of the entity is a subtype, it may also have
+            --  to be made visible, together with the base type of its
+            --  full view, after exchange.
+
+            if Is_Private_Type (Typ) then
+               Switch_View (Typ);
+               Switch_View (Base_Type (Typ));
+            end if;
+         end if;
+      end Check_Actual_Type;
+
       Astype : Entity_Id;
+      E      : Entity_Id;
+      Formal : Node_Id;
 
    begin
       E := First_Entity (Instance);
@@ -7083,60 +7136,22 @@ package body Sem_Ch12 is
             Set_Is_Hidden (E, False);
          end if;
 
-         if Ekind (E) = E_Constant then
+         --  Check directly the type of the actual objects
 
-            --  If the type of the actual is a private type declared in the
-            --  enclosing scope of the generic unit, the body of the generic
-            --  sees the full view of the type (because it has to appear in
-            --  the corresponding package body). If the type is private now,
-            --  exchange views to restore the proper visiblity in the instance.
+         if Ekind (E) in E_Constant | E_Variable then
+            Check_Actual_Type (Etype (E));
 
-            declare
-               Typ : constant Entity_Id := Base_Type (Etype (E));
-               --  The type of the actual
+         --  As well as the type of formal parameters of actual subprograms
 
-               Gen_Id : Entity_Id;
-               --  The generic unit
-
-               Parent_Scope : Entity_Id;
-               --  The enclosing scope of the generic unit
-
-            begin
-               if Is_Wrapper_Package (Instance) then
-                  Gen_Id :=
-                    Generic_Parent
-                      (Specification
-                        (Unit_Declaration_Node
-                          (Related_Instance (Instance))));
-               else
-                  Gen_Id :=
-                    Generic_Parent (Package_Specification (Instance));
-               end if;
-
-               Parent_Scope := Scope (Gen_Id);
-
-               --  The exchange is only needed if the generic is defined
-               --  within a package which is not a common ancestor of the
-               --  scope of the instance, and is not already in scope.
-
-               if Is_Private_Type (Typ)
-                 and then Scope (Typ) = Parent_Scope
-                 and then Scope (Instance) /= Parent_Scope
-                 and then Ekind (Parent_Scope) = E_Package
-                 and then not Is_Child_Unit (Gen_Id)
-               then
-                  Switch_View (Typ);
-
-                  --  If the type of the entity is a subtype, it may also have
-                  --  to be made visible, together with the base type of its
-                  --  full view, after exchange.
-
-                  if Is_Private_Type (Etype (E)) then
-                     Switch_View (Etype (E));
-                     Switch_View (Base_Type (Etype (E)));
-                  end if;
-               end if;
-            end;
+         elsif Ekind (E) in E_Function | E_Procedure
+           and then Is_Generic_Actual_Subprogram (E)
+           and then Present (Alias (E))
+         then
+            Formal := First_Formal (Alias (E));
+            while Present (Formal) loop
+               Check_Actual_Type (Etype (Formal));
+               Next_Formal (Formal);
+            end loop;
          end if;
 
          Next_Entity (E);
@@ -16561,8 +16576,10 @@ package body Sem_Ch12 is
                     and then Is_Global (Entity (Prefix (N2)))
                   then
                      Set_Associated_Node (N, Prefix (N2));
+                     Set_Global_Type (N, Prefix (N2));
 
                   elsif Nkind (Prefix (N2)) = N_Function_Call
+                    and then Is_Entity_Name (Name (Prefix (N2)))
                     and then Present (Entity (Name (Prefix (N2))))
                     and then Is_Global (Entity (Name (Prefix (N2))))
                   then
@@ -16573,6 +16590,9 @@ package body Sem_Ch12 is
                              Name =>
                                New_Occurrence_Of
                                  (Entity (Name (Prefix (N2))), Loc))));
+                     Set_Associated_Node
+                       (Name (Prefix (N)), Name (Prefix (N2)));
+                     Set_Global_Type (Name (Prefix (N)), Name (Prefix (N2)));
 
                   else
                      Set_Associated_Node (N, Empty);
@@ -16598,15 +16618,16 @@ package body Sem_Ch12 is
 
          procedure Save_References_In_Operator (N : Node_Id) is
          begin
+            N2 := Get_Associated_Node (N);
+
             --  The node did not undergo a transformation
 
-            if Nkind (N) = Nkind (Get_Associated_Node (N)) then
+            if Nkind (N) = Nkind (N2) then
                if Nkind (N) = N_Op_Concat then
-                  Set_Is_Component_Left_Opnd (N,
-                    Is_Component_Left_Opnd (Get_Associated_Node (N)));
-
-                  Set_Is_Component_Right_Opnd (N,
-                    Is_Component_Right_Opnd (Get_Associated_Node (N)));
+                  Set_Is_Component_Left_Opnd
+                    (N, Is_Component_Left_Opnd (N2));
+                  Set_Is_Component_Right_Opnd
+                    (N, Is_Component_Right_Opnd (N2));
                end if;
 
                Reset_Entity (N);
@@ -16616,8 +16637,6 @@ package body Sem_Ch12 is
             --  applicable.
 
             else
-               N2 := Get_Associated_Node (N);
-
                --  The operator resoved to a function call
 
                if Nkind (N2) = N_Function_Call then
