@@ -7549,6 +7549,31 @@ riscv_mode_needed (int entity, rtx_insn *insn)
     }
 }
 
+/* Return true if the VXRM/FRM status of the INSN is unknown.  */
+static bool
+global_state_unknown_p (rtx_insn *insn, unsigned int regno)
+{
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref ref;
+
+  /* Return true if there is a definition of VXRM.  */
+  for (ref = DF_INSN_INFO_DEFS (insn_info); ref; ref = DF_REF_NEXT_LOC (ref))
+    if (DF_REF_REGNO (ref) == regno)
+      return true;
+
+  /* A CALL function may contain an instruction that modifies the VXRM,
+     return true in this situation.  */
+  if (CALL_P (insn))
+    return true;
+
+  /* Return true for all assembly since users may hardcode a assembly
+     like this: asm volatile ("csrwi vxrm, 0").  */
+  extract_insn (insn);
+  if (recog_data.is_asm)
+    return true;
+  return false;
+}
+
 /* Return the mode that an insn results in.  */
 
 static int
@@ -7557,7 +7582,9 @@ riscv_mode_after (int entity, int mode, rtx_insn *insn)
   switch (entity)
     {
     case RISCV_VXRM:
-      if (recog_memoized (insn) >= 0)
+      if (global_state_unknown_p (insn, VXRM_REGNUM))
+	return VXRM_MODE_NONE;
+      else if (recog_memoized (insn) >= 0)
 	return reg_mentioned_p (gen_rtx_REG (SImode, VXRM_REGNUM),
 				PATTERN (insn))
 		 ? get_attr_vxrm_mode (insn)
