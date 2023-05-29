@@ -1735,7 +1735,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   rtx_insn *p;
   rtx link;
   bool all_adjacent = true;
-  int (*is_volatile_p) (const_rtx);
+  bool (*is_volatile_p) (const_rtx);
 
   if (succ)
     {
