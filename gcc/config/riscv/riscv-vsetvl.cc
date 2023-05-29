@@ -1138,7 +1138,35 @@ source_equal_p (insn_info *insn1, insn_info *insn2)
     return false;
   if (!rtx_equal_p (SET_SRC (single_set1), SET_SRC (single_set2)))
     return false;
-  gcc_assert (insn1->uses ().size () == insn2->uses ().size ());
+  /* RTL_SSA uses include REG_NOTE. Consider this following case:
+
+     insn1 RTL:
+	(insn 41 39 42 4 (set (reg:DI 26 s10 [orig:159 loop_len_46 ] [159])
+	  (umin:DI (reg:DI 15 a5 [orig:201 _149 ] [201])
+	    (reg:DI 14 a4 [276]))) 408 {*umindi3}
+	(expr_list:REG_EQUAL (umin:DI (reg:DI 15 a5 [orig:201 _149 ] [201])
+	    (const_int 2 [0x2]))
+	(nil)))
+     The RTL_SSA uses of this instruction has 2 uses:
+	1. (reg:DI 15 a5 [orig:201 _149 ] [201]) - twice.
+	2. (reg:DI 14 a4 [276]) - once.
+
+     insn2 RTL:
+	(insn 38 353 351 4 (set (reg:DI 27 s11 [orig:160 loop_len_47 ] [160])
+	  (umin:DI (reg:DI 15 a5 [orig:199 _146 ] [199])
+	    (reg:DI 14 a4 [276]))) 408 {*umindi3}
+	(expr_list:REG_EQUAL (umin:DI (reg:DI 28 t3 [orig:200 ivtmp_147 ] [200])
+	    (const_int 2 [0x2]))
+	(nil)))
+      The RTL_SSA uses of this instruction has 3 uses:
+	1. (reg:DI 15 a5 [orig:199 _146 ] [199]) - once
+	2. (reg:DI 14 a4 [276]) - once
+	3. (reg:DI 28 t3 [orig:200 ivtmp_147 ] [200]) - once
+
+      Return false when insn1->uses ().size () != insn2->uses ().size ()
+  */
+  if (insn1->uses ().size () != insn2->uses ().size ())
+    return false;
   for (size_t i = 0; i < insn1->uses ().size (); i++)
     if (insn1->uses ()[i] != insn2->uses ()[i])
       return false;
