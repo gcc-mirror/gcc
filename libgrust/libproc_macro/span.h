@@ -20,49 +20,22 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef IDENT_H
-#define IDENT_H
+#ifndef SPAN_H
+#define SPAN_H
 
 #include <cstdint>
-#include <string>
-
-#include "span.h"
 
 namespace ProcMacro {
-
-struct Ident
+struct Span
 {
-  bool is_raw;
-  // TODO: Adapt this to UTF-8
-  unsigned char *val;
-  // Length in bytes
-  std::uint64_t len;
-  Span span;
+  std::uint32_t start;
+  std::uint32_t end;
 
 public:
-  Ident clone () const;
-  static Ident make_ident (std::string str, Span span, bool raw = false);
-  static Ident make_ident (const unsigned char *str, std::uint64_t len,
-			   Span span, bool raw = false);
+  static Span make_span (std::uint32_t start, std::uint32_t end);
 
-  static void drop (Ident *ident);
+  static Span make_unknown ();
 };
-
-extern "C" {
-
-Ident
-Ident__new (unsigned char *str, std::uint64_t len, Span span);
-
-Ident
-Ident__new_raw (unsigned char *str, std::uint64_t len, Span span);
-
-void
-Ident__drop (Ident *ident);
-
-Ident
-Ident__clone (const Ident *ident);
-}
-
 } // namespace ProcMacro
 
-#endif /* ! IDENT_H */
+#endif /* SPAN_H */

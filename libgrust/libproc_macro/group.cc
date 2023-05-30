@@ -25,9 +25,9 @@
 namespace ProcMacro {
 
 Group
-Group::make_group (TokenStream stream, Delimiter delim)
+Group::make_group (TokenStream stream, Delimiter delim, Span span)
 {
-  return {delim, stream};
+  return {delim, stream, span};
 }
 
 void

@@ -54,6 +54,7 @@ objext = @OBJEXT@
 
 REQUIRED_OFILES =							\
 	./proc_macro.$(objext) \
+	./span.$(objext) \
 	./literal.$(objext) \
 	./group.$(objext) \
 	./ident.$(objext) \
