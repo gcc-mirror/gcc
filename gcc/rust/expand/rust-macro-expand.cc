@@ -352,7 +352,7 @@ MacroExpander::try_match_rule (AST::MacroRule &match_rule,
   AST::MacroMatcher &matcher = match_rule.get_matcher ();
 
   expansion_depth++;
-  if (!match_matcher (parser, matcher))
+  if (!match_matcher (parser, matcher, false, false))
     {
       expansion_depth--;
       return false;
@@ -437,7 +437,8 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
 
 bool
 MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
-			      AST::MacroMatcher &matcher, bool in_repetition)
+			      AST::MacroMatcher &matcher, bool in_repetition,
+			      bool match_delim)
 {
   if (depth_exceeds_recursion_limit ())
     {
@@ -447,29 +448,34 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
   auto delimiter = parser.peek_current_token ();
 
+  auto check_delim = [&matcher, match_delim] (AST::DelimType delim) {
+    return !match_delim || matcher.get_delim_type () == delim;
+  };
+
   // this is used so we can check that we delimit the stream correctly.
   switch (delimiter->get_id ())
     {
       case LEFT_PAREN: {
-	if (!parser.skip_token (LEFT_PAREN))
+	if (!check_delim (AST::DelimType::PARENS))
 	  return false;
       }
       break;
 
       case LEFT_SQUARE: {
-	if (!parser.skip_token (LEFT_SQUARE))
+	if (!check_delim (AST::DelimType::SQUARE))
 	  return false;
       }
       break;
 
       case LEFT_CURLY: {
-	if (!parser.skip_token (LEFT_CURLY))
+	if (!check_delim (AST::DelimType::CURLY))
 	  return false;
       }
       break;
     default:
-      gcc_unreachable ();
+      return false;
     }
+  parser.skip_token ();
 
   const MacroInvocLexer &source = parser.get_token_source ();
 
