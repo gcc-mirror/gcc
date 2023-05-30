@@ -19,69 +19,22 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-#include "ident.h"
 
-#include <cstring>
+#include "span.h"
 
 namespace ProcMacro {
 
-extern "C" {
-
-Ident
-Ident__new (unsigned char *str, std::uint64_t len, Span span)
+Span
+Span::make_span (std::uint32_t start, std::uint32_t end)
 {
-  return Ident::make_ident (str, len, span);
+  return {start, end};
 }
 
-Ident
-Ident__new_raw (unsigned char *str, std::uint64_t len, Span span)
+Span
+Span::make_unknown ()
 {
-  return Ident::make_ident (str, len, span, true);
-}
-
-void
-Ident__drop (Ident *ident)
-{
-  Ident::drop (ident);
-}
-
-Ident
-Ident__clone (const Ident *ident)
-{
-  return ident->clone ();
-}
-}
-
-Ident
-Ident::clone () const
-{
-  unsigned char *val = new unsigned char[this->len];
-  std::memcpy (val, this->val, this->len);
-  return {this->is_raw, val, this->len, this->span};
-}
-
-Ident
-Ident::make_ident (std::string str, Span span, bool raw)
-{
-  return Ident::make_ident (reinterpret_cast<const unsigned char *> (
-			      str.c_str ()),
-			    str.length (), span, raw);
-}
-
-Ident
-Ident::make_ident (const unsigned char *str, std::uint64_t len, Span span,
-		   bool raw)
-{
-  unsigned char *val = new unsigned char[len];
-  std::memcpy (val, str, len);
-  return {raw, val, len, span};
-}
-
-void
-Ident::drop (Ident *ident)
-{
-  delete[] ident->val;
-  ident->len = 0;
+  // TODO: Change this value to UNKNOWN_LOCATION from gcc/input.h
+  return {0, 0};
 }
 
 } // namespace ProcMacro

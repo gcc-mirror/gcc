@@ -46,16 +46,16 @@ Literal::drop (Literal *lit)
 Literal
 Literal::clone () const
 {
-  return {this->kind, this->text.clone (), this->suffix.clone ()};
+  return {this->kind, this->text.clone (), this->suffix.clone (), this->span};
 }
 
 Literal
-Literal::make_literal (LitKind kind, const std::string &text,
+Literal::make_literal (LitKind kind, Span span, const std::string &text,
 		       const std::string &suffix)
 {
   auto ffi_text = FFIString::make_ffistring (text);
   auto ffi_suffix = FFIString::make_ffistring (suffix);
-  return {kind, ffi_text, ffi_suffix};
+  return {kind, ffi_text, ffi_suffix, span};
 }
 
 Literal
@@ -63,7 +63,7 @@ Literal::make_u8 (std::uint8_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "u8" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -71,7 +71,7 @@ Literal::make_u16 (std::uint16_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "u16" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -79,7 +79,7 @@ Literal::make_u32 (std::uint32_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "u32" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -87,7 +87,7 @@ Literal::make_u64 (std::uint64_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "u64" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -95,7 +95,7 @@ Literal::make_i8 (std::int8_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "i8" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -103,7 +103,7 @@ Literal::make_i16 (std::int16_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "i16" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -111,7 +111,7 @@ Literal::make_i32 (std::int32_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "i32" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -119,7 +119,7 @@ Literal::make_i64 (std::int64_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "i64" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -127,7 +127,7 @@ Literal::make_string (const std::string &str)
 {
   auto text = FFIString::make_ffistring (str);
   auto suffix = FFIString::make_ffistring ("");
-  return {LitKind::make_str (), text, suffix};
+  return {LitKind::make_str (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -136,7 +136,7 @@ Literal::make_byte_string (const std::vector<std::uint8_t> &vec)
   auto text
     = FFIString::make_ffistring (std::string (vec.cbegin (), vec.cend ()));
   auto suffix = FFIString::make_ffistring ("");
-  return {LitKind::make_byte_str (), text, suffix};
+  return {LitKind::make_byte_str (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -144,7 +144,7 @@ Literal::make_f32 (float value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "f32" : "");
-  return {LitKind::make_float (), text, suffix};
+  return {LitKind::make_float (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -152,7 +152,7 @@ Literal::make_f64 (double value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "f64" : "");
-  return {LitKind::make_float (), text, suffix};
+  return {LitKind::make_float (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -160,7 +160,7 @@ Literal::make_char (std::uint32_t ch)
 {
   auto text = FFIString::make_ffistring (std::to_string ((char) ch));
   auto suffix = FFIString::make_ffistring ("");
-  return {LitKind::make_char (), text, suffix};
+  return {LitKind::make_char (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -168,7 +168,7 @@ Literal::make_usize (std::uint64_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "usize" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 Literal
@@ -176,7 +176,7 @@ Literal::make_isize (std::int64_t value, bool suffixed)
 {
   auto text = FFIString::make_ffistring (std::to_string (value));
   auto suffix = FFIString::make_ffistring (suffixed ? "isize" : "");
-  return {LitKind::make_integer (), text, suffix};
+  return {LitKind::make_integer (), text, suffix, Span::make_unknown ()};
 }
 
 LitKind

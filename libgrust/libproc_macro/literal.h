@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "span.h"
 #include "ffistring.h"
 
 namespace ProcMacro {
@@ -70,13 +71,14 @@ struct Literal
   LitKind kind;
   FFIString text;
   FFIString suffix;
-  // TODO: Add span once done in rust interface
+  Span span;
 
 public:
   Literal clone () const;
   bool has_suffix () const { return suffix.len != 0; };
 
-  static Literal make_literal (const LitKind kind, const std::string &text,
+  static Literal make_literal (const LitKind kind, Span span,
+			       const std::string &text,
 			       const std::string &suffix = "");
   static Literal make_u8 (std::uint8_t value, bool suffixed = true);
   static Literal make_u16 (std::uint16_t value, bool suffixed = true);

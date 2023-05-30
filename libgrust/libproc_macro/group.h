@@ -23,6 +23,7 @@
 #ifndef GROUP_H
 #define GROUP_H
 
+#include "span.h"
 #include "tokenstream.h"
 
 namespace ProcMacro {
@@ -39,9 +40,11 @@ struct Group
 {
   Delimiter delimiter;
   TokenStream stream;
+  Span span;
 
 public:
-  static Group make_group (TokenStream stream, Delimiter delim);
+  static Group make_group (TokenStream stream, Delimiter delim,
+			   Span span = Span::make_unknown ());
 
   static void drop (Group *g);
 };

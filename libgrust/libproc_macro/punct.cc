@@ -26,9 +26,9 @@
 namespace ProcMacro {
 
 Punct
-Punct::make_punct (std::uint32_t ch, Spacing spacing)
+Punct::make_punct (std::uint32_t ch, Span span, Spacing spacing)
 {
-  return {ch, spacing};
+  return {ch, spacing, span};
 }
 
 } // namespace ProcMacro

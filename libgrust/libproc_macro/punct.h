@@ -24,6 +24,7 @@
 #define PUNCT_H
 
 #include <cstdint>
+#include "span.h"
 
 namespace ProcMacro {
 
@@ -37,9 +38,11 @@ struct Punct
 {
   std::uint32_t ch;
   Spacing spacing;
+  Span span;
 
 public:
-  static Punct make_punct (std::uint32_t ch, Spacing spacing = Spacing::ALONE);
+  static Punct make_punct (std::uint32_t ch, Span span,
+			   Spacing spacing = Spacing::ALONE);
 };
 
 } // namespace ProcMacro
