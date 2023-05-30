@@ -1207,8 +1207,16 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
   // set up the resolved name on the path
-  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				  resolved_node_id);
+  if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+    {
+      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				      resolved_node_id);
+    }
+  else
+    {
+      resolver->insert_resolved_misc (expr.get_mappings ().get_nodeid (),
+				      resolved_node_id);
+    }
 
   // return the result of the function back
   infered = function_ret_tyty;
