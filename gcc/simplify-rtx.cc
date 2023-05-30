@@ -3826,15 +3826,16 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	 there are no nonzero bits of C outside of X's mode.  */
       if ((GET_CODE (op0) == SIGN_EXTEND
 	   || GET_CODE (op0) == ZERO_EXTEND)
-	  && CONST_INT_P (trueop1)
-	  && HWI_COMPUTABLE_MODE_P (mode)
-	  && (~GET_MODE_MASK (GET_MODE (XEXP (op0, 0)))
-	      & UINTVAL (trueop1)) == 0)
+	  && CONST_SCALAR_INT_P (trueop1)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (op0, 0)), &inner_mode)
+	  && (wi::mask (GET_MODE_PRECISION (inner_mode), true,
+			GET_MODE_PRECISION (int_mode))
+	      & rtx_mode_t (trueop1, mode)) == 0)
 	{
 	  machine_mode imode = GET_MODE (XEXP (op0, 0));
-	  tem = simplify_gen_binary (AND, imode, XEXP (op0, 0),
-				     gen_int_mode (INTVAL (trueop1),
-						   imode));
+	  tem = immed_wide_int_const (rtx_mode_t (trueop1, mode), imode);
+	  tem = simplify_gen_binary (AND, imode, XEXP (op0, 0), tem);
 	  return simplify_gen_unary (ZERO_EXTEND, mode, tem, imode);
 	}
 
