@@ -32,8 +32,9 @@ import json
 import argparse
 import collections
 import os
+import fnmatch
 
-baseurl = "https://download.01.org/perfmon"
+baseurl = "https://raw.githubusercontent.com/intel/perfmon/main"
 
 target_events = ('BR_INST_RETIRED.NEAR_TAKEN',
                  'BR_INST_EXEC.TAKEN',
@@ -74,7 +75,7 @@ def get_cpustr():
 def find_event(eventurl, model):
     print("Downloading", eventurl, file = sys.stderr)
     u = urllib.request.urlopen(eventurl)
-    events = json.loads(u.read())
+    events = json.loads(u.read())["Events"]
     u.close()
 
     found = 0
@@ -102,7 +103,7 @@ found = 0
 cpufound = 0
 for j in u:
     n = j.rstrip().decode().split(',')
-    if len(n) >= 4 and (args.all or n[0] == cpu) and n[3] == "core":
+    if len(n) >= 4 and (args.all or fnmatch.fnmatch(cpu, n[0])) and n[3] == "core":
         components = n[0].split("-")
         model = components[2]
         model = int(model, 16)
