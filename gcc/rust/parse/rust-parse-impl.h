@@ -12159,6 +12159,14 @@ Parser<ManagedTokenSource>::skip_after_semicolon ()
     lexer.skip_token ();
 }
 
+/* Skips the current token */
+template <typename ManagedTokenSource>
+void
+Parser<ManagedTokenSource>::skip_token ()
+{
+  lexer.skip_token ();
+}
+
 /* Checks if current token has inputted id - skips it and returns true if so,
  * diagnoses an error and returns false otherwise. */
 template <typename ManagedTokenSource>

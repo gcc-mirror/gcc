@@ -95,6 +95,11 @@ template <typename ManagedTokenSource> class Parser
 {
 public:
   /**
+   * Consume a token
+   */
+  void skip_token ();
+
+  /**
    * Consume a token, reporting an error if it isn't the next token
    *
    * @param t ID of the token to consume

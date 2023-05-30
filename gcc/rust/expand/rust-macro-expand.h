@@ -275,7 +275,8 @@ struct MacroExpander
 			 AST::MacroMatchRepetition &rep);
 
   bool match_matcher (Parser<MacroInvocLexer> &parser,
-		      AST::MacroMatcher &matcher, bool in_repetition = false);
+		      AST::MacroMatcher &matcher, bool in_repetition = false,
+		      bool match_delim = true);
 
   /**
    * Match any amount of matches
