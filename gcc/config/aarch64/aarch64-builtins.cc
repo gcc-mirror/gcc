@@ -502,8 +502,11 @@ aarch64_types_storestruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define CF4(N, X) CODE_FOR_##N##X##4
 #define CF10(N, X) CODE_FOR_##N##X
 
-#define VAR1(T, N, MAP, FLAG, A) \
-  {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
+/* Define cascading VAR<N> macros that are used from
+   aarch64-builtin-iterators.h to iterate over modes.  These definitions
+   will end up generating a number of VAR1 expansions and code later on in the
+   file should redefine VAR1 to whatever it needs to process on a per-mode
+   basis.  */
 #define VAR2(T, N, MAP, FLAG, A, B) \
   VAR1 (T, N, MAP, FLAG, A) \
   VAR1 (T, N, MAP, FLAG, B)
@@ -551,6 +554,26 @@ aarch64_types_storestruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   VAR1 (T, X, MAP, FLAG, P)
 
 #include "aarch64-builtin-iterators.h"
+
+/* The builtins below should be expanded through the standard optabs
+   CODE_FOR_[u]avg<mode>3_[floor,ceil].  However the mapping scheme in
+   aarch64-simd-builtins.def does not easily allow us to have a pre-mode
+   ("uavg") and post-mode string ("_ceil") in the CODE_FOR_* construction.
+   So the builtins use a name that is natural for AArch64 instructions
+   e.g. "aarch64_srhadd<mode>" and we re-map these to the optab-related
+   CODE_FOR_ here.  */
+#undef VAR1
+#define VAR1(F,T1,T2,I,M) \
+constexpr insn_code CODE_FOR_aarch64_##F##M = CODE_FOR_##T1##M##3##T2;
+
+BUILTIN_VDQ_BHSI (srhadd, avg, _ceil, 0)
+BUILTIN_VDQ_BHSI (urhadd, uavg, _ceil, 0)
+BUILTIN_VDQ_BHSI (shadd, avg, _floor, 0)
+BUILTIN_VDQ_BHSI (uhadd, uavg, _floor, 0)
+
+#undef VAR1
+#define VAR1(T, N, MAP, FLAG, A) \
+  {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
 
 static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #include "aarch64-simd-builtins.def"
