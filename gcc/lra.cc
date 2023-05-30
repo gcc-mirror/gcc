@@ -1838,10 +1838,10 @@ push_insns (rtx_insn *from, rtx_insn *to)
       lra_push_insn (insn);
 }
 
-/* Set up sp offset for insn in range [FROM, LAST].  The offset is
+/* Set up and return sp offset for insns in range [FROM, LAST].  The offset is
    taken from the next BB insn after LAST or zero if there in such
    insn.  */
-static void
+static poly_int64
 setup_sp_offset (rtx_insn *from, rtx_insn *last)
 {
   rtx_insn *before = next_nonnote_nondebug_insn_bb (last);
@@ -1849,7 +1849,11 @@ setup_sp_offset (rtx_insn *from, rtx_insn *last)
 		       ? 0 : lra_get_insn_recog_data (before)->sp_offset);
 
   for (rtx_insn *insn = from; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
-    lra_get_insn_recog_data (insn)->sp_offset = offset;
+    {
+      lra_get_insn_recog_data (insn)->sp_offset = offset;
+      offset = lra_update_sp_offset (PATTERN (insn), offset);
+    }
+  return offset;
 }
 
 /* Emit insns BEFORE before INSN and insns AFTER after INSN.  Put the
@@ -1875,8 +1879,25 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
       if (cfun->can_throw_non_call_exceptions)
 	copy_reg_eh_region_note_forward (insn, before, NULL);
       emit_insn_before (before, insn);
+      poly_int64 old_sp_offset = lra_get_insn_recog_data (insn)->sp_offset;
+      poly_int64 new_sp_offset = setup_sp_offset (before, PREV_INSN (insn));
+      if (maybe_ne (old_sp_offset, new_sp_offset))
+	{
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file, "    Changing sp offset from ");
+	      print_dec (old_sp_offset, lra_dump_file);
+	      fprintf (lra_dump_file, " to ");
+	      print_dec (new_sp_offset, lra_dump_file);
+	      fprintf (lra_dump_file, " for insn");
+	      dump_rtl_slim (lra_dump_file, insn, NULL, -1, 0);
+	    }
+	  lra_get_insn_recog_data (insn)->sp_offset = new_sp_offset;
+	  eliminate_regs_in_insn (insn, false, false,
+				  old_sp_offset - new_sp_offset);
+	  lra_push_insn (insn);
+	}
       push_insns (PREV_INSN (insn), PREV_INSN (before));
-      setup_sp_offset (before, PREV_INSN (insn));
     }
   if (after != NULL_RTX)
     {

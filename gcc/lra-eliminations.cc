@@ -1308,6 +1308,16 @@ init_elimination (void)
   setup_elimination_map ();
 }
 
+/* Update and return stack pointer OFFSET after processing X.  */
+poly_int64
+lra_update_sp_offset (rtx x, poly_int64 offset)
+{
+  curr_sp_change = offset;
+  mark_not_eliminable (x, VOIDmode);
+  return curr_sp_change;
+}
+
+
 /* Eliminate hard reg given by its location LOC.  */
 void
 lra_eliminate_reg_if_possible (rtx *loc)
