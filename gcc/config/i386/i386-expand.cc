@@ -23391,18 +23391,18 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   else
     hop2 = qop2;
 
-    if (code != MULT && op2vec)
-      {
-	/* Expand vashr/vlshr/vashl.  */
-	hdest = gen_reg_rtx (himode);
-	emit_insn (gen_rtx_SET (hdest,
-				simplify_gen_binary (code, himode,
-						     hop1, hop2)));
-      }
-    else
-      /* Expand mult/ashr/lshr/ashl.  */
-      hdest = expand_simple_binop (himode, code, hop1, hop2,
-				   NULL_RTX, 1, OPTAB_DIRECT);
+  if (code != MULT && op2vec)
+    {
+      /* Expand vashr/vlshr/vashl.  */
+      hdest = gen_reg_rtx (himode);
+      emit_insn (gen_rtx_SET (hdest,
+			      simplify_gen_binary (code, himode,
+						   hop1, hop2)));
+    }
+  else
+    /* Expand mult/ashr/lshr/ashl.  */
+    hdest = expand_simple_binop (himode, code, hop1, hop2,
+				 NULL_RTX, 1, OPTAB_DIRECT);
 
   if (gen_truncate)
     emit_insn (gen_truncate (dest, hdest));
