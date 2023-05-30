@@ -1698,23 +1698,6 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   // method receiver
   tree self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
 
-  // lookup the resolved name
-  NodeId resolved_node_id = UNKNOWN_NODEID;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
-	expr.get_mappings ().get_nodeid (), &resolved_node_id))
-    {
-      rust_error_at (expr.get_locus (), "failed to lookup resolved MethodCall");
-      return;
-    }
-
-  // reverse lookup
-  HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
-    {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
   // lookup the expected function type
   TyTy::BaseType *lookup_fntype = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (
@@ -1871,20 +1854,10 @@ CompileExpr::resolve_operator_overload (
     expr.get_mappings ().get_hirid (), &fntype);
   rust_assert (is_op_overload);
 
-  // lookup the resolved name
-  NodeId resolved_node_id = UNKNOWN_NODEID;
-  bool ok = ctx->get_resolver ()->lookup_resolved_name (
-    expr.get_mappings ().get_nodeid (), &resolved_node_id);
-  rust_assert (ok);
-
-  // reverse lookup
-  HirId ref;
-  ok = ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref);
-  rust_assert (ok);
-
   TyTy::BaseType *receiver = nullptr;
-  ok = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
-					   &receiver);
+  bool ok
+    = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
+					  &receiver);
   rust_assert (ok);
 
   bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
