@@ -1,3 +1,13 @@
+2023-05-29  Die Li  <lidie@eswincomputing.com>
+
+	* gcc.target/riscv/xtheadcondmov-indirect-rv32.c: Update the output.
+	* gcc.target/riscv/xtheadcondmov-indirect-rv64.c: Likewise.
+
+2023-05-29  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* gcc.target/riscv/and-extend-1.c: New test
+	* gcc.target/riscv/and-extend-2.c: New test
+
 2023-05-29  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-1.c: New test.

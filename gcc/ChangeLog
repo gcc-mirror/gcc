@@ -1,3 +1,33 @@
+2023-05-29  Die Li  <lidie@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move_onesided):
+	Delete.
+	(riscv_expand_conditional_move):  Reuse the TARGET_SFB_ALU expand
+	process for TARGET_XTHEADCONDMOV
+
+2023-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110021
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2): Also require
+	TARGET_AVX512BW to generate truncv16hiv16qi2.
+
+2023-05-29  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/riscv.md (and<mode>3): New expander.
+	(*and<mode>3) New pattern.
+	* config/riscv/predicates.md (arith_operand_or_mode_mask): New
+	predicate.
+
+2023-05-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_insn): Remove unnecessary
+	comments and rename local variables.
+	(emit_nonvlmax_insn): Diito.
+	(emit_vlmax_merge_insn): Ditto.
+	(emit_vlmax_cmp_insn): Ditto.
+	(emit_vlmax_cmp_mu_insn): Ditto.
+	(emit_scalar_move_insn): Ditto.
+
 2023-05-29  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-v.cc (emit_vlmax_insn): Eliminate the
