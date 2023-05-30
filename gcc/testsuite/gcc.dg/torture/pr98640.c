@@ -10,7 +10,7 @@ uint64_t var_83 = 10966786425750692026ULL;
 void test()
 {
   var_14 = var_0 + (_Bool)7;
-  var_83 = 1 + (int)var_0; // 1 + 888395530
+  var_83 = 1 + (int32_t)var_0; // 1 + 888395530
 }
 
 int main()

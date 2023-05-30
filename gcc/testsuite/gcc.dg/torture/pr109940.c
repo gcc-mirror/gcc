@@ -11,7 +11,7 @@ e(int d, int f) {
     return 1;
   int g = d / 2;
   for (int h = 0; h < g; h++)
-    if (f == (long int)b > b[h])
+    if (f == (__INTPTR_TYPE__)b > b[h])
       c(&b[h]);
   e(g, f);
   e(g, f);

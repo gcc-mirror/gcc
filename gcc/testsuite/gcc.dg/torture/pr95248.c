@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int32plus } */
+/* { dg-require-effective-target size24plus } */
 
 int var_2 = -2013646301;
 int var_3 = -1126567434;

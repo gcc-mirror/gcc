@@ -4,6 +4,10 @@
 
 typedef unsigned char uint8_t;
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 static uint8_t x264_clip_uint8 (int x)
 {
   return x & (~255) ? (-x) >> 31 : x;

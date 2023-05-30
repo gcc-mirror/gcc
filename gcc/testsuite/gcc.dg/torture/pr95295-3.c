@@ -1,7 +1,11 @@
 /* { dg-do compile } */
 
 extern short var_15, var_20;
+#if __SIZEOF_INT__ >= 4
 extern int var_18, var_21, var_23;
+#else
+extern __INT32_TYPE__ var_18, var_21, var_23;
+#endif
 extern _Bool arr_2[];
 extern long arr_3[];
 void test()
