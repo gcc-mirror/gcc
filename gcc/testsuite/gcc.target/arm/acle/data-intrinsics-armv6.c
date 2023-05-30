@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target arm_arch_v6_ok } */
+/* { dg-require-effective-target arm_arch_v6t2_ok } */
 /* { dg-add-options arm_arch_v6t2 } */
 
 #include "arm_acle.h"
