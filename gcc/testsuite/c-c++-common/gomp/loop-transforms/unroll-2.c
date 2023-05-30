@@ -44,12 +44,12 @@ test ()
 
   int i;
 #pragma omp for
-#pragma omp unroll( /* { dg-error {expected '#pragma omp' clause before '\(' token} } */
+#pragma omp unroll( /* { dg-error {expected an OpenMP clause before '\(' token} } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 #pragma omp for
-#pragma omp unroll foo /* { dg-error {expected '#pragma omp' clause before 'foo'} } */
+#pragma omp unroll foo /* { dg-error {expected an OpenMP clause before 'foo'} } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
@@ -69,19 +69,19 @@ test ()
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
-#pragma omp unroll parti /* { dg-error {expected '#pragma omp' clause before 'parti'} } */
+#pragma omp unroll parti /* { dg-error {expected an OpenMP clause before 'parti'} } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 #pragma omp for
 #pragma omp unroll partial(1)
-#pragma omp unroll parti /* { dg-error {expected '#pragma omp' clause before 'parti'} } */
+#pragma omp unroll parti /* { dg-error {expected an OpenMP clause before 'parti'} } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 #pragma omp for
 #pragma omp unroll partial(1)
-#pragma omp unroll parti /* { dg-error {expected '#pragma omp' clause before 'parti'} } */
+#pragma omp unroll parti /* { dg-error {expected an OpenMP clause before 'parti'} } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 

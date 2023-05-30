@@ -75,7 +75,7 @@ test ()
 
     #pragma omp parallel for
     #pragma omp tile sizes(1)
-    #pragma omp unroll partia /* { dg-error {expected '#pragma omp' clause before 'partia'} } */
+    #pragma omp unroll partia /* { dg-error {expected an OpenMP clause before 'partia'} } */
     #pragma omp tile sizes(1)
     for (int i = 0; i < 100; ++i)
 	dummy (i);

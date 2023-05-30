@@ -1,5 +1,21 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from master:
+	2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/109999
+	* c-c++-common/goacc/asyncwait-1.c: Update dg-error.
+	* c-c++-common/goacc/clauses-fail.c: Likewise.
+	* c-c++-common/goacc/data-2.c: Likewise.
+	* c-c++-common/gomp/declare-target-2.c: Likewise.
+	* c-c++-common/gomp/directive-1.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/tile-1.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/tile-2.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/unroll-2.c: Likewise.
+	* g++.dg/goacc/data-1.C: Likewise.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backport from master:
 	2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
 
