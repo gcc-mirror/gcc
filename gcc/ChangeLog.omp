@@ -1,3 +1,11 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from master:
+	2023-05-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_vectorize_builtin_vectorized_function): Remove
+	unused in_mode/in_n variables.
+
 2023-05-12  Julian Brown  <julian@codesourcery.com>
 
 	* omp-builtins.def (BUILT_IN_OMP_IS_INITIAL_DEVICE): New builtin.
