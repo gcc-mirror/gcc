@@ -67,6 +67,15 @@ enum stack_protector_guard {
   SSP_GLOBAL			/* global canary */
 };
 
+enum riscv_multilib_select_kind {
+  /* Select multilib by builtin way.  */
+  select_by_builtin,
+  /* Select multilib by ABI, arch and code model.  */
+  select_by_abi_arch_cmodel,
+  /* Select multilib by ABI only.  */
+  select_by_abi,
+};
+
 #define MASK_ZICSR    (1 << 0)
 #define MASK_ZIFENCEI (1 << 1)
 

@@ -66,3 +66,5 @@ along with GCC; see the file COPYING3.  If not see
    "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
    "/lib/ "					\
    "/usr/lib/ "
+
+#define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi

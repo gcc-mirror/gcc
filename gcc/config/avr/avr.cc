@@ -1019,6 +1019,19 @@ avr_no_gccisr_function_p (tree func)
   return avr_lookup_function_attribute1 (func, "no_gccisr");
 }
 
+
+/* Implement `TARGET_CAN_INLINE_P'.  */
+/* Some options like -mgas_isr_prologues depend on optimization level,
+   and the inliner might think that due to different options, inlining
+   is not permitted; see PR104327.  */
+
+static bool
+avr_can_inline_p (tree /* caller */, tree /* callee */)
+{
+  // No restrictions whatsoever.
+  return true;
+}
+
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  */
 /* Sanity cheching for above function attributes.  */
 
@@ -10844,6 +10857,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
             *total += COSTS_N_INSNS (1);
           return true;
         }
+      if (IOR == code
+          && AND == GET_CODE (XEXP (x, 0))
+          && AND == GET_CODE (XEXP (x, 1))
+          && single_zero_operand (XEXP (XEXP (x, 0), 1), mode))
+        {
+          // Open-coded bit transfer.
+          *total = COSTS_N_INSNS (2);
+          return true;
+        }
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
       if (!CONST_INT_P (XEXP (x, 1)))
@@ -11512,6 +11534,52 @@ avr_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
 
   return done;
+}
+
+
+/* Implement `TARGET_INSN_COST'.  */
+/* For some insns, it is not enough to look at the cost of the SET_SRC.
+   In that case, have a look at the entire insn, e.g. during insn combine.  */
+
+static int
+avr_insn_cost (rtx_insn *insn, bool speed)
+{
+  const int unknown_cost = -1;
+  int cost = unknown_cost;
+
+  rtx set = single_set (insn);
+
+  if (set
+      && ZERO_EXTRACT == GET_CODE (SET_DEST (set)))
+    {
+      // Try find anything that would flip the extracted bit.
+      bool not_bit_p = false;
+
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, SET_SRC (set), NONCONST)
+	{
+	  enum rtx_code code = GET_CODE (*iter);
+	  not_bit_p |= code == NOT || code == XOR || code == GE;
+	}
+
+      // Don't go too deep into the analysis.  In almost all cases,
+      // using BLD/BST is the best we can do for single-bit moves,
+      // even considering CSE.
+      cost = COSTS_N_INSNS (2 + not_bit_p);
+    }
+
+  if (cost != unknown_cost)
+    {
+      if (avr_log.rtx_costs)
+	avr_edump ("\n%? (%s) insn_cost=%d\n%r\n",
+		   speed ? "speed" : "size", cost, insn);
+      return cost;
+    }
+
+  // Resort to what rtlanal.cc::insn_cost() implements as a default
+  // when targetm.insn_cost() is not implemented.
+
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 
@@ -14572,6 +14640,8 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #undef  TARGET_ASM_FINAL_POSTSCAN_INSN
 #define TARGET_ASM_FINAL_POSTSCAN_INSN avr_asm_final_postscan_insn
 
+#undef  TARGET_INSN_COST
+#define TARGET_INSN_COST avr_insn_cost
 #undef  TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
 #undef  TARGET_MEMORY_MOVE_COST
@@ -14710,6 +14780,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 
 #undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST avr_md_asm_adjust
+
+#undef  TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P avr_can_inline_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
