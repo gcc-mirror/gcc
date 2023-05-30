@@ -87,9 +87,6 @@
 ;; the same template.
 (define_mode_iterator HQI [HI QI])
 
-;; This code iterator is for *shlrd and its variants.
-(define_code_iterator ior_op [ior plus])
-
 
 ;; Attributes.
 
@@ -1682,21 +1679,22 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"9")])
 
-(define_insn "*shlrd_reg_<code>"
+(define_insn "*shlrd_reg"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(ior_op:SI (match_operator:SI 4 "logical_shift_operator"
+	(match_operator:SI 6 "xtensa_bit_join_operator"
+		[(match_operator:SI 4 "logical_shift_operator"
 			[(match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "register_operand" "r")])
-		   (match_operator:SI 5 "logical_shift_operator"
-			[(match_operand:SI 3 "register_operand" "r")
-			 (neg:SI (match_dup 2))])))]
+			 (match_operand:SI 3 "register_operand" "r")])
+		 (match_operator:SI 5 "logical_shift_operator"
+			[(match_operand:SI 2 "register_operand" "r")
+			 (neg:SI (match_dup 3))])]))]
   "!optimize_debug && optimize
    && xtensa_shlrd_which_direction (operands[4], operands[5]) != UNKNOWN"
 {
   switch (xtensa_shlrd_which_direction (operands[4], operands[5]))
     {
-    case ASHIFT:	return "ssl\t%2\;src\t%0, %1, %3";
-    case LSHIFTRT:	return "ssr\t%2\;src\t%0, %3, %1";
+    case ASHIFT:	return "ssl\t%3\;src\t%0, %1, %2";
+    case LSHIFTRT:	return "ssr\t%3\;src\t%0, %2, %1";
     default:		gcc_unreachable ();
     }
 }
@@ -1704,14 +1702,42 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
-(define_insn "*shlrd_const_<code>"
+(define_insn_and_split "*shlrd_reg"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(ior_op:SI (match_operator:SI 5 "logical_shift_operator"
+	(match_operator:SI 6 "xtensa_bit_join_operator"
+		[(match_operator:SI 4 "logical_shift_operator"
+			[(match_operand:SI 1 "register_operand" "r")
+			 (neg:SI (match_operand:SI 3 "register_operand" "r"))])
+		 (match_operator:SI 5 "logical_shift_operator"
+			[(match_operand:SI 2 "register_operand" "r")
+			 (match_dup 3)])]))]
+  "!optimize_debug && optimize
+   && xtensa_shlrd_which_direction (operands[5], operands[4]) != UNKNOWN"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(match_op_dup 6
+		[(match_op_dup 5
+			[(match_dup 2)
+			 (match_dup 3)])
+		 (match_op_dup 4
+			[(match_dup 1)
+			 (neg:SI (match_dup 3))])]))]
+  ""
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
+
+
+(define_insn "*shlrd_const"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(match_operator:SI 7 "xtensa_bit_join_operator"
+		[(match_operator:SI 5 "logical_shift_operator"
 			[(match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 3 "const_int_operand" "i")])
-		   (match_operator:SI 6 "logical_shift_operator"
+		 (match_operator:SI 6 "logical_shift_operator"
 			[(match_operand:SI 2 "register_operand" "r")
-			 (match_operand:SI 4 "const_int_operand" "i")])))]
+			 (match_operand:SI 4 "const_int_operand" "i")])]))]
   "!optimize_debug && optimize
    && xtensa_shlrd_which_direction (operands[5], operands[6]) != UNKNOWN
    && IN_RANGE (INTVAL (operands[3]), 1, 31)
@@ -1729,16 +1755,17 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
-(define_insn "*shlrd_per_byte_<code>"
+(define_insn "*shlrd_per_byte"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(ior_op:SI (match_operator:SI 4 "logical_shift_operator"
+	(match_operator:SI 6 "xtensa_bit_join_operator"
+		[(match_operator:SI 4 "logical_shift_operator"
 			[(match_operand:SI 1 "register_operand" "r")
 			 (ashift:SI (match_operand:SI 2 "register_operand" "r")
 				    (const_int 3))])
-		   (match_operator:SI 5 "logical_shift_operator"
+		 (match_operator:SI 5 "logical_shift_operator"
 			[(match_operand:SI 3 "register_operand" "r")
 			 (neg:SI (ashift:SI (match_dup 2)
-					    (const_int 3)))])))]
+					    (const_int 3)))])]))]
   "!optimize_debug && optimize
    && xtensa_shlrd_which_direction (operands[4], operands[5]) != UNKNOWN"
 {
@@ -1753,32 +1780,34 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
-(define_insn_and_split "*shlrd_per_byte_<code>_omit_AND"
+(define_insn_and_split "*shlrd_per_byte_omit_AND"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(ior_op:SI (match_operator:SI 5 "logical_shift_operator"
+	(match_operator:SI 7 "xtensa_bit_join_operator"
+		[(match_operator:SI 5 "logical_shift_operator"
 			[(match_operand:SI 1 "register_operand" "r")
 			 (and:SI (ashift:SI (match_operand:SI 2 "register_operand" "r")
 					    (const_int 3))
 				 (match_operand:SI 4 "const_int_operand" "i"))])
-		   (match_operator:SI 6 "logical_shift_operator"
+		 (match_operator:SI 6 "logical_shift_operator"
 			[(match_operand:SI 3 "register_operand" "r")
 			 (neg:SI (and:SI (ashift:SI (match_dup 2)
 						    (const_int 3))
-					 (match_dup 4)))])))]
+					 (match_dup 4)))])]))]
   "!optimize_debug && optimize
    && xtensa_shlrd_which_direction (operands[5], operands[6]) != UNKNOWN
    && (INTVAL (operands[4]) & 0x1f) == 3 << 3"
   "#"
   "&& 1"
   [(set (match_dup 0)
-	(ior_op:SI (match_op_dup 5
+	(match_op_dup 7
+		[(match_op_dup 5
 			[(match_dup 1)
 			 (ashift:SI (match_dup 2)
 				    (const_int 3))])
-		   (match_op_dup 6
+		 (match_op_dup 6
 			[(match_dup 3)
 			 (neg:SI (ashift:SI (match_dup 2)
-					    (const_int 3)))])))]
+					    (const_int 3)))])]))]
   ""
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")

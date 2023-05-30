@@ -200,6 +200,9 @@
 (define_predicate "xtensa_shift_per_byte_operator"
   (match_code "ashift,ashiftrt,lshiftrt"))
 
+(define_predicate "xtensa_bit_join_operator"
+  (match_code "plus,ior"))
+
 (define_predicate "tls_symbol_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) != 0")))
