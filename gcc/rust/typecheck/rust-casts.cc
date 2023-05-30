@@ -42,7 +42,12 @@ TypeCastRules::check ()
     = TypeCoercionRules::TryCoerce (from.get_ty (), to.get_ty (), locus,
 				    true /*allow-autoderef*/);
   if (!possible_coercion.is_error ())
-    return possible_coercion;
+    {
+      // given the attempt was ok we need to ensure we perform it so that any
+      // inference variables are unified correctly
+      return TypeCoercionRules::Coerce (from.get_ty (), to.get_ty (), locus,
+					true /*allow-autoderef*/);
+    }
 
   // try the simple cast rules
   auto simple_cast = cast_rules ();
