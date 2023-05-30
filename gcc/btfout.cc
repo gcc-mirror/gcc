@@ -705,6 +705,12 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       dw2_asm_output_data (4, dtd->dtd_data.ctti_size, "btt_size: %uB",
 			   dtd->dtd_data.ctti_size);
       return;
+    case BTF_KIND_ARRAY:
+    case BTF_KIND_FWD:
+      /* These types do not encode any information in the size/type field
+	 and should write 0.  */
+      dw2_asm_output_data (4, 0, "(unused)");
+      return;
     default:
       break;
     }
