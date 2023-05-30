@@ -699,8 +699,10 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   if (impl_block.has_generics ())
     for (auto &generic : impl_block.get_generic_params ())
@@ -714,8 +716,9 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   NodeId trait_resolved_node = ResolveType::go (&impl_block.get_trait_path ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     {
-      resolver->get_type_scope ().pop ();
       resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
       return;
     }
 
@@ -723,8 +726,9 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   NodeId type_resolved_node = ResolveType::go (impl_block.get_type ().get ());
   if (type_resolved_node == UNKNOWN_NODEID)
     {
-      resolver->get_type_scope ().pop ();
       resolver->get_name_scope ().pop ();
+      resolver->get_type_scope ().pop ();
+      resolver->get_label_scope ().pop ();
       return;
     }
 
@@ -792,9 +796,12 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
       resolve_impl_item (impl_item.get (), impl_prefix, cpath);
     }
 
-  resolver->get_type_scope ().peek ()->clear_name (
-    Self, impl_block.get_type ()->get_node_id ());
+  Rib *r = resolver->get_type_scope ().peek ();
+  r->clear_name (Self, impl_block.get_type ()->get_node_id ());
+
+  resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
 }
 
 void
