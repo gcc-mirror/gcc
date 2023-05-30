@@ -1,6 +1,19 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2023-05-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/109875
+	* config/gcn/target.c (GOMP_teams4): Honor nteams-var ICV.
+	* config/nvptx/target.c (GOMP_teams4): Likewise.
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-1.c: New test.
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-2.c: New test.
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-3.c: New test.
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-4.c: New test.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2023-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/109904

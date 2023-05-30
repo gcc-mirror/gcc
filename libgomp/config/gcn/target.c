@@ -48,7 +48,9 @@ GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
      multiple times at least for some workgroups.  */
   (void) num_teams_lower;
   if (!num_teams_upper || num_teams_upper >= num_workgroups)
-    num_teams_upper = num_workgroups;
+    num_teams_upper = ((GOMP_ADDITIONAL_ICVS.nteams > 0
+			&& num_workgroups > GOMP_ADDITIONAL_ICVS.nteams)
+		       ? GOMP_ADDITIONAL_ICVS.nteams : num_workgroups);
   else if (workgroup_id >= num_teams_upper)
     return false;
   gomp_num_teams_var = num_teams_upper - 1;
