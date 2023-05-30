@@ -225,7 +225,9 @@
 			 (ss_minus "sssub")
 			 (us_minus "ussub")
 			 (sign_extend "extend")
-			 (zero_extend "zero_extend")])
+			 (zero_extend "zero_extend")
+			 (fix "fix_trunc")
+			 (unsigned_fix "fixuns_trunc")])
 
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
