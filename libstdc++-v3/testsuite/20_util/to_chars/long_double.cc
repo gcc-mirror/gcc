@@ -36,7 +36,7 @@
 
 // On systems that use double-precision from_chars for long double,
 // this is expected to fail.
-// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* i*86-*-vxworks* } }
+// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* i*86-*-vxworks* x86_64-*-vxworks* } }
 
 // { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
