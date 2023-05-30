@@ -460,6 +460,21 @@
   return aarch64_simd_check_vect_par_cnst_half (op, mode, false);
 })
 
+;; PARALLEL for a vec_select that selects all the even or all the odd
+;; elements of a vector of MODE.
+(define_special_predicate "vect_par_cnst_even_or_odd_half"
+  (match_code "parallel")
+{
+  int nunits = XVECLEN (op, 0);
+  if (!known_eq (GET_MODE_NUNITS (mode), nunits * 2))
+    return false;
+  rtx first = XVECEXP (op, 0, 0);
+  if (!CONST_INT_P (first))
+    return false;
+  return (INTVAL (first) == 0 || INTVAL (first) == 1)
+	 && aarch64_stepped_int_parallel_p (op, 2);
+})
+
 (define_predicate "descending_int_parallel"
   (match_code "parallel")
 {

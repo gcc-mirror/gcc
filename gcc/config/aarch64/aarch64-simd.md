@@ -1039,13 +1039,39 @@
   }
 )
 
-(define_insn "aarch64_<sur>adalp<mode>"
+(define_expand "aarch64_<su>adalp<mode>"
+  [(set (match_operand:<VDBLW> 0 "register_operand")
+	(plus:<VDBLW>
+	  (plus:<VDBLW>
+	    (vec_select:<VDBLW>
+	      (ANY_EXTEND:<V2XWIDE>
+		(match_operand:VDQV_L 2 "register_operand"))
+	      (match_dup 3))
+	    (vec_select:<VDBLW> (ANY_EXTEND:<V2XWIDE> (match_dup 2))
+	      (match_dup 4)))
+	  (match_operand:<VDBLW> 1 "register_operand")))]
+ "TARGET_SIMD"
+ {
+   int nunits = GET_MODE_NUNITS (<MODE>mode).to_constant () / 2;
+   operands[3] = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
+   operands[4] = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
+ }
+)
+
+(define_insn "*aarch64_<su>adalp<mode><vczle><vczbe>_insn"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VDQV_L 2 "register_operand" "w")
-			 (match_operand:<VDBLW> 1 "register_operand" "0")]
-	ADALP))]
-  "TARGET_SIMD"
-  "<sur>adalp\t%0.<Vwhalf>, %2.<Vtype>"
+	(plus:<VDBLW>
+	  (plus:<VDBLW>
+	    (vec_select:<VDBLW>
+	      (ANY_EXTEND:<V2XWIDE>
+		(match_operand:VDQV_L 2 "register_operand" "w"))
+	      (match_operand:<V2XWIDE> 3 "vect_par_cnst_even_or_odd_half" ""))
+	    (vec_select:<VDBLW> (ANY_EXTEND:<V2XWIDE> (match_dup 2))
+	      (match_operand:<V2XWIDE> 4 "vect_par_cnst_even_or_odd_half" "")))
+	(match_operand:<VDBLW> 1 "register_operand" "0")))]
+ "TARGET_SIMD
+  && !rtx_equal_p (operands[3], operands[4])"
+ "<su>adalp\t%0.<Vwhalf>, %2.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
@@ -3699,11 +3725,34 @@
   [(set_attr "type" "neon_reduc_add<VDQV_L:q>")]
 )
 
-(define_insn "aarch64_<su>addlp<mode>"
- [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-       (unspec:<VDBLW> [(match_operand:VDQV_L 1 "register_operand" "w")]
-		    USADDLP))]
+(define_expand "aarch64_<su>addlp<mode>"
+  [(set (match_operand:<VDBLW> 0 "register_operand")
+	(plus:<VDBLW>
+	  (vec_select:<VDBLW>
+	    (ANY_EXTEND:<V2XWIDE>
+	      (match_operand:VDQV_L 1 "register_operand"))
+	    (match_dup 2))
+	  (vec_select:<VDBLW> (ANY_EXTEND:<V2XWIDE> (match_dup 1))
+	    (match_dup 3))))]
  "TARGET_SIMD"
+ {
+   int nunits = GET_MODE_NUNITS (<MODE>mode).to_constant () / 2;
+   operands[2] = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
+   operands[3] = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
+ }
+)
+
+(define_insn "*aarch64_<su>addlp<mode><vczle><vczbe>_insn"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
+	(plus:<VDBLW>
+	  (vec_select:<VDBLW>
+	    (ANY_EXTEND:<V2XWIDE>
+	      (match_operand:VDQV_L 1 "register_operand" "w"))
+	    (match_operand:<V2XWIDE> 2 "vect_par_cnst_even_or_odd_half"))
+	  (vec_select:<VDBLW> (ANY_EXTEND:<V2XWIDE> (match_dup 1))
+	    (match_operand:<V2XWIDE> 3 "vect_par_cnst_even_or_odd_half"))))]
+ "TARGET_SIMD
+  && !rtx_equal_p (operands[2], operands[3])"
  "<su>addlp\\t%0.<Vwhalf>, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
