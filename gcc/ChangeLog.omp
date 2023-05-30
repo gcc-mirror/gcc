@@ -1,5 +1,12 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
+	* config/gcn/gcn.opt (mxnack=): Fix default value in the
+	description line.
+	* doc/invoke.texi (mxnack): Update to the on/off/any
+	version.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backport from master:
 	2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
 

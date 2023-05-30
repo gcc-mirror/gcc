@@ -96,7 +96,7 @@ Enum(hsaco_attr_type) String(any) Value(HSACO_ATTR_ANY)
 
 mxnack=
 Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_xnack) Init(HSACO_ATTR_ANY)
-Compile for devices requiring XNACK enabled. Default off.
+Compile for devices requiring XNACK enabled. Default \"any\".
 
 msram-ecc=
 Target RejectNegative Joined ToLower Enum(hsaco_attr_type) Var(flag_sram_ecc) Init(HSACO_ATTR_ANY)
