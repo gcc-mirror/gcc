@@ -1353,9 +1353,9 @@
   if (CONST_INT_P (operands[2]))
     {
       enum machine_mode tmode = VOIDmode;
-      if (INTVAL (operands[2]) == GET_MODE_MASK (HImode))
+      if (UINTVAL (operands[2]) == GET_MODE_MASK (HImode))
 	tmode = HImode;
-      else if (INTVAL (operands[2]) == GET_MODE_MASK (SImode))
+      else if (UINTVAL (operands[2]) == GET_MODE_MASK (SImode))
 	tmode = SImode;
 
       if (tmode != VOIDmode)
