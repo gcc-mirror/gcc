@@ -4148,25 +4148,25 @@ extern unsigned hash_rtx (const_rtx x, machine_mode, int *, int *, bool);
 extern bool check_for_inc_dec (rtx_insn *insn);
 
 /* In jump.cc */
-extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
+extern bool comparison_dominates_p (enum rtx_code, enum rtx_code);
 extern bool jump_to_label_p (const rtx_insn *);
-extern int condjump_p (const rtx_insn *);
-extern int any_condjump_p (const rtx_insn *);
-extern int any_uncondjump_p (const rtx_insn *);
+extern bool condjump_p (const rtx_insn *);
+extern bool any_condjump_p (const rtx_insn *);
+extern bool any_uncondjump_p (const rtx_insn *);
 extern rtx pc_set (const rtx_insn *);
 extern rtx condjump_label (const rtx_insn *);
-extern int simplejump_p (const rtx_insn *);
-extern int returnjump_p (const rtx_insn *);
-extern int eh_returnjump_p (rtx_insn *);
-extern int onlyjump_p (const rtx_insn *);
-extern int invert_jump_1 (rtx_jump_insn *, rtx);
-extern int invert_jump (rtx_jump_insn *, rtx, int);
-extern int rtx_renumbered_equal_p (const_rtx, const_rtx);
+extern bool simplejump_p (const rtx_insn *);
+extern bool returnjump_p (const rtx_insn *);
+extern bool eh_returnjump_p (rtx_insn *);
+extern bool onlyjump_p (const rtx_insn *);
+extern bool invert_jump_1 (rtx_jump_insn *, rtx);
+extern bool invert_jump (rtx_jump_insn *, rtx, int);
+extern bool rtx_renumbered_equal_p (const_rtx, const_rtx);
 extern int true_regnum (const_rtx);
 extern unsigned int reg_or_subregno (const_rtx);
-extern int redirect_jump_1 (rtx_insn *, rtx);
+extern bool redirect_jump_1 (rtx_insn *, rtx);
 extern void redirect_jump_2 (rtx_jump_insn *, rtx, rtx, int, int);
-extern int redirect_jump (rtx_jump_insn *, rtx, int);
+extern bool redirect_jump (rtx_jump_insn *, rtx, int);
 extern void rebuild_jump_labels (rtx_insn *);
 extern void rebuild_jump_labels_chain (rtx_insn *);
 extern rtx reversed_comparison (const_rtx, machine_mode);
@@ -4174,7 +4174,7 @@ extern enum rtx_code reversed_comparison_code (const_rtx, const rtx_insn *);
 extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, const_rtx,
 						     const_rtx, const rtx_insn *);
 extern void delete_for_peephole (rtx_insn *, rtx_insn *);
-extern int condjump_in_parallel_p (const rtx_insn *);
+extern bool condjump_in_parallel_p (const rtx_insn *);
 
 /* In emit-rtl.cc.  */
 extern int max_reg_num (void);
