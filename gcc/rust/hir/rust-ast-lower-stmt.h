@@ -42,6 +42,9 @@ public:
   void visit (AST::Function &function) override;
   void visit (AST::ExternBlock &extern_block) override;
   void visit (AST::MacroRulesDefinition &extern_block) override;
+  void visit (AST::Trait &trait) override;
+  void visit (AST::InherentImpl &impl_block) override;
+  void visit (AST::TraitImpl &impl_block) override;
 
 private:
   ASTLoweringStmt () : translated (nullptr), terminated (false) {}
