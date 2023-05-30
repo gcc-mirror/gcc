@@ -12,6 +12,8 @@ void test_1 (void)
 
 /* Verify SARIF output.
 
+     { dg-final { verify-sarif-file } }
+
    The threadFlowLocation objects should have "kinds" properties
    reflecting the meanings of the events:
      { dg-final { scan-sarif-file "\"kinds\": \\\[\"acquire\", \"memory\"\\\]" } }
