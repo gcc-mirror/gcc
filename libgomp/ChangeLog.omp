@@ -1,6 +1,15 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2023-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/109904
+	* configure.ac (link_gomp): Include also $DL_LIBS.
+	* configure: Regenerated.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/scan-1.c: New test.
