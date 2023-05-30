@@ -1,5 +1,15 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backport from master:
+	2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/brev-1.c: New 32-bit test case.
+	* gcc.target/nvptx/brev-2.c: Likewise.
+	* gcc.target/nvptx/brevll-1.c: New 64-bit test case.
+	* gcc.target/nvptx/brevll-2.c: Likewise.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
 

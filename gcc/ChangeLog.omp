@@ -1,6 +1,21 @@
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from master:
+	2023-05-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.cc (nvptx_expand_brev): Expand target
+	builtin for bit reversal using brev instruction.
+	(enum nvptx_builtins): Add NVPTX_BUILTIN_BREV and
+	NVPTX_BUILTIN_BREVLL.
+	(nvptx_init_builtins): Define "brev" and "brevll".
+	(nvptx_expand_builtin): Expand NVPTX_BUILTIN_BREV and
+	NVPTX_BUILTIN_BREVLL via nvptx_expand_brev function.
+	* doc/extend.texi (Nvidia PTX Builtin-in Functions): New
+	section, document __builtin_nvptx_brev{,ll}.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from master:
 	2023-05-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/gcn/gcn.cc (gcn_vectorize_builtin_vectorized_function): Remove

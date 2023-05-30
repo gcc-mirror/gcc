@@ -14682,6 +14682,7 @@ instructions, but allow the compiler to schedule those calls.
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
+* Nvidia PTX Built-in Functions::
 * Basic PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
@@ -17939,6 +17940,20 @@ Enable global interrupt.
 
 @defbuiltin{void __builtin_nds32_setgie_dis (void)}
 Disable global interrupt.
+@enddefbuiltin
+
+@node Nvidia PTX Built-in Functions
+@subsection Nvidia PTX Built-in Functions
+
+These built-in functions are available for the Nvidia PTX target:
+
+@defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
+Reverse the bit order of a 32-bit unsigned integer.
+Disable global interrupt.
+@enddefbuiltin
+
+@defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
+Reverse the bit order of a 64-bit unsigned integer.
 @enddefbuiltin
 
 @node Basic PowerPC Built-in Functions

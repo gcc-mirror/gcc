@@ -6324,6 +6324,29 @@ nvptx_expand_shuffle (tree exp, rtx target, machine_mode mode, int ignore)
   return target;
 }
 
+/* Expander for the bit reverse builtins.  */
+
+static rtx
+nvptx_expand_brev (tree exp, rtx target, machine_mode mode, int ignore)
+{
+  if (ignore)
+    return target;
+  
+  rtx arg = expand_expr (CALL_EXPR_ARG (exp, 0),
+			 NULL_RTX, mode, EXPAND_NORMAL);
+  if (!REG_P (arg))
+    arg = copy_to_mode_reg (mode, arg);
+  if (!target)
+    target = gen_reg_rtx (mode);
+  rtx pat;
+  if (mode == SImode)
+    pat = gen_bitrevsi2 (target, arg);
+  else
+    pat = gen_bitrevdi2 (target, arg);
+  emit_insn (pat);
+  return target;
+}
+
 const char *
 nvptx_output_red_partition (rtx dst, rtx offset)
 {
@@ -6456,6 +6479,8 @@ enum nvptx_builtins
   NVPTX_BUILTIN_BAR_RED_AND,
   NVPTX_BUILTIN_BAR_RED_OR,
   NVPTX_BUILTIN_BAR_RED_POPC,
+  NVPTX_BUILTIN_BREV,
+  NVPTX_BUILTIN_BREVLL,
   NVPTX_BUILTIN_COND_UNI,
   NVPTX_BUILTIN_MAX
 };
@@ -6586,6 +6611,9 @@ nvptx_init_builtins (void)
   DEF (BAR_RED_POPC, "bar_red_popc",
        (UINT, UINT, UINT, UINT, UINT, NULL_TREE));
 
+  DEF (BREV, "brev", (UINT, UINT, NULL_TREE));
+  DEF (BREVLL, "brevll", (LLUINT, LLUINT, NULL_TREE));
+
 #undef DEF
 #undef ST
 #undef UINT
@@ -6632,6 +6660,10 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     case NVPTX_BUILTIN_BAR_RED_OR:
     case NVPTX_BUILTIN_BAR_RED_POPC:
       return nvptx_expand_bar_red (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_BREV:
+    case NVPTX_BUILTIN_BREVLL:
+      return nvptx_expand_brev (exp, target, mode, ignore);
 
     case NVPTX_BUILTIN_COND_UNI:
       return nvptx_expand_cond_uni (exp, target, mode, ignore);
