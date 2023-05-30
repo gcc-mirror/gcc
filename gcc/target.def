@@ -3491,11 +3491,25 @@ code in @file{optabs.cc}.",
    for further details.  */
 DEFHOOK
 (vector_mode_supported_p,
- "Define this to return nonzero if the port is prepared to handle\n\
+ "Define this to return nonzero if the current target is prepared to handle\n\
 insns involving vector mode @var{mode}.  At the very least, it\n\
 must have move patterns for this mode.",
  bool, (machine_mode mode),
  hook_bool_mode_false)
+
+DEFHOOK
+(vector_mode_supported_any_target_p,
+ "Define this to return nonzero if the port is prepared to handle\n\
+insns involving vector mode @var{mode} in any target configuration.\n\
+Returning @var{true} means that the mode can be used as the @samp{TYPE_MODE}\n\
+for vector types.\n\
+\n\
+The default version of this hook returns true.  The final mode assigned to\n\
+@samp{TYPE_MODE} will also be checked against\n\
+@code{TARGET_VECTOR_MODE_SUPPORTED_P} to take target configuration into\n\
+account.",
+ bool, (machine_mode mode),
+ hook_bool_mode_true)
 
 DEFHOOK
 (compatible_vector_types_p,

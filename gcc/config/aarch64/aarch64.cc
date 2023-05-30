@@ -3399,9 +3399,12 @@ const unsigned int VEC_ANY_SVE  = VEC_SVE_DATA | VEC_SVE_PRED;
 const unsigned int VEC_ANY_DATA = VEC_ADVSIMD | VEC_SVE_DATA;
 
 /* Return a set of flags describing the vector properties of mode MODE.
-   Ignore modes that are not supported by the current target.  */
+   If ANY_TARGET_P is false (the default), ignore modes that are not supported
+   by the current target.  Otherwise categorize the modes that can be used
+   with the set of all targets supported by the port.  */
+
 static unsigned int
-aarch64_classify_vector_mode (machine_mode mode)
+aarch64_classify_vector_mode (machine_mode mode, bool any_target_p = false)
 {
   if (aarch64_sve_pred_mode_p (mode))
     return VEC_SVE_PRED;
@@ -3428,7 +3431,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx4BFmode:
     /* Partial SVE SF vector.  */
     case E_VNx2SFmode:
-      return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
+      return (TARGET_SVE || any_target_p) ? VEC_SVE_DATA | VEC_PARTIAL : 0;
 
     case E_VNx16QImode:
     case E_VNx8HImode:
@@ -3438,7 +3441,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx8HFmode:
     case E_VNx4SFmode:
     case E_VNx2DFmode:
-      return TARGET_SVE ? VEC_SVE_DATA : 0;
+      return (TARGET_SVE || any_target_p) ? VEC_SVE_DATA : 0;
 
     /* x2 SVE vectors.  */
     case E_VNx32QImode:
@@ -3467,12 +3470,12 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx32HFmode:
     case E_VNx16SFmode:
     case E_VNx8DFmode:
-      return TARGET_SVE ? VEC_SVE_DATA | VEC_STRUCT : 0;
+      return (TARGET_SVE || any_target_p) ? VEC_SVE_DATA | VEC_STRUCT : 0;
 
     case E_OImode:
     case E_CImode:
     case E_XImode:
-      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT : 0;
+      return (TARGET_FLOAT || any_target_p) ? VEC_ADVSIMD | VEC_STRUCT : 0;
 
     /* Structures of 64-bit Advanced SIMD vectors.  */
     case E_V2x8QImode:
@@ -3499,7 +3502,8 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4x4HFmode:
     case E_V4x2SFmode:
     case E_V4x1DFmode:
-      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL : 0;
+      return (TARGET_FLOAT || any_target_p)
+	      ? VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL : 0;
 
     /* Structures of 128-bit Advanced SIMD vectors.  */
     case E_V2x16QImode:
@@ -3526,7 +3530,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V4x8HFmode:
     case E_V4x4SFmode:
     case E_V4x2DFmode:
-      return TARGET_FLOAT ? VEC_ADVSIMD | VEC_STRUCT : 0;
+      return (TARGET_FLOAT || any_target_p) ? VEC_ADVSIMD | VEC_STRUCT : 0;
 
     /* 64-bit Advanced SIMD vectors.  */
     case E_V8QImode:
@@ -3546,7 +3550,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
-      return TARGET_FLOAT ? VEC_ADVSIMD : 0;
+      return (TARGET_FLOAT || any_target_p) ? VEC_ADVSIMD : 0;
 
     default:
       return 0;
@@ -11728,6 +11732,56 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
     }
 
   return -1;
+}
+
+/* Return true if X is a CONST_INT, CONST_WIDE_INT or a constant vector
+   duplicate of such constants.  If so, store in RET_WI the wide_int
+   representation of the constant paired with the inner mode of the vector mode
+   or TImode for scalar X constants.  */
+
+static bool
+aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi)
+{
+  rtx elt = unwrap_const_vec_duplicate (x);
+  if (!CONST_SCALAR_INT_P (elt))
+    return false;
+  scalar_mode smode
+    = CONST_SCALAR_INT_P (x) ? TImode : GET_MODE_INNER (GET_MODE (x));
+  *ret_wi = rtx_mode_t (elt, smode);
+  return true;
+}
+
+/* Return true if X is a TImode constant or a constant vector of integer
+   immediates that represent the rounding constant used in the RSRA
+   instructions.
+   The accepted form of the constant is (1 << (C - 1)) where C is within
+   [1, MODE_WIDTH/2].  */
+
+bool
+aarch64_const_vec_rsra_rnd_imm_p (rtx x)
+{
+  wide_int rnd_cst;
+  if (!aarch64_extract_vec_duplicate_wide_int (x, &rnd_cst))
+    return false;
+  int log2 = wi::exact_log2 (rnd_cst);
+  if (log2 < 0)
+    return false;
+  return IN_RANGE (log2, 0, rnd_cst.get_precision () / 2 - 1);
+}
+
+/* Return true if RND is a constant vector of integer rounding constants
+   corresponding to a constant vector of shifts, SHIFT.
+   The relationship should be RND == (1 << (SHIFT - 1)).  */
+
+bool
+aarch64_const_vec_rnd_cst_p (rtx rnd, rtx shift)
+{
+  wide_int rnd_cst, shft_cst;
+  if (!aarch64_extract_vec_duplicate_wide_int (rnd, &rnd_cst)
+      || !aarch64_extract_vec_duplicate_wide_int (shift, &shft_cst))
+    return false;
+
+  return rnd_cst == (wi::shwi (1, rnd_cst.get_precision ()) << (shft_cst - 1));
 }
 
 bool
@@ -20663,6 +20717,14 @@ aarch64_vector_mode_supported_p (machine_mode mode)
   return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
 }
 
+/* Implements target hook vector_mode_supported_any_target_p.  */
+static bool
+aarch64_vector_mode_supported_any_target_p (machine_mode mode)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode, true);
+  return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
+}
+
 /* Return the full-width SVE vector mode for element mode MODE, if one
    exists.  */
 opt_machine_mode
@@ -28087,6 +28149,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P aarch64_vector_mode_supported_p
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
+#define TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P aarch64_vector_mode_supported_any_target_p
 
 #undef TARGET_COMPATIBLE_VECTOR_TYPES_P
 #define TARGET_COMPATIBLE_VECTOR_TYPES_P aarch64_compatible_vector_types_p

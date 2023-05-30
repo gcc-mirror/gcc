@@ -4456,9 +4456,21 @@ code in @file{optabs.cc}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (machine_mode @var{mode})
-Define this to return nonzero if the port is prepared to handle
+Define this to return nonzero if the current target is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P (machine_mode @var{mode})
+Define this to return nonzero if the port is prepared to handle
+insns involving vector mode @var{mode} in any target configuration.
+Returning @var{true} means that the mode can be used as the @samp{TYPE_MODE}
+for vector types.
+
+The default version of this hook returns true.  The final mode assigned to
+@samp{TYPE_MODE} will also be checked against
+@code{TARGET_VECTOR_MODE_SUPPORTED_P} to take target configuration into
+account.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_COMPATIBLE_VECTOR_TYPES_P (const_tree @var{type1}, const_tree @var{type2})
