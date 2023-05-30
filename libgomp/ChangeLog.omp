@@ -1,3 +1,12 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/scan-1.c: New test.
+	* testsuite/libgomp.c/scan-23.c: New test.
+	* testsuite/libgomp.fortran/scan-2.f90: New test.
+
 2023-05-12  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: New

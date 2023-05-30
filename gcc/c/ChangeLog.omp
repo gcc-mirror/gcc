@@ -1,3 +1,11 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_nested_loop_transform_clauses):

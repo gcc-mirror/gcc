@@ -7600,26 +7600,29 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   /* Main loop body.  */
   if (clauses->lists[OMP_LIST_REDUCTION_INSCAN])
     {
-      gcc_assert (code->block->next->next->op == EXEC_OMP_SCAN);
-      gcc_assert (code->block->next->next->next->next == NULL);
-      locus *cloc = &code->block->next->next->loc;
-      location_t loc = gfc_get_location (cloc);
+      gfc_code *code1, *scan, *code2, *tmpcode;
+      code1 = tmpcode = code->block->next;
+      if (tmpcode && tmpcode->op != EXEC_OMP_SCAN)
+	while (tmpcode && tmpcode->next && tmpcode->next->op != EXEC_OMP_SCAN)
+	  tmpcode = tmpcode->next;
+      scan = tmpcode->op == EXEC_OMP_SCAN ? tmpcode : tmpcode->next;
+      if (code1 != scan)
+	tmpcode->next = NULL;
+      code2 = scan->next;
+      gcc_assert (scan->op == EXEC_OMP_SCAN);
+      location_t loc = gfc_get_location (&scan->loc);
 
-      gfc_code code2 = *code->block->next;
-      code2.next = NULL;
-      tmp = gfc_trans_code (&code2);
+      tmp = code1 != scan ? gfc_trans_code (code1) : build_empty_stmt (loc);
       tmp = build2 (OMP_SCAN, void_type_node, tmp, NULL_TREE);
       SET_EXPR_LOCATION (tmp, loc);
       gfc_add_expr_to_block (&body, tmp);
       input_location = loc;
-      tree c = gfc_trans_omp_clauses (&body,
-				      code->block->next->next->ext.omp_clauses,
-				      *cloc);
-      code2 = *code->block->next->next->next;
-      code2.next = NULL;
-      tmp = gfc_trans_code (&code2);
+      tree c = gfc_trans_omp_clauses (&body, scan->ext.omp_clauses, scan->loc);
+      tmp = code2 ? gfc_trans_code (code2) : build_empty_stmt (loc);
       tmp = build2 (OMP_SCAN, void_type_node, tmp, c);
       SET_EXPR_LOCATION (tmp, loc);
+      if (code1 != scan)
+	tmpcode->next = scan;
     }
   else
     tmp = gfc_trans_omp_code (code->block->next, true);

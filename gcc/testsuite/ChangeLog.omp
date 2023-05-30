@@ -1,3 +1,17 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/gomp/attrs-7.C: Update dg-error/dg-warning.
+	* gfortran.dg/gomp/loop-2.f90: Likewise.
+	* gfortran.dg/gomp/reduction5.f90: Likewise.
+	* gfortran.dg/gomp/reduction6.f90: Likewise.
+	* gfortran.dg/gomp/scan-1.f90: Likewise.
+	* gfortran.dg/gomp/taskloop-2.f90: Likewise.
+	* c-c++-common/gomp/scan-6.c: New test.
+	* gfortran.dg/gomp/scan-8.f90: New test.
+
 2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	Revert:

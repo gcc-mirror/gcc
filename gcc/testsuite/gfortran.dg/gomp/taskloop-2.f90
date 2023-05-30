@@ -21,24 +21,24 @@ do i = 1, 64
 end do
 
 !$omp taskloop reduction(inscan, +: r)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-do i = 1, 64                            ! { dg-error "OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+do i = 1, 64                            ! { dg-error "OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 end do
 !$omp taskloop simd reduction(inscan, +: r)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 end do
 !$omp master taskloop reduction(inscan, +: r) ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-  ! { dg-error "With INSCAN at .1., expected loop body with ..OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+  ! { dg-error "With INSCAN at .1., expected loop body with ..OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 do i = 1, 64
 end do
 !$omp master taskloop simd reduction(inscan, +: r)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-  ! { dg-error "With INSCAN at .1., expected loop body with ..OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+  ! { dg-error "With INSCAN at .1., expected loop body with ..OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 do i = 1, 64
 end do
 !$omp parallel master taskloop reduction(inscan, +: r)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 end do
 !$omp parallel master taskloop simd reduction(inscan, +: r)   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured-block-sequences" "" { target *-*-* } .-1 }
+do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 end do
 end
 

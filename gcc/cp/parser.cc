@@ -43891,19 +43891,29 @@ static void
 cp_parser_omp_scan_loop_body (cp_parser *parser)
 {
   tree substmt, clauses = NULL_TREE;
+  bool found_scan = false;
 
   matching_braces braces;
   if (!braces.require_open (parser))
     return;
 
-  substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
+  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+  if (cp_parser_pragma_kind (tok) != PRAGMA_OMP_SCAN)
+    substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
+  else
+    {
+      warning_at (tok->location, 0, "%<#pragma omp scan%> with zero preceding "
+				    "executable statements");
+      substmt = build_empty_stmt (tok->location);
+    }
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   add_stmt (substmt);
 
-  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+  tok = cp_lexer_peek_token (parser->lexer);
   if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SCAN)
     {
       enum omp_clause_code clause = OMP_CLAUSE_ERROR;
+      found_scan = true;
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -43934,7 +43944,15 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     error ("expected %<#pragma omp scan%>");
 
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
+    substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
+  else
+    {
+      if (found_scan)
+	warning_at (tok->location, 0, "%<#pragma omp scan%> with zero "
+				      "succeeding executable statements");
+      substmt = build_empty_stmt (tok->location);
+    }
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
 			clauses);
   add_stmt (substmt);
