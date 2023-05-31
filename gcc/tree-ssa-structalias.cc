@@ -966,28 +966,40 @@ solution_set_expand (bitmap set, bitmap *expanded)
 
   *expanded = BITMAP_ALLOC (&iteration_obstack);
 
-  /* In a first pass expand to the head of the variables we need to
-     add all sub-fields off.  This avoids quadratic behavior.  */
+  /* In a first pass expand variables, once for each head to avoid
+     quadratic behavior, to include all sub-fields.  */
+  unsigned prev_head = 0;
   EXECUTE_IF_SET_IN_BITMAP (set, 0, j, bi)
     {
       varinfo_t v = get_varinfo (j);
       if (v->is_artificial_var
 	  || v->is_full_var)
 	continue;
-      bitmap_set_bit (*expanded, v->head);
+      if (v->head != prev_head)
+	{
+	  varinfo_t head = get_varinfo (v->head);
+	  unsigned num = 1;
+	  for (varinfo_t n = vi_next (head); n != NULL; n = vi_next (n))
+	    {
+	      if (n->id != head->id + num)
+		{
+		  /* Usually sub variables are adjacent but since we
+		     create pointed-to restrict representatives there
+		     can be gaps as well.  */
+		  bitmap_set_range (*expanded, head->id, num);
+		  head = n;
+		  num = 1;
+		}
+	      else
+		num++;
+	    }
+
+	  bitmap_set_range (*expanded, head->id, num);
+	  prev_head = v->head;
+	}
     }
 
-  /* In the second pass now expand all head variables with subfields.  */
-  EXECUTE_IF_SET_IN_BITMAP (*expanded, 0, j, bi)
-    {
-      varinfo_t v = get_varinfo (j);
-      if (v->head != j)
-	continue;
-      for (v = vi_next (v); v != NULL; v = vi_next (v))
-	bitmap_set_bit (*expanded, v->id);
-    }
-
-  /* And finally set the rest of the bits from SET.  */
+  /* And finally set the rest of the bits from SET in an efficient way.  */
   bitmap_ior_into (*expanded, set);
 
   return *expanded;
