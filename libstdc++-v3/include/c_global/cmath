@@ -1877,9 +1877,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef truncf
 #undef truncl
 
+#ifdef _GLIBCXX_HAVE_C99_FLT_EVAL_TYPES
   // types
   using ::double_t;
   using ::float_t;
+#endif
 
   // functions
   using ::acosh;

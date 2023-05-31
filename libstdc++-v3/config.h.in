@@ -42,6 +42,10 @@
 /* Define to 1 if you have the `at_quick_exit' function. */
 #undef HAVE_AT_QUICK_EXIT
 
+/* Define if C99 float_t and double_t in <math.h> should be imported in
+   <cmath> in namespace std for C++11. */
+#undef HAVE_C99_FLT_EVAL_TYPES
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 

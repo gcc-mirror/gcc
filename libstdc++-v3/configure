@@ -18275,6 +18275,43 @@ $as_echo "#define _GLIBCXX11_USE_C99_MATH 1" >>confdefs.h
 
     fi
 
+    # Check for the existence of <math.h> typedefs.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 float types for C++11 in <math.h>" >&5
+$as_echo_n "checking for ISO C99 float types for C++11 in <math.h>... " >&6; }
+if ${glibcxx_cv_c99_flt_eval_types+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+// Types
+		    typedef double_t  my_double_t;
+		    typedef float_t   my_float_t;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_flt_eval_types=yes
+else
+  glibcxx_cv_c99_flt_eval_types=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_flt_eval_types" >&5
+$as_echo "$glibcxx_cv_c99_flt_eval_types" >&6; }
+    if test x"$glibcxx_cv_c99_flt_eval_types" = x"yes"; then
+
+$as_echo "#define HAVE_C99_FLT_EVAL_TYPES 1" >>confdefs.h
+
+    fi
+
     # Check for the existence of <math.h> functions.
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 function support for C++11 in <math.h>" >&5
 $as_echo_n "checking for ISO C99 function support for C++11 in <math.h>... " >&6; }
@@ -18288,9 +18325,7 @@ else
 int
 main ()
 {
-// Types
-		    typedef double_t  my_double_t;
-		    typedef float_t   my_float_t;
+
 		    // Hyperbolic
 		    acosh(0.0);
 		    acoshf(0.0f);

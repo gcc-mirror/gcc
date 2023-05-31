@@ -1273,13 +1273,28 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         in <cmath> in namespace std for C++11.])
     fi
 
-    # Check for the existence of <math.h> functions.
-    AC_CACHE_CHECK([for ISO C99 function support for C++11 in <math.h>],
-    glibcxx_cv_c99_math_funcs, [
+    # Check for the existence of <math.h> typedefs.
+    AC_CACHE_CHECK([for ISO C99 float types for C++11 in <math.h>],
+    glibcxx_cv_c99_flt_eval_types, [
     AC_TRY_COMPILE([#include <math.h>],
 		   [// Types
 		    typedef double_t  my_double_t;
 		    typedef float_t   my_float_t;
+		   ],
+		   [glibcxx_cv_c99_flt_eval_types=yes],
+		   [glibcxx_cv_c99_flt_eval_types=no])
+    ])
+    if test x"$glibcxx_cv_c99_flt_eval_types" = x"yes"; then
+      AC_DEFINE(HAVE_C99_FLT_EVAL_TYPES, 1,
+		[Define if C99 float_t and double_t in <math.h> should be
+		imported in <cmath> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <math.h> functions.
+    AC_CACHE_CHECK([for ISO C99 function support for C++11 in <math.h>],
+    glibcxx_cv_c99_math_funcs, [
+    AC_TRY_COMPILE([#include <math.h>],
+		   [
 		    // Hyperbolic
 		    acosh(0.0);
 		    acoshf(0.0f);
