@@ -66,8 +66,8 @@ OPNINETEEN (int16, 4, 8, s16, padd, add, qadd, qsub, sub, mul, and, orr, eor, or
 OPNINETEEN (int32, 2, 4, s32, padd, add, qadd, qsub, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
 
 OPSIX (int8, 8, 16, s8, zip1, zip2, uzp1, uzp2, shl, qshl)
-OPSIX (int16, 4, 8, s16, zip1, zip2, uzp1, uzp2, shl, qshl)
-OPSIX (int32, 2, 4, s32, zip1, zip2, uzp1, uzp2, shl, qshl)
+OPEIGHT (int16, 4, 8, s16, zip1, zip2, uzp1, uzp2, shl, qshl, qdmulh, qrdmulh)
+OPEIGHT (int32, 2, 4, s32, zip1, zip2, uzp1, uzp2, shl, qshl, qdmulh, qrdmulh)
 
 OPNINETEEN (uint8, 8, 16, u8, padd, add, qadd, qsub, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
 OPNINETEEN (uint16, 4, 8, u16, padd, add, qadd, qsub, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)

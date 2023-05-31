@@ -5510,7 +5510,7 @@
 
 ;; sq<r>dmulh.
 
-(define_insn "aarch64_sq<r>dmulh<mode>"
+(define_insn "aarch64_sq<r>dmulh<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_HSI 0 "register_operand" "=w")
 	(unspec:VSDQ_HSI
 	  [(match_operand:VSDQ_HSI 1 "register_operand" "w")
@@ -5521,7 +5521,7 @@
   [(set_attr "type" "neon_sat_mul_<Vetype><q>")]
 )
 
-(define_insn "aarch64_sq<r>dmulh_n<mode>"
+(define_insn "aarch64_sq<r>dmulh_n<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "w")
@@ -5535,7 +5535,7 @@
 
 ;; sq<r>dmulh_lane
 
-(define_insn "aarch64_sq<r>dmulh_lane<mode>"
+(define_insn "aarch64_sq<r>dmulh_lane<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
         (unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "w")
@@ -5550,7 +5550,7 @@
   [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_sq<r>dmulh_laneq<mode>"
+(define_insn "aarch64_sq<r>dmulh_laneq<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
         (unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "w")
@@ -5597,7 +5597,7 @@
 
 ;; sqrdml[as]h.
 
-(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>"
+(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_HSI 0 "register_operand" "=w")
 	(unspec:VSDQ_HSI
 	  [(match_operand:VSDQ_HSI 1 "register_operand" "0")
@@ -5611,7 +5611,7 @@
 
 ;; sqrdml[as]h_lane.
 
-(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>"
+(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "0")
@@ -5629,7 +5629,7 @@
    [(set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")]
 )
 
-(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>"
+(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode><vczle><vczbe>"
   [(set (match_operand:SD_HSI 0 "register_operand" "=w")
 	(unspec:SD_HSI
 	  [(match_operand:SD_HSI 1 "register_operand" "0")
@@ -5649,7 +5649,7 @@
 
 ;; sqrdml[as]h_laneq.
 
-(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>"
+(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "0")
@@ -5667,7 +5667,7 @@
    [(set_attr "type" "neon_sat_mla_<Vetype>_scalar_long")]
 )
 
-(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>"
+(define_insn "aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode><vczle><vczbe>"
   [(set (match_operand:SD_HSI 0 "register_operand" "=w")
 	(unspec:SD_HSI
 	  [(match_operand:SD_HSI 1 "register_operand" "0")
