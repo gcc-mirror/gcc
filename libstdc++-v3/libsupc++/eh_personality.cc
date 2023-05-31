@@ -592,6 +592,10 @@ PERSONALITY_FUNCTION (int version,
 	      // Zero filter values are cleanups.
 	      saw_cleanup = true;
 	    }
+	  else if (actions == _UA_CLEANUP_PHASE)
+	    // We checked the handlers in the search phase; if one of them
+	    // matched, actions would also have _UA_HANDLER_FRAME set.
+	    ;
 	  else if (ar_filter > 0)
 	    {
 	      // Positive filter values are handlers.
