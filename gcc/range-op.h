@@ -186,7 +186,7 @@ class range_op_handler
 public:
   range_op_handler ();
   range_op_handler (enum tree_code code, tree type);
-  inline operator bool () const { return m_valid; }
+  inline operator bool () const { return m_operator != NULL; }
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,
@@ -210,10 +210,10 @@ public:
 				  relation_kind = VREL_VARYING) const;
   relation_kind op1_op2_relation (const vrange &lhs) const;
 protected:
+  unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
+			  const vrange& op2) const;
   void set_op_handler (enum tree_code code, tree type);
-  bool m_valid;
-  range_operator *m_int;
-  range_operator *m_float;
+  range_operator *m_operator;
 };
 
 extern bool range_cast (vrange &, tree type);
@@ -295,6 +295,25 @@ private:
   range_operator *m_range_tree[MAX_TREE_CODES];
 };
 
+
+// Return a pointer to the range_operator instance, if there is one
+// associated with tree_code CODE.
+
+inline range_operator *
+range_op_table::operator[] (enum tree_code code)
+{
+  gcc_checking_assert (code > 0 && code < MAX_TREE_CODES);
+  return m_range_tree[code];
+}
+
+// Add OP to the handler table for CODE.
+
+inline void
+range_op_table::set (enum tree_code code, range_operator &op)
+{
+  gcc_checking_assert (m_range_tree[code] == NULL);
+  m_range_tree[code] = &op;
+}
 
 // This holds the range op table for floating point operations.
 extern range_op_table *floating_tree_table;

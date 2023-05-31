@@ -144,7 +144,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
   if (type)
     set_op_handler (code, type);
 
-  if (m_valid)
+  if (m_operator)
     switch (gimple_code (m_stmt))
       {
 	case GIMPLE_COND:
@@ -152,7 +152,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	  m_op2 = gimple_cond_rhs (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
 	  if (!Value_Range::supports_type_p (TREE_TYPE (m_op1)))
-	    m_valid = false;
+	    m_operator = NULL;
 	  return;
 	case GIMPLE_ASSIGN:
 	  m_op1 = gimple_range_base_of_assignment (m_stmt);
@@ -171,7 +171,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
 	  if ((m_op1 && !Value_Range::supports_type_p (TREE_TYPE (m_op1))))
-	    m_valid = false;
+	    m_operator = NULL;
 	  return;
 	default:
 	  gcc_unreachable ();
@@ -1193,7 +1193,6 @@ gimple_range_op_handler::maybe_non_standard ()
       {
 	case WIDEN_MULT_EXPR:
 	{
-	  m_valid = false;
 	  m_op1 = gimple_assign_rhs1 (m_stmt);
 	  m_op2 = gimple_assign_rhs2 (m_stmt);
 	  tree ret = gimple_assign_lhs (m_stmt);
@@ -1210,14 +1209,13 @@ gimple_range_op_handler::maybe_non_standard ()
 	  if ((signed1 ^ signed2) && signed_ret)
 	    return;
 
-	  m_valid = true;
 	  if (signed2 && !signed1)
 	    std::swap (m_op1, m_op2);
 
 	  if (signed1 || signed2)
-	    m_int = signed_op;
+	    m_operator = signed_op;
 	  else
-	    m_int = unsigned_op;
+	    m_operator = unsigned_op;
 	  break;
 	}
 	default:
@@ -1246,47 +1244,41 @@ gimple_range_op_handler::maybe_builtin_call ()
     {
     case CFN_BUILT_IN_CONSTANT_P:
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
       if (irange::supports_p (TREE_TYPE (m_op1)))
-	m_int = &op_cfn_constant_p;
+	m_operator = &op_cfn_constant_p;
       else if (frange::supports_p (TREE_TYPE (m_op1)))
-	m_float = &op_cfn_constant_float_p;
+	m_operator = &op_cfn_constant_float_p;
       else
-	m_valid = false;
+	m_operator = NULL;
       break;
 
     CASE_FLT_FN (CFN_BUILT_IN_SIGNBIT):
       m_op1 = gimple_call_arg (call, 0);
-      m_float = &op_cfn_signbit;
-      m_valid = true;
+      m_operator = &op_cfn_signbit;
       break;
 
     CASE_CFN_COPYSIGN_ALL:
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
-      m_float = &op_cfn_copysign;
-      m_valid = true;
+      m_operator = &op_cfn_copysign;
       break;
 
     CASE_CFN_SQRT:
     CASE_CFN_SQRT_FN:
       m_op1 = gimple_call_arg (call, 0);
-      m_float = &op_cfn_sqrt;
-      m_valid = true;
+      m_operator = &op_cfn_sqrt;
       break;
 
     CASE_CFN_SIN:
     CASE_CFN_SIN_FN:
       m_op1 = gimple_call_arg (call, 0);
-      m_float = &op_cfn_sin;
-      m_valid = true;
+      m_operator = &op_cfn_sin;
       break;
 
     CASE_CFN_COS:
     CASE_CFN_COS_FN:
       m_op1 = gimple_call_arg (call, 0);
-      m_float = &op_cfn_cos;
-      m_valid = true;
+      m_operator = &op_cfn_cos;
       break;
 
     case CFN_BUILT_IN_TOUPPER:
@@ -1294,68 +1286,57 @@ gimple_range_op_handler::maybe_builtin_call ()
       // Only proceed If the argument is compatible with the LHS.
       m_op1 = gimple_call_arg (call, 0);
       if (range_compatible_p (type, TREE_TYPE (m_op1)))
-	{
-	  m_valid = true;
-	  m_int = (func == CFN_BUILT_IN_TOLOWER) ? &op_cfn_tolower
-						 : &op_cfn_toupper;
-	}
+	m_operator = (func == CFN_BUILT_IN_TOLOWER) ? &op_cfn_tolower
+						    : &op_cfn_toupper;
       break;
 
     CASE_CFN_FFS:
       m_op1 = gimple_call_arg (call, 0);
-      m_int = &op_cfn_ffs;
-      m_valid = true;
+      m_operator = &op_cfn_ffs;
       break;
 
     CASE_CFN_POPCOUNT:
       m_op1 = gimple_call_arg (call, 0);
-      m_int = &op_cfn_popcount;
-      m_valid = true;
+      m_operator = &op_cfn_popcount;
       break;
 
     CASE_CFN_CLZ:
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
       if (gimple_call_internal_p (call))
-	m_int = &op_cfn_clz_internal;
+	m_operator = &op_cfn_clz_internal;
       else
-	m_int = &op_cfn_clz;
+	m_operator = &op_cfn_clz;
       break;
 
     CASE_CFN_CTZ:
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
       if (gimple_call_internal_p (call))
-	m_int = &op_cfn_ctz_internal;
+	m_operator = &op_cfn_ctz_internal;
       else
-	m_int = &op_cfn_ctz;
+	m_operator = &op_cfn_ctz;
       break;
 
     CASE_CFN_CLRSB:
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
-      m_int = &op_cfn_clrsb;
+      m_operator = &op_cfn_clrsb;
       break;
 
     case CFN_UBSAN_CHECK_ADD:
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
-      m_valid = true;
-      m_int = &op_cfn_ubsan_add;
+      m_operator = &op_cfn_ubsan_add;
       break;
 
     case CFN_UBSAN_CHECK_SUB:
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
-      m_valid = true;
-      m_int = &op_cfn_ubsan_sub;
+      m_operator = &op_cfn_ubsan_sub;
       break;
 
     case CFN_UBSAN_CHECK_MUL:
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
-      m_valid = true;
-      m_int = &op_cfn_ubsan_mul;
+      m_operator = &op_cfn_ubsan_mul;
       break;
 
     case CFN_BUILT_IN_STRLEN:
@@ -1365,8 +1346,7 @@ gimple_range_op_handler::maybe_builtin_call ()
 					 == TYPE_PRECISION (TREE_TYPE (lhs))))
 	  {
 	    m_op1 = gimple_call_arg (call, 0);
-	    m_valid = true;
-	    m_int = &op_cfn_strlen;
+	    m_operator = &op_cfn_strlen;
 	  }
 	break;
       }
@@ -1378,21 +1358,18 @@ gimple_range_op_handler::maybe_builtin_call ()
       // This call will ensure all the asserts are triggered.
       oacc_get_ifn_dim_arg (call);
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
-      m_int = &op_cfn_goacc_dim_size;
+      m_operator = &op_cfn_goacc_dim_size;
       break;
 
     case CFN_GOACC_DIM_POS:
       // This call will ensure all the asserts are triggered.
       oacc_get_ifn_dim_arg (call);
       m_op1 = gimple_call_arg (call, 0);
-      m_valid = true;
-      m_int = &op_cfn_goacc_dim_pos;
+      m_operator = &op_cfn_goacc_dim_pos;
       break;
 
     CASE_CFN_PARITY:
-      m_valid = true;
-      m_int = &op_cfn_parity;
+      m_operator = &op_cfn_parity;
       break;
 
     default:
@@ -1400,9 +1377,8 @@ gimple_range_op_handler::maybe_builtin_call ()
 	unsigned arg;
 	if (gimple_call_fnspec (call).returns_arg (&arg) && arg == 0)
 	  {
-	    m_valid = true;
 	    m_op1 = gimple_call_arg (call, 0);
-	    m_int = &op_cfn_pass_through_arg1;
+	    m_operator = &op_cfn_pass_through_arg1;
 	  }
 	break;
       }

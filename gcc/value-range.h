@@ -77,6 +77,7 @@ class GTY((user)) vrange
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
   friend void streamer_write_vrange (struct output_block *, const vrange &);
+  friend class range_op_handler;
 public:
   virtual void accept (const class vrange_visitor &v) const = 0;
   virtual void set (tree, tree, value_range_kind = VR_RANGE);
