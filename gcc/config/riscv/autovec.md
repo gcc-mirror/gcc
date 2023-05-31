@@ -382,16 +382,24 @@
 ;; - vsext.vf[2|4|8]
 ;; -------------------------------------------------------------------------
 
-(define_expand "<optab><v_double_trunc><mode>2"
-  [(set (match_operand:VWEXTI 0 "register_operand")
+;; Use define_insn_and_split to define vsext.vf2/vzext.vf2 will help
+;; to combine instructions as below:
+;;   vsext.vf2 + vsext.vf2 + vadd.vv ==> vwadd.vv
+(define_insn_and_split "<optab><v_double_trunc><mode>2"
+  [(set (match_operand:VWEXTI 0 "register_operand" "=&vr")
     (any_extend:VWEXTI
-     (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand")))]
+     (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand" "vr")))]
   "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_vf2 (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
   DONE;
-})
+}
+  [(set_attr "type" "vext")
+   (set_attr "mode" "<MODE>")])
 
 (define_expand "<optab><v_quad_trunc><mode>2"
   [(set (match_operand:VQEXTI 0 "register_operand")

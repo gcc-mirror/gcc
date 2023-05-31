@@ -73,6 +73,19 @@ foreach op $AUTOVEC_TEST_OPTS {
     "" "$op"
 }
 
+# widening operation only test on LMUL < 8
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m4} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/widen/*.\[cS\]]] \
+    "" "$op"
+}
+
 # VLS-VLMAX tests
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
 	"-std=c99 -O3 -ftree-vectorize --param riscv-autovec-preference=fixed-vlmax" $CFLAGS
