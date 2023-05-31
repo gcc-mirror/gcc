@@ -1091,7 +1091,7 @@ Common Joined UInteger Var(param_tracer_min_branch_ratio) Init(10) IntegerRange(
 Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent).
 
 -param=tree-reassoc-width=
-Common Joined UInteger Var(param_tree_reassoc_width) Param Optimization
+Common Joined UInteger Var(param_tree_reassoc_width) IntegerRange(0, 256) Param Optimization
 Set the maximum number of instructions executed in parallel in reassociated tree.  If 0, use the target dependent heuristic.
 
 -param=tsan-distinguish-volatile=

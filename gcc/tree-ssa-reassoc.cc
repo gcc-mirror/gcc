@@ -5510,6 +5510,10 @@ rewrite_expr_tree_parallel (gassign *stmt, int width, bool has_fma,
   for (i = stmt_num - 2; i >= 0; i--)
     stmts[i] = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmts[i+1]));
 
+  /* Width should not be larger than op_num / 2, since we can not create
+     more parallel dependency chains that exceeds such value.  */
+  width = width <= op_num / 2 ? width : op_num / 2;
+
   /* Build parallel dependency chain according to width.  */
   for (i = 0; i < width; i++)
     {
