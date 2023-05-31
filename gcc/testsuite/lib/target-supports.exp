@@ -11262,20 +11262,20 @@ proc check_effective_target_branch_cost {} {
 
 # Record that dg-final test TEST requires convential compilation.
 
-proc force_conventional_output_for { test } {
+proc set_required_options_for { test } {
     if { [info proc $test] == "" } {
 	perror "$test does not exist"
 	exit 1
     }
     proc ${test}_required_options {} {
-	global gcc_force_conventional_output
+	global gcc_set_required_options
 	upvar 1 extra_tool_flags extra_tool_flags
 	if {[regexp -- "^scan-assembler" [info level 0]]
 	    && ![string match "*-fident*" $extra_tool_flags]} {
 	    # Do not let .ident confuse assembler scan tests
-	    return [list $gcc_force_conventional_output "-fno-ident"]
+	    return [list $gcc_set_required_options "-fno-ident"]
 	}
-	return $gcc_force_conventional_output
+	return $gcc_set_required_options
     }
 }
 

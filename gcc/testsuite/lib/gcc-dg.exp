@@ -70,8 +70,8 @@ if { $orig_environment_saved == 0 } {
 # Some torture-options cause intermediate code output, unusable for
 # testing using e.g. scan-assembler.  In this variable are the options
 # how to force it, when needed.
-global gcc_force_conventional_output
-set gcc_force_conventional_output ""
+global gcc_set_required_options
+set gcc_set_required_options ""
 
 if [info exists TORTURE_OPTIONS] {
     set DG_TORTURE_OPTIONS $TORTURE_OPTIONS
@@ -92,7 +92,7 @@ if [info exists TORTURE_OPTIONS] {
 	{ -Os } ]
 
     if [check_effective_target_lto] {
-        set gcc_force_conventional_output "-ffat-lto-objects"
+        set gcc_set_required_options "-ffat-lto-objects"
     }
 }
 
