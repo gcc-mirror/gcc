@@ -82,6 +82,7 @@ convert (const std::vector<const_TokenPtr> &tokens)
   trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
   for (auto &token : tokens)
     {
+      auto loc = convert (token->get_locus ());
       switch (token->get_id ())
 	{
 	// Literals
@@ -96,26 +97,22 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case CHAR_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_char (),
-					      convert (token->get_locus ()),
-					      token->as_string ())));
+					      loc, token->as_string ())));
 	  break;
 	case STRING_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_str (),
-					      convert (token->get_locus ()),
-					      token->as_string ())));
+					      loc, token->as_string ())));
 	  break;
 	case BYTE_CHAR_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_byte (),
-					      convert (token->get_locus ()),
-					      token->as_string ())));
+					      loc, token->as_string ())));
 	  break;
 	case BYTE_STRING_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	    ProcMacro::Literal::make_literal (
-	      ProcMacro::LitKind::make_byte_str (),
-	      convert (token->get_locus ()), token->as_string ())));
+	      ProcMacro::LitKind::make_byte_str (), loc, token->as_string ())));
 	  break;
 	// Ident
 	case IDENTIFIER:
@@ -175,8 +172,7 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case FALSE_LITERAL:
 	case TRUE_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Ident::make_ident (token->as_string (),
-					  convert (token->get_locus ()))));
+	    ProcMacro::Ident::make_ident (token->as_string (), loc)));
 	  break;
 	// Joint punct
 	case OR:
@@ -207,12 +203,9 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	    auto it = str.cbegin ();
 	    for (; it != str.cend () - 1; it++)
 	      trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-		ProcMacro::Punct::make_punct (*it,
-					      convert (token->get_locus ()),
-					      ProcMacro::JOINT)));
+		ProcMacro::Punct::make_punct (*it, loc, ProcMacro::JOINT)));
 	    trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	      ProcMacro::Punct::make_punct (*it, convert (token->get_locus ()),
-					    ProcMacro::ALONE)));
+	      ProcMacro::Punct::make_punct (*it, loc, ProcMacro::ALONE)));
 	  }
 	  break;
 	// Alone punct tokens
@@ -239,8 +232,7 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case QUESTION_MARK:
 	case SINGLE_QUOTE:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Punct::make_punct (token->as_string ()[0],
-					  convert (token->get_locus ()),
+	    ProcMacro::Punct::make_punct (token->as_string ()[0], loc,
 					  ProcMacro::ALONE)));
 	  break;
 	case RIGHT_PAREN:
