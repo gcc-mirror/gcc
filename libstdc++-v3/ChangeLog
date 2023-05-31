@@ -1,3 +1,42 @@
+2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109822
+	* include/experimental/bits/simd.h (to_native): Use int NTTP
+	as specified in PTS2.
+	(to_compatible): Likewise. Add missing tag to call mask
+	generator ctor.
+	* testsuite/experimental/simd/pr109822_cast_functions.cc: New
+	test.
+
+2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/integer_operators.cc:
+	Compute expected value differently to avoid getting turned into
+	a vector shift.
+
+2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/operator_cvt.cc: Make long
+	double <-> (u)long conversion tests conditional on sizeof(long
+	double) and sizeof(long).
+
+2023-05-30  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2023-05-26  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_ppc.h (_S_bit_shift_left):
+	Negative __y is UB, so prefer signed compare.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
