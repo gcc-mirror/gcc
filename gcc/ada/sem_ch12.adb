@@ -6980,7 +6980,8 @@ package body Sem_Ch12 is
 
       procedure Check_Actual_Type (Typ : Entity_Id);
       --  If the type of the actual is a private type declared in the
-      --  enclosing scope of the generic unit, the body of the generic
+      --  enclosing scope of the generic unit, but not a derived type
+      --  of a private type declared elsewhere, the body of the generic
       --  sees the full view of the type (because it has to appear in
       --  the corresponding package body). If the type is private now,
       --  exchange views to restore the proper visibility in the instance.
@@ -6999,6 +7000,7 @@ package body Sem_Ch12 is
 
          if Is_Private_Type (Btyp)
            and then Scope (Btyp) = Parent_Scope
+           and then not Has_Private_Ancestor (Btyp)
            and then Ekind (Parent_Scope) in E_Package | E_Generic_Package
            and then Scope (Instance) /= Parent_Scope
            and then not Is_Child_Unit (Gen_Id)

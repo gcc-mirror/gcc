@@ -1969,7 +1969,7 @@ package Einfo is
 --       is defined for the type.
 
 --    Has_Private_Ancestor
---       Applies to type extensions. True if some ancestor is derived from a
+--       Applies to derived record types. True if an ancestor is derived from a
 --       private type, making some components invisible and aggregates illegal.
 --       This flag is set at the point of derivation. The legality of the
 --       aggregate must be rechecked because it also depends on the visibility
