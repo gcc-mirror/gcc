@@ -3162,7 +3162,7 @@ extern rtx operand_subword (rtx, poly_uint64, int, machine_mode);
 
 /* In emit-rtl.cc */
 extern rtx operand_subword_force (rtx, poly_uint64, machine_mode);
-extern int subreg_lowpart_p (const_rtx);
+extern bool subreg_lowpart_p (const_rtx);
 extern poly_uint64 subreg_size_lowpart_offset (poly_uint64, poly_uint64);
 
 /* Return true if a subreg of mode OUTERMODE would only access part of
@@ -3371,7 +3371,7 @@ extern rtx_insn *prev_real_nondebug_insn (rtx_insn *);
 extern rtx_insn *next_real_nondebug_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
-extern int active_insn_p (const rtx_insn *);
+extern bool active_insn_p (const rtx_insn *);
 
 /* In emit-rtl.cc  */
 extern int insn_line (const rtx_insn *);
@@ -4189,7 +4189,7 @@ extern void set_used_flags (rtx);
 extern void reorder_insns (rtx_insn *, rtx_insn *, rtx_insn *);
 extern void reorder_insns_nobb (rtx_insn *, rtx_insn *, rtx_insn *);
 extern int get_max_insn_count (void);
-extern int in_sequence_p (void);
+extern bool in_sequence_p (void);
 extern void init_emit (void);
 extern void init_emit_regs (void);
 extern void init_derived_machine_modes (void);
@@ -4197,7 +4197,7 @@ extern void init_emit_once (void);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
 extern void set_new_first_and_last_insn (rtx_insn *, rtx_insn *);
-extern unsigned int unshare_all_rtl (void);
+extern void unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx_insn *);
 extern void unshare_all_rtl_in_chain (rtx_insn *);
 extern void verify_rtl_sharing (void);

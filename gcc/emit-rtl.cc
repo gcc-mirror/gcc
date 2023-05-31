@@ -215,7 +215,7 @@ const_int_hasher::hash (rtx x)
   return (hashval_t) INTVAL (x);
 }
 
-/* Returns nonzero if the value represented by X (which is really a
+/* Returns true if the value represented by X (which is really a
    CONST_INT) is the same as that given by Y (which is really a
    HOST_WIDE_INT *).  */
 
@@ -241,7 +241,7 @@ const_wide_int_hasher::hash (rtx x)
   return (hashval_t) hash;
 }
 
-/* Returns nonzero if the value represented by X (which is really a
+/* Returns true if the value represented by X (which is really a
    CONST_WIDE_INT) is the same as that given by Y (which is really a
    CONST_WIDE_INT).  */
 
@@ -274,7 +274,7 @@ const_poly_int_hasher::hash (rtx x)
   return h.end ();
 }
 
-/* Returns nonzero if CONST_POLY_INT X is an rtx representation of Y.  */
+/* Returns true if CONST_POLY_INT X is an rtx representation of Y.  */
 
 bool
 const_poly_int_hasher::equal (rtx x, const compare_type &y)
@@ -305,7 +305,7 @@ const_double_hasher::hash (rtx x)
   return h;
 }
 
-/* Returns nonzero if the value represented by X (really a ...)
+/* Returns true if the value represented by X (really a ...)
    is the same as that represented by Y (really a ...) */
 bool
 const_double_hasher::equal (rtx x, rtx y)
@@ -313,7 +313,7 @@ const_double_hasher::equal (rtx x, rtx y)
   const_rtx const a = x, b = y;
 
   if (GET_MODE (a) != GET_MODE (b))
-    return 0;
+    return false;
   if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (a) == VOIDmode)
     return (CONST_DOUBLE_LOW (a) == CONST_DOUBLE_LOW (b)
 	    && CONST_DOUBLE_HIGH (a) == CONST_DOUBLE_HIGH (b));
@@ -336,7 +336,7 @@ const_fixed_hasher::hash (rtx x)
   return h;
 }
 
-/* Returns nonzero if the value represented by X is the same as that
+/* Returns true if the value represented by X is the same as that
    represented by Y.  */
 
 bool
@@ -345,7 +345,7 @@ const_fixed_hasher::equal (rtx x, rtx y)
   const_rtx const a = x, b = y;
 
   if (GET_MODE (a) != GET_MODE (b))
-    return 0;
+    return false;
   return fixed_identical (CONST_FIXED_VALUE (a), CONST_FIXED_VALUE (b));
 }
 
@@ -403,7 +403,7 @@ reg_attr_hasher::hash (reg_attrs *x)
   return h.end ();
 }
 
-/* Returns nonzero if the value represented by X  is the same as that given by
+/* Returns true if the value represented by X  is the same as that given by
    Y.  */
 
 bool
@@ -1710,17 +1710,17 @@ subreg_size_highpart_offset (poly_uint64 outer_bytes, poly_uint64 inner_bytes)
 					* BITS_PER_UNIT);
 }
 
-/* Return 1 iff X, assumed to be a SUBREG,
+/* Return true iff X, assumed to be a SUBREG,
    refers to the least significant part of its containing reg.
-   If X is not a SUBREG, always return 1 (it is its own low part!).  */
+   If X is not a SUBREG, always return true (it is its own low part!).  */
 
-int
+bool
 subreg_lowpart_p (const_rtx x)
 {
   if (GET_CODE (x) != SUBREG)
-    return 1;
+    return true;
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)
-    return 0;
+    return false;
 
   return known_eq (subreg_lowpart_offset (GET_MODE (x),
 					  GET_MODE (SUBREG_REG (x))),
@@ -1836,20 +1836,20 @@ mem_attrs::mem_attrs ()
     size_known_p (false)
 {}
 
-/* Returns 1 if both MEM_EXPR can be considered equal
-   and 0 otherwise.  */
+/* Returns true if both MEM_EXPR can be considered equal
+   and false otherwise.  */
 
-int
+bool
 mem_expr_equal_p (const_tree expr1, const_tree expr2)
 {
   if (expr1 == expr2)
-    return 1;
+    return true;
 
   if (! expr1 || ! expr2)
-    return 0;
+    return false;
 
   if (TREE_CODE (expr1) != TREE_CODE (expr2))
-    return 0;
+    return false;
 
   return operand_equal_p (expr1, expr2, 0);
 }
@@ -2820,7 +2820,7 @@ unshare_all_rtl_again (rtx_insn *insn)
   unshare_all_rtl_1 (insn);
 }
 
-unsigned int
+void
 unshare_all_rtl (void)
 {
   unshare_all_rtl_1 (get_insns ());
@@ -2831,8 +2831,6 @@ unshare_all_rtl (void)
 	SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
       DECL_INCOMING_RTL (decl) = copy_rtx_if_shared (DECL_INCOMING_RTL (decl));
     }
-
-  return 0;
 }
 
 
@@ -2943,7 +2941,6 @@ verify_rtx_sharing (rtx orig, rtx insn)
 	  break;
 	}
     }
-  return;
 }
 
 /* Reset used-flags for INSN.  */
@@ -3206,7 +3203,6 @@ repeat:
       orig1 = last_ptr;
       goto repeat;
     }
-  return;
 }
 
 /* Set the USED bit in X and its non-shareable subparts to FLAG.  */
@@ -3686,11 +3682,7 @@ last_call_insn (void)
   return safe_as_a <rtx_call_insn *> (insn);
 }
 
-/* Find the next insn after INSN that really does something.  This routine
-   does not look inside SEQUENCEs.  After reload this also skips over
-   standalone USE and CLOBBER insn.  */
-
-int
+bool
 active_insn_p (const rtx_insn *insn)
 {
   return (CALL_P (insn) || JUMP_P (insn)
@@ -3700,6 +3692,10 @@ active_insn_p (const rtx_insn *insn)
 		  || (GET_CODE (PATTERN (insn)) != USE
 		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
 }
+
+/* Find the next insn after INSN that really does something.  This routine
+   does not look inside SEQUENCEs.  After reload this also skips over
+   standalone USE and CLOBBER insn.  */
 
 rtx_insn *
 next_active_insn (rtx_insn *insn)
@@ -5586,9 +5582,9 @@ end_sequence (void)
   free_sequence_stack = tem;
 }
 
-/* Return 1 if currently emitting into a sequence.  */
+/* Return true if currently emitting into a sequence.  */
 
-int
+bool
 in_sequence_p (void)
 {
   return get_current_sequence ()->next != 0;
