@@ -5,7 +5,7 @@
 
 /* One union type with 4 members */
 /* { dg-final { scan-assembler-times "\[\t \]0x5000004\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* { dg-final { scan-assembler-times "btm_name" 4 } } */
+/* { dg-final { scan-assembler-times "MEMBER" 4 } } */
 
 union onion
 {

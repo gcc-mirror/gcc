@@ -9,7 +9,9 @@
 
 /* { dg-final { scan-assembler-times "\[\t \]0x4000003\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000002\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* { dg-final { scan-assembler-times "btm_name" 5 } } */
+/* { dg-final { scan-assembler-times " btm_type: \\(BTF_KIND_INT" 3 } } */
+/* { dg-final { scan-assembler-times " btm_type: \\(BTF_KIND_ARRAY" 1 } } */
+/* { dg-final { scan-assembler-times " btm_type: \\(BTF_KIND_STRUCT" 1 } } */
 
 struct foo
 {

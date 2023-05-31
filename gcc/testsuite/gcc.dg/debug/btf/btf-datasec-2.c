@@ -6,8 +6,8 @@
 /* { dg-options "-O0 -gbtf -dA" } */
 
 /* Expect one DATASEC with vlen=1 (.foo_sec) and one with vlen=2 (.bar_sec) */
-/* { dg-final { scan-assembler-times "0xf000002\[\t \]+\[^\n\]*btt_info" 1 } } */
-/* { dg-final { scan-assembler-times "0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
+/* { dg-final { scan-assembler-times " BTF_KIND_DATASEC '.foo_sec'\[\\r\\n\]+\[^\\r\\n\]*0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
+/* { dg-final { scan-assembler-times " BTF_KIND_DATASEC '.bar_sec'\[\\r\\n\]+\[^\\r\\n\]*0xf000002\[\t \]+\[^\n\]*btt_info" 1 } } */
 
 /* Function entries should have offset and size of 0 at compile time.  */
 /* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 3 } } */
