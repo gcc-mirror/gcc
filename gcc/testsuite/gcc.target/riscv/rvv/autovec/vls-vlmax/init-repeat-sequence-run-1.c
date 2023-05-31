@@ -12,7 +12,6 @@ main ()
   double v_vnx8df[sizeof (vnx8df) / sizeof (double)];
   f_vnx8df (a, b, v_vnx8df);
 
-  return 0;
   for (int i = 0; i < sizeof (vnx8df) / sizeof (double); i++)
     {
       if (i % 2 == 0)
