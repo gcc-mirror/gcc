@@ -415,7 +415,10 @@ AssociatedImplTrait::setup_associated_types (
   // we need to figure out what Y is
 
   TyTy::BaseType *associated_self = get_self ();
-  rust_assert (associated_self->can_eq (self, false));
+
+  rust_debug ("setup_associated_types for: %s->%s bound %s",
+	      associated_self->debug_str ().c_str (),
+	      self->debug_str ().c_str (), bound.as_string ().c_str ());
 
   // grab the parameters
   HIR::ImplBlock &impl_block = *get_impl_block ();
@@ -445,6 +448,14 @@ AssociatedImplTrait::setup_associated_types (
 	}
     }
 
+  // this callback gives us the parameters that get substituted so we can
+  // compute the constrained type parameters for this impl block
+  std::map<std::string, HirId> param_mappings;
+  TyTy::ParamSubstCb param_subst_cb
+    = [&] (const TyTy::ParamType &p, const TyTy::SubstitutionArg &a) {
+	param_mappings[p.get_symbol ()] = a.get_tyty ()->get_ref ();
+      };
+
   // generate inference variables for these bound arguments so we can compute
   // their values
   Location locus;
@@ -458,18 +469,12 @@ AssociatedImplTrait::setup_associated_types (
 	}
       else
 	{
-	  args.push_back (
-	    TyTy::SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	  TyTy::ParamType *param = p.get_param_ty ();
+	  TyTy::BaseType *resolved = param->destructure ();
+	  args.push_back (TyTy::SubstitutionArg (&p, resolved));
+	  param_mappings[param->get_symbol ()] = resolved->get_ref ();
 	}
     }
-
-  // this callback gives us the parameters that get substituted so we can
-  // compute the constrained type parameters for this impl block
-  std::map<std::string, HirId> param_mappings;
-  TyTy::ParamSubstCb param_subst_cb
-    = [&] (const TyTy::ParamType &p, const TyTy::SubstitutionArg &a) {
-	param_mappings[p.get_symbol ()] = a.get_tyty ()->get_ref ();
-      };
 
   TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), {},
 						      locus, param_subst_cb);
