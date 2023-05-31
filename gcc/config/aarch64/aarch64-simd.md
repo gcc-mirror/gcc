@@ -150,28 +150,16 @@
   "TARGET_FLOAT
    && (register_operand (operands[0], <MODE>mode)
        || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
-{
-   switch (which_alternative)
-     {
-     case 0: return "ldr\t%d0, %1";
-     case 1: return "str\txzr, %0";
-     case 2: return "str\t%d1, %0";
-     case 3:
-       if (TARGET_SIMD)
-	 return "mov\t%0.<Vbtype>, %1.<Vbtype>";
-       return "fmov\t%d0, %d1";
-     case 4:
-       if (TARGET_SIMD)
-	 return "umov\t%0, %1.d[0]";
-       return "fmov\t%x0, %d1";
-     case 5: return "fmov\t%d0, %1";
-     case 6: return "mov\t%0, %1";
-     case 7:
-	return aarch64_output_simd_mov_immediate (operands[1], 64);
-     case 8: return "fmov\t%d0, xzr";
-     default: gcc_unreachable ();
-     }
-}
+  "@
+   ldr\t%d0, %1
+   str\txzr, %0
+   str\t%d1, %0
+   * return TARGET_SIMD ? \"mov\t%0.<Vbtype>, %1.<Vbtype>\" : \"fmov\t%d0, %d1\";
+   * return TARGET_SIMD ? \"umov\t%0, %1.d[0]\" : \"fmov\t%x0, %d1\";
+   fmov\t%d0, %1
+   mov\t%0, %1
+   * return aarch64_output_simd_mov_immediate (operands[1], 64);
+   fmov\t%d0, xzr"
   [(set_attr "type" "neon_load1_1reg<q>, store_8, neon_store1_1reg<q>,\
 		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
 		     mov_reg, neon_move<q>, f_mcr")
@@ -186,29 +174,16 @@
   "TARGET_FLOAT
    && (register_operand (operands[0], <MODE>mode)
        || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
-{
-  switch (which_alternative)
-    {
-    case 0:
-	return "ldr\t%q0, %1";
-    case 1:
-	return "stp\txzr, xzr, %0";
-    case 2:
-	return "str\t%q1, %0";
-    case 3:
-	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
-    case 4:
-    case 5:
-    case 6:
-	return "#";
-    case 7:
-	return aarch64_output_simd_mov_immediate (operands[1], 128);
-    case 8:
-	return "fmov\t%d0, xzr";
-    default:
-	gcc_unreachable ();
-    }
-}
+  "@
+   ldr\t%q0, %1
+   stp\txzr, xzr, %0
+   str\t%q1, %0
+   mov\t%0.<Vbtype>, %1.<Vbtype>
+   #
+   #
+   #
+   * return aarch64_output_simd_mov_immediate (operands[1], 128);
+   fmov\t%d0, xzr"
   [(set_attr "type" "neon_load1_1reg<q>, store_16, neon_store1_1reg<q>,\
 		     neon_logic<q>, multiple, multiple,\
 		     multiple, neon_move<q>, fmov")
@@ -1155,18 +1130,10 @@
 	(and:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
 		   (match_operand:VDQ_I 2 "aarch64_reg_or_bic_imm" "w,Db")))]
   "TARGET_SIMD"
-  {
-    switch (which_alternative)
-      {
-      case 0:
-	return "and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
-      case 1:
-	return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,
-						  AARCH64_CHECK_BIC);
-      default:
-	gcc_unreachable ();
-      }
-  }
+  "@
+   and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+   * return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,\
+					       AARCH64_CHECK_BIC);"
   [(set_attr "type" "neon_logic<q>")]
 )
 
@@ -1176,18 +1143,10 @@
 	(ior:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
 		   (match_operand:VDQ_I 2 "aarch64_reg_or_orr_imm" "w,Do")))]
   "TARGET_SIMD"
-  {
-    switch (which_alternative)
-      {
-      case 0:
-	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
-      case 1:
-	return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,
-						  AARCH64_CHECK_ORR);
-      default:
-	gcc_unreachable ();
-      }
-  }
+  "@
+   orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+   * return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,\
+					       AARCH64_CHECK_ORR);"
   [(set_attr "type" "neon_logic<q>")]
 )
 

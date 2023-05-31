@@ -1210,36 +1210,18 @@
 	(match_operand:SHORT 1 "aarch64_mov_operand"  " r,M,D<hq>,Usv,m,m,rZ,w,w,rZ,w"))]
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
-{
-   switch (which_alternative)
-     {
-     case 0:
-       return "mov\t%w0, %w1";
-     case 1:
-       return "mov\t%w0, %1";
-     case 2:
-       return aarch64_output_scalar_simd_mov_immediate (operands[1],
-							<MODE>mode);
-     case 3:
-       return aarch64_output_sve_cnt_immediate (\"cnt\", \"%x0\", operands[1]);
-     case 4:
-       return "ldr<size>\t%w0, %1";
-     case 5:
-       return "ldr\t%<size>0, %1";
-     case 6:
-       return "str<size>\t%w1, %0";
-     case 7:
-       return "str\t%<size>1, %0";
-     case 8:
-       return TARGET_SIMD ? "umov\t%w0, %1.<v>[0]" : "fmov\t%w0, %s1";
-     case 9:
-       return TARGET_SIMD ? "dup\t%0.<Vallxd>, %w1" : "fmov\t%s0, %w1";
-     case 10:
-       return TARGET_SIMD ? "dup\t%<Vetype>0, %1.<v>[0]" : "fmov\t%s0, %s1";
-     default:
-       gcc_unreachable ();
-     }
-}
+  "@
+   mov\t%w0, %w1
+   mov\t%w0, %1
+   * return aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
+   * return aarch64_output_sve_cnt_immediate (\"cnt\", \"%x0\", operands[1]);
+   ldr<size>\t%w0, %1
+   ldr\t%<size>0, %1
+   str<size>\t%w1, %0
+   str\t%<size>1, %0
+   * return TARGET_SIMD ? \"umov\t%w0, %1.<v>[0]\" : \"fmov\t%w0, %s1\";
+   * return TARGET_SIMD ? \"dup\t%0.<Vallxd>, %w1\" : \"fmov\t%s0, %w1\";
+   * return TARGET_SIMD ? \"dup\t%<Vetype>0, %1.<v>[0]\" : \"fmov\t%s0, %s1\";"
   ;; The "mov_imm" type for CNT is just a placeholder.
   [(set_attr "type" "mov_reg,mov_imm,neon_move,mov_imm,load_4,load_4,store_4,
 		     store_4,neon_to_gp<q>,neon_from_gp<q>,neon_dup")
