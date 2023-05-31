@@ -5202,7 +5202,7 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
 	;;
     esac
 
-    AC_COMPUTE_INT(glibcxx_cv_at_least_32bit, [sizeof(void*) >= 4])
+    AC_COMPUTE_INT(glibcxx_cv_at_least_32bit, [__INTPTR_WIDTH__ >= 32])
     if test "$glibcxx_cv_at_least_32bit" -ne 0; then
       # Also embed a copy of the tzdata.zi file as a static string.
       embed_zoneinfo=yes
