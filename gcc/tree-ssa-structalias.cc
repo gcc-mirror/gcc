@@ -237,6 +237,7 @@ static struct constraint_stats
   unsigned int iterations;
   unsigned int num_edges;
   unsigned int num_implicit_edges;
+  unsigned int num_avoided_edges;
   unsigned int points_to_sets_created;
 } stats;
 
@@ -1213,7 +1214,10 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
       if (to < FIRST_REF_NODE
 	  && bitmap_bit_p (graph->succs[from], find (escaped_id))
 	  && bitmap_bit_p (get_varinfo (find (to))->solution, escaped_id))
-	return false;
+	{
+	  stats.num_avoided_edges++;
+	  return false;
+	}
 
       if (bitmap_set_bit (graph->succs[from], to))
 	{
@@ -7164,6 +7168,8 @@ dump_sa_stats (FILE *outfile)
   fprintf (outfile, "Number of edges:          %d\n", stats.num_edges);
   fprintf (outfile, "Number of implicit edges: %d\n",
 	   stats.num_implicit_edges);
+  fprintf (outfile, "Number of avoided edges: %d\n",
+	   stats.num_avoided_edges);
 }
 
 /* Dump points-to information to OUTFILE.  */
@@ -8427,7 +8433,7 @@ ipa_pta_execute (void)
 	  || node->clone_of)
 	continue;
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file,
 		   "Generating constraints for %s", node->dump_name ());
