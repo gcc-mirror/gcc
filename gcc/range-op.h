@@ -50,7 +50,6 @@ class range_operator
 {
   friend class range_op_table;
 public:
-  range_operator () : m_code (ERROR_MARK) { }
   // Perform an operation between 2 ranges and return it.
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh,
@@ -114,9 +113,8 @@ protected:
 			       const wide_int &lb,
 			       const wide_int &ub,
 			       unsigned limit) const;
-
-  // Tree code of the range operator or ERROR_MARK if unknown.
-  tree_code m_code;
+  // Apply any bitmasks implied by these ranges.
+  virtual void update_bitmask (irange &, const irange &, const irange &) const;
 };
 
 // Like range_operator above, but for floating point operators.

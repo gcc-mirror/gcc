@@ -286,7 +286,7 @@ range_operator::fold_range (irange &r, tree type,
 	    break;
 	}
       op1_op2_relation_effect (r, type, lh, rh, rel);
-      update_known_bitmask (r, m_code, lh, rh);
+      update_bitmask (r, lh, rh);
       return true;
     }
 
@@ -298,7 +298,7 @@ range_operator::fold_range (irange &r, tree type,
       wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
 			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
-      update_known_bitmask (r, m_code, lh, rh);
+      update_bitmask (r, lh, rh);
       return true;
     }
 
@@ -316,12 +316,12 @@ range_operator::fold_range (irange &r, tree type,
 	if (r.varying_p ())
 	  {
 	    op1_op2_relation_effect (r, type, lh, rh, rel);
-	    update_known_bitmask (r, m_code, lh, rh);
+	    update_bitmask (r, lh, rh);
 	    return true;
 	  }
       }
   op1_op2_relation_effect (r, type, lh, rh, rel);
-  update_known_bitmask (r, m_code, lh, rh);
+  update_bitmask (r, lh, rh);
   return true;
 }
 
@@ -385,6 +385,14 @@ range_operator::op1_op2_relation_effect (irange &lhs_range ATTRIBUTE_UNUSED,
 				       relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return false;
+}
+
+// Apply any known bitmask updates based on this operator.
+
+void
+range_operator::update_bitmask (irange &, const irange &,
+				       const irange &) const
+{
 }
 
 // Create and return a range from a pair of wide-ints that are known
@@ -562,6 +570,8 @@ public:
 			  const irange &val,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, EQ_EXPR, lh, rh); }
 } op_equal;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -682,6 +692,8 @@ public:
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, NE_EXPR, lh, rh); }
 } op_not_equal;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -862,6 +874,8 @@ public:
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, LT_EXPR, lh, rh); }
 } op_lt;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -982,6 +996,8 @@ public:
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, LE_EXPR, lh, rh); }
 } op_le;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -1099,6 +1115,8 @@ public:
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, GT_EXPR, lh, rh); }
 } op_gt;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -1215,6 +1233,8 @@ public:
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, GE_EXPR, lh, rh); }
 } op_ge;
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
@@ -1339,6 +1359,8 @@ public:
   virtual relation_kind lhs_op2_relation (const irange &lhs, const irange &op1,
 					  const irange &op2,
 					  relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, PLUS_EXPR, lh, rh); }
 } op_plus;
 
 // Check to see if the range of OP2 indicates anything about the relation
@@ -1648,6 +1670,8 @@ public:
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MINUS_EXPR, lh, rh); }
 } op_minus;
 
 void 
@@ -1801,6 +1825,8 @@ class operator_pointer_diff : public range_operator
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
 } op_pointer_diff;
 
 bool
@@ -1822,6 +1848,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MIN_EXPR, lh, rh); }
 } op_min;
 
 void
@@ -1844,6 +1872,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MAX_EXPR, lh, rh); }
 } op_max;
 
 void
@@ -1952,6 +1982,8 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio) const final override;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, MULT_EXPR, lh, rh); }
 } op_mult;
 
 bool
@@ -2162,6 +2194,7 @@ operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
 class operator_div : public cross_product_operator
 {
 public:
+  operator_div (tree_code div_kind) { m_code = div_kind; }
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -2170,7 +2203,16 @@ public:
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &)
     const final override;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, m_code, lh, rh); }
+protected:
+  tree_code m_code;
 };
+
+static operator_div op_trunc_div (TRUNC_DIV_EXPR);
+static operator_div op_floor_div (FLOOR_DIV_EXPR);
+static operator_div op_round_div (ROUND_DIV_EXPR);
+static operator_div op_ceil_div (CEIL_DIV_EXPR);
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,
@@ -2265,6 +2307,7 @@ class operator_exact_divide : public operator_div
 {
   using range_operator::op1_range;
 public:
+  operator_exact_divide () : operator_div (EXACT_DIV_EXPR) { }
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
@@ -2314,6 +2357,8 @@ public:
 				tree type,
 				const wide_int &,
 				const wide_int &) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
 } op_lshift;
 
 class operator_rshift : public cross_product_operator
@@ -2343,6 +2388,8 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
 } op_rshift;
 
 
@@ -2682,7 +2729,7 @@ private:
 			const irange &outer) const;
   void fold_pair (irange &r, unsigned index, const irange &inner,
 			   const irange &outer) const;
-};
+} op_cast;
 
 // Add a partial equivalence between the LHS and op1 for casts.
 
@@ -3026,6 +3073,8 @@ public:
 					  const irange &op1,
 					  const irange &op2,
 					  relation_kind) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_AND_EXPR, lh, rh); }
 private:
   void simple_op1_range_solver (irange &r, tree type,
 				const irange &lhs,
@@ -3524,6 +3573,8 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_IOR_EXPR, lh, rh); }
 } op_bitwise_or;
 
 void
@@ -3636,6 +3687,8 @@ public:
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, BIT_XOR_EXPR, lh, rh); }
 } op_bitwise_xor;
 
 void
@@ -3777,6 +3830,8 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, TRUNC_MOD_EXPR, lh, rh); }
 } op_trunc_mod;
 
 void
@@ -4046,7 +4101,7 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
-};
+} op_ident;
 
 // Determine if there is a relationship between LHS and OP1.
 
@@ -4091,7 +4146,7 @@ public:
 			   const irange &op1,
 			   const irange &op2,
 			   relation_trio rel = TRIO_VARYING) const;
-};
+} op_unknown;
 
 bool
 operator_unknown::fold_range (irange &r, tree type,
@@ -4365,6 +4420,8 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_trio = TRIO_VARYING) const;
+  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+    { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
 
 void
@@ -4436,7 +4493,7 @@ public:
   virtual void wi_fold (irange & r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
-};
+} op_ptr_min_max;
 
 void
 pointer_min_max_operator::wi_fold (irange &r, tree type,
@@ -4562,20 +4619,7 @@ range_op_table::set (enum tree_code code, range_operator &op)
 {
   gcc_checking_assert (m_range_tree[code] == NULL);
   m_range_tree[code] = &op;
-  gcc_checking_assert (op.m_code == ERROR_MARK || op.m_code == code);
-  op.m_code = code;
 }
-
-// Shared operators that require separate instantiations because they
-// do not share a common tree code.
-static operator_cast op_nop, op_convert;
-static operator_identity op_ssa, op_paren, op_obj_type;
-static operator_unknown op_realpart, op_imagpart;
-static pointer_min_max_operator op_ptr_min, op_ptr_max;
-static operator_div op_trunc_div;
-static operator_div op_floor_div;
-static operator_div op_round_div;
-static operator_div op_ceil_div;
 
 // Instantiate a range op table for integral operations.
 
@@ -4605,8 +4649,8 @@ integral_table::integral_table ()
   set (EXACT_DIV_EXPR, op_exact_div);
   set (LSHIFT_EXPR, op_lshift);
   set (RSHIFT_EXPR, op_rshift);
-  set (NOP_EXPR, op_nop);
-  set (CONVERT_EXPR, op_convert);
+  set (NOP_EXPR, op_cast);
+  set (CONVERT_EXPR, op_cast);
   set (TRUTH_AND_EXPR, op_logical_and);
   set (BIT_AND_EXPR, op_bitwise_and);
   set (TRUTH_OR_EXPR, op_logical_or);
@@ -4616,11 +4660,11 @@ integral_table::integral_table ()
   set (TRUTH_NOT_EXPR, op_logical_not);
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_ssa);
-  set (PAREN_EXPR, op_paren);
-  set (OBJ_TYPE_REF, op_obj_type);
-  set (IMAGPART_EXPR, op_imagpart);
-  set (REALPART_EXPR, op_realpart);
+  set (SSA_NAME, op_ident);
+  set (PAREN_EXPR, op_ident);
+  set (OBJ_TYPE_REF, op_ident);
+  set (IMAGPART_EXPR, op_unknown);
+  set (REALPART_EXPR, op_unknown);
   set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
@@ -4640,8 +4684,8 @@ pointer_table::pointer_table ()
 {
   set (BIT_AND_EXPR, op_pointer_and);
   set (BIT_IOR_EXPR, op_pointer_or);
-  set (MIN_EXPR, op_ptr_min);
-  set (MAX_EXPR, op_ptr_max);
+  set (MIN_EXPR, op_ptr_min_max);
+  set (MAX_EXPR, op_ptr_min_max);
   set (POINTER_PLUS_EXPR, op_pointer_plus);
 
   set (EQ_EXPR, op_equal);
@@ -4650,11 +4694,11 @@ pointer_table::pointer_table ()
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
-  set (SSA_NAME, op_ssa);
+  set (SSA_NAME, op_ident);
   set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
-  set (NOP_EXPR, op_nop);
-  set (CONVERT_EXPR, op_convert);
+  set (NOP_EXPR, op_cast);
+  set (CONVERT_EXPR, op_cast);
 
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);
