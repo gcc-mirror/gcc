@@ -4,3 +4,4 @@
 #include "vsub-template.h"
 
 /* { dg-final { scan-assembler-times {\tvsub\.vv} 12 } } */
+/* { dg-final { scan-assembler-times {\tvrsub\.vi} 12 } } */
