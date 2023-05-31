@@ -1325,7 +1325,7 @@ _ZSt10from_charsPKcS0_RDF128_St12chars_format(const char* first,
 					      __ieee128& value,
 					      chars_format fmt) noexcept
 __attribute__((alias ("_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format")));
-#else
+#elif defined(__FLT128_MANT_DIG__)
 from_chars_result
 from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
