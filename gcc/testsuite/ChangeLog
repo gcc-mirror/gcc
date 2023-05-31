@@ -1,3 +1,103 @@
+2023-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr108804.c: New test.
+
+2023-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/malloc-sarif-1.c: Add missing verify-sarif-file
+	directive.
+	* gcc.dg/analyzer/sarif-pr107366.c: Likewise.
+
+2023-05-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/torture/pr107451.c: Require int32plus.
+	* gcc.dg/torture/pr108574-3.c: Use __INT32_TYPE__ instead of int.
+	* gcc.dg/torture/pr109940.c: Use __INTPTR_TYPE__ instead of long.
+	* gcc.dg/torture/pr95248.c: Require size24plus.
+	* gcc.dg/torture/pr95295-3.c: Use var_* with at least 32 bits int.
+	* gcc.dg/torture/pr98640.c: Cast to __INT32_TYPE__ instead of int.
+	* gcc.dg/tree-ssa/pr103771.c: Use int with at least 32 bits.
+
+2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c:
+	Support both definitions of int32_t.
+
+2023-05-30  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/minmax-22.c: New test.
+
+2023-05-30  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-5.c: Remove last xfail.
+	* gcc.dg/tree-ssa/pr66726-4.c: Change how scanning
+	works.
+	* gcc.dg/tree-ssa/pr66726-5.c: New test.
+	* gcc.dg/tree-ssa/pr66726-6.c: New test.
+
+2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/acle/data-intrinsics-armv6.c: Fix typo.
+	* gcc.target/arm/acle/data-intrinsics-assembly.c: Require
+	arm_softfp_ok.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/109999
+	* c-c++-common/goacc/asyncwait-1.c: Update dg-error.
+	* c-c++-common/goacc/clauses-fail.c: Likewise.
+	* c-c++-common/goacc/data-2.c: Likewise.
+	* c-c++-common/gomp/declare-target-2.c: Likewise.
+	* c-c++-common/gomp/directive-1.c: Likewise.
+	* g++.dg/goacc/data-1.C: Likewise.
+
+2023-05-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vmv-imm-fixed-rv32.c: Add vmv.v.x
+	tests.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-fixed-rv64.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-rv32.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-rv64.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-template.h: Dito.
+
+2023-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr108938-1.c: New test.
+	* gcc.target/i386/pr108938-2.c: New test.
+	* gcc.target/i386/pr108938-3.c: New test.
+	* gcc.target/i386/pr108938-load-1.c: New test.
+	* gcc.target/i386/pr108938-load-2.c: New test.
+
+2023-05-30  Andreas Schwab  <schwab@suse.de>
+
+	PR sanitizer/82501
+	* c-c++-common/asan/pointer-compare-1.c: Disable use of small data
+	on RISC-V.
+
+2023-05-30  Lili Cui  <lili.cui@intel.com>
+
+	PR tree-optimization/98350
+	* gcc.dg/pr98350-1.c: New test.
+	* gcc.dg/pr98350-2.c: Ditto.
+
+2023-05-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-template.h: New test.
+
+2023-05-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-6.c: New test.
+
 2023-05-29  Die Li  <lidie@eswincomputing.com>
 
 	* gcc.target/riscv/xtheadcondmov-indirect-rv32.c: Update the output.

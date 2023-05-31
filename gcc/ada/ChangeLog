@@ -1,3 +1,183 @@
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (get_storage_model_access): Also strip any
+	type conversion in the node when unwinding the components.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (node_is_component): Remove parentheses.
+	(node_is_type_conversion): New predicate.
+	(get_atomic_access): Use it.
+	(get_storage_model_access): Likewise and look into the parent to
+	find a component if it returns true.
+	(present_in_lhs_or_actual_p): Likewise.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Attribute_to_gnu) <Attr_Size>: Check that
+	the storage model has Copy_From before instantiating loads for it.
+	<Attr_Length>: Likewise.
+	<Attr_Bit_Position>: Likewise.
+	(gnat_to_gnu) <N_Indexed_Component>: Likewise.
+	<N_Slice>: Likewise.
+
+2023-05-30  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/trans.cc (Attribute_to_gnu): Also strip conversion
+	in case of DECL.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Use a
+	local variable for the GNAT index type.
+	<E_Array_Subtype>: Likewise.  Call Is_Null_Range on the bounds and
+	force the zero on TYPE_SIZE and TYPE_SIZE_UNIT if it returns true.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Op_Mod>: Test the
+	precision of the operation rather than that of the result type.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Replace
+	integer_zero_node with null_pointer_node for pointer types.
+	* gcc-interface/trans.cc (gnat_gimplify_expr) <NULL_EXPR>: Likewise.
+	* gcc-interface/utils.cc (maybe_pad_type): Do not attempt to make a
+	packable type from a fat pointer type.
+	* gcc-interface/utils2.cc (build_atomic_load): Use a local variable.
+	(build_atomic_store): Likewise.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.cc (internal_error_function): Be prepared for
+	an input_location set to UNKNOWN_LOCATION.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Attribute_to_gnu) <Attr_Size>: Tweak.
+	(gnat_to_gnu) <N_Assignment_Statement>: Declare a local variable.
+	For a target with a storage model, use the Actual_Designated_Subtype
+	to compute the size if it is present.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Call_to_gnu): Remove code implementing the
+	by-copy semantics for actuals with nonnative storage models.
+	(gnat_to_gnu) <N_Assignment_Statement>: Remove code instantiating a
+	temporary for assignments between nonnative storage models.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (range_cannot_be_superflat): Return true
+	immediately if Cannot_Be_Superflat is set.
+	* gcc-interface/misc.cc (gnat_post_options): Do not override the
+	-Wstringop-overflow setting.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ADA_CFLAGS): Move up.
+	(ALL_ADAFLAGS): Add $(NO_PIE_CFLAGS).
+	(ada/mdll.o): Remove.
+	(ada/mdll-fil.o): Likewise.
+	(ada/mdll-utl.o): Likewise.
+
+2023-05-30  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/trans.cc (get_storage_model_access): Don't require
+	storage model access for dereference used as lvalue or renamings.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Move the declaration of Typ
+	to the beginning.
+	(Initialize_Array_Component): Test the unqualified version of the
+	expression for the nested array case.
+	(Initialize_Ctrl_Array_Component): Do not duplicate the expression
+	here.  Do the pattern matching of the unqualified version of it.
+	(Gen_Assign): Call Unqualify to compute Expr_Q and use Expr_Q in
+	subsequent pattern matching.
+	(Initialize_Ctrl_Record_Component): Do the pattern matching of the
+	unqualified version of the aggregate.
+	(Build_Record_Aggr_Code): Call Unqualify.
+	(Convert_Aggr_In_Assignment): Likewise.
+	(Convert_Aggr_In_Object_Decl): Likewise.
+	(Component_OK_For_Backend): Likewise.
+	(Is_Delayed_Aggregate): Likewise.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code.Get_Assoc_Expr): Duplicate the
+	expression here instead of...
+	(Build_Array_Aggr_Code): ...here.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Large_Modular_Array): Fix head comment, use
+	Standard_Long_Long_Integer_Size directly and generate a reference
+	just before the raise statement if the Etype of the object is an
+	itype declared in an open scope.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Find_Enclosing_Transient_Scope): Return the index in
+	the scope table instead of the scope's entity.
+	(Establish_Transient_Scope): If an enclosing scope already exists,
+	do not set the Uses_Sec_Stack flag on it if the node to be wrapped
+	is a return statement which requires secondary stack management.
+
+2023-05-30  Joel Brobecker  <brobecker@adacore.com>
+
+	* Makefile.rtl: Use libgnat/s-tsmona__linux.adb on
+	aarch64-linux.  Link libgnat with -ldl, as the use of
+	s-tsmona__linux.adb requires it.
+
+2023-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb
+	(Build_Access_Subprogram_Wrapper_Body): Build wrapper body if requested
+	by routine that builds wrapper spec.
+	* sem_ch3.adb
+	(Analyze_Full_Type_Declaration): Only build wrapper when expander is
+	active.
+	(Build_Access_Subprogram_Wrapper):
+	Remove special-case for GNATprove.
+
+2023-05-30  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix minor issues.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Fix minor issues.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-30  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/s-parame.adb: Check that Default_Stack_Size >=
+	Minimum_Stack_size.
+	* libgnat/s-parame__rtems.adb: Ditto.
+	* libgnat/s-parame__vxworks.adb: Check that Default_Stack_Size >=
+	Minimum_Stack_size and use the proper Minimum_Stack_Size if
+	Stack_Check_Limits is enabled.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Restrict previous change to calls that
+	return on the same stack as the enclosing function.  Tidy up.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-cidlli.adb (Put_Image): Simplify.
+	* libgnat/a-coinve.adb (Put_Image): Likewise.
+
+2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Build_DIC_Procedure_Body.Add_Own_DIC): When inside
+	a generic unit, preanalyze the expression directly.
+	(Build_Invariant_Procedure_Body.Add_Own_Invariants): Likewise.
+
+2023-05-30  Cedric Landet  <landet@adacore.com>
+
+	* init.c: Replace FIXME by ???
+
 2023-05-29  Cedric Landet  <landet@adacore.com>
 
 	* s-oscons-tmplt.c: move the definition of sigset out of the

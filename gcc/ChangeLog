@@ -1,3 +1,264 @@
+2023-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/108804
+	* tree-vect-patterns.cc (vect_get_range_info): Remove static.
+	* tree-vect-stmts.cc (vect_create_vectorized_demotion_stmts):
+	Add new parameter narrow_src_p.
+	(vectorizable_conversion): Enhance NARROW FLOAT_EXPR
+	vectorization by truncating to lower precision.
+	* tree-vectorizer.h (vect_get_range_info): New declare.
+
+2023-05-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-int.h (lra_update_sp_offset): Add the prototype.
+	* lra.cc (setup_sp_offset): Change the return type.  Use
+	lra_update_sp_offset.
+	* lra-eliminations.cc (lra_update_sp_offset): New function.
+	(lra_process_new_insns): Push the current insn to reprocess if the
+	input reload changes sp offset.
+
+2023-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110041
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2):
+	Fix misleading identation.
+
+2023-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (comparison_dominates_p): Change return type from int to bool.
+	(condjump_p): Ditto.
+	(any_condjump_p): Ditto.
+	(any_uncondjump_p): Ditto.
+	(simplejump_p): Ditto.
+	(returnjump_p): Ditto.
+	(eh_returnjump_p): Ditto.
+	(onlyjump_p): Ditto.
+	(invert_jump_1): Ditto.
+	(invert_jump): Ditto.
+	(rtx_renumbered_equal_p): Ditto.
+	(redirect_jump_1): Ditto.
+	(redirect_jump): Ditto.
+	(condjump_in_parallel_p): Ditto.
+	* jump.cc (invert_exp_1): Adjust forward declaration.
+	(comparison_dominates_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(simplejump_p): Ditto.
+	(condjump_p): Ditto.
+	(condjump_in_parallel_p): Ditto.
+	(any_uncondjump_p): Ditto.
+	(any_condjump_p): Ditto.
+	(returnjump_p): Ditto.
+	(eh_returnjump_p): Ditto.
+	(onlyjump_p): Ditto.
+	(redirect_jump_1): Ditto.
+	(redirect_jump): Ditto.
+	(invert_exp_1): Ditto.
+	(invert_jump_1): Ditto.
+	(invert_jump): Ditto.
+	(rtx_renumbered_equal_p): Ditto.
+
+2023-05-30  Andrew Pinski  <apinski@marvell.com>
+
+	* fold-const.cc (minmax_from_comparison): Add support for NE_EXPR.
+	* match.pd ((cond (cmp (convert1? x) c1) (convert2? x) c2) pattern):
+	Add ne as a possible cmp.
+	((a CMP b) ? minmax<a, c> : minmax<b, c> pattern): Likewise.
+
+2023-05-30  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`(a CMP CST1) ? max<a,CST2> : a`): New
+	pattern.
+
+2023-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_binary_operation_1) <AND>: Use wide-int
+	instead of HWI_COMPUTABLE_MODE_P and UINTVAL in transformation of
+	(and (extend X) C) as (zero_extend (and X C)), to also optimize
+	modes wider than HOST_WIDE_INT.
+
+2023-05-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/107172
+	* simplify-rtx.cc (simplify_const_relational_operation): Return
+	early if we have a MODE_CC comparison that isn't a COMPARE against
+	const0_rtx.
+
+2023-05-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Allow
+	const_vec_duplicates.
+
+2023-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/108938
+	* gimple-ssa-store-merging.cc (is_bswap_or_nop_p): New
+	function, cut from original find_bswap_or_nop function.
+	(find_bswap_or_nop): Add a new parameter, detect bswap +
+	rotate and save rotate result in the new parameter.
+	(bswap_replace): Add a new parameter to indicate rotate and
+	generate rotate stmt if needed.
+	(maybe_optimize_vector_constructor): Adjust for new rotate
+	parameter in the upper 2 functions.
+	(pass_optimize_bswap::execute): Ditto.
+	(imm_store_chain_info::output_merged_store): Ditto.
+
+2023-05-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>adalp<mode>): Delete.
+	(aarch64_<su>adalp<mode>): New define_expand.
+	(*aarch64_<su>adalp<mode><vczle><vczbe>_insn): New define_insn.
+	(aarch64_<su>addlp<mode>): Convert to define_expand.
+	(*aarch64_<su>addlp<mode><vczle><vczbe>_insn): New define_insn.
+	* config/aarch64/iterators.md (UNSPEC_SADDLP, UNSPEC_UADDLP): Delete.
+	(ADALP): Likewise.
+	(USADDLP): Likewise.
+	* config/aarch64/predicates.md (vect_par_cnst_even_or_odd_half): Define.
+
+2023-05-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (VAR1): Move to after inclusion of
+	aarch64-builtin-iterators.h.  Add definition to remap shadd, uhadd,
+	srhadd, urhadd builtin codes for standard optab ones.
+	* config/aarch64/aarch64-simd.md (<u>avg<mode>3_floor): Rename to...
+	(<su_optab>avg<mode>3_floor): ... This.  Expand to RTL codes rather than
+	unspec.
+	(<u>avg<mode>3_ceil): Rename to...
+	(<su_optab>avg<mode>3_ceil): ... This.  Expand to RTL codes rather than
+	unspec.
+	(aarch64_<su>hsub<mode>): New define_expand.
+	(aarch64_<sur>h<addsub><mode><vczle><vczbe>): Split into...
+	(*aarch64_<su>h<ADDSUB:optab><mode><vczle><vczbe>_insn): ... This...
+	(*aarch64_<su>rhadd<mode><vczle><vczbe>_insn): ... And this.
+
+2023-05-30  Andreas Schwab  <schwab@suse.de>
+
+	PR target/110036
+	* config/riscv/riscv.cc (riscv_asan_shadow_offset): Update to
+	match libsanitizer.
+
+2023-05-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-modes.def (V16HI, V8SI, V4DI, V2TI): New modes.
+	* config/aarch64/aarch64-protos.h (aarch64_const_vec_rnd_cst_p):
+	Declare prototype.
+	(aarch64_const_vec_rsra_rnd_imm_p): Likewise.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_sra<mode>): Rename to...
+	(aarch64_<sra_op>sra_n<mode>_insn): ... This.
+	(aarch64_<sra_op>rsra_n<mode>_insn): New define_insn.
+	(aarch64_<sra_op>sra_n<mode>): New define_expand.
+	(aarch64_<sra_op>rsra_n<mode>): Likewise.
+	(aarch64_<sur>sra_n<mode>): Rename to...
+	(aarch64_<sur>sra_ndi): ... This.
+	* config/aarch64/aarch64.cc (aarch64_classify_vector_mode): Add
+	any_target_p argument.
+	(aarch64_extract_vec_duplicate_wide_int): Define.
+	(aarch64_const_vec_rsra_rnd_imm_p): Likewise.
+	(aarch64_const_vec_rnd_cst_p): Likewise.
+	(aarch64_vector_mode_supported_any_target_p): Likewise.
+	(TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P): Likewise.
+	* config/aarch64/iterators.md (UNSPEC_SRSRA, UNSPEC_URSRA): Delete.
+	(VSRA): Adjust for the above.
+	(sur): Likewise.
+	(V2XWIDE): New mode_attr.
+	(vec_or_offset): Likewise.
+	(SHIFTEXTEND): Likewise.
+	* config/aarch64/predicates.md (aarch64_simd_rsra_rnd_imm_vec): New
+	predicate.
+	* doc/tm.texi (TARGET_VECTOR_MODE_SUPPORTED_P): Adjust description to
+	clarify that it applies to current target options.
+	(TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P): Document.
+	* doc/tm.texi.in: Regenerate.
+	* stor-layout.cc (mode_for_vector): Check
+	vector_mode_supported_any_target_p when iterating through vector modes.
+	* target.def (TARGET_VECTOR_MODE_SUPPORTED_P): Adjust description to
+	clarify that it applies to current target options.
+	(TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P): Define.
+
+2023-05-30  Lili Cui  <lili.cui@intel.com>
+
+	PR tree-optimization/98350
+	* tree-ssa-reassoc.cc
+	(rewrite_expr_tree_parallel): Rewrite this function.
+	(rank_ops_for_fma): New.
+	(reassociate_bb): Handle new function.
+
+2023-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (rtx_addr_can_trap_p): Change return type from int to bool.
+	(rtx_unstable_p): Ditto.
+	(reg_mentioned_p): Ditto.
+	(reg_referenced_p): Ditto.
+	(reg_used_between_p): Ditto.
+	(reg_set_between_p): Ditto.
+	(modified_between_p): Ditto.
+	(no_labels_between_p): Ditto.
+	(modified_in_p): Ditto.
+	(reg_set_p): Ditto.
+	(multiple_sets): Ditto.
+	(set_noop_p): Ditto.
+	(noop_move_p): Ditto.
+	(reg_overlap_mentioned_p): Ditto.
+	(dead_or_set_p): Ditto.
+	(dead_or_set_regno_p): Ditto.
+	(find_reg_fusage): Ditto.
+	(find_regno_fusage): Ditto.
+	(side_effects_p): Ditto.
+	(volatile_refs_p): Ditto.
+	(volatile_insn_p): Ditto.
+	(may_trap_p_1): Ditto.
+	(may_trap_p): Ditto.
+	(may_trap_or_fault_p): Ditto.
+	(computed_jump_p): Ditto.
+	(auto_inc_p): Ditto.
+	(loc_mentioned_in_p): Ditto.
+	* rtlanal.cc (computed_jump_p_1): Adjust forward declaration.
+	(rtx_unstable_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(rtx_addr_can_trap_p): Ditto.
+	(reg_mentioned_p): Ditto.
+	(no_labels_between_p): Ditto.
+	(reg_used_between_p): Ditto.
+	(reg_referenced_p): Ditto.
+	(reg_set_between_p): Ditto.
+	(reg_set_p): Ditto.
+	(modified_between_p): Ditto.
+	(modified_in_p): Ditto.
+	(multiple_sets): Ditto.
+	(set_noop_p): Ditto.
+	(noop_move_p): Ditto.
+	(reg_overlap_mentioned_p): Ditto.
+	(dead_or_set_p): Ditto.
+	(dead_or_set_regno_p): Ditto.
+	(find_reg_fusage): Ditto.
+	(find_regno_fusage): Ditto.
+	(remove_node_from_insn_list): Ditto.
+	(volatile_insn_p): Ditto.
+	(volatile_refs_p): Ditto.
+	(side_effects_p): Ditto.
+	(may_trap_p_1): Ditto.
+	(may_trap_p): Ditto.
+	(may_trap_or_fault_p): Ditto.
+	(computed_jump_p): Ditto.
+	(auto_inc_p): Ditto.
+	(loc_mentioned_in_p): Ditto.
+	* combine.cc (can_combine_p): Update indirect function.
+
+2023-05-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (<optab><mode><vconvert>2): New pattern.
+	* config/riscv/iterators.md: New attribute.
+	* config/riscv/vector-iterators.md: New attribute.
+
+2023-05-30  From: Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Fix signed and unsigned comparison
+	warning.
+
+2023-05-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (fnma<mode>4): New pattern.
+	(*fnma<mode>): Ditto.
+
 2023-05-29  Die Li  <lidie@eswincomputing.com>
 
 	* config/riscv/riscv.cc (riscv_expand_conditional_move_onesided):

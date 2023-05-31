@@ -1,3 +1,9 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/109999
+	* c-parser.cc (c_parser_oacc_all_clauses,
+	c_parser_omp_all_clauses): Improve error wording.
+
 2023-05-23  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/109450

@@ -1,3 +1,9 @@
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/109999
+	* parser.cc (cp_parser_oacc_all_clauses,
+	cp_parser_omp_all_clauses): Improve error wording.
+
 2023-05-19  Andrew Pinski  <apinski@marvell.com>
 
 	PR driver/33980
