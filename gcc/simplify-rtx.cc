@@ -2111,7 +2111,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  break;
 
 	case BSWAP:
-	  result = wide_int (op0).bswap ();
+	  result = wi::bswap (op0);
 	  break;
 
 	case TRUNCATE:

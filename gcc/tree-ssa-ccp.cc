@@ -2401,11 +2401,12 @@ evaluate_stmt (gimple *stmt)
 		  wide_int wval = wi::to_wide (val.value);
 		  val.value
 		    = wide_int_to_tree (type,
-					wide_int::from (wval, prec,
-							UNSIGNED).bswap ());
+					wi::bswap (wide_int::from (wval, prec,
+								   UNSIGNED)));
 		  val.mask
-		    = widest_int::from (wide_int::from (val.mask, prec,
-							UNSIGNED).bswap (),
+		    = widest_int::from (wi::bswap (wide_int::from (val.mask,
+								   prec,
+								   UNSIGNED)),
 					UNSIGNED);
 		  if (wi::sext (val.mask, prec) != -1)
 		    break;
