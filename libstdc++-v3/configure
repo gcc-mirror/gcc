@@ -71904,7 +71904,7 @@ fi
 	;;
     esac
 
-    if ac_fn_c_compute_int "$LINENO" "sizeof(void*) >= 4" "glibcxx_cv_at_least_32bit"        ""; then :
+    if ac_fn_c_compute_int "$LINENO" "__INTPTR_WIDTH__ >= 32" "glibcxx_cv_at_least_32bit"        ""; then :
 
 fi
 
