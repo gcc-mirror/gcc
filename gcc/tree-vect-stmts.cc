@@ -5041,7 +5041,7 @@ vectorizable_conversion (vec_info *vinfo,
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  tree_code tc1;
+  tree_code tc1, tc2;
   code_helper code, code1, code2;
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree new_temp;
@@ -5249,6 +5249,57 @@ vectorizable_conversion (vec_info *vinfo,
 	code1 = tc1;
 	break;
       }
+
+      /* For conversions between float and smaller integer types try whether we
+	 can use intermediate signed integer types to support the
+	 conversion.  */
+      if ((code == FLOAT_EXPR
+	   && GET_MODE_SIZE (lhs_mode) > GET_MODE_SIZE (rhs_mode))
+	  || (code == FIX_TRUNC_EXPR
+	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)))
+	{
+	  bool float_expr_p = code == FLOAT_EXPR;
+	  scalar_mode imode = float_expr_p ? rhs_mode : lhs_mode;
+	  fltsz = GET_MODE_SIZE (float_expr_p ? lhs_mode : rhs_mode);
+	  code1 = float_expr_p ? code : NOP_EXPR;
+	  codecvt1 = float_expr_p ? NOP_EXPR : code;
+	  FOR_EACH_2XWIDER_MODE (rhs_mode_iter, imode)
+	    {
+	      imode = rhs_mode_iter.require ();
+	      if (GET_MODE_SIZE (imode) > fltsz)
+		break;
+
+	      cvt_type
+		= build_nonstandard_integer_type (GET_MODE_BITSIZE (imode),
+						  0);
+	      cvt_type = get_vectype_for_scalar_type (vinfo, cvt_type,
+						      slp_node);
+	      /* This should only happened for SLP as long as loop vectorizer
+		 only supports same-sized vector.  */
+	      if (cvt_type == NULL_TREE
+		  || maybe_ne (TYPE_VECTOR_SUBPARTS (cvt_type), nunits_in)
+		  || !supportable_convert_operation ((tree_code) code1,
+						     vectype_out,
+						     cvt_type, &tc1)
+		  || !supportable_convert_operation ((tree_code) codecvt1,
+						     cvt_type,
+						     vectype_in, &tc2))
+		continue;
+
+	      found_mode = true;
+	      break;
+	    }
+
+	  if (found_mode)
+	    {
+	      multi_step_cvt++;
+	      interm_types.safe_push (cvt_type);
+	      cvt_type = NULL_TREE;
+	      code1 = tc1;
+	      codecvt1 = tc2;
+	      break;
+	    }
+	}
       /* FALLTHRU */
     unsupported:
       if (dump_enabled_p ())
@@ -5513,7 +5564,18 @@ vectorizable_conversion (vec_info *vinfo,
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	{
 	  /* Arguments are ready, create the new vector stmt.  */
-	  gimple *new_stmt = vect_gimple_build (vec_dest, code1, vop0);
+	  gimple* new_stmt;
+	  if (multi_step_cvt)
+	    {
+	      gcc_assert (multi_step_cvt == 1);
+	      new_stmt = vect_gimple_build (vec_dest, codecvt1, vop0);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      vop0 = new_temp;
+	      vec_dest = vec_dsts[0];
+	    }
+	  new_stmt = vect_gimple_build (vec_dest, code1, vop0);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
