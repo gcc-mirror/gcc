@@ -4465,18 +4465,18 @@ extern bool read_rtx (const char *, vec<rtx> *);
 
 /* In alias.cc */
 extern rtx canon_rtx (rtx);
-extern int true_dependence (const_rtx, machine_mode, const_rtx);
 extern rtx get_addr (rtx);
-extern int canon_true_dependence (const_rtx, machine_mode, rtx,
-				  const_rtx, rtx);
-extern int read_dependence (const_rtx, const_rtx);
-extern int anti_dependence (const_rtx, const_rtx);
-extern int canon_anti_dependence (const_rtx, bool,
-				  const_rtx, machine_mode, rtx);
-extern int output_dependence (const_rtx, const_rtx);
-extern int canon_output_dependence (const_rtx, bool,
-				    const_rtx, machine_mode, rtx);
-extern int may_alias_p (const_rtx, const_rtx);
+extern bool read_dependence (const_rtx, const_rtx);
+extern bool true_dependence (const_rtx, machine_mode, const_rtx);
+extern bool canon_true_dependence (const_rtx, machine_mode, rtx,
+				   const_rtx, rtx);
+extern bool anti_dependence (const_rtx, const_rtx);
+extern bool canon_anti_dependence (const_rtx, bool,
+				   const_rtx, machine_mode, rtx);
+extern bool output_dependence (const_rtx, const_rtx);
+extern bool canon_output_dependence (const_rtx, bool,
+				     const_rtx, machine_mode, rtx);
+extern bool may_alias_p (const_rtx, const_rtx);
 extern void init_alias_target (void);
 extern void init_alias_analysis (void);
 extern void end_alias_analysis (void);
