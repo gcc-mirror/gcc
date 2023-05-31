@@ -126,9 +126,6 @@ private:
   // Classifies keyword (i.e. gets id for keyword).
   TokenId classify_keyword (const std::string &str);
 
-  // Builds a token from the input queue.
-  TokenPtr build_token ();
-
   std::tuple<std::string, int, bool> parse_in_decimal ();
   std::pair<std::string, int> parse_in_exponent_part ();
   std::pair<PrimitiveCoreType, int> parse_in_type_suffix ();
@@ -186,6 +183,9 @@ public:
   const_TokenPtr peek_token (int n) { return token_queue.peek (n); }
   // Peeks the current token.
   const_TokenPtr peek_token () { return peek_token (0); }
+
+  // Builds a token from the input queue.
+  TokenPtr build_token ();
 
   // Advances current token to n + 1 tokens ahead of current position.
   void skip_token (int n);

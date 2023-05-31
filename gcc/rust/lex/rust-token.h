@@ -386,6 +386,9 @@ public:
   // Gets location of the token.
   Location get_locus () const { return locus; }
 
+  // Set location of the token.
+  void set_locus (Location locus) { this->locus = locus; }
+
   // Gets string description of the token.
   const std::string &
   get_str () const; /*{

@@ -57,6 +57,12 @@ convert (Location location)
   return ProcMacro::Span::make_span (location.gcc_location (), 0);
 }
 
+static Location
+convert (ProcMacro::Span span)
+{
+  return Location (span.start);
+}
+
 static void
 handle_suffix (ProcMacro::TokenStream &ts, const const_TokenPtr &token,
 	       ProcMacro::LitKind kind)
@@ -275,10 +281,10 @@ from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
   if (ident.is_raw)
     value = "r#" + value;
 
-  // TODO: Inject span -> for now spans are not stored in Ident, once changed
-  // the span should be injected in the built token below.
   Lexer lexer (value);
-  result.push_back (lexer.peek_token ());
+  auto token = lexer.build_token ();
+  token->set_locus (convert (ident.span));
+  result.push_back (token);
 }
 
 /**
@@ -292,6 +298,7 @@ from_literal (const ProcMacro::Literal &literal,
 	      std::vector<const_TokenPtr> &result)
 {
   auto lookup = suffixes.lookup (literal.suffix.to_string ());
+  auto loc = convert (literal.span);
   auto suffix
     = suffixes.is_iter_ok (lookup) ? lookup->second : CORETYPE_UNKNOWN;
   // FIXME: Add spans instead of empty locations
@@ -299,27 +306,25 @@ from_literal (const ProcMacro::Literal &literal,
     {
     case ProcMacro::BYTE:
       result.push_back (
-	Token::make_byte_char (Location (), literal.text.to_string ()[0]));
+	Token::make_byte_char (loc, literal.text.to_string ()[0]));
       break;
     case ProcMacro::CHAR:
-      result.push_back (
-	Token::make_char (Location (), literal.text.to_string ()[0]));
+      result.push_back (Token::make_char (loc, literal.text.to_string ()[0]));
       break;
     case ProcMacro::INTEGER:
       result.push_back (
-	Token::make_int (Location (), literal.text.to_string (), suffix));
+	Token::make_int (loc, literal.text.to_string (), suffix));
       break;
     case ProcMacro::FLOAT:
       result.push_back (
-	Token::make_float (Location (), literal.text.to_string (), suffix));
+	Token::make_float (loc, literal.text.to_string (), suffix));
       break;
     case ProcMacro::STR:
-      result.push_back (
-	Token::make_string (Location (), literal.text.to_string ()));
+      result.push_back (Token::make_string (loc, literal.text.to_string ()));
       break;
     case ProcMacro::BYTE_STR:
       result.push_back (
-	Token::make_byte_string (Location (), literal.text.to_string ()));
+	Token::make_byte_string (loc, literal.text.to_string ()));
       break;
     // FIXME: Handle raw string
     case ProcMacro::STR_RAW:
@@ -347,7 +352,9 @@ from_punct (const ProcMacro::Punct &punct, std::vector<std::uint32_t> &acc,
       // TODO: UTF-8 string
       std::string whole (acc.begin (), acc.end ());
       auto lexer = Lexer (whole);
-      result.push_back (lexer.peek_token ());
+      auto token = lexer.build_token ();
+      token->set_locus (convert (punct.span));
+      result.push_back (token);
       acc.clear ();
     }
 }
@@ -362,22 +369,23 @@ from_punct (const ProcMacro::Punct &punct, std::vector<std::uint32_t> &acc,
 static void
 from_group (const ProcMacro::Group &g, std::vector<const_TokenPtr> &result)
 {
+  auto loc = convert (g.span);
   switch (g.delimiter)
     {
     case ProcMacro::PARENTHESIS:
-      result.push_back (Token::make (LEFT_PAREN, Location ()));
+      result.push_back (Token::make (LEFT_PAREN, loc));
       from_tokenstream (g.stream, result);
-      result.push_back (Token::make (RIGHT_PAREN, Location ()));
+      result.push_back (Token::make (RIGHT_PAREN, loc));
       break;
     case ProcMacro::BRACE:
-      result.push_back (Token::make (LEFT_CURLY, Location ()));
+      result.push_back (Token::make (LEFT_CURLY, loc));
       from_tokenstream (g.stream, result);
-      result.push_back (Token::make (RIGHT_CURLY, Location ()));
+      result.push_back (Token::make (RIGHT_CURLY, loc));
       break;
     case ProcMacro::BRACKET:
-      result.push_back (Token::make (LEFT_SQUARE, Location ()));
+      result.push_back (Token::make (LEFT_SQUARE, loc));
       from_tokenstream (g.stream, result);
-      result.push_back (Token::make (RIGHT_SQUARE, Location ()));
+      result.push_back (Token::make (RIGHT_SQUARE, loc));
       break;
     case ProcMacro::NONE:
       from_tokenstream (g.stream, result);
