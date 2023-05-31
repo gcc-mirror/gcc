@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 // Default definitions for floating point operators.
 
 bool
-range_operator_float::fold_range (frange &r, tree type,
+range_operator::fold_range (frange &r, tree type,
 				  const frange &op1, const frange &op2,
 				  relation_trio trio) const
 {
@@ -121,7 +121,7 @@ range_operator_float::fold_range (frange &r, tree type,
 // MAYBE_NAN is set to TRUE if, in addition to any result in LB or
 // UB, the final range has the possibility of a NAN.
 void
-range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
+range_operator::rv_fold (REAL_VALUE_TYPE &lb,
 			       REAL_VALUE_TYPE &ub,
 			       bool &maybe_nan,
 			       tree type ATTRIBUTE_UNUSED,
@@ -137,7 +137,7 @@ range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
 }
 
 bool
-range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
+range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 				  tree type ATTRIBUTE_UNUSED,
 				  const frange &lh ATTRIBUTE_UNUSED,
 				  const irange &rh ATTRIBUTE_UNUSED,
@@ -147,7 +147,7 @@ range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
+range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 				  tree type ATTRIBUTE_UNUSED,
 				  const frange &lh ATTRIBUTE_UNUSED,
 				  const frange &rh ATTRIBUTE_UNUSED,
@@ -157,7 +157,7 @@ range_operator_float::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op2 ATTRIBUTE_UNUSED,
@@ -167,7 +167,7 @@ range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const irange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op2 ATTRIBUTE_UNUSED,
@@ -177,7 +177,7 @@ range_operator_float::op1_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op1 ATTRIBUTE_UNUSED,
@@ -187,7 +187,7 @@ range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
+range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const irange &lhs ATTRIBUTE_UNUSED,
 				 const frange &op1 ATTRIBUTE_UNUSED,
@@ -197,7 +197,7 @@ range_operator_float::op2_range (frange &r ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -206,7 +206,7 @@ range_operator_float::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -215,7 +215,7 @@ range_operator_float::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -224,7 +224,7 @@ range_operator_float::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
+range_operator::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
 					const frange &op1 ATTRIBUTE_UNUSED,
 					const frange &op2 ATTRIBUTE_UNUSED,
 					relation_kind) const
@@ -233,13 +233,7 @@ range_operator_float::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator_float::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) const
-{
-  return VREL_VARYING;
-}
-
-relation_kind
-range_operator_float::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) const
+range_operator::op1_op2_relation (const frange &lhs ATTRIBUTE_UNUSED) const
 {
   return VREL_VARYING;
 }
@@ -546,10 +540,10 @@ build_gt (frange &r, tree type, const frange &val)
 }
 
 
-class foperator_identity : public range_operator_float
+class foperator_identity : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
 public:
   bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
 		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
@@ -568,12 +562,12 @@ public:
 public:
 } fop_identity;
 
-class foperator_equal : public range_operator_float
+class foperator_equal : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -697,11 +691,11 @@ foperator_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_not_equal : public range_operator_float
+class foperator_not_equal : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -819,12 +813,12 @@ foperator_not_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_lt : public range_operator_float
+class foperator_lt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -935,12 +929,12 @@ foperator_lt::op2_range (frange &r,
   return true;
 }
 
-class foperator_le : public range_operator_float
+class foperator_le : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1045,12 +1039,12 @@ foperator_le::op2_range (frange &r,
   return true;
 }
 
-class foperator_gt : public range_operator_float
+class foperator_gt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1165,12 +1159,12 @@ foperator_gt::op2_range (frange &r,
   return true;
 }
 
-class foperator_ge : public range_operator_float
+class foperator_ge : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
-  using range_operator_float::op1_op2_relation;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1278,11 +1272,11 @@ foperator_ge::op2_range (frange &r, tree type,
 
 // UNORDERED_EXPR comparison.
 
-class foperator_unordered : public range_operator_float
+class foperator_unordered : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1352,11 +1346,11 @@ foperator_unordered::op1_range (frange &r, tree type,
 
 // ORDERED_EXPR comparison.
 
-class foperator_ordered : public range_operator_float
+class foperator_ordered : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1421,10 +1415,10 @@ foperator_ordered::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_negate : public range_operator_float
+class foperator_negate : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
 public:
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1467,10 +1461,10 @@ public:
   }
 } fop_negate;
 
-class foperator_abs : public range_operator_float
+class foperator_abs : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
 public:
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &,
@@ -1566,11 +1560,11 @@ foperator_abs::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_lt : public range_operator_float
+class foperator_unordered_lt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1677,11 +1671,11 @@ foperator_unordered_lt::op2_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_le : public range_operator_float
+class foperator_unordered_le : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1784,11 +1778,11 @@ foperator_unordered_le::op2_range (frange &r,
   return true;
 }
 
-class foperator_unordered_gt : public range_operator_float
+class foperator_unordered_gt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -1895,11 +1889,11 @@ foperator_unordered_gt::op2_range (frange &r,
   return true;
 }
 
-class foperator_unordered_ge : public range_operator_float
+class foperator_unordered_ge : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -2005,11 +1999,11 @@ foperator_unordered_ge::op2_range (frange &r, tree type,
   return true;
 }
 
-class foperator_unordered_equal : public range_operator_float
+class foperator_unordered_equal : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -2086,11 +2080,11 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_ltgt : public range_operator_float
+class foperator_ltgt : public range_operator
 {
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
@@ -2374,10 +2368,10 @@ float_widen_lhs_range (tree type, const frange &lhs)
   return ret;
 }
 
-class foperator_plus : public range_operator_float
+class foperator_plus : public range_operator
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2424,10 +2418,10 @@ private:
 } fop_plus;
 
 
-class foperator_minus : public range_operator_float
+class foperator_minus : public range_operator
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2476,7 +2470,7 @@ private:
 } fop_minus;
 
 
-class foperator_mult_div_base : public range_operator_float
+class foperator_mult_div_base : public range_operator
 {
 protected:
   // Given CP[0] to CP[3] floating point values rounded to -INF,
@@ -2503,8 +2497,8 @@ protected:
 
 class foperator_mult : public foperator_mult_div_base
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2659,8 +2653,8 @@ private:
 
 class foperator_div : public foperator_mult_div_base
 {
-  using range_operator_float::op1_range;
-  using range_operator_float::op2_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
 public:
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2814,12 +2808,16 @@ private:
 } fop_div;
 
 // Instantiate a range_op_table for floating point operations.
-static floating_op_table global_floating_table;
+class float_table : public range_op_table
+{
+  public:
+    float_table ();
+} global_floating_table;
 
 // Pointer to the float table so the dispatch code can access it.
-floating_op_table *floating_tree_table = &global_floating_table;
+range_op_table *floating_tree_table = &global_floating_table;
 
-floating_op_table::floating_op_table ()
+float_table::float_table ()
 {
   set (SSA_NAME, fop_identity);
   set (PAREN_EXPR, fop_identity);
@@ -2850,24 +2848,6 @@ floating_op_table::floating_op_table ()
   set (MINUS_EXPR, fop_minus);
   set (MULT_EXPR, fop_mult);
   set (RDIV_EXPR, fop_div);
-}
-
-// Return a pointer to the range_operator_float instance, if there is
-// one associated with tree_code CODE.
-
-range_operator_float *
-floating_op_table::operator[] (enum tree_code code)
-{
-  return m_range_tree[code];
-}
-
-// Add OP to the handler table for CODE.
-
-void
-floating_op_table::set (enum tree_code code, range_operator_float &op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL);
-  m_range_tree[code] = &op;
 }
 
 #if CHECKING_P

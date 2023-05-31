@@ -556,6 +556,7 @@ class operator_equal : public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -678,6 +679,7 @@ class operator_not_equal : public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -860,6 +862,7 @@ class operator_lt :  public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -982,6 +985,7 @@ class operator_le :  public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -1101,6 +1105,7 @@ class operator_gt :  public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -1219,6 +1224,7 @@ class operator_ge :  public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -1647,6 +1653,7 @@ class operator_minus : public range_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
 public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
@@ -2710,6 +2717,7 @@ class operator_cast: public range_operator
 {
   using range_operator::fold_range;
   using range_operator::op1_range;
+  using range_operator::lhs_op1_relation;
 public:
   virtual bool fold_range (irange &r, tree type,
 			   const irange &op1,
@@ -3055,6 +3063,7 @@ class operator_bitwise_and : public range_operator
 {
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
 public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
@@ -4410,6 +4419,7 @@ operator_addr_expr::op1_range (irange &r, tree type,
 
 class pointer_plus_operator : public range_operator
 {
+  using range_operator::op2_range;
 public:
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
@@ -4719,7 +4729,7 @@ get_handler (enum tree_code code, tree type)
 
 // Return the floating point operator for CODE or NULL if none available.
 
-static inline range_operator_float *
+static inline range_operator *
 get_float_handler (enum tree_code code, tree)
 {
   return (*floating_tree_table)[code];

@@ -268,10 +268,10 @@ gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
 // --------------------------------------------------------------------
 
 // Implement range operator for float CFN_BUILT_IN_CONSTANT_P.
-class cfn_constant_float_p : public range_operator_float
+class cfn_constant_float_p : public range_operator
 {
 public:
-  using range_operator_float::fold_range;
+  using range_operator::fold_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
 			   const irange &, relation_trio) const
   {
@@ -319,6 +319,7 @@ class cfn_pass_through_arg1 : public range_operator
 {
 public:
   using range_operator::fold_range;
+  using range_operator::op1_range;
   virtual bool fold_range (irange &r, tree, const irange &lh,
 			   const irange &, relation_trio) const
   {
@@ -334,11 +335,11 @@ public:
 } op_cfn_pass_through_arg1;
 
 // Implement range operator for CFN_BUILT_IN_SIGNBIT.
-class cfn_signbit : public range_operator_float
+class cfn_signbit : public range_operator
 {
 public:
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
   virtual bool fold_range (irange &r, tree type, const frange &lh,
 			   const irange &, relation_trio) const override
   {
@@ -373,10 +374,10 @@ public:
 } op_cfn_signbit;
 
 // Implement range operator for CFN_BUILT_IN_COPYSIGN
-class cfn_copysign : public range_operator_float
+class cfn_copysign : public range_operator
 {
 public:
-  using range_operator_float::fold_range;
+  using range_operator::fold_range;
   virtual bool fold_range (frange &r, tree type, const frange &lh,
 			   const frange &rh, relation_trio) const override
   {
@@ -464,11 +465,11 @@ frange_mpfr_arg1 (REAL_VALUE_TYPE *res_low, REAL_VALUE_TYPE *res_high,
   return true;
 }
 
-class cfn_sqrt : public range_operator_float
+class cfn_sqrt : public range_operator
 {
 public:
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
   virtual bool fold_range (frange &r, tree type,
 			   const frange &lh, const frange &,
 			   relation_trio) const final override
@@ -599,11 +600,11 @@ public:
   }
 } op_cfn_sqrt;
 
-class cfn_sincos : public range_operator_float
+class cfn_sincos : public range_operator
 {
 public:
-  using range_operator_float::fold_range;
-  using range_operator_float::op1_range;
+  using range_operator::fold_range;
+  using range_operator::op1_range;
   cfn_sincos (combined_fn cfn) { m_cfn = cfn; }
   virtual bool fold_range (frange &r, tree type,
 			   const frange &lh, const frange &,
