@@ -1,3 +1,11 @@
+2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c:
+	Support both definitions of int32_t.
+
 2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/82931

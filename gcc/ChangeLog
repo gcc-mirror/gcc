@@ -1,3 +1,9 @@
+2023-05-30  Andreas Schwab  <schwab@suse.de>
+
+	PR target/110036
+	* config/riscv/riscv.cc (riscv_asan_shadow_offset): Update to
+	match libsanitizer.
+
 2023-05-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/104327
