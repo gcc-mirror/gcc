@@ -4929,24 +4929,6 @@ pointer_table::pointer_table ()
   set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
-// Cast the range in R to TYPE.
-
-bool
-range_cast (vrange &r, tree type)
-{
-  Value_Range tmp (r);
-  Value_Range varying (type);
-  varying.set_varying (type);
-  range_op_handler op (CONVERT_EXPR, type);
-  // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
-    {
-      r.set_varying (type);
-      return false;
-    }
-  return true;
-}
-
 #if CHECKING_P
 #include "selftest.h"
 

@@ -216,7 +216,49 @@ protected:
   range_operator *m_operator;
 };
 
-extern bool range_cast (vrange &, tree type);
+// Cast the range in R to TYPE if R supports TYPE.
+
+inline bool
+range_cast (vrange &r, tree type)
+{
+  gcc_checking_assert (r.supports_type_p (type));
+  Value_Range tmp (r);
+  Value_Range varying (type);
+  varying.set_varying (type);
+  range_op_handler op (CONVERT_EXPR, type);
+  // Call op_convert, if it fails, the result is varying.
+  if (!op || !op.fold_range (r, type, tmp, varying))
+    {
+      r.set_varying (type);
+      return false;
+    }
+  return true;
+}
+
+// Range cast which is capable of switching range kinds.
+// ie for float to int.
+
+inline bool
+range_cast (Value_Range &r, tree type)
+{
+  Value_Range tmp (r);
+  Value_Range varying (type);
+  varying.set_varying (type);
+
+  // Ensure we are in the correct mode for the call to fold.
+  r.set_type (type);
+
+  range_op_handler op (CONVERT_EXPR, type);
+  // Call op_convert, if it fails, the result is varying.
+  if (!op || !op.fold_range (r, type, tmp, varying))
+    {
+      r.set_varying (type);
+      return false;
+    }
+  return true;
+}
+
+
 extern void wi_set_zero_nonzero_bits (tree type,
 				      const wide_int &, const wide_int &,
 				      wide_int &maybe_nonzero,
