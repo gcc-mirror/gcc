@@ -178,8 +178,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // Resolve the trait now
-  TraitReference *trait_ref
-    = TraitResolver::Resolve (*qual_path_type.get_trait ().get ());
+  std::unique_ptr<HIR::TypePath> &trait_path_ref = qual_path_type.get_trait ();
+  TraitReference *trait_ref = TraitResolver::Resolve (*trait_path_ref.get ());
   if (trait_ref->is_error ())
     return;
 
@@ -201,36 +201,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   // inherit the bound
   root->inherit_bounds ({specified_bound});
 
-  // setup the associated types
-  const TraitReference *specified_bound_ref = specified_bound.get ();
-  auto candidates = TypeBoundsProbe::Probe (root);
-  AssociatedImplTrait *associated_impl_trait = nullptr;
-  for (auto &probed_bound : candidates)
-    {
-      const TraitReference *bound_trait_ref = probed_bound.first;
-      const HIR::ImplBlock *associated_impl = probed_bound.second;
-
-      HirId impl_block_id = associated_impl->get_mappings ().get_hirid ();
-      AssociatedImplTrait *associated = nullptr;
-      bool found_impl_trait
-	= context->lookup_associated_trait_impl (impl_block_id, &associated);
-      if (found_impl_trait)
-	{
-	  bool found_trait = specified_bound_ref->is_equal (*bound_trait_ref);
-	  bool found_self = associated->get_self ()->can_eq (root, false);
-	  if (found_trait && found_self)
-	    {
-	      associated_impl_trait = associated;
-	      break;
-	    }
-	}
-    }
-
-  if (associated_impl_trait != nullptr)
-    {
-      associated_impl_trait->setup_associated_types (root, specified_bound);
-    }
-
   // lookup the associated item from the specified bound
   std::unique_ptr<HIR::TypePathSegment> &item_seg
     = path.get_associated_segment ();
@@ -243,8 +213,57 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       return;
     }
 
-  // infer the root type
-  translated = item.get_tyty_for_receiver (root);
+  // we try to look for the real impl item if possible
+  HIR::ImplItem *impl_item = nullptr;
+  if (root->is_concrete ())
+    {
+      // lookup the associated impl trait for this if we can (it might be
+      // generic)
+      AssociatedImplTrait *associated_impl_trait
+	= lookup_associated_impl_block (specified_bound, root);
+      if (associated_impl_trait != nullptr)
+	{
+	  associated_impl_trait->setup_associated_types (root, specified_bound);
+
+	  for (auto &i :
+	       associated_impl_trait->get_impl_block ()->get_impl_items ())
+	    {
+	      bool found = i->get_impl_item_name ().compare (
+			     item_seg_identifier.as_string ())
+			   == 0;
+	      if (found)
+		{
+		  impl_item = i.get ();
+		  break;
+		}
+	    }
+	}
+    }
+
+  NodeId root_resolved_node_id = UNKNOWN_NODEID;
+  if (impl_item == nullptr)
+    {
+      // this may be valid as there could be a default trait implementation here
+      // and we dont need to worry if the trait item is actually implemented or
+      // not because this will have already been validated as part of the trait
+      // impl block
+      translated = item.get_tyty_for_receiver (root);
+      root_resolved_node_id
+	= item.get_raw_item ()->get_mappings ().get_nodeid ();
+    }
+  else
+    {
+      HirId impl_item_id = impl_item->get_impl_mappings ().get_hirid ();
+      bool ok = query_type (impl_item_id, &translated);
+      if (!ok)
+	{
+	  // FIXME
+	  // I think query_type should error if required here anyway
+	  return;
+	}
+
+      root_resolved_node_id = impl_item->get_impl_mappings ().get_nodeid ();
+    }
 
   // turbo-fish segment path::<ty>
   if (item_seg->get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
@@ -270,8 +289,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // continue on as a path-in-expression
-  const TraitItemReference *trait_item_ref = item.get_raw_item ();
-  NodeId root_resolved_node_id = trait_item_ref->get_mappings ().get_nodeid ();
   bool fully_resolved = path.get_segments ().empty ();
   if (fully_resolved)
     {
