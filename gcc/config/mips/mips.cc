@@ -8286,8 +8286,9 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
      For ISA_HAS_LWL_LWR we rely on the lwl/lwr & swl/swr load. Otherwise
      picking the minimum of alignment or BITS_PER_WORD gets us the
      desired size for bits.  */
-
-  if (!ISA_HAS_LWL_LWR)
+  if (ISA_HAS_UNALIGNED_ACCESS)
+    bits = BITS_PER_WORD;
+  else if (!ISA_HAS_LWL_LWR)
     bits = MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest)));
   else
     {
@@ -8309,7 +8310,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
     {
       regs[i] = gen_reg_rtx (mode);
-      if (MEM_ALIGN (src) >= bits)
+      if (ISA_HAS_UNALIGNED_ACCESS || MEM_ALIGN (src) >= bits)
 	mips_emit_move (regs[i], adjust_address (src, mode, offset));
       else
 	{
@@ -8322,7 +8323,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 
   /* Copy the chunks to the destination.  */
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
-    if (MEM_ALIGN (dest) >= bits)
+    if (ISA_HAS_UNALIGNED_ACCESS || MEM_ALIGN (dest) >= bits)
       mips_emit_move (adjust_address (dest, mode, offset), regs[i]);
     else
       {
@@ -8418,25 +8419,26 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 bool
 mips_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if (!ISA_HAS_LWL_LWR
+  if (!CONST_INT_P (length))
+    return false;
+
+  if (mips_isa_rev >= 6 && !ISA_HAS_UNALIGNED_ACCESS
       && (MEM_ALIGN (src) < MIPS_MIN_MOVE_MEM_ALIGN
 	  || MEM_ALIGN (dest) < MIPS_MIN_MOVE_MEM_ALIGN))
     return false;
 
-  if (CONST_INT_P (length))
+  if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER)
     {
-      if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_STRAIGHT)
-	{
-	  mips_block_move_straight (dest, src, INTVAL (length));
-	  return true;
-	}
-      else if (optimize)
-	{
-	  mips_block_move_loop (dest, src, INTVAL (length),
-				MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER);
-	  return true;
-	}
+      mips_block_move_straight (dest, src, INTVAL (length));
+      return true;
     }
+  else if (optimize)
+    {
+      mips_block_move_loop (dest, src, INTVAL (length),
+			    MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER);
+      return true;
+    }
+
   return false;
 }
 
