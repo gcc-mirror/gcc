@@ -18,6 +18,7 @@
 #include "rust-token-converter.h"
 #include "libproc_macro/proc_macro.h"
 #include "bi-map.h"
+#include "line-map.h"
 
 #include <string>
 
@@ -53,7 +54,7 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
 static ProcMacro::Span
 convert (Location location)
 {
-  return ProcMacro::Span::make_unknown ();
+  return ProcMacro::Span::make_span (location.gcc_location (), 0);
 }
 
 static void
