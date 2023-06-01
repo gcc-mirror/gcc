@@ -136,12 +136,15 @@ class TestResult(object):
          self.name,
          self.description) = _VALID_TEST_RESULTS_REX.match(summary_line).groups()
       except:
-        print('Failed to parse summary line: "%s"' % summary_line)
+        print('Failed to parse summary line: "%s"' % summary_line,
+              file=sys.stderr)
         raise
       self.ordinal = ordinal
       if tool == None or exp == None:
         # .sum file seem to be broken.  There was no "tool" and/or "exp"
         # lines preceding this result.
+        print(f'.sum file seems to be broken: tool="{tool}", exp="{exp}", summary_line="{summary_line}"',
+              file=sys.stderr)
         raise
       self.tool = tool
       self.exp = exp
