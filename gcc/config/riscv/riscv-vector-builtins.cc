@@ -2944,6 +2944,8 @@ check_required_extensions (const function_instance &instance)
 
   uint64_t riscv_isa_flags = 0;
 
+  if (TARGET_VECTOR_ELEN_FP_16)
+    riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_16;
   if (TARGET_VECTOR_ELEN_FP_32)
     riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_32;
   if (TARGET_VECTOR_ELEN_FP_64)

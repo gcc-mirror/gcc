@@ -108,6 +108,7 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_ELEN_FP_64 (1 << 3) /* Require FP ELEN >= 64.  */
 #define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
 #define RVV_REQUIRE_MIN_VLEN_64 (1 << 5)	/* Require TARGET_MIN_VLEN >= 64.  */
+#define RVV_REQUIRE_ELEN_FP_16 (1 << 6) /* Require FP ELEN >= 32.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index

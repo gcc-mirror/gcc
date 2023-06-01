@@ -54,7 +54,7 @@ valid_type (unsigned sew, int lmul_log2, bool float_p)
     case 8:
       return lmul_log2 >= -3 && !float_p;
     case 16:
-      return lmul_log2 >= -2 && !float_p;
+      return lmul_log2 >= -2;
     case 32:
       return lmul_log2 >= -1;
     case 64:
@@ -71,6 +71,9 @@ valid_type (unsigned sew, int lmul_log2, unsigned nf, bool float_p)
     return false;
 
   if (nf > 8 || nf < 1)
+    return false;
+
+  if (sew == 16 && nf != 1 && float_p) // Disable FP16 tuple in temporarily.
     return false;
 
   switch (lmul_log2)
@@ -342,7 +345,7 @@ main (int argc, const char **argv)
 	    fprintf (fp, ")\n");
 	  }
   // Build for vfloat
-  for (unsigned sew : {32, 64})
+  for (unsigned sew : {16, 32, 64})
     for (int lmul_log2 : {-3, -2, -1, 0, 1, 2, 3})
       for (unsigned nf : {1, 2, 3, 4, 5, 6, 7, 8})
 	{

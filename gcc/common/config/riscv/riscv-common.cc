@@ -1248,6 +1248,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
   {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
   {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
+  {"zvfhmin",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
+  {"zvfh",     &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
 
   {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
   {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},

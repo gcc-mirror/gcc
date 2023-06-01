@@ -490,6 +490,26 @@ DEF_RVV_TYPE (vint64m8_t, 15, __rvv_int64m8_t, int64, VNx16DI, VNx8DI, VOID, _i6
 DEF_RVV_TYPE (vuint64m8_t, 16, __rvv_uint64m8_t, uint64, VNx16DI, VNx8DI, VOID, _u64m8,
 	      _u64, _e64m8)
 
+/* Enabled if TARGET_VECTOR_ELEN_FP_16 && 9TARGET_ZVFH or TARGET_ZVFHMIN).  */
+/* LMUL = 1/4.  */
+DEF_RVV_TYPE (vfloat16mf4_t, 18, __rvv_float16mf4_t, float16, VNx2HF, VNx1HF, VOID,
+	      _f16mf4, _f16, _e16mf4)
+/* LMUL = 1/2.  */
+DEF_RVV_TYPE (vfloat16mf2_t, 18, __rvv_float16mf2_t, float16, VNx4HF, VNx2HF, VNx1HF,
+	      _f16mf2, _f16, _e16mf2)
+/* LMUL = 1.  */
+DEF_RVV_TYPE (vfloat16m1_t, 17, __rvv_float16m1_t, float16, VNx8HF, VNx4HF, VNx2HF,
+	      _f16m1, _f16, _e16m1)
+/* LMUL = 2.  */
+DEF_RVV_TYPE (vfloat16m2_t, 17, __rvv_float16m2_t, float16, VNx16HF, VNx8HF, VNx4HF,
+	      _f16m2, _f16, _e16m2)
+/* LMUL = 4.  */
+DEF_RVV_TYPE (vfloat16m4_t, 17, __rvv_float16m4_t, float16, VNx32HF, VNx16HF, VNx8HF,
+	      _f16m4, _f16, _e16m4)
+/* LMUL = 8.  */
+DEF_RVV_TYPE (vfloat16m8_t, 16, __rvv_float16m8_t, float16, VNx64HF, VNx32HF, VNx16HF,
+	      _f16m8, _f16, _e16m8)
+
 /* Disable all when !TARGET_VECTOR_ELEN_FP_32.  */
 /* LMUL = 1/2:
    Only enble when TARGET_MIN_VLEN > 32.

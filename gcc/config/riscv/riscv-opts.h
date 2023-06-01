@@ -154,6 +154,8 @@ enum riscv_entity
 #define MASK_VECTOR_ELEN_64    (1 << 1)
 #define MASK_VECTOR_ELEN_FP_32 (1 << 2)
 #define MASK_VECTOR_ELEN_FP_64 (1 << 3)
+/* Align the bit index to riscv-vector-builtins.h.  */
+#define MASK_VECTOR_ELEN_FP_16 (1 << 6)
 
 #define TARGET_VECTOR_ELEN_32 \
   ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_32) != 0)
@@ -163,6 +165,8 @@ enum riscv_entity
   ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_FP_32) != 0)
 #define TARGET_VECTOR_ELEN_FP_64 \
   ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_FP_64) != 0)
+#define TARGET_VECTOR_ELEN_FP_16 \
+  ((riscv_vector_elen_flags & MASK_VECTOR_ELEN_FP_16) != 0)
 
 #define MASK_ZVL32B    (1 <<  0)
 #define MASK_ZVL64B    (1 <<  1)
