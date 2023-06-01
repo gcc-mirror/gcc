@@ -1,3 +1,16 @@
+2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/nothing-2.f90: Remove one dg-error.
+	* gfortran.dg/gomp/pr79154-2.f90: Update expected dg-error wording.
+	* gfortran.dg/gomp/pr79154-simd.f90: Likewise.
+	* gfortran.dg/gomp/pure-1.f90: New test.
+	* gfortran.dg/gomp/pure-2.f90: New test.
+	* gfortran.dg/gomp/pure-3.f90: New test.
+	* gfortran.dg/gomp/pure-4.f90: New test.
+
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

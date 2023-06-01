@@ -1,3 +1,10 @@
+2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark pure-directive handling as 'Y'.
+
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

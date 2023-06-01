@@ -388,7 +388,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
-      @tab N @tab
+      @tab Y @tab
 @item New @code{allocators} directive for Fortran @tab N @tab
 @item Deprecation of @code{allocate} directive for Fortran
       allocatables/pointers @tab N @tab
