@@ -60,9 +60,10 @@ import os
 import re
 import sys
 
-# Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
-_VALID_TEST_RESULTS_REX = re.compile("%s" % "|".join(_VALID_TEST_RESULTS))
+# <STATE>: <NAME> <DESCRIPTION"
+_VALID_TEST_RESULTS_REX = re.compile('(%s):\s*(\S+)\s*(.*)'
+                                     % "|".join(_VALID_TEST_RESULTS))
 
 # Formats of .sum file sections
 _TOOL_LINE_FORMAT = '\t\t=== %s tests ===\n'
@@ -131,8 +132,7 @@ class TestResult(object):
       try:
         (self.state,
          self.name,
-         self.description) = re.match(r'([A-Z]+):\s*(\S+)\s*(.*)',
-                                      summary_line).groups()
+         self.description) = _VALID_TEST_RESULTS_REX.match(summary_line).groups()
       except:
         print('Failed to parse summary line: "%s"' % summary_line)
         raise
