@@ -974,7 +974,7 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
 }
 
-/* Convert COMPARE to vector mode.  */
+/* Convert CCZmode COMPARE to vector mode.  */
 
 rtx
 scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
@@ -1023,7 +1023,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
 	  op11 = tmp;
 	}
-      return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, op11, op12),
+      return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, op11, op12),
 			     UNSPEC_PTEST);
     }
   else
@@ -1052,7 +1052,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
       src = tmp;
     }
 
-  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
+  return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
 }
 
 /* Helper function for converting INSN to vector mode.  */
@@ -1219,7 +1219,7 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 
@@ -1726,7 +1726,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 

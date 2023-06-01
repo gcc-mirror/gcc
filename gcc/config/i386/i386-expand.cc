@@ -2370,8 +2370,8 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
       tmp = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
       tmp = gen_lowpart (p_mode, tmp);
-      emit_insn (gen_rtx_SET (gen_rtx_REG (CCmode, FLAGS_REG),
-			      gen_rtx_UNSPEC (CCmode,
+      emit_insn (gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
+			      gen_rtx_UNSPEC (CCZmode,
 					      gen_rtvec (2, tmp, tmp),
 					      UNSPEC_PTEST)));
       tmp = gen_rtx_fmt_ee (code, VOIDmode, flag, const0_rtx);

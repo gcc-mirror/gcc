@@ -15987,6 +15987,29 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
     }
 }
 
+/* Return TRUE or FALSE depending on whether the ptest instruction
+   INSN has source and destination with suitable matching CC modes.  */
+
+bool
+ix86_match_ptest_ccmode (rtx insn)
+{
+  rtx set, src;
+  machine_mode set_mode;
+
+  set = PATTERN (insn);
+  gcc_assert (GET_CODE (set) == SET);
+  src = SET_SRC (set);
+  gcc_assert (GET_CODE (src) == UNSPEC
+	      && XINT (src, 1) == UNSPEC_PTEST);
+
+  set_mode = GET_MODE (src);
+  if (set_mode != CCZmode
+      && set_mode != CCCmode
+      && set_mode != CCmode)
+    return false;
+  return GET_MODE (SET_DEST (set)) == set_mode;
+}
+
 /* Return the fixed registers used for condition codes.  */
 
 static bool

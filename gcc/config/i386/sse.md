@@ -20423,10 +20423,10 @@
 		    UNSPEC_MOVMSK)
 		 (match_operand 2 "const_int_operand")))]
   "TARGET_SSE4_1 && (INTVAL (operands[2]) == (int) (<vi1avx2const>))"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(match_dup 0)
-		    (match_dup 0)]
-		   UNSPEC_PTEST))])
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ [(match_dup 0)
+		     (match_dup 0)]
+		    UNSPEC_PTEST))])
 
 (define_expand "sse2_maskmovdqu"
   [(set (match_operand:V16QI 0 "memory_operand")
@@ -23078,13 +23078,13 @@
    (set_attr "mode" "<MODE>")])
 
 ;; ptest is very similar to comiss and ucomiss when setting FLAGS_REG.
-;; But it is not a really compare instruction.
-(define_insn "<sse4_1>_ptest<mode>"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(match_operand:V_AVX 0 "register_operand" "Yr, *x, x")
-		    (match_operand:V_AVX 1 "vector_operand" "YrBm, *xBm, xm")]
-		   UNSPEC_PTEST))]
-  "TARGET_SSE4_1"
+;; But it is not really a compare instruction.
+(define_insn "*<sse4_1>_ptest<mode>"
+  [(set (reg FLAGS_REG)
+	(unspec [(match_operand:V_AVX 0 "register_operand" "Yr, *x, x")
+		 (match_operand:V_AVX 1 "vector_operand" "YrBm, *xBm, xm")]
+		UNSPEC_PTEST))]
+  "TARGET_SSE4_1 && ix86_match_ptest_ccmode (insn)"
   "%vptest\t{%1, %0|%0, %1}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecomi")
@@ -23096,6 +23096,30 @@
      (const_string "vector")
      (const_string "*")))
    (set_attr "mode" "<sseinsnmode>")])
+
+;; Expand a ptest to set the Z flag.
+(define_expand "<sse4_1>_ptestz<mode>"
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ [(match_operand:V_AVX 0 "register_operand")
+		     (match_operand:V_AVX 1 "vector_operand")]
+		    UNSPEC_PTEST))]
+  "TARGET_SSE4_1")
+
+;; Expand a ptest to set the C flag
+(define_expand "<sse4_1>_ptestc<mode>"
+  [(set (reg:CCC FLAGS_REG)
+	(unspec:CCC [(match_operand:V_AVX 0 "register_operand")
+		     (match_operand:V_AVX 1 "vector_operand")]
+		    UNSPEC_PTEST))]
+  "TARGET_SSE4_1")
+
+;; Expand a ptest to set both the Z and C flags
+(define_expand "<sse4_1>_ptest<mode>"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC [(match_operand:V_AVX 0 "register_operand")
+		    (match_operand:V_AVX 1 "vector_operand")]
+		   UNSPEC_PTEST))]
+  "TARGET_SSE4_1")
 
 (define_insn "ptesttf2"
   [(set (reg:CC FLAGS_REG)
@@ -23111,17 +23135,17 @@
    (set_attr "mode" "TI")])
 
 (define_insn_and_split "*ptest<mode>_and"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(and:V_AVX (match_operand:V_AVX 0 "register_operand")
-			       (match_operand:V_AVX 1 "vector_operand"))
-		    (and:V_AVX (match_dup 0) (match_dup 1))]
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ [(and:V_AVX (match_operand:V_AVX 0 "register_operand")
+				(match_operand:V_AVX 1 "vector_operand"))
+		     (and:V_AVX (match_dup 0) (match_dup 1))]
 		   UNSPEC_PTEST))]
   "TARGET_SSE4_1
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
-  [(set (reg:CC FLAGS_REG)
-	(unspec:CC [(match_dup 0) (match_dup 1)] UNSPEC_PTEST))])
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ [(match_dup 0) (match_dup 1)] UNSPEC_PTEST))])
 
 (define_expand "nearbyint<mode>2"
   [(set (match_operand:VFH 0 "register_operand")

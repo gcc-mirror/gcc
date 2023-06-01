@@ -140,6 +140,7 @@ extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
 extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
+extern bool ix86_match_ptest_ccmode (rtx);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
 extern bool ix86_expand_int_movcc (rtx[]);
