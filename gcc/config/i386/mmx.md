@@ -3667,6 +3667,27 @@
   DONE;
 })
 
+(define_insn "truncv2hiv2qi2"
+  [(set (match_operand:V2QI 0 "register_operand" "=v")
+	(truncate:V2QI
+	  (match_operand:V2HI 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_AVX512BW"
+  "vpmovwb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_mode_iterator V2QI_V2HI [V2QI V2HI])
+(define_insn "truncv2si<mode>2"
+  [(set (match_operand:V2QI_V2HI 0 "register_operand" "=v")
+	(truncate:V2QI_V2HI
+	  (match_operand:V2SI 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_MMX_WITH_SSE"
+  "vpmovd<mmxvecsize>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
 ;; Pack/unpack vector modes
 (define_mode_attr mmxpackmode
   [(V4HI "V8QI") (V2SI "V4HI")])
