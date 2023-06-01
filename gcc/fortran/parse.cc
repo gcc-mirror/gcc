@@ -934,7 +934,16 @@ decode_omp_directive (void)
      first (those also shall not turn off implicit pure).  */
   switch (c)
     {
+    case 'a':
+      /* For -fopenmp-simd, ignore 'assumes'; note no clause starts with 's'. */
+      if (!flag_openmp && gfc_match ("assumes") == MATCH_YES)
+	break;
+      matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
+      matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
+      break;
     case 'd':
+      matchds ("declare reduction", gfc_match_omp_declare_reduction,
+	       ST_OMP_DECLARE_REDUCTION);
       matchds ("declare simd", gfc_match_omp_declare_simd,
 	       ST_OMP_DECLARE_SIMD);
       matchdo ("declare target", gfc_match_omp_declare_target,
@@ -942,16 +951,25 @@ decode_omp_directive (void)
       matchdo ("declare variant", gfc_match_omp_declare_variant,
 	       ST_OMP_DECLARE_VARIANT);
       break;
+    case 'e':
+      matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
+      matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      break;
     case 's':
+      matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
+      break;
+    case 'n':
+      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     }
 
   pure_ok = false;
   if (flag_openmp && gfc_pure (NULL))
     {
-      gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-		     "at %C may not appear in PURE procedures");
+      gfc_error_now ("OpenMP directive at %C is not pure and thus may not "
+		     "appear in a PURE procedure");
       gfc_error_recovery ();
       return ST_NONE;
     }
@@ -967,11 +985,6 @@ decode_omp_directive (void)
       else
 	matcho ("allocate", gfc_match_omp_allocate, ST_OMP_ALLOCATE);
       matcho ("allocators", gfc_match_omp_allocators, ST_OMP_ALLOCATORS);
-      /* For -fopenmp-simd, ignore 'assumes'; note no clause starts with 's'. */
-      if (!flag_openmp && gfc_match ("assumes") == MATCH_YES)
-	break;
-      matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
-      matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
       break;
     case 'b':
@@ -984,8 +997,6 @@ decode_omp_directive (void)
       matcho ("critical", gfc_match_omp_critical, ST_OMP_CRITICAL);
       break;
     case 'd':
-      matchds ("declare reduction", gfc_match_omp_declare_reduction,
-	       ST_OMP_DECLARE_REDUCTION);
       matcho ("depobj", gfc_match_omp_depobj, ST_OMP_DEPOBJ);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
@@ -999,9 +1010,7 @@ decode_omp_directive (void)
       matcho ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
-      matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
       matcho ("end allocators", gfc_match_omp_eos_error, ST_OMP_END_ALLOCATORS);
-      matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
@@ -1014,7 +1023,6 @@ decode_omp_directive (void)
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
       matchs ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
-      matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
       matcho ("end masked taskloop", gfc_match_omp_eos_error,
@@ -1160,7 +1168,6 @@ decode_omp_directive (void)
       matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
       break;
     case 's':
-      matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matcho ("scope", gfc_match_omp_scope, ST_OMP_SCOPE);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
@@ -1244,14 +1251,27 @@ decode_omp_directive (void)
   return ST_NONE;
 
  finish:
+  if (ret == ST_OMP_ERROR && new_st.ext.omp_clauses->at == OMP_AT_EXECUTION)
+    {
+      gfc_unset_implicit_pure (NULL);
+
+      if (gfc_pure (NULL))
+	{
+	  gfc_error_now ("OpenMP ERROR directive at %L with %<at(execution)%> "
+			 "clause in a PURE procedure", &old_locus);
+	  reject_statement ();
+	  gfc_error_recovery ();
+	  return ST_NONE;
+	}
+    }
   if (!pure_ok)
     {
       gfc_unset_implicit_pure (NULL);
 
       if (!flag_openmp && gfc_pure (NULL))
 	{
-	  gfc_error_now ("OpenMP directives other than SIMD or DECLARE TARGET "
-			 "at %C may not appear in PURE procedures");
+	  gfc_error_now ("OpenMP directive at %C is not pure and thus may not "
+			 "appear in a PURE procedure");
 	  reject_statement ();
 	  gfc_error_recovery ();
 	  return ST_NONE;
