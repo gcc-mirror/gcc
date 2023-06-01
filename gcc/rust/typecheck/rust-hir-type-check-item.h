@@ -20,6 +20,7 @@
 #define RUST_HIR_TYPE_CHECK_ITEM
 
 #include "rust-hir-type-check-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Resolver {

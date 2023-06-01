@@ -20,10 +20,8 @@
 #define RUST_HIR_PATH_PROBE_H
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
+#include "rust-hir-visitor.h"
 #include "rust-tyty.h"
-#include "rust-substitution-mapper.h"
-#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {

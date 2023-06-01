@@ -567,26 +567,34 @@ AssociatedImplTrait::setup_associated_types (
   TyTy::SubstitutionArgumentMappings associated_type_args (
     std::move (associated_arguments), {}, locus);
 
-  ImplTypeIterator iter (*impl, [&] (HIR::TypeAlias &type) {
-    TraitItemReference *resolved_trait_item = nullptr;
-    bool ok = trait->lookup_trait_item (type.get_new_type_name (),
-					&resolved_trait_item);
-    if (!ok)
-      return;
-    if (resolved_trait_item->get_trait_item_type ()
-	!= TraitItemReference::TraitItemType::TYPE)
-      return;
+  auto &impl_items = impl->get_impl_items ();
+  for (auto &impl_item : impl_items)
+    {
+      bool is_type_alias = impl_item->get_impl_item_type ()
+			   == HIR::ImplItem::ImplItemType::TYPE_ALIAS;
+      if (!is_type_alias)
+	continue;
 
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
-      return;
+      HIR::TypeAlias &type = *static_cast<HIR::TypeAlias *> (impl_item.get ());
 
-    // this might be generic
-    TyTy::BaseType *substituted
-      = SubstMapperInternal::Resolve (lookup, associated_type_args);
-    resolved_trait_item->associated_type_set (substituted);
-  });
-  iter.go ();
+      TraitItemReference *resolved_trait_item = nullptr;
+      bool ok = trait->lookup_trait_item (type.get_new_type_name (),
+					  &resolved_trait_item);
+      if (!ok)
+	continue;
+      if (resolved_trait_item->get_trait_item_type ()
+	  != TraitItemReference::TraitItemType::TYPE)
+	continue;
+
+      TyTy::BaseType *lookup;
+      if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
+	continue;
+
+      // this might be generic
+      TyTy::BaseType *substituted
+	= SubstMapperInternal::Resolve (lookup, associated_type_args);
+      resolved_trait_item->associated_type_set (substituted);
+    }
 
   return self_result;
 }
