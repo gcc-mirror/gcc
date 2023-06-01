@@ -242,6 +242,12 @@ BuiltinsContext::setup ()
 		  build_function_type (void_type_node, void_list_node),
 		  builtin_const | builtin_noreturn);
 
+  define_builtin ("expect", BUILT_IN_EXPECT, "__builtin_expect", "expect",
+		  build_function_type_list (long_integer_type_node,
+					    long_integer_type_node,
+					    long_integer_type_node, NULL_TREE),
+		  builtin_const);
+
   define_builtin ("memcpy", BUILT_IN_MEMCPY, "__builtin_memcpy", "memcpy",
 		  build_function_type_list (build_pointer_type (void_type_node),
 					    build_pointer_type (void_type_node),
