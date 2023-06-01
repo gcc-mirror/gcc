@@ -2808,8 +2808,10 @@ template <typename _Tp>
 	  return 16;
 
 	// ARM:
-	if constexpr (__have_neon_a64
-		      || (__have_neon_a32 && !is_same_v<_Tp, double>) )
+	if constexpr (__have_neon_a64)
+	  return 16;
+	if constexpr (__have_neon_a32 and (not is_floating_point_v<_Tp>
+					     or is_same_v<_Tp, float>))
 	  return 16;
 	if constexpr (__have_neon
 		      && sizeof(_Tp) < 8
