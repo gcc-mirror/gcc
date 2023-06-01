@@ -4141,7 +4141,7 @@ extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.cc */
 extern int delete_trivially_dead_insns (rtx_insn *, int);
-extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
+extern bool exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, machine_mode, int *, int *, bool);
 
 /* In dse.cc */
