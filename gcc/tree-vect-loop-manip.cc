@@ -483,7 +483,7 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 				 gimple_stmt_iterator loop_cond_gsi,
 				 rgroup_controls *rgc, tree niters,
 				 tree niters_skip, bool might_wrap_p,
-				 tree *iv_step)
+				 tree *iv_step, tree *compare_step)
 {
   tree compare_type = LOOP_VINFO_RGROUP_COMPARE_TYPE (loop_vinfo);
   tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
@@ -538,9 +538,9 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	   ...
 	   vect__4.8_28 = .LEN_LOAD (_17, 32B, _36, 0);
 	   ...
-	   ivtmp_35 = ivtmp_9 - _36;
+	   ivtmp_35 = ivtmp_9 - POLY_INT_CST [4, 4];
 	   ...
-	   if (ivtmp_35 != 0)
+	   if (ivtmp_9 > POLY_INT_CST [4, 4])
 	     goto <bb 4>; [83.33%]
 	   else
 	     goto <bb 5>; [16.67%]
@@ -549,13 +549,15 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
       tree step = rgc->controls.length () == 1 ? rgc->controls[0]
 					       : make_ssa_name (iv_type);
       /* Create decrement IV.  */
-      create_iv (nitems_total, MINUS_EXPR, step, NULL_TREE, loop, &incr_gsi,
-		 insert_after, &index_before_incr, &index_after_incr);
+      create_iv (nitems_total, MINUS_EXPR, nitems_step, NULL_TREE, loop,
+		 &incr_gsi, insert_after, &index_before_incr,
+		 &index_after_incr);
       gimple_seq_add_stmt (header_seq, gimple_build_assign (step, MIN_EXPR,
 							    index_before_incr,
 							    nitems_step));
       *iv_step = step;
-      return index_after_incr;
+      *compare_step = nitems_step;
+      return index_before_incr;
     }
 
   /* Create increment IV.  */
@@ -825,6 +827,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
      arbitrarily pick the last.  */
   tree test_ctrl = NULL_TREE;
   tree iv_step = NULL_TREE;
+  tree compare_step = NULL_TREE;
   rgroup_controls *rgc;
   rgroup_controls *iv_rgc = nullptr;
   unsigned int i;
@@ -861,7 +864,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 						 &preheader_seq, &header_seq,
 						 loop_cond_gsi, rgc, niters,
 						 niters_skip, might_wrap_p,
-						 &iv_step);
+						 &iv_step, &compare_step);
 
 	    iv_rgc = rgc;
 	  }
@@ -884,10 +887,21 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 
   /* Get a boolean result that tells us whether to iterate.  */
   edge exit_edge = single_exit (loop);
-  tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
-  tree zero_ctrl = build_zero_cst (TREE_TYPE (test_ctrl));
-  gcond *cond_stmt = gimple_build_cond (code, test_ctrl, zero_ctrl,
-					NULL_TREE, NULL_TREE);
+  gcond *cond_stmt;
+  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+    {
+      gcc_assert (compare_step);
+      tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? LE_EXPR : GT_EXPR;
+      cond_stmt = gimple_build_cond (code, test_ctrl, compare_step, NULL_TREE,
+				     NULL_TREE);
+    }
+  else
+    {
+      tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
+      tree zero_ctrl = build_zero_cst (TREE_TYPE (test_ctrl));
+      cond_stmt
+	= gimple_build_cond (code, test_ctrl, zero_ctrl, NULL_TREE, NULL_TREE);
+    }
   gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
 
   /* The loop iterates (NITERS - 1) / VF + 1 times.
