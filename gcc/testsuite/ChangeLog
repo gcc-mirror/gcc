@@ -1,3 +1,81 @@
+2023-06-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/frm-1.c: New test.
+
+2023-05-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lib/gcc-dg.exp: Rename gcc_force_conventional_output to
+	gcc_set_required_options.
+	* lib/target-supports.exp: Rename force_conventional_output_for
+	to set_required_options_for.
+	* lib/scanasm.exp: Adjust callers.
+	* lib/scanrtl.exp: Same.
+
+2023-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_11.c: New test.
+
+2023-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add tests for qdmulh, qrdmulh.
+	* gcc.target/aarch64/simd/pr99195_10.c: New test.
+
+2023-05-31  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-array-1.c: Use new BTF asm comments
+	in scan-assembler expressions where useful.
+	* gcc.dg/debug/btf/btf-anonymous-struct-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-anonymous-union-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-bitfields-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-bitfields-3.c: Likewise.
+	* gcc.dg/debug/btf/btf-datasec-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-enum-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-function-6.c: Likewise.
+	* gcc.dg/debug/btf/btf-pointers-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-struct-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-struct-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-typedef-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-union-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-variables-1.c: Likewise.
+	* gcc.dg/debug/btf/btf-variables-2.c: Likewise. Update outdated comment.
+	* gcc.dg/debug/btf/btf-function-3.c: Update outdated comment.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp:
+	* gcc.target/riscv/rvv/autovec/widen/widen-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-4.c: New test.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run.c: Add vsub.vi.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-template.h: Ditto.
+
+2023-05-31  Cui, Lili  <lili.cui@intel.com>
+
+	PR tree-optimization/110038
+	* gcc.dg/pr110038.c: New test.
+
+2023-05-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/arch-21.c: New test.
+	* gcc.target/riscv/predef-27.c: New test.
+
+2023-05-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/init-repeat-sequence-run-1.c:
+	Remove debug code.
+
 2023-05-30  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr108804.c: New test.

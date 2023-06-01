@@ -1,3 +1,240 @@
+2023-06-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (register_frm): New function.
+	(DEF_RVV_FRM_ENUM): New macro.
+	(handle_pragma_vector): Add FRM enum
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_FRM_ENUM): New macro.
+	(RNE): Ditto.
+	(RTZ): Ditto.
+	(RDN): Ditto.
+	(RUP): Ditto.
+	(RMM): Ditto.
+
+2023-05-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const-call.cc (fold_const_call_ss) <CFN_BUILT_IN_BSWAP*>:
+	Update call to wi::bswap.
+	* simplify-rtx.cc (simplify_const_unary_operation) <case BSWAP>:
+	Update call to wi::bswap.
+	* tree-ssa-ccp.cc (evaluate_stmt) <case BUILT_IN_BSWAP*>:
+	Update calls to wi::bswap.
+	* wide-int.cc (wide_int_storage::bswap): Remove/rename to...
+	(wi::bswap_large): New function, with revised API.
+	* wide-int.h (wi::bswap): New (template) function prototype.
+	(wide_int_storage::bswap): Remove method.
+	(sext_large, zext_large): Consistent indentation/line wrapping.
+	(bswap_large): Prototype helper function containing implementation.
+	(wi::bswap): New template wrapper around bswap_large.
+
+2023-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (<sur>dot_prod<vsi2qi>): Rename to...
+	(<sur>dot_prod<vsi2qi><vczle><vczbe>): ... This.
+	(usdot_prod<vsi2qi>): Rename to...
+	(usdot_prod<vsi2qi><vczle><vczbe>): ... This.
+	(aarch64_<sur>dot_lane<vsi2qi>): Rename to...
+	(aarch64_<sur>dot_lane<vsi2qi><vczle><vczbe>): ... This.
+	(aarch64_<sur>dot_laneq<vsi2qi>): Rename to...
+	(aarch64_<sur>dot_laneq<vsi2qi><vczle><vczbe>): ... This.
+	(aarch64_<DOTPROD_I8MM:sur>dot_lane<VB:isquadop><VS:vsi2qi>): Rename to...
+	(aarch64_<DOTPROD_I8MM:sur>dot_lane<VB:isquadop><VS:vsi2qi><vczle><vczbe>):
+	... This.
+
+2023-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_sq<r>dmulh<mode>): Rename to...
+	(aarch64_sq<r>dmulh<mode><vczle><vczbe>): ... This.
+	(aarch64_sq<r>dmulh_n<mode>): Rename to...
+	(aarch64_sq<r>dmulh_n<mode><vczle><vczbe>): ... This.
+	(aarch64_sq<r>dmulh_lane<mode>): Rename to...
+	(aarch64_sq<r>dmulh_lane<mode><vczle><vczbe>): ... This.
+	(aarch64_sq<r>dmulh_laneq<mode>): Rename to...
+	(aarch64_sq<r>dmulh_laneq<mode><vczle><vczbe>): ... This.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>): Rename to...
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode><vczle><vczbe>): ... This.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>): Rename to...
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode><vczle><vczbe>): ... This.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>): Rename to...
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode><vczle><vczbe>): ... This.
+
+2023-05-31  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_kind_names): New.
+	(btf_kind_name): New.
+	(btf_absolute_var_id): New utility function.
+	(btf_relative_var_id): Likewise.
+	(btf_relative_func_id): Likewise.
+	(btf_absolute_datasec_id): Likewise.
+	(btf_asm_type_ref): New.
+	(btf_asm_type): Update asm comments and use btf_asm_type_ref ().
+	(btf_asm_array): Likewise. Accept ctf_container_ref parameter.
+	(btf_asm_varent): Likewise.
+	(btf_asm_func_arg): Likewise.
+	(btf_asm_datasec_entry): Likewise.
+	(btf_asm_datasec_type): Likewise.
+	(btf_asm_func_type): Likewise. Add index parameter.
+	(btf_asm_enum_const): Likewise.
+	(btf_asm_sou_member): Likewise.
+	(output_btf_vars): Update btf_asm_* call accordingly.
+	(output_asm_btf_sou_fields): Likewise.
+	(output_asm_btf_enum_list): Likewise.
+	(output_asm_btf_func_args_list): Likewise.
+	(output_asm_btf_vlen_bytes): Likewise.
+	(output_btf_func_types): Add ctf_container_ref parameter.
+	Pass it to btf_asm_func_type.
+	(output_btf_datasec_types): Update btf_asm_datsec_type call similarly.
+	(btf_output): Update output_btf_func_types call similarly.
+
+2023-05-31  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_asm_type): Add dedicated cases for BTF_KIND_ARRAY
+	and BTF_KIND_FWD which do not use the size/type field at all.
+
+2023-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (subreg_lowpart_p): Change return type from int to bool.
+	(active_insn_p): Ditto.
+	(in_sequence_p): Ditto.
+	(unshare_all_rtl): Change return type from int to void.
+	* emit-rtl.h (mem_expr_equal_p): Change return type from int to bool.
+	* emit-rtl.cc (subreg_lowpart_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(mem_expr_equal_p): Ditto.
+	(unshare_all_rtl): Change return type from int to void
+	and adjust function body accordingly.
+	(verify_rtx_sharing): Remove unneeded return.
+	(active_insn_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(in_sequence_p): Ditto.
+
+2023-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (true_dependence): Change return type from int to bool.
+	(canon_true_dependence): Ditto.
+	(read_dependence): Ditto.
+	(anti_dependence): Ditto.
+	(canon_anti_dependence): Ditto.
+	(output_dependence): Ditto.
+	(canon_output_dependence): Ditto.
+	(may_alias_p): Ditto.
+	* alias.h (alias_sets_conflict_p): Ditto.
+	(alias_sets_must_conflict_p): Ditto.
+	(objects_must_conflict_p): Ditto.
+	(nonoverlapping_memrefs_p): Ditto.
+	* alias.cc (rtx_equal_for_memref_p): Remove forward declaration.
+	(record_set): Ditto.
+	(base_alias_check): Ditto.
+	(find_base_value): Ditto.
+	(mems_in_disjoint_alias_sets_p): Ditto.
+	(get_alias_set_entry): Ditto.
+	(decl_for_component_ref): Ditto.
+	(write_dependence_p): Ditto.
+	(memory_modified_1): Ditto.
+	(mems_in_disjoint_alias_set_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(alias_sets_conflict_p): Ditto.
+	(alias_sets_must_conflict_p): Ditto.
+	(objects_must_conflict_p): Ditto.
+	(rtx_equal_for_memref_p): Ditto.
+	(base_alias_check): Ditto.
+	(read_dependence): Ditto.
+	(nonoverlapping_memrefs_p): Ditto.
+	(true_dependence_1): Ditto.
+	(true_dependence): Ditto.
+	(canon_true_dependence): Ditto.
+	(write_dependence_p): Ditto.
+	(anti_dependence): Ditto.
+	(canon_anti_dependence): Ditto.
+	(output_dependence): Ditto.
+	(canon_output_dependence): Ditto.
+	(may_alias_p): Ditto.
+	(init_alias_analysis): Change "changed" variable to bool.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (<optab><v_double_trunc><mode>2): Change
+	expand into define_insn_and_split.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Remove FRM.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Remove FRM.
+
+2023-05-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Remove FRM.
+
+2023-05-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/110039
+	* config/aarch64/aarch64.md (aarch64_rev16si2_alt3): New
+	pattern.
+
+2023-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109983
+	PR tree-optimization/109143
+	* tree-ssa-structalias.cc (struct topo_info): Remove.
+	(init_topo_info): Likewise.
+	(free_topo_info): Likewise.
+	(compute_topo_order): Simplify API, put the component
+	with ESCAPED last so it's processed first.
+	(topo_visit): Adjust.
+	(solve_graph): Likewise.
+
+2023-05-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (constraint_stats::num_avoided_edges):
+	New.
+	(add_graph_edge): Count redundant edges we avoid to create.
+	(dump_sa_stats): Dump them.
+	(ipa_pta_execute): Do not dump generating constraints when
+	we are not dumping them.
+
+2023-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<VDMOV:mode>): Rewrite
+	output template to avoid explicit switch on which_alternative.
+	(*aarch64_simd_mov<VQMOV:mode>): Likewise.
+	(and<mode>3): Likewise.
+	(ior<mode>3): Likewise.
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Likewise.
+
+2023-05-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (xtensa_bit_join_operator):
+	New predicate.
+	* config/xtensa/xtensa.md (ior_op): Remove.
+	(*shlrd_reg): Rename from "*shlrd_reg_<code>", and add the
+	insn_and_split pattern of the same name to express and capture
+	the bit-combining operation with both sides swapped.
+	In addition, replace use of code iterator with new operator
+	predicate.
+	(*shlrd_const, *shlrd_per_byte):
+	Likewise regarding the code iterator.
+
+2023-05-31  Cui, Lili  <lili.cui@intel.com>
+
+	PR tree-optimization/110038
+	* params.opt: Add a limit on tree-reassoc-width.
+	* tree-ssa-reassoc.cc
+	(rewrite_expr_tree_parallel): Add width limit.
+
+2023-05-31  Pan Li  <pan2.li@intel.com>
+
+	* common/config/riscv/riscv-common.cc:
+	(riscv_implied_info): Add zvfh item.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZVFH): New macro.
+	(TARGET_ZVFH): Ditto.
+
 2023-05-30  liuhongt  <hongtao.liu@intel.com>
 
 	PR tree-optimization/108804

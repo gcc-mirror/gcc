@@ -1,3 +1,119 @@
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109818
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Add separate check for
+	float_t and double_t and define HAVE_C99_FLT_EVAL_TYPES.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/cmath (float_t, double_t): Guard using new
+	_GLIBCXX_HAVE_C99_FLT_EVAL_TYPES macro.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Add checks for C99 math
+	functions and define _GLIBCXX_USE_C99_MATH_FUNCS. Move checks
+	for C99 rounding functions to here.
+	(GLIBCXX_CHECK_C99_TR1): Remove checks for C99 rounding
+	functions from here.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/random.h: Use _GLIBCXX_USE_C99_MATH_FUNCS instead
+	of _GLIBCXX_USE_C99_MATH_TR1.
+	* include/bits/random.tcc: Likewise.
+	* include/c_compatibility/math.h: Likewise.
+	* include/c_global/cmath: Likewise.
+	* include/ext/random: Likewise.
+	* include/ext/random.tcc: Likewise.
+	* include/std/complex: Likewise.
+	* testsuite/20_util/from_chars/4.cc: Likewise.
+	* testsuite/20_util/from_chars/8.cc: Likewise.
+	* testsuite/26_numerics/complex/proj.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/60401.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_cstdint):
+	Likewise.
+	* testsuite/util/testsuite_random.h: Likewise.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (_Vector_base::_M_invariant()): New
+	function.
+	(vector::size(), vector::capacity()): Call _M_invariant().
+	* testsuite/23_containers/vector/capacity/invariant.cc: New test.
+	* testsuite/23_containers/vector/types/1.cc: Add suppression for
+	false positive warning (PR110060).
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109921
+	* src/c++17/floating_from_chars.cc: Check __FLT128_MANT_DIG__ is
+	defined before trying to use _Float128.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Fix for 32-bit pointers
+	to check __INT_PTR_WIDTH__ instead of sizeof(void*).
+	* configure: Regenerate.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_lock.h: Include <bits/error_constants.h>
+	here for std::errc constants.
+	* include/std/mutex: Do not include <bits/error_constants.h> and
+	<exception> here.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Replace use of -o operator for test.
+	* configure: Regenerate.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Add
+	noexcept to all constructors except the default constructor.
+	(scoped_allocator_adaptor::inner_allocator): Add noexcept.
+	(scoped_allocator_adaptor::outer_allocator): Likewise.
+	* testsuite/20_util/scoped_allocator/noexcept.cc: New test.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104772
+	* include/std/limits (numeric_limits<__float128>): Define.
+	* testsuite/18_support/numeric_limits/128bit.cc: New test.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Extend logic for avr and
+	msp430 to all 16-bit targets.
+	* configure: Regenerate.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109921
+	* src/c++17/floating_from_chars.cc (USE_STRTOF128_FOR_FROM_CHARS):
+	Only define when USE_STRTOD_FOR_FROM_CHARS is also defined.
+	(USE_STRTOD_FOR_FROM_CHARS): Do not undefine when long double is
+	binary64.
+	(from_chars(const char*, const char*, double&, chars_format)):
+	Check __LDBL_MANT_DIG__ == __DBL_MANT_DIG__ here.
+	(from_chars(const char*, const char*, _Float128&, chars_format))
+	Only use from_chars_strtod when USE_STRTOD_FOR_FROM_CHARS is
+	defined, otherwise parse a long double and convert to _Float128.
+
+2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109922
+	* include/std/iomanip (operator>>(basic_istream&, _Setfill)):
+	Add deprecated attribute to non-standard overload.
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* doc/html/*: Regenerate.
+	* testsuite/27_io/manipulators/standard/char/1.cc: Add
+	dg-warning for expected deprecated warning.
+	* testsuite/27_io/manipulators/standard/char/2.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/wchar_t/2.cc: Likewise.
+
 2023-05-30  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/20_util/from_chars/4.cc: Skip long double test06
