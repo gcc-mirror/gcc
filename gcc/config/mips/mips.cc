@@ -13611,6 +13611,9 @@ mips_autovectorize_vector_modes (vector_modes *modes, bool)
   return 0;
 }
 
+
+static GTY (()) rtx speculation_barrier_libfunc;
+
 /* Implement TARGET_INIT_LIBFUNCS.  */
 
 static void
@@ -13680,6 +13683,7 @@ mips_init_libfuncs (void)
       synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
       init_sync_libfuncs (UNITS_PER_WORD);
     }
+  speculation_barrier_libfunc = init_one_libfunc ("__speculation_barrier");
 }
 
 /* Build up a multi-insn sequence that loads label TARGET into $AT.  */
@@ -19090,6 +19094,14 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
 	*delayed_reg = SET_DEST (set);
 	break;
       }
+}
+
+/* Emit a speculation barrier.
+   JR.HB is needed, so we put speculation_barrier_libfunc in libgcc.  */
+void
+mips_emit_speculation_barrier_function ()
+{
+  emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
 }
 
 /* A SEQUENCE is breakable iff the branch inside it has a compact form
