@@ -5,27 +5,27 @@
 
 size_t f0 ()
 {
-  return FRM_RNE;
+  return __RISCV_FRM_RNE;
 }
 
 size_t f1 ()
 {
-  return FRM_RTZ;
+  return __RISCV_FRM_RTZ;
 }
 
 size_t f2 ()
 {
-  return FRM_RDN;
+  return __RISCV_FRM_RDN;
 }
 
 size_t f3 ()
 {
-  return FRM_RUP;
+  return __RISCV_FRM_RUP;
 }
 
 size_t f4 ()
 {
-  return FRM_RMM;
+  return __RISCV_FRM_RMM;
 }
 
 /* { dg-final { scan-assembler-times {li\s+[a-x0-9]+,\s*0} 1} } */

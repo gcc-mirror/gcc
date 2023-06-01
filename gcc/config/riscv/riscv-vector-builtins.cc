@@ -4026,11 +4026,11 @@ register_vxrm ()
 {
   auto_vec<string_int_pair, 4> values;
 #define DEF_RVV_VXRM_ENUM(NAME, VALUE)                                          \
-  values.quick_push (string_int_pair ("VXRM_" #NAME, VALUE));
+  values.quick_push (string_int_pair ("__RISCV_VXRM_" #NAME, VALUE));
 #include "riscv-vector-builtins.def"
 #undef DEF_RVV_VXRM_ENUM
 
-  lang_hooks.types.simulate_enum_decl (input_location, "RVV_VXRM", &values);
+  lang_hooks.types.simulate_enum_decl (input_location, "__RISCV_VXRM", &values);
 }
 
 /* Register the frm enum.  */
@@ -4039,11 +4039,11 @@ register_frm ()
 {
   auto_vec<string_int_pair, 5> values;
 #define DEF_RVV_FRM_ENUM(NAME, VALUE)                                          \
-  values.quick_push (string_int_pair ("FRM_" #NAME, VALUE));
+  values.quick_push (string_int_pair ("__RISCV_FRM_" #NAME, VALUE));
 #include "riscv-vector-builtins.def"
 #undef DEF_RVV_FRM_ENUM
 
-  lang_hooks.types.simulate_enum_decl (input_location, "RVV_FRM", &values);
+  lang_hooks.types.simulate_enum_decl (input_location, "__RISCV_FRM", &values);
 }
 
 /* Implement #pragma riscv intrinsic vector.  */

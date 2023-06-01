@@ -5,22 +5,22 @@
 
 size_t f0 ()
 {
-  return VXRM_RNU;
+  return __RISCV_VXRM_RNU;
 }
 
 size_t f1 ()
 {
-  return VXRM_RNE;
+  return __RISCV_VXRM_RNE;
 }
 
 size_t f2 ()
 {
-  return VXRM_RDN;
+  return __RISCV_VXRM_RDN;
 }
 
 size_t f3 ()
 {
-  return VXRM_ROD;
+  return __RISCV_VXRM_ROD;
 }
 
 /* { dg-final { scan-assembler-times {li\s+[a-x0-9]+,\s*0} 1} } */
