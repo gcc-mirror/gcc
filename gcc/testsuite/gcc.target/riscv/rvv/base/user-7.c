@@ -173,6 +173,12 @@ void f_vint64m2x4_t () {vint64m2x4_t t;} /* { dg-error {unknown type name 'vint6
 void f_vuint64m2x4_t () {vuint64m2x4_t t;} /* { dg-error {unknown type name 'vuint64m2x4_t'} } */
 void f_vint64m4x2_t () {vint64m4x2_t t;} /* { dg-error {unknown type name 'vint64m4x2_t'} } */
 void f_vuint64m4x2_t () {vuint64m4x2_t t;} /* { dg-error {unknown type name 'vuint64m4x2_t'} } */
+void f_vfloat16mf4_t () {vfloat16mf4_t t;} /* { dg-error {unknown type name 'vfloat16mf4_t'} } */
+void f_vfloat16mf2_t () {vfloat16mf2_t t;} /* { dg-error {unknown type name 'vfloat16mf2_t'} } */
+void f_vfloat16m1_t () {vfloat16m1_t t;} /* { dg-error {unknown type name 'vfloat16m1_t'} } */
+void f_vfloat16m2_t () {vfloat16m2_t t;} /* { dg-error {unknown type name 'vfloat16m2_t'} } */
+void f_vfloat16m4_t () {vfloat16m4_t t;} /* { dg-error {unknown type name 'vfloat16m4_t'} } */
+void f_vfloat16m8_t () {vfloat16m8_t t;} /* { dg-error {unknown type name 'vfloat16m8_t'} } */
 void f_vfloat32mf2x2_t () {vfloat32mf2x2_t t;} /* { dg-error {unknown type name 'vfloat32mf2x2_t'} } */
 void f_vfloat32mf2x3_t () {vfloat32mf2x3_t t;} /* { dg-error {unknown type name 'vfloat32mf2x3_t'} } */
 void f_vfloat32mf2x4_t () {vfloat32mf2x4_t t;} /* { dg-error {unknown type name 'vfloat32mf2x4_t'} } */
