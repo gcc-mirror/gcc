@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-Wno-unused-result -Wno-stringop-overread" }
+// { dg-options "-Wno-unused-result" }
 
 #include <vector>
 #include <testsuite_greedy_ops.h>
