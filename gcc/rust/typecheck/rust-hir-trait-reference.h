@@ -20,7 +20,6 @@
 #define RUST_HIR_TRAIT_REF_H
 
 #include "rust-hir-full.h"
-#include "rust-hir-type-check-util.h"
 #include "rust-tyty-visitor.h"
 
 namespace Rust {

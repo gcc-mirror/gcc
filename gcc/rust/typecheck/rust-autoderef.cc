@@ -21,6 +21,7 @@
 #include "rust-hir-dot-operator.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
+#include "rust-substitution-mapper.h"
 
 namespace Rust {
 namespace Resolver {

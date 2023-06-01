@@ -20,6 +20,7 @@
 #define RUST_HIR_TYPE_CHECK_EXPR
 
 #include "rust-hir-type-check-base.h"
+#include "rust-hir-visitor.h"
 #include "rust-tyty.h"
 
 namespace Rust {

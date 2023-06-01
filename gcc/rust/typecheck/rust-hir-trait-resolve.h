@@ -20,6 +20,7 @@
 #define RUST_HIR_TRAIT_RESOLVE_H
 
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Resolver {

@@ -23,6 +23,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {

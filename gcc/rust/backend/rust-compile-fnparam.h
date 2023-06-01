@@ -20,6 +20,7 @@
 #define RUST_COMPILE_FNPARAM
 
 #include "rust-compile-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Compile {

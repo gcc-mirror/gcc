@@ -19,6 +19,8 @@
 #include "rust-hir-path-probe.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
+#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Resolver {
