@@ -78,8 +78,6 @@ rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
-copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
 op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 uninit_handler (Context *ctx, TyTy::FnType *fntype);
@@ -166,6 +164,17 @@ unchecked_op_handler (tree_code op)
 }
 
 static inline tree
+copy_handler_inner (Context *ctx, TyTy::FnType *fntype, bool overlaps);
+
+const static std::function<tree (Context *, TyTy::FnType *)>
+copy_handler (bool overlaps)
+{
+  return [overlaps] (Context *ctx, TyTy::FnType *fntype) {
+    return copy_handler_inner (ctx, fntype, overlaps);
+  };
+}
+
+static inline tree
 expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely);
 
 const static std::function<tree (Context *, TyTy::FnType *)>
@@ -199,7 +208,8 @@ static const std::map<std::string,
     {"add_with_overflow", op_with_overflow (PLUS_EXPR)},
     {"sub_with_overflow", op_with_overflow (MINUS_EXPR)},
     {"mul_with_overflow", op_with_overflow (MULT_EXPR)},
-    {"copy_nonoverlapping", copy_nonoverlapping_handler},
+    {"copy", copy_handler (true)},
+    {"copy_nonoverlapping", copy_handler (false)},
     {"prefetch_read_data", prefetch_read_data},
     {"prefetch_write_data", prefetch_write_data},
     {"atomic_store_seqcst", atomic_store_handler (__ATOMIC_SEQ_CST)},
@@ -686,9 +696,10 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
 /**
  * fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize);
+ * fn copy<T>(src: *const T, dst: *mut T, count: usize);
  */
 static tree
-copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
+copy_handler_inner (Context *ctx, TyTy::FnType *fntype, bool overlaps)
 {
   rust_assert (fntype->get_params ().size () == 3);
   rust_assert (fntype->get_num_substitutions () == 1);
@@ -699,7 +710,7 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
 
   auto fndecl = compile_intrinsic_function (ctx, fntype);
 
-  // Most intrinsic functions are pure - not `copy_nonoverlapping`
+  // Most intrinsic functions are pure - not `copy_nonoverlapping` and `copy`
   TREE_READONLY (fndecl) = 0;
   TREE_SIDE_EFFECTS (fndecl) = 1;
 
@@ -730,7 +741,9 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
     = build2 (MULT_EXPR, size_type_node, TYPE_SIZE_UNIT (param_type), count);
 
   tree memcpy_raw = nullptr;
-  BuiltinsContext::get ().lookup_simple_builtin ("memcpy", &memcpy_raw);
+  BuiltinsContext::get ().lookup_simple_builtin (overlaps ? "memmove"
+							  : "memcpy",
+						 &memcpy_raw);
   rust_assert (memcpy_raw);
   auto memcpy = build_fold_addr_expr_loc (UNKNOWN_LOCATION, memcpy_raw);
 
