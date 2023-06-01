@@ -67,12 +67,14 @@ _VALID_TEST_RESULTS_REX = re.compile('(%s):\s*(\S+)\s*(.*)'
 
 # Formats of .sum file sections
 _TOOL_LINE_FORMAT = '\t\t=== %s tests ===\n'
-_EXP_LINE_FORMAT = '\nRunning %s ...\n'
+_EXP_LINE_FORMAT = '\nRunning %s:%s ...\n'
 _SUMMARY_LINE_FORMAT = '\n\t\t=== %s Summary ===\n'
 
 # ... and their compiled regexs.
 _TOOL_LINE_REX = re.compile('^\t\t=== (.*) tests ===\n')
-_EXP_LINE_REX = re.compile('^Running (.*\.exp) \.\.\.\n')
+# Match .exp file name, optionally prefixed by a "tool:" name and a
+# path ending with "testsuite/"
+_EXP_LINE_REX = re.compile('^Running (?:.*:)?(.*) \.\.\.\n')
 _SUMMARY_LINE_REX = re.compile('^\t\t=== (.*) Summary ===\n')
 
 # Subdirectory of srcdir in which to find the manifest file.
@@ -236,7 +238,7 @@ class ResultSet(set):
         outfile.write(_TOOL_LINE_FORMAT % current_tool)
       if current_exp != result.exp:
         current_exp = result.exp
-        outfile.write(_EXP_LINE_FORMAT % current_exp)
+        outfile.write(_EXP_LINE_FORMAT % (current_tool, current_exp))
       outfile.write('%s\n' % result)
 
     outfile.write(_SUMMARY_LINE_FORMAT % 'Results')
