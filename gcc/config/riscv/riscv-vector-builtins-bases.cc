@@ -361,8 +361,12 @@ public:
 	return e.use_exact_insn (
 	  code_for_pred_dual_widen_scalar (CODE1, CODE2, e.vector_mode ()));
       case OP_TYPE_wv:
-	return e.use_exact_insn (
-	  code_for_pred_single_widen (CODE1, CODE2, e.vector_mode ()));
+	if (CODE1 == PLUS)
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_add (CODE2, e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_sub (CODE2, e.vector_mode ()));
       case OP_TYPE_wx:
 	return e.use_exact_insn (
 	  code_for_pred_single_widen_scalar (CODE1, CODE2, e.vector_mode ()));
