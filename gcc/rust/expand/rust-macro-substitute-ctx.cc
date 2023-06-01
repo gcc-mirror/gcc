@@ -45,7 +45,7 @@ SubstituteCtx::substitute_metavar (
       // currently expanding a repetition metavar - not a simple metavar. We
       // need to error out and inform the user.
       // Associated test case for an example: compile/macro-issue1224.rs
-      if (it->second.get_match_amount () != 1)
+      if (!it->second->is_single_fragment ())
 	{
 	  rust_error_at (metavar->get_locus (),
 			 "metavariable is still repeating at this depth");
@@ -58,7 +58,7 @@ SubstituteCtx::substitute_metavar (
 
       // We only care about the vector when expanding repetitions.
       // Just access the first element of the vector.
-      auto &frag = it->second.get_single_fragment ();
+      auto &frag = it->second->get_single_fragment ();
       for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
 	   offs++)
 	{
@@ -100,11 +100,14 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 		  is_valid = false;
 		}
 
-	      auto &fragment = it->second;
+	      auto &fragment = *it->second;
 
 	      if (!fragment.is_single_fragment ())
 		{
-		  size_t repeat_amount = fragment.get_match_amount ();
+		  auto &fragment_rep
+		    = static_cast<MatchedFragmentContainerRepetition &> (
+		      fragment);
+		  size_t repeat_amount = fragment_rep.get_match_amount ();
 		  if (!first_fragment_found)
 		    {
 		      first_fragment_found = true;
@@ -170,32 +173,18 @@ SubstituteCtx::substitute_repetition (
 
   for (size_t i = 0; i < repeat_amount; i++)
     {
-      std::map<std::string, MatchedFragmentContainer> sub_map;
+      std::map<std::string, MatchedFragmentContainer *> sub_map;
       for (auto &kv_match : fragments)
 	{
-	  MatchedFragment sub_fragment;
-
+	  if (kv_match.second->is_single_fragment ())
+	    sub_map.emplace (kv_match.first, kv_match.second);
 	  // Hack: A repeating meta variable might not be present in the new
 	  // macro. Don't include this match if the fragment doesn't have enough
 	  // items, as check_repetition_amount should prevent repetition amount
 	  // mismatches anyway.
-	  bool is_used = true;
-
-	  // FIXME: Hack: If a fragment is not repeated, how does it fit in the
-	  // submap? Do we really want to expand it? Is this normal behavior?
-	  if (kv_match.second.is_single_fragment ())
-	    sub_fragment = kv_match.second.get_single_fragment ();
-	  else
-	    {
-	      if (kv_match.second.get_fragments ().size () > i)
-		sub_fragment = kv_match.second.get_fragments ().at (i);
-	      else
-		is_used = false;
-	    }
-
-	  if (is_used)
-	    sub_map.insert ({kv_match.first,
-			     MatchedFragmentContainer::metavar (sub_fragment)});
+	  else if (kv_match.second->get_fragments ().size () > i)
+	    sub_map.emplace (kv_match.first,
+			     kv_match.second->get_fragments ().at (i).get ());
 	}
 
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);

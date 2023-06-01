@@ -24,7 +24,7 @@ class SubstituteCtx
 {
   std::vector<std::unique_ptr<AST::Token>> &input;
   std::vector<std::unique_ptr<AST::Token>> &macro;
-  std::map<std::string, MatchedFragmentContainer> &fragments;
+  std::map<std::string, MatchedFragmentContainer *> &fragments;
 
   /**
    * Find the repetition amount to use when expanding a repetition, and
@@ -40,7 +40,7 @@ class SubstituteCtx
 public:
   SubstituteCtx (std::vector<std::unique_ptr<AST::Token>> &input,
 		 std::vector<std::unique_ptr<AST::Token>> &macro,
-		 std::map<std::string, MatchedFragmentContainer> &fragments)
+		 std::map<std::string, MatchedFragmentContainer *> &fragments)
     : input (input), macro (macro), fragments (fragments)
   {}
 
