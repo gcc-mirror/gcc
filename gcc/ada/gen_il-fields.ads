@@ -210,6 +210,7 @@ package Gen_IL.Fields is
       Has_Pragma_Suppress_All,
       Has_Private_View,
       Has_Relative_Deadline_Pragma,
+      Has_Secondary_Private_View,
       Has_Self_Reference,
       Has_SP_Choice,
       Has_Storage_Size_Pragma,
