@@ -1029,6 +1029,9 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
       /* TODO, handle cast64_to_32 and big/litte_endian memory
 	 source when rsize < range.  */
       if (n->range == orig_range
+	  /* There're case like 0x300000200 for uint32->uint64 cast,
+	     Don't hanlde this.  */
+	  && n->range == TYPE_PRECISION (n->type)
 	  && ((orig_range == 32
 	       && optab_handler (rotl_optab, SImode) != CODE_FOR_nothing)
 	      || (orig_range == 64
