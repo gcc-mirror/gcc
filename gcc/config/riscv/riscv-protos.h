@@ -146,6 +146,7 @@ enum insn_type
   RVV_TERNOP = 5,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
+  RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
 };
 enum vlmul_type
 {
@@ -186,10 +187,14 @@ void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
+void emit_vlmax_slide_insn (unsigned, rtx *);
+void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);
 void emit_vlmax_merge_insn (unsigned, int, rtx *);
 void emit_vlmax_cmp_insn (unsigned, rtx *);
 void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
 void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
+void emit_scalar_move_insn (unsigned, rtx *);
+void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);

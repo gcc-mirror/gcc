@@ -655,3 +655,82 @@
   riscv_vector::expand_select_vl (operands);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Insert a vector element.
+;; -------------------------------------------------------------------------
+
+(define_expand "vec_set<mode>"
+  [(match_operand:V	0 "register_operand")
+   (match_operand:<VEL> 1 "register_operand")
+   (match_operand	2 "immediate_operand")]
+  "TARGET_VECTOR"
+{
+  /* If we set the first element, emit an v(f)mv.s.[xf].  */
+  if (operands[2] == const0_rtx)
+    {
+      rtx ops[] = {operands[0], riscv_vector::gen_scalar_move_mask (<VM>mode),
+		   RVV_VUNDEF (<MODE>mode), operands[1]};
+      riscv_vector::emit_scalar_move_insn
+	  (code_for_pred_broadcast (<MODE>mode), ops);
+    }
+  else
+    {
+      /* Move the desired value into a vector register and insert
+	 it at the proper position using vslideup with an
+	 "effective length" of 1 i.e. a VL 1 past the offset.  */
+
+      /* Slide offset = element index.  */
+      int offset = INTVAL (operands[2]);
+
+      /* Only insert one element, i.e. VL = offset + 1.  */
+      rtx length = gen_reg_rtx (Pmode);
+      emit_move_insn (length, GEN_INT (offset + 1));
+
+      /* Move operands[1] into a vector register via vmv.v.x using the same
+	 VL we need for the slide.  */
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx ops1[] = {tmp, operands[1]};
+      riscv_vector::emit_nonvlmax_integer_move_insn
+	(code_for_pred_broadcast (<MODE>mode), ops1, length);
+
+      /* Slide exactly one element up leaving the tail elements
+	 unchanged.  */
+      rtx ops2[] = {operands[0], operands[0], tmp, operands[2]};
+      riscv_vector::emit_nonvlmax_slide_tu_insn
+	(code_for_pred_slide (UNSPEC_VSLIDEUP, <MODE>mode), ops2, length);
+    }
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Extract a vector element.
+;; -------------------------------------------------------------------------
+(define_expand "vec_extract<mode><vel>"
+  [(set (match_operand:<VEL>	  0 "register_operand")
+     (vec_select:<VEL>
+       (match_operand:V		  1 "register_operand")
+       (parallel
+	 [(match_operand	  2 "nonmemory_operand")])))]
+  "TARGET_VECTOR"
+{
+  /* Element extraction can be done by sliding down the requested element
+     to index 0 and then v(f)mv.[xf].s it to a scalar register.  */
+
+  /* When extracting any other than the first element we need to slide
+     it down.  */
+  rtx tmp = NULL_RTX;
+  if (operands[2] != const0_rtx)
+    {
+      /* Emit the slide down to index 0 in a new vector.  */
+      tmp = gen_reg_rtx (<MODE>mode);
+      rtx ops[] = {tmp, RVV_VUNDEF (<MODE>mode), operands[1], operands[2]};
+      riscv_vector::emit_vlmax_slide_insn
+	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode), ops);
+    }
+
+  /* Emit v(f)mv.[xf].s.  */
+  emit_insn (gen_pred_extract_first (<MODE>mode, operands[0],
+				     tmp ? tmp : operands[1]));
+  DONE;
+})

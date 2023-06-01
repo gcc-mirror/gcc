@@ -695,6 +695,52 @@ emit_nonvlmax_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a {NONVLMAX, TAIL_UNDISTURBED, MASK_ANY} vsetvli
+   followed by a vslide insn (with real merge operand).  */
+void
+emit_vlmax_slide_insn (unsigned icode, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SLIDE_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a {NONVLMAX, TAIL_UNDISTURBED, MASK_ANY} vsetvli
+   followed by a vslide insn (with real merge operand).  */
+void
+emit_nonvlmax_slide_tu_insn (unsigned icode, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SLIDE_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ false,
+					  dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+
 /* This function emits merge instruction.  */
 void
 emit_vlmax_merge_insn (unsigned icode, int op_num, rtx *ops)
@@ -768,7 +814,7 @@ emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
 
 /* Emit vmv.s.x instruction.  */
 
-static void
+void
 emit_scalar_move_insn (unsigned icode, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
@@ -798,7 +844,7 @@ emit_vlmax_integer_move_insn (unsigned icode, rtx *ops, rtx vl)
 
 /* Emit vmv.v.x instruction with nonvlmax.  */
 
-static void
+void
 emit_nonvlmax_integer_move_insn (unsigned icode, rtx *ops, rtx avl)
 {
   emit_nonvlmax_insn (icode, riscv_vector::RVV_UNOP, ops, avl);
