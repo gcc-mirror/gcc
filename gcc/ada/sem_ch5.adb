@@ -91,9 +91,14 @@ package body Sem_Ch5 is
 
    function Has_Sec_Stack_Call (N : Node_Id) return Boolean;
    --  N is the node for an arbitrary construct. This function searches the
-   --  construct N to see if any expressions within it contain function
-   --  calls that use the secondary stack, returning True if any such call
-   --  is found, and False otherwise.
+   --  construct N to see if it contains a function call that returns on the
+   --  secondary stack, returning True if any such call is found, and False
+   --  otherwise.
+
+   --  ??? The implementation invokes Sem_Util.Requires_Transient_Scope so it
+   --  will return True if N contains a function call that needs finalization,
+   --  in addition to the above specification. See Analyze_Loop_Statement for
+   --  a similar comment about this entanglement.
 
    procedure Preanalyze_Range (R_Copy : Node_Id);
    --  Determine expected type of range or domain of iteration of Ada 2012
@@ -3626,9 +3631,13 @@ package body Sem_Ch5 is
                Cont_Typ := Etype (Nam_Copy);
 
                --  The iterator loop is traversing an array. This case does not
-               --  require any transformation.
+               --  require any transformation, unless the name contains a call
+               --  that returns on the secondary stack since we need to release
+               --  the space allocated there.
 
-               if Is_Array_Type (Cont_Typ) then
+               if Is_Array_Type (Cont_Typ)
+                 and then not Has_Sec_Stack_Call (Nam_Copy)
+               then
                   null;
 
                --  Otherwise unconditionally wrap the loop statement within
