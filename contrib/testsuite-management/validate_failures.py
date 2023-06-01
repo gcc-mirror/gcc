@@ -64,6 +64,16 @@ import sys
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 _VALID_TEST_RESULTS_REX = re.compile("%s" % "|".join(_VALID_TEST_RESULTS))
 
+# Formats of .sum file sections
+_TOOL_LINE_FORMAT = '\t\t=== %s tests ===\n'
+_EXP_LINE_FORMAT = '\nRunning %s ...\n'
+_SUMMARY_LINE_FORMAT = '\n\t\t=== %s Summary ===\n'
+
+# ... and their compiled regexs.
+_TOOL_LINE_REX = re.compile('^\t\t=== (.*) tests ===\n')
+_EXP_LINE_REX = re.compile('^Running (.*\.exp) \.\.\.\n')
+_SUMMARY_LINE_REX = re.compile('^\t\t=== (.*) Summary ===\n')
+
 # Subdirectory of srcdir in which to find the manifest file.
 _MANIFEST_SUBDIR = 'contrib/testsuite-management'
 
@@ -111,9 +121,11 @@ class TestResult(object):
     ordinal: Monotonically increasing integer.
              It is used to keep results for one .exp file sorted
              by the order the tests were run.
+    tool: Top-level testsuite name (aka "tool" in DejaGnu parlance) of the test.
+    exp: Name of .exp testsuite file.
   """
 
-  def __init__(self, summary_line, ordinal=-1):
+  def __init__(self, summary_line, ordinal, tool, exp):
     try:
       (self.attrs, summary_line) = SplitAttributesFromSummaryLine(summary_line)
       try:
@@ -125,6 +137,12 @@ class TestResult(object):
         print('Failed to parse summary line: "%s"' % summary_line)
         raise
       self.ordinal = ordinal
+      if tool == None or exp == None:
+        # .sum file seem to be broken.  There was no "tool" and/or "exp"
+        # lines preceding this result.
+        raise
+      self.tool = tool
+      self.exp = exp
     except ValueError:
       Error('Cannot parse summary line "%s"' % summary_line)
 
@@ -133,14 +151,27 @@ class TestResult(object):
             self.state, summary_line, self))
 
   def __lt__(self, other):
-    return (self.name < other.name or
-            (self.name == other.name and self.ordinal < other.ordinal))
+    if (self.tool != other.tool):
+      return self.tool < other.tool
+    if (self.exp != other.exp):
+      return self.exp < other.exp
+    if (self.name != other.name):
+      return self.name < other.name
+    return self.ordinal < other.ordinal
 
   def __hash__(self):
-    return hash(self.state) ^ hash(self.name) ^ hash(self.description)
+    return (hash(self.state) ^ hash(self.tool) ^ hash(self.exp)
+            ^ hash(self.name) ^ hash(self.description))
 
+  # Note that we don't include "attrs" in this comparison.  This means that
+  # result entries "FAIL: test" and "flaky | FAIL: test" are considered
+  # the same.  Therefore the ResultSet will preserve only the first occurence.
+  # In practice this means that flaky entries should preceed expected fails
+  # entries.
   def __eq__(self, other):
     return (self.state == other.state and
+            self.tool == other.tool and
+            self.exp == other.exp and
             self.name == other.name and
             self.description == other.description)
 
@@ -172,6 +203,43 @@ class TestResult(object):
     if expiration_date:
       now = datetime.date.today()
       return now > expiration_date
+
+
+class ResultSet(set):
+  """Describes a set of DejaGNU test results.
+  This set can be read in from .sum files or emitted as a manifest.
+
+  Attributes:
+    current_tool: Name of the current top-level DejaGnu testsuite.
+    current_exp: Name of the current .exp testsuite file.
+  """
+
+  def __init__(self):
+    super().__init__()
+    self.ResetToolExp()
+
+  def ResetToolExp(self):
+    self.current_tool = None
+    self.current_exp = None
+
+  def MakeTestResult(self, summary_line, ordinal=-1):
+    return TestResult(summary_line, ordinal,
+                      self.current_tool, self.current_exp)
+
+  def Print(self, outfile=sys.stdout):
+    current_tool = None
+    current_exp = None
+
+    for result in sorted(self):
+      if current_tool != result.tool:
+        current_tool = result.tool
+        outfile.write(_TOOL_LINE_FORMAT % current_tool)
+      if current_exp != result.exp:
+        current_exp = result.exp
+        outfile.write(_EXP_LINE_FORMAT % current_exp)
+      outfile.write('%s\n' % result)
+
+    outfile.write(_SUMMARY_LINE_FORMAT % 'Results')
 
 
 def GetMakefileValue(makefile_name, value_name):
@@ -216,6 +284,21 @@ def IsInterestingResult(line):
   return bool(_VALID_TEST_RESULTS_REX.match(line))
 
 
+def IsToolLine(line):
+  """Return True if line mentions the tool (in DejaGnu terms) for the following tests."""
+  return bool(_TOOL_LINE_REX.match(line))
+
+
+def IsExpLine(line):
+  """Return True if line mentions the .exp file for the following tests."""
+  return bool(_EXP_LINE_REX.match(line))
+
+
+def IsSummaryLine(line):
+  """Return True if line starts .sum footer."""
+  return bool(_SUMMARY_LINE_REX.match(line))
+
+
 def IsInclude(line):
   """Return True if line is an include of another file."""
   return line.startswith("@include ")
@@ -244,18 +327,24 @@ def ParseManifestWorker(result_set, manifest_path):
   if _OPTIONS.verbosity >= 1:
     print('Parsing manifest file %s.' % manifest_path)
   manifest_file = open(manifest_path, encoding='latin-1', mode='r')
-  for line in manifest_file:
-    line = line.strip()
+  for orig_line in manifest_file:
+    line = orig_line.strip()
     if line == "":
       pass
     elif IsComment(line):
       pass
     elif IsNegativeResult(line):
-      result_set.remove(TestResult(GetNegativeResult(line)))
+      result_set.remove(result_set.MakeTestResult(GetNegativeResult(line)))
     elif IsInclude(line):
       ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
     elif IsInterestingResult(line):
-      result_set.add(TestResult(line))
+      result_set.add(result_set.MakeTestResult(line))
+    elif IsExpLine(orig_line):
+      result_set.current_exp = _EXP_LINE_REX.match(orig_line).groups()[0]
+    elif IsToolLine(orig_line):
+      result_set.current_tool = _TOOL_LINE_REX.match(orig_line).groups()[0]
+    elif IsSummaryLine(orig_line):
+      result_set.ResetToolExp()
     else:
       Error('Unrecognized line in manifest file: %s' % line)
   manifest_file.close()
@@ -263,21 +352,21 @@ def ParseManifestWorker(result_set, manifest_path):
 
 def ParseManifest(manifest_path):
   """Create a set of TestResult instances from the given manifest file."""
-  result_set = set()
+  result_set = ResultSet()
   ParseManifestWorker(result_set, manifest_path)
   return result_set
 
 
 def ParseSummary(sum_fname):
   """Create a set of TestResult instances from the given summary file."""
-  result_set = set()
+  result_set = ResultSet()
   # ordinal is used when sorting the results so that tests within each
   # .exp file are kept sorted.
   ordinal=0
   sum_file = open(sum_fname, encoding='latin-1', mode='r')
   for line in sum_file:
     if IsInterestingResult(line):
-      result = TestResult(line, ordinal)
+      result = result_set.MakeTestResult(line, ordinal)
       ordinal += 1
       if result.HasExpired():
         # Tests that have expired are not added to the set of expected
@@ -286,6 +375,13 @@ def ParseSummary(sum_fname):
         print('WARNING: Expected failure "%s" has expired.' % line.strip())
         continue
       result_set.add(result)
+    elif IsExpLine(line):
+      result_set.current_exp = _EXP_LINE_REX.match(line).groups()[0]
+    elif IsToolLine(line):
+      result_set.current_tool = _TOOL_LINE_REX.match(line).groups()[0]
+      result_set.current_exp = None
+    elif IsSummaryLine(line):
+      result_set.ResetToolExp()
   sum_file.close()
   return result_set
 
@@ -301,7 +397,7 @@ def GetManifest(manifest_path):
   if os.path.exists(manifest_path):
     return ParseManifest(manifest_path)
   else:
-    return set()
+    return ResultSet()
 
 
 def CollectSumFiles(builddir):
@@ -318,7 +414,7 @@ def CollectSumFiles(builddir):
 
 def GetResults(sum_files):
   """Collect all the test results from the given .sum files."""
-  build_results = set()
+  build_results = ResultSet()
   for sum_fname in sum_files:
     print('\t%s' % sum_fname)
     build_results |= ParseSummary(sum_fname)
@@ -332,7 +428,7 @@ def CompareResults(manifest, actual):
   """
   # Collect all the actual results not present in the manifest.
   # Results in this set will be reported as errors.
-  actual_vs_manifest = set()
+  actual_vs_manifest = ResultSet()
   for actual_result in actual:
     if actual_result not in manifest:
       actual_vs_manifest.add(actual_result)
@@ -341,7 +437,7 @@ def CompareResults(manifest, actual):
   # in the actual results.
   # Results in this set will be reported as warnings (since
   # they are expected failures that are not failing anymore).
-  manifest_vs_actual = set()
+  manifest_vs_actual = ResultSet()
   for expected_result in manifest:
     # Ignore tests marked flaky.
     if 'flaky' in expected_result.attrs:
@@ -390,9 +486,7 @@ def GetBuildData():
 
 def PrintSummary(msg, summary):
   print('\n\n%s' % msg)
-  for result in sorted(summary):
-    print(result)
-
+  summary.Print()
 
 def GetSumFiles(results, build_dir):
   if not results:
@@ -452,9 +546,8 @@ def ProduceManifest():
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
   manifest_file = open(manifest_path, encoding='latin-1', mode='w')
-  for result in sorted(actual):
-    print(result)
-    manifest_file.write('%s\n' % result)
+  actual.Print(manifest_file)
+  actual.Print()
   manifest_file.close()
 
   return True
