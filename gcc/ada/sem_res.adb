@@ -8116,7 +8116,7 @@ package body Sem_Res is
             --  data from the object.
 
             if Ekind (E) in E_Out_Parameter | E_In_Out_Parameter
-              and then Scope (E) = Current_Scope
+              and then Scope (E) = Current_Scope_No_Loops
               and then Within_Exceptional_Cases_Consequence (N)
               and then not In_Attribute_Old (N)
               and then not (Nkind (Parent (N)) = N_Attribute_Reference
