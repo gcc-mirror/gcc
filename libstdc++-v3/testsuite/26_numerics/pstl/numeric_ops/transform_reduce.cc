@@ -68,7 +68,7 @@ class MyClass
     }
     friend MyClass operator*(const MyClass& x, const MyClass& y) { return MyClass(x.my_field * y.my_field); }
     bool
-    operator==(const MyClass& in)
+    operator==(const MyClass& in) const
     {
         return my_field == in.my_field;
     }
