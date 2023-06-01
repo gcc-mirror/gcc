@@ -4876,16 +4876,16 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	tree src_type = TREE_TYPE (src);
 	tree dest_type = TREE_TYPE (value);
 
-	/* Allow conversions between pointer types, floating-point
-	   types, and offset types.  */
+	/* Allow conversions between pointer types and offset types.  */
 	if ((POINTER_TYPE_P (dest_type) && POINTER_TYPE_P (src_type))
-	    || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type))
 	    || (TREE_CODE (dest_type) == OFFSET_TYPE
 		&& TREE_CODE (src_type) == OFFSET_TYPE))
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
-	/* Allow length-preserving conversions between integer types.  */
-	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type)
+	/* Allow length-preserving conversions between integer types and
+	   floating-point types.  */
+	if (((INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
+	     || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type)))
 	    && (TYPE_PRECISION (dest_type) == TYPE_PRECISION (src_type)))
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
@@ -5255,6 +5255,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
       break;
 
     case REAL_TYPE:
+      gcc_assert (size == thissize);
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
       else
