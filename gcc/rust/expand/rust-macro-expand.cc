@@ -78,7 +78,8 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
   // find matching arm
   AST::MacroRule *matched_rule = nullptr;
-  std::map<std::string, MatchedFragmentContainer> matched_fragments;
+  std::map<std::string, std::unique_ptr<MatchedFragmentContainer>>
+    matched_fragments;
   for (auto &rule : rules_def.get_rules ())
     {
       sub_stack.push ();
@@ -109,8 +110,13 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
       return AST::Fragment::create_error ();
     }
 
-  return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments,
-			  semicolon, peek_context ());
+  std::map<std::string, MatchedFragmentContainer *> matched_fragments_ptr;
+
+  for (auto &ent : matched_fragments)
+    matched_fragments_ptr.emplace (ent.first, ent.second.get ());
+
+  return transcribe_rule (*matched_rule, invoc_token_tree,
+			  matched_fragments_ptr, semicolon, peek_context ());
 }
 
 void
@@ -961,7 +967,7 @@ tokens_to_str (std::vector<std::unique_ptr<AST::Token>> &tokens)
 AST::Fragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
-  std::map<std::string, MatchedFragmentContainer> &matched_fragments,
+  std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
   bool semicolon, ContextType ctx)
 {
   // we can manipulate the token tree to substitute the dollar identifiers so
@@ -1127,6 +1133,46 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
     return AST::Fragment::create_error ();
   else
     return {nodes, std::vector<std::unique_ptr<AST::Token>> ()};
+}
+
+MatchedFragment &
+MatchedFragmentContainer::get_single_fragment ()
+{
+  rust_assert (is_single_fragment ());
+
+  return static_cast<MatchedFragmentContainerMetaVar &> (*this).get_fragment ();
+}
+
+std::vector<std::unique_ptr<MatchedFragmentContainer>> &
+MatchedFragmentContainer::get_fragments ()
+{
+  rust_assert (!is_single_fragment ());
+
+  return static_cast<MatchedFragmentContainerRepetition &> (*this)
+    .get_fragments ();
+}
+
+void
+MatchedFragmentContainer::add_fragment (MatchedFragment fragment)
+{
+  rust_assert (!is_single_fragment ());
+
+  return static_cast<MatchedFragmentContainerRepetition &> (*this)
+    .add_fragment (fragment);
+}
+
+std::unique_ptr<MatchedFragmentContainer>
+MatchedFragmentContainer::zero ()
+{
+  return std::unique_ptr<MatchedFragmentContainer> (
+    new MatchedFragmentContainerRepetition ());
+}
+
+std::unique_ptr<MatchedFragmentContainer>
+MatchedFragmentContainer::metavar (MatchedFragment fragment)
+{
+  return std::unique_ptr<MatchedFragmentContainer> (
+    new MatchedFragmentContainerMetaVar (fragment));
 }
 
 } // namespace Rust
