@@ -165,6 +165,17 @@ unchecked_op_handler (tree_code op)
   };
 }
 
+static inline tree
+expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely);
+
+const static std::function<tree (Context *, TyTy::FnType *)>
+expect_handler (bool likely)
+{
+  return [likely] (Context *ctx, TyTy::FnType *fntype) {
+    return expect_handler_inner (ctx, fntype, likely);
+  };
+}
+
 inline tree
 sorry_handler (Context *ctx, TyTy::FnType *fntype)
 {
@@ -208,6 +219,8 @@ static const std::map<std::string,
     {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
     {"uninit", uninit_handler},
     {"move_val_init", move_val_init_handler},
+    {"likely", expect_handler (true)},
+    {"unlikely", expect_handler (false)},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -1098,6 +1111,50 @@ move_val_init_handler (Context *ctx, TyTy::FnType *fntype)
 
   ctx->add_statement (memset_call);
   // BUILTIN size_of FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static inline tree
+expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely)
+{
+  rust_assert (fntype->get_params ().size () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN expect_handler_inner FN BODY BEGIN
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+  tree expr = Backend::var_expression (param_vars[0], UNDEF_LOCATION);
+  tree expect_fn_raw = nullptr;
+  BuiltinsContext::get ().lookup_simple_builtin ("expect", &expect_fn_raw);
+  rust_assert (expect_fn_raw);
+  auto expect_fn = build_fold_addr_expr_loc (BUILTINS_LOCATION, expect_fn_raw);
+
+  // we need to convert the expression return type to long to match the expected
+  // parameter type of __builtin_expect
+  auto expect_src = build1 (CONVERT_EXPR, long_integer_type_node, expr);
+  auto expect_value
+    = make_unsigned_long_tree (static_cast<unsigned long> (likely));
+
+  auto expect_call
+    = Backend::call_expression (expect_fn, {expect_src, expect_value}, nullptr,
+				BUILTINS_LOCATION);
+  // the return value also needs to be casted (to bool)
+  auto expect_call_bool = build1 (CONVERT_EXPR, boolean_type_node, expect_call);
+  auto return_statement
+    = Backend::return_statement (fndecl, expect_call_bool, BUILTINS_LOCATION);
+  ctx->add_statement (return_statement);
+  // BUILTIN expect_handler_inner FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 
