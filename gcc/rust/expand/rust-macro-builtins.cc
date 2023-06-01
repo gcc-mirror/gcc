@@ -105,6 +105,22 @@ std::unordered_map<
     {"test_case", MacroBuiltin::sorry},
     {"global_allocator", MacroBuiltin::sorry},
     {"cfg_accessible", MacroBuiltin::sorry},
+    /* Derive builtins do not need a real transcriber, but still need one. It
+       will however never be called since builtin derive macros get expanded
+       differently, and benefit from knowing on what kind of items they are
+       applied (struct, enums, unions) rather than receiving a list of tokens
+       like regular builtin macros */
+    {"RustcEncodable", MacroBuiltin::proc_macro_builtin},
+    {"RustcDecodable", MacroBuiltin::proc_macro_builtin},
+    {"Clone", MacroBuiltin::proc_macro_builtin},
+    {"Copy", MacroBuiltin::proc_macro_builtin},
+    {"Debug", MacroBuiltin::proc_macro_builtin},
+    {"Default", MacroBuiltin::proc_macro_builtin},
+    {"Eq", MacroBuiltin::proc_macro_builtin},
+    {"PartialEq", MacroBuiltin::proc_macro_builtin},
+    {"Ord", MacroBuiltin::proc_macro_builtin},
+    {"PartialOrd", MacroBuiltin::proc_macro_builtin},
+    {"Hash", MacroBuiltin::proc_macro_builtin},
 };
 
 // FIXME: This should return an Optional
@@ -929,6 +945,13 @@ MacroBuiltin::sorry (Location invoc_locus, AST::MacroInvocData &invoc)
   rust_sorry_at (invoc_locus, "unimplemented builtin macro: %qs",
 		 invoc.get_path ().as_string ().c_str ());
 
+  return AST::Fragment::create_error ();
+}
+
+AST::Fragment
+MacroBuiltin::proc_macro_builtin (Location, AST::MacroInvocData &)
+{
+  // nothing to do!
   return AST::Fragment::create_error ();
 }
 
