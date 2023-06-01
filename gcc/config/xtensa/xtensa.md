@@ -190,6 +190,35 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
+(define_expand "adddi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "register_operand")))]
+  ""
+{
+  rtx lo_dest, hi_dest, lo_op0, hi_op0, lo_op1, hi_op1;
+  rtx_code_label *label;
+  if (rtx_equal_p (operands[0], operands[1])
+      || rtx_equal_p (operands[0], operands[2])
+      || ! REG_P (operands[1]) || ! REG_P (operands[2]))
+    FAIL;
+  lo_dest = gen_lowpart (SImode, operands[0]);
+  hi_dest = gen_highpart (SImode, operands[0]);
+  lo_op0 = gen_lowpart (SImode, operands[1]);
+  hi_op0 = gen_highpart (SImode, operands[1]);
+  lo_op1 = gen_lowpart (SImode, operands[2]);
+  hi_op1 = gen_highpart (SImode, operands[2]);
+  emit_insn (gen_addsi3 (hi_dest, hi_op0, hi_op1));
+  emit_insn (gen_addsi3 (lo_dest, lo_op0, lo_op1));
+  emit_cmp_and_jump_insns (lo_dest,
+			   (REGNO (operands[1]) < REGNO (operands[2])
+			    ? lo_op1 : lo_op0), GEU, const0_rtx,
+			   SImode, true, label = gen_label_rtx ());
+  emit_insn (gen_addsi3 (hi_dest, hi_dest, const1_rtx));
+  emit_label (label);
+  DONE;
+})
+
 (define_insn "addsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(plus:SF (match_operand:SF 1 "register_operand" "%f")
@@ -236,6 +265,29 @@
 				   && xtensa_m1_or_1_thru_15 (-INTVAL (operands[1]))")
 		      (const_int 5)
 		      (const_int 6)))])
+
+(define_expand "subdi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(minus:DI (match_operand:DI 1 "register_operand")
+		  (match_operand:DI 2 "register_operand")))]
+  ""
+{
+  rtx lo_dest, hi_dest, lo_op0, hi_op0, lo_op1, hi_op1;
+  rtx_code_label *label;
+  lo_dest = gen_lowpart (SImode, operands[0]);
+  hi_dest = gen_highpart (SImode, operands[0]);
+  lo_op0 = gen_lowpart (SImode, operands[1]);
+  hi_op0 = gen_highpart (SImode, operands[1]);
+  lo_op1 = gen_lowpart (SImode, operands[2]);
+  hi_op1 = gen_highpart (SImode, operands[2]);
+  emit_insn (gen_subsi3 (hi_dest, hi_op0, hi_op1));
+  emit_cmp_and_jump_insns (lo_op0, lo_op1, GEU, const0_rtx,
+			   SImode, true, label = gen_label_rtx ());
+  emit_insn (gen_addsi3 (hi_dest, hi_dest, constm1_rtx));
+  emit_label (label);
+  emit_insn (gen_subsi3 (lo_dest, lo_op0, lo_op1));
+  DONE;
+})
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
