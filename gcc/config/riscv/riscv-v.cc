@@ -259,6 +259,47 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
 }
 
+/* Return true if VEC is a constant in which every element is in the range
+   [MINVAL, MAXVAL].  The elements do not need to have the same value.
+
+   This function also exists in aarch64, we may unify it in middle-end in the
+   future.  */
+
+static bool
+const_vec_all_in_range_p (rtx vec, HOST_WIDE_INT minval, HOST_WIDE_INT maxval)
+{
+  if (!CONST_VECTOR_P (vec)
+      || GET_MODE_CLASS (GET_MODE (vec)) != MODE_VECTOR_INT)
+    return false;
+
+  int nunits;
+  if (!CONST_VECTOR_STEPPED_P (vec))
+    nunits = const_vector_encoded_nelts (vec);
+  else if (!CONST_VECTOR_NUNITS (vec).is_constant (&nunits))
+    return false;
+
+  for (int i = 0; i < nunits; i++)
+    {
+      rtx vec_elem = CONST_VECTOR_ELT (vec, i);
+      if (!CONST_INT_P (vec_elem)
+	  || !IN_RANGE (INTVAL (vec_elem), minval, maxval))
+	return false;
+    }
+  return true;
+}
+
+/* Return a const_int vector of VAL.
+
+   This function also exists in aarch64, we may unify it in middle-end in the
+   future.  */
+
+static rtx
+gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
+{
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  return gen_const_vec_duplicate (mode, c);
+}
+
 /* Emit a vlmax vsetvl instruction.  This should only be used when
    optimization is disabled or after vsetvl insertion pass.  */
 void
@@ -1925,6 +1966,118 @@ expand_vcond (rtx *ops)
     expand_vec_cmp (mask, GET_CODE (ops[3]), ops[4], ops[5]);
   emit_insn (
     gen_vcond_mask (data_mode, data_mode, ops[0], ops[1], ops[2], mask));
+}
+
+/* This function emits VLMAX vrgather instruction. Emit vrgather.vx/vi when sel
+   is a const duplicate vector. Otherwise, emit vrgather.vv.  */
+static void
+emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
+{
+  rtx elt;
+  insn_code icode;
+  machine_mode data_mode = GET_MODE (target);
+  if (const_vec_duplicate_p (sel, &elt))
+    {
+      icode = code_for_pred_gather_scalar (data_mode);
+      sel = elt;
+    }
+  else
+    icode = code_for_pred_gather (data_mode);
+  rtx ops[] = {target, op, sel};
+  emit_vlmax_insn (icode, RVV_BINOP, ops);
+}
+
+static void
+emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
+{
+  rtx elt;
+  insn_code icode;
+  machine_mode data_mode = GET_MODE (target);
+  if (const_vec_duplicate_p (sel, &elt))
+    {
+      icode = code_for_pred_gather_scalar (data_mode);
+      sel = elt;
+    }
+  else
+    icode = code_for_pred_gather (data_mode);
+  rtx ops[] = {target, mask, target, op, sel};
+  emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
+}
+
+/* Implement vec_perm<mode>.  */
+
+void
+expand_vec_perm (rtx *operands)
+{
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx sel = operands[3];
+  machine_mode data_mode = GET_MODE (target);
+  machine_mode sel_mode = GET_MODE (sel);
+
+  /* Enforced by the pattern condition.  */
+  int nunits = GET_MODE_NUNITS (sel_mode).to_constant ();
+
+  /* Check if the sel only references the first values vector. If each select
+     index is in range of [0, nunits - 1]. A single vrgather instructions is
+     enough.  */
+  if (const_vec_all_in_range_p (sel, 0, nunits - 1))
+    {
+      emit_vlmax_gather_insn (target, op0, sel);
+      return;
+    }
+
+  /* Check if the two values vectors are the same.  */
+  if (rtx_equal_p (op0, op1) || const_vec_duplicate_p (sel))
+    {
+      /* Note: vec_perm indices are supposed to wrap when they go beyond the
+	 size of the two value vectors, i.e. the upper bits of the indices
+	 are effectively ignored.  RVV vrgather instead produces 0 for any
+	 out-of-range indices, so we need to modulo all the vec_perm indices
+	 to ensure they are all in range of [0, nunits - 1].  */
+      rtx max_sel = gen_const_vector_dup (sel_mode, nunits - 1);
+      rtx sel_mod = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0,
+					 OPTAB_DIRECT);
+      emit_vlmax_gather_insn (target, op1, sel_mod);
+      return;
+    }
+
+  /* Note: vec_perm indices are supposed to wrap when they go beyond the
+     size of the two value vectors, i.e. the upper bits of the indices
+     are effectively ignored.  RVV vrgather instead produces 0 for any
+     out-of-range indices, so we need to modulo all the vec_perm indices
+     to ensure they are all in range of [0, 2 * nunits - 1].  */
+  rtx max_sel = gen_const_vector_dup (sel_mode, 2 * nunits - 1);
+  rtx sel_mod
+    = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0, OPTAB_DIRECT);
+
+  /* This following sequence is handling the case that:
+     __builtin_shufflevector (vec1, vec2, index...), the index can be any
+     value in range of [0, 2 * nunits - 1].  */
+  machine_mode mask_mode;
+  mask_mode = get_mask_mode (data_mode).require ();
+  rtx mask = gen_reg_rtx (mask_mode);
+  max_sel = gen_const_vector_dup (sel_mode, nunits);
+
+  /* Step 1: generate a mask that should select everything >= nunits into the
+   * mask.  */
+  expand_vec_cmp (mask, GEU, sel_mod, max_sel);
+
+  /* Step2: gather every op0 values indexed by sel into target,
+	    we don't need to care about the result of the element
+	    whose index >= nunits.  */
+  emit_vlmax_gather_insn (target, op0, sel_mod);
+
+  /* Step3: shift the range from (nunits, max_of_mode] to
+	    [0, max_of_mode - nunits].  */
+  rtx tmp = gen_reg_rtx (sel_mode);
+  rtx ops[] = {tmp, sel_mod, max_sel};
+  emit_vlmax_insn (code_for_pred (MINUS, sel_mode), RVV_BINOP, ops);
+
+  /* Step4: gather those into the previously masked-out elements
+	    of target.  */
+  emit_vlmax_masked_gather_mu_insn (target, op1, tmp, mask);
 }
 
 } // namespace riscv_vector

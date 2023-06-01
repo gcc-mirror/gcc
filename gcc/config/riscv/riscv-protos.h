@@ -137,6 +137,7 @@ enum insn_type
   RVV_MISC_OP = 1,
   RVV_UNOP = 2,
   RVV_BINOP = 3,
+  RVV_BINOP_MU = RVV_BINOP + 2,
   RVV_MERGE_OP = 4,
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
@@ -240,6 +241,7 @@ opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vcond (rtx *);
+void expand_vec_perm (rtx *);
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum vxrm_field_enum
 {

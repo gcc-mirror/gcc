@@ -330,6 +330,10 @@
        (and (match_code "const_vector")
             (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
 
+(define_predicate "vector_perm_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_vector")))
+
 (define_predicate "ltge_operator"
   (match_code "lt,ltu,ge,geu"))
 

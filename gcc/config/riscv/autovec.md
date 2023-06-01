@@ -84,6 +84,24 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT,FP] permutation
+;; -------------------------------------------------------------------------
+;; This is the pattern permutes the vector
+;; -------------------------------------------------------------------------
+
+(define_expand "vec_perm<mode>"
+  [(match_operand:V 0 "register_operand")
+   (match_operand:V 1 "register_operand")
+   (match_operand:V 2 "register_operand")
+   (match_operand:<VINDEX> 3 "vector_perm_operand")]
+  "TARGET_VECTOR && GET_MODE_NUNITS (<MODE>mode).is_constant ()"
+  {
+    riscv_vector::expand_vec_perm (operands);
+    DONE;
+  }
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Initialize from individual elements
 ;; -------------------------------------------------------------------------
 ;; This is the pattern initialize the vector
