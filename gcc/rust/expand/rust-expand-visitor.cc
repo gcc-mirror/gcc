@@ -128,10 +128,33 @@ get_traits_to_derive (std::vector<AST::Attribute> &outer_attrs)
 }
 
 static std::unique_ptr<AST::Item>
-derive_item (std::unique_ptr<AST::Item> &item, const AST::Attribute &derive,
-	     BuiltinMacro to_derive)
+builtin_derive_item (std::unique_ptr<AST::Item> &item,
+		     const AST::Attribute &derive, BuiltinMacro to_derive)
 {
   return AST::DeriveVisitor::derive (*item, derive, to_derive);
+}
+
+static std::vector<std::unique_ptr<AST::Item>>
+derive_item (std::unique_ptr<AST::Item> &item, std::string &to_derive,
+	     MacroExpander &expander)
+{
+  std::vector<std::unique_ptr<AST::Item>> result;
+  auto frag = expander.expand_derive_proc_macro (item, to_derive);
+  if (!frag.is_error ())
+    {
+      for (auto &node : frag.get_nodes ())
+	{
+	  switch (node.get_kind ())
+	    {
+	    case AST::SingleASTNode::ITEM:
+	      result.push_back (node.take_item ());
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+  return result;
 }
 
 void
@@ -157,10 +180,16 @@ ExpandVisitor::expand_inner_items (
 	      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 		{
 		  auto new_item
-		    = derive_item (item, attr, maybe_builtin->second);
+		    = builtin_derive_item (item, attr, maybe_builtin->second);
 		  // this inserts the derive *before* the item - is it a
 		  // problem?
 		  it = items.insert (it, std::move (new_item));
+		}
+	      else
+		{
+		  auto new_items = derive_item (item, name, expander);
+		  std::move (new_items.begin (), new_items.end (),
+			     std::inserter (items, it));
 		}
 	    }
 	}
@@ -1005,7 +1034,6 @@ ExpandVisitor::visit (AST::TypeAlias &type_alias)
 void
 ExpandVisitor::visit (AST::StructStruct &struct_item)
 {
-  visit_attrs_with_derive (struct_item);
   visit_outer_attrs (struct_item);
   for (auto &generic : struct_item.get_generic_params ())
     visit (generic);
@@ -1020,7 +1048,6 @@ void
 ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 {
   visit_outer_attrs (tuple_struct);
-  visit_attrs_with_derive (tuple_struct);
   for (auto &generic : tuple_struct.get_generic_params ())
     visit (generic);
 
@@ -1057,7 +1084,6 @@ ExpandVisitor::visit (AST::EnumItemDiscriminant &item)
 void
 ExpandVisitor::visit (AST::Enum &enum_item)
 {
-  visit_attrs_with_derive (enum_item);
   visit_outer_attrs (enum_item);
   for (auto &generic : enum_item.get_generic_params ())
     visit (generic);
@@ -1069,7 +1095,6 @@ ExpandVisitor::visit (AST::Enum &enum_item)
 void
 ExpandVisitor::visit (AST::Union &union_item)
 {
-  visit_attrs_with_derive (union_item);
   visit_outer_attrs (union_item);
   for (auto &generic : union_item.get_generic_params ())
     visit (generic);
@@ -1619,52 +1644,4 @@ ExpandVisitor::visit_inner_attrs (T &item)
   visit_inner_using_attrs (item, item.get_inner_attrs ());
 }
 
-template <typename T>
-void
-ExpandVisitor::expand_derive (T &item, std::unique_ptr<AST::TokenTree> trait)
-{
-  auto trait_name = trait->as_string ();
-  expander.expand_derive_proc_macro (item, trait_name);
-}
-
-template <typename T>
-void
-ExpandVisitor::expand_derive (T &item, AST::DelimTokenTree &attr)
-{
-  // Item is const because even though the tokenstream might be modified, it
-  // should appear as the same input for every derive proc macro.
-  auto &trees = attr.get_token_trees ();
-  if (trees.size () > 2)
-    {
-      // Skipping begin and end parenthesis
-      for (auto it = trees.begin () + 1; it < trees.end () - 1;
-	   it += 2 /* Increment + skip comma */)
-	{
-	  expand_derive (item, std::move (*it));
-	}
-    }
-}
-
-template <typename T>
-void
-ExpandVisitor::visit_attrs_with_derive (T &item)
-{
-  auto &attrs = item.get_outer_attrs ();
-  for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
-    {
-      auto current = *it;
-
-      if (!is_builtin (current) && is_derive (current))
-	{
-	  it = attrs.erase (it);
-	  // Downcasting checked in is_derive
-	  expand_derive (item, static_cast<AST::DelimTokenTree &> (
-				 current.get_attr_input ()));
-	}
-      else // Skip unknwown
-	{
-	  it++;
-	}
-    }
-}
 } // namespace Rust

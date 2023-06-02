@@ -23,8 +23,7 @@ namespace AST {
 
 Fragment::Fragment (FragmentKind kind, std::vector<SingleASTNode> nodes,
 		    std::vector<std::unique_ptr<AST::Token>> tokens)
-  : kind (kind), nodes (std::move (nodes)), tokens (std::move (tokens)),
-    overwrite (true)
+  : kind (kind), nodes (std::move (nodes)), tokens (std::move (tokens))
 {}
 
 Fragment::Fragment (Fragment const &other) : kind (other.get_kind ())
@@ -47,8 +46,6 @@ Fragment::operator= (Fragment const &other)
   for (auto &t : other.tokens)
     tokens.emplace_back (t->clone_token ());
 
-  overwrite = other.overwrite;
-
   return *this;
 }
 
@@ -59,15 +56,14 @@ Fragment::create_error ()
 }
 
 Fragment::Fragment (std::vector<AST::SingleASTNode> nodes,
-		    std::vector<std::unique_ptr<AST::Token>> tokens,
-		    bool overwrite)
+		    std::vector<std::unique_ptr<AST::Token>> tokens)
   : kind (FragmentKind::Complete), nodes (std::move (nodes)),
-    tokens (std::move (tokens)), overwrite (overwrite)
+    tokens (std::move (tokens))
 {}
 
 Fragment::Fragment (std::vector<AST::SingleASTNode> nodes,
 		    std::unique_ptr<AST::Token> token)
-  : kind (FragmentKind::Complete), nodes (std::move (nodes)), overwrite (true)
+  : kind (FragmentKind::Complete), nodes (std::move (nodes))
 {
   tokens.emplace_back (std::move (token));
 }
@@ -100,12 +96,6 @@ bool
 Fragment::should_expand () const
 {
   return !is_error ();
-}
-
-bool
-Fragment::should_overwrite () const
-{
-  return overwrite;
 }
 
 bool
