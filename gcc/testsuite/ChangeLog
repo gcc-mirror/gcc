@@ -1,3 +1,44 @@
+2023-06-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88552
+	* gfortran.dg/pr88552.f90: New test.
+
+2023-06-01  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* lib/torture-options.exp: print the value of non-empty options:
+	torture_without_loops, torture_with_loops, LTO_TORTURE_OPTIONS.
+
+2023-06-01  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.misc-tests/i386-prefetch.exp: Move early return outside
+	the torture-{init,finish}
+
+2023-06-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr100106-sa.c: Skip on AIX.
+	* gcc.target/powerpc/pr109566.c: Skip on AIX.
+
+2023-06-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109973
+	* gcc.target/i386/pr109973-1.c: New test case.
+	* gcc.target/i386/pr109973-2.c: Likewise.
+
+2023-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/xreg-vec-modes_1.c: New test.
+
+2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/nothing-2.f90: Remove one dg-error.
+	* gfortran.dg/gomp/pr79154-2.f90: Update expected dg-error wording.
+	* gfortran.dg/gomp/pr79154-simd.f90: Likewise.
+	* gfortran.dg/gomp/pure-1.f90: New test.
+	* gfortran.dg/gomp/pure-2.f90: New test.
+	* gfortran.dg/gomp/pure-3.f90: New test.
+	* gfortran.dg/gomp/pure-4.f90: New test.
+
 2023-06-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/base/frm-1.c: New test.

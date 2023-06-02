@@ -1,3 +1,89 @@
+2023-06-01  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (-Wpedantic): Improve clarity.
+
+2023-06-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (exp_equiv_p): Change return type from int to bool.
+	* cse.cc (mention_regs): Change return type from int to bool
+	and adjust function body accordingly.
+	(exp_equiv_p): Ditto.
+	(insert_regs): Ditto. Change "modified" function argument to bool
+	and update usage accordingly.
+	(record_jump_cond): Remove always zero "reversed_nonequality"
+	function argument and update usage accordingly.
+	(fold_rtx): Change "changed" variable to bool.
+	(record_jump_equiv): Remove unneeded "reversed_nonequality" variable.
+	(is_dead_reg): Change return type from int to bool.
+
+2023-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (adddi3, subdi3):
+	New RTL generation patterns implemented according to the instruc-
+	tion idioms described in the Xtensa ISA reference manual (p. 600).
+
+2023-06-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109973
+	* config/i386/i386-builtin.def (__builtin_ia32_ptestz128): Use new
+	CODE_for_sse4_1_ptestzv2di.
+	(__builtin_ia32_ptestc128): Use new CODE_for_sse4_1_ptestcv2di.
+	(__builtin_ia32_ptestz256): Use new CODE_for_avx_ptestzv4di.
+	(__builtin_ia32_ptestc256): Use new CODE_for_avx_ptestcv4di.
+	* config/i386/i386-expand.cc (ix86_expand_branch): Use CCZmode
+	when expanding UNSPEC_PTEST to compare against zero.
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Likewise generate CCZmode UNSPEC_PTESTs when converting comparisons.
+	(general_scalar_chain::convert_insn): Use CCZmode for COMPARE result.
+	(timode_scalar_chain::convert_insn): Use CCZmode for COMPARE result.
+	* config/i386/i386-protos.h (ix86_match_ptest_ccmode): Prototype.
+	* config/i386/i386.cc (ix86_match_ptest_ccmode): New predicate to
+	check for suitable matching modes for the UNSPEC_PTEST pattern.
+	* config/i386/sse.md (define_split): When splitting UNSPEC_MOVMSK
+	to UNSPEC_PTEST, preserve the FLAG_REG mode as CCZ.
+	(*<sse4_1>_ptest<mode>): Add asterisk to hide define_insn.  Remove
+	":CC" mode of FLAGS_REG, instead use ix86_match_ptest_ccmode.
+	(<sse4_1>_ptestz<mode>): New define_expand to specify CCZ.
+	(<sse4_1>_ptestc<mode>): New define_expand to specify CCC.
+	(<sse4_1>_ptest<mode>): A define_expand using CC to preserve the
+	current behavior.
+	(*ptest<mode>_and): Specify CCZ to only perform this optimization
+	when only the Z flag is required.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR target/109954
+	* doc/invoke.texi (x86 Options): Fix description of -m32 option.
+
+2023-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<VDMOV:mode>):
+	Add =r,m and =r,m alternatives.
+	(load_pair<DREG:mode><DREG2:mode>): Likewise.
+	(vec_store_pair<DREG:mode><DREG2:mode>): Likewise.
+
+2023-06-01  Pan Li  <pan2.li@intel.com>
+
+	* common/config/riscv/riscv-common.cc: Add FP_16 mask to zvfhmin
+	and zvfh.
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Allow FP16.
+	(main): Disable FP16 tuple.
+	* config/riscv/riscv-opts.h (MASK_VECTOR_ELEN_FP_16): New macro.
+	(TARGET_VECTOR_ELEN_FP_16): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (check_required_extensions):
+	Add FP16.
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4_t): New type.
+	(vfloat16mf2_t): Ditto.
+	(vfloat16m1_t): Ditto.
+	(vfloat16m2_t): Ditto.
+	(vfloat16m4_t): Ditto.
+	(vfloat16m8_t): Ditto.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_ELEN_FP_16):
+	New macro.
+	* config/riscv/riscv-vector-switch.def (ENTRY): Allow FP16
+	machine mode based on TARGET_VECTOR_ELEN_FP_16.
+
 2023-06-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vector-builtins.cc (register_frm): New function.

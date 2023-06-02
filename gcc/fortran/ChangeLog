@@ -1,3 +1,16 @@
+2023-06-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/88552
+	* decl.cc (gfc_match_kind_spec): Use error path on missing right
+	parenthesis.
+	(gfc_match_decl_type_spec): Use error return when an error occurred
+	during matching a KIND specifier.
+
+2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.cc (decode_omp_directive): Accept all pure directives
+	inside a PURE procedures; handle 'error at(execution).
+
 2023-05-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Update allocator, fix

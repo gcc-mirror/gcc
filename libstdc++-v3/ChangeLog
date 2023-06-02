@@ -1,3 +1,70 @@
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc:
+	Add const to equality operator.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else)
+	(expected::transform_error): Use _M_val and _M_unex instead of
+	calling value() and error(), as per LWG 3938.
+	(expected::transform): Likewise. Remove incorrect std::move
+	calls from lvalue overloads.
+	(expected<void, E>::and_then, expected<void, E>::or_else)
+	(expected<void, E>::transform): Use _M_unex instead of calling
+	error().
+	* testsuite/20_util/expected/lwg3877.cc: Add checks for and_then
+	and transform, and for std::expected<void, E>.
+	* testsuite/20_util/expected/lwg3938.cc: New test.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110060
+	* include/bits/stl_vector.h (_Vector_base::_M_invariant):
+	Remove.
+	(vector::size, vector::capacity): Remove calls to _M_invariant.
+	* include/bits/vector.tcc (vector::_M_fill_assign): Add
+	optimization hint to reallocating path.
+	(vector::_M_assign_aux(FwdIter, FwdIter, forward_iterator_tag)):
+	Likewise.
+	* testsuite/23_containers/vector/capacity/invariant.cc: Moved
+	to...
+	* testsuite/23_containers/vector/modifiers/assign/no_realloc.cc:
+	...here. Check assign(FwdIter, FwdIter) too.
+	* testsuite/23_containers/vector/types/1.cc: Revert addition
+	of -Wno-stringop-overread option.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document removal of implicit
+	allocator rebinding extensions in strict mode and for C++20.
+	* doc/html/*: Regenerate.
+
+2023-06-01  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Don't check
+	handlers in the cleanup phase.
+
+2023-06-01  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/110050
+	* include/experimental/bits/simd.h (__vectorized_sizeof): With
+	__have_neon_a32 only single-precision float works (in addition
+	to integers).
+
+2023-06-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(std::__search, std::search(_FwdIt1, _FwdIt1, _FwdIt2, _FwdIt2, _BinPred)): Move...
+	* include/bits/stl_algobase.h: ...here.
+	* include/std/functional: Replace <stl_algo.h> include by <stl_algobase.h>.
+	* include/parallel/algo.h (std::__parallel::search<_FIt1, _FIt2, _BinaryPred>)
+	(std::__parallel::__search_switch<_FIt1, _FIt2, _BinaryPred, _ItTag1, _ItTag2>):
+	Move...
+	* include/parallel/algobase.h: ...here.
+	* include/experimental/functional: Remove <bits/stl_algo.h> and <parallel/algorithm>
+	includes. Include <bits/stl_algobase.h>.
+
 2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109818
