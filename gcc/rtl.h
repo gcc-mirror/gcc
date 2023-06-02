@@ -4490,7 +4490,7 @@ extern rtx get_reg_base_value (unsigned int);
 extern rtx extract_mem_from_operand (rtx);
 
 #ifdef STACK_REGS
-extern int stack_regs_mentioned (const_rtx insn);
+extern bool stack_regs_mentioned (const_rtx insn);
 #endif
 
 /* In toplev.cc */
