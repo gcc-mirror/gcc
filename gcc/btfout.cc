@@ -799,7 +799,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
    }
 
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
-		       "TYPE %lu BTF_KIND_%s '%s'",
+		       "TYPE %" PRIu64 " BTF_KIND_%s '%s'",
 		       get_btf_id (dtd->dtd_type), btf_kind_name (btf_kind),
 		       dtd->dtd_name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (btf_kind, btf_kflag, btf_vlen),
@@ -967,7 +967,7 @@ btf_asm_datasec_type (ctf_container_ref ctfc, btf_datasec_t ds, ctf_id_t id,
 		      size_t stroffset)
 {
   dw2_asm_output_data (4, ds.name_offset + stroffset,
-		       "TYPE %lu BTF_KIND_DATASEC '%s'",
+		       "TYPE %" PRIu64 " BTF_KIND_DATASEC '%s'",
 		       btf_absolute_datasec_id (id), ds.name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_DATASEC, 0,
 					 ds.entries.length ()),
