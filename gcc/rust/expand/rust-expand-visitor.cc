@@ -53,75 +53,44 @@ ExpandVisitor::go (AST::Crate &crate)
 }
 
 /**
- * Returns a list of all the derive macros to apply, as well as the Attribute
- * they are from.
+ * Returns a list of traits to derive from within a given attribute.
  *
- * ```rust
- * #[derive(Clone, Copy)] // attr1
- * struct S;
- *
- * // returns [{Clone, &attr1}, {Copy, &attr1}]
- *
- * #[derive(Clone)] // attr1
- * #[derive(Copy, PartialEq, Ord)] // attr2
- * struct S;
- *
- * // returns [{Clone, &attr1}, {Copy, &attr2}, {PartialEq, &attr2}, {Ord,
- * &attr2}]
- * ```
- *
- * @param outer_attrs The list of attributes on the item to derive
+ * @param attrs The attributes on the item to derive
  */
-static std::vector<
-  std::pair<std::string, std::reference_wrapper<const AST::Attribute>>>
-get_traits_to_derive (std::vector<AST::Attribute> &outer_attrs)
+static std::vector<std::string>
+get_traits_to_derive (AST::Attribute &attr)
 {
-  std::vector<
-    std::pair<std::string, std::reference_wrapper<const AST::Attribute>>>
-    to_derive;
-  for (auto it = outer_attrs.begin (); it != outer_attrs.end ();)
+  std::vector<std::string> to_derive;
+
+  auto &input = attr.get_attr_input ();
+  switch (input.get_attr_input_type ())
     {
-      auto &attr = *it;
+      // isn't there a better way to do this?? like parse it or
+      // something idk. some function I'm not thinking of?
+      case AST::AttrInput::TOKEN_TREE: {
+	auto &tokens
+	  = static_cast<AST::DelimTokenTree &> (input).get_token_trees ();
 
-      if (is_derive (attr))
-	{
-	  auto &input = attr.get_attr_input ();
-	  switch (input.get_attr_input_type ())
-	    {
-	      // isn't there a better way to do this?? like parse it or
-	      // something idk. some function I'm not thinking of?
-	      case AST::AttrInput::TOKEN_TREE: {
-		auto &tokens = static_cast<AST::DelimTokenTree &> (input)
-				 .get_token_trees ();
+	// erase the delimiters
+	rust_assert (tokens.size () >= 3);
+	tokens.erase (tokens.begin ());
+	tokens.pop_back ();
 
-		// erase the delimiters
-		rust_assert (tokens.size () >= 3);
-		tokens.erase (tokens.begin ());
-		tokens.pop_back ();
+	for (auto &token : tokens)
+	  {
+	    // skip commas, as they are part of the token stream
+	    if (token->as_string () == ",")
+	      continue;
 
-		for (auto &token : tokens)
-		  {
-		    // skip commas, as they are part of the token stream
-		    if (token->as_string () == ",")
-		      continue;
-
-		    to_derive.emplace_back (token->as_string (), attr);
-		  }
-		break;
-	      }
-	    case AST::AttrInput::LITERAL:
-	    case AST::AttrInput::META_ITEM:
-	    case AST::AttrInput::MACRO:
-	      gcc_unreachable ();
-	      break;
-	    }
-
-	  it = outer_attrs.erase (it);
-	}
-      else
-	{
-	  it++;
-	}
+	    to_derive.emplace_back (token->as_string ());
+	  }
+	break;
+      }
+    case AST::AttrInput::LITERAL:
+    case AST::AttrInput::META_ITEM:
+    case AST::AttrInput::MACRO:
+      gcc_unreachable ();
+      break;
     }
 
   return to_derive;
@@ -168,28 +137,44 @@ ExpandVisitor::expand_inner_items (
       auto &item = *it;
       if (item->has_outer_attrs ())
 	{
-	  auto traits_to_derive
-	    = get_traits_to_derive (item->get_outer_attrs ());
+	  auto &attrs = item->get_outer_attrs ();
 
-	  for (auto &to_derive : traits_to_derive)
+	  for (auto attr_it = attrs.begin (); attr_it != attrs.end ();
+	       /* erase => No increment*/)
 	    {
-	      auto &name = to_derive.first;
-	      auto &attr = to_derive.second;
+	      auto current = *attr_it;
 
-	      auto maybe_builtin = MacroBuiltin::builtins.lookup (name);
-	      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+	      if (is_derive (current))
 		{
-		  auto new_item
-		    = builtin_derive_item (item, attr, maybe_builtin->second);
-		  // this inserts the derive *before* the item - is it a
-		  // problem?
-		  it = items.insert (it, std::move (new_item));
+		  attr_it = attrs.erase (attr_it);
+		  // Get traits to derive in the current attribute
+		  auto traits_to_derive = get_traits_to_derive (current);
+		  for (auto &to_derive : traits_to_derive)
+		    {
+		      auto maybe_builtin
+			= MacroBuiltin::builtins.lookup (to_derive);
+		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
+			{
+			  auto new_item
+			    = builtin_derive_item (item, current,
+						   maybe_builtin->second);
+			  // this inserts the derive *before* the item - is it a
+			  // problem?
+			  it = items.insert (it, std::move (new_item));
+			}
+		      else
+			{
+			  auto new_items
+			    = derive_item (item, to_derive, expander);
+			  std::move (new_items.begin (), new_items.end (),
+				     std::inserter (items, it));
+			}
+		    }
 		}
-	      else
+	      else /* Attribute */
 		{
-		  auto new_items = derive_item (item, name, expander);
-		  std::move (new_items.begin (), new_items.end (),
-			     std::inserter (items, it));
+		  // Ignore for now
+		  attr_it++;
 		}
 	    }
 	}
@@ -278,7 +263,6 @@ ExpandVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
 {
   for (auto &field : fields)
     {
-      visit_outer_attrs (field);
       maybe_expand_type (field.get_field_type ());
     }
 }
@@ -296,7 +280,6 @@ ExpandVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
 {
   for (auto &param : params)
     {
-      visit_outer_attrs (param);
       maybe_expand_type (param.get_type ());
     }
 }
@@ -346,7 +329,6 @@ ExpandVisitor::expand_closure_params (std::vector<AST::ClosureParam> &params)
 {
   for (auto &param : params)
     {
-      visit_outer_attrs (param);
       if (param.has_type_given ())
 	maybe_expand_type (param.get_type ());
     }
@@ -424,9 +406,7 @@ ExpandVisitor::visit (AST::AttrInputMetaItemContainer &)
 
 void
 ExpandVisitor::visit (AST::IdentifierExpr &ident_expr)
-{
-  visit_outer_attrs (ident_expr);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::Lifetime &)
@@ -450,7 +430,6 @@ ExpandVisitor::visit (AST::MacroInvocation &macro_invoc)
 void
 ExpandVisitor::visit (AST::PathInExpression &path)
 {
-  visit_outer_attrs (path);
   for (auto &segment : path.get_segments ())
     if (segment.has_generic_args ())
       expand_generic_args (segment.get_generic_args ());
@@ -486,7 +465,6 @@ ExpandVisitor::visit (AST::TypePath &path)
 void
 ExpandVisitor::visit (AST::QualifiedPathInExpression &path)
 {
-  visit_outer_attrs (path);
   expand_qualified_path_type (path.get_qualified_path_type ());
 
   for (auto &segment : path.get_segments ())
@@ -506,9 +484,7 @@ ExpandVisitor::visit (AST::QualifiedPathInType &path)
 
 void
 ExpandVisitor::visit (AST::LiteralExpr &expr)
-{
-  visit_outer_attrs (expr);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::AttrInputLiteral &)
@@ -531,35 +507,30 @@ ExpandVisitor::visit (AST::MetaItemPathLit &)
 void
 ExpandVisitor::visit (AST::BorrowExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_borrowed_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::DereferenceExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_dereferenced_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ErrorPropagationExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_propagating_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::NegationExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_negated_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -567,7 +538,6 @@ ExpandVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 void
 ExpandVisitor::visit (AST::ComparisonExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -575,7 +545,6 @@ ExpandVisitor::visit (AST::ComparisonExpr &expr)
 void
 ExpandVisitor::visit (AST::LazyBooleanExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -583,7 +552,6 @@ ExpandVisitor::visit (AST::LazyBooleanExpr &expr)
 void
 ExpandVisitor::visit (AST::TypeCastExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_casted_expr ());
 
   visit (expr.get_type_to_cast_to ());
@@ -592,7 +560,6 @@ ExpandVisitor::visit (AST::TypeCastExpr &expr)
 void
 ExpandVisitor::visit (AST::AssignmentExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -600,7 +567,6 @@ ExpandVisitor::visit (AST::AssignmentExpr &expr)
 void
 ExpandVisitor::visit (AST::CompoundAssignmentExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -608,7 +574,6 @@ ExpandVisitor::visit (AST::CompoundAssignmentExpr &expr)
 void
 ExpandVisitor::visit (AST::GroupedExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_expr_in_parens ());
 }
 
@@ -629,14 +594,12 @@ ExpandVisitor::visit (AST::ArrayElemsCopied &elems)
 void
 ExpandVisitor::visit (AST::ArrayExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_array_elems ());
 }
 
 void
 ExpandVisitor::visit (AST::ArrayIndexExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_array_expr ());
   visit (expr.get_index_expr ());
 }
@@ -644,7 +607,6 @@ ExpandVisitor::visit (AST::ArrayIndexExpr &expr)
 void
 ExpandVisitor::visit (AST::TupleExpr &expr)
 {
-  visit_outer_attrs (expr);
   for (auto &element : expr.get_tuple_elems ())
     visit (element);
 }
@@ -652,7 +614,6 @@ ExpandVisitor::visit (AST::TupleExpr &expr)
 void
 ExpandVisitor::visit (AST::TupleIndexExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_tuple_expr ());
 
   // We can't have macro invocations for tuple indexes, right? Need a test!
@@ -660,9 +621,7 @@ ExpandVisitor::visit (AST::TupleIndexExpr &expr)
 
 void
 ExpandVisitor::visit (AST::StructExprStruct &expr)
-{
-  visit_outer_attrs (expr);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::StructExprFieldIdentifier &)
@@ -699,7 +658,6 @@ ExpandVisitor::visit (AST::StructExprStructBase &expr)
 void
 ExpandVisitor::visit (AST::CallExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_function_expr ());
 
   for (auto &param : expr.get_params ())
@@ -709,7 +667,6 @@ ExpandVisitor::visit (AST::CallExpr &expr)
 void
 ExpandVisitor::visit (AST::MethodCallExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_receiver_expr ());
 
   for (auto &param : expr.get_params ())
@@ -719,14 +676,12 @@ ExpandVisitor::visit (AST::MethodCallExpr &expr)
 void
 ExpandVisitor::visit (AST::FieldAccessExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_receiver_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ClosureExprInner &expr)
 {
-  visit_outer_attrs (expr);
   expand_closure_params (expr.get_params ());
 
   visit (expr.get_definition_expr ());
@@ -748,7 +703,6 @@ ExpandVisitor::visit (AST::BlockExpr &expr)
 void
 ExpandVisitor::visit (AST::ClosureExprInnerTyped &expr)
 {
-  visit_outer_attrs (expr);
   expand_closure_params (expr.get_params ());
 
   maybe_expand_type (expr.get_return_type ());
@@ -758,14 +712,11 @@ ExpandVisitor::visit (AST::ClosureExprInnerTyped &expr)
 
 void
 ExpandVisitor::visit (AST::ContinueExpr &expr)
-{
-  visit_outer_attrs (expr);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::BreakExpr &expr)
 {
-  visit_outer_attrs (expr);
   if (expr.has_break_expr ())
     visit (expr.get_break_expr ());
 }
@@ -809,7 +760,6 @@ ExpandVisitor::visit (AST::RangeToInclExpr &expr)
 void
 ExpandVisitor::visit (AST::ReturnExpr &expr)
 {
-  visit_outer_attrs (expr);
   if (expr.has_returned_expr ())
     visit (expr.get_returned_expr ());
 }
@@ -817,14 +767,12 @@ ExpandVisitor::visit (AST::ReturnExpr &expr)
 void
 ExpandVisitor::visit (AST::UnsafeBlockExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_block_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::LoopExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_loop_block ());
 }
 
@@ -838,7 +786,6 @@ ExpandVisitor::visit (AST::WhileLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::WhileLetLoopExpr &expr)
 {
-  visit_outer_attrs (expr);
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
 
@@ -849,7 +796,6 @@ ExpandVisitor::visit (AST::WhileLetLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::ForLoopExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_pattern ());
   visit (expr.get_iterator_expr ());
   visit (expr.get_loop_block ());
@@ -858,7 +804,6 @@ ExpandVisitor::visit (AST::ForLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::IfExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_condition_expr ());
 
   visit (expr.get_if_block ());
@@ -876,7 +821,6 @@ ExpandVisitor::visit (AST::IfExprConseqElse &expr)
 void
 ExpandVisitor::visit (AST::IfLetExpr &expr)
 {
-  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_value_expr ());
 
   visit (expr.get_if_block ());
@@ -894,13 +838,11 @@ ExpandVisitor::visit (AST::IfLetExprConseqElse &expr)
 void
 ExpandVisitor::visit (AST::MatchExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_scrutinee_expr ());
 
   for (auto &match_case : expr.get_match_cases ())
     {
       auto &arm = match_case.get_arm ();
-      visit_outer_attrs (arm);
 
       for (auto &pattern : arm.get_patterns ())
 	visit (pattern);
@@ -915,14 +857,12 @@ ExpandVisitor::visit (AST::MatchExpr &expr)
 void
 ExpandVisitor::visit (AST::AwaitExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_awaited_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::AsyncBlockExpr &expr)
 {
-  visit_outer_attrs (expr);
   visit (expr.get_block_expr ());
 }
 
@@ -952,7 +892,6 @@ ExpandVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 void
 ExpandVisitor::visit (AST::Method &method)
 {
-  visit_outer_attrs (method);
   for (auto &param : method.get_generic_params ())
     visit (param);
 
@@ -971,7 +910,6 @@ ExpandVisitor::visit (AST::Method &method)
 void
 ExpandVisitor::visit (AST::Module &module)
 {
-  visit_outer_attrs (module);
   if (module.get_kind () == AST::Module::ModuleKind::LOADED)
     {
       visit_inner_attrs (module);
@@ -982,9 +920,7 @@ ExpandVisitor::visit (AST::Module &module)
 
 void
 ExpandVisitor::visit (AST::ExternCrate &crate)
-{
-  visit_outer_attrs (crate);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::UseTreeGlob &)
@@ -1000,14 +936,11 @@ ExpandVisitor::visit (AST::UseTreeRebind &)
 
 void
 ExpandVisitor::visit (AST::UseDeclaration &use_decl)
-{
-  visit_outer_attrs (use_decl);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::Function &function)
 {
-  visit_outer_attrs (function);
   visit_inner_using_attrs (function,
 			   function.get_definition ()->get_inner_attrs ());
   for (auto &param : function.get_generic_params ())
@@ -1027,14 +960,12 @@ ExpandVisitor::visit (AST::Function &function)
 void
 ExpandVisitor::visit (AST::TypeAlias &type_alias)
 {
-  visit_outer_attrs (type_alias);
   visit (type_alias.get_type_aliased ());
 }
 
 void
 ExpandVisitor::visit (AST::StructStruct &struct_item)
 {
-  visit_outer_attrs (struct_item);
   for (auto &generic : struct_item.get_generic_params ())
     visit (generic);
 
@@ -1047,7 +978,6 @@ ExpandVisitor::visit (AST::StructStruct &struct_item)
 void
 ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 {
-  visit_outer_attrs (tuple_struct);
   for (auto &generic : tuple_struct.get_generic_params ())
     visit (generic);
 
@@ -1059,9 +989,7 @@ ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 
 void
 ExpandVisitor::visit (AST::EnumItem &item)
-{
-  visit_outer_attrs (item);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::EnumItemTuple &item)
@@ -1084,7 +1012,6 @@ ExpandVisitor::visit (AST::EnumItemDiscriminant &item)
 void
 ExpandVisitor::visit (AST::Enum &enum_item)
 {
-  visit_outer_attrs (enum_item);
   for (auto &generic : enum_item.get_generic_params ())
     visit (generic);
 
@@ -1095,7 +1022,6 @@ ExpandVisitor::visit (AST::Enum &enum_item)
 void
 ExpandVisitor::visit (AST::Union &union_item)
 {
-  visit_outer_attrs (union_item);
   for (auto &generic : union_item.get_generic_params ())
     visit (generic);
 
@@ -1105,7 +1031,6 @@ ExpandVisitor::visit (AST::Union &union_item)
 void
 ExpandVisitor::visit (AST::ConstantItem &const_item)
 {
-  visit_outer_attrs (const_item);
   maybe_expand_type (const_item.get_type ());
 
   visit (const_item.get_expr ());
@@ -1114,7 +1039,6 @@ ExpandVisitor::visit (AST::ConstantItem &const_item)
 void
 ExpandVisitor::visit (AST::StaticItem &static_item)
 {
-  visit_outer_attrs (static_item);
   maybe_expand_type (static_item.get_type ());
 
   visit (static_item.get_expr ());
@@ -1157,7 +1081,6 @@ ExpandVisitor::visit (AST::TraitItemType &item)
 void
 ExpandVisitor::visit (AST::Trait &trait)
 {
-  visit_outer_attrs (trait);
   for (auto &generic : trait.get_generic_params ())
     visit (generic);
 
@@ -1181,7 +1104,6 @@ ExpandVisitor::visit (AST::Trait &trait)
 void
 ExpandVisitor::visit (AST::InherentImpl &impl)
 {
-  visit_outer_attrs (impl);
   visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &generic : impl.get_generic_params ())
@@ -1207,7 +1129,6 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
 void
 ExpandVisitor::visit (AST::TraitImpl &impl)
 {
-  visit_outer_attrs (impl);
   visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : impl.get_generic_params ())
@@ -1266,7 +1187,6 @@ ExpandVisitor::visit (AST::ExternalFunctionItem &item)
 void
 ExpandVisitor::visit (AST::ExternBlock &block)
 {
-  visit_outer_attrs (block);
   visit_inner_attrs (block);
   std::function<std::unique_ptr<AST::ExternalItem> (AST::SingleASTNode)>
     extractor
@@ -1291,9 +1211,7 @@ ExpandVisitor::visit (AST::MacroMatcher &)
 
 void
 ExpandVisitor::visit (AST::MacroRulesDefinition &rules_def)
-{
-  visit_outer_attrs (rules_def);
-}
+{}
 
 void
 ExpandVisitor::visit (AST::MetaItemPath &)
@@ -1565,47 +1483,11 @@ ExpandVisitor::visit (AST::BareFunctionType &type)
 {
   for (auto &param : type.get_function_params ())
     {
-      visit_outer_attrs (param);
       maybe_expand_type (param.get_type ());
     }
 
   if (type.has_return_type ())
     visit (type.get_return_type ());
-}
-
-template <typename T>
-void
-ExpandVisitor::expand_outer_attribute (T &item, AST::SimplePath &path)
-{
-  // FIXME: Retrieve path from segments + local use statements instead of string
-  expander.expand_attribute_proc_macro (item, path);
-}
-
-template <typename T>
-void
-ExpandVisitor::visit_outer_attrs (T &item, std::vector<AST::Attribute> &attrs)
-{
-  for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
-    {
-      auto &current = *it;
-
-      if (!is_builtin (current) && !is_derive (current))
-	{
-	  it = attrs.erase (it);
-	  expand_outer_attribute (item, current.get_path ());
-	}
-      else
-	{
-	  it++;
-	}
-    }
-}
-
-template <typename T>
-void
-ExpandVisitor::visit_outer_attrs (T &item)
-{
-  visit_outer_attrs (item, item.get_outer_attrs ());
 }
 
 template <typename T>

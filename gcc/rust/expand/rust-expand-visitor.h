@@ -350,14 +350,6 @@ public:
   void visit (AST::BareFunctionType &type) override;
 
   template <typename T>
-  void expand_outer_attribute (T &item, AST::SimplePath &path);
-
-  template <typename T>
-  void visit_outer_attrs (T &item, std::vector<AST::Attribute> &attrs);
-
-  template <typename T> void visit_outer_attrs (T &item);
-
-  template <typename T>
   void expand_inner_attribute (T &item, AST::SimplePath &Path);
 
   template <typename T>
