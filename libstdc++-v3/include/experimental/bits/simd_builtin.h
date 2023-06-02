@@ -1628,7 +1628,7 @@ template <typename _Abi, typename>
 	    if constexpr (_UW_size == _TV_size) // one convert+store
 	      {
 		const _UW __converted = __convert<_UW>(__v);
-		_SuperImpl::_S_masked_store_nocvt(
+		_UAbi::_SimdImpl::_S_masked_store_nocvt(
 		  __converted, __mem,
 		  _UAbi::_MaskImpl::template _S_convert<
 		    __int_for_sizeof_t<_Up>>(__k));
@@ -1643,7 +1643,7 @@ template <typename _Abi, typename>
 		const array<_UV, _NAllStores> __converted
 		  = __convert_all<_UV, _NAllStores>(__v);
 		__execute_n_times<_NFullStores>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-		  _SuperImpl::_S_masked_store_nocvt(
+		  _UAbi::_SimdImpl::_S_masked_store_nocvt(
 		    _UW(__converted[__i]), __mem + __i * _UW_size,
 		    _UAbi::_MaskImpl::template _S_convert<
 		      __int_for_sizeof_t<_Up>>(
@@ -1651,7 +1651,7 @@ template <typename _Abi, typename>
 		});
 		if constexpr (_NAllStores
 			      > _NFullStores) // one partial at the end
-		  _SuperImpl::_S_masked_store_nocvt(
+		  _UAbi::_SimdImpl::_S_masked_store_nocvt(
 		    _UW(__converted[_NFullStores]),
 		    __mem + _NFullStores * _UW_size,
 		    _UAbi::_MaskImpl::template _S_convert<

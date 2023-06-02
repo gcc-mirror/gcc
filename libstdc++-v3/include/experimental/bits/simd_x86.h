@@ -1106,31 +1106,6 @@ template <typename _Abi, typename>
 		else
 		  _mm512_mask_storeu_pd(__mem, __k, __vi);
 	      }
-#if 0 // with KNL either sizeof(_Tp) >= 4 or sizeof(_vi) <= 32
-      // with Skylake-AVX512, __have_avx512bw is true
-	  else if constexpr (__have_sse2)
-	    {
-	      using _M   = __vector_type_t<_Tp, _Np>;
-	      using _MVT = _VectorTraits<_M>;
-	      _mm_maskmoveu_si128(__auto_bitcast(__extract<0, 4>(__v._M_data)),
-				  __auto_bitcast(_MaskImpl::template _S_convert<_Tp, _Np>(__k._M_data)),
-				  reinterpret_cast<char*>(__mem));
-	      _mm_maskmoveu_si128(__auto_bitcast(__extract<1, 4>(__v._M_data)),
-				  __auto_bitcast(_MaskImpl::template _S_convert<_Tp, _Np>(
-				    __k._M_data >> 1 * _MVT::_S_full_size)),
-				  reinterpret_cast<char*>(__mem) + 1 * 16);
-	      _mm_maskmoveu_si128(__auto_bitcast(__extract<2, 4>(__v._M_data)),
-				  __auto_bitcast(_MaskImpl::template _S_convert<_Tp, _Np>(
-				    __k._M_data >> 2 * _MVT::_S_full_size)),
-				  reinterpret_cast<char*>(__mem) + 2 * 16);
-	      if constexpr (_Np > 48 / sizeof(_Tp))
-		_mm_maskmoveu_si128(
-		  __auto_bitcast(__extract<3, 4>(__v._M_data)),
-		  __auto_bitcast(_MaskImpl::template _S_convert<_Tp, _Np>(
-		    __k._M_data >> 3 * _MVT::_S_full_size)),
-		  reinterpret_cast<char*>(__mem) + 3 * 16);
-	    }
-#endif
 	    else
 	      __assert_unreachable<_Tp>();
 	  }
@@ -1233,8 +1208,8 @@ template <typename _Abi, typename>
 	    else if constexpr (__have_avx && sizeof(_Tp) == 8)
 	      _mm_maskstore_pd(reinterpret_cast<double*>(__mem), __ki,
 			       __vector_bitcast<double>(__vi));
-	    else if constexpr (__have_sse2)
-	      _mm_maskmoveu_si128(__vi, __ki, reinterpret_cast<char*>(__mem));
+	    else
+	      _Base::_S_masked_store_nocvt(__v, __mem, __k);
 	  }
 	else if constexpr (sizeof(__v) == 32)
 	  {
@@ -1259,13 +1234,8 @@ template <typename _Abi, typename>
 	    else if constexpr (__have_avx && sizeof(_Tp) == 8)
 	      _mm256_maskstore_pd(reinterpret_cast<double*>(__mem), __ki,
 				  __vector_bitcast<double>(__v));
-	    else if constexpr (__have_sse2)
-	      {
-		_mm_maskmoveu_si128(__lo128(__vi), __lo128(__ki),
-				    reinterpret_cast<char*>(__mem));
-		_mm_maskmoveu_si128(__hi128(__vi), __hi128(__ki),
-				    reinterpret_cast<char*>(__mem) + 16);
-	      }
+	    else
+	      _Base::_S_masked_store_nocvt(__v, __mem, __k);
 	  }
 	else
 	  __assert_unreachable<_Tp>();
