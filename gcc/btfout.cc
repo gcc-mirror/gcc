@@ -192,6 +192,14 @@ btf_relative_var_id (ctf_id_t abs)
   return abs - (num_types_added + 1);
 }
 
+/* Return the final BTF ID of the func record at relative index REL.  */
+
+static ctf_id_t
+btf_absolute_func_id (ctf_id_t rel)
+{
+  return rel + (num_types_added + 1) + num_vars_added;
+}
+
 /* Return the relative index of the func record with final BTF ID ABS.  */
 
 static ctf_id_t
@@ -937,13 +945,12 @@ btf_asm_func_arg (ctf_container_ref ctfc, ctf_func_arg_t * farg,
 /* Asm'out a BTF_KIND_FUNC type.  */
 
 static void
-btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, size_t i)
+btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
 {
   ctf_id_t ref_id = dtd->dtd_data.ctti_type;
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
-		       "TYPE %lu BTF_KIND_FUNC '%s'",
-		       num_types_added + num_vars_added + 1 + i,
-		       dtd->dtd_name);
+		       "TYPE %" PRIu64 " BTF_KIND_FUNC '%s'",
+		       btf_absolute_func_id (id), dtd->dtd_name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0, dtd->linkage),
 		       "btt_info: kind=%u, kflag=%u, linkage=%u",
 		       BTF_KIND_FUNC, 0, dtd->linkage);
