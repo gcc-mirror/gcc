@@ -9923,11 +9923,6 @@ resolve_select_rank (gfc_code *code, gfc_namespace *old_ns)
 			       || gfc_expr_attr (code->expr1).pointer))
 	gfc_error ("RANK (*) at %L cannot be used with the pointer or "
 		   "allocatable selector at %L", &c->where, &code->expr1->where);
-
-      if (case_value == -1 && (gfc_expr_attr (code->expr1).allocatable
-			       || gfc_expr_attr (code->expr1).pointer))
-	gfc_error ("RANK (*) at %L cannot be used with the pointer or "
-		   "allocatable selector at %L", &c->where, &code->expr1->where);
     }
 
   /* Add EXEC_SELECT to switch on rank.  */
@@ -12913,7 +12908,10 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 
       if (allocatable)
 	{
-	  if (dimension && as->type != AS_ASSUMED_RANK)
+	  if (dimension
+	      && as
+	      && as->type != AS_ASSUMED_RANK
+	      && !sym->attr.select_rank_temporary)
 	    {
 	      gfc_error ("Allocatable array %qs at %L must have a deferred "
 			 "shape or assumed rank", sym->name, &sym->declared_at);
