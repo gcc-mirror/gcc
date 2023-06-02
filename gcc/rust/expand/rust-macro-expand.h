@@ -357,7 +357,7 @@ struct MacroExpander
   void import_proc_macros (std::string extern_crate);
 
   template <typename T>
-  void expand_derive_proc_macro (T &item, std::string &trait_name)
+  AST::Fragment expand_derive_proc_macro (T &item, std::string &trait_name)
   {
     ProcMacro::CustomDerive macro;
 
@@ -387,11 +387,11 @@ struct MacroExpander
     auto c = collector.collect_tokens ();
     std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
 
-    parse_procmacro_output (macro.macro (convert (vec)), true);
+    return parse_proc_macro_output (macro.macro (convert (vec)));
   }
 
   template <typename T>
-  void expand_bang_proc_macro (T &item, AST::SimplePath &path)
+  AST::Fragment expand_bang_proc_macro (T &item, AST::SimplePath &path)
   {
     ProcMacro::Bang macro;
 
@@ -419,7 +419,7 @@ struct MacroExpander
     auto c = collector.collect_tokens ();
     std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
 
-    parse_procmacro_output (macro.macro (convert (vec)), false);
+    return parse_proc_macro_output (macro.macro (convert (vec)));
   }
 
   template <typename T>
@@ -453,9 +453,8 @@ struct MacroExpander
     std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
 
     // FIXME: Handle attributes
-    parse_procmacro_output (
-      macro.macro (ProcMacro::TokenStream::make_tokenstream (), convert (vec)),
-      false);
+    parse_proc_macro_output (
+      macro.macro (ProcMacro::TokenStream::make_tokenstream (), convert (vec)));
   }
 
   /**
@@ -473,7 +472,7 @@ struct MacroExpander
   AST::MacroInvocation *get_last_invocation () { return last_invoc; }
 
 private:
-  void parse_procmacro_output (ProcMacro::TokenStream ts, bool derive);
+  AST::Fragment parse_proc_macro_output (ProcMacro::TokenStream ts);
 
   AST::Crate &crate;
   Session &session;

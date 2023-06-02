@@ -146,10 +146,7 @@ public:
 	  }
 	else if (proc_macro_fragment.should_expand ())
 	  {
-	    if (proc_macro_fragment.should_overwrite ())
-	      it = values.erase (it);
-	    else
-	      it++;
+	    it = values.erase (it);
 	    for (auto &node : proc_macro_fragment.get_nodes ())
 	      {
 		auto new_node = extractor (node);
@@ -382,13 +379,6 @@ public:
   void visit_inner_using_attrs (T &item, std::vector<AST::Attribute> &attrs);
 
   template <typename T> void visit_inner_attrs (T &item);
-
-  template <typename T>
-  void expand_derive (T &item, std::unique_ptr<AST::TokenTree> trait);
-
-  template <typename T> void expand_derive (T &item, AST::DelimTokenTree &attr);
-
-  template <typename T> void visit_attrs_with_derive (T &item);
 
 private:
   MacroExpander &expander;

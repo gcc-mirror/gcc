@@ -1096,8 +1096,8 @@ MacroExpander::import_proc_macros (std::string extern_crate)
     }
 }
 
-void
-MacroExpander::parse_procmacro_output (ProcMacro::TokenStream ts, bool derive)
+AST::Fragment
+MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 {
   ProcMacroInvocLexer lex (convert (ts));
   Parser<ProcMacroInvocLexer> parser (lex);
@@ -1133,10 +1133,9 @@ MacroExpander::parse_procmacro_output (ProcMacro::TokenStream ts, bool derive)
     }
 
   if (parser.has_errors ())
-    set_expanded_proc_macro_fragment (AST::Fragment::create_error ());
+    return AST::Fragment::create_error ();
   else
-    set_expanded_proc_macro_fragment (
-      {nodes, std::vector<std::unique_ptr<AST::Token>> (), !derive});
+    return {nodes, std::vector<std::unique_ptr<AST::Token>> ()};
 }
 
 } // namespace Rust
