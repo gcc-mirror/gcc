@@ -1743,18 +1743,18 @@ template <typename _To, typename _From>
       return reinterpret_cast<_To>(__x);
     else if constexpr (__is_vector_type_v<_To> && __from_is_vectorizable)
       {
-	using _FV [[gnu::vector_size(sizeof(_From))]] = _From;
+	using _FV [[__gnu__::__vector_size__(sizeof(_From))]] = _From;
 	return reinterpret_cast<_To>(_FV{__x});
       }
     else if constexpr (__to_is_vectorizable && __from_is_vectorizable)
       {
-	using _TV [[gnu::vector_size(sizeof(_To))]] = _To;
-	using _FV [[gnu::vector_size(sizeof(_From))]] = _From;
+	using _TV [[__gnu__::__vector_size__(sizeof(_To))]] = _To;
+	using _FV [[__gnu__::__vector_size__(sizeof(_From))]] = _From;
 	return reinterpret_cast<_TV>(_FV{__x})[0];
       }
     else if constexpr (__to_is_vectorizable && __is_vector_type_v<_From>)
       {
-	using _TV [[gnu::vector_size(sizeof(_To))]] = _To;
+	using _TV [[__gnu__::__vector_size__(sizeof(_To))]] = _To;
 	return reinterpret_cast<_TV>(__x)[0];
       }
     else
