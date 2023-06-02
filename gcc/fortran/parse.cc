@@ -5037,6 +5037,7 @@ parse_associate (void)
   gfc_state_data s;
   gfc_statement st;
   gfc_association_list* a;
+  gfc_array_spec *as;
 
   gfc_notify_std (GFC_STD_F2003, "ASSOCIATE construct at %C");
 
@@ -5052,8 +5053,7 @@ parse_associate (void)
   for (a = new_st.ext.block.assoc; a; a = a->next)
     {
       gfc_symbol* sym;
-      gfc_ref *ref;
-      gfc_array_ref *array_ref;
+      gfc_expr *target;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
@@ -5070,6 +5070,7 @@ parse_associate (void)
 	 for parsing component references on the associate-name
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
+      target = a->target;
 
       /* Don’t share the character length information between associate
 	 variable and target if the length is not a compile-time constant,
@@ -5089,31 +5090,37 @@ parse_associate (void)
 	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
 	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
-      /* Check if the target expression is array valued.  This cannot always
-	 be done by looking at target.rank, because that might not have been
-	 set yet.  Therefore traverse the chain of refs, looking for the last
-	 array ref and evaluate that.  */
-      array_ref = NULL;
-      for (ref = a->target->ref; ref; ref = ref->next)
-	if (ref->type == REF_ARRAY)
-	  array_ref = &ref->u.ar;
-      if (array_ref || a->target->rank)
+      /* Check if the target expression is array valued. This cannot be done
+	 by calling gfc_resolve_expr because the context is unavailable.
+	 However, the references can be resolved and the rank of the target
+	 expression set.  */
+      if (target->ref && gfc_resolve_ref (target)
+	  && target->expr_type != EXPR_ARRAY
+	  && target->expr_type != EXPR_COMPCALL)
+	gfc_expression_rank (target);
+
+      /* Determine whether or not function expressions with unknown type are
+	 structure constructors. If so, the function result can be converted
+	 to be a derived type.
+	 TODO: Deal with references to sibling functions that have not yet been
+	 parsed (PRs 89645 and 99065).  */
+      if (target->expr_type == EXPR_FUNCTION && target->ts.type == BT_UNKNOWN)
 	{
-	  gfc_array_spec *as;
-	  int dim, rank = 0;
-	  if (array_ref)
+	  gfc_symbol *derived;
+	  /* The derived type has a leading uppercase character.  */
+	  gfc_find_symbol (gfc_dt_upper_string (target->symtree->name),
+			   my_ns->parent, 1, &derived);
+	  if (derived && derived->attr.flavor == FL_DERIVED)
 	    {
-	      a->rankguessed = 1;
-	      /* Count the dimension, that have a non-scalar extend.  */
-	      for (dim = 0; dim < array_ref->dimen; ++dim)
-		if (array_ref->dimen_type[dim] != DIMEN_ELEMENT
-		    && !(array_ref->dimen_type[dim] == DIMEN_UNKNOWN
-			 && array_ref->end[dim] == NULL
-			 && array_ref->start[dim] != NULL))
-		  ++rank;
+	      sym->ts.type = BT_DERIVED;
+	      sym->ts.u.derived = derived;
 	    }
-	  else
-	    rank = a->target->rank;
+	}
+
+      if (target->rank)
+	{
+	  int rank = 0;
+	  rank = target->rank;
 	  /* When the rank is greater than zero then sym will be an array.  */
 	  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	    {
@@ -5124,8 +5131,8 @@ parse_associate (void)
 		  /* Don't just (re-)set the attr and as in the sym.ts,
 		     because this modifies the target's attr and as.  Copy the
 		     data and do a build_class_symbol.  */
-		  symbol_attribute attr = CLASS_DATA (a->target)->attr;
-		  int corank = gfc_get_corank (a->target);
+		  symbol_attribute attr = CLASS_DATA (target)->attr;
+		  int corank = gfc_get_corank (target);
 		  gfc_typespec type;
 
 		  if (rank || corank)
@@ -5160,7 +5167,7 @@ parse_associate (void)
 	      as = gfc_get_array_spec ();
 	      as->type = AS_DEFERRED;
 	      as->rank = rank;
-	      as->corank = gfc_get_corank (a->target);
+	      as->corank = gfc_get_corank (target);
 	      sym->as = as;
 	      sym->attr.dimension = 1;
 	      if (as->corank)
