@@ -1295,6 +1295,18 @@ struct _CommonImplBuiltin
 
   // }}}
   // _S_store {{{
+  template <size_t _Bytes>
+    _GLIBCXX_SIMD_INTRINSIC static void
+    _S_memcpy(char* __dst, const char* __src)
+    {
+      if constexpr (_Bytes > 0)
+	{
+	  constexpr size_t _Ns = std::__bit_floor(_Bytes);
+	  __builtin_memcpy(__dst, __src, _Ns);
+	  _S_memcpy<_Bytes - _Ns>(__dst + _Ns, __src + _Ns);
+	}
+    }
+
   template <size_t _ReqBytes = 0, typename _TV>
     _GLIBCXX_SIMD_INTRINSIC static void
     _S_store(_TV __x, void* __addr)
@@ -1302,33 +1314,11 @@ struct _CommonImplBuiltin
       constexpr size_t _Bytes = _ReqBytes == 0 ? sizeof(__x) : _ReqBytes;
       static_assert(sizeof(__x) >= _Bytes);
 
+#if !defined __clang__ && _GLIBCXX_SIMD_WORKAROUND_PR90424
       if constexpr (__is_vector_type_v<_TV>)
-	{
-	  using _Tp = typename _VectorTraits<_TV>::value_type;
-	  constexpr size_t _Np = _Bytes / sizeof(_Tp);
-	  static_assert(_Np * sizeof(_Tp) == _Bytes);
-
-#ifdef _GLIBCXX_SIMD_WORKAROUND_PR90424
-	  using _Up = conditional_t<
-	    (is_integral_v<_Tp> || _Bytes < 4),
-	    conditional_t<(sizeof(__x) > sizeof(long long)), long long, _Tp>,
-	    float>;
-	  const auto __v = __vector_bitcast<_Up>(__x);
-#else // _GLIBCXX_SIMD_WORKAROUND_PR90424
-	  const __vector_type_t<_Tp, _Np> __v = __x;
-#endif // _GLIBCXX_SIMD_WORKAROUND_PR90424
-
-	  if constexpr ((_Bytes & (_Bytes - 1)) != 0)
-	    {
-	      constexpr size_t _MoreBytes = std::__bit_ceil(_Bytes);
-	      alignas(decltype(__v)) char __tmp[_MoreBytes];
-	      __builtin_memcpy(__tmp, &__v, _MoreBytes);
-	      __builtin_memcpy(__addr, __tmp, _Bytes);
-	    }
-	  else
-	    __builtin_memcpy(__addr, &__v, _Bytes);
-	}
+	_S_memcpy<_Bytes>(reinterpret_cast<char*>(__addr), reinterpret_cast<const char*>(&__x));
       else
+#endif // _GLIBCXX_SIMD_WORKAROUND_PR90424
 	__builtin_memcpy(__addr, &__x, _Bytes);
     }
 
