@@ -69,6 +69,235 @@ kf_alloca::impl_call_pre (const call_details &cd) const
   cd.maybe_set_lhs (ptr_sval);
 }
 
+/* Handler for:
+   void __atomic_exchange (type *ptr, type *val, type *ret, int memorder).  */
+
+class kf_atomic_exchange : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *RET = *PTR;
+       *PTR = *VAL;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_ptr_sval = cd.get_arg_svalue (1);
+    tree val_ptr_tree = cd.get_arg_tree (1);
+    const svalue *ret_ptr_sval = cd.get_arg_svalue (2);
+    tree ret_ptr_tree = cd.get_arg_tree (2);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *val_region
+      = model->deref_rvalue (val_ptr_sval, val_ptr_tree, ctxt);
+    const svalue *star_val_sval = model->get_store_value (val_region, ctxt);
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    const region *ret_region
+      = model->deref_rvalue (ret_ptr_sval, ret_ptr_tree, ctxt);
+    model->set_value (ptr_region, star_val_sval, ctxt);
+    model->set_value (ret_region, star_ptr_sval, ctxt);
+  }
+};
+
+/* Handler for:
+   __atomic_exchange_n (type *ptr, type val, int memorder).  */
+
+class kf_atomic_exchange_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       RET = *PTR;
+       *PTR = VAL;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *set_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *dst_region = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *ret_sval = model->get_store_value (dst_region, ctxt);
+    model->set_value (dst_region, set_sval, ctxt);
+    cd.maybe_set_lhs (ret_sval);
+  }
+};
+
+/* Handler for:
+   type __atomic_fetch_add (type *ptr, type val, int memorder);
+   type __atomic_fetch_sub (type *ptr, type val, int memorder);
+   type __atomic_fetch_and (type *ptr, type val, int memorder);
+   type __atomic_fetch_xor (type *ptr, type val, int memorder);
+   type __atomic_fetch_or (type *ptr, type val, int memorder);
+*/
+
+class kf_atomic_fetch_op : public internal_known_function
+{
+public:
+  kf_atomic_fetch_op (enum tree_code op): m_op (op) {}
+
+  /* This is effectively:
+       RET = *PTR;
+       *PTR = RET OP VAL;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *old_sval = model->get_store_value (star_ptr_region, ctxt);
+    const svalue *new_sval = mgr->get_or_create_binop (old_sval->get_type (),
+						       m_op,
+						       old_sval, val_sval);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+    cd.maybe_set_lhs (old_sval);
+  }
+
+private:
+  enum tree_code m_op;
+};
+
+/* Handler for:
+   type __atomic_add_fetch (type *ptr, type val, int memorder);
+   type __atomic_sub_fetch (type *ptr, type val, int memorder);
+   type __atomic_and_fetch (type *ptr, type val, int memorder);
+   type __atomic_xor_fetch (type *ptr, type val, int memorder);
+   type __atomic_or_fetch (type *ptr, type val, int memorder);
+*/
+
+class kf_atomic_op_fetch : public internal_known_function
+{
+public:
+  kf_atomic_op_fetch (enum tree_code op): m_op (op) {}
+
+  /* This is effectively:
+       *PTR = RET OP VAL;
+       return *PTR;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *val_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    const svalue *old_sval = model->get_store_value (star_ptr_region, ctxt);
+    const svalue *new_sval = mgr->get_or_create_binop (old_sval->get_type (),
+						       m_op,
+						       old_sval, val_sval);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+    cd.maybe_set_lhs (new_sval);
+  }
+
+private:
+  enum tree_code m_op;
+};
+
+/* Handler for:
+   void __atomic_load (type *ptr, type *ret, int memorder).  */
+
+class kf_atomic_load : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *RET = *PTR;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    const svalue *ret_ptr_sval = cd.get_arg_svalue (1);
+    tree ret_ptr_tree = cd.get_arg_tree (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    const region *ret_region
+      = model->deref_rvalue (ret_ptr_sval, ret_ptr_tree, ctxt);
+    model->set_value (ret_region, star_ptr_sval, ctxt);
+  }
+};
+
+/* Handler for:
+   type __atomic_load_n (type *ptr, int memorder) */
+
+class kf_atomic_load_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       RET = *PTR;
+       return RET;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_ptr_tree = cd.get_arg_tree (0);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *ptr_region
+      = model->deref_rvalue (ptr_ptr_sval, ptr_ptr_tree, ctxt);
+    const svalue *star_ptr_sval = model->get_store_value (ptr_region, ctxt);
+    cd.maybe_set_lhs (star_ptr_sval);
+  }
+};
+
+/* Handler for:
+   void __atomic_store_n (type *ptr, type val, int memorder) */
+
+class kf_atomic_store_n : public internal_known_function
+{
+public:
+  /* This is effectively:
+       *PTR = VAL;
+  */
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    const svalue *ptr_sval = cd.get_arg_svalue (0);
+    tree ptr_tree = cd.get_arg_tree (0);
+    const svalue *new_sval = cd.get_arg_svalue (1);
+    /* Ignore the memorder param.  */
+
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    const region *star_ptr_region
+      = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
+    model->set_value (star_ptr_region, new_sval, ctxt);
+  }
+};
+
 /* Handler for "__builtin_expect" etc.  */
 
 class kf_expect : public internal_known_function
@@ -987,6 +1216,131 @@ region_model::impl_deallocation_call (const call_details &cd)
   kf.impl_call_post (cd);
 }
 
+static void
+register_atomic_builtins (known_function_manager &kfm)
+{
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE, make_unique<kf_atomic_exchange> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_N, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_1, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_2, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_4, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_8, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_EXCHANGE_16, make_unique<kf_atomic_exchange_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD, make_unique<kf_atomic_load> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_N, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_1, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_2, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_4, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_8, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_LOAD_16, make_unique<kf_atomic_load_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_N, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_1, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_2, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_4, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_8, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_STORE_16, make_unique<kf_atomic_store_n> ());
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_ADD_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_SUB_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_AND_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_XOR_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_1,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_2,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_4,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_8,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_OR_FETCH_16,
+	   make_unique<kf_atomic_op_fetch> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_1,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_2,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_4,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_8,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_ADD_16,
+	   make_unique<kf_atomic_fetch_op> (PLUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_1,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_2,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_4,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_8,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_SUB_16,
+	   make_unique<kf_atomic_fetch_op> (MINUS_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_AND_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_AND_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_XOR_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_XOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_1,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_2,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_4,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_8,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+  kfm.add (BUILT_IN_ATOMIC_FETCH_OR_16,
+	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
+}
+
 /* Populate KFM with instances of known functions supported by the core of the
    analyzer (as opposed to plugins).  */
 
@@ -1028,6 +1382,7 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (BUILT_IN_STRNDUP, make_unique<kf_strndup> ());
     kfm.add (BUILT_IN_STRLEN, make_unique<kf_strlen> ());
 
+    register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);
   }
 
