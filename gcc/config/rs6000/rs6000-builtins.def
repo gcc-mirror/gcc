@@ -3160,10 +3160,10 @@
   void __builtin_altivec_tr_stxvrbx (vsq, signed long, signed char *);
     TR_STXVRBX vsx_stxvrbx {stvec}
 
-  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed int *);
+  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed short *);
     TR_STXVRHX vsx_stxvrhx {stvec}
 
-  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed short *);
+  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed int *);
     TR_STXVRWX vsx_stxvrwx {stvec}
 
   void __builtin_altivec_tr_stxvrdx (vsq, signed long, signed long long *);
