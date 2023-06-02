@@ -291,6 +291,9 @@
 (define_mode_iterator V_128
   [V16QI V8HI V4SI V2DI V4SF (V2DF "TARGET_SSE2")])
 
+(define_mode_iterator V_128H
+  [V16QI V8HI V8HF V8BF V4SI V2DI V4SF (V2DF "TARGET_SSE2")])
+
 ;; All 256bit vector modes
 (define_mode_iterator V_256
   [V32QI V16HI V8SI V4DI V8SF V4DF])
@@ -1075,6 +1078,12 @@
    (V16SI "v16hf") (V8SI "v8hf") (V4SI "v4hf")
    (V8DI "v8hf") (V4DI "v4hf") (V2DI "v2hf")
    (V8DF "v8hf") (V16SF "v16hf") (V8SF "v8hf")])
+
+
+;; Mapping of vector modes to packed vector hf modes of same sized.
+(define_mode_attr ssepackPHmode
+  [(V16SI "V32HF") (V8SI "V16HF") (V4SI "V8HF")
+   (V16SF "V32HF") (V8SF "V16HF") (V4SF "V8HF")])
 
 ;; Mapping of vector modes to packed single mode of the same size
 (define_mode_attr ssePSmode
@@ -6918,6 +6927,61 @@
    (V16SF "") (V8SF "{y}") (V4SF "{x}")
    (V8DF "{z}") (V4DF "{y}") (V2DF "{x}")])
 
+(define_mode_attr vunpck_extract_mode
+  [(V32HF "v32hf") (V16HF "v16hf") (V8HF "v16hf")])
+
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<ssePSmode> 0 "register_operand")
+   (match_operand:VF_AVX512FP16VL 1 "register_operand")]
+  "TARGET_AVX512FP16"
+{
+  rtx tem = operands[1];
+  rtx (*gen) (rtx, rtx);
+  if (<MODE>mode != V8HFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_lo_<vunpck_extract_mode> (tem,
+							   operands[1]));
+      gen = gen_extend<ssehalfvecmodelower><ssePSmodelower>2;
+    }
+  else
+    gen = gen_avx512fp16_float_extend_phv4sf2;
+
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
+
+(define_expand "vec_unpacks_hi_<mode>"
+  [(match_operand:<ssePSmode> 0 "register_operand")
+   (match_operand:VF_AVX512FP16VL 1 "register_operand")]
+  "TARGET_AVX512FP16"
+{
+  rtx tem = operands[1];
+  rtx (*gen) (rtx, rtx);
+  if (<MODE>mode != V8HFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_hi_<vunpck_extract_mode> (tem,
+							   operands[1]));
+      gen = gen_extend<ssehalfvecmodelower><ssePSmodelower>2;
+    }
+  else
+    {
+      tem = gen_reg_rtx (V8HFmode);
+      rtvec tmp = rtvec_alloc (8);
+      for (int i = 0; i != 8; i++)
+	RTVEC_ELT (tmp, i) = GEN_INT ((i + 4) % 8);
+
+      rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
+      emit_move_insn (tem,
+		     gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
+      gen = gen_avx512fp16_float_extend_phv4sf2;
+    }
+
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
+
 (define_insn "avx512fp16_vcvtph2<sseintconvertsignprefix><sseintconvert>_<mode><mask_name><round_name>"
   [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
         (unspec:VI248_AVX512VL
@@ -8314,11 +8378,17 @@
 })
 
 (define_mode_attr vpckfloat_concat_mode
-  [(V8DI "v16sf") (V4DI "v8sf") (V2DI "v8sf")])
+  [(V8DI "v16sf") (V4DI "v8sf") (V2DI "v8sf")
+   (V16SI "v32hf") (V8SI "v16hf") (V4SI "v16hf")
+   (V16SF "v32hf") (V8SF "v16hf") (V4SF "v16hf")])
 (define_mode_attr vpckfloat_temp_mode
-  [(V8DI "V8SF") (V4DI "V4SF") (V2DI "V4SF")])
+  [(V8DI "V8SF") (V4DI "V4SF") (V2DI "V4SF")
+   (V16SI "V16HF") (V8SI "V8HF") (V4SI "V8HF")
+   (V16SF "V16HF") (V8SF "V8HF") (V4SF "V8HF")])
 (define_mode_attr vpckfloat_op_mode
-  [(V8DI "v8sf") (V4DI "v4sf") (V2DI "v2sf")])
+  [(V8DI "v8sf") (V4DI "v4sf") (V2DI "v2sf")
+   (V16SI "v16hf") (V8SI "v8hf") (V4SI "v4hf")
+   (V16SF "v16hf") (V8SF "v8hf") (V4SF "v4hf")])
 
 (define_expand "vec_pack<floatprefix>_float_<mode>"
   [(match_operand:<ssePSmode> 0 "register_operand")
@@ -8339,6 +8409,31 @@
   emit_insn (gen (r2, operands[2]));
   if (<MODE>mode == V2DImode)
     emit_insn (gen_sse_movlhps (operands[0], r1, r2));
+  else
+    emit_insn (gen_avx_vec_concat<vpckfloat_concat_mode> (operands[0],
+							  r1, r2));
+  DONE;
+})
+
+(define_expand "vec_pack<floatprefix>_float_<mode>"
+  [(match_operand:<ssepackPHmode> 0 "register_operand")
+   (any_float:<ssepackPHmode>
+     (match_operand:VI4_AVX512VL 1 "register_operand"))
+   (match_operand:VI4_AVX512VL 2 "register_operand")]
+  "TARGET_AVX512FP16"
+{
+  rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx (*gen) (rtx, rtx);
+
+  if (<MODE>mode == V4SImode)
+    gen = gen_avx512fp16_float<floatunssuffix>v4siv4hf2;
+  else
+    gen = gen_float<floatunssuffix><mode><vpckfloat_op_mode>2;
+  emit_insn (gen (r1, operands[1]));
+  emit_insn (gen (r2, operands[2]));
+  if (<MODE>mode == V4SImode)
+    emit_insn (gen_sse_movlhps_v8hf (operands[0], r1, r2));
   else
     emit_insn (gen_avx_vec_concat<vpckfloat_concat_mode> (operands[0],
 							  r1, r2));
@@ -8747,11 +8842,14 @@
 })
 
 (define_mode_attr vunpckfixt_mode
-  [(V16SF "V8DI") (V8SF "V4DI") (V4SF "V2DI")])
+  [(V16SF "V8DI") (V8SF "V4DI") (V4SF "V2DI")
+   (V32HF "V16SI") (V16HF "V8SI") (V8HF "V4SI")])
 (define_mode_attr vunpckfixt_model
-  [(V16SF "v8di") (V8SF "v4di") (V4SF "v2di")])
+  [(V16SF "v8di") (V8SF "v4di") (V4SF "v2di")
+   (V32HF "v16si") (V16HF "v8si") (V8HF "v4si")])
 (define_mode_attr vunpckfixt_extract_mode
-  [(V16SF "v16sf") (V8SF "v8sf") (V4SF "v8sf")])
+  [(V16SF "v16sf") (V8SF "v8sf") (V4SF "v8sf")
+   (V32HF "v32hf") (V16HF "v16hf") (V8HF "v16hf")])
 
 (define_expand "vec_unpack_<fixprefix>fix_trunc_lo_<mode>"
   [(match_operand:<vunpckfixt_mode> 0 "register_operand")
@@ -8797,6 +8895,60 @@
       tem = gen_reg_rtx (V4SFmode);
       emit_insn (gen_avx_vpermilv4sf (tem, operands[1], GEN_INT (0x4e)));
       gen = gen_avx512dq_fix<fixunssuffix>_truncv2sfv2di2;
+    }
+
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
+
+(define_expand "vec_unpack_<fixprefix>fix_trunc_lo_<mode>"
+  [(match_operand:<vunpckfixt_mode> 0 "register_operand")
+   (any_fix:<vunpckfixt_mode>
+     (match_operand:VF_AVX512FP16VL 1 "register_operand"))]
+  "TARGET_AVX512FP16"
+{
+  rtx tem = operands[1];
+  rtx (*gen) (rtx, rtx);
+  if (<MODE>mode != V8HFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_lo_<vunpckfixt_extract_mode> (tem,
+							       operands[1]));
+      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+    }
+  else
+    gen = gen_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
+
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
+
+(define_expand "vec_unpack_<fixprefix>fix_trunc_hi_<mode>"
+  [(match_operand:<vunpckfixt_mode> 0 "register_operand")
+   (any_fix:<vunpckfixt_mode>
+     (match_operand:VF_AVX512FP16VL 1 "register_operand"))]
+  "TARGET_AVX512FP16"
+{
+  rtx tem = operands[1];
+  rtx (*gen) (rtx, rtx);
+  if (<MODE>mode != V8HFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_hi_<vunpckfixt_extract_mode> (tem,
+							       operands[1]));
+      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+    }
+  else
+    {
+      tem = gen_reg_rtx (V8HFmode);
+      rtvec tmp = rtvec_alloc (8);
+      for (int i = 0; i != 8; i++)
+	RTVEC_ELT (tmp, i) = GEN_INT ((i + 4) % 8);
+
+      rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
+      emit_move_insn (tem,
+		     gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
+      gen = gen_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -9616,6 +9768,31 @@
   operands[4] = gen_reg_rtx (<sf2dfmode>mode);
 })
 
+(define_expand "vec_pack_trunc_<mode>"
+  [(match_operand:<ssepackPHmode> 0 "register_operand")
+   (match_operand:VF1_AVX512VL 1 "register_operand")
+   (match_operand:VF1_AVX512VL 2 "register_operand")]
+  "TARGET_AVX512FP16"
+{
+  rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx (*gen) (rtx, rtx);
+
+  if (<MODE>mode == V4SFmode)
+    gen = gen_avx512fp16_truncv4sfv4hf2;
+  else
+    gen = gen_trunc<mode><vpckfloat_op_mode>2;
+  emit_insn (gen (r1, operands[1]));
+  emit_insn (gen (r2, operands[2]));
+  if (<MODE>mode == V4SFmode)
+    emit_insn (gen_sse_movlhps_v8hf (operands[0], r1, r2));
+  else
+    emit_insn (gen_avx_vec_concat<vpckfloat_concat_mode> (operands[0],
+							  r1, r2));
+  DONE;
+
+})
+
 (define_expand "vec_pack_trunc_v2df"
   [(match_operand:V4SF 0 "register_operand")
    (match_operand:V2DF 1 "vector_operand")
@@ -9920,6 +10097,27 @@
    (set_attr "type" "ssemov")
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
+
+(define_insn "sse_movlhps_<mode>"
+  [(set (match_operand:V8_128 0 "nonimmediate_operand"     "=x,v,x,o")
+	(vec_select:V8_128
+	  (vec_concat:<ssedoublevecmode>
+	    (match_operand:V8_128 1 "nonimmediate_operand" " 0,v,0,0")
+	    (match_operand:V8_128 2 "nonimmediate_operand" " x,v,m,v"))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)
+		     (const_int 8) (const_int 9)
+		     (const_int 10) (const_int 11)])))]
+  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, <MODE>mode, operands)"
+  "@
+   movlhps\t{%2, %0|%0, %2}
+   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
+   movhps\t{%2, %0|%0, %q2}
+   %vmovlps\t{%2, %H0|%H0, %2}"
+  [(set_attr "isa" "noavx,avx,noavx,*")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix" "orig,maybe_evex,orig,maybe_vex")
+   (set_attr "mode" "V4SF,TI,V2SF,V2SF")])
 
 (define_insn "<mask_codefor>avx512f_unpckhps512<mask_name>"
   [(set (match_operand:V16SF 0 "register_operand" "=v")
@@ -26263,9 +26461,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*ssse3_palignr<mode>_perm"
-  [(set (match_operand:V_128 0 "register_operand" "=x,Yw")
-      (vec_select:V_128
-	(match_operand:V_128 1 "register_operand" "0,Yw")
+  [(set (match_operand:V_128H 0 "register_operand" "=x,Yw")
+      (vec_select:V_128H
+	(match_operand:V_128H 1 "register_operand" "0,Yw")
 	(match_parallel 2 "palignr_operand"
 	  [(match_operand 3 "const_int_operand")])))]
   "TARGET_SSSE3"
