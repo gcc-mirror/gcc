@@ -279,6 +279,7 @@
 (define_code_iterator any_extract [sign_extract zero_extract])
 (define_code_iterator any_shiftrt [lshiftrt ashiftrt])
 
+(define_code_iterator piaop [plus ior and])
 (define_code_iterator bitop [xor ior and])
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
@@ -4713,7 +4714,8 @@
   [(parallel [(set (match_operand:HISI 0 "register_operand")
                    (bitop:HISI (match_dup 0)
                                (match_operand:HISI 1 "register_operand")))
-              (clobber (scratch:QI))])]
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])]
   "optimize
    && reload_completed"
   [(const_int 1)]
@@ -4726,6 +4728,43 @@
       }
     DONE;
   })
+
+;; If  $0 = $0 <op> const  requires a QI scratch, and d-reg $1 dies after
+;; the first insn, then we can replace
+;;    $0 = $1
+;;    $0 = $0 <op> const
+;; by
+;;    $1 = $1 <op> const
+;;    $0 = $1
+;; This transorms constraint alternative "r,0,n,&d" of the first operation
+;; to alternative "d,0,n,X".
+;; "*addhi3_clobber"  "*addpsi3"  "*addsi3"
+;; "*addhq3"  "*adduhq3"  "*addha3"  "*adduha3"
+;; "*addsq3"  "*addusq3"  "*addsa3"  "*addusa3"
+;; "*iorhi3"  "*iorpsi3"  "*iorsi3"
+;; "*andhi3"  "*andpsi3"  "*andsi3"
+(define_peephole2
+  [(parallel [(set (match_operand:ORDERED234 0 "register_operand")
+                   (match_operand:ORDERED234 1 "d_register_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (piaop:ORDERED234 (match_dup 0)
+                                     (match_operand:ORDERED234 2 "const_operand")))
+              ; A d-reg as scratch tells that this insn is expensive, and
+              ; that $0 is not a d-register: l-reg or something like SI:14 etc.
+              (clobber (match_operand:QI 3 "d_register_operand"))
+              (clobber (reg:CC REG_CC))])]
+  "peep2_reg_dead_p (1, operands[1])"
+  [(parallel [(set (match_dup 1)
+                   (piaop:ORDERED234 (match_dup 1)
+                                     (match_dup 2)))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
+   ; Unfortunately, the following insn misses a REG_DEAD note for $1,
+   ; so this peep2 works only once.
+   (parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (clobber (reg:CC REG_CC))])])
 
 
 ;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
