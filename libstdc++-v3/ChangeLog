@@ -1,3 +1,79 @@
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109758
+	* include/bits/std_abs.h (abs(__float128)): Handle negative NaN
+	and negative zero correctly.
+	* testsuite/26_numerics/headers/cmath/109758.cc: New test.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/feat-cxx14.cc: Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Remove
+	dependency on _GLIBCXX_USE_C99_STDINT_TR1.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc:
+	Add const to equality operator.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document removal of implicit
+	allocator rebinding extensions in strict mode and for C++20.
+	* doc/html/*: Regenerate.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Use a non-null pointer
+	to check for nan, nanf, and nanl.
+	* configure: Regenerate.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Only test
+	printer for chrono::zoned_time for cx11 ABI and tzdb effective
+	target.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoDurationPrinter):
+	Print floating-point durations correctly.
+	(StdChronoTimePointPrinter): Support printing only the value,
+	not the type name. Uncomment handling for known clocks.
+	(StdChronoZonedTimePrinter): Remove type names from output.
+	(StdChronoCalendarPrinter): Fix hh_mm_ss member access.
+	(StdChronoTimeZonePrinter): Add equals sign to output.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: New test.
+
 2023-05-30  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
