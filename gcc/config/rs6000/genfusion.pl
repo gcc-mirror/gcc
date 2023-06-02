@@ -347,6 +347,3 @@ EOF
 gen_ld_cmpi_p10();
 gen_logical_addsubf();
 gen_addadd;
-
-exit(0);
-
