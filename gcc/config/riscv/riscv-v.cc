@@ -530,6 +530,8 @@ expand_vec_series (rtx dest, rtx base, rtx step)
   machine_mode mode = GET_MODE (dest);
   machine_mode mask_mode;
   gcc_assert (get_mask_mode (mode).exists (&mask_mode));
+  poly_int64 nunits_m1 = GET_MODE_NUNITS (mode) - 1;
+  poly_int64 value;
 
   /* VECT_IV = BASE + I * STEP.  */
 
@@ -545,6 +547,21 @@ expand_vec_series (rtx dest, rtx base, rtx step)
   rtx step_adj;
   if (rtx_equal_p (step, const1_rtx))
     step_adj = vid;
+  else if (rtx_equal_p (step, constm1_rtx) && poly_int_rtx_p (base, &value)
+	   && known_eq (nunits_m1, value))
+    {
+      /* Special case:
+	   {nunits - 1, nunits - 2, ... , 0}.
+	   nunits can be either const_int or const_poly_int.
+
+	 Code sequence:
+	   vid.v v
+	   vrsub nunits - 1, v.  */
+      rtx ops[] = {dest, vid, gen_int_mode (nunits_m1, GET_MODE_INNER (mode))};
+      insn_code icode = code_for_pred_sub_reverse_scalar (mode);
+      emit_vlmax_insn (icode, RVV_BINOP, ops);
+      return;
+    }
   else
     {
       step_adj = gen_reg_rtx (mode);
