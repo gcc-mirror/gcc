@@ -164,7 +164,7 @@ public:
   {
     if (STORE_P || LST_TYPE == LST_INDEXED)
       return true;
-    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+    return pred != PRED_TYPE_none;
   }
 
   rtx expand (function_expander &e) const override
@@ -967,7 +967,7 @@ public:
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
     return pred == PRED_TYPE_tu || pred == PRED_TYPE_tum
-	   || pred == PRED_TYPE_tumu;
+	   || pred == PRED_TYPE_tumu || pred == PRED_TYPE_mu;
   }
 
   rtx expand (function_expander &e) const override
@@ -983,7 +983,7 @@ public:
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
     return pred == PRED_TYPE_tu || pred == PRED_TYPE_tum
-	   || pred == PRED_TYPE_tumu;
+	   || pred == PRED_TYPE_tumu || pred == PRED_TYPE_mu;
   }
 
   rtx expand (function_expander &e) const override
@@ -1715,6 +1715,11 @@ public:
     return CP_READ_MEMORY | CP_WRITE_CSR;
   }
 
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none;
+  }
+
   gimple *fold (gimple_folder &f) const override
   {
     return fold_fault_load (f);
@@ -1753,7 +1758,7 @@ public:
 
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
-    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+    return pred != PRED_TYPE_none;
   }
 
   rtx expand (function_expander &e) const override
@@ -1798,7 +1803,7 @@ public:
 
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
-    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+    return pred != PRED_TYPE_none;
   }
 
   rtx expand (function_expander &e) const override
@@ -1888,7 +1893,7 @@ public:
 
   bool can_be_overloaded_p (enum predication_type_index pred) const override
   {
-    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+    return pred != PRED_TYPE_none;
   }
 
   gimple *fold (gimple_folder &f) const override

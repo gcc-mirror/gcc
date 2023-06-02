@@ -550,9 +550,8 @@ struct fault_load_def : public build_base
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
   {
-    if (overloaded_p)
-      if (instance.pred == PRED_TYPE_none || instance.pred == PRED_TYPE_mu)
-	return nullptr;
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
     tree type = builtin_types[instance.type.index].vector;
     machine_mode mode = TYPE_MODE (type);
     int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
