@@ -135,6 +135,9 @@ class TestResult(object):
         (self.state,
          self.name,
          self.description) = _VALID_TEST_RESULTS_REX.match(summary_line).groups()
+        if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+          self.description = re.sub(_OPTIONS.srcpath_regex, '',
+                                    self.description)
       except:
         print('Failed to parse summary line: "%s"' % summary_line,
               file=sys.stderr)
@@ -361,6 +364,9 @@ def ParseManifestWorker(result_set, manifest_path):
       result_set.add(result)
     elif IsExpLine(orig_line):
       result_set.current_exp = _EXP_LINE_REX.match(orig_line).groups()[0]
+      if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+        result_set.current_exp = re.sub(_OPTIONS.srcpath_regex, '',
+                                        result_set.current_exp)
     elif IsToolLine(orig_line):
       result_set.current_tool = _TOOL_LINE_REX.match(orig_line).groups()[0]
     elif IsSummaryLine(orig_line):
@@ -400,6 +406,9 @@ def ParseSummary(sum_fname):
       result_set.add(result)
     elif IsExpLine(line):
       result_set.current_exp = _EXP_LINE_REX.match(line).groups()[0]
+      if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+        result_set.current_exp = re.sub(_OPTIONS.srcpath_regex, '',
+                                        result_set.current_exp)
       result_set.testsuites.add((result_set.current_tool,
                                  result_set.current_exp))
     elif IsToolLine(line):
@@ -640,6 +649,12 @@ def Main(argv):
                     help='Use provided date YYYYMMDD to decide whether '
                     'manifest entries with expiry settings have expired '
                     'or not. (default = Use today date)')
+  parser.add_option('--srcpath', action='store', type='string',
+                    dest='srcpath_regex', default='[^ ]+/testsuite/',
+                    help='Remove provided path (can be a regex) from '
+                    'the result entries.  This is useful to remove '
+                    'occasional filesystem path from the results. '
+                    '(default = "[^ ]+/testsuite/")')
   parser.add_option('--inverse_match', action='store_true',
                     dest='inverse_match', default=False,
                     help='Inverse result sets in comparison. '
