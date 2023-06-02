@@ -41,6 +41,7 @@
 #include <parallel/algorithmfwd.h>
 #include <parallel/find.h>
 #include <parallel/find_selectors.h>
+#include <parallel/search.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
