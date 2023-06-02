@@ -31,7 +31,7 @@
   (ior (match_operand 0 "arith_operand")
        (and (match_code "const_int")
             (match_test "INTVAL (op) == GET_MODE_MASK (HImode)
-			 || INTVAL (op) == GET_MODE_MASK (SImode)"))))
+			 || UINTVAL (op) == GET_MODE_MASK (SImode)"))))
 
 (define_predicate "lui_operand"
   (and (match_code "const_int")
