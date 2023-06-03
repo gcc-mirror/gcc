@@ -5652,7 +5652,7 @@ riscv_expand_epilogue (int style)
 					   adjust));
 	  rtx dwarf = NULL_RTX;
 	  rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					     GEN_INT (step2));
+					     GEN_INT (step2 + libcall_size));
 
 	  dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -5689,7 +5689,7 @@ riscv_expand_epilogue (int style)
 
       rtx dwarf = NULL_RTX;
       rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					 const0_rtx);
+					 GEN_INT (libcall_size));
       dwarf = alloc_reg_note (REG_CFA_DEF_CFA, cfa_adjust_rtx, dwarf);
       RTX_FRAME_RELATED_P (insn) = 1;
 
