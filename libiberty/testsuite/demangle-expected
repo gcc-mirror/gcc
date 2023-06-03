@@ -1659,3 +1659,6 @@ auto f()::{lambda<typename $T0>(X<$T0>*, X<int>*)#1}::operator()<char>(X<char>*,
 
 _ZZN1XIiE1FEvENKUliE_clEi
 X<int>::F()::{lambda(int)#1}::operator()(int) const
+
+_Z1fIiEv1AIXnxtlT_EEE
+void f<int>(A<noexcept(int{})>)

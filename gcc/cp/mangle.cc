@@ -3402,6 +3402,11 @@ write_expression (tree expr)
       else
 	write_string ("tr");
     }
+  else if (code == NOEXCEPT_EXPR)
+    {
+      write_string ("nx");
+      write_expression (TREE_OPERAND (expr, 0));
+    }
   else if (code == CONSTRUCTOR)
     {
       bool braced_init = BRACE_ENCLOSED_INITIALIZER_P (expr);
