@@ -501,14 +501,9 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
 	    // matched fragment get the offset in the token stream
 	    size_t offs_end = source.get_offs ();
-	    if (in_repetition)
-	      sub_stack.append_fragment (
-		MatchedFragment (fragment->get_ident ().as_string (),
-				 offs_begin, offs_end));
-	    else
-	      sub_stack.insert_metavar (
-		MatchedFragment (fragment->get_ident ().as_string (),
-				 offs_begin, offs_end));
+	    sub_stack.insert_metavar (
+	      MatchedFragment (fragment->get_ident ().as_string (), offs_begin,
+			       offs_end));
 	  }
 	  break;
 
@@ -598,6 +593,7 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	if (!match_token (parser, *rep.get_sep ()))
 	  break;
 
+      sub_stack.push ();
       bool valid_current_match = false;
       for (auto &match : matches)
 	{
@@ -612,13 +608,7 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 		// matched fragment get the offset in the token stream
 		size_t offs_end = source.get_offs ();
 
-		// The main difference with match_matcher happens here: Instead
-		// of inserting a new fragment, we append to one. If that
-		// fragment does not exist, then the operation is similar to
-		// `insert_fragment` with the difference that we are not
-		// creating a metavariable, but a repetition of one, which is
-		// really different.
-		sub_stack.append_fragment (
+		sub_stack.insert_metavar (
 		  MatchedFragment (fragment->get_ident ().as_string (),
 				   offs_begin, offs_end));
 	      }
@@ -645,6 +635,12 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	      break;
 	    }
 	}
+      auto old_stack = sub_stack.pop ();
+
+      // nest metavars into repetitions
+      for (auto &ent : old_stack)
+	sub_stack.append_fragment (ent.first, std::move (ent.second));
+
       // If we've encountered an error once, stop trying to match more
       // repetitions
       if (!valid_current_match)
@@ -1199,6 +1195,16 @@ MatchedFragmentContainer::add_fragment (MatchedFragment fragment)
 
   return static_cast<MatchedFragmentContainerRepetition &> (*this)
     .add_fragment (fragment);
+}
+
+void
+MatchedFragmentContainer::add_fragment (
+  std::unique_ptr<MatchedFragmentContainer> fragment)
+{
+  rust_assert (!is_single_fragment ());
+
+  return static_cast<MatchedFragmentContainerRepetition &> (*this)
+    .add_fragment (std::move (fragment));
 }
 
 std::unique_ptr<MatchedFragmentContainer>
