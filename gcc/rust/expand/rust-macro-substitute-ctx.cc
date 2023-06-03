@@ -31,7 +31,13 @@ SubstituteCtx::substitute_metavar (
   if (it == fragments.end ())
     {
       // fail to substitute
-      return false;
+
+      // HACK: substitute ($ crate) => (crate)
+      if (metavar->get_id () != CRATE)
+	return false;
+
+      expanded.push_back (metavar->clone_token ());
+      return true;
     }
   else
     {
