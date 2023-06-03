@@ -1,3 +1,23 @@
+2023-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109505
+	* match.pd ((x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2),
+	Combine successive equal operations with constants,
+	(A +- CST1) +- CST2 -> A + CST3, (CST1 - A) +- CST2 -> CST3 - A,
+	CST1 - (CST2 - A) -> CST3 + A): Use ! on ops with 2 CONSTANT_CLASS_P
+	operands.
+
+2023-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109505
+	* doc/match-and-simplify.texi: Amend ! documentation.
+	* genmatch.c (expr::gen_transform): Code-generate ! support
+	for GENERIC.
+	(parser::parse_expr): Allow ! for GENERIC.
+
 2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

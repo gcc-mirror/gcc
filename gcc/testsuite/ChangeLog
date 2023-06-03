@@ -1,3 +1,11 @@
+2023-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109505
+	* gcc.target/aarch64/sve/pr109505.c: New test.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
