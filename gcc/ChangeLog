@@ -1,3 +1,10 @@
+2023-06-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/110088
+	* config/avr/avr.md: Add an RTL peephole to optimize operations on
+	non-LD_REGS after a move from LD_REGS.
+	(piaop): New code iterator.
+
 2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
