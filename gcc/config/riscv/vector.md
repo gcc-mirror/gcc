@@ -93,6 +93,7 @@
 			  VNx2x1QI,VNx3x1QI,VNx4x1QI,VNx5x1QI,VNx6x1QI,VNx7x1QI,VNx8x1QI")
 	 (const_int 8)
 	 (eq_attr "mode" "VNx1HI,VNx2HI,VNx4HI,VNx8HI,VNx16HI,VNx32HI,VNx64HI,\
+			  VNx1HF,VNx2HF,VNx4HF,VNx8HF,VNx16HF,VNx32HF,VNx64HF,\
 			  VNx2x32HI,VNx2x16HI,VNx3x16HI,VNx4x16HI,\
 			  VNx2x8HI,VNx3x8HI,VNx4x8HI,VNx5x8HI,VNx6x8HI,VNx7x8HI,VNx8x8HI,\
 			  VNx2x4HI,VNx3x4HI,VNx4x4HI,VNx5x4HI,VNx6x4HI,VNx7x4HI,VNx8x4HI,\
@@ -153,6 +154,23 @@
 	   (symbol_ref "riscv_vector::get_vlmul(E_VNx32HImode)")
 	 (eq_attr "mode" "VNx64HI")
 	   (symbol_ref "riscv_vector::get_vlmul(E_VNx64HImode)")
+
+	 ; Half float point
+	 (eq_attr "mode" "VNx1HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1HFmode)")
+	 (eq_attr "mode" "VNx2HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx2HFmode)")
+	 (eq_attr "mode" "VNx4HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx4HFmode)")
+	 (eq_attr "mode" "VNx8HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx8HFmode)")
+	 (eq_attr "mode" "VNx16HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx16HFmode)")
+	 (eq_attr "mode" "VNx32HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx32HFmode)")
+	 (eq_attr "mode" "VNx64HF")
+	   (symbol_ref "riscv_vector::get_vlmul(E_VNx64HFmode)")
+
 	 (eq_attr "mode" "VNx1SI,VNx1SF,VNx2x1SI,VNx3x1SI,VNx4x1SI,VNx5x1SI,VNx6x1SI,VNx7x1SI,VNx8x1SI,\
 	 		  VNx2x1SF,VNx3x1SF,VNx4x1SF,VNx5x1SF,VNx6x1SF,VNx7x1SF,VNx8x1SF")
 	   (symbol_ref "riscv_vector::get_vlmul(E_VNx1SImode)")
@@ -229,6 +247,23 @@
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx32HImode)")
 	 (eq_attr "mode" "VNx64HI")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx64HImode)")
+
+	 ; Half float point.
+	 (eq_attr "mode" "VNx1HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx1HFmode)")
+	 (eq_attr "mode" "VNx2HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx2HFmode)")
+	 (eq_attr "mode" "VNx4HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx4HFmode)")
+	 (eq_attr "mode" "VNx8HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx8HFmode)")
+	 (eq_attr "mode" "VNx16HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx16HFmode)")
+	 (eq_attr "mode" "VNx32HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx32HFmode)")
+	 (eq_attr "mode" "VNx64HF")
+	   (symbol_ref "riscv_vector::get_ratio(E_VNx64HFmode)")
+
 	 (eq_attr "mode" "VNx1SI,VNx1SF,VNx2x1SI,VNx3x1SI,VNx4x1SI,VNx5x1SI,VNx6x1SI,VNx7x1SI,VNx8x1SI,\
 	 		  VNx2x1SF,VNx3x1SF,VNx4x1SF,VNx5x1SF,VNx6x1SF,VNx7x1SF,VNx8x1SF")
 	   (symbol_ref "riscv_vector::get_ratio(E_VNx1SImode)")
