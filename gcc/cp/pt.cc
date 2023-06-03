@@ -1879,19 +1879,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	  return hash_tmpl_and_args (TI_TEMPLATE (ti), TI_ARGS (ti));
 	}
 
-      switch (TREE_CODE (arg))
+      switch (code)
 	{
-	case TEMPLATE_TEMPLATE_PARM:
-	  {
-	    tree tpi = TEMPLATE_TYPE_PARM_INDEX (arg);
-
-	    /* Do not recurse with TPI directly, as that is unbounded
-	       recursion.  */
-	    val = iterative_hash_object (TEMPLATE_PARM_LEVEL (tpi), val);
-	    val = iterative_hash_object (TEMPLATE_PARM_IDX (tpi), val);
-	  }
-	  break;
-
 	case  DECLTYPE_TYPE:
 	  val = iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
 	  break;
