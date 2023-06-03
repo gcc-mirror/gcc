@@ -1,3 +1,7 @@
+2023-06-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/parallel/algobase.h: Include <parallel/search.h>.
+
 2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/pstl/numeric_ops/transform_reduce.cc:

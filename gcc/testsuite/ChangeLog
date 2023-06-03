@@ -1,3 +1,136 @@
+2023-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110067.c: New test.
+
+2023-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92658-avx512bw-trunc-2.c: New test.
+
+2023-06-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/102733
+	* gcc.target/i386/addr-space-6.c: New test.
+
+2023-06-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/110042
+	* gcc.target/aarch64/csel_bfx_2.c: New test.
+
+2023-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110044
+	* gcc.target/powerpc/darwin-abi-13-0.c: New test.
+	* gcc.target/powerpc/darwin-abi-13-1.c: New test.
+	* gcc.target/powerpc/darwin-abi-13-2.c: New test.
+	* gcc.target/powerpc/darwin-structs-0.h: New test.
+
+2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/100607
+	* gfortran.dg/select_rank_6.f90: New test.
+
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	DR 2735
+	PR c++/109247
+	* g++.dg/cpp0x/initlist-explicit3.C: New test.
+
+2023-06-02  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtin_altivec_tr_stxvr_runnable.c: New test
+	for __builtin_altivec_tr_stxvrbx, __builtin_altivec_tr_stxvrhx,
+	__builtin_altivec_tr_stxvrwx, __builtin_altivec_tr_stxvrdx.
+
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110070
+	PR c++/105838
+	* g++.dg/tree-ssa/initlist-opt1.C: Check for static array.
+	* g++.dg/tree-ssa/initlist-opt2.C: Likewise.
+	* g++.dg/tree-ssa/initlist-opt4.C: New test.
+	* g++.dg/opt/icf1.C: New test.
+	* g++.dg/opt/icf2.C: New test.
+	* g++.dg/opt/icf3.C: New test.
+	* g++.dg/tree-ssa/array-temp1.C: Revert r12-657 change.
+
+2023-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109015
+	* gcc.dg/analyzer/atomic-builtins-1.c: New test.
+	* gcc.dg/analyzer/atomic-builtins-haproxy-proxy.c: New test.
+	* gcc.dg/analyzer/atomic-builtins-qemu-sockets.c: New test.
+	* gcc.dg/analyzer/atomic-types-1.c: New test.
+
+2023-06-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr107557-1.c: Require LTO support.
+	* gcc.dg/pr107557-2.c: Require LTO support.
+
+2023-06-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/102109
+	PR fortran/102112
+	PR fortran/102190
+	PR fortran/102532
+	PR fortran/109948
+	PR fortran/99326
+	* gfortran.dg/associate_54.f90 : Cope with extra error.
+	* gfortran.dg/pr102109.f90 : New test.
+	* gfortran.dg/pr102112.f90 : New test.
+	* gfortran.dg/pr102190.f90 : New test.
+	* gfortran.dg/pr102532.f90 : New test.
+	* gfortran.dg/pr109948.f90 : New test.
+	* gfortran.dg/pr99326.f90 : New test.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Add assembly check.
+
+2023-06-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/abi-16.c: Add test cases.
+	* gcc.target/riscv/rvv/base/user-7.c: Likewise.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/frm-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-9.c: Ditto.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-6.c: New test.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm.h: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-7.c: New test.
+
 2023-06-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/88552

@@ -1,3 +1,19 @@
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	DR 2735
+	PR c++/109247
+	* call.cc (sfk_copy_or_move): New.
+	(joust): Add tiebreaker for explicit conv and copy ctor.
+
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110070
+	PR c++/105838
+	* call.cc (maybe_init_list_as_array): Set DECL_MERGEABLE.
+	(convert_like_internal) [ck_list]: Set it.
+	(set_up_extended_ref_temp): Copy it.
+	* tree.cc (handle_no_unique_addr_attribute): Set it.
+
 2023-06-01  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.cc (check_narrowing): Check flag_permissive.

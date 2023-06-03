@@ -1,3 +1,160 @@
+2023-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/110067
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Don't try
+	bswap + rotate when TYPE_PRECISION(n->type) > n->range.
+
+2023-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/92658
+	* config/i386/mmx.md (truncv2hiv2qi2): New define_insn.
+	(truncv2si<mode>2): Ditto.
+
+2023-06-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/102733
+	* dse.cc (store_info): Add addrspace field.
+	(record_store): Record the address space
+	and check to make sure they are the same.
+
+2023-06-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/110042
+	* ifcvt.cc (bbs_ok_for_cmove_arith): Allow paradoxical subregs.
+	(bb_valid_for_noce_process_p): Strip the subreg for the SET_DEST.
+
+2023-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110044
+	* config/rs6000/rs6000.cc (darwin_rs6000_special_round_type_align):
+	Make sure that we do not have a cap on field alignment before altering
+	the struct layout based on the type alignment of the first entry.
+
+2023-06-02  David Faust  <david.faust@oracle.com>
+
+	PR debug/110073
+	* btfout.cc (btf_absolute_func_id): New function.
+	(btf_asm_func_type): Call it here.  Change index parameter from
+	size_t to ctf_id_t.  Use PRIu64 formatter.
+
+2023-06-02  Alex Coplan  <alex.coplan@arm.com>
+
+	* btfout.cc (btf_asm_type): Use PRIu64 instead of %lu for uint64_t.
+	(btf_asm_datasec_type): Likewise.
+
+2023-06-02  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_tr_stxvrhx,
+	__builtin_altivec_tr_stxvrwx): Fix type of third argument.
+
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110070
+	PR c++/105838
+	* tree.h (DECL_MERGEABLE): New.
+	* tree-core.h (struct tree_decl_common): Mention it.
+	* gimplify.cc (gimplify_init_constructor): Check it.
+	* cgraph.cc (symtab_node::address_can_be_compared_p): Likewise.
+	* varasm.cc (categorize_decl_for_section): Likewise.
+
+2023-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (stack_regs_mentioned): Change return type from int to bool.
+	* reg-stack.cc (struct_block_info_def): Change "done" to bool.
+	(stack_regs_mentioned_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(stack_regs_mentioned): Ditto.
+	(check_asm_stack_operands): Ditto.  Change "malformed_asm"
+	variable to bool.
+	(move_for_stack_reg): Recode handling of control_flow_insn_deleted.
+	(swap_rtx_condition_1): Change return type from int to bool
+	and adjust function body accordingly.  Change "r" variable to bool.
+	(swap_rtx_condition): Change return type from int to bool
+	and adjust function body accordingly.
+	(subst_stack_regs_pat): Recode handling of control_flow_insn_deleted.
+	(subst_stack_regs): Ditto.
+	(convert_regs_entry): Change return type from int to bool and adjust
+	function body accordingly.  Change "inserted" variable to bool.
+	(convert_regs_1): Recode handling of control_flow_insn_deleted.
+	(convert_regs_2): Recode handling of cfg_altered.
+	(convert_regs): Ditto.  Change "inserted" variable to bool.
+
+2023-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95226
+	* varasm.cc (output_constant) [REAL_TYPE]: Check that sizes match.
+	(initializer_constant_valid_p_1): Compare float precision.
+
+2023-06-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/extend.texi (Vector Extensions): Clarify bitwise shift
+	semantics.
+
+2023-06-02  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop-manip.cc (vect_set_loop_controls_directly): Change decrement IV flow.
+	(vect_set_loop_condition_partial_vectors): Ditto.
+
+2023-06-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/110088
+	* config/avr/avr.md: Add an RTL peephole to optimize operations on
+	non-LD_REGS after a move from LD_REGS.
+	(piaop): New code iterator.
+
+2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/66005
+	* doc/install.texi: Document (optional) Perl usage for parallel
+	testing of libgomp.
+
+2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/82856
+	* doc/install.texi (Perl): Back to requiring "Perl version 5.6.1 (or
+	later)".
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    KuanLin Chen  <best124612@gmail.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Add _mu overloaded intrinsics.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct fault_load_def): Ditto.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_vec_series): Optimize reverse series index vector.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md: Change INTVAL into UINTVAL.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_VXRM_ENUM): Add
+	__RISCV_ prefix.
+	(DEF_RVV_FRM_ENUM): Ditto.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Change vwadd.wv/vwsub.wv
+	intrinsic API expander
+	* config/riscv/vector.md
+	(@pred_single_widen_<plus_minus:optab><any_extend:su><mode>): Remove it.
+	(@pred_single_widen_sub<any_extend:su><mode>): New pattern.
+	(@pred_single_widen_add<any_extend:su><mode>): New pattern.
+
+2023-06-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vec_perm<mode>): New pattern.
+	* config/riscv/predicates.md (vector_perm_operand): New predicate.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_vec_perm): New function.
+	* config/riscv/riscv-v.cc (const_vec_all_in_range_p): Ditto.
+	(gen_const_vector_dup): Ditto.
+	(emit_vlmax_gather_insn): Ditto.
+	(emit_vlmax_masked_gather_mu_insn): Ditto.
+	(expand_vec_perm): Ditto.
+
 2023-06-01  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi (-Wpedantic): Improve clarity.

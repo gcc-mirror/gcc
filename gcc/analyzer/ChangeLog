@@ -1,3 +1,21 @@
+2023-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109015
+	* kf.cc (class kf_atomic_exchange): New.
+	(class kf_atomic_exchange_n): New.
+	(class kf_atomic_fetch_op): New.
+	(class kf_atomic_op_fetch): New.
+	(class kf_atomic_load): New.
+	(class kf_atomic_load_n): New.
+	(class kf_atomic_store_n): New.
+	(register_atomic_builtins): New function.
+	(register_known_functions): Call register_atomic_builtins.
+
+2023-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::eval_alias_1): Regions in different memory
+	spaces can't alias.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* region-model-manager.cc (get_code_for_cast): Use _P defines from

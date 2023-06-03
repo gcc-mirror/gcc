@@ -1,3 +1,21 @@
+2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/100607
+	* resolve.cc (resolve_select_rank): Remove duplicate error.
+	(resolve_fl_var_and_proc): Prevent NULL pointer dereference and
+	suppress error message for temporary.
+
+2023-06-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	* parse.cc (parse_associate): Replace the existing evaluation
+	of the target rank with calls to gfc_resolve_ref and
+	gfc_expression_rank. Identify untyped target function results
+	with structure constructors by finding the appropriate derived
+	type.
+	* resolve.cc (resolve_symbol): Allow associate variables to be
+	assumed shape.
+
 2023-06-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/88552

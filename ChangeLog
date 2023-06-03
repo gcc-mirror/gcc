@@ -1,3 +1,9 @@
+2023-06-02  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as MIPS
+	port maintainer.
+	(Write After Approval): Remove myself.
+
 2023-05-30  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
