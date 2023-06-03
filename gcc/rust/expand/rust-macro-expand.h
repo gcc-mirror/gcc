@@ -111,6 +111,11 @@ public:
    */
   void add_fragment (MatchedFragment fragment);
 
+  /**
+   * Add a matched fragment to the container
+   */
+  void add_fragment (std::unique_ptr<MatchedFragmentContainer> fragment);
+
   // const std::string &get_fragment_name () const { return fragment_name; }
 
   bool is_single_fragment () const { return get_kind () == Kind::MetaVar; }
@@ -155,7 +160,15 @@ public:
    */
   void add_fragment (MatchedFragment fragment)
   {
-    fragments.emplace_back (metavar (fragment));
+    add_fragment (metavar (fragment));
+  }
+
+  /**
+   * Add a matched fragment to the container
+   */
+  void add_fragment (std::unique_ptr<MatchedFragmentContainer> fragment)
+  {
+    fragments.emplace_back (std::move (fragment));
   }
 
   virtual Kind get_kind () const { return Kind::Repetition; }
@@ -225,6 +238,25 @@ public:
 	     .first;
 
     it->second->add_fragment (fragment);
+  }
+
+  /**
+   * Append a new matched fragment to a repetition into the current substitution
+   * map
+   */
+  void append_fragment (std::string ident,
+			std::unique_ptr<MatchedFragmentContainer> fragment)
+  {
+    auto &current_map = stack.back ();
+    auto it = current_map.find (ident);
+
+    if (it == current_map.end ())
+      it = current_map
+	     .emplace (ident, std::unique_ptr<MatchedFragmentContainer> (
+				new MatchedFragmentContainerRepetition ()))
+	     .first;
+
+    it->second->add_fragment (std::move (fragment));
   }
 
   void insert_matches (std::string key,
