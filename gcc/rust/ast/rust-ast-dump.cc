@@ -507,7 +507,34 @@ Dump::visit (QualifiedPathInType &path)
 void
 Dump::visit (LiteralExpr &expr)
 {
-  stream << expr.as_string ();
+  switch (expr.get_lit_type ())
+    {
+    case Literal::CHAR:
+      stream << "'" << expr.as_string () << "'";
+      return;
+
+    case Literal::STRING:
+      stream << "\"" << expr.as_string () << "\"";
+      return;
+
+    case Literal::BYTE:
+      stream << "b'" << expr.as_string () << "'";
+      return;
+
+    case Literal::BYTE_STRING:
+      stream << "b\"" << expr.as_string () << "\"";
+      return;
+
+    case Literal::INT:
+    case Literal::FLOAT:
+    case Literal::BOOL:
+      stream << expr.as_string ();
+      return;
+
+    case Literal::ERROR:
+      stream << "/*ERROR*/";
+      return;
+    }
 }
 
 void
