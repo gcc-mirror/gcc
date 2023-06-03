@@ -1924,6 +1924,7 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define current_template_parms scope_chain->template_parms
 #define current_template_depth \
   (current_template_parms ? TMPL_PARMS_DEPTH (current_template_parms) : 0)
+#define in_template_context (current_template_parms != NULL_TREE)
 
 #define processing_template_decl scope_chain->x_processing_template_decl
 #define processing_specialization scope_chain->x_processing_specialization
@@ -7353,7 +7354,6 @@ extern tree lookup_template_variable		(tree, tree);
 extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool uses_outer_template_parms_in_constraints (tree);
-extern bool in_template_function		(void);
 extern bool need_generic_capture		(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);

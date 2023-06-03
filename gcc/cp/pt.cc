@@ -10951,25 +10951,6 @@ uses_template_parms (tree t)
     return instantiation_dependent_expression_p (t);
 }
 
-/* Returns true iff we're processing an incompletely instantiated function
-   template.  Useful instead of processing_template_decl because the latter
-   is set to 0 during instantiate_non_dependent_expr.  */
-
-bool
-in_template_function (void)
-{
-  /* Inspect the less volatile cfun->decl instead of current_function_decl;
-     the latter might get set for e.g. access checking during satisfaction.  */
-  tree fn = cfun ? cfun->decl : NULL_TREE;
-  bool ret;
-  ++processing_template_decl;
-  ret = (fn && DECL_LANG_SPECIFIC (fn)
-	 && DECL_TEMPLATE_INFO (fn)
-	 && any_dependent_template_arguments_p (DECL_TI_ARGS (fn)));
-  --processing_template_decl;
-  return ret;
-}
-
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 bool

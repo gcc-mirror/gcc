@@ -344,7 +344,7 @@ build_base_path (enum tree_code code,
 
   bool uneval = (cp_unevaluated_operand != 0
 		 || processing_template_decl
-		 || in_template_function ());
+		 || in_template_context);
 
   /* For a non-pointer simple base reference, express it as a COMPONENT_REF
      without taking its address (and so causing lambda capture, 91933).  */
@@ -8055,7 +8055,7 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   /* processing_template_decl can be false in a template if we're in
      instantiate_non_dependent_expr, but we still want to suppress
      this check.  */
-  if (in_template_function ())
+  if (in_template_context)
     {
       /* In a template we only care about the type of the result.  */
       if (nonnull)

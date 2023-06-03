@@ -5782,7 +5782,7 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
     maybe_instantiate_decl (decl);
 
-  if (processing_template_decl || in_template_function ())
+  if (processing_template_decl || in_template_context)
     return true;
 
   /* Check this too in case we're within instantiate_non_dependent_expr.  */

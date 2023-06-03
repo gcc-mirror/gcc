@@ -5021,7 +5021,7 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   tree domain = NULL_TREE;
   tree init = NULL_TREE;
 
-  if (!(type_dep && in_template_function ()))
+  if (!(type_dep && current_function_decl && in_template_context))
     {
       const char *name = NULL;
       bool release_name = false;
