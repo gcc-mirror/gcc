@@ -1570,8 +1570,11 @@ Dump::visit (MacroRulesDefinition &rules_def)
 }
 
 void
-Dump::visit (MacroInvocation &)
-{}
+Dump::visit (MacroInvocation &invocation)
+{
+  // FIXME: make this accurately reflect the original macro syntax.
+  stream << invocation.get_invoc_data ().as_string ();
+}
 
 void
 Dump::visit (MetaItemPath &)
