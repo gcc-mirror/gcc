@@ -11155,9 +11155,6 @@ check_return_expr (tree retval, bool *no_warning)
   if (fn_returns_value_p && flag_elide_constructors)
     {
       if (named_return_value_okay_p
-	  /* The current NRV implementation breaks if a backward goto needs to
-	     destroy the object (PR92407).  */
-	  && !cp_function_chain->x_named_labels
           && (current_function_return_value == NULL_TREE
 	      || current_function_return_value == bare_retval))
 	current_function_return_value = bare_retval;

@@ -4938,6 +4938,7 @@ public:
   tree var;
   tree result;
   hash_table<nofree_ptr_hash <tree_node> > visited;
+  bool simple;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -4952,6 +4953,9 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
      non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
+  /* If there's a label, we might need to destroy the NRV on goto (92407).  */
+  else if (TREE_CODE (*tp) == LABEL_EXPR)
+    dp->simple = false;
   /* Change all returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
      about the value of the RESULT_DECL.  But preserve anything appended
@@ -4965,11 +4969,20 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 			   && TREE_OPERAND (*p, 0) == dp->result);
       *p = dp->result;
     }
-  /* Change all cleanups for the NRV to only run when an exception is
-     thrown.  */
+  /* Change all cleanups for the NRV to only run when not returning.  */
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == dp->var)
-    CLEANUP_EH_ONLY (*tp) = 1;
+    {
+      if (dp->simple)
+	CLEANUP_EH_ONLY (*tp) = true;
+      else
+	{
+	  tree cond = build3 (COND_EXPR, void_type_node,
+			      current_retval_sentinel,
+			      void_node, CLEANUP_EXPR (*tp));
+	  CLEANUP_EXPR (*tp) = cond;
+	}
+    }
   /* Replace the DECL_EXPR for the NRV with an initialization of the
      RESULT_DECL, if needed.  */
   else if (TREE_CODE (*tp) == DECL_EXPR
@@ -5009,9 +5022,10 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
    RESULT_DECL for the function.  */
 
 void
-finalize_nrv (tree *tp, tree var, tree result)
+finalize_nrv (tree fndecl, tree var)
 {
   class nrv_data data;
+  tree result = DECL_RESULT (fndecl);
 
   /* Copy name from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);
@@ -5025,7 +5039,14 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   data.var = var;
   data.result = result;
-  cp_walk_tree (tp, finalize_nrv_r, &data, 0);
+
+  /* This is simpler for variables declared in the outer scope of
+     the function so we know that their lifetime always ends with a
+     return; see g++.dg/opt/nrv6.C.  */
+  tree outer = outer_curly_brace_block (fndecl);
+  data.simple = chain_member (var, BLOCK_VARS (outer));
+
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), finalize_nrv_r, &data, 0);
 }
 
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */

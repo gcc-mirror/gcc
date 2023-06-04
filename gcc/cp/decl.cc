@@ -18236,23 +18236,10 @@ finish_function (bool inline_p)
 
   /* Set up the named return value optimization, if we can.  Candidate
      variables are selected in check_return_expr.  */
-  if (current_function_return_value)
+  if (tree r = current_function_return_value)
     {
-      tree r = current_function_return_value;
-      tree outer;
-
-      if (r != error_mark_node
-	  /* This is only worth doing for fns that return in memory--and
-	     simpler, since we don't have to worry about promoted modes.  */
-	  && aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl)), fndecl)
-	  /* Only allow this for variables declared in the outer scope of
-	     the function so we know that their lifetime always ends with a
-	     return; see g++.dg/opt/nrv6.C.  We could be more flexible if
-	     we were to do this optimization in tree-ssa.  */
-	  && (outer = outer_curly_brace_block (fndecl))
-	  && chain_member (r, BLOCK_VARS (outer)))
-	finalize_nrv (&DECL_SAVED_TREE (fndecl), r, DECL_RESULT (fndecl));
-
+      if (r != error_mark_node)
+	finalize_nrv (fndecl, r);
       current_function_return_value = NULL_TREE;
     }
 

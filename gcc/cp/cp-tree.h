@@ -7714,7 +7714,7 @@ extern bool check_accessibility_of_qualified_id (tree, tree, tree, tsubst_flags_
 extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool, tsubst_flags_t);
 extern void simplify_aggr_init_expr		(tree *);
-extern void finalize_nrv			(tree *, tree, tree);
+extern void finalize_nrv			(tree, tree);
 extern tree omp_reduction_id			(enum tree_code, tree, tree);
 extern tree cp_remove_omp_priv_cleanup_stmt	(tree *, int *, void *);
 extern bool cp_check_omp_declare_reduction	(tree);
