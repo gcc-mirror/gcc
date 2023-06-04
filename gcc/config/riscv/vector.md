@@ -8417,44 +8417,5 @@
   [(set_attr "type" "vssegt<order>x")
    (set_attr "mode" "<V64T:MODE>")])
 
-;; -----------------------------------------------------------------------------
-;; ---- Integer Compare Instructions Simplification
-;; -----------------------------------------------------------------------------
-;; Simplify OP(V, V) Instructions to VMCLR.m Includes:
-;; - 1.  VMSNE
-;; - 2.  VMSLT
-;; - 3.  VMSLTU
-;; - 4.  VMSGT
-;; - 5.  VMSGTU
-;; -----------------------------------------------------------------------------
-;; Simplify OP(V, V) Instructions to VMSET.m Includes:
-;; - 1.  VMSEQ
-;; - 2.  VMSLE
-;; - 3.  VMSLEU
-;; - 4.  VMSGE
-;; - 5.  VMSGEU
-;; -----------------------------------------------------------------------------
-(define_split
-  [(set (match_operand:VB      0 "register_operand")
-	(if_then_else:VB
-	  (unspec:VB
-	    [(match_operand:VB 1 "vector_all_trues_mask_operand")
-	     (match_operand    4 "vector_length_operand")
-	     (match_operand    5 "const_int_operand")
-	     (match_operand    6 "const_int_operand")
-	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (match_operand:VB    3 "vector_move_operand")
-	  (match_operand:VB    2 "vector_undef_operand")))]
-  "TARGET_VECTOR"
-  [(const_int 0)]
-  {
-    emit_insn (gen_pred_mov (<MODE>mode, operands[0], CONST1_RTX (<MODE>mode),
-			     RVV_VUNDEF (<MODE>mode), operands[3],
-			     operands[4], operands[5]));
-    DONE;
-  }
-)
-
 (include "autovec.md")
 (include "autovec-opt.md")

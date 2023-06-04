@@ -78,3 +78,95 @@
   "vwmulsu.vv\t%0,%3,%4%p1"
   [(set_attr "type" "viwmul")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+;; -----------------------------------------------------------------------------
+;; ---- Integer Compare Instructions Simplification
+;; -----------------------------------------------------------------------------
+;; Simplify OP(V, V) Instructions to VMCLR.m Includes:
+;; - 1.  VMSNE
+;; - 2.  VMSLT
+;; - 3.  VMSLTU
+;; - 4.  VMSGT
+;; - 5.  VMSGTU
+;; -----------------------------------------------------------------------------
+;; Simplify OP(V, V) Instructions to VMSET.m Includes:
+;; - 1.  VMSEQ
+;; - 2.  VMSLE
+;; - 3.  VMSLEU
+;; - 4.  VMSGE
+;; - 5.  VMSGEU
+;; -----------------------------------------------------------------------------
+
+(define_split
+  [(set (match_operand:VB      0 "register_operand")
+	(if_then_else:VB
+	  (unspec:VB
+	    [(match_operand:VB 1 "vector_all_trues_mask_operand")
+	     (match_operand    4 "vector_length_operand")
+	     (match_operand    5 "const_int_operand")
+	     (match_operand    6 "const_int_operand")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:VB    3 "vector_move_operand")
+	  (match_operand:VB    2 "vector_undef_operand")))]
+  "TARGET_VECTOR"
+  [(const_int 0)]
+  {
+    emit_insn (gen_pred_mov (<MODE>mode, operands[0], CONST1_RTX (<MODE>mode),
+			     RVV_VUNDEF (<MODE>mode), operands[3],
+			     operands[4], operands[5]));
+    DONE;
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [BOOL] Binary logical operations (inverted second input)
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vmandnot.mm
+;; - vmornot.mm
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "*<optab>not<mode>"
+  [(set (match_operand:VB 0 "register_operand"           "=vr")
+	(bitmanip_bitwise:VB
+	  (not:VB (match_operand:VB 2 "register_operand" " vr"))
+	  (match_operand:VB 1 "register_operand"         " vr")))]
+  "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_not (<CODE>, <MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vmalu")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------
+;; ---- [BOOL] Binary logical operations (inverted result)
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vmnand.mm
+;; - vmnor.mm
+;; - vmxnor.mm
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "*n<optab><mode>"
+  [(set (match_operand:VB 0 "register_operand"     "=vr")
+	(not:VB
+	  (any_bitwise:VB
+	    (match_operand:VB 1 "register_operand" " vr")
+	    (match_operand:VB 2 "register_operand" " vr"))))]
+  "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_n (<CODE>, <MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vmalu")
+   (set_attr "mode" "<MODE>")])
