@@ -980,6 +980,39 @@ rtx
 scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
   rtx src, tmp;
+
+  /* Handle any REG_EQUAL notes.  */
+  tmp = find_reg_equal_equiv_note (insn);
+  if (tmp)
+    {
+      if (GET_CODE (XEXP (tmp, 0)) == COMPARE
+	  && GET_MODE (XEXP (tmp, 0)) == CCZmode
+	  && REG_P (XEXP (XEXP (tmp, 0), 0)))
+	{
+	  rtx *op = &XEXP (XEXP (tmp, 0), 1);
+	  if (CONST_SCALAR_INT_P (*op))
+	    {
+	      if (constm1_operand (*op, GET_MODE (*op)))
+		*op = CONSTM1_RTX (vmode);
+	      else
+		{
+		  unsigned n = GET_MODE_NUNITS (vmode);
+		  rtx *v = XALLOCAVEC (rtx, n);
+		  v[0] = *op;
+		  for (unsigned i = 1; i < n; ++i)
+		    v[i] = const0_rtx;
+		  *op = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (n, v));
+		}
+	      tmp = NULL_RTX;
+	    }
+	  else if (REG_P (*op))
+	    tmp = NULL_RTX;
+	}
+
+      if (tmp)
+	remove_note (insn, tmp);
+    }
+
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
