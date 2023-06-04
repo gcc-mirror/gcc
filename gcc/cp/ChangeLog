@@ -1,3 +1,34 @@
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109923
+	* pt.cc (is_specialization_of_friend): Fix overbroad check for
+	a non-template member function of a class template.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (iterative_hash_template_arg): Don't hash
+	TEMPLATE_TEMPLATE_PARM specially.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* class.cc (build_base_path): Check in_template_context instead
+	of in_template_function.
+	(resolves_to_fixed_type_p): Likewise.
+	* cp-tree.h (in_template_context): Define.
+	(in_template_function): Remove.
+	* decl.cc (cp_make_fname_decl): Check current_function_decl
+	and in_template_context instead of in_template_function.
+	* decl2.cc (mark_used): Check in_template_context instead of
+	in_template_function.
+	* pt.cc (in_template_function): Remove.
+	* semantics.cc (enforce_access): Check in_template_context
+	instead of current_template_parms directly.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70790
+	* mangle.cc (write_expression): Handle NOEXCEPT_EXPR.
+
 2023-06-02  Jason Merrill  <jason@redhat.com>
 
 	DR 2735

@@ -1,3 +1,13 @@
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70790
+	* cp-demangle.c (cplus_demangle_operators): Add the noexcept
+	operator.
+	(d_print_comp_inner) <case DEMANGLE_COMPONENT_UNARY>: Always
+	print parens around the operand of noexcept too.
+	* testsuite/demangle-expected: Test noexcept operator
+	demangling.
+
 2023-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/109306

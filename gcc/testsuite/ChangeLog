@@ -1,3 +1,25 @@
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109923
+	* g++.dg/template/friend79.C: New test.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/warn/Waddress-of-packed-member2.C: No longer expect a()
+	to be marked as odr-used.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70790
+	* g++.dg/abi/mangle78.C: New test.
+
+2023-06-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-7.c: New test.
+
 2023-06-03  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr110067.c: New test.

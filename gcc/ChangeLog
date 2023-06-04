@@ -1,3 +1,21 @@
+2023-06-03  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_epilogue): fix cfi issue with
+	correct offset.
+
+2023-06-03  Die Li  <lidie@eswincomputing.com>
+
+	* config/riscv/thead.md (*th_cond_gpr_mov<GPR:mode><GPR2:mode>): Delete.
+
+2023-06-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md: Change INTVAL into UINTVAL.
+
+2023-06-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Add vector-opt.md.
+	* config/riscv/autovec-opt.md: New file.
+
 2023-06-03  liuhongt  <hongtao.liu@intel.com>
 
 	PR tree-optimization/110067

@@ -1,3 +1,13 @@
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109670
+	* unwind-dw2-fde.c: Fix radix sort buffer management.
+
+2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	PR libgcc/109685
+	* unwind-dw2-fde.c: Free sort array in atomic fast path.
+
 2023-05-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: Arrange to set min Darwin OS versions from

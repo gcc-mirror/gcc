@@ -1,3 +1,8 @@
+2023-06-03  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* clang-format (ForEachMacros): Add missing cases
+	for EXECUTE_IF_... macros.
+
 2023-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR bootstrap/105831
