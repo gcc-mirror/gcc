@@ -2024,12 +2024,8 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
 /* Implement vec_perm<mode>.  */
 
 void
-expand_vec_perm (rtx *operands)
+expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
-  rtx target = operands[0];
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
-  rtx sel = operands[3];
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = GET_MODE (sel);
 

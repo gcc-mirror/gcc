@@ -96,7 +96,8 @@
    (match_operand:<VINDEX> 3 "vector_perm_operand")]
   "TARGET_VECTOR && GET_MODE_NUNITS (<MODE>mode).is_constant ()"
   {
-    riscv_vector::expand_vec_perm (operands);
+    riscv_vector::expand_vec_perm (operands[0], operands[1],
+				   operands[2], operands[3]);
     DONE;
   }
 )

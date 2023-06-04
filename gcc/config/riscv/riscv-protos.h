@@ -241,7 +241,7 @@ opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vcond (rtx *);
-void expand_vec_perm (rtx *);
+void expand_vec_perm (rtx, rtx, rtx, rtx);
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum vxrm_field_enum
 {
