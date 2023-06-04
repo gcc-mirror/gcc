@@ -2111,6 +2111,7 @@ struct GTY(()) language_function {
 
   BOOL_BITFIELD invalid_constexpr : 1;
   BOOL_BITFIELD throwing_cleanup : 1;
+  BOOL_BITFIELD backward_goto : 1;
 
   hash_table<named_label_hash> *x_named_labels;
 
