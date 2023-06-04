@@ -928,9 +928,6 @@ rs6000_stack_info (void)
   else if (frame_pointer_needed)
     info->push_p = 1;
 
-  else if (TARGET_XCOFF && write_symbols != NO_DEBUG && !flag_compare_debug)
-    info->push_p = 1;
-
   else
     info->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
 
