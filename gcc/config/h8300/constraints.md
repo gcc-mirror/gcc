@@ -211,7 +211,7 @@
   (and (match_code "const_int")
        (match_test "exact_log2 (ival & 0xff) != -1")))
 
-(define_special_memory_constraint "Zz"
+(define_constraint "Zz"
   "@internal"
   (and (match_test "TARGET_H8300SX")
        (match_code "mem")

@@ -5625,9 +5625,6 @@ pre_incdec_with_reg (rtx op, unsigned int reg)
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P h8300_modes_tieable_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	h8300_legitimate_address_p
 
