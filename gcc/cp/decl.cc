@@ -3650,6 +3650,8 @@ check_goto (tree decl)
       return;
     }
 
+  cp_function_chain->backward_goto = true;
+
   bool saw_catch = false, complained = false;
   int identified = 0;
   tree bad;
