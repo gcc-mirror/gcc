@@ -239,6 +239,165 @@ private:
   expand_operand m_ops[MAX_OPERANDS];
 };
 
+
+class rvv_builder : public rtx_vector_builder
+{
+public:
+  rvv_builder () : rtx_vector_builder () {}
+  rvv_builder (machine_mode mode, unsigned int npatterns,
+	       unsigned int nelts_per_pattern)
+    : rtx_vector_builder (mode, npatterns, nelts_per_pattern)
+  {
+    m_inner_mode = GET_MODE_INNER (mode);
+    m_inner_bits_size = GET_MODE_BITSIZE (m_inner_mode);
+    m_inner_bytes_size = GET_MODE_SIZE (m_inner_mode);
+
+    gcc_assert (
+      int_mode_for_size (inner_bits_size (), 0).exists (&m_inner_int_mode));
+  }
+
+  bool can_duplicate_repeating_sequence_p ();
+  rtx get_merged_repeating_sequence ();
+
+  bool repeating_sequence_use_merge_profitable_p ();
+  rtx get_merge_scalar_mask (unsigned int) const;
+
+  machine_mode new_mode () const { return m_new_mode; }
+  scalar_mode inner_mode () const { return m_inner_mode; }
+  scalar_int_mode inner_int_mode () const { return m_inner_int_mode; }
+  unsigned int inner_bits_size () const { return m_inner_bits_size; }
+  unsigned int inner_bytes_size () const { return m_inner_bytes_size; }
+
+private:
+  scalar_mode m_inner_mode;
+  scalar_int_mode m_inner_int_mode;
+  machine_mode m_new_mode;
+  scalar_int_mode m_new_inner_mode;
+  unsigned int m_inner_bits_size;
+  unsigned int m_inner_bytes_size;
+};
+
+/* Return true if the vector duplicated by a super element which is the fusion
+   of consecutive elements.
+
+     v = { a, b, a, b } super element = ab, v = { ab, ab }  */
+bool
+rvv_builder::can_duplicate_repeating_sequence_p ()
+{
+  poly_uint64 new_size = exact_div (full_nelts (), npatterns ());
+  unsigned int new_inner_size = m_inner_bits_size * npatterns ();
+  if (!int_mode_for_size (new_inner_size, 0).exists (&m_new_inner_mode)
+      || GET_MODE_SIZE (m_new_inner_mode) > UNITS_PER_WORD
+      || !get_vector_mode (m_new_inner_mode, new_size).exists (&m_new_mode))
+    return false;
+  return repeating_sequence_p (0, full_nelts ().to_constant (), npatterns ());
+}
+
+/* Return true if it is a repeating sequence that using
+   merge approach has better codegen than using default
+   approach (slide1down).
+
+   Sequence A:
+     {a, b, a, b, a, b, a, b, a, b, a, b, a, b, a, b}
+
+   nelts = 16
+   npatterns = 2
+
+   for merging a we need mask 101010....
+   for merging b we need mask 010101....
+
+   Foreach element in the npattern, we need to build a mask in scalar register.
+   Mostely we need 3 instructions (aka COST = 3), which is consist of 2 scalar
+   instruction and 1 scalar move to v0 register.  Finally we need vector merge
+   to merge them.
+
+   lui		a5, #imm
+   add		a5, #imm
+   vmov.s.x	v0, a5
+   vmerge.vxm	v9, v9, a1, v0
+
+   So the overall (roughly) COST of Sequence A = (3 + 1) * npatterns = 8.
+   If we use slide1down, the COST = nelts = 16 > 8 (COST of merge).
+   So return true in this case as it is profitable.
+
+   Sequence B:
+     {a, b, c, d, e, f, g, h, a, b, c, d, e, f, g, h}
+
+   nelts = 16
+   npatterns = 8
+
+   COST of merge approach = (3 + 1) * npatterns = 24
+   COST of slide1down approach = nelts = 16
+   Return false in this case as it is NOT profitable in merge approach.
+*/
+bool
+rvv_builder::repeating_sequence_use_merge_profitable_p ()
+{
+  if (inner_bytes_size () > UNITS_PER_WORD)
+    return false;
+
+  unsigned int nelts = full_nelts ().to_constant ();
+
+  if (!repeating_sequence_p (0, nelts, npatterns ()))
+    return false;
+
+  unsigned int merge_cost = 1;
+  unsigned int build_merge_mask_cost = 3;
+  unsigned int slide1down_cost = nelts;
+
+  return (build_merge_mask_cost + merge_cost) * npatterns () < slide1down_cost;
+}
+
+/* Merge the repeating sequence into a single element and return the RTX.  */
+rtx
+rvv_builder::get_merged_repeating_sequence ()
+{
+  scalar_int_mode mode = Pmode;
+  rtx target = gen_reg_rtx (mode);
+  emit_move_insn (target, const0_rtx);
+  rtx imm = gen_int_mode ((1ULL << m_inner_bits_size) - 1, mode);
+  /* { a, b, a, b }: Generate duplicate element = b << bits | a.  */
+  for (unsigned int i = 0; i < npatterns (); i++)
+    {
+      unsigned int loc = m_inner_bits_size * i;
+      rtx shift = gen_int_mode (loc, mode);
+      rtx ele = gen_lowpart (mode, elt (i));
+      rtx tmp = expand_simple_binop (mode, AND, ele, imm, NULL_RTX, false,
+				     OPTAB_DIRECT);
+      rtx tmp2 = expand_simple_binop (mode, ASHIFT, tmp, shift, NULL_RTX, false,
+				      OPTAB_DIRECT);
+      rtx tmp3 = expand_simple_binop (mode, IOR, tmp2, target, NULL_RTX, false,
+				      OPTAB_DIRECT);
+      emit_move_insn (target, tmp3);
+    }
+  if (GET_MODE_SIZE (m_new_inner_mode) < UNITS_PER_WORD)
+    return gen_lowpart (m_new_inner_mode, target);
+  return target;
+}
+
+/* Get the mask for merge approach.
+
+   Consider such following case:
+     {a, b, a, b, a, b, a, b, a, b, a, b, a, b, a, b}
+   To merge "a", the mask should be 1010....
+   To merge "b", the mask should be 0101....
+*/
+rtx
+rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
+{
+  unsigned HOST_WIDE_INT mask = 0;
+  unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
+
+  gcc_assert (BITS_PER_WORD % npatterns () == 0);
+
+  int limit = BITS_PER_WORD / npatterns ();
+
+  for (int i = 0; i < limit; i++)
+    mask |= base_mask << (i * npatterns ());
+
+  return gen_int_mode (mask, inner_int_mode ());
+}
+
 static unsigned
 get_sew (machine_mode mode)
 {
@@ -520,6 +679,96 @@ emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_UNDISTURBED);
   e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit vmv.s.x instruction.  */
+
+static void
+emit_scalar_move_insn (unsigned icode, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (riscv_vector::RVV_SCALAR_MOV_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ false,
+					  dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_vl (CONST1_RTX (Pmode));
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit vmv.v.x instruction with vlmax.  */
+
+static void
+emit_vlmax_integer_move_insn (unsigned icode, rtx *ops, rtx vl)
+{
+  emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops, vl);
+}
+
+/* Emit vmv.v.x instruction with nonvlmax.  */
+
+static void
+emit_nonvlmax_integer_move_insn (unsigned icode, rtx *ops, rtx avl)
+{
+  emit_nonvlmax_insn (icode, riscv_vector::RVV_UNOP, ops, avl);
+}
+
+/* This function emits VLMAX vrgather instruction. Emit vrgather.vx/vi when sel
+   is a const duplicate vector. Otherwise, emit vrgather.vv.  */
+static void
+emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
+{
+  rtx elt;
+  insn_code icode;
+  machine_mode data_mode = GET_MODE (target);
+  if (const_vec_duplicate_p (sel, &elt))
+    {
+      icode = code_for_pred_gather_scalar (data_mode);
+      sel = elt;
+    }
+  else
+    icode = code_for_pred_gather (data_mode);
+  rtx ops[] = {target, op, sel};
+  emit_vlmax_insn (icode, RVV_BINOP, ops);
+}
+
+static void
+emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
+{
+  rtx elt;
+  insn_code icode;
+  machine_mode data_mode = GET_MODE (target);
+  if (const_vec_duplicate_p (sel, &elt))
+    {
+      icode = code_for_pred_gather_scalar (data_mode);
+      sel = elt;
+    }
+  else
+    icode = code_for_pred_gather (data_mode);
+  rtx ops[] = {target, mask, target, op, sel};
+  emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
+}
+
+/* Emit merge instruction.  */
+
+static machine_mode
+get_repeating_sequence_dup_machine_mode (const rvv_builder &builder)
+{
+  poly_uint64 dup_nunits = GET_MODE_NUNITS (builder.mode ());
+
+  if (known_ge (GET_MODE_SIZE (builder.mode ()), BYTES_PER_RISCV_VECTOR))
+    {
+      dup_nunits = exact_div (BYTES_PER_RISCV_VECTOR,
+	builder.inner_bytes_size ());
+    }
+
+  return get_vector_mode (builder.inner_int_mode (), dup_nunits).require ();
 }
 
 /* Expand series const vector.  */
@@ -1354,164 +1603,6 @@ preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
-class rvv_builder : public rtx_vector_builder
-{
-public:
-  rvv_builder () : rtx_vector_builder () {}
-  rvv_builder (machine_mode mode, unsigned int npatterns,
-	       unsigned int nelts_per_pattern)
-    : rtx_vector_builder (mode, npatterns, nelts_per_pattern)
-  {
-    m_inner_mode = GET_MODE_INNER (mode);
-    m_inner_bits_size = GET_MODE_BITSIZE (m_inner_mode);
-    m_inner_bytes_size = GET_MODE_SIZE (m_inner_mode);
-
-    gcc_assert (
-      int_mode_for_size (inner_bits_size (), 0).exists (&m_inner_int_mode));
-  }
-
-  bool can_duplicate_repeating_sequence_p ();
-  rtx get_merged_repeating_sequence ();
-
-  bool repeating_sequence_use_merge_profitable_p ();
-  rtx get_merge_scalar_mask (unsigned int) const;
-
-  machine_mode new_mode () const { return m_new_mode; }
-  scalar_mode inner_mode () const { return m_inner_mode; }
-  scalar_int_mode inner_int_mode () const { return m_inner_int_mode; }
-  unsigned int inner_bits_size () const { return m_inner_bits_size; }
-  unsigned int inner_bytes_size () const { return m_inner_bytes_size; }
-
-private:
-  scalar_mode m_inner_mode;
-  scalar_int_mode m_inner_int_mode;
-  machine_mode m_new_mode;
-  scalar_int_mode m_new_inner_mode;
-  unsigned int m_inner_bits_size;
-  unsigned int m_inner_bytes_size;
-};
-
-/* Return true if the vector duplicated by a super element which is the fusion
-   of consecutive elements.
-
-     v = { a, b, a, b } super element = ab, v = { ab, ab }  */
-bool
-rvv_builder::can_duplicate_repeating_sequence_p ()
-{
-  poly_uint64 new_size = exact_div (full_nelts (), npatterns ());
-  unsigned int new_inner_size = m_inner_bits_size * npatterns ();
-  if (!int_mode_for_size (new_inner_size, 0).exists (&m_new_inner_mode)
-      || GET_MODE_SIZE (m_new_inner_mode) > UNITS_PER_WORD
-      || !get_vector_mode (m_new_inner_mode, new_size).exists (&m_new_mode))
-    return false;
-  return repeating_sequence_p (0, full_nelts ().to_constant (), npatterns ());
-}
-
-/* Return true if it is a repeating sequence that using
-   merge approach has better codegen than using default
-   approach (slide1down).
-
-   Sequence A:
-     {a, b, a, b, a, b, a, b, a, b, a, b, a, b, a, b}
-
-   nelts = 16
-   npatterns = 2
-
-   for merging a we need mask 101010....
-   for merging b we need mask 010101....
-
-   Foreach element in the npattern, we need to build a mask in scalar register.
-   Mostely we need 3 instructions (aka COST = 3), which is consist of 2 scalar
-   instruction and 1 scalar move to v0 register.  Finally we need vector merge
-   to merge them.
-
-   lui		a5, #imm
-   add		a5, #imm
-   vmov.s.x	v0, a5
-   vmerge.vxm	v9, v9, a1, v0
-
-   So the overall (roughly) COST of Sequence A = (3 + 1) * npatterns = 8.
-   If we use slide1down, the COST = nelts = 16 > 8 (COST of merge).
-   So return true in this case as it is profitable.
-
-   Sequence B:
-     {a, b, c, d, e, f, g, h, a, b, c, d, e, f, g, h}
-
-   nelts = 16
-   npatterns = 8
-
-   COST of merge approach = (3 + 1) * npatterns = 24
-   COST of slide1down approach = nelts = 16
-   Return false in this case as it is NOT profitable in merge approach.
-*/
-bool
-rvv_builder::repeating_sequence_use_merge_profitable_p ()
-{
-  if (inner_bytes_size () > UNITS_PER_WORD)
-    return false;
-
-  unsigned int nelts = full_nelts ().to_constant ();
-
-  if (!repeating_sequence_p (0, nelts, npatterns ()))
-    return false;
-
-  unsigned int merge_cost = 1;
-  unsigned int build_merge_mask_cost = 3;
-  unsigned int slide1down_cost = nelts;
-
-  return (build_merge_mask_cost + merge_cost) * npatterns () < slide1down_cost;
-}
-
-/* Merge the repeating sequence into a single element and return the RTX.  */
-rtx
-rvv_builder::get_merged_repeating_sequence ()
-{
-  scalar_int_mode mode = Pmode;
-  rtx target = gen_reg_rtx (mode);
-  emit_move_insn (target, const0_rtx);
-  rtx imm = gen_int_mode ((1ULL << m_inner_bits_size) - 1, mode);
-  /* { a, b, a, b }: Generate duplicate element = b << bits | a.  */
-  for (unsigned int i = 0; i < npatterns (); i++)
-    {
-      unsigned int loc = m_inner_bits_size * i;
-      rtx shift = gen_int_mode (loc, mode);
-      rtx ele = gen_lowpart (mode, elt (i));
-      rtx tmp = expand_simple_binop (mode, AND, ele, imm, NULL_RTX, false,
-				     OPTAB_DIRECT);
-      rtx tmp2 = expand_simple_binop (mode, ASHIFT, tmp, shift, NULL_RTX, false,
-				      OPTAB_DIRECT);
-      rtx tmp3 = expand_simple_binop (mode, IOR, tmp2, target, NULL_RTX, false,
-				      OPTAB_DIRECT);
-      emit_move_insn (target, tmp3);
-    }
-  if (GET_MODE_SIZE (m_new_inner_mode) < UNITS_PER_WORD)
-    return gen_lowpart (m_new_inner_mode, target);
-  return target;
-}
-
-/* Get the mask for merge approach.
-
-   Consider such following case:
-     {a, b, a, b, a, b, a, b, a, b, a, b, a, b, a, b}
-   To merge "a", the mask should be 1010....
-   To merge "b", the mask should be 0101....
-*/
-rtx
-rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
-{
-  unsigned HOST_WIDE_INT mask = 0;
-  unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
-
-  gcc_assert (BITS_PER_WORD % npatterns () == 0);
-
-  int limit = BITS_PER_WORD / npatterns ();
-
-  for (int i = 0; i < limit; i++)
-    mask |= base_mask << (i * npatterns ());
-
-  return gen_int_mode (mask, inner_int_mode ());
-}
-
 /* Subroutine of riscv_vector_expand_vector_init.
    Works as follows:
    (a) Initialize TARGET by broadcasting element NELTS_REQD - 1 of BUILDER.
@@ -1537,60 +1628,6 @@ expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
       rtx ops[] = {target, target, builder.elt (i)};
       emit_vlmax_insn (icode, RVV_BINOP, ops);
     }
-}
-
-/* Emit vmv.s.x instruction.  */
-
-static void
-emit_scalar_move_insn (unsigned icode, rtx *ops)
-{
-  machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (riscv_vector::RVV_SCALAR_MOV_OP,
-					  /* HAS_DEST_P */ true,
-					  /* FULLY_UNMASKED_P */ false,
-					  /* USE_REAL_MERGE_P */ true,
-					  /* HAS_AVL_P */ true,
-					  /* VLMAX_P */ false,
-					  dest_mode,
-					  mask_mode);
-
-  e.set_policy (TAIL_ANY);
-  e.set_policy (MASK_ANY);
-  e.set_vl (CONST1_RTX (Pmode));
-  e.emit_insn ((enum insn_code) icode, ops);
-}
-
-/* Emit vmv.v.x instruction with vlmax.  */
-
-static void
-emit_vlmax_integer_move_insn (unsigned icode, rtx *ops, rtx vl)
-{
-  emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops, vl);
-}
-
-/* Emit vmv.v.x instruction with nonvlmax.  */
-
-static void
-emit_nonvlmax_integer_move_insn (unsigned icode, rtx *ops, rtx avl)
-{
-  emit_nonvlmax_insn (icode, riscv_vector::RVV_UNOP, ops, avl);
-}
-
-/* Emit merge instruction.  */
-
-static machine_mode
-get_repeating_sequence_dup_machine_mode (const rvv_builder &builder)
-{
-  poly_uint64 dup_nunits = GET_MODE_NUNITS (builder.mode ());
-
-  if (known_ge (GET_MODE_SIZE (builder.mode ()), BYTES_PER_RISCV_VECTOR))
-    {
-      dup_nunits = exact_div (BYTES_PER_RISCV_VECTOR,
-	builder.inner_bytes_size ());
-    }
-
-  return get_vector_mode (builder.inner_int_mode (), dup_nunits).require ();
 }
 
 /* Use merge approach to initialize the vector with repeating sequence.
@@ -1983,42 +2020,6 @@ expand_vcond (rtx *ops)
     expand_vec_cmp (mask, GET_CODE (ops[3]), ops[4], ops[5]);
   emit_insn (
     gen_vcond_mask (data_mode, data_mode, ops[0], ops[1], ops[2], mask));
-}
-
-/* This function emits VLMAX vrgather instruction. Emit vrgather.vx/vi when sel
-   is a const duplicate vector. Otherwise, emit vrgather.vv.  */
-static void
-emit_vlmax_gather_insn (rtx target, rtx op, rtx sel)
-{
-  rtx elt;
-  insn_code icode;
-  machine_mode data_mode = GET_MODE (target);
-  if (const_vec_duplicate_p (sel, &elt))
-    {
-      icode = code_for_pred_gather_scalar (data_mode);
-      sel = elt;
-    }
-  else
-    icode = code_for_pred_gather (data_mode);
-  rtx ops[] = {target, op, sel};
-  emit_vlmax_insn (icode, RVV_BINOP, ops);
-}
-
-static void
-emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
-{
-  rtx elt;
-  insn_code icode;
-  machine_mode data_mode = GET_MODE (target);
-  if (const_vec_duplicate_p (sel, &elt))
-    {
-      icode = code_for_pred_gather_scalar (data_mode);
-      sel = elt;
-    }
-  else
-    icode = code_for_pred_gather (data_mode);
-  rtx ops[] = {target, mask, target, op, sel};
-  emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
 }
 
 /* Implement vec_perm<mode>.  */
