@@ -481,6 +481,13 @@
 ])
 
 (define_mode_iterator VWEXTF [
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN < 128")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (VNx32SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 128")
+
   (VNx1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN < 128")
   (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
   (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
@@ -1145,6 +1152,8 @@
   (VNx16SI "VNx16HI") (VNx32SI "VNx32HI")
   (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI")
   (VNx16DI "VNx16SI")
+
+  (VNx1SF "VNx1HF") (VNx2SF "VNx2HF") (VNx4SF "VNx4HF") (VNx8SF "VNx8HF") (VNx16SF "VNx16HF") (VNx32SF "VNx32HF")
   (VNx1DF "VNx1SF") (VNx2DF "VNx2SF") (VNx4DF "VNx4SF") (VNx8DF "VNx8SF")
   (VNx16DF "VNx16SF")
 ])
@@ -1169,6 +1178,7 @@
   (VNx16SI "vnx16hi") (VNx32SI "vnx32hi")
   (VNx1DI "vnx1si") (VNx2DI "vnx2si") (VNx4DI "vnx4si") (VNx8DI "vnx8si")
   (VNx16DI "vnx16si")
+  (VNx1SF "vnx1hf") (VNx2SF "vnx2hf") (VNx4SF "vnx4hf") (VNx8SF "vnx8hf") (VNx16SF "vnx16hf") (VNx32SF "vnx32hf")
   (VNx1DF "vnx1sf") (VNx2DF "vnx2sf") (VNx4DF "vnx4sf") (VNx8DF "vnx8sf")
   (VNx16DF "vnx16sf")
 ])
