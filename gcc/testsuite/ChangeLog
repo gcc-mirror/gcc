@@ -1,3 +1,11 @@
+2023-06-04  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/100607
+	* gfortran.dg/select_rank_6.f90: New test.
+
 2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
