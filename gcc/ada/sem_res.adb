@@ -8124,7 +8124,8 @@ package body Sem_Res is
                             Attribute_Name (Parent (N)) in Name_Constrained
                                                          | Name_First
                                                          | Name_Last
-                                                         | Name_Length)
+                                                         | Name_Length
+                                                         | Name_Range)
               and then not Is_By_Reference_Type (Etype (E))
               and then not Is_Aliased (E)
             then
