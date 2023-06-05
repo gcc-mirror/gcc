@@ -1190,12 +1190,6 @@ gimple_range_op_handler::maybe_non_standard ()
   if (gimple_code (m_stmt) == GIMPLE_ASSIGN)
     switch (gimple_assign_rhs_code (m_stmt))
       {
-	case WIDEN_PLUS_EXPR:
-	{
-	  signed_op = ptr_op_widen_plus_signed;
-	  unsigned_op = ptr_op_widen_plus_unsigned;
-	}
-	gcc_fallthrough ();
 	case WIDEN_MULT_EXPR:
 	{
 	  m_valid = false;

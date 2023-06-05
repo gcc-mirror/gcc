@@ -136,8 +136,6 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info, tree scalar_type)
 	  || gimple_assign_rhs_code (assign) == WIDEN_SUM_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_LSHIFT_EXPR
-	  || gimple_assign_rhs_code (assign) == WIDEN_PLUS_EXPR
-	  || gimple_assign_rhs_code (assign) == WIDEN_MINUS_EXPR
 	  || gimple_assign_rhs_code (assign) == FLOAT_EXPR)
 	{
 	  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));

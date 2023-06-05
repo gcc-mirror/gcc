@@ -9600,8 +9600,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  target, unsignedp);
       return target;
 
-    case WIDEN_PLUS_EXPR:
-    case WIDEN_MINUS_EXPR:
     case WIDEN_MULT_EXPR:
       /* If first operand is constant, swap them.
 	 Thus the following special case checks need only
@@ -10379,10 +10377,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	return temp;
       }
 
-    case VEC_WIDEN_PLUS_HI_EXPR:
-    case VEC_WIDEN_PLUS_LO_EXPR:
-    case VEC_WIDEN_MINUS_HI_EXPR:
-    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:

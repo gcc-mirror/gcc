@@ -4273,8 +4273,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
 
     case REALIGN_LOAD_EXPR:
 
-    case WIDEN_PLUS_EXPR:
-    case WIDEN_MINUS_EXPR:
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case DOT_PROD_EXPR:
@@ -4283,10 +4281,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case WIDEN_MULT_MINUS_EXPR:
     case WIDEN_LSHIFT_EXPR:
 
-    case VEC_WIDEN_PLUS_HI_EXPR:
-    case VEC_WIDEN_PLUS_LO_EXPR:
-    case VEC_WIDEN_MINUS_HI_EXPR:
-    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:

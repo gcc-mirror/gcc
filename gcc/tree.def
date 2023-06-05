@@ -1422,8 +1422,6 @@ DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
    the first argument from type t1 to type t2, and then shifting it
    by the second argument.  */
 DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_PLUS_EXPR, "widen_plus_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_MINUS_EXPR, "widen_minus_expr", tcc_binary, 2)
 
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
@@ -1488,10 +1486,6 @@ DEFTREECODE (VEC_PACK_FLOAT_EXPR, "vec_pack_float_expr", tcc_binary, 2)
  */
 DEFTREECODE (VEC_WIDEN_LSHIFT_HI_EXPR, "widen_lshift_hi_expr", tcc_binary, 2)
 DEFTREECODE (VEC_WIDEN_LSHIFT_LO_EXPR, "widen_lshift_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_HI_EXPR, "widen_plus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_LO_EXPR, "widen_plus_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_HI_EXPR, "widen_minus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_LO_EXPR, "widen_minus_lo_expr", tcc_binary, 2)
 
 /* PREDICT_EXPR.  Specify hint for branch prediction.  The
    PREDICT_EXPR_PREDICTOR specify predictor and PREDICT_EXPR_OUTCOME the
