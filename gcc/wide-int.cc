@@ -766,6 +766,33 @@ wi::bswap_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
   return canonize (val, len, precision);
 }
 
+/* Bitreverse the integer represented by XVAL and LEN into VAL.  Return
+   the number of blocks in VAL.  Both XVAL and VAL have PRECISION bits.  */
+unsigned int
+wi::bitreverse_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		      unsigned int len, unsigned int precision)
+{
+  unsigned int i, s;
+
+  for (i = 0; i < len; i++)
+    val[i] = 0;
+
+  for (s = 0; s < precision; s++)
+    {
+      unsigned int block = s / HOST_BITS_PER_WIDE_INT;
+      unsigned int offset = s & (HOST_BITS_PER_WIDE_INT - 1);
+      if (((safe_uhwi (xval, len, block) >> offset) & 1) != 0)
+	{
+	  unsigned int d = (precision - 1) - s;
+	  block = d / HOST_BITS_PER_WIDE_INT;
+	  offset = d & (HOST_BITS_PER_WIDE_INT - 1);
+          val[block] |= 1 << offset;
+	}
+    }
+
+  return canonize (val, len, precision);
+}
+
 /* Fill VAL with a mask where the lower WIDTH bits are ones and the bits
    above that up to PREC are zeros.  The result is inverted if NEGATE
    is true.  Return the number of blocks in VAL.  */

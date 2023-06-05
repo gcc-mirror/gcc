@@ -553,6 +553,7 @@ namespace wi
   UNARY_FUNCTION zext (const T &, unsigned int);
   UNARY_FUNCTION set_bit (const T &, unsigned int);
   UNARY_FUNCTION bswap (const T &);
+  UNARY_FUNCTION bitreverse (const T &);
 
   BINARY_FUNCTION min (const T1 &, const T2 &, signop);
   BINARY_FUNCTION smin (const T1 &, const T2 &);
@@ -1748,6 +1749,8 @@ namespace wi
 			      unsigned int, unsigned int, unsigned int);
   unsigned int bswap_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			    unsigned int, unsigned int);
+  unsigned int bitreverse_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+				 unsigned int, unsigned int);
   
   unsigned int lshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			     unsigned int, unsigned int, unsigned int);
@@ -2278,6 +2281,18 @@ wi::bswap (const T &x)
   unsigned int precision = get_precision (result);
   WIDE_INT_REF_FOR (T) xi (x, precision);
   result.set_len (bswap_large (val, xi.val, xi.len, precision));
+  return result;
+}
+
+/* Bitreverse the integer X.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::bitreverse (const T &x)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
+  result.set_len (bitreverse_large (val, xi.val, xi.len, precision));
   return result;
 }
 
