@@ -72,7 +72,7 @@ get_traits_to_derive (AST::Attribute &attr)
 	  = static_cast<AST::DelimTokenTree &> (input).get_token_trees ();
 
 	// erase the delimiters
-	rust_assert (tokens.size () >= 3);
+	rust_assert (tokens.size () >= 2);
 	tokens.erase (tokens.begin ());
 	tokens.pop_back ();
 
