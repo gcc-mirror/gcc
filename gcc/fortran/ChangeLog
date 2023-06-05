@@ -1,3 +1,13 @@
+2023-06-04  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/100607
+	* resolve.c (resolve_select_rank): Remove duplicate error.
+	(resolve_fl_var_and_proc): Prevent NULL pointer dereference and
+	suppress error message for temporary.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
