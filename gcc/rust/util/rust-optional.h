@@ -86,6 +86,10 @@ private:
   union
   {
     T value;
+    // prevents initialization warnings
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635#c53
+    // FIXME: remove
+    volatile char unused;
   };
 
   Optional (tag_some, const T &value) : field_is_some (true), value (value) {}
