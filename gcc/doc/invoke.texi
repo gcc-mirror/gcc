@@ -2716,9 +2716,8 @@ the @option{-foffload-options=@var{target-list}=@var{options}} form.  The
 Typical command lines are
 
 @smallexample
--foffload-options=-lgfortran -foffload-options=-lm
--foffload-options="-lgfortran -lm" -foffload-options=nvptx-none=-latomic
--foffload-options=amdgcn-amdhsa=-march=gfx906 -foffload-options=-lm
+-foffload-options='-fno-math-errno -ffinite-math-only' -foffload-options=nvptx-none=-latomic
+-foffload-options=amdgcn-amdhsa=-march=gfx906 -foffload-options=-O3
 @end smallexample
 
 @opindex fopenacc

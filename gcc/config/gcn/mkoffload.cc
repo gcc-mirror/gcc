@@ -946,6 +946,18 @@ main (int argc, char **argv)
       else if (startswith (argv[i], STR))
 	gcn_stack_size = atoi (argv[i] + strlen (STR));
 #undef STR
+      /* Translate host into offloading libraries.  */
+      else if (strcmp (argv[i], "-l_GCC_gfortran") == 0
+	       || strcmp (argv[i], "-l_GCC_m") == 0)
+	{
+	  /* Elide '_GCC_'.  */
+	  size_t i_dst = strlen ("-l");
+	  size_t i_src = strlen ("-l_GCC_");
+	  char c;
+	  do
+	    c = argv[i][i_dst++] = argv[i][i_src++];
+	  while (c != '\0');
+	}
     }
 
   if (!(fopenacc ^ fopenmp))

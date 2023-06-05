@@ -30,7 +30,6 @@ if { $blddir != "" } {
     set lang_source_re {^.*\.[fF](|90|95|03|08)$}
     set lang_include_flags "-fintrinsic-modules-path=${blddir}"
 }
-set lang_link_flags "-foffload=-lgfortran"
 lappend ALWAYS_CFLAGS "compiler=$GFORTRAN_UNDER_TEST"
 
 # Initialize dg.
@@ -113,7 +112,6 @@ if { $blddir != "" } {
     unset libquadmath_library_path
     unset lang_library_paths
 }
-unset lang_link_flags
 
 # All done.
 dg-finish

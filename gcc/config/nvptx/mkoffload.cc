@@ -649,6 +649,18 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "-dumpbase") == 0
 	       && i + 1 < argc)
 	dumppfx = argv[++i];
+      /* Translate host into offloading libraries.  */
+      else if (strcmp (argv[i], "-l_GCC_gfortran") == 0
+	       || strcmp (argv[i], "-l_GCC_m") == 0)
+	{
+	  /* Elide '_GCC_'.  */
+	  size_t i_dst = strlen ("-l");
+	  size_t i_src = strlen ("-l_GCC_");
+	  char c;
+	  do
+	    c = argv[i][i_dst++] = argv[i][i_src++];
+	  while (c != '\0');
+	}
     }
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either %<-fopenacc%> or %<-fopenmp%> "
