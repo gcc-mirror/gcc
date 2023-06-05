@@ -12,20 +12,20 @@
   TYPE b##TYPE[SZ];	  			\
   for (int i = 0; i < SZ; i++)			\
   {                             		\
-    a##TYPE[i] = 999;           		\
+    a##TYPE[i] = 123;           		\
     b##TYPE[i] = VAL;           		\
   }                             		\
   vsub_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
   for (int i = 0; i < SZ; i++)			\
-    assert (a##TYPE[i] == 999 - VAL);
+    assert (a##TYPE[i] == 123 - VAL);
 
 #define RUN2(TYPE,VAL)				\
   TYPE as##TYPE[SZ];				\
   for (int i = 0; i < SZ; i++)			\
-    as##TYPE[i] = 999;            		\
+    as##TYPE[i] = 123;            		\
   vsubs_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
   for (int i = 0; i < SZ; i++)			\
-    assert (as##TYPE[i] == 999 - VAL);
+    assert (as##TYPE[i] == 123 - VAL);
 
 #define RUN3(TYPE)				\
   TYPE as2##TYPE[SZ];				\
@@ -44,24 +44,32 @@
     assert (as3##TYPE[i] == (TYPE)(15 - (i * -17 + 667)));
 
 #define RUN_ALL()	\
+ RUN(int8_t, 1)	\
+ RUN(uint8_t, 2)	\
  RUN(int16_t, 1)	\
  RUN(uint16_t, 2)	\
  RUN(int32_t, 3)	\
  RUN(uint32_t, 4)	\
  RUN(int64_t, 5)	\
  RUN(uint64_t, 6)	\
+ RUN2(int8_t, 7)	\
+ RUN2(uint8_t, 8)	\
  RUN2(int16_t, 7)	\
  RUN2(uint16_t, 8)	\
  RUN2(int32_t, 9)	\
  RUN2(uint32_t, 10)	\
  RUN2(int64_t, 11)	\
  RUN2(uint64_t, 12)	\
+ RUN3(int8_t)		\
+ RUN3(uint8_t)		\
  RUN3(int16_t)		\
  RUN3(uint16_t)		\
  RUN3(int32_t)		\
  RUN3(uint32_t)		\
  RUN3(int64_t)		\
  RUN3(uint64_t)		\
+ RUN4(int8_t)		\
+ RUN4(uint8_t)		\
  RUN4(int16_t)		\
  RUN4(uint16_t)		\
  RUN4(int32_t)		\

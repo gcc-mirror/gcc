@@ -3,5 +3,5 @@
 
 #include "vand-template.h"
 
-/* { dg-final { scan-assembler-times {\tvand\.vv} 12 } } */
-/* { dg-final { scan-assembler-times {\tvand\.vi} 6 } } */
+/* { dg-final { scan-assembler-times {\tvand\.vv} 16 } } */
+/* { dg-final { scan-assembler-times {\tvand\.vi} 8 } } */

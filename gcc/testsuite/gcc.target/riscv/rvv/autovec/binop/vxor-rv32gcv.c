@@ -3,5 +3,5 @@
 
 #include "vxor-template.h"
 
-/* { dg-final { scan-assembler-times {\tvxor\.vv} 12 } } */
-/* { dg-final { scan-assembler-times {\tvxor\.vi} 6 } } */
+/* { dg-final { scan-assembler-times {\tvxor\.vv} 16 } } */
+/* { dg-final { scan-assembler-times {\tvxor\.vi} 8 } } */

@@ -4,7 +4,7 @@
 #include "vdiv-template.h"
 
 /* Currently we use an epilogue loop which also contains vdivs.  Therefore we
-   expect 10 vdiv[u]s instead of 6.  */
+   expect 14 vdiv[u]s instead of 8.  */
 
-/* { dg-final { scan-assembler-times {\tvdiv\.vv} 10 } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vv} 10 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vv} 14 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vv} 14 } } */

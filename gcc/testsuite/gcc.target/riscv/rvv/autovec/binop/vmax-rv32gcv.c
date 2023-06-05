@@ -3,5 +3,5 @@
 
 #include "vmax-template.h"
 
-/* { dg-final { scan-assembler-times {\tvmax\.vv} 6 } } */
-/* { dg-final { scan-assembler-times {\tvmaxu\.vv} 6 } } */
+/* { dg-final { scan-assembler-times {\tvmax\.vv} 8 } } */
+/* { dg-final { scan-assembler-times {\tvmaxu\.vv} 8 } } */

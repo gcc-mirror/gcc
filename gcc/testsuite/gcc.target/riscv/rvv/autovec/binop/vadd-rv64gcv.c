@@ -3,5 +3,5 @@
 
 #include "vadd-template.h"
 
-/* { dg-final { scan-assembler-times {\tvadd\.vv} 12 } } */
-/* { dg-final { scan-assembler-times {\tvadd\.vi} 6 } } */
+/* { dg-final { scan-assembler-times {\tvadd\.vv} 16 } } */
+/* { dg-final { scan-assembler-times {\tvadd\.vi} 8 } } */

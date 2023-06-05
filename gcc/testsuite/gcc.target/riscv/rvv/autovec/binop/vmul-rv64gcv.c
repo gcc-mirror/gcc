@@ -3,4 +3,4 @@
 
 #include "vmul-template.h"
 
-/* { dg-final { scan-assembler-times {\tvmul\.vv} 12 } } */
+/* { dg-final { scan-assembler-times {\tvmul\.vv} 16 } } */
