@@ -1801,7 +1801,7 @@ move2add_use_add2_insn (scalar_int_mode mode, rtx reg, rtx sym, rtx off,
 		     naked SET, or else its single_set is the first element
 		     in a PARALLEL.  */
 		  rtx *setloc = GET_CODE (PATTERN (insn)) == PARALLEL
-		    ? &XEXP (PATTERN (insn), 0) : &PATTERN (insn);
+		    ? &XVECEXP (PATTERN (insn), 0, 0) : &PATTERN (insn);
 		  if (*setloc == set && costs_lt_p (&newcst, &oldcst, speed))
 		    {
 		      changed = validate_change (insn, setloc, new_set, 0);
@@ -2027,7 +2027,7 @@ reload_cse_move2add (rtx_insn *first)
 			  costs_add_n_insns (&oldcst, 1);
 
 			  rtx *setloc = GET_CODE (PATTERN (next)) == PARALLEL
-			    ? &XEXP (PATTERN (next), 0) : &PATTERN (next);
+			    ? &XVECEXP (PATTERN (next), 0, 0) : &PATTERN (next);
 			  if (*setloc == set
 			      && costs_lt_p (&newcst, &oldcst, speed)
 			      && have_add2_insn (reg, new_src))
