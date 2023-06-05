@@ -4292,8 +4292,8 @@ extern HARD_REG_SET eliminable_regset;
 extern void mark_elimination (int, int);
 
 /* In reginfo.cc */
-extern int reg_classes_intersect_p (reg_class_t, reg_class_t);
-extern int reg_class_subset_p (reg_class_t, reg_class_t);
+extern bool reg_classes_intersect_p (reg_class_t, reg_class_t);
+extern bool reg_class_subset_p (reg_class_t, reg_class_t);
 extern void globalize_reg (tree, int);
 extern void init_reg_modes_target (void);
 extern void init_regs (void);
