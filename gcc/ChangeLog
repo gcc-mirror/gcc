@@ -1,3 +1,98 @@
+2023-06-04  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (do_store_flag): Improve for single bit testing
+	not against zero but against that single bit.
+
+2023-06-04  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (do_store_flag): Extend the one bit checking case
+	to handle the case where we don't have an and but rather still
+	one bit is known to be non-zero.
+
+2023-06-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/constraints.md (Zz): Make this a normal
+	constraint.
+	* config/h8300/h8300.cc (TARGET_LRA_P): Remove.
+	* config/h8300/logical.md (H8/SX bit patterns): Remove.
+
+2023-06-04  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*btrue_INT_MIN, *eqne_INT_MIN):
+	New insn_and_split patterns.
+
+2023-06-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110109
+	* config/riscv/riscv-vector-builtins-bases.cc: Change expand approach.
+	* config/riscv/vector.md (@vlmul_extx2<mode>): Remove it.
+	(@vlmul_extx4<mode>): Ditto.
+	(@vlmul_extx8<mode>): Ditto.
+	(@vlmul_extx16<mode>): Ditto.
+	(@vlmul_extx32<mode>): Ditto.
+	(@vlmul_extx64<mode>): Ditto.
+	(*vlmul_extx2<mode>): Ditto.
+	(*vlmul_extx4<mode>): Ditto.
+	(*vlmul_extx8<mode>): Ditto.
+	(*vlmul_extx16<mode>): Ditto.
+	(*vlmul_extx32<mode>): Ditto.
+	(*vlmul_extx64<mode>): Ditto.
+
+2023-06-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat32mf2_t): Add vfloat32mf2_t type to vfncvt.f.f.w operations.
+	(vfloat32m1_t): Likewise.
+	(vfloat32m2_t): Likewise.
+	(vfloat32m4_t): Likewise.
+	(vfloat32m8_t): Likewise.
+	* config/riscv/riscv-vector-builtins.def: Fix typo in comments.
+	* config/riscv/vector-iterators.md: Add single to half machine
+	mode conversion.
+
+2023-06-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>not<mode>): Move to autovec-opt.md.
+	(*n<optab><mode>): Ditto.
+	* config/riscv/autovec.md (*<optab>not<mode>): Ditto.
+	(*n<optab><mode>): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110083
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Update or delete REG_EQUAL notes, converting CONST_INT and
+	CONST_WIDE_INT immediate operands to a suitable CONST_VECTOR.
+
+2023-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97720
+	* tree-eh.cc (lower_resx): Pass the exception pointer to the
+	failure_decl.
+	* except.h: Tweak comment.
+
+2023-06-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* postreload.cc (move2add_use_add2_insn): Handle
+	trivial single_sets.  Rename variable PAT to SET.
+	(move2add_use_add3_insn, reload_cse_move2add): Similar.
+
+2023-06-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat16mf4_t): Add the float16 type to DEF_RVV_F_OPS.
+	(vfloat16mf2_t): Likewise.
+	(vfloat16m1_t): Likewise.
+	(vfloat16m2_t): Likewise.
+	(vfloat16m4_t): Likewise.
+	(vfloat16m8_t): Likewise.
+	* config/riscv/riscv.md: Add vfloat16*_t to attr mode.
+	* config/riscv/vector-iterators.md: Add vfloat16*_t machine mode
+	to V, V_WHOLE, V_FRACT, VINDEX, VM, VEL and sew.
+	* config/riscv/vector.md: Add vfloat16*_t machine mode to sew,
+	vlmul and ratio.
+
 2023-06-03  Fei Gao  <gaofei@eswincomputing.com>
 
 	* config/riscv/riscv.cc (riscv_expand_epilogue): fix cfi issue with

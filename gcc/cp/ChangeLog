@@ -1,3 +1,12 @@
+2023-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97720
+	* cp-tree.h (enum cp_tree_index): Add CPTI_CALL_TERMINATE_FN.
+	(call_terminate_fn): New macro.
+	* cp-gimplify.cc (gimplify_must_not_throw_expr): Use it.
+	* except.cc (init_exception_processing): Set it.
+	(cp_protect_cleanup_actions): Return it.
+
 2023-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109923

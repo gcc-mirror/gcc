@@ -1,3 +1,28 @@
+2023-06-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110109
+	* gcc.target/riscv/rvv/base/pr110109-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr110109-2.c: New test.
+
+2023-06-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: New test.
+
+2023-06-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110083
+	* gcc.target/i386/pr110083.c: New test case.
+
+2023-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97720
+	* g++.dg/eh/terminate2.C: New test.
+
+2023-06-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/mov-14.c: New test.
+	* gcc.target/riscv/rvv/base/spill-13.c: New test.
+
 2023-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109923

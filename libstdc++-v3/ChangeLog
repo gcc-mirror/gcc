@@ -1,3 +1,9 @@
+2023-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97720
+	* libsupc++/eh_call.cc (__cxa_call_terminate): Take void*.
+	* config/abi/pre/gnu.ver: Add it.
+
 2023-06-02  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/parallel/algobase.h: Include <parallel/search.h>.
