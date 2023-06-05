@@ -699,6 +699,23 @@ Do not warn about usage of deprecated features and symbols with
 @item -Werror
 Turns all warnings into errors.
 
+@opindex Wextra
+@opindex Wno-extra
+@item -Wextra
+This enables some extra warning flags that are not enabled by
+@option{-Wall}.
+
+@gccoptlist{-Waddress
+-Wcast-result
+-Wmismatched-special-enum
+-Wunknown-pragmas}
+
+@opindex Wmismatched-special-enum
+@opindex Wno-mismatched-special-enum
+@item -Wmismatched-special-enum
+Warn when an enum the compiler recognizes as special is declared with a
+different size to the built-in type it is representing.
+
 @opindex Wspeculative
 @opindex Wno-speculative
 @item -Wspeculative
