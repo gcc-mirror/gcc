@@ -3622,13 +3622,6 @@ clean: mostlyclean lang.clean
 	-rm -f doc/*.pdf
 # Delete the include directories.
 	-rm -rf include include-fixed
-# Delete files used by the "multilib" facility (including libgcc subdirs).
-	-rm -f multilib.h tmpmultilib*
-	-if [ "x$(MULTILIB_DIRNAMES)" != x ] ; then \
-	  rm -rf $(MULTILIB_DIRNAMES); \
-	else if [ "x$(MULTILIB_OPTIONS)" != x ] ; then \
-	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
-	fi ; fi
 
 # Delete all files that users would normally create
 # while building and installing GCC.
