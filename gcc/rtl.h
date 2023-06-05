@@ -4241,8 +4241,8 @@ extern const rtx_insn *debug_rtx_find (const rtx_insn *, int);
 extern void print_mem_expr (FILE *, const_tree);
 extern void print_rtl (FILE *, const_rtx);
 extern void print_simple_rtl (FILE *, const_rtx);
-extern int print_rtl_single (FILE *, const_rtx);
-extern int print_rtl_single_with_indent (FILE *, const_rtx, int);
+extern void print_rtl_single (FILE *, const_rtx);
+extern void print_rtl_single_with_indent (FILE *, const_rtx, int);
 extern void print_inline_rtx (FILE *, const_rtx, int);
 
 /* In stmt.cc */
