@@ -236,7 +236,6 @@ struct MacroExpander
     : cfg (cfg), crate (crate), session (session),
       sub_stack (SubstitutionScope ()),
       expanded_fragment (AST::Fragment::create_error ()),
-      expanded_proc_macro_fragment (AST::Fragment::create_error ()),
       has_changed_flag (false), resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
@@ -334,22 +333,6 @@ struct MacroExpander
   {
     auto fragment = std::move (expanded_fragment);
     expanded_fragment = AST::Fragment::create_error ();
-
-    return fragment;
-  }
-
-  void set_expanded_proc_macro_fragment (AST::Fragment &&fragment)
-  {
-    if (!fragment.is_error ())
-      has_changed_flag = true;
-
-    expanded_proc_macro_fragment = std::move (fragment);
-  }
-
-  AST::Fragment take_expanded_proc_macro_fragment ()
-  {
-    auto fragment = std::move (expanded_proc_macro_fragment);
-    expanded_proc_macro_fragment = AST::Fragment::create_error ();
 
     return fragment;
   }
@@ -479,7 +462,6 @@ private:
   SubstitutionScope sub_stack;
   std::vector<ContextType> context;
   AST::Fragment expanded_fragment;
-  AST::Fragment expanded_proc_macro_fragment;
   bool has_changed_flag;
 
   AST::MacroRulesDefinition *last_def;

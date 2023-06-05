@@ -127,27 +127,12 @@ public:
 	value->accept_vis (*this);
 
 	auto final_fragment = expander.take_expanded_fragment ();
-	auto proc_macro_fragment
-	  = expander.take_expanded_proc_macro_fragment ();
 
 	// FIXME: Is that correct? It seems *extremely* dodgy
 	if (final_fragment.should_expand ())
 	  {
 	    it = values.erase (it);
 	    for (auto &node : final_fragment.get_nodes ())
-	      {
-		auto new_node = extractor (node);
-		if (new_node != nullptr)
-		  {
-		    it = values.insert (it, std::move (new_node));
-		    it++;
-		  }
-	      }
-	  }
-	else if (proc_macro_fragment.should_expand ())
-	  {
-	    it = values.erase (it);
-	    for (auto &node : proc_macro_fragment.get_nodes ())
 	      {
 		auto new_node = extractor (node);
 		if (new_node != nullptr)
