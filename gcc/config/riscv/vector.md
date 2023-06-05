@@ -1669,7 +1669,7 @@
   [(set_attr "type" "vst<order>x")
    (set_attr "mode" "<VNX8_QHSD:MODE>")])
 
-(define_insn "@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSI:mode>"
+(define_insn "@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSDI:mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -1679,10 +1679,10 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:VNX16_QHSI 2 "register_operand" "  vr")
+	   (match_operand:VNX16_QHSDI 2 "register_operand" "  vr")
 	   (match_operand:VNX16_QHS 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<VNX16_QHSI:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<VNX16_QHSDI:sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
    (set_attr "mode" "<VNX16_QHS:MODE>")])
 
