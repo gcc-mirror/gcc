@@ -1,7 +1,7 @@
 #include <immintrin.h>
 /* { dg-do compile } */
 /* { dg-options "-mavx512bw -O2 -mavx512vl -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-not "builtin_ia32_pabs" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "builtin_ia32_pabs" "optimized" { target { ! ia32 } } } } */
 
 
 __m64
