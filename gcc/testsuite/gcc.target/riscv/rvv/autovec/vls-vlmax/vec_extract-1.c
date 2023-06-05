@@ -55,3 +55,5 @@ TEST_ALL1 (VEC_EXTRACT)
 
 /* { dg-final { scan-assembler-times {\tvfmv.f.s} 8 } } */
 /* { dg-final { scan-assembler-times {\tvmv.x.s} 13 } } */
+
+/* { dg-final { scan-assembler-not {\tsext} } } */

@@ -376,3 +376,32 @@
 }
  [(set_attr "type" "vnshift")
   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+;; -------------------------------------------------------------------------
+;; ---- Sign-extension for vmv.x.s.
+;; -------------------------------------------------------------------------
+(define_insn "*pred_extract_first_sextdi<mode>"
+  [(set (match_operand:DI 0 "register_operand"		"=r")
+	(sign_extend:DI
+          (unspec:<VEL>
+	    [(vec_select:<VEL>
+	       (match_operand:VI_QHS 1 "register_operand""vr")
+	       (parallel [(const_int 0)]))
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)))]
+  "TARGET_VECTOR && Pmode == DImode"
+  "vmv.x.s\t%0,%1"
+  [(set_attr "type" "vimovvx")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*pred_extract_first_sextsi<mode>"
+  [(set (match_operand:SI 0 "register_operand"		  "=r")
+	(sign_extend:SI
+          (unspec:<VEL>
+	    [(vec_select:<VEL>
+	       (match_operand:VI_QH 1 "register_operand"  "vr")
+	       (parallel [(const_int 0)]))
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)))]
+  "TARGET_VECTOR && Pmode == SImode"
+  "vmv.x.s\t%0,%1"
+  [(set_attr "type" "vimovvx")
+   (set_attr "mode" "<MODE>")])
