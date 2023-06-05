@@ -106,7 +106,7 @@ std::unordered_map<
     {"global_allocator", MacroBuiltin::sorry},
     {"cfg_accessible", MacroBuiltin::sorry},
     /* Derive builtins do not need a real transcriber, but still need one. It
-       will however never be called since builtin derive macros get expanded
+       should however never be called since builtin derive macros get expanded
        differently, and benefit from knowing on what kind of items they are
        applied (struct, enums, unions) rather than receiving a list of tokens
        like regular builtin macros */
@@ -949,9 +949,12 @@ MacroBuiltin::sorry (Location invoc_locus, AST::MacroInvocData &invoc)
 }
 
 AST::Fragment
-MacroBuiltin::proc_macro_builtin (Location, AST::MacroInvocData &)
+MacroBuiltin::proc_macro_builtin (Location invoc_locus,
+				  AST::MacroInvocData &invoc)
 {
-  // nothing to do!
+  rust_error_at (invoc_locus, "cannot invoke derive macro: %qs",
+		 invoc.get_path ().as_string ().c_str ());
+
   return AST::Fragment::create_error ();
 }
 

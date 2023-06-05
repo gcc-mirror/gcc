@@ -160,8 +160,8 @@ public:
 
   static AST::Fragment sorry (Location invoc_locus, AST::MacroInvocData &invoc);
 
-  /* Builtin procedural macros do not work directly on tokens, but still need an
-   * empty builtin transcriber to be considered proper builtin macros */
+  /* Builtin procedural macros do not work directly on tokens, but still need a
+   * builtin transcriber to be considered proper builtin macros */
   static AST::Fragment proc_macro_builtin (Location, AST::MacroInvocData &);
 };
 } // namespace Rust
