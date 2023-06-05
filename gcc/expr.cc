@@ -12952,12 +12952,16 @@ expand_single_bit_test (location_t loc, enum tree_code code,
 
   rtx inner0 = expand_expr (inner, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
+  if (CONST_SCALAR_INT_P (inner0))
+    {
+      wide_int t = rtx_mode_t (inner0, operand_mode);
+      bool setp = (wi::lrshift (t, bitnum) & 1) != 0;
+      return (setp ^ (code == EQ_EXPR)) ? const1_rtx : const0_rtx;
+    }
   int bitpos = bitnum;
 
-  scalar_int_mode imode = as_a <scalar_int_mode>(GET_MODE (inner0));
-
   if (BYTES_BIG_ENDIAN)
-    bitpos = GET_MODE_BITSIZE (imode) - 1 - bitpos;
+    bitpos = GET_MODE_BITSIZE (operand_mode) - 1 - bitpos;
 
   inner0 = extract_bit_field (inner0, 1, bitpos, 1, target,
 			      operand_mode, mode, 0, NULL);
