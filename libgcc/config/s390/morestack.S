@@ -597,7 +597,7 @@ __morestack_make_guard:
 # Make __stack_split_initialize a high priority constructor.
 
 #if HAVE_INITFINI_ARRAY_SUPPORT
-	.section .init_array.00000,"aw",@progbits
+	.section .init_array.00000,"aw",@init_array
 #else
 	.section .ctors.65535,"aw",@progbits
 #endif
