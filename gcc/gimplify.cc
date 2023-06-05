@@ -7154,8 +7154,10 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	gimplify_and_add (init, &init_pre_p);
 
       /* Add a clobber for the temporary going out of scope, like
-	 gimplify_bind_expr.  */
+	 gimplify_bind_expr.  But only if we did not promote the
+	 temporary to static storage.  */
       if (gimplify_ctxp->in_cleanup_point_expr
+	  && !TREE_STATIC (temp)
 	  && needs_to_live_in_memory (temp))
 	{
 	  if (flag_stack_reuse == SR_ALL)
