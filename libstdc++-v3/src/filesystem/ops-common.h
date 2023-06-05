@@ -515,25 +515,26 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       int fd;
     };
 
-    int iflag = O_RDONLY;
+    int common_flags = 0;
+#ifdef O_CLOEXEC
+    common_flags |= O_CLOEXEC;
+#endif
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    iflag |= O_BINARY;
+    common_flags |= O_BINARY;
 #endif
 
+    const int iflag = O_RDONLY | common_flags;
     CloseFD in = { posix::open(from, iflag) };
     if (in.fd == -1)
       {
 	ec.assign(errno, std::generic_category());
 	return false;
       }
-    int oflag = O_WRONLY|O_CREAT;
+    int oflag = O_WRONLY | O_CREAT | common_flags;
     if (options.overwrite || options.update)
       oflag |= O_TRUNC;
     else
       oflag |= O_EXCL;
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    oflag |= O_BINARY;
-#endif
     CloseFD out = { posix::open(to, oflag, S_IWUSR) };
     if (out.fd == -1)
       {
