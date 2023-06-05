@@ -1310,7 +1310,7 @@ riscv_const_insns (rtx x)
 		   a general-purpose register.  This means we need as many
 		   insns as it takes to load the constant into the GPR
 		   and one vmv.v.x.  */
-		return 1 + riscv_integer_cost (INTVAL (elt));
+		return 1 + riscv_const_insns (elt);
 	      }
 	  }
 
