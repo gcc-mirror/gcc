@@ -1314,7 +1314,17 @@ commutative_optab_p (optab binoptab)
 	  || binoptab == smul_widen_optab
 	  || binoptab == umul_widen_optab
 	  || binoptab == smul_highpart_optab
-	  || binoptab == umul_highpart_optab);
+	  || binoptab == umul_highpart_optab
+	  || binoptab == vec_widen_sadd_optab
+	  || binoptab == vec_widen_uadd_optab
+	  || binoptab == vec_widen_sadd_hi_optab
+	  || binoptab == vec_widen_sadd_lo_optab
+	  || binoptab == vec_widen_uadd_hi_optab
+	  || binoptab == vec_widen_uadd_lo_optab
+	  || binoptab == vec_widen_sadd_even_optab
+	  || binoptab == vec_widen_sadd_odd_optab
+	  || binoptab == vec_widen_uadd_even_optab
+	  || binoptab == vec_widen_uadd_odd_optab);
 }
 
 /* X is to be used in mode MODE as operand OPN to BINOPTAB.  If we're

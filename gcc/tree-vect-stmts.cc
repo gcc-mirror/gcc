@@ -5051,7 +5051,8 @@ vectorizable_conversion (vec_info *vinfo,
   bool widen_arith = (code == WIDEN_PLUS_EXPR
 		 || code == WIDEN_MINUS_EXPR
 		 || code == WIDEN_MULT_EXPR
-		 || code == WIDEN_LSHIFT_EXPR);
+		 || code == WIDEN_LSHIFT_EXPR
+		 || widening_fn_p (code));
 
   if (!widen_arith
       && !CONVERT_EXPR_CODE_P (code)
@@ -5101,8 +5102,8 @@ vectorizable_conversion (vec_info *vinfo,
       gcc_assert (code == WIDEN_MULT_EXPR
 		  || code == WIDEN_LSHIFT_EXPR
 		  || code == WIDEN_PLUS_EXPR
-		  || code == WIDEN_MINUS_EXPR);
-
+		  || code == WIDEN_MINUS_EXPR
+		  || widening_fn_p (code));
 
       op1 = is_gimple_assign (stmt) ? gimple_assign_rhs2 (stmt) :
 				     gimple_call_arg (stmt, 0);
@@ -12574,25 +12575,68 @@ supportable_widening_operation (vec_info *vinfo,
       optab1 = vec_unpacks_sbool_lo_optab;
       optab2 = vec_unpacks_sbool_hi_optab;
     }
-  else
+
+  vec_mode = TYPE_MODE (vectype);
+  if (widening_fn_p (code))
+     {
+       /* If this is an internal fn then we must check whether the target
+	  supports either a low-high split or an even-odd split.  */
+      internal_fn ifn = as_internal_fn ((combined_fn) code);
+
+      internal_fn lo, hi, even, odd;
+      lookup_hilo_internal_fn (ifn, &lo, &hi);
+      *code1 = as_combined_fn (lo);
+      *code2 = as_combined_fn (hi);
+      optab1 = direct_internal_fn_optab (lo, {vectype, vectype});
+      optab2 = direct_internal_fn_optab (hi, {vectype, vectype});
+
+      /* If we don't support low-high, then check for even-odd.  */
+      if (!optab1
+	  || (icode1 = optab_handler (optab1, vec_mode)) == CODE_FOR_nothing
+	  || !optab2
+	  || (icode2 = optab_handler (optab2, vec_mode)) == CODE_FOR_nothing)
+	{
+	  lookup_evenodd_internal_fn (ifn, &even, &odd);
+	  *code1 = as_combined_fn (even);
+	  *code2 = as_combined_fn (odd);
+	  optab1 = direct_internal_fn_optab (even, {vectype, vectype});
+	  optab2 = direct_internal_fn_optab (odd, {vectype, vectype});
+	}
+    }
+  else if (code.is_tree_code ())
     {
-      optab1 = optab_for_tree_code (c1, vectype, optab_default);
-      optab2 = optab_for_tree_code (c2, vectype, optab_default);
+      if (code == FIX_TRUNC_EXPR)
+	{
+	  /* The signedness is determined from output operand.  */
+	  optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
+	  optab2 = optab_for_tree_code (c2, vectype_out, optab_default);
+	}
+      else if (CONVERT_EXPR_CODE_P ((tree_code) code.safe_as_tree_code ())
+	       && VECTOR_BOOLEAN_TYPE_P (wide_vectype)
+	       && VECTOR_BOOLEAN_TYPE_P (vectype)
+	       && TYPE_MODE (wide_vectype) == TYPE_MODE (vectype)
+	       && SCALAR_INT_MODE_P (TYPE_MODE (vectype)))
+	{
+	  /* If the input and result modes are the same, a different optab
+	     is needed where we pass in the number of units in vectype.  */
+	  optab1 = vec_unpacks_sbool_lo_optab;
+	  optab2 = vec_unpacks_sbool_hi_optab;
+	}
+      else
+	{
+	  optab1 = optab_for_tree_code (c1, vectype, optab_default);
+	  optab2 = optab_for_tree_code (c2, vectype, optab_default);
+	}
+      *code1 = c1;
+      *code2 = c2;
     }
 
   if (!optab1 || !optab2)
     return false;
 
-  vec_mode = TYPE_MODE (vectype);
   if ((icode1 = optab_handler (optab1, vec_mode)) == CODE_FOR_nothing
        || (icode2 = optab_handler (optab2, vec_mode)) == CODE_FOR_nothing)
     return false;
-
-  if (code.is_tree_code ())
-  {
-    *code1 = c1;
-    *code2 = c2;
-  }
 
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)

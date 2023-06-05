@@ -1811,10 +1811,16 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @tindex VEC_RSHIFT_EXPR
 @tindex VEC_WIDEN_MULT_HI_EXPR
 @tindex VEC_WIDEN_MULT_LO_EXPR
-@tindex VEC_WIDEN_PLUS_HI_EXPR
-@tindex VEC_WIDEN_PLUS_LO_EXPR
-@tindex VEC_WIDEN_MINUS_HI_EXPR
-@tindex VEC_WIDEN_MINUS_LO_EXPR
+@tindex IFN_VEC_WIDEN_PLUS
+@tindex IFN_VEC_WIDEN_PLUS_HI
+@tindex IFN_VEC_WIDEN_PLUS_LO
+@tindex IFN_VEC_WIDEN_PLUS_EVEN
+@tindex IFN_VEC_WIDEN_PLUS_ODD
+@tindex IFN_VEC_WIDEN_MINUS
+@tindex IFN_VEC_WIDEN_MINUS_HI
+@tindex IFN_VEC_WIDEN_MINUS_LO
+@tindex IFN_VEC_WIDEN_MINUS_EVEN
+@tindex IFN_VEC_WIDEN_MINUS_ODD
 @tindex VEC_UNPACK_HI_EXPR
 @tindex VEC_UNPACK_LO_EXPR
 @tindex VEC_UNPACK_FLOAT_HI_EXPR
@@ -1860,6 +1866,82 @@ high @code{N/2} elements of the two vector are multiplied to produce the
 vector of @code{N/2} products. In the case of @code{VEC_WIDEN_MULT_LO_EXPR} the
 low @code{N/2} elements of the two vector are multiplied to produce the
 vector of @code{N/2} products.
+
+@item IFN_VEC_WIDEN_PLUS
+This internal function represents widening vector addition of two input
+vectors.  Its operands are vectors that contain the same number of elements
+(@code{N}) of the same integral type.  The result is a vector that contains
+the same amount (@code{N}) of elements, of an integral type whose size is twice
+as wide, as the input vectors.  If the current target does not implement the
+corresponding optabs the vectorizer may choose to split it into either a pair
+of @code{IFN_VEC_WIDEN_PLUS_HI} and @code{IFN_VEC_WIDEN_PLUS_LO} or
+@code{IFN_VEC_WIDEN_PLUS_EVEN} and @code{IFN_VEC_WIDEN_PLUS_ODD}, depending
+on what optabs the target implements.
+
+@item IFN_VEC_WIDEN_PLUS_HI
+@itemx IFN_VEC_WIDEN_PLUS_LO
+These internal functions represent widening vector addition of the high and low
+parts of the two input vectors, respectively.  Their operands are vectors that
+contain the same number of elements (@code{N}) of the same integral type. The
+result is a vector that contains half as many elements, of an integral type
+whose size is twice as wide.  In the case of @code{IFN_VEC_WIDEN_PLUS_HI} the
+high @code{N/2} elements of the two vectors are added to produce the vector of
+@code{N/2} additions.  In the case of @code{IFN_VEC_WIDEN_PLUS_LO} the low
+@code{N/2} elements of the two vectors are added to produce the vector of
+@code{N/2} additions.
+
+@item IFN_VEC_WIDEN_PLUS_EVEN
+@itemx IFN_VEC_WIDEN_PLUS_ODD
+These internal functions represent widening vector addition of the even and odd
+elements of the two input vectors, respectively.  Their operands are vectors
+that contain the same number of elements (@code{N}) of the same integral type.
+The result is a vector that contains half as many elements, of an integral type
+whose size is twice as wide.  In the case of @code{IFN_VEC_WIDEN_PLUS_EVEN} the
+even @code{N/2} elements of the two vectors are added to produce the vector of
+@code{N/2} additions.  In the case of @code{IFN_VEC_WIDEN_PLUS_ODD} the odd
+@code{N/2} elements of the two vectors are added to produce the vector of
+@code{N/2} additions.
+
+@item IFN_VEC_WIDEN_MINUS
+This internal function represents widening vector subtraction of two input
+vectors.  Its operands are vectors that contain the same number of elements
+(@code{N}) of the same integral type.  The result is a vector that contains
+the same amount (@code{N}) of elements, of an integral type whose size is twice
+as wide, as the input vectors.  If the current target does not implement the
+corresponding optabs the vectorizer may choose to split it into either a pair
+of @code{IFN_VEC_WIDEN_MINUS_HI} and @code{IFN_VEC_WIDEN_MINUS_LO} or
+@code{IFN_VEC_WIDEN_MINUS_EVEN} and @code{IFN_VEC_WIDEN_MINUS_ODD}, depending
+on what optabs the target implements.
+
+@item IFN_VEC_WIDEN_MINUS_HI
+@itemx IFN_VEC_WIDEN_MINUS_LO
+These internal functions represent widening vector subtraction of the high and
+low parts of the two input vectors, respectively.  Their operands are vectors
+that contain the same number of elements (@code{N}) of the same integral type.
+The high/low elements of the second vector are subtracted from the high/low
+elements of the first. The result is a vector that contains half as many
+elements, of an integral type whose size is twice as wide.  In the case of
+@code{IFN_VEC_WIDEN_MINUS_HI} the high @code{N/2} elements of the second
+vector are subtracted from the high @code{N/2} of the first to produce the
+vector of @code{N/2} subtractions.  In the case of
+@code{IFN_VEC_WIDEN_MINUS_LO} the low @code{N/2} elements of the second
+vector are subtracted from the low @code{N/2} of the first to produce the
+vector of @code{N/2} subtractions.
+
+@item IFN_VEC_WIDEN_MINUS_EVEN
+@itemx IFN_VEC_WIDEN_MINUS_ODD
+These internal functions represent widening vector subtraction of the even and
+odd parts of the two input vectors, respectively.  Their operands are vectors
+that contain the same number of elements (@code{N}) of the same integral type.
+The even/odd elements of the second vector are subtracted from the even/odd
+elements of the first. The result is a vector that contains half as many
+elements, of an integral type whose size is twice as wide.  In the case of
+@code{IFN_VEC_WIDEN_MINUS_EVEN} the even @code{N/2} elements of the second
+vector are subtracted from the even @code{N/2} of the first to produce the
+vector of @code{N/2} subtractions.  In the case of
+@code{IFN_VEC_WIDEN_MINUS_ODD} the odd @code{N/2} elements of the second
+vector are subtracted from the odd @code{N/2} of the first to produce the
+vector of @code{N/2} subtractions.
 
 @item VEC_WIDEN_PLUS_HI_EXPR
 @itemx VEC_WIDEN_PLUS_LO_EXPR

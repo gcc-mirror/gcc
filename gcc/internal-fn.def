@@ -85,6 +85,21 @@ along with GCC; see the file COPYING3.  If not see
    says that the function extends the C-level BUILT_IN_<NAME>{,L,LL,IMAX}
    group of functions to any integral mode (including vector modes).
 
+   DEF_INTERNAL_WIDENING_OPTAB_FN is a wrapper that defines five internal
+   functions with DEF_INTERNAL_SIGNED_OPTAB_FN:
+   - one that describes a widening operation with the same number of elements
+   in the output and input vectors,
+   - two that describe a pair of high-low widening operations where the output
+   vectors each have half the number of elements of the input vectors,
+   corresponding to the result of the widening operation on the top half and
+   bottom half, these have the suffixes _HI and _LO,
+   - and two that describe a pair of even-odd widening operations where the
+   output vectors each have half the number of elements of the input vectors,
+   corresponding to the result of the widening operation on the even and odd
+   elements, these have the suffixes _EVEN and _ODD.
+   These five internal functions will require two optabs each, a SIGNED_OPTAB
+   and an UNSIGNED_OTPAB.
+
    Each entry must have a corresponding expander of the form:
 
      void expand_NAME (gimple_call stmt)
@@ -121,6 +136,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef DEF_INTERNAL_INT_FN
 #define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
   DEF_INTERNAL_OPTAB_FN (NAME, FLAGS, OPTAB, TYPE)
+#endif
+
+#ifndef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, FLAGS, SELECTOR, SOPTAB, UOPTAB, TYPE)		    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME, FLAGS, SELECTOR, SOPTAB, UOPTAB, TYPE)			    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _LO, FLAGS, SELECTOR, SOPTAB##_lo, UOPTAB##_lo, TYPE)	    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _HI, FLAGS, SELECTOR, SOPTAB##_hi, UOPTAB##_hi, TYPE)	    \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _EVEN, FLAGS, SELECTOR, SOPTAB##_even, UOPTAB##_even, TYPE) \
+  DEF_INTERNAL_SIGNED_OPTAB_FN (NAME ## _ODD, FLAGS, SELECTOR, SOPTAB##_odd, UOPTAB##_odd, TYPE)
 #endif
 
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
@@ -315,6 +339,16 @@ DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT270, ECF_CONST, cadd270, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL, ECF_CONST, cmul, binary)
 DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL_CONJ, ECF_CONST, cmul_conj, binary)
 DEF_INTERNAL_OPTAB_FN (VEC_ADDSUB, ECF_CONST, vec_addsub, binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_PLUS,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_sadd, vec_widen_uadd,
+				binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_MINUS,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_ssub, vec_widen_usub,
+				binary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMADDSUB, ECF_CONST, vec_fmaddsub, ternary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMSUBADD, ECF_CONST, vec_fmsubadd, ternary)
 

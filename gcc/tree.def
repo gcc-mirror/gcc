@@ -1374,15 +1374,16 @@ DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
 DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 
 /* Widening sad (sum of absolute differences).
-   The first two arguments are of type t1 which should be integer.
-   The third argument and the result are of type t2, such that t2 is at least
-   twice the size of t1.  Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
+   The first two arguments are of type t1 which should be a vector of integers.
+   The third argument and the result are of type t2, such that the size of
+   the elements of t2 is at least twice the size of the elements of t1.
+   Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
    equivalent to:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = PLUS_EXPR (tmp2, arg3)
   or:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = WIDEN_SUM_EXPR (tmp2, arg3)
  */

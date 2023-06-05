@@ -90,6 +90,60 @@ lookup_internal_fn (const char *name)
   return entry ? *entry : IFN_LAST;
 }
 
+/* Geven an internal_fn IFN that is a widening function, return its
+   corresponding LO and HI internal_fns.  */
+
+extern void
+lookup_hilo_internal_fn (internal_fn ifn, internal_fn *lo, internal_fn *hi)
+{
+  gcc_assert (widening_fn_p (ifn));
+
+  switch (ifn)
+    {
+    default:
+      gcc_unreachable ();
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
+    case IFN_##NAME:						\
+      *lo = internal_fn (IFN_##NAME##_LO);			\
+      *hi = internal_fn (IFN_##NAME##_HI);			\
+      break;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    }
+}
+
+/* Given an internal_fn IFN that is a widening function, return its
+   corresponding _EVEN and _ODD internal_fns in *EVEN and *ODD.  */
+
+extern void
+lookup_evenodd_internal_fn (internal_fn ifn, internal_fn *even,
+			    internal_fn *odd)
+{
+  gcc_assert (widening_fn_p (ifn));
+
+  switch (ifn)
+    {
+    default:
+      gcc_unreachable ();
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
+    case IFN_##NAME:						\
+      *even = internal_fn (IFN_##NAME##_EVEN);			\
+      *odd = internal_fn (IFN_##NAME##_ODD);			\
+      break;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    }
+}
+
+
 /* Fnspec of each internal function, indexed by function number.  */
 const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 
@@ -3852,7 +3906,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 /* Return the optab used by internal function FN.  */
 
-static optab
+optab
 direct_internal_fn_optab (internal_fn fn, tree_pair types)
 {
   switch (fn)
@@ -3971,6 +4025,11 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_UBSAN_CHECK_MUL:
     case IFN_ADD_OVERFLOW:
     case IFN_MUL_OVERFLOW:
+    case IFN_VEC_WIDEN_PLUS:
+    case IFN_VEC_WIDEN_PLUS_LO:
+    case IFN_VEC_WIDEN_PLUS_HI:
+    case IFN_VEC_WIDEN_PLUS_EVEN:
+    case IFN_VEC_WIDEN_PLUS_ODD:
       return true;
 
     default:
@@ -4044,6 +4103,37 @@ first_commutative_argument (internal_fn fn)
     }
 }
 
+/* Return true if this CODE describes an internal_fn that returns a vector with
+   elements twice as wide as the element size of the input vectors.  */
+
+bool
+widening_fn_p (code_helper code)
+{
+  if (!code.is_fn_code ())
+    return false;
+
+  if (!internal_fn_p ((combined_fn) code))
+    return false;
+
+  internal_fn fn = as_internal_fn ((combined_fn) code);
+  switch (fn)
+    {
+    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T) \
+    case IFN_##NAME:						  \
+    case IFN_##NAME##_HI:					  \
+    case IFN_##NAME##_LO:					  \
+    case IFN_##NAME##_EVEN:					  \
+    case IFN_##NAME##_ODD:					  \
+      return true;
+    #include "internal-fn.def"
+    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
+
+    default:
+      return false;
+    }
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool
@@ -4072,6 +4162,8 @@ set_edom_supported_p (void)
     expand_##TYPE##_optab_fn (fn, stmt, which_optab);			\
   }
 #include "internal-fn.def"
+#undef DEF_INTERNAL_OPTAB_FN
+#undef DEF_INTERNAL_SIGNED_OPTAB_FN
 
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
@@ -4080,6 +4172,7 @@ set_edom_supported_p (void)
 
    where STMT is the statement that performs the call. */
 static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
+
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
   0
