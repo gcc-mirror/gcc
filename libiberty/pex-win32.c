@@ -351,7 +351,7 @@ argv_to_cmdline (char *const *argv)
 	 prevent wasting 2 chars per argument of the CreateProcess 32k char
 	 limit.  We need only escape embedded double-quotes and immediately
 	 preceeding backslash characters.  A sequence of backslach characters
-	 that is not follwed by a double quote character will not be
+	 that is not followed by a double quote character will not be
 	 escaped.  */
       needs_quotes = 0;
       for (j = 0; argv[i][j]; j++)
@@ -366,7 +366,7 @@ argv_to_cmdline (char *const *argv)
 	      /* Escape preceeding backslashes.  */
 	      for (k = j - 1; k >= 0 && argv[i][k] == '\\'; k--)
 		cmdline_len++;
-	      /* Escape the qote character.  */
+	      /* Escape the quote character.  */
 	      cmdline_len++;
 	    }
 	}
