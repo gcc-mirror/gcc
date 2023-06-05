@@ -3262,13 +3262,13 @@ vectorizable_bswap (vec_info *vinfo,
 
 static bool
 simple_integer_narrowing (tree vectype_out, tree vectype_in,
-			  tree_code *convert_code)
+			  code_helper *convert_code)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype_out))
       || !INTEGRAL_TYPE_P (TREE_TYPE (vectype_in)))
     return false;
 
-  tree_code code;
+  code_helper code;
   int multi_step_cvt = 0;
   auto_vec <tree, 8> interm_types;
   if (!supportable_narrowing_operation (NOP_EXPR, vectype_out, vectype_in,
@@ -3482,7 +3482,7 @@ vectorizable_call (vec_info *vinfo,
   tree callee = gimple_call_fndecl (stmt);
 
   /* First try using an internal function.  */
-  tree_code convert_code = ERROR_MARK;
+  code_helper convert_code = MAX_TREE_CODES;
   if (cfn != CFN_LAST
       && (modifier == NONE
 	  || (modifier == NARROW
@@ -3668,8 +3668,8 @@ vectorizable_call (vec_info *vinfo,
 			  continue;
 			}
 		      new_temp = make_ssa_name (vec_dest);
-		      new_stmt = gimple_build_assign (new_temp, convert_code,
-						      prev_res, half_res);
+		      new_stmt = vect_gimple_build (new_temp, convert_code,
+						    prev_res, half_res);
 		      vect_finish_stmt_generation (vinfo, stmt_info,
 						   new_stmt, gsi);
 		    }
@@ -3759,8 +3759,8 @@ vectorizable_call (vec_info *vinfo,
 		  continue;
 		}
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, convert_code,
-					      prev_res, half_res);
+	      new_stmt = vect_gimple_build (new_temp, convert_code, prev_res,
+					    half_res);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    }
 	  else
@@ -4772,7 +4772,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
    STMT_INFO is the original scalar stmt that we are vectorizing.  */
 
 static gimple *
-vect_gen_widened_results_half (vec_info *vinfo, enum tree_code code,
+vect_gen_widened_results_half (vec_info *vinfo, code_helper ch,
                                tree vec_oprnd0, tree vec_oprnd1, int op_type,
 			       tree vec_dest, gimple_stmt_iterator *gsi,
 			       stmt_vec_info stmt_info)
@@ -4781,12 +4781,11 @@ vect_gen_widened_results_half (vec_info *vinfo, enum tree_code code,
   tree new_temp;
 
   /* Generate half of the widened result:  */
-  gcc_assert (op_type == TREE_CODE_LENGTH (code));
   if (op_type != binary_op)
     vec_oprnd1 = NULL;
-  new_stmt = gimple_build_assign (vec_dest, code, vec_oprnd0, vec_oprnd1);
+  new_stmt = vect_gimple_build (vec_dest, ch, vec_oprnd0, vec_oprnd1);
   new_temp = make_ssa_name (vec_dest, new_stmt);
-  gimple_assign_set_lhs (new_stmt, new_temp);
+  gimple_set_lhs (new_stmt, new_temp);
   vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
   return new_stmt;
@@ -4805,7 +4804,7 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 				       stmt_vec_info stmt_info,
 				       vec<tree> &vec_dsts,
 				       gimple_stmt_iterator *gsi,
-				       slp_tree slp_node, enum tree_code code,
+				       slp_tree slp_node, code_helper code,
 				       bool narrow_src_p)
 {
   unsigned int i;
@@ -4818,9 +4817,9 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
       /* Create demotion operation.  */
       vop0 = (*vec_oprnds)[i];
       vop1 = (*vec_oprnds)[i + 1];
-      gassign *new_stmt = gimple_build_assign (vec_dest, code, vop0, vop1);
+      gimple *new_stmt = vect_gimple_build (vec_dest, code, vop0, vop1);
       new_tmp = make_ssa_name (vec_dest, new_stmt);
-      gimple_assign_set_lhs (new_stmt, new_tmp);
+      gimple_set_lhs (new_stmt, new_tmp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
       if (multi_step_cvt || narrow_src_p)
 	/* Store the resulting vector for next recursive call,
@@ -4869,8 +4868,8 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
 					vec<tree> *vec_oprnds1,
 					stmt_vec_info stmt_info, tree vec_dest,
 					gimple_stmt_iterator *gsi,
-					enum tree_code code1,
-					enum tree_code code2, int op_type)
+					code_helper ch1,
+					code_helper ch2, int op_type)
 {
   int i;
   tree vop0, vop1, new_tmp1, new_tmp2;
@@ -4886,10 +4885,10 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
 	vop1 = NULL_TREE;
 
       /* Generate the two halves of promotion operation.  */
-      new_stmt1 = vect_gen_widened_results_half (vinfo, code1, vop0, vop1,
+      new_stmt1 = vect_gen_widened_results_half (vinfo, ch1, vop0, vop1,
 						 op_type, vec_dest, gsi,
 						 stmt_info);
-      new_stmt2 = vect_gen_widened_results_half (vinfo, code2, vop0, vop1,
+      new_stmt2 = vect_gen_widened_results_half (vinfo, ch2, vop0, vop1,
 						 op_type, vec_dest, gsi,
 						 stmt_info);
       if (is_gimple_call (new_stmt1))
@@ -4920,7 +4919,7 @@ vect_create_half_widening_stmts (vec_info *vinfo,
 					vec<tree> *vec_oprnds1,
 					stmt_vec_info stmt_info, tree vec_dest,
 					gimple_stmt_iterator *gsi,
-					enum tree_code code1,
+					code_helper code1,
 					int op_type)
 {
   int i;
@@ -4950,13 +4949,13 @@ vect_create_half_widening_stmts (vec_info *vinfo,
 	  new_stmt2 = gimple_build_assign (new_tmp2, NOP_EXPR, vop1);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt2, gsi);
 	  /* Perform the operation.  With both vector inputs widened.  */
-	  new_stmt3 = gimple_build_assign (vec_dest, code1, new_tmp1, new_tmp2);
+	  new_stmt3 = vect_gimple_build (vec_dest, code1, new_tmp1, new_tmp2);
 	}
       else
 	{
 	  /* Perform the operation.  With the single vector input widened.  */
-	  new_stmt3 = gimple_build_assign (vec_dest, code1, new_tmp1, vop1);
-      }
+	  new_stmt3 = vect_gimple_build (vec_dest, code1, new_tmp1, vop1);
+	}
 
       new_tmp3 = make_ssa_name (vec_dest, new_stmt3);
       gimple_assign_set_lhs (new_stmt3, new_tmp3);
@@ -4986,8 +4985,9 @@ vectorizable_conversion (vec_info *vinfo,
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  enum tree_code code, code1 = ERROR_MARK, code2 = ERROR_MARK;
-  enum tree_code codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
+  tree_code tc1;
+  code_helper code, code1, code2;
+  code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
   tree new_temp;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   int ndts = 2;
@@ -5024,31 +5024,43 @@ vectorizable_conversion (vec_info *vinfo,
       && ! vec_stmt)
     return false;
 
-  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!stmt)
+  gimple* stmt = stmt_info->stmt;
+  if (!(is_gimple_assign (stmt) || is_gimple_call (stmt)))
     return false;
 
-  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
+  if (gimple_get_lhs (stmt) == NULL_TREE
+      || TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
     return false;
 
-  code = gimple_assign_rhs_code (stmt);
-  if (!CONVERT_EXPR_CODE_P (code)
-      && code != FIX_TRUNC_EXPR
-      && code != FLOAT_EXPR
-      && code != WIDEN_PLUS_EXPR
-      && code != WIDEN_MINUS_EXPR
-      && code != WIDEN_MULT_EXPR
-      && code != WIDEN_LSHIFT_EXPR)
+  if (TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
+    return false;
+
+  if (is_gimple_assign (stmt))
+    {
+      code = gimple_assign_rhs_code (stmt);
+      op_type = TREE_CODE_LENGTH ((tree_code) code);
+    }
+  else if (gimple_call_internal_p (stmt))
+    {
+      code = gimple_call_internal_fn (stmt);
+      op_type = gimple_call_num_args (stmt);
+    }
+  else
     return false;
 
   bool widen_arith = (code == WIDEN_PLUS_EXPR
-		      || code == WIDEN_MINUS_EXPR
-		      || code == WIDEN_MULT_EXPR
-		      || code == WIDEN_LSHIFT_EXPR);
-  op_type = TREE_CODE_LENGTH (code);
+		 || code == WIDEN_MINUS_EXPR
+		 || code == WIDEN_MULT_EXPR
+		 || code == WIDEN_LSHIFT_EXPR);
+
+  if (!widen_arith
+      && !CONVERT_EXPR_CODE_P (code)
+      && code != FIX_TRUNC_EXPR
+      && code != FLOAT_EXPR)
+    return false;
 
   /* Check types of lhs and rhs.  */
-  scalar_dest = gimple_assign_lhs (stmt);
+  scalar_dest = gimple_get_lhs (stmt);
   lhs_type = TREE_TYPE (scalar_dest);
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -5086,10 +5098,14 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (op_type == binary_op)
     {
-      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR
-		  || code == WIDEN_PLUS_EXPR || code == WIDEN_MINUS_EXPR);
+      gcc_assert (code == WIDEN_MULT_EXPR
+		  || code == WIDEN_LSHIFT_EXPR
+		  || code == WIDEN_PLUS_EXPR
+		  || code == WIDEN_MINUS_EXPR);
 
-      op1 = gimple_assign_rhs2 (stmt);
+
+      op1 = is_gimple_assign (stmt) ? gimple_assign_rhs2 (stmt) :
+				     gimple_call_arg (stmt, 0);
       tree vectype1_in;
       if (!vect_is_simple_use (vinfo, stmt_info, slp_node, 1,
 			       &op1, &slp_op1, &dt[1], &vectype1_in))
@@ -5173,8 +5189,13 @@ vectorizable_conversion (vec_info *vinfo,
 	  && code != FLOAT_EXPR
 	  && !CONVERT_EXPR_CODE_P (code))
 	return false;
-      if (supportable_convert_operation (code, vectype_out, vectype_in, &code1))
+      gcc_assert (code.is_tree_code ());
+      if (supportable_convert_operation ((tree_code) code, vectype_out,
+					 vectype_in, &tc1))
+      {
+	code1 = tc1;
 	break;
+      }
       /* FALLTHRU */
     unsupported:
       if (dump_enabled_p ())
@@ -5185,9 +5206,12 @@ vectorizable_conversion (vec_info *vinfo,
     case WIDEN:
       if (known_eq (nunits_in, nunits_out))
 	{
-	  if (!supportable_half_widening_operation (code, vectype_out,
-						   vectype_in, &code1))
+	  if (!(code.is_tree_code ()
+		&& supportable_half_widening_operation ((tree_code) code,
+							vectype_out, vectype_in,
+							&tc1)))
 	    goto unsupported;
+	  code1 = tc1;
 	  gcc_assert (!(multi_step_cvt && op_type == binary_op));
 	  break;
 	}
@@ -5221,14 +5245,17 @@ vectorizable_conversion (vec_info *vinfo,
 
 	  if (GET_MODE_SIZE (rhs_mode) == fltsz)
 	    {
-	      if (!supportable_convert_operation (code, vectype_out,
-						  cvt_type, &codecvt1))
+	      tc1 = ERROR_MARK;
+	      gcc_assert (code.is_tree_code ());
+	      if (!supportable_convert_operation ((tree_code) code, vectype_out,
+						  cvt_type, &tc1))
 		goto unsupported;
+	      codecvt1 = tc1;
 	    }
-	  else if (!supportable_widening_operation (vinfo, code, stmt_info,
-						    vectype_out, cvt_type,
-						    &codecvt1, &codecvt2,
-						    &multi_step_cvt,
+	  else if (!supportable_widening_operation (vinfo, code,
+						    stmt_info, vectype_out,
+						    cvt_type, &codecvt1,
+						    &codecvt2, &multi_step_cvt,
 						    &interm_types))
 	    continue;
 	  else
@@ -5236,8 +5263,9 @@ vectorizable_conversion (vec_info *vinfo,
 
 	  if (supportable_widening_operation (vinfo, NOP_EXPR, stmt_info,
 					      cvt_type,
-					      vectype_in, &code1, &code2,
-					      &multi_step_cvt, &interm_types))
+					      vectype_in, &code1,
+					      &code2, &multi_step_cvt,
+					      &interm_types))
 	    {
 	      found_mode = true;
 	      break;
@@ -5274,8 +5302,10 @@ vectorizable_conversion (vec_info *vinfo,
 	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
 	  if (cvt_type == NULL_TREE)
 	    goto unsupported;
-	  if (!supportable_convert_operation (code, cvt_type, vectype_in,
-					      &codecvt1))
+	  if (supportable_convert_operation ((tree_code) code, cvt_type, vectype_in,
+					      &tc1))
+	    codecvt1 = tc1;
+	  else
 	    goto unsupported;
 	  if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
 					       &code1, &multi_step_cvt,
@@ -5306,9 +5336,10 @@ vectorizable_conversion (vec_info *vinfo,
 						&code1, &multi_step_cvt,
 						&interm_types))
 	    goto unsupported;
-	  if (supportable_convert_operation (code, vectype_out,
-					     cvt_type, &codecvt1))
+	  if (supportable_convert_operation ((tree_code) code, vectype_out,
+					     cvt_type, &tc1))
 	    {
+	      codecvt1 = tc1;
 	      modifier = NARROW_SRC;
 	      break;
 	    }
@@ -5429,10 +5460,9 @@ vectorizable_conversion (vec_info *vinfo,
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	{
 	  /* Arguments are ready, create the new vector stmt.  */
-	  gcc_assert (TREE_CODE_LENGTH (code1) == unary_op);
-	  gassign *new_stmt = gimple_build_assign (vec_dest, code1, vop0);
+	  gimple *new_stmt = vect_gimple_build (vec_dest, code1, vop0);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_assign_set_lhs (new_stmt, new_temp);
+	  gimple_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
 	  if (slp_node)
@@ -5462,17 +5492,16 @@ vectorizable_conversion (vec_info *vinfo,
       for (i = multi_step_cvt; i >= 0; i--)
 	{
 	  tree this_dest = vec_dsts[i];
-	  enum tree_code c1 = code1, c2 = code2;
+	  code_helper c1 = code1, c2 = code2;
 	  if (i == 0 && codecvt2 != ERROR_MARK)
 	    {
 	      c1 = codecvt1;
 	      c2 = codecvt2;
 	    }
 	  if (known_eq (nunits_out, nunits_in))
-	    vect_create_half_widening_stmts (vinfo, &vec_oprnds0,
-						    &vec_oprnds1, stmt_info,
-						    this_dest, gsi,
-						    c1, op_type);
+	    vect_create_half_widening_stmts (vinfo, &vec_oprnds0, &vec_oprnds1,
+					     stmt_info, this_dest, gsi, c1,
+					     op_type);
 	  else
 	    vect_create_vectorized_promotion_stmts (vinfo, &vec_oprnds0,
 						    &vec_oprnds1, stmt_info,
@@ -5485,9 +5514,8 @@ vectorizable_conversion (vec_info *vinfo,
 	  gimple *new_stmt;
 	  if (cvt_type)
 	    {
-	      gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
 	      new_temp = make_ssa_name (vec_dest);
-	      new_stmt = gimple_build_assign (new_temp, codecvt1, vop0);
+	      new_stmt = vect_gimple_build (new_temp, codecvt1, vop0);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    }
 	  else
@@ -5512,10 +5540,8 @@ vectorizable_conversion (vec_info *vinfo,
       if (cvt_type && modifier == NARROW_DST)
 	FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	  {
-	    gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
 	    new_temp = make_ssa_name (vec_dest);
-	    gassign *new_stmt
-	      = gimple_build_assign (new_temp, codecvt1, vop0);
+	    gimple *new_stmt = vect_gimple_build (new_temp, codecvt1, vop0);
 	    vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    vec_oprnds0[i] = new_temp;
 	  }
@@ -5531,11 +5557,11 @@ vectorizable_conversion (vec_info *vinfo,
 	  for (unsigned int i = 0; i != vec_oprnds0.length() / 2;  i++)
 	    {
 	      /* Arguments are ready, create the new vector stmt.  */
-	      gcc_assert (TREE_CODE_LENGTH (codecvt1) == unary_op);
-	      gassign *new_stmt
-		= gimple_build_assign (vec_dest, codecvt1, vec_oprnds0[i]);
+	      gcc_assert (TREE_CODE_LENGTH ((tree_code) codecvt1) == unary_op);
+	      gimple *new_stmt
+		= vect_gimple_build (vec_dest, codecvt1, vec_oprnds0[i]);
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
-	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      gimple_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
 	      /* This is the last step of the conversion sequence. Store the
@@ -12389,9 +12415,11 @@ vect_maybe_update_slp_op_vectype (slp_tree op, tree vectype)
 
 bool
 supportable_widening_operation (vec_info *vinfo,
-				enum tree_code code, stmt_vec_info stmt_info,
+				code_helper code,
+				stmt_vec_info stmt_info,
 				tree vectype_out, tree vectype_in,
-                                enum tree_code *code1, enum tree_code *code2,
+				code_helper *code1,
+				code_helper *code2,
                                 int *multi_step_cvt,
                                 vec<tree> *interm_types)
 {
@@ -12402,7 +12430,7 @@ supportable_widening_operation (vec_info *vinfo,
   optab optab1, optab2;
   tree vectype = vectype_in;
   tree wide_vectype = vectype_out;
-  enum tree_code c1, c2;
+  tree_code c1 = MAX_TREE_CODES, c2 = MAX_TREE_CODES;
   int i;
   tree prev_type, intermediate_type;
   machine_mode intermediate_mode, prev_mode;
@@ -12412,8 +12440,12 @@ supportable_widening_operation (vec_info *vinfo,
   if (loop_info)
     vect_loop = LOOP_VINFO_LOOP (loop_info);
 
-  switch (code)
+  switch (code.safe_as_tree_code ())
     {
+    case MAX_TREE_CODES:
+      /* Don't set c1 and c2 if code is not a tree_code.  */
+      break;
+
     case WIDEN_MULT_EXPR:
       /* The result of a vectorized widening operation usually requires
 	 two vectors (because the widened results do not fit into one vector).
@@ -12453,8 +12485,9 @@ supportable_widening_operation (vec_info *vinfo,
 	  && !nested_in_vect_loop_p (vect_loop, stmt_info)
 	  && supportable_widening_operation (vinfo, VEC_WIDEN_MULT_EVEN_EXPR,
 					     stmt_info, vectype_out,
-					     vectype_in, code1, code2,
-					     multi_step_cvt, interm_types))
+					     vectype_in, code1,
+					     code2, multi_step_cvt,
+					     interm_types))
         {
           /* Elements in a vector with vect_used_by_reduction property cannot
              be reordered if the use chain with this property does not have the
@@ -12530,7 +12563,7 @@ supportable_widening_operation (vec_info *vinfo,
       optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
       optab2 = optab_for_tree_code (c2, vectype_out, optab_default);
     }
-  else if (CONVERT_EXPR_CODE_P (code)
+  else if (CONVERT_EXPR_CODE_P (code.safe_as_tree_code ())
 	   && VECTOR_BOOLEAN_TYPE_P (wide_vectype)
 	   && VECTOR_BOOLEAN_TYPE_P (vectype)
 	   && TYPE_MODE (wide_vectype) == TYPE_MODE (vectype)
@@ -12555,8 +12588,12 @@ supportable_widening_operation (vec_info *vinfo,
        || (icode2 = optab_handler (optab2, vec_mode)) == CODE_FOR_nothing)
     return false;
 
-  *code1 = c1;
-  *code2 = c2;
+  if (code.is_tree_code ())
+  {
+    *code1 = c1;
+    *code2 = c2;
+  }
+
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
       && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
@@ -12577,7 +12614,7 @@ supportable_widening_operation (vec_info *vinfo,
   prev_type = vectype;
   prev_mode = vec_mode;
 
-  if (!CONVERT_EXPR_CODE_P (code))
+  if (!CONVERT_EXPR_CODE_P (code.safe_as_tree_code ()))
     return false;
 
   /* We assume here that there will not be more than MAX_INTERM_CVT_STEPS
@@ -12675,9 +12712,9 @@ supportable_widening_operation (vec_info *vinfo,
    narrowing operation (short in the above example).   */
 
 bool
-supportable_narrowing_operation (enum tree_code code,
+supportable_narrowing_operation (code_helper code,
 				 tree vectype_out, tree vectype_in,
-				 enum tree_code *code1, int *multi_step_cvt,
+				 code_helper *code1, int *multi_step_cvt,
                                  vec<tree> *interm_types)
 {
   machine_mode vec_mode;
@@ -12692,8 +12729,11 @@ supportable_narrowing_operation (enum tree_code code,
   unsigned HOST_WIDE_INT n_elts;
   bool uns;
 
+  if (!code.is_tree_code ())
+    return false;
+
   *multi_step_cvt = 0;
-  switch (code)
+  switch ((tree_code) code)
     {
     CASE_CONVERT:
       c1 = VEC_PACK_TRUNC_EXPR;
