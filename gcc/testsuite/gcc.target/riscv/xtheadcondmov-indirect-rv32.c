@@ -5,9 +5,9 @@
 
 /*
 **ConEmv_imm_imm_reg:
-**	addi	a5,a0,-1000
-**	li	a0,10
-**	th.mvnez	a0,a1,a5
+**	addi\t\s*[a-x0-9]+,\s*[a-x0-9]+,-1000+
+**	li\t\s*[a-x0-9]+,10+
+**	th.mvnez\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConEmv_imm_imm_reg(int x, int y){
@@ -17,9 +17,9 @@ int ConEmv_imm_imm_reg(int x, int y){
 
 /*
 **ConEmv_imm_reg_reg:
-**	addi	a5,a0,-1000
-**	th.mveqz	a2,a1,a5
-**	mv	a0,a2
+**	addi\t\s*[a-x0-9]+,\s*[a-x0-9]+,-1000+
+**	th.mveqz\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	mv\t\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConEmv_imm_reg_reg(int x, int y, int z){
@@ -29,9 +29,9 @@ int ConEmv_imm_reg_reg(int x, int y, int z){
 
 /*
 **ConEmv_reg_imm_reg:
-**	sub	a1,a0,a1
-**	li	a0,10
-**	th.mvnez	a0,a2,a1
+**	sub\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	li\t\s*[a-x0-9]+,10+
+**	th.mvnez\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConEmv_reg_imm_reg(int x, int y, int z){
@@ -41,9 +41,9 @@ int ConEmv_reg_imm_reg(int x, int y, int z){
 
 /*
 **ConEmv_reg_reg_reg:
-**	sub	a1,a0,a1
-**	th.mveqz	a3,a2,a1
-**	mv	a0,a3
+**	sub\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	th.mveqz\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	mv\t\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConEmv_reg_reg_reg(int x, int y, int z, int n){
@@ -53,10 +53,10 @@ int ConEmv_reg_reg_reg(int x, int y, int z, int n){
 
 /*
 **ConNmv_imm_imm_reg:
-**	addi	a5,a0,-1000
-**	li	a0,9998336
-**	addi	a0,a0,1664
-**	th.mveqz	a0,a1,a5
+**	addi\t\s*[a-x0-9]+,\s*[a-x0-9]+,-1000+
+**	li\t\s*[a-x0-9]+,9998336+
+**	addi\t\s*[a-x0-9]+,\s*[a-x0-9]+,1664+
+**	th.mveqz\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConNmv_imm_imm_reg(int x, int y){
@@ -66,9 +66,9 @@ int ConNmv_imm_imm_reg(int x, int y){
 
 /*
 **ConNmv_imm_reg_reg:
-**	addi	a0,a0,-1000
-**	th.mvnez	a2,a1,a0
-**	mv	a0,a2
+**	addi\t\s*[a-x0-9]+,\s*[a-x0-9]+,-1000+
+**	th.mvnez\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	mv\t\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConNmv_imm_reg_reg(int x, int y, int z){
@@ -78,9 +78,9 @@ int ConNmv_imm_reg_reg(int x, int y, int z){
 
 /*
 **ConNmv_reg_imm_reg:
-**	sub	a1,a0,a1
-**	li	a0,10
-**	th.mveqz	a0,a2,a1
+**	sub\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	li\t\s*[a-x0-9]+,10+
+**	th.mveqz\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConNmv_reg_imm_reg(int x, int y, int z){
@@ -90,9 +90,9 @@ int ConNmv_reg_imm_reg(int x, int y, int z){
 
 /*
 **ConNmv_reg_reg_reg:
-**	sub	a0,a0,a1
-**	th.mvnez	a3,a2,a0
-**	mv	a0,a3
+**	sub\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	th.mvnez\t\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+
+**	mv\t\s*[a-x0-9]+,\s*[a-x0-9]+
 **	ret
 */
 int ConNmv_reg_reg_reg(int x, int y, int z, int n){
