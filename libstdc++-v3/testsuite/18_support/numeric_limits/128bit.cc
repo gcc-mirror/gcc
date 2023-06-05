@@ -2,7 +2,7 @@
 
 #include <limits>
 
-#if __SIZEOF_FLOAT128__ && !defined __STRICT_ANSI__
+#if __SIZEOF_FLOAT128__
 __extension__ template class std::numeric_limits<__float128>;
 #endif
 
