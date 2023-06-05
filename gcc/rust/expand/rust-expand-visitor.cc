@@ -126,6 +126,29 @@ derive_item (std::unique_ptr<AST::Item> &item, std::string &to_derive,
   return result;
 }
 
+static std::vector<std::unique_ptr<AST::Item>>
+expand_attribute (std::unique_ptr<AST::Item> &item, AST::SimplePath &name,
+		  MacroExpander &expander)
+{
+  std::vector<std::unique_ptr<AST::Item>> result;
+  auto frag = expander.expand_attribute_proc_macro (item, name);
+  if (!frag.is_error ())
+    {
+      for (auto &node : frag.get_nodes ())
+	{
+	  switch (node.get_kind ())
+	    {
+	    case AST::SingleASTNode::ITEM:
+	      result.push_back (node.take_item ());
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+  return result;
+}
+
 void
 ExpandVisitor::expand_inner_items (
   std::vector<std::unique_ptr<AST::Item>> &items)
@@ -173,8 +196,25 @@ ExpandVisitor::expand_inner_items (
 		}
 	      else /* Attribute */
 		{
-		  // Ignore for now
-		  attr_it++;
+		  if (is_builtin (current))
+		    {
+		      attr_it++;
+		    }
+		  else
+		    {
+		      attr_it = attrs.erase (attr_it);
+		      auto new_items
+			= expand_attribute (item, current.get_path (),
+					    expander);
+		      it = items.erase (it);
+		      std::move (new_items.begin (), new_items.end (),
+				 std::inserter (items, it));
+		      // TODO: Improve this ?
+		      // item is invalid since it refers to now deleted,
+		      // cancel the loop increment and break.
+		      it--;
+		      break;
+		    }
 		}
 	    }
 	}

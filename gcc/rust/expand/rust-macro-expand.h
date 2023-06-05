@@ -406,7 +406,7 @@ struct MacroExpander
   }
 
   template <typename T>
-  void expand_attribute_proc_macro (T &item, AST::SimplePath &path)
+  AST::Fragment expand_attribute_proc_macro (T &item, AST::SimplePath &path)
   {
     ProcMacro::Attribute macro;
 
@@ -436,7 +436,7 @@ struct MacroExpander
     std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
 
     // FIXME: Handle attributes
-    parse_proc_macro_output (
+    return parse_proc_macro_output (
       macro.macro (ProcMacro::TokenStream::make_tokenstream (), convert (vec)));
   }
 
