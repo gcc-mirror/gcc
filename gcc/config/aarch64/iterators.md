@@ -2398,6 +2398,8 @@
 ;; op prefix for shift right and narrow.
 (define_code_attr srn_op [(ashiftrt "r") (lshiftrt "")])
 
+(define_code_attr shrn_s [(ashiftrt "s") (lshiftrt "")])
+
 ;; Map shift operators onto underlying bit-field instructions
 (define_code_attr bfshift [(ashift "ubfiz") (ashiftrt "sbfx")
 			   (lshiftrt "ubfx") (rotatert "extr")])

@@ -6665,13 +6665,13 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_insn "*aarch64_<shrn_op>shrn_n<mode>_insn<vczle><vczbe>"
+(define_insn "*aarch64_<shrn_op><shrn_s>shrn_n<mode>_insn<vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(ALL_TRUNC:<VNARROWQ>
-	  (<TRUNC_SHIFT>:VQN
+	  (SHIFTRT:VQN
 	    (match_operand:VQN 1 "register_operand" "w")
 	    (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && AARCH64_VALID_SHRN_OP (<ALL_TRUNC:CODE>, <SHIFTRT:CODE>)"
   "<shrn_op>shrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
