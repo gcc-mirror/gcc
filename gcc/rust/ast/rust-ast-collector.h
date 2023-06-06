@@ -47,7 +47,10 @@ private:
    * types implementing `accept_vis` method and for classes for which the
    * `visit` method is directly implemented.
    */
-  template <typename T> void visit (std::unique_ptr<T> &node);
+  template <typename T> void visit (std::unique_ptr<T> &node)
+  {
+    node->accept_vis (*this);
+  }
 
   /**
    * @see visit<std::unique_ptr<T>>
