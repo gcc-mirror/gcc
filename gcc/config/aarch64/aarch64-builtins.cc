@@ -2496,7 +2496,7 @@ aarch64_expand_builtin_ls64 (int fcode, tree exp, rtx target)
       {
 	rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
 	rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
-	create_output_operand (&ops[0], op0, DImode);
+	create_input_operand (&ops[0], op0, DImode);
 	create_input_operand (&ops[1], op1, V8DImode);
 	expand_insn (CODE_FOR_st64b, 2, ops);
 	return const0_rtx;
