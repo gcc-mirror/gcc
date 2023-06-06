@@ -365,9 +365,57 @@ vfloat16m4_t test_vfncvt_f_xu_w_f16m4(vuint32m8_t src, size_t vl) {
   return __riscv_vfncvt_f_xu_w_f16m4(src, vl);
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 43 } } */
+vfloat16m1_t test_vfredosum_vs_f16mf4_f16m1(vfloat16mf4_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredosum_vs_f16mf4_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredosum_vs_f16m8_f16m1(vfloat16m8_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredosum_vs_f16m8_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredusum_vs_f16mf4_f16m1(vfloat16mf4_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredusum_vs_f16mf4_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredusum_vs_f16m8_f16m1(vfloat16m8_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredusum_vs_f16m8_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredmax_vs_f16mf4_f16m1(vfloat16mf4_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredmax_vs_f16mf4_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredmax_vs_f16m8_f16m1(vfloat16m8_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredmax_vs_f16m8_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredmin_vs_f16mf4_f16m1(vfloat16mf4_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredmin_vs_f16mf4_f16m1(vector, scalar, vl);
+}
+
+vfloat16m1_t test_vfredmin_vs_f16m8_f16m1(vfloat16m8_t vector, vfloat16m1_t scalar, size_t vl) {
+  return __riscv_vfredmin_vs_f16m8_f16m1(vector, scalar, vl);
+}
+
+vfloat32m1_t test_vfwredosum_vs_f16mf4_f32m1(vfloat16mf4_t vector, vfloat32m1_t scalar, size_t vl) {
+  return __riscv_vfwredosum_vs_f16mf4_f32m1(vector, scalar, vl);
+}
+
+vfloat32m1_t test_vfwredosum_vs_f16m8_f32m1(vfloat16m8_t vector, vfloat32m1_t scalar, size_t vl) {
+  return __riscv_vfwredosum_vs_f16m8_f32m1(vector, scalar, vl);
+}
+
+vfloat32m1_t test_vfwredusum_vs_f16mf4_f32m1(vfloat16mf4_t vector, vfloat32m1_t scalar, size_t vl) {
+  return __riscv_vfwredusum_vs_f16mf4_f32m1(vector, scalar, vl);
+}
+
+vfloat32m1_t test_vfwredusum_vs_f16m8_f32m1(vfloat16m8_t vector, vfloat32m1_t scalar, size_t vl) {
+  return __riscv_vfwredusum_vs_f16m8_f32m1(vector, scalar, vl);
+}
+
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 49 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]} 11 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 34 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 40 } } */
 /* { dg-final { scan-assembler-times {vfadd\.v[fv]\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfsub\.v[fv]\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfrsub\.vf\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
@@ -416,3 +464,9 @@ vfloat16m4_t test_vfncvt_f_xu_w_f16m4(vuint32m8_t src, size_t vl) {
 /* { dg-final { scan-assembler-times {vfwcvt\.xu\.f\.v\s+v[0-9]+,\s*v[0-9]+} 1 } } */
 /* { dg-final { scan-assembler-times {vfncvt\.x\.f\.w\s+v[0-9]+,\s*v[0-9]+} 1 } } */
 /* { dg-final { scan-assembler-times {vfncvt\.f\.xu\.w\s+v[0-9]+,\s*v[0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {vfredosum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfredusum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfredmax\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfredmin\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfwredosum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfwredusum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */

@@ -330,10 +330,18 @@
 ])
 
 (define_mode_iterator VWF [
+  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128")
+  (VNx2HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx8HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx16HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx32HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
+  (VNx64HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
   (VNx1SF "TARGET_MIN_VLEN < 128") VNx2SF VNx4SF VNx8SF (VNx16SF "TARGET_MIN_VLEN > 32") (VNx32SF "TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VWF_ZVE64 [
+  VNx1HF VNx2HF VNx4HF VNx8HF VNx16HF VNx32HF
   VNx1SF VNx2SF VNx4SF VNx8SF VNx16SF
 ])
 
@@ -1322,6 +1330,7 @@
   (VNx8HI "VNx4SI") (VNx16HI "VNx4SI") (VNx32HI "VNx4SI") (VNx64HI "VNx4SI")
   (VNx1SI "VNx2DI") (VNx2SI "VNx2DI") (VNx4SI "VNx2DI")
   (VNx8SI "VNx2DI") (VNx16SI "VNx2DI") (VNx32SI "VNx2DI")
+  (VNx1HF "VNx4SF") (VNx2HF "VNx4SF") (VNx4HF "VNx4SF") (VNx8HF "VNx4SF") (VNx16HF "VNx4SF") (VNx32HF "VNx4SF") (VNx64HF "VNx4SF")
   (VNx1SF "VNx2DF") (VNx2SF "VNx2DF")
   (VNx4SF "VNx2DF") (VNx8SF "VNx2DF") (VNx16SF "VNx2DF") (VNx32SF "VNx2DF")
 ])
@@ -1333,6 +1342,7 @@
   (VNx8HI "VNx2SI") (VNx16HI "VNx2SI") (VNx32HI "VNx2SI")
   (VNx1SI "VNx1DI") (VNx2SI "VNx1DI") (VNx4SI "VNx1DI")
   (VNx8SI "VNx1DI") (VNx16SI "VNx1DI")
+  (VNx1HF "VNx2SF") (VNx2HF "VNx2SF") (VNx4HF "VNx2SF") (VNx8HF "VNx2SF") (VNx16HF "VNx2SF") (VNx32HF "VNx2SF")
   (VNx1SF "VNx1DF") (VNx2SF "VNx1DF")
   (VNx4SF "VNx1DF") (VNx8SF "VNx1DF") (VNx16SF "VNx1DF")
 ])
@@ -1393,6 +1403,7 @@
   (VNx8HI "vnx4si") (VNx16HI "vnx4si") (VNx32HI "vnx4si") (VNx64HI "vnx4si")
   (VNx1SI "vnx2di") (VNx2SI "vnx2di") (VNx4SI "vnx2di")
   (VNx8SI "vnx2di") (VNx16SI "vnx2di") (VNx32SI "vnx2di")
+  (VNx1HF "vnx4sf") (VNx2HF "vnx4sf") (VNx4HF "vnx4sf") (VNx8HF "vnx4sf") (VNx16HF "vnx4sf") (VNx32HF "vnx4sf") (VNx64HF "vnx4sf")
   (VNx1SF "vnx2df") (VNx2SF "vnx2df")
   (VNx4SF "vnx2df") (VNx8SF "vnx2df") (VNx16SF "vnx2df") (VNx32SF "vnx2df")
 ])
@@ -1404,6 +1415,7 @@
   (VNx8HI "vnx2si") (VNx16HI "vnx2si") (VNx32HI "vnx2si")
   (VNx1SI "vnx1di") (VNx2SI "vnx1di") (VNx4SI "vnx1di")
   (VNx8SI "vnx1di") (VNx16SI "vnx1di")
+  (VNx1HF "vnx2sf") (VNx2HF "vnx2sf") (VNx4HF "vnx2sf") (VNx8HF "vnx2sf") (VNx16HF "vnx2sf") (VNx32HF "vnx2sf")
   (VNx1SF "vnx1df") (VNx2SF "vnx1df")
   (VNx4SF "vnx1df") (VNx8SF "vnx1df") (VNx16SF "vnx1df")
 ])
