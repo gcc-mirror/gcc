@@ -3665,13 +3665,71 @@
   DONE;
 })
 
+;; SADDLV and UADDLV can be expressed as an ADDV instruction that first
+;; sign or zero-extends its elements.
 (define_insn "aarch64_<su>addlv<mode>"
  [(set (match_operand:<VWIDE_S> 0 "register_operand" "=w")
-       (unspec:<VWIDE_S> [(match_operand:VDQV_L 1 "register_operand" "w")]
-		    USADDLV))]
+       (unspec:<VWIDE_S>
+	 [(ANY_EXTEND:<V2XWIDE>
+	    (match_operand:VDQV_L 1 "register_operand" "w"))]
+	 UNSPEC_ADDV))]
  "TARGET_SIMD"
  "<su>addl<vp>\\t%<Vwstype>0<Vwsuf>, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+;; An ADDV over a vector PLUS of elements extracted and widened all from the
+;; same vector is the same as an [SU]ADDLV above, so long as all the elements
+;; of that vector are used.  We can greatly simplify the RTL expression using
+;; this splitter.
+(define_insn_and_split "*aarch64_<su>addlv<mode>_reduction"
+ [(set (match_operand:<VWIDE_S> 0 "register_operand")
+       (unspec:<VWIDE_S>
+	 [(plus:<VDBLW>
+	    (vec_select:<VDBLW>
+	      (ANY_EXTEND:<V2XWIDE>
+		(match_operand:VDQV_L 1 "register_operand"))
+	      (match_operand:<V2XWIDE> 2 "vect_par_cnst_select_half"))
+	    (vec_select:<VDBLW> (ANY_EXTEND:<V2XWIDE> (match_dup 1))
+	      (match_operand:<V2XWIDE> 3 "vect_par_cnst_select_half")))]
+	 UNSPEC_ADDV))]
+ "TARGET_SIMD && !aarch64_pars_overlap_p (operands[2], operands[3])"
+ "#"
+ "&& 1"
+  [(set (match_dup 0)
+       (unspec:<VWIDE_S>
+	 [(ANY_EXTEND:<V2XWIDE>
+	    (match_dup 1))]
+	 UNSPEC_ADDV))]
+  {}
+)
+
+;; Similar to the above but for two-step zero-widening reductions.
+;; We can push the outer zero_extend outside the ADDV unspec and make
+;; use of the implicit high-part zeroing semantics of UADDLV to do it all
+;; in a single instruction.
+(define_insn_and_split "*aarch64_uaddlv<mode>_reduction_2"
+ [(set (match_operand:<VWIDE2X_S> 0 "register_operand" "=w")
+       (unspec:<VWIDE2X_S>
+	 [(zero_extend:<VQUADW>
+	    (plus:<VDBLW>
+	      (vec_select:<VDBLW>
+		(zero_extend:<V2XWIDE>
+		  (match_operand:VDQQH 1 "register_operand" "w"))
+		(match_operand:<V2XWIDE> 2 "vect_par_cnst_select_half"))
+	      (vec_select:<VDBLW> (zero_extend:<V2XWIDE> (match_dup 1))
+		(match_operand:<V2XWIDE> 3 "vect_par_cnst_select_half"))))]
+	 UNSPEC_ADDV))]
+ "TARGET_SIMD && !aarch64_pars_overlap_p (operands[2], operands[3])"
+ "#"
+ "&& 1"
+  [(set (match_dup 0)
+	(zero_extend:<VWIDE2X_S>
+	  (unspec:<VWIDE_S>
+	    [(zero_extend:<V2XWIDE>
+	       (match_dup 1))]
+	    UNSPEC_ADDV)))]
+  {}
 )
 
 ;; Zero-extending version of the above.  As these intrinsics produce a scalar
@@ -3681,9 +3739,10 @@
 (define_insn "*aarch64_<su>addlv<VDQV_L:mode>_ze<GPI:mode>"
  [(set (match_operand:GPI 0 "register_operand" "=w")
        (zero_extend:GPI
-	(unspec:<VWIDE_S>
-	  [(match_operand:VDQV_L 1 "register_operand" "w")]
-	    USADDLV)))]
+	 (unspec:<VWIDE_S>
+	   [(ANY_EXTEND:<VDQV_L:V2XWIDE>
+	      (match_operand:VDQV_L 1 "register_operand" "w"))]
+	 UNSPEC_ADDV)))]
  "TARGET_SIMD
   && (GET_MODE_SIZE (<GPI:MODE>mode) > GET_MODE_SIZE (<VWIDE_S>mode))"
  "<su>addl<VDQV_L:vp>\\t%<VDQV_L:Vwstype>0<VDQV_L:Vwsuf>, %1.<VDQV_L:Vtype>"

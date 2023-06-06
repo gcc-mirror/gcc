@@ -475,6 +475,15 @@
 	 && aarch64_stepped_int_parallel_p (op, 2);
 })
 
+;; PARALLEL for a vec_select that selects half the elements in a vector of
+;; MODE.  Allows any combination of elements, as long as there's no
+;; duplicate entries.
+(define_special_predicate "vect_par_cnst_select_half"
+  (match_code "parallel")
+{
+  return aarch64_parallel_select_half_p (mode, op);
+})
+
 (define_predicate "descending_int_parallel"
   (match_code "parallel")
 {

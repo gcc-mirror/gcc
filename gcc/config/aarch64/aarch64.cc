@@ -27717,6 +27717,50 @@ aarch64_adjust_reg_alloc_order ()
       reg_alloc_order[i] = i;
 }
 
+/* Return true if the PARALLEL PAR can be used in a VEC_SELECT expression
+   of vector mode MODE to select half the elements of that vector.
+   Allow any combination of indices except duplicates (or out of range of
+   the mode units).  */
+
+bool
+aarch64_parallel_select_half_p (machine_mode mode, rtx par)
+{
+  int nunits = XVECLEN (par, 0);
+  if (!known_eq (GET_MODE_NUNITS (mode), nunits * 2))
+    return false;
+  int mode_nunits = nunits * 2;
+  /* Put all the elements of PAR into a hash_set and use its
+     uniqueness guarantees to check that we don't try to insert the same
+     element twice.  */
+  hash_set<rtx> parset;
+  for (int i = 0; i < nunits; ++i)
+    {
+      rtx elt = XVECEXP (par, 0, i);
+      if (!CONST_INT_P (elt)
+	  || !IN_RANGE (INTVAL (elt), 0, mode_nunits - 1)
+	  || parset.add (elt))
+	return false;
+    }
+  return true;
+}
+
+/* Return true if PAR1 and PAR2, two PARALLEL rtxes of CONST_INT values,
+   contain any common elements.  */
+
+bool
+aarch64_pars_overlap_p (rtx par1, rtx par2)
+{
+  int len1 = XVECLEN (par1, 0);
+  int len2 = XVECLEN (par2, 0);
+  hash_set<rtx> parset;
+  for (int i = 0; i < len1; ++i)
+    parset.add (XVECEXP (par1, 0, i));
+  for (int i = 0; i < len2; ++i)
+    if (parset.contains (XVECEXP (par2, 0, i)))
+      return true;
+  return false;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
