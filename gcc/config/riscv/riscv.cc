@@ -1306,11 +1306,22 @@ riscv_const_insns (rtx x)
 		if (satisfies_constraint_vi (x))
 		  return 1;
 
-		/* A const duplicate vector can always be broadcast from
-		   a general-purpose register.  This means we need as many
-		   insns as it takes to load the constant into the GPR
-		   and one vmv.v.x.  */
-		return 1 + riscv_const_insns (elt);
+		/* Any int/FP constants can always be broadcast from a
+		   scalar register.  Loading of a floating-point
+		   constant incurs a literal-pool access.  Allow this in
+		   order to increase vectorization possibilities.  */
+		int n = riscv_const_insns (elt);
+		if (CONST_DOUBLE_P (elt))
+		    return 1 + 4; /* vfmv.v.f + memory access.  */
+		else
+		  {
+		    /* We need as many insns as it takes to load the constant
+		       into a GPR and one vmv.v.x.  */
+		    if (n != 0)
+		      return 1 + n;
+		    else
+		      return 1 + 4; /*vmv.v.x + memory access.  */
+		  }
 	      }
 	  }
 
@@ -7209,8 +7220,8 @@ riscv_libgcc_floating_mode_supported_p (scalar_float_mode mode)
        precision of the _FloatN type; evaluate all other operations and
        constants to the range and precision of the semantic type;
 
-   If we have the zfh/zhinx extensions then we support _Float16 in native
-   precision, so we should set this to 16.  */
+   If we have the zfh/zhinx/zvfh extensions then we support _Float16
+   in native precision, so we should set this to 16.  */
 static enum flt_eval_method
 riscv_excess_precision (enum excess_precision_type type)
 {
@@ -7218,7 +7229,7 @@ riscv_excess_precision (enum excess_precision_type type)
     {
     case EXCESS_PRECISION_TYPE_FAST:
     case EXCESS_PRECISION_TYPE_STANDARD:
-      return ((TARGET_ZFH || TARGET_ZHINX)
+      return ((TARGET_ZFH || TARGET_ZHINX || TARGET_ZVFH)
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
 		: FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
     case EXCESS_PRECISION_TYPE_IMPLICIT:

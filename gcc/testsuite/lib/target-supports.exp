@@ -1804,6 +1804,55 @@ proc check_effective_target_riscv_vector { } {
     }]
 }
 
+# Return 1 if the we can build a vector example with proper -march flags
+# and the current target can execute it, 0 otherwise.  Cache the result.
+
+proc check_effective_target_riscv_vector_hw { } {
+
+    return [check_runtime riscv_vector_hw32 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv32gcv -mabi=ilp32d"] || [check_runtime riscv_vector_hw64 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv64gcv -mabi=lp64d"]
+}
+
+# Return 1 if the we can build a Zvfh vector example with proper -march flags
+# and the current target can execute it, 0 otherwise.  Cache the result.
+
+proc check_effective_target_riscv_zvfh_hw { } {
+    if ![check_effective_target_riscv_vector_hw] then {
+        return 0
+    }
+
+    return [check_runtime riscv_zvfh_hw32 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vfadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv32gcv_zvfh -mabi=ilp32d"]
+    || [check_runtime riscv_zvfh_hw64 {
+        int main (void)
+        {
+            asm ("vsetivli zero,8,e16,m1,ta,ma");
+            asm ("vfadd.vv v8,v8,v16" : : : "v8");
+            return 0;
+        }
+    } "-march=rv64gcv_zvfh -mabi=lp64d"]
+}
+
+
 # Return 1 if the target is RV32, 0 otherwise.  Cache the result.
 
 proc check_effective_target_rv32 { } {

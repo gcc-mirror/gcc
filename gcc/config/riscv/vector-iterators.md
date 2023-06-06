@@ -317,6 +317,34 @@
   (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
 ])
 
+;; This iterator is the same as above but with TARGET_VECTOR_ELEN_FP_16
+;; changed to TARGET_ZVFH.  TARGET_VECTOR_ELEN_FP_16 is also true for
+;; TARGET_ZVFHMIN while we actually disable all instructions apart from
+;; load, store and convert for it.
+;; Consequently the autovec expanders should also only be enabled with
+;; TARGET_ZVFH.
+(define_mode_iterator VF_AUTO [
+  (VNx1HF "TARGET_ZVFH && TARGET_MIN_VLEN < 128")
+  (VNx2HF "TARGET_ZVFH")
+  (VNx4HF "TARGET_ZVFH")
+  (VNx8HF "TARGET_ZVFH")
+  (VNx16HF "TARGET_ZVFH")
+  (VNx32HF "TARGET_ZVFH && TARGET_MIN_VLEN > 32")
+  (VNx64HF "TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
+
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN < 128")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (VNx32SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 128")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN < 128")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
+])
+
 (define_mode_iterator VF_ZVE64 [
   VNx1SF VNx2SF VNx4SF VNx8SF VNx16SF
   VNx1DF VNx2DF VNx4DF VNx8DF

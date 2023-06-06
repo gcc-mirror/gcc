@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
 
 #include "vmul-template.h"
@@ -15,7 +15,7 @@
     a##TYPE[i] = 2;				\
     b##TYPE[i] = VAL;           		\
   }                             		\
-  vmul_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
+  vadd_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
   for (int i = 0; i < SZ; i++)			\
     assert (a##TYPE[i] == 2 * VAL);
 
@@ -23,31 +23,13 @@
   TYPE as##TYPE[SZ];				\
   for (int i = 0; i < SZ; i++)			\
     as##TYPE[i] = 3;            		\
-  vmuls_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
+  vadds_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
   for (int i = 0; i < SZ; i++)			\
     assert (as##TYPE[i] == 3 * VAL);
 
 #define RUN_ALL()	\
- RUN(int8_t, -1)	\
- RUN(uint8_t, 2)	\
- RUN(int16_t, -1)	\
- RUN(uint16_t, 2)	\
- RUN(int32_t, -3)	\
- RUN(uint32_t, 4)	\
- RUN(int64_t, -5)	\
- RUN(uint64_t, 6)	\
- RUN(float, -5)		\
- RUN(double, 6)		\
- RUN2(int8_t, -7)	\
- RUN2(uint8_t, 8)	\
- RUN2(int16_t, -7)	\
- RUN2(uint16_t, 8)	\
- RUN2(int32_t, -9)	\
- RUN2(uint32_t, 10)	\
- RUN2(int64_t, -11)	\
- RUN2(uint64_t, 12)	\
- RUN2(float, -11)	\
- RUN2(double, 12)	\
+ RUN(_Float16, 4)	\
+ RUN2(_Float16, 10)	\
 
 int main ()
 {

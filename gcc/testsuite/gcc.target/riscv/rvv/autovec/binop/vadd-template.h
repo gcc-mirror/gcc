@@ -41,6 +41,9 @@
  TEST_TYPE(uint32_t)	\
  TEST_TYPE(int64_t)	\
  TEST_TYPE(uint64_t)    \
+ TEST_TYPE(_Float16)	\
+ TEST_TYPE(float)	\
+ TEST_TYPE(double)	\
  TEST2_TYPE(int8_t)	\
  TEST2_TYPE(uint8_t)	\
  TEST2_TYPE(int16_t)	\
@@ -49,6 +52,9 @@
  TEST2_TYPE(uint32_t)	\
  TEST2_TYPE(int64_t)	\
  TEST2_TYPE(uint64_t)   \
+ TEST2_TYPE(_Float16)	\
+ TEST2_TYPE(float)	\
+ TEST2_TYPE(double)	\
  TEST3M_TYPE(int8_t)	\
  TEST3_TYPE(uint8_t)	\
  TEST3M_TYPE(int16_t)	\
@@ -56,6 +62,9 @@
  TEST3M_TYPE(int32_t)	\
  TEST3_TYPE(uint32_t)	\
  TEST3M_TYPE(int64_t)	\
- TEST3_TYPE(uint64_t)
+ TEST3_TYPE(uint64_t)   \
+ TEST3M_TYPE(_Float16)	\
+ TEST3_TYPE(float)	\
+ TEST3M_TYPE(double)	\
 
 TEST_ALL()

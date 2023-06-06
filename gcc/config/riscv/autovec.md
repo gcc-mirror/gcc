@@ -734,3 +734,39 @@
 				     tmp ? tmp : operands[1]));
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfadd.vv/vfsub.vv/...
+;; - vfadd.vf/vfsub.vf/...
+;; -------------------------------------------------------------------------
+(define_expand "<optab><mode>3"
+  [(match_operand:VF_AUTO 0 "register_operand")
+   (any_float_binop:VF_AUTO
+    (match_operand:VF_AUTO 1 "register_operand")
+    (match_operand:VF_AUTO 2 "register_operand"))]
+  "TARGET_VECTOR"
+{
+  riscv_vector::emit_vlmax_fp_insn (code_for_pred (<CODE>, <MODE>mode),
+				    riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfmin.vv/vfmax.vv
+;; - vfmin.vf/vfmax.vf
+;; -------------------------------------------------------------------------
+(define_expand "<optab><mode>3"
+  [(match_operand:VF_AUTO 0 "register_operand")
+   (any_float_binop_nofrm:VF_AUTO
+    (match_operand:VF_AUTO 1 "register_operand")
+    (match_operand:VF_AUTO 2 "register_operand"))]
+  "TARGET_VECTOR"
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
