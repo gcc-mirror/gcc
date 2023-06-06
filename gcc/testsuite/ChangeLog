@@ -1,3 +1,26 @@
+2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Joel Hutton  <joel.hutton@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vect-widen-add.c: Test that new
+	IFN_VEC_WIDEN_PLUS is being used.
+	* gcc.target/aarch64/vect-widen-sub.c: Test that new
+	IFN_VEC_WIDEN_MINUS is being used.
+
+2023-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wmismatched_enum.d: New test.
+
+2023-06-05  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/xtheadcondmov-indirect-rv32.c: Generalize to be
+	less sensitive to register allocation choices.
+	* gcc.target/riscv/xtheadcondmov-indirect-rv64.c: Similarly.
+
+2023-06-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-intrinsic.c: New test.
+
 2023-06-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/110109

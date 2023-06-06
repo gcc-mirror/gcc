@@ -1,3 +1,199 @@
+2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Joel Hutton  <joel.hutton@arm.com>
+
+	* doc/generic.texi: Remove old tree codes.
+	* expr.cc (expand_expr_real_2): Remove old tree code cases.
+	* gimple-pretty-print.cc (dump_binary_rhs): Likewise.
+	* optabs-tree.cc (optab_for_tree_code): Likewise.
+	(supportable_half_widening_operation): Likewise.
+	* tree-cfg.cc (verify_gimple_assign_binary): Likewise.
+	* tree-inline.cc (estimate_operator_cost): Likewise.
+	(op_symbol_code): Likewise.
+	* tree-vect-data-refs.cc (vect_get_smallest_scalar_type): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	* tree-vect-generic.cc (expand_vector_operations_1): Likewise.
+	* cfgexpand.cc (expand_debug_expr): Likewise.
+	* tree-vect-stmts.cc (vectorizable_conversion): Likewise.
+	(supportable_widening_operation): Likewise.
+	* gimple-range-op.cc (gimple_range_op_handler::maybe_non_standard):
+	Likewise.
+	* optabs.def (vec_widen_ssubl_hi_optab, vec_widen_ssubl_lo_optab,
+	vec_widen_saddl_hi_optab, vec_widen_saddl_lo_optab,
+	vec_widen_usubl_hi_optab, vec_widen_usubl_lo_optab,
+	vec_widen_uaddl_hi_optab, vec_widen_uaddl_lo_optab): Remove optabs.
+	* tree-pretty-print.cc (dump_generic_node): Remove tree code definition.
+	* tree.def (WIDEN_PLUS_EXPR, WIDEN_MINUS_EXPR, VEC_WIDEN_PLUS_HI_EXPR,
+	VEC_WIDEN_PLUS_LO_EXPR, VEC_WIDEN_MINUS_HI_EXPR,
+	VEC_WIDEN_MINUS_LO_EXPR): Likewise.
+
+2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Joel Hutton  <joel.hutton@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_widen_<su>addl_lo_<mode>): Rename
+	this ...
+	(vec_widen_<su>add_lo_<mode>): ... to this.
+	(vec_widen_<su>addl_hi_<mode>): Rename this ...
+	(vec_widen_<su>add_hi_<mode>): ... to this.
+	(vec_widen_<su>subl_lo_<mode>): Rename this ...
+	(vec_widen_<su>sub_lo_<mode>): ... to this.
+	(vec_widen_<su>subl_hi_<mode>): Rename this ...
+	(vec_widen_<su>sub_hi_<mode>): ...to this.
+	* doc/generic.texi: Document new IFN codes.
+	* internal-fn.cc (lookup_hilo_internal_fn): Add lookup function.
+	(commutative_binary_fn_p): Add widen_plus fn's.
+	(widening_fn_p): New function.
+	(narrowing_fn_p): New function.
+	(direct_internal_fn_optab): Change visibility.
+	* internal-fn.def (DEF_INTERNAL_WIDENING_OPTAB_FN): Macro to define an
+	internal_fn that expands into multiple internal_fns for widening.
+	(IFN_VEC_WIDEN_PLUS, IFN_VEC_WIDEN_PLUS_HI, IFN_VEC_WIDEN_PLUS_LO,
+	IFN_VEC_WIDEN_PLUS_EVEN, IFN_VEC_WIDEN_PLUS_ODD,
+	IFN_VEC_WIDEN_MINUS, IFN_VEC_WIDEN_MINUS_HI,
+	IFN_VEC_WIDEN_MINUS_LO, IFN_VEC_WIDEN_MINUS_ODD,
+	IFN_VEC_WIDEN_MINUS_EVEN): Define widening  plus,minus functions.
+	* internal-fn.h (direct_internal_fn_optab): Declare new prototype.
+	(lookup_hilo_internal_fn): Likewise.
+	(widening_fn_p): Likewise.
+	(Narrowing_fn_p): Likewise.
+	* optabs.cc (commutative_optab_p): Add widening plus optabs.
+	* optabs.def (OPTAB_D): Define widen add, sub optabs.
+	* tree-vect-patterns.cc (vect_recog_widen_op_pattern): Support
+	patterns with a hi/lo or even/odd split.
+	(vect_recog_sad_pattern): Refactor to use new IFN codes.
+	(vect_recog_widen_plus_pattern): Likewise.
+	(vect_recog_widen_minus_pattern): Likewise.
+	(vect_recog_average_pattern): Likewise.
+	* tree-vect-stmts.cc (vectorizable_conversion): Add support for
+	_HILO IFNs.
+	(supportable_widening_operation): Likewise.
+	* tree.def (WIDEN_SUM_EXPR): Update example to use new IFNs.
+
+2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Joel Hutton  <joel.hutton@arm.com>
+
+	* tree-vect-patterns.cc: Add include for gimple-iterator.
+	(vect_recog_widen_op_pattern): Refactor to use code_helper.
+	(vect_gimple_build): New function.
+	* tree-vect-stmts.cc (simple_integer_narrowing): Refactor to use
+	code_helper.
+	(vectorizable_call): Likewise.
+	(vect_gen_widened_results_half): Likewise.
+	(vect_create_vectorized_demotion_stmts): Likewise.
+	(vect_create_vectorized_promotion_stmts): Likewise.
+	(vect_create_half_widening_stmts): Likewise.
+	(vectorizable_conversion): Likewise.
+	(supportable_widening_operation): Likewise.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vectorizer.h (supportable_widening_operation): Change
+	prototype to use code_helper.
+	(supportable_narrowing_operation): Likewise.
+	(vect_gimple_build): New function prototype.
+	* tree.h (code_helper::safe_as_tree_code): New function.
+	(code_helper::safe_as_fn_code): New function.
+
+2023-06-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* wide-int.cc (wi::bitreverse_large): New function implementing
+	bit reversal of an integer.
+	* wide-int.h (wi::bitreverse): New (template) function prototype.
+	(bitreverse_large): Prototype helper function/implementation.
+	(wi::bitreverse): New template wrapper around bitreverse_large.
+
+2023-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (print_rtl_single): Change return type from int to void.
+	(print_rtl_single_with_indent): Ditto.
+	* print-rtl.h (class rtx_writer): Ditto.  Change m_sawclose to bool.
+	* print-rtl.cc (rtx_writer::rtx_writer): Update for m_sawclose change.
+	(rtx_writer::print_rtx_operand_code_0): Ditto.
+	(rtx_writer::print_rtx_operand_codes_E_and_V): Ditto.
+	(rtx_writer::print_rtx_operand_code_i): Ditto.
+	(rtx_writer::print_rtx_operand_code_u): Ditto.
+	(rtx_writer::print_rtx_operand): Ditto.
+	(rtx_writer::print_rtx): Ditto.
+	(rtx_writer::finish_directive): Ditto.
+	(print_rtl_single): Change return type from int to void
+	and adjust function body accordingly.
+	(rtx_writer::print_rtl_single_with_indent): Ditto.
+
+2023-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (reg_classes_intersect_p): Change return type from int to bool.
+	(reg_class_subset_p): Ditto.
+	* reginfo.cc (reg_classes_intersect_p): Ditto.
+	(reg_class_subset_p): Ditto.
+
+2023-06-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat32mf2_t): New type for DEF_RVV_WEXTF_OPS.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vint16mf4_t): New type for DEF_RVV_CONVERT_I_OPS.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vuint16mf4_t): New type for DEF_RVV_CONVERT_U_OPS.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vint32mf2_t): New type for DEF_RVV_WCONVERT_I_OPS.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint32mf2_t): New type for DEF_RVV_WCONVERT_U_OPS.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+	* config/riscv/vector-iterators.md: Add FP=16 support for V,
+	VWCONVERTI, VCONVERT, VNCONVERT, VMUL1 and vlmul1.
+
+2023-06-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/110085
+	* Makefile.in (clean): Remove the removing of
+	MULTILIB_DIR/MULTILIB_OPTIONS directories.
+
+2023-06-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips-protos.h (mips_emit_speculation_barrier): New
+	prototype.
+	* config/mips/mips.cc (speculation_barrier_libfunc): New static
+	variable.
+	(mips_init_libfuncs): Initialize it.
+	(mips_emit_speculation_barrier): New function.
+	* config/mips/mips.md (speculation_barrier): Call
+	mips_emit_speculation_barrier.
+
+2023-06-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (class rvv_builder): Reorganize functions.
+	(rvv_builder::can_duplicate_repeating_sequence_p): Ditto.
+	(rvv_builder::repeating_sequence_use_merge_profitable_p): Ditto.
+	(rvv_builder::get_merged_repeating_sequence): Ditto.
+	(rvv_builder::get_merge_scalar_mask): Ditto.
+	(emit_scalar_move_insn): Ditto.
+	(emit_vlmax_integer_move_insn): Ditto.
+	(emit_nonvlmax_integer_move_insn): Ditto.
+	(emit_vlmax_gather_insn): Ditto.
+	(emit_vlmax_masked_gather_mu_insn): Ditto.
+	(get_repeating_sequence_dup_machine_mode): Ditto.
+
+2023-06-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Split arguments.
+	* config/riscv/riscv-protos.h (expand_vec_perm): Ditto.
+	* config/riscv/riscv-v.cc (expand_vec_perm): Ditto.
+
 2023-06-04  Andrew Pinski  <apinski@marvell.com>
 
 	* expr.cc (do_store_flag): Improve for single bit testing

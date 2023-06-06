@@ -1,3 +1,21 @@
+2023-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/morestack.S: Use @init_array rather than
+	@progbits for section type of section .init_array.
+	* config/rs6000/morestack.S: Likewise.
+	* config/s390/morestack.S: Likewise.
+
+2023-06-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/lib1funcs.S: New file.
+	define __speculation_barrier and include mips16.S.
+	* config/mips/t-mips: define LIB1ASMSRC as mips/lib1funcs.S.
+	define LIB1ASMFUNCS as _speculation_barrier.
+	set version info for __speculation_barrier.
+	* config/mips/libgcc-mips.ver: New file.
+	* config/mips/t-mips16: don't define LIB1ASMSRC as mips16.S
+	included in lib1funcs.S now.
+
 2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	PR libgcc/109670

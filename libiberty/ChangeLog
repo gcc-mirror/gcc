@@ -1,3 +1,14 @@
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c: fix typos.
+
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Check command line length
+	and generate a response file if necessary.
+	(spawn_script): Adjust parameters.
+	(pex_win32_exec_child): Ditto.
+
 2023-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/70790
