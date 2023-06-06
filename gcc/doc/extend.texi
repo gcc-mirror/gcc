@@ -5670,6 +5670,23 @@ command line (@pxref{MIPS Options}).
 This function attribute instructs the compiler to generate a hazard barrier
 return that clears all execution and instruction hazards while returning,
 instead of generating a normal return instruction.
+
+@item code_readable
+@cindex @code{code_readable} function attribute, MIPS
+For MIPS targets that support PC-relative addressing modes, this attribute
+can be used to control how an object is addressed.  The attribute takes
+a single optional argument:
+
+@table @samp
+@item no
+The function should not read the instruction stream as data.
+@item yes
+The function can read the instruction stream as data.
+@item pcrel
+The function can read the instruction stream in a pc-relative mode.
+@end table
+
+If there is no argument supplied, the default of @code{"yes"} applies.
 @end table
 
 @node MSP430 Function Attributes
