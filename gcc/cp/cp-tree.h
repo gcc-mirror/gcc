@@ -7047,7 +7047,7 @@ extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
 extern tree cp_protect_cleanup_actions		(void);
-extern void maybe_splice_retval_cleanup		(tree);
+extern void maybe_splice_retval_cleanup		(tree, bool);
 extern tree maybe_set_retval_sentinel		(void);
 
 extern tree template_parms_to_args		(tree);

@@ -1312,21 +1312,20 @@ maybe_set_retval_sentinel ()
    on throw.  */
 
 void
-maybe_splice_retval_cleanup (tree compound_stmt)
+maybe_splice_retval_cleanup (tree compound_stmt, bool is_try)
 {
-  /* If we need a cleanup for the return value, add it in at the same level as
-     pushdecl_outermost_localscope.  And also in try blocks.  */
-  const bool function_body
-    = (current_binding_level->level_chain
-       && current_binding_level->level_chain->kind == sk_function_parms
-      /* When we're processing a default argument, c_f_d may not have been
-	 set.  */
-       && current_function_decl);
+  if (!current_function_decl || !cfun
+      || DECL_CONSTRUCTOR_P (current_function_decl)
+      || DECL_DESTRUCTOR_P (current_function_decl)
+      || !current_retval_sentinel)
+    return;
 
-  if ((function_body || current_binding_level->kind == sk_try)
-      && !DECL_CONSTRUCTOR_P (current_function_decl)
-      && !DECL_DESTRUCTOR_P (current_function_decl)
-      && current_retval_sentinel)
+  /* if we need a cleanup for the return value, add it in at the same level as
+     pushdecl_outermost_localscope.  And also in try blocks.  */
+  cp_binding_level *b = current_binding_level;
+  const bool function_body = b->kind == sk_function_parms;
+
+  if (function_body || is_try)
     {
       location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
       tree_stmt_iterator iter = tsi_start (compound_stmt);
