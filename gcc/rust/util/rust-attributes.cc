@@ -33,6 +33,7 @@ static const BuiltinAttrDefinition __definitions[]
      {"cfg_attr", EXPANSION},
      {"deprecated", STATIC_ANALYSIS},
      {"allow", STATIC_ANALYSIS},
+     {"allow_internal_unstable", STATIC_ANALYSIS},
      {"doc", HIR_LOWERING},
      {"must_use", STATIC_ANALYSIS},
      {"lang", HIR_LOWERING},
