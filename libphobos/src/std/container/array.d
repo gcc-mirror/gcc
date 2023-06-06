@@ -412,9 +412,9 @@ if (!is(immutable T == immutable bool))
                     .destroy(e);
 
             static if (hasIndirections!T)
-                GC.removeRange(_payload.ptr);
+                GC.removeRange(cast(void*) _payload.ptr);
 
-            free(_payload.ptr);
+            free(cast(void*) _payload.ptr);
         }
 
         this(this) @disable;
@@ -489,14 +489,14 @@ if (!is(immutable T == immutable bool))
                 auto newPayload = newPayloadPtr[0 .. oldLength];
 
                 // copy old data over to new array
-                memcpy(newPayload.ptr, _payload.ptr, T.sizeof * oldLength);
+                memcpy(cast(void*) newPayload.ptr, cast(void*) _payload.ptr, T.sizeof * oldLength);
                 // Zero out unused capacity to prevent gc from seeing false pointers
-                memset(newPayload.ptr + oldLength,
+                memset( cast(void*) (newPayload.ptr + oldLength),
                         0,
                         (elements - oldLength) * T.sizeof);
-                GC.addRange(newPayload.ptr, sz);
-                GC.removeRange(_payload.ptr);
-                free(_payload.ptr);
+                GC.addRange(cast(void*) newPayload.ptr, sz);
+                GC.removeRange(cast(void*) _payload.ptr);
+                free(cast(void*) _payload.ptr);
                 _payload = newPayload;
             }
             else
@@ -611,12 +611,17 @@ if (!is(immutable T == immutable bool))
         return opEquals(rhs);
     }
 
+    // fix https://issues.dlang.org/show_bug.cgi?23140
+    private alias Unshared(T) = T;
+    private alias Unshared(T: shared U, U) = U;
+
     /// ditto
     bool opEquals(ref const Array rhs) const
     {
         if (empty) return rhs.empty;
         if (rhs.empty) return false;
-        return _data._payload == rhs._data._payload;
+
+        return cast(Unshared!(T)[]) _data._payload ==  cast(Unshared!(T)[]) rhs._data._payload;
     }
 
     /**
@@ -1740,6 +1745,16 @@ if (!is(immutable T == immutable bool))
     assertThrown!AssertError(array.length = 5);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23140
+@system unittest
+{
+    shared class C
+    {
+    }
+
+    Array!C ac;
+    ac = Array!C([new C]);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Array!bool
 ////////////////////////////////////////////////////////////////////////////////
