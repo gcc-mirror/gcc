@@ -1336,6 +1336,30 @@ failed:
   return MATCH_NO;
 }
 
+/* Match target update's to/from( [present:] var-list).  */
+
+static match
+gfc_match_motion_var_list (const char *str, gfc_omp_namelist **list,
+			   gfc_omp_namelist ***headp)
+{
+  match m = gfc_match (str);
+  if (m != MATCH_YES)
+    return m;
+
+  match m_present = gfc_match (" present : ");
+
+  m = gfc_match_omp_variable_list ("", list, false, NULL, headp, true, true);
+  if (m != MATCH_YES)
+    return m;
+  if (m_present == MATCH_YES)
+    {
+      gfc_omp_namelist *n;
+      for (n = **headp; n; n = n->next)
+	n->u.present_modifier = true;
+    }
+  return MATCH_YES;
+}
+
 /* reduction ( reduction-modifier, reduction-operator : variable-list )
    in_reduction ( reduction-operator : variable-list )
    task_reduction ( reduction-operator : variable-list )  */
@@ -2098,6 +2122,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		behavior = OMP_DEFAULTMAP_FROM;
 	      else if (gfc_match ("firstprivate ") == MATCH_YES)
 		behavior = OMP_DEFAULTMAP_FIRSTPRIVATE;
+	      else if (gfc_match ("present ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_PRESENT;
 	      else if (gfc_match ("none ") == MATCH_YES)
 		behavior = OMP_DEFAULTMAP_NONE;
 	      else if (gfc_match ("default ") == MATCH_YES)
@@ -2105,7 +2131,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else
 		{
 		  gfc_error ("Expected ALLOC, TO, FROM, TOFROM, FIRSTPRIVATE, "
-			   "NONE or DEFAULT at %C");
+			     "PRESENT, NONE or DEFAULT at %C");
 		  break;
 		}
 	      if (')' == gfc_peek_ascii_char ())
@@ -2529,10 +2555,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      true) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_FROM)
-	      && (gfc_match_omp_variable_list ("from (",
-					      &c->lists[OMP_LIST_FROM], false,
-					      NULL, &head, true, true)
-		  == MATCH_YES))
+	      && gfc_match_motion_var_list ("from (", &c->lists[OMP_LIST_FROM],
+					     &head) == MATCH_YES)
 	    continue;
 	  break;
 	case 'g':
@@ -2888,8 +2912,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      locus old_loc2 = gfc_current_locus;
 	      int always_modifier = 0;
 	      int close_modifier = 0;
+	      int present_modifier = 0;
 	      locus second_always_locus = old_loc2;
 	      locus second_close_locus = old_loc2;
+	      locus second_present_locus = old_loc2;
 
 	      for (;;)
 		{
@@ -2904,20 +2930,38 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      if (close_modifier++ == 1)
 			second_close_locus = current_locus;
 		    }
+		  else if (gfc_match ("present ") == MATCH_YES)
+		    {
+		      if (present_modifier++ == 1)
+			second_present_locus = current_locus;
+		    }
 		  else
 		    break;
 		  gfc_match (", ");
 		}
 
 	      gfc_omp_map_op map_op = OMP_MAP_TOFROM;
+	      int always_present_modifier
+		= always_modifier && present_modifier;
+
 	      if (gfc_match ("alloc : ") == MATCH_YES)
-		map_op = OMP_MAP_ALLOC;
+		map_op = (present_modifier ? OMP_MAP_PRESENT_ALLOC
+			  : OMP_MAP_ALLOC);
 	      else if (gfc_match ("tofrom : ") == MATCH_YES)
-		map_op = always_modifier ? OMP_MAP_ALWAYS_TOFROM : OMP_MAP_TOFROM;
+		map_op = (always_present_modifier ? OMP_MAP_ALWAYS_PRESENT_TOFROM
+			  : present_modifier ? OMP_MAP_PRESENT_TOFROM
+			  : always_modifier ? OMP_MAP_ALWAYS_TOFROM
+			  : OMP_MAP_TOFROM);
 	      else if (gfc_match ("to : ") == MATCH_YES)
-		map_op = always_modifier ? OMP_MAP_ALWAYS_TO : OMP_MAP_TO;
+		map_op = (always_present_modifier ? OMP_MAP_ALWAYS_PRESENT_TO
+			  : present_modifier ? OMP_MAP_PRESENT_TO
+			  : always_modifier ? OMP_MAP_ALWAYS_TO
+			  : OMP_MAP_TO);
 	      else if (gfc_match ("from : ") == MATCH_YES)
-		map_op = always_modifier ? OMP_MAP_ALWAYS_FROM : OMP_MAP_FROM;
+		map_op = (always_present_modifier ? OMP_MAP_ALWAYS_PRESENT_FROM
+			  : present_modifier ? OMP_MAP_PRESENT_FROM
+			  : always_modifier ? OMP_MAP_ALWAYS_FROM
+			  : OMP_MAP_FROM);
 	      else if (gfc_match ("release : ") == MATCH_YES)
 		map_op = OMP_MAP_RELEASE;
 	      else if (gfc_match ("delete : ") == MATCH_YES)
@@ -2939,6 +2983,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  gfc_error ("too many %<close%> modifiers at %L",
 			     &second_close_locus);
+		  break;
+		}
+	      if (present_modifier > 1)
+		{
+		  gfc_error ("too many %<present%> modifiers at %L",
+			     &second_present_locus);
 		  break;
 		}
 
@@ -3467,10 +3517,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		continue;
 	    }
 	  else if ((mask & OMP_CLAUSE_TO)
-	      && (gfc_match_omp_variable_list ("to (",
-					      &c->lists[OMP_LIST_TO], false,
-					      NULL, &head, true, true)
-		  == MATCH_YES))
+		   && gfc_match_motion_var_list ("to (", &c->lists[OMP_LIST_TO],
+						 &head) == MATCH_YES)
 	    continue;
 	  break;
 	case 'u':
@@ -8092,11 +8140,18 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			{
 			case OMP_MAP_TO:
 			case OMP_MAP_ALWAYS_TO:
+			case OMP_MAP_PRESENT_TO:
+			case OMP_MAP_ALWAYS_PRESENT_TO:
 			case OMP_MAP_FROM:
 			case OMP_MAP_ALWAYS_FROM:
+			case OMP_MAP_PRESENT_FROM:
+			case OMP_MAP_ALWAYS_PRESENT_FROM:
 			case OMP_MAP_TOFROM:
 			case OMP_MAP_ALWAYS_TOFROM:
+			case OMP_MAP_PRESENT_TOFROM:
+			case OMP_MAP_ALWAYS_PRESENT_TOFROM:
 			case OMP_MAP_ALLOC:
+			case OMP_MAP_PRESENT_ALLOC:
 			  break;
 			default:
 			  gfc_error ("TARGET%s with map-type other than TO, "
@@ -8112,13 +8167,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			{
 			case OMP_MAP_TO:
 			case OMP_MAP_ALWAYS_TO:
+			case OMP_MAP_PRESENT_TO:
+			case OMP_MAP_ALWAYS_PRESENT_TO:
 			case OMP_MAP_ALLOC:
+			case OMP_MAP_PRESENT_ALLOC:
 			  break;
 			case OMP_MAP_TOFROM:
 			  n->u.map_op = OMP_MAP_TO;
 			  break;
 			case OMP_MAP_ALWAYS_TOFROM:
 			  n->u.map_op = OMP_MAP_ALWAYS_TO;
+			  break;
+			case OMP_MAP_PRESENT_TOFROM:
+			  n->u.map_op = OMP_MAP_PRESENT_TO;
+			  break;
+			case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_PRESENT_TO;
 			  break;
 			default:
 			  gfc_error ("TARGET ENTER DATA with map-type other "
@@ -8132,6 +8196,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			{
 			case OMP_MAP_FROM:
 			case OMP_MAP_ALWAYS_FROM:
+			case OMP_MAP_PRESENT_FROM:
+			case OMP_MAP_ALWAYS_PRESENT_FROM:
 			case OMP_MAP_RELEASE:
 			case OMP_MAP_DELETE:
 			  break;
@@ -8140,6 +8206,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			  break;
 			case OMP_MAP_ALWAYS_TOFROM:
 			  n->u.map_op = OMP_MAP_ALWAYS_FROM;
+			  break;
+			case OMP_MAP_PRESENT_TOFROM:
+			  n->u.map_op = OMP_MAP_PRESENT_FROM;
+			  break;
+			case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_PRESENT_FROM;
 			  break;
 			default:
 			  gfc_error ("TARGET EXIT DATA with map-type other "
