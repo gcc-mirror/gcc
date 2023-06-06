@@ -1634,11 +1634,11 @@ aarch64_init_ls64_builtins_types (void)
   gcc_assert (TYPE_ALIGN (array_type) == 64);
 
   tree field = build_decl (input_location, FIELD_DECL,
-                           get_identifier ("val"), array_type);
+			   get_identifier ("val"), array_type);
 
   ls64_arm_data_t = lang_hooks.types.simulate_record_decl (input_location,
-                         tuple_type_name,
-                         make_array_slice (&field, 1));
+			 tuple_type_name,
+			 make_array_slice (&field, 1));
 
   gcc_assert (TYPE_MODE (ls64_arm_data_t) == V8DImode);
   gcc_assert (TYPE_MODE_RAW (ls64_arm_data_t) == TYPE_MODE (ls64_arm_data_t));
@@ -1653,16 +1653,16 @@ aarch64_init_ls64_builtins (void)
   ls64_builtins_data data[4] = {
     {"__builtin_aarch64_ld64b", AARCH64_LS64_BUILTIN_LD64B,
      build_function_type_list (ls64_arm_data_t,
-                               const_ptr_type_node, NULL_TREE)},
+			       const_ptr_type_node, NULL_TREE)},
     {"__builtin_aarch64_st64b", AARCH64_LS64_BUILTIN_ST64B,
      build_function_type_list (void_type_node, ptr_type_node,
-                               ls64_arm_data_t, NULL_TREE)},
+			       ls64_arm_data_t, NULL_TREE)},
     {"__builtin_aarch64_st64bv", AARCH64_LS64_BUILTIN_ST64BV,
      build_function_type_list (uint64_type_node, ptr_type_node,
-                               ls64_arm_data_t, NULL_TREE)},
+			       ls64_arm_data_t, NULL_TREE)},
     {"__builtin_aarch64_st64bv0", AARCH64_LS64_BUILTIN_ST64BV0,
      build_function_type_list (uint64_type_node, ptr_type_node,
-                               ls64_arm_data_t, NULL_TREE)},
+			       ls64_arm_data_t, NULL_TREE)},
   };
 
   for (size_t i = 0; i < ARRAY_SIZE (data); ++i)
@@ -2281,40 +2281,40 @@ aarch64_expand_builtin_ls64 (int fcode, tree exp, rtx target)
     {
     case AARCH64_LS64_BUILTIN_LD64B:
       {
-        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-        create_output_operand (&ops[0], target, V8DImode);
-        create_input_operand (&ops[1], op0, DImode);
-        expand_insn (CODE_FOR_ld64b, 2, ops);
-        return ops[0].value;
+	rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	create_output_operand (&ops[0], target, V8DImode);
+	create_input_operand (&ops[1], op0, DImode);
+	expand_insn (CODE_FOR_ld64b, 2, ops);
+	return ops[0].value;
       }
     case AARCH64_LS64_BUILTIN_ST64B:
       {
-        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
-        create_output_operand (&ops[0], op0, DImode);
-        create_input_operand (&ops[1], op1, V8DImode);
-        expand_insn (CODE_FOR_st64b, 2, ops);
-        return const0_rtx;
+	rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+	create_output_operand (&ops[0], op0, DImode);
+	create_input_operand (&ops[1], op1, V8DImode);
+	expand_insn (CODE_FOR_st64b, 2, ops);
+	return const0_rtx;
       }
     case AARCH64_LS64_BUILTIN_ST64BV:
       {
-        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
-        create_output_operand (&ops[0], target, DImode);
-        create_input_operand (&ops[1], op0, DImode);
-        create_input_operand (&ops[2], op1, V8DImode);
-        expand_insn (CODE_FOR_st64bv, 3, ops);
-        return ops[0].value;
+	rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+	create_output_operand (&ops[0], target, DImode);
+	create_input_operand (&ops[1], op0, DImode);
+	create_input_operand (&ops[2], op1, V8DImode);
+	expand_insn (CODE_FOR_st64bv, 3, ops);
+	return ops[0].value;
       }
     case AARCH64_LS64_BUILTIN_ST64BV0:
       {
-        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
-        create_output_operand (&ops[0], target, DImode);
-        create_input_operand (&ops[1], op0, DImode);
-        create_input_operand (&ops[2], op1, V8DImode);
-        expand_insn (CODE_FOR_st64bv0, 3, ops);
-        return ops[0].value;
+	rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+	create_output_operand (&ops[0], target, DImode);
+	create_input_operand (&ops[1], op0, DImode);
+	create_input_operand (&ops[2], op1, V8DImode);
+	expand_insn (CODE_FOR_st64bv0, 3, ops);
+	return ops[0].value;
       }
     }
 

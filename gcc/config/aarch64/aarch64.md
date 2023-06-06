@@ -7668,9 +7668,9 @@
 ;; Load/Store 64-bit (LS64) instructions.
 (define_insn "ld64b"
   [(set (match_operand:V8DI 0 "register_operand" "=r")
-        (unspec_volatile:V8DI
-          [(mem:V8DI (match_operand:DI 1 "register_operand" "r"))]
-            UNSPEC_LD64B)
+	(unspec_volatile:V8DI
+	  [(mem:V8DI (match_operand:DI 1 "register_operand" "r"))]
+	    UNSPEC_LD64B)
   )]
   "TARGET_LS64"
   "ld64b\\t%0, [%1]"
@@ -7679,8 +7679,8 @@
 
 (define_insn "st64b"
   [(set (mem:V8DI (match_operand:DI 0 "register_operand" "=r"))
-        (unspec_volatile:V8DI [(match_operand:V8DI 1 "register_operand" "r")]
-            UNSPEC_ST64B)
+	(unspec_volatile:V8DI [(match_operand:V8DI 1 "register_operand" "r")]
+	    UNSPEC_ST64B)
   )]
   "TARGET_LS64"
   "st64b\\t%1, [%0]"
@@ -7689,10 +7689,10 @@
 
 (define_insn "st64bv"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV_RET))
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV_RET))
    (set (mem:V8DI (match_operand:DI 1 "register_operand" "r"))
-        (unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
-            UNSPEC_ST64BV)
+	(unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
+	    UNSPEC_ST64BV)
   )]
   "TARGET_LS64"
   "st64bv\\t%0, %2, [%1]"
@@ -7701,10 +7701,10 @@
 
 (define_insn "st64bv0"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV0_RET))
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV0_RET))
    (set (mem:V8DI (match_operand:DI 1 "register_operand" "r"))
-        (unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
-            UNSPEC_ST64BV0)
+	(unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
+	    UNSPEC_ST64BV0)
   )]
   "TARGET_LS64"
   "st64bv0\\t%0, %2, [%1]"
