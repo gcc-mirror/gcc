@@ -5370,10 +5370,10 @@ riscv_adjust_libcall_cfi_prologue ()
 	else
 	  offset = saved_size - ((regno - S2_REGNUM + 4) * UNITS_PER_WORD);
 
-	reg = gen_rtx_REG (SImode, regno);
-	mem = gen_frame_mem (SImode, plus_constant (Pmode,
-						    stack_pointer_rtx,
-						    offset));
+	reg = gen_rtx_REG (Pmode, regno);
+	mem = gen_frame_mem (Pmode, plus_constant (Pmode,
+						   stack_pointer_rtx,
+						   offset));
 
 	insn = gen_rtx_SET (mem, reg);
 	dwarf = alloc_reg_note (REG_CFA_OFFSET, insn, dwarf);
@@ -5510,7 +5510,7 @@ riscv_adjust_libcall_cfi_epilogue ()
   for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	reg = gen_rtx_REG (SImode, regno);
+	reg = gen_rtx_REG (Pmode, regno);
 	dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
       }
 
