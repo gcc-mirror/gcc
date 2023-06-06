@@ -628,6 +628,17 @@ set_cleanup_locs (tree stmts, location_t loc)
       set_cleanup_locs (stmt, loc);
 }
 
+/* True iff the innermost block scope is a try block.  */
+
+static bool
+at_try_scope ()
+{
+  cp_binding_level *b = current_binding_level;
+  while (b && b->kind == sk_cleanup)
+    b = b->level_chain;
+  return b && b->kind == sk_try;
+}
+
 /* Finish a scope.  */
 
 tree
@@ -635,10 +646,13 @@ do_poplevel (tree stmt_list)
 {
   tree block = NULL;
 
-  maybe_splice_retval_cleanup (stmt_list);
+  bool was_try = at_try_scope ();
 
   if (stmts_are_full_exprs_p ())
     block = poplevel (kept_level_p (), 1, 0);
+
+  /* This needs to come after poplevel merges sk_cleanup statement_lists.  */
+  maybe_splice_retval_cleanup (stmt_list, was_try);
 
   stmt_list = pop_stmt_list (stmt_list);
 
