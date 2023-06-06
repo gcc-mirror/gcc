@@ -7678,7 +7678,7 @@
 )
 
 (define_insn "st64b"
-  [(set (mem:V8DI (match_operand:DI 0 "register_operand" "=r"))
+  [(set (mem:V8DI (match_operand:DI 0 "register_operand" "r"))
 	(unspec_volatile:V8DI [(match_operand:V8DI 1 "register_operand" "r")]
 	    UNSPEC_ST64B)
   )]
