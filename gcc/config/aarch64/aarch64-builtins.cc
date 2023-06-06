@@ -956,6 +956,16 @@ aarch64_general_add_builtin (const char *name, tree type, unsigned int code,
 			       NULL, attrs);
 }
 
+static tree
+aarch64_general_simulate_builtin (const char *name, tree fntype,
+				  unsigned int code,
+				  tree attrs = NULL_TREE)
+{
+  code = (code << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_GENERAL;
+  return simulate_builtin_function_decl (input_location, name, fntype,
+					 code, NULL, attrs);
+}
+
 static const char *
 aarch64_mangle_builtin_scalar_type (const_tree type)
 {
@@ -1879,23 +1889,24 @@ aarch64_init_ls64_builtins (void)
   aarch64_init_ls64_builtins_types ();
 
   ls64_builtins_data data[4] = {
-    {"__builtin_aarch64_ld64b", AARCH64_LS64_BUILTIN_LD64B,
+    {"__arm_ld64b", AARCH64_LS64_BUILTIN_LD64B,
      build_function_type_list (ls64_arm_data_t,
 			       const_ptr_type_node, NULL_TREE)},
-    {"__builtin_aarch64_st64b", AARCH64_LS64_BUILTIN_ST64B,
+    {"__arm_st64b", AARCH64_LS64_BUILTIN_ST64B,
      build_function_type_list (void_type_node, ptr_type_node,
 			       ls64_arm_data_t, NULL_TREE)},
-    {"__builtin_aarch64_st64bv", AARCH64_LS64_BUILTIN_ST64BV,
+    {"__arm_st64bv", AARCH64_LS64_BUILTIN_ST64BV,
      build_function_type_list (uint64_type_node, ptr_type_node,
 			       ls64_arm_data_t, NULL_TREE)},
-    {"__builtin_aarch64_st64bv0", AARCH64_LS64_BUILTIN_ST64BV0,
+    {"__arm_st64bv0", AARCH64_LS64_BUILTIN_ST64BV0,
      build_function_type_list (uint64_type_node, ptr_type_node,
 			       ls64_arm_data_t, NULL_TREE)},
   };
 
   for (size_t i = 0; i < ARRAY_SIZE (data); ++i)
     aarch64_builtin_decls[data[i].code]
-      = aarch64_general_add_builtin (data[i].name, data[i].type, data[i].code);
+      = aarch64_general_simulate_builtin (data[i].name, data[i].type,
+					  data[i].code);
 }
 
 static void
@@ -2028,6 +2039,9 @@ aarch64_general_init_builtins (void)
 
   if (TARGET_MEMTAG)
     aarch64_init_memtag_builtins ();
+
+  if (in_lto_p)
+    handle_arm_acle_h ();
 }
 
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */
