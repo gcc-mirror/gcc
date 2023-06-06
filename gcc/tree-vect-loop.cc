@@ -6647,7 +6647,7 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       gimple *new_stmt;
       tree mask = NULL_TREE;
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-	mask = vect_get_loop_mask (gsi, masks, vec_num, vectype_in, i);
+	mask = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num, vectype_in, i);
 
       /* Handle MINUS by adding the negative.  */
       if (reduc_fn != IFN_LAST && code == MINUS_EXPR)
@@ -7960,8 +7960,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	      gcc_assert (commutative_binary_op_p (code, op.type));
 	      std::swap (vop[0], vop[1]);
 	    }
-	  tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
-					  vectype_in, i);
+	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					  vec_num * ncopies, vectype_in, i);
 	  gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
 						    vop[0], vop[1], vop[0]);
 	  new_temp = make_ssa_name (vec_dest, call);
@@ -7977,8 +7977,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
 	  if (masked_loop_p && mask_by_cond_expr)
 	    {
-	      tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
-					      vectype_in, i);
+	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					      vec_num * ncopies, vectype_in, i);
 	      build_vect_cond_expr (code, vop, mask, gsi);
 	    }
 
@@ -10085,7 +10085,8 @@ vectorizable_live_operation (vec_info *vinfo,
 	     the loop mask for the final iteration.  */
 	  gcc_assert (ncopies == 1 && !slp_node);
 	  tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-	  tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo),
+	  tree mask = vect_get_loop_mask (loop_vinfo, gsi,
+					  &LOOP_VINFO_MASKS (loop_vinfo),
 					  1, vectype, 0);
 	  tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
 					  mask, vec_lhs_phi);
@@ -10369,7 +10370,8 @@ vect_record_loop_mask (loop_vec_info loop_vinfo, vec_loop_masks *masks,
    arrangement.  */
 
 tree
-vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
+vect_get_loop_mask (loop_vec_info,
+		    gimple_stmt_iterator *gsi, vec_loop_masks *masks,
 		    unsigned int nvectors, tree vectype, unsigned int index)
 {
   rgroup_controls *rgm = &(*masks)[nvectors - 1];
