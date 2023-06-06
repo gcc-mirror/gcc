@@ -2254,6 +2254,8 @@
 ;; Signed and unsigned saturating truncations.
 (define_code_iterator SAT_TRUNC [ss_truncate us_truncate])
 
+(define_code_iterator ALL_TRUNC [ss_truncate us_truncate truncate])
+
 ;; SVE integer unary operations.
 (define_code_iterator SVE_INT_UNARY [abs neg not clrsb clz popcount
 				     (ss_abs "TARGET_SVE2")
@@ -2338,6 +2340,10 @@
 			  (us_minus "sub")])
 
 (define_code_attr SHIFTEXTEND [(ashiftrt "sign_extend") (lshiftrt "zero_extend")])
+
+(define_code_attr TRUNCEXTEND [(ss_truncate "sign_extend")
+			       (us_truncate "zero_extend")
+			       (truncate "zero_extend")])
 
 ;; For comparison operators we use the FCM* and CM* instructions.
 ;; As there are no CMLE or CMLT instructions which act on 3 vector
@@ -2427,6 +2433,12 @@
 				 (us_plus "zero_extend")
 				 (ss_minus "sign_extend")
 				 (us_minus "zero_extend")])
+
+(define_code_attr TRUNC_SHIFT [(ss_truncate "ashiftrt")
+			       (us_truncate "lshiftrt") (truncate "lshiftrt")])
+
+(define_code_attr shrn_op [(ss_truncate "sq")
+			   (us_truncate "uq") (truncate "")])
 
 ;; Whether a shift is left or right.
 (define_code_attr lr [(ashift "l") (ashiftrt "r") (lshiftrt "r")])
