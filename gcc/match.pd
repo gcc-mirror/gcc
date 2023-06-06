@@ -5919,13 +5919,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (negate @0) (negate @1))
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
        || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+	   && (cmp == EQ_EXPR
+	       || cmp == NE_EXPR
+	       || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))))
    (scmp @0 @1)))
  (simplify
   (cmp (negate @0) CONSTANT_CLASS_P@1)
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
        || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+	   && (cmp == EQ_EXPR
+	       || cmp == NE_EXPR
+	       || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))))
    (with { tree tem = const_unop (NEGATE_EXPR, TREE_TYPE (@0), @1); }
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
