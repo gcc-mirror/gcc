@@ -17,7 +17,9 @@ foo_##OP##_##OS (IT a)                     \
 
 #define FUNC(OT,IT,IMT,IS,OS)			\
 MYOP (OT, IT, IMT, qshrn_n, IS, OS)		\
-MYOP (OT, IT, IMT, qrshrn_n, IS, OS)
+MYOP (OT, IT, IMT, qrshrn_n, IS, OS)		\
+MYOP (OT, IT, IMT, shrn_n, IS, OS)		\
+MYOP (OT, IT, IMT, rshrn_n, IS, OS)
 
 #define FUNCUN(OT,IT,IMT,IS,OS)			\
 MYOP (OT, IT, IMT, qshrun_n, IS, OS)		\
