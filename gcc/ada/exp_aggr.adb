@@ -6463,6 +6463,7 @@ package body Exp_Aggr is
 
       if Is_Record_Type (T)
         and then not Is_Private_Type (T)
+        and then not Is_Homogeneous_Aggregate (N)
       then
          Expand_Record_Aggregate (N);
 
