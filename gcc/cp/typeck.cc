@@ -10670,6 +10670,16 @@ can_do_nrvo_p (tree retval, tree functype)
 	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
 }
 
+/* True if we would like to perform NRVO, i.e. can_do_nrvo_p is true and we
+   would otherwise return in memory.  */
+
+static bool
+want_nrvo_p (tree retval, tree functype)
+{
+  return (can_do_nrvo_p (retval, functype)
+	  && aggregate_value_p (functype, current_function_decl));
+}
+
 /* Like can_do_nrvo_p, but we check if we're trying to move a class
    prvalue.  */
 
@@ -11151,7 +11161,7 @@ check_return_expr (tree retval, bool *no_warning)
       bare_retval = tree_strip_any_location_wrapper (retval);
     }
 
-  bool named_return_value_okay_p = can_do_nrvo_p (bare_retval, functype);
+  bool named_return_value_okay_p = want_nrvo_p (bare_retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)
     {
       if (named_return_value_okay_p
@@ -11159,7 +11169,18 @@ check_return_expr (tree retval, bool *no_warning)
 	      || current_function_return_value == bare_retval))
 	current_function_return_value = bare_retval;
       else
-	current_function_return_value = error_mark_node;
+	{
+	  if ((named_return_value_okay_p
+	       || (current_function_return_value
+		   && current_function_return_value != error_mark_node))
+	      && !warning_suppressed_p (current_function_decl, OPT_Wnrvo))
+	    {
+	      warning (OPT_Wnrvo, "not eliding copy on return in %qD",
+		       current_function_decl);
+	      suppress_warning (current_function_decl, OPT_Wnrvo);
+	    }
+	  current_function_return_value = error_mark_node;
+	}
     }
 
   /* We don't need to do any conversions when there's nothing being

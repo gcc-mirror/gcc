@@ -6678,6 +6678,25 @@ is only active when @option{-fdelete-null-pointer-checks} is active,
 which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
 
+@opindex Wnrvo
+@opindex Wno-nrvo
+@item -Wnrvo @r{(C++ and Objective-C++ only)}
+Warn if the compiler does not elide the copy from a local variable to
+the return value of a function in a context where it is allowed by
+[class.copy.elision].  This elision is commonly known as the Named
+Return Value Optimization.  For instance, in the example below the
+compiler cannot elide copies from both v1 and b2, so it elides neither.
+
+@smallexample
+std::vector<int> f()
+@{
+  std::vector<int> v1, v2;
+  // ...
+  if (cond) return v1;
+  else return v2; // warning: not eliding copy
+@}
+@end smallexample
+
 @opindex Winfinite-recursion
 @opindex Wno-infinite-recursion
 @item -Winfinite-recursion

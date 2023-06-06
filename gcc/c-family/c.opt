@@ -923,6 +923,10 @@ Wnamespaces
 C++ ObjC++ Var(warn_namespaces) Warning
 Warn on namespace definition.
 
+Wnrvo
+C++ ObjC++ Var(warn_nrvo)
+Warn if the named return value optimization is not performed although it is allowed.
+
 Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
