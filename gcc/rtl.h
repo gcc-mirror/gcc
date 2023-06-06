@@ -4307,7 +4307,7 @@ extern void fix_register (const char *, int, int);
 extern const HARD_REG_SET *valid_mode_changes_for_regno (unsigned int);
 
 /* In reload1.cc */
-extern int function_invariant_p (const_rtx);
+extern bool function_invariant_p (const_rtx);
 
 /* In calls.cc */
 enum libcall_type
