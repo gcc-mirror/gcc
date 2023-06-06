@@ -33,6 +33,13 @@ X f()
   return X(false);
 }
 
+X f2()
+{
+ foo:
+  X x(true);
+  return X(false);
+}
+
 X g()
 {
   return X(true),X(false);
@@ -48,6 +55,16 @@ void h()
 X i()
 {
   try {
+    X x(true);
+    return X(false);
+  } catch(...) {}
+  return X(false);
+}
+
+X i2()
+{
+  try {
+  foo:
     X x(true);
     return X(false);
   } catch(...) {}
@@ -84,6 +101,8 @@ int main()
   try { f(); }
   catch (...) {}
 
+  try { f2(); } catch (...) {}
+
   try { g(); }
   catch (...) {}
 
@@ -92,6 +111,8 @@ int main()
 
   try { i(); }
   catch (...) {}
+
+  try { i2(); } catch (...) {}
 
   try { j(); } catch (...) {}
 
