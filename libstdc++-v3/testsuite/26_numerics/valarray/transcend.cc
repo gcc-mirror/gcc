@@ -22,7 +22,7 @@
 
 bool eq(double d, double e)
 {
-  return (int)(d * 100) == (int)(e * 100);
+  return std::abs(d - e) < 0.01;
 }
 
 void

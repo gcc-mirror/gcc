@@ -39,7 +39,7 @@ test01()
   VERIFY( res.ptr == s.data() + s.length() );
   // std::from_chars should ignore the current rounding mode
   // and always round to nearest.
-  VERIFY( d == 0.1 );
+  VERIFY( d == (double) 0.1 );
 #endif
 #endif
 }
