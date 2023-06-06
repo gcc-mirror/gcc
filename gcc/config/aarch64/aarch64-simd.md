@@ -6586,15 +6586,45 @@
 
 ;; vrshr_n
 
-(define_insn "aarch64_<sur>shr_n<mode>"
+(define_insn "aarch64_<sra_op>rshr_n<mode><vczle><vczbe>_insn"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
-        (unspec:VSDQ_I_DI [(match_operand:VSDQ_I_DI 1 "register_operand" "w")
-			   (match_operand:SI 2
-			     "aarch64_simd_shift_imm_offset_<ve_mode>" "i")]
-			  VRSHR_N))]
-  "TARGET_SIMD"
-  "<sur>shr\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2"
+	(truncate:VSDQ_I_DI
+	  (SHIFTRT:<V2XWIDE>
+	    (plus:<V2XWIDE>
+	      (<SHIFTEXTEND>:<V2XWIDE>
+		(match_operand:VSDQ_I_DI 1 "register_operand" "w"))
+	      (match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	    (match_operand:VSDQ_I_DI 2 "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>"))))]
+  "TARGET_SIMD
+   && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
+  "<sra_op>rshr\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2"
   [(set_attr "type" "neon_sat_shift_imm<q>")]
+)
+
+(define_expand "aarch64_<sra_op>rshr_n<mode>"
+  [(match_operand:VSDQ_I_DI 0 "register_operand")
+   (SHIFTRT:VSDQ_I_DI
+     (match_operand:VSDQ_I_DI 1 "register_operand")
+     (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))]
+  "TARGET_SIMD"
+  {
+    /* Use this expander to create the rounding constant vector, which is
+       1 << (shift - 1).  Use wide_int here to ensure that the right TImode
+       RTL is generated when handling the DImode expanders.  */
+    int prec = GET_MODE_UNIT_PRECISION (<V2XWIDE>mode);
+    wide_int rnd_wi = wi::set_bit_in_zero (INTVAL (operands[2]) - 1, prec);
+    rtx shft = gen_int_mode (INTVAL (operands[2]), DImode);
+    rtx rnd = immed_wide_int_const (rnd_wi, GET_MODE_INNER (<V2XWIDE>mode));
+    if (VECTOR_MODE_P (<MODE>mode))
+      {
+	shft = gen_const_vec_duplicate (<MODE>mode, shft);
+	rnd = gen_const_vec_duplicate (<V2XWIDE>mode, rnd);
+      }
+
+    emit_insn (gen_aarch64_<sra_op>rshr_n<mode>_insn (operands[0], operands[1],
+						      shft, rnd));
+    DONE;
+  }
 )
 
 ;; v(r)sra_n
