@@ -28604,7 +28604,6 @@ vec_const_128bit_to_bytes (rtx op,
 
   info->all_words_same
     = (info->words[0] == info->words[1]
-       && info->words[0] == info->words[1]
        && info->words[0] == info->words[2]
        && info->words[0] == info->words[3]);
 
