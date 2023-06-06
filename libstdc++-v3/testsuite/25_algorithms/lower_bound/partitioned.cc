@@ -84,10 +84,10 @@ test02()
 
   auto part3 = std::lower_bound(c.begin(), c.end(), Y{1.0});
   VERIFY( part3 != c.end() );
-  VERIFY( part3->val == 1.2 );
+  VERIFY( part3->val == seq[1].val );
   auto part4 = std::lower_bound(c.begin(), c.end(), Y{1.0}, std::less<Y>{});
   VERIFY( part4 != c.end() );
-  VERIFY( part4->val == 1.2 );
+  VERIFY( part4->val == seq[1].val );
 }
 
 int
