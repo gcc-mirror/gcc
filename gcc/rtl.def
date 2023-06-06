@@ -664,6 +664,9 @@ DEF_RTL_EXPR(POPCOUNT, "popcount", "e", RTX_UNARY)
 /* Population parity (number of 1 bits modulo 2).  */
 DEF_RTL_EXPR(PARITY, "parity", "e", RTX_UNARY)
 
+/* Reverse bits.  */
+DEF_RTL_EXPR(BITREVERSE, "bitreverse", "e", RTX_UNARY)
+
 /* Reference to a signed bit-field of specified size and position.
    Operand 0 is the memory unit (usually SImode or QImode) which
    contains the field's first bit.  Operand 1 is the width, in bits.
@@ -752,6 +755,9 @@ DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 
 /* Floating point multiply/add combined instruction.  */
 DEF_RTL_EXPR(FMA, "fma", "eee", RTX_TERNARY)
+
+/* Floating point copysign.  Operand 0 with the sign of operand 1.  */
+DEF_RTL_EXPR(COPYSIGN, "copysign", "ee", RTX_BIN_ARITH)
 
 /* Information about the variable and its location.  */
 DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", RTX_EXTRA)
