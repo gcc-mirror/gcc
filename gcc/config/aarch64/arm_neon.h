@@ -17588,14 +17588,14 @@ __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpaddd_s64 (int64x2_t __a)
 {
-  return __builtin_aarch64_addpdi (__a);
+  return __builtin_aarch64_reduc_plus_scal_v2di (__a);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpaddd_u64 (uint64x2_t __a)
 {
-  return __builtin_aarch64_addpdi_uu (__a);
+  return __builtin_aarch64_reduc_plus_scal_v2di_uu (__a);
 }
 
 /* vqabs */

@@ -7025,16 +7025,6 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
-(define_insn "aarch64_addpdi"
-  [(set (match_operand:DI 0 "register_operand" "=w")
-        (unspec:DI
-          [(match_operand:V2DI 1 "register_operand" "w")]
-          UNSPEC_ADDP))]
-  "TARGET_SIMD"
-  "addp\t%d0, %1.2d"
-  [(set_attr "type" "neon_reduc_add")]
-)
-
 ;; sqrt
 
 (define_expand "sqrt<mode>2"

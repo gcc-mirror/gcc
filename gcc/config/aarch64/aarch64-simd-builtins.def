@@ -53,8 +53,6 @@
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
   BUILTIN_VDQ_I (BINOP, addp, 0, NONE)
   BUILTIN_VDQ_I (BINOPU, addp, 0, NONE)
-  VAR1 (UNOP, addp, 0, NONE, di)
-  VAR1 (UNOPU, addp, 0, NONE, di)
   BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, NONE)
   BUILTIN_VDQ_BHSI (UNOP, clz, 2, NONE)
   BUILTIN_VS (UNOP, ctz, 2, NONE)

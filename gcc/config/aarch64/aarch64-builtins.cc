@@ -3049,6 +3049,7 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
   switch (fcode)
     {
       BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, ALL)
+      BUILTIN_VDQ_I (UNOPU, reduc_plus_scal_, 10, NONE)
 	new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
