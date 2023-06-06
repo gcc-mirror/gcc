@@ -192,8 +192,7 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_address} or
-      @code{unified_shared_memory}
+      @tab complete but no non-host devices provides @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -4460,7 +4459,7 @@ The implementation remark:
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address} or
+@item OpenMP code that has a @code{requires} directive with
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
@@ -4522,8 +4521,8 @@ The implementation remark:
       Per device, reverse offload regions are processed serially such that
       the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address}
-      or @code{unified_shared_memory} will remove any nvptx device from the
+@item OpenMP code that has a @code{requires} directive with
+      @code{unified_shared_memory} will remove any nvptx device from the
       list of available devices (``host fallback'').
 @end itemize
 
