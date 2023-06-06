@@ -6188,7 +6188,20 @@ package body Freeze is
       --  Do not freeze if already frozen since we only need one freeze node
 
       if Is_Frozen (E) then
-         Result := No_List;
+
+         if Is_Itype (E)
+           and then not Is_Base_Type (E)
+           and then not Is_Frozen (Etype (E))
+         then
+            --  If a frozen subtype of an unfrozen type seems impossible
+            --  then see Analyze_Protected_Definition.Undelay_Itypes.
+
+            Result := Freeze_Entity
+                        (Etype (E), N, Do_Freeze_Profile => Do_Freeze_Profile);
+         else
+            Result := No_List;
+         end if;
+
          goto Leave;
 
       --  Do not freeze if we are preanalyzing without freezing

@@ -8387,6 +8387,8 @@ package body Exp_Ch7 is
              Param     => Ref,
              Skip_Self => Skip_Self);
       else
+         pragma Assert (Serious_Errors_Detected > 0
+                        or else not Has_Controlled_Component (Utyp));
          return Empty;
       end if;
    end Make_Final_Call;
