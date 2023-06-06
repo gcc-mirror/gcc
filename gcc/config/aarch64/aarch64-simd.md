@@ -6654,15 +6654,15 @@
 
 ;; vq(r)shr(u)n_n
 
-(define_insn "aarch64_<sur>q<r>shr<u>n_n<mode>"
+(define_insn "aarch64_<shrn_op>shrn_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
-        (unspec:<VNARROWQ> [(match_operand:SD_HSDI 1 "register_operand" "w")
-			    (match_operand:SI 2
-			      "aarch64_simd_shift_imm_offset_<ve_mode>" "i")]
-			   VQSHRN_N))]
+	(SAT_TRUNC:<VNARROWQ>
+	  (<TRUNC_SHIFT>:SD_HSDI
+	    (match_operand:SD_HSDI 1 "register_operand" "w")
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
   "TARGET_SIMD"
-  "<sur>q<r>shr<u>n\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
-  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+  "<shrn_op>shrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
 (define_insn "*aarch64_<shrn_op>shrn_n<mode>_insn<vczle><vczbe>"
@@ -6702,6 +6702,41 @@
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
   "<shrn_op>rshrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<shrn_op>rshrn_n<mode>_insn"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(SAT_TRUNC:<VNARROWQ>
+	  (<TRUNC_SHIFT>:<DWI>
+	    (plus:<DWI>
+	      (<TRUNCEXTEND>:<DWI>
+	        (match_operand:SD_HSDI 1 "register_operand" "w"))
+	      (match_operand:<DWI> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+  "TARGET_SIMD
+   && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
+  "<shrn_op>rshrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_<shrn_op>rshrn_n<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand")
+	(SAT_TRUNC:<VNARROWQ>
+	  (<TRUNC_SHIFT>:<V2XWIDE>
+	    (plus:<V2XWIDE>
+	      (<TRUNCEXTEND>:<V2XWIDE>
+	        (match_operand:SD_HSDI 1 "register_operand"))
+	      (match_dup 3))
+	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
+  "TARGET_SIMD"
+  {
+    /* Use this expander to create the rounding constant vector, which is
+       1 << (shift - 1).  Use wide_int here to ensure that the right TImode
+       RTL is generated when handling the DImode expanders.  */
+    int prec = GET_MODE_UNIT_PRECISION (<V2XWIDE>mode);
+    wide_int rnd_wi = wi::set_bit_in_zero (INTVAL (operands[2]) - 1, prec);
+    operands[3] = immed_wide_int_const (rnd_wi, GET_MODE_INNER (<V2XWIDE>mode));
+  }
 )
 
 (define_expand "aarch64_<shrn_op>rshrn_n<mode>"
@@ -6748,6 +6783,34 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
+(define_insn "aarch64_sqshrun_n<mode>_insn"
+  [(set (match_operand:SD_HSDI 0 "register_operand" "=w")
+	(smin:SD_HSDI
+	  (smax:SD_HSDI
+	    (ashiftrt:SD_HSDI
+	      (match_operand:SD_HSDI 1 "register_operand" "w")
+	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+	    (const_int 0))
+	  (const_int <half_mask>)))]
+  "TARGET_SIMD"
+  "sqshrun\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_sqshrun_n<mode>"
+  [(match_operand:<VNARROWQ> 0 "register_operand")
+   (match_operand:SD_HSDI 1 "register_operand")
+   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
+  "TARGET_SIMD"
+  {
+    rtx dst = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_aarch64_sqshrun_n<mode>_insn (dst, operands[1],
+						 operands[2]));
+    emit_move_insn (operands[0], gen_lowpart (<VNARROWQ>mode, dst));
+    DONE;
+  }
+)
+
 (define_expand "aarch64_sqshrun_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(truncate:<VNARROWQ>
@@ -6786,6 +6849,40 @@
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
   "sqrshrun\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_sqrshrun_n<mode>_insn"
+  [(set (match_operand:<V2XWIDE> 0 "register_operand" "=w")
+	(smin:<V2XWIDE>
+	  (smax:<V2XWIDE>
+	    (ashiftrt:<V2XWIDE>
+	      (plus:<V2XWIDE>
+		(sign_extend:<V2XWIDE>
+		  (match_operand:SD_HSDI 1 "register_operand" "w"))
+		(match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
+	    (const_int 0))
+	  (const_int <half_mask>)))]
+  "TARGET_SIMD
+   && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
+  "sqrshrun\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_sqrshrun_n<mode>"
+  [(match_operand:<VNARROWQ> 0 "register_operand")
+   (match_operand:SD_HSDI 1 "register_operand")
+   (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
+  "TARGET_SIMD"
+  {
+    int prec = GET_MODE_UNIT_PRECISION (<V2XWIDE>mode);
+    wide_int rnd_wi = wi::set_bit_in_zero (INTVAL (operands[2]) - 1, prec);
+    rtx rnd = immed_wide_int_const (rnd_wi, <V2XWIDE>mode);
+    rtx dst = gen_reg_rtx (<V2XWIDE>mode);
+    emit_insn (gen_aarch64_sqrshrun_n<mode>_insn (dst, operands[1], operands[2], rnd));
+    emit_move_insn (operands[0], gen_lowpart (<VNARROWQ>mode, dst));
+    DONE;
+  }
 )
 
 (define_expand "aarch64_sqrshrun_n<mode>"

@@ -1532,7 +1532,8 @@
 (define_mode_attr V2XWIDE [(V8QI "V8HI") (V4HI "V4SI")
 			   (V16QI "V16HI") (V8HI "V8SI")
 			   (V2SI "V2DI") (V4SI "V4DI")
-			   (V2DI "V2TI") (DI "TI")])
+			   (V2DI "V2TI") (DI "TI")
+			   (HI "SI") (SI "DI")])
 
 ;; Predicate mode associated with VWIDE.
 (define_mode_attr VWIDE_PRED [(VNx8HF "VNx4BI") (VNx4SF "VNx2BI")])
