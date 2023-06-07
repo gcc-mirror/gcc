@@ -4956,7 +4956,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   /* If there's a label, we might need to destroy the NRV on goto (92407).  */
   else if (TREE_CODE (*tp) == LABEL_EXPR)
     dp->simple = false;
-  /* Change all returns to just refer to the RESULT_DECL; this is a nop,
+  /* Change NRV returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
      about the value of the RESULT_DECL.  But preserve anything appended
      by check_return_expr.  */
@@ -4965,9 +4965,9 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       tree *p = &TREE_OPERAND (*tp, 0);
       while (TREE_CODE (*p) == COMPOUND_EXPR)
 	p = &TREE_OPERAND (*p, 0);
-      gcc_checking_assert (TREE_CODE (*p) == INIT_EXPR
-			   && TREE_OPERAND (*p, 0) == dp->result);
-      *p = dp->result;
+      if (TREE_CODE (*p) == INIT_EXPR
+	  && INIT_EXPR_NRV_P (*p))
+	*p = dp->result;
     }
   /* Change all cleanups for the NRV to only run when not returning.  */
   else if (TREE_CODE (*tp) == CLEANUP_STMT
