@@ -6773,49 +6773,51 @@
   }
 )
 
-(define_insn "aarch64_<shrn_op>shrn2_n<mode>_insn_le"
+(define_insn "aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_le"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
 	  (ALL_TRUNC:<VNARROWQ>
-	    (<TRUNC_SHIFT>:VQN
+	    (SHIFTRT:VQN
 	      (match_operand:VQN 2 "register_operand" "w")
 	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN
+   && AARCH64_VALID_SHRN_OP (<ALL_TRUNC:CODE>, <SHIFTRT:CODE>)"
   "<shrn_op>shrn2\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_insn "aarch64_<shrn_op>shrn2_n<mode>_insn_be"
+(define_insn "aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_be"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
 	  (ALL_TRUNC:<VNARROWQ>
-	    (<TRUNC_SHIFT>:VQN
+	    (SHIFTRT:VQN
 	      (match_operand:VQN 2 "register_operand" "w")
 	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && AARCH64_VALID_SHRN_OP (<ALL_TRUNC:CODE>, <SHIFTRT:CODE>)"
   "<shrn_op>shrn2\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<shrn_op>shrn2_n<mode>"
+(define_expand "aarch64_<shrn_op><sra_op>shrn2_n<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (ALL_TRUNC:<VNARROWQ>
-     (match_operand:VQN 2 "register_operand"))
+     (SHIFTRT:VQN (match_operand:VQN 2 "register_operand")))
    (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<vn_mode>")]
-  "TARGET_SIMD"
+  "TARGET_SIMD && AARCH64_VALID_SHRN_OP (<ALL_TRUNC:CODE>, <SHIFTRT:CODE>)"
   {
     operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
 						 INTVAL (operands[3]));
 
     if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_<shrn_op>shrn2_n<mode>_insn_be (operands[0],
-				operands[1], operands[2], operands[3]));
+      emit_insn (gen_aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_be (
+		operands[0], operands[1], operands[2], operands[3]));
     else
-      emit_insn (gen_aarch64_<shrn_op>shrn2_n<mode>_insn_le (operands[0],
-				operands[1], operands[2], operands[3]));
+      emit_insn (gen_aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_le (
+		operands[0], operands[1], operands[2], operands[3]));
     DONE;
   }
 )
