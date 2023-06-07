@@ -1,5 +1,6 @@
 // PR c++/99895
 // { dg-do compile { target c++20 } }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 
 struct fixed_string {
   consteval int size(int n) const {
