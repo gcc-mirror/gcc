@@ -1,3 +1,62 @@
+2023-06-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-9.c: New test.
+
+2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Update dg-error, extend to test for
+	duplicated 'present' and extend scan-dump tests for 'present'.
+	* gfortran.dg/gomp/defaultmap-1.f90: Update dg-error.
+	* gfortran.dg/gomp/map-7.f90: Extend parse and dump test for
+	'present'.
+	* gfortran.dg/gomp/map-8.f90: Extend for duplicate 'present'
+	modifier checking.
+	* c-c++-common/gomp/defaultmap-4.c: New test.
+	* c-c++-common/gomp/map-9.c: New test.
+	* c-c++-common/gomp/target-update-1.c: New test.
+	* gfortran.dg/gomp/defaultmap-8.f90: New test.
+	* gfortran.dg/gomp/map-11.f90: New test.
+	* gfortran.dg/gomp/map-12.f90: New test.
+	* gfortran.dg/gomp/target-update-1.f90: New test.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vrshr_1.c: New test.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/pr99195_5.c: Add testing for shrn_n, rshrn_n
+	intrinsics.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/addlv_1.c: New test.
+
+2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110055
+	* g++.dg/warn/Wdangling-pointer-pr110055.C: New testcase.
+
+2023-06-06  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/save-restore-cfi.c: New test to check save-restore
+	cfi directives.
+
+2023-06-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-intrinsic.c: Add new test cases.
+
+2023-06-06  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/save-restore-cfi-2.c: New test to check machmode
+	for cfi reg/mem.
+
 2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Joel Hutton  <joel.hutton@arm.com>
 	    Tamar Christina  <tamar.christina@arm.com>

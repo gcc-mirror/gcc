@@ -1,3 +1,23 @@
+2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Display 'present' map
+	modifier.
+	(show_omp_clauses): Display 'present' motion modifier for 'to'
+	and 'from' clauses.
+	* gfortran.h (enum gfc_omp_map_op): Add entries with 'present'
+	modifiers.
+	(struct gfc_omp_namelist): Add 'present_modifer'.
+	* openmp.cc (gfc_match_motion_var_list): New, handles optional
+	'present' modifier for to/from clauses.
+	(gfc_match_omp_clauses): Call it for to/from clauses; parse 'present'
+	in defaultmap and map clauses.
+	(resolve_omp_clauses): Allow 'present' modifiers on 'target',
+	'target data', 'target enter' and 'target exit'	directives.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Apply 'present' modifiers
+	to tree node for 'map', 'to' and 'from'	clauses.  Apply 'present' for
+	defaultmap.
+
 2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/100607

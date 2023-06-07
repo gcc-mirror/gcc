@@ -1,3 +1,7 @@
+2023-06-06  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Simplify & remove gotos.
+
 2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
 
 	* pex-win32.c: fix typos.

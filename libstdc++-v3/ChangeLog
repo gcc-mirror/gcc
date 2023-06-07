@@ -1,3 +1,92 @@
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add
+	CXXABI_1.3.15 symver and make it the latestp. Remove
+	GLIBCXX_IEEE128_3.4.31 and GLIBCXX_LDBL_3.4.31 from latestp.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/104772
+	* include/std/limits: (numeric_limits<__float128>): Define
+	for __STRICT_ANSI__ as well.
+	* testsuite/18_support/numeric_limits/128bit.cc: Remove
+	check for __STRICT_ANSI__.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Use AS_IF.
+	* configure: Regenerate.
+
+2023-06-06  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/109822
+	* include/experimental/bits/simd_builtin.h (_S_store): Rewrite
+	to avoid casts to other vector types. Implement store as
+	succession of power-of-2 sized memcpy to avoid PR90424.
+
+2023-06-06  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/110054
+	* include/experimental/bits/simd_builtin.h (_S_masked_store):
+	Call into deduced ABI's SimdImpl after conversion.
+	* include/experimental/bits/simd_x86.h (_S_masked_store_nocvt):
+	Don't use _mm_maskmoveu_si128. Use the generic fall-back
+	implementation. Also fix masked stores without SSE2, which
+	were not doing anything before.
+
+2023-06-06  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__bit_cast): Use
+	__gnu__::__vector_size__ instead of gnu::vector_size.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110139
+	* include/std/array (__array_traits<T, 0>::operator T*()): Make
+	conversion operator explicit.
+	(array::front): Use size_type as subscript operand.
+	(array::data): Use static_cast to make conversion explicit.
+	* testsuite/23_containers/array/element_access/110139.cc: New
+	test.
+
+2023-06-06  Joseph Faulls  <Joseph.Faulls@imgtec.com>
+
+	* include/bits/locale_classes.tcc: Remove check for
+	codecvt<char8_t, char, mbstate_t> facet.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (do_copy_file) [O_CLOEXEC]: Set
+	close-on-exec flag on file descriptors.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108178
+	* src/filesystem/ops-common.h (do_copy_file): Check for empty
+	files by trying to read a character.
+	* testsuite/27_io/filesystem/operations/copy_file_108178.cc:
+	New test.
+
+2023-06-06  Jannik Glückert  <jannik.glueckert@gmail.com>
+
+	* acinclude.m4 (_GLIBCXX_USE_COPY_FILE_RANGE): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops-common.h (copy_file_copy_file_range):
+	Define new function.
+	(do_copy_file): Use it.
+
+2023-06-06  Jannik Glückert  <jannik.glueckert@gmail.com>
+
+	* acinclude.m4 (_GLIBCXX_HAVE_LSEEK): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops-common.h (copy_file_sendfile): Define new
+	function for sendfile logic. Loop to support large files. Skip
+	zero-length files.
+	(do_copy_file): Use it.
+
 2023-06-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97720

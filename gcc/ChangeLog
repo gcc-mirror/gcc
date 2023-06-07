@@ -1,3 +1,172 @@
+2023-06-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* doc/rtl.texi (bitreverse, copysign): Document new RTX codes.
+	* rtl.def (BITREVERSE, COPYSIGN): Define new RTX codes.
+	* simplify-rtx.cc (simplify_unary_operation_1): Optimize
+	NOT (BITREVERSE x) as BITREVERSE (NOT x).
+	Optimize POPCOUNT (BITREVERSE x) as POPCOUNT x.
+	Optimize PARITY (BITREVERSE x) as PARITY x.
+	Optimize BITREVERSE (BITREVERSE x) as x.
+	(simplify_const_unary_operation) <case BITREVERSE>: Evaluate
+	BITREVERSE of a constant integer at compile-time.
+	(simplify_binary_operation_1) <case COPYSIGN>:  Optimize
+	COPY_SIGN (x, x) as x.  Optimize COPYSIGN (x, C) as ABS x
+	or NEG (ABS x) for constant C.  Optimize COPYSIGN (ABS x, y)
+	and COPYSIGN (NEG x, y) as COPYSIGN (x, y).
+	Optimize COPYSIGN (x, ABS y) as ABS x.
+	Optimize COPYSIGN (COPYSIGN (x, y), z) as COPYSIGN (x, z).
+	Optimize COPYSIGN (x, COPYSIGN (y, z)) as COPYSIGN (x, z).
+	(simplify_const_binary_operation): Evaluate COPYSIGN of constant
+	arguments at compile-time.
+
+2023-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (function_invariant_p): Change return type from int to bool.
+	* reload1.cc (function_invariant_p): Change return type from
+	int to bool and adjust function body accordingly.
+
+2023-06-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*<optab>_fma<mode>): New pattern.
+	(*single_<optab>mult_plus<mode>): Ditto.
+	(*double_<optab>mult_plus<mode>): Ditto.
+	(*sign_zero_extend_fma): Ditto.
+	(*zero_sign_extend_fma): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+
+2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (omp_notice_variable): Apply GOVD_MAP_ALLOC_ONLY flag
+	and defaultmap flags if the defaultmap has GOVD_MAP_FORCE_PRESENT flag
+	set.
+	(omp_get_attachment): Handle map clauses with 'present' modifier.
+	(omp_group_base): Likewise.
+	(gimplify_scan_omp_clauses): Reorder present maps to come first.
+	Set GOVD flags for present defaultmaps.
+	(gimplify_adjust_omp_clauses_1): Set map kind for present defaultmaps.
+	* omp-low.cc (scan_sharing_clauses): Handle 'always, present' map
+	clauses.
+	(lower_omp_target): Handle map clauses with 'present' modifier.
+	Handle 'to' and 'from' clauses with 'present'.
+	* tree-core.h (enum omp_clause_defaultmap_kind): Add
+	OMP_CLAUSE_DEFAULTMAP_PRESENT defaultmap kind.
+	* tree-pretty-print.cc (dump_omp_clause): Handle 'map', 'to' and
+	'from' clauses with 'present' modifier.  Handle present defaultmap.
+	* tree.h (OMP_CLAUSE_MOTION_PRESENT): New #define.
+
+2023-06-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/genfusion.pl: Delete some dead code.
+
+2023-06-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10_one): New, rewritten and
+	split out from...
+	(gen_ld_cmpi_p10): ... this.
+
+2023-06-06  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/106907
+	* config/rs6000/rs6000.cc (vec_const_128bit_to_bytes): Remove
+	duplicate expression.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_general_gimple_fold_builtin):
+	Handle unsigned reduc_plus_scal_ builtins.
+	* config/aarch64/aarch64-simd-builtins.def (addp): Delete DImode instances.
+	* config/aarch64/aarch64-simd.md (aarch64_addpdi): Delete.
+	* config/aarch64/arm_neon.h (vpaddd_s64): Reimplement with
+	__builtin_aarch64_reduc_plus_scal_v2di.
+	(vpaddd_u64): Reimplement with __builtin_aarch64_reduc_plus_scal_v2di_uu.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>shr_n<mode>): Delete.
+	(aarch64_<sra_op>rshr_n<mode><vczle><vczbe>_insn): New define_insn.
+	(aarch64_<sra_op>rshr_n<mode>): New define_expand.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_shrn<mode>_insn_le): Delete.
+	(aarch64_shrn<mode>_insn_be): Delete.
+	(*aarch64_<srn_op>shrn<mode>_vect):  Rename to...
+	(*aarch64_<srn_op>shrn<mode><vczle><vczbe>): ... This.
+	(aarch64_shrn<mode>): Remove reference to the above deleted patterns.
+	(aarch64_rshrn<mode>_insn_le): Delete.
+	(aarch64_rshrn<mode>_insn_be): Delete.
+	(aarch64_rshrn<mode><vczle><vczbe>_insn): New define_insn.
+	(aarch64_rshrn<mode>): Remove references to the above deleted patterns.
+
+2023-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_parallel_select_half_p):
+	Define prototype.
+	(aarch64_pars_overlap_p): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>addlv<mode>):
+	Express in terms of UNSPEC_ADDV.
+	(*aarch64_<su>addlv<VDQV_L:mode>_ze<GPI:mode>): Likewise.
+	(*aarch64_<su>addlv<mode>_reduction): Define.
+	(*aarch64_uaddlv<mode>_reduction_2): Likewise.
+	* config/aarch64/aarch64.cc	(aarch64_parallel_select_half_p): Define.
+	(aarch64_pars_overlap_p): Likewise.
+	* config/aarch64/iterators.md (UNSPEC_SADDLV, UNSPEC_UADDLV): Delete.
+	(VQUADW): New mode attribute.
+	(VWIDE2X_S): Likewise.
+	(USADDLV): Delete.
+	(su): Delete handling of UNSPEC_SADDLV, UNSPEC_UADDLV.
+	* config/aarch64/predicates.md (vect_par_cnst_select_half): Define.
+
+2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110055
+	* gimplify.cc (gimplify_target_expr): Do not emit
+	CLOBBERs for variables which have static storage duration
+	after gimplifying their initializers.
+
+2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109143
+	* tree-ssa-structalias.cc (solution_set_expand): Avoid
+	one bitmap iteration and optimize bit range setting.
+
+2023-06-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR bootstrap/110120
+	* postreload.cc (reload_cse_move2add, move2add_use_add2_insn): Use
+	XVECEXP, not XEXP, to access first item of a PARALLEL.
+
+2023-06-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat16mf4_t): Add vfloat16mf4_t to WF operations.
+	(vfloat16mf2_t): Likewise.
+	(vfloat16m1_t): Likewise.
+	(vfloat16m2_t): Likewise.
+	(vfloat16m4_t): Likewise.
+	(vfloat16m8_t): Likewise.
+	* config/riscv/vector-iterators.md: Add FP=16 to VWF, VWF_ZVE64,
+	VWLMUL1, VWLMUL1_ZVE64, vwlmul1 and vwlmul1_zve64.
+
+2023-06-06  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_adjust_libcall_cfi_prologue): Use Pmode
+	for cfi reg/mem machmode
+	(riscv_adjust_libcall_cfi_epilogue): Use Pmode for cfi reg machmode
+
+2023-06-06  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/vector-iterators.md:
+	Fix 'REQUIREMENT' for machine_mode 'MODE'.
+	* config/riscv/vector.md (@pred_indexed_<order>store<VNX16_QHS:mode>
+	<VNX16_QHSI:mode>): change VNX16_QHSI to VNX16_QHSDI.
+	(@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSDI:mode>): Ditto.
+
+2023-06-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector-iterators.md: Fix typo in mode attr.
+
 2023-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Joel Hutton  <joel.hutton@arm.com>
 
