@@ -413,9 +413,25 @@ vfloat32m1_t test_vfwredusum_vs_f16m8_f32m1(vfloat16m8_t vector, vfloat32m1_t sc
   return __riscv_vfwredusum_vs_f16m8_f32m1(vector, scalar, vl);
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 49 } } */
+vfloat16mf4_t test_vfslide1up_vf_f16mf4(vfloat16mf4_t src, float16_t value, size_t vl) {
+  return __riscv_vfslide1up_vf_f16mf4(src, value, vl);
+}
+
+vfloat16m8_t test_vfslide1up_vf_f16m8(vfloat16m8_t src, float16_t value, size_t vl) {
+  return __riscv_vfslide1up_vf_f16m8(src, value, vl);
+}
+
+vfloat16mf4_t test_vfslide1down_vf_f16mf4(vfloat16mf4_t src, float16_t value, size_t vl) {
+  return __riscv_vfslide1down_vf_f16mf4(src, value, vl);
+}
+
+vfloat16m8_t test_vfslide1down_vf_f16m8(vfloat16m8_t src, float16_t value, size_t vl) {
+  return __riscv_vfslide1down_vf_f16m8(src, value, vl);
+}
+
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 51 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]} 11 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 40 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 42 } } */
 /* { dg-final { scan-assembler-times {vfadd\.v[fv]\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfsub\.v[fv]\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfrsub\.vf\s+v[0-9]+,\s*v[0-9]+,\s*[vfa]+[0-9]+} 2 } } */
@@ -470,3 +486,5 @@ vfloat32m1_t test_vfwredusum_vs_f16m8_f32m1(vfloat16m8_t vector, vfloat32m1_t sc
 /* { dg-final { scan-assembler-times {vfredmin\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfwredosum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vfwredusum\.vs\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfslide1up\.vf\s+v[0-9]+,\s*v[0-9]+,\s*fa[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vfslide1down\.vf\s+v[0-9]+,\s*v[0-9]+,\s*fa[0-9]+} 2 } } */
