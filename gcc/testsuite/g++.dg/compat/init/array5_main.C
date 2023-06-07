@@ -5,6 +5,8 @@
 // Incorrect construction and destruction of multi-dimensional
 // array of class.
 
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
+
 extern void array5_x (void);
 
 int

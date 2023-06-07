@@ -3,6 +3,8 @@
 
 // Split into pieces for binary compatibility testing October 2002
 
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
+
 extern void spec3_x (void);
 
 int
