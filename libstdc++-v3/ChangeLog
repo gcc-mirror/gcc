@@ -1,3 +1,72 @@
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else)
+	(expected::transform_error): Use _M_val and _M_unex instead of
+	calling value() and error(), as per LWG 3938.
+	(expected::transform): Likewise. Remove incorrect std::move
+	calls from lvalue overloads.
+	(expected<void, E>::and_then, expected<void, E>::or_else)
+	(expected<void, E>::transform): Use _M_unex instead of calling
+	error().
+	* testsuite/20_util/expected/lwg3877.cc: Add checks for and_then
+	and transform, and for std::expected<void, E>.
+	* testsuite/20_util/expected/lwg3938.cc: New test.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else)
+	(expected::transform, expected::transform_error): Fix exception
+	specifications as per LWG 3877.
+	(expected<void, E>::and_then, expected<void, E>::transform):
+	Likewise.
+	* testsuite/20_util/expected/lwg3877.cc: New test.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108178
+	* src/filesystem/ops-common.h (do_copy_file): Check for empty
+	files by trying to read a character.
+	* testsuite/27_io/filesystem/operations/copy_file_108178.cc:
+	New test.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (do_copy_file) [O_CLOEXEC]: Set
+	close-on-exec flag on file descriptors.
+
+2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110139
+	* include/std/array (__array_traits<T, 0>::operator T*()): Make
+	conversion operator explicit.
+	(array::front): Use size_type as subscript operand.
+	(array::data): Use static_cast to make conversion explicit.
+	* testsuite/23_containers/array/element_access/110139.cc: New
+	test.
+
+2023-06-06  Joseph Faulls  <Joseph.Faulls@imgtec.com>
+
+	Backported from master:
+	2023-06-06  Joseph Faulls  <Joseph.Faulls@imgtec.com>
+
+	* include/bits/locale_classes.tcc: Remove check for
+	codecvt<char8_t, char, mbstate_t> facet.
+
 2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
