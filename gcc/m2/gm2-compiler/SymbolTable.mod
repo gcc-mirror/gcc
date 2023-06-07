@@ -9028,12 +9028,16 @@ VAR
 PROCEDURE AddListify (sym: CARDINAL) ;
 BEGIN
    INC (ListifyWordCount) ;
-   IF ListifyWordCount = ListifyTotal
+   (* printf ("AddListify: ListifyWordCount = %d, ListifyTotal = %d\n",
+              ListifyWordCount, ListifyTotal) ;  *)
+   IF ListifyWordCount > 1
    THEN
-      ListifySentance := ConCat (ListifySentance, Mark (InitString (" and ")))
-   ELSIF ListifyWordCount > 1
-   THEN
-      ListifySentance := ConCat (ListifySentance, Mark (InitString (", ")))
+      IF ListifyWordCount = ListifyTotal
+      THEN
+         ListifySentance := ConCat (ListifySentance, Mark (InitString (" and ")))
+      ELSE
+         ListifySentance := ConCat (ListifySentance, Mark (InitString (", ")))
+      END
    END ;
    ListifySentance := ConCat (ListifySentance,
                               Mark (InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
