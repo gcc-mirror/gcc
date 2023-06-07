@@ -57,7 +57,7 @@ range_operator_float::fold_range (frange &r, tree type,
     return true;
   if (op1.known_isnan () || op2.known_isnan ())
     {
-      r.set_nan (op1.type ());
+      r.set_nan (type);
       return true;
     }
 
