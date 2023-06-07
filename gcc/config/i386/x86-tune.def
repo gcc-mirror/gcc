@@ -698,3 +698,7 @@ DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", m_NONE)
 /* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
    before a transfer of control flow out of the function.  */
 DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)
+
+/* X86_TUNE_SLOW_STC: This disables use of stc, clc and cmc carry flag
+  modifications on architectures where theses operations are slow.  */
+DEF_TUNE (X86_TUNE_SLOW_STC, "slow_stc", m_PENT4)

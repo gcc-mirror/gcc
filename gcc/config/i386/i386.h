@@ -448,6 +448,7 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD]
 #define TARGET_DEST_FALSE_DEP_FOR_GLC \
 	ix86_tune_features[X86_TUNE_DEST_FALSE_DEP_FOR_GLC]
+#define TARGET_SLOW_STC ix86_tune_features[X86_TUNE_SLOW_STC]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

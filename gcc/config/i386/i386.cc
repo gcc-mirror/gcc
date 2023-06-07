@@ -15954,6 +15954,17 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	       && REGNO (XEXP (op1, 0)) == FLAGS_REG
 	       && XEXP (op1, 1) == const0_rtx)
 	return CCCmode;
+      /* Similarly for *x86_cmc pattern.
+	 Match LTU of op0 (neg:QI (ltu:QI (reg:CCC FLAGS_REG) (const_int 0)))
+	 and op1 (geu:QI (reg:CCC FLAGS_REG) (const_int 0)).
+	 It is sufficient to test that the operand modes are CCCmode.  */
+      else if (code == LTU
+	       && GET_CODE (op0) == NEG
+	       && GET_CODE (XEXP (op0, 0)) == LTU
+	       && GET_MODE (XEXP (XEXP (op0, 0), 0)) == CCCmode
+	       && GET_CODE (op1) == GEU
+	       && GET_MODE (XEXP (op1, 0)) == CCCmode)
+	return CCCmode;
       else
 	return CCmode;
     case GTU:			/* CF=0 & ZF=0 */
@@ -21303,6 +21314,31 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* This is *setcc_qi_addqi3_cconly_overflow_1_* patterns, a nop.  */
 	  *total = 0;
+	  return true;
+	}
+      /* Match x
+	 (compare:CCC (neg:QI (ltu:QI (reg:CCC FLAGS_REG) (const_int 0)))
+		      (geu:QI (reg:CCC FLAGS_REG) (const_int 0)))  */
+      if (mode == CCCmode
+	  && GET_CODE (op0) == NEG
+	  && GET_CODE (XEXP (op0, 0)) == LTU
+	  && REG_P (XEXP (XEXP (op0, 0), 0))
+	  && GET_MODE (XEXP (XEXP (op0, 0), 0)) == CCCmode
+	  && REGNO (XEXP (XEXP (op0, 0), 0)) == FLAGS_REG
+	  && XEXP (XEXP (op0, 0), 1) == const0_rtx
+	  && GET_CODE (op1) == GEU
+	  && REG_P (XEXP (op1, 0))
+	  && GET_MODE (XEXP (op1, 0)) == CCCmode
+	  && REGNO (XEXP (op1, 0)) == FLAGS_REG
+	  && XEXP (op1, 1) == const0_rtx)
+	{
+	  /* This is *x86_cmc.  */
+	  if (!speed)
+	    *total = COSTS_N_BYTES (1);
+	  else if (TARGET_SLOW_STC)
+	    *total = COSTS_N_INSNS (2);
+	  else 
+	    *total = COSTS_N_INSNS (1);
 	  return true;
 	}
 

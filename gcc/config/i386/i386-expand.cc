@@ -13948,8 +13948,6 @@ rdseed_step:
       arg3 = CALL_EXPR_ARG (exp, 3); /* unsigned int *sum_out.  */
 
       op1 = expand_normal (arg0);
-      if (!integer_zerop (arg0))
-	op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
 
       op2 = expand_normal (arg1);
       if (!register_operand (op2, mode0))
@@ -13967,7 +13965,7 @@ rdseed_step:
 	}
 
       op0 = gen_reg_rtx (mode0);
-      if (integer_zerop (arg0))
+      if (op1 == const0_rtx)
 	{
 	  /* If arg0 is 0, optimize right away into add or sub
 	     instruction that sets CCCmode flags.  */
@@ -13977,7 +13975,14 @@ rdseed_step:
       else
 	{
 	  /* Generate CF from input operand.  */
-	  emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
+	  if (!CONST_INT_P (op1))
+	    {
+	      op1 = convert_to_mode (QImode, op1, 1);
+	      op1 = copy_to_mode_reg (QImode, op1);
+	      emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
+	    }
+	  else
+	    emit_insn (gen_x86_stc ());
 
 	  /* Generate instruction that consumes CF.  */
 	  op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
