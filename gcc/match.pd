@@ -3695,7 +3695,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
   (max @2 @1))
 
-/* (zero_one == 0) ? y : z <op> y -> (-(typeof(y))zero_one & z) <op> y */
+/* (zero_one == 0) ? y : z <op> y -> ((typeof(y))zero_one * z) <op> y */
 (for op (bit_xor bit_ior)
  (simplify
   (cond (eq zero_one_valued_p@0
@@ -3705,9 +3705,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (type)
        && TYPE_PRECISION (type) > 1
        && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
-       (op (bit_and (negate (convert:type @0)) @2) @1))))
+       (op (mult (convert:type @0) @2) @1))))
 
-/* (zero_one != 0) ? z <op> y : y -> (-(typeof(y))zero_one & z) <op> y */
+/* (zero_one != 0) ? z <op> y : y -> ((typeof(y))zero_one * z) <op> y */
 (for op (bit_xor bit_ior)
  (simplify
   (cond (ne zero_one_valued_p@0
@@ -3717,7 +3717,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (type)
        && TYPE_PRECISION (type) > 1
        && (INTEGRAL_TYPE_P (TREE_TYPE (@0))))
-       (op (bit_and (negate (convert:type @0)) @2) @1))))
+       (op (mult (convert:type @0) @2) @1))))
 
 /* Simplifications of shift and rotates.  */
 
