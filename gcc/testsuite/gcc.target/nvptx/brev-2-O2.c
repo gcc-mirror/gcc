@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options -save-temps } */
-/* { dg-final { check-function-bodies {**} {} } } */
 
 inline __attribute__((always_inline))
 unsigned int bitreverse32(unsigned int x)
@@ -96,26 +95,6 @@ int main(void)
 
   return 0;
 }
-/*
-** main:
-**	...
-**	mov\.u32	(%r[0-9]+), 0;
-**	brev\.b32	(%r[0-9]+), \1;
-**	setp\.[^.]+\.u32	%r[0-9]+, \2, 0;
-**	...
-**	mov\.u32	(%r[0-9]+), -1;
-**	brev\.b32	(%r[0-9]+), \3;
-**	setp\.[^.]+\.u32	%r[0-9]+, \4, -1;
-**	...
-**	mov\.u32	(%r[0-9]+), 1;
-**	brev\.b32	(%r[0-9]+), \5;
-**	setp\.[^.]+\.u32	%r[0-9]+, \6, -2147483648;
-**	...
-**	mov\.u32	(%r[0-9]+), 2;
-**	brev\.b32	(%r[0-9]+), \7;
-**	setp\.[^.]+\.u32	%r[0-9]+, \8, 1073741824;
-**	...
-*/
 
-/* { dg-final { scan-assembler-times {\tbrev\.b32\t} 40 } } */
-/* { dg-final { scan-assembler {\mabort\M} } } */
+/* { dg-final { scan-assembler-not {\tbrev\.b32\t} } } */
+/* { dg-final { scan-assembler-not {\mabort\M} } } */

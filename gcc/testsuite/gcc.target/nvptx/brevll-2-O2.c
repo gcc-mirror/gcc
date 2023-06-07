@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options -save-temps } */
-/* { dg-final { check-function-bodies {**} {} } } */
 
 inline __attribute__((always_inline))
 unsigned long long bitreverse64(unsigned long long x)
@@ -156,26 +155,6 @@ int main(void)
 
   return 0;
 }
-/*
-** main:
-**	...
-**	mov\.u64	(%r[0-9]+), 0;
-**	brev\.b64	(%r[0-9]+), \1;
-**	setp\.[^.]+\.u64	%r[0-9]+, \2, 0;
-**	...
-**	mov\.u64	(%r[0-9]+), -1;
-**	brev\.b64	(%r[0-9]+), \3;
-**	setp\.[^.]+\.u64	%r[0-9]+, \4, -1;
-**	...
-**	mov\.u64	(%r[0-9]+), 1;
-**	brev\.b64	(%r[0-9]+), \5;
-**	setp\.[^.]+\.u64	%r[0-9]+, \6, -9223372036854775808;
-**	...
-**	mov\.u64	(%r[0-9]+), 2;
-**	brev\.b64	(%r[0-9]+), \7;
-**	setp\.[^.]+\.u64	%r[0-9]+, \8, 4611686018427387904;
-**	...
-*/
 
-/* { dg-final { scan-assembler-times {\tbrev\.b64\t} 70 } } */
-/* { dg-final { scan-assembler {\mabort\M} } } */
+/* { dg-final { scan-assembler-not {\tbrev\.b64\t} } } */
+/* { dg-final { scan-assembler-not {\mabort\M} } } */
