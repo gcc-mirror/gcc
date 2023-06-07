@@ -130,6 +130,16 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zhinx", "zhinxmin"},
   {"zhinxmin", "zfinx"},
 
+  {"zce",  "zca"},
+  {"zce",  "zcb"},
+  {"zce",  "zcmp"},
+  {"zce",  "zcmt"},
+  {"zcf",  "zca"},
+  {"zcd",  "zca"},
+  {"zcb",  "zca"},
+  {"zcmp", "zca"},
+  {"zcmt", "zca"},
+
   {NULL, NULL}
 };
 
@@ -263,6 +273,14 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zca",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcb",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zce",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcf",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmp", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmt", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1269,10 +1287,21 @@ riscv_subset_list::parse (const char *arch, location_t loc)
       subset_list->handle_implied_ext (itr->name.c_str ());
     }
 
+  /* Zce only implies zcf when RV32 and 'f' extension exist.  */
+  if (subset_list->lookup ("zce") != NULL
+	&& subset_list->m_xlen == 32
+	&& subset_list->lookup ("f") != NULL
+	&& subset_list->lookup ("zcf") == NULL)
+    subset_list->add ("zcf", false);
+
   /* Make sure all implied extensions are included. */
   gcc_assert (subset_list->check_implied_ext ());
 
   subset_list->handle_combine_ext ();
+
+  if (subset_list->lookup ("zcf") && subset_list->m_xlen == 64)
+    error_at (loc, "%<-march=%s%>: zcf extension supports in rv32 only"
+		  , arch);
 
   if (subset_list->lookup ("zfinx") && subset_list->lookup ("f"))
     error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
@@ -1406,6 +1435,15 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
+
+  /* Code-size reduction extensions.  */
+  {"zca",     &gcc_options::x_riscv_zc_subext, MASK_ZCA},
+  {"zcb",     &gcc_options::x_riscv_zc_subext, MASK_ZCB},
+  {"zce",     &gcc_options::x_riscv_zc_subext, MASK_ZCE},
+  {"zcf",     &gcc_options::x_riscv_zc_subext, MASK_ZCF},
+  {"zcd",     &gcc_options::x_riscv_zc_subext, MASK_ZCD},
+  {"zcmp",    &gcc_options::x_riscv_zc_subext, MASK_ZCMP},
+  {"zcmt",    &gcc_options::x_riscv_zc_subext, MASK_ZCMT},
 
   {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
   {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
