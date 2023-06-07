@@ -104,7 +104,7 @@ builtin_derive_item (std::unique_ptr<AST::Item> &item,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-derive_item (std::unique_ptr<AST::Item> &item, std::string &to_derive,
+derive_item (std::unique_ptr<AST::Item> &item, const std::string &to_derive,
 	     MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
