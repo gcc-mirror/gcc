@@ -266,7 +266,7 @@ AC_CHECK_HEADERS([linux/random.h], [], [],
 AC_CHECK_HEADERS([xlocale.h])
 
 # Only do link tests if native. Else, hardcode.
-AS_IF([$GLIBCXX_IS_NATIVE],[
+if $GLIBCXX_IS_NATIVE; then
 
   # We can do more elaborate tests that assume a working linker.
   CANADIAN=no
@@ -298,7 +298,7 @@ AS_IF([$GLIBCXX_IS_NATIVE],[
   # For iconv support.
   AM_ICONV
 
-],[
+else
 
   # This lets us hard-code the functionality we know we'll have in the cross
   # target environment.  "Let" is a sugar-coated word placed on an especially
@@ -330,7 +330,7 @@ AS_IF([$GLIBCXX_IS_NATIVE],[
 
   # First, test for "known" system libraries.  We may be using newlib even
   # on a hosted environment.
-  AS_IF([test "x${with_newlib}" = "xyes"],[
+  if test "x${with_newlib}" = "xyes"; then
     os_include_dir="os/newlib"
     AC_DEFINE(HAVE_HYPOT)
 
@@ -386,14 +386,14 @@ AS_IF([$GLIBCXX_IS_NATIVE],[
         AC_DEFINE(HAVE_USLEEP)
         ;;
     esac
-  ],[test "x$with_headers" != "xno" ],[
+  elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
-  ])
+  fi
 
   # At some point, we should differentiate between architectures
   # like x86, which have long double versions, and alpha/powerpc/etc.,
   # which don't. For the time being, punt.
-  AS_IF([test x"long_double_math_on_this_cpu" = x"yes"],[
+  if test x"long_double_math_on_this_cpu" = x"yes"; then
     AC_DEFINE(HAVE_ACOSL)
     AC_DEFINE(HAVE_ASINL)
     AC_DEFINE(HAVE_ATAN2L)
@@ -417,8 +417,8 @@ AS_IF([$GLIBCXX_IS_NATIVE],[
     AC_DEFINE(HAVE_SQRTL)
     AC_DEFINE(HAVE_TANL)
     AC_DEFINE(HAVE_TANHL)
-  ])
-])
+  fi
+fi
 
 # Check for _Unwind_GetIPInfo.
 GCC_CHECK_UNWIND_GETIPINFO
@@ -449,7 +449,7 @@ case "$target" in
 #error no need for long double compatibility
 #endif
   ], [ac_ldbl_compat=yes], [ac_ldbl_compat=no])
-  AS_IF([test "$ac_ldbl_compat" = yes],[
+  if test "$ac_ldbl_compat" = yes; then
     AC_DEFINE([_GLIBCXX_LONG_DOUBLE_COMPAT],1,
 	      [Define if compatibility should be provided for -mlong-double-64.])
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
@@ -485,7 +485,7 @@ case "$target" in
         fi
 	;;
     esac
-  ])
+  fi
 esac
 AC_SUBST(LONG_DOUBLE_COMPAT_FLAGS)
 AC_SUBST(LONG_DOUBLE_128_FLAGS)
