@@ -1227,7 +1227,8 @@ static bool
 riscv_compressed_reg_p (int regno)
 {
   /* x8-x15/f8-f15 are compressible registers.  */
-  return (TARGET_RVC && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
+  return ((TARGET_RVC  || TARGET_ZCA)
+	  && (IN_RANGE (regno, GP_REG_FIRST + 8, GP_REG_FIRST + 15)
 	  || IN_RANGE (regno, FP_REG_FIRST + 8, FP_REG_FIRST + 15)));
 }
 
@@ -2530,7 +2531,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  /* When optimizing for size, make uncompressible 32-bit addresses
 	     more expensive so that compressible 32-bit addresses are
 	     preferred.  */
-	  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+	  if ((TARGET_RVC || TARGET_ZCA)
+	      && !speed && riscv_mshorten_memrefs && mode == SImode
 	      && !riscv_compressed_lw_address_p (XEXP (x, 0)))
 	    cost++;
 
@@ -2956,7 +2958,8 @@ riscv_address_cost (rtx addr, machine_mode mode,
 {
   /* When optimizing for size, make uncompressible 32-bit addresses more
    * expensive so that compressible 32-bit addresses are preferred.  */
-  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+  if ((TARGET_RVC || TARGET_ZCA)
+      && !speed && riscv_mshorten_memrefs && mode == SImode
       && !riscv_compressed_lw_address_p (addr))
     return riscv_address_insns (addr, mode, false) + 1;
   return riscv_address_insns (addr, mode, false);
@@ -5839,7 +5842,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
       && remaining_const_size % IMM_REACH >= min_first_step)
     return remaining_const_size % IMM_REACH;
 
-  if (TARGET_RVC)
+  if (TARGET_RVC || TARGET_ZCA)
     {
       /* If we need two subtracts, and one is small enough to allow compressed
 	 loads and stores, then put that one first.  */

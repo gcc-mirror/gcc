@@ -47,7 +47,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 {
   builtin_define ("__riscv");
 
-  if (TARGET_RVC)
+  if (TARGET_RVC || TARGET_ZCA)
     builtin_define ("__riscv_compressed");
 
   if (TARGET_RVE)
