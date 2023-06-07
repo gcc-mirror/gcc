@@ -42,7 +42,7 @@ void test_nowarn_long (int n)
 
   {
     long *p = alloc_long (n);
-    dealloc_long (p + 1);     // { dg-warning "'dealloc_long' called on pointer '(p|<unknown>)' with nonzero offset" }
+    dealloc_long (p + 1);     // { dg-warning "'(dealloc_long|void dealloc_long\\(long int\\*\\))' called on pointer '(p|<unknown>)' with nonzero offset" }
   }
 }
 
