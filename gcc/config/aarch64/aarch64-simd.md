@@ -7014,15 +7014,71 @@
 
 ;; addp
 
-(define_insn "aarch64_addp<mode><vczle><vczbe>"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (unspec:VDQ_I
-          [(match_operand:VDQ_I 1 "register_operand" "w")
-	   (match_operand:VDQ_I 2 "register_operand" "w")]
-          UNSPEC_ADDP))]
-  "TARGET_SIMD"
+;; ADDP with two registers semantically concatenates them and performs
+;; a pairwise addition on the result.  For 128-bit input modes represent this
+;; as a concatentation of the pairwise addition results of the two input
+;; registers.  This allow us to avoid using intermediate 256-bit modes.
+(define_insn "aarch64_addp<mode>_insn"
+  [(set (match_operand:VQ_I 0 "register_operand" "=w")
+	(vec_concat:VQ_I
+	  (plus:<VHALF>
+	    (vec_select:<VHALF>
+	      (match_operand:VQ_I 1 "register_operand" "w")
+	      (match_operand:VQ_I 3 "vect_par_cnst_even_or_odd_half"))
+	    (vec_select:<VHALF>
+	      (match_dup 1)
+	      (match_operand:VQ_I 4 "vect_par_cnst_even_or_odd_half")))
+	  (plus:<VHALF>
+	    (vec_select:<VHALF>
+	      (match_operand:VQ_I 2 "register_operand" "w")
+	      (match_dup 3))
+	    (vec_select:<VHALF>
+	      (match_dup 2)
+	      (match_dup 4)))))]
+  "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
   "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+;; For 64-bit input modes an ADDP is represented as a concatentation
+;; of the input registers into an 128-bit register which is then fed
+;; into a pairwise add.  That way we avoid having to create intermediate
+;; 32-bit vector modes.
+(define_insn "aarch64_addp<mode><vczle><vczbe>_insn"
+  [(set (match_operand:VD_BHSI 0 "register_operand" "=w")
+	(plus:VD_BHSI
+	  (vec_select:VD_BHSI
+	    (vec_concat:<VDBL>
+	      (match_operand:VD_BHSI 1 "register_operand" "w")
+	      (match_operand:VD_BHSI 2 "register_operand" "w"))
+	    (match_operand:<VDBL> 3 "vect_par_cnst_even_or_odd_half"))
+	  (vec_select:VD_BHSI
+	    (vec_concat:<VDBL>
+	      (match_dup 1)
+	      (match_dup 2))
+	    (match_operand:<VDBL> 4 "vect_par_cnst_even_or_odd_half"))))]
+  "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
+  "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  [(set_attr "type" "neon_reduc_add<q>")]
+)
+
+(define_expand "aarch64_addp<mode>"
+  [(match_operand:VDQ_I 0 "register_operand")
+   (match_operand:VDQ_I 1 "register_operand")
+   (match_operand:VDQ_I 2 "register_operand")]
+  "TARGET_SIMD"
+  {
+    int nunits = GET_MODE_NUNITS (<MODE>mode).to_constant ();
+    if (known_eq (GET_MODE_BITSIZE (<MODE>mode), 128))
+      nunits /= 2;
+    rtx par_even = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
+    rtx par_odd = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
+    if (BYTES_BIG_ENDIAN)
+      std::swap (operands[1], operands[2]);
+    emit_insn (gen_aarch64_addp<mode>_insn (operands[0], operands[1],
+					    operands[2], par_even, par_odd));
+    DONE;
+  }
 )
 
 ;; sqrt
