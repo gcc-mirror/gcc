@@ -786,7 +786,7 @@ wi::bitreverse_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 	  unsigned int d = (precision - 1) - s;
 	  block = d / HOST_BITS_PER_WIDE_INT;
 	  offset = d & (HOST_BITS_PER_WIDE_INT - 1);
-          val[block] |= 1 << offset;
+	  val[block] |= HOST_WIDE_INT_1U << offset;
 	}
     }
 
