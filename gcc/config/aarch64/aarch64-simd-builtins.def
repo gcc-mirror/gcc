@@ -263,16 +263,14 @@
   BUILTIN_VQN (SHIFTIMM, shrn_n, 0, NONE)
   BUILTIN_VQN (USHIFTIMM, shrn_n, 0, NONE)
 
-  /* Implemented by aarch64_shrn2<mode>.  */
-  BUILTIN_VQN (SHIFT2IMM, shrn2, 0, NONE)
-  BUILTIN_VQN (USHIFT2IMM, shrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, shrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, shrn2_n, 0, NONE)
 
   BUILTIN_VQN (SHIFTIMM, rshrn_n, 0, NONE)
   BUILTIN_VQN (USHIFTIMM, rshrn_n, 0, NONE)
 
-  /* Implemented by aarch64_rshrn2<mode>.  */
-  BUILTIN_VQN (SHIFT2IMM, rshrn2, 0, NONE)
-  BUILTIN_VQN (USHIFT2IMM, rshrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, rshrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, rshrn2_n, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
@@ -480,7 +478,6 @@
   BUILTIN_SD_HSDI (USHIFTIMM, uqshrn_n, 0, NONE)
   BUILTIN_SD_HSDI (SHIFTIMM, sqrshrn_n, 0, NONE)
   BUILTIN_SD_HSDI (USHIFTIMM, uqrshrn_n, 0, NONE)
-  /* Implemented by aarch64_<sur>q<r>shr<u>n2_n<mode>.  */
   BUILTIN_VQN (SHIFT2IMM_UUSS, sqshrun2_n, 0, NONE)
   BUILTIN_VQN (SHIFT2IMM_UUSS, sqrshrun2_n, 0, NONE)
   BUILTIN_VQN (SHIFT2IMM, sqshrn2_n, 0, NONE)

@@ -645,12 +645,6 @@
     UNSPEC_SQSHLU	; Used in aarch64-simd.md.
     UNSPEC_SQSHL	; Used in aarch64-simd.md.
     UNSPEC_UQSHL	; Used in aarch64-simd.md.
-    UNSPEC_SQSHRUN	; Used in aarch64-simd.md.
-    UNSPEC_SQRSHRUN	; Used in aarch64-simd.md.
-    UNSPEC_SQSHRN	; Used in aarch64-simd.md.
-    UNSPEC_UQSHRN	; Used in aarch64-simd.md.
-    UNSPEC_SQRSHRN	; Used in aarch64-simd.md.
-    UNSPEC_UQRSHRN	; Used in aarch64-simd.md.
     UNSPEC_SSHL		; Used in aarch64-simd.md.
     UNSPEC_USHL		; Used in aarch64-simd.md.
     UNSPEC_SRSHL	; Used in aarch64-simd.md.
@@ -2660,10 +2654,6 @@
 
 (define_int_iterator VQSHL_N [UNSPEC_SQSHLU UNSPEC_SQSHL UNSPEC_UQSHL])
 
-(define_int_iterator VQSHRN_N [UNSPEC_SQSHRUN UNSPEC_SQRSHRUN
-                               UNSPEC_SQSHRN UNSPEC_UQSHRN
-                               UNSPEC_SQRSHRN UNSPEC_UQRSHRN])
-
 (define_int_iterator SQRDMLH_AS [UNSPEC_SQRDMLAH UNSPEC_SQRDMLSH])
 
 (define_int_iterator PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
@@ -3374,9 +3364,6 @@
 		      (UNSPEC_URSHR  "ur") (UNSPEC_SRSHR  "sr")
 		      (UNSPEC_SQSHLU "s") (UNSPEC_SQSHL   "s")
 		      (UNSPEC_UQSHL  "u")
-		      (UNSPEC_SQSHRUN "s") (UNSPEC_SQRSHRUN "s")
-                      (UNSPEC_SQSHRN "s")  (UNSPEC_UQSHRN "u")
-                      (UNSPEC_SQRSHRN "s") (UNSPEC_UQRSHRN "u")
 		      (UNSPEC_USHL  "u")   (UNSPEC_SSHL  "s")
 		      (UNSPEC_USHLL  "u")  (UNSPEC_SSHLL "s")
 		      (UNSPEC_URSHL  "ur") (UNSPEC_SRSHL  "sr")
@@ -3388,9 +3375,6 @@
 ])
 
 (define_int_attr r [(UNSPEC_SQDMULH "") (UNSPEC_SQRDMULH "r")
-		    (UNSPEC_SQSHRUN "") (UNSPEC_SQRSHRUN "r")
-                    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
-                    (UNSPEC_SQRSHRN "r") (UNSPEC_UQRSHRN "r")
                     (UNSPEC_SQSHL   "")  (UNSPEC_UQSHL  "")
                     (UNSPEC_SQRSHL   "r")(UNSPEC_UQRSHL  "r")
 		    (UNSPEC_SMULHS "") (UNSPEC_UMULHS "")
@@ -3406,9 +3390,6 @@
 		     (UNSPEC_SLI   "l") (UNSPEC_SRI   "r")])
 
 (define_int_attr u [(UNSPEC_SQSHLU "u") (UNSPEC_SQSHL "") (UNSPEC_UQSHL "")
-		    (UNSPEC_SQSHRUN "u") (UNSPEC_SQRSHRUN "u")
-		    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
-		    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")
 		    (UNSPEC_SHADD "") (UNSPEC_UHADD "u")
 		    (UNSPEC_SRHADD "") (UNSPEC_URHADD "u")])
 
