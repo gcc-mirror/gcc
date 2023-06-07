@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target shared }
 // { dg-lto-options { { -O -fPIC -flto } } }

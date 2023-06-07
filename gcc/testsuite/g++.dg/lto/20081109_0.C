@@ -1,3 +1,5 @@
+// Explicit { dg-require-effective-target exceptions_enabled } so that dependent tests don't turn UNRESOLVED for '-fno-exceptions'.
+
 extern "C" { void abort (void);}
 int foo (int);
 
