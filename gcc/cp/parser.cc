@@ -37708,33 +37708,11 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 static tree
 cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
 			enum c_omp_region_type ort = C_ORT_OMP,
-			bool allow_deref = false, bool allow_present = false)
+			bool allow_deref = false)
 {
   if (cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
-    {
-      bool present = false;
-
-      if (allow_present)
-	{
-	   cp_token *token = cp_lexer_peek_token (parser->lexer);
-
-	   if (token->type == CPP_NAME
-	       && strcmp (IDENTIFIER_POINTER (token->u.value), "present") == 0
-	       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
-	    {
-	      present = true;
-	      cp_lexer_consume_token (parser->lexer);
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	}
-
-      list = cp_parser_omp_var_list_no_open (parser, kind, list, NULL, ort,
-					     allow_deref);
-
-      if (present)
-	for (tree clause = list; clause; clause = OMP_CLAUSE_CHAIN (clause))
-	  OMP_CLAUSE_SET_MOTION_MODIFIER (clause, OMP_CLAUSE_MOTION_PRESENT);
-    }
+    return cp_parser_omp_var_list_no_open (parser, kind, list, NULL, ort,
+					   allow_deref);
   return list;
 }
 
@@ -38782,13 +38760,6 @@ cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
     case 'n':
       if (strcmp ("none", p) == 0)
 	behavior = OMP_CLAUSE_DEFAULTMAP_NONE;
-      else
-	goto invalid_behavior;
-      break;
-
-    case 'p':
-      if (strcmp ("present", p) == 0)
-	behavior = OMP_CLAUSE_DEFAULTMAP_PRESENT;
       else
 	goto invalid_behavior;
       break;
@@ -40825,7 +40796,6 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
 
   bool always_modifier = false;
   bool close_modifier = false;
-  bool present_modifier = false;
   for (int pos = 1; pos < map_kind_pos; ++pos)
     {
       cp_token *tok = cp_lexer_peek_token (parser->lexer);
@@ -40862,24 +40832,11 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
 	    }
 	  close_modifier = true;
 	}
-      else if (strcmp ("present", p) == 0)
-	{
-	  if (present_modifier)
-	    {
-	      cp_parser_error (parser, "too many %<present%> modifiers");
-	      cp_parser_skip_to_closing_parenthesis (parser,
-						     /*recovering=*/true,
-						     /*or_comma=*/false,
-						     /*consume_paren=*/true);
-	      return list;
-	    }
-	  present_modifier = true;
-       }
       else
 	{
 	  cp_parser_error (parser, "%<#pragma omp target%> with "
-				   "modifier other than %<always%>, %<close%> "
-				   "or %<present%> on %<map%> clause");
+				   "modifier other than %<always%> or "
+				   "%<close%> on %<map%> clause");
 	  cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
@@ -40895,25 +40852,15 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
-      int always_present_modifier = always_modifier && present_modifier;
 
       if (strcmp ("alloc", p) == 0)
-	kind = present_modifier ? GOMP_MAP_PRESENT_ALLOC : GOMP_MAP_ALLOC;
+	kind = GOMP_MAP_ALLOC;
       else if (strcmp ("to", p) == 0)
-	kind = always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_TO
-	       : present_modifier ? GOMP_MAP_PRESENT_TO
-	       : always_modifier ? GOMP_MAP_ALWAYS_TO
-	       : GOMP_MAP_TO;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
       else if (strcmp ("from", p) == 0)
-	kind = always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_FROM
-	       : present_modifier ? GOMP_MAP_PRESENT_FROM
-	       : always_modifier ? GOMP_MAP_ALWAYS_FROM
-	       : GOMP_MAP_FROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
       else if (strcmp ("tofrom", p) == 0)
-	kind = always_present_modifier ? GOMP_MAP_ALWAYS_PRESENT_TOFROM
-	       : present_modifier ? GOMP_MAP_PRESENT_TOFROM
-	       : always_modifier ? GOMP_MAP_ALWAYS_TOFROM
-	       : GOMP_MAP_TOFROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
       else if (strcmp ("release", p) == 0)
 	kind = GOMP_MAP_RELEASE;
       else
@@ -41691,12 +41638,12 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    }
 	  else
 	    clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO, clauses,
-					      C_ORT_OMP, true, true);
+					      C_ORT_OMP, true);
 	  c_name = "to";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_FROM, clauses,
-					    C_ORT_OMP, true, true);
+					    C_ORT_OMP, true);
 	  c_name = "from";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
@@ -45625,18 +45572,11 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
-	  case GOMP_MAP_PRESENT_TO:
-	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
-	  case GOMP_MAP_PRESENT_FROM:
-	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_TOFROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
-	  case GOMP_MAP_PRESENT_TOFROM:
-	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	  case GOMP_MAP_ALLOC:
-	  case GOMP_MAP_PRESENT_ALLOC:
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -45739,10 +45679,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
-	  case GOMP_MAP_PRESENT_TO:
-	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_ALLOC:
-	  case GOMP_MAP_PRESENT_ALLOC:
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_TOFROM:
@@ -45751,14 +45688,6 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	    break;
 	  case GOMP_MAP_ALWAYS_TOFROM:
 	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_TO);
-	    map_seen = 3;
-	    break;
-	  case GOMP_MAP_PRESENT_TOFROM:
-	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_PRESENT_TO);
-	    map_seen = 3;
-	    break;
-	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_PRESENT_TO);
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -45853,8 +45782,6 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	  {
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
-	  case GOMP_MAP_PRESENT_FROM:
-	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_RELEASE:
 	  case GOMP_MAP_DELETE:
 	    map_seen = 3;
@@ -45865,14 +45792,6 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	    break;
 	  case GOMP_MAP_ALWAYS_TOFROM:
 	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_FROM);
-	    map_seen = 3;
-	    break;
-	  case GOMP_MAP_PRESENT_TOFROM:
-	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_PRESENT_FROM);
-	    map_seen = 3;
-	    break;
-	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_PRESENT_FROM);
 	    map_seen = 3;
 	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:

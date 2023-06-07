@@ -1,3 +1,27 @@
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Display 'present' map
+	modifier.
+	(show_omp_clauses): Display 'present' motion modifier for 'to'
+	and 'from' clauses.
+	* gfortran.h (enum gfc_omp_map_op): Add entries with 'present'
+	modifiers.
+	(enum gfc_omp_motion_modifier): New.
+	(struct gfc_omp_namelist): Add motion_modifier field.
+	* openmp.cc (gfc_match_omp_variable_list): Add new parameter with
+	default.  Parse 'present' motion modifier and apply.
+	(gfc_match_omp_clauses): Parse 'present' in defaultmap, 'from'
+	clauses, 'map' clauses and 'to' clauses.
+	(resolve_omp_clauses): Allow 'present' modifiers on 'target',
+	'target data', 'target enter' and 'target exit'	directives.
+	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Handle map kinds with
+	'present' modifier.
+	(gfc_trans_omp_clauses): Apply 'present' modifiers to tree node for
+	'map', 'to' and 'from'	clauses.  Apply 'present' for defaultmap.
+
 2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1310,13 +1310,6 @@ enum gfc_omp_map_op
   OMP_MAP_ALWAYS_TO,
   OMP_MAP_ALWAYS_FROM,
   OMP_MAP_ALWAYS_TOFROM,
-  OMP_MAP_PRESENT_ALLOC,
-  OMP_MAP_PRESENT_TO,
-  OMP_MAP_PRESENT_FROM,
-  OMP_MAP_PRESENT_TOFROM,
-  OMP_MAP_ALWAYS_PRESENT_TO,
-  OMP_MAP_ALWAYS_PRESENT_FROM,
-  OMP_MAP_ALWAYS_PRESENT_TOFROM,
   OMP_MAP_DECLARE_ALLOCATE,
   OMP_MAP_DECLARE_DEALLOCATE
 };
@@ -1352,12 +1345,6 @@ enum gfc_omp_linear_op
   OMP_LINEAR_UVAL
 };
 
-enum gfc_omp_motion_modifier
-{
-  OMP_MOTION_NONE,
-  OMP_MOTION_PRESENT
-};
-
 /* For use in OpenMP clauses in case we need extra information
    (aligned clause alignment, linear clause step, etc.).  */
 
@@ -1376,7 +1363,6 @@ typedef struct gfc_omp_namelist
 	  ENUM_BITFIELD (gfc_omp_linear_op) op:4;
 	  bool old_modifier;
 	} linear;
-      gfc_omp_motion_modifier motion_modifier;
       struct gfc_common_head *common;
       bool lastprivate_conditional;
     } u;

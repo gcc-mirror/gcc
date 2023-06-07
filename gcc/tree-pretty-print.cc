@@ -1100,27 +1100,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
 	  pp_string (pp, "force_present,noncontig_array");
 	  break;
-	case GOMP_MAP_PRESENT_ALLOC:
-	  pp_string (pp, "present,alloc");
-	  break;
-	case GOMP_MAP_PRESENT_TO:
-	  pp_string (pp, "present,to");
-	  break;
-	case GOMP_MAP_PRESENT_FROM:
-	  pp_string (pp, "present,from");
-	  break;
-	case GOMP_MAP_PRESENT_TOFROM:
-	  pp_string (pp, "present,tofrom");
-	  break;
-	case GOMP_MAP_ALWAYS_PRESENT_TO:
-	  pp_string (pp, "always,present,to");
-	  break;
-	case GOMP_MAP_ALWAYS_PRESENT_FROM:
-	  pp_string (pp, "always,present,from");
-	  break;
-	case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-	  pp_string (pp, "always,present,tofrom");
-	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1175,16 +1154,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_FROM:
       pp_string (pp, "from(");
-      if (OMP_CLAUSE_MOTION_MODIFIER (clause) == OMP_CLAUSE_MOTION_PRESENT)
-	pp_string (pp, "present:");
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
 
     case OMP_CLAUSE_TO:
       pp_string (pp, "to(");
-      if (OMP_CLAUSE_MOTION_MODIFIER (clause) == OMP_CLAUSE_MOTION_PRESENT)
-	pp_string (pp, "present:");
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
@@ -1350,9 +1325,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	  break;
 	case OMP_CLAUSE_DEFAULTMAP_NONE:
 	  pp_string (pp, "none");
-	  break;
-	case OMP_CLAUSE_DEFAULTMAP_PRESENT:
-	  pp_string (pp, "present");
 	  break;
 	case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
 	  pp_string (pp, "default");

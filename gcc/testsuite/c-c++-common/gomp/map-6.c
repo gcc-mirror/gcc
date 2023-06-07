@@ -13,10 +13,10 @@ foo (void)
   #pragma omp target map (to:a)
   ;
 
-  #pragma omp target map (a to: b) /* { dg-error "'#pragma omp target' with modifier other than 'always', 'close' or 'present'" } */
+  #pragma omp target map (a to: b) /* { dg-error "'#pragma omp target' with modifier other than 'always' or 'close'" } */
   ;
 
-  #pragma omp target map (close, a to: b) /* { dg-error "'#pragma omp target' with modifier other than 'always', 'close' or 'present'" } */
+  #pragma omp target map (close, a to: b) /* { dg-error "'#pragma omp target' with modifier other than 'always' or 'close'" } */
   ;
 
   #pragma omp target map (close a) /* { dg-error "'close' undeclared" "" { target c } } */ 

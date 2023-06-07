@@ -1,3 +1,22 @@
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_variable_list): Set default motion
+	modifier.
+	(c_parser_omp_var_list_parens): Add new parameter with default.  Parse
+	'present' motion modifier and apply.
+	(c_parser_omp_clause_defaultmap): Parse 'present' in defaultmap.
+	(c_parser_omp_clause_map): Parse 'present' modifier in map clauses.
+	(c_parser_omp_clause_to): Allow use of 'present' in variable list.
+	(c_parser_omp_clause_from): Likewise.
+	(c_parser_omp_target_data): Allow map clauses with 'present'
+	modifiers.
+	(c_parser_omp_target_enter_data): Likewise.
+	(c_parser_omp_target_exit_data): Likewise.
+	(c_parser_omp_target): Likewise.
+
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

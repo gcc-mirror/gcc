@@ -1,3 +1,21 @@
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_var_list_no_open): Add new parameter with
+	default.  Parse	'present' motion modifier and apply.
+	(cp_parser_omp_clause_defaultmap): Parse 'present' in defaultmap.
+	(cp_parser_omp_clause_map): Parse 'present' modifier in map clauses.
+	(cp_parser_omp_all_clauses): Allow use of 'present' in 'to' and 'from'
+	clauses.
+	(cp_parser_omp_target_data): Allow map clauses with 'present'
+	modifiers.
+	(cp_parser_omp_target_enter_data): Likewise.
+	(cp_parser_omp_target_exit_data): Likewise.
+	* semantics.cc (finish_omp_target): Accept map clauses with 'present'
+	modifiers.
+
 2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

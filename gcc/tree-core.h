@@ -597,19 +597,13 @@ enum omp_clause_defaultmap_kind {
   OMP_CLAUSE_DEFAULTMAP_NONE = 6 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
   OMP_CLAUSE_DEFAULTMAP_DEFAULT
     = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
-  OMP_CLAUSE_DEFAULTMAP_PRESENT = 8 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
-  OMP_CLAUSE_DEFAULTMAP_MASK = 15 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
+  OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
 };
 
 enum omp_clause_bind_kind {
   OMP_CLAUSE_BIND_TEAMS,
   OMP_CLAUSE_BIND_PARALLEL,
   OMP_CLAUSE_BIND_THREAD
-};
-
-enum omp_clause_motion_modifier {
-  OMP_CLAUSE_MOTION_NONE,
-  OMP_CLAUSE_MOTION_PRESENT
 };
 
 /* memory-order-clause on OpenMP atomic/flush constructs or
@@ -1682,7 +1676,6 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_defaultmap_kind defaultmap_kind;
     enum omp_clause_bind_kind      bind_kind;
     enum omp_clause_device_type_kind device_type_kind;
-    enum omp_clause_motion_modifier motion_modifier;
   } GTY ((skip)) subcode;
 
   /* The gimplification of OMP_CLAUSE_REDUCTION_{INIT,MERGE} for omp-low's

@@ -1,5 +1,24 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Reverted:
+	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* target.c (gomp_to_device_kind_p): Add map kinds with 'present'
+	modifier.
+	(gomp_map_vars_existing): Use new GOMP_MAP_FORCE_P macro.
+	(gomp_map_vars_internal): Emit runtime error if memory region not
+	present.
+	(gomp_update): Likewise.
+	(gomp_target_rev): Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-present-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-present-3.c: New.
+	* testsuite/libgomp.fortran/target-present-1.f90: New.
+	* testsuite/libgomp.fortran/target-present-2.f90: New.
+	* testsuite/libgomp.fortran/target-present-3.f90: New.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Revert:
 	2023-02-15  Thomas Schwinge  <thomas@codesourcery.com>
 
