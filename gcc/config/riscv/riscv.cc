@@ -7631,6 +7631,19 @@ riscv_vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode
   return default_vectorize_related_mode (vector_mode, element_mode, nunits);
 }
 
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
+
+static bool
+riscv_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+				rtx target, rtx op0, rtx op1,
+				const vec_perm_indices &sel)
+{
+  if (TARGET_VECTOR && riscv_v_ext_vector_mode_p (vmode))
+    return riscv_vector::expand_vec_perm_const (vmode, op_mode, target, op0,
+						op1, sel);
+
+  return false;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -7929,6 +7942,9 @@ riscv_vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode
 
 #undef TARGET_VECTORIZE_RELATED_MODE
 #define TARGET_VECTORIZE_RELATED_MODE riscv_vectorize_related_mode
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST riscv_vectorize_vec_perm_const
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -14,4 +14,4 @@ f (int32_t *__restrict f, int32_t *__restrict d, int n)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" } } */
