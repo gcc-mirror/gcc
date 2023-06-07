@@ -2854,6 +2854,10 @@
 }
   [(set_attr "type" "branch")])
 
+;; Micro-architecture unconditionally treats a "jr $ra" as "return from subroutine",
+;; non-returning indirect jumps through $ra would interfere with both subroutine
+;; return prediction and the more general indirect branch prediction.
+
 (define_expand "indirect_jump"
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
@@ -2864,7 +2868,7 @@
 })
 
 (define_insn "@indirect_jump<mode>"
-  [(set (pc) (match_operand:P 0 "register_operand" "r"))]
+  [(set (pc) (match_operand:P 0 "register_operand" "e"))]
   ""
   "jr\t%0"
   [(set_attr "type" "jump")
@@ -2887,7 +2891,7 @@
 
 (define_insn "@tablejump<mode>"
   [(set (pc)
-	(match_operand:P 0 "register_operand" "r"))
+	(match_operand:P 0 "register_operand" "e"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "jr\t%0"
