@@ -340,7 +340,8 @@ struct MacroExpander
   void import_proc_macros (std::string extern_crate);
 
   template <typename T>
-  AST::Fragment expand_derive_proc_macro (T &item, std::string &trait_name)
+  AST::Fragment expand_derive_proc_macro (T &item,
+					  const std::string &trait_name)
   {
     ProcMacro::CustomDerive macro;
 
