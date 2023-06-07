@@ -3387,10 +3387,11 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
      devices were present.
      Note: not all devices support USM, but the compiler refuses to create
      binaries for those that don't anyway.  */
-  omp_requires_mask &= ~(GOMP_REQUIRES_UNIFIED_ADDRESS
-			 | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+  omp_requires_mask &= ~GOMP_REQUIRES_UNIFIED_SHARED_MEMORY;
   if (hsa_context.agent_count > 0
-      && (omp_requires_mask & ~GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
+      && ((omp_requires_mask
+	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
   return hsa_context.agent_count;
 }

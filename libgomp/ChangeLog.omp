@@ -1,3 +1,13 @@
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-06-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Use
+	mainline syntax for mark unified_address requirement as supported.
+	* libgomp.texi (OpenMP 5.0, AMD Radeon, nvptx): Remove
+	'unified_address' from the not-supported requirements.
+
 2023-06-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
