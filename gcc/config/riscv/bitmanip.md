@@ -47,10 +47,10 @@
 ; implicit sign-extensions.
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extend:DI (div:SI (plus:SI (subreg:SI (ashift:DI (match_operand:DI 1 "register_operand")
-							       (match_operand:QI 2 "imm123_operand")) 0)
-						    (subreg:SI (match_operand:DI 3 "register_operand") 0))
-		(subreg:SI (match_operand:DI 4 "register_operand") 0))))
+	(sign_extend:DI (div:SI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
+						    (match_operand:QI 2 "imm123_operand"))
+					 (subreg:SI (match_operand:DI 3 "register_operand") 0))
+				(subreg:SI (match_operand:DI 4 "register_operand") 0))))
    (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
@@ -304,11 +304,11 @@
   [(set_attr "type" "bitmanip,load")
    (set_attr "mode" "HI")])
 
-(define_expand "rotr<mode>3"
-  [(set (match_operand:GPR 0 "register_operand")
-	(rotatert:GPR (match_operand:GPR 1 "register_operand")
+(define_expand "rotrdi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(rotatert:DI (match_operand:DI 1 "register_operand")
 		     (match_operand:QI 2 "arith_operand")))]
-  "TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB"
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)"
 {
   if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
     FAIL;
@@ -322,6 +322,26 @@
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+(define_expand "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+                    (match_operand:QI 2 "arith_operand" "rI")))]
+  "TARGET_ZBB || TARGET_ZBKB || TARGET_XTHEADBB"
+{
+  if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
+    FAIL;
+  if (TARGET_64BIT && register_operand (operands[2], QImode))
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_rotrsi3_sext (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
 (define_insn "*rotrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(rotatert:DI (match_operand:DI 1 "register_operand" "r")
@@ -330,7 +350,7 @@
   "ror%i2\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*rotrsi3_sext"
+(define_insn "rotrsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
                                  (match_operand:QI 2 "arith_operand" "rI"))))]
@@ -338,13 +358,31 @@
   "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "rotlsi3"
+(define_insn "*rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB || TARGET_ZBKB"
   "rol%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
+
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (rotate:SI (match_operand:SI 1 "register_operand" "r")
+                  (match_operand:QI 2 "register_operand" "r")))]
+  "TARGET_ZBB || TARGET_ZBKB"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_rotlsi3_sext (t, operands[1], operands[2]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
 
 (define_insn "rotldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")

@@ -1415,7 +1415,7 @@ riscv_emit_set (rtx target, rtx src)
 
 /* Emit an instruction of the form (set DEST (CODE X Y)).  */
 
-static rtx
+rtx
 riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y)
 {
   return riscv_emit_set (dest, gen_rtx_fmt_ee (code, GET_MODE (dest), x, y));

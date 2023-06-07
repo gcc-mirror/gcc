@@ -38,5 +38,24 @@ sub6 (long i, long j)
 {
   return i << (j & 0x3f);
 }
+
+/* Test for <optab>si3_extend. */
+int
+sub7 (int i, int j) {
+  return (i << 10) & j;
+}
+
+/* Test for <optab>si3_extend. */
+unsigned
+sub8 (unsigned i, unsigned j) {
+  return (i << 10) & j;
+}
+
+/* Test for <optab>si3_extend. */
+unsigned
+sub9 (unsigned i, unsigned j) {
+  return (i >> 10) & j;
+}
+
 /* { dg-final { scan-assembler-not "andi" } } */
 /* { dg-final { scan-assembler-not "sext.w" } } */
