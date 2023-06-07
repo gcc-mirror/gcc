@@ -3696,7 +3696,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (max @2 @1))
 
 /* (zero_one == 0) ? y : z <op> y -> ((typeof(y))zero_one * z) <op> y */
-(for op (bit_xor bit_ior)
+(for op (bit_xor bit_ior plus)
  (simplify
   (cond (eq zero_one_valued_p@0
             integer_zerop)
@@ -3708,7 +3708,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (op (mult (convert:type @0) @2) @1))))
 
 /* (zero_one != 0) ? z <op> y : y -> ((typeof(y))zero_one * z) <op> y */
-(for op (bit_xor bit_ior)
+(for op (bit_xor bit_ior plus)
  (simplify
   (cond (ne zero_one_valued_p@0
             integer_zerop)
