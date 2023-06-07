@@ -1,5 +1,17 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Revert:
+	2023-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-present-1.c: Fix.
+	* testsuite/libgomp.c-c++-common/target-present-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-3.c: Likewise.
+	* testsuite/libgomp.fortran/target-present-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-3.f90: Likewise.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2023-06-06  Tobias Burnus  <tobias@codesourcery.com>
 
