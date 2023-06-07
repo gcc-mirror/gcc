@@ -595,6 +595,14 @@
 			GET_MODE_UNIT_BITSIZE (GET_MODE (op)) / 2,
 			GET_MODE_UNIT_BITSIZE (GET_MODE (op)) / 2)")))
 
+(define_predicate "aarch64_simd_umax_half_mode"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op,
+				(HOST_WIDE_INT_1U
+				<< (GET_MODE_UNIT_BITSIZE  (mode) / 2)) - 1,
+				(HOST_WIDE_INT_1U
+				<< (GET_MODE_UNIT_BITSIZE  (mode) / 2)) - 1)")))
+
 (define_predicate "aarch64_simd_shift_imm_vec_qi"
   (and (match_code "const_vector")
        (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 8)")))

@@ -5438,28 +5438,55 @@
 
 (define_insn "aarch64_sqmovun<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
-	(unspec:<VNARROWQ> [(match_operand:SD_HSDI 1 "register_operand" "w")]
-			   UNSPEC_SQXTUN))]
+	(truncate:<VNARROWQ>
+	  (smin:SD_HSDI
+	    (smax:SD_HSDI
+	      (match_operand:SD_HSDI 1 "register_operand" "w")
+	      (const_int 0))
+	    (const_int <half_mask>))))]
    "TARGET_SIMD"
    "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
-(define_insn "aarch64_sqmovun<mode><vczle><vczbe>"
+(define_insn "*aarch64_sqmovun<mode>_insn<vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
-	(unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")]
-	  UNSPEC_SQXTUN))]
+	(truncate:<VNARROWQ>
+	  (smin:VQN
+	    (smax:VQN (match_operand:VQN 1 "register_operand" "w")
+		      (match_operand:VQN 2 "aarch64_simd_or_scalar_imm_zero"))
+	    (match_operand:VQN 3 "aarch64_simd_umax_half_mode"))))]
   "TARGET_SIMD"
   "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_sqmovun<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ>
+	  (smin:VQN
+	    (smax:VQN (match_operand:VQN 1 "register_operand" "w")
+		      (match_dup 2))
+	    (match_dup 3))))]
+  "TARGET_SIMD"
+  {
+    operands[2] = CONST0_RTX (<MODE>mode);
+    operands[3]
+      = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+			GET_MODE_MASK (GET_MODE_INNER (<VNARROWQ>mode)));
+  }
 )
 
 (define_insn "aarch64_sqxtun2<mode>_le"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
-	  (unspec:<VNARROWQ>
-	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN)))]
+	  (truncate:<VNARROWQ>
+	    (smin:VQN
+	      (smax:VQN
+		(match_operand:VQN 2 "register_operand" "w")
+		(match_operand:VQN 3 "aarch64_simd_or_scalar_imm_zero"))
+	      (match_operand:VQN 4 "aarch64_simd_umax_half_mode")))))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "sqxtun2\\t%0.<V2ntype>, %2.<Vtype>"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
@@ -5468,8 +5495,12 @@
 (define_insn "aarch64_sqxtun2<mode>_be"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
-	  (unspec:<VNARROWQ>
-	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN)
+	  (truncate:<VNARROWQ>
+	    (smin:VQN
+	      (smax:VQN
+		(match_operand:VQN 2 "register_operand" "w")
+		(match_operand:VQN 3 "aarch64_simd_or_scalar_imm_zero"))
+	      (match_operand:VQN 4 "aarch64_simd_umax_half_mode")))
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "sqxtun2\\t%0.<V2ntype>, %2.<Vtype>"
@@ -5479,16 +5510,18 @@
 (define_expand "aarch64_sqxtun2<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
-   (unspec:<VNARROWQ>
-     [(match_operand:VQN 2 "register_operand")] UNSPEC_SQXTUN)]
+   (match_operand:VQN 2 "register_operand")]
   "TARGET_SIMD"
   {
+    rtx zeros = CONST0_RTX (<MODE>mode);
+    rtx half_umax = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+			GET_MODE_MASK (GET_MODE_INNER (<VNARROWQ>mode)));
     if (BYTES_BIG_ENDIAN)
       emit_insn (gen_aarch64_sqxtun2<mode>_be (operands[0], operands[1],
-					      operands[2]));
+					       operands[2], zeros, half_umax));
     else
       emit_insn (gen_aarch64_sqxtun2<mode>_le (operands[0], operands[1],
-					       operands[2]));
+					       operands[2], zeros, half_umax));
     DONE;
   }
 )

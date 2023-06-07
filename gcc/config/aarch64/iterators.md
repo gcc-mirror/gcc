@@ -638,7 +638,6 @@
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
-    UNSPEC_SQXTUN	; Used in aarch64-simd.md.
     UNSPEC_SSRA		; Used in aarch64-simd.md.
     UNSPEC_USRA		; Used in aarch64-simd.md.
     UNSPEC_SRSHR	; Used in aarch64-simd.md.
@@ -1024,6 +1023,8 @@
 (define_mode_attr fpw [(DI "s") (SI "d")])
 
 (define_mode_attr short_mask [(HI "65535") (QI "255")])
+
+(define_mode_attr half_mask [(HI "255") (SI "65535") (DI "4294967295")])
 
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
