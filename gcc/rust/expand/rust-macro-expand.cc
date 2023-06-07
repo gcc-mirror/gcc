@@ -669,6 +669,62 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
   return res;
 }
 
+/*
+ * Helper function for defining unmatched repetition metavars
+ */
+void
+MacroExpander::match_repetition_skipped_metavars (AST::MacroMatch &match)
+{
+  // We have to handle zero fragments differently: They will not have been
+  // "matched" but they are still valid and should be inserted as a special
+  // case. So we go through the stack map, and for every fragment which doesn't
+  // exist, insert a zero-matched fragment.
+  switch (match.get_macro_match_type ())
+    {
+    case AST::MacroMatch::MacroMatchType::Fragment:
+      match_repetition_skipped_metavars (
+	static_cast<AST::MacroMatchFragment &> (match));
+      break;
+    case AST::MacroMatch::MacroMatchType::Repetition:
+      match_repetition_skipped_metavars (
+	static_cast<AST::MacroMatchRepetition &> (match));
+      break;
+    case AST::MacroMatch::MacroMatchType::Matcher:
+      match_repetition_skipped_metavars (
+	static_cast<AST::MacroMatcher &> (match));
+      break;
+    case AST::MacroMatch::MacroMatchType::Tok:
+      break;
+    }
+}
+
+void
+MacroExpander::match_repetition_skipped_metavars (
+  AST::MacroMatchFragment &fragment)
+{
+  auto &stack_map = sub_stack.peek ();
+  auto it = stack_map.find (fragment.get_ident ());
+
+  if (it == stack_map.end ())
+    sub_stack.insert_matches (fragment.get_ident (),
+			      MatchedFragmentContainer::zero ());
+}
+
+void
+MacroExpander::match_repetition_skipped_metavars (
+  AST::MacroMatchRepetition &rep)
+{
+  for (auto &match : rep.get_matches ())
+    match_repetition_skipped_metavars (*match);
+}
+
+void
+MacroExpander::match_repetition_skipped_metavars (AST::MacroMatcher &rep)
+{
+  for (auto &match : rep.get_matches ())
+    match_repetition_skipped_metavars (*match);
+}
+
 bool
 MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 				 AST::MacroMatchRepetition &rep)
@@ -703,24 +759,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 		  res ? "successfully" : "unsuccessfully",
 		  (unsigned long) match_amount);
 
-  // We have to handle zero fragments differently: They will not have been
-  // "matched" but they are still valid and should be inserted as a special
-  // case. So we go through the stack map, and for every fragment which doesn't
-  // exist, insert a zero-matched fragment.
-  auto &stack_map = sub_stack.peek ();
-  for (auto &match : rep.get_matches ())
-    {
-      if (match->get_macro_match_type ()
-	  == AST::MacroMatch::MacroMatchType::Fragment)
-	{
-	  auto fragment = static_cast<AST::MacroMatchFragment *> (match.get ());
-	  auto it = stack_map.find (fragment->get_ident ());
-
-	  if (it == stack_map.end ())
-	    sub_stack.insert_matches (fragment->get_ident (),
-				      MatchedFragmentContainer::zero ());
-	}
-    }
+  match_repetition_skipped_metavars (rep);
 
   return res;
 }
