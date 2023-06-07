@@ -304,6 +304,11 @@ struct MacroExpander
 
   bool match_token (Parser<MacroInvocLexer> &parser, AST::Token &token);
 
+  void match_repetition_skipped_metavars (AST::MacroMatch &);
+  void match_repetition_skipped_metavars (AST::MacroMatchFragment &);
+  void match_repetition_skipped_metavars (AST::MacroMatchRepetition &);
+  void match_repetition_skipped_metavars (AST::MacroMatcher &);
+
   bool match_repetition (Parser<MacroInvocLexer> &parser,
 			 AST::MacroMatchRepetition &rep);
 
