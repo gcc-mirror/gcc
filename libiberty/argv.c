@@ -299,8 +299,6 @@ non-zero if an error occurred while writing to FILE.
 int
 writeargv (char * const *argv, FILE *f)
 {
-  int status = 0;
-
   if (f == NULL)
     return 1;
 
@@ -333,7 +331,7 @@ writeargv (char * const *argv, FILE *f)
       argv++;
     }
 
-  return status;
+  return 0;
 }
 
 /*
