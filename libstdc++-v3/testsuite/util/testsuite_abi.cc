@@ -233,6 +233,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.11");
       known_versions.push_back("CXXABI_1.3.12");
       known_versions.push_back("CXXABI_1.3.13");
+      known_versions.push_back("CXXABI_1.3.14");
       known_versions.push_back("CXXABI_1.3.15");
       known_versions.push_back("CXXABI_IEEE128_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
