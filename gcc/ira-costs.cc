@@ -2016,6 +2016,16 @@ find_costs_and_classes (FILE *dump_file)
 	      ira_assert (regno_aclass[i] != NO_REGS
 			  && ira_reg_allocno_class_p[regno_aclass[i]]);
 	    }
+	  if (pic_offset_table_rtx != NULL
+	      && i == (int) REGNO (pic_offset_table_rtx))
+	    {
+	      /* For some targets, integer pseudos can be assigned to fp
+		 regs.  As we don't want reload pic offset table pseudo, we
+		 should avoid using non-integer regs.  */
+	      regno_aclass[i]
+		= ira_reg_class_intersect[regno_aclass[i]][GENERAL_REGS];
+	      alt_class = ira_reg_class_intersect[alt_class][GENERAL_REGS];
+	    }
 	  if ((new_class
 	       = (reg_class) (targetm.ira_change_pseudo_allocno_class
 			      (i, regno_aclass[i], best))) != regno_aclass[i])
