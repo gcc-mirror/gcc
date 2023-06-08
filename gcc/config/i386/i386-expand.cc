@@ -16376,7 +16376,7 @@ quarter:
 	  machine_mode concat_mode = tmp_mode == DImode ? V2DImode : V2SImode;
 	  rtx tmp = gen_reg_rtx (concat_mode);
 	  vals = gen_rtx_PARALLEL (concat_mode, gen_rtvec_v (2, words));
-	  ix86_expand_vector_init_general (false, concat_mode, tmp, vals);
+	  ix86_expand_vector_init_general (mmx_ok, concat_mode, tmp, vals);
 	  emit_move_insn (target, gen_lowpart (mode, tmp));
 	}
       else if (n_words == 4)
