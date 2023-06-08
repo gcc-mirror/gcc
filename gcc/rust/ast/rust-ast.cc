@@ -4223,12 +4223,10 @@ Attribute::is_parsed_to_meta_item () const
 }
 
 void
-BlockExpr::strip_tail_expr ()
+BlockExpr::normalize_tail_expr ()
 {
-  if (expr)
+  if (!expr)
     {
-      expr = nullptr;
-
       // HACK: try to turn the last statement into a tail expression
       if (statements.size () && statements.back ()->is_expr ())
 	{

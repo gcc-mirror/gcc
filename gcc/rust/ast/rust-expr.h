@@ -2488,7 +2488,9 @@ public:
   }
 
   // Removes the tail expression from the block.
-  void strip_tail_expr ();
+  void strip_tail_expr () { expr = nullptr; }
+  // Normalizes a trailing statement without a semicolon to a tail expression.
+  void normalize_tail_expr ();
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
