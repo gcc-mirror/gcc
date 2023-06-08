@@ -4272,6 +4272,14 @@ maybe_init_list_as_array (tree elttype, tree init)
   if (has_non_trivial_temporaries (first))
     return NULL_TREE;
 
+  /* We can't do this if copying from the initializer_list would be
+     ill-formed.  */
+  tree copy_argtypes = make_tree_vec (1);
+  TREE_VEC_ELT (copy_argtypes, 0)
+    = cp_build_qualified_type (elttype, TYPE_QUAL_CONST);
+  if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
+    return NULL_TREE;
+
   init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
   tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
   arr = finish_compound_literal (arr, init, tf_none);
