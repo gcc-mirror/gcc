@@ -1868,7 +1868,6 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Component_Declaration (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (Component_Definition (N));
       Id  : constant Entity_Id  := Defining_Identifier (N);
       E   : constant Node_Id    := Expression (N);
       Typ : constant Node_Id    :=
@@ -2203,23 +2202,6 @@ package body Sem_Ch3 is
             Set_Etype (Id, Any_Type);
             Set_Is_Limited_Composite (Current_Scope, False);
          end if;
-      end if;
-
-      --  When possible, build the default subtype
-
-      if Build_Default_Subtype_OK (T) then
-         declare
-            Act_T : constant Entity_Id := Build_Default_Subtype (T, N);
-
-         begin
-            Set_Etype (Id, Act_T);
-
-            --  Rewrite component definition to use the constrained subtype
-
-            Rewrite (Component_Definition (N),
-              Make_Component_Definition (Loc,
-                Subtype_Indication => New_Occurrence_Of (Act_T, Loc)));
-         end;
       end if;
 
       Set_Original_Record_Component (Id, Id);
