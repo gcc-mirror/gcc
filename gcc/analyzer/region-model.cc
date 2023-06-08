@@ -2396,7 +2396,8 @@ region_model::get_store_value (const region *reg,
   if (reg->empty_p ())
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
-  check_region_for_read (reg, ctxt);
+  if (check_region_for_read (reg, ctxt))
+    return m_mgr->get_or_create_unknown_svalue(reg->get_type());
 
   /* Special-case: handle var_decls in the constant pool.  */
   if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
@@ -2802,19 +2803,22 @@ region_model::get_string_size (const region *reg) const
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems accessing REG,
-   using DIR to determine if this access is a read or write.  */
+   using DIR to determine if this access is a read or write.
+   Return TRUE if an UNKNOWN_SVALUE needs be created.  */
 
-void
+bool
 region_model::check_region_access (const region *reg,
 				   enum access_direction dir,
 				   region_model_context *ctxt) const
 {
   /* Fail gracefully if CTXT is NULL.  */
   if (!ctxt)
-    return;
+    return false;
 
+  bool need_unknown_sval = false;
   check_region_for_taint (reg, dir, ctxt);
-  check_region_bounds (reg, dir, ctxt);
+  if (!check_region_bounds (reg, dir, ctxt))
+    need_unknown_sval = true;
 
   switch (dir)
     {
@@ -2827,6 +2831,7 @@ region_model::check_region_access (const region *reg,
       check_for_writable_region (reg, ctxt);
       break;
     }
+  return need_unknown_sval;
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems writing to REG.  */
@@ -2838,13 +2843,14 @@ region_model::check_region_for_write (const region *dest_reg,
   check_region_access (dest_reg, DIR_WRITE, ctxt);
 }
 
-/* If CTXT is non-NULL, use it to warn about any problems reading from REG.  */
+/* If CTXT is non-NULL, use it to warn about any problems reading from REG.
+  Returns TRUE if an unknown svalue needs be created.  */
 
-void
+bool
 region_model::check_region_for_read (const region *src_reg,
 				     region_model_context *ctxt) const
 {
-  check_region_access (src_reg, DIR_READ, ctxt);
+  return check_region_access (src_reg, DIR_READ, ctxt);
 }
 
 /* Concrete subclass for casts of pointers that lead to trailing bytes.  */
