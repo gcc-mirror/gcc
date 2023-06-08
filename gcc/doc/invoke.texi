@@ -9591,8 +9591,9 @@ struct s @{ int f, g, h; @};
 struct s x = @{ 3, 4 @};
 @end smallexample
 
-This option does not warn about designated initializers, so the following
-modification does not trigger a warning:
+@c It's unclear if this behavior is desirable.  See PR39589 and PR96868.
+In C this option does not warn about designated initializers, so the
+following modification does not trigger a warning:
 
 @smallexample
 struct s @{ int f, g, h; @};
