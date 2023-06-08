@@ -1984,12 +1984,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   @0)
 
 /* zero_one_valued_p will match when a value is known to be either
-   0 or 1 including constants 0 or 1. */
+   0 or 1 including constants 0 or 1.
+   Signed 1-bits includes -1 so they cannot match here. */
 (match zero_one_valued_p
  @0
- (if (INTEGRAL_TYPE_P (type) && wi::leu_p (tree_nonzero_bits (@0), 1))))
+ (if (INTEGRAL_TYPE_P (type)
+      && (TYPE_UNSIGNED (type)
+	  || TYPE_PRECISION (type) > 1)
+      && wi::leu_p (tree_nonzero_bits (@0), 1))))
 (match zero_one_valued_p
- truth_valued_p@0)
+ truth_valued_p@0
+ (if (INTEGRAL_TYPE_P (type)
+      && (TYPE_UNSIGNED (type)
+	  || TYPE_PRECISION (type) > 1))))
 
 /* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 }.  */
 (simplify
