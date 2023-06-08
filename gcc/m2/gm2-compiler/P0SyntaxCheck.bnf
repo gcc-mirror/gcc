@@ -918,14 +918,14 @@ NamedOperand := '[' Ident ']' =:
 
 AsmOperandName := [ NamedOperand ] =:
 
-AsmOperands  := string [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+AsmOperands  := ConstExpression ':' AsmList [ ':' AsmList [ ':' TrashList ] ]
               =:
 
 AsmList      := [ AsmElement ] { ',' AsmElement } =:
 
-AsmElement   := AsmOperandName string '(' Expression ')'
+AsmElement   := AsmOperandName ConstExpression '(' Expression ')'
               =:
 
-TrashList    := [ string ] { ',' string } =:
+TrashList    := [ ConstExpression ] { ',' ConstExpression } =:
 
 FNB

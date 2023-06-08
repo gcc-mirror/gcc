@@ -701,8 +701,9 @@ END FindType ;
    BuildTreeFromInterface - generates a GCC tree from an interface definition.
 *)
 
-PROCEDURE BuildTreeFromInterface (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : Tree ;
 VAR
+   tok     : CARDINAL ;
    i       : CARDINAL ;
    name    : Name ;
    str,
@@ -715,19 +716,19 @@ BEGIN
    THEN
       i := 1 ;
       REPEAT
-         GetRegInterface (sym, i, name, str, obj) ;
+         GetRegInterface (sym, i, tok, name, str, obj) ;
          IF str#NulSym
          THEN
             IF IsConstString (str)
             THEN
-               DeclareConstant (tokenno, obj) ;
+               DeclareConstant (tok, obj) ;
                IF name = NulName
                THEN
                   gccName := NIL
                ELSE
                   gccName := BuildStringConstant (KeyToCharStar (name), LengthKey (name))
                END ;
-               tree := ChainOnParamValue (tree, gccName, PromoteToString (tokenno, str), Mod2Gcc (obj))
+               tree := ChainOnParamValue (tree, gccName, PromoteToString (tok, str), Mod2Gcc (obj))
             ELSE
                WriteFormat0 ('a constraint to the GNU ASM statement must be a constant string')
             END
@@ -745,25 +746,26 @@ END BuildTreeFromInterface ;
 
 PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : Tree ;
 VAR
+   tok : CARDINAL ;
    i   : CARDINAL ;
    str,
    obj : CARDINAL ;
    name: Name ;
    tree: Tree ;
 BEGIN
-   tree := Tree(NIL) ;
+   tree := Tree (NIL) ;
    IF sym#NulSym
    THEN
       i := 1 ;
       REPEAT
-         GetRegInterface(sym, i, name, str, obj) ;
-         IF str#NulSym
+         GetRegInterface (sym, i, tok, name, str, obj) ;
+         IF str # NulSym
          THEN
-            IF IsConstString(str)
+            IF IsConstString (str)
             THEN
-               tree := AddStringToTreeList(tree, PromoteToString(GetDeclaredMod(str), str))
+               tree := AddStringToTreeList (tree, PromoteToString (tok, str))
             ELSE
-               WriteFormat0('a constraint to the GNU ASM statement must be a constant string')
+               WriteFormat0 ('a constraint to the GNU ASM statement must be a constant string')
             END
          END ;
 (*
@@ -772,10 +774,10 @@ BEGIN
             InternalError ('not expecting the object to be non null in the trash list')
          END ;
 *)
-         INC(i)
-      UNTIL (str=NulSym) AND (obj=NulSym)
+         INC (i)
+      UNTIL (str = NulSym) AND (obj = NulSym)
    END ;
-   RETURN( tree )
+   RETURN tree
 END BuildTrashTreeFromInterface ;
 
 
@@ -801,8 +803,8 @@ BEGIN
       can handle the register dependency providing the user
       specifies VOLATILE and input/output/trash sets correctly.
    *)
-   inputs  := BuildTreeFromInterface (tokenno, GetGnuAsmInput(GnuAsm)) ;
-   outputs := BuildTreeFromInterface (tokenno, GetGnuAsmOutput(GnuAsm)) ;
+   inputs  := BuildTreeFromInterface (GetGnuAsmInput(GnuAsm)) ;
+   outputs := BuildTreeFromInterface (GetGnuAsmOutput(GnuAsm)) ;
    trash   := BuildTrashTreeFromInterface (GetGnuAsmTrash(GnuAsm)) ;
    labels  := NIL ;  (* at present it makes no sence for Modula-2 to jump to a label,
                         given that labels are not allowed in Modula-2.  *)
