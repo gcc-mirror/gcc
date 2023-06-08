@@ -33,6 +33,7 @@ public:
   static HIR::BlockExpr *translate (AST::BlockExpr *expr, bool *terminated)
   {
     ASTLoweringBlock resolver;
+    expr->normalize_tail_expr ();
     expr->accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
