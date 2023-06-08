@@ -340,6 +340,17 @@ private:
   null_denotation (const_TokenPtr t, AST::AttrVec outer_attrs = AST::AttrVec (),
 		   ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::Expr>
+  null_denotation_path (AST::PathInExpression path, AST::AttrVec outer_attrs,
+			ParseRestrictions restrictions = ParseRestrictions ());
+  std::unique_ptr<AST::Expr>
+  null_denotation_not_path (const_TokenPtr t, AST::AttrVec outer_attrs,
+			    ParseRestrictions restrictions
+			    = ParseRestrictions ());
+  std::unique_ptr<AST::Expr>
+  left_denotations (std::unique_ptr<AST::Expr> null_denotation,
+		    int right_binding_power, AST::AttrVec outer_attrs,
+		    ParseRestrictions restrictions = ParseRestrictions ());
+  std::unique_ptr<AST::Expr>
   left_denotation (const_TokenPtr t, std::unique_ptr<AST::Expr> left,
 		   AST::AttrVec outer_attrs = AST::AttrVec (),
 		   ParseRestrictions restrictions = ParseRestrictions ());
@@ -637,12 +648,10 @@ private:
   std::unique_ptr<AST::LetStmt> parse_let_stmt (AST::AttrVec outer_attrs,
 						ParseRestrictions restrictions
 						= ParseRestrictions ());
-  std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs,
-						  ParseRestrictions restrictions
-						  = ParseRestrictions ());
+  std::unique_ptr<AST::Stmt> parse_expr_stmt (AST::AttrVec outer_attrs,
+					      ParseRestrictions restrictions
+					      = ParseRestrictions ());
   ExprOrStmt parse_stmt_or_expr ();
-  ExprOrStmt parse_macro_invocation_maybe_semi (AST::AttrVec outer_attrs);
-  ExprOrStmt parse_path_based_stmt_or_expr (AST::AttrVec outer_attrs);
 
   // Pattern-related
   std::unique_ptr<AST::Pattern> parse_literal_or_range_pattern ();

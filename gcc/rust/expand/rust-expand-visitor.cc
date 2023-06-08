@@ -232,7 +232,7 @@ void
 ExpandVisitor::expand_inner_stmts (
   std::vector<std::unique_ptr<AST::Stmt>> &stmts)
 {
-  expander.push_context (MacroExpander::ContextType::BLOCK);
+  expander.push_context (MacroExpander::ContextType::STMT);
 
   for (auto it = stmts.begin (); it != stmts.end (); it++)
     {
@@ -272,10 +272,9 @@ ExpandVisitor::expand_inner_stmts (
 void
 ExpandVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
-  // FIXME: ARTHUR: Why isn't there a ContextType::EXPR? We can only
-  // reach `parse_expr` once in MacroExpander::transcribe_rule(), but it
-  // would make things clearer wouldn't it?
+  expander.push_context (MacroExpander::ContextType::EXPR);
   expr->accept_vis (*this);
+  expander.pop_context ();
 
   auto final_fragment = expander.take_expanded_fragment ();
   if (final_fragment.should_expand ()
@@ -732,12 +731,8 @@ ExpandVisitor::visit (AST::BlockExpr &expr)
 {
   expand_inner_stmts (expr.get_statements ());
 
-  expander.push_context (MacroExpander::ContextType::BLOCK);
-
   if (expr.has_tail_expr ())
     maybe_expand_expr (expr.get_tail_expr ());
-
-  expander.pop_context ();
 }
 
 void
@@ -1438,7 +1433,7 @@ ExpandVisitor::visit (AST::LetStmt &stmt)
 void
 ExpandVisitor::visit (AST::ExprStmt &stmt)
 {
-  visit (stmt.get_expr ());
+  maybe_expand_expr (stmt.get_expr ());
 }
 
 void

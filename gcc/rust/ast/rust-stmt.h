@@ -201,8 +201,9 @@ public:
 
   std::vector<LetStmt *> locals;
 
-  ExprStmt (std::unique_ptr<Expr> expr, Location locus, bool semicolon_followed)
-    : expr (expr->to_stmt ()), locus (locus),
+  ExprStmt (std::unique_ptr<Expr> &&expr, Location locus,
+	    bool semicolon_followed)
+    : expr (std::move (expr)), locus (locus),
       semicolon_followed (semicolon_followed)
   {}
 

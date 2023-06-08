@@ -6266,18 +6266,11 @@ Parser<ManagedTokenSource>::parse_stmt (ParseRestrictions restrictions)
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "macro_rules")
+      else if (t->get_str () == "macro_rules"
+	       && lexer.peek_token (1)->get_id () == EXCLAM)
 	{
 	  // macro_rules! macro item
 	  return parse_macro_rules_def (std::move (outer_attrs));
-	}
-      else if (lexer.peek_token (1)->get_id () == SCOPE_RESOLUTION
-	       || lexer.peek_token (1)->get_id () == EXCLAM)
-	{
-	  // FIXME: ensure doesn't take any expressions by mistake
-	  /* path (probably) or macro invocation, so probably a macro
-	   * invocation semi */
-	  return parse_macro_invocation_semi (std::move (outer_attrs));
 	}
       gcc_fallthrough ();
       // TODO: find out how to disable gcc "implicit fallthrough" warning
@@ -7269,19 +7262,77 @@ Parser<ManagedTokenSource>::parse_method ()
 		      AST::Visibility::create_error (), AST::AttrVec (), locus);
 }
 
-/* Parses an expression statement. */
+/* Parses an expression or macro statement. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExprStmt>
+std::unique_ptr<AST::Stmt>
 Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 					     ParseRestrictions restrictions)
 {
   Location locus = lexer.peek_token ()->get_locus ();
 
-  restrictions.expr_can_be_stmt = true;
+  std::unique_ptr<AST::Expr> expr;
 
-  // attempt to parse via parse_expr_without_block - seems to work
-  std::unique_ptr<AST::Expr> expr
-    = parse_expr (std::move (outer_attrs), restrictions);
+  switch (lexer.peek_token ()->get_id ())
+    {
+    case IDENTIFIER:
+    case CRATE:
+    case SUPER:
+    case SELF:
+    case SELF_ALIAS:
+    case DOLLAR_SIGN:
+      case SCOPE_RESOLUTION: {
+	AST::PathInExpression path = parse_path_in_expression ();
+	std::unique_ptr<AST::Expr> null_denotation;
+
+	if (lexer.peek_token ()->get_id () == EXCLAM)
+	  {
+	    // Bind a reference to avoid -Wredundant-move on post-P1825R0
+	    // compilers. Change to non-reference type and remove the moves
+	    // below once C++20 is required to build gcc.
+	    std::unique_ptr<AST::MacroInvocation> &&invoc
+	      = parse_macro_invocation_partial (std::move (path),
+						std::move (outer_attrs));
+
+	    if (restrictions.consume_semi && maybe_skip_token (SEMICOLON))
+	      {
+		invoc->add_semicolon ();
+		// Macro invocation with semicolon.
+		return std::move (invoc);
+	      }
+
+	    TokenId after_macro = lexer.peek_token ()->get_id ();
+
+	    if (restrictions.allow_close_after_expr_stmt
+		&& (after_macro == RIGHT_PAREN || after_macro == RIGHT_CURLY
+		    || after_macro == RIGHT_SQUARE))
+	      return std::move (invoc);
+
+	    if (invoc->get_invoc_data ().get_delim_tok_tree ().get_delim_type ()
+		  == AST::CURLY
+		&& after_macro != DOT && after_macro != QUESTION_MARK)
+	      {
+		rust_debug ("braced macro statement");
+		return std::move (invoc);
+	      }
+
+	    null_denotation = std::move (invoc);
+	  }
+	else
+	  {
+	    null_denotation
+	      = null_denotation_path (std::move (path), {}, restrictions);
+	  }
+
+	expr = left_denotations (std::move (null_denotation), LBP_LOWEST,
+				 std::move (outer_attrs), restrictions);
+	break;
+      }
+    default:
+      restrictions.expr_can_be_stmt = true;
+      expr = parse_expr (std::move (outer_attrs), restrictions);
+      break;
+    }
+
   if (expr == nullptr)
     {
       // expr is required, error
@@ -7301,7 +7352,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	{
 	  has_semi = true;
 	}
-      else if (!expr->is_expr_without_block ())
+      else if (expr->is_expr_without_block ())
 	{
 	  if (restrictions.allow_close_after_expr_stmt)
 	    {
@@ -8466,7 +8517,6 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 
       ParseRestrictions restrictions;
       restrictions.expr_can_be_stmt = true;
-      restrictions.consume_semi = false;
 
       std::unique_ptr<AST::Expr> expr = parse_expr ({}, restrictions);
 
@@ -11562,6 +11612,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
   AST::AttrVec outer_attrs = parse_outer_attributes ();
   ParseRestrictions restrictions;
   restrictions.expr_can_be_stmt = true;
+  std::unique_ptr<AST::Expr> expr;
 
   // parsing this will be annoying because of the many different possibilities
   /* best may be just to copy paste in parse_item switch, and failing that try
@@ -11614,6 +11665,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	  {
 	    case LEFT_CURLY: {
 	      // unsafe block: parse as expression
+	      expr = parse_expr (std::move (outer_attrs), restrictions);
 	      break;
 	    }
 	  case AUTO:
@@ -11649,8 +11701,6 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
       }
       /* FIXME: this is either a macro invocation or macro invocation semi.
        * start parsing to determine which one it is. */
-      // FIXME: or this is another path-based thing - struct/enum or path
-      // itself return parse_path_based_stmt_or_expr(std::move(outer_attrs));
       // FIXME: old code there
 
     // crappy hack to do union "keyword"
@@ -11663,26 +11713,67 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	  return ExprOrStmt (std::move (item));
 	  // or should this go straight to parsing union?
 	}
-      else if (t->get_str () == "macro_rules")
+      else if (t->get_str () == "macro_rules"
+	       && lexer.peek_token (1)->get_id () == EXCLAM)
 	{
 	  // macro_rules! macro item
 	  std::unique_ptr<AST::Item> item (
 	    parse_macro_rules_def (std::move (outer_attrs)));
 	  return ExprOrStmt (std::move (item));
 	}
-      else
-	{
-	  break;
-	}
+      gcc_fallthrough ();
+    case SUPER:
+    case SELF:
+    case SELF_ALIAS:
+    case CRATE:
+    case SCOPE_RESOLUTION:
+      case DOLLAR_SIGN: {
+	AST::PathInExpression path = parse_path_in_expression ();
+	std::unique_ptr<AST::Expr> null_denotation;
+
+	if (lexer.peek_token ()->get_id () == EXCLAM)
+	  {
+	    std::unique_ptr<AST::MacroInvocation> invoc
+	      = parse_macro_invocation_partial (std::move (path),
+						std::move (outer_attrs));
+
+	    if (restrictions.consume_semi && maybe_skip_token (SEMICOLON))
+	      {
+		invoc->add_semicolon ();
+		// Macro invocation with semicolon.
+		return ExprOrStmt (
+		  std::unique_ptr<AST::Stmt> (std::move (invoc)));
+	      }
+
+	    TokenId after_macro = lexer.peek_token ()->get_id ();
+
+	    if (invoc->get_invoc_data ().get_delim_tok_tree ().get_delim_type ()
+		  == AST::CURLY
+		&& after_macro != DOT && after_macro != QUESTION_MARK)
+	      {
+		rust_debug ("braced macro statement");
+		return ExprOrStmt (
+		  std::unique_ptr<AST::Stmt> (std::move (invoc)));
+	      }
+
+	    null_denotation = std::move (invoc);
+	  }
+	else
+	  {
+	    null_denotation
+	      = null_denotation_path (std::move (path), {}, restrictions);
+	  }
+
+	expr = left_denotations (std::move (null_denotation), LBP_LOWEST,
+				 std::move (outer_attrs), restrictions);
+	break;
+      }
     default:
+      /* expression statement or expression itself - parse
+       * expression then make it statement if semi afterwards */
+      expr = parse_expr (std::move (outer_attrs), restrictions);
       break;
     }
-
-  /* expression statement or expression itself - parse
-   * expression then make it statement if semi afterwards */
-
-  std::unique_ptr<AST::Expr> expr
-    = parse_expr (std::move (outer_attrs), restrictions);
 
   const_TokenPtr after_expr = lexer.peek_token ();
   if (after_expr->get_id () == SEMICOLON)
@@ -11713,251 +11804,6 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 
   // return expression
   return ExprOrStmt (std::move (expr));
-}
-
-/* Parses a statement or expression beginning with a path (i.e. macro,
- * struct/enum, or path expr) */
-template <typename ManagedTokenSource>
-ExprOrStmt
-Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
-  AST::AttrVec outer_attrs)
-{
-  // attempt to parse path
-  Location stmt_or_expr_loc = lexer.peek_token ()->get_locus ();
-  AST::PathInExpression path = parse_path_in_expression ();
-
-  // branch on next token
-  const_TokenPtr t2 = lexer.peek_token ();
-  switch (t2->get_id ())
-    {
-      case EXCLAM: {
-	/* macro invocation or macro invocation semi - depends on whether
-	 * there is a final ';' */
-	// convert path in expr to simple path (as that is used in macros)
-	AST::SimplePath macro_path = path.as_simple_path ();
-	if (macro_path.is_empty ())
-	  {
-	    Error error (t2->get_locus (),
-			 "failed to convert parsed path to simple "
-			 "path (for macro invocation or semi)");
-	    add_error (std::move (error));
-
-	    return ExprOrStmt::create_error ();
-	  }
-
-	// skip exclamation mark
-	lexer.skip_token ();
-
-	const_TokenPtr t3 = lexer.peek_token ();
-	Location tok_tree_loc = t3->get_locus ();
-
-	AST::DelimType type = AST::PARENS;
-	switch (t3->get_id ())
-	  {
-	  case LEFT_PAREN:
-	    type = AST::PARENS;
-	    break;
-	  case LEFT_SQUARE:
-	    type = AST::SQUARE;
-	    break;
-	  case LEFT_CURLY:
-	    type = AST::CURLY;
-	    break;
-	  default:
-	    add_error (
-	      Error (t3->get_locus (),
-		     "unrecognised token %qs in macro invocation - (opening) "
-		     "delimiter expected",
-		     t3->get_token_description ()));
-
-	    return ExprOrStmt::create_error ();
-	  }
-	lexer.skip_token ();
-
-	// parse actual token trees
-	std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
-	auto delim_open
-	  = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
-	token_trees.push_back (std::move (delim_open));
-
-	t3 = lexer.peek_token ();
-	// parse token trees until the initial delimiter token is found again
-	while (!token_id_matches_delims (t3->get_id (), type))
-	  {
-	    std::unique_ptr<AST::TokenTree> tree = parse_token_tree ();
-
-	    if (tree == nullptr)
-	      {
-		Error error (t3->get_locus (),
-			     "failed to parse token tree for macro "
-			     "invocation (or semi) - "
-			     "found %qs",
-			     t3->get_token_description ());
-		add_error (std::move (error));
-
-		return ExprOrStmt::create_error ();
-	      }
-
-	    token_trees.push_back (std::move (tree));
-
-	    t3 = lexer.peek_token ();
-	  }
-
-	auto delim_close
-	  = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
-	token_trees.push_back (std::move (delim_close));
-
-	// parse end delimiters
-	t3 = lexer.peek_token ();
-	if (token_id_matches_delims (t3->get_id (), type))
-	  {
-	    // tokens match opening delimiter, so skip.
-	    lexer.skip_token ();
-
-	    /* with curly bracketed macros, assume it is a macro invocation
-	     * unless a semicolon is explicitly put at the end. this is not
-	     * necessarily true (i.e. context-dependence) and so may have to
-	     * be fixed up via HACKs in semantic analysis (by checking whether
-	     * it is the last elem in the vector). */
-
-	    AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-						tok_tree_loc);
-	    AST::MacroInvocData invoc_data (std::move (macro_path),
-					    std::move (delim_tok_tree));
-
-	    if (lexer.peek_token ()->get_id () == SEMICOLON)
-	      {
-		lexer.skip_token ();
-
-		auto stmt
-		  = AST::MacroInvocation::Regular (std::move (invoc_data),
-						   std::move (outer_attrs),
-						   stmt_or_expr_loc, true);
-		return ExprOrStmt (std::move (stmt));
-	      }
-
-	    // otherwise, create macro invocation
-	    auto expr = AST::MacroInvocation::Regular (std::move (invoc_data),
-						       std::move (outer_attrs),
-						       stmt_or_expr_loc, false);
-	    return ExprOrStmt (std::move (expr));
-	  }
-	else
-	  {
-	    // tokens don't match opening delimiters, so produce error
-	    Error error (
-	      t2->get_locus (),
-	      "unexpected token %qs - expecting closing delimiter %qs (for a "
-	      "macro invocation)",
-	      t2->get_token_description (),
-	      (type == AST::PARENS ? ")" : (type == AST::SQUARE ? "]" : "}")));
-	    add_error (std::move (error));
-
-	    return ExprOrStmt::create_error ();
-	  }
-      }
-      case LEFT_CURLY: {
-	/* definitely not a block:
-	 *  path '{' ident ','
-	 *  path '{' ident ':' [anything] ','
-	 *  path '{' ident ':' [not a type]
-	 * otherwise, assume block expr and thus path */
-	bool not_a_block = lexer.peek_token (1)->get_id () == IDENTIFIER
-			   && (lexer.peek_token (2)->get_id () == COMMA
-			       || (lexer.peek_token (2)->get_id () == COLON
-				   && (lexer.peek_token (4)->get_id () == COMMA
-				       || !can_tok_start_type (
-					 lexer.peek_token (3)->get_id ()))));
-	std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
-
-	if (not_a_block)
-	  {
-	    /* assume struct expr struct (as struct-enum disambiguation
-	     * requires name lookup) again, make statement if final ';' */
-	    expr = parse_struct_expr_struct_partial (std::move (path),
-						     std::move (outer_attrs));
-	    if (expr == nullptr)
-	      {
-		Error error (t2->get_locus (),
-			     "failed to parse struct expr struct");
-		add_error (std::move (error));
-
-		return ExprOrStmt::create_error ();
-	      }
-	  }
-	else
-	  {
-	    // assume path - make statement if final ';'
-	    // lexer.skip_token();
-
-	    // HACK: add outer attrs to path
-	    path.set_outer_attrs (std::move (outer_attrs));
-	    expr = std::unique_ptr<AST::PathInExpression> (
-	      new AST::PathInExpression (std::move (path)));
-	  }
-
-	// determine if statement if ends with semicolon
-	if (lexer.peek_token ()->get_id () == SEMICOLON)
-	  {
-	    // statement
-	    lexer.skip_token ();
-	    std::unique_ptr<AST::ExprStmt> stmt (
-	      new AST::ExprStmt (std::move (expr), stmt_or_expr_loc, true));
-	    return ExprOrStmt (std::move (stmt));
-	  }
-
-	// otherwise, expression
-	return ExprOrStmt (std::move (expr));
-      }
-      case LEFT_PAREN: {
-	/* assume struct expr tuple (as struct-enum disambiguation requires
-	 * name lookup) again, make statement if final ';' */
-	std::unique_ptr<AST::CallExpr> struct_expr
-	  = parse_struct_expr_tuple_partial (std::move (path),
-					     std::move (outer_attrs));
-	if (struct_expr == nullptr)
-	  {
-	    Error error (t2->get_locus (), "failed to parse struct expr tuple");
-	    add_error (std::move (error));
-
-	    return ExprOrStmt::create_error ();
-	  }
-
-	// determine if statement if ends with semicolon
-	if (lexer.peek_token ()->get_id () == SEMICOLON)
-	  {
-	    // statement
-	    lexer.skip_token ();
-	    std::unique_ptr<AST::ExprStmt> stmt (
-	      new AST::ExprStmt (std::move (struct_expr), stmt_or_expr_loc,
-				 true));
-	    return ExprOrStmt (std::move (stmt));
-	  }
-
-	// otherwise, expression
-	return ExprOrStmt (std::move (struct_expr));
-      }
-      default: {
-	// assume path - make statement if final ';'
-	// lexer.skip_token();
-
-	// HACK: replace outer attributes in path
-	path.set_outer_attrs (std::move (outer_attrs));
-	std::unique_ptr<AST::PathInExpression> expr (
-	  new AST::PathInExpression (std::move (path)));
-
-	if (lexer.peek_token ()->get_id () == SEMICOLON)
-	  {
-	    lexer.skip_token ();
-
-	    std::unique_ptr<AST::ExprStmt> stmt (
-	      new AST::ExprStmt (std::move (expr), stmt_or_expr_loc, true));
-	    return ExprOrStmt (std::move (stmt));
-	  }
-
-	return ExprOrStmt (std::move (expr));
-      }
-    }
 }
 
 // Parses a struct expression field.
@@ -12042,135 +11888,6 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	       t->get_token_description ()));
 
       return nullptr;
-    }
-}
-
-// Parses a macro invocation or macro invocation semi.
-template <typename ManagedTokenSource>
-ExprOrStmt
-Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
-  AST::AttrVec outer_attrs)
-{
-  Location macro_locus = lexer.peek_token ()->get_locus ();
-  AST::SimplePath macro_path = parse_simple_path ();
-  if (macro_path.is_empty ())
-    {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "failed to parse simple path in macro invocation or semi");
-      add_error (std::move (error));
-
-      return ExprOrStmt::create_error ();
-    }
-
-  if (!skip_token (EXCLAM))
-    {
-      return ExprOrStmt::create_error ();
-    }
-
-  const_TokenPtr t3 = lexer.peek_token ();
-  Location tok_tree_loc = t3->get_locus ();
-
-  AST::DelimType type = AST::PARENS;
-  switch (t3->get_id ())
-    {
-    case LEFT_PAREN:
-      type = AST::PARENS;
-      break;
-    case LEFT_SQUARE:
-      type = AST::SQUARE;
-      break;
-    case LEFT_CURLY:
-      type = AST::CURLY;
-      break;
-    default:
-      add_error (
-	Error (t3->get_locus (),
-	       "unrecognised token %qs in macro invocation - (opening) "
-	       "delimiter expected",
-	       t3->get_token_description ()));
-
-      return ExprOrStmt::create_error ();
-    }
-  lexer.skip_token ();
-
-  // parse actual token trees
-  std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
-  auto delim_open
-    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
-  token_trees.push_back (std::move (delim_open));
-
-  t3 = lexer.peek_token ();
-  // parse token trees until the initial delimiter token is found again
-  while (!token_id_matches_delims (t3->get_id (), type))
-    {
-      std::unique_ptr<AST::TokenTree> tree = parse_token_tree ();
-
-      if (tree == nullptr)
-	{
-	  Error error (t3->get_locus (),
-		       "failed to parse token tree for macro invocation (or "
-		       "semi) - found %qs",
-		       t3->get_token_description ());
-	  add_error (std::move (error));
-
-	  return ExprOrStmt::create_error ();
-	}
-
-      token_trees.push_back (std::move (tree));
-
-      t3 = lexer.peek_token ();
-    }
-  auto delim_close
-    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
-  token_trees.push_back (std::move (delim_close));
-
-  // parse end delimiters
-  t3 = lexer.peek_token ();
-  if (token_id_matches_delims (t3->get_id (), type))
-    {
-      // tokens match opening delimiter, so skip.
-      lexer.skip_token ();
-
-      /* with curly bracketed macros, assume it is a macro invocation unless
-       * a semicolon is explicitly put at the end. this is not necessarily
-       * true (i.e. context-dependence) and so may have to be fixed up via
-       * HACKs in semantic analysis (by checking whether it is the last elem
-       * in the vector). */
-
-      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-					  tok_tree_loc);
-      AST::MacroInvocData invoc_data (std::move (macro_path),
-				      std::move (delim_tok_tree));
-
-      if (lexer.peek_token ()->get_id () == SEMICOLON)
-	{
-	  lexer.skip_token ();
-
-	  auto stmt = AST::MacroInvocation::Regular (std::move (invoc_data),
-						     std::move (outer_attrs),
-						     macro_locus, true);
-	  return ExprOrStmt (std::move (stmt));
-	}
-
-      // otherwise, create macro invocation
-      auto expr
-	= AST::MacroInvocation::Regular (std::move (invoc_data),
-					 std::move (outer_attrs), macro_locus);
-      return ExprOrStmt (std::move (expr));
-    }
-  else
-    {
-      const_TokenPtr t = lexer.peek_token ();
-      // tokens don't match opening delimiters, so produce error
-      Error error (
-	t->get_locus (),
-	"unexpected token %qs - expecting closing delimiter %qs (for a "
-	"macro invocation)",
-	t->get_token_description (),
-	(type == AST::PARENS ? ")" : (type == AST::SQUARE ? "]" : "}")));
-      add_error (std::move (error));
-
-      return ExprOrStmt::create_error ();
     }
 }
 
@@ -12376,13 +12093,24 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 
   lexer.skip_token ();
 
-  bool expr_can_be_stmt = restrictions.expr_can_be_stmt;
-  restrictions.expr_can_be_stmt = false;
+  ParseRestrictions null_denotation_restrictions = restrictions;
+  null_denotation_restrictions.expr_can_be_stmt = false;
 
   // parse null denotation (unary part of expression)
   std::unique_ptr<AST::Expr> expr
-    = null_denotation (current_token, {}, restrictions);
+    = null_denotation (current_token, {}, null_denotation_restrictions);
 
+  return left_denotations (std::move (expr), right_binding_power,
+			   std::move (outer_attrs), restrictions);
+}
+
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Expr>
+Parser<ManagedTokenSource>::left_denotations (std::unique_ptr<AST::Expr> expr,
+					      int right_binding_power,
+					      AST::AttrVec outer_attrs,
+					      ParseRestrictions restrictions)
+{
   if (expr == nullptr)
     {
       // DEBUG
@@ -12390,9 +12118,9 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
       return nullptr;
     }
 
-  current_token = lexer.peek_token ();
+  const_TokenPtr current_token = lexer.peek_token ();
 
-  if (expr_can_be_stmt && !expr->is_expr_without_block ()
+  if (restrictions.expr_can_be_stmt && !expr->is_expr_without_block ()
       && current_token->get_id () != DOT
       && current_token->get_id () != QUESTION_MARK)
     {
@@ -12400,6 +12128,8 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
       expr->set_outer_attrs (std::move (outer_attrs));
       return expr;
     }
+
+  restrictions.expr_can_be_stmt = false;
 
   // stop parsing if find lower priority token - parse higher priority first
   while (right_binding_power < left_binding_power (current_token))
@@ -12449,7 +12179,12 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 
   switch (tok->get_id ())
     {
-      case IDENTIFIER: {
+    case IDENTIFIER:
+    case SELF:
+    case SELF_ALIAS:
+    case DOLLAR_SIGN:
+    case CRATE:
+      case SUPER: {
 	// DEBUG
 	rust_debug ("beginning null denotation identifier handling");
 
@@ -12457,88 +12192,126 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	 * struct/enum, or just path info from it */
 	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
 
-	// DEBUG:
-	rust_debug ("finished null denotation identifier path parsing - "
-		    "next is branching");
+	return null_denotation_path (std::move (path), std::move (outer_attrs),
+				     restrictions);
+      }
+      case SCOPE_RESOLUTION: {
+	// TODO: fix: this is for global paths, i.e. std::string::whatever
+	Error error (tok->get_locus (),
+		     "found null denotation scope resolution operator, and "
+		     "have not written handling for it");
+	add_error (std::move (error));
 
-	// branch on next token
-	const_TokenPtr t = lexer.peek_token ();
-	switch (t->get_id ())
+	return nullptr;
+      }
+    default:
+      return null_denotation_not_path (std::move (tok), std::move (outer_attrs),
+				       restrictions);
+    }
+}
+
+// Handling of expresions that start with a path for `null_denotation`.
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Expr>
+Parser<ManagedTokenSource>::null_denotation_path (
+  AST::PathInExpression path, AST::AttrVec outer_attrs,
+  ParseRestrictions restrictions)
+{
+  rust_debug ("parsing null denotation after path");
+
+  // HACK: always make "self" by itself a path (regardless of next
+  // tokens)
+  if (path.is_single_segment () && path.get_segments ()[0].is_lower_self_seg ())
+    {
+      // HACK: add outer attrs to path
+      path.set_outer_attrs (std::move (outer_attrs));
+      return std::unique_ptr<AST::PathInExpression> (
+	new AST::PathInExpression (std::move (path)));
+    }
+
+  // branch on next token
+  const_TokenPtr t = lexer.peek_token ();
+  switch (t->get_id ())
+    {
+    case EXCLAM:
+      // macro
+      return parse_macro_invocation_partial (std::move (path),
+					     std::move (outer_attrs));
+      case LEFT_CURLY: {
+	bool not_a_block = lexer.peek_token (1)->get_id () == IDENTIFIER
+			   && (lexer.peek_token (2)->get_id () == COMMA
+			       || (lexer.peek_token (2)->get_id () == COLON
+				   && (lexer.peek_token (4)->get_id () == COMMA
+				       || !can_tok_start_type (
+					 lexer.peek_token (3)->get_id ()))));
+
+	/* definitely not a block:
+	 *  path '{' ident ','
+	 *  path '{' ident ':' [anything] ','
+	 *  path '{' ident ':' [not a type]
+	 * otherwise, assume block expr and thus path */
+	// DEBUG
+	rust_debug ("values of lookahead: '%s' '%s' '%s' '%s' ",
+		    lexer.peek_token (1)->get_token_description (),
+		    lexer.peek_token (2)->get_token_description (),
+		    lexer.peek_token (3)->get_token_description (),
+		    lexer.peek_token (4)->get_token_description ());
+
+	rust_debug ("can be struct expr: '%s', not a block: '%s'",
+		    restrictions.can_be_struct_expr ? "true" : "false",
+		    not_a_block ? "true" : "false");
+
+	// struct/enum expr struct
+	if (!restrictions.can_be_struct_expr && !not_a_block)
 	  {
-	  case EXCLAM:
-	    // macro
-	    return parse_macro_invocation_partial (std::move (path),
-						   std::move (outer_attrs),
-						   restrictions);
-	    case LEFT_CURLY: {
-	      bool not_a_block
-		= lexer.peek_token (1)->get_id () == IDENTIFIER
-		  && (lexer.peek_token (2)->get_id () == COMMA
-		      || (lexer.peek_token (2)->get_id () == COLON
-			  && (lexer.peek_token (4)->get_id () == COMMA
-			      || !can_tok_start_type (
-				lexer.peek_token (3)->get_id ()))));
-
-	      /* definitely not a block:
-	       *  path '{' ident ','
-	       *  path '{' ident ':' [anything] ','
-	       *  path '{' ident ':' [not a type]
-	       * otherwise, assume block expr and thus path */
-	      // DEBUG
-	      rust_debug ("values of lookahead: '%s' '%s' '%s' '%s' ",
-			  lexer.peek_token (1)->get_token_description (),
-			  lexer.peek_token (2)->get_token_description (),
-			  lexer.peek_token (3)->get_token_description (),
-			  lexer.peek_token (4)->get_token_description ());
-
-	      rust_debug ("can be struct expr: '%s', not a block: '%s'",
-			  restrictions.can_be_struct_expr ? "true" : "false",
-			  not_a_block ? "true" : "false");
-
-	      // struct/enum expr struct
-	      if (!restrictions.can_be_struct_expr && !not_a_block)
-		{
-		  // HACK: add outer attrs to path
-		  path.set_outer_attrs (std::move (outer_attrs));
-		  return std::unique_ptr<AST::PathInExpression> (
-		    new AST::PathInExpression (std::move (path)));
-		}
-	      return parse_struct_expr_struct_partial (std::move (path),
-						       std::move (outer_attrs));
-	    }
-	  case LEFT_PAREN:
-	    // struct/enum expr tuple
-	    if (!restrictions.can_be_struct_expr)
-	      {
-		// HACK: add outer attrs to path
-		path.set_outer_attrs (std::move (outer_attrs));
-		return std::unique_ptr<AST::PathInExpression> (
-		  new AST::PathInExpression (std::move (path)));
-	      }
-	    return parse_struct_expr_tuple_partial (std::move (path),
-						    std::move (outer_attrs));
-	  default:
-	    // assume path is returned if not single segment
-	    if (path.is_single_segment ())
-	      {
-		// have to return an identifier expression or something, idk
-		/* HACK: may have to become permanent, but this is my current
-		 * identifier expression */
-		return std::unique_ptr<AST::IdentifierExpr> (
-		  new AST::IdentifierExpr (tok->get_str (), {},
-					   tok->get_locus ()));
-	      }
 	    // HACK: add outer attrs to path
 	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
-	gcc_unreachable ();
+	return parse_struct_expr_struct_partial (std::move (path),
+						 std::move (outer_attrs));
       }
-      /* FIXME: delegate to parse_literal_expr instead? would have to rejig
-       * tokens and whatever. */
-      /* FIXME: could also be path expression (and hence macro expression,
-       * struct/enum expr) */
+    case LEFT_PAREN:
+      // struct/enum expr tuple
+      if (!restrictions.can_be_struct_expr)
+	{
+	  // assume path is returned
+	  // HACK: add outer attributes to path
+	  path.set_outer_attrs (std::move (outer_attrs));
+	  return std::unique_ptr<AST::PathInExpression> (
+	    new AST::PathInExpression (std::move (path)));
+	}
+      return parse_struct_expr_tuple_partial (std::move (path),
+					      std::move (outer_attrs));
+    default:
+      // assume path is returned if not single segment
+      if (path.is_single_segment ())
+	{
+	  // FIXME: This should probably be returned as a path.
+	  /* HACK: may have to become permanent, but this is my current
+	   * identifier expression */
+	  return std::unique_ptr<AST::IdentifierExpr> (new AST::IdentifierExpr (
+	    path.get_segments ()[0].get_ident_segment ().as_string (), {},
+	    path.get_locus ()));
+	}
+      // HACK: add outer attrs to path
+      path.set_outer_attrs (std::move (outer_attrs));
+      return std::unique_ptr<AST::PathInExpression> (
+	new AST::PathInExpression (std::move (path)));
+    }
+  gcc_unreachable ();
+}
+
+// Handling of expresions that do not start with a path for `null_denotation`.
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Expr>
+Parser<ManagedTokenSource>::null_denotation_not_path (
+  const_TokenPtr tok, AST::AttrVec outer_attrs, ParseRestrictions restrictions)
+{
+  switch (tok->get_id ())
+    {
+    // FIXME: Handle in null_denotation_path?
     case LEFT_SHIFT:
       case LEFT_ANGLE: {
 	// qualified path
@@ -12549,8 +12322,10 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	return std::unique_ptr<AST::QualifiedPathInExpression> (
 	  new AST::QualifiedPathInExpression (std::move (path)));
       }
-    // FIXME: for literal exprs, should outer attrs be passed in or just
-    // ignored?
+    // FIXME: delegate to parse_literal_expr instead? would have to rejig
+    // tokens and whatever.
+    // FIXME: for literal exprs, outer attrs should be passed in, and later
+    // error if it does not make up the entire statement.
     case INT_LITERAL:
       // we should check the range, but ignore for now
       // encode as int?
@@ -12720,97 +12495,6 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	return std::unique_ptr<AST::BorrowExpr> (
 	  new AST::BorrowExpr (std::move (expr), is_mut_borrow, true,
 			       std::move (outer_attrs), tok->get_locus ()));
-      }
-      case SCOPE_RESOLUTION: {
-	// TODO: fix: this is for global paths, i.e. std::string::whatever
-	Error error (tok->get_locus (),
-		     "found null denotation scope resolution operator, and "
-		     "have not written handling for it");
-	add_error (std::move (error));
-
-	return nullptr;
-      }
-    case SELF:
-    case SELF_ALIAS:
-    case DOLLAR_SIGN:
-    case CRATE:
-      case SUPER: {
-	// DEBUG
-	rust_debug ("beginning null denotation "
-		    "self/self-alias/dollar/crate/super handling");
-
-	/* best option: parse as path, then extract identifier, macro,
-	 * struct/enum, or just path info from it */
-	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
-
-	// DEBUG
-	rust_debug (
-	  "just finished parsing path (going to disambiguate) - peeked "
-	  "token is '%s'",
-	  lexer.peek_token ()->get_token_description ());
-
-	// HACK: always make "self" by itself a path (regardless of next
-	// tokens)
-	if (tok->get_id () == SELF && path.is_single_segment ())
-	  {
-	    // HACK: add outer attrs to path
-	    path.set_outer_attrs (std::move (outer_attrs));
-	    return std::unique_ptr<AST::PathInExpression> (
-	      new AST::PathInExpression (std::move (path)));
-	  }
-
-	// branch on next token
-	const_TokenPtr t = lexer.peek_token ();
-	switch (t->get_id ())
-	  {
-	  case EXCLAM:
-	    // macro
-	    return parse_macro_invocation_partial (std::move (path),
-						   std::move (outer_attrs));
-	    case LEFT_CURLY: {
-	      // struct/enum expr struct
-	      rust_debug ("can_be_struct_expr: %s",
-			  restrictions.can_be_struct_expr ? "true" : "false");
-
-	      bool not_a_block
-		= lexer.peek_token (1)->get_id () == IDENTIFIER
-		  && (lexer.peek_token (2)->get_id () == COMMA
-		      || (lexer.peek_token (2)->get_id () == COLON
-			  && (lexer.peek_token (4)->get_id () == COMMA
-			      || !can_tok_start_type (
-				lexer.peek_token (3)->get_id ()))));
-
-	      if (!restrictions.can_be_struct_expr && !not_a_block)
-		{
-		  // assume path is returned
-		  // HACK: add outer attributes to path
-		  path.set_outer_attrs (std::move (outer_attrs));
-		  return std::unique_ptr<AST::PathInExpression> (
-		    new AST::PathInExpression (std::move (path)));
-		}
-	      return parse_struct_expr_struct_partial (std::move (path),
-						       std::move (outer_attrs));
-	    }
-	  case LEFT_PAREN:
-	    // struct/enum expr tuple
-	    if (!restrictions.can_be_struct_expr)
-	      {
-		// assume path is returned
-		// HACK: add outer attributes to path
-		path.set_outer_attrs (std::move (outer_attrs));
-		return std::unique_ptr<AST::PathInExpression> (
-		  new AST::PathInExpression (std::move (path)));
-	      }
-	    return parse_struct_expr_tuple_partial (std::move (path),
-						    std::move (outer_attrs));
-	  default:
-	    // assume path is returned
-	    // HACK: add outer attributes to path
-	    path.set_outer_attrs (std::move (outer_attrs));
-	    return std::unique_ptr<AST::PathInExpression> (
-	      new AST::PathInExpression (std::move (path)));
-	  }
-	gcc_unreachable ();
       }
     case OR:
     case PIPE:
@@ -14407,9 +14091,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
 
   return AST::MacroInvocation::Regular (
     AST::MacroInvocData (std::move (converted_path), std::move (tok_tree)),
-    std::move (outer_attrs), macro_locus,
-    restrictions.expr_can_be_stmt
-      && lexer.peek_token ()->get_id () == SEMICOLON);
+    std::move (outer_attrs), macro_locus);
 }
 
 /* Parses a struct expr struct with a path in expression already parsed (but

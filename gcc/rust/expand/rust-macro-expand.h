@@ -221,7 +221,8 @@ struct MacroExpander
   enum class ContextType
   {
     ITEM,
-    BLOCK,
+    STMT,
+    EXPR,
     EXTERN,
     TYPE,
     TRAIT,

@@ -988,8 +988,6 @@ public:
 
   virtual std::vector<Attribute> &get_outer_attrs () = 0;
 
-  virtual Expr *to_stmt () const { return clone_expr_impl (); }
-
   // TODO: think of less hacky way to implement this kind of thing
   // Sets outer attributes.
   virtual void set_outer_attrs (std::vector<Attribute>) = 0;

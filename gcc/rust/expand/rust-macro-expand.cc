@@ -895,16 +895,6 @@ transcribe_type (Parser<MacroInvocLexer> &parser)
 }
 
 static AST::Fragment
-transcribe_on_delimiter (Parser<MacroInvocLexer> &parser, bool semicolon,
-			 AST::DelimType delimiter, TokenId last_token_id)
-{
-  if (semicolon || delimiter == AST::DelimType::CURLY)
-    return transcribe_many_stmts (parser, last_token_id);
-  else
-    return transcribe_expression (parser);
-} // namespace Rust
-
-static AST::Fragment
 transcribe_context (MacroExpander::ContextType ctx,
 		    Parser<MacroInvocLexer> &parser, bool semicolon,
 		    AST::DelimType delimiter, TokenId last_token_id)
@@ -945,9 +935,12 @@ transcribe_context (MacroExpander::ContextType ctx,
     case MacroExpander::ContextType::TYPE:
       return transcribe_type (parser);
       break;
+    case MacroExpander::ContextType::STMT:
+      return transcribe_many_stmts (parser, last_token_id, semicolon);
+    case MacroExpander::ContextType::EXPR:
+      return transcribe_expression (parser);
     default:
-      return transcribe_on_delimiter (parser, semicolon, delimiter,
-				      last_token_id);
+      gcc_unreachable ();
     }
 }
 
@@ -1111,7 +1104,7 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 	  nodes.push_back ({std::move (result)});
 	}
       break;
-    case ContextType::BLOCK:
+    case ContextType::STMT:
       while (lex.peek_token ()->get_id () != END_OF_FILE)
 	{
 	  auto result = parser.parse_stmt ();
@@ -1125,6 +1118,7 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
     case ContextType::TRAIT_IMPL:
     case ContextType::EXTERN:
     case ContextType::TYPE:
+    case ContextType::EXPR:
     default:
       gcc_unreachable ();
     }
