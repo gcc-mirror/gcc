@@ -424,19 +424,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::move(std::get<_Int>(__arr));
     }
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L && __cpp_generic_lambdas >= 201707L
 #define __cpp_lib_to_array 201907L
-
-  template<bool _Move = false, typename _Tp, size_t... _Idx>
-    constexpr array<remove_cv_t<_Tp>, sizeof...(_Idx)>
-    __to_array(_Tp (&__a)[sizeof...(_Idx)], index_sequence<_Idx...>)
-    {
-      if constexpr (_Move)
-	return {{std::move(__a[_Idx])...}};
-      else
-	return {{__a[_Idx]...}};
-    }
-
   template<typename _Tp, size_t _Nm>
     [[nodiscard]]
     constexpr array<remove_cv_t<_Tp>, _Nm>
@@ -446,8 +435,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_constructible_v<_Tp, _Tp&>);
       if constexpr (is_constructible_v<_Tp, _Tp&>)
-	return std::__to_array(__a, make_index_sequence<_Nm>{});
-      __builtin_unreachable(); // FIXME: see PR c++/91388
+	{
+	  if constexpr (is_trivial_v<_Tp>)
+	    {
+	      array<remove_cv_t<_Tp>, _Nm> __arr;
+	      if (!__is_constant_evaluated() && _Nm != 0)
+		__builtin_memcpy((void*)__arr.data(), (void*)__a, sizeof(__a));
+	      else
+		for (size_t __i = 0; __i < _Nm; ++__i)
+		  __arr._M_elems[__i] = __a[__i];
+	      return __arr;
+	    }
+	  else
+	    return [&__a]<size_t... _Idx>(index_sequence<_Idx...>) {
+	      return array<remove_cv_t<_Tp>, _Nm>{{ __a[_Idx]... }};
+	    }(make_index_sequence<_Nm>{});
+	}
+      else
+	__builtin_unreachable(); // FIXME: see PR c++/91388
     }
 
   template<typename _Tp, size_t _Nm>
@@ -459,8 +464,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_array_v<_Tp>);
       static_assert(is_move_constructible_v<_Tp>);
       if constexpr (is_move_constructible_v<_Tp>)
-	return std::__to_array<1>(__a, make_index_sequence<_Nm>{});
-      __builtin_unreachable(); // FIXME: see PR c++/91388
+	{
+	  if constexpr (is_trivial_v<_Tp>)
+	    {
+	      array<remove_cv_t<_Tp>, _Nm> __arr;
+	      if (!__is_constant_evaluated() && _Nm != 0)
+		__builtin_memcpy((void*)__arr.data(), (void*)__a, sizeof(__a));
+	      else
+		for (size_t __i = 0; __i < _Nm; ++__i)
+		  __arr._M_elems[__i] = __a[__i];
+	      return __arr;
+	    }
+	  else
+	    return [&__a]<size_t... _Idx>(index_sequence<_Idx...>) {
+	      return array<remove_cv_t<_Tp>, _Nm>{{ std::move(__a[_Idx])... }};
+	    }(make_index_sequence<_Nm>{});
+	}
+      else
+	__builtin_unreachable(); // FIXME: see PR c++/91388
     }
 #endif // C++20
 
