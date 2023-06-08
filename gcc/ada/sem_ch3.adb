@@ -14325,6 +14325,8 @@ package body Sem_Ch3 is
       Set_Is_Constrained    (T_Sub, True);
       Set_First_Entity      (T_Sub, First_Entity (Corr_Rec));
       Set_Last_Entity       (T_Sub, Last_Entity  (Corr_Rec));
+      Set_Direct_Primitive_Operations
+        (T_Sub, Direct_Primitive_Operations (Corr_Rec));
 
       if Has_Discriminants (Prot_Subt) then -- False only if errors.
          Set_Discriminant_Constraint
