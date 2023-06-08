@@ -7300,6 +7300,15 @@ package body Sem_Res is
                   ("cannot inline & (in potentially unevaluated context)?",
                    N, Nam_UA);
 
+            --  Calls are not inlined inside the loop_parameter_specification
+            --  or iterator_specification of the quantified expression, as they
+            --  are only preanalyzed. Calls in the predicate part are handled
+            --  by the previous test on potentially unevaluated expressions.
+
+            elsif In_Quantified_Expression (N) then
+               Cannot_Inline
+                 ("cannot inline & (in quantified expression)?", N, Nam_UA);
+
             --  Inlining should not be performed during preanalysis
 
             elsif Full_Analysis then
