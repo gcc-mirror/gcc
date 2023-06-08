@@ -19823,15 +19823,19 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 			 "only available with "
 			 "%<-std=c++14%> or %<-std=gnu++14%>");
 	    }
+	  else if (!flag_concepts_ts && parser->in_template_argument_list_p)
+	    pedwarn (token->location, 0,
+		     "use of %<auto%> in template argument "
+		     "only available with %<-fconcepts-ts%>");
+	  else if (!flag_concepts)
+	    pedwarn (token->location, 0,
+		     "use of %<auto%> in parameter declaration "
+		     "only available with %<-std=c++20%> or %<-fconcepts%>");
 	  else if (cxx_dialect < cxx14)
 	    error_at (token->location,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
 		     "%<-std=c++14%> or %<-std=gnu++14%>");
-	  else if (!flag_concepts)
-	    pedwarn (token->location, 0,
-		     "use of %<auto%> in parameter declaration "
-		     "only available with %<-std=c++20%> or %<-fconcepts%>");
 	}
       else
 	type = make_auto ();
@@ -24522,11 +24526,6 @@ cp_parser_template_type_arg (cp_parser *parser)
     = G_("types may not be defined in template arguments");
   r = cp_parser_type_id_1 (parser, CP_PARSER_FLAGS_NONE, true, false, NULL);
   parser->type_definition_forbidden_message = saved_message;
-  if (cxx_dialect >= cxx14 && !flag_concepts && type_uses_auto (r))
-    {
-      error ("invalid use of %<auto%> in template argument");
-      r = error_mark_node;
-    }
   return r;
 }
 
