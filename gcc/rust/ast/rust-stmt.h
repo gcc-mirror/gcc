@@ -192,6 +192,11 @@ public:
   bool is_item () const override final { return false; }
 
   bool is_expr () const override final { return true; }
+
+  // Used for the last statement for statement macros with a trailing
+  // semicolon.
+  void add_semicolon () override final { semicolon_followed = true; }
+
   std::string as_string () const override;
 
   std::vector<LetStmt *> locals;

@@ -787,6 +787,8 @@ public:
     return new MacroInvocation (*this);
   }
 
+  void add_semicolon () override { is_semi_coloned = true; }
+
 protected:
   Item *clone_item_impl () const override
   {

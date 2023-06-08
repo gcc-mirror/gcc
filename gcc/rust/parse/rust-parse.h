@@ -87,6 +87,9 @@ struct ParseRestrictions
   bool expr_can_be_null = false;
   bool expr_can_be_stmt = false;
   bool consume_semi = true;
+  /* Macro invocations that are statements can expand without a semicolon after
+   * the final statement, if it's an expression statement. */
+  bool allow_close_after_expr_stmt = false;
 };
 
 // Parser implementation for gccrs.

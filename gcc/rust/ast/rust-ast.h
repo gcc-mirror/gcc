@@ -904,6 +904,8 @@ public:
 
   virtual bool is_expr () const { return false; }
 
+  virtual void add_semicolon () {}
+
 protected:
   Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 

@@ -6348,8 +6348,16 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
     }
 
   if (restrictions.consume_semi)
-    if (!skip_token (SEMICOLON))
-      return nullptr;
+    {
+      // `stmt` macro variables are parsed without a semicolon, but should be
+      // parsed as a full statement when interpolated. This should be handled
+      // by having the interpolated statement be distinguishable from normal
+      // tokens, e.g. by NT tokens.
+      if (restrictions.allow_close_after_expr_stmt)
+	maybe_skip_token (SEMICOLON);
+      else if (!skip_token (SEMICOLON))
+	return nullptr;
+    }
 
   return std::unique_ptr<AST::LetStmt> (
     new AST::LetStmt (std::move (pattern), std::move (expr), std::move (type),
@@ -7289,10 +7297,27 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 
   if (restrictions.consume_semi)
     {
-      if (skip_token (SEMICOLON))
-	has_semi = true;
-      else if (expr->is_expr_without_block ())
-	return nullptr;
+      if (maybe_skip_token (SEMICOLON))
+	{
+	  has_semi = true;
+	}
+      else if (!expr->is_expr_without_block ())
+	{
+	  if (restrictions.allow_close_after_expr_stmt)
+	    {
+	      TokenId id = lexer.peek_token ()->get_id ();
+	      if (id != RIGHT_PAREN && id != RIGHT_CURLY && id != RIGHT_SQUARE)
+		{
+		  expect_token (SEMICOLON);
+		  return nullptr;
+		}
+	    }
+	  else
+	    {
+	      expect_token (SEMICOLON);
+	      return nullptr;
+	    }
+	}
     }
 
   return std::unique_ptr<AST::ExprStmt> (

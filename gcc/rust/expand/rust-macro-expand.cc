@@ -724,7 +724,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
  * Helper function to refactor calling a parsing function 0 or more times
  */
 static AST::Fragment
-parse_many (Parser<MacroInvocLexer> &parser, TokenId &delimiter,
+parse_many (Parser<MacroInvocLexer> &parser, TokenId delimiter,
 	    std::function<AST::SingleASTNode ()> parse_fn)
 {
   auto &lexer = parser.get_token_source ();
@@ -836,18 +836,22 @@ transcribe_many_trait_impl_items (Parser<MacroInvocLexer> &parser,
  * @param delimiter Id of the token on which parsing should stop
  */
 static AST::Fragment
-transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
+transcribe_many_stmts (Parser<MacroInvocLexer> &parser, TokenId delimiter,
+		       bool semicolon)
 {
   auto restrictions = ParseRestrictions ();
-  restrictions.consume_semi = false;
+  restrictions.allow_close_after_expr_stmt = true;
 
-  // FIXME: This is invalid! It needs to also handle cases where the macro
-  // transcriber is an expression, but since the macro call is followed by
-  // a semicolon, it's a valid ExprStmt
-  return parse_many (parser, delimiter, [&parser, restrictions] () {
-    auto stmt = parser.parse_stmt (restrictions);
-    return AST::SingleASTNode (std::move (stmt));
-  });
+  return parse_many (parser, delimiter,
+		     [&parser, restrictions, delimiter, semicolon] () {
+		       auto stmt = parser.parse_stmt (restrictions);
+		       if (semicolon && stmt
+			   && parser.peek_current_token ()->get_id ()
+				== delimiter)
+			 stmt->add_semicolon ();
+
+		       return AST::SingleASTNode (std::move (stmt));
+		     });
 }
 
 /**
