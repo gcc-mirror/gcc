@@ -1,3 +1,17 @@
+2023-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in: Build $(generated_files) before building
+	all $(GM2_C_OBJS).
+
+2023-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110019
+	* gm2-compiler/SymbolKey.mod (SearchAndDo): Reformatted.
+	(ForeachNodeDo): Reformatted.
+	* gm2-compiler/SymbolTable.mod (AddListify): Join list
+	with "," or "and" if more than one word is in the list.
+	* m2.flex: Remove -1 from atoi(yytext) line number.
+
 2023-06-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110003

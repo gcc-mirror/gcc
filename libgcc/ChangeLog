@@ -1,3 +1,9 @@
+2023-06-07  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/109712
+	* unwind-dw2-fde-dip.c (find_fde_tail): Correct fast path for
+	parsing eh_frame.
+
 2023-06-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	* config/i386/morestack.S: Use @init_array rather than

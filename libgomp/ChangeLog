@@ -1,3 +1,16 @@
+2023-06-07  Thomas Schwinge  <thomas@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-present-1.c: Run code
+	also for non-offload_device targets; check that it runs
+	successfully for those and for all until a checkpoint for all
+	* testsuite/libgomp.c-c++-common/target-present-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-3.c: Likewise.
+	* testsuite/libgomp.fortran/target-present-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-3.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2.f90: Likewise;
+	add missing vars to map clause.
+
 2023-06-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Regard

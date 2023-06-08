@@ -1,3 +1,223 @@
+2023-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* wide-int.cc (wi::bitreverse_large): Use HOST_WIDE_INT_1U to
+	avoid sign extension/undefined behaviour when setting each bit.
+
+2023-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_builtin) <handlecarry>:
+	Use new x86_stc instruction when the carry flag must be set.
+	* config/i386/i386.cc (ix86_cc_mode): Use CCCmode for *x86_cmc.
+	(ix86_rtx_costs): Provide accurate rtx_costs for *x86_cmc.
+	* config/i386/i386.h (TARGET_SLOW_STC): New define.
+	* config/i386/i386.md (UNSPEC_STC): New UNSPEC for stc.
+	(x86_stc): New define_insn.
+	(define_peephole2): Convert x86_stc into alternate implementation
+	on pentium4 without -Os when a QImode register is available.
+	(*x86_cmc): New define_insn.
+	(define_peephole2): Convert *x86_cmc into alternate implementation
+	on pentium4 without -Os when a QImode register is available.
+	(*setccc): New define_insn_and_split for a no-op CCCmode move.
+	(*setcc_qi_negqi_ccc_1_<mode>): New define_insn_and_split to
+	recognize (and eliminate) the carry flag being copied to itself.
+	(*setcc_qi_negqi_ccc_2_<mode>): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_SLOW_STC): New tuning flag.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd: Fix comment for the
+	`(zero_one ==/!= 0) ? y : z <op> y` patterns.
+
+2023-06-07  Jeff Law  <jlaw@ventanamicro.com>
+	    Jeff Law   <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (rotrdi3, rotrsi3, rotlsi3): New expanders.
+	(rotrsi3_sext): Expose generator.
+	(rotlsi3 pattern): Hide generator.
+	* config/riscv/riscv-protos.h (riscv_emit_binary): New function
+	declaration.
+	* config/riscv/riscv.cc (riscv_emit_binary): Removed static
+	* config/riscv/riscv.md (addsi3, subsi3, negsi2): Hide generator.
+	(mulsi3, <optab>si3): Likewise.
+	(addsi3, subsi3, negsi2, mulsi3, <optab>si3): New expanders.
+	(addv<mode>4, subv<mode>4, mulv<mode>4): Use riscv_emit_binary.
+	(<u>mulsidi3): Likewise.
+	(addsi3_extended, subsi3_extended, negsi2_extended): Expose generator.
+	(mulsi3_extended, <optab>si3_extended): Likewise.
+	(splitter for shadd feeding divison): Update RTL pattern to account
+	for changes in how 32 bit ops are expanded for TARGET_64BIT.
+	* loop-iv.cc (get_biv_step_1): Process src of extension when it PLUS.
+
+2023-06-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/109725
+	* config/riscv/riscv.cc (riscv_print_operand): Calculate
+	memmodel only when it is valid.
+
+2023-06-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/riscv/riscv.cc (riscv_const_insns): Recursively call
+	for constant element of a vector.
+
+2023-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd (zero_one_valued_p): Don't handle integer_zerop specially,
+	instead compare tree_nonzero_bits <= 1U rather than just == 1.
+
+2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110132
+	* config/aarch64/aarch64-builtins.cc (aarch64_general_simulate_builtin):
+	New. Use it ...
+	(aarch64_init_ls64_builtins): ... here. Switch to declaring public ACLE
+	names for builtins.
+	(aarch64_general_init_builtins): Ensure we invoke the arm_acle.h
+	setup if in_lto_p, just like we do for SVE.
+	* config/aarch64/arm_acle.h: (__arm_ld64b): Delete.
+	(__arm_st64b): Delete.
+	(__arm_st64bv): Delete.
+	(__arm_st64bv0): Delete.
+
+2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* config/aarch64/aarch64-builtins.cc (aarch64_expand_builtin_ls64):
+	Use input operand for the destination address.
+	* config/aarch64/aarch64.md (st64b): Fix constraint on address
+	operand.
+
+2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_ls64_builtins_types):
+	Replace eight consecutive spaces with tabs.
+	(aarch64_init_ls64_builtins): Likewise.
+	(aarch64_expand_builtin_ls64): Likewise.
+	* config/aarch64/aarch64.md (ld64b): Likewise.
+	(st64b): Likewise.
+	(st64bv): Likewise
+	(st64bv0): Likewise.
+
+2023-06-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: (find_costs_and_classes): Constrain classes of pic
+	offset table pseudo to a general reg subset.
+
+2023-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqmovun<mode><vczle><vczbe>):
+	Rename to...
+	(*aarch64_sqmovun<mode>_insn<vczle><vczbe>): ... This.  Reimplement
+	with RTL codes.
+	(aarch64_sqmovun<mode> [SD_HSDI]): Reimplement with RTL codes.
+	(aarch64_sqxtun2<mode>_le): Likewise.
+	(aarch64_sqxtun2<mode>_be): Likewise.
+	(aarch64_sqxtun2<mode>): Adjust for the above.
+	(aarch64_sqmovun<mode>): New define_expand.
+	* config/aarch64/iterators.md (UNSPEC_SQXTUN): Delete.
+	(half_mask): New mode attribute.
+	* config/aarch64/predicates.md (aarch64_simd_umax_half_mode):
+	New predicate.
+
+2023-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_addp<mode><vczle><vczbe>):
+	Reimplement as...
+	(aarch64_addp<mode>_insn): ... This...
+	(aarch64_addp<mode><vczle><vczbe>_insn): ... And this.
+	(aarch64_addp<mode>): New define_expand.
+
+2023-06-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (expand_vec_perm_const): New function.
+	* config/riscv/riscv-v.cc
+	(rvv_builder::can_duplicate_repeating_sequence_p): Support POLY
+	handling.
+	(rvv_builder::single_step_npatterns_p): New function.
+	(rvv_builder::npatterns_all_equal_p): Ditto.
+	(const_vec_all_in_range_p): Support POLY handling.
+	(gen_const_vector_dup): Ditto.
+	(emit_vlmax_gather_insn): Add vrgatherei16.
+	(emit_vlmax_masked_gather_mu_insn): Ditto.
+	(expand_const_vector): Add VLA SLP const vector support.
+	(expand_vec_perm): Support POLY.
+	(struct expand_vec_perm_d): New struct.
+	(shuffle_generic_patterns): New function.
+	(expand_vec_perm_const_1): Ditto.
+	(expand_vec_perm_const): Ditto.
+	* config/riscv/riscv.cc (riscv_vectorize_vec_perm_const): Ditto.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): New targethook.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110117
+	* expr.cc (expand_single_bit_test): Handle
+	const_int from expand_expr.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	* expr.cc (do_store_flag): Rearrange the
+	TER code so that it overrides the nonzero bits
+	info if we had `a & POW2`.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110134
+	* match.pd (-A CMP -B -> B CMP A): Allow EQ/NE for all integer
+	types.
+	(-A CMP CST -> B CMP (-CST)): Likewise.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/89263
+	PR tree-optimization/99069
+	PR tree-optimization/20083
+	PR tree-optimization/94898
+	* match.pd: Add patterns to optimize `a ? onezero : onezero` with
+	one of the operands are constant.
+
+2023-06-07  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (zero_one_valued_p): Match 0 integer constant
+	too.
+
+2023-06-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat32mf2_t): Take RVV_REQUIRE_ELEN_FP_16 as requirement.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vuint32m8_t): Ditto.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58487
+	* doc/invoke.texi: Document it.
+
 2023-06-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* doc/rtl.texi (bitreverse, copysign): Document new RTX codes.

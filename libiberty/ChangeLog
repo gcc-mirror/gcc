@@ -1,3 +1,8 @@
+2023-06-07  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Constant propagate "0" for "status",
+	simplifying the code slightly.
+
 2023-06-06  Costas Argyris  <costas.argyris@gmail.com>
 
 	* argv.c (writeargv): Simplify & remove gotos.

@@ -1,3 +1,89 @@
+2023-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/110145
+	* testsuite/20_util/to_chars/double.cc: Include <cfloat>.
+	(double_to_chars_test_cases,
+	double_scientific_precision_to_chars_test_cases_2,
+	double_fixed_precision_to_chars_test_cases_2): #if out 1e126, 4.91e-6
+	and 5.547e-6 tests if FLT_EVAL_METHOD is negative or larger than 1.
+	Add unconditional tests with corresponding double constants
+	0x1.7a2ecc414a03fp+418, 0x1.4981285e98e79p-18 and
+	0x1.7440bbff418b9p-18.
+
+2023-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Re-add
+	CXXABI_1.3.14.
+
+2023-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/nested_exception/rethrow_if_nested-term.cc:
+	Require effective target exceptions_enabled instead of using
+	dg-skip-if.
+	* testsuite/23_containers/vector/capacity/constexpr.cc: Expect
+	shrink_to_fit() to be a no-op without exceptions enabled.
+	* testsuite/23_containers/vector/capacity/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cc:
+	Require effective target exceptions_enabled.
+	* testsuite/ext/malloc_allocator/check_allocate_max_size.cc:
+	Likewise.
+	* testsuite/ext/mt_allocator/check_allocate_max_size.cc:
+	Likewise.
+	* testsuite/ext/new_allocator/check_allocate_max_size.cc:
+	Likewise.
+	* testsuite/ext/pool_allocator/check_allocate_max_size.cc:
+	Likewise.
+	* testsuite/ext/throw_allocator/check_allocate_max_size.cc:
+	Likewise.
+
+2023-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/cons/2.cc: Use values that aren't
+	affected by rounding.
+	* testsuite/20_util/from_chars/5.cc: Cast arithmetic result to
+	double before comparing for equality.
+	* testsuite/20_util/from_chars/6.cc: Likewise.
+	* testsuite/20_util/variant/86874.cc: Use values that aren't
+	affected by rounding.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Compare to
+	original value instead of to floating-point-literal.
+	* testsuite/26_numerics/random/discrete_distribution/cons/range.cc:
+	Cast arithmetic result to double before comparing for equality.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/range.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/range.cc:
+	Likewise.
+	* testsuite/26_numerics/valarray/transcend.cc (eq): Check that
+	the absolute difference is less than 0.01 instead of comparing
+	to two decimal places.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Cast arithmetic result to double before comparing for equality.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/10.cc:
+	Likewise.
+	* testsuite/ext/random/hoyt_distribution/cons/parms.cc: Likewise.
+
+2023-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Use AS_IF.
+	* configure: Regenerate.
+
+2023-06-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Support
+	'UNSUPPORTED: [...]: exception handling disabled'.
+
 2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_abi.cc (check_version): Add

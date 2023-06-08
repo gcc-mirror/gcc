@@ -1,3 +1,54 @@
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58487
+	PR c++/53637
+	* cp-tree.h (INIT_EXPR_NRV_P): New.
+	* semantics.cc (finalize_nrv_r): Check it.
+	* name-lookup.h (decl_in_scope_p): Declare.
+	* name-lookup.cc (decl_in_scope_p): New.
+	* typeck.cc (check_return_expr): Allow non-NRV
+	returns if the NRV is no longer in scope.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58487
+	* typeck.cc (want_nrvo_p): New.
+	(check_return_expr): Handle -Wnrvo.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51571
+	PR c++/92407
+	* decl.cc (finish_function): Simplify NRV handling.
+	* except.cc (maybe_set_retval_sentinel): Also set if NRV.
+	(maybe_splice_retval_cleanup): Don't add the cleanup region
+	if we don't need it.
+	* semantics.cc (nrv_data): Add simple field.
+	(finalize_nrv): Set it.
+	(finalize_nrv_r): Check it and retval sentinel.
+	* cp-tree.h (finalize_nrv): Adjust declaration.
+	* typeck.cc (check_return_expr): Remove named_labels check.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92407
+	* typeck.cc (check_return_expr): Prevent NRV in the presence of
+	named labels.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33799
+	* except.cc (maybe_splice_retval_cleanup): Change
+	recognition of function body and try scopes.
+	* semantics.cc (do_poplevel): Call it after poplevel.
+	(at_try_scope): New.
+	* cp-tree.h (maybe_splice_retval_cleanup): Adjust.
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (finalize_nrv_r): [RETURN_EXPR]: Only replace the
+	INIT_EXPR.
+
 2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

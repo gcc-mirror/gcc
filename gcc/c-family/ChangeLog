@@ -1,3 +1,8 @@
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58487
+	* c.opt: Add -Wnrvo.
+
 2023-05-26  Martin Uecker  <uecker@tugraz.at>
 
 	* c-attribs.cc (build_attr_access_from_parms): Split loop to first
