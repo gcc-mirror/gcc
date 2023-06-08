@@ -7561,7 +7561,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	/* [depr.volatile.type] "Postfix ++ and -- expressions and
 	   prefix ++ and -- expressions of volatile-qualified arithmetic
 	   and pointer types are deprecated."  */
-	if (TREE_THIS_VOLATILE (arg) || CP_TYPE_VOLATILE_P (TREE_TYPE (arg)))
+	if ((TREE_THIS_VOLATILE (arg) || CP_TYPE_VOLATILE_P (TREE_TYPE (arg)))
+	    && (complain & tf_warning))
 	  warning_at (location, OPT_Wvolatile,
 		      "%qs expression of %<volatile%>-qualified type is "
 		      "deprecated",
@@ -7592,7 +7593,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 		    return error_mark_node;
 		  }
 		/* Otherwise, [depr.incr.bool] says this is deprecated.  */
-		else
+		else if (complain & tf_warning)
 		  warning_at (location, OPT_Wdeprecated,
 			      "use of an operand of type %qT "
 			      "in %<operator++%> is deprecated",
