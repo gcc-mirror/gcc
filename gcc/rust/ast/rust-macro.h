@@ -787,6 +787,8 @@ public:
     return new MacroInvocation (*this);
   }
 
+  void add_semicolon () override { is_semi_coloned = true; }
+
 protected:
   Item *clone_item_impl () const override
   {
@@ -808,15 +810,6 @@ protected:
   InherentImplItem *clone_inherent_impl_item_impl () const override
   {
     return clone_macro_invocation_impl ();
-  }
-
-  Expr *to_stmt () const override
-
-  {
-    auto new_impl = clone_macro_invocation_impl ();
-    new_impl->is_semi_coloned = true;
-
-    return new_impl;
   }
 };
 

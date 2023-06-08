@@ -904,6 +904,8 @@ public:
 
   virtual bool is_expr () const { return false; }
 
+  virtual void add_semicolon () {}
+
 protected:
   Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
@@ -985,8 +987,6 @@ public:
   virtual void set_node_id (NodeId id) { node_id = id; }
 
   virtual std::vector<Attribute> &get_outer_attrs () = 0;
-
-  virtual Expr *to_stmt () const { return clone_expr_impl (); }
 
   // TODO: think of less hacky way to implement this kind of thing
   // Sets outer attributes.
