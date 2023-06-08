@@ -1084,7 +1084,8 @@ package body Sprint is
                Write_Str_With_Col_Check_Sloc ("(null record)");
 
             else
-               Write_Str_With_Col_Check_Sloc ("(");
+               Write_Str_With_Col_Check_Sloc
+                 (if Is_Homogeneous_Aggregate (Node) then "[" else "(");
 
                if Present (Expressions (Node)) then
                   Sprint_Comma_List (Expressions (Node));
@@ -1120,7 +1121,8 @@ package body Sprint is
                   Indent_End;
                end if;
 
-               Write_Char (')');
+               Write_Char
+                 (if Is_Homogeneous_Aggregate (Node) then ']' else ')');
             end if;
 
          when N_Allocator =>
