@@ -5872,7 +5872,15 @@ resolve_variable (gfc_expr *e)
       if (sym->ts.type == BT_CLASS)
 	gfc_fix_class_refs (e);
       if (!sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
-	return false;
+	{
+	  /* Unambiguously scalar!  */
+	  if (sym->assoc->target
+	      && (sym->assoc->target->expr_type == EXPR_CONSTANT
+		  || sym->assoc->target->expr_type == EXPR_STRUCTURE))
+	    gfc_error ("Scalar variable %qs has an array reference at %L",
+		       sym->name, &e->where);
+	  return false;
+	}
       else if (sym->attr.dimension && (!e->ref || e->ref->type != REF_ARRAY))
 	{
 	  /* This can happen because the parser did not detect that the
@@ -9279,7 +9287,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       gfc_array_spec *as;
       /* The rank may be incorrectly guessed at parsing, therefore make sure
 	 it is corrected now.  */
-      if (sym->ts.type != BT_CLASS && (!sym->as || sym->assoc->rankguessed))
+      if (sym->ts.type != BT_CLASS && !sym->as)
 	{
 	  if (!sym->as)
 	    sym->as = gfc_get_array_spec ();
@@ -9292,8 +9300,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	    sym->attr.codimension = 1;
 	}
       else if (sym->ts.type == BT_CLASS
-	       && CLASS_DATA (sym)
-	       && (!CLASS_DATA (sym)->as || sym->assoc->rankguessed))
+	       && CLASS_DATA (sym) && !CLASS_DATA (sym)->as)
 	{
 	  if (!CLASS_DATA (sym)->as)
 	    CLASS_DATA (sym)->as = gfc_get_array_spec ();

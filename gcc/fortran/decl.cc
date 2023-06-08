@@ -1056,6 +1056,7 @@ static match
 char_len_param_value (gfc_expr **expr, bool *deferred)
 {
   match m;
+  gfc_expr *p;
 
   *expr = NULL;
   *deferred = false;
@@ -1081,10 +1082,10 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
   if (!gfc_expr_check_typed (*expr, gfc_current_ns, false))
     return MATCH_ERROR;
 
-  /* If gfortran gets an EXPR_OP, try to simplify it.  This catches things
-     like CHARACTER(([1])).   */
-  if ((*expr)->expr_type == EXPR_OP)
-    gfc_simplify_expr (*expr, 1);
+  /* Try to simplify the expression to catch things like CHARACTER(([1])).   */
+  p = gfc_copy_expr (*expr);
+  if (gfc_is_constant_expr (p) && gfc_simplify_expr (p, 1))
+    gfc_replace_expr (*expr, p);
 
   if ((*expr)->expr_type == EXPR_FUNCTION)
     {

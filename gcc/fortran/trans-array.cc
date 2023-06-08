@@ -7934,7 +7934,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  else
 	    tmp = se->string_length;
 
-	  if (expr->ts.deferred && VAR_P (expr->ts.u.cl->backend_decl))
+	  if (expr->ts.deferred && expr->ts.u.cl->backend_decl
+	      && VAR_P (expr->ts.u.cl->backend_decl))
 	    gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl, tmp);
 	  else
 	    expr->ts.u.cl->backend_decl = tmp;
@@ -7997,6 +7998,15 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 		  GFC_DECL_SAVED_DESCRIPTOR (parm) = classse.expr;
 		}
 	    }
+	}
+
+      if (expr->ts.type == BT_CHARACTER
+	  && VAR_P (TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)))))
+	{
+	  tree elem_len = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)));
+	  gfc_add_modify (&loop.pre, elem_len,
+			  fold_convert (TREE_TYPE (elem_len),
+			  gfc_get_array_span (desc, expr)));
 	}
 
       /* Set the span field.  */

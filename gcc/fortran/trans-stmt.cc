@@ -1930,15 +1930,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_conv_expr_descriptor (&se, e);
 
       if (sym->ts.type == BT_CHARACTER
-	  && sym->ts.deferred
 	  && !sym->attr.select_type_temporary
+	  && sym->ts.u.cl->backend_decl
 	  && VAR_P (sym->ts.u.cl->backend_decl)
 	  && se.string_length != sym->ts.u.cl->backend_decl)
-	{
-	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
+	gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
 			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
 					se.string_length));
-	}
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
