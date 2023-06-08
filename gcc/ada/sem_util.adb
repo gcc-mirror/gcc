@@ -4566,6 +4566,38 @@ package body Sem_Util is
 
       elsif No (Items) then
          return;
+
+      --  If the subprogram has a contract Exceptional_Cases, it is often
+      --  useful to refer only to the pre-state in the postcondition, to
+      --  indicate when the subprogram might terminate normally.
+
+      elsif Present (Get_Pragma (Subp_Id, Pragma_Exceptional_Cases)) then
+         return;
+
+      --  Same if the subprogram has a contract Always_Terminates => Cond,
+      --  where Cond is not syntactically True.
+
+      else
+         declare
+            Prag : constant Node_Id :=
+              Get_Pragma (Subp_Id, Pragma_Always_Terminates);
+         begin
+            if Present (Prag)
+              and then Present (Pragma_Argument_Associations (Prag))
+            then
+               declare
+                  Cond : constant Node_Id :=
+                    Get_Pragma_Arg
+                      (First (Pragma_Argument_Associations (Prag)));
+               begin
+                  if not Compile_Time_Known_Value (Cond)
+                    or else not Is_True (Expr_Value (Cond))
+                  then
+                     return;
+                  end if;
+               end;
+            end if;
+         end;
       end if;
 
       --  Examine all postconditions for attribute 'Result and a post-state
