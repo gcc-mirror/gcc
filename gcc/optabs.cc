@@ -2697,10 +2697,14 @@ expand_clrsb_using_clz (scalar_int_mode mode, rtx op0, rtx target)
   return temp;
 }
 
-/* Try calculating clz of a double-word quantity as two clz's of word-sized
-   quantities, choosing which based on whether the high word is nonzero.  */
+static rtx expand_ffs (scalar_int_mode, rtx, rtx);
+
+/* Try calculating clz, ctz or ffs of a double-word quantity as two clz, ctz or
+   ffs operations on word-sized quantities, choosing which based on whether the
+   high (for clz) or low (for ctz and ffs) word is nonzero.  */
 static rtx
-expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
+expand_doubleword_clz_ctz_ffs (scalar_int_mode mode, rtx op0, rtx target,
+			       optab unoptab)
 {
   rtx xop0 = force_reg (mode, op0);
   rtx subhi = gen_highpart (word_mode, xop0);
@@ -2709,6 +2713,7 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
   rtx_code_label *after_label = gen_label_rtx ();
   rtx_insn *seq;
   rtx temp, result;
+  int addend = 0;
 
   /* If we were not given a target, use a word_mode register, not a
      'mode' register.  The result will fit, and nobody is expecting
@@ -2721,6 +2726,9 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
      'target' to tag a REG_EQUAL note on.  */
   result = gen_reg_rtx (word_mode);
 
+  if (unoptab != clz_optab)
+    std::swap (subhi, sublo);
+
   start_sequence ();
 
   /* If the high word is not equal to zero,
@@ -2728,7 +2736,13 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
   emit_cmp_and_jump_insns (subhi, CONST0_RTX (word_mode), EQ, 0,
 			   word_mode, true, hi0_label);
 
-  temp = expand_unop_direct (word_mode, clz_optab, subhi, result, true);
+  if (optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+    temp = expand_unop_direct (word_mode, unoptab, subhi, result, true);
+  else
+    {
+      gcc_assert (unoptab == ffs_optab);
+      temp = expand_ffs (word_mode, subhi, result);
+    }
   if (!temp)
     goto fail;
 
@@ -2739,14 +2753,32 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
   emit_barrier ();
 
   /* Else clz of the full value is clz of the low word plus the number
-     of bits in the high word.  */
+     of bits in the high word.  Similarly for ctz/ffs of the high word,
+     except that ffs should be 0 when both words are zero.  */
   emit_label (hi0_label);
 
-  temp = expand_unop_direct (word_mode, clz_optab, sublo, 0, true);
+  if (unoptab == ffs_optab)
+    {
+      convert_move (result, const0_rtx, true);
+      emit_cmp_and_jump_insns (sublo, CONST0_RTX (word_mode), EQ, 0,
+			       word_mode, true, after_label);
+    }
+
+  if (optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+    temp = expand_unop_direct (word_mode, unoptab, sublo, NULL_RTX, true);
+  else
+    {
+      gcc_assert (unoptab == ffs_optab);
+      temp = expand_unop_direct (word_mode, ctz_optab, sublo, NULL_RTX, true);
+      addend = 1;
+    }
+
   if (!temp)
     goto fail;
+
   temp = expand_binop (word_mode, add_optab, temp,
-		       gen_int_mode (GET_MODE_BITSIZE (word_mode), word_mode),
+		       gen_int_mode (GET_MODE_BITSIZE (word_mode) + addend,
+				     word_mode),
 		       result, true, OPTAB_DIRECT);
   if (!temp)
     goto fail;
@@ -2759,7 +2791,7 @@ expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
   seq = get_insns ();
   end_sequence ();
 
-  add_equal_note (seq, target, CLZ, xop0, NULL_RTX, mode);
+  add_equal_note (seq, target, optab_to_code (unoptab), xop0, NULL_RTX, mode);
   emit_insn (seq);
   return target;
 
@@ -3252,7 +3284,8 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	  if (GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
 	      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
 	    {
-	      temp = expand_doubleword_clz (int_mode, op0, target);
+	      temp = expand_doubleword_clz_ctz_ffs (int_mode, op0, target,
+						    unoptab);
 	      if (temp)
 		return temp;
 	    }
@@ -3496,6 +3529,18 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
   if (unoptab == ctz_optab && is_a <scalar_int_mode> (mode, &int_mode))
     {
       temp = expand_ctz (int_mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
+  if ((unoptab == ctz_optab || unoptab == ffs_optab)
+      && optimize_insn_for_speed_p ()
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+      && (optab_handler (unoptab, word_mode) != CODE_FOR_nothing
+	  || optab_handler (ctz_optab, word_mode) != CODE_FOR_nothing))
+    {
+      temp = expand_doubleword_clz_ctz_ffs (int_mode, op0, target, unoptab);
       if (temp)
 	return temp;
     }
