@@ -1162,7 +1162,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 		    gnu_expr = build_unary_op (ADDR_EXPR, gnu_type, gnu_expr);
 
-		    create_var_decl (gnu_entity_name, gnu_ext_name,
+		    create_var_decl (gnu_entity_name, NULL_TREE,
 				     TREE_TYPE (gnu_expr), gnu_expr,
 				     const_flag, Is_Public (gnat_entity),
 				     imported_p, static_flag, volatile_flag,
@@ -1533,7 +1533,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* If this name is external or a name was specified, use it, but don't
 	   use the Interface_Name with an address clause (see cd30005).  */
-	if ((Is_Public (gnat_entity) && !Is_Imported (gnat_entity))
+	if ((Is_Public (gnat_entity) && !imported_p)
 	    || (Present (Interface_Name (gnat_entity))
 		&& No (Address_Clause (gnat_entity))))
 	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
@@ -3977,10 +3977,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  = gnu_ext_name_for_subprog (gnat_entity, gnu_entity_name);
 	const enum inline_status_t inline_status
 	  = inline_status_for_subprog (gnat_entity);
-	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	/* Subprograms marked both Intrinsic and Always_Inline need not
 	   have a body of their own.  */
-	bool extern_flag
+	const bool extern_flag
 	  = ((Is_Public (gnat_entity) && !definition)
 	     || imported_p
 	     || (Is_Intrinsic_Subprogram (gnat_entity)
@@ -4135,10 +4134,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    else
 	      gnu_decl
 		= create_subprog_decl (gnu_entity_name, gnu_ext_name,
-				       gnu_type, gnu_param_list,
-				       inline_status, public_flag,
-				       extern_flag, artificial_p,
-				       debug_info_p,
+				       gnu_type, gnu_param_list, inline_status,
+				       Is_Public (gnat_entity) || imported_p,
+				       extern_flag, artificial_p, debug_info_p,
 				       definition && imported_p, attr_list,
 				       gnat_entity);
 	  }
