@@ -1,3 +1,19 @@
+2023-06-08  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/109800
+	* gcc.target/arm/pure-code/pr109800.c: New test.
+
+2023-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109939
+	* gcc.target/arm/pr109939.c: New test.
+
 2023-06-04  Steve Kargl  <kargl@gcc.gnu.org>
 
 	Backported from master:
