@@ -179,11 +179,10 @@ template <typename V>
 	  for (int j = 0; j < 100; ++j)
 	    {
 	      const V seq([&](auto i) -> T { return (j + i) % n_promo_bits; });
-	      COMPARE(V(1) >> seq, V([&](auto i) { return T(T(1) >> seq[i]); }))
-		<< "seq = " << seq;
-	      COMPARE(make_value_unknown(V(1)) >> make_value_unknown(seq),
-		V([&](auto i) { return T(T(1) >> seq[i]); }))
-		<< "seq = " << seq;
+	      const V expect([&](auto i) { return seq[i] == 0 ? T(1) : T(0); });
+	      COMPARE(V(1) >> seq, expect) << "\nseq = " << seq;
+	      COMPARE(make_value_unknown(V(1)) >> make_value_unknown(seq), expect)
+		<< "\nseq = " << seq;
 	    }
 	  for_constexpr<int, 0, n_promo_bits - 1>([](auto shift_ic) {
 	    constexpr int shift = shift_ic;

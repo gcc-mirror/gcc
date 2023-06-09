@@ -4061,19 +4061,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       int inside_ptr = POINTER_TYPE_P (inside_type);
       int inside_float = FLOAT_TYPE_P (inside_type);
       int inside_vec = VECTOR_TYPE_P (inside_type);
-      unsigned int inside_prec = TYPE_PRECISION (inside_type);
+      unsigned int inside_prec = element_precision (inside_type);
       int inside_unsignedp = TYPE_UNSIGNED (inside_type);
       int inter_int = INTEGRAL_TYPE_P (inter_type);
       int inter_ptr = POINTER_TYPE_P (inter_type);
       int inter_float = FLOAT_TYPE_P (inter_type);
       int inter_vec = VECTOR_TYPE_P (inter_type);
-      unsigned int inter_prec = TYPE_PRECISION (inter_type);
+      unsigned int inter_prec = element_precision (inter_type);
       int inter_unsignedp = TYPE_UNSIGNED (inter_type);
       int final_int = INTEGRAL_TYPE_P (type);
       int final_ptr = POINTER_TYPE_P (type);
       int final_float = FLOAT_TYPE_P (type);
       int final_vec = VECTOR_TYPE_P (type);
-      unsigned int final_prec = TYPE_PRECISION (type);
+      unsigned int final_prec = element_precision (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
     }
    (switch

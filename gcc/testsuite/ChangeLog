@@ -1,3 +1,42 @@
+2023-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109939
+	* gcc.target/arm/pr109939.c: New test.
+
+2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/109800
+	* gcc.target/arm/pure-code/pr109800.c: New test.
+
+2023-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wmismatched_enum.d: New test.
+
+2023-06-03  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2023-06-02  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/100607
+	* gfortran.dg/select_rank_6.f90: New test.
+
+2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2023-05-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c:
+	Support both definitions of int32_t.
+
 2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	Backported from master:

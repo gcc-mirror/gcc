@@ -47,14 +47,22 @@ foo2 (short * addr, int16x8_t value)
   vst1q (addr, value);
 }
 
-void
-foo3 (int * addr, int32x4_t value)
-{
-  vst1q (addr, value); /* { dg-warning "invalid conversion" "" { target c++ } } */
-}
+/* Glibc defines int32_t as 'int' while newlib defines it as 'long int'.
 
+   Although these correspond to the same size, g++ complains when using the
+   'wrong' version:
+  invalid conversion from 'long int*' to 'int32_t*' {aka 'int*'} [-fpermissive]
+
+  The trick below is to make this test pass whether using glibc-based or
+  newlib-based toolchains.  */
+
+#if defined(__GLIBC__)
+#define word_type int
+#else
+#define word_type long int
+#endif
 void
-foo4 (long * addr, int32x4_t value)
+foo3 (word_type * addr, int32x4_t value)
 {
   vst1q (addr, value);
 }
@@ -78,13 +86,7 @@ foo7 (unsigned short * addr, uint16x8_t value)
 }
 
 void
-foo8 (unsigned int * addr, uint32x4_t value)
-{
-  vst1q (addr, value); /* { dg-warning "invalid conversion" "" { target c++ } } */
-}
-
-void
-foo9 (unsigned long * addr, uint32x4_t value)
+foo8 (unsigned word_type * addr, uint32x4_t value)
 {
   vst1q (addr, value);
 }

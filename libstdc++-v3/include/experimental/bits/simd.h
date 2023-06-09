@@ -3304,7 +3304,7 @@ template <typename _Tp, int _Np>
     return {__mem, vector_aligned};
   }
 
-template <typename _Tp, size_t _Np>
+template <typename _Tp, int _Np>
   _GLIBCXX_SIMD_INTRINSIC
   enable_if_t<(_Np == native_simd_mask<_Tp>::size()), native_simd_mask<_Tp>>
   to_native(const fixed_size_simd_mask<_Tp, _Np>& __x)
@@ -3315,7 +3315,7 @@ template <typename _Tp, size_t _Np>
   }
 
 // to_compatible {{{2
-template <typename _Tp, size_t _Np>
+template <typename _Tp, int _Np>
   _GLIBCXX_SIMD_INTRINSIC enable_if_t<(_Np == simd<_Tp>::size()), simd<_Tp>>
   to_compatible(const simd<_Tp, simd_abi::fixed_size<_Np>>& __x)
   {
@@ -3324,12 +3324,13 @@ template <typename _Tp, size_t _Np>
     return {__mem, vector_aligned};
   }
 
-template <typename _Tp, size_t _Np>
+template <typename _Tp, int _Np>
   _GLIBCXX_SIMD_INTRINSIC
   enable_if_t<(_Np == simd_mask<_Tp>::size()), simd_mask<_Tp>>
   to_compatible(const simd_mask<_Tp, simd_abi::fixed_size<_Np>>& __x)
   {
     return simd_mask<_Tp>(
+	     __private_init,
 	     [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA { return __x[__i]; });
   }
 

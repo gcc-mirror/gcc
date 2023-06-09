@@ -1,3 +1,63 @@
+2023-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2023-05-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109939
+	* config/arm/arm-builtins.cc (SAT_BINOP_UNSIGNED_IMM_QUALIFIERS): Use
+	qualifier_none for the return operand.
+
+2023-06-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2023-06-06  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/106907
+	* config/rs6000/rs6000.cc (vec_const_128bit_to_bytes): Remove
+	duplicate expression.
+
+2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/109800
+	* config/arm/arm.md (movdf): Generate temporary pseudo in DImode
+	instead of DFmode.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): Rather than punning an
+	lvalue DFmode pseudo into DImode, use a DImode pseudo and pun it into
+	DFmode as an rvalue.
+
+2023-06-06  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/110085
+	* Makefile.in (clean): Remove the removing of
+	MULTILIB_DIR/MULTILIB_OPTIONS directories.
+
+2023-06-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/110088
+	* config/avr/avr.md: Add an RTL peephole to optimize operations on
+	non-LD_REGS after a move from LD_REGS.
+	(piaop): New code iterator.
+
+2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR target/109954
+	* doc/invoke.texi (x86 Options): Fix description of -m32 option.
+
+2023-05-30  Andreas Schwab  <schwab@suse.de>
+
+	PR target/110036
+	* config/riscv/riscv.cc (riscv_asan_shadow_offset): Update to
+	match libsanitizer.
+
 2023-05-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	Backported from master:

@@ -8209,7 +8209,8 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
       type = TREE_TYPE (type);
   } while (AGGREGATE_TYPE_P (type));
 
-  if (! AGGREGATE_TYPE_P (type) && type != error_mark_node)
+  if (type != error_mark_node && ! AGGREGATE_TYPE_P (type)
+      && ! TYPE_PACKED (type) && maximum_field_alignment == 0)
     align = MAX (align, TYPE_ALIGN (type));
 
   return align;
@@ -28762,7 +28763,6 @@ vec_const_128bit_to_bytes (rtx op,
 
   info->all_words_same
     = (info->words[0] == info->words[1]
-       && info->words[0] == info->words[1]
        && info->words[0] == info->words[2]
        && info->words[0] == info->words[3]);
 

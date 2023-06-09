@@ -34137,7 +34137,7 @@ on x86-64 processors in 64-bit environments.
 Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
-generates code that runs on any i386 system.
+generates code that runs in 32-bit mode.
 
 The @option{-m64} option sets @code{int} to 32 bits and @code{long} and pointer
 types to 64 bits, and generates code for the x86-64 architecture.

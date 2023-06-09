@@ -64,7 +64,7 @@ template <typename _Abi, typename>
 	__x = _Base::_S_bit_shift_left(__x, __y);
 	if constexpr (sizeof(_Tp) < sizeof(int))
 	  {
-	    if (__y >= sizeof(_Tp) * __CHAR_BIT__)
+	    if (__y >= int(sizeof(_Tp) * __CHAR_BIT__))
 	      return {};
 	  }
 	return __x;

@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
        // Conversion to a pointer produces a null pointer.
        __attribute__((__always_inline__))
-       constexpr operator _Tp*() const noexcept { return nullptr; }
+       constexpr explicit operator _Tp*() const noexcept { return nullptr; }
      };
 
      using _Is_swappable = true_type;
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       front() noexcept
       {
 	__glibcxx_requires_nonempty();
-	return _M_elems[0];
+	return _M_elems[(size_type)0];
       }
 
       [[__nodiscard__]]
@@ -250,7 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201402L
 	__glibcxx_requires_nonempty();
 #endif
-	return _M_elems[0];
+	return _M_elems[(size_type)0];
       }
 
       [[__nodiscard__]]
@@ -274,12 +274,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[__nodiscard__, __gnu__::__const__, __gnu__::__always_inline__]]
       _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
-      { return _M_elems; }
+      { return static_cast<pointer>(_M_elems); }
 
       [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_pointer
       data() const noexcept
-      { return _M_elems; }
+      { return static_cast<const_pointer>(_M_elems); }
     };
 
 #if __cpp_deduction_guides >= 201606
