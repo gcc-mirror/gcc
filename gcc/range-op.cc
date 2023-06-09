@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 
 integral_table integral_tree_table;
 pointer_table pointer_tree_table;
-float_table float_tree_table;
 
 // Instantiate a range_op_table for unified operations.
 class unified_table : public range_op_table
@@ -75,6 +74,7 @@ operator_plus op_plus;
 operator_abs op_abs;
 operator_minus op_minus;
 operator_negate op_negate;
+operator_mult op_mult;
 
 // Invoke the initialization routines for each class of range.
 
@@ -101,6 +101,7 @@ unified_table::unified_table ()
   set (ABS_EXPR, op_abs);
   set (MINUS_EXPR, op_minus);
   set (NEGATE_EXPR, op_negate);
+  set (MULT_EXPR, op_mult);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -113,7 +114,6 @@ get_op_handler (enum tree_code code, tree type)
       // Should not be in any other table if it is in the unified table.
       gcc_checking_assert (!pointer_tree_table[code]);
       gcc_checking_assert (!integral_tree_table[code]);
-      gcc_checking_assert (!float_tree_table[code]);
       return unified_tree_table[code];
     }
 
@@ -121,8 +121,6 @@ get_op_handler (enum tree_code code, tree type)
     return pointer_tree_table[code];
   if (INTEGRAL_TYPE_P (type))
     return integral_tree_table[code];
-  if (frange::supports_p (type))
-    return float_tree_table[code];
   return NULL;
 }
 
@@ -2012,24 +2010,6 @@ operator_max::wi_fold (irange &r, tree type,
 }
 
 
-class cross_product_operator : public range_operator
-{
-public:
-  // Perform an operation between two wide-ints and place the result
-  // in R.  Return true if the operation overflowed.
-  virtual bool wi_op_overflows (wide_int &r,
-				tree type,
-				const wide_int &,
-				const wide_int &) const = 0;
-
-  // Calculate the cross product of two sets of sub-ranges and return it.
-  void wi_cross_product (irange &r, tree type,
-			 const wide_int &lh_lb,
-			 const wide_int &lh_ub,
-			 const wide_int &rh_lb,
-			 const wide_int &rh_ub) const;
-};
-
 // Calculate the cross product of two sets of ranges and return it.
 //
 // Multiplications, divisions and shifts are a bit tricky to handle,
@@ -2085,30 +2065,12 @@ cross_product_operator::wi_cross_product (irange &r, tree type,
 }
 
 
-class operator_mult : public cross_product_operator
+void
+operator_mult::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-			const wide_int &rh_ub) const final override;
-  virtual bool wi_op_overflows (wide_int &res, tree type,
-				const wide_int &w0, const wide_int &w1)
-    const final override;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const final override;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const final override;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, MULT_EXPR, lh, rh); }
-} op_mult;
+  update_known_bitmask (r, MULT_EXPR, lh, rh);
+}
 
 bool
 operator_mult::op1_range (irange &r, tree type,
@@ -4647,7 +4609,6 @@ integral_table::integral_table ()
 {
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
-  set (MULT_EXPR, op_mult);
   set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (BIT_XOR_EXPR, op_bitwise_xor);

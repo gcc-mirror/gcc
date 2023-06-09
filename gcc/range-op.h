@@ -317,16 +317,6 @@ public:
 };
 extern pointer_table pointer_tree_table;
 
-// Instantiate a range_op_table for floating point operations.
-class float_table : public range_op_table
-{
-  public:
-    float_table ();
-};
-extern float_table float_tree_table;
-
-
-
 extern range_operator *ptr_op_widen_mult_signed;
 extern range_operator *ptr_op_widen_mult_unsigned;
 extern range_operator *ptr_op_widen_plus_signed;
