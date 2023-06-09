@@ -254,15 +254,18 @@ enum vxrm_field_enum
   VXRM_RDN,
   VXRM_ROD
 };
-/* Rounding mode bitfield for floating point FRM.  */
+/* Rounding mode bitfield for floating point FRM.  The value of enum comes
+   from the below link.
+   https://github.com/riscv/riscv-isa-manual/blob/main/src/f-st-ext.adoc#floating-point-control-and-status-register
+ */
 enum frm_field_enum
 {
-  FRM_RNE = 0b000,
-  FRM_RTZ = 0b001,
-  FRM_RDN = 0b010,
-  FRM_RUP = 0b011,
-  FRM_RMM = 0b100,
-  FRM_DYN = 0b111
+  FRM_RNE = 0, /* Aka 0b000.  */
+  FRM_RTZ = 1, /* Aka 0b001.  */
+  FRM_RDN = 2, /* Aka 0b010.  */
+  FRM_RUP = 3, /* Aka 0b011.  */
+  FRM_RMM = 4, /* Aka 0b100.  */
+  FRM_DYN = 7, /* Aka 0b111.  */
 };
 
 opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
