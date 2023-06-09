@@ -66,6 +66,7 @@ operator_equal op_equal;
 operator_not_equal op_not_equal;
 operator_lt op_lt;
 operator_le op_le;
+operator_gt op_gt;
 
 // Invoke the initialization routines for each class of range.
 
@@ -79,6 +80,7 @@ unified_table::unified_table ()
   set (NE_EXPR, op_not_equal);
   set (LT_EXPR, op_lt);
   set (LE_EXPR, op_le);
+  set (GT_EXPR, op_gt);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -1291,34 +1293,17 @@ operator_le::op2_range (irange &r, tree type,
 }
 
 
-class operator_gt :  public range_operator
+void
+operator_gt::update_bitmask (irange &r, const irange &lh,
+			     const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::op1_op2_relation;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, GT_EXPR, lh, rh); }
-} op_gt;
+  update_known_bitmask (r, GT_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-gt_op1_op2_relation (const irange &lhs)
+operator_gt::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1332,13 +1317,6 @@ gt_op1_op2_relation (const irange &lhs)
     return VREL_GT;
   return VREL_VARYING;
 }
-
-relation_kind
-operator_gt::op1_op2_relation (const irange &lhs) const
-{
-  return gt_op1_op2_relation (lhs);
-}
-
 
 bool
 operator_gt::fold_range (irange &r, tree type,
@@ -4805,7 +4783,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 integral_table::integral_table ()
 {
-  set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
   set (PLUS_EXPR, op_plus);
   set (MINUS_EXPR, op_minus);
@@ -4855,7 +4832,6 @@ pointer_table::pointer_table ()
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 
-  set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
   set (SSA_NAME, op_ident);
   set (INTEGER_CST, op_integer_cst);
