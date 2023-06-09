@@ -395,10 +395,15 @@ available_occurrence_p (const bb_info *bb, const vector_insn_info dem)
       if (!vlmax_avl_p (dem.get_avl ()))
 	{
 	  rtx dest = NULL_RTX;
+	  insn_info *i = insn;
 	  if (vsetvl_insn_p (insn->rtl ()))
-	    dest = get_vl (insn->rtl ());
-	  for (const insn_info *i = insn; real_insn_and_same_bb_p (i, bb);
-	       i = i->next_nondebug_insn ())
+	    {
+	      dest = get_vl (insn->rtl ());
+	      /* For user vsetvl a2, a2 instruction, we consider it as
+		 available even though it modifies "a2".  */
+	      i = i->next_nondebug_insn ();
+	    }
+	  for (; real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
 	    {
 	      if (read_vl_insn_p (i->rtl ()))
 		continue;
@@ -1893,11 +1898,13 @@ vector_insn_info::parse_insn (rtx_insn *rinsn)
   *this = vector_insn_info ();
   if (!NONDEBUG_INSN_P (rinsn))
     return;
-  if (!has_vtype_op (rinsn))
+  if (optimize == 0 && !has_vtype_op (rinsn))
+    return;
+  if (optimize > 0 && !vsetvl_insn_p (rinsn))
     return;
   m_state = VALID;
   extract_insn_cached (rinsn);
-  const rtx avl = recog_data.operand[get_attr_vl_op_idx (rinsn)];
+  rtx avl = ::get_avl (rinsn);
   m_avl = avl_info (avl, nullptr);
   m_sew = ::get_sew (rinsn);
   m_vlmul = ::get_vlmul (rinsn);
@@ -2730,10 +2737,11 @@ private:
   /* Phase 5.  */
   rtx_insn *get_vsetvl_at_end (const bb_info *, vector_insn_info *) const;
   void local_eliminate_vsetvl_insn (const bb_info *) const;
-  void cleanup_insns (void) const;
+  bool global_eliminate_vsetvl_insn (const bb_info *) const;
+  void ssa_post_optimization (void) const;
 
   /* Phase 6.  */
-  void propagate_avl (void) const;
+  void df_post_optimization (void) const;
 
   void init (void);
   void done (void);
@@ -4246,7 +4254,7 @@ pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
 
       /* Local AVL compatibility checking is simpler than global, we only
 	 need to check the REGNO is same.  */
-      if (prev_dem.valid_p () && prev_dem.skip_avl_compatible_p (curr_dem)
+      if (prev_dem.valid_or_dirty_p () && prev_dem.skip_avl_compatible_p (curr_dem)
 	  && local_avl_compatible_p (prev_avl, curr_avl))
 	{
 	  /* curr_dem and prev_dem is compatible!  */
@@ -4277,27 +4285,191 @@ pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
     }
 }
 
-/* Before VSETVL PASS, RVV instructions pattern is depending on AVL operand
-   implicitly. Since we will emit VSETVL instruction and make RVV instructions
-   depending on VL/VTYPE global status registers, we remove the such AVL operand
-   in the RVV instructions pattern here in order to remove AVL dependencies when
-   AVL operand is a register operand.
+/* Return the first vsetvl instruction in CFG_BB or NULL if
+   none exists or if a user RVV instruction is enountered
+   prior to any vsetvl.  */
+static rtx_insn *
+get_first_vsetvl_before_rvv_insns (basic_block cfg_bb)
+{
+  rtx_insn *rinsn;
+  FOR_BB_INSNS (cfg_bb, rinsn)
+    {
+      if (!NONDEBUG_INSN_P (rinsn))
+	continue;
+      /* If we don't find any inserted vsetvli before user RVV instructions,
+	 we don't need to optimize the vsetvls in this block.  */
+      if (has_vtype_op (rinsn) || vsetvl_insn_p (rinsn))
+	return nullptr;
 
-   Before the VSETVL PASS:
-     li a5,32
-     ...
-     vadd.vv (..., a5)
-   After the VSETVL PASS:
-     li a5,32
-     vsetvli zero, a5, ...
-     ...
-     vadd.vv (..., const_int 0).  */
+      if (vsetvl_discard_result_insn_p (rinsn))
+	return rinsn;
+    }
+  return nullptr;
+}
+
+/* Global user vsetvl optimizaiton:
+
+     Case 1:
+     bb 1:
+       vsetvl a5,a4,e8,mf8
+       ...
+     bb 2:
+       ...
+       vsetvl zero,a5,e8,mf8 --> Eliminate directly.
+
+     Case 2:
+      bb 1:
+       vsetvl a5,a4,e8,mf8    --> vsetvl a5,a4,e32,mf2
+       ...
+      bb 2:
+       ...
+       vsetvl zero,a5,e32,mf2 --> Eliminate directly.
+
+     Case 3:
+      bb 1:
+       vsetvl a5,a4,e8,mf8    --> vsetvl a5,a4,e32,mf2
+       ...
+      bb 2:
+       ...
+       vsetvl a5,a4,e8,mf8    --> vsetvl a5,a4,e32,mf2
+       goto bb 3
+      bb 3:
+       ...
+       vsetvl zero,a5,e32,mf2 --> Eliminate directly.
+*/
+bool
+pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
+{
+  rtx_insn *vsetvl_rinsn;
+  vector_insn_info dem = vector_insn_info ();
+  const auto &block_info = get_block_info (bb);
+  basic_block cfg_bb = bb->cfg_bb ();
+
+  if (block_info.local_dem.valid_or_dirty_p ())
+    {
+      /* Optimize the local vsetvl.  */
+      dem = block_info.local_dem;
+      vsetvl_rinsn = get_first_vsetvl_before_rvv_insns (cfg_bb);
+    }
+  if (!vsetvl_rinsn)
+    /* Optimize the global vsetvl inserted by LCM.  */
+    vsetvl_rinsn = get_vsetvl_at_end (bb, &dem);
+
+  /* No need to optimize if block doesn't have vsetvl instructions.  */
+  if (!dem.valid_or_dirty_p ()
+      || !vsetvl_rinsn
+      || !dem.get_avl_source ()
+      || !dem.has_avl_reg ())
+    return false;
+
+  /* Condition 1: Check it has preds.  */
+  if (EDGE_COUNT (cfg_bb->preds) == 0)
+    return false;
+
+  /* If all preds has VL/VTYPE status setted by user vsetvls, and these
+     user vsetvls are all skip_avl_compatible_p with the vsetvl in this
+     block, we can eliminate this vsetvl instruction.  */
+  sbitmap avin = m_vector_manager->vector_avin[cfg_bb->index];
+
+  unsigned int bb_index;
+  sbitmap_iterator sbi;
+  rtx avl = get_avl (dem.get_insn ()->rtl ());
+  hash_set<set_info *> sets
+    = get_all_sets (dem.get_avl_source (), true, false, false);
+  /* Condition 2: All VL/VTYPE available in are all compatible.  */
+  EXECUTE_IF_SET_IN_BITMAP (avin, 0, bb_index, sbi)
+    {
+      const auto &expr = m_vector_manager->vector_exprs[bb_index];
+      const auto &insn = expr->get_insn ();
+      def_info *def = find_access (insn->defs (), REGNO (avl));
+      set_info *set = safe_dyn_cast<set_info *> (def);
+      if (!vsetvl_insn_p (insn->rtl ()) || insn->bb () == bb
+	  || !sets.contains (set))
+	return false;
+    }
+
+  /* Condition 3: We don't do the global optimization for the block
+     has a pred is entry block or exit block.  */
+  /* Condition 4: All preds have available VL/VTYPE out.  */
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, cfg_bb->preds)
+    {
+      sbitmap avout = m_vector_manager->vector_avout[e->src->index];
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  || e->src == EXIT_BLOCK_PTR_FOR_FN (cfun) || bitmap_empty_p (avout))
+	return false;
+
+      EXECUTE_IF_SET_IN_BITMAP (avout, 0, bb_index, sbi)
+	{
+	  const auto &expr = m_vector_manager->vector_exprs[bb_index];
+	  const auto &insn = expr->get_insn ();
+	  def_info *def = find_access (insn->defs (), REGNO (avl));
+	  set_info *set = safe_dyn_cast<set_info *> (def);
+	  if (!vsetvl_insn_p (insn->rtl ()) || insn->bb () == bb
+	      || !sets.contains (set) || !expr->skip_avl_compatible_p (dem))
+	    return false;
+	}
+    }
+
+  /* Step1: Reshape the VL/VTYPE status to make sure everything compatible.  */
+  hash_set<basic_block> pred_cfg_bbs = get_all_predecessors (cfg_bb);
+  FOR_EACH_EDGE (e, ei, cfg_bb->preds)
+    {
+      sbitmap avout = m_vector_manager->vector_avout[e->src->index];
+      EXECUTE_IF_SET_IN_BITMAP (avout, 0, bb_index, sbi)
+	{
+	  vector_insn_info prev_dem = *m_vector_manager->vector_exprs[bb_index];
+	  vector_insn_info curr_dem = dem;
+	  insn_info *insn = prev_dem.get_insn ();
+	  if (!pred_cfg_bbs.contains (insn->bb ()->cfg_bb ()))
+	    continue;
+	  /* Update avl info since we need to make sure they are fully
+	     compatible before merge.  */
+	  curr_dem.set_avl_info (prev_dem.get_avl_info ());
+	  /* Merge both and update into curr_vsetvl.  */
+	  prev_dem = curr_dem.merge (prev_dem, LOCAL_MERGE);
+	  change_vsetvl_insn (insn, prev_dem);
+	}
+    }
+
+  /* Step2: eliminate the vsetvl instruction.  */
+  eliminate_insn (vsetvl_rinsn);
+  return true;
+}
+
+/* This function does the following post optimization base on RTL_SSA:
+
+   1. Local user vsetvl optimizations.
+   2. Global user vsetvl optimizations.
+   3. AVL dependencies removal:
+      Before VSETVL PASS, RVV instructions pattern is depending on AVL operand
+      implicitly. Since we will emit VSETVL instruction and make RVV
+      instructions depending on VL/VTYPE global status registers, we remove the
+      such AVL operand in the RVV instructions pattern here in order to remove
+      AVL dependencies when AVL operand is a register operand.
+
+      Before the VSETVL PASS:
+	li a5,32
+	...
+	vadd.vv (..., a5)
+      After the VSETVL PASS:
+	li a5,32
+	vsetvli zero, a5, ...
+	...
+	vadd.vv (..., const_int 0).  */
 void
-pass_vsetvl::cleanup_insns (void) const
+pass_vsetvl::ssa_post_optimization (void) const
 {
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       local_eliminate_vsetvl_insn (bb);
+      bool changed_p = true;
+      while (changed_p)
+	{
+	  changed_p = false;
+	  changed_p |= global_eliminate_vsetvl_insn (bb);
+	}
       for (insn_info *insn : bb->real_nondebug_insns ())
 	{
 	  rtx_insn *rinsn = insn->rtl ();
@@ -4342,135 +4514,81 @@ pass_vsetvl::cleanup_insns (void) const
     }
 }
 
-void
-pass_vsetvl::propagate_avl (void) const
+/* Return true if the SET result is not used by any instructions.  */
+static bool
+has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
 {
-  /* Rebuild the RTL_SSA according to the new CFG generated by LCM.  */
-  /* Finalization of RTL_SSA.  */
-  free_dominance_info (CDI_DOMINATORS);
-  if (crtl->ssa->perform_pending_updates ())
-    cleanup_cfg (0);
-  delete crtl->ssa;
-  crtl->ssa = nullptr;
-  /* Initialization of RTL_SSA.  */
-  calculate_dominance_info (CDI_DOMINATORS);
+  /* Handle the following case that can not be detected in RTL_SSA.  */
+  /* E.g.
+	  li a5, 100
+	  vsetvli a6, a5...
+	  ...
+	  vadd (use a6)
+
+	The use of "a6" is removed from "vadd" but the information is
+	not updated in RTL_SSA framework. We don't want to re-new
+	a new RTL_SSA which is expensive, instead, we use data-flow
+	analysis to check whether "a6" has no uses.  */
+  if (bitmap_bit_p (df_get_live_out (cfg_bb), regno))
+    return false;
+
+  rtx_insn *iter;
+  for (iter = NEXT_INSN (rinsn); iter && iter != NEXT_INSN (BB_END (cfg_bb));
+       iter = NEXT_INSN (iter))
+    if (df_find_use (iter, regno_reg_rtx[regno]))
+      return false;
+
+  return true;
+}
+
+/* This function does the following post optimization base on dataflow
+   analysis:
+
+   1. Change vsetvl rd, rs1 --> vsevl zero, rs1, if rd is not used by any
+   nondebug instructions. Even though this PASS runs after RA and it doesn't
+   help for reduce register pressure, it can help instructions scheduling since
+   we remove the dependencies.
+
+   2. Remove redundant user vsetvls base on outcome of Phase 4 (LCM) && Phase 5
+   (AVL dependencies removal).  */
+void
+pass_vsetvl::df_post_optimization (void) const
+{
   df_analyze ();
-  crtl->ssa = new function_info (cfun);
-
   hash_set<rtx_insn *> to_delete;
-  for (const bb_info *bb : crtl->ssa->bbs ())
+  basic_block cfg_bb;
+  rtx_insn *rinsn;
+  FOR_ALL_BB_FN (cfg_bb, cfun)
     {
-      for (insn_info *insn : bb->real_nondebug_insns ())
+      FOR_BB_INSNS (cfg_bb, rinsn)
 	{
-	  if (vsetvl_discard_result_insn_p (insn->rtl ()))
+	  if (NONDEBUG_INSN_P (rinsn) && vsetvl_insn_p (rinsn))
 	    {
-	      rtx avl = get_avl (insn->rtl ());
-	      if (!REG_P (avl))
-		continue;
-
-	      set_info *set = find_access (insn->uses (), REGNO (avl))->def ();
-	      insn_info *def_insn = extract_single_source (set);
-	      if (!def_insn)
-		continue;
-
-	      /* Handle this case:
-		 vsetvli	a6,zero,e32,m1,ta,mu
-		 li	a5,4096
-		 add	a7,a0,a5
-		 addi	a7,a7,-96
-		 vsetvli	t1,zero,e8,mf8,ta,ma
-		 vle8.v	v24,0(a7)
-		 add	a5,a3,a5
-		 addi	a5,a5,-96
-		 vse8.v	v24,0(a5)
-		 vsetvli	zero,a6,e32,m1,tu,ma
-	      */
-	      if (vsetvl_insn_p (def_insn->rtl ()))
-		{
-		  vl_vtype_info def_info = get_vl_vtype_info (def_insn);
-		  vl_vtype_info info = get_vl_vtype_info (insn);
-		  rtx avl = get_avl (def_insn->rtl ());
-		  rtx vl = get_vl (def_insn->rtl ());
-		  if (def_info.get_ratio () == info.get_ratio ())
-		    {
-		      if (vlmax_avl_p (def_info.get_avl ()))
-			{
-			  info.set_avl_info (
-			    avl_info (def_info.get_avl (), nullptr));
-			  rtx new_pat
-			    = gen_vsetvl_pat (VSETVL_NORMAL, info, vl);
-			  validate_change (insn->rtl (),
-					   &PATTERN (insn->rtl ()), new_pat,
-					   false);
-			  continue;
-			}
-		      if (def_info.has_avl_imm () || rtx_equal_p (avl, vl))
-			{
-			  info.set_avl_info (avl_info (avl, nullptr));
-			  emit_vsetvl_insn (VSETVL_DISCARD_RESULT, EMIT_AFTER,
-					    info, NULL_RTX, insn->rtl ());
-			  if (set->single_nondebug_insn_use ())
-			    {
-			      to_delete.add (insn->rtl ());
-			      to_delete.add (def_insn->rtl ());
-			    }
-			  continue;
-			}
-		    }
-		}
-	    }
-
-	  /* Change vsetvl rd, rs1 --> vsevl zero, rs1,
-	     if rd is not used by any nondebug instructions.
-	     Even though this PASS runs after RA and it doesn't help for
-	     reduce register pressure, it can help instructions scheduling
-	     since we remove the dependencies.  */
-	  if (vsetvl_insn_p (insn->rtl ()))
-	    {
-	      rtx vl = get_vl (insn->rtl ());
-	      rtx avl = get_avl (insn->rtl ());
-	      def_info *def = find_access (insn->defs (), REGNO (vl));
-	      set_info *set = safe_dyn_cast<set_info *> (def);
+	      rtx vl = get_vl (rinsn);
 	      vector_insn_info info;
-	      info.parse_insn (insn);
-	      gcc_assert (set);
-	      if (m_vector_manager->to_delete_vsetvls.contains (insn->rtl ()))
+	      info.parse_insn (rinsn);
+	      bool to_delete_p = m_vector_manager->to_delete_p (rinsn);
+	      bool to_refine_p = m_vector_manager->to_refine_p (rinsn);
+	      if (has_no_uses (cfg_bb, rinsn, REGNO (vl)))
 		{
-		  m_vector_manager->to_delete_vsetvls.remove (insn->rtl ());
-		  if (m_vector_manager->to_refine_vsetvls.contains (
-			insn->rtl ()))
-		    m_vector_manager->to_refine_vsetvls.remove (insn->rtl ());
-		  if (!set->has_nondebug_insn_uses ())
-		    {
-		      to_delete.add (insn->rtl ());
-		      continue;
-		    }
-		}
-	      if (m_vector_manager->to_refine_vsetvls.contains (insn->rtl ()))
-		{
-		  m_vector_manager->to_refine_vsetvls.remove (insn->rtl ());
-		  if (!set->has_nondebug_insn_uses ())
+		  if (to_delete_p)
+		    to_delete.add (rinsn);
+		  else if (to_refine_p)
 		    {
 		      rtx new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY,
 						    info, NULL_RTX);
-		      change_insn (insn->rtl (), new_pat);
-		      continue;
+		      validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
 		    }
-		}
-	      if (vlmax_avl_p (avl))
-		continue;
-	      rtx new_pat
-		= gen_vsetvl_pat (VSETVL_DISCARD_RESULT, info, NULL_RTX);
-	      if (!set->has_nondebug_insn_uses ())
-		{
-		  validate_change (insn->rtl (), &PATTERN (insn->rtl ()),
-				   new_pat, false);
-		  continue;
+		  else if (!vlmax_avl_p (info.get_avl ()))
+		    {
+		      rtx new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, info,
+						    NULL_RTX);
+		      validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
+		    }
 		}
 	    }
 	}
     }
-
   for (rtx_insn *rinsn : to_delete)
     eliminate_insn (rinsn);
 }
@@ -4593,16 +4711,16 @@ pass_vsetvl::lazy_vsetvl (void)
     fprintf (dump_file, "\nPhase 4: PRE vsetvl by Lazy code motion (LCM)\n");
   pre_vsetvl ();
 
-  /* Phase 5 - Cleanup AVL && VL operand of RVV instruction.  */
+  /* Phase 5 - Post optimization base on RTL_SSA.  */
   if (dump_file)
-    fprintf (dump_file, "\nPhase 5: Cleanup AVL and VL operands\n");
-  cleanup_insns ();
+    fprintf (dump_file, "\nPhase 5: Post optimization base on RTL_SSA\n");
+  ssa_post_optimization ();
 
-  /* Phase 6 - Rebuild RTL_SSA to propagate AVL between vsetvls.  */
+  /* Phase 6 - Post optimization base on data-flow analysis.  */
   if (dump_file)
     fprintf (dump_file,
-	     "\nPhase 6: Rebuild RTL_SSA to propagate AVL between vsetvls\n");
-  propagate_avl ();
+	     "\nPhase 6: Post optimization base on data-flow analysis\n");
+  df_post_optimization ();
 }
 
 /* Main entry point for this pass.  */
