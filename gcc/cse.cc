@@ -1312,11 +1312,10 @@ try_const_anchors (rtx src_const, machine_mode mode)
   rtx lower_exp = NULL_RTX, upper_exp = NULL_RTX;
   unsigned lower_old, upper_old;
 
-  /* CONST_INT is used for CC modes, but we should leave those alone.  */
-  if (GET_MODE_CLASS (mode) == MODE_CC)
+  /* CONST_INT may be in various modes, avoid non-scalar-int mode. */
+  if (!SCALAR_INT_MODE_P (mode))
     return NULL_RTX;
 
-  gcc_assert (SCALAR_INT_MODE_P (mode));
   if (!compute_const_anchors (src_const, &lower_base, &lower_offs,
 			      &upper_base, &upper_offs))
     return NULL_RTX;
