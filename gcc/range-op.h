@@ -266,7 +266,6 @@ extern void wi_set_zero_nonzero_bits (tree type,
 				      wide_int &mustbe_nonzero);
 
 // op1_op2_relation methods that are the same across irange and frange.
-relation_kind lt_op1_op2_relation (const irange &lhs);
 relation_kind le_op1_op2_relation (const irange &lhs);
 relation_kind gt_op1_op2_relation (const irange &lhs);
 relation_kind ge_op1_op2_relation (const irange &lhs);
