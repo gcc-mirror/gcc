@@ -75,4 +75,41 @@ relop_early_resolve (irange &r, tree type, const vrange &op1,
   return false;
 }
 
+// ----------------------------------------------------------------------
+//                          Mixed Mode Operators.
+// ----------------------------------------------------------------------
+
+class operator_equal : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation;
+  bool fold_range (irange &r, tree type,
+		   const irange &op1, const irange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const frange &op1, const frange &op2,
+		   relation_trio = TRIO_VARYING) const final override;
+
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &val,
+		  relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (frange &r, tree type,
+		  const irange &lhs, const frange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
+
+  bool op2_range (irange &r, tree type,
+		  const irange &lhs, const irange &val,
+		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (frange &r, tree type,
+		  const irange &lhs, const frange &op1,
+		  relation_trio rel = TRIO_VARYING) const final override;
+
+  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H
