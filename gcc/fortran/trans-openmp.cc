@@ -2934,6 +2934,14 @@ gfc_omp_deep_map_kind_p (tree clause)
 
   switch (OMP_CLAUSE_MAP_KIND (clause))
     {
+    case GOMP_MAP_PRESENT_ALLOC:
+    case GOMP_MAP_PRESENT_TO:
+    case GOMP_MAP_PRESENT_TOFROM:
+    case GOMP_MAP_PRESENT_FROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TO:
+    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+      return false;
     case GOMP_MAP_TO:
     case GOMP_MAP_FROM:
     case GOMP_MAP_TOFROM:
@@ -2942,11 +2950,6 @@ gfc_omp_deep_map_kind_p (tree clause)
     case GOMP_MAP_ALWAYS_TOFROM:
     case GOMP_MAP_FIRSTPRIVATE:
     case GOMP_MAP_ALLOC:
-<<<<<<< HEAD
-    case GOMP_MAP_PRESENT_ALLOC:
-      return true;
-=======
->>>>>>> parent of 6e3816fa47c (openmp: Add support for the 'present' modifier)
     case GOMP_MAP_POINTER:
     case GOMP_MAP_TO_PSET:
     case GOMP_MAP_FORCE_PRESENT:
@@ -4580,6 +4583,30 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  always_modifier = true;
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_TOFROM);
 		  break;
+		case OMP_MAP_PRESENT_ALLOC:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_PRESENT_ALLOC);
+		  break;
+		case OMP_MAP_PRESENT_TO:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_PRESENT_TO);
+		  break;
+		case OMP_MAP_PRESENT_FROM:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_PRESENT_FROM);
+		  break;
+		case OMP_MAP_PRESENT_TOFROM:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_PRESENT_TOFROM);
+		  break;
+		case OMP_MAP_ALWAYS_PRESENT_TO:
+		  always_modifier = true;
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_PRESENT_TO);
+		  break;
+		case OMP_MAP_ALWAYS_PRESENT_FROM:
+		  always_modifier = true;
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_PRESENT_FROM);
+		  break;
+		case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+		  always_modifier = true;
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALWAYS_PRESENT_TOFROM);
+		  break;
 		case OMP_MAP_RELEASE:
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_RELEASE);
 		  break;
@@ -5480,6 +5507,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 		  OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
 		}
+	      if (n->u.present_modifier)
+		OMP_CLAUSE_MOTION_PRESENT (node) = 1;
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 	    }
 	  break;
@@ -6088,6 +6117,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  break;
 	case OMP_DEFAULTMAP_FIRSTPRIVATE:
 	  behavior = OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+	  break;
+	case OMP_DEFAULTMAP_PRESENT:
+	  behavior = OMP_CLAUSE_DEFAULTMAP_PRESENT;
 	  break;
 	case OMP_DEFAULTMAP_NONE: behavior = OMP_CLAUSE_DEFAULTMAP_NONE; break;
 	case OMP_DEFAULTMAP_DEFAULT:

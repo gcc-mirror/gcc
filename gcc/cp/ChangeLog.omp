@@ -1,5 +1,21 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from mainline:
+	2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_defaultmap,
+	cp_parser_omp_clause_map): Parse 'present'.
+	(cp_parser_omp_clause_from_to): New; parse to/from
+	clauses with optional 'present' modifier.
+	(cp_parser_omp_all_clauses): Update call.
+	(cp_parser_omp_target_data, cp_parser_omp_target_enter_data,
+	cp_parser_omp_target_exit_data): Handle new enum value for
+	'present' mapping.
+	* semantics.cc (finish_omp_target): Likewise.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Reverted:
 	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 

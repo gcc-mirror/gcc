@@ -1,5 +1,22 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from mainline:
+	2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_5): New.
+	(GOMP_MAP_FLAG_FORCE): Redefine.
+	(GOMP_MAP_FLAG_PRESENT, GOMP_MAP_FLAG_ALWAYS_PRESENT): New.
+	(enum gomp_map_kind): Add map kinds with 'present' modifiers.
+	(GOMP_MAP_COPY_TO_P, GOMP_MAP_COPY_FROM_P): Evaluate to true for
+	map variants with 'present'
+	(GOMP_MAP_ALWAYS_TO_P, GOMP_MAP_ALWAYS_FROM_P): Evaluate to true
+	for map variants with 'always, present' modifiers.
+	(GOMP_MAP_ALWAYS): Redefine.
+	(GOMP_MAP_FORCE_P, GOMP_MAP_PRESENT_P): New.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Reverted:
 	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 

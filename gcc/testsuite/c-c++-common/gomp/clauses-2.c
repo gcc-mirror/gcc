@@ -15,7 +15,7 @@ foo (int *p, int q, struct S t, int i, int j, int k, int l)
     bar (p);
   #pragma omp target map (p) , map (p[0])
     bar (p);
-  #pragma omp target map (q) map (q)
+  #pragma omp target map (q) map (q) /* { dg-error "appears more than once in map clauses" } */
     bar (&q);
   #pragma omp target map (p[0]) map (p[0]) /* { dg-error "appears more than once in data clauses" } */
     bar (p);

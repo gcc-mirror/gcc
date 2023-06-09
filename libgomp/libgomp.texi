@@ -310,7 +310,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
       clause in C and C++ @tab Y @tab
-@item @code{present} argument to @code{defaultmap} clause @tab N @tab
+@item @code{present} argument to @code{defaultmap} clause @tab Y @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
       routines @tab Y @tab
@@ -352,6 +352,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Optional comma between directive and clause in the @code{#pragma} form @tab Y @tab
 @item @code{indirect} clause in @code{declare target} @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
+@item @code{present} modifier to the @code{map}, @code{to} and @code{from}
+      clauses @tab Y @tab
 @end multitable
 
 

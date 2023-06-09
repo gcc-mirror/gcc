@@ -1766,6 +1766,9 @@ class auto_suppress_location_wrappers
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->omp_clause.subcode.map_kind \
    = (unsigned int) (MAP_KIND))
 
+#define OMP_CLAUSE_MOTION_PRESENT(NODE) \
+  (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_FROM, OMP_CLAUSE_TO)->base.deprecated_flag)
+
 /* Nonzero if this map clause is for array (rather than pointer) based array
    section with zero bias.  Both the non-decl OMP_CLAUSE_MAP and corresponding
    OMP_CLAUSE_MAP with GOMP_MAP_POINTER are marked with this flag.  */

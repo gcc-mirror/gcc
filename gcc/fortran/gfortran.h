@@ -1310,6 +1310,13 @@ enum gfc_omp_map_op
   OMP_MAP_ALWAYS_TO,
   OMP_MAP_ALWAYS_FROM,
   OMP_MAP_ALWAYS_TOFROM,
+  OMP_MAP_PRESENT_ALLOC,
+  OMP_MAP_PRESENT_TO,
+  OMP_MAP_PRESENT_FROM,
+  OMP_MAP_PRESENT_TOFROM,
+  OMP_MAP_ALWAYS_PRESENT_TO,
+  OMP_MAP_ALWAYS_PRESENT_FROM,
+  OMP_MAP_ALWAYS_PRESENT_TOFROM,
   OMP_MAP_DECLARE_ALLOCATE,
   OMP_MAP_DECLARE_DEALLOCATE
 };
@@ -1365,6 +1372,7 @@ typedef struct gfc_omp_namelist
 	} linear;
       struct gfc_common_head *common;
       bool lastprivate_conditional;
+      bool present_modifier;
     } u;
   union
     {

@@ -1,5 +1,27 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from mainline:
+	2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+
+	* c-c++-common/gomp/map-6.c: Update dg-error, extend to test for
+	duplicated 'present' and extend scan-dump tests for 'present'.
+	* gfortran.dg/gomp/defaultmap-1.f90: Update dg-error.
+	* gfortran.dg/gomp/map-7.f90: Extend parse and dump test for
+	'present'.
+	* gfortran.dg/gomp/map-8.f90: Extend for duplicate 'present'
+	modifier checking.
+	* c-c++-common/gomp/defaultmap-4.c: New test.
+	* c-c++-common/gomp/map-9.c: New test.
+	* c-c++-common/gomp/target-update-1.c: New test.
+	* gfortran.dg/gomp/defaultmap-8.f90: New test.
+	* gfortran.dg/gomp/map-11.f90: New test.
+	* gfortran.dg/gomp/map-12.f90: New test.
+	* gfortran.dg/gomp/target-update-1.f90: New test.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Reverted:
 	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 

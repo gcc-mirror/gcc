@@ -1,5 +1,29 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from mainline:
+	2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (omp_notice_variable): Apply GOVD_MAP_ALLOC_ONLY flag
+	and defaultmap flags if the defaultmap has GOVD_MAP_FORCE_PRESENT flag
+	set.
+	(omp_get_attachment): Handle map clauses with 'present' modifier.
+	(omp_group_base): Likewise.
+	(gimplify_scan_omp_clauses): Reorder present maps to come first.
+	Set GOVD flags for present defaultmaps.
+	(gimplify_adjust_omp_clauses_1): Set map kind for present defaultmaps.
+	* omp-low.cc (scan_sharing_clauses): Handle 'always, present' map
+	clauses.
+	(lower_omp_target): Handle map clauses with 'present' modifier.
+	Handle 'to' and 'from' clauses with 'present'.
+	* tree-core.h (enum omp_clause_defaultmap_kind): Add
+	OMP_CLAUSE_DEFAULTMAP_PRESENT defaultmap kind.
+	* tree-pretty-print.cc (dump_omp_clause): Handle 'map', 'to' and
+	'from' clauses with 'present' modifier.  Handle present defaultmap.
+	* tree.h (OMP_CLAUSE_MOTION_PRESENT): New #define.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Reverted:
 	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 

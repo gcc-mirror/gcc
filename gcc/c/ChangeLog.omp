@@ -1,5 +1,21 @@
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from mainline:
+	2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_defaultmap,
+	c_parser_omp_clause_map): Parse 'present'.
+	(c_parser_omp_clause_to, c_parser_omp_clause_from): Remove.
+	(c_parser_omp_clause_from_to): New; parse to/from clauses with
+	optional present modifer.
+	(c_parser_omp_all_clauses): Update call.
+	(c_parser_omp_target_data, c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Handle new map enum values
+	for 'present' mapping.
+
+2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
+
 	Reverted:
 	2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
