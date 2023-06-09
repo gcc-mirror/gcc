@@ -873,32 +873,10 @@ operator_lt::op2_range (frange &r,
   return true;
 }
 
-class foperator_le : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio rel = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return le_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
-  bool op2_range (frange &r, tree type,
-		  const irange &lhs, const frange &op1,
-		  relation_trio rel = TRIO_VARYING) const final override;
-} fop_le;
-
 bool
-foperator_le::fold_range (irange &r, tree type,
-			  const frange &op1, const frange &op2,
-			  relation_trio rel) const
+operator_le::fold_range (irange &r, tree type,
+			 const frange &op1, const frange &op2,
+			 relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LE))
     return true;
@@ -916,11 +894,11 @@ foperator_le::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_le::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+operator_le::op1_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op2,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -949,11 +927,11 @@ foperator_le::op1_range (frange &r,
 }
 
 bool
-foperator_le::op2_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op1,
-			 relation_trio) const
+operator_le::op2_range (frange &r,
+			tree type,
+			const irange &lhs,
+			const frange &op1,
+			relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {
@@ -1637,7 +1615,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_le.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (LE_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2765,7 +2744,6 @@ float_table::float_table ()
   // All the relational operators are expected to work, because the
   // calculation of ranges on outgoing edges expect the handlers to be
   // present.
-  set (LE_EXPR, fop_le);
   set (GT_EXPR, fop_gt);
   set (GE_EXPR, fop_ge);
 
