@@ -2487,6 +2487,17 @@ public:
     return expr;
   }
 
+  std::unique_ptr<Expr> take_tail_expr ()
+  {
+    rust_assert (has_tail_expr ());
+    return std::move (expr);
+  }
+
+  void set_tail_expr (std::unique_ptr<Expr> expr)
+  {
+    this->expr = std::move (expr);
+  }
+
   // Removes the tail expression from the block.
   void strip_tail_expr () { expr = nullptr; }
   // Normalizes a trailing statement without a semicolon to a tail expression.
