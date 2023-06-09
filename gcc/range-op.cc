@@ -70,6 +70,7 @@ operator_gt op_gt;
 operator_ge op_ge;
 operator_identity op_ident;
 operator_cst op_cst;
+operator_cast op_cast;
 
 // Invoke the initialization routines for each class of range.
 
@@ -90,6 +91,9 @@ unified_table::unified_table ()
   set (OBJ_TYPE_REF, op_ident);
   set (REAL_CST, op_cst);
   set (INTEGER_CST, op_cst);
+  set (NOP_EXPR, op_cast);
+  set (CONVERT_EXPR, op_cast);
+
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -2868,32 +2872,6 @@ operator_rshift::wi_fold (irange &r, tree type,
 }
 
 
-class operator_cast: public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::lhs_op1_relation;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					  const irange &op1,
-					  const irange &op2,
-					  relation_kind) const;
-private:
-  bool truncating_cast_p (const irange &inner, const irange &outer) const;
-  bool inside_domain_p (const wide_int &min, const wide_int &max,
-			const irange &outer) const;
-  void fold_pair (irange &r, unsigned index, const irange &inner,
-			   const irange &outer) const;
-} op_cast;
-
 // Add a partial equivalence between the LHS and op1 for casts.
 
 relation_kind
@@ -4744,8 +4722,6 @@ integral_table::integral_table ()
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
   set (MULT_EXPR, op_mult);
-  set (NOP_EXPR, op_cast);
-  set (CONVERT_EXPR, op_cast);
   set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (BIT_XOR_EXPR, op_bitwise_xor);
@@ -4784,8 +4760,6 @@ pointer_table::pointer_table ()
   set (MAX_EXPR, op_ptr_min_max);
 
   set (ADDR_EXPR, op_addr);
-  set (NOP_EXPR, op_cast);
-  set (CONVERT_EXPR, op_cast);
 
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);

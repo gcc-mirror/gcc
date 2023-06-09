@@ -304,4 +304,28 @@ public:
 		   relation_trio = TRIO_VARYING) const final override;
 };
 
+
+class operator_cast: public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::lhs_op1_relation;
+  bool fold_range (irange &r, tree type,
+		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+private:
+  bool truncating_cast_p (const irange &inner, const irange &outer) const;
+  bool inside_domain_p (const wide_int &min, const wide_int &max,
+			const irange &outer) const;
+  void fold_pair (irange &r, unsigned index, const irange &inner,
+			   const irange &outer) const;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H
