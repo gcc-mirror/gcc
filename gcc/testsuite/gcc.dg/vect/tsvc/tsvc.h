@@ -1164,7 +1164,7 @@ real_t get_expected_result(const char * name)
     } else if (!strcmp(name, "s175")) {
 	return 32009.023438f;
     } else if (!strcmp(name, "s176")) {
-	return 32000.f;
+	return 32063.902344f;
     } else if (!strcmp(name, "s211")) {
 	return 63983.308594f;
     } else if (!strcmp(name, "s212")) {
