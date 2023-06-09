@@ -1341,23 +1341,10 @@ public:
   }
 } fop_negate;
 
-class foperator_abs : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-public:
-  bool fold_range (frange &r, tree type,
-		   const frange &op1, const frange &,
-		   relation_trio = TRIO_VARYING) const final override;
-  bool op1_range (frange &r, tree type,
-		  const frange &lhs, const frange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
-} fop_abs;
-
 bool
-foperator_abs::fold_range (frange &r, tree type,
-			   const frange &op1, const frange &op2,
-			   relation_trio) const
+operator_abs::fold_range (frange &r, tree type,
+			  const frange &op1, const frange &op2,
+			  relation_trio) const
 {
   if (empty_range_varying (r, type, op1, op2))
     return true;
@@ -1405,9 +1392,9 @@ foperator_abs::fold_range (frange &r, tree type,
 }
 
 bool
-foperator_abs::op1_range (frange &r, tree type,
-			  const frange &lhs, const frange &op2,
-			  relation_trio) const
+operator_abs::op1_range (frange &r, tree type,
+			 const frange &lhs, const frange &op2,
+			 relation_trio) const
 {
   if (empty_range_varying (r, type, lhs, op2))
     return true;
@@ -2691,7 +2678,6 @@ private:
 
 float_table::float_table ()
 {
-  set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
   set (MINUS_EXPR, fop_minus);
   set (MULT_EXPR, fop_mult);
