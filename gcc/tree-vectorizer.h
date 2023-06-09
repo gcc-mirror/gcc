@@ -825,6 +825,11 @@ public:
 	(b) can iterate more than once.  */
   bool using_decrementing_iv_p;
 
+  /* True if we've decided to use output of select_vl to adjust IV of
+     both loop control and data reference pointer. This is only true
+     for single-rgroup control.  */
+  bool using_select_vl_p;
+
   /* True if we've decided to use partially-populated vectors for the
      epilogue of loop.  */
   bool epil_using_partial_vectors_p;
@@ -898,6 +903,7 @@ public:
 #define LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P(L) (L)->can_use_partial_vectors_p
 #define LOOP_VINFO_USING_PARTIAL_VECTORS_P(L) (L)->using_partial_vectors_p
 #define LOOP_VINFO_USING_DECREMENTING_IV_P(L) (L)->using_decrementing_iv_p
+#define LOOP_VINFO_USING_SELECT_VL_P(L) (L)->using_select_vl_p
 #define LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P(L)                             \
   (L)->epil_using_partial_vectors_p
 #define LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS(L) (L)->partial_load_store_bias

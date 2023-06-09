@@ -534,7 +534,7 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	   _10 = (unsigned long) count_12(D);
 	   ...
 	   # ivtmp_9 = PHI <ivtmp_35(6), _10(5)>
-	   _36 = MIN_EXPR <ivtmp_9, POLY_INT_CST [4, 4]>;
+	   _36 = (MIN_EXPR | SELECT_VL) <ivtmp_9, POLY_INT_CST [4, 4]>;
 	   ...
 	   vect__4.8_28 = .LEN_LOAD (_17, 32B, _36, 0);
 	   ...
@@ -549,15 +549,28 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
       tree step = rgc->controls.length () == 1 ? rgc->controls[0]
 					       : make_ssa_name (iv_type);
       /* Create decrement IV.  */
-      create_iv (nitems_total, MINUS_EXPR, nitems_step, NULL_TREE, loop,
-		 &incr_gsi, insert_after, &index_before_incr,
-		 &index_after_incr);
-      gimple_seq_add_stmt (header_seq, gimple_build_assign (step, MIN_EXPR,
-							    index_before_incr,
-							    nitems_step));
+      if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+	{
+	  create_iv (nitems_total, MINUS_EXPR, step, NULL_TREE, loop, &incr_gsi,
+		     insert_after, &index_before_incr, &index_after_incr);
+	  tree len = gimple_build (header_seq, IFN_SELECT_VL, iv_type,
+				   index_before_incr, nitems_step);
+	  gimple_seq_add_stmt (header_seq, gimple_build_assign (step, len));
+	}
+      else
+	{
+	  create_iv (nitems_total, MINUS_EXPR, nitems_step, NULL_TREE, loop,
+		     &incr_gsi, insert_after, &index_before_incr,
+		     &index_after_incr);
+	  gimple_seq_add_stmt (header_seq,
+			       gimple_build_assign (step, MIN_EXPR,
+						    index_before_incr,
+						    nitems_step));
+	}
       *iv_step = step;
       *compare_step = nitems_step;
-      return index_before_incr;
+      return LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) ? index_after_incr
+						       : index_before_incr;
     }
 
   /* Create increment IV.  */
@@ -888,7 +901,8 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
   /* Get a boolean result that tells us whether to iterate.  */
   edge exit_edge = single_exit (loop);
   gcond *cond_stmt;
-  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+  if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo)
+      && !LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
     {
       gcc_assert (compare_step);
       tree_code code = (exit_edge->flags & EDGE_TRUE_VALUE) ? LE_EXPR : GT_EXPR;
