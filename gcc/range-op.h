@@ -265,9 +265,6 @@ extern void wi_set_zero_nonzero_bits (tree type,
 				      wide_int &maybe_nonzero,
 				      wide_int &mustbe_nonzero);
 
-// op1_op2_relation methods that are the same across irange and frange.
-relation_kind ge_op1_op2_relation (const irange &lhs);
-
 // This implements the range operator tables as local objects.
 
 class range_op_table
