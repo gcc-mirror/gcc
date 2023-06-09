@@ -675,28 +675,10 @@ operator_equal::op1_range (frange &r, tree type,
   return true;
 }
 
-class foperator_not_equal : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op1_op2_relation;
-public:
-  bool fold_range (irange &r, tree type,
-		   const frange &op1, const frange &op2,
-		   relation_trio rel = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override
-  {
-    return not_equal_op1_op2_relation (lhs);
-  }
-  bool op1_range (frange &r, tree type,
-		  const irange &lhs, const frange &op2,
-		  relation_trio = TRIO_VARYING) const final override;
-} fop_not_equal;
-
 bool
-foperator_not_equal::fold_range (irange &r, tree type,
-				 const frange &op1, const frange &op2,
-				 relation_trio rel) const
+operator_not_equal::fold_range (irange &r, tree type,
+				const frange &op1, const frange &op2,
+				relation_trio rel) const
 {
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_NE))
     return true;
@@ -750,10 +732,10 @@ foperator_not_equal::fold_range (irange &r, tree type,
 }
 
 bool
-foperator_not_equal::op1_range (frange &r, tree type,
-				const irange &lhs,
-				const frange &op2,
-				relation_trio trio) const
+operator_not_equal::op1_range (frange &r, tree type,
+			       const irange &lhs,
+			       const frange &op2,
+			       relation_trio trio) const
 {
   relation_kind rel = trio.op1_op2 ();
   switch (get_bool_state (r, lhs, type))
@@ -2086,7 +2068,8 @@ public:
       op1_no_nan.clear_nan ();
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
-    if (!fop_not_equal.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+    if (!range_op_handler (NE_EXPR).fold_range (r, type, op1_no_nan,
+						op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2803,7 +2786,6 @@ float_table::float_table ()
   // All the relational operators are expected to work, because the
   // calculation of ranges on outgoing edges expect the handlers to be
   // present.
-  set (NE_EXPR, fop_not_equal);
   set (LT_EXPR, fop_lt);
   set (LE_EXPR, fop_le);
   set (GT_EXPR, fop_gt);

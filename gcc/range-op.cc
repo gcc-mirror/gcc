@@ -63,6 +63,7 @@ class unified_table : public range_op_table
 // Instantiate the operators which apply to multiple types here.
 
 operator_equal op_equal;
+operator_not_equal op_not_equal;
 
 // Invoke the initialization routines for each class of range.
 
@@ -73,6 +74,7 @@ unified_table::unified_table ()
   initialize_float_ops ();
 
   set (EQ_EXPR, op_equal);
+  set (NE_EXPR, op_not_equal);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -926,34 +928,19 @@ operator_equal::op2_range (irange &r, tree type,
   return operator_equal::op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
 }
 
-class operator_not_equal : public range_operator
+// -------------------------------------------------------------------------
+
+void
+operator_not_equal::update_bitmask (irange &r, const irange &lh,
+				    const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::op1_op2_relation;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  virtual relation_kind op1_op2_relation (const irange &lhs) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, NE_EXPR, lh, rh); }
-} op_not_equal;
+  update_known_bitmask (r, NE_EXPR, lh, rh);
+}
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-not_equal_op1_op2_relation (const irange &lhs)
+operator_not_equal::op1_op2_relation (const irange &lhs) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -966,12 +953,6 @@ not_equal_op1_op2_relation (const irange &lhs)
   if (lhs.undefined_p () || !contains_zero_p (lhs))
     return VREL_NE;
   return VREL_VARYING;
-}
-
-relation_kind
-operator_not_equal::op1_op2_relation (const irange &lhs) const
-{
-  return not_equal_op1_op2_relation (lhs);
 }
 
 bool
@@ -4866,7 +4847,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 integral_table::integral_table ()
 {
-  set (NE_EXPR, op_not_equal);
   set (LT_EXPR, op_lt);
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
@@ -4919,7 +4899,6 @@ pointer_table::pointer_table ()
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 
-  set (NE_EXPR, op_not_equal);
   set (LT_EXPR, op_lt);
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
