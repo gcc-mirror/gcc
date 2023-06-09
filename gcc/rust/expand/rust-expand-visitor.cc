@@ -149,9 +149,9 @@ expand_item_attribute (AST::Item &item, AST::SimplePath &name,
   return result;
 }
 
+template <typename T>
 static std::vector<std::unique_ptr<AST::Stmt>>
-expand_stmt_attribute (AST::Item &item, AST::SimplePath &name,
-		       MacroExpander &expander)
+expand_stmt_attribute (T &item, AST::SimplePath &name, MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Stmt>> result;
   auto frag = expander.expand_attribute_proc_macro (item, name);
@@ -170,6 +170,39 @@ expand_stmt_attribute (AST::Item &item, AST::SimplePath &name,
 	}
     }
   return result;
+}
+
+void
+expand_tail_expr (AST::BlockExpr &item, MacroExpander &expander)
+{
+  if (item.has_tail_expr ())
+    {
+      auto tail = item.take_tail_expr ();
+      auto attrs = tail->get_outer_attrs ();
+      bool changed = false;
+      for (auto it = attrs.begin (); it != attrs.end ();)
+	{
+	  auto current = *it;
+	  if (is_builtin (current))
+	    {
+	      it++;
+	    }
+	  else
+	    {
+	      it = attrs.erase (it);
+	      changed = true;
+	      auto new_stmts
+		= expand_stmt_attribute (item, current.get_path (), expander);
+	      auto &stmts = item.get_statements ();
+	      std::move (new_stmts.begin (), new_stmts.end (),
+			 std::inserter (stmts, stmts.end ()));
+	    }
+	}
+      if (changed)
+	item.strip_tail_expr ();
+      else
+	item.set_tail_expr (std::move (tail));
+    }
 }
 
 void
@@ -799,6 +832,7 @@ ExpandVisitor::visit (AST::BlockExpr &expr)
 {
   expand_inner_stmts (expr.get_statements ());
 
+  expand_tail_expr (expr, expander);
   if (expr.has_tail_expr ())
     maybe_expand_expr (expr.get_tail_expr ());
 }
