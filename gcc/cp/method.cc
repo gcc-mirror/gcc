@@ -1679,6 +1679,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 	      if (defining)
 		{
 		  tree var = create_temporary_var (rettype);
+		  DECL_NAME (var) = get_identifier ("retval");
 		  pushdecl (var);
 		  cp_finish_decl (var, comp, false, NULL_TREE, flags);
 		  comp = retval = var;

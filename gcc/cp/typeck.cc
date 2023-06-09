@@ -11174,6 +11174,7 @@ check_return_expr (tree retval, bool *no_warning)
 	current_function_return_value = bare_retval;
       else if (current_function_return_value
 	       && VAR_P (current_function_return_value)
+	       && DECL_NAME (current_function_return_value)
 	       && !decl_in_scope_p (current_function_return_value))
 	{
 	  /* The earlier NRV is out of scope at this point, so it's safe to
