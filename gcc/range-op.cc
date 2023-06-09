@@ -68,6 +68,7 @@ operator_lt op_lt;
 operator_le op_le;
 operator_gt op_gt;
 operator_ge op_ge;
+operator_identity op_ident;
 
 // Invoke the initialization routines for each class of range.
 
@@ -83,6 +84,10 @@ unified_table::unified_table ()
   set (LE_EXPR, op_le);
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
+  set (SSA_NAME, op_ident);
+  set (PAREN_EXPR, op_ident);
+  set (OBJ_TYPE_REF, op_ident);
+  set (REAL_CST, op_ident);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -4240,26 +4245,6 @@ operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 }
 
 
-class operator_identity : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::lhs_op1_relation;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
-} op_ident;
-
 // Determine if there is a relationship between LHS and OP1.
 
 relation_kind
@@ -4774,9 +4759,6 @@ integral_table::integral_table ()
   set (BIT_XOR_EXPR, op_bitwise_xor);
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_ident);
-  set (PAREN_EXPR, op_ident);
-  set (OBJ_TYPE_REF, op_ident);
   set (ABS_EXPR, op_abs);
   set (NEGATE_EXPR, op_negate);
   set (ADDR_EXPR, op_addr);
@@ -4810,7 +4792,6 @@ pointer_table::pointer_table ()
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 
-  set (SSA_NAME, op_ident);
   set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
   set (NOP_EXPR, op_cast);

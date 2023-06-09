@@ -268,4 +268,28 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
+
+class operator_identity : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::lhs_op1_relation;
+  bool fold_range (irange &r, tree type,
+		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
+		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
+		   relation_trio = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
+		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
+		  relation_trio = TRIO_VARYING) const final override;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind rel) const final override;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H

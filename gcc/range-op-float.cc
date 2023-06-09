@@ -541,27 +541,22 @@ build_gt (frange &r, tree type, const frange &val)
 }
 
 
-class foperator_identity : public range_operator
+bool
+operator_identity::fold_range (frange &r, tree, const frange &op1,
+			       const frange &, relation_trio) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-public:
-  bool fold_range (frange &r, tree type ATTRIBUTE_UNUSED,
-		   const frange &op1, const frange &op2 ATTRIBUTE_UNUSED,
-		   relation_trio = TRIO_VARYING) const final override
-  {
-    r = op1;
-    return true;
-  }
-  bool op1_range (frange &r, tree type ATTRIBUTE_UNUSED,
-		  const frange &lhs, const frange &op2 ATTRIBUTE_UNUSED,
-		  relation_trio = TRIO_VARYING) const final override
-  {
-    r = lhs;
-    return true;
-  }
-public:
-} fop_identity;
+  r = op1;
+  return true;
+}
+
+bool
+operator_identity::op1_range (frange &r, tree, const frange &lhs,
+			      const frange &, relation_trio) const
+{
+  r = lhs;
+  return true;
+}
+
 
 bool
 operator_equal::op2_range (frange &r, tree type,
@@ -2694,11 +2689,6 @@ private:
 
 float_table::float_table ()
 {
-  set (SSA_NAME, fop_identity);
-  set (PAREN_EXPR, fop_identity);
-  set (OBJ_TYPE_REF, fop_identity);
-  set (REAL_CST, fop_identity);
-
   set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
   set (PLUS_EXPR, fop_plus);
