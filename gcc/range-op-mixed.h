@@ -388,4 +388,46 @@ private:
 		const wide_int &rh_ub) const final override;
 
 };
+
+class operator_minus : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio) const final override;
+  bool op1_range (frange &r, tree type,
+		  const frange &lhs, const frange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
+
+  bool op2_range (irange &r, tree type,
+		  const irange &lhs, const irange &op1,
+		  relation_trio) const final override;
+  bool op2_range (frange &r, tree type,
+		  const frange &lhs,
+		  const frange &op1,
+		  relation_trio = TRIO_VARYING) const final override;
+
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind rel) const final override;
+  bool op1_op2_relation_effect (irange &lhs_range, tree type,
+				const irange &op1_range,
+				const irange &op2_range,
+				relation_kind rel) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
+private:
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override;
+  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+		bool &maybe_nan, tree type,
+		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
+		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
+		relation_kind) const final override;
+};
 #endif // GCC_RANGE_OP_MIXED_H

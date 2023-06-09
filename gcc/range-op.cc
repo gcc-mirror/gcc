@@ -73,6 +73,7 @@ operator_cst op_cst;
 operator_cast op_cast;
 operator_plus op_plus;
 operator_abs op_abs;
+operator_minus op_minus;
 
 // Invoke the initialization routines for each class of range.
 
@@ -97,6 +98,7 @@ unified_table::unified_table ()
   set (CONVERT_EXPR, op_cast);
   set (PLUS_EXPR, op_plus);
   set (ABS_EXPR, op_abs);
+  set (MINUS_EXPR, op_minus);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -1787,38 +1789,12 @@ operator_widen_plus_unsigned::wi_fold (irange &r, tree type,
    r = int_range<2> (type, new_lb, new_ub);
 }
 
-class operator_minus : public range_operator
+void
+operator_minus::update_bitmask (irange &r, const irange &lh,
+				const irange &rh) const
 {
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::lhs_op1_relation;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
-  virtual bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, MINUS_EXPR, lh, rh); }
-} op_minus;
+  update_known_bitmask (r, MINUS_EXPR, lh, rh);
+}
 
 void 
 operator_minus::wi_fold (irange &r, tree type,
@@ -4682,7 +4658,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 integral_table::integral_table ()
 {
-  set (MINUS_EXPR, op_minus);
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
   set (MULT_EXPR, op_mult);
