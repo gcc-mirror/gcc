@@ -13423,7 +13423,7 @@ verify_type_variant (const_tree t, tree tv)
 	}
       verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
     }
-  verify_variant_match (TYPE_PRECISION);
+  verify_variant_match (TYPE_PRECISION_RAW);
   if (RECORD_OR_UNION_TYPE_P (t))
     verify_variant_match (TYPE_TRANSPARENT_AGGR);
   else if (TREE_CODE (t) == ARRAY_TYPE)
@@ -13701,8 +13701,8 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
       || TREE_CODE (t1) == OFFSET_TYPE
       || POINTER_TYPE_P (t1))
     {
-      /* Can't be the same type if they have different recision.  */
-      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2))
+      /* Can't be the same type if they have different precision.  */
+      if (TYPE_PRECISION_RAW (t1) != TYPE_PRECISION_RAW (t2))
 	return false;
 
       /* In some cases the signed and unsigned types are required to be

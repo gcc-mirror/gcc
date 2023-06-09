@@ -1373,7 +1373,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       if (AGGREGATE_TYPE_P (t))
 	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
       hstate.commit_flag ();
-      hstate.add_int (TYPE_PRECISION (t));
+      hstate.add_int (TYPE_PRECISION_RAW (t));
       hstate.add_int (TYPE_ALIGN (t));
       hstate.add_int (TYPE_EMPTY_P (t));
     }
