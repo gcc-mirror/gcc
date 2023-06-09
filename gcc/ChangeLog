@@ -1,3 +1,124 @@
+2023-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc
+	(gimple_range_op_handler::gimple_range_op_handler): Adjust.
+	(gimple_range_op_handler::maybe_builtin_call): Adjust.
+	* gimple-range-op.h (operand1, operand2): Use m_operator.
+	* range-op.cc (integral_table, pointer_table): Relocate.
+	(get_op_handler): Rename from get_handler and handle all types.
+	(range_op_handler::range_op_handler): Relocate.
+	(range_op_handler::set_op_handler): Relocate and adjust.
+	(range_op_handler::range_op_handler): Relocate.
+	(dispatch_trio): New.
+	(RO_III, RO_IFI, RO_IFF, RO_FFF, RO_FIF, RO_FII): New consts.
+	(range_op_handler::dispatch_kind): New.
+	(range_op_handler::fold_range): Relocate and Use new dispatch value.
+	(range_op_handler::op1_range): Ditto.
+	(range_op_handler::op2_range): Ditto.
+	(range_op_handler::lhs_op1_relation): Ditto.
+	(range_op_handler::lhs_op2_relation): Ditto.
+	(range_op_handler::op1_op2_relation): Ditto.
+	(range_op_handler::set_op_handler): Use m_operator member.
+	* range-op.h (range_op_handler::operator bool): Use m_operator.
+	(range_op_handler::dispatch_kind): New.
+	(range_op_handler::m_valid): Delete.
+	(range_op_handler::m_int): Delete
+	(range_op_handler::m_float): Delete
+	(range_op_handler::m_operator): New.
+	(range_op_table::operator[]): Relocate from .cc file.
+	(range_op_table::set): Ditto.
+	* value-range.h (class vrange): Make range_op_handler a friend.
+
+2023-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc (cfn_constant_float_p): Change base class.
+	(cfn_pass_through_arg1): Adjust using statemenmt.
+	(cfn_signbit): Change base class, adjust using statement.
+	(cfn_copysign): Ditto.
+	(cfn_sqrt): Ditto.
+	(cfn_sincos): Ditto.
+	* range-op-float.cc (fold_range): Change class to range_operator.
+	(rv_fold): Ditto.
+	(op1_range): Ditto
+	(op2_range): Ditto
+	(lhs_op1_relation): Ditto.
+	(lhs_op2_relation): Ditto.
+	(op1_op2_relation): Ditto.
+	(foperator_*): Ditto.
+	(class float_table): New.  Inherit from range_op_table.
+	(floating_tree_table) Change to range_op_table pointer.
+	(class floating_op_table): Delete.
+	* range-op.cc (operator_equal): Adjust using statement.
+	(operator_not_equal): Ditto.
+	(operator_lt, operator_le, operator_gt, operator_ge): Ditto.
+	(operator_minus, operator_cast): Ditto.
+	(operator_bitwise_and, pointer_plus_operator): Ditto.
+	(get_float_handle): Change return type.
+	* range-op.h (range_operator_float): Delete.  Relocate all methods
+	into class range_operator.
+	(range_op_handler::m_float): Change type to range_operator.
+	(floating_op_table): Delete.
+	(floating_tree_table): Change type.
+
+2023-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (range_operator::fold_range): Call virtual routine.
+	(range_operator::update_bitmask): New.
+	(operator_equal::update_bitmask): New.
+	(operator_not_equal::update_bitmask): New.
+	(operator_lt::update_bitmask): New.
+	(operator_le::update_bitmask): New.
+	(operator_gt::update_bitmask): New.
+	(operator_ge::update_bitmask): New.
+	(operator_ge::update_bitmask): New.
+	(operator_plus::update_bitmask): New.
+	(operator_minus::update_bitmask): New.
+	(operator_pointer_diff::update_bitmask): New.
+	(operator_min::update_bitmask): New.
+	(operator_max::update_bitmask): New.
+	(operator_mult::update_bitmask): New.
+	(operator_div:operator_div):New.
+	(operator_div::update_bitmask): New.
+	(operator_div::m_code): New member.
+	(operator_exact_divide::operator_exact_divide): New constructor.
+	(operator_lshift::update_bitmask): New.
+	(operator_rshift::update_bitmask): New.
+	(operator_bitwise_and::update_bitmask): New.
+	(operator_bitwise_or::update_bitmask): New.
+	(operator_bitwise_xor::update_bitmask): New.
+	(operator_trunc_mod::update_bitmask): New.
+	(op_ident, op_unknown, op_ptr_min_max): New.
+	(op_nop, op_convert): Delete.
+	(op_ssa, op_paren, op_obj_type): Delete.
+	(op_realpart, op_imagpart): Delete.
+	(op_ptr_min, op_ptr_max): Delete.
+	(pointer_plus_operator:update_bitmask): New.
+	(range_op_table::set): Do not use m_code.
+	(integral_table::integral_table): Adjust to single instances.
+	* range-op.h (range_operator::range_operator): Delete.
+	(range_operator::m_code): Delete.
+	(range_operator::update_bitmask): New.
+
+2023-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (range_operator_float::fold_range): Return
+	NAN of the result type.
+
+2023-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* optabs.cc (expand_ffs): Add forward declaration.
+	(expand_doubleword_clz): Rename to ...
+	(expand_doubleword_clz_ctz_ffs): ... this.  Add UNOPTAB argument,
+	handle also doubleword CTZ and FFS in addition to CLZ.
+	(expand_unop): Adjust caller.  Also call it for doubleword
+	ctz_optab and ffs_optab.
+
+2023-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/110152
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_general): For
+	n_words == 2 recurse with mmx_ok as first argument rather than false.
+
 2023-06-07  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* wide-int.cc (wi::bitreverse_large): Use HOST_WIDE_INT_1U to

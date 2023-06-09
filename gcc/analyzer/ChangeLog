@@ -1,3 +1,14 @@
+2023-06-08  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* bounds-checking.cc (region_model::check_symbolic_bounds): Returns whether the BASE_REG
+	region access was OOB.
+	(region_model::check_region_bounds): Likewise.
+	* region-model.cc (region_model::get_store_value): Creates an
+	unknown svalue on OOB-read access to REG.
+	(region_model::check_region_access): Returns whether an unknown svalue needs be created.
+	(region_model::check_region_for_read): Passes check_region_access return value.
+	* region-model.h: Update prior function definitions.
+
 2023-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109015

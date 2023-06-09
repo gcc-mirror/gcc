@@ -1,3 +1,26 @@
+2023-06-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/99350
+	PR fortran/107821
+	PR fortran/109451
+	* decl.cc (char_len_param_value): Simplify a copy of the expr
+	and replace the original if there is no error.
+	* gfortran.h : Remove the redundant field 'rankguessed' from
+	'gfc_association_list'.
+	* resolve.cc (resolve_assoc_var): Remove refs to 'rankguessed'.
+	(resolve_variable): Associate names with constant or structure
+	constructor targets cannot have array refs.
+	* trans-array.cc (gfc_conv_expr_descriptor): Guard expression
+	character length backend decl before using it. Suppress the
+	assignment if lhs equals rhs.
+	* trans-io.cc (gfc_trans_transfer): Scalarize transfer of
+	associate variables pointing to a variable. Add comment.
+	* trans-stmt.cc (trans_associate_var): Remove requirement that
+	the character length be deferred before assigning the value
+	returned by gfc_conv_expr_descriptor. Also, guard the backend
+	decl before testing with VAR_P.
+
 2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

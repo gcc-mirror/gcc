@@ -1,3 +1,51 @@
+2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2-compiler/M2GenGCC.mod (BuildTreeFromInterface): Remove
+	tokenno parameter.  Use object tok instead of tokenno.
+	(BuildTrashTreeFromInterface): Use object tok instead of
+	GetDeclaredMod.
+	(CodeInline): Remove tokenno from parameter list to BuildTreeFromInterface.
+	* gm2-compiler/M2Quads.def (BuildAsmElement): Exported and
+	defined.
+	* gm2-compiler/M2Quads.mod (BuildOptimizeOff): Reformatted.
+	(BuildInline): Reformatted.
+	(BuildLineNo): Reformatted.
+	(UseLineNote): Reformatted.
+	(BuildAsmElement): New procedure.
+	* gm2-compiler/P0SyntaxCheck.bnf (AsmOperands): Use
+	ConstExpression instead of string.
+	(AsmElement): Use ConstExpression instead of string.
+	(TrashList): Use ConstExpression instead of string.
+	* gm2-compiler/P1Build.bnf (AsmOperands): Use
+	ConstExpression instead of string.
+	(AsmElement): Use ConstExpression instead of string.
+	(TrashList): Use ConstExpression instead of string.
+	* gm2-compiler/P2Build.bnf (AsmOperands): Use
+	ConstExpression instead of string.
+	(AsmElement): Use ConstExpression instead of string.
+	(TrashList): Use ConstExpression instead of string.
+	* gm2-compiler/P3Build.bnf (AsmOperands): Rewrite.
+	(AsmOperandSpec): Rewrite.
+	(AsmOutputList): New rule.
+	(AsmInputList): New rule.
+	(TrashList): Rewrite.
+	* gm2-compiler/PCBuild.bnf (AsmOperands): Use
+	ConstExpression instead of string.
+	(AsmElement): Use ConstExpression instead of string.
+	(TrashList): Use ConstExpression instead of string.
+	* gm2-compiler/PHBuild.bnf (AsmOperands): Use
+	ConstExpression instead of string.
+	(AsmElement): Use ConstExpression instead of string.
+	(TrashList): Use ConstExpression instead of string.
+	* gm2-compiler/SymbolTable.def (PutRegInterface):
+	Rewrite interface.
+	(GetRegInterface): Rewrite interface.
+	* gm2-compiler/SymbolTable.mod (SetFirstUsed): New procedure.
+	(PutFirstUsed): New procedure.
+	(PutRegInterface): Rewrite.
+	(GetRegInterface): Rewrite.
+
 2023-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in: Build $(generated_files) before building

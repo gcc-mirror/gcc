@@ -1,3 +1,47 @@
+2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2/pim/pass/fooasm3.mod: New test.
+
+2023-06-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-intrinsic.c: Add new cases.
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: New test.
+
+2023-06-08  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* gcc.dg/analyzer/out-of-bounds-2.c: Cleaned test for uninitialized-value warning
+	* gcc.dg/analyzer/out-of-bounds-5.c: Likewise.
+	* gcc.dg/analyzer/pr101962.c: Likewise.
+	* gcc.dg/analyzer/realloc-5.c: Likewise.
+	* gcc.dg/analyzer/pr109439.c: New test.
+
+2023-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/ctzll-1.c: New test.
+	* gcc.target/i386/ffsll-1.c: New test.
+
+2023-06-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99350
+	PR fortran/107821
+	PR fortran/109451
+	* gfortran.dg/pr99350.f90 : New test.
+	* gfortran.dg/associate_5.f03 : Changed error message.
+	* gfortran.dg/pr107821.f90 : New test.
+	* gfortran.dg/associate_61.f90 : New test
+
+2023-06-08  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s116.c: Bump timeout factor.
+	* gcc.dg/vect/tsvc/vect-tsvc-s241.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s254.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s271.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2711.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2712.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s276.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-vdotr.c: Likewise.
+
 2023-06-07  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
