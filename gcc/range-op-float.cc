@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "value-relation.h"
 #include "range-op.h"
+#include "range-op-mixed.h"
 
 // Default definitions for floating point operators.
 
@@ -2807,15 +2808,6 @@ private:
   }
 } fop_div;
 
-// Instantiate a range_op_table for floating point operations.
-class float_table : public range_op_table
-{
-  public:
-    float_table ();
-} global_floating_table;
-
-// Pointer to the float table so the dispatch code can access it.
-range_op_table *floating_tree_table = &global_floating_table;
 
 float_table::float_table ()
 {
@@ -2833,6 +2825,19 @@ float_table::float_table ()
   set (LE_EXPR, fop_le);
   set (GT_EXPR, fop_gt);
   set (GE_EXPR, fop_ge);
+
+  set (ABS_EXPR, fop_abs);
+  set (NEGATE_EXPR, fop_negate);
+  set (PLUS_EXPR, fop_plus);
+  set (MINUS_EXPR, fop_minus);
+  set (MULT_EXPR, fop_mult);
+}
+
+// Initialize any pointer operators to the primary table
+
+void
+range_op_table::initialize_float_ops ()
+{
   set (UNLE_EXPR, fop_unordered_le);
   set (UNLT_EXPR, fop_unordered_lt);
   set (UNGE_EXPR, fop_unordered_ge);
@@ -2841,12 +2846,6 @@ float_table::float_table ()
   set (ORDERED_EXPR, fop_ordered);
   set (UNORDERED_EXPR, fop_unordered);
   set (LTGT_EXPR, fop_ltgt);
-
-  set (ABS_EXPR, fop_abs);
-  set (NEGATE_EXPR, fop_negate);
-  set (PLUS_EXPR, fop_plus);
-  set (MINUS_EXPR, fop_minus);
-  set (MULT_EXPR, fop_mult);
   set (RDIV_EXPR, fop_div);
 }
 

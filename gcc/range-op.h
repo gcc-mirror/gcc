@@ -186,6 +186,7 @@ class range_op_handler
 public:
   range_op_handler ();
   range_op_handler (enum tree_code code, tree type);
+  range_op_handler (enum tree_code code);
   inline operator bool () const { return m_operator != NULL; }
 
   bool fold_range (vrange &r, tree type,
@@ -272,69 +273,18 @@ relation_kind le_op1_op2_relation (const irange &lhs);
 relation_kind gt_op1_op2_relation (const irange &lhs);
 relation_kind ge_op1_op2_relation (const irange &lhs);
 
-enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
-bool_range_state get_bool_state (vrange &r, const vrange &lhs, tree val_type);
-
-// If the range of either op1 or op2 is undefined, set the result to
-// varying and return TRUE.  If the caller truly cares about a result,
-// they should pass in a varying if it has an undefined that it wants
-// treated as a varying.
-
-inline bool
-empty_range_varying (vrange &r, tree type,
-		     const vrange &op1, const vrange & op2)
-{
-  if (op1.undefined_p () || op2.undefined_p ())
-    {
-      r.set_varying (type);
-      return true;
-    }
-  else
-    return false;
-}
-
-// For relation opcodes, first try to see if the supplied relation
-// forces a true or false result, and return that.
-// Then check for undefined operands.  If none of this applies,
-// return false.
-
-inline bool
-relop_early_resolve (irange &r, tree type, const vrange &op1,
-		     const vrange &op2, relation_trio trio,
-		     relation_kind my_rel)
-{
-  relation_kind rel = trio.op1_op2 ();
-  // If known relation is a complete subset of this relation, always true.
-  if (relation_union (rel, my_rel) == my_rel)
-    {
-      r = range_true (type);
-      return true;
-    }
-
-  // If known relation has no subset of this relation, always false.
-  if (relation_intersect (rel, my_rel) == VREL_UNDEFINED)
-    {
-      r = range_false (type);
-      return true;
-    }
-
-  // If either operand is undefined, return VARYING.
-  if (empty_range_varying (r, type, op1, op2))
-    return true;
-
-  return false;
-}
-
 // This implements the range operator tables as local objects.
 
 class range_op_table
 {
 public:
   range_operator *operator[] (enum tree_code code);
-protected:
   void set (enum tree_code code, range_operator &op);
-private:
+protected:
   range_operator *m_range_tree[MAX_TREE_CODES];
+  void initialize_integral_ops ();
+  void initialize_pointer_ops ();
+  void initialize_float_ops ();
 };
 
 
@@ -357,8 +307,33 @@ range_op_table::set (enum tree_code code, range_operator &op)
   m_range_tree[code] = &op;
 }
 
-// This holds the range op table for floating point operations.
-extern range_op_table *floating_tree_table;
+// This holds the range op tables
+
+class integral_table : public range_op_table
+{
+public:
+  integral_table ();
+};
+extern integral_table integral_tree_table;
+
+// Instantiate a range op table for pointer operations.
+
+class pointer_table : public range_op_table
+{
+public:
+  pointer_table ();
+};
+extern pointer_table pointer_tree_table;
+
+// Instantiate a range_op_table for floating point operations.
+class float_table : public range_op_table
+{
+  public:
+    float_table ();
+};
+extern float_table float_tree_table;
+
+
 
 extern range_operator *ptr_op_widen_mult_signed;
 extern range_operator *ptr_op_widen_mult_unsigned;

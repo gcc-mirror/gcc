@@ -47,36 +47,48 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-relation.h"
 #include "range-op.h"
 #include "tree-ssa-ccp.h"
+#include "range-op-mixed.h"
 
-// Instantiate a range op table for integral operations.
+integral_table integral_tree_table;
+pointer_table pointer_tree_table;
+float_table float_tree_table;
 
-class integral_table : public range_op_table
+// Instantiate a range_op_table for unified operations.
+class unified_table : public range_op_table
 {
-public:
-  integral_table ();
-} integral_tree_table;
+  public:
+    unified_table ();
+} unified_tree_table;
 
-// Instantiate a range op table for pointer operations.
+// Invoke the initialization routines for each class of range.
 
-class pointer_table : public range_op_table
+unified_table::unified_table ()
 {
-public:
-  pointer_table ();
-} pointer_tree_table;
-
+  initialize_integral_ops ();
+  initialize_pointer_ops ();
+  initialize_float_ops ();
+}
 
 // The tables are hidden and accessed via a simple extern function.
 
 range_operator *
 get_op_handler (enum tree_code code, tree type)
 {
-  // First check if there is a pointer specialization.
+  if (unified_tree_table[code])
+    {
+      // Should not be in any other table if it is in the unified table.
+      gcc_checking_assert (!pointer_tree_table[code]);
+      gcc_checking_assert (!integral_tree_table[code]);
+      gcc_checking_assert (!float_tree_table[code]);
+      return unified_tree_table[code];
+    }
+
   if (POINTER_TYPE_P (type))
     return pointer_tree_table[code];
   if (INTEGRAL_TYPE_P (type))
     return integral_tree_table[code];
   if (frange::supports_p (type))
-    return (*floating_tree_table)[code];
+    return float_tree_table[code];
   return NULL;
 }
 
@@ -94,6 +106,13 @@ range_op_handler::set_op_handler (tree_code code, tree type)
 range_op_handler::range_op_handler (tree_code code, tree type)
 {
   set_op_handler (code, type);
+}
+
+// Constructing without a type must come from the unified table.
+
+range_op_handler::range_op_handler (tree_code code)
+{
+  m_operator = unified_tree_table[code];
 }
 
 // Create a dispatch pattern for value range discriminators LHS, OP1, and OP2.
@@ -4875,6 +4894,26 @@ integral_table::integral_table ()
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
   set (MULT_EXPR, op_mult);
+  set (NOP_EXPR, op_cast);
+  set (CONVERT_EXPR, op_cast);
+  set (BIT_AND_EXPR, op_bitwise_and);
+  set (BIT_IOR_EXPR, op_bitwise_or);
+  set (BIT_XOR_EXPR, op_bitwise_xor);
+  set (BIT_NOT_EXPR, op_bitwise_not);
+  set (INTEGER_CST, op_integer_cst);
+  set (SSA_NAME, op_ident);
+  set (PAREN_EXPR, op_ident);
+  set (OBJ_TYPE_REF, op_ident);
+  set (ABS_EXPR, op_abs);
+  set (NEGATE_EXPR, op_negate);
+  set (ADDR_EXPR, op_addr);
+}
+
+// Initialize any integral operators to the primary table
+
+void
+range_op_table::initialize_integral_ops ()
+{
   set (TRUNC_DIV_EXPR, op_trunc_div);
   set (FLOOR_DIV_EXPR, op_floor_div);
   set (ROUND_DIV_EXPR, op_round_div);
@@ -4882,27 +4921,13 @@ integral_table::integral_table ()
   set (EXACT_DIV_EXPR, op_exact_div);
   set (LSHIFT_EXPR, op_lshift);
   set (RSHIFT_EXPR, op_rshift);
-  set (NOP_EXPR, op_cast);
-  set (CONVERT_EXPR, op_cast);
   set (TRUTH_AND_EXPR, op_logical_and);
-  set (BIT_AND_EXPR, op_bitwise_and);
   set (TRUTH_OR_EXPR, op_logical_or);
-  set (BIT_IOR_EXPR, op_bitwise_or);
-  set (BIT_XOR_EXPR, op_bitwise_xor);
   set (TRUNC_MOD_EXPR, op_trunc_mod);
   set (TRUTH_NOT_EXPR, op_logical_not);
-  set (BIT_NOT_EXPR, op_bitwise_not);
-  set (INTEGER_CST, op_integer_cst);
-  set (SSA_NAME, op_ident);
-  set (PAREN_EXPR, op_ident);
-  set (OBJ_TYPE_REF, op_ident);
   set (IMAGPART_EXPR, op_unknown);
   set (REALPART_EXPR, op_unknown);
-  set (POINTER_DIFF_EXPR, op_pointer_diff);
-  set (ABS_EXPR, op_abs);
   set (ABSU_EXPR, op_absu);
-  set (NEGATE_EXPR, op_negate);
-  set (ADDR_EXPR, op_addr);
 }
 
 pointer_table::pointer_table ()
@@ -4911,7 +4936,6 @@ pointer_table::pointer_table ()
   set (BIT_IOR_EXPR, op_pointer_or);
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
-  set (POINTER_PLUS_EXPR, op_pointer_plus);
 
   set (EQ_EXPR, op_equal);
   set (NE_EXPR, op_not_equal);
@@ -4927,6 +4951,15 @@ pointer_table::pointer_table ()
 
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);
+}
+
+// Initialize any pointer operators to the primary table
+
+void
+range_op_table::initialize_pointer_ops ()
+{
+  set (POINTER_PLUS_EXPR, op_pointer_plus);
+  set (POINTER_DIFF_EXPR, op_pointer_diff);
 }
 
 #if CHECKING_P
