@@ -69,6 +69,7 @@ operator_le op_le;
 operator_gt op_gt;
 operator_ge op_ge;
 operator_identity op_ident;
+operator_cst op_cst;
 
 // Invoke the initialization routines for each class of range.
 
@@ -87,7 +88,8 @@ unified_table::unified_table ()
   set (SSA_NAME, op_ident);
   set (PAREN_EXPR, op_ident);
   set (OBJ_TYPE_REF, op_ident);
-  set (REAL_CST, op_ident);
+  set (REAL_CST, op_cst);
+  set (INTEGER_CST, op_cst);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -4224,16 +4226,6 @@ operator_bitwise_not::op1_range (irange &r, tree type,
 }
 
 
-class operator_cst : public range_operator
-{
-  using range_operator::fold_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-} op_integer_cst;
-
 bool
 operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 			  const irange &lh,
@@ -4758,7 +4750,6 @@ integral_table::integral_table ()
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (BIT_XOR_EXPR, op_bitwise_xor);
   set (BIT_NOT_EXPR, op_bitwise_not);
-  set (INTEGER_CST, op_integer_cst);
   set (ABS_EXPR, op_abs);
   set (NEGATE_EXPR, op_negate);
   set (ADDR_EXPR, op_addr);
@@ -4792,7 +4783,6 @@ pointer_table::pointer_table ()
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 
-  set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
   set (NOP_EXPR, op_cast);
   set (CONVERT_EXPR, op_cast);

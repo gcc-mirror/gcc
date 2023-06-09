@@ -557,6 +557,13 @@ operator_identity::op1_range (frange &r, tree, const frange &lhs,
   return true;
 }
 
+bool
+operator_cst::fold_range (frange &r, tree, const frange &op1,
+			  const frange &, relation_trio) const
+{
+  r = op1;
+  return true;
+}
 
 bool
 operator_equal::op2_range (frange &r, tree type,
