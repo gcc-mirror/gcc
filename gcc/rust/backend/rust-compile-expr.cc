@@ -1274,7 +1274,8 @@ check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
   rust_assert ((TyTy::is_primitive_type_kind (scrutinee_kind)
 		&& scrutinee_kind != TyTy::TypeKind::NEVER)
 	       || scrutinee_kind == TyTy::TypeKind::ADT
-	       || scrutinee_kind == TyTy::TypeKind::TUPLE);
+	       || scrutinee_kind == TyTy::TypeKind::TUPLE
+	       || scrutinee_kind == TyTy::TypeKind::REF);
 
   if (scrutinee_kind == TyTy::TypeKind::ADT)
     {
@@ -1361,6 +1362,12 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	= ctx->get_backend ()->struct_field_expression (
 	  scrutinee_first_record_expr, 0,
 	  expr.get_scrutinee_expr ()->get_locus ());
+    }
+  else if (scrutinee_kind == TyTy::TypeKind::REF)
+    {
+      tree indirect
+	= indirect_expression (match_scrutinee_expr, expr.get_locus ());
+      match_scrutinee_expr_qualifier_expr = indirect;
     }
   else if (scrutinee_kind == TyTy::TypeKind::TUPLE)
     {
