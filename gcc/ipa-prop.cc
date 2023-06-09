@@ -2405,6 +2405,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		 of this file uses value_range's, which only hold
 		 integers and pointers.  */
 	      && irange::supports_p (TREE_TYPE (arg))
+	      && irange::supports_p (param_type)
 	      && get_range_query (cfun)->range_of_expr (vr, arg)
 	      && !vr.undefined_p ())
 	    {
