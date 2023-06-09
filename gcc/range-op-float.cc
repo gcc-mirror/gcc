@@ -2254,54 +2254,49 @@ float_widen_lhs_range (tree type, const frange &lhs)
   return ret;
 }
 
-class foperator_plus : public range_operator
+bool
+operator_plus::op1_range (frange &r, tree type, const frange &lhs,
+			  const frange &op2, relation_trio) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool op1_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op2,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    if (lhs.undefined_p ())
-      return false;
-    range_op_handler minus (MINUS_EXPR, type);
-    if (!minus)
-      return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
-    return float_binary_op_range_finish (minus.fold_range (r, type, wlhs, op2),
-					 r, type, wlhs);
-  }
-  virtual bool op2_range (frange &r, tree type,
-			  const frange &lhs,
-			  const frange &op1,
-			  relation_trio = TRIO_VARYING) const final override
-  {
-    return op1_range (r, type, lhs, op1);
-  }
-private:
-  void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, bool &maybe_nan,
-		tree type,
-		const REAL_VALUE_TYPE &lh_lb,
-		const REAL_VALUE_TYPE &lh_ub,
-		const REAL_VALUE_TYPE &rh_lb,
-		const REAL_VALUE_TYPE &rh_ub,
-		relation_kind) const final override
-  {
-    frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
-    frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
+  if (lhs.undefined_p ())
+    return false;
+  range_op_handler minus (MINUS_EXPR, type);
+  if (!minus)
+    return false;
+  frange wlhs = float_widen_lhs_range (type, lhs);
+  return float_binary_op_range_finish (minus.fold_range (r, type, wlhs, op2),
+				       r, type, wlhs);
+}
 
-    // [-INF] + [+INF] = NAN
-    if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
-      maybe_nan = true;
-    // [+INF] + [-INF] = NAN
-    else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
-      maybe_nan = true;
-    else
-      maybe_nan = false;
-  }
-} fop_plus;
+bool
+operator_plus::op2_range (frange &r, tree type,
+			  const frange &lhs, const frange &op1,
+			  relation_trio) const
+{
+  return op1_range (r, type, lhs, op1);
+}
+
+void
+operator_plus::rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan, tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind) const
+{
+  frange_arithmetic (PLUS_EXPR, type, lb, lh_lb, rh_lb, dconstninf);
+  frange_arithmetic (PLUS_EXPR, type, ub, lh_ub, rh_ub, dconstinf);
+
+  // [-INF] + [+INF] = NAN
+  if (real_isinf (&lh_lb, true) && real_isinf (&rh_ub, false))
+    maybe_nan = true;
+  // [+INF] + [-INF] = NAN
+  else if (real_isinf (&lh_ub, false) && real_isinf (&rh_lb, true))
+    maybe_nan = true;
+  else
+    maybe_nan = false;
+}
 
 
 class foperator_minus : public range_operator
@@ -2317,9 +2312,9 @@ public:
     if (lhs.undefined_p ())
       return false;
     frange wlhs = float_widen_lhs_range (type, lhs);
-    return float_binary_op_range_finish (fop_plus.fold_range (r, type, wlhs,
-							      op2),
-					 r, type, wlhs);
+    return float_binary_op_range_finish (
+		range_op_handler (PLUS_EXPR).fold_range (r, type, wlhs, op2),
+		r, type, wlhs);
   }
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
@@ -2698,7 +2693,6 @@ float_table::float_table ()
 {
   set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
-  set (PLUS_EXPR, fop_plus);
   set (MINUS_EXPR, fop_minus);
   set (MULT_EXPR, fop_mult);
 }

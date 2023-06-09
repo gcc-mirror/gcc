@@ -71,6 +71,7 @@ operator_ge op_ge;
 operator_identity op_ident;
 operator_cst op_cst;
 operator_cast op_cast;
+operator_plus op_plus;
 
 // Invoke the initialization routines for each class of range.
 
@@ -93,7 +94,7 @@ unified_table::unified_table ()
   set (INTEGER_CST, op_cst);
   set (NOP_EXPR, op_cast);
   set (CONVERT_EXPR, op_cast);
-
+  set (PLUS_EXPR, op_plus);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -1498,35 +1499,12 @@ operator_ge::op2_range (irange &r, tree type,
 }
 
 
-class operator_plus : public range_operator
+void
+operator_plus::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::lhs_op1_relation;
-  using range_operator::lhs_op2_relation;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs, const irange &op1,
-					  const irange &op2,
-					  relation_kind rel) const;
-  virtual relation_kind lhs_op2_relation (const irange &lhs, const irange &op1,
-					  const irange &op2,
-					  relation_kind rel) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, PLUS_EXPR, lh, rh); }
-} op_plus;
+  update_known_bitmask (r, PLUS_EXPR, lh, rh);
+}
 
 // Check to see if the range of OP2 indicates anything about the relation
 // between LHS and OP1.
@@ -4717,7 +4695,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 integral_table::integral_table ()
 {
-  set (PLUS_EXPR, op_plus);
   set (MINUS_EXPR, op_minus);
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
