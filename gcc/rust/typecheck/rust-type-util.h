@@ -28,6 +28,10 @@ namespace Resolver {
 bool
 query_type (HirId reference, TyTy::BaseType **result);
 
+bool
+types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		  Location unify_locus, bool emit_errors);
+
 TyTy::BaseType *
 unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	    Location unify_locus);

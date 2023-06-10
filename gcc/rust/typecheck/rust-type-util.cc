@@ -123,6 +123,16 @@ query_type (HirId reference, TyTy::BaseType **result)
   return false;
 }
 
+bool
+types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+		  Location unify_locus, bool emit_errors)
+{
+  TyTy::BaseType *result
+    = unify_site_and (UNKNOWN_HIRID, lhs, rhs, unify_locus, emit_errors,
+		      false /*commit*/, true /*infer*/, true /*cleanup*/);
+  return result->get_kind () != TyTy::TypeKind::ERROR;
+}
+
 TyTy::BaseType *
 unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	    Location unify_locus)

@@ -1576,17 +1576,8 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
       }
       break;
 
-      case TyTy::PLACEHOLDER: {
-	TyTy::PlaceholderType &type
-	  = *static_cast<TyTy::PlaceholderType *> (rtype);
-	bool symbol_match
-	  = ltype->get_symbol ().compare (type.get_symbol ()) == 0;
-	if (symbol_match)
-	  {
-	    return type.clone ();
-	  }
-      }
-      break;
+    case TyTy::PLACEHOLDER:
+      return ltype->clone ();
 
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
@@ -1609,6 +1600,10 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
     case TyTy::USIZE:
     case TyTy::ISIZE:
     case TyTy::NEVER:
+      if (infer_flag)
+	return rtype->clone ();
+      gcc_fallthrough ();
+
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
