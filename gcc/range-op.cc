@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "range-op-mixed.h"
 
-integral_table integral_tree_table;
 pointer_table pointer_tree_table;
 
 // Instantiate a range_op_table for unified operations.
@@ -81,6 +80,7 @@ operator_bitwise_xor op_bitwise_xor;
 operator_bitwise_and op_bitwise_and;
 operator_bitwise_or op_bitwise_or;
 operator_min op_min;
+operator_max op_max;
 
 // Invoke the initialization routines for each class of range.
 
@@ -121,6 +121,7 @@ unified_table::unified_table ()
   set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (MIN_EXPR, op_min);
+  set (MAX_EXPR, op_max);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -132,16 +133,7 @@ get_op_handler (enum tree_code code, tree type)
   if (POINTER_TYPE_P (type) && pointer_tree_table[code])
     return pointer_tree_table[code];
 
-  if (unified_tree_table[code])
-    {
-      // Should not be in any other table if it is in the unified table.
-      gcc_checking_assert (!integral_tree_table[code]);
-      return unified_tree_table[code];
-    }
-
-  if (INTEGRAL_TYPE_P (type))
-    return integral_tree_table[code];
-  return NULL;
+  return unified_tree_table[code];
 }
 
 range_op_handler::range_op_handler ()
@@ -2001,17 +1993,12 @@ operator_min::wi_fold (irange &r, tree type,
 }
 
 
-class operator_max : public range_operator
+void
+operator_max::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
 {
-public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, MAX_EXPR, lh, rh); }
-} op_max;
+  update_known_bitmask (r, MAX_EXPR, lh, rh);
+}
 
 void
 operator_max::wi_fold (irange &r, tree type,
@@ -4529,11 +4516,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
     r.set_varying (type);
 }
 
-integral_table::integral_table ()
-{
-  set (MAX_EXPR, op_max);
-}
-
 // Initialize any integral operators to the primary table
 
 void

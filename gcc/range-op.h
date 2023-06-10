@@ -299,15 +299,6 @@ range_op_table::set (enum tree_code code, range_operator &op)
   m_range_tree[code] = &op;
 }
 
-// This holds the range op tables
-
-class integral_table : public range_op_table
-{
-public:
-  integral_table ();
-};
-extern integral_table integral_tree_table;
-
 // Instantiate a range op table for pointer operations.
 
 class pointer_table : public range_op_table
