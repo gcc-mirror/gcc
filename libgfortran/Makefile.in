@@ -155,9 +155,6 @@ target_triplet = @target@
 @LIBGFOR_MINIMAL_FALSE@runtime/pause.c \
 @LIBGFOR_MINIMAL_FALSE@runtime/stop.c
 
-
-# dummy sources for libtool
-@onestep_TRUE@am__append_7 = libgfortran_c.c libgfortran_f.f90
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -481,11 +478,9 @@ am__objects_62 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 am__objects_63 = misc_specifics.lo
 am__objects_64 = $(am__objects_61) $(am__objects_62) $(am__objects_63) \
 	dprod_r8.lo f2c_specifics.lo random_init.lo
-am__objects_65 = $(am__objects_3) $(am__objects_53) $(am__objects_55) \
-	$(am__objects_58) $(am__objects_59) $(am__objects_60) \
-	$(am__objects_64)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_65)
-@onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
+am_libgfortran_la_OBJECTS = $(am__objects_3) $(am__objects_53) \
+	$(am__objects_55) $(am__objects_58) $(am__objects_59) \
+	$(am__objects_60) $(am__objects_64)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -715,7 +710,6 @@ mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
-onestep = @onestep@
 pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -1652,25 +1646,11 @@ intrinsics/f2c_specifics.F90 \
 intrinsics/random_init.f90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
-	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
-	$(am__append_7)
-prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
+	$(gfor_built_specific2_src) $(gfor_misc_specifics)
+
+libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 	$(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
-@onestep_FALSE@libgfortran_la_SOURCES = $(prereq_SRC)
-
-#libgfortran_f.o: $(filter %.f %.f90,$(prereq_SRC))
-#	$(FCCOMPILE) -c $^ -o $@ -combine
-
-#libgfortran_f.lo: $(filter %.f %.f90,$(prereq_SRC))
-#	$(LTFCCOMPILE) -c -o $@ $^ -combine
-# not currently used:
-#libgfortran_F.o: $(filter %.F %.F90,$(prereq_SRC))
-#	$(PPFCCOMPILE) -c $^ -o $@ -combine
-#
-#libgfortran_F.lo: 
-#	$(LTPPFCCOMPILE) -c -o $@ $^ -combine
-@onestep_TRUE@libgfortran_la_SOURCES = libgfortran_c.c $(filter-out %.c,$(prereq_SRC))
 I_M4_DEPS = m4/iparm.m4 m4/mtype.m4
 I_M4_DEPS0 = $(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1 = $(I_M4_DEPS) m4/ifunction.m4
@@ -2047,7 +2027,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/is_contiguous.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ishftc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kill.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgfortran_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list_read.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock.Plo@am__quote@
@@ -7665,14 +7644,6 @@ ieee_exceptions.mod: ieee_exceptions.lo
 	:
 ieee_arithmetic.mod: ieee_arithmetic.lo
 	:
-@onestep_TRUE@libgfortran_c.c libgfortran_f.f90 libgfortran_F.F90:
-@onestep_TRUE@	echo > $@
-# overrides for libtool perusing the dummy sources
-@onestep_TRUE@libgfortran_c.o: $(filter %.c,$(prereq_SRC))
-@onestep_TRUE@	$(COMPILE) -c $^ -o $@ -combine
-
-@onestep_TRUE@libgfortran_c.lo: $(filter %.c,$(prereq_SRC))
-@onestep_TRUE@	$(LTCOMPILE) -c -o $@ $^ -combine
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' \
