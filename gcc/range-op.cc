@@ -135,7 +135,7 @@ range_op_handler::range_op_handler ()
 // Create a range_op_handler for CODE.  Use a default operatoer if CODE
 // does not have an entry.
 
-range_op_handler::range_op_handler (tree_code code)
+range_op_handler::range_op_handler (unsigned code)
 {
   m_operator = operator_table[code];
   if (!m_operator)
@@ -1726,7 +1726,6 @@ public:
 			const wide_int &rh_lb,
 			const wide_int &rh_ub) const;
 } op_widen_plus_signed;
-range_operator *ptr_op_widen_plus_signed = &op_widen_plus_signed;
 
 void
 operator_widen_plus_signed::wi_fold (irange &r, tree type,
@@ -1760,7 +1759,6 @@ public:
 			const wide_int &rh_lb,
 			const wide_int &rh_ub) const;
 } op_widen_plus_unsigned;
-range_operator *ptr_op_widen_plus_unsigned = &op_widen_plus_unsigned;
 
 void
 operator_widen_plus_unsigned::wi_fold (irange &r, tree type,
@@ -2184,7 +2182,6 @@ public:
 			const wide_int &rh_ub)
     const;
 } op_widen_mult_signed;
-range_operator *ptr_op_widen_mult_signed = &op_widen_mult_signed;
 
 void
 operator_widen_mult_signed::wi_fold (irange &r, tree type,
@@ -2217,7 +2214,6 @@ public:
 			const wide_int &rh_ub)
     const;
 } op_widen_mult_unsigned;
-range_operator *ptr_op_widen_mult_unsigned = &op_widen_mult_unsigned;
 
 void
 operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
@@ -4298,6 +4294,11 @@ range_op_table::initialize_integral_ops ()
   set (IMAGPART_EXPR, op_unknown);
   set (REALPART_EXPR, op_unknown);
   set (ABSU_EXPR, op_absu);
+  set (OP_WIDEN_MULT_SIGNED, op_widen_mult_signed);
+  set (OP_WIDEN_MULT_UNSIGNED, op_widen_mult_unsigned);
+  set (OP_WIDEN_PLUS_SIGNED, op_widen_plus_signed);
+  set (OP_WIDEN_PLUS_UNSIGNED, op_widen_plus_unsigned);
+
 }
 
 #if CHECKING_P

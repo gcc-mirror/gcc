@@ -1168,8 +1168,11 @@ public:
 void
 gimple_range_op_handler::maybe_non_standard ()
 {
-  range_operator *signed_op = ptr_op_widen_mult_signed;
-  range_operator *unsigned_op = ptr_op_widen_mult_unsigned;
+  range_op_handler signed_op (OP_WIDEN_MULT_SIGNED);
+  gcc_checking_assert (signed_op);
+  range_op_handler unsigned_op (OP_WIDEN_MULT_UNSIGNED);
+  gcc_checking_assert (unsigned_op);
+
   if (gimple_code (m_stmt) == GIMPLE_ASSIGN)
     switch (gimple_assign_rhs_code (m_stmt))
       {
@@ -1195,9 +1198,9 @@ gimple_range_op_handler::maybe_non_standard ()
 	    std::swap (m_op1, m_op2);
 
 	  if (signed1 || signed2)
-	    m_operator = signed_op;
+	    m_operator = signed_op.range_op ();
 	  else
-	    m_operator = unsigned_op;
+	    m_operator = unsigned_op.range_op ();
 	  break;
 	}
 	default:

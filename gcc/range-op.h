@@ -185,7 +185,7 @@ class range_op_handler
 {
 public:
   range_op_handler ();
-  range_op_handler (enum tree_code code);
+  range_op_handler (unsigned);
   operator bool () const;
   range_operator *range_op () const;
 
@@ -262,31 +262,37 @@ extern void wi_set_zero_nonzero_bits (tree type,
 				      wide_int &maybe_nonzero,
 				      wide_int &mustbe_nonzero);
 
+// These are extra operators that do not fit in the normal scheme of things.
+// Add them to the end of the tree-code vector, and provide a name for
+// each allowing for easy access when required.
+
+#define OP_WIDEN_MULT_SIGNED	((unsigned) MAX_TREE_CODES)
+#define OP_WIDEN_MULT_UNSIGNED	((unsigned) MAX_TREE_CODES + 1)
+#define OP_WIDEN_PLUS_SIGNED	((unsigned) MAX_TREE_CODES + 2)
+#define OP_WIDEN_PLUS_UNSIGNED	((unsigned) MAX_TREE_CODES + 3)
+#define RANGE_OP_TABLE_SIZE	((unsigned) MAX_TREE_CODES + 4)
+
 // This implements the range operator tables as local objects.
 
 class range_op_table
 {
 public:
   range_op_table ();
-  inline range_operator *operator[] (enum tree_code code)
+  inline range_operator *operator[] (unsigned code)
     {
-      gcc_checking_assert (code >= 0 && code < MAX_TREE_CODES);
+      gcc_checking_assert (code < RANGE_OP_TABLE_SIZE);
       return m_range_tree[code];
     }
 protected:
-  inline void set (enum tree_code code, range_operator &op)
+  inline void set (unsigned code, range_operator &op)
     {
+      gcc_checking_assert (code < RANGE_OP_TABLE_SIZE);
       gcc_checking_assert (m_range_tree[code] == NULL);
       m_range_tree[code] = &op;
     }
-  range_operator *m_range_tree[MAX_TREE_CODES];
+  range_operator *m_range_tree[RANGE_OP_TABLE_SIZE];
   void initialize_integral_ops ();
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
-
-extern range_operator *ptr_op_widen_mult_signed;
-extern range_operator *ptr_op_widen_mult_unsigned;
-extern range_operator *ptr_op_widen_plus_signed;
-extern range_operator *ptr_op_widen_plus_unsigned;
 #endif // GCC_RANGE_OP_H
