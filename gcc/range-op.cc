@@ -121,16 +121,44 @@ range_op_table::range_op_table ()
   // set (MAX_EXPR, op_max);
 }
 
+// Instantiate a default range operator for opcodes with no entry.
+
+range_operator default_operator;
+
+// Create a default range_op_handler.
+
 range_op_handler::range_op_handler ()
 {
-  m_operator = NULL;
+  m_operator = &default_operator;
 }
 
-// Constructing without a type must come from the unified table.
+// Create a range_op_handler for CODE.  Use a default operatoer if CODE
+// does not have an entry.
 
 range_op_handler::range_op_handler (tree_code code)
 {
   m_operator = operator_table[code];
+  if (!m_operator)
+    m_operator = &default_operator;
+}
+
+// Return TRUE if this handler has a non-default operator.
+
+range_op_handler::operator bool () const
+{
+  return m_operator != &default_operator;
+}
+
+// Return a pointer to the range operator assocaited with this handler.
+// If it is a default operator, return NULL.
+// This is the equivalent of indexing the range table.
+
+range_operator *
+range_op_handler::range_op () const
+{
+  if (m_operator != &default_operator)
+    return m_operator;
+  return NULL;
 }
 
 // Create a dispatch pattern for value range discriminators LHS, OP1, and OP2.

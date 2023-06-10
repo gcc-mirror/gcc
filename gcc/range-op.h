@@ -186,7 +186,8 @@ class range_op_handler
 public:
   range_op_handler ();
   range_op_handler (enum tree_code code);
-  inline operator bool () const { return m_operator != NULL; }
+  operator bool () const;
+  range_operator *range_op () const;
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,

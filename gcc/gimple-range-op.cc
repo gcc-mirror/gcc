@@ -120,21 +120,22 @@ gimple_range_op_handler::supported_p (gimple *s)
 // Construct a handler object for statement S.
 
 gimple_range_op_handler::gimple_range_op_handler (gimple *s)
-  : range_op_handler (get_code (s))
 {
+  range_op_handler oper (get_code (s));
   m_stmt = s;
   m_op1 = NULL_TREE;
   m_op2 = NULL_TREE;
 
-  if (m_operator)
+  if (oper)
     switch (gimple_code (m_stmt))
       {
 	case GIMPLE_COND:
 	  m_op1 = gimple_cond_lhs (m_stmt);
 	  m_op2 = gimple_cond_rhs (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
-	  if (!Value_Range::supports_type_p (TREE_TYPE (m_op1)))
-	    m_operator = NULL;
+	  if (Value_Range::supports_type_p (TREE_TYPE (m_op1)))
+	    m_operator = oper.range_op ();
+	  gcc_checking_assert (m_operator);
 	  return;
 	case GIMPLE_ASSIGN:
 	  m_op1 = gimple_range_base_of_assignment (m_stmt);
@@ -153,7 +154,9 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
 	  if ((m_op1 && !Value_Range::supports_type_p (TREE_TYPE (m_op1))))
-	    m_operator = NULL;
+	    return;
+	  m_operator = oper.range_op ();
+	  gcc_checking_assert (m_operator);
 	  return;
 	default:
 	  gcc_unreachable ();
@@ -165,6 +168,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
     maybe_builtin_call ();
   else
     maybe_non_standard ();
+  gcc_checking_assert (m_operator);
 }
 
 // Calculate what we can determine of the range of this unary
@@ -364,11 +368,10 @@ public:
 			   const frange &rh, relation_trio) const override
   {
     frange neg;
-    range_op_handler abs_op (ABS_EXPR);
-    range_op_handler neg_op (NEGATE_EXPR);
-    if (!abs_op || !abs_op.fold_range (r, type, lh, frange (type)))
+    if (!range_op_handler (ABS_EXPR).fold_range (r, type, lh, frange (type)))
       return false;
-    if (!neg_op || !neg_op.fold_range (neg, type, r, frange (type)))
+    if (!range_op_handler (NEGATE_EXPR).fold_range (neg, type, r,
+						    frange (type)))
       return false;
 
     bool signbit;
@@ -1073,14 +1076,11 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &lh,
 			   const irange &rh, relation_trio rel) const
   {
-    range_op_handler handler (m_code);
-    gcc_checking_assert (handler);
-
     bool saved_flag_wrapv = flag_wrapv;
     // Pretend the arithmetic is wrapping.  If there is any overflow,
     // we'll complain, but will actually do wrapping operation.
     flag_wrapv = 1;
-    bool result = handler.fold_range (r, type, lh, rh, rel);
+    bool result = range_op_handler (m_code).fold_range (r, type, lh, rh, rel);
     flag_wrapv = saved_flag_wrapv;
 
     // If for both arguments vrp_valueize returned non-NULL, this should
@@ -1230,8 +1230,6 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_operator = &op_cfn_constant_p;
       else if (frange::supports_p (TREE_TYPE (m_op1)))
 	m_operator = &op_cfn_constant_float_p;
-      else
-	m_operator = NULL;
       break;
 
     CASE_FLT_FN (CFN_BUILT_IN_SIGNBIT):
