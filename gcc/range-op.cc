@@ -80,6 +80,7 @@ operator_bitwise_not op_bitwise_not;
 operator_bitwise_xor op_bitwise_xor;
 operator_bitwise_and op_bitwise_and;
 operator_bitwise_or op_bitwise_or;
+operator_min op_min;
 
 // Invoke the initialization routines for each class of range.
 
@@ -119,6 +120,7 @@ unified_table::unified_table ()
   // speifc version is provided.
   set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
+  set (MIN_EXPR, op_min);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -1980,17 +1982,12 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
 }
 
 
-class operator_min : public range_operator
+void
+operator_min::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
 {
-public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, MIN_EXPR, lh, rh); }
-} op_min;
+  update_known_bitmask (r, MIN_EXPR, lh, rh);
+}
 
 void
 operator_min::wi_fold (irange &r, tree type,
@@ -4534,7 +4531,6 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 integral_table::integral_table ()
 {
-  set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
 }
 

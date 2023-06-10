@@ -596,4 +596,15 @@ private:
 		const wide_int &rh_ub) const final override;
 };
 
+class operator_min : public range_operator
+{
+public:
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
+private:
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H
