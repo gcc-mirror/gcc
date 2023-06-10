@@ -1,3 +1,51 @@
+2023-06-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/concepts/auto7.C: New test.
+	* g++.dg/concepts/auto7a.C: New test.
+
+2023-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110102
+	* g++.dg/cpp0x/initlist-opt1.C: New test.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/97711
+	PR tree-optimization/110155
+	* gcc.dg/tree-ssa/branchless-cond-add-2.c: New test.
+	* gcc.dg/tree-ssa/branchless-cond-add.c: New test.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/branchless-cond.c: Update testcase.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110165
+	PR tree-optimization/110166
+	* gcc.c-torture/execute/pr110165-1.c: New test.
+	* gcc.c-torture/execute/pr110166-1.c: New test.
+
+2023-06-09  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c: Adjust iterations.
+	* gcc.dg/vect/tsvc/tsvc.h: Adjust expected rsult for s176.
+
+2023-06-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Add vle16 test
+	for ZVFHMIN.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110108-2.c: New test.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110108.c: New test.
+	* gcc.target/i386/pr110108-3.c: New test.
+	* gcc.target/i386/pr109900.c: Adjust testcase.
+
 2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110126

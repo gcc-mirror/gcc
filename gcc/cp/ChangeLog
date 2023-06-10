@@ -1,3 +1,22 @@
+2023-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110185
+	PR c++/58487
+	* method.cc (build_comparison_op): Give retval a name.
+	* typeck.cc (check_return_expr): Fix for nameless variables.
+
+2023-06-09  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_simple_type_specifier): Check for auto
+	in template argument.
+	(cp_parser_template_type_arg): Remove auto checking.
+
+2023-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110102
+	* call.cc (maybe_init_list_as_array): Check that the element type is
+	copyable.
+
 2023-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58487

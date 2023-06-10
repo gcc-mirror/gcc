@@ -1,3 +1,22 @@
+2023-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110112
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Move code to region::calc_initial_value_at_main.
+	* region.cc (region::get_initial_value_at_main): New function.
+	(region::calc_initial_value_at_main): New function, based on code
+	in region_model::get_initial_value_for_global.
+	(region::region): Initialize m_cached_init_sval_at_main.
+	(decl_region::get_svalue_for_constructor): Add a cache, splitting
+	out body to...
+	(decl_region::calc_svalue_for_constructor): ...this new function.
+	* region.h (region::get_initial_value_at_main): New decl.
+	(region::calc_initial_value_at_main): New decl.
+	(region::m_cached_init_sval_at_main): New field.
+	(decl_region::decl_region): Initialize m_ctor_svalue.
+	(decl_region::calc_svalue_for_constructor): New decl.
+	(decl_region::m_ctor_svalue): New field.
+
 2023-06-08  Benjamin Priour  <vultkayn@gcc.gnu.org>
 
 	* bounds-checking.cc (region_model::check_symbolic_bounds): Returns whether the BASE_REG

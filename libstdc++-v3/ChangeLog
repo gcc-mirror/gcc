@@ -1,3 +1,71 @@
+2023-06-09  Ken Matsui  <kmatsui@cs.washington.edu>
+
+	* include/std/type_traits: Use using instead of typedef
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110077
+	* src/c++17/floating_from_chars.cc (from_chars) <_Float128>:
+	Only define if _Float128 and long double have different
+	representations.
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100285
+	* include/experimental/internet [IPPROTO_TCP || IPPROTO_UDP]
+	(basic_endpoint, basic_resolver_entry, resolver_base)
+	(basic_resolver_results, basic_resolver): Only define if the tcp
+	or udp protocols will be defined.
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (libtool_VERSION): Update to 6.0.33.
+	* configure: Regenerate.
+	* doc/xml/manual/abi.xml: Add libstdc++.so.6.0.33.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110149
+	* include/std/format (formatter<const void*, charT>::parse):
+	Only alow 0 and P for C++26 and non-strict modes.
+	(formatter<const void*, charT>::format): Use toupper for P
+	type, and insert zero-fill characters for 0 option.
+	* testsuite/std/format/functions/format.cc: Check pointer
+	formatting. Only check P2510R3 extensions conditionally.
+	* testsuite/std/format/parse_ctx.cc: Only check P2510R3
+	extensions conditionally.
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110167
+	* include/std/array (to_array): Initialize arrays of trivial
+	types using memcpy. For non-trivial types, use lambda
+	expressions instead of a separate helper function.
+	(__to_array): Remove.
+	* testsuite/23_containers/array/creation/110167.cc: New test.
+
+2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/list/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/vector/modifiers/emplace/1.cc: New
+	test.
+
 2023-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/110145

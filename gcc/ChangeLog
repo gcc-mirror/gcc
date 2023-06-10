@@ -1,3 +1,93 @@
+2023-06-09  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Richard Sandiford <richard.sandiford@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* doc/md.texi: Add SELECT_VL support.
+	* internal-fn.def (SELECT_VL): Ditto.
+	* optabs.def (OPTAB_D): Ditto.
+	* tree-vect-loop-manip.cc (vect_set_loop_controls_directly): Ditto.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Ditto.
+	* tree-vect-stmts.cc (get_select_vl_data_ref_ptr): Ditto.
+	(vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (LOOP_VINFO_USING_SELECT_VL_P): Ditto.
+
+2023-06-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR ipa/109886
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Check param
+	type as well.
+
+2023-06-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (range_cast): Move to...
+	* range-op.h (range_cast): Here and add generic a version.
+
+2023-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/39589
+	PR c++/96868
+	* doc/invoke.texi: Clarify that -Wmissing-field-initializers doesn't
+	warn about designated initializers in C only.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/97711
+	PR tree-optimization/110155
+	* match.pd ((zero_one == 0) ? y : z <op> y): Add plus to the op.
+	((zero_one != 0) ? z <op> y : y): Likewise.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd ((zero_one ==/!= 0) ? y : z <op> y): Use
+	multiply rather than negation/bit_and.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`X & -Y -> X * Y`): Allow for truncation
+	and the same type for unsigned types.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110165
+	PR tree-optimization/110166
+	* match.pd (zero_one_valued_p): Don't accept
+	signed 1-bit integers.
+
+2023-06-09  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (two conversions in a row): Use element_precision
+	to DTRT for VECTOR_TYPE.
+
+2023-06-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.md (enabled): Move to another place, and
+	add fp_vector_disabled to the cond.
+	(fp_vector_disabled): New attr defined for disabling fp.
+	* config/riscv/vector-iterators.md: Fix V_WHOLE and V_FRACT.
+
+2023-06-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (enum frm_field_enum): Adjust
+	literal to int.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110108
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Explicitly
+	view_convert_expr mask to signed type when folding pblendvb
+	builtins.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110108
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Fold
+	_mm{,256,512}_abs_{epi8,epi16,epi32,epi64} into gimple
+	ABSU_EXPR + VCE, don't fold _mm_abs_{pi8,pi16,pi32} w/o
+	TARGET_64BIT.
+	* config/i386/i386-builtin.def: Replace CODE_FOR_nothing with
+	real codename for __builtin_ia32_pabs{b,w,d}.
+
 2023-06-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-op.cc
