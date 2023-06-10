@@ -514,12 +514,10 @@ get_temporary_buffer(5, (int*)0);
     you won't notice.)
   </para>
   <para>
-    Probably the only times you'll be interested in demangling at runtime
-    are when you're seeing <code>typeid</code> strings in RTTI, or when
-    you're handling the runtime-support exception classes.  For example:
+    Probably the only time you'll be interested in demangling at runtime
+    is when you're seeing <code>typeid</code> strings in RTTI.  For example:
   </para>
    <programlisting>
-#include &lt;exception&gt;
 #include &lt;iostream&gt;
 #include &lt;cstdlib&gt;
 #include &lt;cxxabi.h&gt;
