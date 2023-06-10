@@ -1494,6 +1494,13 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__OMPACC_:
 	  break;
 
+	  /* Clauses related to loop transforms.  */
+	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_UNROLL_FULL:
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	case OMP_CLAUSE_UNROLL_NONE:
+	  break;
+
 	  /* The following clause belongs to the OpenACC cache directive, which
 	     is discarded during gimplification.  */
 	case OMP_CLAUSE__CACHE_:
@@ -2289,6 +2296,13 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__CONDTEMP_:
 	case OMP_CLAUSE__SCANTEMP_:
 	case OMP_CLAUSE__OMPACC_:
+	  break;
+
+	  /* Clauses related to loop transforms.  */
+	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_UNROLL_FULL:
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	case OMP_CLAUSE_UNROLL_NONE:
 	  break;
 
 	  /* The following clause belongs to the OpenACC cache directive, which

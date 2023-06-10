@@ -1,3 +1,8 @@
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+	    Frederik Harwath <frederik@codesourcery.com>
+
+	* testsuite/libgomp.fortran/loop-transforms/nested-fn.f90: New test.
+
 2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
