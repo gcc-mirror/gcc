@@ -132,11 +132,9 @@ test ()
 
     #pragma omp parallel for
     #pragma omp tile sizes(1, 2, 3)
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
       for (int j = 0; j < 100; ++j)
         dummy (i);
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
-    /* { dg-error {'i' was not declared in this scope} "" { target c++ } .-2 } */
 
     #pragma omp parallel for
     #pragma omp tile sizes(1)
@@ -158,22 +156,20 @@ test ()
 
     #pragma omp parallel for
     #pragma omp tile sizes(1, 2)
-    for (int i = 0; i < 100; ++i) /* { dg-error {inner loops must be perfectly nested} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {inner loops must be perfectly nested} } */
       {
         dummy (i);
-	/* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
         for (int j = 0; j < 100; ++j)
           dummy (j);
       }
 
     #pragma omp parallel for
     #pragma omp tile sizes(1, 2)
-    for (int i = 0; i < 100; ++i) /* { dg-error {inner loops must be perfectly nested} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {inner loops must be perfectly nested} } */
       {
         for (int j = 0; j < 100; ++j)
 	  dummy (j);
 	dummy (i);
-	/* { dg-error {collapsed loops not perfectly nested} "" { target c++ } .-1 } */
       }
 
     #pragma omp parallel for

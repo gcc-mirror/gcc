@@ -1,3 +1,41 @@
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cp-tree.h (cp_convert_omp_range_for): Adjust declaration.
+	* parser.cc (struct omp_for_parse_data): New.
+	(cp_parser_postfix_expression): Diagnose calls to OpenMP runtime
+	in intervening code.
+	(check_omp_intervening_code): New.
+	(cp_parser_statement_seq_opt): Special-case nested OMP loops and
+	blocks in intervening code.
+	(cp_parser_iteration_statement): Reject loops in intervening code.
+	(cp_parser_omp_for_loop_init): Expand comments and tweak the
+	interface slightly to better distinguish input/output parameters.
+	(cp_parser_omp_range_for): Likewise.
+	(cp_convert_omp_range_for): Likewise.
+	(cp_parser_see_omp_loop_nest): New.
+	(cp_parser_omp_loop_nest): New, split from cp_parser_omp_for_loop
+	and largely rewritten.  Add more comments.
+	(struct sit_data, substitute_in_tree_walker, substitute_in_tree):
+	New.
+	(fixup_blocks_walker): New.
+	(cp_parser_omp_for_loop): Rewrite to use recursive descent instead
+	of a loop.  Add logic to reshuffle the bits of code collected
+	during parsing so intervening code gets moved to the loop body.
+	(cp_parser_omp_loop): Remove call to finish_omp_for_block, which
+	is now redundant.
+	(cp_parser_omp_simd): Likewise.
+	(cp_parser_omp_for): Likewise.
+	(cp_parser_omp_distribute): Likewise.
+	(cp_parser_oacc_loop): Likewise.
+	(cp_parser_omp_taskloop): Likewise.
+	(cp_parser_pragma): Reject OpenMP pragmas in intervening code.
+	* parser.h (struct cp_parser): Add omp_for_parse_state field.
+	* pt.cc (tsubst_omp_for_iterator): Adjust call to
+	cp_convert_omp_range_for.
+	* semantics.cc (struct fofb_data, finish_omp_for_block_walker): New.
+	(finish_omp_for_block): Allow variables to be bound in a BIND_EXPR
+	nested inside BIND instead of directly in BIND itself.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

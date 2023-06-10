@@ -1,4 +1,14 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c++/imperfect-class-1.C: New.
+	* testsuite/libgomp.c++/imperfect-class-2.C: New.
+	* testsuite/libgomp.c++/imperfect-class-3.C: New.
+	* testsuite/libgomp.c++/imperfect-destructor.C: New.
+	* testsuite/libgomp.c++/imperfect-template-1.C: New.
+	* testsuite/libgomp.c++/imperfect-template-2.C: New.
+	* testsuite/libgomp.c++/imperfect-template-3.C: New.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 	    Frederik Harwath <frederik@codesourcery.com>
 
 	* testsuite/libgomp.fortran/loop-transforms/nested-fn.f90: New test.

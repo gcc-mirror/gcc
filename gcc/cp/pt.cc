@@ -18467,7 +18467,8 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       tree this_pre_body = NULL_TREE;
       tree orig_init = NULL_TREE;
       tree orig_decl = NULL_TREE;
-      cp_convert_omp_range_for (this_pre_body, NULL, decl, orig_decl, init,
+      tree init_sl = NULL_TREE;
+      cp_convert_omp_range_for (this_pre_body, init_sl, decl, orig_decl, init,
 				orig_init, cond, incr);
       if (orig_decl)
 	{

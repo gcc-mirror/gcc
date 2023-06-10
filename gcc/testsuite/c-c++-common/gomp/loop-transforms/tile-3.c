@@ -36,11 +36,9 @@ test ()
 
 #pragma omp for collapse(3)
     #pragma omp tile sizes(1, 2) /* { dg-error {nesting depth left after this transformation too low for loop collapse} } */
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
     for (int j = 0; j < 100; ++j)
 	dummy (i);
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
-    /* { dg-error {'i' was not declared in this scope} "" { target c++ } .-2 } */
 
 #pragma omp for collapse(1)
 #pragma omp tile sizes(1)
@@ -51,23 +49,20 @@ test ()
 #pragma omp for collapse(2)
 #pragma omp tile sizes(1, 2)
 #pragma omp tile sizes(1) /* { dg-error {nesting depth left after this transformation too low for outer transformation} } */
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
     	dummy (i);
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
 
 #pragma omp for collapse(2)
 #pragma omp tile sizes(1, 2)
 #pragma omp tile sizes(1, 2)
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
     	dummy (i);
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
 
 #pragma omp for collapse(2)
 #pragma omp tile sizes(5, 6)
 #pragma omp tile sizes(1, 2, 3)
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
     	dummy (i); 
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
 
 #pragma omp for collapse(1)
 #pragma omp tile sizes(1)
@@ -100,10 +95,9 @@ test ()
 #pragma omp for collapse(3)
 #pragma omp tile sizes(1, 2) /* { dg-error {nesting depth left after this transformation too low for loop collapse} } */
 #pragma omp tile sizes(1, 2)
-    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+    for (int i = 0; i < 100; ++i) /* { dg-error {not enough nested loops} } */
     for (int j = 0; j < 100; ++j)
     	dummy (i);
-    /* { dg-error {not enough for loops to collapse} "" { target c++ } .-1 } */
 
 #pragma omp for collapse(3)
 #pragma omp tile sizes(5, 6) /* { dg-error {nesting depth left after this transformation too low for loop collapse} } */

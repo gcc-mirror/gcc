@@ -7279,7 +7279,7 @@ extern bool maybe_clone_body			(tree);
 /* In parser.cc */
 extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
 				  unsigned short);
-extern void cp_convert_omp_range_for (tree &, vec<tree, va_gc> *, tree &,
+extern void cp_convert_omp_range_for (tree &, tree &, tree &,
 				      tree &, tree &, tree &, tree &, tree &);
 extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);

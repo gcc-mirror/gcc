@@ -13,11 +13,10 @@ test ()
       dummy (i);
 
 #pragma omp target parallel for collapse(2)
-  for (int i = -300; i != 100; ++i) /* { dg-error {not enough nested loops} "" { target c } } */
+  for (int i = -300; i != 100; ++i) /* { dg-error {not enough nested loops} } */
 #pragma omp tile sizes(2, 3)
     for (int j = 0; j != 100; ++j)
-      dummy (i); /* { dg-error {not enough for loops to collapse} "" { target c++ } } */
-/* { dg-error {'i' was not declared in this scope} "" { target c++ } .-1 } */
+      dummy (i);
 
 #pragma omp target parallel for collapse(2)
   for (int i = -300; i != 100; ++i)

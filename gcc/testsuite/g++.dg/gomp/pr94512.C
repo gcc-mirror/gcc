@@ -8,7 +8,7 @@ void
 bar ()
 {
 #pragma omp parallel master taskloop
-  foo ();	// { dg-error "for statement expected before" }
+  foo ();	// { dg-error "loop nest expected before" }
 }
 
 void
