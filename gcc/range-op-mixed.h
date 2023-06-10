@@ -501,4 +501,17 @@ public:
 		relation_kind kind) const final override;
 };
 
+class operator_addr_expr : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  bool fold_range (irange &r, tree type,
+		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H

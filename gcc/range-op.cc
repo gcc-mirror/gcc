@@ -75,6 +75,7 @@ operator_abs op_abs;
 operator_minus op_minus;
 operator_negate op_negate;
 operator_mult op_mult;
+operator_addr_expr op_addr;
 
 // Invoke the initialization routines for each class of range.
 
@@ -102,6 +103,10 @@ unified_table::unified_table ()
   set (MINUS_EXPR, op_minus);
   set (NEGATE_EXPR, op_negate);
   set (MULT_EXPR, op_mult);
+
+  // Occur in both integer and pointer tables, but currently share
+  // integral implelmentation.
+  set (ADDR_EXPR, op_addr);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -4366,21 +4371,6 @@ operator_negate::op1_range (irange &r, tree type,
 }
 
 
-class operator_addr_expr : public range_operator
-{
-  using range_operator::fold_range;
-  using range_operator::op1_range;
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-} op_addr;
-
 bool
 operator_addr_expr::fold_range (irange &r, tree type,
 				const irange &lh,
@@ -4613,7 +4603,6 @@ integral_table::integral_table ()
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (BIT_XOR_EXPR, op_bitwise_xor);
   set (BIT_NOT_EXPR, op_bitwise_not);
-  set (ADDR_EXPR, op_addr);
 }
 
 // Initialize any integral operators to the primary table
@@ -4643,8 +4632,6 @@ pointer_table::pointer_table ()
   set (BIT_IOR_EXPR, op_pointer_or);
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
-
-  set (ADDR_EXPR, op_addr);
 
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);
