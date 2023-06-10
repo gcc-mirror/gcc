@@ -1,3 +1,28 @@
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110165
+	PR tree-optimization/110166
+	* gcc.c-torture/execute/pr110165-1.c: New test.
+	* gcc.c-torture/execute/pr110166-1.c: New test.
+
+2023-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110044
+	* gcc.target/powerpc/darwin-abi-13-0.c: New test.
+	* gcc.target/powerpc/darwin-abi-13-1.c: New test.
+	* gcc.target/powerpc/darwin-abi-13-2.c: New test.
+	* gcc.target/powerpc/darwin-structs-0.h: New test.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110108-2.c: New test.
+
 2023-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
