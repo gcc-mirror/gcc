@@ -1,5 +1,13 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* c-c++-common/gomp/imperfect1.c: New.
+	* c-c++-common/gomp/imperfect2.c: New.
+	* c-c++-common/gomp/imperfect3.c: New.
+	* c-c++-common/gomp/imperfect4.c: New.
+	* c-c++-common/gomp/imperfect5.c: New.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* c-c++-common/goacc/tile-2.c: Adjust expected error patterns.
 	* c-c++-common/gomp/loop-transforms/imperfect-loop-nest: Likewise.
 	* c-c++-common/gomp/loop-transforms/tile-1.c: Likewise.

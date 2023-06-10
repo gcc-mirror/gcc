@@ -1,5 +1,22 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* testsuite/libgomp.c-c++-common/imperfect-transform-1.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect-transform-2.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect1.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect2.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect3.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect4.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect5.c: New.
+	* testsuite/libgomp.c-c++-common/imperfect6.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect-transform-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect-transform-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect1.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect2.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect3.c: New.
+	* testsuite/libgomp.c-c++-common/target-imperfect4.c: New.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* testsuite/libgomp.c++/imperfect-class-1.C: New.
 	* testsuite/libgomp.c++/imperfect-class-2.C: New.
 	* testsuite/libgomp.c++/imperfect-class-3.C: New.
