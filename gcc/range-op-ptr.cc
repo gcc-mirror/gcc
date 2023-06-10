@@ -270,7 +270,6 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
 
 pointer_table::pointer_table ()
 {
-  set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 }
 
@@ -380,6 +379,32 @@ public:
     }
 } op_hybrid_or;
 
+// Temporary class which dispatches routines to either the INT version or
+// the pointer version depending on the type.  Once PRANGE is a range
+// class, we can remove the hybrid.
+
+class hybrid_min_operator : public operator_min
+{
+public:
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override
+    {
+      if (!r.undefined_p () && INTEGRAL_TYPE_P (r.type ()))
+	operator_min::update_bitmask (r, lh, rh);
+    }
+
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override
+    {
+      if (INTEGRAL_TYPE_P (type))
+	return operator_min::wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+      else
+	return op_ptr_min_max.wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+    }
+} op_hybrid_min;
+
+
 
 
 // Initialize any pointer operators to the primary table
@@ -391,4 +416,5 @@ range_op_table::initialize_pointer_ops ()
   set (POINTER_DIFF_EXPR, op_pointer_diff);
   set (BIT_AND_EXPR, op_hybrid_and);
   set (BIT_IOR_EXPR, op_hybrid_or);
+  set (MIN_EXPR, op_hybrid_min);
 }

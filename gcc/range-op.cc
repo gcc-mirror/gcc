@@ -123,7 +123,7 @@ unified_table::unified_table ()
 
   // set (BIT_AND_EXPR, op_bitwise_and);
   // set (BIT_IOR_EXPR, op_bitwise_or);
-  set (MIN_EXPR, op_min);
+  // set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
 }
 
