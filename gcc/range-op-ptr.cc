@@ -157,7 +157,6 @@ pointer_min_max_operator::wi_fold (irange &r, tree type,
     r.set_varying (type);
 }
 
-
 class pointer_and_operator : public range_operator
 {
 public:
@@ -263,14 +262,6 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
 {
   return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
 					rel);
-}
-
-// When PRANGE is implemented, these are all the opcodes which are currently
-// expecting routines with PRANGE signatures.
-
-pointer_table::pointer_table ()
-{
-  set (MAX_EXPR, op_ptr_min_max);
 }
 
 // ----------------------------------------------------------------------
@@ -404,8 +395,26 @@ public:
     }
 } op_hybrid_min;
 
+class hybrid_max_operator : public operator_max
+{
+public:
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override
+    {
+      if (!r.undefined_p () && INTEGRAL_TYPE_P (r.type ()))
+	operator_max::update_bitmask (r, lh, rh);
+    }
 
-
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override
+    {
+      if (INTEGRAL_TYPE_P (type))
+	return operator_max::wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+      else
+	return op_ptr_min_max.wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+    }
+} op_hybrid_max;
 
 // Initialize any pointer operators to the primary table
 
@@ -417,4 +426,5 @@ range_op_table::initialize_pointer_ops ()
   set (BIT_AND_EXPR, op_hybrid_and);
   set (BIT_IOR_EXPR, op_hybrid_or);
   set (MIN_EXPR, op_hybrid_min);
+  set (MAX_EXPR, op_hybrid_max);
 }

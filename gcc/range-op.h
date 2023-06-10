@@ -299,15 +299,6 @@ range_op_table::set (enum tree_code code, range_operator &op)
   m_range_tree[code] = &op;
 }
 
-// Instantiate a range op table for pointer operations.
-
-class pointer_table : public range_op_table
-{
-public:
-  pointer_table ();
-};
-extern pointer_table pointer_tree_table;
-
 extern range_operator *ptr_op_widen_mult_signed;
 extern range_operator *ptr_op_widen_mult_unsigned;
 extern range_operator *ptr_op_widen_plus_signed;

@@ -49,8 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "range-op-mixed.h"
 
-pointer_table pointer_tree_table;
-
 // Instantiate a range_op_table for unified operations.
 class unified_table : public range_op_table
 {
@@ -124,18 +122,14 @@ unified_table::unified_table ()
   // set (BIT_AND_EXPR, op_bitwise_and);
   // set (BIT_IOR_EXPR, op_bitwise_or);
   // set (MIN_EXPR, op_min);
-  set (MAX_EXPR, op_max);
+  // set (MAX_EXPR, op_max);
 }
 
 // The tables are hidden and accessed via a simple extern function.
 
 range_operator *
-get_op_handler (enum tree_code code, tree type)
+get_op_handler (enum tree_code code, tree)
 {
-  // If this is pointer type and there is pointer specifc routine, use it.
-  if (POINTER_TYPE_P (type) && pointer_tree_table[code])
-    return pointer_tree_table[code];
-
   return unified_tree_table[code];
 }
 
