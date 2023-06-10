@@ -78,6 +78,7 @@ operator_mult op_mult;
 operator_addr_expr op_addr;
 operator_bitwise_not op_bitwise_not;
 operator_bitwise_xor op_bitwise_xor;
+operator_bitwise_and op_bitwise_and;
 
 // Invoke the initialization routines for each class of range.
 
@@ -111,6 +112,11 @@ unified_table::unified_table ()
   set (ADDR_EXPR, op_addr);
   set (BIT_NOT_EXPR, op_bitwise_not);
   set (BIT_XOR_EXPR, op_bitwise_xor);
+
+  // These are in both integer and pointer tables, but pointer has a different
+  // implementation.  These also remain in the pointer table until a pointer
+  // speifc version is provided.
+  set (BIT_AND_EXPR, op_bitwise_and);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -118,16 +124,17 @@ unified_table::unified_table ()
 range_operator *
 get_op_handler (enum tree_code code, tree type)
 {
+  // If this is pointer type and there is pointer specifc routine, use it.
+  if (POINTER_TYPE_P (type) && pointer_tree_table[code])
+    return pointer_tree_table[code];
+
   if (unified_tree_table[code])
     {
       // Should not be in any other table if it is in the unified table.
-      gcc_checking_assert (!pointer_tree_table[code]);
       gcc_checking_assert (!integral_tree_table[code]);
       return unified_tree_table[code];
     }
 
-  if (POINTER_TYPE_P (type))
-    return pointer_tree_table[code];
   if (INTEGRAL_TYPE_P (type))
     return integral_tree_table[code];
   return NULL;
@@ -3121,37 +3128,12 @@ operator_logical_and::op2_range (irange &r, tree type,
 }
 
 
-class operator_bitwise_and : public range_operator
+void
+operator_bitwise_and::update_bitmask (irange &r, const irange &lh,
+				      const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::lhs_op1_relation;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					  const irange &op1,
-					  const irange &op2,
-					  relation_kind) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, BIT_AND_EXPR, lh, rh); }
-private:
-  void simple_op1_range_solver (irange &r, tree type,
-				const irange &lhs,
-				const irange &op2) const;
-} op_bitwise_and;
-
+  update_known_bitmask (r, BIT_AND_EXPR, lh, rh);
+}
 
 // Optimize BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR of signed types
 // by considering the number of leading redundant sign bit copies.
@@ -4567,7 +4549,6 @@ integral_table::integral_table ()
 {
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
-  set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
 }
 

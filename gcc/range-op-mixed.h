@@ -550,4 +550,31 @@ private:
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const final override;
 };
+
+class operator_bitwise_and : public range_operator
+{
+public:
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op2_range (irange &r, tree type,
+		  const irange &lhs, const irange &op1,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
+private:
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override;
+  void simple_op1_range_solver (irange &r, tree type,
+				const irange &lhs,
+				const irange &op2) const;
+};
+
 #endif // GCC_RANGE_OP_MIXED_H
