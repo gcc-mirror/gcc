@@ -266,34 +266,23 @@ extern void wi_set_zero_nonzero_bits (tree type,
 class range_op_table
 {
 public:
-  range_operator *operator[] (enum tree_code code);
-  void set (enum tree_code code, range_operator &op);
+  range_op_table ();
+  inline range_operator *operator[] (enum tree_code code)
+    {
+      gcc_checking_assert (code >= 0 && code < MAX_TREE_CODES);
+      return m_range_tree[code];
+    }
 protected:
+  inline void set (enum tree_code code, range_operator &op)
+    {
+      gcc_checking_assert (m_range_tree[code] == NULL);
+      m_range_tree[code] = &op;
+    }
   range_operator *m_range_tree[MAX_TREE_CODES];
   void initialize_integral_ops ();
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
-
-
-// Return a pointer to the range_operator instance, if there is one
-// associated with tree_code CODE.
-
-inline range_operator *
-range_op_table::operator[] (enum tree_code code)
-{
-  gcc_checking_assert (code >= 0 && code < MAX_TREE_CODES);
-  return m_range_tree[code];
-}
-
-// Add OP to the handler table for CODE.
-
-inline void
-range_op_table::set (enum tree_code code, range_operator &op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL);
-  m_range_tree[code] = &op;
-}
 
 extern range_operator *ptr_op_widen_mult_signed;
 extern range_operator *ptr_op_widen_mult_unsigned;

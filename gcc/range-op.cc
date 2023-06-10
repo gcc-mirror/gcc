@@ -49,13 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "range-op-mixed.h"
 
-// Instantiate a range_op_table for unified operations.
-class unified_table : public range_op_table
-{
-  public:
-    unified_table ();
-} unified_tree_table;
-
 // Instantiate the operators which apply to multiple types here.
 
 operator_equal op_equal;
@@ -80,9 +73,12 @@ operator_bitwise_or op_bitwise_or;
 operator_min op_min;
 operator_max op_max;
 
+// Instantaite a range operator table.
+range_op_table operator_table;
+
 // Invoke the initialization routines for each class of range.
 
-unified_table::unified_table ()
+range_op_table::range_op_table ()
 {
   initialize_integral_ops ();
   initialize_pointer_ops ();
@@ -134,7 +130,7 @@ range_op_handler::range_op_handler ()
 
 range_op_handler::range_op_handler (tree_code code)
 {
-  m_operator = unified_tree_table[code];
+  m_operator = operator_table[code];
 }
 
 // Create a dispatch pattern for value range discriminators LHS, OP1, and OP2.
