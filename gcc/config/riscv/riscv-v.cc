@@ -2447,4 +2447,16 @@ expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
   return ret;
 }
 
+/* Generate no side effects vsetvl to get the vector length.  */
+void
+expand_select_vl (rtx *ops)
+{
+  poly_int64 nunits = rtx_to_poly_int64 (ops[2]);
+  /* We arbitrary picked QImode as inner scalar mode to get vector mode.
+     since vsetvl only demand ratio. We let VSETVL PASS to optimize it.  */
+  scalar_int_mode mode = QImode;
+  machine_mode rvv_mode = get_vector_mode (mode, nunits).require ();
+  emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
+}
+
 } // namespace riscv_vector

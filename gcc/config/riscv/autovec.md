@@ -626,3 +626,17 @@
   }
   [(set_attr "type" "vimuladd")
    (set_attr "mode" "<MODE>")])
+
+;; =========================================================================
+;; == SELECT_VL
+;; =========================================================================
+
+(define_expand "select_vl<mode>"
+  [(match_operand:P 0 "register_operand")
+   (match_operand:P 1 "vector_length_operand")
+   (match_operand:P 2 "")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_select_vl (operands);
+  DONE;
+})

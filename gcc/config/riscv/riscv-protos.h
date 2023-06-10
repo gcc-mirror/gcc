@@ -246,6 +246,7 @@ void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vcond (rtx *);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
+void expand_select_vl (rtx *);
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum vxrm_field_enum
 {
