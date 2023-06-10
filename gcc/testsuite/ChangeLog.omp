@@ -1,5 +1,15 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* c-c++-common/goacc/combined-reduction.c: Adjust scan output.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+	* c-c++-common/goacc/reduction-10.c: Likewise.
+	* gfortran.dg/goacc/loop-tree-1.f90: Likewise.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gfortran.dg/goacc/assumed-size.f90: Don't expect error.
 
 2023-06-19  Julian Brown  <julian@codesourcery.com>

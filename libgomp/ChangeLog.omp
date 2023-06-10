@@ -1,5 +1,9 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/implicit-mapping-1.c: New test.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-1.f90: New
 	test.
 	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-2.f90: New
