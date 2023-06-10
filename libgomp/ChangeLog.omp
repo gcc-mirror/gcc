@@ -1,5 +1,21 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* testsuite/libgomp.fortran/imperfect-destructor.f90: New.
+	* testsuite/libgomp.fortran/imperfect-transform-1.f90: New.
+	* testsuite/libgomp.fortran/imperfect-transform-2.f90: New.
+	* testsuite/libgomp.fortran/imperfect1.f90: New.
+	* testsuite/libgomp.fortran/imperfect2.f90: New.
+	* testsuite/libgomp.fortran/imperfect3.f90: New.
+	* testsuite/libgomp.fortran/imperfect4.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect-transform-1.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect-transform-2.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect1.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect2.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect3.f90: New.
+	* testsuite/libgomp.fortran/target-imperfect4.f90: New.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/imperfect-transform-1.c: New.
 	* testsuite/libgomp.c-c++-common/imperfect-transform-2.c: New.
 	* testsuite/libgomp.c-c++-common/imperfect1.c: New.

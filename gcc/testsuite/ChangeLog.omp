@@ -1,5 +1,18 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* gfortran.dg/gomp/collapse1.f90: Adjust expected errors.
+	* gfortran.dg/gomp/collapse2.f90: Likewise.
+	* gfortran.dg/gomp/imperfect1.f90: New.
+	* gfortran.dg/gomp/imperfect2.f90: New.
+	* gfortran.dg/gomp/imperfect3.f90: New.
+	* gfortran.dg/gomp/imperfect4.f90: New.
+	* gfortran.dg/gomp/imperfect5.f90: New.
+	* gfortran.dg/gomp/loop-transforms/tile-1.f90: Adjust expected errors.
+	* gfortran.dg/gomp/loop-transforms/tile-2.f90: Likewise.
+	* gfortran.dg/gomp/loop-transforms/tile-imperfect-nest.f90: Likewise.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* gfortran.dg/gomp/collapse1.f90: Adjust expected error message.
 	* gfortran.dg/gomp/collapse2.f90: Likewise.
 	* gfortran.dg/gomp/loop-transforms/tile-2.f90: Likewise.

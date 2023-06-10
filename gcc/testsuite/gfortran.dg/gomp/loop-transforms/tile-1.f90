@@ -117,29 +117,29 @@ subroutine test
   end do
   !$end omp tile
 
-  !$omp tile sizes(1,2,1)
+  !$omp tile sizes(1,2,1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
   do i = 1,100
      do j = 1,100
         do k = 1,100
            call dummy(i)
         end do
      end do
-     call dummy(i) ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} }
+     call dummy(i)
   end do
   !$end omp tile
 
-  !$omp tile sizes(1,2,1)
+  !$omp tile sizes(1,2,1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
   do i = 1,100
      do j = 1,100
         do k = 1,100
            call dummy(i)
         end do
-        call dummy(j) ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} }
+        call dummy(j)
      end do
   end do
   !$end omp tile
 
-  !$omp tile sizes(1,2,1) ! { dg-error {not enough DO loops for \!\$OMP TILE at \(1\)} }
+  !$omp tile sizes(1,2,1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
   do i = 1,100
      call dummy(i)
      do j = 1,100
@@ -150,7 +150,7 @@ subroutine test
   end do
   !$end omp tile
 
-  !$omp tile sizes(1,2,1) ! { dg-error {not enough DO loops for \!\$OMP TILE at \(1\)} }
+  !$omp tile sizes(1,2,1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
   do i = 1,100
      do j = 1,100
         call dummy(j)

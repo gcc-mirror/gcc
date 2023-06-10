@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-memory.h"  /* For gfc_encode_character.  */
 #include "bitmap.h"
 #include "options.h"
+#include "omp-api.h"  /* For omp_runtime_api_procname.  */
 
 
 static gfc_statement omp_code_to_statement (gfc_code *);
@@ -8183,15 +8184,24 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
 		     &n->where);
       }
-  if (omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]
-      && code->op != EXEC_OMP_DO
-      && code->op != EXEC_OMP_SIMD
-      && code->op != EXEC_OMP_DO_SIMD
-      && code->op != EXEC_OMP_PARALLEL_DO
-      && code->op != EXEC_OMP_PARALLEL_DO_SIMD)
-    gfc_error ("%<inscan%> REDUCTION clause on construct other than DO, SIMD, "
-	       "DO SIMD, PARALLEL DO, PARALLEL DO SIMD at %L",
-	       &omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where);
+  if (omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
+    {
+      locus *loc = &omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where;
+      if (code->op != EXEC_OMP_DO
+	  && code->op != EXEC_OMP_SIMD
+	  && code->op != EXEC_OMP_DO_SIMD
+	  && code->op != EXEC_OMP_PARALLEL_DO
+	  && code->op != EXEC_OMP_PARALLEL_DO_SIMD)
+	gfc_error ("%<inscan%> REDUCTION clause on construct other than DO, "
+		   "SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD at %L",
+		   loc);
+      if (omp_clauses->ordered)
+	gfc_error ("ORDERED clause specified together with %<inscan%> "
+		   "REDUCTION clause at %L", loc);
+      if (omp_clauses->sched_kind != OMP_SCHED_NONE)
+	gfc_error ("SCHEDULE clause specified together with %<inscan%> "
+		   "REDUCTION clause at %L", loc);
+    }
 
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE
@@ -10091,68 +10101,130 @@ find_nested_loop_in_block (gfc_code *block)
   return find_nested_loop_in_chain (ns->code);
 }
 
+/* Forward declaration for mutually recursive functions.  */
+static gfc_code *
+scan_for_next_loop_in_block (gfc_code *block, gfc_code **imperfectp);
+
+/* Like find_nested_loop_in_chain, but also stop when a loop transform is
+   found and check for intervening code too.  Return the first nested
+   DO loop or loop transform in CHAIN, and set *IMPERFECTP to the first
+   intervening code statement if one is found.  */
+static gfc_code *
+scan_for_next_loop_in_chain (gfc_code *chain, gfc_code **imperfectp)
+{
+  gfc_code *code;
+  gfc_code *result = NULL;
+
+  if (!chain)
+    return NULL;
+
+  for (code = chain; code; code = code->next)
+    {
+      /* DO WHILE and DO CONCURRENT are errors, but we need to catch them
+	 here to ensure the right error is diagnosed elsewhere.  */
+      if (!result
+	  && (code->op == EXEC_DO
+	      || code->op == EXEC_DO_WHILE
+	      || code->op == EXEC_DO_CONCURRENT
+	      || loop_transform_p (code->op)))
+	result = code;
+      else if (!result && code->op == EXEC_BLOCK)
+	{
+	  result = scan_for_next_loop_in_block (code, imperfectp);
+	  /* If no loop in the block, the block itself is intervening code.  */
+	  if (!result && !*imperfectp)
+	    *imperfectp = code;
+	}
+      else if (code->op == EXEC_NOP || code->op == EXEC_CONTINUE)
+	continue;
+      else if (!*imperfectp)
+	*imperfectp = code;
+      if (result && *imperfectp)
+	break;
+    }
+  return result;
+}
+
+/* Like find_nested_loop_in_block, but also checks for intervening code.
+   Return the first nested DO loop in BLOCK, or NULL if there
+   isn't one.  Sets *IMPERFECTP to the first piece of intervening code.  */
+static gfc_code *
+scan_for_next_loop_in_block (gfc_code *block, gfc_code **imperfectp)
+{
+  gfc_namespace *ns;
+  gcc_assert (block->op == EXEC_BLOCK);
+  ns = block->ext.block.ns;
+  gcc_assert (ns);
+  return scan_for_next_loop_in_chain (ns->code, imperfectp);
+}
+
 void
 gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 {
   if (code->block->next && code->block->next->op == EXEC_DO)
     {
       int i;
-      gfc_code *c;
 
       omp_current_do_code = code->block->next;
       if (code->ext.omp_clauses->orderedc)
 	omp_current_do_collapse = code->ext.omp_clauses->orderedc;
-      else
+      else if (code->ext.omp_clauses->collapse)
 	omp_current_do_collapse = code->ext.omp_clauses->collapse;
-      for (i = 1, c = omp_current_do_code; i < omp_current_do_collapse; i++)
-	{
-	  c = c->block;
-	  if (c->op != EXEC_DO || c->next == NULL)
-	    break;
-	  c = c->next;
-	  if (c->op != EXEC_DO)
-	    break;
-	}
-      if (i < omp_current_do_collapse || omp_current_do_collapse <= 0)
+      else
 	omp_current_do_collapse = 1;
       if (code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
 	{
+	  /* Checking that there is a matching EXEC_OMP_SCAN in the
+	     innermost body cannot be deferred to resolve_omp_do because
+	     we process directives nested in the loop before we get
+	     there.  */
 	  locus *loc
 	    = &code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where;
-	  if (code->ext.omp_clauses->ordered)
-	    gfc_error ("ORDERED clause specified together with %<inscan%> "
-		       "REDUCTION clause at %L", loc);
-	  if (code->ext.omp_clauses->sched_kind != OMP_SCHED_NONE)
-	    gfc_error ("SCHEDULE clause specified together with %<inscan%> "
-		       "REDUCTION clause at %L", loc);
-	  gfc_code *block = c->block ? c->block->next : NULL;
-	  if (block && block->op != EXEC_OMP_SCAN)
-	    while (block && block->next && block->next->op != EXEC_OMP_SCAN)
-	      block = block->next;
-	  if (!block
-	      || (block->op != EXEC_OMP_SCAN
-		  && (!block->next || block->next->op != EXEC_OMP_SCAN)))
-	    gfc_error ("With INSCAN at %L, expected loop body with !$OMP SCAN "
-		       "between two structured block sequences", loc);
-	  else
+	  gfc_code *c;
+
+	  for (i = 1, c = omp_current_do_code;
+	       i < omp_current_do_collapse; i++)
 	    {
-	      if (block->op == EXEC_OMP_SCAN)
-		gfc_warning (0, "!$OMP SCAN at %L with zero executable "
-				"statements in preceding structured block "
-				"sequence", &block->loc);
-	      if ((block->op == EXEC_OMP_SCAN && !block->next)
-		  || (block->next && block->next->op == EXEC_OMP_SCAN
-		      && !block->next->next))
-		gfc_warning (0, "!$OMP SCAN at %L with zero executable "
-				"statements in succeeding structured block "
-				"sequence", block->op == EXEC_OMP_SCAN
-					    ? &block->loc : &block->next->loc);
+	      c = find_nested_loop_in_chain (c->block->next);
+	      if (!c || c->op != EXEC_DO || c->block == NULL)
+		break;
 	    }
-	  if (block && block->op != EXEC_OMP_SCAN)
-	    block = block->next;
-	  if (block && block->op == EXEC_OMP_SCAN)
-	    /* Mark 'omp scan' as checked; flag will be unset later.  */
-	    block->ext.omp_clauses->if_present = true;
+
+	  /* Skip this if we don't have enough nested loops.  That
+	     problem will be diagnosed elsewhere.  */
+	  if (c && c->op == EXEC_DO)
+	    {
+	      gfc_code *block = c->block ? c->block->next : NULL;
+	      if (block && block->op != EXEC_OMP_SCAN)
+		while (block && block->next
+		       && block->next->op != EXEC_OMP_SCAN)
+		  block = block->next;
+	      if (!block
+		  || (block->op != EXEC_OMP_SCAN
+		      && (!block->next || block->next->op != EXEC_OMP_SCAN)))
+		gfc_error ("With INSCAN at %L, expected loop body with "
+			   "!$OMP SCAN between two "
+			   "structured block sequences", loc);
+	      else
+		{
+		  if (block->op == EXEC_OMP_SCAN)
+		    gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+				 "statements in preceding structured block "
+				 "sequence", &block->loc);
+		  if ((block->op == EXEC_OMP_SCAN && !block->next)
+		      || (block->next && block->next->op == EXEC_OMP_SCAN
+			  && !block->next->next))
+		    gfc_warning (0, "!$OMP SCAN at %L with zero executable "
+				 "statements in succeeding structured block "
+				 "sequence", block->op == EXEC_OMP_SCAN
+				 ? &block->loc : &block->next->loc);
+		}
+	      if (block && block->op != EXEC_OMP_SCAN)
+		block = block->next;
+	      if (block && block->op == EXEC_OMP_SCAN)
+		/* Mark 'omp scan' as checked; flag will be unset later.  */
+		block->ext.omp_clauses->if_present = true;
+	    }
 	}
     }
   gfc_resolve_blocks (code->block, ns);
@@ -10282,13 +10354,12 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
      private just in the !$omp do resp. !$omp parallel do construct,
      with no implications for the outer parallel constructs.  */
 
-  while (i-- >= 1)
+  while (i-- >= 1 && c)
     {
       if (code == c)
 	return;
-
-      c = c->block->next;
-    }
+      c = find_nested_loop_in_chain (c->block->next);
+   }
 
   /* An openacc context may represent a data clause.  Abort if so.  */
   if (!omp_current_ctx->is_openmp && !oacc_is_loop (omp_current_ctx->code))
@@ -10327,6 +10398,328 @@ gfc_resolve_omp_local_vars (gfc_namespace *ns)
     gfc_traverse_ns (ns, handle_local_var);
 }
 
+/* Error checking on intervening code uses a code walker.  */
+
+struct icode_error_state
+{
+  const char *name;
+  bool errorp;
+  gfc_code *nested;
+  gfc_code *next;
+};
+
+static int
+icode_code_error_callback (gfc_code **codep,
+			   int *walk_subtrees ATTRIBUTE_UNUSED, void *opaque)
+{
+  gfc_code *code = *codep;
+  icode_error_state *state = (icode_error_state *)opaque;
+
+  /* gfc_code_walker walks down CODE's next chain as well as
+     walking things that are actually nested in CODE.  We need to
+     special-case traversal of outer blocks, so stop immediately if we
+     are heading down such a next chain.  */
+  if (code == state->next)
+    return 1;
+
+  switch (code->op)
+    {
+    case EXEC_DO:
+    case EXEC_DO_WHILE:
+    case EXEC_DO_CONCURRENT:
+      gfc_error ("%s cannot contain loop in intervening code at %L",
+		 state->name, &code->loc);
+      state->errorp = true;
+      break;
+    case EXEC_CYCLE:
+    case EXEC_EXIT:
+      /* Errors have already been diagnosed in match_exit_cycle.  */
+      state->errorp = true;
+      break;
+    case EXEC_OMP_CRITICAL:
+    case EXEC_OMP_DO:
+    case EXEC_OMP_FLUSH:
+    case EXEC_OMP_MASTER:
+    case EXEC_OMP_ORDERED:
+    case EXEC_OMP_PARALLEL:
+    case EXEC_OMP_PARALLEL_DO:
+    case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SECTIONS:
+    case EXEC_OMP_SINGLE:
+    case EXEC_OMP_WORKSHARE:
+    case EXEC_OMP_ATOMIC:
+    case EXEC_OMP_BARRIER:
+    case EXEC_OMP_END_NOWAIT:
+    case EXEC_OMP_END_SINGLE:
+    case EXEC_OMP_TASK:
+    case EXEC_OMP_TASKWAIT:
+    case EXEC_OMP_TASKYIELD:
+    case EXEC_OMP_CANCEL:
+    case EXEC_OMP_CANCELLATION_POINT:
+    case EXEC_OMP_TASKGROUP:
+    case EXEC_OMP_SIMD:
+    case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET:
+    case EXEC_OMP_TARGET_DATA:
+    case EXEC_OMP_TEAMS:
+    case EXEC_OMP_DISTRIBUTE:
+    case EXEC_OMP_DISTRIBUTE_SIMD:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_TEAMS:
+    case EXEC_OMP_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_UPDATE:
+    case EXEC_OMP_END_CRITICAL:
+    case EXEC_OMP_TARGET_ENTER_DATA:
+    case EXEC_OMP_TARGET_EXIT_DATA:
+    case EXEC_OMP_TARGET_PARALLEL:
+    case EXEC_OMP_TARGET_PARALLEL_DO:
+    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_SIMD:
+    case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TASKLOOP_SIMD:
+    case EXEC_OMP_SCAN:
+    case EXEC_OMP_DEPOBJ:
+    case EXEC_OMP_PARALLEL_MASTER:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_MASTER_TASKLOOP:
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_LOOP:
+    case EXEC_OMP_PARALLEL_LOOP:
+    case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
+    case EXEC_OMP_MASKED:
+    case EXEC_OMP_PARALLEL_MASKED:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+    case EXEC_OMP_MASKED_TASKLOOP:
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+    case EXEC_OMP_SCOPE:
+    case EXEC_OMP_ERROR:
+      gfc_error ("%s cannot contain OpenMP directive in intervening code "
+		 "at %L",
+		 state->name, &code->loc);
+      state->errorp = true;
+      break;
+    case EXEC_CALL:
+      /* Per OpenMP 5.2, the "omp_" prefix is reserved, so we don't have to
+	 consider the possibility that some locally-bound definition
+	 overrides the runtime routine.  */
+      if (code->resolved_sym
+	  && omp_runtime_api_procname (code->resolved_sym->name))
+	{
+	  gfc_error ("%s cannot contain OpenMP API call in intervening code "
+		     "at %L",
+		 state->name, &code->loc);
+	  state->errorp = true;
+	}
+      break;
+    default:
+      break;
+    }
+  return 0;
+}
+
+static int
+icode_expr_error_callback (gfc_expr **expr,
+			   int *walk_subtrees ATTRIBUTE_UNUSED, void *opaque)
+{
+  icode_error_state *state = (icode_error_state *)opaque;
+
+  switch ((*expr)->expr_type)
+    {
+      /* As for EXPR_CALL with "omp_"-prefixed symbols.  */
+    case EXPR_FUNCTION:
+      {
+	gfc_symbol *sym = (*expr)->value.function.esym;
+	if (sym && omp_runtime_api_procname (sym->name))
+	  {
+	    gfc_error ("%s cannot contain OpenMP API call in intervening code "
+		       "at %L",
+		       state->name, &((*expr)->where));
+	    state->errorp = true;
+	  }
+	}
+
+      break;
+    default:
+      break;
+    }
+
+  /* FIXME: The description of canonical loop form in the OpenMP standard
+     also says "array expressions" are not permitted in intervening code.
+     That term is not defined in either the OpenMP spec or the Fortran
+     standard, although the latter uses it informally to refer to any
+     expression that is not scalar-valued.  It is also apparently not the
+     thing GCC internally calls EXPR_ARRAY.  It seems the intent of the
+     OpenMP restriction is to disallow elemental operations/intrinsics
+     (including things that are not expressions, like assignment
+     statements) that generate implicit loops over array operands
+     (even if the result is a scalar), but even if the spec said
+     that there is no list of all the cases that would be forbidden.
+     This is OpenMP issue 3326.  */
+
+  return 0;
+}
+
+static void
+diagnose_intervening_code_errors_1 (gfc_code *chain,
+				    struct icode_error_state *state)
+{
+  gfc_code *code;
+  for (code = chain; code; code = code->next)
+    {
+      if (code == state->nested)
+	/* Do not walk the nested loop or its body, we are only
+	   interested in intervening code.  */
+	;
+      else if (code->op == EXEC_BLOCK
+	       && find_nested_loop_in_block (code) == state->nested)
+	/* This block contains the nested loop, recurse on its
+	   statements.  */
+	{
+	  gfc_namespace* ns = code->ext.block.ns;
+	  diagnose_intervening_code_errors_1 (ns->code, state);
+	}
+      else
+	/* Treat the whole statement as a unit.  */
+	{
+	  gfc_code *temp = state->next;
+	  state->next = code->next;
+	  gfc_code_walker (&code, icode_code_error_callback,
+			   icode_expr_error_callback, state);
+	  state->next = temp;
+	}
+    }
+}
+
+/* Diagnose intervening code errors in BLOCK with nested loop NESTED.
+   NAME is the user-friendly name of the OMP directive, used for error
+   messages.  Returns true if any error was found.  */
+static bool
+diagnose_intervening_code_errors (gfc_code *chain, const char *name,
+				  gfc_code *nested)
+{
+  struct icode_error_state state;
+  state.name = name;
+  state.errorp = false;
+  state.nested = nested;
+  state.next = NULL;
+  diagnose_intervening_code_errors_1 (chain, &state);
+  return state.errorp;
+}
+
+/* Push intervening code surrounding a loop, including nested scopes,
+   into the body of the loop.  CHAINP is the pointer to the head of
+   the next-chain to scan, OUTER_LOOP is the EXEC_DO for the next outer
+   loop level, and COLLAPSE is the number of nested loops we need to
+   process.
+   Note that CHAINP may point at outer_loop->block->next when we
+   are scanning the body of a loop, but if there is an intervening block
+   CHAINP points into the block's chain rather than its enclosing outer
+   loop.  This is why OUTER_LOOP is passed separately.  */
+static gfc_code *
+restructure_intervening_code (gfc_code **chainp, gfc_code *outer_loop,
+			      int count)
+{
+  gfc_code *code;
+  gfc_code *head = *chainp;
+  gfc_code *tail = NULL;
+  gfc_code *innermost_loop = NULL;
+
+  for (code = *chainp; code; code = code->next, chainp = &((*chainp)->next))
+    {
+      if (code->op == EXEC_DO || loop_transform_p (code->op))
+	{
+	  gfc_code *c = code;
+
+	  /* Treat a series of loop transforms as a unit, same as a single
+	     EXEC_DO.  CODE is the first and C is the last in the chain.  */
+	  while (loop_transform_p (c->op) && !c->block)
+	    c = c->next;
+
+	  gcc_assert (c);
+	  gcc_assert (c->op == EXEC_DO
+		      || (loop_transform_p (c->op) && c->block));
+
+	  /* Cut the transforms and the loop they apply to free from the
+	     chain, leaving the ends dangling.  */
+	  *chainp = NULL;
+	  tail = c->next;
+	  c->next = NULL;
+
+	  if (count == 1 && c->op == EXEC_DO)
+	    innermost_loop = c;
+	  else
+	    innermost_loop
+	      = restructure_intervening_code (&(c->block->next), c,
+					      (loop_transform_p (c->op)
+					       ? count : count - 1));
+	  break;
+	}
+      else if (code->op == EXEC_BLOCK
+	       && find_nested_loop_in_block (code))
+	{
+	  gfc_namespace *ns = code->ext.block.ns;
+
+	  /* Cut CODE free from its chain, leaving the ends dangling.  */
+	  *chainp = NULL;
+	  tail = code->next;
+	  code->next = NULL;
+
+	  innermost_loop
+	    = restructure_intervening_code (&(ns->code), outer_loop,
+					    count);
+
+	  /* At this point we have already pulled out the nested loop and
+	     pointed outer_loop at it, and moved the intervening code that
+	     was previously in the block into the body of innermost_loop.
+	     Now we want to move the BLOCK itself so it wraps the entire
+	     current body of innermost_loop.  */
+	  ns->code = innermost_loop->block->next;
+	  innermost_loop->block->next = code;
+	  break;
+	}
+    }
+
+  gcc_assert (innermost_loop);
+
+  /* Now we have split the intervening code into two parts:
+     head is the start of the part before the loop/block, terminating
+     at *chainp, and tail is the part after it.  Splice the two parts
+     around the existing body of the innermost loop.  */
+  if (head != code)
+    {
+      if (innermost_loop->block->next)
+	gfc_append_code (head, innermost_loop->block->next);
+      innermost_loop->block->next = head;
+    }
+  if (tail)
+    {
+      if (innermost_loop->block->next)
+	gfc_append_code (innermost_loop->block->next, tail);
+      else
+	innermost_loop->block->next = tail;
+    }
+
+  /* For loops, finally splice CODE into OUTER_LOOP.  We already handled
+     relinking EXEC_BLOCK above.  */
+  if ((code->op == EXEC_DO || loop_transform_p (code->op)) && outer_loop)
+    outer_loop->block->next = code;
+
+  return innermost_loop;
+}
 
 /* CODE is an OMP loop construct.  Return true if VAR matches an iteration
    variable outer to level DEPTH.  */
@@ -10556,29 +10949,36 @@ static void
 resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 		      int num_loops, bool is_simd, bool is_tile)
 {
+  bool errorp = false;
+  bool perfect_nesting_errorp = false;
+  bool is_nested_tile = false;
+  bool any_imperfect = false;
+
   for (int i = 1; i <= num_loops; i++)
     {
       gfc_symbol *dovar;
       gfc_symbol *start_var = NULL, *end_var = NULL;
-      gfc_code *c;
+      gfc_code *imperfect = NULL;
+      gfc_code *next;
 
+      /* Parse errors are not recoverable.  */
       if (do_code->op == EXEC_DO_WHILE)
 	{
 	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
 		     "at %L", name, &do_code->loc);
-	  break;
+	  return;
 	}
       if (do_code->op == EXEC_DO_CONCURRENT)
 	{
 	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
 		     &do_code->loc);
-	  break;
+	  return;
 	}
       if (do_code->op != EXEC_DO)
 	{
 	  gfc_error ("%s must be DO loop at %L", name,
 		     &do_code->loc);
-	  break;
+	  return;
 	}
       dovar = do_code->ext.iterator->var->symtree->n.sym;
       if (!is_tile)
@@ -10587,11 +10987,17 @@ resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 	  gfc_omp_namelist *n;
 
 	  if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
-	    gfc_error ("%s iteration variable must be of type integer at %L",
-		       name, &do_code->loc);
+	    {
+	      gfc_error ("%s iteration variable must be of type integer at %L",
+			 name, &do_code->loc);
+	      errorp = true;
+	    }
 	  if (dovar->attr.threadprivate)
-	    gfc_error ("%s iteration variable must not be THREADPRIVATE "
-		       "at %L", name, &do_code->loc);
+	    {
+	      gfc_error ("%s iteration variable must not be THREADPRIVATE "
+			 "at %L", name, &do_code->loc);
+	      errorp = true;
+	    }
 	  if (code->ext.omp_clauses)
 	    for (list = 0; list < OMP_LIST_NUM; list++)
 	      if (!is_simd || code->ext.omp_clauses->collapse > 1
@@ -10611,7 +11017,7 @@ resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 				   "other than PRIVATE, LASTPRIVATE, "
 				   "ALLOCATE or LINEAR at %L",
 				   name, &do_code->loc);
-		      break;
+		      errorp = true;
 		    }
 	}
       if (is_outer_iteration_variable (code, i, dovar))
@@ -10619,7 +11025,7 @@ resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 	  gfc_error ("%s iteration variable used in more than one loop at %L "
 		     "(depth %d)",
 		     name, &do_code->loc, i);
-	  break;
+	  errorp = true;
 	}
       else if (!bound_expr_is_canonical (code, i,
 					 do_code->ext.iterator->start,
@@ -10627,7 +11033,7 @@ resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 	{
 	  gfc_error ("%s loop start expression not in canonical form at %L",
 		     name, &do_code->loc);
-	  break;
+	  errorp = true;
 	}
       else if (!bound_expr_is_canonical (code, i,
 					 do_code->ext.iterator->end,
@@ -10635,53 +11041,125 @@ resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
 	{
 	  gfc_error ("%s loop end expression not in canonical form at %L",
 		     name, &do_code->loc);
-	  break;
+	  errorp = true;
 	}
       else if (start_var && end_var && start_var != end_var)
 	{
 	  gfc_error ("%s loop bounds reference different "
 		     "iteration variables at %L", name, &do_code->loc);
-	  break;
+	  errorp = true;
 	}
       else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
 	{
 	  gfc_error ("%s loop increment not in canonical form at %L",
 		     name, &do_code->loc);
-	  break;
+	  errorp = true;
 	}
       if (start_var || end_var)
 	code->ext.omp_clauses->non_rectangular = 1;
 
-      for (c = do_code->next; c; c = c->next)
-	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
-	  {
-	    gfc_error ("%s loops not perfectly nested at %L",
-		       name, &c->loc);
-	    break;
-	  }
-      if (i == num_loops || c)
+      if (i == num_loops)
 	break;
-      do_code = do_code->block->next;
 
-      if (do_code)
-	do_code = resolve_nested_loop_transforms (do_code, name,
-						  num_loops - i,
-						  &code->loc);
-      if (!do_code
-	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
+      next = scan_for_next_loop_in_chain (do_code->block->next, &imperfect);
+      if (!next)
+	{
+	  /* Parse error, can't recover from this.  */
+	  gfc_error ("not enough DO loops for %s at %L",
+		     name, &code->loc);
+	  return;
+	}
+
+      /* Only diagnose violation of imperfect nesting constraints once.  */
+      if (!perfect_nesting_errorp && imperfect)
+	{
+	  if (code->ext.omp_clauses->orderedc)
+	    {
+	      gfc_error ("%s inner loops must be perfectly nested with "
+			 "ORDERED clause at %L",
+			 name, &code->loc);
+	      perfect_nesting_errorp = true;
+	    }
+	  else if (code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
+	    {
+	      gfc_error ("%s inner loops must be perfectly nested with "
+			 "REDUCTION INSCAN clause at %L",
+			 name, &code->loc);
+	      perfect_nesting_errorp = true;
+	    }
+	  else if (is_tile)
+	    {
+	      gfc_error ("%s inner loops must be perfectly nested at %L",
+			 name, &code->loc);
+	      perfect_nesting_errorp = true;
+	    }
+	  else if (is_nested_tile)
+	    {
+	      gfc_error ("%s inner loops must be perfectly nested with "
+			 "nested !$OMP TILE at %L",
+			 name, &code->loc);
+	      perfect_nesting_errorp = true;
+	    }
+	  if (perfect_nesting_errorp)
+	    errorp = true;
+	}
+
+      /* Check constraints on intervening code, if we have some.  */
+      if (imperfect)
+	{
+	  any_imperfect = true;
+	  if (diagnose_intervening_code_errors (do_code->block->next,
+						name, next))
+	    errorp = true;
+	}
+
+      /* Check for presence of nested TILE directive, used for next level
+	 of the imperfect loop error checking above.  Then resolve all the
+	 transforms at this level.  */
+      if (!is_tile && !is_nested_tile && !perfect_nesting_errorp)
+	for (gfc_code *c = next; c && loop_transform_p (c->op); )
+	  {
+	    if (c->op == EXEC_OMP_TILE)
+	      {
+		is_nested_tile = true;
+		break;
+	      }
+	    if (c->block)
+	      c = c->block->next;
+	    else
+	      c = c->next;
+	  }
+      next = resolve_nested_loop_transforms (next, name, num_loops - i,
+					     &code->loc);
+      if (!next)
 	{
 	  gfc_error ("not enough DO loops for %s at %L",
 		     name, &code->loc);
-	  break;
+	  return;
 	}
+
+      do_code = next;
     }
+
+  /* Give up now if we found any constraint violations.  */
+  if (errorp)
+    return;
+
+  /* Only restructure intervening code if we found some.  Note that
+     restructure_intervening_code assumes CODE is a DO loop instead of a
+     top-level TILE directive, which should have been rejected already if
+     if contains intervening code.  */
+  if (is_tile)
+    gcc_assert (!any_imperfect);
+  if (any_imperfect)
+    restructure_intervening_code (&(code->block->next), code, num_loops);
 }
 
 static void
 resolve_omp_do (gfc_code *code)
 {
   gfc_code *do_code;
-  int collapse;
+  int count;
   const char *name;
   bool is_simd = false;
 
@@ -10787,15 +11265,15 @@ resolve_omp_do (gfc_code *code)
     resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
 
   if (code->ext.omp_clauses->orderedc)
-    collapse = code->ext.omp_clauses->orderedc;
+    count = code->ext.omp_clauses->orderedc;
   else
     {
-      collapse = code->ext.omp_clauses->collapse;
-      if (collapse <= 0)
-	collapse = 1;
+      count = code->ext.omp_clauses->collapse;
+      if (count <= 0)
+	count = 1;
     }
 
-  do_code = resolve_nested_loop_transforms (code->block->next, name, collapse,
+  do_code = resolve_nested_loop_transforms (code->block->next, name, count,
 					    &code->loc);
 
   /* While the spec defines the loop nest depth independently of the COLLAPSE
@@ -10803,7 +11281,7 @@ resolve_omp_do (gfc_code *code)
      depth and treats any further inner loops as the final-loop-body.  So
      here we also check canonical loop nest form only for the number of
      outer loops specified by the COLLAPSE clause too.  */
-  resolve_nested_loops (code, name, do_code, collapse, is_simd, false);
+  resolve_nested_loops (code, name, do_code, count, is_simd, false);
 }
 
 static void

@@ -1,5 +1,28 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* openmp.cc: Include omp-api.h.
+	(resolve_omp_clauses): Consolidate inscan reduction clause conflict
+	checking here.
+	(scan_for_next_loop_in_chain): New.
+	(scan_for_next_loop_in_block): New.
+	(gfc_resolve_omp_do_blocks): Set omp_current_do_collapse properly.
+	Handle imperfectly-nested loops when looking for nested omp scan.
+	Refactor to move inscan reduction clause conflict checking to
+	resolve_omp_clauses.
+	(gfc_resolve_do_iterator): Handle imperfectly-nested loops.
+	(struct icode_error_state): New.
+	(icode_code_error_callback): New.
+	(icode_expr_error_callback): New.
+	(diagnose_intervening_code_errors_1): New.
+	(diagnose_intervening_code_errors): New.
+	(restructure_intervening_code): New.
+	(resolve_nested_loops): Update error handling, and extend to
+	detect imperfect nesting errors and check validity of
+	intervening code.  Call restructure_intervening_code if needed.
+	(resolve_omp_do): Rename collapse -> count.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* openmp.cc (find_nested_loop_in_chain): Move up in file.
 	(find_nested_loop_in_block): Likewise.
 	(resolve_nested_loops): New helper function to consolidate code

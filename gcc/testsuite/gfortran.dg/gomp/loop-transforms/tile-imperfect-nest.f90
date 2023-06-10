@@ -21,7 +21,7 @@ subroutine test0m
     integer :: i, j, k, inner
     !$omp parallel do collapse(2) private(inner)
     do i = 1,m
-       !$omp tile sizes (8, 1)
+       !$omp tile sizes (8, 1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
        do j = 1,n
           do k = 1, n
              if (k == 1) then
@@ -29,7 +29,7 @@ subroutine test0m
              endif
              inner = inner + a(k, i) * b(j, k)
           end do
-          c(j, i) = inner ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} }
+          c(j, i) = inner
        end do
     end do
 end subroutine test0m
@@ -40,7 +40,7 @@ subroutine test1
     !$omp parallel do collapse(2) private(inner)
     !$omp tile sizes (8, 1)
     do i = 1,m
-       !$omp tile sizes (8, 1)
+       !$omp tile sizes (8, 1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
        do j = 1,n
           !$omp unroll partial(10)
           do k = 1, n
@@ -49,7 +49,7 @@ subroutine test1
              endif
              inner = inner + a(k, i) * b(j, k)
           end do
-          c(j, i) = inner ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} "TODO Fix with upcoming imperfect loop nest handling" { xfail *-*-* } }
+          c(j, i) = inner
        end do
     end do
 end subroutine test1
@@ -61,7 +61,7 @@ subroutine test2
     !$omp parallel do collapse(2) private(inner)
     !$omp tile sizes (8, 1)
     do i = 1,m
-       !$omp tile sizes (8, 1)
+       !$omp tile sizes (8, 1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
        do j = 1,n
           do k = 1, n
              if (k == 1) then
@@ -69,7 +69,7 @@ subroutine test2
              endif
              inner = inner + a(k, i) * b(j, k)
           end do
-          c(j, i) = inner ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} }
+          c(j, i) = inner
        end do
     end do
 end subroutine test2
@@ -79,7 +79,7 @@ subroutine test3
     integer :: i, j, k, inner
     !$omp parallel do collapse(2) private(inner)
     do i = 1,m
-       !$omp tile sizes (8, 1)
+       !$omp tile sizes (8, 1) ! { dg-error {\!\$OMP TILE inner loops must be perfectly nested at \(1\)} }
        do j = 1,n
           do k = 1, n
              if (k == 1) then
@@ -87,7 +87,7 @@ subroutine test3
              endif
              inner = inner + a(k, i) * b(j, k)
           end do
-          c(j, i) = inner ! { dg-error {\!\$OMP TILE loops not perfectly nested at \(1\)} }
+          c(j, i) = inner
        end do
     end do
 end subroutine test3
