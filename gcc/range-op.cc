@@ -116,9 +116,12 @@ unified_table::unified_table ()
   set (BIT_XOR_EXPR, op_bitwise_xor);
 
   // These are in both integer and pointer tables, but pointer has a different
-  // implementation.  These also remain in the pointer table until a pointer
-  // speifc version is provided.
-  set (BIT_AND_EXPR, op_bitwise_and);
+  // implementation.
+  // If commented out, there is a hybrid version in range-op-ptr.cc which
+  // is used until there is a pointer range class.  Then we can simply
+  // uncomment the operator here and use the unified version.
+
+  //set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);

@@ -270,11 +270,70 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
 
 pointer_table::pointer_table ()
 {
-  set (BIT_AND_EXPR, op_pointer_and);
   set (BIT_IOR_EXPR, op_pointer_or);
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
 }
+
+// ----------------------------------------------------------------------
+// Hybrid operators for the 4 operations which integer and pointers share,
+// but which have different implementations.  Simply check the type in
+// the call and choose the appropriate method.
+// Once there is a PRANGE signature, simply add the appropriate
+// prototypes in the rmixed range class, and remove these hybrid classes.
+
+class hybrid_and_operator : public operator_bitwise_and
+{
+public:
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override
+    {
+      if (INTEGRAL_TYPE_P (type))
+	return operator_bitwise_and::op1_range (r, type, lhs, op2, rel);
+      else
+	return false;
+    }
+  bool op2_range (irange &r, tree type,
+		  const irange &lhs, const irange &op1,
+		  relation_trio rel = TRIO_VARYING) const final override
+    {
+      if (INTEGRAL_TYPE_P (type))
+	return operator_bitwise_and::op2_range (r, type, lhs, op1, rel);
+      else
+	return false;
+    }
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind rel) const final override
+    {
+      if (!lhs.undefined_p () && INTEGRAL_TYPE_P (lhs.type ()))
+	return operator_bitwise_and::lhs_op1_relation (lhs, op1, op2, rel);
+      else
+	return VREL_VARYING;
+    }
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override
+    {
+      if (!r.undefined_p () && INTEGRAL_TYPE_P (r.type ()))
+	operator_bitwise_and::update_bitmask (r, lh, rh);
+    }
+
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override
+    {
+      if (INTEGRAL_TYPE_P (type))
+	return operator_bitwise_and::wi_fold (r, type, lh_lb, lh_ub,
+					      rh_lb, rh_ub);
+      else
+	return op_pointer_and.wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+    }
+} op_hybrid_and;
+
 
 // Initialize any pointer operators to the primary table
 
@@ -283,4 +342,5 @@ range_op_table::initialize_pointer_ops ()
 {
   set (POINTER_PLUS_EXPR, op_pointer_plus);
   set (POINTER_DIFF_EXPR, op_pointer_diff);
+  set (BIT_AND_EXPR, op_hybrid_and);
 }
