@@ -1,3 +1,29 @@
+2023-06-09  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2023-06-06  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/106907
+	* config/rs6000/rs6000.cc (vec_const_128bit_to_bytes): Remove
+	duplicate expression.
+
+2023-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110044
+	* config/rs6000/rs6000.cc (darwin_rs6000_special_round_type_align):
+	Make sure that we do not have a cap on field alignment before altering
+	the struct layout based on the type alignment of the first entry.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110108
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Explicitly
+	view_convert_expr mask to signed type when folding pblendvb
+	builtins.
+
 2023-06-08  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
