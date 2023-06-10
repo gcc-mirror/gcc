@@ -1588,6 +1588,7 @@ OBJS = \
 	range.o \
 	range-op.o \
 	range-op-float.o \
+	range-op-ptr.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \

@@ -22,6 +22,31 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_MIXED_H
 #define GCC_RANGE_OP_MIXED_H
 
+void update_known_bitmask (irange &, tree_code, const irange &, const irange &);
+bool minus_op1_op2_relation_effect (irange &lhs_range, tree type,
+				    const irange &, const irange &,
+				    relation_kind rel);
+
+
+// Return TRUE if 0 is within [WMIN, WMAX].
+
+inline bool
+wi_includes_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
+{
+  signop sign = TYPE_SIGN (type);
+  return wi::le_p (wmin, 0, sign) && wi::ge_p (wmax, 0, sign);
+}
+
+// Return TRUE if [WMIN, WMAX] is the singleton 0.
+
+inline bool
+wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
+{
+  unsigned prec = TYPE_PRECISION (type);
+  return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
+}
+
+
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 bool_range_state get_bool_state (vrange &r, const vrange &lhs, tree val_type);
 
