@@ -87,7 +87,8 @@ main(void)
 
 /* Check that default copy maps are generated for loop reductions.  */
 /* { dg-final { scan-tree-dump-times "reduction..:result. map.tofrom:result .len: 4.." 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "oacc_parallel map.tofrom:result .len: 4.." 2 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "map.tofrom:array .len: 4000.. firstprivate.result." 3 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "map.tofrom:result .len: 4.. map.tofrom:array .len: 4000.." 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "map.tofrom:array .len: 4000.. map.force_tofrom:result .len: 4.." 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times {oacc_parallel map\(tofrom:result \[len: 4\]\)} 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "oacc_parallel map.tofrom:result .len: 4..implicit.." 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map.tofrom:array .len: 4000..implicit.. firstprivate.result." 3 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map.tofrom:result .len: 4.. map.tofrom:array .len: 4000..implicit.." 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map.tofrom:array .len: 4000..implicit.. map.force_tofrom:result .len: 4..implicit.." 1 "gimple" } } */

@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_adjust_omp_clauses_1): Set
+	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P for OpenACC also.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_adjust_omp_clauses_1): Handle "oacc declare
 	create" attribute.
 

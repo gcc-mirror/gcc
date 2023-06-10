@@ -13413,10 +13413,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  gcc_unreachable ();
 	}
       OMP_CLAUSE_SET_MAP_KIND (clause, kind);
-      /* Setting of the implicit flag for the runtime is currently disabled for
-	 OpenACC.  */
-      if ((gimplify_omp_ctxp->region_type & ORT_ACC) == 0)
-	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause) = 1;
+      OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause) = 1;
       if (DECL_SIZE (decl)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{

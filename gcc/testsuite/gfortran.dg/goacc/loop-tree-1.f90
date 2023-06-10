@@ -44,4 +44,4 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "private\\(m\\)" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "reduction\\(\\+:sum\\)" 1 "original" } } 
-! { dg-final { scan-tree-dump-times "map\\(tofrom:sum \\\[len: \[0-9\]+\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(tofrom:sum \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\)" 1 "gimple" } }

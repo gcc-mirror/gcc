@@ -50,5 +50,5 @@ main(void)
 }
 
 /* Check that default copy maps are generated for loop reductions.  */
-/* { dg-final { scan-tree-dump-times "map\\(tofrom:result \\\[len: \[0-9\]+\\\]\\)" 4 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "map\\(tofrom:lresult \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(tofrom:result \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\)" 4 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(tofrom:lresult \\\[len: \[0-9\]+\\\]\\\[implicit\\\]\\)" 2 "gimple" } } */

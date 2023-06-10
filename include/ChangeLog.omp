@@ -1,3 +1,7 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_NONCONTIG_ARRAY_P): Tweak condition.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
