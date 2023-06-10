@@ -133,6 +133,21 @@
   (and (match_code "const_int")
        (match_test "ival == 7")))
 
+(define_constraint "C15"
+  "Constant integer 15."
+  (and (match_code "const_int")
+       (match_test "ival == 15")))
+
+(define_constraint "C23"
+  "Constant integer 23."
+  (and (match_code "const_int")
+       (match_test "ival == 23")))
+
+(define_constraint "C31"
+  "Constant integer 31."
+  (and (match_code "const_int")
+       (match_test "ival == 31")))
+
 (define_constraint "Ca1"
   "Constant 1-byte integer that allows AND by means of CLT + BLD."
   (and (match_code "const_int")
@@ -262,3 +277,8 @@
   "Fixed-point constant from @minus{}0x003f to 0x003f."
   (and (match_code "const_fixed")
        (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), -63, 63)")))
+
+(define_constraint "Yil"
+  "Memory in the lower half of the I/O space."
+  (and (match_code "mem")
+       (match_test "low_io_address_operand (XEXP (op, 0), Pmode)")))

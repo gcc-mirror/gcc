@@ -55,6 +55,16 @@
        (and (match_code "symbol_ref")
 	    (match_test "SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_IO_LOW"))))
 
+;; Return true if OP is a register_operand or low_io_operand.
+(define_predicate "reg_or_low_io_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "mem")
+            ; Deliberately only allow QImode no matter what the mode of
+            ; the operand is.  This effectively disallows and I/O that
+            ; is not QImode for that operand.
+            (match_test "GET_MODE (op) == QImode")
+            (match_test "low_io_address_operand (XEXP (op, 0), Pmode)"))))
+
 ;; Return true if OP is a valid address for high half of I/O space.
 (define_predicate "high_io_address_operand"
   (and (match_code "const_int")
@@ -91,11 +101,46 @@
   (and (match_code "const_int")
        (match_test "op == CONST1_RTX (mode)")))
 
+;; Return 1 if OP is the constant integer 7 for MODE.
+(define_predicate "const7_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL(op) == 7")))
+
+;; Return 1 if OP is the constant integer 15 for MODE.
+(define_predicate "const15_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL(op) == 15")))
+
+;; Return 1 if OP is the constant integer 23 for MODE.
+(define_predicate "const23_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL(op) == 23")))
+
+;; Return 1 if OP is the constant integer 31 for MODE.
+(define_predicate "const31_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL(op) == 31")))
+
 
 ;; Return 1 if OP is constant integer 0..7 for MODE.
 (define_predicate "const_0_to_7_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
+
+;; Return 1 if OP is constant integer 0..15 for MODE.
+(define_predicate "const_0_to_15_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+
+;; Return 1 if OP is constant integer 0..23 for MODE.
+(define_predicate "const_0_to_23_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 23)")))
+
+;; Return 1 if OP is constant integer 0..31 for MODE.
+(define_predicate "const_0_to_31_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
 
 ;; Return 1 if OP is constant integer 2..7 for MODE.
 (define_predicate "const_2_to_7_operand"

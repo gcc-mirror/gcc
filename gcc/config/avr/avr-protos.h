@@ -58,6 +58,8 @@ extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
+extern const char *avr_out_extr (rtx_insn *, rtx*, int*);
+extern const char *avr_out_extr_not (rtx_insn *, rtx*, int*);
 extern const char *avr_out_plus_set_ZN (rtx*, int*);
 extern const char *avr_out_cmp_ext (rtx*, enum rtx_code, int*);
 

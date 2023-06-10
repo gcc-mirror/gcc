@@ -7600,9 +7600,9 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int *len)
 
 	case 7:
 	  *len = 3;
-	  return ("rol %0" CR_TAB
-		  "clr %0" CR_TAB
-		  "rol %0");
+	  return ("bst %1,7" CR_TAB
+		  "clr %0"   CR_TAB
+		  "bld %0,0");
 	}
     }
   else if (CONSTANT_P (operands[2]))
@@ -7859,10 +7859,10 @@ lshrhi3_out (rtx_insn *insn, rtx operands[], int *len)
 
 	case 15:
 	  *len = 4;
-	  return ("clr %A0" CR_TAB
-		  "lsl %B0" CR_TAB
-		  "rol %A0" CR_TAB
-		  "clr %B0");
+	  return ("bst %B1,7" CR_TAB
+		  "clr %A0"   CR_TAB
+		  "clr %B0"   CR_TAB
+		  "bld %A0,0");
 	}
       len = t;
     }
@@ -7911,11 +7911,11 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int *plen)
           /* fall through */
 
         case 23:
-          return avr_asm_len ("clr %A0"    CR_TAB
-                              "sbrc %C0,7" CR_TAB
-                              "inc %A0"    CR_TAB
-                              "clr %B0"    CR_TAB
-                              "clr %C0", op, plen, 5);
+          return avr_asm_len ("bst %C1,7" CR_TAB
+                              "clr %A0"   CR_TAB
+                              "clr %B0"   CR_TAB
+                              "clr %C0"   CR_TAB
+                              "bld %A0,0", op, plen, 5);
         } /* switch */
     }
 
@@ -7998,13 +7998,19 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 			    "clr %D0");
 
 	case 31:
+	  if (AVR_HAVE_MOVW)
+	    return *len = 5, ("bst %D1,7"    CR_TAB
+			      "clr %A0"      CR_TAB
+			      "clr %B0"      CR_TAB
+			      "movw %C0,%A0" CR_TAB
+			      "bld %A0,0");
 	  *len = 6;
-	  return ("clr %A0"    CR_TAB
-		  "sbrc %D0,7" CR_TAB
-		  "inc %A0"    CR_TAB
-		  "clr %B0"    CR_TAB
-		  "clr %C0"    CR_TAB
-		  "clr %D0");
+	  return ("bst %D1,7" CR_TAB
+		  "clr %A0"   CR_TAB
+		  "clr %B0"   CR_TAB
+		  "clr %C0"   CR_TAB
+		  "clr %D0"   CR_TAB
+		  "bld %A0,0");
 	}
       len = t;
     }
@@ -9059,6 +9065,135 @@ avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
 }
 
 
+/* Output instructions to extract a bit to 8-bit register XOP[0].
+   The input XOP[1] is a register or an 8-bit MEM in the lower I/O range.
+   XOP[2] is the const_int bit position.  Return "".
+
+   PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
+   PLEN == 0: Output instructions.  */
+
+const char*
+avr_out_extr (rtx_insn *insn, rtx xop[], int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+
+  if (GET_MODE (src) != QImode)
+    {
+      src = xop[1] = simplify_gen_subreg (QImode, src, GET_MODE (src), bit / 8);
+      bit %= 8;
+      xop[2] = GEN_INT (bit);
+    }
+
+  if (MEM_P (src))
+    {
+      xop[1] = XEXP (src, 0); // address
+      gcc_assert (low_io_address_operand (xop[1], Pmode));
+
+      return avr_asm_len ("clr %0"      CR_TAB
+			  "sbic %i1,%2" CR_TAB
+			  "inc %0", xop, plen, -3);
+    }
+
+  gcc_assert (REG_P (src));
+
+  bool ld_dest_p = test_hard_reg_class (LD_REGS, dest);
+  bool ld_src_p = test_hard_reg_class (LD_REGS, src);
+
+  if (ld_dest_p
+      && REGNO (src) == REGNO (dest))
+    {
+      if (bit == 0)
+	return avr_asm_len ("andi %0,1", xop, plen, -1);
+      if (bit == 1)
+	return avr_asm_len ("lsr %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+      if (bit == 4)
+	return avr_asm_len ("swap %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+    }
+
+  if (bit == 0
+      && REGNO (src) != REGNO (dest))
+  {
+    if (ld_dest_p)
+      return avr_asm_len ("mov %0,%1" CR_TAB
+			  "andi %0,1", xop, plen, -2);
+    if (ld_src_p
+	&& reg_unused_after (insn, src))
+      return avr_asm_len ("andi %1,1" CR_TAB
+			  "mov %0,%1", xop, plen, -2);
+  }
+
+  return avr_asm_len ("bst %1,%2" CR_TAB
+		      "clr %0"    CR_TAB
+		      "bld %0,0", xop, plen, -3);
+}
+
+
+/* Output instructions to extract a negated bit to 8-bit register XOP[0].
+   The input XOP[1] is an 8-bit register or MEM in the lower I/O range.
+   XOP[2] is the const_int bit position.  Return "".
+
+   PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
+   PLEN == 0: Output instructions.  */
+
+const char*
+avr_out_extr_not (rtx_insn* /* insn */, rtx xop[], int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+
+  if (MEM_P (src))
+    {
+      xop[1] = XEXP (src, 0); // address
+      gcc_assert (low_io_address_operand (xop[1], Pmode));
+
+      return avr_asm_len ("clr %0"      CR_TAB
+			  "sbis %i1,%2" CR_TAB
+			  "inc %0", xop, plen, -3);
+    }
+
+  gcc_assert (REG_P (src));
+
+  bool ld_src_p = test_hard_reg_class (LD_REGS, src);
+
+  if (ld_src_p
+      && REGNO (src) == REGNO (dest))
+    {
+      if (bit == 0)
+	return avr_asm_len ("inc %0" CR_TAB
+			    "andi %0,1", xop, plen, -2);
+      if (bit == 1)
+	return avr_asm_len ("lsr %0" CR_TAB
+			    "inc %0" CR_TAB
+			    "andi %0,1", xop, plen, -3);
+      if (bit == 4)
+	return avr_asm_len ("swap %0" CR_TAB
+			    "inc %0"  CR_TAB
+			    "andi %0,1", xop, plen, -3);
+    }
+
+  if (bit == 7
+      && ld_src_p)
+    return avr_asm_len ("cpi %1,0x80" CR_TAB
+			"sbc %0,%0"   CR_TAB
+			"neg %0", xop, plen, -3);
+
+  if (REGNO (src) != REGNO (dest))
+    return avr_asm_len ("clr %0"     CR_TAB
+			"sbrs %1,%2" CR_TAB
+			"inc %0", xop, plen, -3);
+
+  return avr_asm_len ("clr __tmp_reg__" CR_TAB
+		      "sbrs %1,%2"      CR_TAB
+		      "inc __tmp_reg__" CR_TAB
+		      "mov %0,__tmp_reg__", xop, plen, -4);
+}
+
+
 /* Outputs instructions needed for fixed point type conversion.
    This includes converting between any fixed point type, as well
    as converting to any integer type.  Conversion between integer
@@ -9856,6 +9991,8 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_RELOAD_IN32: output_reload_insisf (op, op[2], &len); break;
 
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
+    case ADJUST_LEN_EXTR_NOT: avr_out_extr_not (insn, op, &len); break;
+    case ADJUST_LEN_EXTR: avr_out_extr (insn, op, &len); break;
 
     case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
@@ -11492,6 +11629,16 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
         {
           // Open-coded bit transfer.
           *total = COSTS_N_INSNS (2);
+          return true;
+        }
+      if (AND == code
+          && single_one_operand (XEXP (x, 1), mode)
+          && (ASHIFT == GET_CODE (XEXP (x, 0))
+              || ASHIFTRT == GET_CODE (XEXP (x, 0))
+              || LSHIFTRT == GET_CODE (XEXP (x, 0))))
+        {
+          // "*insv.any_shift.<mode>
+          *total = COSTS_N_INSNS (1 + GET_MODE_SIZE (mode));
           return true;
         }
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
