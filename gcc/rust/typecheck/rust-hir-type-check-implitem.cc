@@ -411,7 +411,9 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 
   // check the types are compatible
   auto trait_item_type = resolved_trait_item.get_tyty_for_receiver (self);
-  if (!trait_item_type->can_eq (lookup, true))
+  if (!types_compatable (TyTy::TyWithLocation (trait_item_type),
+			 TyTy::TyWithLocation (lookup), constant.get_locus (),
+			 true /*emit_errors*/))
     {
       RichLocation r (constant.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
@@ -460,7 +462,9 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 
   // check the types are compatible
   auto trait_item_type = resolved_trait_item.get_tyty_for_receiver (self);
-  if (!trait_item_type->can_eq (lookup, true))
+  if (!types_compatable (TyTy::TyWithLocation (trait_item_type),
+			 TyTy::TyWithLocation (lookup), type.get_locus (),
+			 true /*emit_errors*/))
     {
       RichLocation r (type.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
@@ -519,7 +523,9 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
 
   // check the types are compatible
   auto trait_item_type = resolved_trait_item.get_tyty_for_receiver (self);
-  if (!trait_item_type->can_eq (lookup, true))
+  if (!types_compatable (TyTy::TyWithLocation (trait_item_type),
+			 TyTy::TyWithLocation (lookup), function.get_locus (),
+			 true /*emit_errors*/))
     {
       RichLocation r (function.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
