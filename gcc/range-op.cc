@@ -79,6 +79,7 @@ operator_addr_expr op_addr;
 operator_bitwise_not op_bitwise_not;
 operator_bitwise_xor op_bitwise_xor;
 operator_bitwise_and op_bitwise_and;
+operator_bitwise_or op_bitwise_or;
 
 // Invoke the initialization routines for each class of range.
 
@@ -117,6 +118,7 @@ unified_table::unified_table ()
   // implementation.  These also remain in the pointer table until a pointer
   // speifc version is provided.
   set (BIT_AND_EXPR, op_bitwise_and);
+  set (BIT_IOR_EXPR, op_bitwise_or);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -3608,27 +3610,12 @@ operator_logical_or::op2_range (irange &r, tree type,
 }
 
 
-class operator_bitwise_or : public range_operator
+void
+operator_bitwise_or::update_bitmask (irange &r, const irange &lh,
+				     const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, BIT_IOR_EXPR, lh, rh); }
-} op_bitwise_or;
+  update_known_bitmask (r, BIT_IOR_EXPR, lh, rh);
+}
 
 void
 operator_bitwise_or::wi_fold (irange &r, tree type,
@@ -4549,7 +4536,6 @@ integral_table::integral_table ()
 {
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
-  set (BIT_IOR_EXPR, op_bitwise_or);
 }
 
 // Initialize any integral operators to the primary table
