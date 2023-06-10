@@ -9,7 +9,7 @@ subroutine collapse1
   !$omp threadprivate (thr)
   l = .false.
   a(:, :, :) = 0
-  !$omp parallel do collapse(4) schedule(static, 4) ! { dg-error "not enough DO loops for collapsed" }
+  !$omp parallel do collapse(4) schedule(static, 4) ! { dg-error "not enough DO loops for" }
     do i = 1, 3
       do j = 4, 6
         do k = 5, 7

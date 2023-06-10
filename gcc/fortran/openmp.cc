@@ -10045,6 +10045,52 @@ static struct fortran_omp_context
 static gfc_code *omp_current_do_code;
 static int omp_current_do_collapse;
 
+/* Forward declaration for mutually recursive functions.  */
+static gfc_code *
+find_nested_loop_in_block (gfc_code *block);
+
+/* Return the first nested DO loop in CHAIN, or NULL if there
+   isn't one.  Does no error checking on intervening code.  */
+
+static gfc_code *
+find_nested_loop_in_chain (gfc_code *chain)
+{
+  gfc_code *code;
+
+  if (!chain)
+    return NULL;
+
+  for (code = chain; code; code = code->next)
+    {
+      if (code->op == EXEC_DO)
+	return code;
+      else if (loop_transform_p (code->op) && code->block)
+	{
+	  code = code->block;
+	  continue;
+	}
+      else if (code->op == EXEC_BLOCK)
+	{
+	  gfc_code *c = find_nested_loop_in_block (code);
+	  if (c)
+	    return c;
+	}
+    }
+  return NULL;
+}
+
+/* Return the first nested DO loop in BLOCK, or NULL if there
+   isn't one.  Does no error checking on intervening code.  */
+static gfc_code *
+find_nested_loop_in_block (gfc_code *block)
+{
+  gfc_namespace *ns;
+  gcc_assert (block->op == EXEC_BLOCK);
+  ns = block->ext.block.ns;
+  gcc_assert (ns);
+  return find_nested_loop_in_chain (ns->code);
+}
+
 void
 gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 {
@@ -10282,51 +10328,6 @@ gfc_resolve_omp_local_vars (gfc_namespace *ns)
 }
 
 
-/* Forward declaration for mutually recursive functions.  */
-static gfc_code *
-find_nested_loop_in_block (gfc_code *block);
-
-/* Return the first nested DO loop in CHAIN, or NULL if there
-   isn't one.  Does no error checking on intervening code.  */
-
-static gfc_code *
-find_nested_loop_in_chain (gfc_code *chain)
-{
-  gfc_code *code;
-
-  if (!chain)
-    return NULL;
-
-  for (code = chain; code; code = code->next)
-    {
-      if (code->op == EXEC_DO)
-	return code;
-      else if (loop_transform_p (code->op) && code->block)
-	{
-	  code = code->block;
-	  continue;
-	}
-      else if (code->op == EXEC_BLOCK)
-	{
-	  gfc_code *c = find_nested_loop_in_block (code);
-	  if (c)
-	    return c;
-	}
-    }
-  return NULL;
-}
-
-/* Return the first nested DO loop in BLOCK, or NULL if there
-   isn't one.  Does no error checking on intervening code.  */
-static gfc_code *
-find_nested_loop_in_block (gfc_code *block)
-{
-  gfc_namespace *ns;
-  gcc_assert (block->op == EXEC_BLOCK);
-  ns = block->ext.block.ns;
-  gcc_assert (ns);
-  return find_nested_loop_in_chain (ns->code);
-}
 /* CODE is an OMP loop construct.  Return true if VAR matches an iteration
    variable outer to level DEPTH.  */
 static bool
@@ -10547,13 +10548,140 @@ resolve_omp_unroll (gfc_code *code)
 	     descr, loc);
 }
 
+/* Shared helper function for resolve_omp_do and resolve_omp_tile:
+   check that we have NUM_LOOPS nested loops at DO_CODE.  CODE and NAME
+   are for the outer OMP construct, used for error checking.  */
+
+static void
+resolve_nested_loops (gfc_code *code, const char *name, gfc_code *do_code,
+		      int num_loops, bool is_simd, bool is_tile)
+{
+  for (int i = 1; i <= num_loops; i++)
+    {
+      gfc_symbol *dovar;
+      gfc_symbol *start_var = NULL, *end_var = NULL;
+      gfc_code *c;
+
+      if (do_code->op == EXEC_DO_WHILE)
+	{
+	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
+		     "at %L", name, &do_code->loc);
+	  break;
+	}
+      if (do_code->op == EXEC_DO_CONCURRENT)
+	{
+	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
+		     &do_code->loc);
+	  break;
+	}
+      if (do_code->op != EXEC_DO)
+	{
+	  gfc_error ("%s must be DO loop at %L", name,
+		     &do_code->loc);
+	  break;
+	}
+      dovar = do_code->ext.iterator->var->symtree->n.sym;
+      if (!is_tile)
+	{
+	  int list;
+	  gfc_omp_namelist *n;
+
+	  if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
+	    gfc_error ("%s iteration variable must be of type integer at %L",
+		       name, &do_code->loc);
+	  if (dovar->attr.threadprivate)
+	    gfc_error ("%s iteration variable must not be THREADPRIVATE "
+		       "at %L", name, &do_code->loc);
+	  if (code->ext.omp_clauses)
+	    for (list = 0; list < OMP_LIST_NUM; list++)
+	      if (!is_simd || code->ext.omp_clauses->collapse > 1
+		  ? (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
+		     && list != OMP_LIST_ALLOCATE)
+		  : (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
+		     && list != OMP_LIST_ALLOCATE && list != OMP_LIST_LINEAR))
+		for (n = code->ext.omp_clauses->lists[list]; n; n = n->next)
+		  if (dovar == n->sym)
+		    {
+		      if (!is_simd || code->ext.omp_clauses->collapse > 1)
+			gfc_error ("%s iteration variable present on clause "
+				   "other than PRIVATE, LASTPRIVATE or "
+				   "ALLOCATE at %L", name, &do_code->loc);
+		      else
+			gfc_error ("%s iteration variable present on clause "
+				   "other than PRIVATE, LASTPRIVATE, "
+				   "ALLOCATE or LINEAR at %L",
+				   name, &do_code->loc);
+		      break;
+		    }
+	}
+      if (is_outer_iteration_variable (code, i, dovar))
+	{
+	  gfc_error ("%s iteration variable used in more than one loop at %L "
+		     "(depth %d)",
+		     name, &do_code->loc, i);
+	  break;
+	}
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->start,
+					 &start_var))
+	{
+	  gfc_error ("%s loop start expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->end,
+					 &end_var))
+	{
+	  gfc_error ("%s loop end expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      else if (start_var && end_var && start_var != end_var)
+	{
+	  gfc_error ("%s loop bounds reference different "
+		     "iteration variables at %L", name, &do_code->loc);
+	  break;
+	}
+      else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
+	{
+	  gfc_error ("%s loop increment not in canonical form at %L",
+		     name, &do_code->loc);
+	  break;
+	}
+      if (start_var || end_var)
+	code->ext.omp_clauses->non_rectangular = 1;
+
+      for (c = do_code->next; c; c = c->next)
+	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
+	  {
+	    gfc_error ("%s loops not perfectly nested at %L",
+		       name, &c->loc);
+	    break;
+	  }
+      if (i == num_loops || c)
+	break;
+      do_code = do_code->block->next;
+
+      if (do_code)
+	do_code = resolve_nested_loop_transforms (do_code, name,
+						  num_loops - i,
+						  &code->loc);
+      if (!do_code
+	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
+	{
+	  gfc_error ("not enough DO loops for %s at %L",
+		     name, &code->loc);
+	  break;
+	}
+    }
+}
+
 static void
 resolve_omp_do (gfc_code *code)
 {
-  gfc_code *do_code, *c;
-  int list, i, collapse;
-  gfc_omp_namelist *n;
-  gfc_symbol *dovar;
+  gfc_code *do_code;
+  int collapse;
   const char *name;
   bool is_simd = false;
 
@@ -10667,238 +10795,31 @@ resolve_omp_do (gfc_code *code)
 	collapse = 1;
     }
 
+  do_code = resolve_nested_loop_transforms (code->block->next, name, collapse,
+					    &code->loc);
+
   /* While the spec defines the loop nest depth independently of the COLLAPSE
      clause, in practice the middle end only pays attention to the COLLAPSE
      depth and treats any further inner loops as the final-loop-body.  So
      here we also check canonical loop nest form only for the number of
      outer loops specified by the COLLAPSE clause too.  */
-  do_code = resolve_nested_loop_transforms (code->block->next, name, collapse,
-					    &code->loc);
-
-  for (i = 1; i <= collapse; i++)
-    {
-      gfc_symbol *start_var = NULL, *end_var = NULL;
-      if (do_code->op == EXEC_DO_WHILE)
-	{
-	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
-		     "at %L", name, &do_code->loc);
-	  break;
-	}
-      if (do_code->op == EXEC_DO_CONCURRENT)
-	{
-	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
-		     &do_code->loc);
-	  break;
-	}
-      if (do_code->op != EXEC_DO)
-	{
-	  gfc_error ("%s must be DO loop at %L", name,
-		     &do_code->loc);
-	  break;
-	}
-
-      gcc_assert (do_code->op != EXEC_OMP_UNROLL);
-      gcc_assert (do_code->op == EXEC_DO);
-      if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
-	gfc_error ("%s iteration variable must be of type integer at %L",
-		   name, &do_code->loc);
-      dovar = do_code->ext.iterator->var->symtree->n.sym;
-      if (dovar->attr.threadprivate)
-	gfc_error ("%s iteration variable must not be THREADPRIVATE "
-		   "at %L", name, &do_code->loc);
-      if (code->ext.omp_clauses)
-	for (list = 0; list < OMP_LIST_NUM; list++)
-	  if (!is_simd || code->ext.omp_clauses->collapse > 1
-	      ? (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
-		  && list != OMP_LIST_ALLOCATE)
-	      : (list != OMP_LIST_PRIVATE && list != OMP_LIST_LASTPRIVATE
-		 && list != OMP_LIST_ALLOCATE && list != OMP_LIST_LINEAR))
-	    for (n = code->ext.omp_clauses->lists[list]; n; n = n->next)
-	      if (dovar == n->sym)
-		{
-		  if (!is_simd || code->ext.omp_clauses->collapse > 1)
-		    gfc_error ("%s iteration variable present on clause "
-			       "other than PRIVATE, LASTPRIVATE or "
-			       "ALLOCATE at %L", name, &do_code->loc);
-		  else
-		    gfc_error ("%s iteration variable present on clause "
-			       "other than PRIVATE, LASTPRIVATE, ALLOCATE or "
-			       "LINEAR at %L", name, &do_code->loc);
-		  break;
-		}
-      if (is_outer_iteration_variable (code, i, dovar))
-	{
-	  gfc_error ("%s iteration variable used in more than one loop at %L",
-		     name, &do_code->loc);
-	  break;
-	}
-      else if (!bound_expr_is_canonical (code, i,
-					 do_code->ext.iterator->start,
-					 &start_var))
-	{
-	  gfc_error ("%s loop start expression not in canonical form at %L",
-		     name, &do_code->loc);
-	  break;
-	}
-      else if (!bound_expr_is_canonical (code, i,
-					 do_code->ext.iterator->end,
-					 &end_var))
-	{
-	  gfc_error ("%s loop end expression not in canonical form at %L",
-		     name, &do_code->loc);
-	  break;
-	}
-      else if (start_var && end_var && start_var != end_var)
-	{
-	  gfc_error ("%s loop bounds reference different "
-		     "iteration variables at %L", name, &do_code->loc);
-	  break;
-	}
-      else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
-	{
-	  gfc_error ("%s loop increment not in canonical form at %L",
-		     name, &do_code->loc);
-	  break;
-	}
-      if (start_var || end_var)
-	code->ext.omp_clauses->non_rectangular = 1;
-
-      for (c = do_code->next; c; c = c->next)
-	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
-	  {
-	    gfc_error ("collapsed %s loops not perfectly nested at %L",
-		       name, &c->loc);
-	    break;
-	  }
-      if (i == collapse || c)
-	break;
-      do_code = do_code->block;
-      do_code = resolve_nested_loop_transforms (do_code, name, collapse - i,
-						&code->loc);
-      if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
-	{
-	  gfc_error ("not enough DO loops for collapsed %s at %L",
-		     name, &code->loc);
-	  break;
-	}
-      do_code = do_code->next;
-      do_code = resolve_nested_loop_transforms (do_code, name, collapse - i,
-						&code->loc);
-      if (do_code == NULL
-	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
-	{
-	  gfc_error ("not enough DO loops for collapsed %s at %L",
-		     name, &code->loc);
-	  break;
-	}
-    }
+  resolve_nested_loops (code, name, do_code, collapse, is_simd, false);
 }
 
 static void
 resolve_omp_tile (gfc_code *code)
 {
-  gfc_code *do_code, *next;
-  gfc_symbol *dovar;
+  gfc_code *do_code;
   const char *name = "!$OMP TILE";
 
-  unsigned num_loops = 0;
+  int num_loops = 0;
   gcc_assert (code->ext.omp_clauses->tile_sizes);
   for (gfc_expr_list *el = code->ext.omp_clauses->tile_sizes; el;
        el = el->next)
     num_loops++;
 
   do_code = resolve_nested_loop_transforms (code, name, num_loops, &code->loc);
-
-  for (unsigned i = 1; i <= num_loops; i++)
-    {
-
-      gfc_symbol *start_var = NULL, *end_var = NULL;
-
-      if (do_code->op == EXEC_DO_WHILE)
-	{
-	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
-		     "at %L", name, &do_code->loc);
-	  return;
-	}
-      if (do_code->op == EXEC_DO_CONCURRENT)
-	{
-	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
-		     &do_code->loc);
-	  return;
-	}
-      if (do_code->op != EXEC_DO)
-	{
-	  gfc_error ("%s must be DO loop at %L", name,
-		     &do_code->loc);
-	  return;
-	}
-
-      gcc_assert (do_code->op != EXEC_OMP_UNROLL);
-      gcc_assert (do_code->op == EXEC_DO);
-      dovar = do_code->ext.iterator->var->symtree->n.sym;
-      if (is_outer_iteration_variable (code, i, dovar))
-	{
-	  gfc_error ("%s iteration variable used in more than one loop at %L (depth %d)",
-		     name, &do_code->loc, i);
-	  return;
-	}
-      else if (!bound_expr_is_canonical (code, i,
-					 do_code->ext.iterator->start,
-					 &start_var))
-	{
-	  gfc_error ("%s loop start expression not in canonical form at %L",
-		     name, &do_code->loc);
-	  return;
-	}
-      else if (!bound_expr_is_canonical (code, i,
-					 do_code->ext.iterator->end,
-					 &end_var))
-	{
-	  gfc_error ("%s loop end expression not in canonical form at %L",
-		     name, &do_code->loc);
-	  return;
-	}
-      else if (start_var && end_var && start_var != end_var)
-	{
-	  gfc_error ("%s loop bounds reference different "
-		     "iteration variables at %L", name, &do_code->loc);
-	  return;
-	}
-      else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
-	{
-	  gfc_error ("%s loop increment not in canonical form at %L",
-		     name, &do_code->loc);
-	  return;
-	}
-      if (start_var || end_var)
-	code->ext.omp_clauses->non_rectangular = 1;
-      for (next = do_code->next; next; next = next->next)
-	if (next->op != EXEC_NOP && next->op != EXEC_CONTINUE)
-	  {
-	    gfc_error ("%s loops not perfectly nested at %L",
-		       name, &next->loc);
-	    break;
-	  }
-      if (i == num_loops || next)
-	break;
-      do_code = do_code->block;
-      do_code = resolve_nested_loop_transforms (do_code, name, num_loops - i, &code->loc);
-      if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
-	{
-	  gfc_error ("not enough DO loops for %s at %L",
-		     name, &code->loc);
-	  break;
-	}
-      do_code = do_code->next;
-      do_code = resolve_nested_loop_transforms (do_code, name, num_loops - i, &code->loc);
-      if (do_code == NULL
-	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
-	{
-	  gfc_error ("not enough DO loops for %s at %L",
-		     name, &code->loc);
-	  break;
-	}
-    }
+  resolve_nested_loops (code, name, do_code, num_loops, false, true);
 }
 
 static gfc_statement

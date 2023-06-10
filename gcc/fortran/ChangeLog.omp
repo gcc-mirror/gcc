@@ -1,3 +1,13 @@
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* openmp.cc (find_nested_loop_in_chain): Move up in file.
+	(find_nested_loop_in_block): Likewise.
+	(resolve_nested_loops): New helper function to consolidate code
+	from...
+	(resolve_omp_do, resolve_omp_tile): ...these functions.  Also,
+	remove the redundant call to resolve_nested_loop_transforms, and
+	use uniform error message wording.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Fix conditions for

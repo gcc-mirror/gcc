@@ -17,13 +17,13 @@ program p
       end do
       x = 5  ! { dg-error "loops not perfectly nested" }
    end do
-   !$omp parallel do collapse(2)  ! { dg-error "not enough DO loops for collapsed" }
+   !$omp parallel do collapse(2)  ! { dg-error "not enough DO loops for" }
    do i = 1, 8
       x = 5
       do j = 1, 8
       end do
    end do
-   !$omp parallel do ordered(2)  ! { dg-error "not enough DO loops for collapsed" }
+   !$omp parallel do ordered(2)  ! { dg-error "not enough DO loops for" }
    do i = 1, 8
       x = 5
       do j = 1, 8

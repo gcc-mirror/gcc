@@ -1,5 +1,11 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* gfortran.dg/gomp/collapse1.f90: Adjust expected error message.
+	* gfortran.dg/gomp/collapse2.f90: Likewise.
+	* gfortran.dg/gomp/loop-transforms/tile-2.f90: Likewise.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* c-c++-common/gomp/imperfect1.c: New.
 	* c-c++-common/gomp/imperfect2.c: New.
 	* c-c++-common/gomp/imperfect3.c: New.

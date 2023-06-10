@@ -64,7 +64,7 @@ subroutine test3
   implicit none
   integer :: i, j, k
 
-  !$omp taskloop collapse(3) ! { dg-error {not enough DO loops for collapsed \!\$OMP TASKLOOP at \(1\)} }
+  !$omp taskloop collapse(3) ! { dg-error {not enough DO loops for \!\$OMP TASKLOOP at \(1\)} }
   !$omp tile sizes (1,2) ! { dg-error {loop nest depth after \!\$OMP TILE at \(1\) is insufficient for outer \!\$OMP TASKLOOP} }
   !$omp tile sizes (1,2)
   do i = 1,100
