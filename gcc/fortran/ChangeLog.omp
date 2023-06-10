@@ -1,5 +1,16 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* trans-openmp.cc (gfc_omp_finish_clause): Handle "declare create" for
+	scalar allocatable variables.
+	(gfc_trans_omp_clauses): Don't include allocatable vars in synthetic
+	"acc data" region created for "declare create" variables.  Mark such
+	variables with the "oacc declare create" attribute instead.  Don't
+	create ALWAYS_POINTER mapping for target-to-host updates of declare
+	create variables.
+	(gfc_trans_oacc_declare): Handle empty clause list.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Add GOMP_MAP_STRUCT_UNORD.
 
 2023-06-19  Julian Brown  <julian@codesourcery.com>

@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_adjust_omp_clauses_1): Handle "oacc declare
+	create" attribute.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_tsort_mark, omp_mapping_group): Move before
 	gimplify_omp_ctx. Add constructor to omp_mapping_group.
 	(gimplify_omp_ctx): Add DECL_DATA_CLAUSE field.

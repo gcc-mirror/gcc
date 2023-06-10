@@ -1619,7 +1619,16 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       orig_decl = decl;
 
       c4 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_POINTER);
+      if (openacc
+	  && GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
+	  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_PRESENT)
+	/* This allows "declare create" to work for scalar allocatables.  The
+	   resulting mapping nodes are:
+	     force_present(*var) firstprivate_pointer(var)
+	   which is the same as an explicit "present" clause gives.  */
+	OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_FIRSTPRIVATE_POINTER);
+      else
+	OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_POINTER);
       OMP_CLAUSE_DECL (c4) = decl;
       OMP_CLAUSE_SIZE (c4) = size_int (0);
       decl = build_fold_indirect_ref (decl);
@@ -4588,6 +4597,29 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      if (!n->sym->attr.referenced)
 		continue;
 
+	      /* We do not want to include allocatable vars in a synthetic
+		 "acc data" region created for "!$acc declare create" vars.
+		 Such variables are handled by augmenting allocate/deallocate
+		 statements elsewhere (with
+		 "acc enter data declare_allocate(...)", etc.).  */
+	      if (op == EXEC_OACC_DECLARE
+		  && n->u.map_op == OMP_MAP_ALLOC
+		  && n->sym->attr.allocatable
+		  && n->sym->attr.oacc_declare_create)
+		{
+		  tree tree_var = gfc_get_symbol_decl (n->sym);
+		  if (!lookup_attribute ("oacc declare create",
+					 DECL_ATTRIBUTES (tree_var)))
+		    DECL_ATTRIBUTES (tree_var)
+		      = tree_cons (get_identifier ("oacc declare create"),
+				   NULL_TREE, DECL_ATTRIBUTES (tree_var));
+		  /* We might need to turn what would normally be a
+		     "firstprivate" mapping into a "present" mapping.  For the
+		     latter, we need the decl to be addressable.  */
+		  TREE_ADDRESSABLE (tree_var) = 1;
+		  continue;
+		}
+
 	      bool always_modifier = false;
 	      tree node = build_omp_clause (input_location, OMP_CLAUSE_MAP);
 	      tree node2 = NULL_TREE;
@@ -4780,7 +4812,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      tree orig_decl = decl;
 		      enum gomp_map_kind gmk = GOMP_MAP_POINTER;
 		      if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
-			  && n->sym->attr.oacc_declare_create)
+			  && n->sym->attr.oacc_declare_create
+			  && n->u.map_op != OMP_MAP_FORCE_FROM)
 			{
 			  if (clauses->update_allocatable)
 			    gmk = GOMP_MAP_ALWAYS_POINTER;
@@ -9846,10 +9879,12 @@ gfc_trans_oacc_declare (gfc_code *code)
   gfc_start_block (&block);
 
   oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.oacc_declare->clauses,
-					code->loc, false, true);
+					code->loc, false, true,
+					EXEC_OACC_DECLARE);
   stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
-		     oacc_clauses);
+  if (oacc_clauses)
+    stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
+		       oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
 
   return gfc_finish_block (&block);

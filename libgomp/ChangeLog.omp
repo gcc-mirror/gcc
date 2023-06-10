@@ -1,5 +1,11 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/declare-create-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-create-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-create-3.f90: New test.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: Un-XFAIL.
 	* testsuite/libgomp.oacc-c-c++-common/pr70828-2.c: Un-XFAIL.
 	* testsuite/libgomp.oacc-fortran/pr70828.f90: Un-XFAIL.

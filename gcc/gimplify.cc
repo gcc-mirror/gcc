@@ -13215,6 +13215,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 		g->have_offload = true;
 	    }
 	}
+      if (lookup_attribute ("oacc declare create", DECL_ATTRIBUTES (decl)))
+	flags |= GOVD_MAP_FORCE_PRESENT;
     }
   else if (flags & GOVD_SHARED)
     {
@@ -13253,6 +13255,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  error ("%<_Atomic%> %qD in implicit %<firstprivate%> clause on "
 		 "%<target%> construct", decl);
 	  return 0;
+	}
+      if (lookup_attribute ("oacc declare create", DECL_ATTRIBUTES (decl)))
+	{
+	  code = OMP_CLAUSE_MAP;
+	  flags &= ~GOVD_FIRSTPRIVATE;
+	  flags |= GOVD_MAP | GOVD_MAP_FORCE_PRESENT;
 	}
     }
   else if (flags & GOVD_LASTPRIVATE)
