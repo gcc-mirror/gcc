@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_OMP_GENERAL_H
 
 #include "gomp-constants.h"
+#include "omp-api.h"
 
 /*  Flags for an OpenACC loop.  */
 

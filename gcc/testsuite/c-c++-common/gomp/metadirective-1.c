@@ -36,7 +36,7 @@ void f (int a[], int b[], int c[])
       when (implementation={vendor("gnu")}: parallel for)
     #pragma omp metadirective \
 	when (implementation={vendor("cray")}: parallel for)
-	/* { dg-error "for statement expected before '#pragma'" "" { target c } .-2 } */
+	/* { dg-error "loop nest expected before '#pragma'" "" { target c } .-2 } */
 	/* { dg-error "'#pragma' is not allowed here" "" { target c++ } .-3 } */
       for (i = 0; i < N; i++) c[i] = a[i] * b[i];
 }

@@ -1,3 +1,17 @@
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/goacc/collapse-1.c: Update for new C error behavior.
+	* c-c++-common/goacc/tile-2.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/imperfect-loop-nest.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/tile-1.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/tile-2.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/tile-3.c: Likewise.
+	* c-c++-common/gomp/loop-transforms/unroll-inner-2.c: Likewise.
+	* c-c++-common/gomp/metadirective-1.c: Likewise.
+	* gcc.dg/gomp/collapse-1.c: Likewise.
+	* gcc.dg/gomp/for-1.c: Likewise.
+	* gcc.dg/gomp/for-11.c: Likewise.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

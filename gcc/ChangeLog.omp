@@ -1,4 +1,13 @@
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-api.h: New.
+	* omp-general.cc (omp_runtime_api_procname): New.
+	(omp_runtime_api_call): Moved here from omp-low.cc, and make
+	non-static.
+	* omp-general.h: Include omp-api.h.
+	* omp-low.cc (omp_runtime_api_call): Delete this copy.
+
+2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 	    Frederik Harwath <frederik@codesourcery.com>
 
 	* tree-nested.cc (convert_nonlocal_omp_clauses): Handle loop
