@@ -609,16 +609,16 @@ public:
   using range_operator::op2_range;
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
+		  relation_trio rel = TRIO_VARYING) const override;
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
-		  relation_trio rel = TRIO_VARYING) const final override;
+		  relation_trio rel = TRIO_VARYING) const override;
   void update_bitmask (irange &r, const irange &lh,
-		       const irange &rh) const final override;
-private:
+		       const irange &rh) const override;
+protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
-		const wide_int &rh_ub) const final override;
+		const wide_int &rh_ub) const override;
 };
 
 class operator_min : public range_operator

@@ -121,8 +121,8 @@ unified_table::unified_table ()
   // is used until there is a pointer range class.  Then we can simply
   // uncomment the operator here and use the unified version.
 
-  //set (BIT_AND_EXPR, op_bitwise_and);
-  set (BIT_IOR_EXPR, op_bitwise_or);
+  // set (BIT_AND_EXPR, op_bitwise_and);
+  // set (BIT_IOR_EXPR, op_bitwise_or);
   set (MIN_EXPR, op_min);
   set (MAX_EXPR, op_max);
 }
