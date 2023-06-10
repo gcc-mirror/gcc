@@ -77,6 +77,7 @@ operator_negate op_negate;
 operator_mult op_mult;
 operator_addr_expr op_addr;
 operator_bitwise_not op_bitwise_not;
+operator_bitwise_xor op_bitwise_xor;
 
 // Invoke the initialization routines for each class of range.
 
@@ -109,6 +110,7 @@ unified_table::unified_table ()
   // integral implementation.
   set (ADDR_EXPR, op_addr);
   set (BIT_NOT_EXPR, op_bitwise_not);
+  set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
 // The tables are hidden and accessed via a simple extern function.
@@ -3732,33 +3734,12 @@ operator_bitwise_or::op2_range (irange &r, tree type,
   return operator_bitwise_or::op1_range (r, type, lhs, op1);
 }
 
-
-class operator_bitwise_xor : public range_operator
+void
+operator_bitwise_xor::update_bitmask (irange &r, const irange &lh,
+				      const irange &rh) const
 {
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-public:
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, BIT_XOR_EXPR, lh, rh); }
-} op_bitwise_xor;
+  update_known_bitmask (r, BIT_XOR_EXPR, lh, rh);
+}
 
 void
 operator_bitwise_xor::wi_fold (irange &r, tree type,
@@ -4588,7 +4569,6 @@ integral_table::integral_table ()
   set (MAX_EXPR, op_max);
   set (BIT_AND_EXPR, op_bitwise_and);
   set (BIT_IOR_EXPR, op_bitwise_or);
-  set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
 // Initialize any integral operators to the primary table
@@ -4618,8 +4598,6 @@ pointer_table::pointer_table ()
   set (BIT_IOR_EXPR, op_pointer_or);
   set (MIN_EXPR, op_ptr_min_max);
   set (MAX_EXPR, op_ptr_min_max);
-
-  set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
 // Initialize any pointer operators to the primary table
