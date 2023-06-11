@@ -637,6 +637,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_function
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
+  template<typename _Tp>
+    struct is_function
+    : public __bool_constant<__is_function(_Tp)>
+    { };
+#else
   template<typename _Tp>
     struct is_function
     : public __bool_constant<!is_const<const _Tp>::value> { };
@@ -648,6 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_function<_Tp&&>
     : public false_type { };
+#endif
 
 #ifdef __cpp_lib_is_null_pointer // C++ >= 11
   /// is_null_pointer (LWG 2247).
@@ -3255,8 +3262,7 @@ template <typename _Tp>
   inline constexpr bool is_union_v = __is_union(_Tp);
 template <typename _Tp>
   inline constexpr bool is_class_v = __is_class(_Tp);
-template <typename _Tp>
-  inline constexpr bool is_function_v = is_function<_Tp>::value;
+// is_function_v is defined below, after is_const_v.
 
 #if _GLIBCXX_USE_BUILTIN_TRAIT(__is_reference)
 template <typename _Tp>
@@ -3293,6 +3299,19 @@ template <typename _Tp>
   inline constexpr bool is_const_v = false;
 template <typename _Tp>
   inline constexpr bool is_const_v<const _Tp> = true;
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
+template <typename _Tp>
+  inline constexpr bool is_function_v = __is_function(_Tp);
+#else
+template <typename _Tp>
+  inline constexpr bool is_function_v = !is_const_v<const _Tp>;
+template <typename _Tp>
+  inline constexpr bool is_function_v<_Tp&> = false;
+template <typename _Tp>
+  inline constexpr bool is_function_v<_Tp&&> = false;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_volatile_v = false;
 template <typename _Tp>
