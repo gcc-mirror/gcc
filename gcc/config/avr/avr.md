@@ -163,7 +163,7 @@
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
    ashlpsi, ashrpsi, lshrpsi,
-   insert_bits, insv_notbit, insv_notbit_0, insv_notbit_7,
+   insert_bits, insv_notbit,
    add_set_ZN, cmp_uext, cmp_sext,
    no"
   (const_string "no"))
@@ -9152,6 +9152,21 @@
 
 ;; Same, but with a NOT inverting the source bit.
 ;; Insert bit ~$2.$3 into $0.$1
+(define_insn "insv_notbit"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"            "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"         "n"))
+        (not:QI (zero_extract:QI (match_operand:QI 2 "register_operand"     "r")
+                                 (const_int 1)
+                                 (match_operand:QI 3 "const_0_to_7_operand" "n"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  {
+    return avr_out_insert_notbit (insn, operands, NULL);
+  }
+  [(set_attr "adjust_len" "insv_notbit")])
+
+;; Insert bit ~$2.$3 into $0.$1
 (define_insn_and_split "*insv.not-shiftrt_split"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
                          (const_int 1)
@@ -9161,25 +9176,11 @@
   ""
   "#"
   "&& reload_completed"
-  [(parallel [(set (zero_extract:QI (match_dup 0)
-                                    (const_int 1)
-                                    (match_dup 1))
-                   (not:QI (any_shiftrt:QI (match_dup 2)
-                                           (match_dup 3))))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*insv.not-shiftrt"
-  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
-                         (const_int 1)
-                         (match_operand:QI 1 "const_0_to_7_operand"        "n"))
-        (not:QI (any_shiftrt:QI (match_operand:QI 2 "register_operand"     "r")
-                                (match_operand:QI 3 "const_0_to_7_operand" "n"))))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
+  [(scratch)]
   {
-    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
-  }
-  [(set_attr "adjust_len" "insv_notbit")])
+    emit (gen_insv_notbit (operands[0], operands[1], operands[2], operands[3]));
+    DONE;
+  })
 
 ;; Insert bit ~$2.0 into $0.$1
 (define_insn_and_split "*insv.xor1-bit.0_split"
@@ -9191,25 +9192,11 @@
   ""
   "#"
   "&& reload_completed"
-  [(parallel [(set (zero_extract:QI (match_dup 0)
-                                    (const_int 1)
-                                    (match_dup 1))
-                   (xor:QI (match_dup 2)
-                           (const_int 1)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*insv.xor1-bit.0"
-  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
-                         (const_int 1)
-                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
-        (xor:QI (match_operand:QI 2 "register_operand"              "r")
-                (const_int 1)))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
+  [(scratch)]
   {
-    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
-  }
-  [(set_attr "adjust_len" "insv_notbit_0")])
+    emit (gen_insv_notbit (operands[0], operands[1], operands[2], const0_rtx));
+    DONE;
+  })
 
 ;; Insert bit ~$2.0 into $0.$1
 (define_insn_and_split "*insv.not-bit.0_split"
@@ -9220,23 +9207,11 @@
   ""
   "#"
   "&& reload_completed"
-  [(parallel [(set (zero_extract:QI (match_dup 0)
-                                    (const_int 1)
-                                    (match_dup 1))
-                   (not:QI (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*insv.not-bit.0"
-  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
-                         (const_int 1)
-                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
-        (not:QI (match_operand:QI 2 "register_operand"              "r")))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
+  [(scratch)]
   {
-    return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
-  }
-  [(set_attr "adjust_len" "insv_notbit_0")])
+    emit (gen_insv_notbit (operands[0], operands[1], operands[2], const0_rtx));
+    DONE;
+  })
 
 ;; Insert bit ~$2.7 into $0.$1
 (define_insn_and_split "*insv.not-bit.7_split"
@@ -9248,25 +9223,11 @@
   ""
   "#"
   "&& reload_completed"
-  [(parallel [(set (zero_extract:QI (match_dup 0)
-                                    (const_int 1)
-                                    (match_dup 1))
-                   (ge:QI (match_dup 2)
-                          (const_int 0)))
-               (clobber (reg:CC REG_CC))])])
-
-(define_insn "*insv.not-bit.7"
-  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
-                         (const_int 1)
-                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
-        (ge:QI (match_operand:QI 2 "register_operand"               "r")
-               (const_int 0)))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
+  [(scratch)]
   {
-    return avr_out_insert_notbit (insn, operands, GEN_INT (7), NULL);
-  }
-  [(set_attr "adjust_len" "insv_notbit_7")])
+    emit (gen_insv_notbit (operands[0], operands[1], operands[2], GEN_INT(7)));
+    DONE;
+  })
 
 ;; Insert bit ~$2.$3 into $0.$1
 (define_insn_and_split "*insv.xor-extract_split"
@@ -9280,31 +9241,13 @@
   "INTVAL (operands[4]) & (1 << INTVAL (operands[3]))"
   "#"
   "&& reload_completed"
-  [(parallel [(set (zero_extract:QI (match_dup 0)
-                                    (const_int 1)
-                                    (match_dup 1))
-                   (any_extract:QI (xor:QI (match_dup 2)
-                                           (match_dup 4))
-                                   (const_int 1)
-                                   (match_dup 3)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*insv.xor-extract"
-  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"        "+r")
-                         (const_int 1)
-                         (match_operand:QI 1 "const_0_to_7_operand"     "n"))
-        (any_extract:QI (xor:QI (match_operand:QI 2 "register_operand"  "r")
-                                (match_operand:QI 4 "const_int_operand" "n"))
-                        (const_int 1)
-                        (match_operand:QI 3 "const_0_to_7_operand"      "n")))
-   (clobber (reg:CC REG_CC))]
-  "INTVAL (operands[4]) & (1 << INTVAL (operands[3])) && reload_completed"
+  [(scratch)]
   {
-    return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
-  }
-  [(set_attr "adjust_len" "insv_notbit")])
+    emit (gen_insv_notbit (operands[0], operands[1], operands[2], operands[3]));
+    DONE;
+  })
 
-
+
 ;; Some combine patterns that try to fix bad code when a value is composed
 ;; from byte parts like in PR27663.
 ;; The patterns give some release but the code still is not optimal,

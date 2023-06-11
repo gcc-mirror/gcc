@@ -8995,20 +8995,15 @@ avr_out_addto_sp (rtx *op, int *plen)
 }
 
 
-/* Output instructions to insert an inverted bit into OPERANDS[0]:
-   $0.$1 = ~$2.$3      if XBITNO = NULL
-   $0.$1 = ~$2.XBITNO  if XBITNO != NULL.
+/* Output instructions to insert an inverted bit into OP[0]: $0.$1 = ~$2.$3.
    If PLEN = NULL then output the respective instruction sequence which
    is a combination of BST / BLD and some instruction(s) to invert the bit.
    If PLEN != NULL then store the length of the sequence (in words) in *PLEN.
    Return "".  */
 
 const char*
-avr_out_insert_notbit (rtx_insn *insn, rtx operands[], rtx xbitno, int *plen)
+avr_out_insert_notbit (rtx_insn *insn, rtx op[], int *plen)
 {
-  rtx op[4] = { operands[0], operands[1], operands[2],
-                xbitno == NULL_RTX ? operands [3] : xbitno };
-
   if (INTVAL (op[1]) == 7
       && test_hard_reg_class (LD_REGS, op[0]))
     {
@@ -10038,15 +10033,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_INSERT_BITS: avr_out_insert_bits (op, &len); break;
     case ADJUST_LEN_ADD_SET_ZN: avr_out_plus_set_ZN (op, &len); break;
 
-    case ADJUST_LEN_INSV_NOTBIT:
-      avr_out_insert_notbit (insn, op, NULL_RTX, &len);
-      break;
-    case ADJUST_LEN_INSV_NOTBIT_0:
-      avr_out_insert_notbit (insn, op, const0_rtx, &len);
-      break;
-    case ADJUST_LEN_INSV_NOTBIT_7:
-      avr_out_insert_notbit (insn, op, GEN_INT (7), &len);
-      break;
+    case ADJUST_LEN_INSV_NOTBIT: avr_out_insert_notbit (insn, op, &len); break;
 
     default:
       gcc_unreachable();
