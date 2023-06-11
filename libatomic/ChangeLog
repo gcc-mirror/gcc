@@ -1,3 +1,7 @@
+2023-06-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.tgt: For x86_64, always set try_ifunc=yes.
+
 2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (PERL): Remove.

@@ -1,3 +1,12 @@
+2023-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* f95-lang.cc (gfc_init_builtin_functions): Add fmax() and
+	fmin() built-ins, and their variants.
+	* mathbuiltins.def: Add FMAX and FMIN built-ins.
+	* trans-intrinsic.cc (conv_intrinsic_ieee_minmax): New function.
+	(gfc_conv_ieee_arithmetic_function): Handle IEEE_MIN_NUM and
+	IEEE_MAX_NUM functions.
+
 2023-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/96024

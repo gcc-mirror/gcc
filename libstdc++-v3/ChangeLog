@@ -1,3 +1,9 @@
+2023-06-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/27_io/basic_istream/ignore/wchar_t/94749.cc (main)
+	[! SIMULATOR_TEST]: Also exclude running test05.
+	* testsuite/27_io/basic_istream/ignore/char/94749.cc: Ditto.
+
 2023-06-09  Ken Matsui  <kmatsui@cs.washington.edu>
 
 	* include/std/type_traits: Use using instead of typedef

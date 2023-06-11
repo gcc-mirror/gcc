@@ -1,3 +1,327 @@
+2023-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipcp_vr_lattice::init): Take type argument.
+	(ipcp_vr_lattice::print): Call dump method.
+	(ipcp_vr_lattice::meet_with): Adjust for m_vr being a
+	Value_Range.
+	(ipcp_vr_lattice::meet_with_1): Make argument a reference.
+	(ipcp_vr_lattice::set_to_bottom): Set varying for an unsupported
+	range.
+	(initialize_node_lattices): Pass type when appropriate.
+	(ipa_vr_operation_and_type_effects): Make type agnostic.
+	(ipa_value_range_from_jfunc): Same.
+	(propagate_vr_across_jump_function): Same.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Same.
+	(evaluate_properties_for_edge): Same.
+	* ipa-prop.cc (ipa_vr::get_vrange): Same.
+	(ipcp_update_vr): Same.
+	* ipa-prop.h (ipa_value_range_from_jfunc): Same.
+	(ipa_range_set_and_normalize): Same.
+
+2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/109650
+	PR target/92729
+	* config/avr/avr-passes.def (avr_pass_ifelse): Insert new pass.
+	* config/avr/avr.cc (avr_pass_ifelse): New RTL pass.
+	(avr_pass_data_ifelse): New pass_data for it.
+	(make_avr_pass_ifelse, avr_redundant_compare, avr_cbranch_cost)
+	(avr_canonicalize_comparison, avr_out_plus_set_ZN)
+	(avr_out_cmp_ext): New functions.
+	(compare_condtition): Make sure REG_CC dies in the branch insn.
+	(avr_rtx_costs_1): Add computation of cbranch costs.
+	(avr_adjust_insn_length) [ADJUST_LEN_ADD_SET_ZN, ADJUST_LEN_CMP_ZEXT]:
+	[ADJUST_LEN_CMP_SEXT]Handle them.
+	(TARGET_CANONICALIZE_COMPARISON): New define.
+	(avr_simplify_comparison_p, compare_diff_p, avr_compare_pattern)
+	(avr_reorg_remove_redundant_compare, avr_reorg): Remove functions.
+	(TARGET_MACHINE_DEPENDENT_REORG): Remove define.
+	* config/avr/avr-protos.h (avr_simplify_comparison_p): Remove proto.
+	(make_avr_pass_ifelse, avr_out_plus_set_ZN, cc_reg_rtx)
+	(avr_out_cmp_zext): New Protos
+	* config/avr/avr.md (branch, difficult_branch): Don't split insns.
+	(*cbranchhi.zero-extend.0", *cbranchhi.zero-extend.1")
+	(*swapped_tst<mode>, *add.for.eqne.<mode>): New insns.
+	(*cbranch<mode>4): Rename to cbranch<mode>4_insn.
+	(define_peephole): Add dead_or_set_regno_p(insn,REG_CC) as needed.
+	(define_deephole2): Add peep2_regno_dead_p(*,REG_CC) as needed.
+	Add new RTL peepholes for decrement-and-branch and *swapped_tst<mode>.
+	Rework signtest-and-branch peepholes for *sbrx_branch<mode>.
+	(adjust_len) [add_set_ZN, cmp_zext]: New.
+	(QIPSI): New mode iterator.
+	(ALLs1, ALLs2, ALLs4, ALLs234): New mode iterators.
+	(gelt): New code iterator.
+	(gelt_eqne): New code attribute.
+	(rvbranch, *rvbranch, difficult_rvbranch, *difficult_rvbranch)
+	(branch_unspec, *negated_tst<mode>, *reversed_tst<mode>)
+	(*cmpqi_sign_extend): Remove insns.
+	(define_c_enum "unspec") [UNSPEC_IDENTITY]: Remove.
+	* config/avr/avr-dimode.md (cbranch<mode>4): Canonicalize comparisons.
+	* config/avr/predicates.md (scratch_or_d_register_operand): New.
+	* config/avr/constraints.md (Yxx): New constraint.
+
+2023-06-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (select_vl<mode>): New pattern.
+	* config/riscv/riscv-protos.h (expand_select_vl): New function.
+	* config/riscv/riscv-v.cc (expand_select_vl): Ditto.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_mult_div_base): Delete.
+	(foperator_mult_div_base::find_range): Make static local function.
+	(foperator_mult): Remove.  Move prototypes to range-op-mixed.h
+	(operator_mult::op1_range): Rename from foperator_mult.
+	(operator_mult::op2_range): Ditto.
+	(operator_mult::rv_fold): Ditto.
+	(float_table::float_table): Remove MULT_EXPR.
+	(class foperator_div): Inherit from range_operator.
+	(float_table::float_table): Delete.
+	* range-op-mixed.h (class operator_mult): Combined from integer
+	and float files.
+	* range-op.cc (float_tree_table): Delete.
+	(op_mult): New object.
+	(unified_table::unified_table): Add MULT_EXPR.
+	(get_op_handler): Do not check float table any longer.
+	(class cross_product_operator): Move to range-op-mixed.h.
+	(class operator_mult): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove MULT_EXPR.
+	(pointer_table::pointer_table): Remove MULT_EXPR.
+	* range-op.h (float_table): Remove.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_negate): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_negate::fold_range): Rename from foperator_negate.
+	(operator_negate::op1_range): Ditto.
+	(float_table::float_table): Remove NEGATE_EXPR.
+	* range-op-mixed.h (class operator_negate): Combined from integer
+	and float files.
+	* range-op.cc (op_negate): New object.
+	(unified_table::unified_table): Add NEGATE_EXPR.
+	(class operator_negate): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove NEGATE_EXPR.
+	(pointer_table::pointer_table): Remove NEGATE_EXPR.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_minus): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_minus::fold_range): Rename from foperator_minus.
+	(operator_minus::op1_range): Ditto.
+	(operator_minus::op2_range): Ditto.
+	(operator_minus::rv_fold): Ditto.
+	(float_table::float_table): Remove MINUS_EXPR.
+	* range-op-mixed.h (class operator_minus): Combined from integer
+	and float files.
+	* range-op.cc (op_minus): New object.
+	(unified_table::unified_table): Add MINUS_EXPR.
+	(class operator_minus): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove MINUS_EXPR.
+	(pointer_table::pointer_table): Remove MINUS_EXPR.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_abs): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_abs::fold_range): Rename from foperator_abs.
+	(operator_abs::op1_range): Ditto.
+	(float_table::float_table): Remove ABS_EXPR.
+	* range-op-mixed.h (class operator_abs): Combined from integer
+	and float files.
+	* range-op.cc (op_abs): New object.
+	(unified_table::unified_table): Add ABS_EXPR.
+	(class operator_abs): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove ABS_EXPR.
+	(pointer_table::pointer_table): Remove ABS_EXPR.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_plus): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_plus::fold_range): Rename from foperator_plus.
+	(operator_plus::op1_range): Ditto.
+	(operator_plus::op2_range): Ditto.
+	(operator_plus::rv_fold): Ditto.
+	(float_table::float_table): Remove PLUS_EXPR.
+	* range-op-mixed.h (class operator_plus): Combined from integer
+	and float files.
+	* range-op.cc (op_plus): New object.
+	(unified_table::unified_table): Add PLUS_EXPR.
+	(class operator_plus): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove PLUS_EXPR.
+	(pointer_table::pointer_table): Remove PLUS_EXPR.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_cast): Combined from integer
+	and float files.
+	* range-op.cc (op_cast): New object.
+	(unified_table::unified_table): Add op_cast
+	(class operator_cast): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove op_cast
+	(pointer_table::pointer_table): Remove op_cast.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (operator_cst::fold_range): New.
+	* range-op-mixed.h (class operator_cst): Move from integer file.
+	* range-op.cc (op_cst): New object.
+	(unified_table::unified_table): Add op_cst. Also use for REAL_CST.
+	(class operator_cst): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove op_cst.
+	(pointer_table::pointer_table): Remove op_cst.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_identity): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_identity::fold_range): Rename from foperator_identity.
+	(operator_identity::op1_range): Ditto.
+	(float_table::float_table): Remove fop_identity.
+	* range-op-mixed.h (class operator_identity): Combined from integer
+	and float files.
+	* range-op.cc (op_identity): New object.
+	(unified_table::unified_table): Add op_identity.
+	(class operator_identity): Move to range-op-mixed.h.
+	(integral_table::integral_table): Remove identity.
+	(pointer_table::pointer_table): Remove identity.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_ge): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_ge::fold_range): Rename from foperator_ge.
+	(operator_ge::op1_range): Ditto.
+	(float_table::float_table): Remove GE_EXPR.
+	* range-op-mixed.h (class operator_ge): Combined from integer
+	and float files.
+	* range-op.cc (op_ge): New object.
+	(unified_table::unified_table): Add GE_EXPR.
+	(class operator_ge): Move to range-op-mixed.h.
+	(ge_op1_op2_relation): Fold into
+	operator_ge::op1_op2_relation.
+	(integral_table::integral_table): Remove GE_EXPR.
+	(pointer_table::pointer_table): Remove GE_EXPR.
+	* range-op.h (ge_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_gt): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_gt::fold_range): Rename from foperator_gt.
+	(operator_gt::op1_range): Ditto.
+	(float_table::float_table): Remove GT_EXPR.
+	* range-op-mixed.h (class operator_gt): Combined from integer
+	and float files.
+	* range-op.cc (op_gt): New object.
+	(unified_table::unified_table): Add GT_EXPR.
+	(class operator_gt): Move to range-op-mixed.h.
+	(gt_op1_op2_relation): Fold into
+	operator_gt::op1_op2_relation.
+	(integral_table::integral_table): Remove GT_EXPR.
+	(pointer_table::pointer_table): Remove GT_EXPR.
+	* range-op.h (gt_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_le): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_le::fold_range): Rename from foperator_le.
+	(operator_le::op1_range): Ditto.
+	(float_table::float_table): Remove LE_EXPR.
+	* range-op-mixed.h (class operator_le): Combined from integer
+	and float files.
+	* range-op.cc (op_le): New object.
+	(unified_table::unified_table): Add LE_EXPR.
+	(class operator_le): Move to range-op-mixed.h.
+	(le_op1_op2_relation): Fold into
+	operator_le::op1_op2_relation.
+	(integral_table::integral_table): Remove LE_EXPR.
+	(pointer_table::pointer_table): Remove LE_EXPR.
+	* range-op.h (le_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_lt): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_lt::fold_range): Rename from foperator_lt.
+	(operator_lt::op1_range): Ditto.
+	(float_table::float_table): Remove LT_EXPR.
+	* range-op-mixed.h (class operator_lt): Combined from integer
+	and float files.
+	* range-op.cc (op_lt): New object.
+	(unified_table::unified_table): Add LT_EXPR.
+	(class operator_lt): Move to range-op-mixed.h.
+	(lt_op1_op2_relation): Fold into
+	operator_lt::op1_op2_relation.
+	(integral_table::integral_table): Remove LT_EXPR.
+	(pointer_table::pointer_table): Remove LT_EXPR.
+	* range-op.h (lt_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_not_equal): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_equal::fold_range): Rename from foperator_not_equal.
+	(operator_equal::op1_range): Ditto.
+	(float_table::float_table): Remove NE_EXPR.
+	* range-op-mixed.h (class operator_not_equal): Combined from integer
+	and float files.
+	* range-op.cc (op_equal): New object.
+	(unified_table::unified_table): Add NE_EXPR.
+	(class operator_not_equal): Move to range-op-mixed.h.
+	(not_equal_op1_op2_relation): Fold into
+	operator_not_equal::op1_op2_relation.
+	(integral_table::integral_table): Remove NE_EXPR.
+	(pointer_table::pointer_table): Remove NE_EXPR.
+	* range-op.h (not_equal_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (foperator_equal): Remove.  Move prototypes
+	to range-op-mixed.h
+	(operator_equal::fold_range): Rename from foperator_equal.
+	(operator_equal::op1_range): Ditto.
+	(float_table::float_table): Remove EQ_EXPR.
+	* range-op-mixed.h (class operator_equal): Combined from integer
+	and float files.
+	* range-op.cc (op_equal): New object.
+	(unified_table::unified_table): Add EQ_EXPR.
+	(class operator_equal): Move to range-op-mixed.h.
+	(equal_op1_op2_relation): Fold into
+	operator_equal::op1_op2_relation.
+	(integral_table::integral_table): Remove EQ_EXPR.
+	(pointer_table::pointer_table): Remove EQ_EXPR.
+	* range-op.h (equal_op1_op2_relation): Delete.
+
+2023-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-float.cc (class float_table): Move to header.
+	(float_table::float_table): Move float only operators to...
+	(range_op_table::initialize_float_ops): Here.
+	* range-op-mixed.h: New.
+	* range-op.cc (integral_tree_table, pointer_tree_table): Moved
+	to top of file.
+	(float_tree_table): Moved from range-op-float.cc.
+	(unified_tree_table): New.
+	(unified_table::unified_table): New.  Call initialize routines.
+	(get_op_handler): Check unified table first.
+	(range_op_handler::range_op_handler): Handle no type constructor.
+	(integral_table::integral_table): Move integral only operators to...
+	(range_op_table::initialize_integral_ops): Here.
+	(pointer_table::pointer_table): Move pointer only operators to...
+	(range_op_table::initialize_pointer_ops): Here.
+	* range-op.h (enum bool_range_state): Move to range-op-mixed.h.
+	(get_bool_state): Ditto.
+	(empty_range_varying): Ditto.
+	(relop_early_resolve): Ditto.
+	(class range_op_table): Add new init methods for range types.
+	(class integral_table): Move declaration to here.
+	(class pointer_table): Move declaration to here.
+	(class float_table): Move declaration to here.
+
 2023-06-09  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 	    Richard Sandiford <richard.sandiford@arm.com>
 	    Richard Biener  <rguenther@suse.de>

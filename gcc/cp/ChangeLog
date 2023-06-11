@@ -1,3 +1,8 @@
+2023-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/61663
+	* pt.cc (maybe_adjust_types_for_deduction): Implement DR976.
+
 2023-06-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/110185

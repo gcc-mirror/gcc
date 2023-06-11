@@ -1,3 +1,16 @@
+2023-06-10  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/109577
+	* constraint-manager.cc (class sval_finder): Visitor to find
+	childs in svalue trees.
+	(constraint_manager::sval_constrained_p): Add new function to
+	check whether a sval might be part of an constraint.
+	* constraint-manager.h: Add sval_constrained_p function.
+	* region-model.cc (class size_visitor): Reverse behavior to not
+	emit a warning on not explicitly considered cases.
+	(region_model::check_region_size):
+	Adapt to size_visitor changes.
+
 2023-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110112

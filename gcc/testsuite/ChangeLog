@@ -1,3 +1,43 @@
+2023-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr61663.C: New.
+
+2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/109650
+	* gcc.target/avr/torture/pr109650-1.c: New test.
+	* gcc.target/avr/torture/pr109650-2.c: New test.
+
+2023-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/minmax_1.f90: New test.
+	* gfortran.dg/ieee/minmax_2.f90: New file.
+	* gfortran.dg/ieee/minmax_3.f90: New file.
+	* gfortran.dg/ieee/minmax_4.f90: New file.
+
+2023-06-10  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/110014
+	* gcc.dg/analyzer/realloc-pr110014.c: New tests.
+
+2023-06-10  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/109577
+	* gcc.dg/analyzer/allocation-size-2.c: Change expected output
+	and add new test case.
+	* gcc.dg/analyzer/pr109577.c: New test.
+
+2023-06-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Add new cases.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Diito.
+
+2023-06-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-2.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/select_vl-1.c: New test.
+
 2023-06-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/concepts/auto7.C: New test.
