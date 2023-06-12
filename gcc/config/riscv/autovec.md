@@ -513,7 +513,7 @@
 })
 
 ;; -------------------------------------------------------------------------------
-;; - ABS expansion to vmslt and vneg
+;; - [INT] ABS expansion to vmslt and vneg.
 ;; -------------------------------------------------------------------------------
 
 (define_expand "abs<mode>2"
@@ -529,6 +529,40 @@
   rtx ops[] = {operands[0], mask, operands[1], operands[1]};
   riscv_vector::emit_vlmax_masked_mu_insn (code_for_pred (NEG, <MODE>mode),
 					   riscv_vector::RVV_UNOP_MU, ops);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------------
+;; ---- [FP] Unary operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vfneg.v/vfabs.v
+;; -------------------------------------------------------------------------------
+(define_expand "<optab><mode>2"
+  [(set (match_operand:VF_AUTO 0 "register_operand")
+    (any_float_unop_nofrm:VF_AUTO
+     (match_operand:VF_AUTO 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------------
+;; - [FP] Square root
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vfsqrt.v
+;; -------------------------------------------------------------------------------
+(define_expand "<optab><mode>2"
+  [(set (match_operand:VF_AUTO 0 "register_operand")
+    (any_float_unop:VF_AUTO
+     (match_operand:VF_AUTO 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_fp_insn (icode, riscv_vector::RVV_UNOP, operands);
   DONE;
 })
 

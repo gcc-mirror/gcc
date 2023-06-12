@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
 
 #include "vneg-template.h"
@@ -18,12 +18,7 @@
     assert (a##TYPE[i] == -(i - 127));
 
 #define RUN_ALL()	                        \
- RUN(int8_t)	                                \
- RUN(int16_t)	                                \
- RUN(int32_t)	                                \
- RUN(int64_t)					\
- RUN(float)	                                \
- RUN(double)					\
+ RUN(_Float16)	                                \
 
 int main ()
 {

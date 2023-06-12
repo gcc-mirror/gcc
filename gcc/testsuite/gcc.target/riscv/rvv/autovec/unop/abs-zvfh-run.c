@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_zvfh_hw } } } */
 /* { dg-additional-options "-std=c99 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax -ffast-math" } */
 
 #include "abs-template.h"
@@ -20,19 +20,14 @@
   for (int i = 0; i < SZ; i++)				  \
     {							  \
       if (i & 1)					  \
-	assert (a##TYPE[i] == __builtin_abs (i - 64));	  \
+	assert (a##TYPE[i] == __builtin_abs (i - 64));    \
       else						  \
 	assert (a##TYPE[i] == i);			  \
     }
 
 
 #define RUN_ALL()					  \
- RUN(int8_t)	                                	  \
- RUN(int16_t)	                                	  \
- RUN(int32_t)	                                	  \
- RUN(int64_t)						  \
- RUN(float)	                                	  \
- RUN(double)						  \
+ RUN(_Float16)	                                	  \
 
 int main ()
 {
