@@ -2433,8 +2433,6 @@ const struct tune_params arm_fa726te_tune =
   tune_params::SCHED_AUTOPREF_OFF
 };
 
-char *accepted_branch_protection_string = NULL;
-
 /* Auto-generated CPU, FPU and architecture tables.  */
 #include "arm-cpu-data.h"
 

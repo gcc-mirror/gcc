@@ -351,8 +351,6 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
-char *accepted_branch_protection_string = NULL;
-
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -17999,12 +17997,6 @@ aarch64_adjust_generic_arch_tuning (struct tune_params &current_tune)
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
-  if (accepted_branch_protection_string)
-    {
-      opts->x_aarch64_branch_protection_string
-	= xstrdup (accepted_branch_protection_string);
-    }
-
   /* PR 70044: We have to be careful about being called multiple times for the
      same function.  This means all changes should be repeatable.  */
 
@@ -18647,7 +18639,7 @@ aarch64_override_options (void)
   /* Return address signing is currently not supported for ILP32 targets.  For
      LP64 targets use the configured option in the absence of a command-line
      option for -mbranch-protection.  */
-  if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
+  if (!TARGET_ILP32 && aarch64_branch_protection_string == NULL)
     {
 #ifdef TARGET_ENABLE_PAC_RET
       aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;

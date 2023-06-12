@@ -660,9 +660,6 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   return saw_asm_flag ? seq : NULL;
 }
 
-#define BRANCH_PROTECT_STR_MAX 255
-extern char *accepted_branch_protection_string;
-
 static enum aarch_parse_opt_result
 aarch_handle_no_branch_protection (char* str, char* rest)
 {
@@ -812,19 +809,6 @@ aarch_parse_branch_protection (const char *const_str, char** last_str)
 	strcpy (*last_str, str);
       else
 	*last_str = NULL;
-    }
-
-  if (res == AARCH_PARSE_OK)
-    {
-      /* If needed, alloc the accepted string then copy in const_str.
-	Used by override_option_after_change_1.  */
-      if (!accepted_branch_protection_string)
-	accepted_branch_protection_string
-	  = (char *) xmalloc (BRANCH_PROTECT_STR_MAX + 1);
-      strncpy (accepted_branch_protection_string, const_str,
-	       BRANCH_PROTECT_STR_MAX + 1);
-      /* Forcibly null-terminate.  */
-      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
     }
   return res;
 }
