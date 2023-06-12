@@ -7710,6 +7710,9 @@ package body Sem_Ch12 is
             Prepend_Elmt (Typ, Exchanged_Views);
             Exchange_Declarations (Etype (Get_Associated_Node (N)));
 
+         --  Check that the available views of Typ match their respective flag.
+         --  Note that the type of a visible discriminant is never private.
+
          else
             Check_Private_Type (Typ, Has_Private_View (N));
 
@@ -7720,6 +7723,20 @@ package body Sem_Ch12 is
             elsif Is_Array_Type (Typ) then
                Check_Private_Type
                  (Component_Type (Typ), Has_Secondary_Private_View (N));
+
+            elsif (Is_Record_Type (Typ) or else Is_Concurrent_Type (Typ))
+              and then Has_Discriminants (Typ)
+            then
+               declare
+                  Disc : Entity_Id;
+
+               begin
+                  Disc := First_Discriminant (Typ);
+                  while Present (Disc) loop
+                     Check_Private_Type (Etype (Disc), False);
+                     Next_Discriminant (Disc);
+                  end loop;
+               end;
             end if;
          end if;
       end if;
