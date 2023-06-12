@@ -694,13 +694,6 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
       gcc_unreachable ();
     }
 
-  if (!res)
-    rust_error_at (rep.get_match_locus (),
-		   "invalid amount of matches for macro invocation. Expected "
-		   "between %s and %s, got %lu",
-		   lo_str.c_str (), hi_str.c_str (),
-		   (unsigned long) match_amount);
-
   rust_debug_loc (rep.get_match_locus (), "%s matched %lu times",
 		  res ? "successfully" : "unsuccessfully",
 		  (unsigned long) match_amount);
