@@ -126,7 +126,7 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BuildRetry,
                     DisplayStack,
                     AddVarientRange, AddVarientEquality,
-                    BuildAsmElement,
+                    BuildAsmElement, BuildAsmTrash,
                     BeginVarient, EndVarient, BeginVarientList, EndVarientList,
                     PushInConstExpression, PopInConstExpression, IsInConstExpression,
                     BuildDefaultFieldAlignment, BuildPragmaField,
@@ -1587,7 +1587,7 @@ AsmOperandName :=  ( NamedOperand
 AsmInputElement := AsmOperandName
                    ConstExpression '(' Expression                          % IF Pass3
                                                                              THEN
-                                                                                BuildAsmElement (TRUE, FALSE, FALSE)
+                                                                                BuildAsmElement (TRUE, FALSE)
                                                                              END
                                                                            %
                                    ')'
@@ -1596,34 +1596,22 @@ AsmInputElement := AsmOperandName
 AsmOutputElement := AsmOperandName
                     ConstExpression '(' Expression                         % IF Pass3
                                                                              THEN
-                                                                                BuildAsmElement (FALSE, TRUE, FALSE)
+                                                                                BuildAsmElement (FALSE, TRUE)
                                                                              END
                                                                            %
                                     ')'
                   =:
 
-AsmTrashList :=                                                            % VAR expr, tokpos  : CARDINAL ; %
+AsmTrashList :=                                                            % VAR expr, tokpos: CARDINAL ; %
                  [ ConstExpression                                         % IF Pass3
                                                                              THEN
-                                                                                PopTtok (expr, tokpos) ;
-                                                                                PushT (NulSym) ;
-                                                                                PushTtok (expr, tokpos) ;
-                                                                                BuildAsmElement (FALSE, FALSE, TRUE) ;
-                                                                                PopTtok (expr, tokpos) ;
-                                                                                PopNothing ;
-                                                                                PushTtok (expr, tokpos) ;
+                                                                                BuildAsmTrash
                                                                              END
 
                                                                            %
                  ] { ',' ConstExpression                                   % IF Pass3
                                                                              THEN
-                                                                                PopTtok (expr, tokpos) ;
-                                                                                PushT (NulSym) ;
-                                                                                PushTtok (expr, tokpos) ;
-                                                                                BuildAsmElement (FALSE, FALSE, TRUE) ;
-                                                                                PopTtok (expr, tokpos) ;
-                                                                                PopNothing ;
-                                                                                PushTtok (expr, tokpos) ;
+                                                                                BuildAsmTrash
                                                                              END
                                                                            %
                    } =:
