@@ -249,6 +249,8 @@ public:
   TyTy::BaseType *get_self ();
   const TyTy::BaseType *get_self () const;
 
+  void setup_raw_associated_types ();
+
   TyTy::BaseType *
   setup_associated_types (const TyTy::BaseType *self,
 			  const TyTy::TypeBoundPredicate &bound);

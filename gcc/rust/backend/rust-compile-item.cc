@@ -133,6 +133,23 @@ CompileItem::visit (HIR::Function &function)
 	  fntype->monomorphize ();
 	}
     }
+  else
+    {
+      // if this is part of a trait impl block which is not generic we need to
+      // ensure associated types are setup
+      HirId parent_impl_block = UNKNOWN_HIRID;
+      HirId id = function.get_mappings ().get_hirid ();
+      HIR::ImplItem *impl_item
+	= ctx->get_mappings ()->lookup_hir_implitem (id, &parent_impl_block);
+      if (impl_item != nullptr)
+	{
+	  Resolver::AssociatedImplTrait *impl = nullptr;
+	  bool found = ctx->get_tyctx ()->lookup_associated_trait_impl (
+	    parent_impl_block, &impl);
+	  if (found)
+	    impl->setup_raw_associated_types ();
+	}
+    }
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   bool ok = ctx->get_mappings ()->lookup_canonical_path (
