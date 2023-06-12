@@ -836,6 +836,46 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
   emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
 }
 
+/* According to RVV ISA spec (16.5.1. Synthesizing vdecompress):
+   https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc
+
+  There is no inverse vdecompress provided, as this operation can be readily
+  synthesized using iota and a masked vrgather:
+
+      Desired functionality of 'vdecompress'
+	7 6 5 4 3 2 1 0     # vid
+
+	      e d c b a     # packed vector of 5 elements
+	1 0 0 1 1 1 0 1     # mask vector of 8 elements
+	p q r s t u v w     # destination register before vdecompress
+
+	e q r d c b v a     # result of vdecompress
+       # v0 holds mask
+       # v1 holds packed data
+       # v11 holds input expanded vector and result
+       viota.m v10, v0                 # Calc iota from mask in v0
+       vrgather.vv v11, v1, v10, v0.t  # Expand into destination
+     p q r s t u v w  # v11 destination register
+	   e d c b a  # v1 source vector
+     1 0 0 1 1 1 0 1  # v0 mask vector
+
+     4 4 4 3 2 1 1 0  # v10 result of viota.m
+     e q r d c b v a  # v11 destination after vrgather using viota.m under mask
+*/
+static void
+emit_vlmax_decompress_insn (rtx target, rtx op, rtx mask)
+{
+  machine_mode data_mode = GET_MODE (target);
+  machine_mode sel_mode = related_int_vector_mode (data_mode).require ();
+  if (GET_MODE_INNER (data_mode) == QImode)
+    sel_mode = get_vector_mode (HImode, GET_MODE_NUNITS (data_mode)).require ();
+
+  rtx sel = gen_reg_rtx (sel_mode);
+  rtx iota_ops[] = {sel, mask};
+  emit_vlmax_insn (code_for_pred_iota (sel_mode), RVV_UNOP, iota_ops);
+  emit_vlmax_masked_gather_mu_insn (target, op, sel, mask);
+}
+
 /* Emit merge instruction.  */
 
 static machine_mode
@@ -2337,6 +2377,75 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+/* Recognize decompress patterns:
+
+   1. VEC_PERM_EXPR op0 and op1
+      with isel = { 0, nunits, 1, nunits + 1, ... }.
+      Decompress op0 and op1 vector with the mask = { 0, 1, 0, 1, ... }.
+
+   2. VEC_PERM_EXPR op0 and op1
+      with isel = { 1/2 nunits, 3/2 nunits, 1/2 nunits+1, 3/2 nunits+1,... }.
+      Slide down op0 and op1 with OFFSET = 1/2 nunits.
+      Decompress op0 and op1 vector with the mask = { 0, 1, 0, 1, ... }.
+*/
+static bool
+shuffle_decompress_patterns (struct expand_vec_perm_d *d)
+{
+  poly_uint64 nelt = d->perm.length ();
+  machine_mode mask_mode = get_mask_mode (d->vmode).require ();
+
+  /* For constant size indices, we dont't need to handle it here.
+     Just leave it to vec_perm<mode>.  */
+  if (d->perm.length ().is_constant ())
+    return false;
+
+  poly_uint64 first = d->perm[0];
+  if ((maybe_ne (first, 0U) && maybe_ne (first * 2, nelt))
+      || !d->perm.series_p (0, 2, first, 1)
+      || !d->perm.series_p (1, 2, first + nelt, 1))
+    return false;
+
+  /* Permuting two SEW8 variable-length vectors need vrgatherei16.vv.
+     Otherwise, it could overflow the index range.  */
+  machine_mode sel_mode = related_int_vector_mode (d->vmode).require ();
+  if (GET_MODE_INNER (d->vmode) == QImode
+      && !get_vector_mode (HImode, nelt).exists (&sel_mode))
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  rtx op0, op1;
+  if (known_eq (first, 0U))
+    {
+      op0 = d->op0;
+      op1 = d->op1;
+    }
+  else
+    {
+      op0 = gen_reg_rtx (d->vmode);
+      op1 = gen_reg_rtx (d->vmode);
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, d->vmode);
+      rtx ops0[] = {op0, d->op0, gen_int_mode (first, Pmode)};
+      rtx ops1[] = {op1, d->op1, gen_int_mode (first, Pmode)};
+      emit_vlmax_insn (icode, RVV_BINOP, ops0);
+      emit_vlmax_insn (icode, RVV_BINOP, ops1);
+    }
+  /* Generate { 0, 1, .... } mask.  */
+  rtx vid = gen_reg_rtx (sel_mode);
+  rtx vid_repeat = gen_reg_rtx (sel_mode);
+  emit_insn (gen_vec_series (sel_mode, vid, const0_rtx, const1_rtx));
+  rtx and_ops[] = {vid_repeat, vid, const1_rtx};
+  emit_vlmax_insn (code_for_pred_scalar (AND, sel_mode), RVV_BINOP, and_ops);
+  rtx const_vec = gen_const_vector_dup (sel_mode, 1);
+  rtx mask = gen_reg_rtx (mask_mode);
+  expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
+  emit_move_insn (d->target, op0);
+  emit_vlmax_decompress_insn (d->target, op1, mask);
+  return true;
+}
+
 /* Recognize the pattern that can be shuffled by generic approach.  */
 
 static bool
@@ -2388,6 +2497,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     {
       if (d->vmode == d->op_mode)
 	{
+	  if (shuffle_decompress_patterns (d))
+	    return true;
 	  if (shuffle_generic_patterns (d))
 	    return true;
 	  return false;
