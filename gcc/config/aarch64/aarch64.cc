@@ -22254,7 +22254,7 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
      and matches[X][1] with the count of duplicate elements (if X is the
      earliest element which has duplicates).  */
 
-  if (n_var == n_elts && n_elts <= 16)
+  if (n_var >= n_elts - 1 && n_elts <= 16)
     {
       int matches[16][2] = {0};
       for (int i = 0; i < n_elts; i++)
@@ -22271,12 +22271,23 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
 	}
       int maxelement = 0;
       int maxv = 0;
+      rtx const_elem = NULL_RTX;
+      int const_elem_pos = 0;
+
       for (int i = 0; i < n_elts; i++)
-	if (matches[i][1] > maxv)
-	  {
-	    maxelement = i;
-	    maxv = matches[i][1];
-	  }
+	{
+	  if (matches[i][1] > maxv)
+	    {
+	      maxelement = i;
+	      maxv = matches[i][1];
+	    }
+	  if (CONST_INT_P (XVECEXP (vals, 0, i))
+	      || CONST_DOUBLE_P (XVECEXP (vals, 0, i)))
+	    {
+	      const_elem_pos = i;
+	      const_elem = XVECEXP (vals, 0, i);
+	    }
+	}
 
       /* Create a duplicate of the most common element, unless all elements
 	 are equally useless to us, in which case just immediately set the
@@ -22314,8 +22325,19 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
 	     vector register.  For big-endian we want that position to hold
 	     the last element of VALS.  */
 	  maxelement = BYTES_BIG_ENDIAN ? n_elts - 1 : 0;
-	  rtx x = force_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-	  aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
+
+	  /* If we have a single constant element, use that for duplicating
+	     instead.  */
+	  if (const_elem)
+	    {
+	      maxelement = const_elem_pos;
+	      aarch64_emit_move (target, gen_vec_duplicate (mode, const_elem));
+	    }
+	  else
+	    {
+	      rtx x = force_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	      aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
+	    }
 	}
       else
 	{
