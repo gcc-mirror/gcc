@@ -1,3 +1,30 @@
+2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* g++.dg/cpp2a/nontype-class59.C: New test.
+
+2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* g++.dg/cpp2a/nontype-class57.C: New test.
+	* g++.dg/cpp2a/nontype-class58.C: New test.
+
+2023-06-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/109907
+	* gcc.target/avr/pr109907.c: New test.
+	* gcc.target/avr/torture/pr109907-1.c: New test.
+	* gcc.target/avr/torture/pr109907-2.c: New test.
+
+2023-06-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-16.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-21.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-22.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-23.c: New test.
+
 2023-06-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/pr61663.C: New.

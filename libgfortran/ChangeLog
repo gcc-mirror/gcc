@@ -1,3 +1,11 @@
+2023-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/109373
+	* configure.ac: Remove support for --enable-intermodule
+	* Makefile.am: Remove onestep path.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2023-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/ieee_arithmetic.F90: Add IEEE_MIN_NUM, IEEE_MAX_NUM,

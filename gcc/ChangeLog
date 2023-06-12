@@ -1,3 +1,60 @@
+2023-06-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (adjust_len) [insv_notbit_0, insv_notbit_7]:
+	Remove attribute values.
+	(insv_notbit): New post-reload insn.
+	(*insv.not-shiftrt_split, *insv.xor1-bit.0_split)
+	(*insv.not-bit.0_split, *insv.not-bit.7_split)
+	(*insv.xor-extract_split): Split to insv_notbit.
+	(*insv.not-shiftrt, *insv.xor1-bit.0, *insv.not-bit.0, *insv.not-bit.7)
+	(*insv.xor-extract): Remove post-reload insns.
+	* config/avr/avr.cc (avr_out_insert_notbit) [bitno]: Remove parameter.
+	(avr_adjust_insn_length): Adjust call of avr_out_insert_notbit.
+	[ADJUST_LEN_INSV_NOTBIT_0, ADJUST_LEN_INSV_NOTBIT_7]: Remove cases.
+	* config/avr/avr-protos.h (avr_out_insert_notbit): Adjust prototype.
+
+2023-06-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/109907
+	* config/avr/avr.md (adjust_len) [extr, extr_not]: New elements.
+	(MSB, SIZE): New mode attributes.
+	(any_shift): New code iterator.
+	(*lshr<mode>3_split, *lshr<mode>3, lshr<mode>3)
+	(*lshr<mode>3_const_split): Add constraint alternative for
+	the case of shift-offset = MSB.  Ditch "length" attribute.
+	(extzv<mode): New. replaces extzv.  Adjust following patterns.
+	Use avr_out_extr, avr_out_extr_not to print asm.
+	(*extzv.subreg.<mode>, *extzv.<mode>.subreg, *extzv.xor)
+	(*extzv<mode>.ge, *neg.ashiftrt<mode>.msb, *extzv.io.lsr7): New.
+	* config/avr/constraints.md (C15, C23, C31, Yil): New
+	* config/avr/predicates.md (reg_or_low_io_operand)
+	(const7_operand, reg_or_low_io_operand)
+	(const15_operand, const_0_to_15_operand)
+	(const23_operand, const_0_to_23_operand)
+	(const31_operand, const_0_to_31_operand): New.
+	* config/avr/avr-protos.h (avr_out_extr, avr_out_extr_not): New.
+	* config/avr/avr.cc (avr_out_extr, avr_out_extr_not): New funcs.
+	(lshrqi3_out, lshrhi3_out, lshrpsi3_out, lshrsi3_out): Adjust
+	MSB case to new insn constraint "r" for operands[1].
+	(avr_adjust_insn_length) [ADJUST_LEN_EXTR_NOT, ADJUST_LEN_EXTR]:
+	Handle these cases.
+	(avr_rtx_costs_1): Adjust cost for a new pattern.
+
+2023-06-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (available_occurrence_p): Enhance user vsetvl optimization.
+	(vector_insn_info::parse_insn): Add rtx_insn parse.
+	(pass_vsetvl::local_eliminate_vsetvl_insn): Enhance user vsetvl optimization.
+	(get_first_vsetvl): New function.
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Ditto.
+	(pass_vsetvl::cleanup_insns): Remove it.
+	(pass_vsetvl::ssa_post_optimization): New function.
+	(has_no_uses): Ditto.
+	(pass_vsetvl::propagate_avl): Remove it.
+	(pass_vsetvl::df_post_optimization): New function.
+	(pass_vsetvl::lazy_vsetvl): Rework Phase 5 && Phase 6.
+	* config/riscv/riscv-vsetvl.h: Adapt declaration.
+
 2023-06-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* ipa-cp.cc (ipcp_vr_lattice::init): Take type argument.

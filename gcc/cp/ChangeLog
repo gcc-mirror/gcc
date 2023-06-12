@@ -1,3 +1,18 @@
+2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* constexpr.cc (cxx_eval_call_expression): Synthesize defaulted
+	functions needed for constant evaluation.
+	(instantiate_cx_fn_r): Likewise.
+
+2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* pt.cc (lookup_template_class): Extend shortcut for looking up the
+	current class scope to consider outer class scopes too, and use
+	current_nonlambda_class_type instead of current_class_type.  Only
+	call coerce_template_parms when specializing a primary template.
+
 2023-06-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/61663
