@@ -830,7 +830,7 @@ exported from the @code{SYSTEM} module.
 @xref{The PIM system module, , ,gm2}.
 @xref{The ISO system module, , ,gm2}.
 
-@node Standard procedures, Dialect, Elementary data types, Using
+@node Standard procedures, High procedure function, Elementary data types, Using
 @section Permanently accessible base procedures.
 
 This section describes the procedures and functions which are
