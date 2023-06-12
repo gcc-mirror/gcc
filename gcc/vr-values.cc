@@ -292,8 +292,8 @@ range_of_var_in_loop (vrange &v, tree name, class loop *l, gimple *stmt,
 	  wide_int w = wide_int::from (nit, TYPE_PRECISION (type), TYPE_SIGN (type));
 	  int_range<1> niter (type, w, w);
 	  int_range_max max_step;
-	  range_op_handler mult_handler (MULT_EXPR, type);
-	  range_op_handler plus_handler (PLUS_EXPR, type);
+	  range_op_handler mult_handler (MULT_EXPR);
+	  range_op_handler plus_handler (PLUS_EXPR);
 	  if (!mult_handler.fold_range (max_step, type, niter, rstep)
 	      || !plus_handler.fold_range (max_init, type, rinit, max_step))
 	    return false;
@@ -317,7 +317,7 @@ simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
 
   tree type = TREE_TYPE (op0);
   int_range<1> res;
-  range_op_handler handler (code, type);
+  range_op_handler handler (code);
   if (handler && handler.fold_range (res, type, r0, r1))
     {
       if (res == range_true (type))

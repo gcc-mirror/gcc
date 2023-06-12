@@ -185,7 +185,6 @@ class range_op_handler
 {
 public:
   range_op_handler ();
-  range_op_handler (enum tree_code code, tree type);
   range_op_handler (enum tree_code code);
   inline operator bool () const { return m_operator != NULL; }
 
@@ -213,7 +212,6 @@ public:
 protected:
   unsigned dispatch_kind (const vrange &lhs, const vrange &op1,
 			  const vrange& op2) const;
-  void set_op_handler (enum tree_code code, tree type);
   range_operator *m_operator;
 };
 
@@ -226,9 +224,8 @@ range_cast (vrange &r, tree type)
   Value_Range tmp (r);
   Value_Range varying (type);
   varying.set_varying (type);
-  range_op_handler op (CONVERT_EXPR, type);
   // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
+  if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
     {
       r.set_varying (type);
       return false;
@@ -249,9 +246,8 @@ range_cast (Value_Range &r, tree type)
   // Ensure we are in the correct mode for the call to fold.
   r.set_type (type);
 
-  range_op_handler op (CONVERT_EXPR, type);
   // Call op_convert, if it fails, the result is varying.
-  if (!op || !op.fold_range (r, type, tmp, varying))
+  if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
     {
       r.set_varying (type);
       return false;
@@ -286,7 +282,7 @@ protected:
 inline range_operator *
 range_op_table::operator[] (enum tree_code code)
 {
-  gcc_checking_assert (code > 0 && code < MAX_TREE_CODES);
+  gcc_checking_assert (code >= 0 && code < MAX_TREE_CODES);
   return m_range_tree[code];
 }
 

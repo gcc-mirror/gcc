@@ -228,8 +228,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
       if (COMPARISON_CLASS_P (expr)
 	  && !Value_Range::supports_type_p (TREE_TYPE (op0)))
 	return false;
-      range_op_handler op (TREE_CODE (expr),
-			   BINARY_CLASS_P (expr) ? type : TREE_TYPE (op0));
+      range_op_handler op (TREE_CODE (expr));
       if (op)
 	{
 	  Value_Range r0 (TREE_TYPE (op0));
@@ -245,7 +244,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     }
   if (UNARY_CLASS_P (expr))
     {
-      range_op_handler op (TREE_CODE (expr), type);
+      range_op_handler op (TREE_CODE (expr));
       tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
       if (op && Value_Range::supports_type_p (op0_type))
 	{

@@ -94,28 +94,14 @@ gimple_range_base_of_assignment (const gimple *stmt)
 
 // If statement is supported by range-ops, set the CODE and return the TYPE.
 
-static tree
-get_code_and_type (gimple *s, enum tree_code &code)
+static inline enum tree_code
+get_code (gimple *s)
 {
-  tree type = NULL_TREE;
-  code = NOP_EXPR;
-
   if (const gassign *ass = dyn_cast<const gassign *> (s))
-    {
-      code = gimple_assign_rhs_code (ass);
-      // The LHS of a comparison is always an int, so we must look at
-      // the operands.
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
-	type = TREE_TYPE (gimple_assign_rhs1 (ass));
-      else
-	type = TREE_TYPE (gimple_assign_lhs (ass));
-    }
-  else if (const gcond *cond = dyn_cast<const gcond *> (s))
-    {
-      code = gimple_cond_code (cond);
-      type = TREE_TYPE (gimple_cond_lhs (cond));
-    }
-  return type;
+    return gimple_assign_rhs_code (ass);
+  if (const gcond *cond = dyn_cast<const gcond *> (s))
+    return gimple_cond_code (cond);
+  return ERROR_MARK;
 }
 
 // If statement S has a supported range_op handler return TRUE.
@@ -123,9 +109,8 @@ get_code_and_type (gimple *s, enum tree_code &code)
 bool
 gimple_range_op_handler::supported_p (gimple *s)
 {
-  enum tree_code code;
-  tree type = get_code_and_type (s, code);
-  if (type && range_op_handler (code, type))
+  enum tree_code code = get_code (s);
+  if (range_op_handler (code))
     return true;
   if (is_a <gcall *> (s) && gimple_range_op_handler (s))
     return true;
@@ -135,14 +120,11 @@ gimple_range_op_handler::supported_p (gimple *s)
 // Construct a handler object for statement S.
 
 gimple_range_op_handler::gimple_range_op_handler (gimple *s)
+  : range_op_handler (get_code (s))
 {
-  enum tree_code code;
-  tree type = get_code_and_type (s, code);
   m_stmt = s;
   m_op1 = NULL_TREE;
   m_op2 = NULL_TREE;
-  if (type)
-    set_op_handler (code, type);
 
   if (m_operator)
     switch (gimple_code (m_stmt))
@@ -382,8 +364,8 @@ public:
 			   const frange &rh, relation_trio) const override
   {
     frange neg;
-    range_op_handler abs_op (ABS_EXPR, type);
-    range_op_handler neg_op (NEGATE_EXPR, type);
+    range_op_handler abs_op (ABS_EXPR);
+    range_op_handler neg_op (NEGATE_EXPR);
     if (!abs_op || !abs_op.fold_range (r, type, lh, frange (type)))
       return false;
     if (!neg_op || !neg_op.fold_range (neg, type, r, frange (type)))
@@ -1091,7 +1073,7 @@ public:
   virtual bool fold_range (irange &r, tree type, const irange &lh,
 			   const irange &rh, relation_trio rel) const
   {
-    range_op_handler handler (m_code, type);
+    range_op_handler handler (m_code);
     gcc_checking_assert (handler);
 
     bool saved_flag_wrapv = flag_wrapv;

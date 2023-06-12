@@ -1478,7 +1478,7 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
   tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
   if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
     return false;
-  range_op_handler hand (gimple_assign_rhs_code (cond_def), type);
+  range_op_handler hand (gimple_assign_rhs_code (cond_def));
   if (!hand)
     return false;
 

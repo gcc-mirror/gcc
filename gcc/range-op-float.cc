@@ -2244,7 +2244,7 @@ operator_plus::op1_range (frange &r, tree type, const frange &lhs,
 {
   if (lhs.undefined_p ())
     return false;
-  range_op_handler minus (MINUS_EXPR, type);
+  range_op_handler minus (MINUS_EXPR);
   if (!minus)
     return false;
   frange wlhs = float_widen_lhs_range (type, lhs);
@@ -2361,7 +2361,7 @@ operator_mult::op1_range (frange &r, tree type,
 {
   if (lhs.undefined_p ())
     return false;
-  range_op_handler rdiv (RDIV_EXPR, type);
+  range_op_handler rdiv (RDIV_EXPR);
   if (!rdiv)
     return false;
   frange wlhs = float_widen_lhs_range (type, lhs);
@@ -2716,7 +2716,7 @@ range_op_float_tests ()
   ASSERT_EQ (r, r1);
 
   // [-INF,+INF] + [-INF,+INF] could be a NAN.
-  range_op_handler plus (PLUS_EXPR, float_type_node);
+  range_op_handler plus (PLUS_EXPR);
   r0.set_varying (float_type_node);
   r1.set_varying (float_type_node);
   r0.clear_nan ();

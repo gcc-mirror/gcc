@@ -218,7 +218,7 @@ relation_oracle::validate_relation (relation_kind rel, vrange &op1, vrange &op2)
     return VREL_VARYING;
 
   // If there is no handler, leave the relation as is.
-  range_op_handler handler (code, t1);
+  range_op_handler handler (code);
   if (!handler)
     return rel;
 

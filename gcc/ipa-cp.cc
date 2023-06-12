@@ -1924,7 +1924,7 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
   if (!irange::supports_p (dst_type) || !irange::supports_p (src_type))
     return false;
 
-  range_op_handler handler (operation, dst_type);
+  range_op_handler handler (operation);
   if (!handler)
     return false;
 
@@ -1990,7 +1990,7 @@ ipa_value_range_from_jfunc (vrange &vr,
 	  Value_Range res (vr_type);
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
 	  Value_Range op_vr (vr_type);
-	  range_op_handler handler (operation, vr_type);
+	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
 
@@ -2786,7 +2786,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
 	  Value_Range op_vr (TREE_TYPE (op));
 	  Value_Range op_res (operand_type);
-	  range_op_handler handler (operation, operand_type);
+	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
 

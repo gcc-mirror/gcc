@@ -125,28 +125,9 @@ unified_table::unified_table ()
   // set (MAX_EXPR, op_max);
 }
 
-// The tables are hidden and accessed via a simple extern function.
-
-range_operator *
-get_op_handler (enum tree_code code, tree)
-{
-  return unified_tree_table[code];
-}
-
 range_op_handler::range_op_handler ()
 {
   m_operator = NULL;
-}
-
-void
-range_op_handler::set_op_handler (tree_code code, tree type)
-{
-  m_operator = get_op_handler (code, type);
-}
-
-range_op_handler::range_op_handler (tree_code code, tree type)
-{
-  set_op_handler (code, type);
 }
 
 // Constructing without a type must come from the unified table.
@@ -1692,7 +1673,7 @@ operator_plus::op1_range (irange &r, tree type,
   if (lhs.undefined_p ())
     return false;
   // Start with the default operation.
-  range_op_handler minus (MINUS_EXPR, type);
+  range_op_handler minus (MINUS_EXPR);
   if (!minus)
     return false;
   bool res = minus.fold_range (r, type, lhs, op2);
@@ -1908,7 +1889,7 @@ operator_minus::op1_range (irange &r, tree type,
   if (lhs.undefined_p ())
     return false;
   // Start with the default operation.
-  range_op_handler minus (PLUS_EXPR, type);
+  range_op_handler minus (PLUS_EXPR);
   if (!minus)
     return false;
   bool res = minus.fold_range (r, type, lhs, op2);
@@ -2046,8 +2027,7 @@ operator_mult::op1_range (irange &r, tree type,
 
   wide_int offset;
   if (op2.singleton_p (offset) && offset != 0)
-    return range_op_handler (TRUNC_DIV_EXPR, type).fold_range (r, type,
-							       lhs, op2);
+    return range_op_handler (TRUNC_DIV_EXPR).fold_range (r, type, lhs, op2);
   return false;
 }
 
@@ -2375,7 +2355,7 @@ operator_exact_divide::op1_range (irange &r, tree type,
   // the time however.
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
   if (op2.singleton_p (offset) && offset != 0)
-    return range_op_handler (MULT_EXPR, type).fold_range (r, type, lhs, op2);
+    return range_op_handler (MULT_EXPR).fold_range (r, type, lhs, op2);
   return false;
 }
 
@@ -2946,9 +2926,8 @@ operator_cast::op1_range (irange &r, tree type,
 	  // Add this to the unsigned LHS range(s).
 	  int_range_max lim_range (type, lim, lim);
 	  int_range_max lhs_neg;
-	  range_op_handler (PLUS_EXPR, type).fold_range (lhs_neg, type,
-							 converted_lhs,
-							 lim_range);
+	  range_op_handler (PLUS_EXPR).fold_range (lhs_neg, type,
+						   converted_lhs, lim_range);
 	  // lhs_neg now has all the negative versions of the LHS.
 	  // Now union in all the values from SIGNED MIN (0x80000) to
 	  // lim-1 in order to fill in all the ranges with the upper
@@ -3987,7 +3966,7 @@ operator_bitwise_not::fold_range (irange &r, tree type,
   // ~X is simply -1 - X.
   int_range<1> minusone (type, wi::minus_one (TYPE_PRECISION (type)),
 			 wi::minus_one (TYPE_PRECISION (type)));
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type, minusone, lh);
+  return range_op_handler (MINUS_EXPR).fold_range (r, type, minusone, lh);
 }
 
 bool
@@ -4233,8 +4212,8 @@ operator_negate::fold_range (irange &r, tree type,
   if (empty_range_varying (r, type, lh, rh))
     return true;
   // -X is simply 0 - X.
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type,
-							 range_zero (type), lh);
+  return range_op_handler (MINUS_EXPR).fold_range (r, type,
+						   range_zero (type), lh);
 }
 
 bool

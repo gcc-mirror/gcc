@@ -593,7 +593,7 @@ compute_distributive_range (tree type, value_range &op0_range,
   gcc_assert (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type));
   if (result_range)
     {
-      range_op_handler op (code, type);
+      range_op_handler op (code);
       if (!op.fold_range (*result_range, type, op0_range, op1_range))
 	result_range->set_varying (type);
     }
@@ -640,7 +640,7 @@ compute_distributive_range (tree type, value_range &op0_range,
   range_cast (op0_range, ssizetype);
   range_cast (op1_range, ssizetype);
   value_range wide_range;
-  range_op_handler op (code, ssizetype);
+  range_op_handler op (code);
   bool saved_flag_wrapv = flag_wrapv;
   flag_wrapv = 1;
   if (!op.fold_range (wide_range, ssizetype, op0_range, op1_range))
