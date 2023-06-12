@@ -2009,6 +2009,13 @@
   const vsll __builtin_vsx_xxspltd_2di (vsll, const int<1>);
     XXSPLTD_V2DI vsx_xxspltd_v2di {}
 
+  const vsq __builtin_pack_vector_int128 (unsigned long long, \
+                                          unsigned long long);
+    PACK_V1TI packv1ti {}
+
+  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
+    UNPACK_V1TI unpackv1ti {}
+
 
 ; Power7 builtins (ISA 2.06).
 [power7]
@@ -2030,15 +2037,8 @@
   const unsigned int __builtin_divweu (unsigned int, unsigned int);
     DIVWEU diveu_si {}
 
-  const vsq __builtin_pack_vector_int128 (unsigned long long, \
-                                          unsigned long long);
-    PACK_V1TI packv1ti {}
-
   void __builtin_ppc_speculation_barrier ();
     SPECBARR speculation_barrier {}
-
-  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
-    UNPACK_V1TI unpackv1ti {}
 
 
 ; Power7 builtins requiring 64-bit GPRs (even with 32-bit addressing).
