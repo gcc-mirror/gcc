@@ -7908,11 +7908,6 @@ if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
 fi
 
 
-cat >>confdefs.h <<_ACEOF
-#define DEFAULT_MATCHPD_PARTITIONS $DEFAULT_MATCHPD_PARTITIONS
-_ACEOF
-
-
 
 # Enable __cxa_atexit for C++.
 # Check whether --enable-__cxa_atexit was given.
@@ -19850,7 +19845,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19853 "configure"
+#line 19848 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19956,7 +19951,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19959 "configure"
+#line 19954 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
