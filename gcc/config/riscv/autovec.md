@@ -150,18 +150,23 @@
 ;; - vsll.vi/vsra.vi/vsrl.vi
 ;; -------------------------------------------------------------------------
 
-(define_expand "<optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand")
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VI 0 "register_operand" "=vr")
     (any_shift:VI
-     (match_operand:VI 1 "register_operand")
-     (match_operand:<VEL> 2 "csr_operand")))]
+     (match_operand:VI 1 "register_operand"    " vr")
+     (match_operand:<VEL> 2 "csr_operand"      " rK")))]
   "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
 {
   operands[2] = gen_lowpart (Pmode, operands[2]);
   riscv_vector::emit_vlmax_insn (code_for_pred_scalar (<CODE>, <MODE>mode),
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
-})
+}  
+ [(set_attr "type" "vshift")
+  (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Binary shifts by scalar.
@@ -170,17 +175,22 @@
 ;; - vsll.vv/vsra.vv/vsrl.vv
 ;; -------------------------------------------------------------------------
 
-(define_expand "v<optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand")
+(define_insn_and_split "v<optab><mode>3"
+  [(set (match_operand:VI 0 "register_operand"  "=vr,vr")
     (any_shift:VI
-     (match_operand:VI 1 "register_operand")
-     (match_operand:VI 2 "vector_shift_operand")))]
+     (match_operand:VI 1 "register_operand"     " vr,vr")
+     (match_operand:VI 2 "vector_shift_operand" " vr,vk")))]
   "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
-})
+}
+ [(set_attr "type" "vshift")
+  (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [BOOL] Binary logical operations
@@ -395,16 +405,21 @@
 ;; -------------------------------------------------------------------------
 ;; - vncvt.x.x.w
 ;; -------------------------------------------------------------------------
-(define_expand "trunc<mode><v_double_trunc>2"
-  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
+(define_insn_and_split "trunc<mode><v_double_trunc>2"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand" "=vr")
     (truncate:<V_DOUBLE_TRUNC>
-     (match_operand:VWEXTI 1 "register_operand")))]
+     (match_operand:VWEXTI 1 "register_operand"              " vr")))]
   "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_trunc (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
   DONE;
-})
+}
+  [(set_attr "type" "vshift")
+   (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; Truncation to a mode whose inner mode size is a quarter of mode's.

@@ -330,3 +330,49 @@
   }
   [(set_attr "type" "viwmuladd")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Binary narrow shifts.
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vnsrl.wv/vnsrl.wx/vnsrl.wi
+;; - vnsra.wv/vnsra.wx/vnsra.wi
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "*v<any_shiftrt:optab><any_extend:optab>trunc<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"       "=vr,vr")
+    (truncate:<V_DOUBLE_TRUNC>
+      (any_shiftrt:VWEXTI
+        (match_operand:VWEXTI 1 "register_operand"                 " vr,vr")
+	(any_extend:VWEXTI
+          (match_operand:<V_DOUBLE_TRUNC> 2 "vector_shift_operand" " vr,vk")))))]
+  "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred_narrow (<any_shiftrt:CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  DONE;
+}
+ [(set_attr "type" "vnshift")
+  (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+(define_insn_and_split "*<any_shiftrt:optab>trunc<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand" "=vr")
+    (truncate:<V_DOUBLE_TRUNC>
+      (any_shiftrt:VWEXTI
+        (match_operand:VWEXTI 1 "register_operand"           " vr")
+	(match_operand:<VEL> 2 "csr_operand"                 " rK"))))]
+  "TARGET_VECTOR"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  operands[2] = gen_lowpart (Pmode, operands[2]);
+  insn_code icode = code_for_pred_narrow_scalar (<any_shiftrt:CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  DONE;
+}
+ [(set_attr "type" "vnshift")
+  (set_attr "mode" "<V_DOUBLE_TRUNC>")])
