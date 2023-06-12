@@ -2503,6 +2503,8 @@ public:
   // Normalizes a trailing statement without a semicolon to a tail expression.
   void normalize_tail_expr ();
 
+  void try_convert_last_stmt ();
+
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 

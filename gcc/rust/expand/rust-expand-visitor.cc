@@ -173,11 +173,11 @@ expand_stmt_attribute (T &item, AST::SimplePath &name, MacroExpander &expander)
 }
 
 void
-expand_tail_expr (AST::BlockExpr &item, MacroExpander &expander)
+expand_tail_expr (AST::BlockExpr &block_expr, MacroExpander &expander)
 {
-  if (item.has_tail_expr ())
+  if (block_expr.has_tail_expr ())
     {
-      auto tail = item.take_tail_expr ();
+      auto tail = block_expr.take_tail_expr ();
       auto attrs = tail->get_outer_attrs ();
       bool changed = false;
       for (auto it = attrs.begin (); it != attrs.end ();)
@@ -192,16 +192,17 @@ expand_tail_expr (AST::BlockExpr &item, MacroExpander &expander)
 	      it = attrs.erase (it);
 	      changed = true;
 	      auto new_stmts
-		= expand_stmt_attribute (item, current.get_path (), expander);
-	      auto &stmts = item.get_statements ();
+		= expand_stmt_attribute (block_expr, current.get_path (),
+					 expander);
+	      auto &stmts = block_expr.get_statements ();
 	      std::move (new_stmts.begin (), new_stmts.end (),
 			 std::inserter (stmts, stmts.end ()));
 	    }
 	}
       if (changed)
-	item.strip_tail_expr ();
+	block_expr.normalize_tail_expr ();
       else
-	item.set_tail_expr (std::move (tail));
+	block_expr.set_tail_expr (std::move (tail));
     }
 }
 
@@ -286,7 +287,7 @@ ExpandVisitor::expand_inner_items (
 
 void
 ExpandVisitor::expand_inner_stmts (
-  std::vector<std::unique_ptr<AST::Stmt>> &stmts)
+  AST::BlockExpr &expr, std::vector<std::unique_ptr<AST::Stmt>> &stmts)
 {
   expander.push_context (MacroExpander::ContextType::STMT);
 
@@ -361,6 +362,9 @@ ExpandVisitor::expand_inner_stmts (
 	    }
 	}
     }
+
+  if (!expr.has_tail_expr ())
+    expr.normalize_tail_expr ();
 
   std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
     = [] (AST::SingleASTNode node) { return node.take_stmt (); };
@@ -830,7 +834,7 @@ ExpandVisitor::visit (AST::ClosureExprInner &expr)
 void
 ExpandVisitor::visit (AST::BlockExpr &expr)
 {
-  expand_inner_stmts (expr.get_statements ());
+  expand_inner_stmts (expr, expr.get_statements ());
 
   expand_tail_expr (expr, expander);
   if (expr.has_tail_expr ())
