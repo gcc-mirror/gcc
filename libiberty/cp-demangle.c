@@ -6660,32 +6660,10 @@ d_print_conversion (struct d_print_info *dpi, int options,
       dpt.template_decl = dpi->current_template;
     }
 
-  if (d_left (dc)->type != DEMANGLE_COMPONENT_TEMPLATE)
-    {
-      d_print_comp (dpi, options, d_left (dc));
-      if (dpi->current_template != NULL)
-	dpi->templates = dpt.next;
-    }
-  else
-    {
-      d_print_comp (dpi, options, d_left (d_left (dc)));
+  d_print_comp (dpi, options, d_left (dc));
 
-      /* For a templated cast operator, we need to remove the template
-	 parameters from scope after printing the operator name,
-	 so we need to handle the template printing here.  */
-      if (dpi->current_template != NULL)
-	dpi->templates = dpt.next;
-
-      if (d_last_char (dpi) == '<')
-	d_append_char (dpi, ' ');
-      d_append_char (dpi, '<');
-      d_print_comp (dpi, options, d_right (d_left (dc)));
-      /* Avoid generating two consecutive '>' characters, to avoid
-	 the C++ syntactic ambiguity.  */
-      if (d_last_char (dpi) == '>')
-	d_append_char (dpi, ' ');
-      d_append_char (dpi, '>');
-    }
+  if (dpi->current_template != NULL)
+    dpi->templates = dpt.next;
 }
 
 /* Initialize the information structure we use to pass around
