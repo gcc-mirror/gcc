@@ -1,3 +1,11 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_map): Reword error message for
+	clearness especially with 'omp target (enter/exit) data.'
+
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

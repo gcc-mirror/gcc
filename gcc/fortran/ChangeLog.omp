@@ -1,3 +1,8 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Fix conditions for
+	present modifier.
+
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

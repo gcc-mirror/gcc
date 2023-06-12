@@ -426,8 +426,8 @@ gomp_to_device_kind_p (int kind)
     case GOMP_MAP_FORCE_ALLOC:
     case GOMP_MAP_FORCE_FROM:
     case GOMP_MAP_ALWAYS_FROM:
-    case GOMP_MAP_PRESENT_FROM:
     case GOMP_MAP_ALWAYS_PRESENT_FROM:
+    case GOMP_MAP_FORCE_PRESENT:
       return false;
     default:
       return true;
@@ -1976,36 +1976,28 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    i = j - 1;
 		    break;
 		  case GOMP_MAP_FORCE_PRESENT:
+		  case GOMP_MAP_ALWAYS_PRESENT_TO:
+		  case GOMP_MAP_ALWAYS_PRESENT_FROM:
+		  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 		    {
 		      /* We already looked up the memory region above and it
 			 was missing.  */
 		      size_t size = k->host_end - k->host_start;
 		      gomp_mutex_unlock (&devicep->lock);
 #ifdef HAVE_INTTYPES_H
-		      gomp_fatal ("present clause: !acc_is_present (%p, "
-				  "%"PRIu64" (0x%"PRIx64"))",
-				  (void *) k->host_start,
-				  (uint64_t) size, (uint64_t) size);
+		      gomp_fatal ("present clause: not present on the device "
+				  "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
+				  "dev: %d)", (void *) k->host_start,
+				  (uint64_t) size, (uint64_t) size,
+				  devicep->target_id);
 #else
-		      gomp_fatal ("present clause: !acc_is_present (%p, "
-				  "%lu (0x%lx))", (void *) k->host_start,
-				  (unsigned long) size, (unsigned long) size);
+		      gomp_fatal ("present clause: not present on the device "
+				  "(addr: %p, size: %lu (0x%lx), dev: %d)",
+				  (void *) k->host_start,
+				  (unsigned long) size, (unsigned long) size,
+				  devicep->target_id);
 #endif
 		    }
-		    break;
-		  case GOMP_MAP_PRESENT_ALLOC:
-		  case GOMP_MAP_PRESENT_TO:
-		  case GOMP_MAP_PRESENT_FROM:
-		  case GOMP_MAP_PRESENT_TOFROM:
-		  case GOMP_MAP_ALWAYS_PRESENT_TO:
-		  case GOMP_MAP_ALWAYS_PRESENT_FROM:
-		  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
-		    /* We already looked up the memory region above and it
-		       was missing.  */
-		    gomp_mutex_unlock (&devicep->lock);
-		    gomp_fatal ("present clause: not present on the device "
-				"(%p, %d)",
-				(void *) k->host_start, devicep->target_id);
 		    break;
 		  case GOMP_MAP_FORCE_DEVICEPTR:
 		    assert (k->host_end - k->host_start == sizeof (void *));
@@ -2627,9 +2619,18 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 		/* We already looked up the memory region above and it
 		   was missing.  */
 		gomp_mutex_unlock (&devicep->lock);
+#ifdef HAVE_INTTYPES_H
 		gomp_fatal ("present clause: not present on the device "
-			    "(%p, %d)",
-			    (void *) hostaddrs[i], devicep->target_id);
+			    "(addr: %p, size: %"PRIu64" (0x%"PRIx64"), "
+			    "dev: %d)", (void *) hostaddrs[i],
+			    (uint64_t) sizes[i], (uint64_t) sizes[i],
+			    devicep->target_id);
+#else
+		gomp_fatal ("present clause: not present on the device "
+			    "(addr: %p, size: %lu (0x%lx), dev: %d)",
+			    (void *) hostaddrs[i], (unsigned long) sizes[i],
+			    (unsigned long) sizes[i], devicep->target_id);
+#endif
 	      }
 	  }
       }
@@ -4041,9 +4042,7 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      case GOMP_MAP_FORCE_TOFROM:
 	      case GOMP_MAP_ALWAYS_TO:
 	      case GOMP_MAP_ALWAYS_TOFROM:
-	      case GOMP_MAP_PRESENT_FROM:
-	      case GOMP_MAP_PRESENT_TO:
-	      case GOMP_MAP_PRESENT_TOFROM:
+	      case GOMP_MAP_FORCE_PRESENT:
 	      case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_TO:
 	      case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
@@ -4337,8 +4336,6 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      case GOMP_MAP_FORCE_TOFROM:
 	      case GOMP_MAP_ALWAYS_FROM:
 	      case GOMP_MAP_ALWAYS_TOFROM:
-	      case GOMP_MAP_PRESENT_FROM:
-	      case GOMP_MAP_PRESENT_TOFROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	      case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 		copy = true;

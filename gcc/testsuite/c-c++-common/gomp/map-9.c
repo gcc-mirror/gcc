@@ -25,8 +25,8 @@ foo (void)
       c[i] = a[i] + b[i];
 }
 
-/* { dg-final { scan-tree-dump "pragma omp target enter data map\\(present,to:b \\\[len: \[0-9\]+\\\]\\) map\\(present,to:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "pragma omp target data map\\(present,to:b \\\[len: \[0-9\]+\\\]\\) map\\(present,to:a \\\[len: \[0-9\]+\\\]\\) map\\(always,present,from:c \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "pragma omp target.*map\\(present,from:c \\\[len: \[0-9\]+\\\]\\) map\\(present,to:b \\\[len: \[0-9\]+\\\]\\) map\\(present,to:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target enter data map\\(force_present:b \\\[len: \[0-9\]+\\\]\\) map\\(force_present:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target data map\\(force_present:b \\\[len: \[0-9\]+\\\]\\) map\\(force_present:a \\\[len: \[0-9\]+\\\]\\) map\\(always,present,from:c \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target.*map\\(force_present:c \\\[len: \[0-9\]+\\\]\\) map\\(force_present:b \\\[len: \[0-9\]+\\\]\\) map\\(force_present:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
 /* { dg-final { scan-tree-dump "pragma omp target exit data map\\(always,present,from:c \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "pragma omp target.*map\\(present,to:b \\\[len: \[0-9\]+\\\]\\) map\\(from:c \\\[len: \[0-9\]+\\\]\\) map\\(to:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "pragma omp target.*map\\(force_present:b \\\[len: \[0-9\]+\\\]\\) map\\(from:c \\\[len: \[0-9\]+\\\]\\) map\\(to:a \\\[len: \[0-9\]+\\\]\\)" "gimple" } } */

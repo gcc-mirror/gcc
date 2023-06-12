@@ -1,3 +1,13 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Reword error message for
+	clearness especially with 'omp target (enter/exit) data.'
+	* semantics.cc (handle_omp_array_sections): Handle
+	GOMP_MAP_{ALWAYS_,}PRESENT_{TO,TOFROM,FROM,ALLOC} enum values.
+
 2023-06-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

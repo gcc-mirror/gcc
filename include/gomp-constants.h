@@ -136,14 +136,6 @@ enum gomp_map_kind
        device.  */
     GOMP_MAP_ALWAYS_TOFROM =		(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_TOFROM),
-    /* Must already be present.  */
-    GOMP_MAP_PRESENT_ALLOC =		(GOMP_MAP_FLAG_PRESENT | GOMP_MAP_ALLOC),
-    /* Must already be present, copy to device.  */
-    GOMP_MAP_PRESENT_TO =		(GOMP_MAP_FLAG_PRESENT | GOMP_MAP_TO),
-    /* Must already be present, copy from device.  */
-    GOMP_MAP_PRESENT_FROM =		(GOMP_MAP_FLAG_PRESENT | GOMP_MAP_FROM),
-    /* Must already be present, copy to and from device.  */
-    GOMP_MAP_PRESENT_TOFROM =		(GOMP_MAP_FLAG_PRESENT | GOMP_MAP_TOFROM),
     /* Must already be present, unconditionally copy to device.  */
     GOMP_MAP_ALWAYS_PRESENT_TO =	(GOMP_MAP_FLAG_ALWAYS_PRESENT
 					 | GOMP_MAP_TO),
@@ -230,7 +222,13 @@ enum gomp_map_kind
     /* An attach or detach operation.  Rewritten to the appropriate type during
        gimplification, depending on directive (i.e. "enter data" or
        parallel/kernels region vs. "exit data").  */
-    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3)
+    GOMP_MAP_ATTACH_DETACH =		(GOMP_MAP_LAST | 3),
+    /* Must already be present - all of following map to GOMP_MAP_FORCE_PRESENT
+       as no data transfer is needed.  */
+    GOMP_MAP_PRESENT_ALLOC =		(GOMP_MAP_LAST | 4),
+    GOMP_MAP_PRESENT_TO =		(GOMP_MAP_LAST | 5),
+    GOMP_MAP_PRESENT_FROM =		(GOMP_MAP_LAST | 6),
+    GOMP_MAP_PRESENT_TOFROM =		(GOMP_MAP_LAST | 7)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
@@ -268,7 +266,8 @@ enum gomp_map_kind
   (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_FLAG_FORCE)
 
 #define GOMP_MAP_PRESENT_P(X) \
-  (((X) & GOMP_MAP_FLAG_PRESENT) == GOMP_MAP_FLAG_PRESENT)
+  (((X) & GOMP_MAP_FLAG_PRESENT) == GOMP_MAP_FLAG_PRESENT \
+   || (X) == GOMP_MAP_FORCE_PRESENT)
 
 #define GOMP_MAP_NONCONTIG_ARRAY_P(X) \
   ((X) & GOMP_MAP_NONCONTIG_ARRAY)

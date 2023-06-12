@@ -12750,7 +12750,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  kind = GOMP_MAP_FORCE_PRESENT;
 	  break;
 	case GOVD_MAP_FORCE_PRESENT | GOVD_MAP_ALLOC_ONLY:
-	  kind = GOMP_MAP_PRESENT_ALLOC;
+	  kind = GOMP_MAP_FORCE_PRESENT;
 	  break;
 	case GOVD_DEVICEPTR:
 	  kind = GOMP_MAP_FORCE_DEVICEPTR;
@@ -13085,6 +13085,17 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  break;
 
 	case OMP_CLAUSE_MAP:
+	  switch (OMP_CLAUSE_MAP_KIND (c))
+	    {
+	    case GOMP_MAP_PRESENT_ALLOC:
+	    case GOMP_MAP_PRESENT_TO:
+	    case GOMP_MAP_PRESENT_FROM:
+	    case GOMP_MAP_PRESENT_TOFROM:
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FORCE_PRESENT);
+	      break;
+	    default:
+	      break;
+	    }
 	  if (code == OMP_TARGET_EXIT_DATA
 	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER)
 	    {
