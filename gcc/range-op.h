@@ -72,6 +72,10 @@ public:
 			   const frange &lh,
 			   const frange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (frange &r, tree type,
+			   const irange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other

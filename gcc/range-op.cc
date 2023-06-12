@@ -219,6 +219,10 @@ range_op_handler::fold_range (vrange &r, tree type,
 	return m_operator->fold_range (as_a <frange> (r), type,
 				       as_a <frange> (lh),
 				       as_a <frange> (rh), rel);
+      case RO_FII:
+	return m_operator->fold_range (as_a <frange> (r), type,
+				       as_a <irange> (lh),
+				       as_a <irange> (rh), rel);
       default:
 	return false;
     }
@@ -2401,7 +2405,8 @@ public:
 				tree type,
 				const wide_int &,
 				const wide_int &) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override
     { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
 } op_lshift;
 
@@ -2432,7 +2437,8 @@ public:
 					   const irange &op1,
 					   const irange &op2,
 					   relation_kind rel) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override
     { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
 } op_rshift;
 

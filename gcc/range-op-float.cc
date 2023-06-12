@@ -158,6 +158,16 @@ range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
 }
 
 bool
+range_operator::fold_range (frange &r ATTRIBUTE_UNUSED,
+			    tree type ATTRIBUTE_UNUSED,
+			    const irange &lh ATTRIBUTE_UNUSED,
+			    const irange &rh ATTRIBUTE_UNUSED,
+			    relation_trio) const
+{
+  return false;
+}
+
+bool
 range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 				 tree type ATTRIBUTE_UNUSED,
 				 const frange &lhs ATTRIBUTE_UNUSED,

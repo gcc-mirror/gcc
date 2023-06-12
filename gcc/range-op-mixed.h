@@ -239,26 +239,27 @@ public:
   using range_operator::op1_op2_relation;
   bool fold_range (irange &r, tree type,
 		   const irange &op1, const irange &op2,
-		   relation_trio = TRIO_VARYING) const;
+		   relation_trio = TRIO_VARYING) const final override;
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
 
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
-		  relation_trio = TRIO_VARYING) const;
+		  relation_trio = TRIO_VARYING) const final override;
   bool op1_range (frange &r, tree type,
 		  const irange &lhs, const frange &op2,
 		  relation_trio = TRIO_VARYING) const final override;
 
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
-		  relation_trio = TRIO_VARYING) const;
+		  relation_trio = TRIO_VARYING) const final override;
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
   relation_kind op1_op2_relation (const irange &lhs) const final override;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
 };
 
 class operator_ge :  public range_operator
