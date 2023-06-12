@@ -1405,15 +1405,14 @@ static gimple *
 vect_recog_widen_op_pattern (vec_info *vinfo,
 			     stmt_vec_info last_stmt_info, tree *type_out,
 			     tree_code orig_code, code_helper wide_code,
-			     bool shift_p, const char *name,
-			     optab_subtype *subtype = NULL)
+			     bool shift_p, const char *name)
 {
   gimple *last_stmt = last_stmt_info->stmt;
 
   vect_unpromoted_value unprom[2];
   tree half_type;
   if (!vect_widened_op_tree (vinfo, last_stmt_info, orig_code, orig_code,
-			     shift_p, 2, unprom, &half_type, subtype))
+			     shift_p, 2, unprom, &half_type))
 
     return NULL;
 
@@ -1480,20 +1479,6 @@ vect_recog_widen_op_pattern (vec_info *vinfo,
 			      type, pattern_stmt, vecctype);
 }
 
-static gimple *
-vect_recog_widen_op_pattern (vec_info *vinfo,
-			     stmt_vec_info last_stmt_info, tree *type_out,
-			     tree_code orig_code, internal_fn wide_ifn,
-			     bool shift_p, const char *name,
-			     optab_subtype *subtype = NULL)
-{
-  combined_fn ifn = as_combined_fn (wide_ifn);
-  return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
-				      orig_code, ifn, shift_p, name,
-				      subtype);
-}
-
-
 /* Try to detect multiplication on widened inputs, converting MULT_EXPR
    to WIDEN_MULT_EXPR.  See vect_recog_widen_op_pattern for details.  */
 
@@ -1513,11 +1498,9 @@ static gimple *
 vect_recog_widen_plus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 			       tree *type_out)
 {
-  optab_subtype subtype;
   return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
 				      PLUS_EXPR, IFN_VEC_WIDEN_PLUS,
-				      false, "vect_recog_widen_plus_pattern",
-				      &subtype);
+				      false, "vect_recog_widen_plus_pattern");
 }
 
 /* Try to detect subtraction on widened inputs, converting MINUS_EXPR
@@ -1526,11 +1509,9 @@ static gimple *
 vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 			       tree *type_out)
 {
-  optab_subtype subtype;
   return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
 				      MINUS_EXPR, IFN_VEC_WIDEN_MINUS,
-				      false, "vect_recog_widen_minus_pattern",
-				      &subtype);
+				      false, "vect_recog_widen_minus_pattern");
 }
 
 /* Function vect_recog_ctz_ffs_pattern
