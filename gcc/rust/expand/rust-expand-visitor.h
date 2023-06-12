@@ -158,7 +158,8 @@ public:
    * @param values Vector of values to mutate in-place and append into
    */
   void expand_inner_items (std::vector<std::unique_ptr<AST::Item>> &values);
-  void expand_inner_stmts (std::vector<std::unique_ptr<AST::Stmt>> &values);
+  void expand_inner_stmts (AST::BlockExpr &expr,
+			   std::vector<std::unique_ptr<AST::Stmt>> &values);
 
   // TODO: See if possible to make more specialization for Impl items, Block
   // stmts etc? This could allow us to remove expand_macro_children or at least
