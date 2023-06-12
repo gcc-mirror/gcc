@@ -2131,6 +2131,20 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  result = wide_int::from (op0, width, UNSIGNED);
 	  break;
 
+	case US_TRUNCATE:
+	case SS_TRUNCATE:
+	  {
+	    signop sgn = code == US_TRUNCATE ? UNSIGNED : SIGNED;
+	    wide_int nmax
+	      = wide_int::from (wi::max_value (width, sgn),
+				GET_MODE_PRECISION (imode), sgn);
+	    wide_int nmin
+	      = wide_int::from (wi::min_value (width, sgn),
+				GET_MODE_PRECISION (imode), sgn);
+	    result = wi::min (wi::max (op0, nmin, sgn), nmax, sgn);
+	    result = wide_int::from (result, width, sgn);
+	    break;
+	  }
 	case SIGN_EXTEND:
 	  result = wide_int::from (op0, width, SIGNED);
 	  break;
