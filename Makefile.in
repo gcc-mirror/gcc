@@ -67178,6 +67178,16 @@ all-stagetrain-gcc: all-stagetrain-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
 all-stageautoprofile-gcc: all-stageautoprofile-libiberty
 all-stageautofeedback-gcc: all-stageautofeedback-libiberty
+all-gcc: maybe-all-libgrust
+all-stage1-gcc: maybe-all-stage1-libgrust
+all-stage2-gcc: maybe-all-stage2-libgrust
+all-stage3-gcc: maybe-all-stage3-libgrust
+all-stage4-gcc: maybe-all-stage4-libgrust
+all-stageprofile-gcc: maybe-all-stageprofile-libgrust
+all-stagetrain-gcc: maybe-all-stagetrain-libgrust
+all-stagefeedback-gcc: maybe-all-stagefeedback-libgrust
+all-stageautoprofile-gcc: maybe-all-stageautoprofile-libgrust
+all-stageautofeedback-gcc: maybe-all-stageautofeedback-libgrust
 all-gcc: maybe-all-intl
 all-stage1-gcc: maybe-all-stage1-intl
 all-stage2-gcc: maybe-all-stage2-intl

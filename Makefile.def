@@ -357,6 +357,7 @@ dependencies = { module=configure-gcc; on=all-ld; };
 dependencies = { module=configure-gcc; on=all-gold; };
 dependencies = { module=configure-gcc; on=all-libiconv; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
+dependencies = { module=all-gcc; on=all-libgrust; };
 dependencies = { module=all-gcc; on=all-intl; };
 dependencies = { module=all-gcc; on=all-mpfr; };
 dependencies = { module=all-gcc; on=all-mpc; };
