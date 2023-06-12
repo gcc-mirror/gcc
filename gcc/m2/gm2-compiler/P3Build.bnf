@@ -179,9 +179,6 @@ IMPORT M2Error ;
 
 CONST
    Debugging = FALSE ;
-   Pass1     = FALSE ;          (* permanently disabled for the time being *)
-   Pass2     = FALSE ;
-   Pass3     =  TRUE ;          (* permanently disabled for the time being *)
    DebugAsm  = FALSE ;
 
 VAR
@@ -368,6 +365,8 @@ END PeepToken ;
 *)
 
 PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+CONST
+   Pass1 = FALSE ;
 BEGIN
    IF currenttoken=t
    THEN
@@ -1463,108 +1462,84 @@ Definition := "CONST" { ConstantDeclaration ";" } |
               DefProcedureHeading ";" =:
 
 AsmStatement :=                                                            % VAR CurrentAsm: CARDINAL ; %
-                'ASM'                                                      % IF Pass3
-                                                                             THEN
-                                                                                PushAutoOn ;
-                                                                                PushT(0) ;  (* operand count *)
-                                                                                PushT(MakeGnuAsm())
-                                                                             END
+                'ASM'                                                      % PushAutoOn ;
+                                                                             PushT(0) ;  (* operand count *)
+                                                                             PushT(MakeGnuAsm())
                                                                            %
-                [ 'VOLATILE'                                               % IF Pass3
-                                                                             THEN
-                                                                                PopT(CurrentAsm) ;
-                                                                                PutGnuAsmVolatile(CurrentAsm) ;
-                                                                                PushT(CurrentAsm)
-                                                                             END
+                [ 'VOLATILE'                                               % PopT(CurrentAsm) ;
+                                                                             PutGnuAsmVolatile(CurrentAsm) ;
+                                                                             PushT(CurrentAsm)
                                                                            %
-                ] '(' AsmOperands                                          % IF Pass3
-                                                                             THEN
-                                                                                PopNothing ;  (* throw away interface sym *)
-                                                                                BuildInline ;
-                                                                                PopNothing ;  (* throw away count *)
-                                                                                PopAuto
-                                                                             END
+                ] '(' AsmOperands                                          % PopNothing ;  (* throw away interface sym *)
+                                                                             BuildInline ;
+                                                                             PopNothing ;  (* throw away count *)
+                                                                             PopAuto
                                                                            %
                   ')' =:
 
 AsmOperands :=                                                             % VAR CurrentAsm, count: CARDINAL ;
                                                                                  str: CARDINAL ;
                                                                            %
-               ConstExpression                                             % IF Pass3
+               ConstExpression                                             % PopT(str) ;
+                                                                             PopT(CurrentAsm) ;
+                                                                             Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                             PopT(count) ;
+                                                                             IF DebugAsm
                                                                              THEN
-                                                                                PopT(str) ;
-                                                                                PopT(CurrentAsm) ;
-                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
-                                                                                PopT(count) ;
-                                                                                IF DebugAsm
-                                                                                THEN
-                                                                                   printf1('1: count of asm operands: %d\n', count)
-                                                                                END ;
-                                                                                PushT(count) ;
-                                                                                (* adds the name/instruction for this asm *)
-                                                                                PutGnuAsm(CurrentAsm, str) ;
-                                                                                PushT(CurrentAsm) ;
-                                                                                PushT(NulSym)    (* the InterfaceSym *)
-                                                                             END
+                                                                                printf1('1: count of asm operands: %d\n', count)
+                                                                             END ;
+                                                                             PushT(count) ;
+                                                                             (* adds the name/instruction for this asm *)
+                                                                             PutGnuAsm(CurrentAsm, str) ;
+                                                                             PushT(CurrentAsm) ;
+                                                                             PushT(NulSym)    (* the InterfaceSym *)
                                                                            %
                        ( AsmOperandSpec |                                  % (* epsilon *)
-                                                                             IF Pass3
-                                                                             THEN
-                                                                                PutGnuAsmSimple(CurrentAsm)
-                                                                             END
+                                                                             PutGnuAsmSimple(CurrentAsm)
                                                                            %
                                                         )
                =:
 
 AsmOperandSpec :=                                                          % VAR CurrentAsm, outputs, inputs, trash, count: CARDINAL ;
                                                                            %
-                    ':' AsmOutputList                                      % IF Pass3
+                    ':' AsmOutputList                                      % PopT(outputs) ;
+                                                                             PopT(CurrentAsm) ;
+                                                                             Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                             PopT(count) ;
+                                                                             IF DebugAsm
                                                                              THEN
-                                                                                PopT(outputs) ;
-                                                                                PopT(CurrentAsm) ;
-                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
-                                                                                PopT(count) ;
-                                                                                IF DebugAsm
-                                                                                THEN
-                                                                                   printf1('2: output count of asm operands: %d\n', count)
-                                                                                END ;
-                                                                                PutGnuAsmOutput(CurrentAsm, outputs) ;
-                                                                                PushT(0) ;  (* reset count *)
-                                                                                PushT(CurrentAsm) ;
-                                                                                PushT(NulSym)    (* the InterfaceSym *)
-                                                                             END
+                                                                                printf1('2: output count of asm operands: %d\n', count)
+                                                                             END ;
+                                                                             PutGnuAsmOutput(CurrentAsm, outputs) ;
+                                                                             PushT(0) ;  (* reset count *)
+                                                                             PushT(CurrentAsm) ;
+                                                                             PushT(NulSym)    (* the InterfaceSym *)
                                                                            %
-                     [ ':' AsmInputList                                    % IF Pass3
+                     [ ':' AsmInputList                                    % PopT(inputs) ;
+                                                                             PopT(CurrentAsm) ;
+                                                                             Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                             PopT(count) ;
+                                                                             IF DebugAsm
                                                                              THEN
-                                                                                PopT(inputs) ;
-                                                                                PopT(CurrentAsm) ;
-                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
-                                                                                PopT(count) ;
-                                                                                IF DebugAsm
-                                                                                THEN
-                                                                                   printf1('3: input count of asm operands: %d\n', count)
-                                                                                END ;
-                                                                                PutGnuAsmInput(CurrentAsm, inputs) ;
-                                                                                PushT(0) ;  (* reset count *)
-                                                                                PushT(CurrentAsm) ;
-                                                                                PushT(NulSym)    (* the InterfaceSym *)
-                                                                             END
+                                                                                printf1('3: input count of asm operands: %d\n', count)
+                                                                             END ;
+                                                                             PutGnuAsmInput(CurrentAsm, inputs) ;
+                                                                             PushT(0) ;  (* reset count *)
+                                                                             PushT(CurrentAsm) ;
+                                                                             PushT(NulSym)    (* the InterfaceSym *)
                                                                            %
-                        [ ':' AsmTrashList                                 % IF Pass3
+                        [ ':' AsmTrashList                                 % PopT(trash) ;
+                                                                             PopT(CurrentAsm) ;
+                                                                             Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                             PopT(count) ;
+                                                                             IF DebugAsm
                                                                              THEN
-                                                                                PopT(trash) ;
-                                                                                PopT(CurrentAsm) ;
-                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
-                                                                                PopT(count) ;
-                                                                                IF DebugAsm
-                                                                                THEN
-                                                                                   printf1('4: trash count of asm operands: %d\n', count)
-                                                                                END ;
-                                                                                PutGnuAsmTrash(CurrentAsm, trash) ;
-                                                                                PushT(0) ;  (* reset count *)
-                                                                                PushT(CurrentAsm) ;
-                                                                                PushT(NulSym)    (* the InterfaceSym *)
-                                                                             END
+                                                                                printf1('4: trash count of asm operands: %d\n', count)
+                                                                             END ;
+                                                                             PutGnuAsmTrash(CurrentAsm, trash) ;
+                                                                             PushT(0) ;  (* reset count *)
+                                                                             PushT(CurrentAsm) ;
+                                                                             PushT(NulSym)    (* the InterfaceSym *)
                                                                            %
                            ] ]
             =:
@@ -1578,41 +1553,27 @@ NamedOperand := '[' Ident ']' =:
 AsmOperandName :=  ( NamedOperand
                                   |                                        % IF IsAutoPushOn()
                                                                              THEN
-                                                                                PushTF(NulName, identtok)
+                                                                                PushTF (NulName, identtok)
                                                                              END
                                                                            %
                                     )
                 =:
 
 AsmInputElement := AsmOperandName
-                   ConstExpression '(' Expression                          % IF Pass3
-                                                                             THEN
-                                                                                BuildAsmElement (TRUE, FALSE)
-                                                                             END
+                   ConstExpression '(' Expression                          % BuildAsmElement (TRUE, FALSE)
                                                                            %
                                    ')'
                  =:
 
 AsmOutputElement := AsmOperandName
-                    ConstExpression '(' Expression                         % IF Pass3
-                                                                             THEN
-                                                                                BuildAsmElement (FALSE, TRUE)
-                                                                             END
+                    ConstExpression '(' Expression                         % BuildAsmElement (FALSE, TRUE)
                                                                            %
                                     ')'
                   =:
 
-AsmTrashList :=                                                            % VAR expr, tokpos: CARDINAL ; %
-                 [ ConstExpression                                         % IF Pass3
-                                                                             THEN
-                                                                                BuildAsmTrash
-                                                                             END
-
+AsmTrashList :=  [ ConstExpression                                         % BuildAsmTrash
                                                                            %
-                 ] { ',' ConstExpression                                   % IF Pass3
-                                                                             THEN
-                                                                                BuildAsmTrash
-                                                                             END
+                 ] { ',' ConstExpression                                   % BuildAsmTrash
                                                                            %
                    } =:
 
