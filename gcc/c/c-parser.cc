@@ -17160,9 +17160,8 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	}
       else
 	{
-	  c_parser_error (parser, "%<#pragma omp target%> with "
-				  "modifier other than %<always%>, %<close%> "
-				  "or %<present%> on %<map%> clause");
+	  c_parser_error (parser, "%<map%> clause with map-type modifier other "
+				  "than %<always%>, %<close%> or %<present%>");
 	  parens.skip_until_found_close (parser);
 	  return list;
 	}

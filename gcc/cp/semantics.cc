@@ -5819,6 +5819,13 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    case GOMP_MAP_ALWAYS_TO:
 	    case GOMP_MAP_ALWAYS_FROM:
 	    case GOMP_MAP_ALWAYS_TOFROM:
+	    case GOMP_MAP_PRESENT_ALLOC:
+	    case GOMP_MAP_PRESENT_TO:
+	    case GOMP_MAP_PRESENT_FROM:
+	    case GOMP_MAP_PRESENT_TOFROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_TO:
+	    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	    case GOMP_MAP_RELEASE:
 	    case GOMP_MAP_DELETE:
 	    case GOMP_MAP_FORCE_TO:
