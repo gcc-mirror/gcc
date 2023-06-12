@@ -2568,7 +2568,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 	{
 	  fprintf_indent (f, indent, "if (TREE_TYPE (_o%d[0]) != %s)\n",
 			  depth, type);
-	  indent += 2;
+	  fprintf_indent (f, indent + 2, "{\n");
+	  indent += 4;
 	}
       if (opr->kind == id_base::CODE)
 	fprintf_indent (f, indent, "_r%d = fold_build%d_loc (loc, %s, %s",
@@ -2591,7 +2592,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 	}
       if (*opr == CONVERT_EXPR)
 	{
-	  indent -= 2;
+	  fprintf_indent (f, indent - 2, "}\n");
+	  indent -= 4;
 	  fprintf_indent (f, indent, "else\n");
 	  fprintf_indent (f, indent, "  _r%d = _o%d[0];\n", depth, depth);
 	}

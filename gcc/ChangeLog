@@ -1,3 +1,81 @@
+2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/109650
+	PR target/92729
+	Backport from 2023-05-10 master r14-1688.
+	* config/avr/avr-passes.def (avr_pass_ifelse): Insert new pass.
+	* config/avr/avr.cc (avr_pass_ifelse): New RTL pass.
+	(avr_pass_data_ifelse): New pass_data for it.
+	(make_avr_pass_ifelse, avr_redundant_compare, avr_cbranch_cost)
+	(avr_canonicalize_comparison, avr_out_plus_set_ZN)
+	(avr_out_cmp_ext): New functions.
+	(compare_condtition): Make sure REG_CC dies in the branch insn.
+	(avr_rtx_costs_1): Add computation of cbranch costs.
+	(avr_adjust_insn_length) [ADJUST_LEN_ADD_SET_ZN, ADJUST_LEN_CMP_ZEXT]:
+	[ADJUST_LEN_CMP_SEXT]Handle them.
+	(TARGET_CANONICALIZE_COMPARISON): New define.
+	(avr_simplify_comparison_p, compare_diff_p, avr_compare_pattern)
+	(avr_reorg_remove_redundant_compare, avr_reorg): Remove functions.
+	(TARGET_MACHINE_DEPENDENT_REORG): Remove define.
+	* config/avr/avr-protos.h (avr_simplify_comparison_p): Remove proto.
+	(make_avr_pass_ifelse, avr_out_plus_set_ZN, cc_reg_rtx)
+	(avr_out_cmp_zext): New Protos
+	* config/avr/avr.md (branch, difficult_branch): Don't split insns.
+	(*cbranchhi.zero-extend.0", *cbranchhi.zero-extend.1")
+	(*swapped_tst<mode>, *add.for.eqne.<mode>): New insns.
+	(*cbranch<mode>4): Rename to cbranch<mode>4_insn.
+	(define_peephole): Add dead_or_set_regno_p(insn,REG_CC) as needed.
+	(define_deephole2): Add peep2_regno_dead_p(*,REG_CC) as needed.
+	Add new RTL peepholes for decrement-and-branch and *swapped_tst<mode>.
+	Rework signtest-and-branch peepholes for *sbrx_branch<mode>.
+	(adjust_len) [add_set_ZN, cmp_zext]: New.
+	(QIPSI): New mode iterator.
+	(ALLs1, ALLs2, ALLs4, ALLs234): New mode iterators.
+	(gelt): New code iterator.
+	(gelt_eqne): New code attribute.
+	(rvbranch, *rvbranch, difficult_rvbranch, *difficult_rvbranch)
+	(branch_unspec, *negated_tst<mode>, *reversed_tst<mode>)
+	(*cmpqi_sign_extend): Remove insns.
+	(define_c_enum "unspec") [UNSPEC_IDENTITY]: Remove.
+	* config/avr/avr-dimode.md (cbranch<mode>4): Canonicalize comparisons.
+	* config/avr/predicates.md (scratch_or_d_register_operand): New.
+	* config/avr/constraints.md (Yxx): New constraint.
+
+2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110165
+	PR tree-optimization/110166
+	* match.pd (zero_one_valued_p): Don't accept
+	signed 1-bit integers.
+
+2023-06-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-09  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (two conversions in a row): Use element_precision
+	to DTRT for VECTOR_TYPE.
+
+2023-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110044
+	* config/rs6000/rs6000.cc (darwin_rs6000_special_round_type_align):
+	Make sure that we do not have a cap on field alignment before altering
+	the struct layout based on the type alignment of the first entry.
+
+2023-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110108
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Explicitly
+	view_convert_expr mask to signed type when folding pblendvb
+	builtins.
+
 2023-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
