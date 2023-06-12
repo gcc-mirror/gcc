@@ -61,6 +61,14 @@ vfloat16m8_t test_vundefined_f16m8() {
   return __riscv_vundefined_f16m8();
 }
 
+vfloat16m2_t test_vset_v_f16m1_f16m2(vfloat16m2_t dest, size_t index, vfloat16m1_t val) {
+  return __riscv_vset_v_f16m1_f16m2(dest, 0, val);
+}
+
+vfloat16m4_t test_vget_v_f16m8_f16m4(vfloat16m8_t src, size_t index) {
+  return __riscv_vget_v_f16m8_f16m4(src, 0);
+}
+
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*mf4,\s*t[au],\s*m[au]} 3 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]} 2 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e16,\s*m8,\s*t[au],\s*m[au]} 1 } } */
@@ -71,7 +79,10 @@ vfloat16m8_t test_vundefined_f16m8() {
 /* { dg-final { scan-assembler-times {vfncvt\.f\.f\.w\s+v[0-9]+,\s*v[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vle16\.v\s+v[0-9]+,\s*0\([0-9ax]+\)} 7 } } */
 /* { dg-final { scan-assembler-times {vse16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 6 } } */
-/* { dg-final { scan-assembler-times {vl4re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
+/* { dg-final { scan-assembler-times {vl1re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
+/* { dg-final { scan-assembler-times {vl2re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
+/* { dg-final { scan-assembler-times {vl4re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 3 } } */
 /* { dg-final { scan-assembler-times {vl8re16\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
-/* { dg-final { scan-assembler-times {vs4r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
+/* { dg-final { scan-assembler-times {vs2r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 1 } } */
+/* { dg-final { scan-assembler-times {vs4r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 3 } } */
 /* { dg-final { scan-assembler-times {vs8r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 5 } } */
