@@ -7001,11 +7001,11 @@ package body Sem_Ch12 is
       --  The enclosing scope of the generic unit
 
       procedure Check_Actual_Type (Typ : Entity_Id);
-      --  If the type of the actual is a private type declared in the
-      --  enclosing scope of the generic unit, but not a derived type
-      --  of a private type declared elsewhere, the body of the generic
-      --  sees the full view of the type (because it has to appear in
-      --  the corresponding package body). If the type is private now,
+      --  If the type of the actual is a private type declared in the enclosing
+      --  scope of the generic, either directly or through packages nested in
+      --  bodies, but not a derived type of a private type declared elsewhere,
+      --  then the body of the generic sees the full view of the type because
+      --  it has to appear in the package body. If the type is private now then
       --  exchange views to restore the proper visibility in the instance.
 
       -----------------------
@@ -7015,16 +7015,48 @@ package body Sem_Ch12 is
       procedure Check_Actual_Type (Typ : Entity_Id) is
          Btyp : constant Entity_Id := Base_Type (Typ);
 
+         function Scope_Within_Body_Or_Same
+           (Inner : Entity_Id;
+            Outer : Entity_Id) return Boolean;
+         --  Determine whether scope Inner is within the body of scope Outer
+         --  or is Outer itself.
+
+         -------------------------------
+         -- Scope_Within_Body_Or_Same --
+         -------------------------------
+
+         function Scope_Within_Body_Or_Same
+           (Inner : Entity_Id;
+            Outer : Entity_Id) return Boolean
+         is
+            Curr : Entity_Id := Inner;
+
+         begin
+            while Curr /= Standard_Standard loop
+               if Curr = Outer then
+                  return True;
+
+               elsif Is_Package_Body_Entity (Curr) then
+                  Curr := Scope (Curr);
+
+               else
+                  exit;
+               end if;
+            end loop;
+
+            return False;
+         end Scope_Within_Body_Or_Same;
+
       begin
          --  The exchange is only needed if the generic is defined
          --  within a package which is not a common ancestor of the
          --  scope of the instance, and is not already in scope.
 
          if Is_Private_Type (Btyp)
-           and then Scope (Btyp) = Parent_Scope
            and then not Has_Private_Ancestor (Btyp)
            and then Ekind (Parent_Scope) in E_Package | E_Generic_Package
-           and then Scope (Instance) /= Parent_Scope
+           and then Scope_Within_Body_Or_Same (Parent_Scope, Scope (Btyp))
+           and then Parent_Scope /= Scope (Instance)
            and then not Is_Child_Unit (Gen_Id)
          then
             Switch_View (Btyp);
