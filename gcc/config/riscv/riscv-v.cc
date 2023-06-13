@@ -863,7 +863,7 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
      e q r d c b v a  # v11 destination after vrgather using viota.m under mask
 */
 static void
-emit_vlmax_decompress_insn (rtx target, rtx op, rtx mask)
+emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
 {
   machine_mode data_mode = GET_MODE (target);
   machine_mode sel_mode = related_int_vector_mode (data_mode).require ();
@@ -873,7 +873,8 @@ emit_vlmax_decompress_insn (rtx target, rtx op, rtx mask)
   rtx sel = gen_reg_rtx (sel_mode);
   rtx iota_ops[] = {sel, mask};
   emit_vlmax_insn (code_for_pred_iota (sel_mode), RVV_UNOP, iota_ops);
-  emit_vlmax_masked_gather_mu_insn (target, op, sel, mask);
+  emit_vlmax_gather_insn (target, op0, sel);
+  emit_vlmax_masked_gather_mu_insn (target, op1, sel, mask);
 }
 
 /* Emit merge instruction.  */
@@ -2441,8 +2442,7 @@ shuffle_decompress_patterns (struct expand_vec_perm_d *d)
   rtx const_vec = gen_const_vector_dup (sel_mode, 1);
   rtx mask = gen_reg_rtx (mask_mode);
   expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
-  emit_move_insn (d->target, op0);
-  emit_vlmax_decompress_insn (d->target, op1, mask);
+  emit_vlmax_decompress_insn (d->target, op0, op1, mask);
   return true;
 }
 
