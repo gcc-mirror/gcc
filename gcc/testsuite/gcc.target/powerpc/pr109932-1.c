@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mno-vsx" } */
 
