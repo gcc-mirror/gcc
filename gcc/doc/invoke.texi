@@ -20235,12 +20235,12 @@ addresses and sizes of sections.  Programs can be statically linked only.  The
 @item -mtp=@var{name}
 @opindex mtp
 Specify the system register to use as a thread pointer.  The valid values
-are @samp{el0}, @samp{el1}, @samp{el2}, @samp{el3}.  These correspond to
-using the @samp{tpidr_el0}, @samp{tpidr_el1}, @samp{tpidr_el2},
-@samp{tpidr_el3} registers accordingly.  The default setting is @samp{el0}.
-It is recommended to compile all code intended to interoperate with the same
-value of this option to avoid accessing a different thread pointer from the
-wrong exception level.
+are @samp{tpidr_el0}, @samp{tpidrro_el0}, @samp{tpidr_el1}, @samp{tpidr_el2},
+@samp{tpidr_el3}.  For backwards compatibility the aliases @samp{el0},
+@samp{el1}, @samp{el2}, @samp{el3} are also accepted.
+The default setting is @samp{tpidr_el0}.  It is recommended to compile all
+code intended to interoperate with the same value of this option to avoid
+accessing a different thread pointer from the wrong exception level.
 
 @opindex mstrict-align
 @opindex mno-strict-align

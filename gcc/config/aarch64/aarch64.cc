@@ -27693,7 +27693,8 @@ aarch64_indirect_call_asm (rtx addr)
 const char *
 aarch64_output_load_tp (rtx dest)
 {
-  const char *tpidrs[] = {"tpidr_el0", "tpidr_el1", "tpidr_el2", "tpidr_el3"};
+  const char *tpidrs[] = {"tpidr_el0", "tpidr_el1", "tpidr_el2",
+			  "tpidr_el3", "tpidrro_el0"};
   char buffer[64];
   snprintf (buffer, sizeof (buffer), "mrs\t%%0, %s",
 	    tpidrs[aarch64_tpidr_register]);
