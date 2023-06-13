@@ -911,6 +911,15 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   if (expr == nullptr)
     return AST::Fragment::create_error ();
 
+  // FIXME: make this an error for some edititons
+  if (parser.peek_current_token ()->get_id () == SEMICOLON)
+    {
+      rust_warning_at (
+	parser.peek_current_token ()->get_locus (), 0,
+	"trailing semicolon in macro used in expression context");
+      parser.skip_token ();
+    }
+
   auto end = lexer.get_offs ();
 
   return AST::Fragment ({std::move (expr)}, lexer.get_token_slice (start, end));
