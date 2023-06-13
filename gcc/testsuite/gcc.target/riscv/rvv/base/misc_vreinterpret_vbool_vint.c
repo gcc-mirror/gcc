@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64 -O3" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64 -O3 -Wno-psabi" } */
 #include "riscv_vector.h"
 
 vbool1_t test_vreinterpret_v_i8m1_b1 (vint8m1_t src) {

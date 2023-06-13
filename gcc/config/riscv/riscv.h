@@ -677,6 +677,8 @@ typedef struct {
 
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
+
+  int rvv_psabi_warning;
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -684,7 +686,8 @@ typedef struct {
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  memset (&(CUM), 0, sizeof (CUM))
+  riscv_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (INDIRECT),     \
+			(N_NAMED_ARGS) != -1)
 
 #define EPILOGUE_USES(REGNO)	riscv_epilogue_uses (REGNO)
 
