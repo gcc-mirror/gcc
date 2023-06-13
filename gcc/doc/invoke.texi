@@ -22645,12 +22645,15 @@ by default.
 
 @opindex mtp
 @item -mtp=@var{name}
-Specify the access model for the thread local storage pointer.  The valid
-models are @samp{soft}, which generates calls to @code{__aeabi_read_tp},
-@samp{cp15}, which fetches the thread pointer from @code{cp15} directly
-(supported in the arm6k architecture), and @samp{auto}, which uses the
-best available method for the selected processor.  The default setting is
-@samp{auto}.
+Specify the access model for the thread local storage pointer.  The model
+@samp{soft} generates calls to @code{__aeabi_read_tp}.  Other accepted
+models are @samp{tpidrurw}, @samp{tpidruro} and @samp{tpidrprw} which fetch
+the thread pointer from the corresponding system register directly
+(supported from the arm6k architecture and later).  These system registers
+are accessed through the CP15 co-processor interface and the argument
+@samp{cp15} is also accepted as a convenience alias of @samp{tpidruro}.
+The argument @samp{auto} uses the best available method for the selected
+processor.  The default setting is @samp{auto}.
 
 @opindex mtls-dialect
 @item -mtls-dialect=@var{dialect}

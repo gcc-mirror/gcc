@@ -3927,7 +3927,7 @@ arm_option_reconfigure_globals (void)
   if (target_thread_pointer == TP_AUTO)
     {
       if (arm_arch6k && !TARGET_THUMB1)
-	target_thread_pointer = TP_CP15;
+	target_thread_pointer = TP_TPIDRURO;
       else
 	target_thread_pointer = TP_SOFT;
     }
@@ -34646,6 +34646,36 @@ arm_get_mask_mode (machine_mode mode)
     return arm_mode_to_pred_mode (mode);
 
   return default_get_mask_mode (mode);
+}
+
+/* Output assembly to read the thread pointer from the appropriate TPIDR
+   register into DEST.  If PRED_P also emit the %? that can be used to
+   output the predication code.  */
+
+const char *
+arm_output_load_tpidr (rtx dst, bool pred_p)
+{
+  char buf[64];
+  int tpidr_coproc_num = -1;
+  switch (target_thread_pointer)
+    {
+    case TP_TPIDRURW:
+      tpidr_coproc_num = 2;
+      break;
+    case TP_TPIDRURO:
+      tpidr_coproc_num = 3;
+      break;
+    case TP_TPIDRPRW:
+      tpidr_coproc_num = 4;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  snprintf (buf, sizeof (buf),
+	    "mrc%s\tp15, 0, %%0, c13, c0, %d\t@ load_tp_hard",
+	    pred_p ? "%?" : "", tpidr_coproc_num);
+  output_asm_insn (buf, &dst);
+  return "";
 }
 
 #include "gt-arm.h"
