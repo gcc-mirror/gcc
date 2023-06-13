@@ -770,6 +770,10 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 					TyTy::BaseType *receiver,
 					Location expr_locus)
 {
+  rust_debug_loc (expr_locus, "resolve_method_address for %s and receiver %s",
+		  fntype->debug_str ().c_str (),
+		  receiver->debug_str ().c_str ());
+
   DefId id = fntype->get_id ();
   rust_assert (id != UNKNOWN_DEFID);
 
@@ -823,13 +827,46 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 					ctx, fntype, true, expr_locus);
     }
 
-  // FIXME this will be a case to return error_mark_node, there is
-  // an error scenario where a Trait Foo has a method Bar, but this
-  // receiver does not implement this trait or has an incompatible
-  // implementation and we should just return error_mark_node
+  const Resolver::PathProbeCandidate *selectedCandidate = nullptr;
+  rust_debug_loc (expr_locus, "resolved to %lu candidates", candidates.size ());
 
-  rust_assert (candidates.size () == 1);
-  auto &candidate = *candidates.begin ();
+  // filter for the possible case of non fn type items
+  std::set<Resolver::PathProbeCandidate> filteredFunctionCandidates;
+  for (auto &candidate : candidates)
+    {
+      bool is_fntype = candidate.ty->get_kind () == TyTy::TypeKind::FNDEF;
+      if (!is_fntype)
+	continue;
+
+      filteredFunctionCandidates.insert (candidate);
+    }
+
+  // look for the exact fntype
+  for (auto &candidate : filteredFunctionCandidates)
+    {
+      bool compatable
+	= Resolver::types_compatable (TyTy::TyWithLocation (candidate.ty),
+				      TyTy::TyWithLocation (fntype), expr_locus,
+				      false);
+
+      rust_debug_loc (candidate.locus, "candidate: %s vs %s compatable=%s",
+		      candidate.ty->debug_str ().c_str (),
+		      fntype->debug_str ().c_str (),
+		      compatable ? "true" : "false");
+
+      if (compatable)
+	{
+	  selectedCandidate = &candidate;
+	  break;
+	}
+    }
+
+  // FIXME eventually this should just return error mark node when we support
+  // going through all the passes
+  rust_assert (selectedCandidate != nullptr);
+
+  // lets compile it
+  const Resolver::PathProbeCandidate &candidate = *selectedCandidate;
   rust_assert (candidate.is_impl_candidate ());
   rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
   TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
