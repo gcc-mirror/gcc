@@ -1254,7 +1254,6 @@ struct mode_vtype_group
   ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
   vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
   ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
-#include "riscv-vector-switch.def"
 #define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL_FOR_MIN_VLEN32, \
 		    RATIO_FOR_MIN_VLEN32, VLMUL_FOR_MIN_VLEN64,                \
 		    RATIO_FOR_MIN_VLEN64, VLMUL_FOR_MIN_VLEN128,               \
@@ -1268,6 +1267,8 @@ struct mode_vtype_group
   vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
   ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
 #include "riscv-vector-switch.def"
+#undef ENTRY
+#undef TUPLE_ENTRY
   }
 };
 
