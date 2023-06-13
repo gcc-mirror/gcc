@@ -1,3 +1,88 @@
+2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110189
+	* gm2/pim/fail/foovaltype.mod: New test.
+
+2023-06-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/101188
+	* gcc.c-torture/execute/pr101188.c: New test
+
+2023-06-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/vec-init-single-const.c: New test.
+	* gcc.target/aarch64/vec-init-single-const-be.c: Likewise.
+	* gcc.target/aarch64/vec-init-single-const-2.c: Likewise.
+
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/defaultmap-4.c: Update scan-tree-dump.
+	* c-c++-common/gomp/map-9.c: Likewise.
+	* gfortran.dg/gomp/defaultmap-8.f90: Likewise.
+	* gfortran.dg/gomp/map-11.f90: Likewise.
+	* gfortran.dg/gomp/target-update-1.f90: Likewise.
+	* gfortran.dg/gomp/map-12.f90: Likewise; also check original dump.
+	* c-c++-common/gomp/map-6.c: Update dg-error and also check
+	clause error with 'target (enter/exit) data'.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-23.c: Adjust test checking.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Add new test cases.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Likewise.
+
+2023-06-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/narrow-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/narrow-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/narrow-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/narrow_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/narrow_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/narrow_run-3.c: New test.
+
+2023-06-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/zvfhmin-1.c: New test.
+
+2023-06-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/pr110142.c: New test.
+
+2023-06-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vec_pack_fp16-1.c: New test.
+	* gcc.target/i386/vec_pack_fp16-2.c: New test.
+	* gcc.target/i386/vec_pack_fp16-3.c: New test.
+
+2023-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105838
+	* g++.dg/tree-ssa/initlist-opt5.C: New test.
+
+2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: New test.
+	* gcc.target/powerpc/pr109932-2.c: New test.
+
+2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* gcc.target/powerpc/pr110011.c: New test.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Add test cases.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Ditto.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Add new test cases.
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Add new test cases.
+
 2023-06-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110122

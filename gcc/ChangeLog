@@ -1,3 +1,336 @@
+2023-06-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/101188
+	* postreload.cc (reload_cse_move2add_invalidate): New function,
+	extracted from...
+	(reload_cse_move2add): Call reload_cse_move2add_invalidate.
+
+2023-06-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Tweak condition
+	if (n_var == n_elts && n_elts <= 16) to allow a single constant,
+	and if maxv == 1, use constant element for duplicating into register.
+
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_adjust_omp_clauses_1): Use
+	GOMP_MAP_FORCE_PRESENT for 'present alloc' implicit mapping.
+	(gimplify_adjust_omp_clauses): Change
+	GOMP_MAP_PRESENT_{TO,TOFROM,FROM,ALLOC} to the equivalent
+	GOMP_MAP_FORCE_PRESENT.
+	* omp-low.cc (lower_omp_target): Remove handling of no-longer valid
+	GOMP_MAP_PRESENT_{TO,TOFROM,FROM,ALLOC}; update map kinds used for
+	to/from clauses with present modifier.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110205
+	* range-op-float.cc (range_operator::fold_range): Add default FII
+	fold routine.
+	* range-op-mixed.h (class operator_gt): Add missing final overrides.
+	* range-op.cc (range_op_handler::fold_range): Add RO_FII case.
+	(operator_lshift ::update_bitmask): Add final override.
+	(operator_rshift ::update_bitmask): Add final override.
+	* range-op.h (range_operator::fold_range): Add FII prototype.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc (gimple_range_op_handler::maybe_non_standard):
+	Use range_op_handler directly.
+	* range-op.cc (range_op_handler::range_op_handler): Unsigned
+	param instead of tree-code.
+	(ptr_op_widen_plus_signed): Delete.
+	(ptr_op_widen_plus_unsigned): Delete.
+	(ptr_op_widen_mult_signed): Delete.
+	(ptr_op_widen_mult_unsigned): Delete.
+	(range_op_table::initialize_integral_ops): Add new opcodes.
+	* range-op.h (range_op_handler): Use unsigned.
+	(OP_WIDEN_MULT_SIGNED): New.
+	(OP_WIDEN_MULT_UNSIGNED): New.
+	(OP_WIDEN_PLUS_SIGNED): New.
+	(OP_WIDEN_PLUS_UNSIGNED): New.
+	(RANGE_OP_TABLE_SIZE): New.
+	(range_op_table::operator []): Use unsigned.
+	(range_op_table::set): Use unsigned.
+	(m_range_tree): Make unsigned.
+	(ptr_op_widen_mult_signed): Remove.
+	(ptr_op_widen_mult_unsigned): Remove.
+	(ptr_op_widen_plus_signed): Remove.
+	(ptr_op_widen_plus_unsigned): Remove.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc (gimple_range_op_handler): Set m_operator
+	manually as there is no access to the default operator.
+	(cfn_copysign::fold_range): Don't check for validity.
+	(cfn_ubsan::fold_range): Ditto.
+	(gimple_range_op_handler::maybe_builtin_call): Don't set to NULL.
+	* range-op.cc (default_operator): New.
+	(range_op_handler::range_op_handler): Use default_operator
+	instead of NULL.
+	(range_op_handler::operator bool): Move from header, compare
+	against default operator.
+	(range_op_handler::range_op): New.
+	* range-op.h (range_op_handler::operator bool): Move.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (unified_table): Delete.
+	(range_op_table operator_table): Instantiate.
+	(range_op_table::range_op_table): Rename from unified_table.
+	(range_op_handler::range_op_handler): Use range_op_table.
+	* range-op.h (range_op_table::operator []): Inline.
+	(range_op_table::set): Inline.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Do not
+	pass type.
+	* gimple-range-op.cc (get_code): Rename from get_code_and_type
+	and simplify.
+	(gimple_range_op_handler::supported_p): No need for type.
+	(gimple_range_op_handler::gimple_range_op_handler): Ditto.
+	(cfn_copysign::fold_range): Ditto.
+	(cfn_ubsan::fold_range): Ditto.
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Ditto.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Ditto.
+	* range-op-float.cc (operator_plus::op1_range): Ditto.
+	(operator_mult::op1_range): Ditto.
+	(range_op_float_tests): Ditto.
+	* range-op.cc (get_op_handler): Remove.
+	(range_op_handler::set_op_handler): Remove.
+	(operator_plus::op1_range): No need for type.
+	(operator_minus::op1_range): Ditto.
+	(operator_mult::op1_range): Ditto.
+	(operator_exact_divide::op1_range): Ditto.
+	(operator_cast::op1_range): Ditto.
+	(perator_bitwise_not::fold_range): Ditto.
+	(operator_negate::fold_range): Ditto.
+	* range-op.h (range_op_handler::range_op_handler): Remove type param.
+	(range_cast): No need for type.
+	(range_op_table::operator[]): Check for enum_code >= 0.
+	* tree-data-ref.cc (compute_distributive_range): No need for type.
+	* tree-ssa-loop-unswitch.cc (unswitch_predicate): Ditto.
+	* value-query.cc (range_query::get_tree_range): Ditto.
+	* value-relation.cc (relation_oracle::validate_relation): Ditto.
+	* vr-values.cc (range_of_var_in_loop): Ditto.
+	(simplify_using_ranges::fold_cond_with_ops): Ditto.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_max): Remove final.
+	* range-op-ptr.cc (pointer_table::pointer_table): Remove MAX_EXPR.
+	(pointer_table::pointer_table): Remove.
+	(class hybrid_max_operator): New.
+	(range_op_table::initialize_pointer_ops): Add hybrid_max_operator.
+	* range-op.cc (pointer_tree_table): Remove.
+	(unified_table::unified_table): Comment out MAX_EXPR.
+	(get_op_handler): Remove check of pointer table.
+	* range-op.h (class pointer_table): Remove.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_min): Remove final.
+	* range-op-ptr.cc (pointer_table::pointer_table): Remove MIN_EXPR.
+	(class hybrid_min_operator): New.
+	(range_op_table::initialize_pointer_ops): Add hybrid_min_operator.
+	* range-op.cc (unified_table::unified_table): Comment out MIN_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_bitwise_or): Remove final.
+	* range-op-ptr.cc (pointer_table::pointer_table): Remove BIT_IOR_EXPR.
+	(class hybrid_or_operator): New.
+	(range_op_table::initialize_pointer_ops): Add hybrid_or_operator.
+	* range-op.cc (unified_table::unified_table): Comment out BIT_IOR_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_bitwise_and): Remove final.
+	* range-op-ptr.cc (pointer_table::pointer_table): Remove BIT_AND_EXPR.
+	(class hybrid_and_operator): New.
+	(range_op_table::initialize_pointer_ops): Add hybrid_and_operator.
+	* range-op.cc (unified_table::unified_table): Comment out BIT_AND_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add range-op-ptr.o.
+	* range-op-mixed.h (update_known_bitmask): Move prototype here.
+	(minus_op1_op2_relation_effect): Move prototype here.
+	(wi_includes_zero_p): Move function to here.
+	(wi_zero_p): Ditto.
+	* range-op.cc (update_known_bitmask): Remove static.
+	(wi_includes_zero_p): Move to header.
+	(wi_zero_p): Move to header.
+	(minus_op1_op2_relation_effect): Remove static.
+	(operator_pointer_diff): Move class and routines to range-op-ptr.cc.
+	(pointer_plus_operator): Ditto.
+	(pointer_min_max_operator): Ditto.
+	(pointer_and_operator): Ditto.
+	(pointer_or_operator): Ditto.
+	(pointer_table): Ditto.
+	(range_op_table::initialize_pointer_ops): Ditto.
+	* range-op-ptr.cc: New.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_max): Move from...
+	* range-op.cc (unified_table::unified_table): Add MAX_EXPR.
+	(get_op_handler): Remove the integral table.
+	(class operator_max): Move from here.
+	(integral_table::integral_table): Delete.
+	* range-op.h (class integral_table): Delete.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_min): Move from...
+	* range-op.cc (unified_table::unified_table): Add MIN_EXPR.
+	(class operator_min): Move from here.
+	(integral_table::integral_table): Remove MIN_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_bitwise_or): Move from...
+	* range-op.cc (unified_table::unified_table): Add BIT_IOR_EXPR.
+	(class operator_bitwise_or): Move from here.
+	(integral_table::integral_table): Remove BIT_IOR_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_bitwise_and): Move from...
+	* range-op.cc (unified_table::unified_table): Add BIT_AND_EXPR.
+	(get_op_handler): Check for a pointer table entry first.
+	(class operator_bitwise_and): Move from here.
+	(integral_table::integral_table): Remove BIT_AND_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_bitwise_xor): Move from...
+	* range-op.cc (unified_table::unified_table): Add BIT_XOR_EXPR.
+	(class operator_bitwise_xor): Move from here.
+	(integral_table::integral_table): Remove BIT_XOR_EXPR.
+	(pointer_table::pointer_table): Remove BIT_XOR_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_bitwise_not): Move from...
+	* range-op.cc (unified_table::unified_table): Add BIT_NOT_EXPR.
+	(class operator_bitwise_not): Move from here.
+	(integral_table::integral_table): Remove BIT_NOT_EXPR.
+	(pointer_table::pointer_table): Remove BIT_NOT_EXPR.
+
+2023-06-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (class operator_addr_expr): Move from...
+	* range-op.cc (unified_table::unified_table): Add ADDR_EXPR.
+	(class operator_addr_expr): Move from here.
+	(integral_table::integral_table): Remove ADDR_EXPR.
+	(pointer_table::pointer_table): Remove ADDR_EXPR.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat16m1_t): Add type to lmul1 ops.
+	(vfloat16m2_t): Likewise.
+	(vfloat16m4_t): Likewise.
+
+2023-06-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (call_may_clobber_ref_p_1): For
+	.MASK_STORE and friend set the size of the access to
+	unknown.
+
+2023-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove DEFAULT_MATCHPD_PARTITIONS.
+
+2023-06-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md
+	(*v<any_shiftrt:optab><any_extend:optab>trunc<mode>): New pattern.
+	(*<any_shiftrt:optab>trunc<mode>): Ditto.
+	* config/riscv/autovec.md (<optab><mode>3): Change to
+	define_insn_and_split.
+	(v<optab><mode>3): Ditto.
+	(trunc<mode><v_double_trunc>2): Ditto.
+
+2023-06-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.cc (simplify_const_unary_operation):
+	Handle US_TRUNCATE, SS_TRUNCATE.
+
+2023-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR modula2/109952
+	* doc/gm2.texi (Standard procedures): Fix Next link.
+
+2023-06-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* config.in: Regenerate.
+
+2023-06-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR middle-end/110142
+	* tree-vect-patterns.cc (vect_recog_widen_op_pattern): Don't pass
+	subtype to vect_widened_op_tree and remove subtype parameter, also
+	remove superfluous overloaded function definition.
+	(vect_recog_widen_plus_pattern): Remove subtype parameter and dont pass
+	to call to vect_recog_widen_op_pattern.
+	(vect_recog_widen_minus_pattern): Likewise.
+
+2023-06-12  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (vec_pack<floatprefix>_float_<mode>): New expander.
+	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>): Ditto.
+	(vec_unpack_<fixprefix>fix_trunc_hi_<mode>): Ditto.
+	(vec_unpacks_lo_<mode>): Ditto.
+	(vec_unpacks_hi_<mode>): Ditto.
+	(sse_movlhps_<mode>): New define_insn.
+	(ssse3_palignr<mode>_perm): Extend to V_128H.
+	(V_128H): New mode iterator.
+	(ssepackPHmode): New mode attribute.
+	(vunpck_extract_mode): Ditto.
+	(vpckfloat_concat_mode): Extend to VxSI/VxSF for _Float16.
+	(vpckfloat_temp_mode): Ditto.
+	(vpckfloat_op_mode): Ditto.
+	(vunpckfixt_mode): Extend to VxHF.
+	(vunpckfixt_model): Ditto.
+	(vunpckfixt_extract_mode): Ditto.
+
+2023-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110200
+	* genmatch.cc (expr::gen_transform): Put braces around
+	the if arm for the (convert ...) short-cut.
+
+2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* config/rs6000/rs6000-builtins.def (__builtin_pack_vector_int128,
+	__builtin_unpack_vector_int128): Move from stanza power7 to vsx.
+
+2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* config/rs6000/rs6000.cc (output_toc): Use the mode of the 128-bit
+	floating constant itself for real_to_target call.
+
+2023-06-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-types.def
+	(vfloat16mf4_t): Add type to X2/X4/X8/X16/X32 vlmul ext ops.
+	(vfloat16mf2_t): Ditto.
+	(vfloat16m1_t): Ditto.
+	(vfloat16m2_t): Ditto.
+	(vfloat16m4_t): Ditto.
+
+2023-06-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info):
+	Do not require a stack frame when debugging is enabled for AIX.
+
 2023-06-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (adjust_len) [insv_notbit_0, insv_notbit_7]:

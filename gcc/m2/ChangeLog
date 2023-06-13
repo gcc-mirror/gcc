@@ -1,3 +1,34 @@
+2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110189
+	* gm2-compiler/M2Quads.mod (BuildAbsFunction): Replace abort
+	format specifier.
+	(BuildValFunction): Replace abort format specifier.
+	(BuildCastFunction): Replace abort format specifier.
+	(BuildMinFunction): Replace abort format specifier.
+	(BuildMaxFunction): Replace abort format specifier.
+	(BuildTruncFunction): Replace abort format specifier.
+	* gm2-compiler/P3Build.bnf (Pass1): Remove.
+	(Pass2): Remove.
+	(Pass3): Remove.
+	(Expect): Add Pass1.
+	(AsmStatement): Remove Pass3.
+	(AsmOperands): Remove Pass3.
+	(AsmOperandSpec): Remove Pass3.
+	(AsmInputElement): Remove Pass3.
+	(AsmOutputElement): Remove Pass3.
+	(AsmTrashList): Remove Pass3.
+
+2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2-compiler/M2Quads.def (BuildAsmElement): Remove
+	trash parameter.
+	(BuildAsmTrash): New procedure.
+	* gm2-compiler/M2Quads.mod (BuildAsmTrash): New procedure.
+	(BuildAsmElement): Remove trash parameter.
+	* gm2-compiler/P3Build.bnf (AsmTrashList): Rewrite.
+
 2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110126

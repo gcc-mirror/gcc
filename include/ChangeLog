@@ -1,3 +1,9 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Change the enum values
+	GOMP_MAP_PRESENT_{TO,TOFROM,FROM,ALLOC} to be compiler only.
+	(GOMP_MAP_PRESENT_P): Update to include also GOMP_MAP_FORCE_PRESENT.
+
 2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

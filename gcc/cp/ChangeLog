@@ -1,3 +1,21 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_map): Reword error message for
+	clearness especially with 'omp target (enter/exit) data.'
+	* semantics.cc (handle_omp_array_sections): Handle
+	GOMP_MAP_{ALWAYS_,}PRESENT_{TO,TOFROM,FROM,ALLOC} enum values.
+
+2023-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105838
+	* call.cc (convert_like_internal) [ck_list]: Use
+	maybe_init_list_as_array.
+	* constexpr.cc (cxx_eval_vec_init_1): Init might have
+	a different type.
+	* tree.cc (build_vec_init_elt): Likewise.
+	* init.cc (build_vec_init): Handle from_array from a
+	TARGET_EXPR.  Retain TARGET_EXPR of a different type.
+
 2023-06-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110122

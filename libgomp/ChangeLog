@@ -1,3 +1,19 @@
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_to_device_kind_p, gomp_map_vars_internal): Replace
+	GOMP_MAP_PRESENT_{FROM,TO,TOFROM,ACLLOC} by GOMP_MAP_FORCE_PRESENT.
+	(gomp_map_vars_internal, gomp_update): Likewise; unify and improve
+	error message.
+	* testsuite/libgomp.c-c++-common/target-present-2.c: Update for
+	changed error message.
+	* testsuite/libgomp.fortran/target-present-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/present-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-1.c: Likewise and
+	extend testcase to check that data is copied when needed.
+	* testsuite/libgomp.c-c++-common/target-present-3.c: Likewise.
+	* testsuite/libgomp.fortran/target-present-3.f90: Likewise.
+
 2023-06-07  Thomas Schwinge  <thomas@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
