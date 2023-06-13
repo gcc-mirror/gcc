@@ -8796,16 +8796,13 @@ native_interpret_vector_part (tree type, const unsigned char *bytes,
 static tree
 native_interpret_vector (tree type, const unsigned char *ptr, unsigned int len)
 {
-  tree etype;
-  unsigned int size;
-  unsigned HOST_WIDE_INT count;
+  unsigned HOST_WIDE_INT size;
 
-  etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
-  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&count)
-      || size * count > len)
+  if (!tree_to_poly_uint64 (TYPE_SIZE_UNIT (type)).is_constant (&size)
+      || size > len)
     return NULL_TREE;
 
+  unsigned HOST_WIDE_INT count = TYPE_VECTOR_SUBPARTS (type).to_constant ();
   return native_interpret_vector_part (type, ptr, len, count, 1);
 }
 
