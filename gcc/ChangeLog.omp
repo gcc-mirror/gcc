@@ -3,6 +3,16 @@
 	Backport from mainline:
 	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* tree-vect-generic.cc: Include optabs-libfuncs.h.
+	(get_compute_type): Check optab_libfunc.
+	* tree-vect-stmts.cc: Include optabs-libfuncs.h.
+	(vectorizable_operation): Check optab_libfunc.
+
+2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-protos.h (vgpr_4reg_mode_p): New function.
 	* config/gcn/gcn-valu.md (V_4REG, V_4REG_ALT): New iterators.
 	(V_MOV, V_MOV_ALT): Likewise.

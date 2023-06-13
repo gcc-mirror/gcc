@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "regs.h"
 #include "attribs.h"
+#include "optabs-libfuncs.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -6382,8 +6383,8 @@ vectorizable_operation (vec_info *vinfo,
                              "no optab.\n");
 	  return false;
 	}
-      target_support_p = (optab_handler (optab, vec_mode)
-			  != CODE_FOR_nothing);
+      target_support_p = (optab_handler (optab, vec_mode) != CODE_FOR_nothing
+			  || optab_libfunc (optab, vec_mode));
     }
 
   bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);
