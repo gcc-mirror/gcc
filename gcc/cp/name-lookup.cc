@@ -6760,7 +6760,7 @@ class missing_std_header : public deferred_diagnostic
 	maybe_add_include_fixit (&richloc, header, true);
 	inform (&richloc,
 		"%<std::%s%> is defined in header %qs;"
-		" did you forget to %<#include %s%>?",
+		" this is probably fixable by adding %<#include %s%>",
 		m_name_str, header, header);
       }
     else

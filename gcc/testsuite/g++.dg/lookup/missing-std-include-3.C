@@ -7,7 +7,7 @@
 void test ()
 {
   std::string test; // { dg-error ".string. is not a member of .std." }
-  // { dg-message ".std::string. is defined in header .<string>.; did you forget to .#include <string>.?" "" { target *-*-* } .-1 }
+  // { dg-message ".std::string. is defined in header .<string>.; this is probably fixable by adding .#include <string>." "" { target *-*-* } .-1 }
 }
 
 #include <string>
