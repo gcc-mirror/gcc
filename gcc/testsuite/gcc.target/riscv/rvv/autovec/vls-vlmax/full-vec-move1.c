@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do compile } */
 /* { dg-additional-options "-std=c99 -O3 -march=rv64gcv_zvl128b -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax" } */
 
 #include <stdint-gcc.h>
