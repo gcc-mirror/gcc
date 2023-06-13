@@ -457,6 +457,9 @@ rvv_builder::single_step_npatterns_p () const
      { 2, 2, 2, 2, 4, 4, 4, 4, 8, 8, 8, 8, 16, 16, 16, 16, ... }
    E.g. NPATTERNS = 8:
      { 2, 2, 2, 2, 2, 2, 2, 2, 8, 8, 8, 8, 8, 8, 8, 8, ... }
+   We only check ele[0] ~ ele[NPATTERNS - 1] whether they are the same.
+   We don't need to check the elements[n] with n >= NPATTERNS since
+   they don't belong to the same pattern.
 */
 bool
 rvv_builder::npatterns_all_equal_p () const
@@ -2478,6 +2481,8 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* This function recognizes and supports different permutation patterns
+   and enable VLA SLP auto-vectorization.  */
 static bool
 expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -2509,6 +2514,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
+/* This function implements TARGET_VECTORIZE_VEC_PERM_CONST by using RVV
+ * instructions.  */
 bool
 expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
 		       rtx op0, rtx op1, const vec_perm_indices &sel)
