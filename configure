@@ -3439,6 +3439,17 @@ $as_echo "yes" >&6; }
     fi
 fi
 
+# Disable libgrust when not using the rust language
+if test -d ${srcdir}/libgrust; then
+  case ,${enable_languages}, in
+    *,rust,*)
+      ;;
+    *)
+      noconfigdirs="$noconfigdirs libgrust"
+      ;;
+  esac
+fi
+
 # Disable Fortran for some systems.
 case "${target}" in
   mmix-*-*)

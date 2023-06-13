@@ -698,6 +698,17 @@ if test -d ${srcdir}/libphobos; then
     fi
 fi
 
+# Disable libgrust when not using the rust language
+if test -d ${srcdir}/libgrust; then
+  case ,${enable_languages}, in
+    *,rust,*)
+      ;;
+    *)
+      noconfigdirs="$noconfigdirs libgrust"
+      ;;
+  esac
+fi
+
 # Disable Fortran for some systems.
 case "${target}" in
   mmix-*-*)
