@@ -41192,13 +41192,51 @@ cp_parser_oacc_clause_async (cp_parser *parser, tree list)
   return list;
 }
 
+/* OpenACC 2.7:
+   self [( expression )] */
+
+static tree
+cp_parser_oacc_compute_clause_self (cp_parser *parser, tree list)
+{
+  tree t;
+  location_t location = cp_lexer_peek_token (parser->lexer)->location;
+  if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+      t = cp_parser_assignment_expression (parser);
+      if (t == error_mark_node
+	  || !parens.require_close (parser))
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+    }
+  else
+    t = truthvalue_true_node;
+
+  for (tree c = list; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SELF)
+      {
+	error_at (location, "too many %<self%> clauses");
+	return list;
+      }
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_SELF);
+  OMP_CLAUSE_SELF_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
 static tree
 cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 			    const char *where, cp_token *pragma_tok,
-			    bool finish_p = true)
+			    bool finish_p = true, bool compute_p = false)
 {
   tree clauses = NULL;
   bool first = true;
@@ -41218,7 +41256,19 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	cp_lexer_consume_token (parser->lexer);
 
       here = cp_lexer_peek_token (parser->lexer)->location;
-      c_kind = cp_parser_omp_clause_name (parser);
+
+      /* For OpenACC compute directives */
+      if (compute_p
+	  && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  && !strcmp (IDENTIFIER_POINTER
+		      (cp_lexer_peek_token (parser->lexer)->u.value),
+		      "self"))
+	{
+	  c_kind = PRAGMA_OACC_CLAUSE_SELF;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	c_kind = cp_parser_omp_clause_name (parser);
 
       switch (c_kind)
 	{
@@ -41351,6 +41401,10 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
 					      false, clauses);
 	  c_name = "reduction";
+	  break;
+	case PRAGMA_OACC_CLAUSE_SELF:
+	  clauses = cp_parser_oacc_compute_clause_self (parser, clauses);
+	  c_name = "self";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = cp_parser_oacc_simple_clause (here, OMP_CLAUSE_SEQ,
@@ -46866,6 +46920,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -46886,6 +46941,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRIVATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)       \
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -46904,6 +46960,7 @@ cp_parser_oacc_loop (cp_parser *parser, cp_token *pragma_tok, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static tree
@@ -46949,7 +47006,8 @@ cp_parser_oacc_compute (cp_parser *parser, cp_token *pragma_tok,
 	}
     }
 
-  tree clauses = cp_parser_oacc_all_clauses (parser, mask, p_name, pragma_tok);
+  tree clauses = cp_parser_oacc_all_clauses (parser, mask, p_name, pragma_tok,
+					     true, true);
 
   tree block = begin_omp_parallel ();
   unsigned int save = cp_parser_begin_omp_structured_block (parser);

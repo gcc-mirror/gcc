@@ -193,6 +193,17 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
       goacc_restore_bind ();
       goto out_prof;
     }
+  else if (flags & GOACC_FLAG_LOCAL_DEVICE)
+    {
+      /* TODO: a proper pthreads based "multi-core CPU" local device
+	 implementation. Currently, this is still the same as host-fallback.  */
+      prof_info.device_type = acc_device_host;
+      api_info.device_type = prof_info.device_type;
+      goacc_save_and_set_bind (acc_device_host);
+      fn (hostaddrs);
+      goacc_restore_bind ();
+      goto out_prof;
+    }
   else if (acc_device_type (acc_dev->type) == acc_device_host)
     {
       fn (hostaddrs);

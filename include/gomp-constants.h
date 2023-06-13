@@ -304,6 +304,8 @@ enum gomp_map_kind
 
 /* Force host fallback execution.  */
 #define GOACC_FLAG_HOST_FALLBACK	(1 << 0)
+/* Execute on local device (i.e. host multicore CPU).  */
+#define GOACC_FLAG_LOCAL_DEVICE 	(1 << 1)
 
 /* For legacy reasons, in the ABI, the GOACC_FLAGs are encoded as an inverted
    bitmask.  */

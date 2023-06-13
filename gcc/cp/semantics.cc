@@ -7377,13 +7377,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  goto handle_field_decl;
 
 	case OMP_CLAUSE_IF:
-	  t = OMP_CLAUSE_IF_EXPR (c);
+	case OMP_CLAUSE_SELF:
+	  t = OMP_CLAUSE_OPERAND (c, 0);
 	  t = maybe_convert_cond (t);
 	  if (t == error_mark_node)
 	    remove = true;
 	  else if (!processing_template_decl)
 	    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
-	  OMP_CLAUSE_IF_EXPR (c) = t;
+	  OMP_CLAUSE_OPERAND (c, 0) = t;
 	  break;
 
 	case OMP_CLAUSE_FINAL:

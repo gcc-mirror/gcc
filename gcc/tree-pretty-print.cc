@@ -1453,7 +1453,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 false);
       pp_right_paren (pp);
       break;
-
+    case OMP_CLAUSE_SELF:
+      pp_string (pp, "self(");
+      dump_generic_node (pp, OMP_CLAUSE_SELF_EXPR (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
     default:
       gcc_unreachable ();
     }

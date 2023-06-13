@@ -15923,6 +15923,41 @@ c_parser_oacc_clause_wait (c_parser *parser, tree list)
   return list;
 }
 
+/* OpenACC 2.7:
+   self [( expression )] */
+
+static tree
+c_parser_oacc_compute_clause_self (c_parser *parser, tree list)
+{
+  tree t;
+  location_t location = c_parser_peek_token (parser)->location;
+  if (c_parser_peek_token (parser)->type == CPP_OPEN_PAREN)
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+
+      location_t loc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (loc, expr, true, true);
+      t = c_objc_common_truthvalue_conversion (loc, expr.value);
+      t = c_fully_fold (t, false, NULL);
+      parens.skip_until_found_close (parser);
+    }
+  else
+    t = truthvalue_true_node;
+
+  for (tree c = list; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SELF)
+      {
+	error_at (location, "too many %<self%> clauses");
+	return list;
+      }
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_SELF);
+  OMP_CLAUSE_SELF_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
 
 /* OpenMP 5.0:
    order ( concurrent )
@@ -18048,7 +18083,8 @@ c_parser_omp_clause_detach (c_parser *parser, tree list)
 
 static tree
 c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
-			   const char *where, bool finish_p = true)
+			   const char *where, bool finish_p = true,
+			   bool compute_p = false)
 {
   tree clauses = NULL;
   bool first = true;
@@ -18064,7 +18100,18 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	c_parser_consume_token (parser);
 
       here = c_parser_peek_token (parser)->location;
-      c_kind = c_parser_omp_clause_name (parser);
+
+      /* For OpenACC compute directives */
+      if (compute_p
+	  && c_parser_next_token_is (parser, CPP_NAME)
+	  && !strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
+		      "self"))
+	{
+	  c_kind = PRAGMA_OACC_CLAUSE_SELF;
+	  c_parser_consume_token (parser);
+	}
+      else
+	c_kind = c_parser_omp_clause_name (parser);
 
       switch (c_kind)
 	{
@@ -18195,6 +18242,10 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
 					     false, clauses);
 	  c_name = "reduction";
+	  break;
+	case PRAGMA_OACC_CLAUSE_SELF:
+	  clauses = c_parser_oacc_compute_clause_self (parser, clauses);
+	  c_name = "self";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = c_parser_oacc_simple_clause (here, OMP_CLAUSE_SEQ,
@@ -19032,6 +19083,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -19052,6 +19104,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -19070,6 +19123,7 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static tree
@@ -19112,7 +19166,7 @@ c_parser_oacc_compute (location_t loc, c_parser *parser,
 	}
     }
 
-  tree clauses = c_parser_oacc_all_clauses (parser, mask, p_name);
+  tree clauses = c_parser_oacc_all_clauses (parser, mask, p_name, true, true);
 
   tree block = c_begin_omp_parallel ();
   add_stmt (c_parser_omp_structured_block (parser, if_p));

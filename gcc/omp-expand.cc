@@ -10332,6 +10332,47 @@ expand_omp_target (struct omp_region *region)
 	}
     }
 
+  if ((c = omp_find_clause (clauses, OMP_CLAUSE_SELF)) != NULL_TREE)
+    {
+      gcc_assert (is_gimple_omp_oacc (entry_stmt) && offloaded);
+
+      edge e = split_block_after_labels (new_bb);
+      basic_block cond_bb = e->src;
+      new_bb = e->dest;
+      remove_edge (e);
+
+      basic_block then_bb = create_empty_bb (cond_bb);
+      basic_block else_bb = create_empty_bb (then_bb);
+      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+      set_immediate_dominator (CDI_DOMINATORS, else_bb, cond_bb);
+
+      tree self_cond = gimple_boolify (OMP_CLAUSE_SELF_EXPR (c));
+      stmt = gimple_build_cond_empty (self_cond);
+      gsi = gsi_last_bb (cond_bb);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      tree tmp_var = create_tmp_var (TREE_TYPE (goacc_flags));
+      stmt = gimple_build_assign (tmp_var, BIT_IOR_EXPR, goacc_flags,
+				  build_int_cst (integer_type_node,
+						 GOACC_FLAG_LOCAL_DEVICE));
+      gsi = gsi_start_bb (then_bb);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      gsi = gsi_start_bb (else_bb);
+      stmt = gimple_build_assign (tmp_var, goacc_flags);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+      make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+      make_edge (cond_bb, else_bb, EDGE_FALSE_VALUE);
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      add_bb_to_loop (else_bb, cond_bb->loop_father);
+      make_edge (then_bb, new_bb, EDGE_FALLTHRU);
+      make_edge (else_bb, new_bb, EDGE_FALLTHRU);
+
+      goacc_flags = tmp_var;
+      gsi = gsi_last_nondebug_bb (new_bb);
+    }
+
   if (need_device_adjustment)
     {
       tree uns = fold_convert (unsigned_type_node, device);

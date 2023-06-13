@@ -1094,6 +1094,7 @@ enum omp_mask2
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
   OMP_CLAUSE_USES_ALLOCATORS, /* OpenMP 5.0  */
+  OMP_CLAUSE_SELF, /* OpenACC 2.7  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -3519,6 +3520,27 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else
 		gfc_current_locus = old_loc;
 	    }
+	  if ((mask & OMP_CLAUSE_SELF)
+	      && (m = gfc_match_dupl_check (!c->self_expr, "self"))
+	          != MATCH_NO)
+	    {
+	      gcc_assert (!(mask & OMP_CLAUSE_HOST_SELF));
+	      if (m == MATCH_ERROR)
+		goto error;
+	      m = gfc_match (" ( %e )", &c->self_expr);
+	      if (m == MATCH_ERROR)
+		{
+		  gfc_current_locus = old_loc;
+		  break;
+		}
+	      else if (m == MATCH_NO)
+		{
+		  c->self_expr = gfc_get_logical_expr (gfc_default_logical_kind,
+						       NULL, true);
+		  needs_space = true;
+		}
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_HOST_SELF)
 	      && gfc_match ("self ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
@@ -3791,19 +3813,22 @@ error:
    | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_NO_CREATE | OMP_CLAUSE_PRESENT	      \
    | OMP_CLAUSE_DEVICEPTR | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE      \
-   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH)
+   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH		      \
+   | OMP_CLAUSE_SELF)
 #define OACC_KERNELS_CLAUSES \
   (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_NUM_GANGS	      \
    | OMP_CLAUSE_NUM_WORKERS | OMP_CLAUSE_VECTOR_LENGTH | OMP_CLAUSE_DEVICEPTR \
    | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_NO_CREATE | OMP_CLAUSE_PRESENT	      \
-   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH)
+   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH	              \
+   | OMP_CLAUSE_SELF)
 #define OACC_SERIAL_CLAUSES \
   (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_ASYNC | OMP_CLAUSE_REDUCTION	      \
    | OMP_CLAUSE_COPY | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT		      \
    | OMP_CLAUSE_CREATE | OMP_CLAUSE_NO_CREATE | OMP_CLAUSE_PRESENT	      \
    | OMP_CLAUSE_DEVICEPTR | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE      \
-   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH)
+   | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_WAIT | OMP_CLAUSE_ATTACH	              \
+   | OMP_CLAUSE_SELF)
 #define OACC_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_IF) | OMP_CLAUSE_DEVICEPTR  | OMP_CLAUSE_COPY	      \
    | OMP_CLAUSE_COPYIN | OMP_CLAUSE_COPYOUT | OMP_CLAUSE_CREATE		      \
@@ -7539,6 +7564,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		       "the current OpenMP construct", ifs[ifc], &expr->where);
 	  }
       }
+
+  if (omp_clauses->self_expr)
+    {
+      gfc_expr *expr = omp_clauses->self_expr;
+      if (!gfc_resolve_expr (expr)
+	  || expr->ts.type != BT_LOGICAL || expr->rank != 0)
+	gfc_error ("SELF clause at %L requires a scalar LOGICAL expression",
+		   &expr->where);
+    }
 
   if (omp_clauses->final_expr)
     {
