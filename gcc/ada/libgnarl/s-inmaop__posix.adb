@@ -135,6 +135,7 @@ package body System.Interrupt_Management.Operations is
 
    begin
       Result := sigwait (Mask, Sig'Access);
+      pragma Assert (Result = 0);
 
       if Result /= 0 then
          return 0;
