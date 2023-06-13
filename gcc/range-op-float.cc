@@ -260,7 +260,7 @@ maybe_isnan (const frange &op1, const frange &op2)
 // Floating version of relop_early_resolve that takes into account NAN
 // and -ffinite-math-only.
 
-inline bool
+static inline bool
 frelop_early_resolve (irange &r, tree type,
 		      const frange &op1, const frange &op2,
 		      relation_trio rel, relation_kind my_rel)
@@ -277,7 +277,7 @@ frelop_early_resolve (irange &r, tree type,
 
 // Set VALUE to its next real value, or INF if the operation overflows.
 
-inline void
+void
 frange_nextafter (enum machine_mode mode,
 		  REAL_VALUE_TYPE &value,
 		  const REAL_VALUE_TYPE &inf)
@@ -2697,7 +2697,7 @@ namespace selftest
 
 // Build an frange from string endpoints.
 
-inline frange
+static inline frange
 frange_float (const char *lb, const char *ub, tree type = float_type_node)
 {
   REAL_VALUE_TYPE min, max;
