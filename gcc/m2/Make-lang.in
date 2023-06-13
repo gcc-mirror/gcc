@@ -593,6 +593,13 @@ m2/gm2-gcc/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-gcc/%.def $(MCDEPS)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-gcc/$*.def
 
+ifeq ($(HAVE_PYTHON),yes)
+check-format-error:
+	$(PYTHON) $(srcdir)/m2/tools-src/checkmeta.py -s $(srcdir)/m2/gm2-compiler
+else
+check-format-error:
+endif
+
 # The following tables define the source files which are translated into C using mc
 # and defines the system interface C files.
 
