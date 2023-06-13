@@ -399,10 +399,17 @@ rvv_builder::get_merge_scalar_mask (unsigned int index_in_pattern) const
 {
   unsigned HOST_WIDE_INT mask = 0;
   unsigned HOST_WIDE_INT base_mask = (1ULL << index_in_pattern);
+  /* Here we construct a mask pattern that will later be broadcast
+     to a vector register.  The maximum broadcast size for vmv.v.x/vmv.s.x
+     is determined by the length of a vector element (ELEN) and not by
+     XLEN so make sure we do not exceed it.  One example is -march=zve32*
+     which mandates ELEN == 32 but can be combined with -march=rv64
+     with XLEN == 64.  */
+  unsigned int elen = TARGET_VECTOR_ELEN_64 ? 64 : 32;
 
-  gcc_assert (BITS_PER_WORD % npatterns () == 0);
+  gcc_assert (elen % npatterns () == 0);
 
-  int limit = BITS_PER_WORD / npatterns ();
+  int limit = elen / npatterns ();
 
   for (int i = 0; i < limit; i++)
     mask |= base_mask << (i * npatterns ());
@@ -1928,7 +1935,7 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       rtx mask = gen_reg_rtx (mask_mode);
       rtx dup = gen_reg_rtx (dup_mode);
 
-      if (full_nelts <= BITS_PER_WORD) /* vmv.s.x.  */
+      if (full_nelts <= builder.inner_bits_size ()) /* vmv.s.x.  */
 	{
 	  rtx ops[] = {dup, gen_scalar_move_mask (dup_mask_mode),
 	    RVV_VUNDEF (dup_mode), merge_mask};
@@ -1938,7 +1945,8 @@ expand_vector_init_merge_repeating_sequence (rtx target,
       else /* vmv.v.x.  */
 	{
 	  rtx ops[] = {dup, force_reg (GET_MODE_INNER (dup_mode), merge_mask)};
-	  rtx vl = gen_int_mode (CEIL (full_nelts, BITS_PER_WORD), Pmode);
+	  rtx vl = gen_int_mode (CEIL (full_nelts, builder.inner_bits_size ()),
+				 Pmode);
 	  emit_nonvlmax_integer_move_insn (code_for_pred_broadcast (dup_mode),
 					   ops, vl);
 	}
