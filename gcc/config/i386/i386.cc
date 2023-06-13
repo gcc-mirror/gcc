@@ -5358,19 +5358,19 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
       if (GET_MODE_SIZE (mode) == 64)
 	{
 	  gcc_assert (TARGET_AVX512F);
-	  return "vpcmpeqd \t %t0, %t0, %t0";
+	  return "vpcmpeqd\t%t0, %t0, %t0";
 	}
       else if (GET_MODE_SIZE (mode) == 32)
 	{
 	  gcc_assert (TARGET_AVX);
-	  return "vpcmpeqd \t %x0, %x0, %x0";
+	  return "vpcmpeqd\t%x0, %x0, %x0";
 	}
       gcc_unreachable ();
     }
   else if (vector_all_ones_zero_extend_quarter_operand (x, mode))
     {
       gcc_assert (TARGET_AVX512F);
-      return "vpcmpeqd \t %x0, %x0, %x0";
+      return "vpcmpeqd\t%x0, %x0, %x0";
     }
 
   gcc_unreachable ();
