@@ -1333,7 +1333,7 @@
 
 (define_insn "mov<mode>_internal"
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
-	 "=v,v ,v,v ,m")
+	 "=v,v ,x,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
 	 " C,<sseconstm1>,BH,vm,v"))]
   "TARGET_SSE
