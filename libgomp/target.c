@@ -152,8 +152,8 @@ resolve_device (int device_id, bool remapped)
 	return NULL;
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
 	  && gomp_get_num_devices () == 0)
-	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY but only the host "
-		    "device is available");
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
+		    "but only the host device is available");
       else if (device_id == omp_invalid_device)
 	gomp_fatal ("omp_invalid_device encountered");
       else if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)

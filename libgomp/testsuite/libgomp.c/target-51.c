@@ -9,7 +9,7 @@
 
 /* See comment in target-50.c/target-50.c for why the output differs.  */
 
-/* { dg-output ".*libgomp: OMP_TARGET_OFFLOAD is set to MANDATORY but only the host device is available.*" { target { ! offload_device } } } */
+/* { dg-output ".*libgomp: OMP_TARGET_OFFLOAD is set to MANDATORY, but only the host device is available.*" { target { ! offload_device } } } */
 /* { dg-output ".*libgomp: OMP_TARGET_OFFLOAD is set to MANDATORY, but device not found.*" { target offload_device } } */
 
 int
