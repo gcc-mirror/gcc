@@ -1,3 +1,149 @@
+2023-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84890
+	* g++.dg/cpp2a/srcloc3.C: Update expected message.
+	* g++.dg/lookup/missing-std-include-2.C: Likewise.
+	* g++.dg/lookup/missing-std-include-3.C: Likewise.
+	* g++.dg/lookup/missing-std-include-6.C: Likewise.
+	* g++.dg/lookup/missing-std-include.C: Likewise.
+	* g++.dg/spellcheck-inttypes.C: Likewise.
+	* g++.dg/spellcheck-stdint.C: Likewise.
+	* g++.dg/spellcheck-stdlib.C: Likewise.
+	* gcc.dg/spellcheck-inttypes.c: Likewise.
+	* gcc.dg/spellcheck-stdbool.c: Likewise.
+	* gcc.dg/spellcheck-stdint.c: Likewise.
+	* gcc.dg/spellcheck-stdlib.c: Likewise.
+
+2023-06-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/data_array_7.f90: New test.
+
+2023-06-13  Harald Anlauf  <anlauf@gmx.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/86277
+	* gfortran.dg/zero_sized_14.f90: New test.
+	* gfortran.dg/zero_sized_15.f90: New test.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-15.c: New test.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-12.c: New test.
+
+2023-06-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tree-ssa/initlist-opt6.C: New test.
+
+2023-06-13  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/rvv/base/pr109244.C: Add the -Wno-psabi.
+	* g++.target/riscv/rvv/base/pr109535.C: Same
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-120.c: Same
+	* gcc.target/riscv/rvv/base/integer_compare_insn_shortcut.c: Same
+	* gcc.target/riscv/rvv/base/mask_insn_shortcut.c: Same
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c: Same
+	* gcc.target/riscv/rvv/base/pr110109-2.c: Same
+	* gcc.target/riscv/rvv/base/scalar_move-9.c: Same
+	* gcc.target/riscv/rvv/base/spill-10.c: Same
+	* gcc.target/riscv/rvv/base/spill-11.c: Same
+	* gcc.target/riscv/rvv/base/spill-9.c: Same
+	* gcc.target/riscv/rvv/base/vlmul_ext-1.c: Same
+	* gcc.target/riscv/rvv/base/zero_base_load_store_optimization.c: Same
+	* gcc.target/riscv/rvv/base/zvfh-intrinsic.c: Same
+	* gcc.target/riscv/rvv/base/zvfh-over-zvfhmin.c: Same
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Same
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-1.c: Same
+	* gcc.target/riscv/vector-abi-1.c: New test.
+	* gcc.target/riscv/vector-abi-2.c: New test.
+	* gcc.target/riscv/vector-abi-3.c: New test.
+	* gcc.target/riscv/vector-abi-4.c: New test.
+	* gcc.target/riscv/vector-abi-5.c: New test.
+	* gcc.target/riscv/vector-abi-6.c: New test.
+
+2023-06-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/mtp.c: New test.
+	* gcc.target/arm/mtp_1.c: New test.
+	* gcc.target/arm/mtp_2.c: New test.
+	* gcc.target/arm/mtp_3.c: New test.
+	* gcc.target/arm/mtp_4.c: New test.
+
+2023-06-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108779
+	* gcc.target/aarch64/mtp_5.c: New test.
+	* gcc.target/aarch64/mtp_6.c: New test.
+	* gcc.target/aarch64/mtp_7.c: New test.
+	* gcc.target/aarch64/mtp_8.c: New test.
+	* gcc.target/aarch64/mtp_9.c: New test.
+
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110232
+	* gcc.target/i386/pr110232.c: New testcase.
+
+2023-06-13  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	PR testsuite/109880
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Update test.
+
+2023-06-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/110230
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: Adjust with int128 effective target.
+	* gcc.target/powerpc/pr109932-2.c: Ditto.
+
+2023-06-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c:
+	Adjust dg-do to comiple for asm checking.
+
+2023-06-13  Tejas Belagod  <tbelagod@arm.com>
+
+	PR target/96339
+	* gcc.target/aarch64/sve/acle/general-c/svlast.c: New.
+	* gcc.target/aarch64/sve/acle/general-c/svlast128_run.c: New.
+	* gcc.target/aarch64/sve/acle/general-c/svlast256_run.c: New.
+	* gcc.target/aarch64/sve/pcs/return_4.c (caller_bf16): Fix asm
+	to expect optimized code for function body.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_256.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_512.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_1024.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_4_2048.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_256.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_512.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_1024.c (caller_bf16): Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_2048.c (caller_bf16): Likewise.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c: New test.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-9.c: New test.
+
 2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110189

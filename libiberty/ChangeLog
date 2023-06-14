@@ -1,3 +1,9 @@
+2023-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_conversion): Remove incorrect
+	template instantiation handling.
+	* testsuite/demangle-expected: Add testcases.
+
 2023-06-07  Costas Argyris  <costas.argyris@gmail.com>
 
 	* argv.c (writeargv): Constant propagate "0" for "status",

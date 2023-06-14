@@ -1,3 +1,21 @@
+2023-06-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (check-format-error): New rule.
+	* gm2-compiler/M2MetaError.mod (op): Add calls InternalError if
+	digits are detected.
+	* gm2-compiler/M2Quads.mod (BuildForToByDo): Bugfix to format
+	specifier.
+	(BuildLengthFunction): Bugfix to format	specifiers.
+	(BuildOddFunction): Bugfix to format specifiers.
+	(BuildAbsFunction): Bugfix to format specifiers.
+	(BuildCapFunction): Bugfix to format specifiers.
+	(BuildChrFunction): Bugfix to format specifiers.
+	(BuildOrdFunction): Bugfix to format specifiers.
+	(BuildMakeAdrFunction): Bugfix to format specifiers.
+	(BuildSizeFunction): Bugfix to format specifiers.
+	(BuildBitSizeFunction): Bugfix to format specifiers.
+	* tools-src/checkmeta.py: New file.
+
 2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110189

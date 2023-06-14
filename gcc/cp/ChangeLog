@@ -1,3 +1,13 @@
+2023-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84890
+	* name-lookup.cc (missing_std_header::~missing_std_header): Reword
+	note to avoid negative tone of "forgetting".
+
+2023-06-13  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (build_target_expr): Check TYPE_HAS_MUTABLE_P.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_clause_map): Reword error message for

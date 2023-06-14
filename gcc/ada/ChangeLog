@@ -1,3 +1,329 @@
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Simply resolve
+	the expression.
+
+2023-06-13  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_N_Quantified_Expression): Detect the secondary-stack
+	case, and find the innermost scope where we should mark/release,
+	and Set_Uses_Sec_Stack on that. Skip intermediate blocks and loops
+	that are part of expansion.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Repeatedly_Evaluated): Recognize iterated component
+	association as repeatedly evaluated.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Recognize iterated
+	component association as potentially unevaluated.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Replace early call to
+	In_Quantified_Expression with a call to Is_Potentially_Unevaluated that
+	was only done when Full_Analysis is true.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Aspect_Id): Add new aspect.
+	(Implementation_Defined_Aspect): New aspect is
+	implementation-defined.
+	(Aspect_Argument): New aspect has an expression argument.
+	(Is_Representation_Aspect): New aspect is not a representation
+	aspect.
+	(Aspect_Names): Link new aspect identifier with a name.
+	(Aspect_Delay): New aspect is never delayed.
+	* contracts.adb (Expand_Subprogram_Contract): Mention new aspect
+	in comment.
+	(Add_Contract_Item): Attach pragma corresponding to the new aspect
+	to contract items.
+	(Analyze_Entry_Or_Subprogram_Contract): Analyze pragma
+	corresponding to the new aspect that appears with subprogram spec.
+	(Analyze_Subprogram_Body_Stub_Contract): Expand pragma
+	corresponding to the new aspect.
+	* contracts.ads
+	(Add_Contract_Item, Analyze_Entry_Or_Subprogram_Contract)
+	(Analyze_Entry_Or_Subprogram_Body_Contract)
+	(Analyze_Subprogram_Body_Stub_Contract): Mention new aspect in
+	comment.
+	* einfo-utils.adb (Get_Pragma): Return pragma attached to
+	contract.
+	* einfo-utils.ads (Get_Pragma): Mention new contract in comment.
+	* exp_prag.adb (Expand_Pragma_Always_Terminates): Placeholder for
+	possibly expanding new aspect.
+	* exp_prag.ads (Expand_Pragma_Always_Terminates): Dedicated
+	routine for expansion of the new aspect.
+	* inline.adb (Remove_Aspects_And_Pragmas): Remove aspect from
+	inlined bodies.
+	* par-prag.adb (Prag): Postpone checking of the pragma until
+	analysis.
+	* sem_ch12.adb: Mention new aspect in explanation of handling
+	contracts on generic units.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Convert new aspect
+	into a corresponding pragma.
+	(Check_Aspect_At_Freeze_Point): Don't expect new aspect.
+	* sem_prag.adb (Analyze_Always_Terminates_In_Decl_Part): Analyze
+	pragma corresponding to the new aspect.
+	(Analyze_Pragma): Handle pragma corresponding to the new aspect.
+	(Is_Non_Significant_Pragma_Reference): Handle references appearing
+	within new aspect.
+	* sem_prag.ads (Aspect_Specifying_Pragma): New aspect can be
+	emulated with a pragma.
+	(Assertion_Expression_Pragma): New aspect has an assertion
+	expression.
+	(Pragma_Significant_To_Subprograms): New aspect is significant to
+	subprograms.
+	(Analyze_Always_Terminates_In_Decl_Part): Add spec for routine
+	that analyses new aspect.
+	(Find_Related_Declaration_Or_Body): Mention new aspect in comment.
+	* sem_util.adb (Is_Subprogram_Contract_Annotation): New aspect is
+	a subprogram contract annotation.
+	* sem_util.ads (Is_Subprogram_Contract_Annotation): Mention new
+	aspect in comment.
+	* sinfo.ads (Is_Generic_Contract_Pragma): New pragma is a generic
+	contract.
+	(Contract): Explain attaching new pragma to subprogram contract.
+	* snames.ads-tmpl (Name_Always_Terminates): New name for the new
+	contract.
+	(Pragma_Always_Terminates): New pragma identifier.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_elab.adb (Check_Overriding_Primitive): Prevent Corresponding_Body
+	to be called with entity of an abstract subprogram.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Save_References_In_Identifier): In the case where
+	the identifier has been turned into a function call by analysis,
+	call Set_Global_Type on the entity if it is global.
+
+2023-06-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Call
+	Preanalyze_And_Resolve instead of Resolve_Aggr_Expr except for
+	aggregate.
+	Co-authored-by: Ed Schonberg <schonberg@adacore.com>
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Contract_Error): New exception.
+	(Add_Contract_Item): Raise Contract_Error instead of Program_Error.
+	(Add_Generic_Contract_Pragma): Deal with Contract_Error.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Add more exceptions to the early
+	return for a prefix which is a nonfrozen generic actual type.
+	* sem_ch12.adb (Copy_Generic_Node): Also check private views in the
+	case of an entity name or operator analyzed as a function call.
+	(Set_Global_Type): Make it a child of Save_Global_References.
+	(Save_References_In_Operator): In the case where the operator has
+	been turned into a function call, call Set_Global_Type on the entity
+	if it is global.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract): For a
+	subprogram body that has no contracts and does not come from source,
+	make sure that contracts on its corresponding spec are analyzed, if
+	any, before expanding them.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-fields.ads (Opt_Field_Enum): Add No_Finalize_Actions and
+	remove No_Side_Effect_Removal.
+	* gen_il-gen-gen_nodes.adb (N_Function_Call): Remove semantic flag
+	No_Side_Effect_Removal
+	(N_Assignment_Statement): Add semantic flag No_Finalize_Actions.
+	* sinfo.ads (No_Ctrl_Actions): Adjust comment.
+	(No_Finalize_Actions): New flag on assignment statements.
+	(No_Side_Effect_Removal): Delete.
+	* exp_aggr.adb (Build_Record_Aggr_Code): Remove obsolete comment and
+	Ancestor_Is_Expression variable.  In the case of an extension, do
+	not generate a call to Adjust manually, call Set_No_Finalize_Actions
+	instead.  Do not set the tags, replace call to Make_Unsuppress_Block
+	by Make_Suppress_Block and remove useless assertions.
+	In the general case, call Initialize_Component.
+	(Initialize_Controlled_Component): Delete.
+	(Initialize_Simple_Component): Delete.
+	(Initialize_Component): Do the low-level processing, but do not
+	generate a call to Adjust manually, call Set_No_Finalize_Actions.
+	(Process_Transient_Component): Delete.
+	(Process_Transient_Component_Completion): Likewise.
+	* exp_ch5.adb (Expand_Assign_Array): Deal with No_Finalize_Actions.
+	(Expand_Assign_Array_Loop): Likewise.
+	(Expand_N_Assignment_Statement): Likewise.
+	(Make_Tag_Ctrl_Assignment): Likewise.
+	* exp_util.adb (Remove_Side_Effects): Do not test the
+	No_Side_Effect_Removal flag.
+	* sem_prag.adb (Process_Suppress_Unsuppress): Give the warning in
+	SPARK mode only for pragma Suppress.
+	* tbuild.ads (Make_Suppress_Block): New declaration.
+	(Make_Unsuppress_Block): Adjust comment.
+	* tbuild.adb (Make_Suppress_Block): New procedure.
+	(Make_Unsuppress_Block): Unsuppress instead of suppressing.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Turn Rhs into a constant and
+	remove calls to the following subprograms.
+	(Transform_BIP_Assignment): Delete.
+	(Should_Transform_BIP_Assignment): Likewise.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Is_Inherited_Operation_For_Type): Remove spec.
+	* sem_util.adb (Is_Inherited_Operation_For_Type): Remove body.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Add new variable Ancestor_Q
+	to store the result of Unqualify on Ancestor.  Remove the dead call
+	to Generate_Finalization_Actions in the case of another aggregate as
+	ancestor part.  Remove the redundant setting of Assignment_OK.  Use
+	Init_Typ in lieu of Etype (Ancestor) more consistently.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): In the case of an extension
+	aggregate of a limited type whose ancestor part is an aggregate, do
+	not skip the final code assigning the tag of the extension.
+
+2023-06-13  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb (Check_Ghost_Context): Allow absence of Ghost_Id
+	for attribute. Update error message to mention Ghost_Predicate.
+	(Is_Ghost_Attribute_Reference): New query.
+	* ghost.ads (Is_Ghost_Attribute_Reference): New query.
+	* sem_attr.adb (Resolve_Attribute): Check ghost context for ghost
+	attributes.
+
+2023-06-13  Daniel King  <dmking@adacore.com>
+
+	* libgnat/s-stoele.ads: Add No_Elaboration_Code_All pragma.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Make_Tag_Assignment_From_Type): Declare.
+	* exp_util.adb (Make_Tag_Assignment_From_Type): New function.
+	* exp_aggr.adb (Build_Record_Aggr_Code): Call the above function.
+	(Initialize_Simple_Component): Likewise.
+	* exp_ch3.adb (Build_Record_Init_Proc.Build_Assignment): Likewise.
+	(Build_Record_Init_Proc.Build_Init_Procedure ): Likewise.
+	(Make_Tag_Assignment): Likewise.  Rename local variable and call
+	Unqualify to go through qualified expressions.
+	* exp_ch4.adb (Expand_Allocator_Expression): Likewise.
+
+2023-06-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strsup.ads: Change predicate aspect.
+	* sem_ch13.adb (Add_Predicate): Fix for first predicate.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Initialize_Component): Perform immediate expansion
+	of the initialization expression if it is a conditional expression
+	and the component type is controlled.
+
+2023-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Initialize_Component): New procedure factored out
+	from the processing of array and record aggregates.
+	(Initialize_Controlled_Component): Likewise.
+	(Initialize_Simple_Component): Likewise.
+	(Build_Array_Aggr_Code.Gen_Assign): Remove In_Loop parameter.
+	Call Initialize_Component to initialize the component.
+	(Initialize_Array_Component): Delete.
+	(Initialize_Ctrl_Array_Component): Likewise.
+	(Build_Array_Aggr_Code): Adjust calls to Gen_Assign.
+	(Build_Record_Aggr_Code): Call Initialize_Simple_Component or
+	Initialize_Component to initialize the component.
+	(Initialize_Ctrl_Record_Component): Delete.
+	(Initialize_Record_Component): Likewise.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Expansion of raise statements
+	never happens in GNATprove mode.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch11.adb (Find_Local_Handler): Replace guard against other
+	constructs appearing in the list of exception handlers with iteration
+	using First_Non_Pragma/Next_Non_Pragma.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch11.ads (Find_Local_Handler): Fix typo in comment.
+	* exp_ch11.adb (Find_Local_Handler): Remove redundant check for the
+	Exception_Handler list being present; use membership test to eliminate
+	local object LCN; fold nested IF statements. Remove useless ELSIF
+	condition.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Check_Function_Writable_Actuals): Tune style; use
+	subtype name to detect membership test nodes.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Spec): Use a single call
+	to New_List.
+
+2023-06-13  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst: Document new
+	aspect.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Whitespace.
+	* aspects.adb (Init_Canonical_Aspect): Set it to Predicate.
+	* aspects.ads: Set global constants for new aspect.
+	* einfo.ads: Describe new flag related to new aspect.
+	* exp_ch6.adb (Can_Fold_Predicate_Call): Do not fold new aspect.
+	* exp_util.adb (Make_Predicate_Check): Add comment.
+	* gen_il-fields.ads: Add new flag.
+	* gen_il-gen-gen_entities.adb: Add new flag.
+	* ghost.adb (Is_OK_Ghost_Context): Ghost predicate is an OK
+	ghost context.
+	(Mark_Ghost_Pragma): Add overloading with ghost mode parameter.
+	* ghost.ads (Mark_Ghost_Pragma): Add overloading with ghpst mode
+	parameter.
+	(Name_To_Ghost_Mode): Make function public.
+	* sem_aggr.adb: Issue error for violation of valid use.
+	* sem_case.adb: Issue error for violation of valid use.
+	* sem_ch13.adb: Adapt for new aspect.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Remove dead code
+	which was trying to propagate Has_Predicates flag in the wrong
+	direction (from derived to parent type).
+	(Analyze_Number_Declaration): Issue error for violation of valid
+	use.
+	(Build_Derived_Type): Cleanup inheritance of predicate flags from
+	parent to derived type.
+	(Build_Predicate_Function): Only add a predicate check when it
+	is not ignored as Ghost code.
+	* sem_ch4.adb (Analyze_Membership_Op): Issue an error for use of
+	a subtype with a ghost predicate as name in a membership test.
+	* sem_ch5.adb (Check_Predicate_Use): Issue error for violation of
+	valid use.
+	* sem_eval.adb: Adapt code for Dynamic_Predicate to account for
+	Ghost_Predicate too.
+	* sem_prag.adb (Analyze_Pragma): Make pragma ghost or not.
+	* sem_util.adb (Bad_Predicated_Subtype_Use): Adapt to new aspect.
+	(Inherit_Predicate_Flags): Add inheritance of flag. Add parameter
+	to apply to derived types.
+	* sem_util.ads (Inherit_Predicate_Flags): Change signature.
+	* snames.ads-tmpl: Add new aspect name.
+	* gnat_rm.texi: Regenerate.
+
+2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Remove early
+	decoration.
+
 2023-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (get_storage_model_access): Also strip any

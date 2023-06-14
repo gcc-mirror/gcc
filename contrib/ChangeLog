@@ -1,3 +1,7 @@
+2023-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* gen_autofdo_event.py: Update for download server changes
+
 2023-06-03  Lehua Ding  <lehua.ding@rivai.ai>
 
 	* clang-format (ForEachMacros): Add missing cases

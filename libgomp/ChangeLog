@@ -1,3 +1,9 @@
+2023-06-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/109837
+	* testsuite/libgomp.c-c++-common/requires-unified-addr-1.c: New test.
+	* testsuite/libgomp.fortran/requires-unified-addr-1.f90: New test.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* target.c (gomp_to_device_kind_p, gomp_map_vars_internal): Replace

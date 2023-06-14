@@ -1,3 +1,125 @@
+2023-06-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.cc (LINK_COMMAND_SPEC): Remove mudflap spec handling.
+
+2023-06-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/sh/divtab.cc: Remove.
+
+2023-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.cc (standard_sse_constant_opcode): Remove
+	superfluous spaces around \t for vpcmpeqd.
+
+2023-06-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.cc (store_constructor) <case VECTOR_TYPE>: Don't bother
+	clearing vectors with only a single element.  Set CLEARED if the
+	vector was initialized to zero.
+
+2023-06-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-v.cc (struct mode_vtype_group): Remove duplicate
+	#include.
+	(ENTRY): Undef.
+	(TUPLE_ENTRY): Undef.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (rvv_builder::single_step_npatterns_p): Add comment.
+	(shuffle_generic_patterns): Ditto.
+	(expand_vec_perm_const_1): Ditto.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_decompress_insn): Fix bug.
+	(shuffle_decompress_patterns): Ditto.
+
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Free loop BBs.
+
+2023-06-13  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_init_cumulative_args): Set
+	warning flag if func is not builtin
+	* config/riscv/riscv.cc
+	(riscv_scalable_vector_type_p): Determine whether the type is scalable vector.
+	(riscv_arg_has_vector): Determine whether the arg is vector type.
+	(riscv_pass_in_vector_p): Check the vector type param is passed by value.
+	(riscv_init_cumulative_args): The same as header.
+	(riscv_get_arg_info): Add the checking.
+	(riscv_function_value): Check the func return and set warning flag
+	* config/riscv/riscv.h (INIT_CUMULATIVE_ARGS): Add a flag to
+	determine whether warning psabi or not.
+
+2023-06-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-opts.h (enum arm_tp_type): Remove TP_CP15.
+	Add TP_TPIDRURW, TP_TPIDRURO, TP_TPIDRPRW values.
+	* config/arm/arm-protos.h (arm_output_load_tpidr): Declare prototype.
+	* config/arm/arm.cc (arm_option_reconfigure_globals): Replace TP_CP15
+	with TP_TPIDRURO.
+	(arm_output_load_tpidr): Define.
+	* config/arm/arm.h (TARGET_HARD_TP): Define in terms of TARGET_SOFT_TP.
+	* config/arm/arm.md (load_tp_hard): Call arm_output_load_tpidr to output
+	assembly.
+	(reload_tp_hard): Likewise.
+	* config/arm/arm.opt (tpidrurw, tpidruro, tpidrprw): New values for
+	arm_tp_type.
+	* doc/invoke.texi (Arm Options, mtp): Document new values.
+
+2023-06-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108779
+	* config/aarch64/aarch64-opts.h (enum aarch64_tp_reg): Add
+	AARCH64_TPIDRRO_EL0 value.
+	* config/aarch64/aarch64.cc (aarch64_output_load_tp): Define.
+	* config/aarch64/aarch64.opt (tpidr_el0, tpidr_el1, tpidr_el2,
+	tpidr_el3, tpidrro_el3): New accepted values to -mtp=.
+	* doc/invoke.texi (AArch64 Options): Document new -mtp= options.
+
+2023-06-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* range-op-float.cc (frange_nextafter): Drop inline.
+	(frelop_early_resolve): Add static.
+	(frange_float): Likewise.
+
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110232
+	* fold-const.cc (native_interpret_vector): Use TYPE_SIZE_UNIT
+	to check whether the buffer covers the whole vector.
+
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): For
+	.MASK_LOAD and friends set the size of the access to unknown.
+
+2023-06-13  Tejas Belagod  <tbelagod@arm.com>
+
+	PR target/96339
+	* config/aarch64/aarch64-sve-builtins-base.cc (svlast_impl::fold): Fold sve
+	calls that have a constant input predicate vector.
+	(svlast_impl::is_lasta): Query to check if intrinsic is svlasta.
+	(svlast_impl::is_lastb): Query to check if intrinsic is svlastb.
+	(svlast_impl::vect_all_same): Check if all vector elements are equal.
+
+2023-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/gcc-auto-profile: Regenerate.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Fix requirement.
+
+2023-06-13  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (emit_vlmax_decompress_insn): New function.
+	(shuffle_decompress_patterns): New function.
+	(expand_vec_perm_const_1): Add decompress optimization.
+
 2023-06-12  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/101188
