@@ -1088,7 +1088,7 @@ public:
 	int step = f.type_suffix (0).element_bytes;
 	int step_1 = gcd (step, VECTOR_CST_NPATTERNS (pred));
 	int npats = VECTOR_CST_NPATTERNS (pred);
-	unsigned HOST_WIDE_INT enelts = vector_cst_encoded_nelts (pred);
+	unsigned enelts = vector_cst_encoded_nelts (pred);
 	tree b = NULL_TREE;
 	unsigned HOST_WIDE_INT nelts;
 
@@ -1130,13 +1130,13 @@ public:
 		/* Restrict the scope of search to NPATS if vector is
 		   variable-length for linear search later.  */
 		nelts = npats;
-		for (i = npats; i < enelts; i += step_1)
+		for (unsigned j = npats; j < enelts; j += step_1)
 		  {
 		    /* If there are active elements in the repeated pattern of a
 		       variable-length vector, then return NULL as there is no
 		       way to be sure statically if this falls within the
 		       Advanced SIMD range.  */
-		    if (!integer_zerop (VECTOR_CST_ENCODED_ELT (pred, i)))
+		    if (!integer_zerop (VECTOR_CST_ENCODED_ELT (pred, j)))
 		      return NULL;
 		  }
 	      }
