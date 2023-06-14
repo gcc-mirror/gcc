@@ -973,12 +973,26 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     }
 
   std::string relative_import_path = "";
-  Import::Stream *s
-    = Import::open_package (crate_name, locus, relative_import_path);
+  std::string import_name = crate_name;
+
+  // The path to the extern crate might have been specified by the user using
+  // -frust-extern
+  auto cli_extern_crate = extern_crates.find (crate_name);
+
+  Import::Stream *s;
+  if (cli_extern_crate != extern_crates.end ())
+    {
+      auto path = cli_extern_crate->second;
+      s = Import::try_package_in_directory (path, locus);
+    }
+  else
+    {
+      s = Import::open_package (import_name, locus, relative_import_path);
+    }
   if (s == NULL)
     {
       rust_error_at (locus, "failed to locate crate %<%s%>",
-		     crate_name.c_str ());
+		     import_name.c_str ());
       return UNKNOWN_NODEID;
     }
 
