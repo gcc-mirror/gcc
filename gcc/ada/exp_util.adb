@@ -6291,6 +6291,11 @@ package body Exp_Util is
 
       Typ := Underlying_Type (Typ);
 
+      --  We cannot find the operation if there is no full view available.
+      if Typ = Empty then
+         return Empty;
+      end if;
+
       --  Loop through primitive operations
 
       Prim := First_Elmt (Primitive_Operations (Typ));
