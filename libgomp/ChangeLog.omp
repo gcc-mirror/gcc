@@ -1,6 +1,13 @@
 2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
+	2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-51.c: Fix typo.
+
+2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
 	2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* env.c (gomp_default_icv_values): Init default_device_var to
