@@ -112,6 +112,8 @@ public:
   static Stream *open_package (const std::string &filename, Location location,
 			       const std::string &relative_import_path);
 
+  static Stream *try_package_in_directory (const std::string &, Location);
+
   // Constructor.
   Import (Stream *, Location);
 
@@ -153,8 +155,6 @@ public:
   void clear_stream () { this->stream_ = NULL; }
 
 private:
-  static Stream *try_package_in_directory (const std::string &, Location);
-
   static int try_suffixes (std::string *);
 
   static Stream *find_export_data (const std::string &filename, int fd,
