@@ -423,7 +423,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Conforming device numbers and @code{omp_initial_device} and
       @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
 @item Initial value of @emph{default-device-var} ICV with
-      @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
+      @code{OMP_TARGET_OFFLOAD=mandatory} @tab Y @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
       of the @code{interop} construct @tab N @tab
 @end multitable
@@ -2006,6 +2006,8 @@ Set to choose the device which is used in a @code{target} region, unless the
 value is overridden by @code{omp_set_default_device} or by a @code{device}
 clause.  The value shall be the nonnegative device number. If no device with
 the given device number exists, the code is executed on the host.  If unset,
+@env{OMP_TARGET_OFFLOAD} is @code{mandatory} and no non-host devices are
+available, it is set to @code{omp_invalid_device}.  Otherwise, if unset,
 device number 0 will be used.
 
 

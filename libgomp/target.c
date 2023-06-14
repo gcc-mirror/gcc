@@ -218,7 +218,11 @@ resolve_device (int device_id, bool remapped)
       if (device_id == (remapped ? GOMP_DEVICE_HOST_FALLBACK
 				 : omp_initial_device))
 	return NULL;
-      if (device_id == omp_invalid_device)
+      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+	  && gomp_get_num_devices () == 0)
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY but only the host "
+		    "device is available");
+      else if (device_id == omp_invalid_device)
 	gomp_fatal ("omp_invalid_device encountered");
       else if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
@@ -6326,6 +6330,15 @@ gomp_target_init (void)
 	 takes a copy of the pointer argument) must be delayed until now.  */
       if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
 	goacc_register (&devs[i]);
+    }
+  if (gomp_global_icv.default_device_var == INT_MIN)
+    {
+       /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+       struct gomp_icv_list *none;
+       none = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_NO_SUFFIX);
+       gomp_global_icv.default_device_var = (num_devs_openmp
+					     ? 0 : omp_invalid_device);
+       none->icvs.default_device_var = gomp_global_icv.default_device_var;
     }
 
   num_devices = num_devs;

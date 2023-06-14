@@ -1,3 +1,29 @@
+2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* env.c (gomp_default_icv_values): Init default_device_var to
+	an nonconforming value - INT_MIN.
+	(initialize_env): After env-var parsing, set default_device_var to
+	device 0 unless OMP_TARGET_OFFLOAD=mandatory.
+	(omp_display_env): If default_device_var is INT_MIN, call
+	gomp_init_targets_once.
+	* icv-device.c (omp_get_default_device): Likewise.
+	* libgomp.texi (OMP_DEFAULT_DEVICE): Update init description.
+	(OpenMP 5.2 Impl. Status): Mark OMP_TARGET_OFFLOAD=mandatory as 'Y'.
+	* target.c (resolve_device): Improve error message device-num < 0
+	with 'mandatory' and no no-host devices available.
+	(gomp_target_init): Set default-device-var if INT_MIN.
+	* testsuite/libgomp.c/target-48.c: New test.
+	* testsuite/libgomp.c/target-49.c: New test.
+	* testsuite/libgomp.c/target-50.c: New test.
+	* testsuite/libgomp.c/target-50a.c: New test.
+	* testsuite/libgomp.c/target-51.c: New test.
+	* testsuite/libgomp.c/target-52.c: New test.
+	* testsuite/libgomp.c/target-53.c: New test.
+	* testsuite/libgomp.c/target-54.c: New test.
+
 2023-06-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
