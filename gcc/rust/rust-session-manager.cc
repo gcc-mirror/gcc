@@ -28,7 +28,6 @@
 #include "rust-privacy-check.h"
 #include "rust-const-checker.h"
 #include "rust-feature-gate.h"
-#include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
 #include "rust-lint-scan-deadcode.h"
@@ -630,10 +629,6 @@ Session::compile_crate (const char *filename)
 
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
-  if (options.dump_option_enabled (CompileOptions::TYPE_RESOLUTION_DUMP))
-    {
-      dump_type_resolution (hir);
-    }
 
   if (saw_errors ())
     return;
@@ -975,22 +970,6 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
     }
 
   HIR::Dump (out).go (crate);
-  out.close ();
-}
-
-void
-Session::dump_type_resolution (HIR::Crate &hir) const
-{
-  std::ofstream out;
-  out.open (kHIRTypeResolutionDumpFile);
-  if (out.fail ())
-    {
-      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
-		     kHIRTypeResolutionDumpFile);
-      return;
-    }
-
-  Resolver::TypeResolverDump::go (hir, out);
   out.close ();
 }
 

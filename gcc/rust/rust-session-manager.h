@@ -202,7 +202,6 @@ struct CompileOptions
     TARGET_OPTION_DUMP,
     HIR_DUMP,
     HIR_DUMP_PRETTY,
-    TYPE_RESOLUTION_DUMP,
   };
 
   std::set<DumpOption> dump_options;
@@ -261,7 +260,6 @@ struct CompileOptions
     enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP_PRETTY);
-    enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
   }
 
   void set_crate_name (std::string name)
@@ -373,7 +371,6 @@ private:
   void dump_tokenstream (AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
-  void dump_type_resolution (HIR::Crate &crate) const;
 
   // pipeline stages - TODO maybe move?
   /* Register plugins pipeline stage. TODO maybe move to another object?
