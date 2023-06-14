@@ -1458,7 +1458,7 @@ See RS/6000 and PowerPC Options.
 -munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
-@gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll
+@gccoptlist{-mconsole  -mcrtdll=@var{library}  -mcygwin  -mno-cygwin  -mdll
 -mnop-fun-dllimport  -mthread
 -municode  -mwin32  -mwindows  -fno-set-stack-executable}
 
@@ -34291,6 +34291,28 @@ instructing the linker to set the PE header subsystem type
 required for console applications.
 This option is available for Cygwin and MinGW targets and is
 enabled by default on those targets.
+
+@opindex mcrtdll
+@item -mcrtdll=@var{library}
+Preprocess, compile or link with specified C RunTime DLL @var{library}.
+This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__}
+and @code{__MSVCRT_VERSION__} for specified CRT @var{library}, choose
+start file for CRT @var{library} and link with CRT @var{library}.
+Recognized CRT library names for proprocessor are:
+@code{crtdll}, @code{msvcrt10}, @code{msvcrt20}, @code{msvcrt40},
+@code{msvcrt-os}, @code{msvcr70}, @code{msvcr80}, @code{msvcr90},
+@code{msvcr100}, @code{msvcr110}, @code{msvcr120} and @code{ucrt}.
+If this options is not specified then the default MinGW import library
+@code{msvcrt} is used for linking and no other adjustment for
+preprocessor is done. MinGW import library @code{msvcrt} is just a
+symlink to (or a copy of) another MinGW CRT import library
+chosen during MinGW compilation. MinGW import library @code{msvcrt-os}
+is for Windows system CRT DLL library @code{msvcrt.dll} and
+in most cases is the default MinGW import library.
+Generally speaking, changing the CRT DLL requires recompiling
+the entire MinGW CRT. This option is for experimental and testing
+purposes only.
+This option is available for MinGW targets.
 
 @opindex mdll
 @item -mdll
