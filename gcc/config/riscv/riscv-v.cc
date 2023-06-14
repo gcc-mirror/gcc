@@ -2390,6 +2390,57 @@ struct expand_vec_perm_d
   bool testing_p;
 };
 
+/* Recognize the patterns that we can use merge operation to shuffle the
+   vectors. The value of Each element (index i) in selector can only be
+   either i or nunits + i.  We will check the pattern is actually monotonic.
+
+   E.g.
+   v = VEC_PERM_EXPR (v0, v1, selector),
+   selector = { 0, nunits + 1, 2, nunits + 3, 4, nunits + 5, ...  }
+
+   We can transform such pattern into:
+
+   v = vcond_mask (v0, v1, mask),
+   mask = { 0, 1, 0, 1, 0, 1, ... }.  */
+
+static bool
+shuffle_merge_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  machine_mode sel_mode = related_int_vector_mode (vmode).require ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+  poly_int64 vec_len = d->perm.length ();
+
+  for (int i = 0; i < n_patterns; ++i)
+    if (!known_eq (d->perm[i], i) && !known_eq (d->perm[i], vec_len + i))
+      return false;
+
+  /* Check the pattern is monotonic here, otherwise, return false.  */
+  for (int i = n_patterns; i < n_patterns * 2; i++)
+    if (!d->perm.series_p (i, n_patterns, i, n_patterns)
+	&& !d->perm.series_p (i, n_patterns, vec_len + i, n_patterns))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  machine_mode mask_mode = get_mask_mode (vmode).require ();
+  rtx mask = gen_reg_rtx (mask_mode);
+
+  rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
+
+  /* MASK = SELECTOR < NUNTIS ? 1 : 0.  */
+  rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
+  insn_code icode = code_for_pred_cmp_scalar (sel_mode);
+  rtx cmp = gen_rtx_fmt_ee (LTU, mask_mode, sel, x);
+  rtx ops[] = {mask, cmp, sel, x};
+  emit_vlmax_cmp_insn (icode, ops);
+
+  /* TARGET = MASK ? OP0 : OP1.  */
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, mask));
+  return true;
+}
+
 /* Recognize decompress patterns:
 
    1. VEC_PERM_EXPR op0 and op1
@@ -2511,6 +2562,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     {
       if (d->vmode == d->op_mode)
 	{
+	  if (shuffle_merge_patterns (d))
+	    return true;
 	  if (shuffle_decompress_patterns (d))
 	    return true;
 	  if (shuffle_generic_patterns (d))
