@@ -151,7 +151,11 @@ UnifyRules::go ()
 	      rtype->debug_str ().c_str ());
 
   // check bounds
-  bool should_check_bounds = !ltype->is_equal (*rtype);
+  bool ltype_is_placeholder = ltype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+  bool rtype_is_placeholder = rtype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+  bool types_equal = ltype->is_equal (*rtype);
+  bool should_check_bounds
+    = !types_equal && !(ltype_is_placeholder || rtype_is_placeholder);
   if (should_check_bounds)
     {
       if (ltype->num_specified_bounds () > 0)
