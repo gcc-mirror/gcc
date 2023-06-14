@@ -1021,6 +1021,7 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
+  rtx src;
 
   machine_mode dmode = GET_MODE (op0);
   machine_mode smode = GET_MODE (op1);
@@ -1044,11 +1045,20 @@ ix86_split_mmx_pack (rtx operands[], enum rtx_code code)
   op1 = lowpart_subreg (sse_smode, op1, GET_MODE (op1));
   op2 = lowpart_subreg (sse_smode, op2, GET_MODE (op2));
 
-  op1 = gen_rtx_fmt_e (code, sse_half_dmode, op1);
-  op2 = gen_rtx_fmt_e (code, sse_half_dmode, op2);
-  rtx insn = gen_rtx_SET (dest, gen_rtx_VEC_CONCAT (sse_dmode,
-						    op1, op2));
-  emit_insn (insn);
+  /* paskusdw/packuswb does unsigned saturation of a signed source
+     which is different from generic us_truncate RTX.  */
+  if (code == US_TRUNCATE)
+    src = gen_rtx_UNSPEC (sse_dmode,
+			  gen_rtvec (2, op1, op2),
+			  UNSPEC_US_TRUNCATE);
+  else
+    {
+      op1 = gen_rtx_fmt_e (code, sse_half_dmode, op1);
+      op2 = gen_rtx_fmt_e (code, sse_half_dmode, op2);
+      src = gen_rtx_VEC_CONCAT (sse_dmode, op1, op2);
+    }
+
+  emit_move_insn (dest, src);
 
   ix86_move_vector_high_sse_to_mmx (op0);
 }
