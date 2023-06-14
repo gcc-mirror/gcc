@@ -3,6 +3,15 @@
 	Backported from mainline:
 	2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (resolve_device): Align a
+	'OMP_TARGET_OFFLOAD=mandatory' diagnostic with others.
+	* testsuite/libgomp.c/target-51.c: Adjust.
+
+2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.c/target-51.c: Fix typo.
 
 2023-06-14  Tobias Burnus  <tobias@codesourcery.com>
