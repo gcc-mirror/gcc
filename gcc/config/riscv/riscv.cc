@@ -3915,13 +3915,13 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       riscv_pass_in_vector_p (type);
     }
 
-  /* TODO: Currently, it will cause an ICE for --param
-     riscv-autovec-preference=fixed-vlmax. So, we just return NULL_RTX here
-     let GCC generate loads/stores. Ideally, we should either warn the user not
-     to use an RVV vector type as function argument or support the calling
-     convention directly.  */
+  /* All current vector arguments and return values are passed through the
+     function stack. Ideally, we should either warn the user not to use an RVV
+     vector type as function argument or support a calling convention
+     with better performance.  */
   if (riscv_v_ext_mode_p (mode))
     return NULL_RTX;
+
   if (named)
     {
       riscv_aggregate_field fields[2];
@@ -4105,6 +4105,13 @@ riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
       if (info.num_fprs)
 	return false;
     }
+
+  /* All current vector arguments and return values are passed through the
+     function stack. Ideally, we should either warn the user not to use an RVV
+     vector type as function argument or support a calling convention
+     with better performance.  */
+  if (riscv_v_ext_mode_p (arg.mode))
+    return true;
 
   /* Pass by reference if the data do not fit in two integer registers.  */
   return !IN_RANGE (size, 0, 2 * UNITS_PER_WORD);
