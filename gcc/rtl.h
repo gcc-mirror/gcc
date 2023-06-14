@@ -3008,7 +3008,12 @@ extern rtx copy_rtx_if_shared (rtx);
 /* In rtl.cc */
 extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
-extern int rtx_equal_p (const_rtx, const_rtx);
+
+typedef int (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
+					      rtx *, rtx *);
+extern int rtx_equal_p (const_rtx, const_rtx,
+			rtx_equal_p_callback_function = NULL);
+
 extern bool rtvec_all_equal_p (const_rtvec);
 extern bool rtvec_series_p (rtvec, int);
 
@@ -3710,16 +3715,6 @@ typedef int (*for_each_inc_dec_fn) (rtx mem, rtx op, rtx dest, rtx src,
 				    rtx srcoff, void *arg);
 extern int for_each_inc_dec (rtx, for_each_inc_dec_fn, void *arg);
 
-typedef int (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
-                                              rtx *, rtx *);
-extern int rtx_equal_p_cb (const_rtx, const_rtx,
-                           rtx_equal_p_callback_function);
-
-typedef int (*hash_rtx_callback_function) (const_rtx, machine_mode, rtx *,
-                                           machine_mode *);
-extern unsigned hash_rtx_cb (const_rtx, machine_mode, int *, int *,
-                             bool, hash_rtx_callback_function);
-
 extern rtx regno_use_in (unsigned int, rtx);
 extern bool auto_inc_p (const_rtx);
 extern bool in_insn_list_p (const rtx_insn_list *, const rtx_insn *);
@@ -4142,7 +4137,11 @@ extern int rtx_to_tree_code (enum rtx_code);
 /* In cse.cc */
 extern int delete_trivially_dead_insns (rtx_insn *, int);
 extern bool exp_equiv_p (const_rtx, const_rtx, int, bool);
-extern unsigned hash_rtx (const_rtx x, machine_mode, int *, int *, bool);
+
+typedef int (*hash_rtx_callback_function) (const_rtx, machine_mode, rtx *,
+					   machine_mode *);
+extern unsigned hash_rtx (const_rtx, machine_mode, int *, int *,
+			  bool, hash_rtx_callback_function = NULL);
 
 /* In dse.cc */
 extern bool check_for_inc_dec (rtx_insn *insn);

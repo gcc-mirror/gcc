@@ -2208,13 +2208,26 @@ hash_rtx_string (const char *ps)
   return hash;
 }
 
-/* Same as hash_rtx, but call CB on each rtx if it is not NULL.
+/* Hash an rtx.  We are careful to make sure the value is never negative.
+   Equivalent registers hash identically.
+   MODE is used in hashing for CONST_INTs only;
+   otherwise the mode of X is used.
+
+   Store 1 in DO_NOT_RECORD_P if any subexpression is volatile.
+
+   If HASH_ARG_IN_MEMORY_P is not NULL, store 1 in it if X contains
+   a MEM rtx which does not have the MEM_READONLY_P flag set.
+
+   Note that cse_insn knows that the hash code of a MEM expression
+   is just (int) MEM plus the hash code of the address.
+
+   Call CB on each rtx if CB is not NULL.
    When the callback returns true, we continue with the new rtx.  */
 
 unsigned
-hash_rtx_cb (const_rtx x, machine_mode mode,
-             int *do_not_record_p, int *hash_arg_in_memory_p,
-             bool have_reg_qty, hash_rtx_callback_function cb)
+hash_rtx (const_rtx x, machine_mode mode,
+	  int *do_not_record_p, int *hash_arg_in_memory_p,
+	  bool have_reg_qty, hash_rtx_callback_function cb)
 {
   int i, j;
   unsigned hash = 0;
@@ -2234,8 +2247,8 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
   if (cb != NULL
       && ((*cb) (x, mode, &newx, &newmode)))
     {
-      hash += hash_rtx_cb (newx, newmode, do_not_record_p,
-                           hash_arg_in_memory_p, have_reg_qty, cb);
+      hash += hash_rtx (newx, newmode, do_not_record_p,
+			hash_arg_in_memory_p, have_reg_qty, cb);
       return hash;
     }
 
@@ -2355,9 +2368,9 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	for (i = 0; i < units; ++i)
 	  {
 	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
-	    hash += hash_rtx_cb (elt, GET_MODE (elt),
-                                 do_not_record_p, hash_arg_in_memory_p,
-                                 have_reg_qty, cb);
+	    hash += hash_rtx (elt, GET_MODE (elt),
+			      do_not_record_p, hash_arg_in_memory_p,
+			      have_reg_qty, cb);
 	  }
 
 	return hash;
@@ -2463,10 +2476,10 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	    {
 	      for (i = 1; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 		{
-		  hash += (hash_rtx_cb (ASM_OPERANDS_INPUT (x, i),
-                                        GET_MODE (ASM_OPERANDS_INPUT (x, i)),
-                                        do_not_record_p, hash_arg_in_memory_p,
-                                        have_reg_qty, cb)
+		  hash += (hash_rtx (ASM_OPERANDS_INPUT (x, i),
+				     GET_MODE (ASM_OPERANDS_INPUT (x, i)),
+				     do_not_record_p, hash_arg_in_memory_p,
+				     have_reg_qty, cb)
 			   + hash_rtx_string
                            (ASM_OPERANDS_INPUT_CONSTRAINT (x, i)));
 		}
@@ -2502,16 +2515,16 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	      goto repeat;
 	    }
 
-	  hash += hash_rtx_cb (XEXP (x, i), VOIDmode, do_not_record_p,
-                               hash_arg_in_memory_p,
-                               have_reg_qty, cb);
+	  hash += hash_rtx (XEXP (x, i), VOIDmode, do_not_record_p,
+			    hash_arg_in_memory_p,
+			    have_reg_qty, cb);
 	  break;
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    hash += hash_rtx_cb (XVECEXP (x, i, j), VOIDmode, do_not_record_p,
-                                 hash_arg_in_memory_p,
-                                 have_reg_qty, cb);
+	    hash += hash_rtx (XVECEXP (x, i, j), VOIDmode, do_not_record_p,
+			      hash_arg_in_memory_p,
+			      have_reg_qty, cb);
 	  break;
 
 	case 's':
@@ -2536,27 +2549,6 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
     }
 
   return hash;
-}
-
-/* Hash an rtx.  We are careful to make sure the value is never negative.
-   Equivalent registers hash identically.
-   MODE is used in hashing for CONST_INTs only;
-   otherwise the mode of X is used.
-
-   Store 1 in DO_NOT_RECORD_P if any subexpression is volatile.
-
-   If HASH_ARG_IN_MEMORY_P is not NULL, store 1 in it if X contains
-   a MEM rtx which does not have the MEM_READONLY_P flag set.
-
-   Note that cse_insn knows that the hash code of a MEM expression
-   is just (int) MEM plus the hash code of the address.  */
-
-unsigned
-hash_rtx (const_rtx x, machine_mode mode, int *do_not_record_p,
-	  int *hash_arg_in_memory_p, bool have_reg_qty)
-{
-  return hash_rtx_cb (x, mode, do_not_record_p,
-                      hash_arg_in_memory_p, have_reg_qty, NULL);
 }
 
 /* Hash an rtx X for cse via hash_rtx.
