@@ -62,13 +62,14 @@
 #include "secure_getenv.h"
 #include "environ.h"
 
-/* Default values of ICVs according to the OpenMP standard.  */
+/* Default values of ICVs according to the OpenMP standard,
+   except for default-device-var.  */
 const struct gomp_default_icv gomp_default_icv_values = {
   .nthreads_var = 1,
   .thread_limit_var = UINT_MAX,
   .run_sched_var = GFS_DYNAMIC,
   .run_sched_chunk_size = 1,
-  .default_device_var = 0,
+  .default_device_var = INT_MIN,
   .max_active_levels_var = 1,
   .bind_var = omp_proc_bind_false,
   .nteams_var = 0,
@@ -1614,6 +1615,10 @@ omp_display_env (int verbose)
   struct gomp_icv_list *none
     = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_NO_SUFFIX);
 
+  if (none->icvs.default_device_var == INT_MIN)
+    /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+    gomp_init_targets_once ();
+
   fputs ("\nOPENMP DISPLAY ENVIRONMENT BEGIN\n", stderr);
 
   fputs ("  _OPENMP = '201511'\n", stderr);
@@ -2212,6 +2217,10 @@ initialize_env (void)
       else if (gomp_nthreads_var_list_len > 1 || gomp_bind_var_list_len > 1)
 	gomp_global_icv.max_active_levels_var = gomp_supported_active_levels;
     }
+
+  if (gomp_global_icv.default_device_var == INT_MIN
+      && gomp_target_offload_var != GOMP_TARGET_OFFLOAD_MANDATORY)
+    none->icvs.default_device_var = gomp_global_icv.default_device_var = 0;
 
   /* Process GOMP_* variables and dependencies between parsed ICVs.  */
   parse_int_secure ("GOMP_DEBUG", &gomp_debug_var, true);
