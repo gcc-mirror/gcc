@@ -1,3 +1,38 @@
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): For
+	.MASK_LOAD and friends set the size of the access to unknown.
+
+2023-06-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (call_may_clobber_ref_p_1): For
+	.MASK_STORE and friend set the size of the access to
+	unknown.
+
+2023-06-13  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2023-06-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* range-op-float.cc (frange_nextafter): Drop inline.
+	(frelop_early_resolve): Add static.
+	(frange_float): Likewise.
+
+2023-06-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110200
+	* genmatch.cc (expr::gen_transform): Put braces around
+	the if arm for the (convert ...) short-cut.
+
 2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/109650
