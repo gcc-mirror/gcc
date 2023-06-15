@@ -1,3 +1,10 @@
+2023-06-14  Jason Merrill  <jason@redhat.com>
+
+	DR 2327
+	PR c++/86521
+	* call.cc (joust_maybe_elide_copy): Don't change cand.
+	(joust): Move the elided tiebreaker later.
+
 2023-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/84890

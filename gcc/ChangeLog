@@ -1,3 +1,27 @@
+2023-06-14  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/moxie/uclinux.h (MFWRAP_SPEC): Remove
+
+2023-06-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svlast_impl::fold):
+	Fix signed comparison warning in loop from npats to enelts.
+
+2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.cc (driver_handle_option): Forward host '-lgfortran', '-lm'
+	to offloading compilation.
+	* config/gcn/mkoffload.cc (main): Adjust.
+	* config/nvptx/mkoffload.cc (main): Likewise.
+	* doc/invoke.texi (foffload-options): Update example.
+
+2023-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110227
+	* config/i386/sse.md (mov<mode>_internal>): Use x instead of v
+	for alternative 2 since there's no evex version for vpcmpeqd
+	ymm, ymm, ymm.
+
 2023-06-13  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.cc (LINK_COMMAND_SPEC): Remove mudflap spec handling.

@@ -1,3 +1,30 @@
+2023-06-14  Jason Merrill  <jason@redhat.com>
+
+	DR 2327
+	PR c++/86521
+	* g++.dg/cpp0x/overload-conv-4.C: Remove warnings.
+	* g++.dg/cpp1z/elide7.C: New test.
+
+2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.fortran-torture/execute/math.f90: Enhance for optional
+	OpenACC 'serial', OpenMP 'target' usage.
+
+2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/Wfree-nonheap-object-2.c: Tighten 'dg-warning'
+	alternatives.
+	* c-c++-common/Wfree-nonheap-object-3.c: Likewise.
+	* c-c++-common/Wfree-nonheap-object.c: Likewise.
+
+2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/warn/Wfree-nonheap-object.s: Remove.
+
+2023-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110227.c: New test.
+
 2023-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/84890

@@ -1,3 +1,67 @@
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (TestResult,)
+	(ParseManifestWorker, ParseSummary, Main): Handle new option
+	"--srcpath <regex>".
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (TestResult): Update.
+	(Main): Handle new option "--expiry_date YYYYMMDD".
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (ResultSet.update,)
+	(ResultSet.HasTestsuite): New methods.
+	(GetResults): Update.
+	(ParseSummary, CompareResults, PerformComparison, Main): Handle new
+	option --invert_match.
+
+2023-06-14  Thiago Bauermann  <thiago.bauermann@linaro.org>
+
+	* testsuite-management/validate_failures.py (TestResult): Improve error
+	output.
+
+2023-06-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite-management/validate_failures.py (_EXP_LINE_FORMAT,)
+	(_EXP_LINE_REX, ResultSet): Support "$tool:" prefix in exp names.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (Main): Use exit code "2"
+	to indicate regression.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (_VALID_TEST_RESULTS_REX):
+	Update.
+	(TestResult): Use _VALID_TEST_RESULTS_REX.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py: Add more verbosity levels.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py: Simplify GetManifestPath().
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (GetResults): Update.
+	(CompareBuilds): Read in manifest.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py (ParseManifestWorker):
+	Support expiry attributes in manifests.
+	(ParseSummary): Add a comment.
+
+2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite-management/validate_failures.py: Avoid testsuite
+	aliasing.
+
 2023-06-13  Andi Kleen  <ak@linux.intel.com>
 
 	* gen_autofdo_event.py: Update for download server changes
