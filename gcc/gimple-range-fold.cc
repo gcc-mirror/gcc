@@ -508,7 +508,8 @@ adjust_imagpart_expr (vrange &res, const gimple *stmt)
       && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
-      if (TREE_CODE (cst) == COMPLEX_CST)
+      if (TREE_CODE (cst) == COMPLEX_CST
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (cst))) == INTEGER_TYPE)
 	{
 	  wide_int w = wi::to_wide (TREE_IMAGPART (cst));
 	  int_range<1> imag (TREE_TYPE (TREE_IMAGPART (cst)), w, w);
@@ -535,7 +536,8 @@ adjust_realpart_expr (vrange &res, const gimple *stmt)
       && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
-      if (TREE_CODE (cst) == COMPLEX_CST)
+      if (TREE_CODE (cst) == COMPLEX_CST
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (cst))) == INTEGER_TYPE)
 	{
 	  wide_int imag = wi::to_wide (TREE_REALPART (cst));
 	  int_range<2> tmp (TREE_TYPE (TREE_REALPART (cst)), imag, imag);
