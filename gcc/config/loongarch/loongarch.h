@@ -1073,7 +1073,7 @@ typedef struct {
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.
 */
-#define LARCH_CALL_RATIO 8
+#define LARCH_CALL_RATIO 6
 
 /* Any loop-based implementation of cpymemsi will have at least
    LARCH_MAX_MOVE_OPS_PER_LOOP_ITER memory-to-memory
