@@ -32,6 +32,5 @@ extern bool find_case_label_range (gswitch *, tree, tree, size_t *, size_t *);
 extern tree find_case_label_range (gswitch *, const irange *vr);
 extern bool find_case_label_index (gswitch *, size_t, tree, size_t *);
 extern bool overflow_comparison_p (tree_code, tree, tree, tree *);
-extern void maybe_set_nonzero_bits (edge, tree);
 
 #endif /* GCC_TREE_VRP_H */
