@@ -7,6 +7,7 @@
 
 #include "rust-system.h"
 #include "rust-location.h"
+#include "rust-proc-macro.h"
 
 namespace Rust {
 
@@ -109,10 +110,12 @@ public:
   // returns a pointer to a Stream object to read the data that it
   // exports.  LOCATION is the location of the import statement.
   // RELATIVE_IMPORT_PATH is used as a prefix for a relative import.
-  static Stream *open_package (const std::string &filename, Location location,
-			       const std::string &relative_import_path);
+  static std::pair<Stream *, std::vector<ProcMacro::Procmacro>>
+  open_package (const std::string &filename, Location location,
+		const std::string &relative_import_path);
 
-  static Stream *try_package_in_directory (const std::string &, Location);
+  static std::pair<Stream *, std::vector<ProcMacro::Procmacro>>
+  try_package_in_directory (const std::string &, Location);
 
   // Constructor.
   Import (Stream *, Location);
