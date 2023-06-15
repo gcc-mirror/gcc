@@ -1,3 +1,8 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/acc-data-chain.c: Partly disable test.
+	* gfortran.dg/goacc/pr70828.f90: Likewise.
+
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.dg/gomp/collapse1.f90: Adjust expected errors.

@@ -1,3 +1,14 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: XFAIL test.
+	* testsuite/libgomp.oacc-c-c++-common/pr70828-2.c: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828.f90: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828-2.f90: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828-3.f90: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828-4.f90: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828-5.f90: XFAIL test.
+	* testsuite/libgomp.oacc-fortran/pr70828-6.f90: XFAIL test.
+
 2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

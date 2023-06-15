@@ -1,6 +1,11 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	Revert:
+	* trans-openmp.cc: Handle implicit "present".
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	Revert:
 	2019-05-19  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_omp_finish_clause): Guard addition of clauses for

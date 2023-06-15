@@ -21,4 +21,6 @@ int main(int argc, char *argv[])
 }
 
 // { dg-final { scan-tree-dump-times "omp target oacc_data map\\(from:b\\\[0\\\] \\\[len: 400\\\]\\) map\\(to:a\\\[0\\\] \\\[len: 400\\\]\\)" 1 "gimple" } }
-// { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(force_present:b\\\[0\\\] \\\[len: 400\\\]\\) map.alloc:b \\\[pointer assign, bias: 0\\\]\\) map\\(force_present:a\\\[0\\\] \\\[len: 400\\\]\\) map\\(alloc:a \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
+/* This isn't expected to work while the "lexical inheritance" support is
+   reverted.  */
+// { dg-final { scan-tree-dump-times "omp target oacc_parallel map\\(force_present:b\\\[0\\\] \\\[len: 400\\\]\\) map.alloc:b \\\[pointer assign, bias: 0\\\]\\) map\\(force_present:a\\\[0\\\] \\\[len: 400\\\]\\) map\\(alloc:a \\\[pointer assign, bias: 0\\\]\\)" 0 "gimple" } }

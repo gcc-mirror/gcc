@@ -32,3 +32,5 @@ main (int argc, char* argv[])
 
   return 0;
 }
+
+/* { dg-xfail-run-if "PR70828" { ! openacc_host_selected } } */

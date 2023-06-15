@@ -1,6 +1,24 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	Revert:
+	2018-08-28  Julian Brown  <julian@codesourcery.com>
+		    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gimplify.cc (oacc_array_mapping_info): New struct.
+	(gimplify_omp_ctx): Add decl_data_clause hash map.
+	(new_omp_context): Zero-initialise above.
+	(delete_omp_context): Delete above if allocated.
+	(gimplify_scan_omp_clauses): Scan for array mappings on data constructs,
+	and record in above map.
+	(gomp_oacc_needs_data_present): New function.
+	(gimplify_adjust_omp_clauses_1): Handle data mappings (e.g. array
+	slices) declared in lexically-enclosing data constructs.
+	* omp-low.cc (lower_omp_target): Allow decl for bias not to be present
+	in OpenACC context.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	Revert:
 	2019-05-19  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (oacc_array_mapping_info): Add REF field.
