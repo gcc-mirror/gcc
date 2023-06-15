@@ -1,5 +1,16 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: Un-XFAIL.
+	* testsuite/libgomp.oacc-c-c++-common/pr70828-2.c: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828.f90: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828-2.f90: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828-3.f90: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828-4.f90: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828-5.f90: Un-XFAIL.
+	* testsuite/libgomp.oacc-fortran/pr70828-6.f90: Un-XFAIL.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* oacc-mem.c (find_group_last, goacc_enter_data_internal,
 	goacc_exit_data_internal, GOACC_enter_exit_data): Add
 	GOMP_MAP_STRUCT_UNORD support.

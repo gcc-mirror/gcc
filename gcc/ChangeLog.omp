@@ -1,5 +1,22 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (omp_tsort_mark, omp_mapping_group): Move before
+	gimplify_omp_ctx. Add constructor to omp_mapping_group.
+	(gimplify_omp_ctx): Add DECL_DATA_CLAUSE field.
+	(new_omp_context, delete_omp_context): Initialise and free above field.
+	(omp_gather_mapping_groups_1): Use constructor for omp_mapping_group.
+	(gimplify_scan_omp_clauses): Record mappings that might be lexically
+	inherited.  Don't remove
+	GOMP_MAP_FIRSTPRIVATE_POINTER/GOMP_MAP_FIRSTPRIVATE_REFERENCE yet.
+	(gomp_oacc_needs_data_present): New function.
+	(gimplify_adjust_omp_clauses_1): Implement lexical inheritance
+	behaviour for OpenACC.
+	(gimplify_adjust_omp_clauses): Remove
+	GOMP_MAP_FIRSTPRIVATE_POINTER/GOMP_MAP_FIRSTPRIVATE_REFERENCE here
+	instead, after lexical inheritance is done.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_segregate_mapping_groups): Handle "present" groups.
 	(gimplify_scan_omp_clauses): Use mapping group functionality to
 	iterate through mapping nodes.  Remove most gimplification of

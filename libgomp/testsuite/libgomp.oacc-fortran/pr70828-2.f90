@@ -29,5 +29,3 @@ program test
      end if
   end do
 end program test
-
-! { dg-xfail-run-if "PR70828" { ! openacc_host_selected } }

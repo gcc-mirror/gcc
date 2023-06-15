@@ -218,6 +218,48 @@ enum gimplify_defaultmap_kind
   GDMK_POINTER
 };
 
+/* Used for topological sorting of mapping groups.  UNVISITED means we haven't
+   started processing the group yet.  The TEMPORARY mark is used when we first
+   encounter a group on a depth-first traversal, and the PERMANENT mark is used
+   when we have processed all the group's children (i.e. all the base pointers
+   referred to by the group's mapping nodes, recursively).  */
+
+enum omp_tsort_mark {
+  UNVISITED,
+  TEMPORARY,
+  PERMANENT
+};
+
+/* A group of OMP_CLAUSE_MAP nodes that correspond to a single "map"
+   clause.  */
+
+struct omp_mapping_group {
+  tree *grp_start;
+  tree grp_end;
+  omp_tsort_mark mark;
+  /* If we've removed the group but need to reindex, mark the group as
+     deleted.  */
+  bool deleted;
+  /* The group points to an already-created "GOMP_MAP_STRUCT
+     GOMP_MAP_ATTACH_DETACH" pair.  */
+  bool reprocess_struct;
+  /* The group should use "zero-length" allocations for pointers that are not
+     mapped "to" on the same directive.  */
+  bool fragile;
+  struct omp_mapping_group *sibling;
+  struct omp_mapping_group *next;
+
+  omp_mapping_group (tree *_start, tree _end)
+    : grp_start (_start), grp_end (_end), mark (UNVISITED), deleted (false),
+      reprocess_struct (false), fragile (false), sibling (NULL), next (NULL)
+    {
+    }
+
+  omp_mapping_group ()
+    {
+    }
+};
+
 struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
@@ -239,6 +281,7 @@ struct gimplify_omp_ctx
   bool in_for_exprs;
   bool ompacc;
   int defaultmap[5];
+  hash_map<tree, omp_mapping_group *> *decl_data_clause;
 };
 
 struct privatize_reduction
@@ -473,6 +516,7 @@ new_omp_context (enum omp_region_type region_type)
   c->defaultmap[GDMK_AGGREGATE] = GOVD_MAP;
   c->defaultmap[GDMK_ALLOCATABLE] = GOVD_MAP;
   c->defaultmap[GDMK_POINTER] = GOVD_MAP;
+  c->decl_data_clause = NULL;
 
   return c;
 }
@@ -485,6 +529,7 @@ delete_omp_context (struct gimplify_omp_ctx *c)
   splay_tree_delete (c->variables);
   delete c->privatized_types;
   c->loop_iter_var.release ();
+  delete c->decl_data_clause;
   XDELETE (c);
 }
 
@@ -8988,18 +9033,6 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
   return base;
 }
 
-/* Used for topological sorting of mapping groups.  UNVISITED means we haven't
-   started processing the group yet.  The TEMPORARY mark is used when we first
-   encounter a group on a depth-first traversal, and the PERMANENT mark is used
-   when we have processed all the group's children (i.e. all the base pointers
-   referred to by the group's mapping nodes, recursively).  */
-
-enum omp_tsort_mark {
-  UNVISITED,
-  TEMPORARY,
-  PERMANENT
-};
-
 /* Hash for trees based on operand_equal_p.  Like tree_operand_hash
    but ignores side effects in the equality comparisons.  */
 
@@ -9015,26 +9048,6 @@ tree_operand_hash_no_se::equal (const value_type &t1,
 {
   return operand_equal_p (t1, t2, OEP_MATCH_SIDE_EFFECTS);
 }
-
-/* A group of OMP_CLAUSE_MAP nodes that correspond to a single "map"
-   clause.  */
-
-struct omp_mapping_group {
-  tree *grp_start;
-  tree grp_end;
-  omp_tsort_mark mark;
-  /* If we've removed the group but need to reindex, mark the group as
-     deleted.  */
-  bool deleted;
-  /* The group points to an already-created "GOMP_MAP_STRUCT
-     GOMP_MAP_ATTACH_DETACH" pair.  */
-  bool reprocess_struct;
-  /* The group should use "zero-length" allocations for pointers that are not
-     mapped "to" on the same directive.  */
-  bool fragile;
-  struct omp_mapping_group *sibling;
-  struct omp_mapping_group *next;
-};
 
 DEBUG_FUNCTION void
 debug_mapping_group (omp_mapping_group *grp)
@@ -9276,16 +9289,7 @@ omp_gather_mapping_groups_1 (tree *list_p, vec<omp_mapping_group> *groups,
 	continue;
 
       tree *grp_last_p = omp_group_last (cp);
-      omp_mapping_group grp;
-
-      grp.grp_start = cp;
-      grp.grp_end = *grp_last_p;
-      grp.mark = UNVISITED;
-      grp.sibling = NULL;
-      grp.deleted = false;
-      grp.reprocess_struct = false;
-      grp.fragile = false;
-      grp.next = NULL;
+      omp_mapping_group grp (cp, *grp_last_p);
       groups->safe_push (grp);
 
       cp = grp_last_p;
@@ -12267,6 +12271,18 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		}
 	      break;
 	    }
+	  if (code == OACC_DATA && *grp_start_p != grp_end)
+	    {
+	      if (!ctx->decl_data_clause)
+		ctx->decl_data_clause = new hash_map<tree, omp_mapping_group *>;
+
+	      omp_mapping_group *grp
+		= new omp_mapping_group (grp_start_p, grp_end);
+
+	      gcc_assert (DECL_P (decl));
+
+	      ctx->decl_data_clause->put (decl, grp);
+	    }
 	  flags = GOVD_MAP | GOVD_EXPLICIT;
 	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TO
 	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TOFROM)
@@ -12953,11 +12969,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  gcc_unreachable ();
 	}
 
-      if (code == OACC_DATA
-	  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-	  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
-	remove = true;
       if (remove)
 	*list_p = OMP_CLAUSE_CHAIN (c);
       else
@@ -13098,6 +13109,52 @@ struct gimplify_adjust_omp_clauses_data
   gimple_seq *pre_p;
 };
 
+/* For OpenACC offload regions, the implicit data mappings for arrays must
+   respect explicit data clauses set by a containing acc data region.
+   Specifically, an array section on the data clause must be transformed into
+   an equivalent PRESENT mapping on the inner offload region.
+   This function returns a pointer to a mapping group if an array slice of DECL
+   is specified on a lexically-enclosing data construct, or returns NULL
+   otherwise.  */
+
+static omp_mapping_group *
+gomp_oacc_needs_data_present (tree decl)
+{
+  gimplify_omp_ctx *ctx = NULL;
+
+  if (gimplify_omp_ctxp->region_type != ORT_ACC_PARALLEL
+      && gimplify_omp_ctxp->region_type != ORT_ACC_SERIAL
+      && gimplify_omp_ctxp->region_type != ORT_ACC_KERNELS)
+    return NULL;
+
+  if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
+      && (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != ARRAY_TYPE))
+    return NULL;
+
+  decl = get_base_address (decl);
+
+  for (ctx = gimplify_omp_ctxp->outer_context; ctx; ctx = ctx->outer_context)
+    {
+      splay_tree_node on
+	= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+
+      if (ctx->region_type == ORT_ACC_DATA
+	  && on
+	  && (((int) on->value) & GOVD_EXPLICIT)
+	  && ctx->decl_data_clause != NULL)
+	{
+	  omp_mapping_group **pgrp = ctx->decl_data_clause->get (decl);
+	  if (pgrp)
+	    return *pgrp;
+	}
+    }
+
+  return NULL;
+}
+
 /* For all variables that were not actually used within the context,
    remove PRIVATE, SHARED, and FIRSTPRIVATE clauses.  */
 
@@ -13219,6 +13276,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   clause = build_omp_clause (input_location, code);
   OMP_CLAUSE_DECL (clause) = decl;
   OMP_CLAUSE_CHAIN (clause) = chain;
+  omp_mapping_group *outer_grp;
   if (private_debug)
     OMP_CLAUSE_PRIVATE_DEBUG (clause) = 1;
   else if (code == OMP_CLAUSE_PRIVATE && (flags & GOVD_PRIVATE_OUTER_REF))
@@ -13227,6 +13285,58 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	   && (flags & GOVD_WRITTEN) == 0
 	   && omp_shared_to_firstprivate_optimizable_decl_p (decl))
     OMP_CLAUSE_SHARED_READONLY (clause) = 1;
+  else if ((gimplify_omp_ctxp->region_type & ORT_ACC) != 0
+	   && (code == OMP_CLAUSE_MAP || code == OMP_CLAUSE_FIRSTPRIVATE)
+	   && (outer_grp = gomp_oacc_needs_data_present (decl)))
+    {
+      if (code == OMP_CLAUSE_FIRSTPRIVATE)
+	/* Oops, we have the wrong type of clause.  Rebuild it.  */
+	clause = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+				   OMP_CLAUSE_MAP);
+
+      tree mapping = *outer_grp->grp_start;
+
+      OMP_CLAUSE_SET_MAP_KIND (clause, GOMP_MAP_FORCE_PRESENT);
+      OMP_CLAUSE_DECL (clause) = unshare_expr (OMP_CLAUSE_DECL (mapping));
+      OMP_CLAUSE_SIZE (clause) = unshare_expr (OMP_CLAUSE_SIZE (mapping));
+
+      /* Copy subsequent nodes (that are part of the mapping group) after the
+	 initial one from the outer "acc data" directive -- "pointer" nodes,
+	 including firstprivate_reference, pointer sets, etc.  */
+
+      tree ptr = OMP_CLAUSE_CHAIN (mapping);
+      tree *ins = &OMP_CLAUSE_CHAIN (clause);
+      tree sentinel = OMP_CLAUSE_CHAIN (outer_grp->grp_end);
+      for (; ptr && ptr != sentinel; ptr = OMP_CLAUSE_CHAIN (ptr))
+	{
+	  tree nc = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+				      OMP_CLAUSE_MAP);
+	  OMP_CLAUSE_SET_MAP_KIND (nc, OMP_CLAUSE_MAP_KIND (ptr));
+	  OMP_CLAUSE_DECL (nc) = unshare_expr (OMP_CLAUSE_DECL (ptr));
+	  OMP_CLAUSE_SIZE (nc) = unshare_expr (OMP_CLAUSE_SIZE (ptr));
+	  *ins = nc;
+	  ins = &OMP_CLAUSE_CHAIN (nc);
+	}
+
+      *ins = chain;
+
+      gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+      gimplify_omp_ctxp = ctx->outer_context;
+      for (ptr = clause; ptr != chain; ptr = OMP_CLAUSE_CHAIN (ptr))
+	{
+	  /* The condition is specifically to not gimplify here if we have a
+	     DECL_P with a DECL_VALUE_EXPR -- i.e. a VLA, or variable-sized
+	     array section.  If we do, omp-low.cc does not see the DECL_P it
+	     expects here for e.g. firstprivate_pointer or
+	     firstprivate_reference.  */
+	  if (!DECL_P (OMP_CLAUSE_DECL (ptr)))
+	    gimplify_expr (&OMP_CLAUSE_DECL (ptr), pre_p, NULL,
+			   is_gimple_lvalue, fb_lvalue);
+	  gimplify_expr (&OMP_CLAUSE_SIZE (ptr), pre_p, NULL,
+			 is_gimple_val, fb_rvalue);
+	}
+      gimplify_omp_ctxp = ctx;
+    }
   else if (code == OMP_CLAUSE_FIRSTPRIVATE && (flags & GOVD_EXPLICIT) == 0)
     OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (clause) = 1;
   else if (code == OMP_CLAUSE_MAP && (flags & GOVD_MAP_0LEN_ARRAY) != 0)
@@ -13689,16 +13799,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    case OMP_TARGET:
 	      break;
 	    case OACC_DATA:
-	      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
-		break;
-	      goto check_firstprivate;
 	    case OACC_ENTER_DATA:
 	    case OACC_EXIT_DATA:
 	    case OMP_TARGET_DATA:
 	    case OMP_TARGET_ENTER_DATA:
 	    case OMP_TARGET_EXIT_DATA:
 	    case OACC_HOST_DATA:
-	    check_firstprivate:
 	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
 		  || (OMP_CLAUSE_MAP_KIND (c)
 		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))

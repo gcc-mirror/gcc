@@ -4313,7 +4313,8 @@ c_omp_address_inspector::expand_array_base (tree c,
 	/* The code handling "firstprivatize_array_bases" in gimplify.cc is
 	   relevant here.  What do we need to create for arrays at this
 	   stage?  (This condition doesn't feel quite right.  FIXME?)  */
-	if (!target
+	if (openmp
+	    && !target
 	    && (TREE_CODE (TREE_TYPE (addr_tokens[i + 1]->expr))
 		== ARRAY_TYPE))
 	  break;
@@ -4324,7 +4325,7 @@ c_omp_address_inspector::expand_array_base (tree c,
 					   virtual_origin);
 	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
 	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
-	if (decl_p && target)
+	if (decl_p && (!openmp || target))
 	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
 	else
 	  {
@@ -4375,9 +4376,11 @@ c_omp_address_inspector::expand_array_base (tree c,
 	tree data_addr = omp_accessed_addr (addr_tokens, last_access, expr);
 	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	/* For OpenACC, use FIRSTPRIVATE_POINTER for decls even on non-compute
-	   regions (e.g. "acc data" constructs).  It'll be removed anyway in
-	   gimplify.cc, but doing it this way maintains diagnostic
-	   behaviour.  */
+	   regions (e.g. "acc data" constructs).  It is used during "lexical
+	   inheritance" of mapping clauses on enclosed target
+	   (parallel/serial/kernels) regions, i.e. creating "present" mappings
+	   for sections of pointer-based arrays.  It's also used for
+	   diagnostics.  */
 	if (decl_p && (target || !openmp) && !chain_p && !declare_target_p)
 	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
 	else

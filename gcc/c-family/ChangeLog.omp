@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* c-omp.cc (c_omp_address_inspector::expand_array_base): Don't omit
+	pointer nodes for OpenACC.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* c-common.h (c_omp_region_type): Add C_ORT_ACC_TARGET.
 	(omp_addr_token): Add forward declaration.
 	(c_omp_address_inspector): New class.
