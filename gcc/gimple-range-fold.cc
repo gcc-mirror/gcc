@@ -489,6 +489,8 @@ adjust_imagpart_expr (vrange &res, const gimple *stmt)
 	case IFN_ADD_OVERFLOW:
 	case IFN_SUB_OVERFLOW:
 	case IFN_MUL_OVERFLOW:
+	case IFN_UADDC:
+	case IFN_USUBC:
 	case IFN_ATOMIC_COMPARE_EXCHANGE:
 	  {
 	    int_range<2> r;

@@ -5224,6 +5224,22 @@ is taken only on unsigned overflow.
 @item @samp{usubv@var{m}4}, @samp{umulv@var{m}4}
 Similar, for other unsigned arithmetic operations.
 
+@cindex @code{uaddc@var{m}5} instruction pattern
+@item @samp{uaddc@var{m}5}
+Adds unsigned operands 2, 3 and 4 (where the last operand is guaranteed to
+have only values 0 or 1) together, sets operand 0 to the result of the
+addition of the 3 operands and sets operand 1 to 1 iff there was
+overflow on the unsigned additions, and to 0 otherwise.  So, it is
+an addition with carry in (operand 4) and carry out (operand 1).
+All operands have the same mode.
+
+@cindex @code{usubc@var{m}5} instruction pattern
+@item @samp{usubc@var{m}5}
+Similarly to @samp{uaddc@var{m}5}, except subtracts unsigned operands 3
+and 4 from operand 2 instead of adding them.  So, it is
+a subtraction with carry/borrow in (operand 4) and carry/borrow out
+(operand 1).  All operands have the same mode.
+
 @cindex @code{addptr@var{m}3} instruction pattern
 @item @samp{addptr@var{m}3}
 Like @code{add@var{m}3} but is guaranteed to only be used for address

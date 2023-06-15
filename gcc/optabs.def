@@ -260,6 +260,8 @@ OPTAB_D (uaddv4_optab, "uaddv$I$a4")
 OPTAB_D (usubv4_optab, "usubv$I$a4")
 OPTAB_D (umulv4_optab, "umulv$I$a4")
 OPTAB_D (negv3_optab, "negv$I$a3")
+OPTAB_D (uaddc5_optab, "uaddc$I$a5")
+OPTAB_D (usubc5_optab, "usubc$I$a5")
 OPTAB_D (addptr3_optab, "addptr$a3")
 OPTAB_D (spaceship_optab, "spaceship$a3")
 

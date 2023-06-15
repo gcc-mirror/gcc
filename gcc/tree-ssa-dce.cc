@@ -1481,6 +1481,14 @@ eliminate_unnecessary_stmts (bool aggressive)
 		  case IFN_MUL_OVERFLOW:
 		    maybe_optimize_arith_overflow (&gsi, MULT_EXPR);
 		    break;
+		  case IFN_UADDC:
+		    if (integer_zerop (gimple_call_arg (stmt, 2)))
+		      maybe_optimize_arith_overflow (&gsi, PLUS_EXPR);
+		    break;
+		  case IFN_USUBC:
+		    if (integer_zerop (gimple_call_arg (stmt, 2)))
+		      maybe_optimize_arith_overflow (&gsi, MINUS_EXPR);
+		    break;
 		  default:
 		    break;
 		  }

@@ -1937,6 +1937,30 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 	return NULL_TREE;
       }
 
+    case CFN_UADDC:
+    case CFN_USUBC:
+      if (integer_cst_p (arg0) && integer_cst_p (arg1) && integer_cst_p (arg2))
+	{
+	  tree itype = TREE_TYPE (type);
+	  bool ovf = false;
+	  tree_code subcode = fn == CFN_UADDC ? PLUS_EXPR : MINUS_EXPR;
+	  tree r = int_const_binop (subcode, fold_convert (itype, arg0),
+				    fold_convert (itype, arg1));
+	  if (!r)
+	    return NULL_TREE;
+	  if (arith_overflowed_p (subcode, itype, arg0, arg1))
+	    ovf = true;
+	  tree r2 = int_const_binop (subcode, r, fold_convert (itype, arg2));
+	  if (!r2 || TREE_CODE (r2) != INTEGER_CST)
+	    return NULL_TREE;
+	  if (arith_overflowed_p (subcode, itype, r, arg2))
+	    ovf = true;
+	  if (TREE_OVERFLOW (r2))
+	    r2 = drop_tree_overflow (r2);
+	  return build_complex (type, r2, build_int_cst (itype, ovf));
+	}
+      return NULL_TREE;
+
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);
     }
