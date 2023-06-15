@@ -996,7 +996,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       return UNKNOWN_NODEID;
     }
 
-  Imports::ExternCrate extern_crate (*s.first);
+  Imports::ExternCrate extern_crate (*s.first, s.second);
   bool ok = extern_crate.load (locus);
   if (!ok)
     {

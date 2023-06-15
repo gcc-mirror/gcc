@@ -25,7 +25,10 @@
 namespace Rust {
 namespace Imports {
 
-ExternCrate::ExternCrate (Import::Stream &stream) : import_stream (stream) {}
+ExternCrate::ExternCrate (Import::Stream &stream,
+			  std::vector<ProcMacro::Procmacro> macros)
+  : import_stream (stream), proc_macros (macros)
+{}
 
 ExternCrate::~ExternCrate () {}
 

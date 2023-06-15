@@ -28,7 +28,8 @@ namespace Imports {
 class ExternCrate
 {
 public:
-  ExternCrate (Import::Stream &stream);
+  ExternCrate (Import::Stream &stream,
+	       std::vector<ProcMacro::Procmacro> macros);
   ~ExternCrate ();
 
   bool ok () const;
@@ -44,6 +45,7 @@ public:
 
 private:
   Import::Stream &import_stream;
+  std::vector<ProcMacro::Procmacro> proc_macros;
 
   std::string crate_name;
   std::string metadata_buffer;
