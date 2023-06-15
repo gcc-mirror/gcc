@@ -10299,22 +10299,54 @@ rs6000_emit_set_const (rtx dest, rtx source)
   return true;
 }
 
-/* Check if value C can be built by 2 instructions: one is 'li', another is
-   'rotldi'.
+/* Check if C can be rotated to a negative value which 'lis' instruction is
+   able to load: 1..1xx0..0.  If so, set *ROT to the number by which C is
+   rotated, and return true.  Return false otherwise.  */
+
+static bool
+can_be_rotated_to_negative_lis (HOST_WIDE_INT c, int *rot)
+{
+  /* case a. 1..1xxx0..01..1: up to 15 x's, at least 16 0's.  */
+  int leading_ones = clz_hwi (~c);
+  int tailing_ones = ctz_hwi (~c);
+  int middle_zeros = ctz_hwi (c >> tailing_ones);
+  if (middle_zeros >= 16 && leading_ones + tailing_ones >= 33)
+    {
+      *rot = HOST_BITS_PER_WIDE_INT - tailing_ones;
+      return true;
+    }
+
+  /* case b. xx0..01..1xx: some of 15 x's (and some of 16 0's) are
+     rotated over the highest bit.  */
+  int pos_one = clz_hwi ((c << 16) >> 16);
+  middle_zeros = ctz_hwi (c >> (HOST_BITS_PER_WIDE_INT - pos_one));
+  int middle_ones = clz_hwi (~(c << pos_one));
+  if (middle_zeros >= 16 && middle_ones >= 33)
+    {
+      *rot = pos_one;
+      return true;
+    }
+
+  return false;
+}
+
+/* Check if value C can be built by 2 instructions: one is 'li or lis',
+   another is rotldi.
 
    If so, *SHIFT is set to the shift operand of rotldi(rldicl), and *MASK
    is set to the mask operand of rotldi(rldicl), and return true.
    Return false otherwise.  */
 
 static bool
-can_be_built_by_li_and_rotldi (HOST_WIDE_INT c, int *shift,
+can_be_built_by_li_lis_and_rotldi (HOST_WIDE_INT c, int *shift,
 				   HOST_WIDE_INT *mask)
 {
   /* If C or ~C contains at least 49 successive zeros, then C can be rotated
      to/from a positive or negative value that 'li' is able to load.  */
   int n;
   if (can_be_rotated_to_lowbits (c, 15, &n)
-      || can_be_rotated_to_lowbits (~c, 15, &n))
+      || can_be_rotated_to_lowbits (~c, 15, &n)
+      || can_be_rotated_to_negative_lis (c, &n))
     {
       *mask = HOST_WIDE_INT_M1;
       *shift = HOST_BITS_PER_WIDE_INT - n;
@@ -10370,7 +10402,7 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
 					 GEN_INT ((ud2 ^ 0xffff) << 16)));
     }
-  else if (can_be_built_by_li_and_rotldi (c, &shift, &mask))
+  else if (can_be_built_by_li_lis_and_rotldi (c, &shift, &mask))
     {
       temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
       unsigned HOST_WIDE_INT imm = (c | ~mask);
