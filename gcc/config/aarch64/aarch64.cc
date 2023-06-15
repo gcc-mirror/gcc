@@ -18563,7 +18563,8 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch_validate_mbranch_protection (aarch64_branch_protection_string);
+    aarch_validate_mbranch_protection (aarch64_branch_protection_string,
+				       "-mbranch-protection=");
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -18997,34 +18998,12 @@ aarch64_handle_attr_cpu (const char *str)
 
 /* Handle the argument STR to the branch-protection= attribute.  */
 
- static bool
- aarch64_handle_attr_branch_protection (const char* str)
- {
-  char *err_str = (char *) xmalloc (strlen (str) + 1);
-  enum aarch_parse_opt_result res = aarch_parse_branch_protection (str,
-								   &err_str);
-  bool success = false;
-  switch (res)
-    {
-     case AARCH_PARSE_MISSING_ARG:
-       error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
-	      " attribute");
-       break;
-     case AARCH_PARSE_INVALID_ARG:
-       error ("invalid protection type %qs in %<target(\"branch-protection"
-	      "=\")%> pragma or attribute", err_str);
-       break;
-     case AARCH_PARSE_OK:
-       success = true;
-      /* Fall through.  */
-     case AARCH_PARSE_INVALID_FEATURE:
-       break;
-     default:
-       gcc_unreachable ();
-    }
-  free (err_str);
-  return success;
- }
+static bool
+aarch64_handle_attr_branch_protection (const char* str)
+{
+  return aarch_validate_mbranch_protection (str,
+					    "target(\"branch-protection=\")");
+}
 
 /* Handle the argument STR to the tune= target attribute.  */
 
