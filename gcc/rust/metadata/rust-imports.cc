@@ -164,11 +164,13 @@ Import::try_package_in_directory (const std::string &filename,
 	return std::make_pair (nullptr, std::vector<ProcMacro::Procmacro>{});
     }
 
+  auto macros = load_macros (found_filename);
+
   // The export data may not be in this file.
   std::unique_ptr<Stream> s
     = Import::find_export_data (found_filename, fd, location);
   if (s != nullptr)
-    return std::make_pair (std::move (s), std::vector<ProcMacro::Procmacro>{});
+    return std::make_pair (std::move (s), macros);
 
   close (fd);
 
@@ -176,7 +178,7 @@ Import::try_package_in_directory (const std::string &filename,
 		 "%s exists but does not contain any Rust export data",
 		 found_filename.c_str ());
 
-  return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
+  return std::make_pair (NULL, macros);
 }
 
 // Given import "*PFILENAME", where *PFILENAME does not exist, try
