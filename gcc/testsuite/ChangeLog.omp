@@ -1,3 +1,9 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/acc-data-chain.c: New test.
+	* gfortran.dg/goacc/pr70828.f90: Likewise.
+	* gfortran.dg/goacc/assumed-size.f90: Likewise.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

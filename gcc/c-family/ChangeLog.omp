@@ -1,3 +1,8 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	* c-omp.cc (c_omp_address_inspector::expand_array_base): Don't omit
+	pointer nodes for OpenACC.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
