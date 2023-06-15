@@ -115,7 +115,7 @@ load_macros (std::string path)
   const ProcMacro::ProcmacroArray *array = load_macros_array (path);
   // Did not load the proc macro
   if (array == nullptr)
-    rust_unreachable ();
+    return {};
 
   rust_debug ("Found %lu procedural macros", array->length);
 
