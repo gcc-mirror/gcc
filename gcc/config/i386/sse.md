@@ -17762,14 +17762,14 @@
   DONE;
 })
 
-(define_insn "<sse2_avx2>_packsswb<mask_name>"
-  [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,<v_Yw>")
-	(vec_concat:VI1_AVX512
-	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,<v_Yw>"))
-	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,<v_Yw>m"))))]
-  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
+(define_insn "sse2_packsswb<mask_name>"
+  [(set (match_operand:V16QI 0 "register_operand" "=x,Yw")
+	(vec_concat:V16QI
+	  (ss_truncate:V8QI
+	    (match_operand:V8HI 1 "register_operand" "0,Yw"))
+	  (ss_truncate:V8QI
+	    (match_operand:V8HI 2 "vector_operand" "xBm,Ywm"))))]
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
   "@
    packsswb\t{%2, %0|%0, %2}
    vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
@@ -17777,16 +17777,93 @@
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,<mask_prefix>")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set_attr "mode" "TI")])
 
-(define_insn "<sse2_avx2>_packssdw<mask_name>"
-  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,<v_Yw>")
-	(vec_concat:VI2_AVX2
-	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 1 "register_operand" "0,<v_Yw>"))
-	  (ss_truncate:<ssehalfvecmode>
-	    (match_operand:<sseunpackmode> 2 "vector_operand" "xBm,<v_Yw>m"))))]
-  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
+(define_insn "avx2_packsswb<mask_name>"
+  [(set (match_operand:V32QI 0 "register_operand" "=Yw")
+	(vec_select:V32QI
+	  (vec_concat:V32QI
+	    (ss_truncate:V16QI
+	      (match_operand:V16HI 1 "register_operand" "Yw"))
+	    (ss_truncate:V16QI
+	      (match_operand:V16HI 2 "vector_operand" "Ywm")))
+	  (parallel [(const_int 0)  (const_int 1)
+		     (const_int 2)  (const_int 3)
+		     (const_int 4)  (const_int 5)
+		     (const_int 6)  (const_int 7)
+		     (const_int 16) (const_int 17)
+		     (const_int 18) (const_int 19)
+		     (const_int 20) (const_int 21)
+		     (const_int 22) (const_int 23)
+		     (const_int 8)  (const_int 9)
+		     (const_int 10) (const_int 11)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)
+		     (const_int 24) (const_int 25)
+		     (const_int 26) (const_int 27)
+		     (const_int 28) (const_int 29)
+		     (const_int 30) (const_int 31)])))]
+  "TARGET_AVX2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
+  "vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "<mask_prefix>")
+   (set_attr "mode" "OI")])
+
+(define_insn "avx512bw_packsswb<mask_name>"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+	(vec_select:V64QI
+	  (vec_concat:V64QI
+	    (ss_truncate:V32QI
+	      (match_operand:V32HI 1 "register_operand" "v"))
+	    (ss_truncate:V32QI
+	      (match_operand:V32HI 2 "vector_operand" "vm")))
+	  (parallel [(const_int 0)  (const_int 1)
+		     (const_int 2)  (const_int 3)
+		     (const_int 4)  (const_int 5)
+		     (const_int 6)  (const_int 7)
+		     (const_int 32) (const_int 33)
+		     (const_int 34) (const_int 35)
+		     (const_int 36) (const_int 37)
+		     (const_int 38) (const_int 39)
+		     (const_int 8)  (const_int 9)
+		     (const_int 10) (const_int 11)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)
+		     (const_int 40) (const_int 41)
+		     (const_int 42) (const_int 43)
+		     (const_int 44) (const_int 45)
+		     (const_int 46) (const_int 47)
+		     (const_int 16) (const_int 17)
+		     (const_int 18) (const_int 19)
+		     (const_int 20) (const_int 21)
+		     (const_int 22) (const_int 23)
+		     (const_int 48) (const_int 49)
+		     (const_int 50) (const_int 51)
+		     (const_int 52) (const_int 53)
+		     (const_int 54) (const_int 55)
+		     (const_int 24) (const_int 25)
+		     (const_int 26) (const_int 27)
+		     (const_int 28) (const_int 29)
+		     (const_int 30) (const_int 31)
+		     (const_int 56) (const_int 57)
+		     (const_int 58) (const_int 59)
+		     (const_int 60) (const_int 61)
+		     (const_int 62) (const_int 63)])))]
+
+  "TARGET_AVX512BW"
+  "vpacksswb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "<mask_prefix>")
+   (set_attr "mode" "XI")])
+
+(define_insn "sse2_packssdw<mask_name>"
+  [(set (match_operand:V8HI 0 "register_operand" "=x,Yw")
+	(vec_concat:V8HI
+	  (ss_truncate:V4HI
+	    (match_operand:V4SI 1 "register_operand" "0,Yw"))
+	  (ss_truncate:V4HI
+	    (match_operand:V4SI 2 "vector_operand" "xBm,Ywm"))))]
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
   "@
    packssdw\t{%2, %0|%0, %2}
    vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
@@ -17794,7 +17871,59 @@
    (set_attr "type" "sselog")
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,<mask_prefix>")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set_attr "mode" "TI")])
+
+(define_insn "avx2_packssdw<mask_name>"
+  [(set (match_operand:V16HI 0 "register_operand" "=Yw")
+	(vec_select:V16HI
+	  (vec_concat:V16HI
+	    (ss_truncate:V8HI
+	      (match_operand:V8SI 1 "register_operand" "Yw"))
+	    (ss_truncate:V8HI
+	      (match_operand:V8SI 2 "vector_operand" "Ywm")))
+	  (parallel [(const_int 0)  (const_int 1)
+		     (const_int 2)  (const_int 3)
+		     (const_int 8)  (const_int 9)
+		     (const_int 10) (const_int 11)
+		     (const_int 4)  (const_int 5)
+		     (const_int 6)  (const_int 7)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)])))]
+  "TARGET_AVX2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
+  "vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "<mask_prefix>")
+   (set_attr "mode" "OI")])
+
+(define_insn "avx512bw_packssdw<mask_name>"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(vec_select:V32HI
+	  (vec_concat:V32HI
+	    (ss_truncate:V16HI
+	      (match_operand:V16SI 1 "register_operand" "v"))
+	    (ss_truncate:V16HI
+	      (match_operand:V16SI 2 "vector_operand" "vm")))
+	  (parallel [(const_int 0)  (const_int 1)
+		     (const_int 2)  (const_int 3)
+		     (const_int 16)  (const_int 17)
+		     (const_int 18) (const_int 19)
+		     (const_int 4)  (const_int 5)
+		     (const_int 6)  (const_int 7)
+		     (const_int 20) (const_int 21)
+		     (const_int 22) (const_int 23)
+		     (const_int 8)  (const_int 9)
+		     (const_int 10)  (const_int 11)
+		     (const_int 24)  (const_int 25)
+		     (const_int 26)  (const_int 27)
+		     (const_int 12)  (const_int 13)
+		     (const_int 14)  (const_int 15)
+		     (const_int 28)  (const_int 29)
+		     (const_int 30)  (const_int 31)])))]
+  "TARGET_AVX512BW"
+  "vpackssdw\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "<mask_prefix>")
+   (set_attr "mode" "XI")])
 
 ;; This instruction does unsigned saturation of signed source
 ;; and is different from generic us_truncate RTX.
