@@ -359,6 +359,8 @@ OPTAB_D (mask_fold_left_plus_optab, "mask_fold_left_plus_$a")
 OPTAB_D (extract_last_optab, "extract_last_$a")
 OPTAB_D (fold_extract_last_optab, "fold_extract_last_$a")
 
+OPTAB_D (uabd_optab, "uabd$a3")
+OPTAB_D (sabd_optab, "sabd$a3")
 OPTAB_D (savg_floor_optab, "avg$a3_floor")
 OPTAB_D (uavg_floor_optab, "uavg$a3_floor")
 OPTAB_D (savg_ceil_optab, "avg$a3_ceil")

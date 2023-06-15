@@ -5809,6 +5809,16 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
+@cindex @code{uabd@var{m}} instruction pattern
+@cindex @code{sabd@var{m}} instruction pattern
+@item @samp{uabd@var{m}}, @samp{sabd@var{m}}
+Signed and unsigned absolute difference instructions.  These
+instructions find the difference between operands 1 and 2
+then return the absolute value.  A C code equivalent would be:
+@smallexample
+op0 = op1 > op2 ? op1 - op2 : op2 - op1;
+@end smallexample
+
 @cindex @code{avg@var{m}3_floor} instruction pattern
 @cindex @code{uavg@var{m}3_floor} instruction pattern
 @item @samp{avg@var{m}3_floor}
