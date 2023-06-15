@@ -910,6 +910,18 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
+(define_expand "<su>abd<mode>3"
+  [(match_operand:VDQ_BHSI 0 "register_operand")
+   (USMAX:VDQ_BHSI
+     (match_operand:VDQ_BHSI 1 "register_operand")
+     (match_operand:VDQ_BHSI 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_aarch64_<su>abd<mode> (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
 (define_insn "aarch64_<su>abdl<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(zero_extend:<VWIDE>

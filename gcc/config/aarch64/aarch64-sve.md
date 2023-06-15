@@ -4001,7 +4001,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated integer absolute difference.
-(define_expand "<su>abd<mode>_3"
+(define_expand "<su>abd<mode>3"
   [(use (match_operand:SVE_I 0 "register_operand"))
    (USMAX:SVE_I
      (match_operand:SVE_I 1 "register_operand")
@@ -6973,7 +6973,7 @@
   {
     rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
     rtx diff = gen_reg_rtx (<VSI2QI>mode);
-    emit_insn (gen_<su>abd<vsi2qi>_3 (diff, operands[1], operands[2]));
+    emit_insn (gen_<su>abd<vsi2qi>3 (diff, operands[1], operands[2]));
     emit_insn (gen_udot_prod<vsi2qi> (operands[0], diff, ones, operands[3]));
     DONE;
   }
