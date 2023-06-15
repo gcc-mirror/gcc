@@ -5702,22 +5702,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    result = arg0;
 	  else if (subcode == MULT_EXPR && integer_onep (arg0))
 	    result = arg1;
-	  else if (TREE_CODE (arg0) == INTEGER_CST
-		   && TREE_CODE (arg1) == INTEGER_CST)
-	    {
-	      if (cplx_result)
-		result = int_const_binop (subcode, fold_convert (type, arg0),
-					  fold_convert (type, arg1));
-	      else
-		result = int_const_binop (subcode, arg0, arg1);
-	      if (result && arith_overflowed_p (subcode, type, arg0, arg1))
-		{
-		  if (cplx_result)
-		    overflow = build_one_cst (type);
-		  else
-		    result = NULL_TREE;
-		}
-	    }
 	  if (result)
 	    {
 	      if (result == integer_zero_node)

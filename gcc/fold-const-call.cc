@@ -1669,6 +1669,7 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 {
   const char *p0, *p1;
   char c;
+  tree_code subcode;
   switch (fn)
     {
     case CFN_BUILT_IN_STRSPN:
@@ -1737,6 +1738,46 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 
     case CFN_FOLD_LEFT_PLUS:
       return fold_const_fold_left (type, arg0, arg1, PLUS_EXPR);
+
+    case CFN_UBSAN_CHECK_ADD:
+    case CFN_ADD_OVERFLOW:
+      subcode = PLUS_EXPR;
+      goto arith_overflow;
+
+    case CFN_UBSAN_CHECK_SUB:
+    case CFN_SUB_OVERFLOW:
+      subcode = MINUS_EXPR;
+      goto arith_overflow;
+
+    case CFN_UBSAN_CHECK_MUL:
+    case CFN_MUL_OVERFLOW:
+      subcode = MULT_EXPR;
+      goto arith_overflow;
+
+    arith_overflow:
+      if (integer_cst_p (arg0) && integer_cst_p (arg1))
+	{
+	  tree itype
+	    = TREE_CODE (type) == COMPLEX_TYPE ? TREE_TYPE (type) : type;
+	  bool ovf = false;
+	  tree r = int_const_binop (subcode, fold_convert (itype, arg0),
+				    fold_convert (itype, arg1));
+	  if (!r || TREE_CODE (r) != INTEGER_CST)
+	    return NULL_TREE;
+	  if (arith_overflowed_p (subcode, itype, arg0, arg1))
+	    ovf = true;
+	  if (TREE_OVERFLOW (r))
+	    r = drop_tree_overflow (r);
+	  if (itype == type)
+	    {
+	      if (ovf)
+		return NULL_TREE;
+	      return r;
+	    }
+	  else
+	    return build_complex (type, r, build_int_cst (itype, ovf));
+	}
+      return NULL_TREE;
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);
