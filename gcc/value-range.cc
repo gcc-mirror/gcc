@@ -411,9 +411,6 @@ frange::set (tree type,
   gcc_checking_assert (real_compare (LE_EXPR, &min, &max));
 
   normalize_kind ();
-
-  if (flag_checking)
-    verify_range ();
 }
 
 // Setter for an frange defaulting the NAN possibility to +-NAN when
@@ -462,6 +459,8 @@ frange::normalize_kind ()
 	  m_kind = VR_RANGE;
 	  m_min = frange_val_min (m_type);
 	  m_max = frange_val_max (m_type);
+	  if (flag_checking)
+	    verify_range ();
 	  return true;
 	}
     }
@@ -524,8 +523,6 @@ frange::union_nans (const frange &r)
   m_pos_nan |= r.m_pos_nan;
   m_neg_nan |= r.m_neg_nan;
   normalize_kind ();
-  if (flag_checking)
-    verify_range ();
   return true;
 }
 
@@ -569,8 +566,6 @@ frange::union_ (const vrange &v)
     changed |= combine_zeros (r, true);
 
   changed |= normalize_kind ();
-  if (flag_checking)
-    verify_range ();
   return changed;
 }
 
@@ -648,8 +643,6 @@ frange::intersect (const vrange &v)
     changed |= combine_zeros (r, false);
 
   changed |= normalize_kind ();
-  if (flag_checking)
-    verify_range ();
   return changed;
 }
 
@@ -1197,7 +1190,12 @@ irange::irange_single_pair_union (const irange &r)
 	  m_base[3] = r.m_base[1];
 	  m_num_ranges = 2;
 	}
-      union_nonzero_bits (r);
+      // The range has been altered, so normalize it even if nothing
+      // changed in the mask.
+      if (!union_nonzero_bits (r))
+	normalize_kind ();
+      if (flag_checking)
+	verify_range ();
       return true;
     }
 
@@ -1221,7 +1219,12 @@ irange::irange_single_pair_union (const irange &r)
       m_base[3] = m_base[1];
       m_base[1] = r.m_base[1];
     }
-  union_nonzero_bits (r);
+  // The range has been altered, so normalize it even if nothing
+  // changed in the mask.
+  if (!union_nonzero_bits (r))
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
   return true;
 }
 
@@ -1351,7 +1354,12 @@ irange::union_ (const vrange &v)
   m_num_ranges = i / 2;
 
   m_kind = VR_RANGE;
-  union_nonzero_bits (r);
+  // The range has been altered, so normalize it even if nothing
+  // changed in the mask.
+  if (!union_nonzero_bits (r))
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
   return true;
 }
 
@@ -1518,7 +1526,12 @@ irange::intersect (const vrange &v)
     }
 
   m_kind = VR_RANGE;
-  intersect_nonzero_bits (r);
+  // The range has been altered, so normalize it even if nothing
+  // changed in the mask.
+  if (!intersect_nonzero_bits (r))
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
   return true;
 }
 
@@ -1585,10 +1598,7 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
     }
 
   m_kind = VR_RANGE;
-  // No need to call normalize_kind(), as the caller will do this
-  // while intersecting the nonzero mask.
-  if (flag_checking)
-    verify_range ();
+  normalize_kind ();
   return true;
 }
 
@@ -1758,6 +1768,8 @@ irange::set_range_from_nonzero_bits ()
 	  zero.set_zero (type ());
 	  union_ (zero);
 	}
+      if (flag_checking)
+	verify_range ();
       return true;
     }
   else if (popcount == 0)
@@ -1778,10 +1790,8 @@ irange::set_nonzero_bits (const wide_int &bits)
     m_kind = VR_RANGE;
 
   m_nonzero_mask = bits;
-  if (set_range_from_nonzero_bits ())
-    return;
-
-  normalize_kind ();
+  if (!set_range_from_nonzero_bits ())
+    normalize_kind ();
   if (flag_checking)
     verify_range ();
 }
@@ -1807,8 +1817,8 @@ irange::get_nonzero_bits () const
     return m_nonzero_mask & get_nonzero_bits_from_range ();
 }
 
-// Intersect the nonzero bits in R into THIS and normalize the range.
-// Return TRUE if the intersection changed anything.
+// Intersect the nonzero bits in R into THIS.  Return TRUE and
+// normalize the range if anything changed.
 
 bool
 irange::intersect_nonzero_bits (const irange &r)
@@ -1816,14 +1826,8 @@ irange::intersect_nonzero_bits (const irange &r)
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
   if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
-    {
-      normalize_kind ();
-      if (flag_checking)
-	verify_range ();
-      return false;
-    }
+    return false;
 
-  bool changed = false;
   if (m_nonzero_mask != r.m_nonzero_mask)
     {
       wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
@@ -1832,18 +1836,17 @@ irange::intersect_nonzero_bits (const irange &r)
 	return false;
 
       m_nonzero_mask = nz;
-      if (set_range_from_nonzero_bits ())
-	return true;
-      changed = true;
+      if (!set_range_from_nonzero_bits ())
+	normalize_kind ();
+      if (flag_checking)
+	verify_range ();
+      return true;
     }
-  normalize_kind ();
-  if (flag_checking)
-    verify_range ();
-  return changed;
+  return false;
 }
 
-// Union the nonzero bits in R into THIS and normalize the range.
-// Return TRUE if the union changed anything.
+// Union the nonzero bits in R into THIS.  Return TRUE and normalize
+// the range if anything changed.
 
 bool
 irange::union_nonzero_bits (const irange &r)
@@ -1851,28 +1854,22 @@ irange::union_nonzero_bits (const irange &r)
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
   if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
-    {
-      normalize_kind ();
-      if (flag_checking)
-	verify_range ();
-      return false;
-    }
+    return false;
 
-  bool changed = false;
   if (m_nonzero_mask != r.m_nonzero_mask)
     {
       wide_int save = get_nonzero_bits ();
       m_nonzero_mask = save | r.get_nonzero_bits ();
+      if (m_nonzero_mask == save)
+	return false;
       // No need to call set_range_from_nonzero_bits, because we'll
       // never narrow the range.  Besides, it would cause endless
       // recursion because of the union_ in
       // set_range_from_nonzero_bits.
-      changed = m_nonzero_mask != save;
+      normalize_kind ();
+      return true;
     }
-  normalize_kind ();
-  if (flag_checking)
-    verify_range ();
-  return changed;
+  return false;
 }
 
 void
