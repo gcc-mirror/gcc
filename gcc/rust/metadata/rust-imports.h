@@ -110,15 +110,15 @@ public:
   // returns a pointer to a Stream object to read the data that it
   // exports.  LOCATION is the location of the import statement.
   // RELATIVE_IMPORT_PATH is used as a prefix for a relative import.
-  static std::pair<Stream *, std::vector<ProcMacro::Procmacro>>
+  static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
   open_package (const std::string &filename, Location location,
 		const std::string &relative_import_path);
 
-  static std::pair<Stream *, std::vector<ProcMacro::Procmacro>>
+  static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
   try_package_in_directory (const std::string &, Location);
 
   // Constructor.
-  Import (Stream *, Location);
+  Import (std::unique_ptr<Stream>, Location);
 
   // The location of the import statement.
   Location location () const { return this->location_; }
@@ -160,19 +160,20 @@ public:
 private:
   static int try_suffixes (std::string *);
 
-  static Stream *find_export_data (const std::string &filename, int fd,
-				   Location);
+  static std::unique_ptr<Stream> find_export_data (const std::string &filename,
+						   int fd, Location);
 
-  static Stream *find_object_export_data (const std::string &filename, int fd,
-					  off_t offset, Location);
+  static std::unique_ptr<Stream>
+  find_object_export_data (const std::string &filename, int fd, off_t offset,
+			   Location);
 
   static bool is_archive_magic (const char *);
 
-  static Stream *find_archive_export_data (const std::string &filename, int fd,
-					   Location);
+  static std::unique_ptr<Stream>
+  find_archive_export_data (const std::string &filename, int fd, Location);
 
   // The stream from which to read import data.
-  Stream *stream_;
+  std::unique_ptr<Stream> stream_;
   // The location of the import statement we are processing.
   Location location_;
 };

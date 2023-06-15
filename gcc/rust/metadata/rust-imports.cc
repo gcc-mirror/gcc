@@ -21,6 +21,7 @@
 #include "rust-imports.h"
 #include "rust-object-export.h"
 #include "rust-export-metadata.h"
+#include "rust-make-unique.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -62,7 +63,7 @@ add_search_path (const std::string &path)
 // stop; we do not keep looking for another file with the same name
 // later in the search path.
 
-std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>>
+std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
 Import::open_package (const std::string &filename, Location location,
 		      const std::string &relative_import_path)
 {
@@ -121,21 +122,21 @@ Import::open_package (const std::string &filename, Location location,
 	    indir += '/';
 	  indir += fn;
 	  auto s = Import::try_package_in_directory (indir, location);
-	  if (s.first != NULL)
+	  if (s.first != nullptr)
 	    return s;
 	}
     }
 
   auto s = Import::try_package_in_directory (fn, location);
-  if (s.first != NULL)
+  if (s.first != nullptr)
     return s;
 
-  return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
+  return std::make_pair (nullptr, std::vector<ProcMacro::Procmacro>{});
 }
 
 // Try to find the export data for FILENAME.
 
-std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>>
+std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
 Import::try_package_in_directory (const std::string &filename,
 				  Location location)
 {
@@ -160,13 +161,14 @@ Import::try_package_in_directory (const std::string &filename,
 
       fd = Import::try_suffixes (&found_filename);
       if (fd < 0)
-	return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
+	return std::make_pair (nullptr, std::vector<ProcMacro::Procmacro>{});
     }
 
   // The export data may not be in this file.
-  Stream *s = Import::find_export_data (found_filename, fd, location);
-  if (s != NULL)
-    return std::make_pair (s, std::vector<ProcMacro::Procmacro>{});
+  std::unique_ptr<Stream> s
+    = Import::find_export_data (found_filename, fd, location);
+  if (s != nullptr)
+    return std::make_pair (std::move (s), std::vector<ProcMacro::Procmacro>{});
 
   close (fd);
 
@@ -223,27 +225,27 @@ Import::try_suffixes (std::string *pfilename)
 
 // Look for export data in the file descriptor FD.
 
-Import::Stream *
+std::unique_ptr<Import::Stream>
 Import::find_export_data (const std::string &filename, int fd,
 			  Location location)
 {
   // See if we can read this as an object file.
-  Import::Stream *stream
+  std::unique_ptr<Import::Stream> stream
     = Import::find_object_export_data (filename, fd, 0, location);
-  if (stream != NULL)
+  if (stream != nullptr)
     return stream;
 
   const int len = sizeof (Metadata::kMagicHeader);
   if (lseek (fd, 0, SEEK_SET) < 0)
     {
       rust_error_at (location, "lseek %s failed: %m", filename.c_str ());
-      return NULL;
+      return nullptr;
     }
 
   char buf[len];
   ssize_t c = ::read (fd, buf, len);
   if (c < len)
-    return NULL;
+    return nullptr;
 
   // Check for a file containing nothing but Rust export data.
   // if (memcmp (buf, Export::cur_magic, Export::magic_len) == 0
@@ -254,18 +256,18 @@ Import::find_export_data (const std::string &filename, int fd,
   //
   if (memcmp (buf, Metadata::kMagicHeader, sizeof (Metadata::kMagicHeader))
       == 0)
-    return new Stream_from_file (fd);
+    return Rust::make_unique<Stream_from_file> (fd);
 
   // See if we can read this as an archive.
   if (Import::is_archive_magic (buf))
     return Import::find_archive_export_data (filename, fd, location);
 
-  return NULL;
+  return nullptr;
 }
 
 // Look for export data in an object file.
 
-Import::Stream *
+std::unique_ptr<Import::Stream>
 Import::find_object_export_data (const std::string &filename, int fd,
 				 off_t offset, Location location)
 {
@@ -273,20 +275,20 @@ Import::find_object_export_data (const std::string &filename, int fd,
   size_t len;
   int err;
   const char *errmsg = rust_read_export_data (fd, offset, &buf, &len, &err);
-  if (errmsg != NULL)
+  if (errmsg != nullptr)
     {
       if (err == 0)
 	rust_error_at (location, "%s: %s", filename.c_str (), errmsg);
       else
 	rust_error_at (location, "%s: %s: %s", filename.c_str (), errmsg,
 		       xstrerror (err));
-      return NULL;
+      return nullptr;
     }
 
-  if (buf == NULL)
-    return NULL;
+  if (buf == nullptr)
+    return nullptr;
 
-  return new Stream_from_buffer (buf, len);
+  return Rust::make_unique<Stream_from_buffer> (buf, len);
 }
 
 // Class Import.
@@ -294,8 +296,8 @@ Import::find_object_export_data (const std::string &filename, int fd,
 // Construct an Import object.  We make the builtin_types_ vector
 // large enough to hold all the builtin types.
 
-Import::Import (Stream *stream, Location location)
-  : stream_ (stream), location_ (location)
+Import::Import (std::unique_ptr<Stream> stream, Location location)
+  : stream_ (std::move (stream)), location_ (location)
 {}
 
 // Import the data in the associated stream.

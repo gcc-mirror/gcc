@@ -979,7 +979,8 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // -frust-extern
   auto cli_extern_crate = extern_crates.find (crate_name);
 
-  std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>> s;
+  std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
+    s;
   if (cli_extern_crate != extern_crates.end ())
     {
       auto path = cli_extern_crate->second;
