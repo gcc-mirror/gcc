@@ -62,7 +62,7 @@ add_search_path (const std::string &path)
 // stop; we do not keep looking for another file with the same name
 // later in the search path.
 
-Import::Stream *
+std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>>
 Import::open_package (const std::string &filename, Location location,
 		      const std::string &relative_import_path)
 {
@@ -120,22 +120,22 @@ Import::open_package (const std::string &filename, Location location,
 	  if (!indir.empty () && indir[indir.size () - 1] != '/')
 	    indir += '/';
 	  indir += fn;
-	  Stream *s = Import::try_package_in_directory (indir, location);
-	  if (s != NULL)
+	  auto s = Import::try_package_in_directory (indir, location);
+	  if (s.first != NULL)
 	    return s;
 	}
     }
 
-  Stream *s = Import::try_package_in_directory (fn, location);
-  if (s != NULL)
+  auto s = Import::try_package_in_directory (fn, location);
+  if (s.first != NULL)
     return s;
 
-  return NULL;
+  return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
 }
 
 // Try to find the export data for FILENAME.
 
-Import::Stream *
+std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>>
 Import::try_package_in_directory (const std::string &filename,
 				  Location location)
 {
@@ -160,13 +160,13 @@ Import::try_package_in_directory (const std::string &filename,
 
       fd = Import::try_suffixes (&found_filename);
       if (fd < 0)
-	return NULL;
+	return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
     }
 
   // The export data may not be in this file.
   Stream *s = Import::find_export_data (found_filename, fd, location);
   if (s != NULL)
-    return s;
+    return std::make_pair (s, std::vector<ProcMacro::Procmacro>{});
 
   close (fd);
 
@@ -174,7 +174,7 @@ Import::try_package_in_directory (const std::string &filename,
 		 "%s exists but does not contain any Rust export data",
 		 found_filename.c_str ());
 
-  return NULL;
+  return std::make_pair (NULL, std::vector<ProcMacro::Procmacro>{});
 }
 
 // Given import "*PFILENAME", where *PFILENAME does not exist, try

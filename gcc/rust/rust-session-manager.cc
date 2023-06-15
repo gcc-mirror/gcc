@@ -979,7 +979,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // -frust-extern
   auto cli_extern_crate = extern_crates.find (crate_name);
 
-  Import::Stream *s;
+  std::pair<Import::Stream *, std::vector<ProcMacro::Procmacro>> s;
   if (cli_extern_crate != extern_crates.end ())
     {
       auto path = cli_extern_crate->second;
@@ -989,14 +989,14 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     {
       s = Import::open_package (import_name, locus, relative_import_path);
     }
-  if (s == NULL)
+  if (s.first == NULL)
     {
       rust_error_at (locus, "failed to locate crate %<%s%>",
 		     import_name.c_str ());
       return UNKNOWN_NODEID;
     }
 
-  Imports::ExternCrate extern_crate (*s);
+  Imports::ExternCrate extern_crate (*s.first);
   bool ok = extern_crate.load (locus);
   if (!ok)
     {
