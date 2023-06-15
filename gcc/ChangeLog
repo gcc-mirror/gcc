@@ -1,3 +1,18 @@
+2023-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.cc (standard_sse_constant_opcode): Remove
+	superfluous spaces around \t for vpcmpeqd.
+
+2023-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110227
+	* config/i386/sse.md (mov<mode>_internal>): Use x instead of v
+	for alternative 2 since there's no evex version for vpcmpeqd
+	ymm, ymm, ymm.
+
 2023-06-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

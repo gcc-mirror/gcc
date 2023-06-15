@@ -1,3 +1,7 @@
+2023-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110227.c: New test.
+
 2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/109650
