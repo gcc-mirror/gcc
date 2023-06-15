@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . V A L _ L L L U                       --
+--                      S Y S T E M . V A L _ S P E C                       --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2023-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,48 +29,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines for scanning modular Long_Long_Unsigned
---  values for use in Text_IO.Modular_IO, and the Value attribute.
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
 
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
+package body System.Val_Spec
+  with SPARK_Mode
+is
 
-with System.Unsigned_Types;
-with System.Value_U;
-with System.Vs_LLLU;
+   ---------------------------
+   -- First_Non_Space_Ghost --
+   ---------------------------
 
-package System.Val_LLLU with SPARK_Mode is
-   pragma Preelaborate;
+   function First_Non_Space_Ghost
+     (S        : String;
+      From, To : Integer) return Positive
+   is
+   begin
+      for J in From .. To loop
+         if S (J) /= ' ' then
+            return J;
+         end if;
 
-   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
+         pragma Loop_Invariant (for all K in From .. J => S (K) = ' ');
+      end loop;
 
-   package Impl is new Value_U (Long_Long_Long_Unsigned, System.Vs_LLLU.Spec);
+      raise Program_Error;
+   end First_Non_Space_Ghost;
 
-   procedure Scan_Raw_Long_Long_Long_Unsigned
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer;
-      Res : out Long_Long_Long_Unsigned)
-     renames Impl.Scan_Raw_Unsigned;
+   -----------------------
+   -- Last_Number_Ghost --
+   -----------------------
 
-   procedure Scan_Long_Long_Long_Unsigned
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer;
-      Res : out Long_Long_Long_Unsigned)
-     renames Impl.Scan_Unsigned;
+   function Last_Number_Ghost (Str : String) return Positive is
+   begin
+      for J in Str'Range loop
+         if Str (J) not in '0' .. '9' | '_' then
+            return J - 1;
+         end if;
 
-   function Value_Long_Long_Long_Unsigned
-     (Str : String) return Long_Long_Long_Unsigned
-     renames Impl.Value_Unsigned;
+         pragma Loop_Invariant
+           (for all K in Str'First .. J => Str (K) in '0' .. '9' | '_');
+      end loop;
 
-end System.Val_LLLU;
+      return Str'Last;
+   end Last_Number_Ghost;
+
+end System.Val_Spec;

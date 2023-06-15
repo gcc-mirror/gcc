@@ -772,6 +772,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valspe$(objext) \
   s-valued$(objext) \
   s-valuef$(objext) \
   s-valuei$(objext) \
@@ -785,6 +786,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \
+  s-vs_int$(objext) \
+  s-vs_lli$(objext) \
+  s-vs_llu$(objext) \
+  s-vs_uns$(objext) \
   s-wchcnv$(objext) \
   s-wchcon$(objext) \
   s-wchjis$(objext) \
@@ -1030,6 +1035,8 @@ GNATRTL_128BIT_OBJS = \
   s-vafi128$(objext) \
   s-valllli$(objext) \
   s-vallllu$(objext) \
+  s-vsllli$(objext) \
+  s-vslllu$(objext) \
   s-widllli$(objext) \
   s-widlllu$(objext)
 

@@ -31,6 +31,7 @@
 
 with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 use Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+with System.Val_Spec;
 
 package body System.Image_U is
 
@@ -54,17 +55,6 @@ package body System.Image_U is
 
    Big_10 : constant Big_Integer := Big (10) with Ghost;
 
-   --  Maximum value of exponent for 10 that fits in Uns'Base
-   function Max_Log10 return Natural is
-     (case Uns'Base'Size is
-        when 8   => 2,
-        when 16  => 4,
-        when 32  => 9,
-        when 64  => 19,
-        when 128 => 38,
-        when others => raise Program_Error)
-   with Ghost;
-
    ------------------
    -- Local Lemmas --
    ------------------
@@ -85,11 +75,6 @@ package body System.Image_U is
    with
      Ghost,
      Post => X / Y / Z = X / (Y * Z);
-
-   procedure Lemma_Unsigned_Width_Ghost
-   with
-     Ghost,
-     Post => Unsigned_Width_Ghost = Max_Log10 + 2;
 
    ---------------------------
    -- Lemma_Div_Commutation --
@@ -117,18 +102,6 @@ package body System.Image_U is
       pragma Assert (X / YZ = XYZ + R / YZ);
    end Lemma_Div_Twice;
 
-   --------------------------------
-   -- Lemma_Unsigned_Width_Ghost --
-   --------------------------------
-
-   procedure Lemma_Unsigned_Width_Ghost is
-   begin
-      pragma Assert (Unsigned_Width_Ghost <= Max_Log10 + 2);
-      pragma Assert (Big (Uns'Last) > Big_10 ** Max_Log10);
-      pragma Assert (Big (Uns'Last) < Big_10 ** (Unsigned_Width_Ghost - 1));
-      pragma Assert (Unsigned_Width_Ghost >= Max_Log10 + 2);
-   end Lemma_Unsigned_Width_Ghost;
-
    --------------------
    -- Image_Unsigned --
    --------------------
@@ -147,12 +120,12 @@ package body System.Image_U is
           and then S'Last < Integer'Last
           and then P in 2 .. S'Last
           and then S (1) = ' '
-          and then Uns_Params.Only_Decimal_Ghost (S, From => 2, To => P)
-          and then Uns_Params.Scan_Based_Number_Ghost (S, From => 2, To => P)
-            = Uns_Params.Wrap_Option (V),
-        Post => not System.Val_Util.Only_Space_Ghost (S, 1, P)
-          and then Uns_Params.Is_Unsigned_Ghost (S (1 .. P))
-          and then Uns_Params.Is_Value_Unsigned_Ghost (S (1 .. P), V);
+          and then U_Spec.Only_Decimal_Ghost (S, From => 2, To => P)
+          and then U_Spec.Scan_Based_Number_Ghost (S, From => 2, To => P)
+            = U_Spec.Wrap_Option (V),
+        Post => not System.Val_Spec.Only_Space_Ghost (S, 1, P)
+          and then U_Spec.Is_Unsigned_Ghost (S (1 .. P))
+          and then U_Spec.Is_Value_Unsigned_Ghost (S (1 .. P), V);
       --  Ghost lemma to prove the value of Value_Unsigned from the value of
       --  Scan_Based_Number_Ghost on a decimal string.
 
@@ -166,13 +139,13 @@ package body System.Image_U is
          pragma Assert (Str'First = 1);
          pragma Assert (S (2) /= ' ');
          pragma Assert
-           (Uns_Params.Only_Decimal_Ghost (Str, From => 2, To => P));
-         Uns_Params.Prove_Scan_Based_Number_Ghost_Eq
+           (U_Spec.Only_Decimal_Ghost (Str, From => 2, To => P));
+         U_Spec.Prove_Scan_Based_Number_Ghost_Eq
            (S, Str, From => 2, To => P);
          pragma Assert
-           (Uns_Params.Scan_Based_Number_Ghost (Str, From => 2, To => P)
-            = Uns_Params.Wrap_Option (V));
-         Uns_Params.Prove_Scan_Only_Decimal_Ghost (Str, V);
+           (U_Spec.Scan_Based_Number_Ghost (Str, From => 2, To => P)
+            = U_Spec.Wrap_Option (V));
+         U_Spec.Prove_Scan_Only_Decimal_Ghost (Str, V);
       end Prove_Value_Unsigned;
 
    --  Start of processing for Image_Unsigned
@@ -227,7 +200,7 @@ package body System.Image_U is
       with
         Ghost,
         Pre  => R in 0 .. 9,
-        Post => Uns_Params.Hexa_To_Unsigned_Ghost (Character'Val (48 + R)) = R;
+        Post => U_Spec.Hexa_To_Unsigned_Ghost (Character'Val (48 + R)) = R;
       --  Ghost lemma to prove that Hexa_To_Unsigned_Ghost returns the source
       --  figure when applied to the corresponding character.
 
@@ -245,26 +218,26 @@ package body System.Image_U is
             and then (for all I in P + 1 .. Max => Prev_S (I) = S (I))
             and then S (P) in '0' .. '9'
             and then V <= Uns'Last / 10
-            and then Uns'Last - Uns_Params.Hexa_To_Unsigned_Ghost (S (P))
+            and then Uns'Last - U_Spec.Hexa_To_Unsigned_Ghost (S (P))
               >= 10 * V
             and then Prev_V =
-              V * 10 + Uns_Params.Hexa_To_Unsigned_Ghost (S (P))
+              V * 10 + U_Spec.Hexa_To_Unsigned_Ghost (S (P))
             and then
               (if P = Max then Prev_V = Res
-               else Uns_Params.Scan_Based_Number_Ghost
+               else U_Spec.Scan_Based_Number_Ghost
                  (Str  => Prev_S,
                   From => P + 1,
                   To   => Max,
                   Base => 10,
-                  Acc  => Prev_V) = Uns_Params.Wrap_Option (Res)),
+                  Acc  => Prev_V) = U_Spec.Wrap_Option (Res)),
           Post =>
             (for all I in P .. Max => S (I) in '0' .. '9')
-            and then Uns_Params.Scan_Based_Number_Ghost
+            and then U_Spec.Scan_Based_Number_Ghost
               (Str  => S,
                From => P,
                To   => Max,
                Base => 10,
-               Acc  => V) = Uns_Params.Wrap_Option (Res);
+               Acc  => V) = U_Spec.Wrap_Option (Res);
       --  Ghost lemma to prove that Scan_Based_Number_Ghost is preserved
       --  through an iteration of the loop.
 
@@ -287,17 +260,17 @@ package body System.Image_U is
       is
          pragma Unreferenced (Res);
       begin
-         Uns_Params.Lemma_Scan_Based_Number_Ghost_Step
+         U_Spec.Lemma_Scan_Based_Number_Ghost_Step
            (Str  => S,
             From => P,
             To   => Max,
             Base => 10,
             Acc  => V);
          if P < Max then
-            Uns_Params.Prove_Scan_Based_Number_Ghost_Eq
+            U_Spec.Prove_Scan_Based_Number_Ghost_Eq
               (Prev_S, S, P + 1, Max, 10, Prev_V);
          else
-            Uns_Params.Lemma_Scan_Based_Number_Ghost_Base
+            U_Spec.Lemma_Scan_Based_Number_Ghost_Base
               (Str  => S,
                From => P + 1,
                To   => Max,
@@ -313,8 +286,6 @@ package body System.Image_U is
                      P < Natural'Last);
       --  No check is done since, as documented in the specification, the
       --  caller guarantees that S is long enough to hold the result.
-
-      Lemma_Unsigned_Width_Ghost;
 
       --  First we compute the number of characters needed for representing
       --  the number.
@@ -359,7 +330,7 @@ package body System.Image_U is
          Prove_Euclidian
            (Val  => Prev_Value,
             Quot => Value,
-            Rest => Uns_Params.Hexa_To_Unsigned_Ghost (S (P + J)));
+            Rest => U_Spec.Hexa_To_Unsigned_Ghost (S (P + J)));
 
          Prove_Scan_Iter
            (S, Prev_S, Value, Prev_Value, V, P + J, P + Nb_Digits);
@@ -368,18 +339,18 @@ package body System.Image_U is
          pragma Loop_Invariant
            (for all K in S'First .. P => S (K) = S_Init (K));
          pragma Loop_Invariant
-           (Uns_Params.Only_Decimal_Ghost
+           (U_Spec.Only_Decimal_Ghost
               (S, From => P + J, To => P + Nb_Digits));
          pragma Loop_Invariant (Pow = Big_10 ** (Nb_Digits - J + 1));
          pragma Loop_Invariant (Big (Value) = Big (V) / Pow);
          pragma Loop_Invariant
-           (Uns_Params.Scan_Based_Number_Ghost
+           (U_Spec.Scan_Based_Number_Ghost
               (Str  => S,
                From => P + J,
                To   => P + Nb_Digits,
                Base => 10,
                Acc  => Value)
-              = Uns_Params.Wrap_Option (V));
+              = U_Spec.Wrap_Option (V));
       end loop;
       pragma Assert (Big (Value) = Big (V) / (Big_10 ** Nb_Digits));
       pragma Assert (Value = 0);

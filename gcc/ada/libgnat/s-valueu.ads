@@ -45,16 +45,18 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Subprogram_Variant => Ignore);
 
 with System.Value_U_Spec;
-with System.Val_Util; use System.Val_Util;
+with System.Val_Spec; use System.Val_Spec;
 
 generic
 
    type Uns is mod <>;
 
+   --  Additional parameters for ghost subprograms used inside contracts
+
+   with package Spec is new System.Value_U_Spec (Uns => Uns) with Ghost;
+
 package System.Value_U is
    pragma Preelaborate;
-
-   package Spec is new System.Value_U_Spec (Uns);
 
    procedure Scan_Raw_Unsigned
      (Str : String;

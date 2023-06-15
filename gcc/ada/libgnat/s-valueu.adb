@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with System.SPARK.Cut_Operations; use System.SPARK.Cut_Operations;
+with System.Val_Util;             use System.Val_Util;
 
 package body System.Value_U is
 

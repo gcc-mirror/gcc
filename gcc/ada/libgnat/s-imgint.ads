@@ -47,8 +47,8 @@ pragma Assertion_Policy (Pre                => Ignore,
 
 with System.Image_I;
 with System.Unsigned_Types;
-with System.Val_Int;
-with System.Wid_Uns;
+with System.Vs_Int;
+with System.Vs_Uns;
 
 package System.Img_Int
   with SPARK_Mode
@@ -56,11 +56,10 @@ is
    subtype Unsigned is Unsigned_Types.Unsigned;
 
    package Impl is new Image_I
-     (Int                  => Integer,
-      Uns                  => Unsigned,
-      Unsigned_Width_Ghost =>
-         Wid_Uns.Width_Unsigned (0, Unsigned'Last),
-      Int_Params           => System.Val_Int.Impl.Spec.Int_Params);
+     (Int    => Integer,
+      Uns    => Unsigned,
+      U_Spec => System.Vs_Uns.Spec,
+      I_Spec => System.Vs_Int.Spec);
 
    procedure Image_Integer
      (V : Integer;

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . V A L _ L L L U                       --
+--                        S Y S T E M . V S _ L L L I                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2023-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines for scanning modular Long_Long_Unsigned
---  values for use in Text_IO.Modular_IO, and the Value attribute.
+--  This package contains specification functions for scanning
+--  Long_Long_Long_Integer values for use in Text_IO.Integer_IO, and the Value
+--  attribute.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
@@ -45,32 +46,15 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Subprogram_Variant => Ignore);
 
 with System.Unsigned_Types;
-with System.Value_U;
+with System.Value_I_Spec;
 with System.Vs_LLLU;
 
-package System.Val_LLLU with SPARK_Mode is
+package System.Vs_LLLI with SPARK_Mode, Ghost is
    pragma Preelaborate;
 
    subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
-   package Impl is new Value_U (Long_Long_Long_Unsigned, System.Vs_LLLU.Spec);
+   package Spec is new System.Value_I_Spec
+     (Long_Long_Long_Integer, Long_Long_Long_Unsigned, System.Vs_LLLU.Spec);
 
-   procedure Scan_Raw_Long_Long_Long_Unsigned
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer;
-      Res : out Long_Long_Long_Unsigned)
-     renames Impl.Scan_Raw_Unsigned;
-
-   procedure Scan_Long_Long_Long_Unsigned
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer;
-      Res : out Long_Long_Long_Unsigned)
-     renames Impl.Scan_Unsigned;
-
-   function Value_Long_Long_Long_Unsigned
-     (Str : String) return Long_Long_Long_Unsigned
-     renames Impl.Value_Unsigned;
-
-end System.Val_LLLU;
+end System.Vs_LLLI;

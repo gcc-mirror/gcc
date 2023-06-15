@@ -37,7 +37,7 @@ pragma Assertion_Policy (Ghost          => Ignore,
                          Loop_Invariant => Ignore,
                          Assert         => Ignore);
 
-with System.Val_Util;
+with System.Val_Spec;
 
 package body System.Img_Bool
   with SPARK_Mode
@@ -58,12 +58,12 @@ is
          S (1 .. 4) := "TRUE";
          P := 4;
          pragma Assert
-           (System.Val_Util.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
+           (System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
       else
          S (1 .. 5) := "FALSE";
          P := 5;
          pragma Assert
-           (System.Val_Util.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
+           (System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = 1);
       end if;
    end Image_Boolean;
 

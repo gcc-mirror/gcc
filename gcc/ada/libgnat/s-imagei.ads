@@ -45,22 +45,25 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
-with System.Val_Util;
+with System.Value_I_Spec;
+with System.Value_U_Spec;
 
 generic
    type Int is range <>;
    type Uns is mod <>;
 
-   Unsigned_Width_Ghost : Natural;
+   --  Additional parameters for ghost subprograms used inside contracts
 
-   with package Int_Params is new System.Val_Util.Int_Params
-     (Int => Int, Uns => Uns, others => <>)
-   with Ghost;
+   with package U_Spec is new System.Value_U_Spec (Uns => Uns) with Ghost;
+   with package I_Spec is new System.Value_I_Spec
+     (Int => Int, Uns => Uns, U_Spec => U_Spec) with Ghost;
 
 package System.Image_I is
-   package IP renames Int_Params;
-   package UP renames IP.Uns_Params;
+   package IP renames I_Spec;
+   package UP renames U_Spec;
    use type UP.Uns_Option;
+
+   Unsigned_Width_Ghost : constant Natural := U_Spec.Max_Log10 + 2 with Ghost;
 
    procedure Image_Integer
      (V : Int;

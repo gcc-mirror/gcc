@@ -62,44 +62,6 @@ is
       end if;
    end Bad_Value;
 
-   ---------------------------
-   -- First_Non_Space_Ghost --
-   ---------------------------
-
-   function First_Non_Space_Ghost
-     (S        : String;
-      From, To : Integer) return Positive
-   is
-   begin
-      for J in From .. To loop
-         if S (J) /= ' ' then
-            return J;
-         end if;
-
-         pragma Loop_Invariant (for all K in From .. J => S (K) = ' ');
-      end loop;
-
-      raise Program_Error;
-   end First_Non_Space_Ghost;
-
-   -----------------------
-   -- Last_Number_Ghost --
-   -----------------------
-
-   function Last_Number_Ghost (Str : String) return Positive is
-   begin
-      for J in Str'Range loop
-         if Str (J) not in '0' .. '9' | '_' then
-            return J - 1;
-         end if;
-
-         pragma Loop_Invariant
-           (for all K in Str'First .. J => Str (K) in '0' .. '9' | '_');
-      end loop;
-
-      return Str'Last;
-   end Last_Number_Ghost;
-
    ----------------------
    -- Normalize_String --
    ----------------------
@@ -224,10 +186,10 @@ is
 
       declare
          Rest : constant String := Str (P .. Max) with Ghost;
-         Last : constant Natural := Last_Number_Ghost (Rest) with Ghost;
+         Last : constant Natural := Sp.Last_Number_Ghost (Rest) with Ghost;
 
       begin
-         pragma Assert (Is_Natural_Format_Ghost (Rest));
+         pragma Assert (Sp.Is_Natural_Format_Ghost (Rest));
 
          loop
             pragma Assert (Str (P) in '0' .. '9');
@@ -240,8 +202,8 @@ is
             pragma Loop_Invariant (P in Rest'First .. Last);
             pragma Loop_Invariant (Str (P) in '0' .. '9');
             pragma Loop_Invariant
-              (Scan_Natural_Ghost (Rest, Rest'First, 0)
-               = Scan_Natural_Ghost (Rest, P + 1, X));
+              (Sp.Scan_Natural_Ghost (Rest, Rest'First, 0)
+               = Sp.Scan_Natural_Ghost (Rest, P + 1, X));
 
             P := P + 1;
 
@@ -301,7 +263,7 @@ is
 
       Start := P;
 
-      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
+      pragma Assert (Start = Sp.First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Skip past an initial plus sign
 
@@ -357,7 +319,7 @@ is
 
       Start := P;
 
-      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
+      pragma Assert (Start = Sp.First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Remember an initial minus sign
 

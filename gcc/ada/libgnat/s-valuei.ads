@@ -38,8 +38,9 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
-with System.Val_Util; use System.Val_Util;
+with System.Val_Spec; use System.Val_Spec;
 with System.Value_I_Spec;
+with System.Value_U_Spec;
 
 generic
 
@@ -55,15 +56,13 @@ generic
 
    --  Additional parameters for ghost subprograms used inside contracts
 
-   with package Uns_Params is new System.Val_Util.Uns_Params
-     (Uns => Uns, others => <>)
+   with package U_Spec is new System.Value_U_Spec (Uns => Uns) with Ghost;
+   with package Spec is new System.Value_I_Spec
+     (Int => Int, Uns => Uns, U_Spec => U_Spec)
    with Ghost;
 
 package System.Value_I is
    pragma Preelaborate;
-   use all type Uns_Params.Uns_Option;
-
-   package Spec is new System.Value_I_Spec (Int, Uns, Uns_Params);
 
    procedure Scan_Integer
      (Str : String;
@@ -84,12 +83,12 @@ package System.Value_I is
               (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
                else Non_Blank);
           begin
-            Uns_Params.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))
-              and then Uns_Params.Raw_Unsigned_No_Overflow_Ghost
+            U_Spec.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))
+              and then U_Spec.Raw_Unsigned_No_Overflow_Ghost
                 (Str, Fst_Num, Max)
               and then Spec.Uns_Is_Valid_Int
                 (Minus => Str (Non_Blank) = '-',
-                 Uval  => Uns_Params.Scan_Raw_Unsigned_Ghost
+                 Uval  => U_Spec.Scan_Raw_Unsigned_Ghost
                    (Str, Fst_Num, Max))),
     Post =>
       (declare
@@ -99,12 +98,12 @@ package System.Value_I is
            (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
             else Non_Blank);
          Uval      : constant Uns :=
-            Uns_Params.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max);
+            U_Spec.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max);
        begin
            Spec.Is_Int_Of_Uns (Minus => Str (Non_Blank) = '-',
                                Uval  => Uval,
                                Val   => Res)
-           and then Ptr.all = Uns_Params.Raw_Unsigned_Last_Ghost
+           and then Ptr.all = U_Spec.Raw_Unsigned_Last_Ghost
              (Str, Fst_Num, Max));
    --  This procedure scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring

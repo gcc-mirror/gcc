@@ -47,6 +47,8 @@ pragma Assertion_Policy (Pre                => Ignore,
 with System.Unsigned_Types;
 with System.Val_Uns;
 with System.Value_I;
+with System.Vs_Int;
+with System.Vs_Uns;
 
 package System.Val_Int with SPARK_Mode is
    pragma Preelaborate;
@@ -57,7 +59,8 @@ package System.Val_Int with SPARK_Mode is
      (Int               => Integer,
       Uns               => Unsigned,
       Scan_Raw_Unsigned => Val_Uns.Scan_Raw_Unsigned,
-      Uns_Params        => System.Val_Uns.Impl.Spec.Uns_Params);
+      U_Spec            => System.Vs_Uns.Spec,
+      Spec              => System.Vs_Int.Spec);
 
    procedure Scan_Integer
      (Str : String;
