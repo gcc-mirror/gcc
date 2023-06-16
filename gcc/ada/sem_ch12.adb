@@ -7192,10 +7192,15 @@ package body Sem_Ch12 is
             Set_Is_Hidden (E, False);
          end if;
 
-         --  Check directly the type of the actual objects
+         --  Check directly the type of the actual objects, including the
+         --  component type for array types.
 
          if Ekind (E) in E_Constant | E_Variable then
             Check_Actual_Type (Etype (E));
+
+            if Is_Array_Type (Etype (E)) then
+               Check_Actual_Type (Component_Type (Etype (E)));
+            end if;
 
          --  As well as the type of formal parameters of actual subprograms
 
@@ -8520,13 +8525,12 @@ package body Sem_Ch12 is
             Copy_Descendants;
          end;
 
-      --  Iterator and loop parameter specifications do not have an identifier
-      --  denoting the index type, so we must locate it through the expression
-      --  to check whether the views are consistent.
+      --  Loop parameter specifications do not have an identifier denoting the
+      --  index type, so we must locate it through the defining identifier to
+      --  check whether the views are consistent.
 
-      elsif Nkind (N) in N_Iterator_Specification
-                       | N_Loop_Parameter_Specification
-         and then Instantiating
+      elsif Nkind (N) = N_Loop_Parameter_Specification
+        and then Instantiating
       then
          declare
             Id : constant Entity_Id :=
