@@ -3832,7 +3832,7 @@ package Einfo is
 
 --    Number_Formals (synthesized)
 --       Applies to subprograms and subprogram types. Yields the number of
---       formals as a value of type Pos.
+--       formals as a value of type Nat.
 
 --    Object_Size_Clause (synthesized)
 --       Applies to entities for types and subtypes. If an object size clause

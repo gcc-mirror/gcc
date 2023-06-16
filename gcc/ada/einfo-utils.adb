@@ -2105,8 +2105,8 @@ package body Einfo.Utils is
    -- Number_Formals --
    --------------------
 
-   function Number_Formals (Id : E) return Pos is
-      N      : Int;
+   function Number_Formals (Id : E) return Nat is
+      N      : Nat;
       Formal : Entity_Id;
 
    begin
