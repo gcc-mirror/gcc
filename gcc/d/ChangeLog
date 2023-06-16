@@ -1,3 +1,7 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Make-lang.in: Remove NO_PIE_CFLAGS.
+
 2023-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.texi (Warnings): Document -Wextra and -Wmismatched-special-enum.

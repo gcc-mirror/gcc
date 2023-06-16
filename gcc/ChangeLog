@@ -1,3 +1,151 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set LD_PICFLAG.  Use it.  Set enable_host_pie.
+	Remove NO_PIE_CFLAGS and NO_PIE_FLAG.  Pass LD_PICFLAG to
+	ALL_LINKERFLAGS.  Use the "pic" build of libiberty if --enable-host-pie.
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG and LD_PICFLAG after this
+	check.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-pie.
+
+2023-06-15  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* regcprop.cc (maybe_mode_change): Enable stack pointer
+	propagation.
+
+2023-06-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110266
+	* gimple-range-fold.cc (adjust_imagpart_expr): Check for integer
+	complex type.
+	(adjust_realpart_expr): Ditto.
+
+2023-06-15  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (<avx512>_vec_dup<mode><mask_name>): Use
+	vmovddup.
+
+2023-06-15  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/constraints.md: Mention k and r for B.
+
+2023-06-15  Lulu Cheng  <chenglulu@loongson.cn>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR target/110136
+	* config/loongarch/loongarch.md: Modify the register constraints for template
+	"jumptable" and "indirect_jump" from "r" to "e".
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-tune.h (loongarch_align): New
+	struct.
+	* config/loongarch/loongarch-def.h (loongarch_cpu_align): New
+	array.
+	* config/loongarch/loongarch-def.c (loongarch_cpu_align): Define
+	the array.
+	* config/loongarch/loongarch.cc
+	(loongarch_option_override_internal): Set the value of
+	-falign-functions= if -falign-functions is enabled but no value
+	is given.  Likewise for -falign-labels=.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* internal-fn.def (UADDC, USUBC): New internal functions.
+	* internal-fn.cc (expand_UADDC, expand_USUBC): New functions.
+	(commutative_ternary_fn_p): Return true also for IFN_UADDC.
+	* optabs.def (uaddc5_optab, usubc5_optab): New optabs.
+	* tree-ssa-math-opts.cc (uaddc_cast, uaddc_ne0, uaddc_is_cplxpart,
+	match_uaddc_usubc): New functions.
+	(math_opts_dom_walker::after_dom_children): Call match_uaddc_usubc
+	for PLUS_EXPR, MINUS_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR unless
+	other optimizations have been successful for those.
+	* gimple-fold.cc (gimple_fold_call): Handle IFN_UADDC and IFN_USUBC.
+	* fold-const-call.cc (fold_const_call): Likewise.
+	* gimple-range-fold.cc (adjust_imagpart_expr): Likewise.
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): Likewise.
+	* doc/md.texi (uaddc<mode>5, usubc<mode>5): Document new named
+	patterns.
+	* config/i386/i386.md (uaddc<mode>5, usubc<mode>5): New
+	define_expand patterns.
+	(*setcc_qi_addqi3_cconly_overflow_1_<mode>, *setccc): Split
+	into NOTE_INSN_DELETED note rather than nop instruction.
+	(*setcc_qi_negqi_ccc_1_<mode>, *setcc_qi_negqi_ccc_2_<mode>):
+	Likewise.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* config/i386/i386.md (subborrow<mode>): Add alternative with
+	memory destination and add for it define_peephole2
+	TARGET_READ_MODIFY_WRITE/-Os patterns to prefer using memory
+	destination in these patterns.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* config/i386/i386.md (*sub<mode>_3, @add<mode>3_carry,
+	addcarry<mode>, @sub<mode>3_carry, *add<mode>3_cc_overflow_1): Add
+	define_peephole2 TARGET_READ_MODIFY_WRITE/-Os patterns to prefer
+	using memory destination in these patterns.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.cc (gimple_fold_call): Move handling of arg0
+	as well as arg1 INTEGER_CSTs for .UBSAN_CHECK_{ADD,SUB,MUL}
+	and .{ADD,SUB,MUL}_OVERFLOW calls from here...
+	* fold-const-call.cc (fold_const_call): ... here.
+
+2023-06-15  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<su>abd<mode>):
+	Rename to <su>abd<mode>3.
+	* config/aarch64/aarch64-sve.md (<su>abd<mode>_3): Rename
+	to <su>abd<mode>3.
+
+2023-06-15  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* doc/md.texi (sabd, uabd): Document them.
+	* internal-fn.def (ABD): Use new optab.
+	* optabs.def (sabd_optab, uabd_optab): New optabs,
+	* tree-vect-patterns.cc (vect_recog_absolute_difference):
+	Recognize the following idiom abs (a - b).
+	(vect_recog_sad_pattern): Refactor to use
+	vect_recog_absolute_difference.
+	(vect_recog_abd_pattern): Use patterns found by
+	vect_recog_absolute_difference to build a new ABD
+	internal call.
+
+2023-06-15  chenxiaolong  <chenxl04200420@163.com>
+
+	* config/loongarch/loongarch.h (LARCH_CALL_RATIO): Modify the value
+	of macro LARCH_CALL_RATIO on LoongArch to make it perform optimally.
+
+2023-06-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (shuffle_merge_patterns): New pattern.
+	(expand_vec_perm_const_1): Add merge optmization.
+
+2023-06-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110119
+	* config/riscv/riscv.cc (riscv_get_arg_info): Return NULL_RTX for vector mode
+	(riscv_pass_by_reference): Return true for vector mode
+
+2023-06-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Align the predictor sytle.
+	* config/riscv/autovec.md: Ditto.
+
+2023-06-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (rvv_builder::get_merge_scalar_mask):
+	Take elen instead of scalar BITS_PER_WORD.
+	(expand_vector_init_merge_repeating_sequence): Use inner_bits_size
+	instead of scaler BITS_PER_WORD.
+
 2023-06-14  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
 
 	* config/moxie/uclinux.h (MFWRAP_SPEC): Remove

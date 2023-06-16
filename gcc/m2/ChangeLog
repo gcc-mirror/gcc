@@ -1,3 +1,7 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* Make-lang.in: New var, GM2_PICFLAGS.  Use it.
+
 2023-06-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (check-format-error): New rule.

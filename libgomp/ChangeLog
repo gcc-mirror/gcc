@@ -1,3 +1,19 @@
+2023-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* env.c (gomp_def_allocator_envvar): New var.
+	(parse_allocator): Handle OpenMP 5.1 syntax.
+	(cleanup_env): New.
+	(omp_display_env): Output gomp_def_allocator_envvar
+	for an allocator with traits.
+	* libgomp.texi (OMP_ALLOCATOR, OMP_AFFINITY_FORMAT,
+	OMP_DISPLAY_AFFINITY): New.
+	* testsuite/libgomp.c/allocator-1.c: New test.
+	* testsuite/libgomp.c/allocator-2.c: New test.
+	* testsuite/libgomp.c/allocator-3.c: New test.
+	* testsuite/libgomp.c/allocator-4.c: New test.
+	* testsuite/libgomp.c/allocator-5.c: New test.
+	* testsuite/libgomp.c/allocator-6.c: New test.
+
 2023-06-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (resolve_device): Align a

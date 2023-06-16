@@ -1,3 +1,8 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac: Also set shared when enable_host_pie.
+	* configure: Regenerate.
+
 2023-06-13  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_print_conversion): Remove incorrect

@@ -1,3 +1,177 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* gcc-interface/Make-lang.in (ALL_ADAFLAGS): Remove NO_PIE_CFLAGS.  Add
+	PICFLAG.  Use PICFLAG when building ada/b_gnat1.o and ada/b_gnatb.o.
+	* gcc-interface/Makefile.in: Use pic/libiberty.a if PICFLAG is set.
+	Remove NO_PIE_FLAG.
+
+2023-06-15  Marc Poulhiès  <poulhies@adacore.com>
+
+	* vxworks7-cert-rtp-base-link.spec: Removed.
+	* vxworks7-cert-rtp-base-link__ppc64.spec: Removed.
+	* vxworks7-cert-rtp-base-link__x86.spec: Removed.
+	* vxworks7-cert-rtp-base-link__x86_64.spec: Removed.
+	* vxworks7-cert-rtp-link.spec: Removed.
+	* vxworks7-cert-rtp-link__ppcXX.spec: Removed.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_binary_op) <MODIFY_EXPR>: Do not
+	remove a VIEW_CONVERT_EXPR on the LHS if it is also on the RHS.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Restrict
+	the special handling of temporaries created for return values and
+	subject to a renaming to the top level.
+
+2023-06-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst: Fix typo. Uniformize punctuation.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Uniformize punctuation.
+	Fix capitalization. Fix indentation of code block. Fix RST formatting
+	syntax errors.
+	* gnat_ugn.texi: Regenerate.
+
+2023-06-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Reject case of Loop_Entry
+	inside the prefix of Loop_Entry, as per SPARK RM 5.5.3.1(4,8).
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Rewrite the logic that
+	determines the type used for the allocation and add assertions.
+	* exp_util.adb (Has_Tag_Of_Type): Also return true for extension
+	aggregates.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (Iterator_Filter): Document field.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Move comment around.
+	(Analyze_Loop_Parameter_Specification): Only preanalyze the iterator
+	filter, if any.
+	* exp_ch5.adb (Expand_N_Loop_Statement): Analyze the new list built
+	when an iterator filter is present.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Find_Hook_Context): Revert latest change.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Deal again specifically
+	with an aggregate returned through an object of a class-wide type.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Container): Do not insert
+	an always empty list. Remove unused parameter Isc.
+	(Expand_Iterator_Loop): Adjust call to above procedure.
+
+2023-06-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* targparm.adb: Allow pragma Style_Checks in some forms.
+	* targparm.ads: Document new pragma permission.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Within_Case_Or_If_Expression): Adjust description.
+	* exp_util.adb (Find_Hook_Context): Stop the search for the topmost
+	conditional expression, if within one, at contexts where temporaries
+	may be contained.
+	(Within_Case_Or_If_Expression): Return false upon first encoutering
+	contexts where temporaries may be contained.
+
+2023-06-15  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnarl/s-osinte__qnx.adb: Adjust priority conversion function.
+	* libgnat/system-qnx-arm.ads: Adjust priority range and default
+	priority.
+
+2023-06-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* targparm.ads: Remove references to front-end-based exceptions. Fix
+	thinko.
+
+2023-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Add_Contract_Item): Add pragma Always_Terminates to
+	package contract.
+	* sem_prag.adb (Analyze_Pragma): Accept pragma Always_Terminates on
+	packages and generic packages, but only when it has no arguments.
+
+2023-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Accept pragma Always_Terminates when
+	it applies to an entry.
+
+2023-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Reject pragma Always_Terminates when
+	it applies to a function or generic function.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): Adjust the test to detect the presence
+	of an incomplete view of a type on a function call.
+
+2023-06-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* ttypes.ads: Remove reference to Ttypef in comment. Fix typo in
+	comment.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* get_targ.ads (Get_Max_Unaligned_Field): Delete.
+	* ada_get_targ.adb (Get_Max_Unaligned_Field): Likewise.
+	* get_targ.adb (Get_Max_Unaligned_Field): Likewise.
+	* set_targ.ads (Max_Unaligned_Field): Adjust comment.
+	* set_targ.adb: Set Max_Unaligned_Field to 1 during elaboration.
+	* ttypes.ads (Max_Unaligned_Field): Delete.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Disambiguate): Fix pasto in the implementation of
+	the RM 8.4(10) clause for operators.
+
+2023-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.adb
+	(Base_Aspect): Fix layout.
+	* aspects.ads
+	(Aspect_Argument): Expression for Always_Terminates is optional.
+	* sem_prag.adb
+	(Analyze_Always_Terminates_In_Decl_Part): Only analyze expression when
+	pragma argument is present.
+	(Analyze_Pragma): Argument for Always_Terminates is optional; fix
+	whitespace for Async_Readers.
+
+2023-06-15  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb
+	(Is_CPP_Constructor_Call): Add missing support for calls to
+	functions returning a private type.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Build_Transient_Object_Statements): Remove obsolete
+	references to array and record aggregates in documentation.
+
+2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add missing items
+	in the list of aspects handled by means of Insert_Pragma.
+	<Aspect_Linker_Section>: Remove obsolete code.  Do not delay the
+	processing of the aspect if the entity is already frozen.
+
+2023-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb
+	(Resolve_Array_Aggregate): Simplify comment.
+	(Resolve_Iterated_Component_Association): Tune comment; change variable
+	to constant.
+
 2023-06-13  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_aggr.adb (Resolve_Iterated_Component_Association): Simply resolve

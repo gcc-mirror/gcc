@@ -1,3 +1,9 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
 2022-11-23  Marek Polacek  <polacek@redhat.com>
 
 	Revert:

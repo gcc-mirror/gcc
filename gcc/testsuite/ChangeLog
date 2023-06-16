@@ -1,3 +1,74 @@
+2023-06-15  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110266
+	* gcc.c-torture/compile/pr110266.c: New test.
+
+2023-06-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110266
+	* gcc.dg/pr110266.c: New.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/80753
+	* c-c++-common/missing-header-5.c: New test.
+
+2023-06-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/Wfree-nonheap-object-3.c: Fix 'dg-warning' for C++.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* gcc.target/i386/pr79173-1.c: New test.
+	* gcc.target/i386/pr79173-2.c: New test.
+	* gcc.target/i386/pr79173-3.c: New test.
+	* gcc.target/i386/pr79173-4.c: New test.
+	* gcc.target/i386/pr79173-5.c: New test.
+	* gcc.target/i386/pr79173-6.c: New test.
+	* gcc.target/i386/pr79173-7.c: New test.
+	* gcc.target/i386/pr79173-8.c: New test.
+	* gcc.target/i386/pr79173-9.c: New test.
+	* gcc.target/i386/pr79173-10.c: New test.
+
+2023-06-15  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* gcc.target/aarch64/abd.h: New file.
+	* gcc.target/aarch64/abd_2.c: New test.
+	* gcc.target/aarch64/abd_3.c: New test.
+	* gcc.target/aarch64/abd_4.c: New test.
+	* gcc.target/aarch64/abd_none_2.c: New test.
+	* gcc.target/aarch64/abd_none_3.c: New test.
+	* gcc.target/aarch64/abd_none_4.c: New test.
+	* gcc.target/aarch64/abd_run_1.c: New test.
+	* gcc.target/aarch64/sve/abd_1.c: New test.
+	* gcc.target/aarch64/sve/abd_none_1.c: New test.
+	* gcc.target/aarch64/sve/abd_2.c: New test.
+	* gcc.target/aarch64/sve/abd_none_2.c: New test.
+
+2023-06-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-7.c: New test.
+
+2023-06-15  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110119
+	* gcc.target/riscv/rvv/base/pr110119-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr110119-2.c: New test.
+
 2023-06-14  Jason Merrill  <jason@redhat.com>
 
 	DR 2327
