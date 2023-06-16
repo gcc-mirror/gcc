@@ -29759,6 +29759,8 @@ else
 
     $as_echo "#define HAVE_FREXPF 1" >>confdefs.h
 
+    $as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
+
     $as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
 
     $as_echo "#define HAVE_LOG10F 1" >>confdefs.h
@@ -29778,6 +29780,1183 @@ else
     $as_echo "#define HAVE_TANF 1" >>confdefs.h
 
     $as_echo "#define HAVE_TANHF 1" >>confdefs.h
+
+
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for acosl declaration" >&5
+$as_echo_n "checking for acosl declaration... " >&6; }
+if ${glibcxx_cv_func_acosl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef acosl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))acosl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_acosl_use=yes
+
+else
+  glibcxx_cv_func_acosl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_acosl_use" >&5
+$as_echo "$glibcxx_cv_func_acosl_use" >&6; }
+  if test "x$glibcxx_cv_func_acosl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_ACOSL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for asinl declaration" >&5
+$as_echo_n "checking for asinl declaration... " >&6; }
+if ${glibcxx_cv_func_asinl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef asinl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))asinl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_asinl_use=yes
+
+else
+  glibcxx_cv_func_asinl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_asinl_use" >&5
+$as_echo "$glibcxx_cv_func_asinl_use" >&6; }
+  if test "x$glibcxx_cv_func_asinl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_ASINL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atan2l declaration" >&5
+$as_echo_n "checking for atan2l declaration... " >&6; }
+if ${glibcxx_cv_func_atan2l_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef atan2l
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))atan2l;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_atan2l_use=yes
+
+else
+  glibcxx_cv_func_atan2l_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_atan2l_use" >&5
+$as_echo "$glibcxx_cv_func_atan2l_use" >&6; }
+  if test "x$glibcxx_cv_func_atan2l_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_ATAN2L 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atanl declaration" >&5
+$as_echo_n "checking for atanl declaration... " >&6; }
+if ${glibcxx_cv_func_atanl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef atanl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))atanl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_atanl_use=yes
+
+else
+  glibcxx_cv_func_atanl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_atanl_use" >&5
+$as_echo "$glibcxx_cv_func_atanl_use" >&6; }
+  if test "x$glibcxx_cv_func_atanl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_ATANL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ceill declaration" >&5
+$as_echo_n "checking for ceill declaration... " >&6; }
+if ${glibcxx_cv_func_ceill_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef ceill
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))ceill;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_ceill_use=yes
+
+else
+  glibcxx_cv_func_ceill_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_ceill_use" >&5
+$as_echo "$glibcxx_cv_func_ceill_use" >&6; }
+  if test "x$glibcxx_cv_func_ceill_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_CEILL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for coshl declaration" >&5
+$as_echo_n "checking for coshl declaration... " >&6; }
+if ${glibcxx_cv_func_coshl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef coshl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))coshl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_coshl_use=yes
+
+else
+  glibcxx_cv_func_coshl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_coshl_use" >&5
+$as_echo "$glibcxx_cv_func_coshl_use" >&6; }
+  if test "x$glibcxx_cv_func_coshl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_COSHL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cosl declaration" >&5
+$as_echo_n "checking for cosl declaration... " >&6; }
+if ${glibcxx_cv_func_cosl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef cosl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))cosl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_cosl_use=yes
+
+else
+  glibcxx_cv_func_cosl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_cosl_use" >&5
+$as_echo "$glibcxx_cv_func_cosl_use" >&6; }
+  if test "x$glibcxx_cv_func_cosl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_COSL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for expl declaration" >&5
+$as_echo_n "checking for expl declaration... " >&6; }
+if ${glibcxx_cv_func_expl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef expl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))expl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_expl_use=yes
+
+else
+  glibcxx_cv_func_expl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_expl_use" >&5
+$as_echo "$glibcxx_cv_func_expl_use" >&6; }
+  if test "x$glibcxx_cv_func_expl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_EXPL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fabsl declaration" >&5
+$as_echo_n "checking for fabsl declaration... " >&6; }
+if ${glibcxx_cv_func_fabsl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef fabsl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))fabsl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_fabsl_use=yes
+
+else
+  glibcxx_cv_func_fabsl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_fabsl_use" >&5
+$as_echo "$glibcxx_cv_func_fabsl_use" >&6; }
+  if test "x$glibcxx_cv_func_fabsl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_FABSL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for floorl declaration" >&5
+$as_echo_n "checking for floorl declaration... " >&6; }
+if ${glibcxx_cv_func_floorl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef floorl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))floorl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_floorl_use=yes
+
+else
+  glibcxx_cv_func_floorl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_floorl_use" >&5
+$as_echo "$glibcxx_cv_func_floorl_use" >&6; }
+  if test "x$glibcxx_cv_func_floorl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOORL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fmodl declaration" >&5
+$as_echo_n "checking for fmodl declaration... " >&6; }
+if ${glibcxx_cv_func_fmodl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef fmodl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))fmodl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_fmodl_use=yes
+
+else
+  glibcxx_cv_func_fmodl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_fmodl_use" >&5
+$as_echo "$glibcxx_cv_func_fmodl_use" >&6; }
+  if test "x$glibcxx_cv_func_fmodl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_FMODL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for frexpl declaration" >&5
+$as_echo_n "checking for frexpl declaration... " >&6; }
+if ${glibcxx_cv_func_frexpl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef frexpl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))frexpl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_frexpl_use=yes
+
+else
+  glibcxx_cv_func_frexpl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_frexpl_use" >&5
+$as_echo "$glibcxx_cv_func_frexpl_use" >&6; }
+  if test "x$glibcxx_cv_func_frexpl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_FREXPL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hypotl declaration" >&5
+$as_echo_n "checking for hypotl declaration... " >&6; }
+if ${glibcxx_cv_func_hypotl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef hypotl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))hypotl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_hypotl_use=yes
+
+else
+  glibcxx_cv_func_hypotl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_hypotl_use" >&5
+$as_echo "$glibcxx_cv_func_hypotl_use" >&6; }
+  if test "x$glibcxx_cv_func_hypotl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_HYPOTL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ldexpl declaration" >&5
+$as_echo_n "checking for ldexpl declaration... " >&6; }
+if ${glibcxx_cv_func_ldexpl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef ldexpl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))ldexpl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_ldexpl_use=yes
+
+else
+  glibcxx_cv_func_ldexpl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_ldexpl_use" >&5
+$as_echo "$glibcxx_cv_func_ldexpl_use" >&6; }
+  if test "x$glibcxx_cv_func_ldexpl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_LDEXPL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for log10l declaration" >&5
+$as_echo_n "checking for log10l declaration... " >&6; }
+if ${glibcxx_cv_func_log10l_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef log10l
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))log10l;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_log10l_use=yes
+
+else
+  glibcxx_cv_func_log10l_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_log10l_use" >&5
+$as_echo "$glibcxx_cv_func_log10l_use" >&6; }
+  if test "x$glibcxx_cv_func_log10l_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_LOG10L 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for logl declaration" >&5
+$as_echo_n "checking for logl declaration... " >&6; }
+if ${glibcxx_cv_func_logl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef logl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))logl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_logl_use=yes
+
+else
+  glibcxx_cv_func_logl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_logl_use" >&5
+$as_echo "$glibcxx_cv_func_logl_use" >&6; }
+  if test "x$glibcxx_cv_func_logl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_LOGL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for modfl declaration" >&5
+$as_echo_n "checking for modfl declaration... " >&6; }
+if ${glibcxx_cv_func_modfl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef modfl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))modfl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_modfl_use=yes
+
+else
+  glibcxx_cv_func_modfl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_modfl_use" >&5
+$as_echo "$glibcxx_cv_func_modfl_use" >&6; }
+  if test "x$glibcxx_cv_func_modfl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_MODFL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for powl declaration" >&5
+$as_echo_n "checking for powl declaration... " >&6; }
+if ${glibcxx_cv_func_powl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef powl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))powl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_powl_use=yes
+
+else
+  glibcxx_cv_func_powl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_powl_use" >&5
+$as_echo "$glibcxx_cv_func_powl_use" >&6; }
+  if test "x$glibcxx_cv_func_powl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_POWL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sinhl declaration" >&5
+$as_echo_n "checking for sinhl declaration... " >&6; }
+if ${glibcxx_cv_func_sinhl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef sinhl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))sinhl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_sinhl_use=yes
+
+else
+  glibcxx_cv_func_sinhl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_sinhl_use" >&5
+$as_echo "$glibcxx_cv_func_sinhl_use" >&6; }
+  if test "x$glibcxx_cv_func_sinhl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_SINHL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sinl declaration" >&5
+$as_echo_n "checking for sinl declaration... " >&6; }
+if ${glibcxx_cv_func_sinl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef sinl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))sinl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_sinl_use=yes
+
+else
+  glibcxx_cv_func_sinl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_sinl_use" >&5
+$as_echo "$glibcxx_cv_func_sinl_use" >&6; }
+  if test "x$glibcxx_cv_func_sinl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_SINL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqrtl declaration" >&5
+$as_echo_n "checking for sqrtl declaration... " >&6; }
+if ${glibcxx_cv_func_sqrtl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef sqrtl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))sqrtl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_sqrtl_use=yes
+
+else
+  glibcxx_cv_func_sqrtl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_sqrtl_use" >&5
+$as_echo "$glibcxx_cv_func_sqrtl_use" >&6; }
+  if test "x$glibcxx_cv_func_sqrtl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_SQRTL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tanhl declaration" >&5
+$as_echo_n "checking for tanhl declaration... " >&6; }
+if ${glibcxx_cv_func_tanhl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef tanhl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))tanhl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_tanhl_use=yes
+
+else
+  glibcxx_cv_func_tanhl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_tanhl_use" >&5
+$as_echo "$glibcxx_cv_func_tanhl_use" >&6; }
+  if test "x$glibcxx_cv_func_tanhl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_TANHL 1
+_ACEOF
+
+  fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tanl declaration" >&5
+$as_echo_n "checking for tanl declaration... " >&6; }
+if ${glibcxx_cv_func_tanl_use+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif
+#undef tanl
+
+int
+main ()
+{
+
+  void (*f)(void) = (void (*)(void))tanl;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_func_tanl_use=yes
+
+else
+  glibcxx_cv_func_tanl_use=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_func_tanl_use" >&5
+$as_echo "$glibcxx_cv_func_tanl_use" >&6; }
+  if test "x$glibcxx_cv_func_tanl_use" = xyes; then
+    cat >>confdefs.h <<_ACEOF
+#define HAVE_TANL 1
+_ACEOF
+
+  fi
+
+
 
 
     $as_echo "#define HAVE_ICONV 1" >>confdefs.h
