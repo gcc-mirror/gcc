@@ -5558,9 +5558,12 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
-	      if (!convert_plusminus_to_widen (&gsi, stmt, code)
-		  && !match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p))
-		match_uaddc_usubc (&gsi, stmt, code);
+	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
+		{
+		  match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
+		  if (gsi_stmt (gsi) == stmt)
+		    match_uaddc_usubc (&gsi, stmt, code);
+		}
 	      break;
 
 	    case BIT_NOT_EXPR:
