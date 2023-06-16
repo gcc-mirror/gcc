@@ -12839,6 +12839,50 @@ after addition, conditional jump on carry etc.
  
 @enddefbuiltin
 
+@defbuiltin{unsigned int __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{unsigned long int __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{unsigned long long int __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_add_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_add_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they add 3 unsigned values, set what the last argument
+points to to 1 if any of the two additions overflowed (otherwise 0)
+and return the sum of those 3 unsigned values.  Note, while all
+the first 3 arguments can have arbitrary values, better code will be
+emitted if one of them (preferrably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{unsigned long int __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{unsigned long long int __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_sub_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_sub_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they subtract 2 unsigned values from the first unsigned value,
+set what the last argument points to to 1 if any of the two subtractions
+overflowed (otherwise 0) and return the result of the subtractions.
+Note, while all the first 3 arguments can have arbitrary values, better code
+will be emitted if one of them (preferrably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
+@enddefbuiltin
+
 @node x86 specific memory model extensions for transactional memory
 @section x86-Specific Memory Model Extensions for Transactional Memory
 

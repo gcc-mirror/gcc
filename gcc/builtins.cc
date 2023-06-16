@@ -9555,6 +9555,51 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
   return build2_loc (loc, COMPOUND_EXPR, boolean_type_node, store, ovfres);
 }
 
+/* Fold __builtin_{add,sub}c{,l,ll} into pair of internal functions
+   that return both result of arithmetics and overflowed boolean
+   flag in a complex integer result.  */
+
+static tree
+fold_builtin_addc_subc (location_t loc, enum built_in_function fcode,
+			tree *args)
+{
+  enum internal_fn ifn;
+
+  switch (fcode)
+    {
+    case BUILT_IN_ADDC:
+    case BUILT_IN_ADDCL:
+    case BUILT_IN_ADDCLL:
+      ifn = IFN_ADD_OVERFLOW;
+      break;
+    case BUILT_IN_SUBC:
+    case BUILT_IN_SUBCL:
+    case BUILT_IN_SUBCLL:
+      ifn = IFN_SUB_OVERFLOW;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  tree type = TREE_TYPE (args[0]);
+  tree ctype = build_complex_type (type);
+  tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+					    args[0], args[1]);
+  tree tgt = save_expr (call);
+  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
+				       intres, args[2]);
+  tgt = save_expr (call);
+  intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres2 = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  ovfres = build2_loc (loc, BIT_IOR_EXPR, type, ovfres, ovfres2);
+  tree mem_arg3 = build_fold_indirect_ref_loc (loc, args[3]);
+  tree store
+    = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg3, ovfres);
+  return build2_loc (loc, COMPOUND_EXPR, type, store, intres);
+}
+
 /* Fold a call to __builtin_FILE to a constant string.  */
 
 static inline tree
@@ -10842,6 +10887,14 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs)
     case BUILT_IN_FPCLASSIFY:
       ret = fold_builtin_fpclassify (loc, args, nargs);
       break;
+
+    case BUILT_IN_ADDC:
+    case BUILT_IN_ADDCL:
+    case BUILT_IN_ADDCLL:
+    case BUILT_IN_SUBC:
+    case BUILT_IN_SUBCL:
+    case BUILT_IN_SUBCLL:
+      return fold_builtin_addc_subc (loc, fcode, args);
 
     default:
       break;
