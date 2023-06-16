@@ -23,7 +23,7 @@ enum class E7 : int; //ok
 
 enum class E3 e3; // { dg-error "scoped enum must not use" }
 enum struct E3 e4; // { dg-error "scoped enum must not use" }
-enum E5 : int e5; // { dg-error "expected|invalid type" }
+enum E5 : int e5; // { dg-error "declaration of enumeration with fixed underlying type|invalid type" }
 
 enum E6 : int { a, b, c }; // { dg-message "previous definition" }
 enum E6 : int { a, b, c }; // { dg-error "multiple definition" }
