@@ -591,7 +591,9 @@ package body Sem_Warn is
             begin
                Actual := First_Actual (N);
                while Present (Actual) loop
-                  if Is_Access_Subprogram_Type (Etype (Actual)) then
+                  if No (Etype (Actual))
+                    or else Is_Access_Subprogram_Type (Etype (Actual))
+                  then
                      return Abandon;
                   else
                      Next_Actual (Actual);
