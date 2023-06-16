@@ -6,6 +6,7 @@ package fuzz
 
 import (
 	"math"
+	"runtime"
 	"strconv"
 	"testing"
 	"unicode"
@@ -330,6 +331,14 @@ func FuzzFloat64RoundTrip(f *testing.F) {
 	f.Add(math.Float64bits(math.Inf(-1)))
 
 	f.Fuzz(func(t *testing.T, u1 uint64) {
+		// The signaling NaN test fails on 32-bit x86 with gccgo,
+		// which uses the 387 floating-point stack by default.
+		// Converting a signaling NaN in and out of the stack
+		// changes the NaN to a quiet NaN.
+		if runtime.GOARCH == "386" && u1 == 0x7FF0000000000001 {
+			t.Skip("skipping signalling NaN test on 386 with gccgo")
+		}
+
 		x1 := math.Float64frombits(u1)
 
 		b := marshalCorpusFile(x1)
