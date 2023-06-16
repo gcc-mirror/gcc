@@ -26,6 +26,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <errno.h>
 
+#ifndef LIBGFOR_MINIMAL
+static void * (*gfortran_malloc)(size_t) = malloc;
+static void * (*gfortran_calloc)(size_t, size_t) = calloc;
+static void * (*gfortran_realloc)(void *, size_t) = realloc;
+static void (*gfortran_free)(void *) = free;
+
+void
+mem_allocators_init (void *malloc_ptr, void *calloc_ptr,
+		     void *realloc_ptr, void *free_ptr)
+{
+  gfortran_malloc = malloc_ptr;
+  gfortran_calloc = calloc_ptr;
+  gfortran_realloc = realloc_ptr;
+  gfortran_free = free_ptr;
+}
+
+#else
+#define gfortran_malloc malloc
+#define gfortran_calloc calloc
+#define gfortran_realloc realloc
+#define gfortran_free free
+#endif
 
 void *
 xmalloc (size_t n)
@@ -35,7 +57,7 @@ xmalloc (size_t n)
   if (n == 0)
     n = 1;
 
-  p = malloc (n);
+  p = gfortran_malloc (n);
 
   if (p == NULL)
     os_error ("Memory allocation failed");
@@ -57,7 +79,7 @@ xmallocarray (size_t nmemb, size_t size)
       os_error ("Integer overflow in xmallocarray");
     }
 
-  p = malloc (prod);
+  p = gfortran_malloc (prod);
 
   if (!p)
     os_error ("Memory allocation failed in xmallocarray");
@@ -73,7 +95,7 @@ xcalloc (size_t nmemb, size_t size)
   if (!nmemb || !size)
     nmemb = size = 1;
 
-  void *p = calloc (nmemb, size);
+  void *p = gfortran_calloc (nmemb, size);
   if (!p)
     os_error ("Allocating cleared memory failed");
 
@@ -86,7 +108,7 @@ xrealloc (void *ptr, size_t size)
   if (size == 0)
     size = 1;
 
-  void *newp = realloc (ptr, size);
+  void *newp = gfortran_realloc (ptr, size);
   if (!newp)
     os_error ("Memory allocation failure in xrealloc");
 
@@ -96,5 +118,5 @@ xrealloc (void *ptr, size_t size)
 void
 xfree (void *ptr)
 {
-  free (ptr);
+  gfortran_free (ptr);
 }

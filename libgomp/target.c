@@ -3033,6 +3033,70 @@ gomp_requires_to_name (char *buf, size_t size, int requires_mask)
 		   (p == buf ? "" : ", "));
 }
 
+/* Macro to define a callback set with a name, and routine to register
+   a callback function into set.  */
+#define GOMP_DEFINE_CALLBACK_SET(name)				\
+  static unsigned int num_ ## name ## _callbacks = 0;		\
+  static void (*name ## _callbacks[4])(void);			\
+  void GOMP_ ## name ## _callback (void (*fn)(void))		\
+  {								\
+    if (num_ ## name ## _callbacks				\
+	< (sizeof (name ## _callbacks)				\
+	   / sizeof (name ## _callbacks[0])))			\
+      {								\
+	name ## _callbacks[num_ ## name ## _callbacks] = fn;	\
+	num_ ## name ## _callbacks += 1;			\
+      }								\
+  }
+GOMP_DEFINE_CALLBACK_SET(post_offload_register)
+GOMP_DEFINE_CALLBACK_SET(pre_gomp_target_fini)
+#undef GOMP_DEFINE_CALLBACK_SET
+
+/* Routines to insert into libgfortran, under unified_shared_memory.  */
+static void *
+libgfortran_malloc_usm (size_t size)
+{
+  return omp_alloc (size, ompx_unified_shared_mem_alloc);
+}
+
+static void *
+libgfortran_calloc_usm (size_t n, size_t size)
+{
+  return omp_calloc (n, size, ompx_unified_shared_mem_alloc);
+}
+
+static void *
+libgfortran_realloc_usm (void *ptr, size_t size)
+{
+  return omp_realloc (ptr, size, ompx_unified_shared_mem_alloc,
+		      ompx_unified_shared_mem_alloc);
+}
+
+static void
+libgfortran_free_usm (void *ptr)
+{
+  omp_free (ptr, ompx_unified_shared_mem_alloc);
+}
+
+extern void __attribute__((weak))
+_gfortran_mem_allocators_init (void *, void *, void *, void *);
+
+static void
+gomp_libgfortran_omp_allocators_init (int omp_requires_mask)
+{
+  static bool init = false;
+  if (init)
+    return;
+  init = true;
+
+  if ((omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+      && _gfortran_mem_allocators_init != NULL)
+    _gfortran_mem_allocators_init (libgfortran_malloc_usm,
+				   libgfortran_calloc_usm,
+				   libgfortran_realloc_usm,
+				   libgfortran_free_usm);
+}
+
 /* This function should be called from every offload image while loading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
    the target, and DATA.  */
@@ -3042,6 +3106,9 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
 			   int target_type, const void *data)
 {
   int i;
+
+  if (host_table == NULL)
+    goto end;
 
   if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
     gomp_fatal ("Library too old for offload (version %u < %u)",
@@ -3109,6 +3176,14 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
 
   num_offload_images++;
   gomp_mutex_unlock (&register_lock);
+
+  /* Call into libgfortran to initialize OpenMP memory allocators.  */
+  gomp_libgfortran_omp_allocators_init (omp_requires_mask);
+
+ end:
+  for (int i = 0; i < num_post_offload_register_callbacks; i++)
+    post_offload_register_callbacks[i] ();
+  num_post_offload_register_callbacks = 0;
 }
 
 /* Legacy entry point.  */
@@ -3221,7 +3296,7 @@ gomp_unload_device (struct gomp_device_descr *devicep)
   if (devicep->state == GOMP_DEVICE_INITIALIZED)
     {
       unsigned i;
-      
+
       /* Unload from device all images registered at the moment.  */
       for (i = 0; i < num_offload_images; i++)
 	{
@@ -6346,6 +6421,13 @@ gomp_target_init (void)
   devices = devs;
   if (atexit (gomp_target_fini) != 0)
     gomp_fatal ("atexit failed");
+
+  /* Register 'pre_gomp_target_fini' callbacks to run before gomp_target_fini
+     during finalization.  */
+  for (int i = 0; i < num_pre_gomp_target_fini_callbacks; i++)
+    if (atexit (pre_gomp_target_fini_callbacks[i]) != 0)
+      gomp_fatal ("atexit failed");
+  num_pre_gomp_target_fini_callbacks = 0;
 }
 
 #else /* PLUGIN_SUPPORT */

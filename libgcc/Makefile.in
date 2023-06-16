@@ -1048,8 +1048,9 @@ crtbeginT$(objext): $(srcdir)/crtstuff.c
 crtoffloadbegin$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN
 
+# crtoffloadend contains a constructor with calls to libgomp, so build as PIC.
 crtoffloadend$(objext): $(srcdir)/offloadstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) $(PICFLAG) -c $< -DCRT_END
 
 crtoffloadtable$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_TABLE

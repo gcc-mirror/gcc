@@ -61,9 +61,16 @@ get_args (int *argc, char ***argv)
 
 /* Initialize the runtime library.  */
 
-static void __attribute__((constructor))
-init (void)
+static void
+do_init (void)
 {
+#ifndef LIBGFOR_MINIMAL
+  static bool do_init_ran = false;
+  if (do_init_ran)
+    return;
+  do_init_ran = true;
+#endif
+
   /* Must be first */
   init_variables ();
 
@@ -82,5 +89,37 @@ init (void)
 static void __attribute__((destructor))
 cleanup (void)
 {
+#ifndef LIBGFOR_MINIMAL
+  static bool cleanup_ran = false;
+  if (cleanup_ran)
+    return;
+  cleanup_ran = true;
+#endif
+
   close_units ();
+}
+
+#ifndef LIBGFOR_MINIMAL
+extern void __attribute__((weak))
+GOMP_post_offload_register_callback (void (*func)(void));
+
+extern void __attribute__((weak))
+GOMP_pre_gomp_target_fini_callback (void (*func)(void));
+#endif
+
+static void __attribute__((constructor))
+init (void)
+{
+#ifndef LIBGFOR_MINIMAL
+  if (GOMP_post_offload_register_callback)
+    {
+      GOMP_post_offload_register_callback (do_init);
+      GOMP_pre_gomp_target_fini_callback (cleanup);
+      return;
+    }
+#endif
+
+  /* If libgomp is not present, then we can go ahead and call do_init
+     directly.  */
+  do_init ();
 }
