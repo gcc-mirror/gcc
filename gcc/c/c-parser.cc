@@ -3182,7 +3182,19 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  attrs_ok = true;
 	  if (kind == C_ID_ID)
 	    {
-	      error_at (loc, "unknown type name %qE", value);
+	      auto_diagnostic_group d;
+	      name_hint hint = lookup_name_fuzzy (value, FUZZY_LOOKUP_TYPENAME,
+						  loc);
+	      if (const char *suggestion = hint.suggestion ())
+		{
+		  gcc_rich_location richloc (loc);
+		  richloc.add_fixit_replace (suggestion);
+		  error_at (&richloc,
+			    "unknown type name %qE; did you mean %qs?",
+			    value, suggestion);
+		}
+	      else
+		error_at (loc, "unknown type name %qE", value);
 	      t.kind = ctsk_typedef;
 	      t.spec = error_mark_node;
 	    }
