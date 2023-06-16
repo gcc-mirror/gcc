@@ -4340,7 +4340,7 @@ get_first_vsetvl_before_rvv_insns (basic_block cfg_bb)
 bool
 pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
 {
-  rtx_insn *vsetvl_rinsn;
+  rtx_insn *vsetvl_rinsn = NULL;
   vector_insn_info dem = vector_insn_info ();
   const auto &block_info = get_block_info (bb);
   basic_block cfg_bb = bb->cfg_bb ();
