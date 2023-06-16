@@ -6120,8 +6120,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (cmp @0 (bit_xor @1 (convert @2)))))
 
  (simplify
-  (cmp (convert? addr@0) integer_zerop)
-  (if (tree_single_nonzero_warnv_p (@0, NULL))
+  (cmp (nop_convert? @0) integer_zerop)
+  (if (tree_expr_nonzero_p (@0))
    { constant_boolean_node (cmp == NE_EXPR, type); }))
 
  /* (X & C) op (Y & C) into (X ^ Y) & C op 0.  */

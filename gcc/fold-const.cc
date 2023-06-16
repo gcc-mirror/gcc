@@ -12298,13 +12298,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 			      tem, build_int_cst (TREE_TYPE (tem), 0));
 	}
 
-      if (integer_zerop (arg1)
-	  && tree_expr_nonzero_p (arg0))
-        {
-	  tree res = constant_boolean_node (code==NE_EXPR, type);
-	  return omit_one_operand_loc (loc, type, res, arg0);
-	}
-
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && TREE_CODE (arg1) == BIT_XOR_EXPR)
 	{
