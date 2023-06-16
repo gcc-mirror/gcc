@@ -138,7 +138,7 @@
 
 #define MUTEX_DEBUG_ADD(mutex) do {		\
     aio_lock_debug *n;				\
-    n = malloc (sizeof(aio_lock_debug));	\
+    n = xmalloc (sizeof(aio_lock_debug));	\
     n->prev = TAIL_DEBUG_QUEUE;			\
     if (n->prev)				\
       n->prev->next = n;			\
@@ -169,7 +169,7 @@
 	  if (curr == aio_debug_head)					\
 	    aio_debug_head = NULL;					\
 	}								\
-	free (curr);							\
+	xfree (curr);							\
       }									\
     INTERN_UNLOCK (&debug_queue_lock);					\
     INTERN_UNLOCK (mutex);						\

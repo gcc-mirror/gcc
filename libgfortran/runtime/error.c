@@ -285,7 +285,7 @@ show_locus (st_parameter_common *cmp)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
 		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
-	  free (filename);
+	  xfree (filename);
 	}
       else
 	{
@@ -334,7 +334,7 @@ static void __attribute__((constructor))
 constructor_recursion_check (void)
 {
   if (__gthread_active_p ())
-    __gthread_key_create (&recursion_key, &free);
+    __gthread_key_create (&recursion_key, &xfree);
 }
 
 static void __attribute__((destructor))

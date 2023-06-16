@@ -38,6 +38,6 @@ perror_sub (char *string, gfc_charlen_type string_len)
 {
   char *str = fc_strdup (string, string_len);
   perror (str);
-  free (str);
+  xfree (str);
 }
 iexport(perror_sub);

@@ -304,7 +304,7 @@ matmul_i4_avx128_fma3 (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -515,7 +515,7 @@ matmul_i4_avx128_fma3 (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -874,7 +874,7 @@ matmul_i4_avx128_fma4 (gfc_array_i4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_INTEGER_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -1085,7 +1085,7 @@ matmul_i4_avx128_fma4 (gfc_array_i4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)

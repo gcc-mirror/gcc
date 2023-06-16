@@ -113,7 +113,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
 
  cleanup:
 #if defined (HAVE_POSIX_GETPWUID_R) && defined(HAVE_GETEUID)
-  free (buf);
+  xfree (buf);
 #else
   ;
 #endif

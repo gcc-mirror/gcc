@@ -573,8 +573,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
       snprintf (msg, msglen, "Cannot open file '%s': %s", path,
 		gf_strerror (errno, errbuf, sizeof (errbuf)));
       generate_error (&opp->common, LIBERROR_OS, msg);
-      free (msg);
-      free (path);
+      xfree (msg);
+      xfree (path);
       goto cleanup;
     }
 
@@ -671,7 +671,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   test_endfile (u);
 
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
-    free (opp->file);
+    xfree (opp->file);
     
   if (flags->form == FORM_FORMATTED)
     {
@@ -696,7 +696,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   /* Free memory associated with a temporary filename.  */
 
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
-    free (opp->file);
+    xfree (opp->file);
 
  fail:
 
@@ -736,7 +736,7 @@ already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
       if (u->filename && u->flags.status == STATUS_SCRATCH)
 	remove (u->filename);
 #endif
-      free (u->filename);
+      xfree (u->filename);
       u->filename = NULL;
       
       u = new_unit (opp, u, flags);

@@ -43,7 +43,6 @@ xmalloc (size_t n)
   return p;
 }
 
-
 void *
 xmallocarray (size_t nmemb, size_t size)
 {
@@ -66,7 +65,6 @@ xmallocarray (size_t nmemb, size_t size)
   return p;
 }
 
-
 /* calloc wrapper that aborts on error.  */
 
 void *
@@ -82,7 +80,6 @@ xcalloc (size_t nmemb, size_t size)
   return p;
 }
 
-
 void *
 xrealloc (void *ptr, size_t size)
 {
@@ -94,4 +91,10 @@ xrealloc (void *ptr, size_t size)
     os_error ("Memory allocation failure in xrealloc");
 
   return newp;
+}
+
+void
+xfree (void *ptr)
+{
+  free (ptr);
 }

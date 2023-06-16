@@ -92,7 +92,7 @@ st_close (st_parameter_close *clp)
 	    generate_error (&clp->common, LIBERROR_BAD_OPTION,
 			    "Can't KEEP a scratch file on CLOSE");
 #if !HAVE_UNLINK_OPEN_FILE
-	  path = strdup (u->filename);
+	  path = xstrdup (u->filename);
 #endif
 	}
       else
@@ -110,7 +110,7 @@ st_close (st_parameter_close *clp)
 		    generate_error (&clp->common, LIBERROR_OS,
 				    "File cannot be deleted");
 #else
-		  path = strdup (u->filename);
+		  path = xstrdup (u->filename);
 #endif
 		}
 	    }
@@ -124,7 +124,7 @@ st_close (st_parameter_close *clp)
 	  if (remove (path))
 	    generate_error (&clp->common, LIBERROR_OS,
 			    "File cannot be deleted");
-	  free (path);
+	  xfree (path);
 	}
 #endif
     }

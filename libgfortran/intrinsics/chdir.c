@@ -46,7 +46,7 @@ chdir_i4_sub (char *dir, GFC_INTEGER_4 *status, gfc_charlen_type dir_len)
   char *str = fc_strdup (dir, dir_len);
 
   val = chdir (str);
-  free (str);
+  xfree (str);
 
   if (status != NULL)
     *status = (val == 0) ? 0 : errno;
@@ -63,7 +63,7 @@ chdir_i8_sub (char *dir, GFC_INTEGER_8 *status, gfc_charlen_type dir_len)
   char *str = fc_strdup (dir, dir_len);
 
   val = chdir (str);
-  free (str);
+  xfree (str);
 
   if (status != NULL)
     *status = (val == 0) ? 0 : errno;

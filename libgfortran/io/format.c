@@ -65,7 +65,7 @@ free_format_hash_table (gfc_unit *u)
       if (u->format_hash_table[i].hashed_fmt != NULL)
 	{
 	  free_format_data (u->format_hash_table[i].hashed_fmt);
-	  free (u->format_hash_table[i].key);
+	  xfree (u->format_hash_table[i].key);
 	}
       u->format_hash_table[i].key = NULL;
       u->format_hash_table[i].key_len = 0;
@@ -145,7 +145,7 @@ save_parsed_format (st_parameter_dt *dtp)
     free_format_data (u->format_hash_table[hash].hashed_fmt);
   u->format_hash_table[hash].hashed_fmt = NULL;
 
-  free (u->format_hash_table[hash].key);
+  xfree (u->format_hash_table[hash].key);
   u->format_hash_table[hash].key = dtp->format;
 
   u->format_hash_table[hash].key_len = dtp->format_len;
@@ -247,7 +247,7 @@ free_format (st_parameter_dt *dtp)
 {
   if ((dtp->common.flags & IOPARM_DT_HAS_FORMAT) && dtp->format)
     {
-      free (dtp->format);
+      xfree (dtp->format);
       dtp->format = NULL;
     }
 }
@@ -270,17 +270,17 @@ free_format_data (format_data *fmt)
     if (fnp->format == FMT_DT)
 	{
 	  if (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist))
-	    free (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist));
-	  free (fnp->u.udf.vlist);
+	    xfree (GFC_DESCRIPTOR_DATA(fnp->u.udf.vlist));
+	  xfree (fnp->u.udf.vlist);
 	}
 
   for (fa = fmt->array.next; fa; fa = fa_next)
     {
       fa_next = fa->next;
-      free (fa);
+      xfree (fa);
     }
 
-  free (fmt);
+  xfree (fmt);
   fmt = NULL;
 }
 

@@ -485,7 +485,7 @@ raw_close (unix_stream *s)
     }
   else
     retval = 0;
-  free (s);
+  xfree (s);
   return retval;
 }
 
@@ -750,7 +750,7 @@ buf_close (unix_stream *s)
 {
   if (buf_flush (s) != 0)
     return -1;
-  free (s->buffer);
+  xfree (s->buffer);
   return raw_close (s);
 }
 
@@ -1029,7 +1029,7 @@ static int
 mem_close (unix_stream *s)
 {
   if (s)
-    free (s);
+    xfree (s);
   return 0;
 }
 
@@ -1316,7 +1316,7 @@ tempfile (st_parameter_open *opp)
         buffer[0] = 0;
       else
         buffer[ret] = 0;
-      tempdir = strdup (buffer);
+      tempdir = xstrdup (buffer);
       fd = tempfile_open (tempdir, &fname);
     }
 #elif defined(__CYGWIN__)
@@ -1550,7 +1550,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 {
   char *path = fc_strdup (opp->file, opp->file_len);
   int fd = regular_file2 (path, opp, flags);
-  free (path);
+  xfree (path);
   return fd;
 }
 
@@ -1692,7 +1692,7 @@ compare_file_filename (gfc_unit *u, const char *name, gfc_charlen_type len)
     ret = 0;
 #endif
  done:
-  free (path);
+  xfree (path);
   return ret;
 }
 
@@ -1798,14 +1798,14 @@ retry:
 	  LOCK (&unit_lock);
 	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free (u);
+	    xfree (u);
 	  goto retry;
 	}
 
       dec_waiting_unlocked (u);
     }
  done:
-  free (path);
+  xfree (path);
   return u;
 }
 
@@ -1865,7 +1865,7 @@ flush_all_units (void)
 	  LOCK (&unit_lock);
 	  UNLOCK (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free (u);
+	    xfree (u);
 	}
     }
   while (1);
@@ -1914,7 +1914,7 @@ file_exists (const char *file, gfc_charlen_type file_len)
 {
   char *path = fc_strdup (file, file_len);
   int res = !(access (path, F_OK));
-  free (path);
+  xfree (path);
   return res;
 }
 
@@ -1928,7 +1928,7 @@ file_size (const char *file, gfc_charlen_type file_len)
   struct stat statbuf;
   int err;
   TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
-  free (path);
+  xfree (path);
   if (err == -1)
     return -1;
   return (GFC_IO_INT) statbuf.st_size;
@@ -1951,7 +1951,7 @@ inquire_sequential (const char *string, gfc_charlen_type len)
   char *path = fc_strdup (string, len);
   int err;
   TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
-  free (path);
+  xfree (path);
   if (err == -1)
     return unknown;
 
@@ -1980,7 +1980,7 @@ inquire_direct (const char *string, gfc_charlen_type len)
   char *path = fc_strdup (string, len);
   int err;
   TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
-  free (path);
+  xfree (path);
   if (err == -1)
     return unknown;
 
@@ -2009,7 +2009,7 @@ inquire_formatted (const char *string, gfc_charlen_type len)
   char *path = fc_strdup (string, len);
   int err;
   TEMP_FAILURE_RETRY (err = stat (path, &statbuf));
-  free (path);
+  xfree (path);
   if (err == -1)
     return unknown;
 
@@ -2045,7 +2045,7 @@ inquire_access (const char *string, gfc_charlen_type len, int mode)
     return no;
   char *path = fc_strdup (string, len);
   int res = access (path, mode);
-  free (path);
+  xfree (path);
   if (res == -1)
     return no;
 

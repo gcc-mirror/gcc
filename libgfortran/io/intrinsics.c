@@ -388,7 +388,7 @@ ttynam (char **name, gfc_charlen_type *name_len, int unit)
 	  unlock_unit (u);
 	  return;
 	}
-      free (*name);
+      xfree (*name);
       unlock_unit (u);
     }
 

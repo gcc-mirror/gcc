@@ -487,7 +487,7 @@ chmod_func (char *name, char *mode, gfc_charlen_type name_len,
 {
   char *cname = fc_strdup (name, name_len);
   int ret = chmod_internal (cname, mode, mode_len);
-  free (cname);
+  xfree (cname);
   return ret;
 }
 

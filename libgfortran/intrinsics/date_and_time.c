@@ -289,7 +289,7 @@ secnds (GFC_REAL_4 *x)
 
   date_and_time (NULL, NULL, NULL, avalues, 0, 0, 0);
 
-  free (avalues);
+  xfree (avalues);
 
   temp1 = 3600.0 * (GFC_REAL_4)values[4] +
 	    60.0 * (GFC_REAL_4)values[5] +

@@ -255,7 +255,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof('rtype_name`));
+      t1 = xmalloc (t1_dim * sizeof('rtype_name`));
 
       /* Start turning the crank. */
       i1 = n;
@@ -466,7 +466,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)

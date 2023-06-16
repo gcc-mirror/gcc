@@ -61,7 +61,7 @@ getcwd_i4_sub (char *cwd, GFC_INTEGER_4 *status, gfc_charlen_type cwd_len)
 	}
       else
 	err = errno;
-      free (buf);
+      xfree (buf);
     }
   else
     err = errno;

@@ -136,7 +136,7 @@ free_saved (st_parameter_dt *dtp)
   if (dtp->u.p.saved_string == NULL)
     return;
 
-  free (dtp->u.p.saved_string);
+  xfree (dtp->u.p.saved_string);
 
   dtp->u.p.saved_string = NULL;
   dtp->u.p.saved_used = 0;
@@ -154,7 +154,7 @@ free_line (st_parameter_dt *dtp)
   if (dtp->u.p.line_buffer == NULL)
     return;
 
-  free (dtp->u.p.line_buffer);
+  xfree (dtp->u.p.line_buffer);
   dtp->u.p.line_buffer = NULL;
 }
 
@@ -2727,7 +2727,7 @@ nml_touch_nodes (namelist_info *nl)
       else
 	break;
     }
-  free (ext_name);
+  xfree (ext_name);
   return;
 }
 
@@ -3057,18 +3057,18 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 				  pprev_nl, nml_err_msg, nml_err_msg_size,
 				  clow, chigh))
 		  {
-		    free (obj_name);
+		    xfree (obj_name);
 		    return false;
 		  }
 
 		if (dtp->u.p.input_complete)
 		  {
-		    free (obj_name);
+		    xfree (obj_name);
 		    return true;
 		  }
 	      }
 
-	    free (obj_name);
+	    xfree (obj_name);
 	    goto incr_idx;
 
           default:
@@ -3324,7 +3324,7 @@ get_name:
       nl = find_nml_node (dtp, ext_name);
 
       if (ext_size > EXT_STACK_SZ)
-	free (ext_name);
+	xfree (ext_name);
     }
   else
     nl = find_nml_node (dtp, dtp->u.p.saved_string);

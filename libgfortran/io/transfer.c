@@ -1733,7 +1733,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  dtp->u.p.current_unit->child_dtio--;
 
 	  if (f->u.udf.string_len != 0)
-	    free (iotype);
+	    xfree (iotype);
 	  /* Note: vlist is freed in free_format_data.  */
 	  break;
 
@@ -2217,7 +2217,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  dtp->u.p.current_unit->child_dtio--;
 
 	  if (f->u.udf.string_len != 0)
-	    free (iotype);
+	    xfree (iotype);
 	  /* Note: vlist is freed in free_format_data.  */
 	  break;
 
@@ -4320,8 +4320,8 @@ finalize_transfer (st_parameter_dt *dtp)
     {
       if (cf & IOPARM_DT_HAS_FORMAT)
         {
-	  free (dtp->u.p.fmt);
-	  free (dtp->format);
+	  xfree (dtp->u.p.fmt);
+	  xfree (dtp->format);
 	}
       return;
     }
@@ -4520,10 +4520,10 @@ st_read_done_worker (st_parameter_dt *dtp, bool unlock)
 	{
 	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
 	    {
-	      free (dtp->u.p.current_unit->filename);
+	      xfree (dtp->u.p.current_unit->filename);
 	      dtp->u.p.current_unit->filename = NULL;
 	      if (dtp->u.p.current_unit->ls)
-		free (dtp->u.p.current_unit->ls);
+		xfree (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
 	  free_newunit = true;
@@ -4617,10 +4617,10 @@ st_write_done_worker (st_parameter_dt *dtp, bool unlock)
 	{
 	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
 	    {
-	      free (dtp->u.p.current_unit->filename);
+	      xfree (dtp->u.p.current_unit->filename);
 	      dtp->u.p.current_unit->filename = NULL;
 	      if (dtp->u.p.current_unit->ls)
-		free (dtp->u.p.current_unit->ls);
+		xfree (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
 	  free_newunit = true;

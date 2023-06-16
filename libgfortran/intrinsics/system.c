@@ -39,7 +39,7 @@ system_sub (const char *fcmd, GFC_INTEGER_4 *status, gfc_charlen_type cmd_len)
   flush_all_units();
 
   stat = system (cmd);
-  free (cmd);
+  xfree (cmd);
   if (status)
     *status = stat;
 }

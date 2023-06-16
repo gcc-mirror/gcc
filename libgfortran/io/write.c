@@ -1636,9 +1636,9 @@ write_float_0 (st_parameter_dt *dtp, const fnode *f, const char *source, int kin
   write_float_string (dtp, result, flt_str_len);
 
   if (buf_size > BUF_STACK_SZ)
-    free (buffer);
+    xfree (buffer);
   if (res_len > BUF_STACK_SZ)
-    free (result);
+    xfree (result);
 }
 
 void
@@ -1763,9 +1763,9 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
 
   dtp->u.p.scale_factor = orig_scale;
   if (buf_size > BUF_STACK_SZ)
-    free (buffer);
+    xfree (buffer);
   if (res_len > BUF_STACK_SZ)
-    free (result);
+    xfree (result);
 }
 
 /* Similar to list formatted REAL output, for kPG0 where k > 0 we
@@ -1818,9 +1818,9 @@ write_real_w0 (st_parameter_dt *dtp, const char *source, int kind,
 
   dtp->u.p.g0_no_blanks = 0;
   if (buf_size > BUF_STACK_SZ)
-    free (buffer);
+    xfree (buffer);
   if (res_len > BUF_STACK_SZ)
-    free (result);
+    xfree (result);
 }
 
 
@@ -1879,11 +1879,11 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
   dtp->u.p.scale_factor = orig_scale;
   dtp->u.p.g0_no_blanks = 0;
   if (buf_size > BUF_STACK_SZ)
-    free (buffer);
+    xfree (buffer);
   if (res_len1 > BUF_STACK_SZ)
-    free (result1);
+    xfree (result1);
   if (res_len2 > BUF_STACK_SZ)
-    free (result2);
+    xfree (result2);
 }
 
 
@@ -2384,8 +2384,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 					  obj, ext_name);
 		}
 
-	      free (obj_name);
-	      free (ext_name);
+	      xfree (obj_name);
+	      xfree (ext_name);
 	      goto obj_loop;
 
             default:

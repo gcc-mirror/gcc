@@ -339,7 +339,7 @@ matmul_c4_avx (gfc_array_c4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_COMPLEX_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -550,7 +550,7 @@ matmul_c4_avx (gfc_array_c4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -908,7 +908,7 @@ matmul_c4_avx2 (gfc_array_c4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_COMPLEX_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -1119,7 +1119,7 @@ matmul_c4_avx2 (gfc_array_c4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -1477,7 +1477,7 @@ matmul_c4_avx512f (gfc_array_c4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_COMPLEX_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -1688,7 +1688,7 @@ matmul_c4_avx512f (gfc_array_c4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -2060,7 +2060,7 @@ matmul_c4_vanilla (gfc_array_c4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_COMPLEX_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -2271,7 +2271,7 @@ matmul_c4_vanilla (gfc_array_c4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
@@ -2702,7 +2702,7 @@ matmul_c4 (gfc_array_c4 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_COMPLEX_4));
+      t1 = xmalloc (t1_dim * sizeof(GFC_COMPLEX_4));
 
       /* Start turning the crank. */
       i1 = n;
@@ -2913,7 +2913,7 @@ matmul_c4 (gfc_array_c4 * const restrict retarray,
 		}
 	    }
 	}
-      free(t1);
+      xfree (t1);
       return;
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)

@@ -161,7 +161,7 @@ show_locus (st_parameter_common *cmp)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
 		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
-	  free (filename);
+	  xfree (filename);
 	}
       else
 	{

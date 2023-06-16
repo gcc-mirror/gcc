@@ -50,7 +50,7 @@ unlink_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
 
   stat = unlink (str);
 
-  free (str);
+  xfree (str);
 
   if (status != NULL)
     *status = (stat == 0) ? stat : errno;

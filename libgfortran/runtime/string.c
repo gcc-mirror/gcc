@@ -106,20 +106,29 @@ strnlen (const char *s, size_t maxlen)
 #endif
 
 
-#ifndef HAVE_STRNDUP
 static char *
-strndup (const char *s, size_t n)
+fc_strndup (const char *s, size_t n)
 {
   size_t len = strnlen (s, n);
-  char *p = malloc (len + 1);
+  char *p = xmalloc (len + 1);
   if (!p)
     return NULL;
   memcpy (p, s, len);
   p[len] = '\0';
   return p;
 }
-#endif
 
+char *
+xstrdup (const char *src)
+{
+  size_t len = strlen (src) + 1;
+  void *new = xmalloc (len);
+
+  if (new == NULL)
+    return NULL;
+
+  return (char *) memcpy (new, src, len);
+}
 
 /* Duplicate a non-null-terminated Fortran string to a malloced
    null-terminated C string.  */
@@ -128,7 +137,7 @@ char *
 fc_strdup (const char *src, gfc_charlen_type src_len)
 {
   gfc_charlen_type n = fstrlen (src, src_len);
-  char *p = strndup (src, n);
+  char *p = fc_strndup (src, n);
   if (!p)
     os_error ("Memory allocation failed in fc_strdup");
   return p;
@@ -142,7 +151,7 @@ fc_strdup (const char *src, gfc_charlen_type src_len)
 char *
 fc_strdup_notrim (const char *src, gfc_charlen_type src_len)
 {
-  char *p = strndup (src, src_len);
+  char *p = fc_strndup (src, src_len);
   if (!p)
     os_error ("Memory allocation failed in fc_strdup");
   return p;

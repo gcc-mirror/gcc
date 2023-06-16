@@ -254,7 +254,7 @@ static void
 destroy_unit_mutex (gfc_unit *u)
 {
   __gthread_mutex_destroy (&u->lock);
-  free (u);
+  xfree (u);
 }
 
 
@@ -638,7 +638,7 @@ init_units (void)
       u->recl = default_recl;
       u->endfile = NO_ENDFILE;
 
-      u->filename = strdup (stdin_name);
+      u->filename = xstrdup (stdin_name);
 
       fbuf_init (u, 0);
 
@@ -669,7 +669,7 @@ init_units (void)
       u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
-      u->filename = strdup (stdout_name);
+      u->filename = xstrdup (stdout_name);
 
       fbuf_init (u, 0);
 
@@ -699,7 +699,7 @@ init_units (void)
       u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
-      u->filename = strdup (stderr_name);
+      u->filename = xstrdup (stderr_name);
 
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
                               any kind of exotic formatting to stderr.  */
@@ -739,7 +739,7 @@ close_unit_1 (gfc_unit *u, int locked)
 
   delete_unit (u);
 
-  free (u->filename);
+  xfree (u->filename);
   u->filename = NULL;
 
   free_format_hash_table (u);
@@ -800,7 +800,7 @@ close_units (void)
     close_unit_1 (unit_root, 1);
   UNLOCK (&unit_lock);
 
-  free (newunits);
+  xfree (newunits);
 
 #ifdef HAVE_POSIX_2008_LOCALE
   freelocale (c_locale);
@@ -867,7 +867,7 @@ filename_from_unit (int n)
 
   /* Get the filename.  */
   if (u != NULL && u->filename != NULL)
-    return strdup (u->filename);
+    return xstrdup (u->filename);
   else
     return (char *) NULL;
 }

@@ -55,7 +55,7 @@ PREFIX(getenv) (char * name, char * value, gfc_charlen_type name_len,
 
   res = getenv(name_nt);
 
-  free (name_nt);
+  xfree (name_nt);
 
   /* If res is NULL, it means that the environment variable didn't 
      exist, so just return.  */
@@ -121,7 +121,7 @@ get_environment_variable_i4 (char *name, char *value, GFC_INTEGER_4 *length,
   
   res = getenv(name_nt);
 
-  free (name_nt);
+  xfree (name_nt);
 
   if (res == NULL)
     stat = GFC_NAME_DOES_NOT_EXIST;

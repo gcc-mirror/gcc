@@ -107,7 +107,7 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
      by setting the length to CFI_MAX_RANK. This should not be necessary
      but valgrind complains accesses after the allocated block.  */
   if (*d_ptr == NULL)
-    d = calloc (1, (sizeof (CFI_cdesc_t)
+    d = xcalloc (1, (sizeof (CFI_cdesc_t)
 		    + (CFI_type_t)(CFI_MAX_RANK * sizeof (CFI_dim_t))));
   else
     d = *d_ptr;
@@ -271,7 +271,7 @@ CFI_allocate (CFI_cdesc_t *dv, const CFI_index_t lower_bounds[],
         }
     }
 
-  dv->base_addr = calloc (arr_len, dv->elem_len);
+  dv->base_addr = xcalloc (arr_len, dv->elem_len);
   if (dv->base_addr == NULL)
     {
       fprintf (stderr, "CFI_allocate: Failure in memory allocation.\n");
@@ -311,7 +311,7 @@ CFI_deallocate (CFI_cdesc_t *dv)
     }
 
   /* Free and nullify memory. */
-  free (dv->base_addr);
+  xfree (dv->base_addr);
   dv->base_addr = NULL;
 
   return CFI_SUCCESS;

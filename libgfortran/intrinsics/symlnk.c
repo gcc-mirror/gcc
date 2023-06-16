@@ -43,8 +43,8 @@ symlnk_internal (char *path1, char *path2, gfc_charlen_type path1_len,
   char *str1 = fc_strdup (path1, path1_len);
   char *str2 = fc_strdup (path2, path2_len);
   int val = symlink (str1, str2);
-  free (str1);
-  free (str2);
+  xfree (str1);
+  xfree (str2);
   return ((val == 0) ? 0 : errno);
 }
 

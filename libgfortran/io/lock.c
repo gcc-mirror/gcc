@@ -52,13 +52,13 @@ free_ionml (st_parameter_dt *dtp)
 	{
 	  t2 = t1;
 	  t1 = t1->next;
-	  free (t2->var_name);
+	  xfree (t2->var_name);
 	  if (t2->var_rank)
 	    {
-	     free (t2->dim);
-	     free (t2->ls);
+	     xfree (t2->dim);
+	     xfree (t2->ls);
 	    }
-	  free (t2);
+	  xfree (t2);
 	}
     }
   dtp->u.p.ionml = NULL;

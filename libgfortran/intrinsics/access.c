@@ -78,7 +78,7 @@ access_func (char *name, char *mode, gfc_charlen_type name_len,
   /* And make the call to access().  */
   int res = (access (path, m) == 0 ? 0 : errno);
 
-  free (path);
+  xfree (path);
   return res;
 }
 #endif

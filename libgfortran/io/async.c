@@ -72,7 +72,7 @@ update_pdt (st_parameter_dt **old, st_parameter_dt *new) {
   temp = *old;
   *old = new;
   if (temp)
-    free (temp);
+    xfree (temp);
 }
 
 /* Destroy an adv_cond structure.  */
@@ -107,7 +107,7 @@ async_io (void *arg)
       while (ctq)
 	{
 	  if (prev)
-	    free (prev);
+	    xfree (prev);
 	  prev = ctq;
 	  if (!au->error.has_error)
 	    {
@@ -150,7 +150,7 @@ async_io (void *arg)
 		  transfer_array_inner (au->pdt, ctq->arg.array.desc,
 					ctq->arg.array.kind,
 					ctq->arg.array.charlen);
-		  free (ctq->arg.array.desc);
+		  xfree (ctq->arg.array.desc);
 		  break;
 
 		case AIO_CLOSE:
@@ -195,7 +195,7 @@ async_io (void *arg)
   au->head = NULL;
   au->empty = 1;
   SIGNAL (&au->emptysignal);
-  free (ctq);
+  xfree (ctq);
   UNLOCK (&au->lock);
   return NULL;
 }
@@ -212,7 +212,7 @@ free_async_unit (async_unit *au)
   destroy_adv_cond (&au->emptysignal);
   destroy_adv_cond (&au->id.done);
   T_ERROR (__gthread_mutex_destroy, &au->lock);
-  free (au);
+  xfree (au);
 }
 
 /* Initialize an adv_cond structure.  */
@@ -264,7 +264,7 @@ init_async_unit (gfc_unit *u)
 void
 enqueue_transfer (async_unit *au, transfer_args *arg, enum aio_do type)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = xcalloc (sizeof (transfer_queue), 1);
   tq->arg = *arg;
   tq->type = type;
   tq->has_id = 0;
@@ -286,7 +286,7 @@ int
 enqueue_done_id (async_unit *au, enum aio_do type)
 {
   int ret;
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = xcalloc (sizeof (transfer_queue), 1);
 
   tq->type = type;
   tq->has_id = 1;
@@ -310,7 +310,7 @@ enqueue_done_id (async_unit *au, enum aio_do type)
 void
 enqueue_done (async_unit *au, enum aio_do type)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = xcalloc (sizeof (transfer_queue), 1);
   tq->type = type;
   tq->has_id = 0;
   LOCK (&au->lock);
@@ -330,7 +330,7 @@ enqueue_done (async_unit *au, enum aio_do type)
 void
 enqueue_close (async_unit *au)
 {
-  transfer_queue *tq = calloc (sizeof (transfer_queue), 1);
+  transfer_queue *tq = xcalloc (sizeof (transfer_queue), 1);
 
   tq->type = AIO_CLOSE;
   LOCK (&au->lock);

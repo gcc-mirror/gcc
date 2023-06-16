@@ -50,8 +50,8 @@ link_internal (char *path1, char *path2, gfc_charlen_type path1_len,
 
   val = link (str1, str2);
 
-  free (str1);
-  free (str2);
+  xfree (str1);
+  xfree (str2);
 
   return ((val == 0) ? 0 : errno);
 }

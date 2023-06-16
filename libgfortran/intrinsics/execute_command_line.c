@@ -167,7 +167,7 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 	}
     }
 
-  free (cmd);
+  xfree (cmd);
 
   /* Now copy back to the Fortran string if needed.  */
   if (cmdstat && *cmdstat > EXEC_NOERROR && cmdmsg)

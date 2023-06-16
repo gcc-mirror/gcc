@@ -76,7 +76,7 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
 #endif
     val = stat(str, &sb);
 
-  free (str);
+  xfree (str);
 
   if (val == 0)
     {
@@ -193,7 +193,7 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
 #endif
     val = stat(str, &sb);
 
-  free (str);
+  xfree (str);
 
   if (val == 0)
     {

@@ -1039,7 +1039,7 @@ constructor_random (void)
   __GTHREAD_MUTEX_INIT_FUNCTION (&random_lock);
 #endif
   if (__gthread_active_p ())
-    __gthread_key_create (&rand_state_key, &free);
+    __gthread_key_create (&rand_state_key, &xfree);
 }
 #endif
 

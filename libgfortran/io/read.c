@@ -1050,7 +1050,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 
       convert_infnan (dtp, dest, buffer, length);
       if (buf_size > READF_TMP)
-	free (buffer);
+	xfree (buffer);
       return;
     }
 
@@ -1244,7 +1244,7 @@ done:
   /* Do the actual conversion.  */
   convert_real (dtp, dest, buffer, length);
   if (buf_size > READF_TMP)
-    free (buffer);
+    xfree (buffer);
   return;
 
   /* The value read is zero.  */
@@ -1284,7 +1284,7 @@ zero:
 
 bad_float:
   if (buf_size > READF_TMP)
-    free (buffer);
+    xfree (buffer);
   generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		  "Bad value during floating point read");
   next_record (dtp, 1);

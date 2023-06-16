@@ -875,6 +875,9 @@ internal_proto(xcalloc);
 extern void *xrealloc (void *, size_t);
 internal_proto(xrealloc);
 
+extern void xfree (void *);
+internal_proto(xfree);
+
 /* environ.c */
 
 extern void init_variables (void);
@@ -922,6 +925,9 @@ internal_proto(fc_strdup);
 
 extern char *fc_strdup_notrim(const char *, gfc_charlen_type);
 internal_proto(fc_strdup_notrim);
+
+extern char *xstrdup(const char *);
+internal_proto(xstrdup);
 
 extern const char *gfc_itoa(GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_itoa);
