@@ -1,3 +1,13 @@
+2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/lib2-gcn.h (QItype, UQItype, HItype, UHItype): Delete.
+	(__divhi3, __modhi3, __udivhi3, __umodhi3): Delete.
+	* config/gcn/t-amdgcn: Don't build lib2-divmod-hi.c.
+	* config/gcn/lib2-divmod-hi.c: Removed.
+
 2023-01-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/crt0.c [!HAVE_STDLIB_H]: Don't '#include <stdlib.h>'.

@@ -27,10 +27,6 @@
 
 /* Types.  */
 
-typedef char QItype __attribute__ ((mode (QI)));
-typedef unsigned char UQItype __attribute__ ((mode (QI)));
-typedef short HItype __attribute__ ((mode (HI)));
-typedef unsigned short UHItype __attribute__ ((mode (HI)));
 typedef int SItype __attribute__ ((mode (SI)));
 typedef unsigned int USItype __attribute__ ((mode (SI)));
 typedef int DItype __attribute__ ((mode (DI)));
@@ -48,10 +44,6 @@ extern SItype __divsi3 (SItype, SItype);
 extern SItype __modsi3 (SItype, SItype);
 extern USItype __udivsi3 (USItype, USItype);
 extern USItype __umodsi3 (USItype, USItype);
-extern HItype __divhi3 (HItype, HItype);
-extern HItype __modhi3 (HItype, HItype);
-extern UHItype __udivhi3 (UHItype, UHItype);
-extern UHItype __umodhi3 (UHItype, UHItype);
 extern SItype __mulsi3 (SItype, SItype);
 
 #endif /* LIB2_GCN_H */
