@@ -283,6 +283,20 @@ public:
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<NodeId> &get_exported_macros ();
 
+  void insert_derive_proc_macros (CrateNum num,
+				  std::vector<ProcMacro::CustomDerive> macros);
+  void insert_bang_proc_macros (CrateNum num,
+				std::vector<ProcMacro::Bang> macros);
+  void insert_attribute_proc_macros (CrateNum num,
+				     std::vector<ProcMacro::Attribute> macros);
+
+  bool lookup_derive_proc_macros (CrateNum num,
+				  std::vector<ProcMacro::CustomDerive> &macros);
+  bool lookup_bang_proc_macros (CrateNum num,
+				std::vector<ProcMacro::Bang> &macros);
+  bool lookup_attribute_proc_macros (CrateNum num,
+				     std::vector<ProcMacro::Attribute> &macros);
+
   void insert_derive_proc_macro (std::pair<std::string, std::string> hierachy,
 				 ProcMacro::CustomDerive macro);
   void insert_bang_proc_macro (std::pair<std::string, std::string> hierachy,
@@ -376,6 +390,14 @@ private:
   std::vector<NodeId> exportedMacros;
 
   // Procedural macros
+  std::map<CrateNum, std::vector<ProcMacro::CustomDerive>>
+    procmacrosDeriveMappings;
+
+  std::map<CrateNum, std::vector<ProcMacro::Bang>> procmacrosBangMappings;
+
+  std::map<CrateNum, std::vector<ProcMacro::Attribute>>
+    procmacrosAttributeMappings;
+
   std::map<std::pair<std::string, std::string>, ProcMacro::CustomDerive>
     procmacroDeriveMappings;
 

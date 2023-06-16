@@ -40,6 +40,8 @@ public:
 
   const std::string &get_metadata () const;
 
+  std::vector<ProcMacro::Procmacro> &get_proc_macros () { return proc_macros; }
+
   static bool string_to_int (location_t locus, const std::string &s,
 			     bool is_neg_ok, int *ret);
 

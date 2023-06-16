@@ -943,6 +943,70 @@ Mappings::get_exported_macros ()
 }
 
 void
+Mappings::insert_derive_proc_macros (
+  CrateNum num, std::vector<ProcMacro::CustomDerive> macros)
+{
+  auto it = procmacrosDeriveMappings.find (num);
+  rust_assert (it == procmacrosDeriveMappings.end ());
+
+  procmacrosDeriveMappings[num] = macros;
+}
+
+void
+Mappings::insert_bang_proc_macros (CrateNum num,
+				   std::vector<ProcMacro::Bang> macros)
+{
+  auto it = procmacrosBangMappings.find (num);
+  rust_assert (it == procmacrosBangMappings.end ());
+
+  procmacrosBangMappings[num] = macros;
+}
+
+void
+Mappings::insert_attribute_proc_macros (
+  CrateNum num, std::vector<ProcMacro::Attribute> macros)
+{
+  auto it = procmacrosAttributeMappings.find (num);
+  rust_assert (it == procmacrosAttributeMappings.end ());
+
+  procmacrosAttributeMappings[num] = macros;
+}
+
+bool
+Mappings::lookup_derive_proc_macros (
+  CrateNum num, std::vector<ProcMacro::CustomDerive> &macros)
+{
+  auto it = procmacrosDeriveMappings.find (num);
+  if (it == procmacrosDeriveMappings.end ())
+    return false;
+
+  macros = it->second;
+  return true;
+}
+bool
+Mappings::lookup_bang_proc_macros (CrateNum num,
+				   std::vector<ProcMacro::Bang> &macros)
+{
+  auto it = procmacrosBangMappings.find (num);
+  if (it == procmacrosBangMappings.end ())
+    return false;
+
+  macros = it->second;
+  return true;
+}
+bool
+Mappings::lookup_attribute_proc_macros (
+  CrateNum num, std::vector<ProcMacro::Attribute> &macros)
+{
+  auto it = procmacrosAttributeMappings.find (num);
+  if (it == procmacrosAttributeMappings.end ())
+    return false;
+
+  macros = it->second;
+  return true;
+}
+
+void
 Mappings::insert_derive_proc_macro (
   std::pair<std::string, std::string> hierarchy, ProcMacro::CustomDerive macro)
 {
