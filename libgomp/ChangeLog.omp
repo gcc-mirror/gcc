@@ -1,3 +1,13 @@
+2023-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (resolve_device): Call gomp_get_num_devices early to ensure
+	gomp_init_targets_once was called before using default-device-var.
+	* testsuite/libgomp.c/target-55.c: New test.
+	* testsuite/libgomp.c/target-55a.c: New test.
+
 2023-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

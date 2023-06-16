@@ -206,6 +206,10 @@ gomp_get_num_devices (void)
 static struct gomp_device_descr *
 resolve_device (int device_id, bool remapped)
 {
+  /* Get number of devices and thus ensure that 'gomp_init_targets_once' was
+     called, which must be done before using default_device_var.  */
+  int num_devices = gomp_get_num_devices ();
+
   if (remapped && device_id == GOMP_DEVICE_ICV)
     {
       struct gomp_task_icv *icv = gomp_icv (false);
@@ -219,7 +223,7 @@ resolve_device (int device_id, bool remapped)
 				 : omp_initial_device))
 	return NULL;
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && gomp_get_num_devices () == 0)
+	  && num_devices == 0)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but only the host device is available");
       else if (device_id == omp_invalid_device)
@@ -230,10 +234,10 @@ resolve_device (int device_id, bool remapped)
 
       return NULL;
     }
-  else if (device_id >= gomp_get_num_devices ())
+  else if (device_id >= num_devices)
     {
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && device_id != num_devices_openmp)
+	  && device_id != num_devices)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but device not found");
 
