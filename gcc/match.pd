@@ -6410,6 +6410,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (if (cmp == GT_EXPR)
 	  (lt (view_convert:st @0) { build_zero_cst (st); })))))))))))
 
+/* unsigned < (typeof unsigned)(unsigned != 0) is always false.  */
+(simplify
+ (lt:c @0 (convert (ne @0 integer_zerop)))
+ (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+  { constant_boolean_node (false, type); }))
+
+/* x != (typeof x)(x == 0) is always true.  */
+(simplify
+ (ne:c @0 (convert (eq @0 integer_zerop)))
+ { constant_boolean_node (true, type); })
+
 (for cmp (unordered ordered unlt unle ungt unge uneq ltgt)
  /* If the second operand is NaN, the result is constant.  */
  (simplify
