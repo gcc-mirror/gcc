@@ -929,6 +929,67 @@
   (VNx2x64QI "TARGET_MIN_VLEN >= 128")
 ])
 
+(define_mode_iterator VQI [
+  (VNx1QI "TARGET_MIN_VLEN < 128")
+  VNx2QI
+  VNx4QI
+  VNx8QI
+  VNx16QI
+  VNx32QI
+  (VNx64QI "TARGET_MIN_VLEN > 32")
+  (VNx128QI "TARGET_MIN_VLEN >= 128")
+])
+
+(define_mode_iterator VHI [
+  (VNx1HI "TARGET_MIN_VLEN < 128")
+  VNx2HI
+  VNx4HI
+  VNx8HI
+  VNx16HI
+  (VNx32HI "TARGET_MIN_VLEN > 32")
+  (VNx64HI "TARGET_MIN_VLEN >= 128")
+])
+
+(define_mode_iterator VSI [
+  (VNx1SI "TARGET_MIN_VLEN < 128")
+  VNx2SI
+  VNx4SI
+  VNx8SI
+  (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx32SI "TARGET_MIN_VLEN >= 128")
+])
+
+(define_mode_iterator VDI [
+  (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128")
+  (VNx2DI "TARGET_VECTOR_ELEN_64")
+  (VNx4DI "TARGET_VECTOR_ELEN_64")
+  (VNx8DI "TARGET_VECTOR_ELEN_64")
+  (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
+])
+
+(define_mode_iterator VQI_LMUL1 [
+  (VNx16QI "TARGET_MIN_VLEN >= 128")
+  (VNx8QI "TARGET_MIN_VLEN == 64")
+  (VNx4QI "TARGET_MIN_VLEN == 32")
+])
+
+(define_mode_iterator VHI_LMUL1 [
+  (VNx8HI "TARGET_MIN_VLEN >= 128")
+  (VNx4HI "TARGET_MIN_VLEN == 64")
+  (VNx2HI "TARGET_MIN_VLEN == 32")
+])
+
+(define_mode_iterator VSI_LMUL1 [
+  (VNx4SI "TARGET_MIN_VLEN >= 128")
+  (VNx2SI "TARGET_MIN_VLEN == 64")
+  (VNx1SI "TARGET_MIN_VLEN == 32")
+])
+
+(define_mode_iterator VDI_LMUL1 [
+  (VNx2DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
+  (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN == 64")
+])
+
 (define_mode_attr VLMULX2 [
   (VNx1QI "VNx2QI") (VNx2QI "VNx4QI") (VNx4QI "VNx8QI") (VNx8QI "VNx16QI") (VNx16QI "VNx32QI") (VNx32QI "VNx64QI") (VNx64QI "VNx128QI")
   (VNx1HI "VNx2HI") (VNx2HI "VNx4HI") (VNx4HI "VNx8HI") (VNx8HI "VNx16HI") (VNx16HI "VNx32HI") (VNx32HI "VNx64HI")

@@ -1396,8 +1396,17 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (
-      code_for_pred_reduc (CODE, e.vector_mode (), e.vector_mode ()));
+    machine_mode mode = e.vector_mode ();
+    machine_mode ret_mode = e.ret_mode ();
+
+    /* TODO: we will use ret_mode after all types of PR110265 are addressed.  */
+    if ((GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT)
+       || GET_MODE_INNER (mode) != GET_MODE_INNER (ret_mode))
+      return e.use_exact_insn (
+	code_for_pred_reduc (CODE, e.vector_mode (), e.vector_mode ()));
+    else
+      return e.use_exact_insn (
+	code_for_pred_reduc (CODE, e.vector_mode (), e.ret_mode ()));
   }
 };
 
