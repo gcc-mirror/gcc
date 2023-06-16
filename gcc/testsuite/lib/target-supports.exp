@@ -12358,7 +12358,7 @@ proc check_effective_target_o_flag_in_section { } {
 # return 1 if LRA is supported.
 
 proc check_effective_target_lra { } {
-    if { [istarget hppa*-*-*] || [istarget cris-*-*] || [istarget avr-*-*] } {
+    if { [istarget hppa*-*-*] || [istarget avr-*-*] } {
 	return 0
     }
     return 1
