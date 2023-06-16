@@ -1,3 +1,85 @@
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/aarch64/shrink_wrap_1.c (dg-options): Add
+	-fno-stack-protector.
+	* gcc.target/aarch64/stack-check-cfa-1.c (dg-options): Add
+	-fno-stack-protector.
+	* gcc.target/aarch64/stack-check-cfa-2.c (dg-options): Add
+	-fno-stack-protector.
+	* gcc.target/aarch64/test_frame_17.c (dg-options): Add
+	-fno-stack-protector.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/aarch64/pr104005.c (dg-options): Add
+	-fno-stack-protector.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/aarch64/auto-init-7.c (dg-options): Add
+	-fno-stack-protector.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/aarch64/pr103147-10.c (dg-options): Add
+	-fno-stack-protector.
+	* g++.target/aarch64/pr103147-10.C: Likewise.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/aarch64/sve/pcs/aarch64-sve-pcs.exp (sve_flags):
+	Add -fno-stack-protector.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/70150
+	* gcc.target/aarch64/fuse_adrp_add_1.c (dg-options): Add
+	-fno-pie.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/70150
+	* gcc.dg/tls/pr78796.c (dg-additional-options): Add -fno-pie
+	-no-pie for aarch64-*-*.
+	* gcc.target/aarch64/pr63304_1.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/pr70120-2.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/pr78733.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/pr79041-2.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/pr94530.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/pr94577.c (dg-options): Add -fno-pie.
+	* gcc.target/aarch64/reload-valid-spoff.c (dg-options): Add
+	-fno-pie.
+
+2023-06-15  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR testsuite/70150
+	* gcc.target/aarch64/aapcs64/aapcs64.exp (additional_flags):
+	Add -fno-pie -no-pie.
+
 2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/109650
