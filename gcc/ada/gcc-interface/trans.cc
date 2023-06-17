@@ -2700,11 +2700,9 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	 never been problematic, but not for case expressions in Ada 2012.  */
       if (choices_added_p)
 	{
-	  const bool is_case_expression
-	    = (Nkind (Parent (gnat_node)) == N_Expression_With_Actions);
-	  tree group
-	    = build_stmt_group (Statements (gnat_when), !is_case_expression);
-	  bool group_may_fallthru = block_may_fallthru (group);
+	  const bool case_expr_p = From_Conditional_Expression (gnat_node);
+	  tree group = build_stmt_group (Statements (gnat_when), !case_expr_p);
+	  const bool group_may_fallthru = block_may_fallthru (group);
 	  add_stmt (group);
 	  if (group_may_fallthru)
 	    {
