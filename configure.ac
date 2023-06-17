@@ -1891,27 +1891,35 @@ AC_ARG_ENABLE(linker-plugin-flags,
   extra_linker_plugin_flags=)
 AC_SUBST(extra_linker_plugin_flags)
 
-# Enable --enable-host-pie.
-# Checked early to determine whether jit is an 'all' language
+# Handle --enable-host-pie
+# If host PIE executables are the default (or must be forced on) for some host,
+# we must pass that configuration to the gcc directory.
+gcc_host_pie=
 AC_ARG_ENABLE(host-pie,
 [AS_HELP_STRING([--enable-host-pie],
 		[build position independent host executables])],
 [host_pie=$enableval
  case $host in
-   x86_64-*-darwin* | aarch64-*-darwin*)
+   *-*-darwin2*)
      if test x$host_pie != xyes ; then
-       # PIC is the default, and actually cannot be switched off.
-       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       # for Darwin20+ this is required.
+       AC_MSG_WARN([PIE executables are required for the configured host, host-pie setting ignored.])
        host_pie=yes
+       gcc_host_pie=--enable-host-pie
      fi ;;
   *) ;;
  esac],
 [case $host in
-  *-*-darwin2*) host_pie=yes ;;
+  *-*-darwin2*)
+    # Default to PIE (mandatory for aarch64).
+    host_pie=yes
+    gcc_host_pie=--enable-host-pie
+    ;;
   *) host_pie=no ;;
  esac])
 
 AC_SUBST(host_pie)
+AC_SUBST(gcc_host_pie)
 
 # Enable --enable-host-shared.
 # Checked early to determine whether jit is an 'all' language
@@ -1923,27 +1931,39 @@ AC_ARG_ENABLE(host-shared,
    x86_64-*-darwin* | aarch64-*-darwin*)
      if test x$host_shared != xyes ; then
        # PIC is the default, and actually cannot be switched off.
-       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       AC_MSG_WARN([PIC code is required for the configured host; host-shared setting ignored.])
        host_shared=yes
      fi ;;
    *-*-darwin*)
-     if test x$host_pie == xyes ; then
-       echo configure.ac: warning: PIC code is required for PIE executables. 1>&2
+     if test x$host_pie = xyes -a x$host_shared != xyes ; then
+       AC_MSG_WARN([PIC code is required for PIE host executables host-shared setting ignored.])
        host_shared=yes
      fi ;;
   *) ;;
  esac],
 [case $host in
+  # 64B x86_64 and Aarch64 Darwin default to PIC.
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
-  # Darwin needs PIC objects to link PIE executables.
-  *-*-darwin*) host_shared=host_pie ;;
+  # 32B and powerpc64 Darwin must use PIC to link PIE exes.
+  *-*-darwin*) host_shared=$host_pie ;;
   *) host_shared=no;;
  esac])
 
 AC_SUBST(host_shared)
 
 if test x$host_shared = xyes; then
-  PICFLAG=-fPIC
+  case $host in
+    *-*-darwin*)
+      # Since host shared is the default for 64b Darwin, and also enabled for
+      # host_pie, ensure that we present the PIE flag when host_pie is active.
+      if test x$host_pie = xyes; then
+        PICFLAG=-fPIE
+      fi
+      ;;
+    *)
+      PICFLAG=-fPIC
+      ;;
+  esac
 elif test x$host_pie = xyes; then
   PICFLAG=-fPIE
 else

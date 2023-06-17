@@ -12021,7 +12021,7 @@ configure-gcc:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias}  \
+	  --target=${target_alias} @gcc_host_pie@ \
 	  || exit 1
 @endif gcc
 
@@ -12056,7 +12056,8 @@ configure-stage1-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	   \
-	  $(STAGE1_CONFIGURE_FLAGS)
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stage2-gcc maybe-configure-stage2-gcc
@@ -12089,7 +12090,8 @@ configure-stage2-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stage3-gcc maybe-configure-stage3-gcc
@@ -12122,7 +12124,8 @@ configure-stage3-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stage4-gcc maybe-configure-stage4-gcc
@@ -12155,7 +12158,8 @@ configure-stage4-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stageprofile-gcc maybe-configure-stageprofile-gcc
@@ -12188,7 +12192,8 @@ configure-stageprofile-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stagetrain-gcc maybe-configure-stagetrain-gcc
@@ -12221,7 +12226,8 @@ configure-stagetrain-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEtrain_CONFIGURE_FLAGS)
+	  $(STAGEtrain_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stagefeedback-gcc maybe-configure-stagefeedback-gcc
@@ -12254,7 +12260,8 @@ configure-stagefeedback-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stageautoprofile-gcc maybe-configure-stageautoprofile-gcc
@@ -12287,7 +12294,8 @@ configure-stageautoprofile-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautoprofile_CONFIGURE_FLAGS)
+	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 .PHONY: configure-stageautofeedback-gcc maybe-configure-stageautofeedback-gcc
@@ -12320,7 +12328,8 @@ configure-stageautofeedback-gcc:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautofeedback_CONFIGURE_FLAGS)
+	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
+	  @gcc_host_pie@
 @endif gcc-bootstrap
 
 
