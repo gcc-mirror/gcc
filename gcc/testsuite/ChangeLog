@@ -1,3 +1,7 @@
+2023-06-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/sparc/pr109541.c: New.
+
 2023-06-14  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr110227.c: New test.
