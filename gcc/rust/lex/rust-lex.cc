@@ -255,10 +255,11 @@ TokenId
 Lexer::classify_keyword (const std::string &str)
 {
   auto keyword = keywords.find (str);
-  auto id = keyword->second;
 
   if (keyword == keywords.end ())
     return IDENTIFIER;
+
+  auto id = keyword->second;
 
   // We now have the expected token ID of the reserved keyword. However, some
   // keywords are reserved starting in certain editions. For example, `try` is
