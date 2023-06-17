@@ -1,3 +1,7 @@
+2023-06-16  Alex Coplan  <alex.coplan@arm.com>
+
+	* c.opt (Welaborated-enum-base): New.
+
 2023-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/84890

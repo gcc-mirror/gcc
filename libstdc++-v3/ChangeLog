@@ -1,3 +1,15 @@
+2023-06-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/from_chars/4.cc: Skip long double on
+	aarch64-rtems.
+
+2023-06-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* configure.ac ["x${with_newlib}" = "xyes"]: Define
+	HAVE_HYPOTF.  Add compile-checks for various long double
+	math functions as well.
+	* configure: Regenerate.
+
 2023-06-14  Jonny Grant  <jg@jguk.org>
 
 	* doc/xml/manual/extensions.xml: Remove demangle exception

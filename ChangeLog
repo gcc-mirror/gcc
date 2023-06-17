@@ -1,3 +1,8 @@
+2023-06-16  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (Write After Approval): move Matthew Fortune
+	to Write After Approval.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-pie): New check.  Set PICFLAG after this

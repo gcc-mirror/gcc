@@ -1,3 +1,244 @@
+2023-06-16  Pan Li  <pan2.li@intel.com>
+
+	PR target/110265
+	* config/riscv/riscv-vector-builtins-bases.cc: Add ret_mode for
+	integer reduction expand.
+	* config/riscv/vector-iterators.md: Add VQI, VHI, VSI and VDI,
+	and the LMUL1 attr respectively.
+	* config/riscv/vector.md
+	(@pred_reduc_<reduc><mode><vlmul1>): Removed.
+	(@pred_reduc_<reduc><mode><vlmul1_zve64>): Likewise.
+	(@pred_reduc_<reduc><mode><vlmul1_zve32>): Likewise.
+	(@pred_reduc_<reduc><VQI:mode><VQI_LMUL1:mode>): New pattern.
+	(@pred_reduc_<reduc><VHI:mode><VHI_LMUL1:mode>): Likewise.
+	(@pred_reduc_<reduc><VSI:mode><VSI_LMUL1:mode>): Likewise.
+	(@pred_reduc_<reduc><VDI:mode><VDI_LMUL1:mode>): Likewise.
+
+2023-06-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110264
+	* config/riscv/riscv-vsetvl.cc (insert_vsetvl): Fix bug.
+
+2023-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* builtin-types.def (BT_FN_UINT_UINT_UINT_UINT_UINTPTR,
+	BT_FN_ULONG_ULONG_ULONG_ULONG_ULONGPTR,
+	BT_FN_ULONGLONG_ULONGLONG_ULONGLONG_ULONGLONG_ULONGLONGPTR): New
+	types.
+	* builtins.def (BUILT_IN_ADDC, BUILT_IN_ADDCL, BUILT_IN_ADDCLL,
+	BUILT_IN_SUBC, BUILT_IN_SUBCL, BUILT_IN_SUBCLL): New builtins.
+	* builtins.cc (fold_builtin_addc_subc): New function.
+	(fold_builtin_varargs): Handle BUILT_IN_{ADD,SUB}C{,L,LL}.
+	* doc/extend.texi (__builtin_addc, __builtin_subc): Document.
+
+2023-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110271
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children)
+	<case PLUS_EXPR>: Ignore return value from match_arith_overflow,
+	instead call match_uaddc_usubc only if gsi_stmt (gsi) is still stmt.
+
+2023-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	* configure: Regenerate.
+
+2023-06-16  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31985
+	* config/i386/i386.md (*add<dwi>3_doubleword_concat): New
+	define_insn_and_split combine *add<dwi>3_doubleword with
+	a *concat<mode><dwi>3 for more efficient lowering after reload.
+
+2023-06-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-lives.cc: Include except.h.
+	(process_bb_node_lives): Ignore conflicts from cleanup exceptions
+	when the pseudo does not live at the exception landing pad.
+
+2023-06-16  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/invoke.texi: Document -Welaborated-enum-base.
+
+2023-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (shrn2_n): Rename builtins to...
+	(ushrn2_n): ... This.
+	(sqshrn2_n): Rename builtins to...
+	(ssqshrn2_n): ... This.
+	(uqshrn2_n): Rename builtins to...
+	(uqushrn2_n): ... This.
+	* config/aarch64/arm_neon.h (vqshrn_high_n_s16): Adjust for the above.
+	(vqshrn_high_n_s32): Likewise.
+	(vqshrn_high_n_s64): Likewise.
+	(vqshrn_high_n_u16): Likewise.
+	(vqshrn_high_n_u32): Likewise.
+	(vqshrn_high_n_u64): Likewise.
+	(vshrn_high_n_s16): Likewise.
+	(vshrn_high_n_s32): Likewise.
+	(vshrn_high_n_s64): Likewise.
+	(vshrn_high_n_u16): Likewise.
+	(vshrn_high_n_u32): Likewise.
+	(vshrn_high_n_u64): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_<shrn_op>shrn2_n<mode>_insn_le):
+	Rename to...
+	(aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_le): ... This.
+	Use SHIFTRT iterator and AARCH64_VALID_SHRN_OP check.
+	(aarch64_<shrn_op>shrn2_n<mode>_insn_be): Rename to...
+	(aarch64_<shrn_op><sra_op>shrn2_n<mode>_insn_be): ... This.
+	Use SHIFTRT iterator and AARCH64_VALID_SHRN_OP check.
+	(aarch64_<shrn_op>shrn2_n<mode>): Rename to...
+	(aarch64_<shrn_op><sra_op>shrn2_n<mode>): ... This.
+	Update expander for the above.
+
+2023-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (shrn2): Rename builtins to...
+	(shrn2_n): ... This.
+	(rshrn2): Rename builtins to...
+	(rshrn2_n): ... This.
+	* config/aarch64/arm_neon.h (vrshrn_high_n_s16): Adjust for the above.
+	(vrshrn_high_n_s32): Likewise.
+	(vrshrn_high_n_s64): Likewise.
+	(vrshrn_high_n_u16): Likewise.
+	(vrshrn_high_n_u32): Likewise.
+	(vrshrn_high_n_u64): Likewise.
+	(vshrn_high_n_s16): Likewise.
+	(vshrn_high_n_s32): Likewise.
+	(vshrn_high_n_s64): Likewise.
+	(vshrn_high_n_u16): Likewise.
+	(vshrn_high_n_u32): Likewise.
+	(vshrn_high_n_u64): Likewise.
+	* config/aarch64/aarch64-simd.md (*aarch64_<srn_op>shrn<mode>2_vect_le):
+	Delete.
+	(*aarch64_<srn_op>shrn<mode>2_vect_be): Likewise.
+	(aarch64_shrn2<mode>_insn_le): Likewise.
+	(aarch64_shrn2<mode>_insn_be): Likewise.
+	(aarch64_shrn2<mode>): Likewise.
+	(aarch64_rshrn2<mode>_insn_le): Likewise.
+	(aarch64_rshrn2<mode>_insn_be): Likewise.
+	(aarch64_rshrn2<mode>): Likewise.
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_le): Likewise.
+	(aarch64_<shrn_op>shrn2_n<mode>_insn_le): New define_insn.
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_be): Delete.
+	(aarch64_<shrn_op>shrn2_n<mode>_insn_be): New define_insn.
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>): Delete.
+	(aarch64_<shrn_op>shrn2_n<mode>): New define_expand.
+	(aarch64_<shrn_op>rshrn2_n<mode>_insn_le): New define_insn.
+	(aarch64_<shrn_op>rshrn2_n<mode>_insn_be): New define_insn.
+	(aarch64_<shrn_op>rshrn2_n<mode>): New define_expand.
+	(aarch64_sqshrun2_n<mode>_insn_le): New define_insn.
+	(aarch64_sqshrun2_n<mode>_insn_be): New define_insn.
+	(aarch64_sqshrun2_n<mode>): New define_expand.
+	(aarch64_sqrshrun2_n<mode>_insn_le): New define_insn.
+	(aarch64_sqrshrun2_n<mode>_insn_be): New define_insn.
+	(aarch64_sqrshrun2_n<mode>): New define_expand.
+	* config/aarch64/iterators.md (UNSPEC_SQSHRUN, UNSPEC_SQRSHRUN,
+	UNSPEC_SQSHRN, UNSPEC_UQSHRN, UNSPEC_SQRSHRN, UNSPEC_UQRSHRN):
+	Delete unspec values.
+	(VQSHRN_N): Delete int iterator.
+
+2023-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_VALID_SHRN_OP): Define.
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_<shrn_op>shrn_n<mode>_insn<vczle><vczbe>): Rename to...
+	(*aarch64_<shrn_op><shrn_s>shrn_n<mode>_insn<vczle><vczbe>): ... This.
+	Use SHIFTRT iterator and add AARCH64_VALID_SHRN_OP to condition.
+	* config/aarch64/iterators.md (shrn_s): New code attribute.
+
+2023-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>q<r>shr<u>n_n<mode>):
+	Rename to...
+	(aarch64_<shrn_op>shrn_n<mode>): ... This.  Reimplement with RTL codes.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn): New define_insn.
+	(aarch64_sqrshrun_n<mode>_insn): Likewise.
+	(aarch64_sqshrun_n<mode>_insn): Likewise.
+	(aarch64_<shrn_op>rshrn_n<mode>): New define_expand.
+	(aarch64_sqshrun_n<mode>): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	* config/aarch64/iterators.md (V2XWIDE): Add HI and SI modes.
+
+2023-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (shrn): Rename builtins to...
+	(shrn_n): ... This.
+	(rshrn): Rename builtins to...
+	(rshrn_n): ... This.
+	* config/aarch64/arm_neon.h (vshrn_n_s16): Adjust for the above.
+	(vshrn_n_s32): Likewise.
+	(vshrn_n_s64): Likewise.
+	(vshrn_n_u16): Likewise.
+	(vshrn_n_u32): Likewise.
+	(vshrn_n_u64): Likewise.
+	(vrshrn_n_s16): Likewise.
+	(vrshrn_n_s32): Likewise.
+	(vrshrn_n_s64): Likewise.
+	(vrshrn_n_u16): Likewise.
+	(vrshrn_n_u32): Likewise.
+	(vrshrn_n_u64): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_<srn_op>shrn<mode><vczle><vczbe>): Delete.
+	(aarch64_shrn<mode>): Likewise.
+	(aarch64_rshrn<mode><vczle><vczbe>_insn): Likewise.
+	(aarch64_rshrn<mode>): Likewise.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn<vczle><vczbe>): Likewise.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>): Likewise.
+	(*aarch64_<shrn_op>shrn_n<mode>_insn<vczle><vczbe>): New define_insn.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn<vczle><vczbe>): Likewise.
+	(*aarch64_sqshrun_n<mode>_insn<vczle><vczbe>): Likewise.
+	(*aarch64_sqrshrun_n<mode>_insn<vczle><vczbe>): Likewise.
+	(aarch64_<shrn_op>shrn_n<mode>): New define_expand.
+	(aarch64_<shrn_op>rshrn_n<mode>): Likewise.
+	(aarch64_sqshrun_n<mode>): Likewise.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+	* config/aarch64/iterators.md (ALL_TRUNC): New code iterator.
+	(TRUNCEXTEND): New code attribute.
+	(TRUNC_SHIFT): Likewise.
+	(shrn_op): Likewise.
+	* config/aarch64/predicates.md (aarch64_simd_umax_quarter_mode):
+	New predicate.
+
+2023-06-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vsetvl.cc
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Initialize var by NULL.
+
+2023-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110278
+	* match.pd (uns < (typeof uns)(uns != 0) -> false): New.
+	(x != (typeof x)(x == 0) -> true): Likewise.
+
+2023-06-16  Pali Rohár  <pali@kernel.org>
+
+	* config/i386/mingw-w64.h (CPP_SPEC): Adjust for -mcrtdll=.
+	(REAL_LIBGCC_SPEC): New define.
+	* config/i386/mingw.opt: Add mcrtdll=
+	* config/i386/mingw32.h (CPP_SPEC): Adjust for -mcrtdll=.
+	(REAL_LIBGCC_SPEC): Adjust for -mcrtdll=.
+	(STARTFILE_SPEC): Adjust for -mcrtdll=.
+	* doc/invoke.texi: Add mcrtdll= documentation.
+
+2023-06-16  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* config/mips/mips.cc (enum mips_code_readable_setting):New enmu.
+	(mips_handle_code_readable_attr):New static function.
+	(mips_get_code_readable_attr):New static enum function.
+	(mips_set_current_function):Set the code_readable mode.
+	(mips_option_override):Same as above.
+	* doc/extend.texi:Document code_readable.
+
+2023-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110269
+	* fold-const.cc (fold_binary_loc): Merge x != 0 folding
+	with tree_expr_nonzero_p ...
+	* match.pd (cmp (convert? addr@0) integer_zerop): With this
+	pattern.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in: Set LD_PICFLAG.  Use it.  Set enable_host_pie.

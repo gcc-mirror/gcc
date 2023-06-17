@@ -1,3 +1,53 @@
+2023-06-16  Pan Li  <pan2.li@intel.com>
+
+	PR target/110265
+	* gcc.target/riscv/rvv/base/pr110265-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr110265-1.h: New test.
+	* gcc.target/riscv/rvv/base/pr110265-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr110265-2.h: New test.
+	* gcc.target/riscv/rvv/base/pr110265-3.c: New test.
+
+2023-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* gcc.target/i386/pr79173-11.c: New test.
+	* gcc.dg/builtin-addc-1.c: New test.
+
+2023-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110271
+	* gcc.c-torture/compile/pr110271.c: New test.
+
+2023-06-16  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31985
+	* gcc.target/i386/pr31985.c: New test case.
+
+2023-06-16  Alex Coplan  <alex.coplan@arm.com>
+
+	* g++.dg/cpp0x/enum40.C: Adjust expected diagnostics.
+	* g++.dg/cpp0x/forw_enum6.C: Likewise.
+	* g++.dg/cpp0x/elab-enum-base.C: New test.
+
+2023-06-16  Simon Dardis  <simon.dardis@imgtec.com>
+
+	* gcc.target/mips/code-readable-attr-1.c: New test.
+	* gcc.target/mips/code-readable-attr-2.c: New test.
+	* gcc.target/mips/code-readable-attr-3.c: New test.
+	* gcc.target/mips/code-readable-attr-4.c: New test.
+	* gcc.target/mips/code-readable-attr-5.c: New test.
+
+2023-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110269
+	* gcc.dg/tree-ssa/pr110269.c: New testcase.
+
+2023-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107583
+	* c-c++-common/spellcheck-pr107583.c: New test.
+
 2023-06-15  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/110266

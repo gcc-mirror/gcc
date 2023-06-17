@@ -1,3 +1,9 @@
+2023-06-16  Alex Coplan  <alex.coplan@arm.com>
+
+	* parser.cc (cp_parser_enum_specifier): Don't reject
+	elaborated-type-specifier with enum-base, instead emit new
+	Welaborated-enum-base warning.
+
 2023-06-14  Jason Merrill  <jason@redhat.com>
 
 	DR 2327
