@@ -521,7 +521,8 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		  return;
 		}
 	    }
-	  else if (GET_MODE_SIZE (mode) >= 16)
+	  else if (CONST_WIDE_INT_P (op1)
+		   && GET_MODE_SIZE (mode) >= 16)
 	    {
 	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
 		(GET_MODE (op0), op1);
@@ -696,8 +697,9 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
-  /* Special case TImode to V1TImode conversions, via V2DI.  */
-  if (mode == V1TImode
+  /* Special case TImode to 128-bit vector conversions via V2DI.  */
+  if (VECTOR_MODE_P (mode)
+      && GET_MODE_SIZE (mode) == 16
       && SUBREG_P (op1)
       && GET_MODE (SUBREG_REG (op1)) == TImode
       && TARGET_64BIT && TARGET_SSE
@@ -709,7 +711,7 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       emit_move_insn (lo, gen_lowpart (DImode, SUBREG_REG (op1)));
       emit_move_insn (hi, gen_highpart (DImode, SUBREG_REG (op1)));
       emit_insn (gen_vec_concatv2di (tmp, lo, hi));
-      emit_move_insn (op0, gen_lowpart (V1TImode, tmp));
+      emit_move_insn (op0, gen_lowpart (mode, tmp));
       return;
     }
 
