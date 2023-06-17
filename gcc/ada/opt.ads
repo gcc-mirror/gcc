@@ -209,16 +209,6 @@ package Opt is
    --  Unchecked_Conversion instantiations require checking based on annotated
    --  values.
 
-   Back_End_Handles_Limited_Types : Boolean;
-   --  This flag is set True if the back end can properly handle limited or
-   --  other by reference types, and avoid copies. If this flag is False, then
-   --  the front end does special expansion for if/case expressions to make
-   --  sure that no copy occurs. If the flag is True, then the expansion for
-   --  if and case expressions relies on the back end properly handling things.
-   --  Currently the default is False for all cases (set in gnat1drv). The
-   --  default can be modified using -gnatd.L (sets the flag True). This is
-   --  used to test the possibility of having the backend handle this.
-
    Back_End_Inlining : Boolean := False;
    --  GNAT
    --  Set True to activate inlining by back-end expansion. This is the normal

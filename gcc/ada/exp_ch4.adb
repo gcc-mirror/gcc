@@ -5306,7 +5306,6 @@ package body Exp_Ch4 is
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
       Decl       : Node_Id;
-      Expr       : Node_Id;
       Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
@@ -5361,7 +5360,6 @@ package body Exp_Ch4 is
 
       --  In all other cases expand into
 
-      --    do
       --       type Ptr_Typ is access all Typ;
       --       Target : Ptr_Typ;
       --       case X is
@@ -5371,7 +5369,8 @@ package body Exp_Ch4 is
       --             Target := BX'Unrestricted_Access;
       --          ...
       --       end case;
-      --    in Target.all end;
+
+      --  and replace the case expression by a reference to Target.all.
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
@@ -5514,20 +5513,21 @@ package body Exp_Ch4 is
                Prepend_List (Actions (Alt), Stmts);
             end if;
 
-            --  Finalize any transient objects on exit from the alternative.
-            --  This is done only in the return optimization case because
-            --  otherwise the case expression is converted into an expression
-            --  with actions which already contains this form of processing.
-
-            if Optimize_Return_Stmt then
-               Process_If_Case_Statements (N, Stmts);
-            end if;
-
             Append_To
               (Alternatives (Case_Stmt),
                Make_Case_Statement_Alternative (Sloc (Alt),
                  Discrete_Choices => Discrete_Choices (Alt),
                  Statements       => Stmts));
+
+            --  Finalize any transient objects on exit from the alternative.
+            --  This needs to be done only when the case expression is _not_
+            --  later converted into an expression with actions, which already
+            --  contains this form of processing, and after Stmts is attached
+            --  to the Alternatives list above (for Safe_To_Capture_Value).
+
+            if Optimize_Return_Stmt or else not Is_Copy_Type (Typ) then
+               Process_If_Case_Statements (N, Stmts);
+            end if;
          end;
 
          Next (Alt);
@@ -5539,29 +5539,23 @@ package body Exp_Ch4 is
          Rewrite (Par, Case_Stmt);
          Analyze (Par);
 
-      --  Otherwise convert the case expression into an expression with actions
+      --  Otherwise rewrite the case expression itself
 
       else
          Append_To (Acts, Case_Stmt);
 
          if Is_Copy_Type (Typ) then
-            Expr := New_Occurrence_Of (Target, Loc);
+            Rewrite (N,
+              Make_Expression_With_Actions (Loc,
+                Expression => New_Occurrence_Of (Target, Loc),
+                Actions    => Acts));
 
          else
-            Expr :=
+            Insert_Actions (N, Acts);
+            Rewrite (N,
               Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Target, Loc));
+                Prefix => New_Occurrence_Of (Target, Loc)));
          end if;
-
-         --  Generate:
-         --    do
-         --       ...
-         --    in Target[.all] end;
-
-         Rewrite (N,
-           Make_Expression_With_Actions (Loc,
-             Expression => Expr,
-             Actions    => Acts));
 
          Analyze_And_Resolve (N, Typ);
       end if;
@@ -5937,9 +5931,8 @@ package body Exp_Ch4 is
 
          Set_From_Conditional_Expression (New_If);
 
-      --  If the type is limited, and the back end does not handle limited
-      --  types, then we expand as follows to avoid the possibility of
-      --  improper copying.
+      --  If the type is by reference, then we expand as follows to avoid the
+      --  possibility of improper copying.
 
       --      type Ptr is access all Typ;
       --      Cnn : Ptr;
@@ -5953,12 +5946,7 @@ package body Exp_Ch4 is
 
       --  and replace the if expression by a reference to Cnn.all.
 
-      --  This special case can be skipped if the back end handles limited
-      --  types properly and ensures that no incorrect copies are made.
-
-      elsif Is_By_Reference_Type (Typ)
-        and then not Back_End_Handles_Limited_Types
-      then
+      elsif Is_By_Reference_Type (Typ) then
          --  When the "then" or "else" expressions involve controlled function
          --  calls, generated temporaries are chained on the corresponding list
          --  of actions. These temporaries need to be finalized after the if
