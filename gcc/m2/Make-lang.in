@@ -490,7 +490,6 @@ SO=-O0 -g -fPIC
 # Language-specific object files for the gm2 compiler.
 
 GM2_C_OBJS        = m2/gm2-lang.o \
-                    m2/stor-layout.o \
                     m2/m2pp.o \
                     m2/gm2-gcc/m2assert.o \
                     m2/gm2-gcc/m2block.o \
@@ -516,7 +515,7 @@ GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
                     $(GM2-BOOT-O)
 
-$(GM2_C_OBJS) : | $(generated_files)
+m2_OBJS = $(GM2_C_OBJS)
 
 cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
@@ -574,10 +573,6 @@ m2/gm2-gcc/m2configure.o: $(srcdir)/m2/gm2-gcc/m2configure.cc \
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
 	    -DLIBSUBDIR=\"$(libsubdir)\" \
-            $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-m2/stor-layout.o: $(srcdir)/stor-layout.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
-	$(COMPILER) -c -DSET_WORD_SIZE=INT_TYPE_SIZE $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 m2/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
