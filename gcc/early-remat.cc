@@ -508,16 +508,16 @@ early_remat *early_remat::er;
    This allows us to compare two copies of a pattern, even though their
    SCRATCHes are always distinct.  */
 
-static int
+static bool
 scratch_equal (const_rtx *x, const_rtx *y, rtx *nx, rtx *ny)
 {
   if (GET_CODE (*x) == SCRATCH && GET_CODE (*y) == SCRATCH)
     {
       *nx = const0_rtx;
       *ny = const0_rtx;
-      return 1;
+      return true;
     }
-  return 0;
+  return false;
 }
 
 /* Hash callback functions for remat_candidate.  */

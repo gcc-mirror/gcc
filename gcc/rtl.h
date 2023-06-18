@@ -3009,10 +3009,10 @@ extern rtx copy_rtx_if_shared (rtx);
 extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 
-typedef int (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
-					      rtx *, rtx *);
-extern int rtx_equal_p (const_rtx, const_rtx,
-			rtx_equal_p_callback_function = NULL);
+typedef bool (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
+					       rtx *, rtx *);
+extern bool rtx_equal_p (const_rtx, const_rtx,
+			 rtx_equal_p_callback_function = NULL);
 
 extern bool rtvec_all_equal_p (const_rtvec);
 extern bool rtvec_series_p (rtvec, int);
@@ -4138,8 +4138,8 @@ extern int rtx_to_tree_code (enum rtx_code);
 extern int delete_trivially_dead_insns (rtx_insn *, int);
 extern bool exp_equiv_p (const_rtx, const_rtx, int, bool);
 
-typedef int (*hash_rtx_callback_function) (const_rtx, machine_mode, rtx *,
-					   machine_mode *);
+typedef bool (*hash_rtx_callback_function) (const_rtx, machine_mode, rtx *,
+					    machine_mode *);
 extern unsigned hash_rtx (const_rtx, machine_mode, int *, int *,
 			  bool, hash_rtx_callback_function = NULL);
 

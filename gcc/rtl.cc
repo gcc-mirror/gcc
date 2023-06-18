@@ -412,13 +412,13 @@ int currently_expanding_to_rtl;
 
 
 
-/* Return 1 if X and Y are identical-looking rtx's.
+/* Return true if X and Y are identical-looking rtx's.
    This is the Lisp function EQUAL for rtx arguments.
 
    Call CB on each pair of rtx if CB is not NULL.
    When the callback returns true, we continue with the new pair.  */
 
-int
+bool
 rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 {
   int i;
@@ -428,9 +428,9 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
   rtx nx, ny;
 
   if (x == y)
-    return 1;
+    return true;
   if (x == 0 || y == 0)
-    return 0;
+    return false;
 
   /* Invoke the callback first.  */
   if (cb != NULL
@@ -440,17 +440,17 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
   code = GET_CODE (x);
   /* Rtx's of different codes cannot be equal.  */
   if (code != GET_CODE (y))
-    return 0;
+    return false;
 
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
      (REG:SI x) and (REG:HI x) are NOT equivalent.  */
 
   if (GET_MODE (x) != GET_MODE (y))
-    return 0;
+    return false;
 
   /* MEMs referring to different address space are not equivalent.  */
   if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
-    return 0;
+    return false;
 
   /* Some RTL can be compared nonrecursively.  */
   switch (code)
@@ -468,7 +468,7 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
     case VALUE:
     case SCRATCH:
     CASE_CONST_UNIQUE:
-      return 0;
+      return false;
 
     case CONST_VECTOR:
       if (!same_vector_encodings_p (x, y))
@@ -500,7 +500,7 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	{
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'n':
@@ -513,30 +513,30 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 		  && XINT (x, i) == XINT (y, i))
 		break;
 #endif
-	      return 0;
+	      return false;
 	    }
 	  break;
 
 	case 'p':
 	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
+	    return false;
 
 	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (rtx_equal_p (XVECEXP (x, i, j), XVECEXP (y, i, j), cb) == 0)
-	      return 0;
+	    if (!rtx_equal_p (XVECEXP (x, i, j), XVECEXP (y, i, j), cb))
+	      return false;
 	  break;
 
 	case 'e':
-	  if (rtx_equal_p (XEXP (x, i), XEXP (y, i), cb) == 0)
-	    return 0;
+	  if (!rtx_equal_p (XEXP (x, i), XEXP (y, i), cb))
+	    return false;
 	  break;
 
 	case 'S':
@@ -544,7 +544,7 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	  if ((XSTR (x, i) || XSTR (y, i))
 	      && (! XSTR (x, i) || ! XSTR (y, i)
 		  || strcmp (XSTR (x, i), XSTR (y, i))))
-	    return 0;
+	    return false;
 	  break;
 
 	case 'u':
@@ -562,7 +562,7 @@ rtx_equal_p (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 	  gcc_unreachable ();
 	}
     }
-  return 1;
+  return true;
 }
 
 /* Return true if all elements of VEC are equal.  */

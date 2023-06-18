@@ -1079,7 +1079,7 @@ free_nop_pool (void)
 /* Skip unspec to support ia64 speculation. Called from rtx_equal_p.
    The callback is given two rtxes XX and YY and writes the new rtxes
    to NX and NY in case some needs to be skipped.  */
-static int
+static bool
 skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
 {
   const_rtx x = *xx;
@@ -1091,7 +1091,7 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
     {
       *nx = XVECEXP (x, 0, 0);
       *ny = CONST_CAST_RTX (y);
-      return 1;
+      return true;
     }
 
   if (GET_CODE (y) == UNSPEC
@@ -1100,16 +1100,16 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
     {
       *nx = CONST_CAST_RTX (x);
       *ny = XVECEXP (y, 0, 0);
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Callback, called from hash_rtx.  Helps to hash UNSPEC rtx X in a correct way
    to support ia64 speculation.  When changes are needed, new rtx X and new mode
    NMODE are written, and the callback returns true.  */
-static int
+static bool
 hash_with_unspec_callback (const_rtx x, machine_mode mode ATTRIBUTE_UNUSED,
                            rtx *nx, machine_mode* nmode)
 {
@@ -1119,10 +1119,10 @@ hash_with_unspec_callback (const_rtx x, machine_mode mode ATTRIBUTE_UNUSED,
     {
       *nx = XVECEXP (x, 0 ,0);
       *nmode = VOIDmode;
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Returns LHS and RHS are ok to be scheduled separately.  */
