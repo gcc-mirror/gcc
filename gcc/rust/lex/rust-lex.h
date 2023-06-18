@@ -23,6 +23,7 @@
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
 #include "rust-optional.h"
+#include "selftest.h"
 
 namespace Rust {
 // Simple wrapper for FILE* that simplifies destruction.
@@ -119,9 +120,9 @@ private:
   void skip_input (int n);
 
   // Peeks the current char.
-  int peek_input ();
+  Codepoint peek_input ();
   // Returns char n bytes ahead of current position.
-  int peek_input (int n);
+  Codepoint peek_input (int n);
 
   // Classifies keyword (i.e. gets id for keyword).
   TokenId classify_keyword (const std::string &str);
@@ -136,12 +137,10 @@ private:
   std::pair<Codepoint, int> parse_partial_unicode_escape ();
 
   int get_input_codepoint_length ();
-  int test_get_input_codepoint_n_length (int n_start_offset);
   // Peeks the current utf-8 char
   Codepoint peek_codepoint_input ();
-  Codepoint test_peek_codepoint_input (int n);
   void skip_codepoint_input ();
-  void skip_broken_string_input (int current_char);
+  void skip_broken_string_input (Codepoint current_char);
 
   TokenPtr parse_byte_char (Location loc);
   TokenPtr parse_byte_string (Location loc);
@@ -208,6 +207,179 @@ public:
   Linemap *get_line_map () { return line_map; }
   std::string get_filename () { return std::string (input.get_filename ()); }
 
+  // Input source wrapper thing.
+  class InputSource
+  {
+  private:
+    // position of current character
+    unsigned int pos;
+    std::vector<Codepoint> chars;
+    bool is_valid_utf8;
+
+    // Overload operator () to return next char from input stream.
+    virtual int next_byte () = 0;
+
+    Codepoint next_codepoint ()
+    {
+      uint8_t input = next_byte ();
+
+      if ((int8_t) input == EOF)
+	return Codepoint::eof ();
+      else if (input < 128)
+	{
+	  // ascii -- 1 byte
+	  return {input};
+	}
+      else if ((input & 0xC0) == 0x80)
+	{
+	  // invalid (continuation; can't be first char)
+	  return {0xFFFE};
+	}
+      else if ((input & 0xE0) == 0xC0)
+	{
+	  // 2 bytes
+	  uint8_t input2 = next_byte ();
+	  if ((input2 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint32_t output = ((input & 0x1F) << 6) | ((input2 & 0x3F) << 0);
+	  return output;
+	}
+      else if ((input & 0xF0) == 0xE0)
+	{
+	  // 3 bytes or UTF-8 BOM
+	  uint8_t input2 = next_byte ();
+	  // If the second byte is equal to 0xBB then the input is no longer a
+	  // valid UTF-8 char.
+	  if (input == 0xEF && input2 == 0xBB)
+	    {
+	      uint8_t input3 = next_byte ();
+	      if (input3 == 0xBF)
+		return next_codepoint ();
+	      else
+		return {0xFFFE};
+	    }
+
+	  if ((input2 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint8_t input3 = next_byte ();
+
+	  if ((input3 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint32_t output = ((input & 0x0F) << 12) | ((input2 & 0x3F) << 6)
+			    | ((input3 & 0x3F) << 0);
+	  return {output};
+	}
+      else if ((input & 0xF8) == 0xF0)
+	{
+	  // 4 bytes
+	  uint8_t input2 = next_byte ();
+	  if ((input2 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint8_t input3 = next_byte ();
+	  if ((input3 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint8_t input4 = next_byte ();
+	  if ((input4 & 0xC0) != 0x80)
+	    return {0xFFFE};
+
+	  uint32_t output = ((input & 0x07) << 18) | ((input2 & 0x3F) << 12)
+			    | ((input3 & 0x3F) << 6) | ((input4 & 0x3F) << 0);
+	  return {output};
+	}
+      else
+	{
+	  // rust_error_at (get_current_location (),
+	  //   "invalid UTF-8 [SECND] (too long)");
+	  return {0xFFFE};
+	}
+    }
+
+  protected:
+    // Check if the input source is valid as utf-8 and copy all characters to
+    // `chars`.
+    void init ()
+    {
+      Codepoint char32 = next_codepoint ();
+      while (!char32.is_eof () && char32 != 0xFFFE)
+	{
+	  chars.push_back (char32);
+	  char32 = next_codepoint ();
+	}
+
+      if (char32 == 0xFFFE)
+	{
+	  // Input source is not valid as utf-8.
+	  is_valid_utf8 = false;
+	}
+    }
+
+  public:
+    InputSource () : pos (0), chars ({}), is_valid_utf8 (true) {}
+
+    virtual ~InputSource () {}
+
+    bool is_valid () { return is_valid_utf8; }
+
+    // get the next UTF-8 character
+    Codepoint next ()
+    {
+      if (pos >= chars.size ())
+	return Codepoint::eof ();
+      else
+	{
+	  Codepoint c = chars[pos];
+	  pos++;
+	  return c;
+	}
+    }
+  };
+
+  class FileInputSource : public InputSource
+  {
+  private:
+    // Input source file.
+    FILE *input;
+
+    int next_byte () override { return fgetc (input); }
+
+  public:
+    // Create new input source from file.
+    FileInputSource (FILE *input) : InputSource (), input (input)
+    {
+      // TODO make this better?
+      init ();
+    }
+  };
+
+  class BufferInputSource : public InputSource
+  {
+  private:
+    const std::string &buffer;
+    size_t offs;
+
+    int next_byte () override
+    {
+      if (offs >= buffer.size ())
+	return EOF;
+
+      return buffer.at (offs++);
+    }
+
+  public:
+    // Create new input source from file.
+    BufferInputSource (const std::string &b, size_t offset)
+      : InputSource (), buffer (b), offs (offset)
+    {
+      // TODO make this better?
+      init ();
+    }
+  };
+
 private:
   void start_line (int current_line, int current_column);
 
@@ -220,7 +392,7 @@ private:
   // Current column number.
   int current_column;
   // Current character.
-  int current_char;
+  Codepoint current_char;
   Codepoint current_char32;
   // Line map.
   Linemap *line_map;
@@ -231,55 +403,11 @@ private:
 
   Optional<std::ofstream &> dump_lex_out;
 
-  // Input source wrapper thing.
-  class InputSource
-  {
-  public:
-    virtual ~InputSource () {}
-
-    // Overload operator () to return next char from input stream.
-    virtual int next () = 0;
-  };
-
-  class FileInputSource : public InputSource
-  {
-  private:
-    // Input source file.
-    FILE *input;
-
-  public:
-    // Create new input source from file.
-    FileInputSource (FILE *input) : input (input) {}
-
-    int next () override { return fgetc (input); }
-  };
-
-  class BufferInputSource : public InputSource
-  {
-  private:
-    const std::string &buffer;
-    size_t offs;
-
-  public:
-    // Create new input source from file.
-    BufferInputSource (const std::string &b, size_t offset)
-      : buffer (b), offs (offset)
-    {}
-
-    int next () override
-    {
-      if (offs >= buffer.size ())
-	return EOF;
-
-      return buffer.at (offs++);
-    }
-  };
-
   // The input source for the lexer.
   // InputSource input_source;
   // Input file queue.
   std::unique_ptr<InputSource> raw_input_source;
-  buffered_queue<int, std::reference_wrapper<InputSource>> input_queue;
+  buffered_queue<Codepoint, std::reference_wrapper<InputSource>> input_queue;
 
   // Token source wrapper thing.
   struct TokenSource
@@ -304,5 +432,15 @@ private:
 };
 
 } // namespace Rust
+
+#if CHECKING_P
+
+namespace selftest {
+void
+rust_input_source_test ();
+
+} // namespace selftest
+
+#endif // CHECKING_P
 
 #endif
