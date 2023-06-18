@@ -38,6 +38,7 @@
 #include "rust-privacy-ctx.h"
 #include "rust-ast-resolve-item.h"
 #include "rust-optional.h"
+#include "rust-lex.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -452,6 +453,7 @@ void
 run_rust_tests ()
 {
   // Call tests for the rust frontend here
+  rust_input_source_test ();
   rust_cfg_parser_test ();
   rust_privacy_ctx_test ();
   rust_crate_name_validation_test ();
