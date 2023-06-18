@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "tree-pass.h"
 #include "print-rtl.h"
+#include <math.h>
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1067,7 +1068,7 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
 {
   HOST_WIDE_INT imm = INT_MAX;
   rtx x = NULL_RTX;
-  int shift;
+  int shift, sqr;
 
   gcc_assert (REG_P (dst));
 
@@ -1077,7 +1078,6 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
       imm = -1;
       x = gen_lshrsi3 (dst, dst, GEN_INT (32 - shift));
     }
-
 
   shift = ctz_hwi (srcval);
   if ((!x || (TARGET_DENSITY && ! IN_RANGE (imm, -32, 95)))
@@ -1103,6 +1103,14 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
 	imm0 -= 256, imm1 += 256;
       imm = imm0;
       x = gen_addsi3 (dst, dst, GEN_INT (imm1));
+    }
+
+  sqr = (int) floorf (sqrtf (srcval));
+  if (TARGET_MUL32 && optimize_size
+      && !x && IN_RANGE (srcval, 0, (2047 * 2047)) && sqr * sqr == srcval)
+    {
+      imm = sqr;
+      x = gen_mulsi3 (dst, dst, dst);
     }
 
   if (!x)
