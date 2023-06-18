@@ -371,7 +371,8 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 				    bool inline_p,
 				    ipa_auto_call_arg_values *avals,
 				    clause_t *ret_clause,
-				    clause_t *ret_nonspec_clause)
+				    clause_t *ret_nonspec_clause,
+				    ipa_call_summary *es)
 {
   clause_t clause = inline_p ? 0 : 1 << ipa_predicate::not_inlined_condition;
   clause_t nonspec_clause = 1 << ipa_predicate::not_inlined_condition;
@@ -385,6 +386,17 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
       tree res;
       int j;
       struct expr_eval_op *op;
+
+      if (c->code == ipa_predicate::not_sra_candidate)
+	{
+	  if (!inline_p
+	      || !es
+	      || (int)es->param.length () <= c->operand_num
+	      || !es->param[c->operand_num].points_to_possible_sra_candidate)
+	    clause |= 1 << (i + ipa_predicate::first_dynamic_condition);
+	  nonspec_clause |= 1 << (i + ipa_predicate::first_dynamic_condition);
+	  continue;
+	}
 
       if (c->agg_contents)
 	{
@@ -592,6 +604,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   class ipa_fn_summary *info = ipa_fn_summaries->get (callee);
   class ipa_edge_args *args;
+  class ipa_call_summary *es = NULL;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << ipa_predicate::not_inlined_condition;
@@ -603,8 +616,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
     {
       struct cgraph_node *caller;
       class ipa_node_params *caller_parms_info, *callee_pi = NULL;
-      class ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
+      es = ipa_call_summaries->get (e);
 
       if (count)
 	{
@@ -720,7 +733,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
     }
 
   evaluate_conditions_for_known_args (callee, inline_p, avals, clause_ptr,
-				      nonspec_clause_ptr);
+				      nonspec_clause_ptr, es);
 }
 
 
@@ -847,6 +860,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 					  &possible_truths,
 					  /* We are going to specialize,
 					     so ignore nonspec truths.  */
+					  NULL,
 					  NULL);
 
       info->account_size_time (0, 0, true_pred, true_pred);
@@ -1034,6 +1048,9 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 		       prob * 100.0 / REG_BR_PROB_BASE);
 	    if (es->param[i].points_to_local_or_readonly_memory)
 	      fprintf (f, "%*s op%i points to local or readonly memory\n",
+		       indent + 2, "", i);
+	    if (es->param[i].points_to_possible_sra_candidate)
+	      fprintf (f, "%*s op%i points to possible sra candidate\n",
 		       indent + 2, "", i);
 	  }
       if (!edge->inline_failed)
@@ -1289,6 +1306,35 @@ unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
   return ipa_load_from_parm_agg (fbi, fbi->info->descriptors,
 				 stmt, op, index_p, &aggpos->offset,
 				 size_p, &aggpos->by_ref);
+}
+
+/* If stmt is simple load or store of value pointed to by a function parmaeter,
+   return its index.  */
+
+static int
+load_or_store_of_ptr_parameter (ipa_func_body_info *fbi, gimple *stmt)
+{
+  if (!optimize)
+    return -1;
+  gassign *assign = dyn_cast <gassign *> (stmt);
+  if (!assign)
+    return -1;
+  tree param;
+  if (gimple_assign_load_p (stmt))
+    param = gimple_assign_rhs1 (stmt);
+  else if (gimple_store_p (stmt))
+    param = gimple_assign_lhs (stmt);
+  else
+    return -1;
+  tree base = get_base_address (param);
+  if (TREE_CODE (base) != MEM_REF
+      || TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME
+      || !SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0)))
+    return -1;
+  tree p = SSA_NAME_VAR (TREE_OPERAND (base, 0));
+  if (TREE_CODE (p) != PARM_DECL)
+    return -1;
+  return ipa_get_param_decl_index (fbi->info, p);
 }
 
 /* See if statement might disappear after inlining.
@@ -2585,6 +2631,23 @@ points_to_local_or_readonly_memory_p (tree t)
   return false;
 }
 
+/* Return true if T is a pointer pointing to memory location that is possible
+   sra candidate if all functions it is passed to are inlined.  */
+
+static bool
+points_to_possible_sra_candidate_p (tree t)
+{
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+
+  t = get_base_address (TREE_OPERAND (t, 0));
+
+  /* Automatic variables are fine.  */
+  if (DECL_P (t)
+      && auto_var_in_fn_p (t, current_function_decl))
+    return true;
+  return false;
+}
 
 /* Analyze function body for NODE.
    EARLY indicates run from early optimization pipeline.  */
@@ -2797,6 +2860,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		      es->param[i].points_to_local_or_readonly_memory
 			 = points_to_local_or_readonly_memory_p
 			     (gimple_call_arg (stmt, i));
+		      es->param[i].points_to_possible_sra_candidate
+			 = points_to_possible_sra_candidate_p
+			     (gimple_call_arg (stmt, i));
 		    }
 		}
 	      /* We cannot setup VLA parameters during inlining.  */
@@ -2847,7 +2913,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  if (this_time || this_size)
 	    {
 	      sreal final_time = (sreal)this_time * freq;
-
 	      prob = eliminated_by_inlining_prob (&fbi, stmt);
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
@@ -2856,6 +2921,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		fprintf (dump_file, "\t\tWill be eliminated by inlining\n");
 
 	      ipa_predicate p = bb_predicate & will_be_nonconstant;
+	      int parm = load_or_store_of_ptr_parameter (&fbi, stmt);
+	      ipa_predicate sra_predicate = true;
+	      if (parm != -1)
+		sra_predicate &= add_condition (info, params_summary, parm,
+						ptr_type_node, NULL,
+						ipa_predicate::not_sra_candidate, NULL, 0);
 
 	      /* We can ignore statement when we proved it is never going
 		 to happen, but we cannot do that for call statements
@@ -2875,7 +2946,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  if (prob)
 		    {
 		      ipa_predicate ip
-			= bb_predicate & ipa_predicate::not_inlined ();
+			= bb_predicate & ipa_predicate::not_inlined () & sra_predicate;
 		      info->account_size_time (this_size * prob,
 					       (final_time * prob) / 2, ip,
 					       p);
@@ -2883,7 +2954,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
 					     (final_time * (2 - prob) / 2),
-					     bb_predicate,
+					     bb_predicate & sra_predicate,
 					     p);
 		}
 
@@ -3930,7 +4001,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
   clause_t clause, nonspec_clause;
 
   evaluate_conditions_for_known_args (node, false, avals, &clause,
-				      &nonspec_clause);
+				      &nonspec_clause, NULL);
   ipa_call_context ctx (node, clause, nonspec_clause, vNULL, avals);
   ctx.estimate_size_and_time (estimates);
 }
@@ -4024,6 +4095,9 @@ remap_edge_params (struct cgraph_edge *inlined_edge,
 		  if (inlined_es
 			->param[id].points_to_local_or_readonly_memory)
 		    es->param[i].points_to_local_or_readonly_memory = true;
+		  if (inlined_es
+			->param[id].points_to_possible_sra_candidate)
+		    es->param[i].points_to_possible_sra_candidate = true;
 		}
 	      if (!es->param[i].points_to_local_or_readonly_memory
 		  && jfunc->type == IPA_JF_CONST
@@ -4420,8 +4494,11 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
       for (i = 0; i < length; i++)
 	{
 	  es->param[i].change_prob = streamer_read_uhwi (ib);
+	  bitpack_d bp = streamer_read_bitpack (ib);
 	  es->param[i].points_to_local_or_readonly_memory
-	    = streamer_read_uhwi (ib);
+	    = bp_unpack_value (&bp, 1);	
+	  es->param[i].points_to_possible_sra_candidate
+	    = bp_unpack_value (&bp, 1);	
 	}
     }
   else
@@ -4692,7 +4769,10 @@ write_ipa_call_summary (struct output_block *ob, struct cgraph_edge *e)
   for (i = 0; i < (int) es->param.length (); i++)
     {
       streamer_write_uhwi (ob, es->param[i].change_prob);
-      streamer_write_uhwi (ob, es->param[i].points_to_local_or_readonly_memory);
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, es->param[i].points_to_local_or_readonly_memory, 1);
+      bp_pack_value (&bp, es->param[i].points_to_possible_sra_candidate, 1);
+      streamer_write_bitpack (&bp);
     }
 }
 
