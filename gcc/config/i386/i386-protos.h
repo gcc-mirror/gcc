@@ -155,6 +155,7 @@ extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
 extern void ix86_expand_sse_unpack (rtx, rtx, bool, bool);
 extern void ix86_expand_fp_spaceship (rtx, rtx, rtx);
 extern bool ix86_expand_int_addcc (rtx[]);
+extern void ix86_expand_carry (rtx arg);
 extern rtx_insn *ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);
 extern bool ix86_call_use_plt_p (rtx);
 extern void ix86_split_call_vzeroupper (rtx, rtx);

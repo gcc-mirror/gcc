@@ -12646,6 +12646,21 @@ ix86_check_builtin_isa_match (unsigned int fcode,
   return (bisa & isa) == bisa && (bisa2 & isa2) == bisa2;
 }
 
+/* Emit instructions to set the carry flag from ARG.  */
+
+void
+ix86_expand_carry (rtx arg)
+{
+  if (!CONST_INT_P (arg) || arg == const0_rtx)
+    {
+      arg = convert_to_mode (QImode, arg, 1);
+      arg = copy_to_mode_reg (QImode, arg);
+      emit_insn (gen_addqi3_cconly_overflow (arg, constm1_rtx));
+    }
+  else
+    emit_insn (gen_x86_stc ());
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -13977,14 +13992,7 @@ rdseed_step:
       else
 	{
 	  /* Generate CF from input operand.  */
-	  if (!CONST_INT_P (op1))
-	    {
-	      op1 = convert_to_mode (QImode, op1, 1);
-	      op1 = copy_to_mode_reg (QImode, op1);
-	      emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
-	    }
-	  else
-	    emit_insn (gen_x86_stc ());
+	  ix86_expand_carry (op1);
 
 	  /* Generate instruction that consumes CF.  */
 	  op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
