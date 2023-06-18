@@ -1,3 +1,7 @@
+2023-06-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-mov-2.c: New test case.
+
 2023-06-16  Pan Li  <pan2.li@intel.com>
 
 	PR target/110265

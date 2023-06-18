@@ -1,3 +1,8 @@
+2023-06-17  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* testsuite-management/validate_failures.py (IsInterestingResult):
+	Add result_set argument and use it.  Adjust callers.
+
 2023-06-14  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* testsuite-management/validate_failures.py (TestResult,)

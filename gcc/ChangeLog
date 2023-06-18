@@ -1,3 +1,15 @@
+2023-06-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move): Check that OP1 is
+	CONST_WIDE_INT_P before calling ix86_convert_wide_int_to_broadcast.
+	Generalize special case for converting TImode to V1TImode to handle
+	all 128-bit vector conversions.
+
+2023-06-17  Costas Argyris  <costas.argyris@gmail.com>
+
+	* gcc-ar.cc (main): Refactor to slightly reduce code
+	duplication.  Avoid unnecessary elements in nargv.
+
 2023-06-16  Pan Li  <pan2.li@intel.com>
 
 	PR target/110265
