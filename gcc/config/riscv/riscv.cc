@@ -3806,31 +3806,22 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
-/* Use the TYPE_SIZE to distinguish the type with vector_size attribute and
-   intrinsic vector type.  Because we can't get the decl for the params.  */
-
-static bool
-riscv_scalable_vector_type_p (const_tree type)
-{
-  tree size = TYPE_SIZE (type);
-  if (size && TREE_CODE (size) == INTEGER_CST)
-    return false;
-
-  /* For the data type like vint32m1_t, the size code is POLY_INT_CST.  */
-  return true;
-}
+/* Return true if a vector type is included in the type TYPE.  */
 
 static bool
 riscv_arg_has_vector (const_tree type)
 {
-  bool is_vector = false;
+  if (riscv_v_ext_mode_p (TYPE_MODE (type)))
+    return true;
+
+  if (!COMPLETE_TYPE_P (type))
+    return false;
 
   switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
-      if (!COMPLETE_TYPE_P (type))
-	break;
-
+      /* If it is a record, it is further determined whether its fileds have
+         vector type.  */
       for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
 	if (TREE_CODE (f) == FIELD_DECL)
 	  {
@@ -3838,25 +3829,15 @@ riscv_arg_has_vector (const_tree type)
 	    if (!TYPE_P (field_type))
 	      break;
 
-	    /* Ignore it if it's fixed length vector.  */
-	    if (VECTOR_TYPE_P (field_type))
-	      is_vector = riscv_scalable_vector_type_p (field_type);
-	    else
-	      is_vector = riscv_arg_has_vector (field_type);
+	    if (riscv_arg_has_vector (field_type))
+	      return true;
 	  }
-
       break;
-
-    case VECTOR_TYPE:
-      is_vector = riscv_scalable_vector_type_p (type);
-      break;
-
-    default:
-      is_vector = false;
-      break;
+    case ARRAY_TYPE:
+      return riscv_arg_has_vector (TREE_TYPE (type));
     }
 
-  return is_vector;
+  return false;
 }
 
 /* Pass the type to check whether it's a vector type or contains vector type.
@@ -3867,11 +3848,11 @@ riscv_pass_in_vector_p (const_tree type)
 {
   static int warned = 0;
 
-  if (type && riscv_arg_has_vector (type) && !warned)
+  if (type && riscv_v_ext_mode_p (TYPE_MODE (type)) && !warned)
     {
-      warning (OPT_Wpsabi, "ABI for the scalable vector type is currently in "
-	       "experimental stage and may changes in the upcoming version of "
-	       "GCC.");
+      warning (OPT_Wpsabi,
+	       "ABI for the vector type is currently in experimental stage and "
+	       "may changes in the upcoming version of GCC.");
       warned = 1;
     }
 }

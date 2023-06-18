@@ -2,10 +2,15 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d" } */
 
 typedef int v4si __attribute__ ((vector_size (16)));
-struct A { int a; v4si b; };
+struct A { int a; int b; };
+
+void foo (int b);
 
 void
-fun (struct A a) {} /* { dg-bogus "the scalable vector type" } */
+fun (struct A a) {
+
+        foo (a.b);
+} /* { dg-bogus "the vector type" } */
 
 void
 bar ()

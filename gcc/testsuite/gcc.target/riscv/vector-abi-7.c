@@ -4,11 +4,11 @@
 #include "riscv_vector.h"
 
 void
-fun (vint32m1_t a) { } /* { dg-warning "the vector type" } */
+fun (vint32m1x3_t a) { } /* { dg-warning "the vector type" } */
 
 void
 bar ()
 {
-  vint32m1_t a;
+  vint32m1x3_t a;
   fun (a);
 }
