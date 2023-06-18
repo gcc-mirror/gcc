@@ -131,7 +131,6 @@ static bool xtensa_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int xtensa_insn_cost (rtx_insn *, bool);
 static int xtensa_register_move_cost (machine_mode, reg_class_t,
 				      reg_class_t);
-static int xtensa_memory_move_cost (machine_mode, reg_class_t, bool);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
@@ -213,8 +212,6 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST xtensa_register_move_cost
-#undef TARGET_MEMORY_MOVE_COST
-#define TARGET_MEMORY_MOVE_COST xtensa_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_INSN_COST
@@ -4354,16 +4351,6 @@ xtensa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
     return 3;
   else
     return 10;
-}
-
-/* Worker function for TARGET_MEMORY_MOVE_COST.  */
-
-static int
-xtensa_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
-			 reg_class_t rclass ATTRIBUTE_UNUSED,
-			 bool in ATTRIBUTE_UNUSED)
-{
-  return 4;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
