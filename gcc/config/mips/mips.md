@@ -5753,7 +5753,8 @@
 		     (match_operand:QI 1 "address_operand" "ZD")]
 		    UNSPEC_MIPS_CACHE))]
   "ISA_HAS_CACHE"
-  "cache\t%X0,%a1")
+  "cache\t%X0,%a1"
+  [(set_attr "extended_mips16" "yes")])
 
 ;; Similar, but with the operands hard-coded to an R10K cache barrier
 ;; operation.  We keep the pattern distinct so that we can identify

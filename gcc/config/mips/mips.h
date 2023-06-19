@@ -1386,7 +1386,8 @@ struct mips_cpu_info {
 #define TARGET_CACHE_BUILTIN (mips_isa >= MIPS_ISA_MIPS3)
 
 /* The CACHE instruction is available.  */
-#define ISA_HAS_CACHE (TARGET_CACHE_BUILTIN && !TARGET_MIPS16)
+#define ISA_HAS_CACHE (TARGET_CACHE_BUILTIN && (!TARGET_MIPS16	\
+						|| TARGET_MIPS16E2))
 
 /* Tell collect what flags to pass to nm.  */
 #ifndef NM_FLAGS

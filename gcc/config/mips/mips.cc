@@ -2926,6 +2926,9 @@ mips_9bit_offset_address_p (rtx x, machine_mode mode)
   return (mips_classify_address (&addr, x, mode, false)
 	  && addr.type == ADDRESS_REG
 	  && CONST_INT_P (addr.offset)
+	  && (!TARGET_MIPS16E2
+	      || M16_REG_P (REGNO (addr.reg))
+	      || REGNO (addr.reg) >= FIRST_PSEUDO_REGISTER)
 	  && MIPS_9BIT_OFFSET_P (INTVAL (addr.offset)));
 }
 
@@ -15514,9 +15517,13 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
 	The function is available on the current target if !TARGET_MIPS16.
 
    BUILTIN_AVAIL_MIPS16
-	The function is available on the current target if TARGET_MIPS16.  */
+	The function is available on the current target if TARGET_MIPS16.
+
+   BUILTIN_AVAIL_MIPS16E2
+	The function is available on the current target if TARGET_MIPS16E2.  */
 #define BUILTIN_AVAIL_NON_MIPS16 1
 #define BUILTIN_AVAIL_MIPS16 2
+#define BUILTIN_AVAIL_MIPS16E2 4
 
 /* Declare an availability predicate for built-in functions that
    require non-MIPS16 mode and also require COND to be true.
@@ -15526,6 +15533,17 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
  mips_builtin_avail_##NAME (void)					\
  {									\
    return (COND) ? BUILTIN_AVAIL_NON_MIPS16 : 0;			\
+ }
+
+/* Declare an availability predicate for built-in functions that
+   require non-MIPS16 mode or MIPS16E2 and also require COND to be true.
+   NAME is the main part of the predicate's name.  */
+#define AVAIL_MIPS16E2_OR_NON_MIPS16(NAME, COND)			\
+ static unsigned int							\
+ mips_builtin_avail_##NAME (void)					\
+ {									\
+   return ((COND) ? BUILTIN_AVAIL_NON_MIPS16 | BUILTIN_AVAIL_MIPS16E2	\
+	   : 0);							\
  }
 
 /* Declare an availability predicate for built-in functions that
@@ -15573,7 +15591,7 @@ AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dsp_64, TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
 AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_MMI)
-AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
+AVAIL_MIPS16E2_OR_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 AVAIL_NON_MIPS16 (msa, TARGET_MSA)
 
 /* Construct a mips_builtin_description from the given arguments.
@@ -17573,7 +17591,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   d = &mips_builtins[fcode];
   avail = d->avail ();
   gcc_assert (avail != 0);
-  if (TARGET_MIPS16 && !(avail & BUILTIN_AVAIL_MIPS16))
+  if (TARGET_MIPS16 && !(avail & BUILTIN_AVAIL_MIPS16)
+      && (!TARGET_MIPS16E2 || !(avail & BUILTIN_AVAIL_MIPS16E2)))
     {
       error ("built-in function %qE not supported for MIPS16",
 	     DECL_NAME (fndecl));
