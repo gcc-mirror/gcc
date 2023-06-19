@@ -1,3 +1,8 @@
+/* { dg-additional-options "-O0" } */
+/* Disable optimization to ensure that the compiler does not exploit that
+   S::r + t will never be NULL due to int (&r) and (&t).  */
+
+
 extern "C" void abort ();
 struct S { char a[64]; int (&r)[2]; char b[64]; };
 
@@ -19,7 +24,9 @@ foo (S s, int (&t)[3], int z)
   #pragma omp target map(from: err) map(tofrom: s.r[:0], t[:0])
   {
     if (sep)
-      err = s.r != (int *) 0 || t != (int *) 0;
+      /* Since OpenMP 5.2, if no matching mapped list it has been found,
+	 pointers retain their original value.  */
+      err = s.r == (int *) 0 || t == (int *) 0;
     else
       err = t[0] != 1 || t[1] != 2 || t[2] != 3 || s.r[0] != 6 || s.r[1] != 7;
   }
@@ -28,7 +35,9 @@ foo (S s, int (&t)[3], int z)
   #pragma omp target map(from: err) map(tofrom: s.r[:z], t[:z])
   {
     if (sep)
-      err = s.r != (int *) 0 || t != (int *) 0;
+      /* Since OpenMP 5.2, if no matching mapped list it has been found,
+	 pointers retain their original value.  */
+      err = s.r == (int *) 0 || t == (int *) 0;
     else
       err = t[0] != 1 || t[1] != 2 || t[2] != 3 || s.r[0] != 6 || s.r[1] != 7;
   }

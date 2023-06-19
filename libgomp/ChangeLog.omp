@@ -1,3 +1,19 @@
+2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/110270
+	* target.c (gomp_map_vars_internal): Copy host value instead of NULL
+	for  GOMP_MAP_ZERO_LEN_ARRAY_SECTION if not mapped.
+	* libgomp.texi (OpenMP 5.2 Impl.): Mark as 'Y'.
+	* testsuite/libgomp.c/target-19.c: Update expected value.
+	* testsuite/libgomp.c++/target-18.C: Likewise.
+	* testsuite/libgomp.c++/target-19.C: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-unified-addr-2.c: New test.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-3.c: New test.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-4.c: New test.
+
 2023-06-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
