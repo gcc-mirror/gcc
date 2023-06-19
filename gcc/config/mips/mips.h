@@ -1375,6 +1375,8 @@ struct mips_cpu_info {
 /* ISA includes the pop instruction.  */
 #define ISA_HAS_POP		(TARGET_OCTEON && !TARGET_MIPS16)
 
+#define MIPS16_GP_LOADS	(ISA_HAS_MIPS16E2 && !TARGET_64BIT)
+
 /* The CACHE instruction is available in non-MIPS16 code.  */
 #define TARGET_CACHE_BUILTIN (mips_isa >= MIPS_ISA_MIPS3)
 
@@ -2066,10 +2068,6 @@ FP_ASM_SPEC "\
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
 #define NO_FUNCTION_CSE 1
-
-/* The ABI-defined global pointer.  Sometimes we use a different
-   register in leaf functions: see PIC_OFFSET_TABLE_REGNUM.  */
-#define GLOBAL_POINTER_REGNUM (GP_REG_FIRST + 28)
 
 /* We normally use $28 as the global pointer.  However, when generating
    n32/64 PIC, it is better for leaf functions to use a call-clobbered

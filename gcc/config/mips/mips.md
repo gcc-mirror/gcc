@@ -169,6 +169,7 @@
    (GET_FCSR_REGNUM		2)
    (SET_FCSR_REGNUM		4)
    (PIC_FUNCTION_ADDR_REGNUM	25)
+   (GLOBAL_POINTER_REGNUM	28)
    (RETURN_ADDR_REGNUM		31)
    (CPRESTORE_SLOT_REGNUM	76)
    (GOT_VERSION_REGNUM		79)
@@ -4679,6 +4680,16 @@
   "<d>addiu\t%0,%1,%R2"
   [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "*lowsi_mips16_gp"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+    (lo_sum:SI (reg:SI GLOBAL_POINTER_REGNUM)
+		  (match_operand 1 "immediate_operand" "")))]
+  "MIPS16_GP_LOADS"
+  "addiu\t%0,$28,%R1"
+  [(set_attr "alu_type" "add")
+   (set_attr "mode" "SI")
+   (set_attr "extended_mips16" "yes")])
 
 (define_insn "*low<mode>_mips16"
   [(set (match_operand:P 0 "register_operand" "=d")
