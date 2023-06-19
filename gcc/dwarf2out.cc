@@ -26534,7 +26534,8 @@ process_scope_var (tree stmt, tree decl, tree origin, dw_die_ref context_die)
 
   if (die != NULL && die->die_parent == NULL)
     add_child_die (context_die, die);
-  else if (TREE_CODE (decl_or_origin) == IMPORTED_DECL)
+
+  if (TREE_CODE (decl_or_origin) == IMPORTED_DECL)
     {
       if (early_dwarf)
 	dwarf2out_imported_module_or_decl_1 (decl_or_origin, DECL_NAME (decl_or_origin),
