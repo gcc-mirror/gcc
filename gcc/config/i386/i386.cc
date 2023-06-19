@@ -23666,6 +23666,7 @@ class ix86_vector_costs : public vector_costs
 			      stmt_vec_info stmt_info, slp_tree node,
 			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
+  void finish_cost (const vector_costs *) override;
 };
 
 /* Implement targetm.vectorize.create_costs.  */
@@ -23916,6 +23917,31 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   m_costs[where] += retval;
 
   return retval;
+}
+
+void
+ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
+{
+  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
+  if (loop_vinfo && !m_costing_for_scalar)
+    {
+      /* We are currently not asking the vectorizer to compare costs
+	 between different vector mode sizes.  When using predication
+	 that will end up always choosing the prefered mode size even
+	 if there's a smaller mode covering all lanes.  Test for this
+	 situation and artificially reject the larger mode attempt.
+	 ???  We currently lack masked ops for sub-SSE sized modes,
+	 so we could restrict this rejection to AVX and AVX512 modes
+	 but error on the safe side for now.  */
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	  && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && (exact_log2 (LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant ())
+	      > ceil_log2 (LOOP_VINFO_INT_NITERS (loop_vinfo))))
+	m_costs[vect_body] = INT_MAX;
+    }
+
+  vector_costs::finish_cost (scalar_costs);
 }
 
 /* Validate target specific memory model bits in VAL. */
