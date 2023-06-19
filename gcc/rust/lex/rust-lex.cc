@@ -22,6 +22,7 @@
 #include "rust-linemap.h"
 #include "rust-session-manager.h"
 #include "safe-ctype.h"
+#include "cpplib.h"
 
 namespace Rust {
 // TODO: move to separate compilation unit?
@@ -103,17 +104,35 @@ check_valid_float_dot_end (char character)
   return character != '.' && character != '_' && !ISALPHA (character);
 }
 
-// ISSPACE from safe-ctype but may change in future
 bool
-is_whitespace (char character)
+is_whitespace (int character)
 {
-  return ISSPACE (character);
+  // https://doc.rust-lang.org/reference/whitespace.html
+  return character == '\t' || character == '\n' || character == '\v'
+	 || character == '\f' || character == '\r' || character == ' '
+	 || character == 0x0085	 // next line
+	 || character == 0x200e	 // left-to-right mark
+	 || character == 0x200f	 // right-to-left mark
+	 || character == 0x2028	 // line separator
+	 || character == 0x2029; // pragraph separator
 }
 
 bool
 is_non_decimal_int_literal_separator (char character)
 {
   return character == 'x' || character == 'o' || character == 'b';
+}
+
+bool
+is_identifier_start (int codepoint)
+{
+  return (check_xid_property (codepoint) & XID_START) || codepoint == '_';
+}
+
+bool
+is_identifier_continue (int codepoint)
+{
+  return check_xid_property (codepoint) & XID_CONTINUE;
 }
 
 Lexer::Lexer (const std::string &input)
@@ -284,21 +303,21 @@ Lexer::build_token ()
   while (true)
     {
       Location loc = get_current_location ();
-      current_char = peek_input ();
-      skip_input ();
 
       // detect UTF8 bom
       //
       // Must be the first thing on the first line.
       // There might be an optional BOM (Byte Order Mark), which for UTF-8 is
       // the three bytes 0xEF, 0xBB and 0xBF. These can simply be skipped.
-      if (current_line == 1 && current_column == 1 && current_char == 0xef
-	  && peek_input () == 0xbb && peek_input (1) == 0xbf)
+      if (current_line == 1 && current_column == 1 && peek_input () == 0xef
+	  && peek_input (1) == 0xbb && peek_input (2) == 0xbf)
 	{
-	  skip_input (1);
-	  current_char = peek_input ();
-	  skip_input ();
+	  skip_input (2);
 	}
+
+      current_char = peek_input ();
+      current_char32 = peek_codepoint_input ();
+      skip_codepoint_input ();
 
       // detect shebang
       // Must be the first thing on the first line, starting with #!
@@ -312,6 +331,7 @@ Lexer::build_token ()
 	  int n = 1;
 	  while (true)
 	    {
+	      // TODO use utf-8 codepoint to skip whitespaces
 	      int next_char = peek_input (n);
 	      if (is_whitespace (next_char))
 		n++;
@@ -1052,7 +1072,8 @@ Lexer::build_token ()
 	  int peek = peek_input ();
 	  int peek1 = peek_input (1);
 
-	  if (peek == '#' && (ISALPHA (peek1) || peek1 == '_'))
+	  // TODO (tamaron) parse Unicode ident
+	  if (peek == '#' && is_identifier_start (peek1))
 	    {
 	      TokenPtr raw_ident_ptr = parse_raw_identifier (loc);
 	      if (raw_ident_ptr != nullptr)
@@ -1069,8 +1090,8 @@ Lexer::build_token ()
 	    }
 	}
 
-      // find identifiers and keywords
-      if (ISALPHA (current_char) || current_char == '_')
+      // find identifiers and keywords.
+      if (is_identifier_start (current_char32.value))
 	return parse_identifier_or_keyword (loc);
 
       // int and float literals
@@ -1468,6 +1489,7 @@ Lexer::parse_partial_string_continue ()
   int additional_length_offset = 1;
 
   // string continue
+  // TODO use utf-8 codepoint to skip whitespaces
   while (is_whitespace (current_char))
     {
       if (current_char == '\n')
@@ -1611,6 +1633,7 @@ Lexer::parse_partial_unicode_escape ()
       // wrong bracketm whitespace or single/double quotes are wrong
       // termination, otherwise it is a wrong character, then skip to the actual
       // terminator.
+      // TODO use utf-8 codepoint to skip whitespaces
       if (current_char == '{' || is_whitespace (current_char)
 	  || current_char == '\'' || current_char == '"')
 	{
@@ -1623,6 +1646,7 @@ Lexer::parse_partial_unicode_escape ()
 	  rust_error_at (get_current_location (),
 			 "invalid character %<%c%> in unicode escape",
 			 current_char);
+	  // TODO use utf-8 codepoint to skip whitespaces
 	  while (current_char != '}' && current_char != '{'
 		 && !is_whitespace (current_char) && current_char != '\''
 		 && current_char != '"')
@@ -1905,8 +1929,7 @@ Lexer::parse_raw_identifier (Location loc)
   int length = 0;
   current_char = peek_input ();
   // loop through entire name
-  while (ISALPHA (current_char) || ISDIGIT (current_char)
-	 || current_char == '_')
+  while (is_identifier_continue (current_char))
     {
       length++;
 
@@ -2042,21 +2065,22 @@ Lexer::parse_identifier_or_keyword (Location loc)
 {
   std::string str;
   str.reserve (16); // default
-  str += current_char;
+  str += current_char32.as_string ();
 
   bool first_is_underscore = current_char == '_';
 
   int length = 1;
-  current_char = peek_input ();
+  current_char32 = peek_codepoint_input ();
+
   // loop through entire name
-  while (ISALPHA (current_char) || ISDIGIT (current_char)
-	 || current_char == '_')
+  while (is_identifier_continue (current_char32.value))
     {
+      auto s = current_char32.as_string ();
       length++;
 
-      str += current_char;
-      skip_input ();
-      current_char = peek_input ();
+      str += current_char32.as_string ();
+      skip_codepoint_input ();
+      current_char32 = peek_codepoint_input ();
     }
 
   current_column += length;
@@ -2444,27 +2468,28 @@ Lexer::parse_char_or_lifetime (Location loc)
 
 	  return Token::make_char (loc, current_char32);
 	}
-      else if (ISDIGIT (current_char32.value) || ISALPHA (current_char32.value)
-	       || current_char32.value == '_')
+      else if (is_identifier_start (current_char32.value))
 	{
 	  // parse lifetime name
 	  std::string str;
 	  str += current_char32;
 	  length++;
 
-	  current_char = peek_input ();
-	  while (ISDIGIT (current_char) || ISALPHA (current_char)
-		 || current_char == '_')
+	  current_char32 = peek_codepoint_input ();
+	  while (is_identifier_continue (current_char32.value))
 	    {
-	      str += current_char;
-	      skip_input ();
-	      current_char = peek_input ();
+	      str += current_char32;
+	      skip_codepoint_input ();
+	      current_char32 = peek_codepoint_input ();
 	      length++;
 	    }
 
 	  current_column += length;
 
 	  loc += length - 1;
+
+	  // TODO some keywords cannot be used for a lifetime label #2306
+	  // https://doc.rust-lang.org/reference/tokens.html
 
 	  str.shrink_to_fit ();
 	  return Token::make_lifetime (loc, std::move (str));
@@ -2637,6 +2662,8 @@ Lexer::peek_codepoint_input ()
 void
 Lexer::skip_codepoint_input ()
 {
+  if (peek_input () == EOF)
+    return;
   int toSkip = get_input_codepoint_length ();
   gcc_assert (toSkip >= 1);
 

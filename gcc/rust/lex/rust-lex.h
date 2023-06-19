@@ -118,9 +118,9 @@ private:
   // Advances current input char to n + 1 chars ahead of current position.
   void skip_input (int n);
 
-  // Returns char n chars ahead of current position.
-  int peek_input ();
   // Peeks the current char.
+  int peek_input ();
+  // Returns char n bytes ahead of current position.
   int peek_input (int n);
 
   // Classifies keyword (i.e. gets id for keyword).
@@ -137,6 +137,7 @@ private:
 
   int get_input_codepoint_length ();
   int test_get_input_codepoint_n_length (int n_start_offset);
+  // Peeks the current utf-8 char
   Codepoint peek_codepoint_input ();
   Codepoint test_peek_codepoint_input (int n);
   void skip_codepoint_input ();
@@ -220,6 +221,7 @@ private:
   int current_column;
   // Current character.
   int current_char;
+  Codepoint current_char32;
   // Line map.
   Linemap *line_map;
 
