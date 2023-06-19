@@ -3359,9 +3359,9 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and<mode>3_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d,d,d,d")
-	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "%W,W,W,d,0,d,0,0?")
-		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yw,Yw,d,Yx,Yz,K")))]
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d,d,d,d,d,d,d")
+	(and:GPR (match_operand:GPR 1 "nonimmediate_operand" "%0,0,W,W,W,d,0,d,0,0?")
+		 (match_operand:GPR 2 "and_operand" "Yb,Yh,Yb,Yh,Yw,Yw,d,Yx,Yz,K")))]
   "TARGET_MIPS16 && and_operands_ok (<MODE>mode, operands[1], operands[2])"
 {
   int len;
@@ -3370,38 +3370,42 @@
   switch (which_alternative)
     {
     case 0:
+      return "zeb\t%0";
+    case 1:
+      return "zeh\t%0";
+    case 2:
       operands[1] = gen_lowpart (QImode, operands[1]);
       return "lbu\t%0,%1";
-    case 1:
+    case 3:
       operands[1] = gen_lowpart (HImode, operands[1]);
       return "lhu\t%0,%1";
-    case 2:
+    case 4:
       operands[1] = gen_lowpart (SImode, operands[1]);
       return "lwu\t%0,%1";
-    case 3:
-      return "#";
-    case 4:
-      return "and\t%0,%2";
     case 5:
+      return "#";
+    case 6:
+      return "and\t%0,%2";
+    case 7:
       len = low_bitmask_len (<MODE>mode, INTVAL (operands[2]));
       operands[2] = GEN_INT (len);
       return "ext\t%0,%1,0,%2";
-    case 6:
+    case 8:
       mips_bit_clear_info (<MODE>mode, INTVAL (operands[2]), &pos, &len);
       operands[1] = GEN_INT (pos);
       operands[2] = GEN_INT (len);
       return "ins\t%0,$0,%1,%2";
-    case 7:
+    case 9:
       return "andi\t%0,%x2";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "move_type" "load,load,load,shift_shift,logical,ext_ins,ext_ins,andi")
+  [(set_attr "move_type" "andi,andi,load,load,load,shift_shift,logical,ext_ins,ext_ins,andi")
    (set_attr "mode" "<MODE>")
-   (set_attr "extended_mips16" "no,no,no,no,no,yes,yes,yes")
+   (set_attr "extended_mips16" "no,no,no,no,no,no,no,yes,yes,yes")
    (set (attr "enabled")
-   (cond [(and (eq_attr "alternative" "7")
+   (cond [(and (eq_attr "alternative" "9")
 			   (not (match_test "ISA_HAS_MIPS16E2")))
 		  (const_string "no")
 		  (and (eq_attr "alternative" "0,1")
