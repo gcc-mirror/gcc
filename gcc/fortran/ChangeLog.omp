@@ -1,5 +1,10 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* trans-openmp.cc (gfc_omp_finish_clause): Treat implicitly-mapped
+	assumed-size arrays as zero-sized for OpenACC, rather than an error.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* trans-openmp.cc (gfc_omp_finish_clause): Handle "declare create" for
 	scalar allocatable variables.
 	(gfc_trans_omp_clauses): Don't include allocatable vars in synthetic

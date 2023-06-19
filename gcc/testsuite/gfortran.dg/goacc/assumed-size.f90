@@ -4,7 +4,8 @@
 ! exit data, respectively.
 
 ! This does not appear to be supported by the OpenACC standard as of version
-! 3.0.  Check for an appropriate error message.
+! 3.0.  There is however real-world code that relies on this working, so we
+! make an attempt to support it.
 
 program test
   implicit none
@@ -26,7 +27,6 @@ subroutine dtest (a, n)
   !$acc enter data copyin(a(1:n))
 
   !$acc parallel loop
-! { dg-error {implicit mapping of assumed size array 'a'} "" { target *-*-* } .-1 }
   do i = 1, n
      a(i) = i
   end do
