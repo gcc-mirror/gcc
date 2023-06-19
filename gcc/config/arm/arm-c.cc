@@ -248,8 +248,6 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   {
     unsigned int pac = 1;
 
-    gcc_assert (aarch_ra_sign_key == AARCH_KEY_A);
-
     if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
       pac |= 0x4;
 

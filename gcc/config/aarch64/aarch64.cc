@@ -9541,12 +9541,12 @@ aarch64_expand_prologue (void)
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
     {
-      switch (aarch_ra_sign_key)
+      switch (aarch64_ra_sign_key)
 	{
-	  case AARCH_KEY_A:
+	  case AARCH64_KEY_A:
 	    insn = emit_insn (gen_paciasp ());
 	    break;
-	  case AARCH_KEY_B:
+	  case AARCH64_KEY_B:
 	    insn = emit_insn (gen_pacibsp ());
 	    break;
 	  default:
@@ -9962,12 +9962,12 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
   if (aarch64_return_address_signing_enabled ()
       && (sibcall || !TARGET_ARMV8_3))
     {
-      switch (aarch_ra_sign_key)
+      switch (aarch64_ra_sign_key)
 	{
-	  case AARCH_KEY_A:
+	  case AARCH64_KEY_A:
 	    insn = emit_insn (gen_autiasp ());
 	    break;
-	  case AARCH_KEY_B:
+	  case AARCH64_KEY_B:
 	    insn = emit_insn (gen_autibsp ());
 	    break;
 	  default:
@@ -18689,6 +18689,62 @@ aarch64_set_asm_isa_flags (aarch64_feature_flags flags)
   aarch64_set_asm_isa_flags (&global_options, flags);
 }
 
+static void
+aarch64_handle_no_branch_protection (void)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
+  aarch_enable_bti = 0;
+}
+
+static void
+aarch64_handle_standard_branch_protection (void)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
+  aarch64_ra_sign_key = AARCH64_KEY_A;
+  aarch_enable_bti = 1;
+}
+
+static void
+aarch64_handle_pac_ret_protection (void)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
+  aarch64_ra_sign_key = AARCH64_KEY_A;
+}
+
+static void
+aarch64_handle_pac_ret_leaf (void)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_ALL;
+}
+
+static void
+aarch64_handle_pac_ret_b_key (void)
+{
+  aarch64_ra_sign_key = AARCH64_KEY_B;
+}
+
+static void
+aarch64_handle_bti_protection (void)
+{
+  aarch_enable_bti = 1;
+}
+
+static const struct aarch_branch_protect_type aarch64_pac_ret_subtypes[] = {
+  { "leaf", false, aarch64_handle_pac_ret_leaf, NULL, 0 },
+  { "b-key", false, aarch64_handle_pac_ret_b_key, NULL, 0 },
+  { NULL, false, NULL, NULL, 0 }
+};
+
+static const struct aarch_branch_protect_type aarch64_branch_protect_types[] =
+{
+  { "none", true, aarch64_handle_no_branch_protection, NULL, 0 },
+  { "standard", true, aarch64_handle_standard_branch_protection, NULL, 0 },
+  { "pac-ret", false, aarch64_handle_pac_ret_protection,
+    aarch64_pac_ret_subtypes, ARRAY_SIZE (aarch64_pac_ret_subtypes) },
+  { "bti", false, aarch64_handle_bti_protection, NULL, 0 },
+  { NULL, false, NULL, NULL, 0 }
+};
+
 /* Implement TARGET_OPTION_OVERRIDE.  This is called once in the beginning
    and is used to parse the -m{cpu,tune,arch} strings and setup the initial
    tuning structs.  In particular it must set selected_tune and
@@ -18711,7 +18767,8 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch_validate_mbranch_protection (aarch64_branch_protection_string,
+    aarch_validate_mbranch_protection (aarch64_branch_protect_types,
+				       aarch64_branch_protection_string,
 				       "-mbranch-protection=");
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
@@ -19149,7 +19206,7 @@ aarch64_handle_attr_cpu (const char *str)
 static bool
 aarch64_handle_attr_branch_protection (const char* str)
 {
-  return aarch_validate_mbranch_protection (str,
+  return aarch_validate_mbranch_protection (aarch64_branch_protect_types, str,
 					    "target(\"branch-protection=\")");
 }
 
@@ -24449,7 +24506,7 @@ void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
   if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
-      && aarch_ra_sign_key == AARCH_KEY_B)
+      && aarch64_ra_sign_key == AARCH64_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
 

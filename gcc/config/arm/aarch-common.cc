@@ -37,6 +37,7 @@
 #include "function.h"
 #include "emit-rtl.h"
 #include "aarch-common.h"
+#include "aarch-common-protos.h"
 
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
@@ -660,61 +661,6 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   return saw_asm_flag ? seq : NULL;
 }
 
-static void
-aarch_handle_no_branch_protection (void)
-{
-  aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
-  aarch_enable_bti = 0;
-}
-
-static void
-aarch_handle_standard_branch_protection (void)
-{
-  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
-  aarch_ra_sign_key = AARCH_KEY_A;
-  aarch_enable_bti = 1;
-}
-
-static void
-aarch_handle_pac_ret_protection (void)
-{
-  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
-  aarch_ra_sign_key = AARCH_KEY_A;
-}
-
-static void
-aarch_handle_pac_ret_leaf (void)
-{
-  aarch_ra_sign_scope = AARCH_FUNCTION_ALL;
-}
-
-static void
-aarch_handle_pac_ret_b_key (void)
-{
-  aarch_ra_sign_key = AARCH_KEY_B;
-}
-
-static void
-aarch_handle_bti_protection (void)
-{
-  aarch_enable_bti = 1;
-}
-
-static const struct aarch_branch_protect_type aarch_pac_ret_subtypes[] = {
-  { "leaf", false, aarch_handle_pac_ret_leaf, NULL, 0 },
-  { "b-key", false, aarch_handle_pac_ret_b_key, NULL, 0 },
-  { NULL, false, NULL, NULL, 0 }
-};
-
-static const struct aarch_branch_protect_type aarch_branch_protect_types[] = {
-  { "none", true, aarch_handle_no_branch_protection, NULL, 0 },
-  { "standard", true, aarch_handle_standard_branch_protection, NULL, 0 },
-  { "pac-ret", false, aarch_handle_pac_ret_protection, aarch_pac_ret_subtypes,
-    ARRAY_SIZE (aarch_pac_ret_subtypes) },
-  { "bti", false, aarch_handle_bti_protection, NULL, 0 },
-  { NULL, false, NULL, NULL, 0 }
-};
-
 /* In-place split *str at delim, return *str and set *str to the tail
    of the string or NULL if the end is reached.  */
 
@@ -735,12 +681,15 @@ next_tok (char **str, int delim)
   return tok;
 }
 
-/* Parses CONST_STR for branch protection features specified in
-   aarch64_branch_protect_types, and set any global variables required.
-   Returns true on success.  */
+/* Parses CONST_STR according to branch protection features specified in
+   TYPES.  The first type resets the settings, the last type is marked with
+   name == NULL.  On failure an error message is printed referencing OPT as
+   the source of the options.  Returns true on success.  */
 
 bool
-aarch_validate_mbranch_protection (const char *const_str, const char *opt)
+aarch_validate_mbranch_protection (
+  const struct aarch_branch_protect_type *types, const char *const_str,
+  const char *opt)
 {
   char *str_root = xstrdup (const_str);
   char *next_str = str_root;
@@ -750,11 +699,11 @@ aarch_validate_mbranch_protection (const char *const_str, const char *opt)
   bool res = true;
 
   /* First entry is "none" and it is used to reset the state.  */
-  aarch_branch_protect_types[0].handler ();
+  types->handler ();
 
   while (str)
     {
-      const aarch_branch_protect_type *type = aarch_branch_protect_types;
+      const aarch_branch_protect_type *type = types;
       for (; type->name; type++)
 	if (strcmp (str, type->name) == 0)
 	  break;

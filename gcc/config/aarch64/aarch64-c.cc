@@ -235,9 +235,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     {
       int v = 0;
-      if (aarch_ra_sign_key == AARCH_KEY_A)
+      if (aarch64_ra_sign_key == AARCH64_KEY_A)
 	v |= 1;
-      if (aarch_ra_sign_key == AARCH_KEY_B)
+      if (aarch64_ra_sign_key == AARCH64_KEY_B)
 	v |= 2;
       if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
 	v |= 4;
