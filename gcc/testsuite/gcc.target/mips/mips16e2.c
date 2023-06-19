@@ -122,3 +122,119 @@ test10 (int i)
   return i;
 }
 
+/* Test 32bit unaligned load.  */
+
+/* { dg-final { scan-assembler "test11:.*\tlwl\t.*test11\n" } } */
+/* { dg-final { scan-assembler "test11:.*\tlwr\t.*test11\n" } } */
+struct node11
+{
+  char c;
+  int i;
+} __attribute__ ((packed)) obj11 __attribute__((aligned(1)));
+
+int
+test11 (void)
+{
+  return obj11.i;
+}
+
+/* Test 32bit unaligned load.  */
+
+/* { dg-final { scan-assembler "test12:.*\tlwl\t.*test12\n" } } */
+/* { dg-final { scan-assembler "test12:.*\tlwr\t.*test12\n" } } */
+struct node12
+{
+  unsigned int i : 8;
+  unsigned int j : 32;
+} __attribute__ ((packed)) obj12 __attribute__((aligned(16)));
+
+int
+test12 (void)
+{
+  return obj12.j;
+}
+
+/* Test 32bit unaligned store with non-zero constant */
+
+/* { dg-final { scan-assembler "test13:.*\tswl\t.*test13\n" } } */
+/* { dg-final { scan-assembler "test13:.*\tswr\t.*test13\n" } } */
+struct node13
+{
+  char c;
+  int i;
+} __attribute__ ((packed)) obj13 __attribute__((aligned(1)));
+
+void
+test13 (void)
+{
+  obj13.i = 1234;
+}
+
+/* Test 32bit unaligned store with zero constant.  */
+
+/* { dg-final { scan-assembler "test14:.*\tswl\t.*test14\n" } } */
+/* { dg-final { scan-assembler "test14:.*\tswr\t.*test14\n" } } */
+/* { dg-final { scan-assembler-not "test14:.*\tswl\t\\\$0,.*test14\n" } } */
+/* { dg-final { scan-assembler-not "test14:.*\tswr\t\\\$0,.*test14\n" } } */
+struct node14
+{
+  char c;
+  int i;
+} __attribute__ ((packed)) obj14 __attribute__((aligned(1)));
+
+void
+test14 (void)
+{
+  obj14.i = 0;
+}
+
+/* Test 32bit unaligned store with non-constant.  */
+
+/* { dg-final { scan-assembler "test15:.*\tswl\t.*test15\n" } } */
+/* { dg-final { scan-assembler "test15:.*\tswr\t.*test15\n" } } */
+struct node15
+{
+  char c;
+  int i;
+} __attribute__ ((packed)) obj15 __attribute__((aligned(1)));
+
+int i15 = 1234;
+
+void
+test15 (void)
+{
+  obj15.i = i15;
+}
+
+/* Test 32bit unaligned store with non-constant */
+
+/* { dg-final { scan-assembler "test16:.*\tswl\t.*test16\n" } } */
+/* { dg-final { scan-assembler "test16:.*\tswr\t.*test16\n" } } */
+struct node16
+{
+  char c;
+  int i;
+} __attribute__ ((packed)) obj16 __attribute__((aligned(1)));
+
+void
+test16 (int i)
+{
+  obj16.i = i;
+}
+
+/* Test 32bit unaligned store with non-constant.  */
+
+/* { dg-final { scan-assembler "test17:.*\tswl\t.*test17\n" } } */
+/* { dg-final { scan-assembler "test17:.*\tswr\t.*test17\n" } } */
+struct node17
+{
+  unsigned int i : 8;
+  unsigned int j : 32;
+} __attribute__ ((packed)) obj17 __attribute__((aligned(16)));
+
+void
+test17 (int i)
+{
+  obj17.j = i;
+}
+

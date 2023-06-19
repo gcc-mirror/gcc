@@ -8701,11 +8701,24 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
     return false;
 
   mode = int_mode_for_size (width, 0).require ();
-  src = gen_lowpart (mode, src);
+  if (TARGET_MIPS16
+      && src == const0_rtx)
+    src = force_reg (mode, src);
+  else
+    src = gen_lowpart (mode, src);
+
   if (mode == DImode)
     {
+      if (TARGET_MIPS16)
+	gcc_unreachable ();
       emit_insn (gen_mov_sdl (dest, src, left));
       emit_insn (gen_mov_sdr (copy_rtx (dest), copy_rtx (src), right));
+    }
+  else if (TARGET_MIPS16)
+    {
+      emit_insn (gen_mov_swl_mips16e2 (dest, src, left));
+      emit_insn (gen_mov_swr_mips16e2 (copy_rtx (dest), copy_rtx (src),
+				       right));
     }
   else
     {
