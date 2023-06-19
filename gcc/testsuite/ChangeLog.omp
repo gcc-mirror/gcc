@@ -1,5 +1,9 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	* gfortran.dg/goacc/assumed-size.f90: Don't expect error.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/goacc/acc-data-chain.c: Re-enable scan test.
 	* gfortran.dg/goacc/pr70828.f90: Likewise.
 	* gfortran.dg/goacc/assumed-size.f90: New test.
