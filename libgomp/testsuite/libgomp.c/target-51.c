@@ -9,7 +9,7 @@
 
 /* See comment in target-50.c/target-50.c for why the output differs.  */
 
-/* { dg-output ".*libgomp: OMP_TARGET_OFFLOAD is set to MANDATORY, but .*" } } */
+/* { dg-output ".*libgomp: OMP_TARGET_OFFLOAD is set to MANDATORY, but .*" } */
 
 int
 main ()
