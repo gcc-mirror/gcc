@@ -3,6 +3,14 @@
 	Backported from mainline:
 	2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.c/target-51.c: Accept more error msg variants
+	as expected dg-output.
+
+2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
+	2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR middle-end/110270
 	* target.c (gomp_map_vars_internal): Copy host value instead of NULL
 	for  GOMP_MAP_ZERO_LEN_ARRAY_SECTION if not mapped.
