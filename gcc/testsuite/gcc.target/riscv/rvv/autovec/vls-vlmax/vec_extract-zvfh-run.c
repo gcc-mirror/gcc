@@ -1,5 +1,5 @@
 /* { dg-do run {target { riscv_zvfh_hw } } } */
-/* { dg-additional-options "-march=rv64gcv_zvfh -Wno-pedantic" } */
+/* { dg-additional-options "-Wno-pedantic" } */
 
 #include <assert.h>
 
