@@ -2376,7 +2376,9 @@ mips_symbol_insns_1 (enum mips_symbol_type type, machine_mode mode)
 	 The final address is then $at + %lo(symbol).  With 32-bit
 	 symbols we just need a preparatory LUI for normal mode and
 	 a preparatory LI and SLL for MIPS16.  */
-      return ABI_HAS_64BIT_SYMBOLS ? 6 : TARGET_MIPS16 ? 3 : 2;
+      return ABI_HAS_64BIT_SYMBOLS
+	      ? 6
+	      : (TARGET_MIPS16 && !ISA_HAS_MIPS16E2) ? 3 : 2;
 
     case SYMBOL_GP_RELATIVE:
       /* Treat GP-relative accesses as taking a single instruction on
@@ -2948,7 +2950,7 @@ mips_const_insns (rtx x)
 
       /* This is simply an LUI for normal mode.  It is an extended
 	 LI followed by an extended SLL for MIPS16.  */
-      return TARGET_MIPS16 ? 4 : 1;
+      return TARGET_MIPS16 ? (ISA_HAS_MIPS16E2 ? 2 : 4) : 1;
 
     case CONST_INT:
       if (TARGET_MIPS16)
@@ -2960,7 +2962,10 @@ mips_const_insns (rtx x)
 		: SMALL_OPERAND_UNSIGNED (INTVAL (x)) ? 2
 		: IN_RANGE (-INTVAL (x), 0, 255) ? 2
 		: SMALL_OPERAND_UNSIGNED (-INTVAL (x)) ? 3
-		: 0);
+		: ISA_HAS_MIPS16E2
+		  ? (trunc_int_for_mode (INTVAL (x), SImode) == INTVAL (x)
+		     ? 4 : 8)
+		  : 0);
 
       return mips_build_integer (codes, INTVAL (x));
 
@@ -5333,6 +5338,11 @@ mips_output_move (rtx dest, rtx src)
 	  if (!TARGET_MIPS16)
 	    return "li\t%0,%1\t\t\t# %X1";
 
+	  if (ISA_HAS_MIPS16E2
+	      && LUI_INT (src)
+	      && !SMALL_OPERAND_UNSIGNED (INTVAL (src)))
+	    return "lui\t%0,%%hi(%1)\t\t\t# %X1";
+
 	  if (SMALL_OPERAND_UNSIGNED (INTVAL (src)))
 	    return "li\t%0,%1";
 
@@ -5341,7 +5351,7 @@ mips_output_move (rtx dest, rtx src)
 	}
 
       if (src_code == HIGH)
-	return TARGET_MIPS16 ? "#" : "lui\t%0,%h1";
+	return (TARGET_MIPS16 && !ISA_HAS_MIPS16E2) ? "#" : "lui\t%0,%h1";
 
       if (CONST_GP_P (src))
 	return "move\t%0,%1";
@@ -12081,13 +12091,25 @@ mips_output_function_prologue (FILE *file)
     {
       if (TARGET_MIPS16)
 	{
-	  /* This is a fixed-form sequence.  The position of the
-	     first two instructions is important because of the
-	     way _gp_disp is defined.  */
-	  output_asm_insn ("li\t$2,%%hi(_gp_disp)", 0);
-	  output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
-	  output_asm_insn ("sll\t$2,16", 0);
-	  output_asm_insn ("addu\t$2,$3", 0);
+	  if (ISA_HAS_MIPS16E2)
+	    {
+	      /* This is a fixed-form sequence.  The position of the
+		 first two instructions is important because of the
+		 way _gp_disp is defined.  */
+	      output_asm_insn ("lui\t$2,%%hi(_gp_disp)", 0);
+	      output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
+	      output_asm_insn ("addu\t$2,$3", 0);
+	    }
+	  else
+	    {
+	      /* This is a fixed-form sequence.  The position of the
+		 first two instructions is important because of the
+		 way _gp_disp is defined.  */
+	      output_asm_insn ("li\t$2,%%hi(_gp_disp)", 0);
+	      output_asm_insn ("addiu\t$3,$pc,%%lo(_gp_disp)", 0);
+	      output_asm_insn ("sll\t$2,16", 0);
+	      output_asm_insn ("addu\t$2,$3", 0);
+	    }
 	}
       else
 	{

@@ -100,3 +100,25 @@ test08 (unsigned int a)
   return ((a + 0x2) ^ 0x3f0);
 }
 
+/* Test LUI.  */
+
+/* { dg-final { scan-assembler "test09:.*\tlui\t.*test09\n" } } */
+int
+test09 (void)
+{
+  return 0x44440000;
+}
+
+/* Test LUI relocation sequence chang.  */
+
+/* { dg-final { scan-assembler "test10:.*\tlui\t.*test10\n" } } */
+int *a10;
+
+int
+test10 (int i)
+{
+  a10 = &i;
+  *a10 = 0x44440000;
+  return i;
+}
+

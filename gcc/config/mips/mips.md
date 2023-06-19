@@ -4636,7 +4636,7 @@
 (define_split
   [(set (match_operand:P 0 "d_operand")
 	(high:P (match_operand:P 1 "symbolic_operand_with_high")))]
-  "TARGET_MIPS16 && reload_completed"
+  "TARGET_MIPS16 && reload_completed && !ISA_HAS_MIPS16E2"
   [(set (match_dup 0) (unspec:P [(match_dup 1)] UNSPEC_UNSHIFTED_HIGH))
    (set (match_dup 0) (ashift:P (match_dup 0) (const_int 16)))])
 
