@@ -366,7 +366,7 @@
 ;; As a convenience, "fp_q" means "fp" + the ability to move between
 ;; Q registers and is equivalent to "simd".
 
-(define_enum "arches" [ any rcpc8_4 fp fp_q simd sve fp16])
+(define_enum "arches" [ any rcpc8_4 fp fp_q simd nosimd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -396,6 +396,9 @@
 
 	(and (eq_attr "arch" "fp_q, simd")
 	     (match_test "TARGET_SIMD"))
+
+	(and (eq_attr "arch" "nosimd")
+	     (match_test "!TARGET_SIMD"))
 
 	(and (eq_attr "arch" "fp16")
 	     (match_test "TARGET_FP_F16INST"))
@@ -1206,26 +1209,27 @@
 )
 
 (define_insn "*mov<mode>_aarch64"
-  [(set (match_operand:SHORT 0 "nonimmediate_operand" "=r,r,    w,r  ,r,w, m,m,r,w,w")
-	(match_operand:SHORT 1 "aarch64_mov_operand"  " r,M,D<hq>,Usv,m,m,rZ,w,w,rZ,w"))]
+  [(set (match_operand:SHORT 0 "nonimmediate_operand")
+	(match_operand:SHORT 1 "aarch64_mov_operand"))]
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
-  "@
-   mov\t%w0, %w1
-   mov\t%w0, %1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
-   * return aarch64_output_sve_cnt_immediate (\"cnt\", \"%x0\", operands[1]);
-   ldr<size>\t%w0, %1
-   ldr\t%<size>0, %1
-   str<size>\t%w1, %0
-   str\t%<size>1, %0
-   * return TARGET_SIMD ? \"umov\t%w0, %1.<v>[0]\" : \"fmov\t%w0, %s1\";
-   * return TARGET_SIMD ? \"dup\t%0.<Vallxd>, %w1\" : \"fmov\t%s0, %w1\";
-   * return TARGET_SIMD ? \"dup\t%<Vetype>0, %1.<v>[0]\" : \"fmov\t%s0, %s1\";"
-  ;; The "mov_imm" type for CNT is just a placeholder.
-  [(set_attr "type" "mov_reg,mov_imm,neon_move,mov_imm,load_4,load_4,store_4,
-		     store_4,neon_to_gp<q>,neon_from_gp<q>,neon_dup")
-   (set_attr "arch" "*,*,simd,sve,*,*,*,*,*,*,*")]
+  {@ [cons: =0, 1; attrs: type, arch]
+     [r, r    ; mov_reg        , *     ] mov\t%w0, %w1
+     [r, M    ; mov_imm        , *     ] mov\t%w0, %1
+     [w, D<hq>; neon_move      , simd  ] << aarch64_output_scalar_simd_mov_immediate (operands[1], <MODE>mode);
+     /* The "mov_imm" type for CNT is just a placeholder.  */
+     [r, Usv  ; mov_imm        , sve   ] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, m    ; load_4         , *     ] ldr<size>\t%w0, %1
+     [w, m    ; load_4         , *     ] ldr\t%<size>0, %1
+     [m, r Z  ; store_4        , *     ] str<size>\\t%w1, %0
+     [m, w    ; store_4        , *     ] str\t%<size>1, %0
+     [r, w    ; neon_to_gp<q>  , simd  ] umov\t%w0, %1.<v>[0]
+     [r, w    ; neon_to_gp<q>  , nosimd] fmov\t%w0, %s1 /*foo */
+     [w, r Z  ; neon_from_gp<q>, simd  ] dup\t%0.<Vallxd>, %w1
+     [w, r Z  ; neon_from_gp<q>, nosimd] fmov\t%s0, %w1
+     [w, w    ; neon_dup       , simd  ] dup\t%<Vetype>0, %1.<v>[0]
+     [w, w    ; neon_dup       , nosimd] fmov\t%s0, %s1
+  }
 )
 
 (define_expand "mov<mode>"
@@ -1262,79 +1266,70 @@
 )
 
 (define_insn_and_split "*movsi_aarch64"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r,  r, w,r,w, w")
-	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Ds"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
-  "@
-   mov\\t%w0, %w1
-   mov\\t%w0, %w1
-   mov\\t%w0, %w1
-   mov\\t%w0, %1
-   #
-   * return aarch64_output_sve_cnt_immediate (\"cnt\", \"%x0\", operands[1]);
-   ldr\\t%w0, %1
-   ldr\\t%s0, %1
-   str\\t%w1, %0
-   str\\t%s1, %0
-   adrp\\t%x0, %A1\;ldr\\t%w0, [%x0, %L1]
-   adr\\t%x0, %c1
-   adrp\\t%x0, %A1
-   fmov\\t%s0, %w1
-   fmov\\t%w0, %s1
-   fmov\\t%s0, %s1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);"
+  {@ [cons: =0, 1; attrs: type, arch, length]
+     [r k, r  ; mov_reg  , *   , 4] mov\t%w0, %w1
+     [r  , k  ; mov_reg  , *   , 4] ^
+     [r  , M  ; mov_imm  , *   , 4] mov\t%w0, %1
+     [r  , n  ; mov_imm  , *   ,16] #
+     /* The "mov_imm" type for CNT is just a placeholder.  */
+     [r  , Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r  , m  ; load_4   , *   , 4] ldr\t%w0, %1
+     [w  , m  ; load_4   , fp  , 4] ldr\t%s0, %1
+     [m  , r Z; store_4  , *   , 4] str\t%w1, %0
+     [m  , w  ; store_4  , fp  , 4] str\t%s1, %0
+     [r  , Usw; load_4   , *   , 8] adrp\t%x0, %A1;ldr\t%w0, [%x0, %L1]
+     [r  , Usa; adr      , *   , 4] adr\t%x0, %c1
+     [r  , Ush; adr      , *   , 4] adrp\t%x0, %A1
+     [w  , r Z; f_mcr    , fp  , 4] fmov\t%s0, %w1
+     [r  , w  ; f_mrc    , fp  , 4] fmov\t%w0, %s1
+     [w  , w  ; fmov     , fp  , 4] fmov\t%s0, %s1
+     [w  , Ds ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
+  }
   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
     && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
-   [(const_int 0)]
-   "{
-       aarch64_expand_mov_immediate (operands[0], operands[1]);
-       DONE;
-    }"
-  ;; The "mov_imm" type for CNT is just a placeholder.
-  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_4,
-		    load_4,store_4,store_4,load_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
-   (set_attr "arch"   "*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
-   (set_attr "length" "4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")
-]
+  [(const_int 0)]
+  {
+    aarch64_expand_mov_immediate (operands[0], operands[1]);
+    DONE;
+  }
 )
 
 (define_insn_and_split "*movdi_aarch64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m,m,   r,  r,  r, w,r,w, w")
-	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,O,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Dd"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand")
+	(match_operand:DI 1 "aarch64_mov_operand"))]
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
-  "@
-   mov\\t%x0, %x1
-   mov\\t%0, %x1
-   mov\\t%x0, %1
-   * return aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? \"mov\\t%x0, %1\" : \"mov\\t%w0, %1\";
-   #
-   * return aarch64_output_sve_cnt_immediate (\"cnt\", \"%x0\", operands[1]);
-   ldr\\t%x0, %1
-   ldr\\t%d0, %1
-   str\\t%x1, %0
-   str\\t%d1, %0
-   * return TARGET_ILP32 ? \"adrp\\t%0, %A1\;ldr\\t%w0, [%0, %L1]\" : \"adrp\\t%0, %A1\;ldr\\t%0, [%0, %L1]\";
-   adr\\t%x0, %c1
-   adrp\\t%x0, %A1
-   fmov\\t%d0, %x1
-   fmov\\t%x0, %d1
-   fmov\\t%d0, %d1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);"
-   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
-    && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
-   [(const_int 0)]
-   "{
-       aarch64_expand_mov_immediate (operands[0], operands[1]);
-       DONE;
-    }"
-  ;; The "mov_imm" type for CNTD is just a placeholder.
-  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,
-		     load_8,load_8,store_8,store_8,load_8,adr,adr,f_mcr,f_mrc,
-		     fmov,neon_move")
-   (set_attr "arch"   "*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
-   (set_attr "length" "4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")]
+  {@ [cons: =0, 1; attrs: type, arch, length]
+     [r, r  ; mov_reg  , *   , 4] mov\t%x0, %x1
+     [k, r  ; mov_reg  , *   , 4] mov\t%0, %x1
+     [r, k  ; mov_reg  , *   , 4] mov\t%x0, %1
+     [r, O  ; mov_imm  , *   , 4] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
+     [r, n  ; mov_imm  , *   ,16] #
+     /* The "mov_imm" type for CNT is just a placeholder.  */
+     [r, Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, m  ; load_8   , *   , 4] ldr\t%x0, %1
+     [w, m  ; load_8   , fp  , 4] ldr\t%d0, %1
+     [m, r Z; store_8  , *   , 4] str\t%x1, %0
+     [m, w  ; store_8  , fp  , 4] str\t%d1, %0
+     [r, Usw; load_8   , *   , 8] << TARGET_ILP32 ? "adrp\t%0, %A1;ldr\t%w0, [%0, %L1]" : "adrp\t%0, %A1;ldr\t%0, [%0, %L1]";
+     [r, Usa; adr      , *   , 4] adr\t%x0, %c1
+     [r, Ush; adr      , *   , 4] adrp\t%x0, %A1
+     [w, r Z; f_mcr    , fp  , 4] fmov\t%d0, %x1
+     [r, w  ; f_mrc    , fp  , 4] fmov\t%x0, %d1
+     [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
+     [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+  }
+  "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
+   && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
+  [(const_int 0)]
+  {
+      aarch64_expand_mov_immediate (operands[0], operands[1]);
+      DONE;
+  }
 )
 
 (define_insn "insv_imm<mode>"
