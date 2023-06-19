@@ -1,3 +1,149 @@
+2023-06-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Fix one typo.
+
+2023-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (*rtx_equal_p_callback_function):
+	Change return type from int to bool.
+	(rtx_equal_p): Ditto.
+	(*hash_rtx_callback_function): Ditto.
+	* rtl.cc (rtx_equal_p): Change return type from int to bool
+	and adjust function body accordingly.
+	* early-remat.cc (scratch_equal): Ditto.
+	* sel-sched-ir.cc (skip_unspecs_callback): Ditto.
+	(hash_with_unspec_callback): Ditto.
+
+2023-06-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/arc/arc.md (movqi_insn): Allow certain constants to
+	be stored into memory in the pattern's condition.
+	(movsf_insn): Similarly.
+
+2023-06-18  Honza  <jh@ryzen3.suse.cz>
+
+	PR tree-optimization/109849
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Add new parameter
+	ES; handle ipa_predicate::not_sra_candidate.
+	(evaluate_properties_for_edge): Pass es to
+	evaluate_conditions_for_known_args.
+	(ipa_fn_summary_t::duplicate): Handle sra candidates.
+	(dump_ipa_call_summary): Dump points_to_possible_sra_candidate.
+	(load_or_store_of_ptr_parameter): New function.
+	(points_to_possible_sra_candidate_p): New function.
+	(analyze_function_body): Initialize points_to_possible_sra_candidate;
+	determine sra predicates.
+	(estimate_ipcp_clone_size_and_time): Update call of
+	evaluate_conditions_for_known_args.
+	(remap_edge_params): Update points_to_possible_sra_candidate.
+	(read_ipa_call_summary): Stream points_to_possible_sra_candidate
+	(write_ipa_call_summary): Likewise.
+	* ipa-predicate.cc (ipa_predicate::add_clause): Handle not_sra_candidate.
+	(dump_condition): Dump it.
+	* ipa-predicate.h (struct inline_param_summary): Add
+	points_to_possible_sra_candidate.
+
+2023-06-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_carry): New helper
+	function for setting the carry flag.
+	(ix86_expand_builtin) <handlecarry>: Use it here.
+	* config/i386/i386-protos.h (ix86_expand_carry): Prototype here.
+	* config/i386/i386.md (uaddc<mode>5): Use ix86_expand_carry.
+	(usubc<mode>5): Likewise.
+
+2023-06-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*concat<mode><dwi>3_1): Use QImode
+	for the immediate constant shift count.
+	(*concat<mode><dwi>3_2): Likewise.
+	(*concat<mode><dwi>3_3): Likewise.
+	(*concat<mode><dwi>3_4): Likewise.
+	(*concat<mode><dwi>3_5): Likewise.
+	(*concat<mode><dwi>3_6): Likewise.
+
+2023-06-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* cse.cc (hash_rtx_cb): Rename to hash_rtx.
+	(hash_rtx): Remove.
+	* early-remat.cc (remat_candidate_hasher::equal): Update
+	to call rtx_equal_p with rtx_equal_p_callback_function argument.
+	* rtl.cc (rtx_equal_p_cb): Rename to rtx_equal_p.
+	(rtx_equal_p): Remove.
+	* rtl.h (rtx_equal_p): Add rtx_equal_p_callback_function
+	argument with NULL default value.
+	(rtx_equal_p_cb): Remove function declaration.
+	(hash_rtx_cb): Ditto.
+	(hash_rtx): Add hash_rtx_callback_function argument
+	with NULL default value.
+	* sel-sched-ir.cc (free_nop_pool): Update function comment.
+	(skip_unspecs_callback): Ditto.
+	(vinsn_init): Update to call hash_rtx with
+	hash_rtx_callback_function argument.
+	(vinsn_equal_p): Ditto.
+
+2023-06-18  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Enable FP16 tuple.
+	* config/riscv/riscv-modes.def (RVV_TUPLE_MODES): New macro.
+	(ADJUST_ALIGNMENT): Ditto.
+	(RVV_TUPLE_PARTIAL_MODES): Ditto.
+	(ADJUST_NUNITS): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (vfloat16mf4x2_t):
+	New types.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4x2_t): New macro.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-switch.def (TUPLE_ENTRY): New.
+	* config/riscv/riscv.md: New.
+	* config/riscv/vector-iterators.md: New.
+
 2023-06-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_move): Check that OP1 is

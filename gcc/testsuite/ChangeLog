@@ -1,3 +1,20 @@
+2023-06-18  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/20091013-1_0.c: Disable stringop-overread warning.
+
+2023-06-18  Honza  <jh@ryzen3.suse.cz>
+
+	PR tree-optimization/109849
+	* g++.dg/ipa/devirt-45.C: Update template.
+
+2023-06-18  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/tuple-28.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-29.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-30.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-31.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-32.c: New test.
+
 2023-06-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/sse2-v1ti-mov-2.c: New test case.

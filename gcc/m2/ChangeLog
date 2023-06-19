@@ -1,3 +1,13 @@
+2023-06-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110284
+	* Make-lang.in (m2_OBJS): Assign $(GM2_C_OBJS).
+	(GM2_C_OBJS): Remove m2/stor-layout.o.
+	(m2/stor-layout.o): Remove rule.
+	* gm2-gcc/gcc-consolidation.h (rtl.h): Remove include.
+	(df.h): Remove include.
+	(except.h): Remove include.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* Make-lang.in: New var, GM2_PICFLAGS.  Use it.
