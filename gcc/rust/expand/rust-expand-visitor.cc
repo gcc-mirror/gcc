@@ -286,9 +286,9 @@ ExpandVisitor::expand_inner_items (
 }
 
 void
-ExpandVisitor::expand_inner_stmts (
-  AST::BlockExpr &expr, std::vector<std::unique_ptr<AST::Stmt>> &stmts)
+ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 {
+  auto &stmts = expr.get_statements ();
   expander.push_context (MacroExpander::ContextType::STMT);
 
   for (auto it = stmts.begin (); it != stmts.end (); it++)
@@ -834,7 +834,7 @@ ExpandVisitor::visit (AST::ClosureExprInner &expr)
 void
 ExpandVisitor::visit (AST::BlockExpr &expr)
 {
-  expand_inner_stmts (expr, expr.get_statements ());
+  expand_inner_stmts (expr);
 
   expand_tail_expr (expr, expander);
   if (expr.has_tail_expr ())
