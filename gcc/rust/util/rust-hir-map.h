@@ -28,6 +28,7 @@
 #include "rust-hir-full-decls.h"
 #include "rust-lang-item.h"
 #include "rust-privacy-common.h"
+#include "rust-proc-macro-invocation.h"
 #include "libproc_macro/proc_macro.h"
 
 namespace Rust {
@@ -297,21 +298,27 @@ public:
   bool lookup_attribute_proc_macros (CrateNum num,
 				     std::vector<ProcMacro::Attribute> &macros);
 
-  void insert_derive_proc_macro (std::pair<std::string, std::string> hierachy,
-				 ProcMacro::CustomDerive macro);
-  void insert_bang_proc_macro (std::pair<std::string, std::string> hierachy,
-			       ProcMacro::Bang macro);
-  void
-  insert_attribute_proc_macro (std::pair<std::string, std::string> hierachy,
-			       ProcMacro::Attribute macro);
+  void insert_derive_proc_macro_def (NodeId id, ProcMacro::CustomDerive macro);
+  void insert_bang_proc_macro_def (NodeId id, ProcMacro::Bang macro);
+  void insert_attribute_proc_macro_def (NodeId id, ProcMacro::Attribute macro);
 
-  bool lookup_derive_proc_macro (std::pair<std::string, std::string> hierachy,
-				 ProcMacro::CustomDerive &macro);
-  bool lookup_bang_proc_macro (std::pair<std::string, std::string> hierachy,
-			       ProcMacro::Bang &macro);
-  bool
-  lookup_attribute_proc_macro (std::pair<std::string, std::string> hierachy,
-			       ProcMacro::Attribute &macro);
+  bool lookup_derive_proc_macro_def (NodeId id, ProcMacro::CustomDerive &macro);
+  bool lookup_bang_proc_macro_def (NodeId id, ProcMacro::Bang &macro);
+  bool lookup_attribute_proc_macro_def (NodeId id, ProcMacro::Attribute &macro);
+
+  void insert_derive_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+					    ProcMacro::CustomDerive def);
+
+  bool lookup_derive_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+					    ProcMacro::CustomDerive &def);
+  void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
+					  ProcMacro::Bang def);
+  bool lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id,
+					  ProcMacro::Bang &def);
+  void insert_attribute_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+					       ProcMacro::Attribute def);
+  bool lookup_attribute_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+					       ProcMacro::Attribute &def);
 
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
@@ -392,20 +399,16 @@ private:
   // Procedural macros
   std::map<CrateNum, std::vector<ProcMacro::CustomDerive>>
     procmacrosDeriveMappings;
-
   std::map<CrateNum, std::vector<ProcMacro::Bang>> procmacrosBangMappings;
-
   std::map<CrateNum, std::vector<ProcMacro::Attribute>>
     procmacrosAttributeMappings;
 
-  std::map<std::pair<std::string, std::string>, ProcMacro::CustomDerive>
-    procmacroDeriveMappings;
-
-  std::map<std::pair<std::string, std::string>, ProcMacro::Bang>
-    procmacroBangMappings;
-
-  std::map<std::pair<std::string, std::string>, ProcMacro::Attribute>
-    procmacroAttributeMappings;
+  std::map<NodeId, ProcMacro::CustomDerive> procmacroDeriveMappings;
+  std::map<NodeId, ProcMacro::Bang> procmacroBangMappings;
+  std::map<NodeId, ProcMacro::Attribute> procmacroAttributeMappings;
+  std::map<NodeId, ProcMacro::CustomDerive> procmacroDeriveInvocations;
+  std::map<NodeId, ProcMacro::Bang> procmacroBangInvocations;
+  std::map<NodeId, ProcMacro::Attribute> procmacroAttributeInvocations;
 
   // crate names
   std::map<CrateNum, std::string> crate_names;

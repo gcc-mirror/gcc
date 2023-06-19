@@ -242,7 +242,7 @@ public:
     return type;
   }
 
-  const std::string &get_path () const
+  const std::string get_path () const
   {
     rust_assert (kind == Kind::Either);
 

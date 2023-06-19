@@ -173,7 +173,7 @@ SimplePathSegment::as_string () const
   return segment_name;
 }
 
-std::string
+const std::string
 SimplePath::as_string () const
 {
   std::string path;

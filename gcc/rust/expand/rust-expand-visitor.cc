@@ -57,43 +57,66 @@ ExpandVisitor::go (AST::Crate &crate)
  *
  * @param attrs The attributes on the item to derive
  */
-static std::vector<std::string>
+static std::vector<std::unique_ptr<ProcMacroInvocable>>
 get_traits_to_derive (AST::Attribute &attr)
 {
-  std::vector<std::string> to_derive;
-
+  std::vector<std::unique_ptr<ProcMacroInvocable>> result;
   auto &input = attr.get_attr_input ();
   switch (input.get_attr_input_type ())
     {
-      // isn't there a better way to do this?? like parse it or
-      // something idk. some function I'm not thinking of?
-      case AST::AttrInput::TOKEN_TREE: {
-	auto &tokens
-	  = static_cast<AST::DelimTokenTree &> (input).get_token_trees ();
-
-	// erase the delimiters
-	rust_assert (tokens.size () >= 2);
-	tokens.erase (tokens.begin ());
-	tokens.pop_back ();
-
-	for (auto &token : tokens)
+      case AST::AttrInput::META_ITEM: {
+	auto meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
+	for (auto &current : meta.get_items ())
 	  {
-	    // skip commas, as they are part of the token stream
-	    if (token->as_string () == ",")
-	      continue;
-
-	    to_derive.emplace_back (token->as_string ());
+	    // HACK: Find a better way to achieve the downcast.
+	    switch (current->get_kind ())
+	      {
+		case AST::MetaItemInner::Kind::MetaItem: {
+		  // Let raw pointer go out of scope without freeing, it doesn't
+		  // own the data anyway
+		  auto meta_item
+		    = static_cast<AST::MetaItem *> (current.get ());
+		  switch (meta_item->get_item_kind ())
+		    {
+		      case AST::MetaItem::ItemKind::Path: {
+			auto path
+			  = static_cast<AST::MetaItemPath *> (meta_item);
+			result.push_back (Rust::make_unique<AST::SimplePath> (
+			  path->get_path ()));
+		      }
+		      break;
+		      case AST::MetaItem::ItemKind::Word: {
+			auto word = static_cast<AST::MetaWord *> (meta_item);
+			result.push_back (
+			  Rust::make_unique<Identifier> (word->get_ident ()));
+		      }
+		      break;
+		    case AST::MetaItem::ItemKind::ListPaths:
+		    case AST::MetaItem::ItemKind::NameValueStr:
+		    case AST::MetaItem::ItemKind::PathLit:
+		    case AST::MetaItem::ItemKind::Seq:
+		    case AST::MetaItem::ItemKind::ListNameValueStr:
+		    default:
+		      gcc_unreachable ();
+		      break;
+		    }
+		}
+		break;
+	      case AST::MetaItemInner::Kind::LitExpr:
+	      default:
+		gcc_unreachable ();
+		break;
+	      }
 	  }
-	break;
       }
+      break;
+    case AST::AttrInput::TOKEN_TREE:
     case AST::AttrInput::LITERAL:
-    case AST::AttrInput::META_ITEM:
     case AST::AttrInput::MACRO:
       rust_unreachable ();
       break;
     }
-
-  return to_derive;
+  return result;
 }
 
 static std::unique_ptr<AST::Item>
@@ -104,7 +127,7 @@ builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-derive_item (AST::Item &item, const std::string &to_derive,
+derive_item (AST::Item &item, ProcMacroInvocable &to_derive,
 	     MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
@@ -127,7 +150,7 @@ derive_item (AST::Item &item, const std::string &to_derive,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-expand_item_attribute (AST::Item &item, AST::SimplePath &name,
+expand_item_attribute (AST::Item &item, ProcMacroInvocable &name,
 		       MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
@@ -232,13 +255,14 @@ ExpandVisitor::expand_inner_items (
 
 	      if (is_derive (current))
 		{
+		  current.parse_attr_to_meta_item ();
 		  attr_it = attrs.erase (attr_it);
 		  // Get traits to derive in the current attribute
 		  auto traits_to_derive = get_traits_to_derive (current);
 		  for (auto &to_derive : traits_to_derive)
 		    {
-		      auto maybe_builtin
-			= MacroBuiltin::builtins.lookup (to_derive);
+		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
+			to_derive->as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
@@ -251,7 +275,7 @@ ExpandVisitor::expand_inner_items (
 		      else
 			{
 			  auto new_items
-			    = derive_item (*item, to_derive, expander);
+			    = derive_item (*item, *to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (items, it));
 			}
@@ -323,8 +347,8 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		  auto traits_to_derive = get_traits_to_derive (current);
 		  for (auto &to_derive : traits_to_derive)
 		    {
-		      auto maybe_builtin
-			= MacroBuiltin::builtins.lookup (to_derive);
+		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
+			to_derive->as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
@@ -337,7 +361,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		      else
 			{
 			  auto new_items
-			    = derive_item (item, to_derive, expander);
+			    = derive_item (item, *to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (stmts, it));
 			}

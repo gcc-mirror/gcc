@@ -1093,50 +1093,6 @@ MacroExpander::transcribe_rule (
   return fragment;
 }
 
-// TODO: Move to early name resolver ?
-void
-MacroExpander::import_proc_macros (std::string extern_crate)
-{
-  auto path = session.extern_crates.find (extern_crate);
-  if (path == session.extern_crates.end ())
-    {
-      // Extern crate path is not available.
-      // FIXME: Emit error
-      rust_error_at (UNDEF_LOCATION, "Cannot find requested proc macro crate");
-      rust_unreachable ();
-    }
-  auto macros = load_macros (path->second);
-
-  std::string prefix = extern_crate + "::";
-  for (auto &macro : macros)
-    {
-      switch (macro.tag)
-	{
-	case ProcMacro::CUSTOM_DERIVE:
-	  rust_debug ("Found one derive proc macro.");
-	  mappings->insert_derive_proc_macro (
-	    std::make_pair (extern_crate,
-			    macro.payload.custom_derive.trait_name),
-	    macro.payload.custom_derive);
-	  break;
-	case ProcMacro::ATTR:
-	  rust_debug ("Found one attribute proc macro.");
-	  mappings->insert_attribute_proc_macro (
-	    std::make_pair (extern_crate, macro.payload.attribute.name),
-	    macro.payload.attribute);
-	  break;
-	case ProcMacro::BANG:
-	  rust_debug ("Found one bang proc macro.");
-	  mappings->insert_bang_proc_macro (
-	    std::make_pair (extern_crate, macro.payload.bang.name),
-	    macro.payload.bang);
-	  break;
-	default:
-	  rust_unreachable ();
-	}
-    }
-}
-
 AST::Fragment
 MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 {

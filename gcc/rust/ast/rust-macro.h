@@ -838,6 +838,8 @@ public:
     return path;
   }
 
+  SimplePath &get_path () { return path; }
+
   location_t get_locus () const override { return path.get_locus (); }
 
   bool check_cfg_predicate (const Session &session) const override;
@@ -935,7 +937,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Identifier get_ident () const { return ident; }
+  Identifier &get_ident () { return ident; }
 
   location_t get_locus () const override { return ident_locus; }
 
