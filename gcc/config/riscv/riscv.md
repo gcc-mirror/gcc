@@ -78,6 +78,8 @@
   UNSPECV_GPR_RESTORE
 
   ;; Floating-point unspecs.
+  UNSPECV_FRCSR
+  UNSPECV_FSCSR
   UNSPECV_FRFLAGS
   UNSPECV_FSFLAGS
   UNSPECV_FSNVSNAN
@@ -3060,6 +3062,17 @@
    (const_int 0)]
   ""
   "")
+
+(define_insn "riscv_frcsr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile [(const_int 0)] UNSPECV_FRCSR))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "frcsr\t%0")
+
+(define_insn "riscv_fscsr"
+  [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSCSR)]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "fscsr\t%0")
 
 (define_insn "riscv_frflags"
   [(set (match_operand:SI 0 "register_operand" "=r")
