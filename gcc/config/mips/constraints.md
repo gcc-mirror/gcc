@@ -264,6 +264,10 @@
   (and (match_code "const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_constraint "Yz"
+  "@internal"
+  (match_operand 0 "bit_clear_operand"))
+
 (define_constraint "YA"
   "@internal
    An unsigned 6-bit constant."

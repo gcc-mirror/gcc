@@ -170,6 +170,10 @@
   (and (match_code "const_int")
        (match_test "UINTVAL (op) == 0xffffffff")))
 
+(define_predicate "bit_clear_operand"
+  (and (match_code "const_int")
+       (match_test "mips_bit_clear_p (mode, INTVAL (op))")))
+
 (define_predicate "and_load_operand"
   (ior (match_operand 0 "qi_mask_operand")
        (match_operand 0 "hi_mask_operand")
@@ -184,8 +188,15 @@
   (ior (match_operand 0 "register_operand")
        (and (not (match_test "TARGET_MIPS16"))
 	    (match_operand 0 "const_uns_arith_operand"))
+       (and (match_test "ISA_HAS_MIPS16E2")
+	    (match_operand 0 "const_uns_arith_operand")
+	    (not (match_operand 0 "hi_mask_operand"))
+	    (not (match_operand 0 "qi_mask_operand")))
+       (and (match_test "ISA_HAS_MIPS16E2")
+	    (match_operand 0 "const_uns_arith_operand"))
        (match_operand 0 "low_bitmask_operand")
-       (match_operand 0 "si_mask_operand")))
+       (match_operand 0 "si_mask_operand")
+       (match_operand 0 "bit_clear_operand")))
 
 (define_predicate "and_operand"
   (ior (match_operand 0 "and_load_operand")
