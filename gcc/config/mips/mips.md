@@ -7343,12 +7343,30 @@
 		 (const_int 0)])
 	 (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "!TARGET_MIPS16 && ISA_HAS_CONDMOVE"
   "@
     mov%T4\t%0,%z2,%1
     mov%t4\t%0,%z3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>_mips16e2"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
+	(if_then_else:GPR
+	 (match_operator 4 "equality_operator"
+		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>,t,t")
+		 (const_int 0)])
+	 (match_operand:GPR 2 "reg_or_0_operand_mips16e2" "dJ,0,dJ,0")
+	 (match_operand:GPR 3 "reg_or_0_operand_mips16e2" "0,dJ,0,dJ")))]
+  "ISA_HAS_MIPS16E2 && ISA_HAS_CONDMOVE"
+  "@
+    mov%T4\t%0,%z2,%1
+    mov%t4\t%0,%z3,%1
+    movt%T4\t%0,%z2
+    movt%t4\t%0,%z3"
+  [(set_attr "type" "condmove")
+   (set_attr "mode" "<GPR:MODE>")
+   (set_attr "extended_mips16" "yes")])
 
 (define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
@@ -7356,12 +7374,28 @@
         (match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>")
         (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
         (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
-  "ISA_HAS_CONDMOVE"
+  "!TARGET_MIPS16 && ISA_HAS_CONDMOVE"
   "@
     movn\t%0,%z2,%1
     movz\t%0,%z3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
+	   (if_then_else:GPR
+		(match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>,t,t")
+		(match_operand:GPR 2 "reg_or_0_operand_mips16e2" "dJ,0,dJ,0")
+		(match_operand:GPR 3 "reg_or_0_operand_mips16e2" "0,dJ,0,dJ")))]
+ "ISA_HAS_MIPS16E2 && ISA_HAS_CONDMOVE"
+  "@
+    movn\t%0,%z2,%1
+    movz\t%0,%z3,%1
+    movtn\t%0,%z2
+    movtz\t%0,%z3"
+  [(set_attr "type" "condmove")
+   (set_attr "mode" "<GPR:MODE>")
+   (set_attr "extended_mips16" "yes")])
 
 (define_insn "*mov<SCALARF:mode>_on_<MOVECC:mode>"
   [(set (match_operand:SCALARF 0 "register_operand" "=f,f")

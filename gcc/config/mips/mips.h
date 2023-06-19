@@ -1081,6 +1081,7 @@ struct mips_cpu_info {
    ST Loongson 2E/2F.  */
 #define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE			\
 				 || TARGET_MIPS5900			\
+				 || ISA_HAS_MIPS16E2			\
 				 || TARGET_LOONGSON_2EF)
 
 /* ISA has LDC1 and SDC1.  */
