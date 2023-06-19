@@ -3795,7 +3795,7 @@ extern void setup_reg_classes (int, enum reg_class, enum reg_class,
 			       enum reg_class);
 
 extern void split_all_insns (void);
-extern unsigned int split_all_insns_noflow (void);
+extern void split_all_insns_noflow (void);
 
 #define MAX_SAVED_CONST_INT 64
 extern GTY(()) rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
