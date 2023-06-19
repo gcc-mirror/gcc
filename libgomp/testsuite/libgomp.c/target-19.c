@@ -20,7 +20,9 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
       if (sep)
 	{
-	  if (q != (int *) 0 || r != (int *) 0)
+	  /* Since OpenMP 5.2, 'q'/'r' are no longer set to NULL if pointing to
+	     unmapped storage.  */
+	  if (q == (int *) 0 || r == (int *) 0)
 	    err = 1;
 	}
       else if (p + 8 != q || r != s)
@@ -37,7 +39,9 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
       if (sep)
 	{
-	  if (q != (int *) 0 || r != (int *) 0)
+	  /* Since OpenMP 5.2, 'q'/'r' are no longer set to NULL if pointing to
+	     unmapped storage.  */
+	  if (q == (int *) 0 || r == (int *) 0)
 	    err = 1;
 	}
       else if (p + 8 != q || r != s)
@@ -55,7 +59,9 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
       if (sep)
 	{
-	  if (q != (int *) 0 || r != (int *) 0)
+	  /* Since OpenMP 5.2, 'q'/'r' are no longer set to NULL if pointing to
+	     unmapped storage.  */
+	  if (q == (int *) 0 || r == (int *) 0)
 	    err = 1;
 	}
       else if (p + 8 != q || r != s)
@@ -91,7 +97,8 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
 	else if (sep)
 	  {
-	    if (r != (int *) 0)
+	    /* Since OpenMP 5.2, 'r' is no longer set to NULL if *r is unmapped.*/
+	    if (r == (int *) 0)
 	      err = 1;
 	  }
 	else if (r != q + 1)
@@ -110,7 +117,8 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
 	else if (sep)
 	  {
-	    if (r != (int *) 0)
+	    /* Since OpenMP 5.2, 'r' is no longer set to NULL if *r is unmapped.*/
+	    if (r == (int *) 0)
 	      err = 1;
 	  }
 	else if (r != q + 1)
@@ -130,7 +138,8 @@ foo (int *p, int *q, int *r, int n, int m)
 	  err = 1;
 	else if (sep)
 	  {
-	    if (r != (int *) 0)
+	    /* Since OpenMP 5.2, 'r' is no longer set to NULL if *r is unmapped.*/
+	    if (r == (int *) 0)
 	      err = 1;
 	  }
 	else if (r != q + 1)
