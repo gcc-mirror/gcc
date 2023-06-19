@@ -1,6 +1,14 @@
 2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:
+	2023-06-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-51.c: Fix DejaGnu directive syntax
+	error.
+
+2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline:
 	2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c/target-51.c: Accept more error msg variants
