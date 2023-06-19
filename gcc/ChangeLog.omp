@@ -1,3 +1,19 @@
+2023-11-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Tamar Christina <tamar.christina@arm.com>
+
+	* gensupport.cc (class conlist, add_constraints, add_attributes,
+	skip_spaces, expect_char, preprocess_compact_syntax,
+	parse_section_layout, parse_section, convert_syntax): New.
+	(process_rtx): Check for conversion.
+	* genoutput.cc (process_template): Check for unresolved iterators.
+	(class data): Add compact_syntax_p.
+	(gen_insn): Use it.
+	* gensupport.h (compact_syntax): New.
+	(hash-set.h): Include.
+	* doc/md.texi: Document it.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gcc/gimplify.cc (gimplify_omp_allocate): Gimplify allocator.

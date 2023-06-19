@@ -18,6 +18,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "bconfig.h"
+#define INCLUDE_STRING
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -33,6 +35,8 @@
 static rtx operand_data[MAX_OPERANDS];
 static rtx match_operand_entries_in_pattern[MAX_OPERANDS];
 static char used_operands_numbers[MAX_OPERANDS];
+/* List of entries which are part of the new syntax.  */
+hash_set<rtx> compact_syntax;
 
 
 /* In case some macros used by files we include need it, define this here.  */
@@ -545,6 +549,497 @@ gen_rewrite_sequence (rtvec vec)
   return new_vec;
 }
 
+/* The following is for handling the compact syntax for constraints and
+   attributes.
+
+   The normal syntax looks like this:
+
+       ...
+       (match_operand: 0 "s_register_operand" "r,I,k")
+       (match_operand: 2 "s_register_operand" "r,k,I")
+       ...
+       "@
+	<asm>
+	<asm>
+	<asm>"
+       ...
+       (set_attr "length" "4,8,8")
+
+   The compact syntax looks like this:
+
+       ...
+       (match_operand: 0 "s_register_operand")
+       (match_operand: 2 "s_register_operand")
+       ...
+       {@ [cons: 0, 2; attrs: length]
+	[r,r; 4] <asm>
+	[I,k; 8] <asm>
+	[k,I; 8] <asm>
+       }
+       ...
+       [<other attributes>]
+
+   This is the only place where this syntax needs to be handled.  Relevant
+   patterns are transformed from compact to the normal syntax before they are
+   queued, so none of the gen* programs need to know about this syntax at all.
+
+   Conversion process (convert_syntax):
+
+   0) Check that pattern actually uses new syntax (check for {@ ... }).
+
+   1) Get the "layout", i.e. the "[cons: 0 2; attrs: length]" from the above
+      example.  cons must come first; both are optional. Set up two vecs,
+      convec and attrvec, for holding the results of the transformation.
+
+   2) For each alternative: parse the list of constraints and/or attributes,
+      and enqueue them in the relevant lists in convec and attrvec.  By the end
+      of this process, convec[N].con and attrvec[N].con should contain regular
+      syntax constraint/attribute lists like "r,I,k".  Copy the asm to a string
+      as we go.
+
+   3) Search the rtx and write the constraint and attribute lists into the
+      correct places. Write the asm back into the template.  */
+
+/* Helper class for shuffling constraints/attributes in convert_syntax and
+   add_constraints/add_attributes.  This includes commas but not whitespace.  */
+
+class conlist {
+private:
+  std::string con;
+
+public:
+  std::string name;
+  int idx = -1;
+
+  conlist () = default;
+
+  /* [ns..ns + len) should be a string with the id of the rtx to match
+     i.e. if rtx is the relevant match_operand or match_scratch then
+     [ns..ns + len) should equal itoa (XINT (rtx, 0)), and if set_attr then
+     [ns..ns + len) should equal XSTR (rtx, 0).  */
+  conlist (const char *ns, unsigned int len, bool numeric)
+  {
+    /* Trim leading whitespaces.  */
+    while (ISBLANK (*ns))
+      {
+	ns++;
+	len--;
+      }
+
+    /* Trim trailing whitespace.  */
+    for (int i = len - 1; i >= 0; i--, len--)
+      if (!ISBLANK (ns[i]))
+	break;
+
+    /* Parse off any modifiers.  */
+    while (!ISALNUM (*ns))
+      {
+	con += *(ns++);
+	len--;
+      }
+
+    name.assign (ns, len);
+    if (numeric)
+      idx = std::stoi (name);
+  }
+
+  /* Adds a character to the end of the string.  */
+  void add (char c)
+  {
+    con += c;
+  }
+
+  /* Output the string in the form of a brand-new char *, then effectively
+     clear the internal string by resetting len to 0.  */
+  char *out ()
+  {
+    /* Final character is always a trailing comma, so strip it out.  */
+    char *q = xstrndup (con.c_str (), con.size () - 1);
+    con.clear ();
+    return q;
+  }
+};
+
+typedef std::vector<conlist> vec_conlist;
+
+/* Add constraints to an rtx.  This function is similar to remove_constraints.
+   Errors if adding the constraints would overwrite existing constraints.  */
+
+static void
+add_constraints (rtx part, file_location loc, vec_conlist &cons)
+{
+  const char *format_ptr;
+
+  if (part == NULL_RTX)
+    return;
+
+  /* If match_op or match_scr, check if we have the right one, and if so, copy
+     over the constraint list.  */
+  if (GET_CODE (part) == MATCH_OPERAND || GET_CODE (part) == MATCH_SCRATCH)
+    {
+      int field = GET_CODE (part) == MATCH_OPERAND ? 2 : 1;
+      unsigned id = XINT (part, 0);
+
+      if (id >= cons.size () || cons[id].idx == -1)
+	return;
+
+      if (XSTR (part, field)[0] != '\0')
+	{
+	  error_at (loc, "can't mix normal and compact constraint syntax");
+	  return;
+	}
+      XSTR (part, field) = cons[id].out ();
+      cons[id].idx = -1;
+    }
+
+  format_ptr = GET_RTX_FORMAT (GET_CODE (part));
+
+  /* Recursively search the rtx.  */
+  for (int i = 0; i < GET_RTX_LENGTH (GET_CODE (part)); i++)
+    switch (*format_ptr++)
+      {
+      case 'e':
+      case 'u':
+	add_constraints (XEXP (part, i), loc, cons);
+	break;
+      case 'E':
+	if (XVEC (part, i) != NULL)
+	  for (int j = 0; j < XVECLEN (part, i); j++)
+	    add_constraints (XVECEXP (part, i, j), loc, cons);
+	break;
+      default:
+	continue;
+      }
+}
+
+/* Add ATTRS to definition X's attribute list.  */
+
+static void
+add_attributes (rtx x, vec_conlist &attrs)
+{
+  unsigned int attr_index = GET_CODE (x) == DEFINE_INSN ? 4 : 3;
+  rtvec orig = XVEC (x, attr_index);
+  if (orig)
+    {
+      size_t n_curr = XVECLEN (x, attr_index);
+      rtvec copy = rtvec_alloc (n_curr + attrs.size ());
+
+      /* Create a shallow copy of existing entries.  */
+      memcpy (&copy->elem[attrs.size ()], &orig->elem[0],
+	      sizeof (rtx) * n_curr);
+      XVEC (x, attr_index) = copy;
+    }
+   else
+    XVEC (x, attr_index) = rtvec_alloc (attrs.size ());
+
+  /* Create the new elements.  */
+  for (unsigned i = 0; i < attrs.size (); i++)
+    {
+      rtx attr = rtx_alloc (SET_ATTR);
+      XSTR (attr, 0) = xstrdup (attrs[i].name.c_str ());
+      XSTR (attr, 1) = attrs[i].out ();
+      XVECEXP (x, attr_index, i) = attr;
+    }
+}
+
+/* Consumes spaces and tabs.  */
+
+static inline void
+skip_spaces (const char **str)
+{
+  while (ISBLANK (**str))
+    (*str)++;
+}
+
+/* Consumes the given character, if it's there.  */
+
+static inline bool
+expect_char (const char **str, char c)
+{
+  if (**str != c)
+    return false;
+  (*str)++;
+  return true;
+}
+
+/* Parses the section layout that follows a "{@" if using new syntax. Builds
+   a vector for a single section. E.g. if we have "attrs: length, arch]..."
+   then list will have two elements, the first for "length" and the second
+   for "arch".  */
+
+static void
+parse_section_layout (file_location loc, const char **templ, const char *label,
+		      vec_conlist &list, bool numeric)
+{
+  const char *name_start;
+  size_t label_len = strlen (label);
+  if (strncmp (label, *templ, label_len) == 0)
+    {
+      *templ += label_len;
+
+      /* Gather the names.  */
+      while (**templ != ';' && **templ != ']')
+	{
+	  skip_spaces (templ);
+	  name_start = *templ;
+	  int len = 0;
+	  char val = (*templ)[len];
+	  while (val != ',' && val != ';' && val != ']')
+	    {
+	      if (val == 0 || val == '\n')
+	        fatal_at (loc, "missing ']'");
+	      val = (*templ)[++len];
+	    }
+	  *templ += len;
+	  if (val == ',')
+	    (*templ)++;
+	  list.push_back (conlist (name_start, len, numeric));
+	}
+    }
+}
+
+/* Parse a section, a section is defined as a named space separated list, e.g.
+
+   foo: a, b, c
+
+   is a section named "foo" with entries a, b and c.  */
+
+static void
+parse_section (const char **templ, unsigned int n_elems, unsigned int alt_no,
+	       vec_conlist &list, file_location loc, const char *name)
+{
+  unsigned int i;
+
+  /* Go through the list, one character at a time, adding said character
+     to the correct string.  */
+  for (i = 0; **templ != ']' && **templ != ';'; (*templ)++)
+    if (!ISBLANK (**templ))
+      {
+	if (**templ == 0 || **templ == '\n')
+	  fatal_at (loc, "missing ']'");
+	list[i].add (**templ);
+	if (**templ == ',')
+	  {
+	    ++i;
+	    if (i == n_elems)
+	      fatal_at (loc, "too many %ss in alternative %d: expected %d",
+			name, alt_no, n_elems);
+	  }
+      }
+
+  if (i + 1 < n_elems)
+    fatal_at (loc, "too few %ss in alternative %d: expected %d, got %d",
+	      name, alt_no, n_elems, i);
+
+  list[i].add (',');
+}
+
+/* The compact syntax has more convience syntaxes.  As such we post process
+   the lines to get them back to something the normal syntax understands.  */
+
+static void
+preprocess_compact_syntax (file_location loc, int alt_no, std::string &line,
+			   std::string &last_line)
+{
+  /* Check if we're copying the last statement.  */
+  if (line.find ("^") == 0 && line.size () == 1)
+    {
+      if (last_line.empty ())
+	fatal_at (loc, "found instruction to copy previous line (^) in"
+		       "alternative %d but no previous line to copy", alt_no);
+      line = last_line;
+      return;
+    }
+
+  std::string result;
+  std::string buffer;
+  /* Check if we have << which means return c statement.  */
+  if (line.find ("<<") == 0)
+    {
+      result.append ("* return ");
+      const char *chunk = line.c_str () + 2;
+      skip_spaces (&chunk);
+      result.append (chunk);
+    }
+  else
+    result.append (line);
+
+  line = result;
+  return;
+}
+
+/* Converts an rtx from compact syntax to normal syntax if possible.  */
+
+static void
+convert_syntax (rtx x, file_location loc)
+{
+  int alt_no;
+  unsigned int templ_index;
+  const char *templ;
+  vec_conlist tconvec, convec, attrvec;
+
+  templ_index = GET_CODE (x) == DEFINE_INSN ? 3 : 2;
+
+  templ = XTMPL (x, templ_index);
+
+  /* Templates with constraints start with "{@".  */
+  if (strncmp ("*{@", templ, 3))
+    return;
+
+  /* Get the layout for the template.  */
+  templ += 3;
+  skip_spaces (&templ);
+
+  if (!expect_char (&templ, '['))
+    fatal_at (loc, "expecing `[' to begin section list");
+
+  parse_section_layout (loc, &templ, "cons:", tconvec, true);
+
+  /* Check for any duplicate cons entries and sort based on i.  */
+  for (auto e : tconvec)
+    {
+      unsigned idx = e.idx;
+      if (idx >= convec.size ())
+	convec.resize (idx + 1);
+
+      if (convec[idx].idx >= 0)
+	fatal_at (loc, "duplicate cons number found: %d", idx);
+      convec[idx] = e;
+    }
+  tconvec.clear ();
+
+  if (*templ != ']')
+    {
+      if (*templ == ';')
+	skip_spaces (&(++templ));
+      parse_section_layout (loc, &templ, "attrs:", attrvec, false);
+    }
+
+  if (!expect_char (&templ, ']'))
+    fatal_at (loc, "expecting `]` to end section list - section list must have "
+		   "cons first, attrs second");
+
+  /* We will write the un-constrainified template into new_templ.  */
+  std::string new_templ;
+  new_templ.append ("@");
+
+  /* Skip to the first proper line.  */
+  skip_spaces (&templ);
+  if (*templ == 0)
+    fatal_at (loc, "'{@...}' blocks must have at least one alternative");
+  if (*templ != '\n')
+    fatal_at (loc, "unexpected character '%c' after ']'", *templ);
+  templ++;
+
+  alt_no = 0;
+  std::string last_line;
+
+  /* Process the alternatives.  */
+  while (*(templ - 1) != '\0')
+    {
+      /* Skip leading whitespace.  */
+      std::string buffer;
+      skip_spaces (&templ);
+
+      /* Check if we're at the end.  */
+      if (templ[0] == '}' && templ[1] == '\0')
+	break;
+
+      if (expect_char (&templ, '['))
+	{
+	  new_templ += '\n';
+	  new_templ.append (buffer);
+	  /* Parse the constraint list, then the attribute list.  */
+	  if (convec.size () > 0)
+	    parse_section (&templ, convec.size (), alt_no, convec, loc,
+			   "constraint");
+
+	  if (attrvec.size () > 0)
+	    {
+	      if (convec.size () > 0 && !expect_char (&templ, ';'))
+		fatal_at (loc, "expected `;' to separate constraints "
+			       "and attributes in alternative %d", alt_no);
+
+	      parse_section (&templ, attrvec.size (), alt_no,
+			     attrvec, loc, "attribute");
+	    }
+
+	  if (!expect_char (&templ, ']'))
+	    fatal_at (loc, "expected end of constraint/attribute list but "
+			   "missing an ending `]' in alternative %d", alt_no);
+	}
+      else if (templ[0] == '/' && templ[1] == '/')
+	{
+	  templ += 2;
+	  /* Glob till newline or end of string.  */
+	  while (*templ != '\n' || *templ != '\0')
+	    templ++;
+
+	  /* Skip any newlines or whitespaces needed.  */
+	  while (ISSPACE(*templ))
+	    templ++;
+	  continue;
+	}
+      else if (templ[0] == '/' && templ[1] == '*')
+	{
+	  templ += 2;
+	  /* Glob till newline or end of multiline comment.  */
+	  while (templ[0] != 0 && templ[0] != '*' && templ[1] != '/')
+	    templ++;
+
+	while (templ[0] != '*' || templ[1] != '/')
+	  {
+	    if (templ[0] == 0)
+	      fatal_at (loc, "unterminated '/*'");
+	    templ++;
+	  }
+	templ += 2;
+
+	  /* Skip any newlines or whitespaces needed.  */
+	  while (ISSPACE(*templ))
+	    templ++;
+	  continue;
+	}
+      else
+	fatal_at (loc, "expected constraint/attribute list at beginning of "
+		       "alternative %d but missing a starting `['", alt_no);
+
+      /* Skip whitespace between list and asm.  */
+      skip_spaces (&templ);
+
+      /* Copy asm to new template.  */
+      std::string line;
+      while (*templ != '\n' && *templ != '\0')
+	line += *templ++;
+
+      /* Apply any pre-processing needed to the line.  */
+      preprocess_compact_syntax (loc, alt_no, line, last_line);
+      new_templ.append (line);
+      last_line = line;
+
+      /* Normal "*..." syntax expects the closing quote to be on the final
+	 line of asm, whereas we allow the closing "}" to be on its own line.
+	 Postpone copying the '\n' until we know that there is another
+	 alternative in the list.  */
+      while (ISSPACE (*templ))
+	templ++;
+      ++alt_no;
+    }
+
+  /* Write the constraints and attributes into their proper places.  */
+  if (convec.size () > 0)
+    add_constraints (x, loc, convec);
+
+  if (attrvec.size () > 0)
+    add_attributes (x, attrvec);
+
+  /* Copy over the new un-constrainified template.  */
+  XTMPL (x, templ_index) = xstrdup (new_templ.c_str ());
+
+  /* Register for later checks during iterator expansions.  */
+  compact_syntax.add (x);
+}
+
 /* Process a top level rtx in some way, queuing as appropriate.  */
 
 static void
@@ -553,10 +1048,12 @@ process_rtx (rtx desc, file_location loc)
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
+      convert_syntax (desc, loc);
       queue_pattern (desc, &define_insn_tail, loc);
       break;
 
     case DEFINE_COND_EXEC:
+      convert_syntax (desc, loc);
       queue_pattern (desc, &define_cond_exec_tail, loc);
       break;
 
@@ -631,6 +1128,7 @@ process_rtx (rtx desc, file_location loc)
 	attr = XVEC (desc, split_code + 1);
 	PUT_CODE (desc, DEFINE_INSN);
 	XVEC (desc, 4) = attr;
+	convert_syntax (desc, loc);
 
 	/* Queue them.  */
 	insn_elem = queue_pattern (desc, &define_insn_tail, loc);

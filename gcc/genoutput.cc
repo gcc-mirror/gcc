@@ -157,6 +157,7 @@ public:
   int n_alternatives;		/* Number of alternatives in each constraint */
   int operand_number;		/* Operand index in the big array.  */
   int output_format;		/* INSN_OUTPUT_FORMAT_*.  */
+  bool compact_syntax_p;
   struct operand_data operand[MAX_MAX_OPERANDS];
 };
 
@@ -700,11 +701,50 @@ process_template (class data *d, const char *template_code)
 	  if (sp != ep)
 	    message_at (d->loc, "trailing whitespace in output template");
 
-	  while (cp < sp)
+	  /* Check for any unexpanded iterators.  */
+	  if (bp[0] != '*' && d->compact_syntax_p)
 	    {
-	      putchar (*cp);
-	      cp++;
+	      const char *p = cp;
+	      const char *last_bracket = nullptr;
+	      while (p < sp)
+		{
+		  if (*p == '\\' && p + 1 < sp)
+		    {
+		      putchar (*p);
+		      putchar (*(p+1));
+		      p += 2;
+		      continue;
+		    }
+
+		  if (*p == '>' && last_bracket && *last_bracket == '<')
+		    {
+		      int len = p - last_bracket;
+		      fatal_at (d->loc, "unresolved iterator '%.*s' in '%s'",
+				len - 1, last_bracket + 1, cp);
+		    }
+		  else if (*p == '<' || *p == '>')
+		    last_bracket = p;
+
+		  putchar (*p);
+		  p += 1;
+		}
+
+	      if (last_bracket)
+		{
+		  char *nl = strchr (const_cast<char*> (cp), '\n');
+		  if (nl)
+		    *nl = '\0';
+		  fatal_at (d->loc, "unmatched angle brackets, likely an "
+			    "error in iterator syntax in %s", cp);
+		}
 	    }
+	  else
+	    {
+	      while (cp < sp)
+		putchar (*(cp++));
+	    }
+
+	  cp = sp;
 
 	  if (!found_star)
 	    puts ("\",");
@@ -880,6 +920,8 @@ gen_insn (md_rtx_info *info)
     d->name = XSTR (insn, 0);
   else
     d->name = 0;
+
+  d->compact_syntax_p = compact_syntax.contains (insn);
 
   /* Build up the list in the same order as the insns are seen
      in the machine description.  */

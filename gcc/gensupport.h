@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GENSUPPORT_H
 #define GCC_GENSUPPORT_H
 
+#include "hash-set.h"
 #include "read-md.h"
 
 struct obstack;
@@ -217,6 +218,8 @@ struct pattern_stats
   /* The number of operand variables that are needed.  */
   int num_operand_vars;
 };
+
+extern hash_set<rtx> compact_syntax;
 
 extern void get_pattern_stats (struct pattern_stats *ranges, rtvec vec);
 extern void compute_test_codes (rtx, file_location, char *);

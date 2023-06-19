@@ -27,6 +27,7 @@ See the next chapter for information on the C header file.
                         from such an insn.
 * Output Statement::    For more generality, write C code to output
                         the assembler code.
+* Compact Syntax::      Compact syntax for writing machine descriptors.
 * Predicates::          Controlling what kinds of operands can be used
                         for an insn.
 * Constraints::         Fine-tuning operand selection.
@@ -712,6 +713,168 @@ you can use @samp{*} inside of a @samp{@@} multi-alternative template:
    clrmem %0")
 @end group
 @end smallexample
+
+@node Compact Syntax
+@section Compact Syntax
+@cindex compact syntax
+
+When a @code{define_insn} or @code{define_insn_and_split} has multiple
+alternatives it may be beneficial to use the compact syntax when specifying
+alternatives.
+
+This syntax puts the constraints and attributes on the same horizontal line as
+the instruction assembly template.
+
+As an example
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv"))]
+  ""
+  "@@
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %1
+   #
+   * return aarch64_output_sve_cnt_immediate ('cnt', '%x0', operands[1]);"
+  "&& true"
+   [(const_int 0)]
+  @{
+     aarch64_expand_mov_immediate (operands[0], operands[1]);
+     DONE;
+  @}
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm")
+   (set_attr "arch"   "*,*,*,*,*,sve")
+   (set_attr "length" "4,4,4,4,*,  4")
+]
+)
+@end group
+@end smallexample
+
+can be better expressed as:
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: =0, 1; attrs: type, arch, length]
+     [r , r  ; mov_reg  , *   , 4] mov\t%w0, %w1
+     [k , r  ; mov_reg  , *   , 4] ^
+     [r , k  ; mov_reg  , *   , 4] ^
+     [r , M  ; mov_imm  , *   , 4] mov\t%w0, %1
+     [r , n  ; mov_imm  , *   , *] #
+     [r , Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+  @}
+  "&& true"
+  [(const_int 0)]
+  @{
+    aarch64_expand_mov_immediate (operands[0], operands[1]);
+    DONE;
+  @}
+)
+@end group
+@end smallexample
+
+The syntax rules are as follows:
+@itemize @bullet
+@item
+Templates must start with @samp{@{@@} to use the new syntax.
+
+@item
+@samp{@{@@} is followed by a layout in square brackets which is @samp{cons:}
+followed by a comma-separated list of @code{match_operand}/@code{match_scratch}
+operand numbers, then a semicolon, followed by the same for attributes
+(@samp{attrs:}).  Operand modifiers like @code{=} and @code{+} can be placed
+before an operand number.
+Both sections are optional (so you can use only @samp{cons}, or only
+@samp{attrs}, or both), and @samp{cons} must come before @samp{attrs} if
+present.
+
+@item
+Each alternative begins with any amount of whitespace.
+
+@item
+Following the whitespace is a comma-separated list of "constraints" and/or
+"attributes" within brackets @code{[]}, with sections separated by a semicolon.
+
+@item
+Should you want to copy the previous asm line, the symbol @code{^} can be used.
+This allows less copy pasting between alternative and reduces the number of
+lines to update on changes.
+
+@item
+When using C functions for output, the idiom @samp{* return @var{function};}
+can be replaced with the shorthand @samp{<< @var{function};}.
+
+@item
+Following the closing @samp{]} is any amount of whitespace, and then the actual
+asm output.
+
+@item
+Spaces are allowed in the list (they will simply be removed).
+
+@item
+All constraint alternatives should be specified.  For example, a list of
+of three blank alternatives should be written @samp{[,,]} rather than
+@samp{[]}.
+
+@item
+All attribute alternatives should be non-empty, with @samp{*}
+representing the default attribute value.  For example, a list of three
+default attribute values should be written @samp{[*,*,*]} rather than
+@samp{[]}.
+
+@item
+Within an @samp{@{@@} block both multiline and singleline C comments are
+allowed, but when used outside of a C block they must be the only non-whitespace
+blocks on the line.
+
+@item
+Within an @samp{@{@@} block, any iterators that do not get expanded will result
+in an error.  If for some reason it is required to have @code{<} or @code{>} in
+the output then these must be escaped using @backslashchar{}.
+
+@item
+It is possible to use the @samp{attrs} list to specify some attributes and to
+use the normal @code{set_attr} syntax to specify other attributes.  There must
+not be any overlap between the two lists.
+
+In other words, the following is valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+but this is not valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "arch" "bar")
+   (set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+because it specifies @code{arch} twice.
+@end itemize
 
 @node Predicates
 @section Predicates
