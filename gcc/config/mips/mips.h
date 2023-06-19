@@ -1248,7 +1248,8 @@ struct mips_cpu_info {
 				 && !TARGET_MIPS16)
 
 /* ISA has data prefetch, LL and SC with limited 9-bit displacement.  */
-#define ISA_HAS_9BIT_DISPLACEMENT	(mips_isa_rev >= 6)
+#define ISA_HAS_9BIT_DISPLACEMENT	(mips_isa_rev >= 6		\
+					 || ISA_HAS_MIPS16E2)
 
 /* ISA has data indexed prefetch instructions.  This controls use of
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
@@ -1341,7 +1342,8 @@ struct mips_cpu_info {
 #define ISA_HAS_SYNCI (mips_isa_rev >= 2 && !TARGET_MIPS16)
 
 /* ISA includes sync.  */
-#define ISA_HAS_SYNC ((mips_isa >= MIPS_ISA_MIPS2 || TARGET_MIPS3900) && !TARGET_MIPS16)
+#define ISA_HAS_SYNC ((mips_isa >= MIPS_ISA_MIPS2 || TARGET_MIPS3900)	\
+		      && (!TARGET_MIPS16 || ISA_HAS_MIPS16E2))
 #define GENERATE_SYNC			\
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
@@ -1350,7 +1352,8 @@ struct mips_cpu_info {
 /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
    instructions.  */
-#define ISA_HAS_LL_SC (mips_isa >= MIPS_ISA_MIPS2 && !TARGET_MIPS5900 && !TARGET_MIPS16)
+#define ISA_HAS_LL_SC (mips_isa >= MIPS_ISA_MIPS2 && !TARGET_MIPS5900	\
+		       && (!TARGET_MIPS16 || ISA_HAS_MIPS16E2))
 #define GENERATE_LL_SC			\
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
