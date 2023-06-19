@@ -62,9 +62,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       bool in_middle_of_path = i > 0;
       if (in_middle_of_path && segment.is_lower_self_seg ())
 	{
-	  // error[E0433]: failed to resolve: `self` in paths can only be used
-	  // in start position
-	  rust_error_at (segment.get_locus (),
+	  rust_error_at (segment.get_locus (), ErrorCode ("E0433"),
 			 "failed to resolve: %<%s%> in paths can only be used "
 			 "in start position",
 			 segment.as_string ().c_str ());
@@ -208,7 +206,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	}
       else if (is_first_segment)
 	{
-	  rust_error_at (segment.get_locus (),
+	  rust_error_at (segment.get_locus (), ErrorCode ("E0433"),
 			 "Cannot find path %<%s%> in this scope",
 			 segment.as_string ().c_str ());
 	  return UNKNOWN_NODEID;
