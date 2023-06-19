@@ -5094,7 +5094,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load (operand 2 - operand 3) elements from vector memory operand 1
+Load (operand 2 + operand 3) elements from memory operand 1
 into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
@@ -5105,7 +5105,7 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes rather than
@@ -5116,7 +5116,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store (operand 2 - operand 3) vector elements from vector register operand 1
+Store (operand 2 + operand 3) vector elements from vector register operand 1
 into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
@@ -5127,7 +5127,60 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{len_maskload@var{m}@var{n}} instruction pattern
+@item @samp{len_maskload@var{m}@var{n}}
+Perform a masked load from the memory location pointed to by operand 1
+into register operand 0.  (operand 2 + operand 4) elements are loaded from
+memory and other elements in operand 0 are set to undefined values.
+This is a combination of len_load and maskload.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2
+has whichever integer mode the target prefers.  A mask is specified in
+operand 3 which must be of type @var{n}.  The mask has lower precedence than
+the length and is itself subject to length masking,
+i.e. only mask indices < (operand 2 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{len_maskstore@var{m}@var{n}} instruction pattern
+@item @samp{len_maskstore@var{m}@var{n}}
+Perform a masked store from vector register operand 1 into memory operand 0.
+(operand 2 + operand 4) elements are stored to memory
+and leave the other elements of operand 0 unchanged.
+This is a combination of len_store and maskstore.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2 has whichever
+integer mode the target prefers.  A mask is specified in operand 3 which must be
+of type @var{n}.  The mask has lower precedence than the length and is itself subject to
+length masking, i.e. only mask indices < (operand 2 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes
