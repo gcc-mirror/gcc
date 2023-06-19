@@ -476,6 +476,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  opt_pass * clone () final override { return new pass_phiprop (m_ctxt); }
   bool gate (function *) final override { return flag_tree_phiprop; }
   unsigned int execute (function *) final override;
 
