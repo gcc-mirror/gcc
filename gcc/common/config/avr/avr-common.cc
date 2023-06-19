@@ -29,12 +29,6 @@
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options avr_option_optimization_table[] =
   {
-    // With -fdelete-null-pointer-checks option, the compiler assumes
-    // that dereferencing of a null pointer would halt the program.
-    // For AVR this assumption is not true and a program can safely
-    // dereference null pointers.  Changes made by this option may not
-    // work properly for AVR.  So disable this option.
-    { OPT_LEVELS_ALL, OPT_fdelete_null_pointer_checks, NULL, 0 },
     // The only effect of -fcaller-saves might be that it triggers
     // a frame without need when it tries to be smart around calls.
     { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
