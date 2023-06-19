@@ -26895,6 +26895,13 @@ MIPS16 code generation can also be controlled on a per-function basis
 by means of @code{mips16} and @code{nomips16} attributes.
 @xref{Function Attributes}, for more information.
 
+@opindex mmips16e2
+@opindex mno-mips16e2
+@item -mmips16e2
+@itemx -mno-mips16e2
+Use (do not use) the MIPS16e2 ASE.  This option modifies the behavior
+of the @option{-mips16} option such that it targets the MIPS16e2 ASE@.
+
 @opindex mflip-mips16
 @item -mflip-mips16
 Generate MIPS16 code on alternating functions.  This option is provided

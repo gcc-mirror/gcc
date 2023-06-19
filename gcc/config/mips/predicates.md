@@ -369,7 +369,7 @@
 {
   /* When generating mips16 code, TARGET_LEGITIMATE_CONSTANT_P rejects
      CONST_INTs that can't be loaded using simple insns.  */
-  if (TARGET_MIPS16)
+  if (TARGET_MIPS16 && !TARGET_MIPS16E2)
     return false;
 
   /* Don't handle multi-word moves this way; we don't want to introduce

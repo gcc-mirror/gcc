@@ -475,6 +475,9 @@ struct mips_cpu_info {
       if (mips_base_compression_flags & MASK_MIPS16)			\
 	builtin_define ("__mips16");					\
 									\
+      if (TARGET_MIPS16E2)						\
+	builtin_define ("__mips_mips16e2");				\
+									\
       if (TARGET_MIPS3D)						\
 	builtin_define ("__mips3d");					\
 									\
@@ -1291,6 +1294,10 @@ struct mips_cpu_info {
 /* The MSA ASE is available.  */
 #define ISA_HAS_MSA		(TARGET_MSA && !TARGET_MIPS16)
 
+/* The MIPS16e V2 instructions are available.  */
+#define ISA_HAS_MIPS16E2       (TARGET_MIPS16 && TARGET_MIPS16E2 \
+				&& !TARGET_64BIT)
+
 /* True if the result of a load is not available to the next instruction.
    A nop will then be needed between instructions like "lw $4,..."
    and "addiu $4,$4,1".  */
@@ -1450,6 +1457,7 @@ struct mips_cpu_info {
 %{msym32} %{mno-sym32} \
 %{mtune=*}" \
 FP_ASM_SPEC "\
+%{mmips16e2} \
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */

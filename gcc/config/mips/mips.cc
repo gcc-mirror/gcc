@@ -10145,7 +10145,8 @@ mips_file_start (void)
     fputs ("\t.module\tmsa\n", asm_out_file);
   if (TARGET_XPA)
     fputs ("\t.module\txpa\n", asm_out_file);
-  /* FIXME: MIPS16E2 is not supported by GCC? gas does support it */
+  if (TARGET_MIPS16E2)
+    fputs ("\t.module\tmips16e2\n", asm_out_file);
   if (TARGET_CRC)
     fputs ("\t.module\tcrc\n", asm_out_file);
   if (TARGET_GINV)
