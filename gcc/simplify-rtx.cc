@@ -4860,6 +4860,17 @@ simplify_ashift:
 	    return simplify_gen_binary (VEC_SELECT, mode, XEXP (trueop0, 0),
 					gen_rtx_PARALLEL (VOIDmode, vec));
 	  }
+	/* (vec_concat:
+	     (subreg_lowpart:N OP)
+	     (vec_select:N OP P))  -->  OP when P selects the high half
+	    of the OP.  */
+	if (GET_CODE (trueop0) == SUBREG
+	    && subreg_lowpart_p (trueop0)
+	    && GET_CODE (trueop1) == VEC_SELECT
+	    && SUBREG_REG (trueop0) == XEXP (trueop1, 0)
+	    && !side_effects_p (XEXP (trueop1, 0))
+	    && vec_series_highpart_p (op1_mode, mode, XEXP (trueop1, 1)))
+	  return XEXP (trueop1, 0);
       }
       return 0;
 
