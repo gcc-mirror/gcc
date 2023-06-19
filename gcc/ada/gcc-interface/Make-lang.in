@@ -550,8 +550,11 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-trasym.o \
  ada/libgnat/s-unstyp.o	\
  ada/libgnat/s-valint.o	\
+ ada/libgnat/s-valspe.o	\
  ada/libgnat/s-valuns.o	\
  ada/libgnat/s-valuti.o	\
+ ada/libgnat/s-vs_int.o \
+ ada/libgnat/s-vs_uns.o \
  ada/libgnat/s-wchcnv.o	\
  ada/libgnat/s-wchcon.o	\
  ada/libgnat/s-wchjis.o	\
