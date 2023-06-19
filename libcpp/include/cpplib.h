@@ -1602,4 +1602,11 @@ bool cpp_input_conversion_is_trivial (const char *input_charset);
 int cpp_check_utf8_bom (const char *data, size_t data_length);
 bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
 
+enum {
+   XID_START = 1,
+   XID_CONTINUE = 2
+};
+
+unsigned int check_xid_property (cppchar_t c);
+
 #endif /* ! LIBCPP_CPPLIB_H */
