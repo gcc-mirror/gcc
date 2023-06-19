@@ -16256,7 +16256,8 @@ aarch64_vector_costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
       unsigned int num_masks = 0;
       rgroup_controls *rgm;
       unsigned int num_vectors_m1;
-      FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), num_vectors_m1, rgm)
+      FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo).rgc_vec,
+			num_vectors_m1, rgm)
 	if (rgm->type)
 	  num_masks += num_vectors_m1 + 1;
       for (auto &ops : m_ops)
