@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+#ifndef RUST_ATTRIBUTES_H
+#define RUST_ATTRIBUTES_H
 
 #include "rust-ast.h"
 #include "rust-system.h"
@@ -267,3 +269,5 @@ private:
 
 } // namespace Analysis
 } // namespace Rust
+
+#endif /* ! RUST_ATTRIBUTES_H */
