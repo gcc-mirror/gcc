@@ -21857,7 +21857,9 @@
 (define_expand "maskload<mode><avx512fmaskmodelower>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand")
 	(vec_merge:V48_AVX512VL
-	  (match_operand:V48_AVX512VL 1 "memory_operand")
+	  (unspec:V48_AVX512VL
+	    [(match_operand:V48_AVX512VL 1 "memory_operand")]
+	    UNSPEC_MASKLOAD)
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
@@ -21865,7 +21867,9 @@
 (define_expand "maskload<mode><avx512fmaskmodelower>"
   [(set (match_operand:VI12_AVX512VL 0 "register_operand")
 	(vec_merge:VI12_AVX512VL
-	  (match_operand:VI12_AVX512VL 1 "memory_operand")
+	  (unspec:VI12_AVX512VL
+	    [(match_operand:VI12_AVX512VL 1 "memory_operand")]
+	    UNSPEC_MASKLOAD)
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512BW")
