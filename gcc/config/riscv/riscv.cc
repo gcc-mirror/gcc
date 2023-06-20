@@ -7364,6 +7364,11 @@ riscv_regmode_natural_size (machine_mode mode)
      anything smaller than that.  */
   /* ??? For now, only do this for variable-width RVV registers.
      Doing it for constant-sized registers breaks lower-subreg.c.  */
+
+  /* RVV mask modes always consume a single register.  */
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    return BYTES_PER_RISCV_VECTOR;
+
   if (!riscv_vector_chunks.is_constant () && riscv_v_ext_mode_p (mode))
     {
       if (riscv_v_ext_tuple_mode_p (mode))
