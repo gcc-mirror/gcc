@@ -5,7 +5,7 @@
   void vncvt_##TYPE1##TYPE2 (TYPE2 *dst, TYPE1 *a, int n)	\
   {								\
     for (int i = 0; i < n; i++)					\
-      dst[i] = (TYPE1)a[i];					\
+      dst[i] = (TYPE2)a[i];					\
   }
 
 #define TEST_ALL()						\

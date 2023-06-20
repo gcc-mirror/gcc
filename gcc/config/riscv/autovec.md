@@ -451,6 +451,25 @@
   DONE;
 })
 
+;; -------------------------------------------------------------------------
+;; ---- [FP<-INT] Conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfcvt.f.xu.v
+;; - vfcvt.f.x.v
+;; -------------------------------------------------------------------------
+
+(define_expand "<float_cvt><vconvert><mode>2"
+  [(set (match_operand:VF 0 "register_operand")
+	(any_float:VF
+	  (match_operand:<VCONVERT> 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_fp_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
 ;; =========================================================================
 ;; == Unary arithmetic
 ;; =========================================================================
