@@ -162,12 +162,12 @@
   riscv_vector::emit_vlmax_insn (code_for_pred_scalar (<CODE>, <MODE>mode),
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
-}  
+}
  [(set_attr "type" "vshift")
   (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------
-;; ---- [INT] Binary shifts by scalar.
+;; ---- [INT] Binary shifts by vector.
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - vsll.vv/vsra.vv/vsrl.vv
@@ -427,6 +427,90 @@
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Widening.
+;; -------------------------------------------------------------------------
+;; - vfwcvt.f.f.v
+;; -------------------------------------------------------------------------
+(define_insn_and_split "extend<v_double_trunc><mode>2"
+  [(set (match_operand:VWEXTF_ZVFHMIN 0 "register_operand" "=&vr")
+    (float_extend:VWEXTF_ZVFHMIN
+     (match_operand:<V_DOUBLE_TRUNC>  1 "register_operand" "  vr")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred_extend (<MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+}
+  [(set_attr "type" "vfwcvtftof")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "extend<v_quad_trunc><mode>2"
+  [(set (match_operand:VQEXTF 0 "register_operand")
+    (float_extend:VQEXTF
+     (match_operand:<V_QUAD_TRUNC> 1 "register_operand")))]
+  "TARGET_VECTOR && (TARGET_ZVFHMIN || TARGET_ZVFH)"
+{
+  rtx dblw = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
+  insn_code icode = code_for_pred_extend (<V_DOUBLE_TRUNC>mode);
+  rtx ops1[] = {dblw, operands[1]};
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops1);
+
+  icode = code_for_pred_extend (<MODE>mode);
+  rtx ops2[] = {operands[0], dblw};
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops2);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Narrowing.
+;; -------------------------------------------------------------------------
+;; - vfncvt.f.f.w
+;; -------------------------------------------------------------------------
+(define_insn_and_split "trunc<mode><v_double_trunc>2"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand" "=vr")
+    (truncate:<V_DOUBLE_TRUNC>
+     (match_operand:VWEXTF_ZVFHMIN 1 "register_operand"      " vr")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code icode = code_for_pred_trunc (<MODE>mode);
+  riscv_vector::emit_vlmax_fp_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+}
+  [(set_attr "type" "vfncvtftof")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------
+;; Narrowing to a mode whose inner mode size is a quarter of mode's.
+;; We emulate this with two consecutive vfncvts.
+;; -------------------------------------------------------------------------
+(define_expand "trunc<mode><v_quad_trunc>2"
+  [(set (match_operand:<V_QUAD_TRUNC> 0 "register_operand")
+    (truncate:<V_QUAD_TRUNC>
+     (match_operand:VQEXTF 1 "register_operand")))]
+  "TARGET_VECTOR && (TARGET_ZVFHMIN || TARGET_ZVFH)"
+{
+  rtx half = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
+  rtx opshalf[] = {half, operands[1]};
+
+  /* According to the RISC-V V Spec 13.19. we need to use
+     vfncvt.rod.f.f.w for all steps but the last.  */
+  insn_code icode = code_for_pred_rod_trunc (<MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, opshalf);
+
+  rtx ops[] = {operands[0], half};
+  icode = code_for_pred_trunc (<V_DOUBLE_TRUNC>mode);
+  riscv_vector::emit_vlmax_fp_insn (icode, riscv_vector::RVV_UNOP, ops);
+  DONE;
+})
+
 
 ;; =========================================================================
 ;; == Conversions

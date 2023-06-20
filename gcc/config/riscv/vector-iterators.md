@@ -547,6 +547,14 @@
   (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
 ])
 
+(define_mode_iterator VQEXTF [
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN < 128")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
+])
+
 (define_mode_iterator VOEXTI [
   (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128") (VNx2DI "TARGET_VECTOR_ELEN_64")
   (VNx4DI "TARGET_VECTOR_ELEN_64") (VNx8DI "TARGET_VECTOR_ELEN_64")
@@ -1305,6 +1313,9 @@
   (VNx16SI "VNx16QI") (VNx32SI "VNx32QI")
   (VNx1DI "VNx1HI") (VNx2DI "VNx2HI")
   (VNx4DI "VNx4HI") (VNx8DI "VNx8HI") (VNx16DI "VNx16HI")
+
+  (VNx1DF "VNx1HF") (VNx2DF "VNx2HF") (VNx4DF "VNx4HF") (VNx8DF "VNx8HF")
+  (VNx16DF "VNx16HF")
 ])
 
 (define_mode_attr V_OCT_TRUNC [
@@ -1330,6 +1341,9 @@
   (VNx16SI "vnx16qi") (VNx32SI "vnx32qi")
   (VNx1DI "vnx1hi") (VNx2DI "vnx2hi") (VNx4DI "vnx4hi") (VNx8DI "vnx8hi")
   (VNx16DI "vnx16hi")
+
+  (VNx1DF "vnx1hf") (VNx2DF "vnx2hf") (VNx4DF "vnx4hf") (VNx8DF "vnx8hf")
+  (VNx16DF "vnx16hf")
 ])
 
 (define_mode_attr v_oct_trunc [
