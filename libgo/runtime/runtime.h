@@ -355,9 +355,6 @@ bool	runtime_notetsleepg(Note*, int64)  // false - timeout
 /*
  * low level C-called
  */
-#define runtime_mmap mmap
-#define runtime_munmap munmap
-#define runtime_madvise madvise
 #define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
 #define runtime_getcallerpc() __builtin_return_address(0)
 
