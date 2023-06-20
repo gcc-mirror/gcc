@@ -2331,6 +2331,9 @@ finalization of all Ada libraries must be performed at the end of the program.
 No call to these libraries or to the Ada run-time library should be made
 after the finalization phase.
 
+Information on limitations of binding Ada code in non-Ada contexts can be
+found under :ref:`Binding_with_Non-Ada_Main_Programs`.
+
 Note also that special care must be taken with multi-tasks
 applications. The initialization and finalization routines are not
 protected against concurrent access. If such requirement is needed it

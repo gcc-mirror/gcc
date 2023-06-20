@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 04, 2023
+GNAT User's Guide for Native Platforms , Jul 06, 2023
 
 AdaCore
 
@@ -3857,6 +3857,9 @@ finalization of all Ada libraries must be performed at the end of the program.
 No call to these libraries or to the Ada run-time library should be made
 after the finalization phase.
 
+Information on limitations of binding Ada code in non-Ada contexts can be
+found under @ref{7e,,Binding with Non-Ada Main Programs}.
+
 Note also that special care must be taken with multi-tasks
 applications. The initialization and finalization routines are not
 protected against concurrent access. If such requirement is needed it
@@ -3864,7 +3867,7 @@ must be ensured at the application level using a specific operating
 system services like a mutex or a critical-section.
 
 @node Restrictions in Stand-alone Libraries,,Creating a Stand-alone Library to be used in a non-Ada context,Stand-alone Ada Libraries
-@anchor{gnat_ugn/the_gnat_compilation_model id45}@anchor{7e}@anchor{gnat_ugn/the_gnat_compilation_model restrictions-in-stand-alone-libraries}@anchor{7f}
+@anchor{gnat_ugn/the_gnat_compilation_model id45}@anchor{7f}@anchor{gnat_ugn/the_gnat_compilation_model restrictions-in-stand-alone-libraries}@anchor{80}
 @subsubsection Restrictions in Stand-alone Libraries
 
 
@@ -3910,7 +3913,7 @@ In practice these attributes are rarely used, so this is unlikely
 to be a consideration.
 
 @node Rebuilding the GNAT Run-Time Library,,Stand-alone Ada Libraries,GNAT and Libraries
-@anchor{gnat_ugn/the_gnat_compilation_model id46}@anchor{80}@anchor{gnat_ugn/the_gnat_compilation_model rebuilding-the-gnat-run-time-library}@anchor{81}
+@anchor{gnat_ugn/the_gnat_compilation_model id46}@anchor{81}@anchor{gnat_ugn/the_gnat_compilation_model rebuilding-the-gnat-run-time-library}@anchor{82}
 @subsection Rebuilding the GNAT Run-Time Library
 
 
@@ -3946,7 +3949,7 @@ experiments or debugging, and is not supported.
 @geindex Conditional compilation
 
 @node Conditional Compilation,Mixed Language Programming,GNAT and Libraries,The GNAT Compilation Model
-@anchor{gnat_ugn/the_gnat_compilation_model conditional-compilation}@anchor{2b}@anchor{gnat_ugn/the_gnat_compilation_model id47}@anchor{82}
+@anchor{gnat_ugn/the_gnat_compilation_model conditional-compilation}@anchor{2b}@anchor{gnat_ugn/the_gnat_compilation_model id47}@anchor{83}
 @section Conditional Compilation
 
 
@@ -3963,7 +3966,7 @@ gnatprep preprocessor utility.
 @end menu
 
 @node Modeling Conditional Compilation in Ada,Preprocessing with gnatprep,,Conditional Compilation
-@anchor{gnat_ugn/the_gnat_compilation_model id48}@anchor{83}@anchor{gnat_ugn/the_gnat_compilation_model modeling-conditional-compilation-in-ada}@anchor{84}
+@anchor{gnat_ugn/the_gnat_compilation_model id48}@anchor{84}@anchor{gnat_ugn/the_gnat_compilation_model modeling-conditional-compilation-in-ada}@anchor{85}
 @subsection Modeling Conditional Compilation in Ada
 
 
@@ -4014,7 +4017,7 @@ be achieved using Ada in general, and GNAT in particular.
 @end menu
 
 @node Use of Boolean Constants,Debugging - A Special Case,,Modeling Conditional Compilation in Ada
-@anchor{gnat_ugn/the_gnat_compilation_model id49}@anchor{85}@anchor{gnat_ugn/the_gnat_compilation_model use-of-boolean-constants}@anchor{86}
+@anchor{gnat_ugn/the_gnat_compilation_model id49}@anchor{86}@anchor{gnat_ugn/the_gnat_compilation_model use-of-boolean-constants}@anchor{87}
 @subsubsection Use of Boolean Constants
 
 
@@ -4058,7 +4061,7 @@ Then any other unit requiring conditional compilation can do a `with'
 of @code{Config} to make the constants visible.
 
 @node Debugging - A Special Case,Conditionalizing Declarations,Use of Boolean Constants,Modeling Conditional Compilation in Ada
-@anchor{gnat_ugn/the_gnat_compilation_model debugging-a-special-case}@anchor{87}@anchor{gnat_ugn/the_gnat_compilation_model id50}@anchor{88}
+@anchor{gnat_ugn/the_gnat_compilation_model debugging-a-special-case}@anchor{88}@anchor{gnat_ugn/the_gnat_compilation_model id50}@anchor{89}
 @subsubsection Debugging - A Special Case
 
 
@@ -4171,7 +4174,7 @@ end if;
 @end example
 
 @node Conditionalizing Declarations,Use of Alternative Implementations,Debugging - A Special Case,Modeling Conditional Compilation in Ada
-@anchor{gnat_ugn/the_gnat_compilation_model conditionalizing-declarations}@anchor{89}@anchor{gnat_ugn/the_gnat_compilation_model id51}@anchor{8a}
+@anchor{gnat_ugn/the_gnat_compilation_model conditionalizing-declarations}@anchor{8a}@anchor{gnat_ugn/the_gnat_compilation_model id51}@anchor{8b}
 @subsubsection Conditionalizing Declarations
 
 
@@ -4236,7 +4239,7 @@ constant was introduced as @code{System.Default_Bit_Order}, so you do not
 need to define this one yourself).
 
 @node Use of Alternative Implementations,Preprocessing,Conditionalizing Declarations,Modeling Conditional Compilation in Ada
-@anchor{gnat_ugn/the_gnat_compilation_model id52}@anchor{8b}@anchor{gnat_ugn/the_gnat_compilation_model use-of-alternative-implementations}@anchor{8c}
+@anchor{gnat_ugn/the_gnat_compilation_model id52}@anchor{8c}@anchor{gnat_ugn/the_gnat_compilation_model use-of-alternative-implementations}@anchor{8d}
 @subsubsection Use of Alternative Implementations
 
 
@@ -4370,7 +4373,7 @@ The same idea can also be implemented using tagged types and dispatching
 calls.
 
 @node Preprocessing,,Use of Alternative Implementations,Modeling Conditional Compilation in Ada
-@anchor{gnat_ugn/the_gnat_compilation_model id53}@anchor{8d}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing}@anchor{8e}
+@anchor{gnat_ugn/the_gnat_compilation_model id53}@anchor{8e}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing}@anchor{8f}
 @subsubsection Preprocessing
 
 
@@ -4393,7 +4396,7 @@ The preprocessor may be used in two separate modes. It can be used quite
 separately from the compiler, to generate a separate output source file
 that is then fed to the compiler as a separate step. This is the
 @code{gnatprep} utility, whose use is fully described in
-@ref{8f,,Preprocessing with gnatprep}.
+@ref{90,,Preprocessing with gnatprep}.
 
 The preprocessing language allows such constructs as
 
@@ -4413,10 +4416,10 @@ often more convenient. In this approach the preprocessing is integrated into
 the compilation process. The compiler is given the preprocessor input which
 includes @code{#if} lines etc, and then the compiler carries out the
 preprocessing internally and processes the resulting output.
-For more details on this approach, see @ref{90,,Integrated Preprocessing}.
+For more details on this approach, see @ref{91,,Integrated Preprocessing}.
 
 @node Preprocessing with gnatprep,Integrated Preprocessing,Modeling Conditional Compilation in Ada,Conditional Compilation
-@anchor{gnat_ugn/the_gnat_compilation_model id54}@anchor{91}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing-with-gnatprep}@anchor{8f}
+@anchor{gnat_ugn/the_gnat_compilation_model id54}@anchor{92}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing-with-gnatprep}@anchor{90}
 @subsection Preprocessing with @code{gnatprep}
 
 
@@ -4441,7 +4444,7 @@ For further discussion of conditional compilation in general, see
 @end menu
 
 @node Preprocessing Symbols,Using gnatprep,,Preprocessing with gnatprep
-@anchor{gnat_ugn/the_gnat_compilation_model id55}@anchor{92}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing-symbols}@anchor{93}
+@anchor{gnat_ugn/the_gnat_compilation_model id55}@anchor{93}@anchor{gnat_ugn/the_gnat_compilation_model preprocessing-symbols}@anchor{94}
 @subsubsection Preprocessing Symbols
 
 
@@ -4451,7 +4454,7 @@ normal Ada (case-insensitive) rules for its syntax, with the restriction that
 all characters need to be in the ASCII set (no accented letters).
 
 @node Using gnatprep,Switches for gnatprep,Preprocessing Symbols,Preprocessing with gnatprep
-@anchor{gnat_ugn/the_gnat_compilation_model id56}@anchor{94}@anchor{gnat_ugn/the_gnat_compilation_model using-gnatprep}@anchor{95}
+@anchor{gnat_ugn/the_gnat_compilation_model id56}@anchor{95}@anchor{gnat_ugn/the_gnat_compilation_model using-gnatprep}@anchor{96}
 @subsubsection Using @code{gnatprep}
 
 
@@ -4509,7 +4512,7 @@ optional, and can be replaced by the use of the @code{-D} switch.
 @end itemize
 
 @node Switches for gnatprep,Form of Definitions File,Using gnatprep,Preprocessing with gnatprep
-@anchor{gnat_ugn/the_gnat_compilation_model id57}@anchor{96}@anchor{gnat_ugn/the_gnat_compilation_model switches-for-gnatprep}@anchor{97}
+@anchor{gnat_ugn/the_gnat_compilation_model id57}@anchor{97}@anchor{gnat_ugn/the_gnat_compilation_model switches-for-gnatprep}@anchor{98}
 @subsubsection Switches for @code{gnatprep}
 
 
@@ -4660,7 +4663,7 @@ deleted lines are completely removed from the output, unless -r is
 specified, in which case -b is assumed.
 
 @node Form of Definitions File,Form of Input Text for gnatprep,Switches for gnatprep,Preprocessing with gnatprep
-@anchor{gnat_ugn/the_gnat_compilation_model form-of-definitions-file}@anchor{98}@anchor{gnat_ugn/the_gnat_compilation_model id58}@anchor{99}
+@anchor{gnat_ugn/the_gnat_compilation_model form-of-definitions-file}@anchor{99}@anchor{gnat_ugn/the_gnat_compilation_model id58}@anchor{9a}
 @subsubsection Form of Definitions File
 
 
@@ -4690,7 +4693,7 @@ the usual @code{--},
 and comments may be added to the definitions lines.
 
 @node Form of Input Text for gnatprep,,Form of Definitions File,Preprocessing with gnatprep
-@anchor{gnat_ugn/the_gnat_compilation_model form-of-input-text-for-gnatprep}@anchor{9a}@anchor{gnat_ugn/the_gnat_compilation_model id59}@anchor{9b}
+@anchor{gnat_ugn/the_gnat_compilation_model form-of-input-text-for-gnatprep}@anchor{9b}@anchor{gnat_ugn/the_gnat_compilation_model id59}@anchor{9c}
 @subsubsection Form of Input Text for @code{gnatprep}
 
 
@@ -4822,7 +4825,7 @@ Header : String := $XYZ;
 and then the substitution will occur as desired.
 
 @node Integrated Preprocessing,,Preprocessing with gnatprep,Conditional Compilation
-@anchor{gnat_ugn/the_gnat_compilation_model id60}@anchor{9c}@anchor{gnat_ugn/the_gnat_compilation_model integrated-preprocessing}@anchor{90}
+@anchor{gnat_ugn/the_gnat_compilation_model id60}@anchor{9d}@anchor{gnat_ugn/the_gnat_compilation_model integrated-preprocessing}@anchor{91}
 @subsection Integrated Preprocessing
 
 
@@ -4883,7 +4886,7 @@ because @code{gnatmake} cannot compute the checksum of the source after
 preprocessing.
 
 The actual preprocessing function is described in detail in
-@ref{8f,,Preprocessing with gnatprep}. This section explains the switches
+@ref{90,,Preprocessing with gnatprep}. This section explains the switches
 that relate to integrated preprocessing.
 
 @geindex -gnatep (gcc)
@@ -4982,7 +4985,7 @@ lines starting with the character ‘*’.
 
 After the file name or ‘*’, an optional literal string specifies the name of
 the definition file to be used for preprocessing
-(@ref{98,,Form of Definitions File}). The definition files are found by the
+(@ref{99,,Form of Definitions File}). The definition files are found by the
 compiler in one of the source directories. In some cases, when compiling
 a source in a directory other than the current directory, if the definition
 file is in the current directory, it may be necessary to add the current
@@ -5074,7 +5077,7 @@ the output file will be @code{foo.adb.prep}.
 @end table
 
 @node Mixed Language Programming,GNAT and Other Compilation Models,Conditional Compilation,The GNAT Compilation Model
-@anchor{gnat_ugn/the_gnat_compilation_model id61}@anchor{9d}@anchor{gnat_ugn/the_gnat_compilation_model mixed-language-programming}@anchor{2c}
+@anchor{gnat_ugn/the_gnat_compilation_model id61}@anchor{9e}@anchor{gnat_ugn/the_gnat_compilation_model mixed-language-programming}@anchor{2c}
 @section Mixed Language Programming
 
 
@@ -5094,7 +5097,7 @@ with a focus on combining Ada with C or C++.
 @end menu
 
 @node Interfacing to C,Calling Conventions,,Mixed Language Programming
-@anchor{gnat_ugn/the_gnat_compilation_model id62}@anchor{9e}@anchor{gnat_ugn/the_gnat_compilation_model interfacing-to-c}@anchor{9f}
+@anchor{gnat_ugn/the_gnat_compilation_model id62}@anchor{9f}@anchor{gnat_ugn/the_gnat_compilation_model interfacing-to-c}@anchor{a0}
 @subsection Interfacing to C
 
 
@@ -5205,7 +5208,7 @@ $ gnatmake my_main.adb -largs file1.o file2.o
 If the main program is in a language other than Ada, then you may have
 more than one entry point into the Ada subsystem. You must use a special
 binder option to generate callable routines that initialize and
-finalize the Ada units (@ref{a0,,Binding with Non-Ada Main Programs}).
+finalize the Ada units (@ref{7e,,Binding with Non-Ada Main Programs}).
 Calls to the initialization and finalization routines must be inserted
 in the main program, or some other appropriate point in the code. The
 call to initialize the Ada units must occur before the first Ada
@@ -9073,7 +9076,7 @@ Disable atomic synchronization
 @item @code{-gnateDsymbol[=`value']}
 
 Defines a symbol, associated with @code{value}, for preprocessing.
-(@ref{90,,Integrated Preprocessing}).
+(@ref{91,,Integrated Preprocessing}).
 @end table
 
 @geindex -gnateE (gcc)
@@ -9221,7 +9224,7 @@ Specify a mapping file
 
 Specify a preprocessing data file
 (the equal sign is optional)
-(@ref{90,,Integrated Preprocessing}).
+(@ref{91,,Integrated Preprocessing}).
 @end table
 
 @geindex -gnateP (gcc)
@@ -15947,7 +15950,7 @@ Output chosen elaboration order.
 @item @code{-L`xxx'}
 
 Bind the units for library building. In this case the @code{adainit} and
-@code{adafinal} procedures (@ref{a0,,Binding with Non-Ada Main Programs})
+@code{adafinal} procedures (@ref{7e,,Binding with Non-Ada Main Programs})
 are renamed to @code{@var{xxx}init} and
 @code{@var{xxx}final}.
 Implies -n.
@@ -16608,7 +16611,7 @@ unless explicitly overridden by a @code{'Size} clause on the access type.
 These switches are only effective on VMS platforms.
 
 @node Binding with Non-Ada Main Programs,Binding Programs with No Main Subprogram,Dynamic Allocation Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-non-ada-main-programs}@anchor{a0}@anchor{gnat_ugn/building_executable_programs_with_gnat id40}@anchor{11e}
+@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-non-ada-main-programs}@anchor{7e}@anchor{gnat_ugn/building_executable_programs_with_gnat id40}@anchor{11e}
 @subsubsection Binding with Non-Ada Main Programs
 
 
@@ -17496,7 +17499,7 @@ Other GNAT utilities are described elsewhere in this manual:
 @ref{1d,,Renaming Files with gnatchop}
 
 @item 
-@ref{8f,,Preprocessing with gnatprep}
+@ref{90,,Preprocessing with gnatprep}
 @end itemize
 
 @menu
@@ -24266,7 +24269,7 @@ To achieve this you must export an initialization routine
 (@code{Initialize_API} in the previous example), which must be invoked
 before using any of the DLL services. This elaboration routine must call
 the Ada elaboration routine @code{adainit} generated by the GNAT binder
-(@ref{a0,,Binding with Non-Ada Main Programs}). See the body of
+(@ref{7e,,Binding with Non-Ada Main Programs}). See the body of
 @code{Initialize_Api} for an example. Note that the GNAT binder is
 automatically invoked during the DLL build process by the @code{gnatdll}
 tool (@ref{1e9,,Using gnatdll}).
@@ -24293,7 +24296,7 @@ invoke the DLL finalization routine, if available. The DLL finalization
 routine is in charge of releasing all resources acquired by the DLL. In the
 case of the Ada code contained in the DLL, this is achieved by calling
 routine @code{adafinal} generated by the GNAT binder
-(@ref{a0,,Binding with Non-Ada Main Programs}).
+(@ref{7e,,Binding with Non-Ada Main Programs}).
 See the body of @code{Finalize_Api} for an
 example. As already pointed out the GNAT binder is automatically invoked
 during the DLL build process by the @code{gnatdll} tool
