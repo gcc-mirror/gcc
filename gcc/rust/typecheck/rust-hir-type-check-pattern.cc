@@ -204,7 +204,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    if (!variant->lookup_field (ident.get_identifier (), &field,
 					nullptr))
 	      {
-		rust_error_at (ident.get_locus (),
+		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
 			       "variant %s does not have a field named %s",
 			       variant->get_identifier ().c_str (),
 			       ident.get_identifier ().c_str ());
@@ -225,7 +225,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    if (!variant->lookup_field (ident.get_identifier (), &field,
 					nullptr))
 	      {
-		rust_error_at (ident.get_locus (),
+		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
 			       "variant %s does not have a field named %s",
 			       variant->get_identifier ().c_str (),
 			       ident.get_identifier ().c_str ());
