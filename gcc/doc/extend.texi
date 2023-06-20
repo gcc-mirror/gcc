@@ -19807,6 +19807,10 @@ double scalar_insert_exp (double significand, unsigned long long int exponent);
 ieee_128 scalar_insert_exp (unsigned __int128 significand,
                             unsigned long long int exponent);
 ieee_128 scalar_insert_exp (ieee_128 significand, unsigned long long int exponent);
+vector ieee_128 scalar_insert_exp (vector unsigned __int128 significand,
+                                   vector unsigned long long exponent);
+vector unsigned long long scalar_extract_exp_to_vec (ieee_128);
+vector unsigned __int128  scalar_extract_sig_to_vec (ieee_128);
 
 int scalar_cmp_exp_gt (double arg1, double arg2);
 int scalar_cmp_exp_lt (double arg1, double arg2);
@@ -19857,11 +19861,21 @@ of the result are composed of the least significant 11 bits of the
 
 When supplied with a 128-bit first argument, the
 @code{scalar_insert_exp} built-in function returns a quad-precision
-ieee floating point value.  The sign bit of the result is copied from
-the most significant bit of the @code{significand} argument.
-The significand and exponent components of the result are composed of
-the least significant 15 bits of the @code{exponent} argument and the
-least significant 112 bits of the @code{significand} argument respectively.
+IEEE floating point value if the two arguments were scalar.  If the two
+arguments are vectors, the return value is a vector IEEE floating point value.
+The sign bit of the result is copied from the most significant bit of the
+@code{significand} argument.  The significand and exponent components of the
+result are composed of the least significant 15 bits of the @code{exponent}
+argument (element 0 on big-endian and element 1 on little-endian) and the
+least significant 112 bits of the @code{significand} argument
+respectively.  Note, the @code{significand} is the scalar argument or in the
+case of vector arguments, @code{significand} is element 0 for big-endian and
+element 1 for little-endian.
+
+The @code{scalar_extract_exp_to_vec},
+and @code{scalar_extract_sig_to_vec} are similar to
+@code{scalar_extract_exp}, @code{scalar_extract_sig} except they return
+a vector result of type unsigned long long and unsigned __int128 respectively.
 
 The @code{scalar_cmp_exp_gt}, @code{scalar_cmp_exp_lt},
 @code{scalar_cmp_exp_eq}, and @code{scalar_cmp_exp_unordered} built-in
