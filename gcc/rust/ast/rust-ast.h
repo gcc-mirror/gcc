@@ -681,11 +681,19 @@ protected:
   virtual MetaItemInner *clone_meta_item_inner_impl () const = 0;
 
 public:
+  enum class Kind
+  {
+    LitExpr,
+    MetaItem,
+  };
+
   // Unique pointer custom clone function
   std::unique_ptr<MetaItemInner> clone_meta_item_inner () const
   {
     return std::unique_ptr<MetaItemInner> (clone_meta_item_inner_impl ());
   }
+
+  virtual Kind get_kind () = 0;
 
   virtual ~MetaItemInner ();
 
@@ -897,6 +905,24 @@ class AttrInputLiteral;
 // abstract base meta item class
 class MetaItem : public MetaItemInner
 {
+public:
+  enum class ItemKind
+  {
+    Path,
+    Word,
+    NameValueStr,
+    PathLit,
+    Seq,
+    ListPaths,
+    ListNameValueStr,
+  };
+
+  MetaItemInner::Kind get_kind () override
+  {
+    return MetaItemInner::Kind::MetaItem;
+  }
+
+  virtual ItemKind get_item_kind () const = 0;
 };
 
 // Forward decl - defined in rust-expr.h
