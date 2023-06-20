@@ -4728,6 +4728,7 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   if (!types_compatible_p (type, TREE_TYPE (arg1)))
     return false;
   int kind[2] = { 0, 0 };
+  tree arg_im[2] = { NULL_TREE, NULL_TREE };
   /* At least one of arg2 and arg3 should have type compatible
      with arg1/rhs[0], and the other one should have value in [0, 1]
      range.  If both are in [0, 1] range and type compatible with
@@ -4758,6 +4759,7 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	  g = uaddc_ne0 (g);
 	  if (!uaddc_is_cplxpart (g, IMAGPART_EXPR))
 	    continue;
+	  arg_im[i] = gimple_assign_lhs (g);
 	  g = SSA_NAME_DEF_STMT (TREE_OPERAND (gimple_assign_rhs1 (g), 0));
 	  if (!is_gimple_call (g) || !gimple_call_internal_p (g))
 	    continue;
@@ -4781,6 +4783,7 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
     {
       std::swap (arg2, arg3);
       std::swap (kind[0], kind[1]);
+      std::swap (arg_im[0], arg_im[1]);
     }
   if ((kind[0] & 1) == 0 || (kind[1] & 6) == 0)
     return false;
@@ -4810,6 +4813,8 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   /* Build .UADDC/.USUBC call which will be placed before the stmt.  */
   gimple_stmt_iterator gsi2 = gsi_for_stmt (ovf2);
   gimple *g;
+  if ((kind[1] & 4) != 0 && types_compatible_p (type, TREE_TYPE (arg_im[1])))
+    arg3 = arg_im[1];
   if ((kind[1] & 1) == 0)
     {
       if (TREE_CODE (arg3) == INTEGER_CST)
