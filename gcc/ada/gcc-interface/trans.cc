@@ -3902,8 +3902,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     gnu_return_var_elmt = NULL_TREE;
 
   /* If the function returns by invisible reference, make it explicit in the
-     function body.  See gnat_to_gnu_subprog_type for more details.  */
-  if (TREE_ADDRESSABLE (gnu_subprog_type))
+     function body, but beware that maybe_make_gnu_thunk may already have done
+     it if the function is inlined across units.  See gnat_to_gnu_subprog_type
+     for more details.  */
+  if (TREE_ADDRESSABLE (gnu_subprog_type)
+      && TREE_CODE (TREE_TYPE (gnu_result_decl)) != REFERENCE_TYPE)
     {
       TREE_TYPE (gnu_result_decl)
 	= build_reference_type (TREE_TYPE (gnu_result_decl));
@@ -11015,7 +11018,7 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
      same transformation as Subprogram_Body_to_gnu here.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (gnu_target))
       && DECL_EXTERNAL (gnu_target)
-      && !POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (gnu_target))))
+      && TREE_CODE (TREE_TYPE (DECL_RESULT (gnu_target))) != REFERENCE_TYPE)
     {
       TREE_TYPE (DECL_RESULT (gnu_target))
 	= build_reference_type (TREE_TYPE (DECL_RESULT (gnu_target)));
