@@ -320,6 +320,14 @@
 		     | RS6000_BTC_SPECIAL),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
+#define BU_VSX_MISC_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_VSX,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 /* VSX overloaded builtin function macros.  */
 #define BU_VSX_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (VSX_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
@@ -2589,8 +2597,8 @@ BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)
 BU_IBM128_2 (PACK_IF,		"pack_ibm128",		CONST,	packif)
 BU_IBM128_2 (UNPACK_IF,		"unpack_ibm128",	CONST,	unpackif)
 
-BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
-BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)
+BU_VSX_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
+BU_VSX_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)
 
 /* 2 argument DFP (Decimal Floating Point) functions added in ISA 3.0.  */
 BU_P9_DFP_MISC_2 (TSTSFI_LT_DD, "dtstsfi_lt_dd", CONST, dfptstsfi_lt_dd)
