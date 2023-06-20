@@ -7325,10 +7325,11 @@
 
 (define_insn "stack_tie"
   [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_operand:DI 0 "register_operand" "rk")
-		     (match_operand:DI 1 "register_operand" "rk")]
+	(unspec:BLK [(reg:DI SP_REGNUM)
+		     (match_operand:DI 0 "register_operand" "rk")
+		     (match_operand:DI 1 "const_int_operand")]
 		    UNSPEC_PRLG_STK))]
-  ""
+  "REGNO (operands[0]) == INTVAL (operands[1])"
   ""
   [(set_attr "length" "0")]
 )

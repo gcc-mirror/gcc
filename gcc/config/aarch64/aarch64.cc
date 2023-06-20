@@ -9664,6 +9664,16 @@ aarch64_stack_clash_protection_alloca_probe_range (void)
   return STACK_CLASH_CALLER_GUARD;
 }
 
+/* Emit a stack tie that acts as a scheduling barrier for all previous and
+   subsequent memory accesses and that requires the stack pointer and REG
+   to have their current values.  REG can be stack_pointer_rtx if no
+   other register's value needs to be fixed.  */
+
+static void
+aarch64_emit_stack_tie (rtx reg)
+{
+  emit_insn (gen_stack_tie (reg, gen_int_mode (REGNO (reg), DImode)));
+}
 
 /* Allocate POLY_SIZE bytes of stack space using TEMP1 and TEMP2 as scratch
    registers.  If POLY_SIZE is not large enough to require a probe this function
@@ -9776,7 +9786,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 	     the instruction.  */
 	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, STACK_CLASH_SVE_CFA_REGNUM);
 	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
-	  emit_insn (gen_stack_tie (stack_ptr_copy, stack_pointer_rtx));
+	  aarch64_emit_stack_tie (stack_ptr_copy);
 
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
@@ -10145,7 +10155,7 @@ aarch64_expand_prologue (void)
 	  aarch64_add_cfa_expression (insn, regno_reg_rtx[reg1],
 				      hard_frame_pointer_rtx, 0);
 	}
-      emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
+      aarch64_emit_stack_tie (hard_frame_pointer_rtx);
     }
 
   aarch64_save_callee_saves (saved_regs_offset, R0_REGNUM, R30_REGNUM,
@@ -10248,7 +10258,7 @@ aarch64_expand_epilogue (bool for_sibcall)
       || cfun->calls_alloca
       || crtl->calls_eh_return)
     {
-      emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
+      aarch64_emit_stack_tie (stack_pointer_rtx);
       need_barrier_p = false;
     }
 
@@ -10287,7 +10297,7 @@ aarch64_expand_epilogue (bool for_sibcall)
 				callee_adjust != 0, &cfi_ops);
 
   if (need_barrier_p)
-    emit_insn (gen_stack_tie (stack_pointer_rtx, stack_pointer_rtx));
+    aarch64_emit_stack_tie (stack_pointer_rtx);
 
   if (callee_adjust != 0)
     aarch64_pop_regs (reg1, reg2, callee_adjust, &cfi_ops);
