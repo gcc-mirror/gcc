@@ -878,7 +878,8 @@ convert_syntax (rtx x, file_location loc)
   const char *templ;
   vec_conlist tconvec, convec, attrvec;
 
-  templ_index = GET_CODE (x) == DEFINE_INSN ? 3 : 2;
+  templ_index = 3;
+  gcc_assert (GET_CODE (x) == DEFINE_INSN);
 
   templ = XTMPL (x, templ_index);
 
@@ -1053,7 +1054,6 @@ process_rtx (rtx desc, file_location loc)
       break;
 
     case DEFINE_COND_EXEC:
-      convert_syntax (desc, loc);
       queue_pattern (desc, &define_cond_exec_tail, loc);
       break;
 
