@@ -704,47 +704,74 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
 	      pointer __new_start(this->_M_allocate(__len));
+
+	      // RAII guard for allocated storage.
+	      struct _Guard
+	      {
+		pointer _M_storage;         // Storage to deallocate
+		size_type _M_len;
+		_Tp_alloc_type& _M_alloc;
+
+		_GLIBCXX20_CONSTEXPR
+		_Guard(pointer __s, size_type __l, _Tp_alloc_type& __a)
+		: _M_storage(__s), _M_len(__l), _M_alloc(__a)
+		{ }
+
+		_GLIBCXX20_CONSTEXPR
+		~_Guard()
+		{
+		  if (_M_storage)
+		    __gnu_cxx::__alloc_traits<_Tp_alloc_type>::
+		      deallocate(_M_alloc, _M_storage, _M_len);
+		}
+
+	      private:
+		_Guard(const _Guard&);
+	      };
+	      _Guard __guard(__new_start, __len, _M_impl);
+
+	      std::__uninitialized_default_n_a(__new_start + __size, __n,
+					       _M_get_Tp_allocator());
+
 	      if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
 		{
-		  __try
-		    {
-		      std::__uninitialized_default_n_a(__new_start + __size,
-			      __n, _M_get_Tp_allocator());
-		    }
-		  __catch(...)
-		    {
-		      _M_deallocate(__new_start, __len);
-		      __throw_exception_again;
-		    }
 		  _S_relocate(__old_start, __old_finish,
 			      __new_start, _M_get_Tp_allocator());
 		}
 	      else
 		{
-		  pointer __destroy_from = pointer();
-		  __try
-		    {
-		      std::__uninitialized_default_n_a(__new_start + __size,
-			      __n, _M_get_Tp_allocator());
-		      __destroy_from = __new_start + __size;
-		      std::__uninitialized_move_if_noexcept_a(
-			      __old_start, __old_finish,
-			      __new_start, _M_get_Tp_allocator());
-		    }
-		  __catch(...)
-		    {
-		      if (__destroy_from)
-			std::_Destroy(__destroy_from, __destroy_from + __n,
-				      _M_get_Tp_allocator());
-		      _M_deallocate(__new_start, __len);
-		      __throw_exception_again;
-		    }
-		  std::_Destroy(__old_start, __old_finish,
-				_M_get_Tp_allocator());
+		  // RAII type to destroy initialized elements.
+		  struct _Guard_elts
+		  {
+		    pointer _M_first, _M_last;  // Elements to destroy
+		    _Tp_alloc_type& _M_alloc;
+
+		    _GLIBCXX20_CONSTEXPR
+		    _Guard_elts(pointer __first, size_type __n,
+				_Tp_alloc_type& __a)
+		    : _M_first(__first), _M_last(__first + __n), _M_alloc(__a)
+		    { }
+
+		    _GLIBCXX20_CONSTEXPR
+		    ~_Guard_elts()
+		    { std::_Destroy(_M_first, _M_last, _M_alloc); }
+
+		  private:
+		    _Guard_elts(const _Guard_elts&);
+		  };
+		  _Guard_elts __guard_elts(__new_start + __size, __n, _M_impl);
+
+		  std::__uninitialized_move_if_noexcept_a(
+		    __old_start, __old_finish, __new_start,
+		    _M_get_Tp_allocator());
+
+		  __guard_elts._M_first = __old_start;
+		  __guard_elts._M_last = __old_finish;
 		}
 	      _GLIBCXX_ASAN_ANNOTATE_REINIT;
-	      _M_deallocate(__old_start,
-			    this->_M_impl._M_end_of_storage - __old_start);
+	      __guard._M_storage = __old_start;
+	      __guard._M_len = this->_M_impl._M_end_of_storage - __old_start;
+
 	      this->_M_impl._M_start = __new_start;
 	      this->_M_impl._M_finish = __new_start + __size + __n;
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
