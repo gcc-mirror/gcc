@@ -3820,8 +3820,8 @@ riscv_arg_has_vector (const_tree type)
   switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
-      /* If it is a record, it is further determined whether its fileds have
-         vector type.  */
+      /* If it is a record, it is further determined whether its fields have
+	 vector type.  */
       for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
 	if (TREE_CODE (f) == FIELD_DECL)
 	  {
@@ -3835,6 +3835,8 @@ riscv_arg_has_vector (const_tree type)
       break;
     case ARRAY_TYPE:
       return riscv_arg_has_vector (TREE_TYPE (type));
+    default:
+      break;
     }
 
   return false;
