@@ -20,3 +20,5 @@ f (int8_t *restrict a, int8_t *restrict b, int n)
 }
 
 /* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" } } */
+/* { dg-final { scan-assembler {\tvid\.v} } } */
+/* { dg-final { scan-assembler {\tvand} } } */

@@ -1128,7 +1128,7 @@ expand_const_vector (rtx target, rtx src)
 	builder.quick_push (CONST_VECTOR_ELT (src, i * npatterns + j));
     }
   builder.finalize ();
-  
+
   if (CONST_VECTOR_DUPLICATE_P (src))
     {
       /* Handle the case with repeating sequence that NELTS_PER_PATTERN = 1
@@ -1204,61 +1204,52 @@ expand_const_vector (rtx target, rtx src)
       if (builder.single_step_npatterns_p ())
 	{
 	  /* Describe the case by choosing NPATTERNS = 4 as an example.  */
-	  rtx base, step;
+	  insn_code icode;
+
+	  /* Step 1: Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
+	  rtx vid = gen_reg_rtx (builder.mode ());
+	  rtx vid_ops[] = {vid};
+	  icode = code_for_pred_series (builder.mode ());
+	  emit_vlmax_insn (icode, RVV_MISC_OP, vid_ops);
+
 	  if (builder.npatterns_all_equal_p ())
 	    {
 	      /* Generate the variable-length vector following this rule:
 		 { a, a, a + step, a + step, a + step * 2, a + step * 2, ...}
 		   E.g. { 0, 0, 8, 8, 16, 16, ... } */
-	      /* Step 1: Generate base = { 0, 0, 0, 0, 0, 0, 0, ... }.  */
-	      base = expand_vector_broadcast (builder.mode (), builder.elt (0));
+	      /* We want to create a pattern where value[ix] = floor (ix /
+		 NPATTERNS). As NPATTERNS is always a power of two we can
+		 rewrite this as = ix & -NPATTERNS.  */
+	      /* Step 2: VID AND -NPATTERNS:
+		 { 0&-4, 1&-4, 2&-4, 3 &-4, 4 &-4, 5 &-4, 6 &-4, 7 &-4, ... }
+	      */
+	      rtx imm
+		= gen_int_mode (-builder.npatterns (), builder.inner_mode ());
+	      rtx and_ops[] = {target, vid, imm};
+	      icode = code_for_pred_scalar (AND, builder.mode ());
+	      emit_vlmax_insn (icode, RVV_BINOP, and_ops);
 	    }
 	  else
 	    {
 	      /* Generate the variable-length vector following this rule:
 		 { a, b, a, b, a + step, b + step, a + step*2, b + step*2, ...}
-		   E.g. { 0, 6, 0, 6, 8, 14, 8, 14, 16, 22, 16, 22, ... } */
-	      /* Step 1: Generate base = { 0, 6, 0, 6, ... }.  */
-	      rvv_builder new_builder (builder.mode (), builder.npatterns (),
-				       1);
-	      for (unsigned int i = 0; i < builder.npatterns (); ++i)
-		new_builder.quick_push (builder.elt (i));
-	      rtx new_vec = new_builder.build ();
-	      base = gen_reg_rtx (builder.mode ());
-	      emit_move_insn (base, new_vec);
+		   E.g. { 3, 2, 1, 0, 7, 6, 5, 4, ... } */
+	      /* Step 2: Generate diff = TARGET - VID:
+		 { 3-0, 2-1, 1-2, 0-3, 7-4, 6-5, 5-6, 4-7, ... }*/
+	      rvv_builder v (builder.mode (), builder.npatterns (), 1);
+	      for (unsigned int i = 0; i < v.npatterns (); ++i)
+		{
+		  /* Calculate the diff between the target sequence and
+		     vid sequence.  */
+		  HOST_WIDE_INT diff = INTVAL (builder.elt (i)) - i;
+		  v.quick_push (gen_int_mode (diff, v.inner_mode ()));
+		}
+	      /* Step 2: Generate result = VID + diff.  */
+	      rtx vec = v.build ();
+	      rtx add_ops[] = {target, vid, vec};
+	      emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()), RVV_BINOP,
+			       add_ops);
 	    }
-
-	  /* Step 2: Generate step = gen_int_mode (diff, mode).  */
-	  poly_int64 value1 = rtx_to_poly_int64 (builder.elt (0));
-	  poly_int64 value2
-	    = rtx_to_poly_int64 (builder.elt (builder.npatterns ()));
-	  poly_int64 diff = value2 - value1;
-	  step = gen_int_mode (diff, builder.inner_mode ());
-
-	  /* Step 3: Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
-	  rtx vid = gen_reg_rtx (builder.mode ());
-	  rtx op[] = {vid};
-	  emit_vlmax_insn (code_for_pred_series (builder.mode ()), RVV_MISC_OP,
-			   op);
-
-	  /* Step 4: Generate factor = { 0, 0, 0, 0, 1, 1, 1, 1, ... }.  */
-	  rtx factor = gen_reg_rtx (builder.mode ());
-	  rtx shift_ops[]
-	    = {factor, vid,
-	       gen_int_mode (exact_log2 (builder.npatterns ()), Pmode)};
-	  emit_vlmax_insn (code_for_pred_scalar (LSHIFTRT, builder.mode ()),
-			   RVV_BINOP, shift_ops);
-
-	  /* Step 5: Generate adjusted step = { 0, 0, 0, 0, diff, diff, ... } */
-	  rtx adjusted_step = gen_reg_rtx (builder.mode ());
-	  rtx mul_ops[] = {adjusted_step, factor, step};
-	  emit_vlmax_insn (code_for_pred_scalar (MULT, builder.mode ()),
-			   RVV_BINOP, mul_ops);
-
-	  /* Step 6: Generate the final result.  */
-	  rtx add_ops[] = {target, base, adjusted_step};
-	  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()), RVV_BINOP,
-			   add_ops);
 	}
       else
 	/* TODO: We will enable more variable-length vector in the future.  */
