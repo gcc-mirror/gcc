@@ -200,6 +200,11 @@ public:
 
   bool check_cfg_predicate (const Session &session) const override;
 
+  MetaItemInner::Kind get_kind () override
+  {
+    return MetaItemInner::Kind::LitExpr;
+  }
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemLitExpr *clone_meta_item_inner_impl () const override
@@ -226,6 +231,11 @@ public:
   std::string as_string () const override
   {
     return path.as_string () + " = " + lit.as_string ();
+  }
+
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::PathLit;
   }
 
   // There are two Locations in MetaItemPathLit (path and lit_expr),

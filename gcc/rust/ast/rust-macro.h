@@ -844,6 +844,11 @@ public:
 
   Attribute to_attribute () const override;
 
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::Path;
+  }
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemPath *clone_meta_item_inner_impl () const override
@@ -902,6 +907,11 @@ public:
 
   Attribute to_attribute () const override;
 
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::Seq;
+  }
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaItemSeq *clone_meta_item_inner_impl () const override
@@ -932,6 +942,11 @@ public:
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
+
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::Word;
+  }
 
 protected:
   // Use covariance to implement clone function as returning this type
@@ -984,6 +999,11 @@ public:
 
   bool is_key_value_pair () const override { return true; }
 
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::NameValueStr;
+  }
+
 protected:
   // Use covariance to implement clone function as returning this type
   MetaNameValueStr *clone_meta_item_inner_impl () const override
@@ -1020,6 +1040,11 @@ public:
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
+
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::ListPaths;
+  }
 
 private:
   bool check_path_exists_in_cfg (const Session &session,
@@ -1060,6 +1085,11 @@ public:
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
+
+  MetaItem::ItemKind get_item_kind () const override
+  {
+    return MetaItem::ItemKind::ListNameValueStr;
+  }
 
 protected:
   // Use covariance to implement clone function as returning this type
