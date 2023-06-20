@@ -414,9 +414,16 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  bool found_impl_trait
 	    = context->lookup_associated_trait_impl (impl_block_id,
 						     &associated);
+
+	  auto mappings = TyTy::SubstitutionArgumentMappings::error ();
 	  TyTy::BaseType *impl_block_ty
 	    = TypeCheckItem::ResolveImplBlockSelfWithInference (
-	      *associated_impl_block, seg.get_locus ());
+	      *associated_impl_block, seg.get_locus (), &mappings);
+
+	  // we need to apply the arguments to the segment type so they get
+	  // unified properly
+	  if (!mappings.is_error ())
+	    tyseg = SubstMapperInternal::Resolve (tyseg, mappings);
 
 	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
 				     TyTy::TyWithLocation (prev_segment),
