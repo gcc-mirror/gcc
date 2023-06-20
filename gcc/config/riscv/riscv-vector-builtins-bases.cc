@@ -1212,7 +1212,7 @@ public:
   }
 };
 
-/* Implements vfsqrt7/vfrec7/vfclass/vfsgnj/vfsgnjn/vfsgnjx.  */
+/* Implements vfsqrt7/vfrec7/vfclass/vfsgnj/vfsgnjx.  */
 template<int UNSPEC>
 class float_misc : public function_base
 {
@@ -1223,6 +1223,20 @@ public:
       return e.use_exact_insn (code_for_pred_scalar (UNSPEC, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv || e.op_info->op == OP_TYPE_v)
       return e.use_exact_insn (code_for_pred (UNSPEC, e.vector_mode ()));
+    gcc_unreachable ();
+  }
+};
+
+/* Implements vfsgnjn.  */
+class vfsgnjn : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_vf)
+      return e.use_exact_insn (code_for_pred_ncopysign_scalar (e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_vv)
+      return e.use_exact_insn (code_for_pred_ncopysign (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -2031,7 +2045,7 @@ static CONSTEXPR const float_misc<UNSPEC_VFREC7> vfrec7_obj;
 static CONSTEXPR const binop<SMIN> vfmin_obj;
 static CONSTEXPR const binop<SMAX> vfmax_obj;
 static CONSTEXPR const float_misc<UNSPEC_VCOPYSIGN> vfsgnj_obj;
-static CONSTEXPR const float_misc<UNSPEC_VNCOPYSIGN> vfsgnjn_obj;
+static CONSTEXPR const vfsgnjn vfsgnjn_obj;
 static CONSTEXPR const float_misc<UNSPEC_VXORSIGN> vfsgnjx_obj;
 static CONSTEXPR const unop<NEG> vfneg_obj;
 static CONSTEXPR const unop<ABS> vfabs_obj;

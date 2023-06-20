@@ -950,3 +950,46 @@
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })
+
+;; -------------------------------------------------------------------------------
+;; ---- [FP] Sign copying
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vfsgnj.vv/vfsgnjn.vv
+;; - vfsgnj.vf/vfsgnjn.vf
+;; -------------------------------------------------------------------------------
+
+;; Leave the pattern like this as to still allow combine to match
+;; a negated copysign (see vector.md) before adding the UNSPEC_VPREDICATE later.
+(define_insn_and_split "copysign<mode>3"
+  [(set (match_operand:VF 0 "register_operand"      "=vd, vd, vr, vr")
+    (unspec:VF
+     [(match_operand:VF 1 "register_operand"        " vr, vr, vr, vr")
+     (match_operand:VF 2 "register_operand"         " vr, vr, vr, vr")] UNSPEC_VCOPYSIGN))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (UNSPEC_VCOPYSIGN, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
+  DONE;
+}
+  [(set_attr "type" "vfsgnj")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vfsgnjx.vv
+;; - vfsgnjx.vf
+;; -------------------------------------------------------------------------------
+(define_expand "xorsign<mode>3"
+  [(match_operand:VF 0 "register_operand")
+    (match_operand:VF 1 "register_operand")
+    (match_operand:VF 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (UNSPEC_VXORSIGN, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
+  DONE;
+})

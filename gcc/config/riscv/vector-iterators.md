@@ -61,7 +61,6 @@
   UNSPEC_VFCLASS
 
   UNSPEC_VCOPYSIGN
-  UNSPEC_VNCOPYSIGN
   UNSPEC_VXORSIGN
 
   UNSPEC_VFCVT
@@ -1460,14 +1459,11 @@
 
 (define_int_attr float_insn_type [(UNSPEC_VFRSQRT7 "vfsqrt") (UNSPEC_VFREC7 "vfrecp")])
 
-(define_int_iterator VCOPYSIGNS [UNSPEC_VCOPYSIGN UNSPEC_VNCOPYSIGN UNSPEC_VXORSIGN])
+(define_int_iterator VCOPYSIGNS [UNSPEC_VCOPYSIGN UNSPEC_VXORSIGN])
 
-(define_int_attr copysign [(UNSPEC_VCOPYSIGN "copysign")
-			   (UNSPEC_VNCOPYSIGN "ncopysign")
-			   (UNSPEC_VXORSIGN "xorsign")])
+(define_int_attr copysign [(UNSPEC_VCOPYSIGN "copysign") (UNSPEC_VXORSIGN "xorsign")])
 
-(define_int_attr nx [(UNSPEC_VCOPYSIGN "") (UNSPEC_VNCOPYSIGN "n")
-		     (UNSPEC_VXORSIGN "x")])
+(define_int_attr nx [(UNSPEC_VCOPYSIGN "") (UNSPEC_VXORSIGN "x")])
 
 (define_int_attr ud [(UNSPEC_VSLIDEUP "up") (UNSPEC_VSLIDEDOWN "down")
 		     (UNSPEC_VSLIDE1UP "1up") (UNSPEC_VSLIDE1DOWN "1down")
