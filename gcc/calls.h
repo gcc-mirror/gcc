@@ -112,7 +112,7 @@ public:
 
 extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (const_tree);
-extern int setjmp_call_p (const_tree);
+extern bool setjmp_call_p (const_tree);
 extern bool gimple_maybe_alloca_call_p (const gimple *);
 extern bool gimple_alloca_call_p (const gimple *);
 extern bool alloca_call_p (const_tree);
