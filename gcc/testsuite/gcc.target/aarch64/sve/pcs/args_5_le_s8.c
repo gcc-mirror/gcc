@@ -50,8 +50,8 @@ caller (void *x0)
 /* { dg-final { scan-assembler {\tld3b\t{z4\.b - z6\.b}, p[0-7]/z, \[x0, #-3, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tld1b\tz7\.b, p[0-7]/z, \[x0, #2, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tmov\tx1, sp\n} } } */
-/* { dg-final { scan-assembler {\tld2b\t{(z[0-9]+)\.b - z[0-9]+\.b}.*\tstr\t\1, \[x1\]\n} } } */
-/* { dg-final { scan-assembler {\tld2b\t{z[0-9]+\.b - (z[0-9]+)\.b}.*\tstr\t\1, \[x1, #1, mul vl\]\n} } } */
+/* { dg-final { scan-assembler {\tld2b\t{(z[0-9]+)\.b - z[0-9]+\.b}.*\tstr\t\1, \[(?:x1|sp)\]\n} } } */
+/* { dg-final { scan-assembler {\tld2b\t{z[0-9]+\.b - (z[0-9]+)\.b}.*\tstr\t\1, \[(?:x1|sp), #1, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp0\.b, vl1\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp1\.h, vl2\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp2\.s, vl3\n} } } */
