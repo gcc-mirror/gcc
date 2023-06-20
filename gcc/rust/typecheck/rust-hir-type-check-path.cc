@@ -415,11 +415,8 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    = context->lookup_associated_trait_impl (impl_block_id,
 						     &associated);
 	  TyTy::BaseType *impl_block_ty
-	    = TypeCheckItem::ResolveImplBlockSelf (*associated_impl_block);
-
-	  if (impl_block_ty->needs_generic_substitutions ())
-	    impl_block_ty
-	      = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
+	    = TypeCheckItem::ResolveImplBlockSelfWithInference (
+	      *associated_impl_block, seg.get_locus ());
 
 	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
 				     TyTy::TyWithLocation (prev_segment),
