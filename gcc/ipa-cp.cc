@@ -6779,3 +6779,79 @@ ipa_cp_cc_finalize (void)
   orig_overall_size = 0;
   ipcp_free_transformation_sum ();
 }
+
+/* Given PARAM which must be a parameter of function FNDECL described by THIS,
+   return its index in the DECL_ARGUMENTS chain, using a pre-computed
+   DECL_UID-sorted vector if available (which is pre-computed only if there are
+   many parameters).  Can return -1 if param is static chain not represented
+   among DECL_ARGUMENTS. */
+
+int
+ipcp_transformation::get_param_index (const_tree fndecl, const_tree param) const
+{
+  gcc_assert (TREE_CODE (param) == PARM_DECL);
+  if (m_uid_to_idx)
+    {
+      unsigned puid = DECL_UID (param);
+      const ipa_uid_to_idx_map_elt *res
+	= std::lower_bound (m_uid_to_idx->begin(), m_uid_to_idx->end (), puid,
+			    [] (const ipa_uid_to_idx_map_elt &elt, unsigned uid)
+			    {
+			      return elt.uid < uid;
+			    });
+      if (res == m_uid_to_idx->end ()
+	  || res->uid != puid)
+	{
+	  gcc_assert (DECL_STATIC_CHAIN (fndecl));
+	  return -1;
+	}
+      return res->index;
+    }
+
+  unsigned index = 0;
+  for (tree p = DECL_ARGUMENTS (fndecl); p; p = DECL_CHAIN (p), index++)
+    if (p == param)
+      return (int) index;
+
+  gcc_assert (DECL_STATIC_CHAIN (fndecl));
+  return -1;
+}
+
+/* Helper function to qsort a vector of ipa_uid_to_idx_map_elt elements
+   according to the uid.  */
+
+static int
+compare_uids (const void *a, const void *b)
+{
+  const ipa_uid_to_idx_map_elt *e1 = (const ipa_uid_to_idx_map_elt *) a;
+  const ipa_uid_to_idx_map_elt *e2 = (const ipa_uid_to_idx_map_elt *) b;
+  if (e1->uid < e2->uid)
+    return -1;
+  if (e1->uid > e2->uid)
+    return 1;
+  gcc_unreachable ();
+}
+
+/* Assuming THIS describes FNDECL and it has sufficiently many parameters to
+   justify the overhead, create a DECL_UID-sorted vector to speed up mapping
+   from parameters to their indices in DECL_ARGUMENTS chain.  */
+
+void
+ipcp_transformation::maybe_create_parm_idx_map (tree fndecl)
+{
+  int c = count_formal_params (fndecl);
+  if (c < 32)
+    return;
+
+  m_uid_to_idx = NULL;
+  vec_safe_reserve (m_uid_to_idx, c, true);
+  unsigned index = 0;
+  for (tree p = DECL_ARGUMENTS (fndecl); p; p = DECL_CHAIN (p), index++)
+    {
+      ipa_uid_to_idx_map_elt elt;
+      elt.uid = DECL_UID (p);
+      elt.index = index;
+      m_uid_to_idx->quick_push (elt);
+    }
+  m_uid_to_idx->qsort (compare_uids);
+}
