@@ -2530,6 +2530,7 @@ package body Sem_Disp is
         (S               : Entity_Id;
          No_Interfaces   : Boolean := False;
          Interfaces_Only : Boolean := False;
+         Skip_Overridden : Boolean := False;
          One_Only        : Boolean := False) return Subprogram_List
       is
          Result : Subprogram_List (1 .. 6000);
@@ -2670,6 +2671,34 @@ package body Sem_Disp is
             end if;
          end if;
 
+         --  Do not keep an overridden operation if its overridding operation
+         --  is in the results too, and it is not S. This can happen for
+         --  inheritance between interfaces.
+
+         if Skip_Overridden then
+            declare
+               Res : constant Subprogram_List (1 .. N) := Result (1 .. N);
+               M   : Nat := 0;
+            begin
+               for J in 1 .. N loop
+                  for K in 1 .. N loop
+                     if Res (K) /= S
+                       and then Res (J) = Overridden_Operation (Res (K))
+                     then
+                        goto Skip;
+                     end if;
+                  end loop;
+
+                  M := M + 1;
+                  Result (M) := Res (J);
+
+                  <<Skip>>
+               end loop;
+
+               N := M;
+            end;
+         end if;
+
          <<Done>>
 
          return Result (1 .. N);
@@ -2702,6 +2731,7 @@ package body Sem_Disp is
      (S               : Entity_Id;
       No_Interfaces   : Boolean := False;
       Interfaces_Only : Boolean := False;
+      Skip_Overridden : Boolean := False;
       One_Only        : Boolean := False) return Subprogram_List renames
      Inheritance_Utilities_Inst.Inherited_Subprograms;
 
