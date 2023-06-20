@@ -1224,7 +1224,7 @@
      [m, r Z  ; store_4        , *     ] str<size>\\t%w1, %0
      [m, w    ; store_4        , *     ] str\t%<size>1, %0
      [r, w    ; neon_to_gp<q>  , simd  ] umov\t%w0, %1.<v>[0]
-     [r, w    ; neon_to_gp<q>  , nosimd] fmov\t%w0, %s1 /*foo */
+     [r, w    ; neon_to_gp<q>  , nosimd] fmov\t%w0, %s1
      [w, r Z  ; neon_from_gp<q>, simd  ] dup\t%0.<Vallxd>, %w1
      [w, r Z  ; neon_from_gp<q>, nosimd] fmov\t%s0, %w1
      [w, w    ; neon_dup       , simd  ] dup\t%<Vetype>0, %1.<v>[0]
