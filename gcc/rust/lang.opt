@@ -167,4 +167,8 @@ Enum(frust_compile_until) String(compilation) Value(9)
 EnumValue
 Enum(frust_compile_until) String(end) Value(10)
 
+frust-name-resolution-2.0
+Rust Var(flag_name_resolution_2_0)
+Use the temporary and experimental name resolution pipeline instead of the stable one
+
 ; This comment is to ensure we retain the blank line above.
