@@ -1,3 +1,313 @@
+2023-06-19  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/interrupt-fcsr-1.c: New test.
+	* gcc.target/riscv/interrupt-fcsr-2.c: New test.
+	* gcc.target/riscv/interrupt-fcsr-3.c: New test.
+
+2023-06-19  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/109811
+	PR tree-optimization/109849
+	* gcc.dg/tree-ssa/phiprop-1.c: New test.
+	* gcc.dg/tree-ssa/pr21463.c: Adjust template.
+
+2023-06-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/110299
+	* gcc.target/riscv/rvv/base/pr110299-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr110299-1.h: New test.
+	* gcc.target/riscv/rvv/base/pr110299-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr110299-2.h: New test.
+	* gcc.target/riscv/rvv/base/pr110299-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr110299-3.h: New test.
+	* gcc.target/riscv/rvv/base/pr110299-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr110299-4.h: New test.
+
+2023-06-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/110277
+	* gcc.target/riscv/rvv/base/pr110277-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr110277-1.h: New test.
+	* gcc.target/riscv/rvv/base/pr110277-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr110277-2.h: New test.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/tree-ssa/predcom-2.c: Avoid vectors on amdgcn.
+	* gcc.dg/unroll-8.c: Likewise.
+	* gcc.dg/vect/slp-26.c: Change expected results on amdgdn.
+	* lib/target-supports.exp
+	(check_effective_target_vect_int_mod): Add amdgcn.
+	(check_effective_target_divmod): Likewise.
+	* gcc.target/gcn/simd-math-3-16.c: New test.
+	* gcc.target/gcn/simd-math-3-2.c: New test.
+	* gcc.target/gcn/simd-math-3-32.c: New test.
+	* gcc.target/gcn/simd-math-3-4.c: New test.
+	* gcc.target/gcn/simd-math-3-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-16.c: New test.
+	* gcc.target/gcn/simd-math-3-char-2.c: New test.
+	* gcc.target/gcn/simd-math-3-char-32.c: New test.
+	* gcc.target/gcn/simd-math-3-char-4.c: New test.
+	* gcc.target/gcn/simd-math-3-char-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run.c: New test.
+	* gcc.target/gcn/simd-math-3-char.c: New test.
+	* gcc.target/gcn/simd-math-3-long-16.c: New test.
+	* gcc.target/gcn/simd-math-3-long-2.c: New test.
+	* gcc.target/gcn/simd-math-3-long-32.c: New test.
+	* gcc.target/gcn/simd-math-3-long-4.c: New test.
+	* gcc.target/gcn/simd-math-3-long-8.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run.c: New test.
+	* gcc.target/gcn/simd-math-3-long.c: New test.
+	* gcc.target/gcn/simd-math-3-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-run.c: New test.
+	* gcc.target/gcn/simd-math-3-short-16.c: New test.
+	* gcc.target/gcn/simd-math-3-short-2.c: New test.
+	* gcc.target/gcn/simd-math-3-short-32.c: New test.
+	* gcc.target/gcn/simd-math-3-short-4.c: New test.
+	* gcc.target/gcn/simd-math-3-short-8.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run.c: New test.
+	* gcc.target/gcn/simd-math-3-short.c: New test.
+	* gcc.target/gcn/simd-math-3.c: New test.
+	* gcc.target/gcn/simd-math-4-char-run.c: New test.
+	* gcc.target/gcn/simd-math-4-char.c: New test.
+	* gcc.target/gcn/simd-math-4-long-run.c: New test.
+	* gcc.target/gcn/simd-math-4-long.c: New test.
+	* gcc.target/gcn/simd-math-4-run.c: New test.
+	* gcc.target/gcn/simd-math-4-short-run.c: New test.
+	* gcc.target/gcn/simd-math-4-short.c: New test.
+	* gcc.target/gcn/simd-math-4.c: New test.
+	* gcc.target/gcn/simd-math-5-16.c: New test.
+	* gcc.target/gcn/simd-math-5-32.c: New test.
+	* gcc.target/gcn/simd-math-5-4.c: New test.
+	* gcc.target/gcn/simd-math-5-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-16.c: New test.
+	* gcc.target/gcn/simd-math-5-char-32.c: New test.
+	* gcc.target/gcn/simd-math-5-char-4.c: New test.
+	* gcc.target/gcn/simd-math-5-char-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run.c: New test.
+	* gcc.target/gcn/simd-math-5-char.c: New test.
+	* gcc.target/gcn/simd-math-5-long-16.c: New test.
+	* gcc.target/gcn/simd-math-5-long-32.c: New test.
+	* gcc.target/gcn/simd-math-5-long-4.c: New test.
+	* gcc.target/gcn/simd-math-5-long-8.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run.c: New test.
+	* gcc.target/gcn/simd-math-5-long.c: New test.
+	* gcc.target/gcn/simd-math-5-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-run.c: New test.
+	* gcc.target/gcn/simd-math-5-short-16.c: New test.
+	* gcc.target/gcn/simd-math-5-short-32.c: New test.
+	* gcc.target/gcn/simd-math-5-short-4.c: New test.
+	* gcc.target/gcn/simd-math-5-short-8.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run.c: New test.
+	* gcc.target/gcn/simd-math-5-short.c: New test.
+	* gcc.target/gcn/simd-math-5.c: New test.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-bic-bitmask-2.c: Remove -save-temps.
+	* gcc.dg/vect/vect-bic-bitmask-3.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-4.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-5.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-6.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-8.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-9.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-10.c: Likewise.
+	* gcc.dg/vect/vect-bic-bitmask-11.c: Likewise.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* gcc.dg/torture/pr110298.c: New testcase.
+
+2023-06-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/low-high-combine_1.c: New test.
+
+2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/105523
+	* lib/target-supports.exp
+	(check_effective_target_keeps_null_pointer_checks): Add
+	avr.
+	* gcc.target/avr/pr105523.c: New test.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/abs-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/abs-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/unop/abs-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vfsqrt-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/zvfhmin-1.c: Add unops.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv.c: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-template.h: Add FP.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-zvfh-run.c: New test.
+	* lib/target-supports.exp: Add riscv_vector_hw and riscv_zvfh_hw
+	target selectors.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: Ensure
+	that no sext insns are present.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: Dito.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-zvfh-run.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-zvfh-run.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-run.c: New file.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-run.c: Adapt for
+	(u)int8_t.
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/shift-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vand-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vand-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vand-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vand-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vor-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vor-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vor-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vor-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-template.h: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-rv32gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-rv64gcv.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-template.h: Dito.
+
+2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/110086
+	* gcc.target/avr/pr110086.c: New test.
+
+2023-06-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/const_anchors.c: New test.
+	* gcc.target/powerpc/try_const_anchors_ice.c: New test.
+
+2023-06-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-vpackssdw-3.c: New test.
+	* gcc.target/i386/avx512bw-vpacksswb-3.c: New test.
+
 2023-06-18  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/lto/20091013-1_0.c: Disable stringop-overread warning.

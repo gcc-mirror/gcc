@@ -1,3 +1,9 @@
+2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS): Also
+	add references to the OpenMP 5.1 and 5.2 spec; add omp_initial_device
+	and omp_invalid_device named constants.
+
 2023-06-13  Harald Anlauf  <anlauf@gmx.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

@@ -1,3 +1,388 @@
+2023-06-19  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_compute_frame_info): Allocate frame for FCSR.
+	(riscv_for_each_saved_reg): Save and restore FCSR in interrupt functions.
+	* config/riscv/riscv.md (riscv_frcsr): New patterns.
+	(riscv_fscsr): Likewise.
+
+2023-06-19  Toru Kisuki  <tkisuki@tachyum.com>
+
+	PR rtl-optimization/110305
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Handle HONOR_SNANS for x + 0.0.
+
+2023-06-19  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/109811
+	PR tree-optimization/109849
+	* passes.def: Add phiprop to early optimization passes.
+	* tree-ssa-phiprop.cc: Allow clonning.
+
+2023-06-19  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (arches): Add nosimd.
+	(*mov<mode>_aarch64, *movsi_aarch64, *movdi_aarch64): Rewrite to
+	compact syntax.
+
+2023-06-19  Tamar Christina  <tamar.christina@arm.com>
+	    Omar Tahir  <Omar.Tahir2@arm.com>
+
+	* gensupport.cc (class conlist, add_constraints, add_attributes,
+	skip_spaces, expect_char, preprocess_compact_syntax,
+	parse_section_layout, parse_section, convert_syntax): New.
+	(process_rtx): Check for conversion.
+	* genoutput.cc (process_template): Check for unresolved iterators.
+	(class data): Add compact_syntax_p.
+	(gen_insn): Use it.
+	* gensupport.h (compact_syntax): New.
+	(hash-set.h): Include.
+	* doc/md.texi: Document it.
+
+2023-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* recog.h (check_asm_operands): Change return type from int to bool.
+	(insn_invalid_p): Ditto.
+	(verify_changes): Ditto.
+	(apply_change_group): Ditto.
+	(constrain_operands): Ditto.
+	(constrain_operands_cached): Ditto.
+	(validate_replace_rtx_subexp): Ditto.
+	(validate_replace_rtx): Ditto.
+	(validate_replace_rtx_part): Ditto.
+	(validate_replace_rtx_part_nosimplify): Ditto.
+	(added_clobbers_hard_reg_p): Ditto.
+	(peep2_regno_dead_p): Ditto.
+	(peep2_reg_dead_p): Ditto.
+	(store_data_bypass_p): Ditto.
+	(if_test_bypass_p): Ditto.
+	* rtl.h (split_all_insns_noflow): Change
+	return type from unsigned int to void.
+	* genemit.cc (output_added_clobbers_hard_reg_p): Change return type
+	of generated added_clobbers_hard_reg_p from int to bool and adjust
+	function body accordingly.  Change "used" variable type from
+	int to bool.
+	* recog.cc (check_asm_operands): Change return type
+	from int to bool and adjust function body accordingly.
+	(insn_invalid_p): Ditto.  Change "is_asm" variable to bool.
+	(verify_changes): Change return type from int to bool.
+	(apply_change_group): Change return type from int to bool
+	and adjust function body accordingly.
+	(validate_replace_rtx_subexp): Change return type from int to bool.
+	(validate_replace_rtx): Ditto.
+	(validate_replace_rtx_part): Ditto.
+	(validate_replace_rtx_part_nosimplify): Ditto.
+	(constrain_operands_cached): Ditto.
+	(constrain_operands): Ditto.  Change "lose" and "win"
+	variables type from int to bool.
+	(split_all_insns_noflow): Change return type from unsigned int
+	to void and adjust function body accordingly.
+	(peep2_regno_dead_p): Change return type from int to bool.
+	(peep2_reg_dead_p): Ditto.
+	(peep2_find_free_register): Change "success"
+	variable type from int to bool
+	(store_data_bypass_p_1): Change return type from int to bool.
+	(store_data_bypass_p): Ditto.
+
+2023-06-19  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/vector-iterators.md: zvfh/zvfhmin depends on the
+	Zve32f extension.
+
+2023-06-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/110299
+	* config/riscv/riscv-vector-builtins-bases.cc: Adjust expand for
+	modes.
+	* config/riscv/vector-iterators.md: Remove VWLMUL1, VWLMUL1_ZVE64,
+	VWLMUL1_ZVE32, VI_ZVE64, VI_ZVE32, VWI, VWI_ZVE64, VWI_ZVE32,
+	VF_ZVE63 and VF_ZVE32.
+	* config/riscv/vector.md
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1>): Removed.
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1_zve64>): Ditto.
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1_zve32>): Ditto.
+	(@pred_widen_reduc_plus<order><mode><vwlmul1>): Ditto.
+	(@pred_widen_reduc_plus<order><mode><vwlmul1_zve64>): Ditto.
+	(@pred_widen_reduc_plus<v_su><VQI:mode><VHI_LMUL1:mode>): New pattern.
+	(@pred_widen_reduc_plus<v_su><VHI:mode><VSI_LMUL1:mode>): Ditto.
+	(@pred_widen_reduc_plus<v_su><VSI:mode><VDI_LMUL1:mode>): Ditto.
+	(@pred_widen_reduc_plus<order><VHF:mode><VSF_LMUL1:mode>): Ditto.
+	(@pred_widen_reduc_plus<order><VSF:mode><VDF_LMUL1:mode>): Ditto.
+
+2023-06-19  Pan Li  <pan2.li@intel.com>
+
+	PR target/110277
+	* config/riscv/riscv-vector-builtins-bases.cc: Adjust expand for
+	ret_mode.
+	* config/riscv/vector-iterators.md: Add VHF, VSF, VDF,
+	VHF_LMUL1, VSF_LMUL1, VDF_LMUL1, and remove unused attr.
+	* config/riscv/vector.md (@pred_reduc_<reduc><mode><vlmul1>): Removed.
+	(@pred_reduc_<reduc><mode><vlmul1_zve64>): Ditto.
+	(@pred_reduc_<reduc><mode><vlmul1_zve32>): Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1>): Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1_zve32>): Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1_zve64>): Ditto.
+	(@pred_reduc_<reduc><VHF:mode><VHF_LMUL1:mode>): New pattern.
+	(@pred_reduc_<reduc><VSF:mode><VSF_LMUL1:mode>): Ditto.
+	(@pred_reduc_<reduc><VDF:mode><VDF_LMUL1:mode>): Ditto.
+	(@pred_reduc_plus<order><VHF:mode><VHF_LMUL1:mode>): Ditto.
+	(@pred_reduc_plus<order><VSF:mode><VSF_LMUL1:mode>): Ditto.
+	(@pred_reduc_plus<order><VDF:mode><VDF_LMUL1:mode>): Ditto.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_divmod_libfunc): New function.
+	(gcn_init_libfuncs): Add div and mod functions for all modes.
+	Add placeholders for divmod functions.
+	(TARGET_EXPAND_DIVMOD_LIBFUNC): Define.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* tree-vect-generic.cc: Include optabs-libfuncs.h.
+	(get_compute_type): Check optab_libfunc.
+	* tree-vect-stmts.cc: Include optabs-libfuncs.h.
+	(vectorizable_operation): Check optab_libfunc.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (vgpr_4reg_mode_p): New function.
+	* config/gcn/gcn-valu.md (V_4REG, V_4REG_ALT): New iterators.
+	(V_MOV, V_MOV_ALT): Likewise.
+	(scalar_mode, SCALAR_MODE): Add TImode.
+	(vnsi, VnSI, vndi, VnDI): Likewise.
+	(vec_merge, vec_merge_with_clobber, vec_merge_with_vcc): Use V_MOV.
+	(mov<mode>, mov<mode>_unspec): Use V_MOV.
+	(*mov<mode>_4reg): New insn.
+	(mov<mode>_exec): New 4reg variant.
+	(mov<mode>_sgprbase): Likewise.
+	(reload_in<mode>, reload_out<mode>): Use V_MOV.
+	(vec_set<mode>): Likewise.
+	(vec_duplicate<mode><exec>): New 4reg variant.
+	(vec_extract<mode><scalar_mode>): Likewise.
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): Rename to ...
+	(vec_extract<V_MOV:mode><V_MOV_ALT:mode>): ... this, and use V_MOV.
+	(vec_extract<V_4REG:mode><V_4REG_ALT:mode>_nop): New 4reg variant.
+	(fold_extract_last_<mode>): Use V_MOV.
+	(vec_init<V_ALL:mode><V_ALL_ALT:mode>): Rename to ...
+	(vec_init<V_MOV:mode><V_MOV_ALT:mode>): ... this, and use V_MOV.
+	(gather_load<mode><vnsi>, gather<mode>_expr<exec>,
+	gather<mode>_insn_1offset<exec>, gather<mode>_insn_1offset_ds<exec>,
+	gather<mode>_insn_2offsets<exec>): Use V_MOV.
+	(scatter_store<mode><vnsi>, scatter<mode>_expr<exec_scatter>,
+	scatter<mode>_insn_1offset<exec_scatter>,
+	scatter<mode>_insn_1offset_ds<exec_scatter>,
+	scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	(maskload<mode>di, maskstore<mode>di, mask_gather_load<mode><vnsi>,
+	mask_scatter_store<mode><vnsi>): Likewise.
+	* config/gcn/gcn.cc (gcn_class_max_nregs): Use vgpr_4reg_mode_p.
+	(gcn_hard_regno_mode_ok): Likewise.
+	(GEN_VNM): Add TImode support.
+	(USE_TI): New macro. Separate TImode operations from non-TImode ones.
+	(gcn_vector_mode_supported_p): Add V64TImode, V32TImode, V16TImode,
+	V8TImode, and V2TImode.
+	(print_operand):  Add 'J' and 'K' print codes.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* tree-ssa-loop-ivcanon.cc (tree_unroll_loops_completely):
+	Clear number of iterations info before cleaning up the CFG.
+
+2023-06-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Simplify vec_concat of lowpart subreg and high part vec_select.
+
+2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (-foffload-options): Remove '-O3' from the examples.
+
+2023-06-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.cc (vect_set_loop_condition_partial_vectors):
+	Handle null niters_skip.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::analyze_loop_vinfo): Fix reference
+	to LOOP_VINFO_MASKS.
+
+2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/105523
+	* common/config/avr/avr-common.cc: Remove setting
+	of OPT_fdelete_null_pointer_checks.
+	* config/avr/avr.cc (avr_option_override): Clear
+	flag_delete_null_pointer_checks if zero_address_valid.
+	(avr_addr_space_zero_address_valid): New function.
+	(TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID): Provide target
+	hook.
+
+2023-06-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* doc/md.texi: Add len_mask{load,store}.
+	* genopinit.cc (main): Ditto.
+	(CMP_NAME): Ditto.
+	* internal-fn.cc (len_maskload_direct): Ditto.
+	(len_maskstore_direct): Ditto.
+	(expand_call_mem_ref): Ditto.
+	(expand_partial_load_optab_fn): Ditto.
+	(expand_len_maskload_optab_fn): Ditto.
+	(expand_partial_store_optab_fn): Ditto.
+	(expand_len_maskstore_optab_fn): Ditto.
+	(direct_len_maskload_optab_supported_p): Ditto.
+	(direct_len_maskstore_optab_supported_p): Ditto.
+	* internal-fn.def (LEN_MASK_LOAD): Ditto.
+	(LEN_MASK_STORE): Ditto.
+	* optabs.def (OPTAB_CD): Ditto.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<optab><mode>2): Add unop expanders.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<optab><mode>3): Implement binop
+	expander.
+	* config/riscv/riscv-protos.h (emit_vlmax_fp_insn): Declare.
+	(enum vxrm_field_enum): Rename this...
+	(enum fixed_point_rounding_mode): ...to this.
+	(enum frm_field_enum): Rename this...
+	(enum floating_point_rounding_mode): ...to this.
+	* config/riscv/riscv-v.cc (emit_vlmax_fp_insn): New function
+	* config/riscv/riscv.cc (riscv_const_insns): Clarify const
+	vector handling.
+	(riscv_libgcc_floating_mode_supported_p): Adjust comment.
+	(riscv_excess_precision): Do not convert to float for ZVFH.
+	* config/riscv/vector-iterators.md: Add VF_AUTO iterator.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/vector-iterators.md: Add VI_QH iterator.
+	* config/riscv/autovec-opt.md
+	(@pred_extract_first_sextdi<mode>): New vmv.x.s pattern
+	that includes sign extension.
+	(@pred_extract_first_sextsi<mode>): Dito for SImode.
+
+2023-06-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (vec_set<mode>): Implement.
+	(vec_extract<mode><vel>): Implement.
+	* config/riscv/riscv-protos.h (enum insn_type): Add slide insn.
+	(emit_vlmax_slide_insn): Declare.
+	(emit_nonvlmax_slide_tu_insn): Declare.
+	(emit_scalar_move_insn): Export.
+	(emit_nonvlmax_integer_move_insn): Export.
+	* config/riscv/riscv-v.cc (emit_vlmax_slide_insn): New function.
+	(emit_nonvlmax_slide_tu_insn): New function.
+	(emit_vlmax_masked_mu_insn): No change.
+	(emit_vlmax_integer_move_insn): Export.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (enum vect_partial_vector_style): New.
+	(_loop_vec_info::partial_vector_style): Likewise.
+	(LOOP_VINFO_PARTIAL_VECTORS_STYLE): Likewise.
+	(rgroup_controls::compare_type): Add.
+	(vec_loop_masks): Change from a typedef to auto_vec<>
+	to a structure.
+	* tree-vect-loop-manip.cc (vect_set_loop_condition_partial_vectors):
+	Adjust.  Convert niters_skip to compare_type.
+	(vect_set_loop_condition_partial_vectors_avx512): New function
+	implementing the AVX512 partial vector codegen.
+	(vect_set_loop_condition): Dispatch to the correct
+	vect_set_loop_condition_partial_vectors_* function based on
+	LOOP_VINFO_PARTIAL_VECTORS_STYLE.
+	(vect_prepare_for_masked_peels): Compute LOOP_VINFO_MASK_SKIP_NITERS
+	in the original niter type.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialize
+	partial_vector_style.
+	(can_produce_all_loop_masks_p): Adjust.
+	(vect_verify_full_masking): Produce the rgroup_controls vector
+	here.  Set LOOP_VINFO_PARTIAL_VECTORS_STYLE on success.
+	(vect_verify_full_masking_avx512): New function implementing
+	verification of AVX512 style masking.
+	(vect_verify_loop_lens): Set LOOP_VINFO_PARTIAL_VECTORS_STYLE.
+	(vect_analyze_loop_2): Also try AVX512 style masking.
+	Adjust condition.
+	(vect_estimate_min_profitable_iters): Implement AVX512 style
+	mask producing cost.
+	(vect_record_loop_mask): Do not build the rgroup_controls
+	vector here but record masks in a hash-set.
+	(vect_get_loop_mask): Implement AVX512 style mask query,
+	complementing the existing while_ult style.
+
+2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_loop_mask): Add loop_vec_info
+	argument.
+	* tree-vect-loop.cc (vect_get_loop_mask): Likewise.
+	(vectorize_fold_left_reduction): Adjust.
+	(vect_transform_reduction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-stmts.cc (vectorizable_call): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+
+2023-06-19  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR target/110086
+	* config/avr/avr.opt (mgas-isr-prologues, mmain-is-OS_task):
+	Add Optimization option property.
+
+2023-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_constantsynth_2insn):
+	Add new pattern for the abovementioned case.
+
+2023-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(TARGET_MEMORY_MOVE_COST, xtensa_memory_move_cost): Remove.
+
+2023-06-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (TARGET_CONST_ANCHOR): New define.
+
+2023-06-19  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* cse.cc (try_const_anchors): Check SCALAR_INT_MODE.
+
+2023-06-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110235
+	* config/i386/sse.md (<sse2_avx2>_packsswb<mask_name>):
+	Substitute with ..
+	(sse2_packsswb<mask_name>): .. this, ..
+	(avx2_packsswb<mask_name>): .. this and ..
+	(avx512bw_packsswb<mask_name>): .. this.
+	(<sse2_avx2>_packssdw<mask_name>): Substitute with ..
+	(sse2_packssdw<mask_name>): .. this, ..
+	(avx2_packssdw<mask_name>): .. this and ..
+	(avx512bw_packssdw<mask_name>): .. this.
+
+2023-06-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110235
+	* config/i386/i386-expand.cc (ix86_split_mmx_pack): Use
+	UNSPEC_US_TRUNCATE instead of original us_truncate for
+	packusdw/packuswb.
+	* config/i386/mmx.md (mmx_pack<s_trunsuffix>swb): Substitute
+	with ..
+	(mmx_packsswb): .. this and ..
+	(mmx_packuswb): .. this.
+	(mmx_packusdw): Use UNSPEC_US_TRUNCATE instead of original
+	us_truncate.
+	(s_trunsuffix): Removed code iterator.
+	(any_s_truncate): Ditto.
+	* config/i386/sse.md (<sse2_avx2>_packuswb<mask_name>): Use
+	UNSPEC_US_TRUNCATE instead of original us_truncate.
+	(<sse4_1_avx2>_packusdw<mask_name>): Ditto.
+	* config/i386/i386.md (UNSPEC_US_TRUNCATE): New unspec_c_enum.
+
 2023-06-18  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-vector-builtins-bases.cc: Fix one typo.

@@ -1,3 +1,23 @@
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/lib2-divmod-di.c: Reimplement like lib2-divmod.c.
+	* config/gcn/lib2-divmod.c: Likewise.
+	* config/gcn/lib2-gcn.h: Add new types and prototypes for all the
+	new vector libfuncs.
+	* config/gcn/t-amdgcn: Add new files.
+	* config/gcn/amdgcn_veclib.h: New file.
+	* config/gcn/lib2-vec_divmod-di.c: New file.
+	* config/gcn/lib2-vec_divmod-hi.c: New file.
+	* config/gcn/lib2-vec_divmod-qi.c: New file.
+	* config/gcn/lib2-vec_divmod.c: New file.
+
+2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/lib2-gcn.h (QItype, UQItype, HItype, UHItype): Delete.
+	(__divhi3, __modhi3, __udivhi3, __umodhi3): Delete.
+	* config/gcn/t-amdgcn: Don't build lib2-divmod-hi.c.
+	* config/gcn/lib2-divmod-hi.c: Removed.
+
 2023-06-07  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/109712
