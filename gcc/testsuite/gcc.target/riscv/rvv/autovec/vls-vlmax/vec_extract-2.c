@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv_zvfh -Wno-pedantic -Wno-psabi" } */
+/* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d -Wno-pedantic -Wno-psabi" } */
 
 #include <stdint-gcc.h>
 
