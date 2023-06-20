@@ -74,8 +74,9 @@ TypeCheckItem::ResolveImplBlockSelf (HIR::ImplBlock &impl_block)
 }
 
 TyTy::BaseType *
-TypeCheckItem::ResolveImplBlockSelfWithInference (HIR::ImplBlock &impl,
-						  Location locus)
+TypeCheckItem::ResolveImplBlockSelfWithInference (
+  HIR::ImplBlock &impl, Location locus,
+  TyTy::SubstitutionArgumentMappings *infer_arguments)
 {
   TypeCheckItem resolver;
 
@@ -112,10 +113,20 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (HIR::ImplBlock &impl,
     }
 
   // create argument mappings
-  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), {},
-						      locus);
+  *infer_arguments
+    = TyTy::SubstitutionArgumentMappings (std::move (args), {}, locus);
 
-  return SubstMapperInternal::Resolve (self, infer_arguments);
+  TyTy::BaseType *infer = SubstMapperInternal::Resolve (self, *infer_arguments);
+
+  // we only need to apply to the bounds manually on types which dont bind
+  // generics
+  if (!infer->has_subsititions_defined ())
+    {
+      for (auto &bound : infer->get_specified_bounds ())
+	bound.handle_substitions (*infer_arguments);
+    }
+
+  return infer;
 }
 
 void
