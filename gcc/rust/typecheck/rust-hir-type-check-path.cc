@@ -427,9 +427,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 				     seg.get_locus ());
 	  bool ok = prev_segment->get_kind () != TyTy::TypeKind::ERROR;
 	  if (!ok)
-	    {
-	      return;
-	    }
+	    return;
 
 	  if (found_impl_trait)
 	    {
