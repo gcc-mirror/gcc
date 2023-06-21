@@ -6379,6 +6379,39 @@ build_class_sym:
 }
 
 
+/* Build the associate name  */
+static int
+build_associate_name (const char *name, gfc_expr **e1, gfc_expr **e2)
+{
+  gfc_expr *expr1 = *e1;
+  gfc_expr *expr2 = *e2;
+  gfc_symbol *sym;
+
+  /* For the case where the associate name is already an associate name.  */
+  if (!expr2)
+    expr2 = expr1;
+  expr1 = gfc_get_expr ();
+  expr1->expr_type = EXPR_VARIABLE;
+  expr1->where = expr2->where;
+  if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
+    return 1;
+
+  sym = expr1->symtree->n.sym;
+  if (expr2->ts.type == BT_UNKNOWN)
+      sym->attr.untyped = 1;
+  else
+  copy_ts_from_selector_to_associate (expr1, expr2);
+
+  sym->attr.flavor = FL_VARIABLE;
+  sym->attr.referenced = 1;
+  sym->attr.class_ok = 1;
+
+  *e1 = expr1;
+  *e2 = expr2;
+  return 0;
+}
+
+
 /* Push the current selector onto the SELECT TYPE stack.  */
 
 static void
@@ -6534,7 +6567,6 @@ gfc_match_select_type (void)
   match m;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   bool class_array;
-  gfc_symbol *sym;
   gfc_namespace *ns = gfc_current_ns;
 
   m = gfc_match_label ();
@@ -6556,24 +6588,11 @@ gfc_match_select_type (void)
   m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
     {
-      expr1 = gfc_get_expr ();
-      expr1->expr_type = EXPR_VARIABLE;
-      expr1->where = expr2->where;
-      if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
+      if (build_associate_name (name, &expr1, &expr2))
 	{
 	  m = MATCH_ERROR;
 	  goto cleanup;
 	}
-
-      sym = expr1->symtree->n.sym;
-      if (expr2->ts.type == BT_UNKNOWN)
-	sym->attr.untyped = 1;
-      else
-	copy_ts_from_selector_to_associate (expr1, expr2);
-
-      sym->attr.flavor = FL_VARIABLE;
-      sym->attr.referenced = 1;
-      sym->attr.class_ok = 1;
     }
   else
     {
@@ -6616,6 +6635,17 @@ gfc_match_select_type (void)
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  /* Prevent an existing associate name from reuse here by pushing expr1 to
+     expr2 and building a new associate name.  */
+  if (!expr2 && expr1->symtree->n.sym->assoc
+      && !expr1->symtree->n.sym->attr.select_type_temporary
+      && !expr1->symtree->n.sym->attr.select_rank_temporary
+      && build_associate_name (expr1->symtree->n.sym->name, &expr1, &expr2))
+    {
       m = MATCH_ERROR;
       goto cleanup;
     }
