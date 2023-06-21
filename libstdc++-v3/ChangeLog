@@ -1,3 +1,9 @@
+2023-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/array (to_array(T(&)[N])): Remove redundant
+	condition.
+	(to_array(T(&&)[N])): Remove redundant std::move.
+
 2023-06-16  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/20_util/from_chars/4.cc: Skip long double on

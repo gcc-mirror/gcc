@@ -1,3 +1,16 @@
+2023-06-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* macro.cc (_cpp_create_definition): Add location argument.
+	* internal.h (_cpp_create_definition): Adjust prototype.
+	* directives.cc (do_define): Pass new location argument to
+	_cpp_create_definition.
+	(do_undef): Stop passing inferior location to cpp_warning_with_line;
+	the default from cpp_warning is better.
+	(cpp_pop_definition): Pass new location argument to
+	_cpp_create_definition.
+	* pch.cc (cpp_read_state): Likewise.
+
 2023-06-19  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* charset.cc: Reject encodings of codepoints above 0x10FFFF.

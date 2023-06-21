@@ -1,3 +1,242 @@
+2023-06-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* c-c++-common/cpp/macro-ranges.c: New test.
+	* c-c++-common/cpp/line-2.c: Adapt to check for column information
+	on macro-related libcpp warnings.
+	* c-c++-common/cpp/line-3.c: Likewise.
+	* c-c++-common/cpp/macro-arg-count-1.c: Likewise.
+	* c-c++-common/cpp/pr58844-1.c: Likewise.
+	* c-c++-common/cpp/pr58844-2.c: Likewise.
+	* c-c++-common/cpp/warning-zero-location.c: Likewise.
+	* c-c++-common/pragma-diag-14.c: Likewise.
+	* c-c++-common/pragma-diag-15.c: Likewise.
+	* g++.dg/modules/macro-2_d.C: Likewise.
+	* g++.dg/modules/macro-4_d.C: Likewise.
+	* g++.dg/modules/macro-4_e.C: Likewise.
+	* g++.dg/spellcheck-macro-ordering.C: Likewise.
+	* gcc.dg/builtin-redefine.c: Likewise.
+	* gcc.dg/cpp/Wunused.c: Likewise.
+	* gcc.dg/cpp/redef2.c: Likewise.
+	* gcc.dg/cpp/redef3.c: Likewise.
+	* gcc.dg/cpp/redef4.c: Likewise.
+	* gcc.dg/cpp/ucnid-11-utf8.c: Likewise.
+	* gcc.dg/cpp/ucnid-11.c: Likewise.
+	* gcc.dg/cpp/undef2.c: Likewise.
+	* gcc.dg/cpp/warn-redefined-2.c: Likewise.
+	* gcc.dg/cpp/warn-redefined.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros-2.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros.c: Likewise.
+
+2023-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/args_1.c: Match moves from the stack
+	pointer to indirect argument registers and allow either to be used
+	as the base register in subsequent stores.
+	* gcc.target/aarch64/sve/pcs/args_8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_2.c: Allow the store of the
+	indirect argument to happen via the argument register or the
+	stack pointer.
+	* gcc.target/aarch64/sve/pcs/args_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_4.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_le_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_bf16.c: Disable
+	-fcprop-registers and combine.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_be_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_6_le_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_3_nosc.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_3_sc.c: Likewise.
+
+2023-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* g++.target/i386/pr79173-1.C: New test.
+
+2023-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110276
+	* gcc.dg/ipa/pr110276.c: New test.
+
+2023-06-20  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-8.c: New test case.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-8.c: New test case.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-16.c: New test case.
+
+2023-06-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c: Add
+	-mabi=lp64d.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: Dito.
+
+2023-06-20  Li Xu  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/vreinterpet-fixed.c: New test.
+
+2023-06-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Adapt testcase.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-16.c: New test.
+
+2023-06-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: Add
+	-Wno-psabi.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-run.c:
+	Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: Dito.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-run.c: Dito.
+
+2023-06-20  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run.c: Add
+	-ffast-math.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-zvfh-run.c: Dito.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Remove
+	-ffast-math
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv.c: Check for
+	vfmul.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv.c: Dito.
+
+2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-47.c: New testcase.
+	* c-c++-common/asan/pr106558.c: Avoid undefined behavior
+	due to missing return.
+
+2023-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/addp-same-low_1.c: New test.
+
+2023-06-20  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512f-dupv2di.c: New test.
+
+2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* g++.dg/debug/pr110295.C: New testcase.
+
+2023-06-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-run.c: Fix fail.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-zvfh-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-zvfh-run.c: Ditto.
+
+2023-06-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/fixed-vlmax-1.c: Add -Wno-psabi option.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110119-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110119-2.c: Ditto.
+	* gcc.target/riscv/vector-abi-1.c: Ditto.
+	* gcc.target/riscv/vector-abi-2.c: Ditto.
+	* gcc.target/riscv/vector-abi-3.c: Ditto.
+	* gcc.target/riscv/vector-abi-4.c: Ditto.
+	* gcc.target/riscv/vector-abi-5.c: Ditto.
+	* gcc.target/riscv/vector-abi-6.c: Ditto.
+	* gcc.target/riscv/vector-abi-7.c: New test.
+	* gcc.target/riscv/vector-abi-8.c: New test.
+	* gcc.target/riscv/vector-abi-9.c: New test.
+
 2023-06-19  Jin Ma  <jinma@linux.alibaba.com>
 
 	* gcc.target/riscv/interrupt-fcsr-1.c: New test.

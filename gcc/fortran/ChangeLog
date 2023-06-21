@@ -1,3 +1,13 @@
+2023-06-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): Fix dump of the allocator
+	modifier of OMP_LIST_ALLOCATE.
+
+2023-06-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* match.cc (gfc_match_char): Match with '%S' a symbol
+	with host_assoc = 1.
+
 2023-06-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* intrinsic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS): Also

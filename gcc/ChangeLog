@@ -1,3 +1,156 @@
+2023-06-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR bootstrap/110324
+	* gensupport.cc (convert_syntax): Explicitly check for RTX code.
+
+2023-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (stack_tie): Hard-code the first
+	register operand to the stack pointer.  Require the second register
+	operand to have the number specified in a separate const_int operand.
+	* config/aarch64/aarch64.cc (aarch64_emit_stack_tie): New function.
+	(aarch64_allocate_and_probe_stack_space): Use it.
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Likewise.
+	(aarch64_expand_epilogue): Likewise.
+
+2023-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Remember lhs of
+	IMAGPART_EXPR of arg2/arg3 and use that as arg3 if it has the right
+	type.
+
+2023-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* calls.h (setjmp_call_p): Change return type from int to bool.
+	* calls.cc (struct arg_data): Change "pass_on_stack" to bool.
+	(store_one_arg): Change return type from int to bool
+	and adjust function body accordingly.  Change "sibcall_failure"
+	variable to bool.
+	(finalize_must_preallocate): Ditto.  Change *must_preallocate pointer
+	argument  to bool.  Change "partial_seen" variable to bool.
+	(load_register_parameters):  Change *sibcall_failure
+	pointer argument to bool.
+	(check_sibcall_argument_overlap_1): Change return type from int to bool
+	and adjust function body accordingly.
+	(check_sibcall_argument_overlap):  Ditto.  Change
+	"mark_stored_args_map" argument to bool.
+	(emit_call_1): Change "already_popped" variable to bool.
+	(setjmp_call_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(initialize_argument_information): Change *must_preallocate
+	pointer argument to bool.
+	(expand_call): Change "pcc_struct_value", "must_preallocate"
+	and "sibcall_failure" variables to bool.
+	(emit_library_call_value_1): Change "pcc_struct_value"
+	variable to bool.
+
+2023-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110276
+	* ipa-sra.cc (struct caller_issues): New field there_is_one.
+	(check_for_caller_issues): Set it.
+	(check_all_callers_for_issues): Check it.
+
+2023-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_uid_to_idx_map_elt): New type.
+	(struct ipcp_transformation): Rearrange members	according to
+	C++ class coding convention, add m_uid_to_idx,
+	get_param_index and maybe_create_parm_idx_map.
+	* ipa-cp.cc (ipcp_transformation::get_param_index): New function.
+	(compare_uids): Likewise.
+	(ipcp_transformation::maype_create_parm_idx_map): Likewise.
+	* ipa-prop.cc (ipcp_get_parm_bits): Use get_param_index.
+	(ipcp_update_bits): Accept TS as a parameter, assume it is not NULL.
+	(ipcp_update_vr): Likewise.
+	(ipcp_transform_function): Call, maybe_create_parm_idx_map of TS, bail
+	out quickly if empty, pass it to ipcp_update_bits and ipcp_update_vr.
+
+2023-06-20  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin):
+	Rename CODE_FOR_xsxsigqp_tf to CODE_FOR_xsxsigqp_tf_ti.
+	Rename CODE_FOR_xsxsigqp_kf to CODE_FOR_xsxsigqp_kf_ti.
+	Rename CCDE_FOR_xsxexpqp_tf to CODE_FOR_xsxexpqp_tf_di.
+	Rename CODE_FOR_xsxexpqp_kf to CODE_FOR_xsxexpqp_kf_di.
+	(CODE_FOR_xsxexpqp_kf_v2di, CODE_FOR_xsxsigqp_kf_v1ti,
+	CODE_FOR_xsiexpqp_kf_v2di): Add case statements.
+	* config/rs6000/rs6000-builtins.def
+	(__builtin_vsx_scalar_extract_exp_to_vec,
+	__builtin_vsx_scalar_extract_sig_to_vec,
+	__builtin_vsx_scalar_insert_exp_vqp): Add new builtin definitions.
+	Rename xsxexpqp_kf, xsxsigqp_kf, xsiexpqp_kf to xsexpqp_kf_di,
+	xsxsigqp_kf_ti, xsiexpqp_kf_di respectively.
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin):
+	Update case RS6000_OVLD_VEC_VSIE to handle MODE_VECTOR_INT for new
+	overloaded instance. Update comments.
+	* config/rs6000/rs6000-overload.def
+	(__builtin_vec_scalar_insert_exp): Add new overload definition with
+	vector arguments.
+	(scalar_extract_exp_to_vec, scalar_extract_sig_to_vec): New
+	overloaded definitions.
+	* config/rs6000/vsx.md (V2DI_DI): New mode iterator.
+	(DI_to_TI): New mode attribute.
+	Rename xsxexpqp_<mode> to sxexpqp_<IEEE128:mode>_<V2DI_DI:mode>.
+	Rename xsxsigqp_<mode> to xsxsigqp_<IEEE128:mode>_<VEC_TI:mode>.
+	Rename xsiexpqp_<mode> to xsiexpqp_<IEEE128:mode>_<V2DI_DI:mode>.
+	* doc/extend.texi (scalar_extract_exp_to_vec,
+	scalar_extract_sig_to_vec): Add documentation for new builtins.
+	(scalar_insert_exp): Add new overloaded builtin definition.
+
+2023-06-20  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_regmode_natural_size): set the natural
+	size of vector mask mode to one rvv register.
+
+2023-06-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Optimize codegen.
+
+2023-06-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_arg_has_vector): Add default
+	switch handler.
+
+2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dse.cc (dse_classify_store): When we found
+	no defs and the basic-block with the original definition
+	ends in __builtin_unreachable[_trap] the store is dead.
+
+2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-phiprop.cc (phiprop_insert_phi): For simple loads
+	keep the virtual SSA form up-to-date.
+
+2023-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_addp_same_reg<mode>):
+	New define_insn_and_split.
+
+2023-06-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Drop test comment.
+
+2023-06-20  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vec_dupv2di): Correct %vmovddup input
+	constraint. Add new AVX512F alternative.
+
+2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* dwarf2out.cc (process_scope_var): Continue processing
+	the decl after setting a parent in case the existing DIE
+	was in limbo.
+
+2023-06-20  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_scalable_vector_type_p): Delete.
+	(riscv_arg_has_vector): Simplify.
+	(riscv_pass_in_vector_p): Adjust warning message.
+
 2023-06-19  Jin Ma  <jinma@linux.alibaba.com>
 
 	* config/riscv/riscv.cc (riscv_compute_frame_info): Allocate frame for FCSR.
