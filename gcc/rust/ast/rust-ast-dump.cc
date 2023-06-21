@@ -24,6 +24,38 @@ namespace AST {
 
 Dump::Dump (std::ostream &stream) : stream (stream), indentation (Indent ()) {}
 
+bool
+Dump::require_spacing (TokenPtr previous, TokenPtr current)
+{
+  switch (current->get_id ())
+    {
+    case EXCLAM:
+    case DOT_DOT:
+    case DOT_DOT_EQ:
+    case SCOPE_RESOLUTION:
+    case LEFT_PAREN:
+    case LEFT_ANGLE:
+    case LEFT_SQUARE:
+    case RIGHT_SQUARE:
+    case RIGHT_PAREN:
+    case DOLLAR_SIGN:
+    case SEMICOLON:
+      return false;
+    default:
+      break;
+    }
+
+  switch (previous->get_id ())
+    {
+    case SCOPE_RESOLUTION:
+    case LEFT_SQUARE:
+    case LEFT_PAREN:
+      return false;
+    default:
+      return true;
+    }
+}
+
 void
 Dump::debug (Visitable &v)
 {

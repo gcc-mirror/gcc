@@ -45,9 +45,14 @@ public:
     TokenCollector collector (container);
     collector.visit (v);
 
-    for (auto &token : collector.collect_tokens ())
+    auto tokens = collector.collect_tokens ();
+    if (!tokens.empty ())
+      stream << tokens.front ()->as_string ();
+    for (auto it = tokens.cbegin () + 1; it < tokens.cend (); it++)
       {
-	stream << token->as_string () << " ";
+	if (require_spacing (*(it - 1), *it))
+	  stream << " ";
+	stream << (*it)->as_string ();
       }
   }
 
@@ -57,6 +62,8 @@ public:
 private:
   std::ostream &stream;
   Indent indentation;
+
+  static bool require_spacing (TokenPtr previous, TokenPtr current);
 };
 
 } // namespace AST
