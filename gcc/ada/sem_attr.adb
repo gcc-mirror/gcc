@@ -2013,10 +2013,20 @@ package body Sem_Attr is
                Flag_Non_Static_Expr
                  ("expression for dimension must be static!", E1);
                Error_Attr;
-
-            elsif Expr_Value (E1) > D or else Expr_Value (E1) < 1 then
-               Error_Attr ("invalid dimension number for array type", E1);
             end if;
+
+            declare
+               Value : constant Uint := Expr_Value (E1);
+            begin
+
+               if Value > D or else Value < 1 then
+                  Error_Attr ("invalid dimension number for array type", E1);
+               end if;
+
+               --  Replace the static value to simplify the tree for gigi
+               Fold_Uint (E1, Value, True);
+            end;
+
          end if;
 
          if (Style_Check and Style_Check_Array_Attribute_Index)
