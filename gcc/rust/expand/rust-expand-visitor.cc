@@ -149,12 +149,18 @@ expand_item_attribute (AST::Item &item, AST::SimplePath &name,
   return result;
 }
 
+/* Helper function to expand a given attribute on a statement and collect back
+ * statements.
+ * T should be anything that can be used as a statement accepting outer
+ * attributes.
+ */
 template <typename T>
 static std::vector<std::unique_ptr<AST::Stmt>>
-expand_stmt_attribute (T &item, AST::SimplePath &name, MacroExpander &expander)
+expand_stmt_attribute (T &statement, AST::SimplePath &attribute,
+		       MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Stmt>> result;
-  auto frag = expander.expand_attribute_proc_macro (item, name);
+  auto frag = expander.expand_attribute_proc_macro (statement, attribute);
   if (!frag.is_error ())
     {
       for (auto &node : frag.get_nodes ())
