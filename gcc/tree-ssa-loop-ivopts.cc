@@ -1175,9 +1175,6 @@ contain_complex_addr_expr (tree expr)
   return res;
 }
 
-static tree
-strip_offset (tree expr, poly_uint64_pod *offset);
-
 /* Allocates an induction variable with given initial value BASE and step STEP
    for loop LOOP.  NO_OVERFLOW implies the iv doesn't overflow.  */
 
@@ -1609,7 +1606,10 @@ record_group_use (struct ivopts_data *data, tree *use_p,
     {
       unsigned int i;
 
-      addr_base = strip_offset (iv->base, &addr_offset);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (iv->base)));
+      tree addr_toffset;
+      split_constant_offset (iv->base, &addr_base, &addr_toffset);
+      addr_offset = int_cst_value (addr_toffset);
       for (i = 0; i < data->vgroups.length (); i++)
 	{
 	  struct iv_use *use;
