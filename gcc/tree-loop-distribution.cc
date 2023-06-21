@@ -1756,11 +1756,12 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
       return;
     }
 
-  poly_uint64 base_offset;
-  unsigned HOST_WIDE_INT const_base_offset;
-  tree base_base = strip_offset (base, &base_offset);
-  if (!base_offset.is_constant (&const_base_offset))
+  tree base_offset;
+  tree base_base;
+  split_constant_offset (base, &base_base, &base_offset);
+  if (!cst_and_fits_in_hwi (base_offset))
     return;
+  unsigned HOST_WIDE_INT const_base_offset = int_cst_value (base_offset);
 
   struct builtin_info *builtin;
   builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
