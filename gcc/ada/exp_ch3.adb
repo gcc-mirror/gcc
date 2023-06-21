@@ -139,7 +139,7 @@ package body Exp_Ch3 is
    --  the code expansion for controlled components (when control actions
    --  are active) can lead to very large blocks that GCC handles poorly.
 
-   procedure Build_Untagged_Equality (Typ : Entity_Id);
+   procedure Build_Untagged_Record_Equality (Typ : Entity_Id);
    --  AI05-0123: Equality on untagged records composes. This procedure
    --  builds the equality routine for an untagged record that has components
    --  of a record type that has user-defined primitive equality operations.
@@ -4450,11 +4450,11 @@ package body Exp_Ch3 is
       Set_Is_Pure (Proc_Name);
    end Build_Slice_Assignment;
 
-   -----------------------------
-   -- Build_Untagged_Equality --
-   -----------------------------
+   ------------------------------------
+   -- Build_Untagged_Record_Equality --
+   ------------------------------------
 
-   procedure Build_Untagged_Equality (Typ : Entity_Id) is
+   procedure Build_Untagged_Record_Equality (Typ : Entity_Id) is
       Build_Eq : Boolean;
       Comp     : Entity_Id;
       Decl     : Node_Id;
@@ -4481,7 +4481,7 @@ package body Exp_Ch3 is
          end if;
       end User_Defined_Eq;
 
-   --  Start of processing for Build_Untagged_Equality
+   --  Start of processing for Build_Untagged_Record_Equality
 
    begin
       --  If a record component has a primitive equality operation, we must
@@ -4558,7 +4558,7 @@ package body Exp_Ch3 is
             Set_Is_Public (Op);
          end if;
       end if;
-   end Build_Untagged_Equality;
+   end Build_Untagged_Record_Equality;
 
    -----------------------------------
    -- Build_Variant_Record_Equality --
@@ -5803,25 +5803,18 @@ package body Exp_Ch3 is
          end if;
 
       --  In the untagged case, ever since Ada 83 an equality function must
-      --  be  provided for variant records that are not unchecked unions.
-      --  In Ada 2012 the equality function composes, and thus must be built
-      --  explicitly just as for tagged records.
+      --  be provided for variant records that are not unchecked unions.
 
       elsif Has_Discriminants (Typ)
         and then not Is_Limited_Type (Typ)
+        and then Present (Component_List (Type_Definition (Typ_Decl)))
+        and then
+          Present (Variant_Part (Component_List (Type_Definition (Typ_Decl))))
       then
-         declare
-            Comps : constant Node_Id :=
-                      Component_List (Type_Definition (Typ_Decl));
-         begin
-            if Present (Comps)
-              and then Present (Variant_Part (Comps))
-            then
-               Build_Variant_Record_Equality (Typ);
-            end if;
-         end;
+         Build_Variant_Record_Equality (Typ);
 
-      --  Otherwise create primitive equality operation (AI05-0123)
+      --  In Ada 2012 the equality function composes, and thus must be built
+      --  explicitly just as for tagged records.
 
       --  This is done unconditionally to ensure that tools can be linked
       --  properly with user programs compiled with older language versions.
@@ -5832,7 +5825,7 @@ package body Exp_Ch3 is
         and then Convention (Typ) = Convention_Ada
         and then not Is_Limited_Type (Typ)
       then
-         Build_Untagged_Equality (Typ);
+         Build_Untagged_Record_Equality (Typ);
       end if;
 
       --  Before building the record initialization procedure, if we are
@@ -5841,9 +5834,7 @@ package body Exp_Ch3 is
       --  type and the concurrent record value type. See the section "Handling
       --  of Discriminants" in the Einfo spec for details.
 
-      if Is_Concurrent_Record_Type (Typ)
-        and then Has_Discriminants (Typ)
-      then
+      if Is_Concurrent_Record_Type (Typ) and then Has_Discriminants (Typ) then
          declare
             Ctyp       : constant Entity_Id :=
                            Corresponding_Concurrent_Type (Typ);
