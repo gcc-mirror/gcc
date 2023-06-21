@@ -4228,8 +4228,10 @@ BlockExpr::normalize_tail_expr ()
   if (!expr)
     {
       // HACK: try to turn the last statement into a tail expression
-      if (statements.size () && statements.back ()->is_expr ())
+      if (!statements.empty () && statements.back ()->is_expr ())
 	{
+	  // Watch out: This reference become invalid when the vector is
+	  // modified.
 	  auto &stmt = static_cast<ExprStmt &> (*statements.back ());
 
 	  if (!stmt.is_semicolon_followed ())
