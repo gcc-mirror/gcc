@@ -9,24 +9,15 @@
 					      TYPE *__restrict b, int n)       \
   {                                                                            \
     for (int i = 0; i < n; i++)                                                \
-      dst[i] += a[i] * b[i];                                                   \
+      dst[i] = -(a[i] * b[i]) - dst[i];                                        \
   }
 
 #define TEST_ALL()                                                             \
-  TEST_TYPE (int8_t)                                                           \
-  TEST_TYPE (uint8_t)                                                          \
-  TEST_TYPE (int16_t)                                                          \
-  TEST_TYPE (uint16_t)                                                         \
-  TEST_TYPE (int32_t)                                                          \
-  TEST_TYPE (uint32_t)                                                         \
-  TEST_TYPE (int64_t)                                                          \
-  TEST_TYPE (uint64_t)                                                         \
   TEST_TYPE (_Float16)                                                         \
   TEST_TYPE (float)                                                            \
   TEST_TYPE (double)
 
 TEST_ALL ()
 
-/* { dg-final { scan-assembler-times {\tvmadd\.vv} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfmadd\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfnmadd\.vv} 3 } } */
 /* { dg-final { scan-assembler-not {\tvmv} } } */

@@ -12,27 +12,18 @@
   {                                                                            \
     for (int i = 0; i < n; ++i)                                                \
       {                                                                        \
-	dest1[i] += src1[i] * src2[i];                                         \
-	dest2[i] += src1[i] * dest1[i];                                        \
-	dest3[i] += src2[i] * dest2[i];                                        \
+	dest1[i] = -(src1[i] * src2[i]) - dest1[i];                            \
+	dest2[i] = src1[i] * dest1[i] - dest2[i];                              \
+	dest3[i] = src2[i] * dest2[i] - dest3[i];                              \
       }                                                                        \
   }
 
 #define TEST_ALL()                                                             \
-  TEST_TYPE (int8_t)                                                           \
-  TEST_TYPE (uint8_t)                                                          \
-  TEST_TYPE (int16_t)                                                          \
-  TEST_TYPE (uint16_t)                                                         \
-  TEST_TYPE (int32_t)                                                          \
-  TEST_TYPE (uint32_t)                                                         \
-  TEST_TYPE (int64_t)                                                          \
-  TEST_TYPE (uint64_t)                                                         \
   TEST_TYPE (_Float16)                                                         \
   TEST_TYPE (float)                                                            \
   TEST_TYPE (double)
 
 TEST_ALL ()
 
-/* { dg-final { scan-assembler-times {\tvmacc\.vv} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfmacc\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfnmacc\.vv} 3 } } */
 /* { dg-final { scan-assembler-not {\tvmv} } } */

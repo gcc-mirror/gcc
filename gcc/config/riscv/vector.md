@@ -425,14 +425,14 @@
 	 (eq_attr "type" "vldux,vldox,vialu,vshift,viminmax,vimul,vidiv,vsalu,\
 			  viwalu,viwmul,vnshift,vaalu,vsmul,vsshift,\
 			  vnclip,vicmp,vfalu,vfmul,vfminmax,vfdiv,vfwalu,vfwmul,\
-			  vfsgnj,vfcmp,vfmuladd,vslideup,vslidedown,vislide1up,\
+			  vfsgnj,vfcmp,vslideup,vslidedown,vislide1up,\
 			  vislide1down,vfslide1up,vfslide1down,vgather,viwmuladd,vfwmuladd,\
 			  vlsegds,vlsegdux,vlsegdox")
 	   (symbol_ref "INTVAL (operands[8])")
 	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox")
 	   (symbol_ref "INTVAL (operands[5])")
 
-	 (eq_attr "type" "vimuladd")
+	 (eq_attr "type" "vimuladd,vfmuladd")
 	   (symbol_ref "INTVAL (operands[9])")
 
 	 (eq_attr "type" "vmsfs,vmidx,vcompress")

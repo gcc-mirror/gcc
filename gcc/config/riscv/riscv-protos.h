@@ -187,6 +187,7 @@ void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_fp_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
+void emit_vlmax_fp_ternary_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
 void emit_vlmax_slide_insn (unsigned, rtx *);
 void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);

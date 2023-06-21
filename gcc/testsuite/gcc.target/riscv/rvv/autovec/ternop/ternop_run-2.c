@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include "ternop-2.c"
 
@@ -100,5 +100,15 @@ int __attribute__ ((optimize (0))) main ()
   TEST_LOOP (int64_t, 795)
   TEST_LOOP (uint64_t, 795)
 
+  TEST_LOOP (float, 7)
+  TEST_LOOP (double, 7)
+  TEST_LOOP (float, 16)
+  TEST_LOOP (double, 16)
+  TEST_LOOP (float, 77)
+  TEST_LOOP (double, 77)
+  TEST_LOOP (float, 128)
+  TEST_LOOP (double, 128)
+  TEST_LOOP (float, 795)
+  TEST_LOOP (double, 795)
   return 0;
 }
