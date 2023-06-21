@@ -139,6 +139,12 @@ TokenCollector::decrement_indentation ()
 {}
 
 void
+TokenCollector::visit (Visitable &v)
+{
+  v.accept_vis (*this);
+}
+
+void
 TokenCollector::visit (FunctionParam &param)
 {
   visit (param.get_pattern ());
