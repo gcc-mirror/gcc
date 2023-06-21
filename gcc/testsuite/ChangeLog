@@ -1,3 +1,17 @@
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: New test.
+	* gcc.target/powerpc/pr109932-2.c: New test.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* gcc.target/powerpc/pr110011.c: New test.
+
 2023-06-09  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

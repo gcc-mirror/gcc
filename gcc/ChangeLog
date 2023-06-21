@@ -1,3 +1,19 @@
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* config/rs6000/rs6000-builtin.def (BU_VSX_MISC_2): New macro.
+	({un,}pack_vector_int128): Use BU_VSX_MISC_2 instead of
+	BU_P7_MISC_2.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* config/rs6000/rs6000.c (output_toc): Use the mode of the 128-bit
+	floating constant itself for real_to_target call.
+
 2023-06-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
