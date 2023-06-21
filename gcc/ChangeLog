@@ -1,3 +1,21 @@
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* config/rs6000/rs6000-builtins.def (__builtin_pack_vector_int128,
+	__builtin_unpack_vector_int128): Move from stanza power7 to vsx.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* config/rs6000/rs6000.cc (output_toc): Use the mode of the 128-bit
+	floating constant itself for real_to_target call.
+
 2023-06-15  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

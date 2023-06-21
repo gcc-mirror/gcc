@@ -1,3 +1,30 @@
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/110230
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: Adjust with int128 effective target.
+	* gcc.target/powerpc/pr109932-2.c: Ditto.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: New test.
+	* gcc.target/powerpc/pr109932-2.c: New test.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* gcc.target/powerpc/pr110011.c: New test.
+
 2023-06-15  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
