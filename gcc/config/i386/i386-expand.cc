@@ -2278,7 +2278,7 @@ ix86_expand_copysign (rtx operands[])
   else
     dest = NULL_RTX;
   op1 = lowpart_subreg (vmode, force_reg (mode, operands[2]), mode);
-  mask = ix86_build_signbit_mask (vmode, 0, 0);
+  mask = ix86_build_signbit_mask (vmode, TARGET_AVX512F && mode != HFmode, 0);
 
   if (CONST_DOUBLE_P (operands[1]))
     {

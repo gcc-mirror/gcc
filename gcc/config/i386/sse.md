@@ -12597,22 +12597,35 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*<avx512>_vternlog<mode>_all"
-  [(set (match_operand:V 0 "register_operand" "=v")
+  [(set (match_operand:V 0 "register_operand" "=v,v")
 	(unspec:V
-	  [(match_operand:V 1 "register_operand" "0")
-	   (match_operand:V 2 "register_operand" "v")
-	   (match_operand:V 3 "bcst_vector_operand" "vmBr")
+	  [(match_operand:V 1 "register_operand" "0,0")
+	   (match_operand:V 2 "register_operand" "v,v")
+	   (match_operand:V 3 "bcst_vector_operand" "vBr,m")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_VTERNLOG))]
-  "TARGET_AVX512F
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
 /* Disallow embeded broadcast for vector HFmode since
    it's not real AVX512FP16 instruction.  */
   && (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) >= 4
      || GET_CODE (operands[3]) != VEC_DUPLICATE)"
-  "vpternlog<ternlogsuffix>\t{%4, %3, %2, %0|%0, %2, %3, %4}"
+{
+  if (TARGET_AVX512VL)
+    return "vpternlog<ternlogsuffix>\t{%4, %3, %2, %0|%0, %2, %3, %4}";
+  else
+    return "vpternlog<ternlogsuffix>\t{%4, %g3, %g2, %g0|%g0, %g2, %g3, %4}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))
+   (set (attr "enabled")
+	(if_then_else (eq_attr "alternative" "1")
+		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+		      (const_string "*")))])
 
 ;; There must be lots of other combinations like
 ;;
@@ -12641,7 +12654,8 @@
 	  (any_logic2:V
 	    (match_operand:V 3 "regmem_or_bitnot_regmem_operand")
 	    (match_operand:V 4 "regmem_or_bitnot_regmem_operand"))))]
-  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
    && ix86_pre_reload_split ()
    && (rtx_equal_p (STRIP_UNARY (operands[1]),
 		    STRIP_UNARY (operands[4]))
@@ -12725,7 +12739,8 @@
 	      (match_operand:V 2 "regmem_or_bitnot_regmem_operand"))
 	    (match_operand:V 3 "regmem_or_bitnot_regmem_operand"))
 	  (match_operand:V 4 "regmem_or_bitnot_regmem_operand")))]
-  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
    && ix86_pre_reload_split ()
    && (rtx_equal_p (STRIP_UNARY (operands[1]),
 		    STRIP_UNARY (operands[4]))
@@ -12808,7 +12823,8 @@
 	    (match_operand:V 1 "regmem_or_bitnot_regmem_operand")
 	    (match_operand:V 2 "regmem_or_bitnot_regmem_operand"))
 	  (match_operand:V 3 "regmem_or_bitnot_regmem_operand")))]
-  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
