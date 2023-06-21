@@ -108,6 +108,7 @@ public:
    */
   template <typename T> void visit (T &node);
 
+  void visit (Visitable &v);
   void visit (LoopLabel &label);
 
   void visit (Literal &lit, Location locus = {});
