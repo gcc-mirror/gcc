@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=rv32gc_zve32f_zvfhmin -mabi=ilp32d" } */
+/* { dg-options "-O3 -march=rv32gc_zve32x_zvfhmin -mabi=ilp32d" } */
 
 void f___rvv_int8mf8x2_t () {__rvv_int8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x2_t'} } */
 void f___rvv_uint8mf8x2_t () {__rvv_uint8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x2_t'} } */
