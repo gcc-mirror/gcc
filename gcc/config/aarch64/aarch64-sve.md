@@ -1429,12 +1429,18 @@
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5  ]
-     [w, Z,   w, Ui1, Ui1, Upl ] ld1<Vesize>\t%0.s, %5/z, [%2.s]
-     [w, vgw, w, Ui1, Ui1, Upl ] ld1<Vesize>\t%0.s, %5/z, [%2.s, #%1]
-     [w, rk,  w, Z,   Ui1, Upl ] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
-     [w, rk,  w, Ui1, Ui1, Upl ] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
-     [w, rk,  w, Z,   i,   Upl ] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
-     [w, rk,  w, Ui1, i,   Upl ] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [&w, Z,   w, Ui1, Ui1, Upl] ld1<Vesize>\t%0.s, %5/z, [%2.s]
+     [?w, Z,   0, Ui1, Ui1, Upl] ^
+     [&w, vgw, w, Ui1, Ui1, Upl] ld1<Vesize>\t%0.s, %5/z, [%2.s, #%1]
+     [?w, vgw, 0, Ui1, Ui1, Upl] ^
+     [&w, rk,  w, Z,   Ui1, Upl] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
+     [?w, rk,  0, Z,   Ui1, Upl] ^
+     [&w, rk,  w, Ui1, Ui1, Upl] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
+     [?w, rk,  0, Ui1, Ui1, Upl] ^
+     [&w, rk,  w, Z,   i,   Upl] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+     [?w, rk,  0, Z,   i,   Upl] ^
+     [&w, rk,  w, Ui1, i,   Upl] ld1<Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [?w, rk,  0, Ui1, i,   Upl] ^
   }
 )
 
@@ -1451,11 +1457,15 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5 ]
-     [w, Z,   w, i, Ui1, Upl  ] ld1<Vesize>\t%0.d, %5/z, [%2.d]
-     [w, vgd, w, i, Ui1, Upl  ] ld1<Vesize>\t%0.d, %5/z, [%2.d, #%1]
-     [w, rk,  w, i, Ui1, Upl  ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d]
-     [w, rk,  w, i, i,   Upl  ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5]
+     [&w, Z,   w, i, Ui1, Upl] ld1<Vesize>\t%0.d, %5/z, [%2.d]
+     [?w, Z,   0, i, Ui1, Upl] ^
+     [&w, vgd, w, i, Ui1, Upl] ld1<Vesize>\t%0.d, %5/z, [%2.d, #%1]
+     [?w, vgd, 0, i, Ui1, Upl] ^
+     [&w, rk,  w, i, Ui1, Upl] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d]
+     [?w, rk,  0, i, Ui1, Upl] ^
+     [&w, rk,  w, i, i,   Upl] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [?w, rk,  0, i, i,   Upl] ^
   }
 )
 
@@ -1475,9 +1485,11 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5 ]
-     [w, rk, w, i, Ui1, Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw]
-     [w, rk, w, i, i,   Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5]
+     [&w, rk, w, i, Ui1, Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, <su>xtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1503,9 +1515,11 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5 ]
-     [w, rk, w, i, Ui1, Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
-     [w, rk, w, i, i,   Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5]
+     [&w, rk, w, i, Ui1, Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1528,9 +1542,11 @@
 	   (mem:BLK (scratch))]
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5 ]
-     [w, rk, w, i, Ui1, Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
-     [w, rk, w, i, i,   Upl   ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5]
+     [&w, rk, w, i, Ui1, Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
 )
 
@@ -1563,13 +1579,19 @@
 	       UNSPEC_LD1_GATHER))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<SVE_4HSI:narrower_mask> & <SVE_4BHI:self_mask>) == 0"
-  {@ [cons: =0, 1, 2, 3, 4, 5, 6                      ]
-     [w, Z,                   w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%2.s]
-     [w, vg<SVE_4BHI:Vesize>, w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%2.s, #%1]
-     [w, rk,                  w, Z,   Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
-     [w, rk,                  w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
-     [w, rk,                  w, Z,   i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
-     [w, rk,                  w, Ui1, i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5, 6]
+     [&w, Z,                   w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%2.s]
+     [?w, Z,                   0, Ui1, Ui1, Upl, UplDnm] ^
+     [&w, vg<SVE_4BHI:Vesize>, w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%2.s, #%1]
+     [?w, vg<SVE_4BHI:Vesize>, 0, Ui1, Ui1, Upl, UplDnm] ^
+     [&w, rk,                  w, Z,   Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
+     [?w, rk,                  0, Z,   Ui1, Upl, UplDnm] ^
+     [&w, rk,                  w, Ui1, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
+     [?w, rk,                  0, Ui1, Ui1, Upl, UplDnm] ^
+     [&w, rk,                  w, Z,   i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+     [?w, rk,                  0, Z,   i,   Upl, UplDnm] ^
+     [&w, rk,                  w, Ui1, i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_4BHI:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [?w, rk,                  0, Ui1, i,   Upl, UplDnm] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1595,10 +1617,14 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<SVE_2HSDI:narrower_mask> & <SVE_2BHSI:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4, 5, 6]
-     [w, Z,                    w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%2.d]
-     [w, vg<SVE_2BHSI:Vesize>, w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%2.d, #%1]
-     [w, rk,                   w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d]
-     [w, rk,                   w, i, i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [&w, Z,                    w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%2.d]
+     [?w, Z,                    0, i, Ui1, Upl, UplDnm] ^
+     [&w, vg<SVE_2BHSI:Vesize>, w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%2.d, #%1]
+     [?w, vg<SVE_2BHSI:Vesize>, 0, i, Ui1, Upl, UplDnm] ^
+     [&w, rk,                   w, i, Ui1, Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d]
+     [?w, rk,                   0, i, Ui1, Upl, UplDnm] ^
+     [&w, rk,                   w, i, i,   Upl, UplDnm] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [?w, rk,                   0, i, i,   Upl, UplDnm] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1627,8 +1653,10 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<SVE_2HSDI:narrower_mask> & <SVE_2BHSI:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, <ANY_EXTEND2:su>xtw]
-     [w, rk, w, i, i,   Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, <ANY_EXTEND2:su>xtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, <ANY_EXTEND2:su>xtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, <ANY_EXTEND2:su>xtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& (!CONSTANT_P (operands[6]) || !CONSTANT_P (operands[7]))"
   {
@@ -1660,8 +1688,10 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<SVE_2HSDI:narrower_mask> & <SVE_2BHSI:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
-     [w, rk, w, i, i,   Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& (!CONSTANT_P (operands[6]) || !CONSTANT_P (operands[7]))"
   {
@@ -1690,8 +1720,10 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE && (~<SVE_2HSDI:narrower_mask> & <SVE_2BHSI:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
-     [w, rk, w, i, i,   Upl  ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ld1<ANY_EXTEND:s><SVE_2BHSI:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& !CONSTANT_P (operands[7])"
   {
@@ -1721,13 +1753,19 @@
 	   (reg:VNx16BI FFRT_REGNUM)]
 	  UNSPEC_LDFF1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5 ]
-     [w, Z,   w, i,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%2.s]
-     [w, vgw, w, i,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%2.s, #%1]
-     [w, rk,  w, Z,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, sxtw]
-     [w, rk,  w, Ui1, Ui1, Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, uxtw]
-     [w, rk,  w, Z,   i,   Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
-     [w, rk,  w, Ui1, i,   Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5  ]
+     [&w, Z,   w, i,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%2.s]
+     [?w, Z,   0, i,   Ui1, Upl] ^
+     [&w, vgw, w, i,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%2.s, #%1]
+     [?w, vgw, 0, i,   Ui1, Upl] ^
+     [&w, rk,  w, Z,   Ui1, Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, sxtw]
+     [?w, rk,  0, Z,   Ui1, Upl] ^
+     [&w, rk,  w, Ui1, Ui1, Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, uxtw]
+     [?w, rk,  0, Ui1, Ui1, Upl] ^
+     [&w, rk,  w, Z,   i,   Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+     [?w, rk,  0, Z,   i,   Upl] ^
+     [&w, rk,  w, Ui1, i,   Upl] ldff1w\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [?w, rk,  0, Ui1, i,   Upl] ^
   }
 )
 
@@ -1745,11 +1783,15 @@
 	   (reg:VNx16BI FFRT_REGNUM)]
 	  UNSPEC_LDFF1_GATHER))]
   "TARGET_SVE"
-  {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, Z,   w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%2.d]
-     [w, vgd, w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%2.d, #%1]
-     [w, rk,  w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d]
-     [w, rk,  w, i, i,   Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+  {@ [cons: =0, 1, 2, 3, 4, 5 ]
+     [&w, Z,   w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%2.d]
+     [?w, Z,   0, i, Ui1, Upl ] ^
+     [&w, vgd, w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%2.d, #%1]
+     [?w, vgd, 0, i, Ui1, Upl ] ^
+     [&w, rk,  w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d]
+     [?w, rk,  0, i, Ui1, Upl ] ^
+     [&w, rk,  w, i, i,   Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [?w, rk,  0, i, i,   Upl ] ^
   }
 )
 
@@ -1772,8 +1814,10 @@
 	  UNSPEC_LDFF1_GATHER))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ldff1d\t%0.d, %5/z, [%1, %2.d, sxtw]
-     [w, rk, w, i, i,   Upl  ] ldff1d\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, sxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1797,8 +1841,10 @@
 	  UNSPEC_LDFF1_GATHER))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ldff1d\t%0.d, %5/z, [%1, %2.d, uxtw]
-     [w, rk, w, i, i,   Upl  ] ldff1d\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, uxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ldff1d\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
 )
 
@@ -1833,12 +1879,18 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5, 6]
-     [w, Z,                      w, i,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%2.s]
-     [w, vg<VNx4_NARROW:Vesize>, w, i,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%2.s, #%1]
-     [w, rk,                     w, Z,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
-     [w, rk,                     w, Ui1, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
-     [w, rk,                     w, Z,   i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
-     [w, rk,                     w, Ui1, i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [&w, Z,                      w, i,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%2.s]
+     [?w, Z,                      0, i,   Ui1, Upl, UplDnm] ^
+     [&w, vg<VNx4_NARROW:Vesize>, w, i,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%2.s, #%1]
+     [?w, vg<VNx4_NARROW:Vesize>, 0, i,   Ui1, Upl, UplDnm] ^
+     [&w, rk,                     w, Z,   Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw]
+     [?w, rk,                     0, Z,   Ui1, Upl, UplDnm] ^
+     [&w, rk,                     w, Ui1, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw]
+     [?w, rk,                     0, Ui1, Ui1, Upl, UplDnm] ^
+     [&w, rk,                     w, Z,   i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+     [?w, rk,                     0, Z,   i,   Upl, UplDnm] ^
+     [&w, rk,                     w, Ui1, i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx4_NARROW:Vesize>\t%0.s, %5/z, [%1, %2.s, uxtw %p4]
+     [?w, rk,                     0, Ui1, i,   Upl, UplDnm] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1865,10 +1917,14 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5, 6]
-     [w, Z,                      w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%2.d]
-     [w, vg<VNx2_NARROW:Vesize>, w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%2.d, #%1]
-     [w, rk,                     w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d]
-     [w, rk,                     w, i, i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [&w, Z,                      w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%2.d]
+     [?w, Z,                      0, i, Ui1, Upl, UplDnm] ^
+     [&w, vg<VNx2_NARROW:Vesize>, w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%2.d, #%1]
+     [?w, vg<VNx2_NARROW:Vesize>, 0, i, Ui1, Upl, UplDnm] ^
+     [&w, rk,                     w, i, Ui1, Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d]
+     [?w, rk,                     0, i, Ui1, Upl, UplDnm] ^
+     [&w, rk,                     w, i, i,   Upl, UplDnm] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, lsl %p4]
+     [?w, rk,                     w, i, i,   Upl, UplDnm] ^
   }
   "&& !CONSTANT_P (operands[6])"
   {
@@ -1899,8 +1955,10 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
-     [w, rk, w, i, i,   Upl  ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, sxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& (!CONSTANT_P (operands[6]) || !CONSTANT_P (operands[7]))"
   {
@@ -1929,8 +1987,10 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [cons: =0, 1, 2, 3, 4, 5]
-     [w, rk, w, i, Ui1, Upl  ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
-     [w, rk, w, i, i,   Upl  ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [&w, rk, w, i, Ui1, Upl ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw]
+     [?w, rk, 0, i, Ui1, Upl ] ^
+     [&w, rk, w, i, i,   Upl ] ldff1<ANY_EXTEND:s><VNx2_NARROW:Vesize>\t%0.d, %5/z, [%1, %2.d, uxtw %p4]
+     [?w, rk, 0, i, i,   Upl ] ^
   }
   "&& !CONSTANT_P (operands[7])"
   {

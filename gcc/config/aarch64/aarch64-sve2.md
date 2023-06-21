@@ -111,8 +111,10 @@
 	  UNSPEC_LDNT1_GATHER))]
   "TARGET_SVE2"
   {@ [cons: =0, 1, 2, 3]
-     [w, Upl, Z, w     ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
-     [w, Upl, r, w     ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>, %2]
+     [&w, Upl, Z, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>]
+     [?w, Upl, Z, 0    ] ^
+     [&w, Upl, r, w    ] ldnt1<Vesize>\t%0.<Vetype>, %1/z, [%3.<Vetype>, %2]
+     [?w, Upl, r, 0    ] ^
   }
 )
 
@@ -132,8 +134,10 @@
   "TARGET_SVE2
    && (~<SVE_FULL_SDI:narrower_mask> & <SVE_PARTIAL_I:self_mask>) == 0"
   {@ [cons: =0, 1, 2, 3, 4]
-     [w, Upl, Z, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
-     [w, Upl, r, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>, %2]
+     [&w, Upl, Z, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>]
+     [?w, Upl, Z, 0, UplDnm] ^
+     [&w, Upl, r, w, UplDnm] ldnt1<ANY_EXTEND:s><SVE_PARTIAL_I:Vesize>\t%0.<SVE_FULL_SDI:Vetype>, %1/z, [%3.<SVE_FULL_SDI:Vetype>, %2]
+     [?w, Upl, r, 0, UplDnm] ^
   }
   "&& !CONSTANT_P (operands[4])"
   {
