@@ -596,40 +596,41 @@
 ;;    result after reload_completed.
 (define_expand "fma<mode>4"
   [(parallel
-    [(set (match_operand:VI 0 "register_operand"     "=vr")
+    [(set (match_operand:VI 0 "register_operand")
 	  (plus:VI
 	    (mult:VI
-	      (match_operand:VI 1 "register_operand" " vr")
-	      (match_operand:VI 2 "register_operand" " vr"))
-	    (match_operand:VI 3 "register_operand"   " vr")))
-     (clobber (match_scratch:SI 4))])]
+	      (match_operand:VI 1 "register_operand")
+	      (match_operand:VI 2 "register_operand"))
+	    (match_operand:VI 3 "register_operand")))
+     (clobber (match_dup 4))])]
   "TARGET_VECTOR"
-  {})
+  {
+    operands[4] = gen_reg_rtx (Pmode);
+  })
 
-(define_insn_and_split "*fma<mode>"
+(define_insn_and_split "*fma<VI:mode><P:mode>"
   [(set (match_operand:VI 0 "register_operand"     "=vr, vr, ?&vr")
 	(plus:VI
 	  (mult:VI
 	    (match_operand:VI 1 "register_operand" " %0, vr,   vr")
 	    (match_operand:VI 2 "register_operand" " vr, vr,   vr"))
 	  (match_operand:VI 3 "register_operand"   " vr,  0,   vr")))
-   (clobber (match_scratch:SI 4 "=r,r,r"))]
+   (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    PUT_MODE (operands[4], Pmode);
-    riscv_vector::emit_vlmax_vsetvl (<MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VI:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_mul_plus (<MODE>mode),
-					  riscv_vector::RVV_TERNOP, ops, operands[4]);
+    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_mul_plus (<VI:MODE>mode),
+					   riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vimuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<VI:MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] VNMSAC and VNMSUB
@@ -641,40 +642,41 @@
 
 (define_expand "fnma<mode>4"
   [(parallel
-    [(set (match_operand:VI 0 "register_operand"     "=vr")
+    [(set (match_operand:VI 0 "register_operand")
    (minus:VI
-     (match_operand:VI 3 "register_operand"   " vr")
+     (match_operand:VI 3 "register_operand")
      (mult:VI
-       (match_operand:VI 1 "register_operand" " vr")
-       (match_operand:VI 2 "register_operand" " vr"))))
-     (clobber (match_scratch:SI 4))])]
+       (match_operand:VI 1 "register_operand")
+       (match_operand:VI 2 "register_operand"))))
+     (clobber (match_dup 4))])]
   "TARGET_VECTOR"
-  {})
+  {
+    operands[4] = gen_reg_rtx (Pmode);
+  })
 
-(define_insn_and_split "*fnma<mode>"
+(define_insn_and_split "*fnma<VI:mode><P:mode>"
   [(set (match_operand:VI 0 "register_operand"     "=vr, vr, ?&vr")
  (minus:VI
    (match_operand:VI 3 "register_operand"   " vr,  0,   vr")
    (mult:VI
      (match_operand:VI 1 "register_operand" " %0, vr,   vr")
      (match_operand:VI 2 "register_operand" " vr, vr,   vr"))))
-   (clobber (match_scratch:SI 4 "=r,r,r"))]
+   (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    PUT_MODE (operands[4], Pmode);
-    riscv_vector::emit_vlmax_vsetvl (<MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VI:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_minus_mul (<MODE>mode),
-    riscv_vector::RVV_TERNOP, ops, operands[4]);
+    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_minus_mul (<VI:MODE>mode),
+    					   riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vimuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<VI:MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFMACC and VFMADD
