@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-mavx512f -mno-avx512vl -O2" } */
+/* { dg-options "-mavx512f -mno-avx512vl -mprefer-vector-width=512 -O2" } */
 /* { dg-final { scan-assembler-not "vmovddup\[^\n\]*%xmm16" } } */
 
 typedef long long __attribute__ ((vector_size (16))) v2di;
