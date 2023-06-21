@@ -837,7 +837,7 @@ blocks on the line.
 @item
 Within an @samp{@{@@} block, any iterators that do not get expanded will result
 in an error.  If for some reason it is required to have @code{<} or @code{>} in
-the output then these must be escaped using @backslashchar{}.
+the output then these must be escaped using @samp{\}.
 
 @item
 It is possible to use the @samp{attrs} list to specify some attributes and to
