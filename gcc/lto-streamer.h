@@ -604,6 +604,8 @@ struct GTY(()) lto_file_decl_data
   int order_base;
 
   int unit_base;
+
+  unsigned mode_bits;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;

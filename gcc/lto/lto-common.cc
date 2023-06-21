@@ -2278,6 +2278,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file,
   lto_input_mode_table (file_data);
 #else
   file_data->mode_table = lto_mode_identity_table;
+  file_data->mode_bits = ceil_log2 (MAX_MACHINE_MODE);
 #endif
 
   data = lto_get_summary_section_data (file_data, LTO_section_decls, &len);
