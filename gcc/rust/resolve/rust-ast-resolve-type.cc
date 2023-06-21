@@ -589,6 +589,11 @@ ResolveGenericArgs::go (AST::GenericArgs &generic_args,
 
       resolver.resolve_disambiguated_generic (arg);
     }
+
+  for (auto &binding : generic_args.get_binding_args ())
+    {
+      ResolveType::go (binding.get_type ().get ());
+    }
 }
 
 } // namespace Resolver

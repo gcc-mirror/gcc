@@ -1298,7 +1298,7 @@ populate_coalesce_list_for_outofssa (coalesce_list *cl, bitmap used_in_copy)
 		     originally with optimizations and only the link
 		     performed at -O0, so we can't actually require it.  */
 		  const int cost
-		    = (TREE_CODE (SSA_NAME_VAR (a)) == VAR_DECL || in_lto_p)
+		    = (VAR_P (SSA_NAME_VAR (a)) || in_lto_p)
 		      ? MUST_COALESCE_COST - 1 : MUST_COALESCE_COST;
 		  add_coalesce (cl, SSA_NAME_VERSION (a),
 				SSA_NAME_VERSION (*slot), cost);

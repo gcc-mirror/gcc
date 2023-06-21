@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread2-stats -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-thread2-stats -fdump-tree-optimized -fno-ssa-phiopt" } */
 
 long a;
 int b;
@@ -19,6 +19,7 @@ int main() {
   a = b;
 }
 
+/* Disable phiopt as the threading opportunity  goes away. */
 /* We need to perform a non-multi-way branch FSM thread creating an
    irreducible loop in thread2 to allow followup threading to
    remove the call to foo ().  */

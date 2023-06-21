@@ -38,7 +38,7 @@ float f5(float A)
   return -A;
 }
 
-/* These should be optimized in phiopt1 but is confused by predicts. */
-/* { dg-final { scan-tree-dump-not "if" "phiopt1" { xfail *-*-* } } } */
+/* f4 and f5 are not allowed to be optimized in early phi-opt. */
+/* { dg-final { scan-tree-dump-times "if" 2 "phiopt1" } } */
 /* { dg-final { scan-tree-dump-not "if" "phiopt2" } } */
 

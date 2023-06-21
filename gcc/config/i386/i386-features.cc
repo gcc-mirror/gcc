@@ -974,12 +974,45 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
 }
 
-/* Convert COMPARE to vector mode.  */
+/* Convert CCZmode COMPARE to vector mode.  */
 
 rtx
 scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
   rtx src, tmp;
+
+  /* Handle any REG_EQUAL notes.  */
+  tmp = find_reg_equal_equiv_note (insn);
+  if (tmp)
+    {
+      if (GET_CODE (XEXP (tmp, 0)) == COMPARE
+	  && GET_MODE (XEXP (tmp, 0)) == CCZmode
+	  && REG_P (XEXP (XEXP (tmp, 0), 0)))
+	{
+	  rtx *op = &XEXP (XEXP (tmp, 0), 1);
+	  if (CONST_SCALAR_INT_P (*op))
+	    {
+	      if (constm1_operand (*op, GET_MODE (*op)))
+		*op = CONSTM1_RTX (vmode);
+	      else
+		{
+		  unsigned n = GET_MODE_NUNITS (vmode);
+		  rtx *v = XALLOCAVEC (rtx, n);
+		  v[0] = *op;
+		  for (unsigned i = 1; i < n; ++i)
+		    v[i] = const0_rtx;
+		  *op = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (n, v));
+		}
+	      tmp = NULL_RTX;
+	    }
+	  else if (REG_P (*op))
+	    tmp = NULL_RTX;
+	}
+
+      if (tmp)
+	remove_note (insn, tmp);
+    }
+
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
@@ -1023,7 +1056,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
 	  op11 = tmp;
 	}
-      return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, op11, op12),
+      return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, op11, op12),
 			     UNSPEC_PTEST);
     }
   else
@@ -1052,7 +1085,7 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
       src = tmp;
     }
 
-  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
+  return gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
 }
 
 /* Helper function for converting INSN to vector mode.  */
@@ -1219,7 +1252,7 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 
@@ -1635,10 +1668,11 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   switch (GET_CODE (src))
     {
     case REG:
-      PUT_MODE (src, V1TImode);
-      /* Call fix_debug_reg_uses only if SRC is never defined.  */
-      if (!DF_REG_DEF_CHAIN (REGNO (src)))
-	fix_debug_reg_uses (src);
+      if (GET_MODE (src) == TImode)
+	{
+	  PUT_MODE (src, V1TImode);
+	  fix_debug_reg_uses (src);
+	}
       break;
 
     case MEM:
@@ -1725,7 +1759,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case COMPARE:
-      dst = gen_rtx_REG (CCmode, FLAGS_REG);
+      dst = gen_rtx_REG (CCZmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
       break;
 

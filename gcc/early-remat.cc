@@ -504,20 +504,20 @@ private:
 
 early_remat *early_remat::er;
 
-/* rtx_equal_p_cb callback that treats any two SCRATCHes as equal.
+/* rtx_equal_p callback that treats any two SCRATCHes as equal.
    This allows us to compare two copies of a pattern, even though their
    SCRATCHes are always distinct.  */
 
-static int
+static bool
 scratch_equal (const_rtx *x, const_rtx *y, rtx *nx, rtx *ny)
 {
   if (GET_CODE (*x) == SCRATCH && GET_CODE (*y) == SCRATCH)
     {
       *nx = const0_rtx;
       *ny = const0_rtx;
-      return 1;
+      return true;
     }
-  return 0;
+  return false;
 }
 
 /* Hash callback functions for remat_candidate.  */
@@ -534,10 +534,8 @@ remat_candidate_hasher::equal (const remat_candidate *cand1,
 {
   return (cand1->regno == cand2->regno
 	  && cand1->constant_p == cand2->constant_p
-	  && (cand1->constant_p
-	      ? rtx_equal_p (cand1->remat_rtx, cand2->remat_rtx)
-	      : rtx_equal_p_cb (cand1->remat_rtx, cand2->remat_rtx,
-				scratch_equal))
+	  && rtx_equal_p (cand1->remat_rtx, cand2->remat_rtx,
+			  cand1->constant_p ? NULL : scratch_equal)
 	  && (!cand1->uses || bitmap_equal_p (cand1->uses, cand2->uses)));
 }
 
@@ -1010,8 +1008,8 @@ early_remat::init_block_info (void)
   m_block_info.safe_grow_cleared (n_blocks, true);
 }
 
-/* Maps basic block indices to their position in the post order.  */
-static unsigned int *postorder_index;
+/* Maps basic block indices to their position in the forward RPO.  */
+static unsigned int *rpo_index;
 
 /* Order remat_candidates X_IN and Y_IN according to the cfg postorder.  */
 
@@ -1024,7 +1022,7 @@ compare_candidates (const void *x_in, const void *y_in)
   basic_block y_bb = BLOCK_FOR_INSN (y->insn);
   if (x_bb != y_bb)
     /* Make X and Y follow block postorder.  */
-    return postorder_index[x_bb->index] - postorder_index[y_bb->index];
+    return rpo_index[y_bb->index] - rpo_index[x_bb->index];
 
   /* Make X and Y follow a backward traversal of the containing block.  */
   return DF_INSN_LUID (y->insn) - DF_INSN_LUID (x->insn);
@@ -1051,15 +1049,15 @@ early_remat::sort_candidates (void)
   /* Create a mapping from block numbers to their position in the
      postorder.  */
   unsigned int n_blocks = last_basic_block_for_fn (m_fn);
-  int *postorder = df_get_postorder (DF_BACKWARD);
-  unsigned int postorder_len = df_get_n_blocks (DF_BACKWARD);
-  postorder_index = new unsigned int[n_blocks];
-  for (unsigned int i = 0; i < postorder_len; ++i)
-    postorder_index[postorder[i]] = i;
+  int *rpo = df_get_postorder (DF_FORWARD);
+  unsigned int rpo_len = df_get_n_blocks (DF_FORWARD);
+  rpo_index = new unsigned int[n_blocks];
+  for (unsigned int i = 0; i < rpo_len; ++i)
+    rpo_index[rpo[i]] = i;
 
   m_candidates.qsort (compare_candidates);
 
-  delete[] postorder_index;
+  delete[] rpo_index;
 }
 
 /* Commit to the current candidate indices and initialize cross-references.  */
@@ -2097,11 +2095,11 @@ early_remat::local_phase (void)
   if (dump_file)
     fprintf (dump_file, "\n;; Local phase:\n");
 
-  int *postorder = df_get_postorder (DF_BACKWARD);
-  unsigned int postorder_len = df_get_n_blocks (DF_BACKWARD);
-  for (unsigned int i = postorder_len; i-- > 0; )
-    if (postorder[i] >= NUM_FIXED_BLOCKS)
-      process_block (BASIC_BLOCK_FOR_FN (m_fn, postorder[i]));
+  int *rpo = df_get_postorder (DF_FORWARD);
+  unsigned int rpo_len = df_get_n_blocks (DF_FORWARD);
+  for (unsigned int i = 0; i < rpo_len; ++i)
+    if (rpo[i] >= NUM_FIXED_BLOCKS)
+      process_block (BASIC_BLOCK_FOR_FN (m_fn, rpo[i]));
 }
 
 /* Return true if available values survive across edge E.  */

@@ -673,10 +673,6 @@ VAR
    vec    : Vector ;
    inSet,
    outSet : SetOfFd ;
-   b4s,
-   b4m,
-   afs,
-   afm,
    sec,
    micro  : CARDINAL ;
    maxFd  : INTEGER ;

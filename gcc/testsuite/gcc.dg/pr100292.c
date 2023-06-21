@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32 } */
 
 typedef unsigned char __attribute__((__vector_size__ (4))) V;
 

@@ -43,8 +43,10 @@ model*:\ 47|\
 model*:\ 37|\
 model*:\ 44) E="cpu/event=0x88,umask=0x40/$FLAGS" ;;
 model*:\ 55|\
+model*:\ 74|\
 model*:\ 77|\
 model*:\ 76|\
+model*:\ 90|\
 model*:\ 92|\
 model*:\ 95|\
 model*:\ 87|\
@@ -75,14 +77,19 @@ model*:\ 165|\
 model*:\ 166|\
 model*:\ 85|\
 model*:\ 85) E="cpu/event=0xC4,umask=0x20/p$FLAGS" ;;
+model*:\ 125|\
 model*:\ 126|\
+model*:\ 167|\
 model*:\ 140|\
 model*:\ 141|\
 model*:\ 143|\
+model*:\ 207|\
 model*:\ 106|\
 model*:\ 108) E="cpu/event=0xc4,umask=0x20/p$FLAGS" ;;
 model*:\ 134|\
-model*:\ 150) E="cpu/event=0xc4,umask=0xfe/p$FLAGS" ;;
+model*:\ 150|\
+model*:\ 156|\
+model*:\ 190) E="cpu/event=0xc4,umask=0xfe/p$FLAGS" ;;
 *)
 echo >&2 "Unknown CPU. Run contrib/gen_autofdo_event.py --all --script to update script."
 	exit 1 ;;

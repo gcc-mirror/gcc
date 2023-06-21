@@ -317,14 +317,15 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   if (integral)
     {
       value_range vr;
+      tree tmin, tmax;
 
       query->range_of_expr (vr, exp, stmt);
 
       if (vr.undefined_p ())
 	vr.set_varying (TREE_TYPE (exp));
-      range_type = vr.kind ();
-      min = wi::to_wide (vr.min ());
-      max = wi::to_wide (vr.max ());
+      range_type = get_legacy_range (vr, tmin, tmax);
+      min = wi::to_wide (tmin);
+      max = wi::to_wide (tmax);
     }
   else
     range_type = VR_VARYING;

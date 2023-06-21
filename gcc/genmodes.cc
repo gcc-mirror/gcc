@@ -1141,10 +1141,10 @@ inline __attribute__((__always_inline__))\n\
 #else\n\
 extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
 #endif\n\
-unsigned char\n\
+unsigned short\n\
 mode_inner_inline (machine_mode mode)\n\
 {\n\
-  extern const unsigned char mode_inner[NUM_MACHINE_MODES];\n\
+  extern const unsigned short mode_inner[NUM_MACHINE_MODES];\n\
   gcc_assert (mode >= 0 && mode < NUM_MACHINE_MODES);\n\
   switch (mode)\n\
     {");
@@ -1529,7 +1529,7 @@ emit_mode_wider (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_next", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_next", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     tagged_printf ("E_%smode",
@@ -1537,7 +1537,7 @@ emit_mode_wider (void)
 		   m->name);
 
   print_closer ();
-  print_decl ("unsigned char", "mode_wider", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_wider", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     {
@@ -1568,7 +1568,7 @@ emit_mode_wider (void)
     }
 
   print_closer ();
-  print_decl ("unsigned char", "mode_2xwider", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_2xwider", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     {
@@ -1625,7 +1625,7 @@ emit_mode_complex (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_complex", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_complex", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     tagged_printf ("E_%smode",
@@ -1665,7 +1665,7 @@ emit_mode_inner (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_inner", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_inner", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     tagged_printf ("E_%smode",
@@ -1738,7 +1738,7 @@ emit_class_narrowest_mode (void)
 {
   int c;
 
-  print_decl ("unsigned char", "class_narrowest_mode", "MAX_MODE_CLASS");
+  print_decl ("unsigned short", "class_narrowest_mode", "MAX_MODE_CLASS");
 
   for (c = 0; c < MAX_MODE_CLASS; c++)
     {

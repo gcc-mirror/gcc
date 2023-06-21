@@ -3374,6 +3374,8 @@ stack.
 
 @hook TARGET_VECTOR_MODE_SUPPORTED_P
 
+@hook TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
+
 @hook TARGET_COMPATIBLE_VECTOR_TYPES_P
 
 @hook TARGET_ARRAY_MODE
@@ -4003,6 +4005,8 @@ macro, a reasonable default is used.
 @hook TARGET_LIBC_HAS_FUNCTION
 
 @hook TARGET_LIBC_HAS_FAST_FUNCTION
+
+@hook TARGET_LIBM_FUNCTION_MAX_ERROR
 
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions

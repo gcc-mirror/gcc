@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -139,21 +140,21 @@ EXTERN DynamicStrings_String DynamicStrings_Add (DynamicStrings_String a, Dynami
    Equal - returns TRUE if String, a, and, b, are equal.
 */
 
-EXTERN unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b);
+EXTERN bool DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
    EqualCharStar - returns TRUE if contents of String, s, is
                    the same as the string, a.
 */
 
-EXTERN unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a);
+EXTERN bool DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a);
 
 /*
    EqualArray - returns TRUE if contents of String, s, is the
                 same as the string, a.
 */
 
-EXTERN unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
+EXTERN bool DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
 
 /*
    Mult - returns a new string which is n concatenations of String, s.
@@ -310,13 +311,13 @@ EXTERN void DynamicStrings_PushAllocation (void);
                    with an exit code of 1.
 */
 
-EXTERN void DynamicStrings_PopAllocation (unsigned int halt);
+EXTERN void DynamicStrings_PopAllocation (bool halt);
 
 /*
    PopAllocationExemption - test to see that all strings are
-                            deallocated, except string, e, since
+                            deallocated, except string e since
                             the last push.
-                            Then it pops to the previous
+                            Post-condition: it pops to the previous
                             allocation/deallocation lists.
 
                             If halt is true then the application
@@ -325,7 +326,7 @@ EXTERN void DynamicStrings_PopAllocation (unsigned int halt);
                             The string, e, is returned unmodified,
 */
 
-EXTERN DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned int halt, DynamicStrings_String e);
+EXTERN DynamicStrings_String DynamicStrings_PopAllocationExemption (bool halt, DynamicStrings_String e);
 #   ifdef __cplusplus
 }
 #   endif

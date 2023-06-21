@@ -1,6 +1,7 @@
 // { dg-do run { target c++20 } }
 // { dg-do compile { target c++17_down } }
 // { dg-excess-errors "" { target { c++17_down } } } (PR108972)
+// { dg-additional-options "-flto" { target lto } } (PR107897)
 
 template<typename T>
 concept C1 = __is_same_as(T, int)

@@ -92,7 +92,6 @@ extern bool fold_convertible_p (const_tree, const_tree);
 #define fold_convert(T1,T2)\
    fold_convert_loc (UNKNOWN_LOCATION, T1, T2)
 extern tree fold_convert_loc (location_t, tree, tree);
-extern tree fold_single_bit_test (location_t, enum tree_code, tree, tree, tree);
 extern tree fold_ignored_result (tree);
 extern tree fold_abs_const (tree, tree);
 extern tree fold_indirect_ref_1 (location_t, tree, tree);
@@ -245,6 +244,9 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 
 #define fold_build_pointer_plus_hwi(p,o) \
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
+
+extern tree_code minmax_from_comparison (tree_code, tree, tree,
+					 tree, tree);
 
 /* In gimple-fold.cc.  */
 extern void clear_type_padding_in_mask (tree, unsigned char *);

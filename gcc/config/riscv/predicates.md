@@ -27,6 +27,12 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "arith_operand_or_mode_mask"
+  (ior (match_operand 0 "arith_operand")
+       (and (match_code "const_int")
+            (match_test "UINTVAL (op) == GET_MODE_MASK (HImode)
+			 || UINTVAL (op) == GET_MODE_MASK (SImode)"))))
+
 (define_predicate "lui_operand"
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (INTVAL (op))")))
@@ -235,13 +241,15 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
-(define_predicate "const31_operand"
+(define_predicate "const_si_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 31")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (SImode) - 1))
+                    == GET_MODE_BITSIZE (SImode) - 1")))
 
-(define_predicate "const63_operand"
+(define_predicate "const_di_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 63")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (DImode) - 1))
+                    == GET_MODE_BITSIZE (DImode) - 1")))
 
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
@@ -322,6 +330,10 @@
        (and (match_code "const_vector")
             (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
 
+(define_predicate "vector_perm_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_vector")))
+
 (define_predicate "ltge_operator"
   (match_code "lt,ltu,ge,geu"))
 
@@ -366,6 +378,11 @@
   (and (match_code "const_int")
        (match_test "popcount_hwi (~UINTVAL (op)) == 2")))
 
+(define_predicate "const_nottwobits_not_arith_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "arith_operand"))
+	    (match_operand 0 "const_nottwobits_operand"))))
+
 ;; A CONST_INT operand that consists of a single run of 32 consecutive
 ;; set bits.
 (define_predicate "consecutive_bits32_operand"
@@ -399,7 +416,7 @@
 (define_predicate "uimm_extra_bit_or_twobits"
   (and (match_code "const_int")
        (ior (match_operand 0 "uimm_extra_bit_operand")
-	    (match_operand 0 "const_twobits_operand"))))
+	    (match_operand 0 "const_twobits_not_arith_operand"))))
 
 ;; A CONST_INT operand that fits into the negative half of a
 ;; signed-immediate after a single cleared top bit has been
@@ -411,4 +428,4 @@
 (define_predicate "not_uimm_extra_bit_or_nottwobits"
   (and (match_code "const_int")
        (ior (match_operand 0 "not_uimm_extra_bit_operand")
-	    (match_operand 0 "const_nottwobits_operand"))))
+	    (match_operand 0 "const_nottwobits_not_arith_operand"))))

@@ -343,19 +343,17 @@ set_ifsese_condition (ifsese if_region, tree condition)
   sese_info_p region = if_region->region;
   edge entry = region->region.entry;
   basic_block bb = entry->dest;
-  gimple *last = last_stmt (bb);
-  gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gcond *cond_stmt;
 
-  gcc_assert (gimple_code (last) == GIMPLE_COND);
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gcc_assert (gimple_code (*gsi) == GIMPLE_COND);
 
-  gsi_remove (&gsi, true);
-  gsi = gsi_last_bb (bb);
-  condition = force_gimple_operand_gsi (&gsi, condition, true, NULL,
-					false, GSI_NEW_STMT);
+  condition = force_gimple_operand_gsi_1 (&gsi, condition,
+					  is_gimple_condexpr_for_cond,
+					  NULL_TREE, true, GSI_SAME_STMT);
   cond_stmt = gimple_build_cond_from_tree (condition, NULL_TREE, NULL_TREE);
-  gsi = gsi_last_bb (bb);
-  gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
+  gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
+  gsi_remove (&gsi, true);
 }
 
 /* Return true when T is defined outside REGION or when no definitions are

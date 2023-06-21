@@ -16,4 +16,5 @@ void loop(float * const __restrict__ dst,
     dst[i] = 42.0 * src[idx[i]];
 }
 
-/* { dg-final { scan-assembler-times "mulps" 1 } } */
+/* For ia32 we do not consider V2SFmode vectorization.  */
+/* { dg-final { scan-assembler-times "mulps" 1 { target { ! ia32 } } } } */

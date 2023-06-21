@@ -1,4 +1,4 @@
-/* { dg-do run { xfail { cris-*-* sparc*-*-* } } } */
+/* { dg-do run { xfail { cris-*-* hppa*-*-* sparc*-*-* } } } */
 /* { dg-options "-O2" } */
 
 #include <inttypes.h>

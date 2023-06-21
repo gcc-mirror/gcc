@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -95,7 +96,7 @@ struct RTExceptions__T3_r {
                             RTExceptions_Handler stack;
                           };
 
-static unsigned int inException;
+static bool inException;
 static RTExceptions_Handler freeHandler;
 static RTExceptions_EHBlock freeEHB;
 static RTExceptions_EHBlock currentEHB;
@@ -188,7 +189,7 @@ extern "C" void RTExceptions_BaseExceptionsThrow (void);
                         in the exception state.
 */
 
-extern "C" unsigned int RTExceptions_IsInExceptionState (void);
+extern "C" bool RTExceptions_IsInExceptionState (void);
 
 /*
    SetExceptionState - returns the current exception state and
@@ -196,7 +197,7 @@ extern "C" unsigned int RTExceptions_IsInExceptionState (void);
                        to.
 */
 
-extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to);
+extern "C" bool RTExceptions_SetExceptionState (bool to);
 
 /*
    SwitchExceptionState - assigns, from, with the current exception
@@ -204,7 +205,7 @@ extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to);
                           to, to.
 */
 
-extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to);
+extern "C" void RTExceptions_SwitchExceptionState (bool *from, bool to);
 
 /*
    GetBaseExceptionBlock - returns the initial language exception block
@@ -724,7 +725,7 @@ static void AddHandler (RTExceptions_EHBlock e, RTExceptions_Handler h)
 
 static void indexf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 613, 9, const_cast<void*> (reinterpret_cast<const void*>("indexf")), const_cast<void*> (reinterpret_cast<const void*>("array index out of bounds")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 614, 9, const_cast<void*> (reinterpret_cast<const void*>("indexf")), const_cast<void*> (reinterpret_cast<const void*>("array index out of bounds")));
 }
 
 
@@ -734,7 +735,7 @@ static void indexf (void * a)
 
 static void range (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 625, 9, const_cast<void*> (reinterpret_cast<const void*>("range")), const_cast<void*> (reinterpret_cast<const void*>("assignment out of range")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 626, 9, const_cast<void*> (reinterpret_cast<const void*>("range")), const_cast<void*> (reinterpret_cast<const void*>("assignment out of range")));
 }
 
 
@@ -744,7 +745,7 @@ static void range (void * a)
 
 static void casef (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 637, 9, const_cast<void*> (reinterpret_cast<const void*>("casef")), const_cast<void*> (reinterpret_cast<const void*>("case selector out of range")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 638, 9, const_cast<void*> (reinterpret_cast<const void*>("casef")), const_cast<void*> (reinterpret_cast<const void*>("case selector out of range")));
 }
 
 
@@ -754,7 +755,7 @@ static void casef (void * a)
 
 static void invalidloc (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 649, 9, const_cast<void*> (reinterpret_cast<const void*>("invalidloc")), const_cast<void*> (reinterpret_cast<const void*>("invalid address referenced")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 650, 9, const_cast<void*> (reinterpret_cast<const void*>("invalidloc")), const_cast<void*> (reinterpret_cast<const void*>("invalid address referenced")));
 }
 
 
@@ -764,7 +765,7 @@ static void invalidloc (void * a)
 
 static void function (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 661, 9, const_cast<void*> (reinterpret_cast<const void*>("function")), const_cast<void*> (reinterpret_cast<const void*>("... function ... ")));  /* --fixme-- what has happened ?  */
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 662, 9, const_cast<void*> (reinterpret_cast<const void*>("function")), const_cast<void*> (reinterpret_cast<const void*>("... function ... ")));  /* --fixme-- what has happened ?  */
 }
 
 
@@ -774,7 +775,7 @@ static void function (void * a)
 
 static void wholevalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 673, 9, const_cast<void*> (reinterpret_cast<const void*>("wholevalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 674, 9, const_cast<void*> (reinterpret_cast<const void*>("wholevalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -784,7 +785,7 @@ static void wholevalue (void * a)
 
 static void wholediv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 685, 9, const_cast<void*> (reinterpret_cast<const void*>("wholediv")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 686, 9, const_cast<void*> (reinterpret_cast<const void*>("wholediv")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -794,7 +795,7 @@ static void wholediv (void * a)
 
 static void realvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 697, 9, const_cast<void*> (reinterpret_cast<const void*>("realvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal real value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 698, 9, const_cast<void*> (reinterpret_cast<const void*>("realvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal real value exception")));
 }
 
 
@@ -804,7 +805,7 @@ static void realvalue (void * a)
 
 static void realdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 709, 9, const_cast<void*> (reinterpret_cast<const void*>("realdiv")), const_cast<void*> (reinterpret_cast<const void*>("real number division by zero exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 710, 9, const_cast<void*> (reinterpret_cast<const void*>("realdiv")), const_cast<void*> (reinterpret_cast<const void*>("real number division by zero exception")));
 }
 
 
@@ -814,7 +815,7 @@ static void realdiv (void * a)
 
 static void complexvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 721, 9, const_cast<void*> (reinterpret_cast<const void*>("complexvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal complex value exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 722, 9, const_cast<void*> (reinterpret_cast<const void*>("complexvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal complex value exception")));
 }
 
 
@@ -824,7 +825,7 @@ static void complexvalue (void * a)
 
 static void complexdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 733, 9, const_cast<void*> (reinterpret_cast<const void*>("complexdiv")), const_cast<void*> (reinterpret_cast<const void*>("complex number division by zero exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 734, 9, const_cast<void*> (reinterpret_cast<const void*>("complexdiv")), const_cast<void*> (reinterpret_cast<const void*>("complex number division by zero exception")));
 }
 
 
@@ -834,7 +835,7 @@ static void complexdiv (void * a)
 
 static void protection (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 745, 9, const_cast<void*> (reinterpret_cast<const void*>("protection")), const_cast<void*> (reinterpret_cast<const void*>("protection exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 746, 9, const_cast<void*> (reinterpret_cast<const void*>("protection")), const_cast<void*> (reinterpret_cast<const void*>("protection exception")));
 }
 
 
@@ -844,7 +845,7 @@ static void protection (void * a)
 
 static void systemf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 757, 9, const_cast<void*> (reinterpret_cast<const void*>("systemf")), const_cast<void*> (reinterpret_cast<const void*>("system exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 758, 9, const_cast<void*> (reinterpret_cast<const void*>("systemf")), const_cast<void*> (reinterpret_cast<const void*>("system exception")));
 }
 
 
@@ -854,7 +855,7 @@ static void systemf (void * a)
 
 static void coroutine (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 769, 9, const_cast<void*> (reinterpret_cast<const void*>("coroutine")), const_cast<void*> (reinterpret_cast<const void*>("coroutine exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 770, 9, const_cast<void*> (reinterpret_cast<const void*>("coroutine")), const_cast<void*> (reinterpret_cast<const void*>("coroutine exception")));
 }
 
 
@@ -864,7 +865,7 @@ static void coroutine (void * a)
 
 static void exception (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 781, 9, const_cast<void*> (reinterpret_cast<const void*>("exception")), const_cast<void*> (reinterpret_cast<const void*>("exception exception")));
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod")), 782, 9, const_cast<void*> (reinterpret_cast<const void*>("exception")), const_cast<void*> (reinterpret_cast<const void*>("exception exception")));
 }
 
 
@@ -874,7 +875,7 @@ static void exception (void * a)
 
 static void Init (void)
 {
-  inException = FALSE;
+  inException = false;
   freeHandler = NULL;
   freeEHB = NULL;
   currentEHB = RTExceptions_InitExceptionBlock ();
@@ -1077,7 +1078,6 @@ extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int n
 extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
 {
   RTExceptions_Handler h;
-  RTExceptions_Handler i;
 
   h = findHandler (e, number);
   if (h != NULL)
@@ -1135,7 +1135,7 @@ extern "C" void RTExceptions_BaseExceptionsThrow (void)
                         in the exception state.
 */
 
-extern "C" unsigned int RTExceptions_IsInExceptionState (void)
+extern "C" bool RTExceptions_IsInExceptionState (void)
 {
   return inException;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1149,9 +1149,9 @@ extern "C" unsigned int RTExceptions_IsInExceptionState (void)
                        to.
 */
 
-extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to)
+extern "C" bool RTExceptions_SetExceptionState (bool to)
 {
-  unsigned int old;
+  bool old;
 
   old = inException;
   inException = to;
@@ -1167,7 +1167,7 @@ extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to)
                           to, to.
 */
 
-extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to)
+extern "C" void RTExceptions_SwitchExceptionState (bool *from, bool to)
 {
   (*from) = inException;
   inException = to;
@@ -1183,7 +1183,7 @@ extern "C" RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
 {
   if (currentEHB == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod", 53, 599, (const char *) "GetBaseExceptionBlock", 21, (const char *) "currentEHB has not been initialized yet", 39);
+      M2RTS_Halt ((const char *) "currentEHB has not been initialized yet", 39, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTExceptions.mod", 53, (const char *) "GetBaseExceptionBlock", 21, 600);
     }
   else
     {

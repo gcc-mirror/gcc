@@ -1,5 +1,7 @@
 // { dg-additional-options "-w" }
-// { dg-output "t1sz=5 t2sz=10" }
+// { dg-output "t1sz=5 t2sz=10\r*" }
+#![feature(intrinsics)]
+
 mod mem {
     extern "rust-intrinsic" {
         #[rustc_const_stable(feature = "const_transmute", since = "1.46.0")]

@@ -1,4 +1,4 @@
-// { dg-output "104\n33\n1\n" }
+// { dg-output "104\r*\n33\r*\n1\r*\n" }
 #[rustc_builtin_macro]
 macro_rules! include_bytes {
     () => {{}};

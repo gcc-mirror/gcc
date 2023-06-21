@@ -1,4 +1,4 @@
-// { dg-output "other!\nother!\nother!\nfifteen!\nfifteen!\nother!\nother!\nfifteen!\n" }
+// { dg-output "other!\r*\nother!\r*\nother!\r*\nfifteen!\r*\nfifteen!\r*\nother!\r*\nother!\r*\nfifteen!\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

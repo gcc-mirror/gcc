@@ -225,6 +225,14 @@ package Atree is
    pragma Inline (Is_Entity);
    --  Returns True if N is an entity
 
+   function Is_Syntactic_Node
+     (Source : Node_Id;
+      Field  : Node_Id)
+      return Boolean;
+   --  Return True when Field is a syntactic child of node Source. It is called
+   --  when creating a copy of Source to preserve the Parent link in the copy
+   --  of Field.
+
    function New_Node
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Node_Id;
@@ -253,8 +261,7 @@ package Atree is
    function New_Entity
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Entity_Id;
-   --  Similar to New_Node, except that it is used only for entity nodes
-   --  and returns an extended node.
+   --  Similar to New_Node, except that it is used only for entity nodes.
 
    procedure Set_Comes_From_Source_Default (Default : Boolean);
    --  Sets value of Comes_From_Source flag to be used in all subsequent
@@ -630,16 +637,15 @@ package Atree is
    --  Mutate_Nkind. This is necessary, because the memory occupied by the
    --  vanishing fields might be used for totally unrelated fields in the new
    --  node. See Reinit_Field_To_Zero.
+   --
+   --  It is an error to mutate a node to the same kind it already has.
 
-   procedure Mutate_Ekind
-     (N : Entity_Id; Val : Entity_Kind) with Inline;
+   procedure Mutate_Ekind (N : Entity_Id; Val : Entity_Kind) with Inline;
    --  Ekind is also like a discriminant, and is mostly treated as above (see
-   --  Mutate_Nkind). However, there are a few cases where we set the Ekind
-   --  from its initial E_Void value to something else, then set it back to
-   --  E_Void, then back to the something else, and we expect the "something
-   --  else" fields to retain their value. The two "something else"s are not
-   --  always the same; for example we change from E_Void, to E_Variable, to
-   --  E_Void, to E_Constant.
+   --  Mutate_Nkind).
+   --
+   --  It is not (yet?) an error to mutate an entity to the same kind it
+   --  already has. It is an error to mutate to E_Void.
 
    function Node_To_Fetch_From
      (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)

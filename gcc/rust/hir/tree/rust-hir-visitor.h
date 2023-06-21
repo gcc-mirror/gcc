@@ -138,7 +138,6 @@ public:
   virtual void visit (TuplePatternItemsMultiple &tuple_items) = 0;
   virtual void visit (TuplePatternItemsRanged &tuple_items) = 0;
   virtual void visit (TuplePattern &pattern) = 0;
-  virtual void visit (GroupedPattern &pattern) = 0;
   virtual void visit (SlicePattern &pattern) = 0;
   virtual void visit (EmptyStmt &stmt) = 0;
   virtual void visit (LetStmt &stmt) = 0;
@@ -290,7 +289,6 @@ public:
   virtual void visit (TuplePatternItemsMultiple &) override {}
   virtual void visit (TuplePatternItemsRanged &) override {}
   virtual void visit (TuplePattern &) override {}
-  virtual void visit (GroupedPattern &) override {}
   virtual void visit (SlicePattern &) override {}
 
   virtual void visit (EmptyStmt &) override {}
@@ -470,7 +468,6 @@ public:
 class HIRPatternVisitor
 {
 public:
-  virtual void visit (GroupedPattern &) = 0;
   virtual void visit (IdentifierPattern &) = 0;
   virtual void visit (LiteralPattern &) = 0;
   virtual void visit (PathInExpression &) = 0;

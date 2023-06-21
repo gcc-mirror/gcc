@@ -1,4 +1,4 @@
-/* { dg-output "add_assign\n3\n" } */
+/* { dg-output "add_assign\r*\n3\r*\n" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }

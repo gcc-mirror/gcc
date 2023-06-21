@@ -1,7 +1,7 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9" } */
+/* { dg-require-effective-target has_arch_ppc64 } */
 
 /* This test should succeed only on 64-bit configurations.  */
 #include <altivec.h>

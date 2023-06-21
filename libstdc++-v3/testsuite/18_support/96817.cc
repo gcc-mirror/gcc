@@ -17,6 +17,7 @@
 
 // { dg-do run }
 // { dg-additional-options "-pthread" { target pthread } }
+// { dg-require-effective-target hosted }
 
 // Static init cannot detect recursion for gthreads targets without futexes
 // (and the futex case can only detect it if __libc_single_threaded==true).

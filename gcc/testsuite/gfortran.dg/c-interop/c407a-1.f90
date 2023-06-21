@@ -1,8 +1,8 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
-! C407a An assumed-type entity shall be a dummy variable that does not 
-! have the ALLOCATABLE, CODIMENSION, INTENT(OUT), POINTER, or VALUE 
+! C407a An assumed-type entity shall be a dummy variable that does not
+! have the ALLOCATABLE, CODIMENSION, INTENT(OUT), POINTER, or VALUE
 ! attribute and is not an explicit-shape array.
 !
 ! This test file contains tests that are expected to all pass.

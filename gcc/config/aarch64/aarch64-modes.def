@@ -75,6 +75,14 @@ VECTOR_MODE (INT, DI, 1);     /*                 V1DI.  */
 VECTOR_MODE (FLOAT, DF, 1);   /*                 V1DF.  */
 VECTOR_MODE (FLOAT, HF, 2);   /*                 V2HF.  */
 
+
+/* Integer vector modes used to represent intermediate widened values in some
+   instructions.  Not intended to be moved to and from registers or memory.  */
+VECTOR_MODE (INT, HI, 16);   /*                V16HI.  */
+VECTOR_MODE (INT, SI, 8);   /*                 V8SI.  */
+VECTOR_MODE (INT, DI, 4);   /*                 V4DI.  */
+VECTOR_MODE (INT, TI, 2);   /*                 V2TI.  */
+
 /* Oct Int: 256-bit integer mode needed for 32-byte vector arguments.  */
 INT_MODE (OI, 32);
 

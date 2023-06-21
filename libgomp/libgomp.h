@@ -1130,10 +1130,7 @@ extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
-			     int,
-			     void (*) (void *, const void *, size_t, void *),
-			     void (*) (void *, const void *, size_t, void *),
-			     void *);
+			     int, struct goacc_asyncqueue *);
 
 /* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;

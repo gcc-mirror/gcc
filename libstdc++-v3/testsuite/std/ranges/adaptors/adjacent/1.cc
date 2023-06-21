@@ -107,7 +107,7 @@ test04()
   // PR libstdc++/106798
   auto r = views::single(0) | views::lazy_split(0) | views::pairwise;
   decltype(ranges::cend(r)) s = r.end();
-  VERIFY( r.begin() == s );
+  VERIFY( r.begin() != s );
 
   return true;
 }

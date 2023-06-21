@@ -1664,10 +1664,10 @@ type_prevails_p (tree old_type, tree new_type)
   if (TREE_CODE (old_type) != COMPLEX_TYPE
       && TREE_CODE (old_type) != VECTOR_TYPE
       && (TREE_CODE (new_type) == COMPLEX_TYPE
-	  || TREE_CODE (new_type) == VECTOR_TYPE))
+	  || VECTOR_TYPE_P (new_type)))
     return true;
   if ((TREE_CODE (old_type) == COMPLEX_TYPE
-       || TREE_CODE (old_type) == VECTOR_TYPE)
+       || VECTOR_TYPE_P (old_type))
       && TREE_CODE (new_type) != COMPLEX_TYPE
       && TREE_CODE (new_type) != VECTOR_TYPE)
     return false;
@@ -1754,7 +1754,7 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
       if (ctx == ISRA_CTX_ARG)
 	return;
       tree t = get_base_address (TREE_OPERAND (expr, 0));
-      if (TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+      if (VAR_P (t) && !TREE_STATIC (t))
 	loaded_decls->add (t);
       return;
     }
@@ -1780,7 +1780,7 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
 	return;
       deref = true;
     }
-  else if (TREE_CODE (base) == VAR_DECL
+  else if (VAR_P (base)
 	   && !TREE_STATIC (base)
 	   && (ctx == ISRA_CTX_ARG
 	       || ctx == ISRA_CTX_LOAD))
@@ -3074,6 +3074,8 @@ struct caller_issues
   cgraph_node *candidate;
   /* There is a thunk among callers.  */
   bool thunk;
+  /* Set if there is at least one caller that is OK.  */
+  bool there_is_one;
   /* Call site with no available information.  */
   bool unknown_callsite;
   /* Call from outside the candidate's comdat group.  */
@@ -3116,6 +3118,8 @@ check_for_caller_issues (struct cgraph_node *node, void *data)
 
       if (csum->m_bit_aligned_arg)
 	issues->bit_aligned_aggregate_argument = true;
+
+      issues->there_is_one = true;
     }
   return false;
 }
@@ -3169,6 +3173,13 @@ check_all_callers_for_issues (cgraph_node *node)
       unsigned param_count = vec_safe_length (ifs->m_parameters);
       for (unsigned i = 0; i < param_count; i++)
 	(*ifs->m_parameters)[i].split_candidate = false;
+    }
+  if (!issues.there_is_one)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "There is no call to %s that we can modify.  "
+		 "Disabling all modifications.\n", node->dump_name ());
+      return true;
     }
   return false;
 }
@@ -4028,6 +4039,70 @@ mark_callers_calls_comdat_local (struct cgraph_node *node, void *)
   return false;
 }
 
+/* Remove any IPA-CP results stored in TS that are associated with removed
+   parameters as marked in IFS. */
+
+static void
+zap_useless_ipcp_results (const isra_func_summary *ifs, ipcp_transformation *ts)
+{
+  unsigned ts_len = vec_safe_length (ts->m_agg_values);
+
+  if (ts_len == 0)
+    return;
+
+  bool removed_item = false;
+  unsigned dst_index = 0;
+
+  for (unsigned i = 0; i < ts_len; i++)
+    {
+      ipa_argagg_value *v = &(*ts->m_agg_values)[i];
+      const isra_param_desc *desc = &(*ifs->m_parameters)[v->index];
+
+      if (!desc->locally_unused)
+	{
+	  if (removed_item)
+	    (*ts->m_agg_values)[dst_index] = *v;
+	  dst_index++;
+	}
+      else
+	removed_item = true;
+    }
+  if (dst_index == 0)
+    {
+      ggc_free (ts->m_agg_values);
+      ts->m_agg_values = NULL;
+    }
+  else if (removed_item)
+    ts->m_agg_values->truncate (dst_index);
+
+  bool useful_bits = false;
+  unsigned count = vec_safe_length (ts->bits);
+  for (unsigned i = 0; i < count; i++)
+    if ((*ts->bits)[i])
+    {
+      const isra_param_desc *desc = &(*ifs->m_parameters)[i];
+      if (desc->locally_unused)
+	(*ts->bits)[i] = NULL;
+      else
+	useful_bits = true;
+    }
+  if (!useful_bits)
+    ts->bits = NULL;
+
+  bool useful_vr = false;
+  count = vec_safe_length (ts->m_vr);
+  for (unsigned i = 0; i < count; i++)
+    if ((*ts->m_vr)[i].known_p ())
+      {
+	const isra_param_desc *desc = &(*ifs->m_parameters)[i];
+	if (desc->locally_unused)
+	  (*ts->m_vr)[i].set_unknown ();
+	else
+	  useful_vr = true;
+      }
+  if (!useful_vr)
+    ts->m_vr = NULL;
+}
 
 /* Do final processing of results of IPA propagation regarding NODE, clone it
    if appropriate.  */
@@ -4080,6 +4155,8 @@ process_isra_node_results (cgraph_node *node,
     }
 
   ipcp_transformation *ipcp_ts = ipcp_get_transformation_summary (node);
+  if (ipcp_ts)
+    zap_useless_ipcp_results (ifs, ipcp_ts);
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
   if (ipa_param_adjustments *old_adjustments
 	 = cinfo ? cinfo->param_adjustments : NULL)

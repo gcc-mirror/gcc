@@ -474,11 +474,23 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
 					     &overload, complain);
 		}
 	      else
-		/* If it would be valid albeit deprecated expression in C++20,
-		   just pedwarn on it and treat it as if wrapped in ().  */
-		pedwarn (loc, OPT_Wcomma_subscript,
-			 "top-level comma expression in array subscript "
-			 "changed meaning in C++23");
+		{
+		  /* If it would be valid albeit deprecated expression in
+		     C++20, just pedwarn on it and treat it as if wrapped
+		     in ().  */
+		  pedwarn (loc, OPT_Wcomma_subscript,
+			   "top-level comma expression in array subscript "
+			   "changed meaning in C++23");
+		  if (processing_template_decl)
+		    {
+		      orig_index_exp
+			= build_x_compound_expr_from_vec (orig_index_exp_list,
+							  NULL, complain);
+		      if (orig_index_exp == error_mark_node)
+			expr = error_mark_node;
+		      release_tree_vector (orig_index_exp_list);
+		    }
+		}
 	    }
 	}
     }
@@ -519,6 +531,15 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
 	      return error_mark_node;
 	    }
 	  index_exp = idx;
+	  if (processing_template_decl)
+	    {
+	      orig_index_exp
+		= build_x_compound_expr_from_vec (orig_index_exp_list,
+						  NULL, complain);
+	      release_tree_vector (orig_index_exp_list);
+	      if (orig_index_exp == error_mark_node)
+		return error_mark_node;
+	    }
 	}
 
       if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
@@ -834,6 +855,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (function);
+      DECL_TEMPLATE_INFO (function) = build_template_info (fns, NULL_TREE);
       matched = function;
     }
 
@@ -1592,6 +1614,11 @@ find_last_decl (tree decl)
 
   if (tree name = DECL_P (decl) ? DECL_NAME (decl) : NULL_TREE)
     {
+      /* Template specializations are matched elsewhere.  */
+      if (DECL_LANG_SPECIFIC (decl)
+	  && DECL_USE_TEMPLATE (decl))
+	return NULL_TREE;
+
       /* Look up the declaration in its scope.  */
       tree pushed_scope = NULL_TREE;
       if (tree ctype = DECL_CONTEXT (decl))
@@ -4742,15 +4769,24 @@ record_mangling (tree decl, bool need_warning)
     = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
 					  INSERT);
 
-  /* If this is already an alias, remove the alias, because the real
+  /* If this is already an alias, cancel the alias, because the real
      decl takes precedence.  */
   if (*slot && DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
-    if (symtab_node *n = symtab_node::get (*slot))
-      if (n->cpp_implicit_alias)
+    {
+      if (symtab_node *n = symtab_node::get (*slot))
 	{
-	  n->remove ();
-	  *slot = NULL_TREE;
+	  if (n->cpp_implicit_alias)
+	    /* Actually removing the node isn't safe if other code is already
+	       holding a pointer to it, so just neutralize it.  */
+	    n->reset ();
 	}
+      else
+	/* analyze_functions might have already removed the alias from the
+	   symbol table if it's internal.  */
+	gcc_checking_assert (!TREE_PUBLIC (*slot));
+
+      *slot = NULL_TREE;
+    }
 
   if (!*slot)
     *slot = decl;
@@ -5746,7 +5782,7 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
     maybe_instantiate_decl (decl);
 
-  if (processing_template_decl || in_template_function ())
+  if (processing_template_decl || in_template_context)
     return true;
 
   /* Check this too in case we're within instantiate_non_dependent_expr.  */

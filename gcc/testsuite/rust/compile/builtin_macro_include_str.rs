@@ -10,4 +10,5 @@ fn main () {
   include_str! ("foo.txt", "bar.txt"); // { dg-error "macro takes 1 argument" "" }
   include_str! ("builtin_macro_include_str.rs"); // ok
   include_str! ("builtin_macro_include_str.rs",); // trailing comma ok
+  include_str! ("invalid_utf8"); // { dg-error "invalid_utf8 was not a valid utf-8 file" "" }
 }

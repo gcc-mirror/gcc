@@ -5949,14 +5949,14 @@ free_for_value_p (int regno, machine_mode mode, int opnum,
   return 1;
 }
 
-/* Return nonzero if the rtx X is invariant over the current function.  */
+/* Return true if the rtx X is invariant over the current function.  */
 /* ??? Actually, the places where we use this expect exactly what is
    tested here, and not everything that is function invariant.  In
    particular, the frame pointer and arg pointer are special cased;
    pic_offset_table_rtx is not, and we must not spill these things to
    memory.  */
 
-int
+bool
 function_invariant_p (const_rtx x)
 {
   if (CONSTANT_P (x))
@@ -8377,11 +8377,11 @@ emit_reload_insns (class insn_chain *chain)
   reg_reloaded_dead |= reg_reloaded_died;
 }
 
-/* Go through the motions to emit INSN and test if it is strictly valid.
-   Return the emitted insn if valid, else return NULL.  */
+
+/* Helper for emit_insn_if_valid_for_reload.  */
 
 static rtx_insn *
-emit_insn_if_valid_for_reload (rtx pat)
+emit_insn_if_valid_for_reload_1 (rtx pat)
 {
   rtx_insn *last = get_last_insn ();
   int code;
@@ -8401,6 +8401,29 @@ emit_insn_if_valid_for_reload (rtx pat)
 
   delete_insns_since (last);
   return NULL;
+}
+
+/* Go through the motions to emit INSN and test if it is strictly valid.
+   Return the emitted insn if valid, else return NULL.  */
+
+static rtx_insn *
+emit_insn_if_valid_for_reload (rtx pat)
+{
+  rtx_insn *insn = emit_insn_if_valid_for_reload_1 (pat);
+
+  if (insn)
+    return insn;
+
+  /* If the pattern is a SET, and this target has a single
+     flags-register, try again with a PARALLEL that clobbers that
+     register.  */
+  if (targetm.flags_regnum == INVALID_REGNUM || GET_CODE (pat) != SET)
+    return NULL;
+
+  rtx flags_clobber = gen_hard_reg_clobber (CCmode, targetm.flags_regnum);
+  rtx parpat = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, pat, flags_clobber));
+
+  return emit_insn_if_valid_for_reload (parpat);
 }
 
 /* Emit code to perform a reload from IN (which may be a reload register) to

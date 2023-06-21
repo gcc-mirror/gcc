@@ -1,5 +1,7 @@
 // { dg-additional-options "-w" }
-// { dg-output "slice_access=3\n" }
+// { dg-output "slice_access=3\r*\n" }
+#![feature(intrinsics)]
+
 extern "rust-intrinsic" {
     #[rustc_const_stable(feature = "const_ptr_offset", since = "1.61.0")]
     fn offset<T>(dst: *const T, offset: isize) -> *const T;

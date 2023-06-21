@@ -622,7 +622,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   // set_symmetric_difference
   // set_union
 
-#if (__cplusplus >= 201103L) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#if __cplusplus >= 201103L
   template<typename _RAIter, typename _UGenerator>
     void
     shuffle(_RAIter, _RAIter, _UGenerator&&);

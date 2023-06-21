@@ -637,7 +637,7 @@ get_biv_step_1 (df_ref def, scalar_int_mode outer_mode, rtx reg,
 {
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
   rtx next, nextr;
-  enum rtx_code code;
+  enum rtx_code code, prev_code = UNKNOWN;
   rtx_insn *insn = DF_REF_INSN (def);
   df_ref next_def;
   enum iv_grd_result res;
@@ -697,6 +697,27 @@ get_biv_step_1 (df_ref def, scalar_int_mode outer_mode, rtx reg,
 	return false;
 
       op0 = XEXP (rhs, 0);
+
+      /* rv64 wraps SImode arithmetic inside an extension to DImode.
+	 This matches the actual hardware semantics.  So peek inside
+	 the extension and see if we have simple arithmetic that we
+	 can analyze.  */
+      if (GET_CODE (op0) == PLUS)
+	{
+	  rhs = op0;
+	  op0 = XEXP (rhs, 0);
+	  op1 = XEXP (rhs, 1);
+
+	  if (CONSTANT_P (op0))
+	    std::swap (op0, op1);
+
+	  if (!simple_reg_p (op0) || !CONSTANT_P (op1))
+	    return false;
+
+	  prev_code = code;
+	  code = PLUS;
+	}
+
       if (!simple_reg_p (op0))
 	return false;
 
@@ -769,6 +790,11 @@ get_biv_step_1 (df_ref def, scalar_int_mode outer_mode, rtx reg,
       else
 	*outer_step = simplify_gen_binary (code, outer_mode,
 					   *outer_step, op1);
+
+      if (prev_code == SIGN_EXTEND)
+	*extend = IV_SIGN_EXTEND;
+      else if (prev_code == ZERO_EXTEND)
+	*extend = IV_ZERO_EXTEND;
       break;
 
     case SIGN_EXTEND:
@@ -2617,7 +2643,7 @@ iv_number_of_iterations (class loop *loop, rtx_insn *insn, rtx condition,
 	  d *= 2;
 	  size--;
 	}
-      bound = GEN_INT (((uint64_t) 1 << (size - 1 ) << 1) - 1);
+      bound = gen_int_mode (((uint64_t) 1 << (size - 1) << 1) - 1, mode);
 
       tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
       tmp = simplify_gen_binary (UMOD, mode, tmp1, gen_int_mode (d, mode));

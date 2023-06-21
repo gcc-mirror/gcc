@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-march=bonnell -Os -fPIC -fschedule-insns -w" } */
 
 void

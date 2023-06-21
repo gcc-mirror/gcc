@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-stack-clash-protection -g" } */
+/* { dg-options "-O2 -fno-stack-clash-protection -fno-cprop-registers -fdisable-rtl-combine -g" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #include <arm_sve.h>
@@ -29,7 +29,7 @@ callee_0 (int64_t *ptr, ...)
 /*
 ** caller_0:
 **	...
-**	ptrue	(p[0-7])\.d, vl7
+**	ptrue	(p[0-9]+)\.d, vl7
 **	...
 **	str	\1, \[x1\]
 **	...
@@ -66,7 +66,7 @@ callee_1 (int64_t *ptr, ...)
 /*
 ** caller_1:
 **	...
-**	ptrue	(p[0-7])\.d, vl7
+**	ptrue	(p[0-9]+)\.d, vl7
 **	...
 **	str	\1, \[x2\]
 **	...
@@ -108,7 +108,7 @@ callee_7 (int64_t *ptr, ...)
 /*
 ** caller_7:
 **	...
-**	ptrue	(p[0-7])\.d, vl7
+**	ptrue	(p[0-9]+)\.d, vl7
 **	...
 **	str	\1, \[x7\]
 **	...
@@ -155,7 +155,7 @@ callee_8 (int64_t *ptr, ...)
 /*
 ** caller_8:
 **	...
-**	ptrue	(p[0-7])\.d, vl7
+**	ptrue	(p[0-9]+)\.d, vl7
 **	...
 **	str	\1, \[(x[0-9]+)\]
 **	...

@@ -1810,9 +1810,9 @@ package body Checks is
                Determine_Range (Left, LOK, Llo, Lhi, Assume_Valid => True);
                LLB := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
 
-               if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
+               if (not ROK or else (Rlo <= (-1) and then (-1) <= Rhi))
                      and then
-                  ((not LOK) or else (Llo = LLB))
+                  (not LOK or else Llo = LLB)
                then
                   --  Ensure that expressions are not evaluated twice (once
                   --  for their runtime checks and once for their regular
@@ -1872,7 +1872,7 @@ package body Checks is
       then
          Set_Do_Division_Check (N, False);
 
-         if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
+         if not ROK or else (Rlo <= 0 and then 0 <= Rhi) then
             if Is_Floating_Point_Type (Etype (N)) then
                Opnd := Make_Real_Literal (Loc, Ureal_0);
             else
@@ -2727,7 +2727,7 @@ package body Checks is
       Par : Node_Id;
       S   : Entity_Id;
 
-      Check_Disabled : constant Boolean := (not Predicate_Enabled (Typ))
+      Check_Disabled : constant Boolean := not Predicate_Enabled (Typ)
         or else not Predicate_Check_In_Scope (N);
    begin
       S := Current_Scope;
@@ -3501,7 +3501,7 @@ package body Checks is
          --  for the subscript, and that convert will do the necessary validity
          --  check.
 
-         if (No_Check_Needed = Empty_Dimension_Set)
+         if No_Check_Needed = Empty_Dimension_Set
            or else not No_Check_Needed.Elements (Dimension)
          then
             Ensure_Valid (Sub, Holes_OK => True);
@@ -8437,7 +8437,18 @@ package body Checks is
               Right_Opnd => Make_Null (Loc)),
           Reason => CE_Access_Check_Failed));
 
-      Mark_Non_Null;
+      --  Mark the entity of N "non-null" except when assertions are enabled -
+      --  since expansion becomes much more complicated (especially when it
+      --  comes to contracts) due to the generation of wrappers and wholesale
+      --  moving of declarations and statements which may happen.
+
+      --  Additionally, it is assumed that extra checks will exist with
+      --  assertions enabled so some potentially redundant checks are
+      --  acceptable.
+
+      if not Assertions_Enabled then
+         Mark_Non_Null;
+      end if;
    end Install_Null_Excluding_Check;
 
    -----------------------------------------
@@ -10815,6 +10826,8 @@ package body Checks is
 
                if not Check_Added
                  and then Is_Fixed_Lower_Bound_Index_Subtype (T_Typ)
+                 and then Known_LB
+                 and then Known_T_LB
                  and then Expr_Value (LB) /= Expr_Value (T_LB)
                then
                   Add_Check

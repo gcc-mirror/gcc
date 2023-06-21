@@ -124,6 +124,8 @@ private
    --  Setup proper set of -L's for this configuration
 
    type Address is mod Memory_Size;
+   for Address'Size use Standard'Address_Size;
+
    Null_Address : constant Address := 0;
 
    --------------------------------------

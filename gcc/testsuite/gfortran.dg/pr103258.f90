@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-additional-options "-Wno-pedantic" }
 !
 ! Test from PR103258.  This used to ICE due to incorrectly marking the

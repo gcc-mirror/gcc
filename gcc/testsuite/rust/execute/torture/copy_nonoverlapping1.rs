@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 extern "rust-intrinsic" {
     pub fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize);
 }

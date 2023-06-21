@@ -178,6 +178,7 @@ public:
   void visit (AST::TuplePattern &);
   void visit (AST::GroupedPattern &);
   void visit (AST::SlicePattern &);
+  void visit (AST::AltPattern &);
 
   void visit (AST::EmptyStmt &);
   void visit (AST::LetStmt &);

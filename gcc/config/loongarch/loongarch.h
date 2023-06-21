@@ -612,6 +612,25 @@ enum reg_class
 
 #define CONST_LOW_PART(VALUE) ((VALUE) - CONST_HIGH_PART (VALUE))
 
+/* True if VALUE can be added onto a register with one addu16i.d
+   instruction.  */
+
+#define ADDU16I_OPERAND(VALUE)			\
+  (TARGET_64BIT && (((VALUE) & 0xffff) == 0	\
+   && IMM16_OPERAND ((HOST_WIDE_INT) (VALUE) / 65536)))
+
+/* True if VALUE can be added onto a register with two addi.{d/w}
+   instructions, but not one addi.{d/w} instruction.  */
+#define DUAL_IMM12_OPERAND(VALUE) \
+  (IN_RANGE ((VALUE), -4096, 4094) && !IMM12_OPERAND (VALUE))
+
+/* True if VALUE can be added onto a register with two addu16i.d
+   instruction, but not one addu16i.d instruction.  */
+#define DUAL_ADDU16I_OPERAND(VALUE)		\
+  (TARGET_64BIT && (((VALUE) & 0xffff) == 0	\
+   && !ADDU16I_OPERAND (VALUE)			\
+   && IN_RANGE ((VALUE) / 65536, -0x10000, 0xfffe)))
+
 #define IMM12_INT(X) IMM12_OPERAND (INTVAL (X))
 #define IMM12_INT_UNSIGNED(X) IMM12_OPERAND_UNSIGNED (INTVAL (X))
 #define LU12I_INT(X) LU12I_OPERAND (INTVAL (X))
@@ -836,7 +855,6 @@ typedef struct {
    1 is the default; other values are interpreted relative to that.  */
 
 #define BRANCH_COST(speed_p, predictable_p) loongarch_branch_cost
-#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* Return the asm template for a conditional branch instruction.
    OPCODE is the opcode's mnemonic and OPERANDS is the asm template for
@@ -1044,21 +1062,21 @@ typedef struct {
 
 /* The maximum number of bytes that can be copied by one iteration of
    a cpymemsi loop; see loongarch_block_move_loop.  */
-#define LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER (UNITS_PER_WORD * 4)
+#define LARCH_MAX_MOVE_OPS_PER_LOOP_ITER 4
 
 /* The maximum number of bytes that can be copied by a straight-line
    implementation of cpymemsi; see loongarch_block_move_straight.  We want
    to make sure that any loop-based implementation will iterate at
    least twice.  */
-#define LARCH_MAX_MOVE_BYTES_STRAIGHT (LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER * 2)
+#define LARCH_MAX_MOVE_OPS_STRAIGHT (LARCH_MAX_MOVE_OPS_PER_LOOP_ITER * 2)
 
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.
 */
-#define LARCH_CALL_RATIO 8
+#define LARCH_CALL_RATIO 6
 
 /* Any loop-based implementation of cpymemsi will have at least
-   LARCH_MAX_MOVE_BYTES_STRAIGHT / UNITS_PER_WORD memory-to-memory
+   LARCH_MAX_MOVE_OPS_PER_LOOP_ITER memory-to-memory
    moves, so allow individual copies of fewer elements.
 
    When cpymemsi is not available, use a value approximating
@@ -1069,9 +1087,7 @@ typedef struct {
    value of LARCH_CALL_RATIO to take that into account.  */
 
 #define MOVE_RATIO(speed) \
-  (HAVE_cpymemsi \
-   ? LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD \
-   : CLEAR_RATIO (speed) / 2)
+  (HAVE_cpymemsi ? LARCH_MAX_MOVE_OPS_PER_LOOP_ITER : CLEAR_RATIO (speed) / 2)
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
@@ -1131,6 +1147,8 @@ struct GTY (()) machine_function
   /* The current frame information, calculated by loongarch_compute_frame_info.
    */
   struct loongarch_frame_info frame;
+
+  bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
 };
 #endif
 

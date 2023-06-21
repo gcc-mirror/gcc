@@ -47,7 +47,7 @@ FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
-FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, Mark ;
+FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, InitStringChar, Mark ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError3 ;
@@ -143,6 +143,7 @@ FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBloc
 
 FROM M2ALU IMPORT Addn, Sub, Equ, GreEqu, Gre, Less, PushInt, PushCard, ConvertToType,
                   PushIntegerTree, PopIntegerTree, PopRealTree, ConvertToInt, PopSetTree,
+                  PopChar,
                   IsConstructorDependants, WalkConstructorDependants,
                   PopConstructorTree, PopComplexTree, PutConstructorSolved,
                   ChangeToConstructor, EvaluateValue, TryEvaluateValue ;
@@ -1562,16 +1563,24 @@ END DeclareStringConstant ;
 PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
    size: CARDINAL ;
+   ch  : CHAR ;
 BEGIN
    DeclareConstant (tokenno, sym) ;
-   size := GetStringLength (sym) ;
-   IF size > 1
+   IF IsConst (sym) AND (GetSType (sym) = Char)
    THEN
-      (* will be a string anyway *)
-      RETURN Tree (Mod2Gcc (sym))
+      PushValue (sym) ;
+      ch := PopChar (tokenno) ;
+      RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
    ELSE
-      RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
-                                  GetStringLength (sym))
+      size := GetStringLength (sym) ;
+      IF size > 1
+      THEN
+         (* will be a string anyway *)
+         RETURN Tree (Mod2Gcc (sym))
+      ELSE
+         RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
+                                     GetStringLength (sym))
+      END
    END
 END PromoteToString ;
 
@@ -3153,10 +3162,11 @@ END FindOuterModule ;
 
 
 (*
-   DoVariableDeclaration -
+   DoVariableDeclaration - create a corresponding gcc variable and add the association
+                           between the front end symbol var and the gcc tree.
 *)
 
-PROCEDURE DoVariableDeclaration (var, module: CARDINAL; name: ADDRESS;
+PROCEDURE DoVariableDeclaration (var: CARDINAL; name: ADDRESS;
                                  isImported, isExported,
                                  isTemporary, isGlobal: BOOLEAN;
                                  scope: Tree) ;
@@ -3174,7 +3184,7 @@ BEGIN
       (*
         There are two issues to deal with:
 
-        (i)   LeftValue is really a pointer to GetSType(Son), which is built
+        (i)   LeftValue is really a pointer to GetSType (var), which is built
               here.
         (ii)  Front end might have specified the back end use a particular
               data type, in which case we use the specified type.
@@ -3183,7 +3193,7 @@ BEGIN
       varType := SkipType (GetVarBackEndType (var)) ;
       IF varType=NulSym
       THEN
-         (* we have not explicity told back end the type, so build it *)
+         (* We have not explicity told back end the type, so build it.  *)
          varType := GetSType (var) ;
          IF IsVariableAtAddress (var)
          THEN
@@ -3192,6 +3202,7 @@ BEGIN
             type := BuildPointerType (Mod2Gcc (varType))
          END
       ELSE
+         (* We have been requested to use varType.  *)
          type := Mod2Gcc (varType)
       END ;
       Assert (AllDependantsFullyDeclared (varType))
@@ -3199,7 +3210,6 @@ BEGIN
       type := Mod2Gcc (GetDType (var))
    END ;
    location := TokenToLocation (GetDeclaredMod (var)) ;
-   (* The M2LINK module global variables are a special case and have initializers.  *)
    PreAddModGcc (var, DeclareKnownVariable (location,
                                             name, type,
                                             isExported, isImported, isTemporary,
@@ -3244,7 +3254,7 @@ BEGIN
       decl := FindOuterModule (variable) ;
       Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
       PushBinding (ModSym) ;
-      DoVariableDeclaration (variable, decl,
+      DoVariableDeclaration (variable,
                              KeyToCharStar (GetFullSymName (variable)),
                              (* in Modula-2 we are allowed to import from ourselves, but we do not present this to GCC *)
                              IsEffectivelyImported(ModSym, variable) AND (GetMainModule () # decl),
@@ -3272,7 +3282,7 @@ BEGIN
       decl := FindOuterModule (variable) ;
       Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
       PushBinding (mainModule) ;
-      DoVariableDeclaration (variable, decl,
+      DoVariableDeclaration (variable,
                              KeyToCharStar (GetFullSymName (variable)),
                              (NOT IsSourceSeen (decl)) AND
                              IsEffectivelyImported (mainModule, variable) AND (GetMainModule () # decl),
@@ -3368,7 +3378,7 @@ END DeclareImportedVariablesWholeProgram ;
 PROCEDURE DeclareLocalVariable (var: CARDINAL) ;
 BEGIN
    Assert (AllDependantsFullyDeclared (var)) ;
-   DoVariableDeclaration (var, NulSym,
+   DoVariableDeclaration (var,
                           KeyToCharStar (GetFullSymName (var)),
                           FALSE,  (* local variables cannot be imported *)
                           FALSE,  (* or exported *)
@@ -3412,7 +3422,7 @@ BEGIN
    Var := GetNth (sym, i) ;
    WHILE Var # NulSym DO
       Assert (AllDependantsFullyDeclared (GetSType (Var))) ;
-      DoVariableDeclaration (Var, NulSym,
+      DoVariableDeclaration (Var,
                              KeyToCharStar (GetFullSymName (Var)),
                              FALSE,   (* inner module variables cannot be imported *)
                              FALSE,   (* or exported (as far as GCC is concerned)  *)

@@ -231,6 +231,7 @@ public:
   virtual void visit (AST::TuplePattern &pattern);
   virtual void visit (AST::GroupedPattern &pattern);
   virtual void visit (AST::SlicePattern &pattern);
+  virtual void visit (AST::AltPattern &pattern);
 
   // rust-stmt.h
   virtual void visit (AST::EmptyStmt &stmt);

@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (lsl_32_u32_m_tied1, svuint32_t,
 		z0 = svlsl_m (p0, z0, 32))
 
 /*
-** lsl_32_u32_m_untied: { xfail *-*-* }
+** lsl_32_u32_m_untied:
 **	mov	(z[0-9]+\.s), #32
 **	movprfx	z0, z1
 **	lsl	z0\.s, p0/m, z0\.s, \1

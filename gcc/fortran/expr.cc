@@ -798,7 +798,7 @@ gfc_copy_ref (gfc_ref *src)
 
 /* Detect whether an expression has any vector index array references.  */
 
-int
+bool
 gfc_has_vector_index (gfc_expr *e)
 {
   gfc_ref *ref;
@@ -809,6 +809,16 @@ gfc_has_vector_index (gfc_expr *e)
 	if (ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
 	  return 1;
   return 0;
+}
+
+
+bool
+gfc_is_ptr_fcn (gfc_expr *e)
+{
+  return e != NULL && e->expr_type == EXPR_FUNCTION
+	      && (gfc_expr_attr (e).pointer
+		  || (e->ts.type == BT_CLASS
+		      && CLASS_DATA (e)->attr.class_pointer));
 }
 
 
@@ -888,7 +898,7 @@ gfc_kind_max (gfc_expr *e1, gfc_expr *e2)
 
 /* Returns nonzero if the type is numeric, zero otherwise.  */
 
-static int
+static bool
 numeric_type (bt type)
 {
   return type == BT_COMPLEX || type == BT_REAL || type == BT_INTEGER;
@@ -897,7 +907,7 @@ numeric_type (bt type)
 
 /* Returns nonzero if the typespec is a numeric type, zero otherwise.  */
 
-int
+bool
 gfc_numeric_ts (gfc_typespec *ts)
 {
   return numeric_type (ts->type);
@@ -1539,6 +1549,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   mpz_init_set_ui (delta_mpz, one);
   mpz_init_set_ui (nelts, one);
   mpz_init (tmp_mpz);
+  mpz_init (ptr);
 
   /* Do the initialization now, so that we can cleanup without
      keeping track of where we were.  */
@@ -1682,7 +1693,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       mpz_mul (delta_mpz, delta_mpz, tmp_mpz);
     }
 
-  mpz_init (ptr);
   cons = gfc_constructor_first (base);
 
   /* Now clock through the array reference, calculating the index in
@@ -1735,7 +1745,8 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 		     "at %L requires an increase of the allowed %d "
 		     "upper limit.  See %<-fmax-array-constructor%> "
 		     "option", &expr->where, flag_max_array_constructor);
-	  return false;
+	  t = false;
+	  goto cleanup;
 	}
 
       cons = gfc_constructor_lookup (base, limit);
@@ -1750,8 +1761,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 				   gfc_copy_expr (cons->expr), NULL);
     }
 
-  mpz_clear (ptr);
-
 cleanup:
 
   mpz_clear (delta_mpz);
@@ -1765,6 +1774,7 @@ cleanup:
       mpz_clear (ctr[d]);
       mpz_clear (stride[d]);
     }
+  mpz_clear (ptr);
   gfc_constructor_free (base);
   return t;
 }
@@ -3504,8 +3514,6 @@ check_restricted (gfc_expr *e)
 	    || sym->attr.implied_index
 	    || sym->attr.flavor == FL_PARAMETER
 	    || is_parent_of_current_ns (sym->ns)
-	    || (sym->ns->proc_name != NULL
-		  && sym->ns->proc_name->attr.flavor == FL_MODULE)
 	    || (gfc_is_formal_arg () && (sym->ns == gfc_current_ns)))
 	{
 	  t = true;
@@ -3658,7 +3666,7 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
 /* Given an assignable expression and an arbitrary expression, make
    sure that the assignment can take place.  Only add a call to the intrinsic
    conversion routines, when allow_convert is set.  When this assign is a
-   coarray call, then the convert is done by the coarray routine implictly and
+   coarray call, then the convert is done by the coarray routine implicitly and
    adding the intrinsic conversion would do harm in most cases.  */
 
 bool
@@ -5849,9 +5857,9 @@ gfc_get_corank (gfc_expr *e)
   if (!gfc_is_coarray (e))
     return 0;
 
-  if (e->ts.type == BT_CLASS && e->ts.u.derived->components)
-    corank = e->ts.u.derived->components->as
-	     ? e->ts.u.derived->components->as->corank : 0;
+  if (e->ts.type == BT_CLASS && CLASS_DATA (e))
+    corank = CLASS_DATA (e)->as
+	     ? CLASS_DATA (e)->as->corank : 0;
   else
     corank = e->symtree->n.sym->as ? e->symtree->n.sym->as->corank : 0;
 
@@ -6258,7 +6266,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       && !(sym->attr.flavor == FL_PROCEDURE && sym == sym->result)
       && !(sym->attr.flavor == FL_PROCEDURE && sym->attr.proc_pointer)
       && !(sym->attr.flavor == FL_PROCEDURE
-	   && sym->attr.function && sym->attr.pointer))
+	   && sym->attr.function && attr.pointer))
     {
       if (context)
 	gfc_error ("%qs in variable definition context (%s) at %L is not"
@@ -6471,6 +6479,22 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			   name, &e->where, context);
 	    }
 	  return false;
+	}
+      else if (context && gfc_is_ptr_fcn (assoc->target))
+	{
+	  if (!gfc_notify_std (GFC_STD_F2018, "%qs at %L associated to "
+			       "pointer function target being used in a "
+			       "variable definition context (%s)", name,
+			       &e->where, context))
+	    return false;
+	  else if (gfc_has_vector_index (e))
+	    {
+	      gfc_error ("%qs at %L associated to vector-indexed target"
+			 " cannot be used in a variable definition"
+			 " context (%s)",
+			 name, &e->where, context);
+	      return false;
+	    }
 	}
 
       /* Target must be allowed to appear in a variable definition context.  */

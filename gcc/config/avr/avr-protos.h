@@ -57,7 +57,11 @@ extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
-extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
+extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, int*);
+extern const char *avr_out_extr (rtx_insn *, rtx*, int*);
+extern const char *avr_out_extr_not (rtx_insn *, rtx*, int*);
+extern const char *avr_out_plus_set_ZN (rtx*, int*);
+extern const char *avr_out_cmp_ext (rtx*, enum rtx_code, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -112,8 +116,6 @@ extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
-extern int avr_simplify_comparison_p (machine_mode mode,
-				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 				rtx operands[], int *len, int t_len);
@@ -145,6 +147,7 @@ extern rtx tmp_reg_rtx;
 extern rtx zero_reg_rtx;
 extern rtx all_regs_rtx[32];
 extern rtx rampz_rtx;
+extern rtx cc_reg_rtx;
 
 #endif /* RTX_CODE */
 
@@ -160,6 +163,7 @@ class rtl_opt_pass;
 extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_ifelse (gcc::context *);
 
 /* From avr-log.cc */
 

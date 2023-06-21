@@ -134,6 +134,7 @@ static void cris_init_libfuncs (void);
 static unsigned int cris_postdbr_cmpelim (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
+static reg_class_t cris_spill_class (reg_class_t, machine_mode);
 
 static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
@@ -215,14 +216,14 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
+
+#undef TARGET_SPILL_CLASS
+#define TARGET_SPILL_CLASS cris_spill_class
 
 /* We don't define TARGET_FIXED_CONDITION_CODE_REGS, as at the time of
    this writing, it has an effect only on pre-reload CSE and when
@@ -432,7 +433,7 @@ cris_postdbr_cmpelim ()
 		  machine_mode ccmode = GET_MODE (src);
 		  rtx modeadjusted_dccr
 		    = (ccmode == CCmode ? dccr
-		       : gen_rtx_REG (CCmode, CRIS_CC0_REGNUM));
+		       : gen_rtx_REG (ccmode, CRIS_CC0_REGNUM));
 		  rtx compare
 		    /* We don't need to copy_rtx pat: we're going to
 		       delete that insn. */
@@ -1684,6 +1685,14 @@ cris_preferred_reload_class (rtx x, reg_class_t rclass)
   return rclass;
 }
 
+/* Worker function for TARGET_SPILL_CLASS.  */
+
+static reg_class_t
+cris_spill_class (reg_class_t /* orig_class */, machine_mode)
+{
+  return ALL_REGS;
+}
+
 /* Worker function for TARGET_REGISTER_MOVE_COST.  */
 
 static int
@@ -1884,7 +1893,28 @@ cris_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 	if (val == 0)
 	  *total = 0;
 	else if (val < 32 && val >= -32)
-	  *total = 1;
+	  switch (outer_code)
+	    {
+	      /* For modes that fit in one register we tell they cost
+		 the same as with register operands.  DImode operations
+		 needs careful consideration for more basic reasons:
+		 shifting by a non-word-size amount needs more
+		 operations than an addition by a register pair.
+		 Deliberately excluding SET, PLUS and comparisons and
+		 also not including the full -64..63 range for (PLUS
+		 and) MINUS.  */
+	    case MINUS: case ASHIFT: case LSHIFTRT:
+	    case ASHIFTRT: case AND: case IOR:
+	      if (GET_MODE_SIZE(mode) <= UNITS_PER_WORD)
+		{
+		  *total = 0;
+		  break;
+		}
+	      /* FALL THROUGH.  */
+	    default:
+	      *total = 1;
+	      break;
+	    }
 	/* Eight or 16 bits are a word and cycle more expensive.  */
 	else if (val <= 32767 && val >= -32768)
 	  *total = 2;
@@ -2116,12 +2146,12 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   /* The operands may be swapped.  Canonicalize them in reg_rtx and
      val_rtx, where reg_rtx always is a reg (for this constraint to
      match).  */
-  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+  if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
     reg_rtx = val_rtx, val_rtx = ops[rreg];
 
   /* Don't forget to check that reg_rtx really is a reg.  If it isn't,
      we have no business.  */
-  if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+  if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
     return 0;
 
   /* Don't do this when -mno-split.  */
@@ -2146,9 +2176,9 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       /* Check if the lvalue register is the same as the "other
 	 operand".  If so, the result is undefined and we shouldn't do
 	 this.  FIXME:  Check again.  */
-      if ((cris_base_p (ops[lreg], reload_in_progress || reload_completed)
+      if ((cris_base_p (ops[lreg], lra_in_progress || reload_completed)
 	   && cris_base_p (ops[other_op],
-			   reload_in_progress || reload_completed)
+			   lra_in_progress || reload_completed)
 	   && REGNO (ops[lreg]) == REGNO (ops[other_op]))
 	  || rtx_equal_p (ops[other_op], ops[lreg]))
       return 0;
@@ -2161,7 +2191,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
     return 0;
 
   if (code == PLUS
-      && ! cris_base_p (val_rtx, reload_in_progress || reload_completed))
+      && ! cris_base_p (val_rtx, lra_in_progress || reload_completed))
     {
 
       /* Do not allow rx = rx + n if a normal add or sub with same size
@@ -2177,13 +2207,13 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 
       if (MEM_P (val_rtx)
 	  && cris_base_or_autoincr_p (XEXP (val_rtx, 0),
-				      reload_in_progress || reload_completed))
+				      lra_in_progress || reload_completed))
 	return 1;
 
       if (GET_CODE (val_rtx) == SIGN_EXTEND
 	  && MEM_P (XEXP (val_rtx, 0))
 	  && cris_base_or_autoincr_p (XEXP (XEXP (val_rtx, 0), 0),
-				      reload_in_progress || reload_completed))
+				      lra_in_progress || reload_completed))
 	return 1;
 
       /* If we got here, it's not a valid addressing mode.  */
@@ -2192,7 +2222,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   else if (code == MULT
 	   || (code == PLUS
 	       && cris_base_p (val_rtx,
-			       reload_in_progress || reload_completed)))
+			       lra_in_progress || reload_completed)))
     {
       /* Do not allow rx = rx + ry.S, since it doesn't give better code.  */
       if (rtx_equal_p (ops[lreg], reg_rtx)
@@ -2204,7 +2234,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 	return 0;
 
       /* Only allow  r + ...  */
-      if (! cris_base_p (reg_rtx, reload_in_progress || reload_completed))
+      if (! cris_base_p (reg_rtx, lra_in_progress || reload_completed))
 	return 0;
 
       /* If we got here, all seems ok.
@@ -2603,6 +2633,107 @@ cris_split_movdx (rtx *operands)
   val = get_insns ();
   end_sequence ();
   return val;
+}
+
+/* Try to split the constant WVAL into a number of separate insns of less cost
+   for the rtx operation CODE and the metric SPEED than using val as-is.
+   Generate those insns if GENERATE.  DEST holds the destination, and OP holds
+   the other operand for binary operations; NULL when CODE is SET.  Return the
+   number of insns for the operation or 0 if the constant can't be usefully
+   split (because it's already minimal or is not within range for the known
+   methods).  Parts stolen from arm.cc.  */
+
+int
+cris_split_constant (HOST_WIDE_INT wval, enum rtx_code code,
+		     machine_mode mode, bool speed ATTRIBUTE_UNUSED,
+		     bool generate, rtx dest, rtx op)
+{
+  int32_t ival = (int32_t) wval;
+  uint32_t uval = (uint32_t) wval;
+
+  /* Can we do with two addq or two subq, improving chances of filling a
+     delay-slot?  At worst, we break even, both performance and
+     size-wise.  */
+  if (code == PLUS
+      && (IN_RANGE (ival, -63 * 2, -63 - 1)
+	  || IN_RANGE (ival, 63 + 1, 63 * 2)))
+    {
+      if (generate)
+	{
+	  int sign = ival < 0 ? -1 : 1;
+	  int aval = abs (ival);
+
+	  if (mode != SImode)
+	    {
+	      dest = gen_rtx_REG (SImode, REGNO (dest));
+	      op = gen_rtx_REG (SImode, REGNO (op));
+	    }
+	  emit_insn (gen_addsi3 (dest, op, GEN_INT (63 * sign)));
+	  emit_insn (gen_addsi3 (dest, op, GEN_INT ((aval - 63) * sign)));
+	}
+      return 2;
+    }
+
+  if (code != AND || IN_RANGE (ival, -32, 31)
+      /* Implemented using movu.[bw] elsewhere.  */
+      || ival == 255 || ival == 65535
+      /* Implemented using clear.[bw] elsewhere.  */
+      || uval == 0xffffff00 || uval == 0xffff0000)
+    return 0;
+
+  int i;
+
+  int msb_zeros = 0;
+  int lsb_zeros = 0;
+
+  /* Count number of leading zeros.  */
+  for (i = 31; i >= 0; i--)
+    {
+      if ((uval & (1 << i)) == 0)
+	msb_zeros++;
+      else
+	break;
+    }
+
+  /* Count number of trailing zero's.  */
+  for (i = 0; i <= 31; i++)
+    {
+      if ((uval & (1 << i)) == 0)
+	lsb_zeros++;
+      else
+	break;
+    }
+
+  /* Is there a lowest or highest part that is zero (but not both)
+     and the non-zero part is just ones?  */
+  if (exact_log2 ((uval >> lsb_zeros) + 1) > 0
+      && (lsb_zeros != 0) != (msb_zeros != 0))
+    {
+      /* If so, we can shift OP in the zero direction, then back.  We don't
+	 nominally win anything for uval < 256, except that the insns are split
+	 into slottable insns so it's always beneficial.  */
+      if (generate)
+	{
+	  if (mode != SImode)
+	    {
+	      dest = gen_rtx_REG (SImode, REGNO (dest));
+	      op = gen_rtx_REG (SImode, REGNO (op));
+	    }
+	  if (msb_zeros)
+	    {
+	      emit_insn (gen_ashlsi3 (dest, op, GEN_INT (msb_zeros)));
+	      emit_insn (gen_lshrsi3 (dest, op, GEN_INT (msb_zeros)));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lshrsi3 (dest, op, GEN_INT (lsb_zeros)));
+	      emit_insn (gen_ashlsi3 (dest, op, GEN_INT (lsb_zeros)));
+	    }
+	}
+      return 2;
+    }
+
+  return 0;
 }
 
 /* Try to change a comparison against a constant to be against zero, and

@@ -120,22 +120,9 @@
   /* Invert the condition and take else-block.  */
   rtx_code code = GET_CODE (operands[4]);
   code = (code == EQ) ? NE : EQ;
-  operands[4] = gen_rtx_fmt_ee (code, VOIDmode, const0_rtx, const0_rtx);
+  operands[4] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], const0_rtx);
   return "th.mv%C4z\t%0,%z3,%1";
 }
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "<GPR:MODE>")])
-
-(define_insn "*th_cond_gpr_mov<GPR:mode><GPR2:mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=r,r")
-	(if_then_else:GPR
-	 (match_operand:GPR2 1 "register_operand" "r,r")
-	 (match_operand:GPR 2 "reg_or_0_operand" "rJ,0")
-	 (match_operand:GPR 3 "reg_or_0_operand" "0,rJ")))]
-  "TARGET_XTHEADCONDMOV"
-  "@
-   th.mvnez\t%0,%z2,%1
-   th.mveqz\t%0,%z3,%1"
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 

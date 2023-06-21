@@ -514,13 +514,12 @@ get_temporary_buffer(5, (int*)0);
     you won't notice.)
   </para>
   <para>
-    Probably the only times you'll be interested in demangling at runtime
-    are when you're seeing <code>typeid</code> strings in RTTI, or when
-    you're handling the runtime-support exception classes.  For example:
+    Probably the only time you'll be interested in demangling at runtime
+    is when you're seeing <code>typeid</code> strings in RTTI.  For example:
   </para>
    <programlisting>
-#include &lt;exception&gt;
 #include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
 #include &lt;cxxabi.h&gt;
 
 struct empty { };
@@ -528,29 +527,18 @@ struct empty { };
 template &lt;typename T, int N&gt;
   struct bar { };
 
-
 int main()
 {
   int     status;
   char   *realname;
 
-  // exception classes not in &lt;stdexcept&gt;, thrown by the implementation
-  // instead of the user
-  std::bad_exception  e;
-  realname = abi::__cxa_demangle(e.what(), 0, 0, &amp;status);
-  std::cout &lt;&lt; e.what() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
-  free(realname);
-
-
   // typeid
   bar&lt;empty,17&gt;          u;
   const std::type_info  &amp;ti = typeid(u);
 
-  realname = abi::__cxa_demangle(ti.name(), 0, 0, &amp;status);
+  realname = abi::__cxa_demangle(ti.name(), NULL, NULL, &amp;status);
   std::cout &lt;&lt; ti.name() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
-  free(realname);
-
-  return 0;
+  std::free(realname);
 }
    </programlisting>
    <para>
@@ -559,7 +547,6 @@ int main()
 
    <screen>
    <computeroutput>
-      St13bad_exception       =&gt; std::bad_exception   : 0
       3barI5emptyLi17EE       =&gt; bar&lt;empty, 17&gt;       : 0
    </computeroutput>
    </screen>
@@ -568,8 +555,8 @@ int main()
      The demangler interface is described in the source documentation
      linked to above.  It is actually written in C, so you don't need to
      be writing C++ in order to demangle C++.  (That also means we have to
-     use crummy memory management facilities, so don't forget to free()
-     the returned char array.)
+     use crummy memory management facilities, so don't forget to
+     <code>free()</code> the returned char array.)
    </para>
 </chapter>
 

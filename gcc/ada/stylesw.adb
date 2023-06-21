@@ -58,12 +58,8 @@ package body Stylesw is
                      "I" &  -- check mode IN
                      "S" &  -- check separate lines after THEN or ELSE
                      "u" &  -- check no unnecessary blank lines
-                     "x";   -- check extra parentheses around conditionals
-
-   --  Note: we intend GNAT_Style to also include the following, but we do
-   --  not yet have the whole tool suite clean with respect to this.
-
-   --                "B" &  -- check boolean operators
+                     "x" &  -- check extra parentheses around conditionals
+                     "z";   -- check parens not required by precedence rules.
 
    -------------------------------
    -- Reset_Style_Check_Options --
@@ -71,33 +67,34 @@ package body Stylesw is
 
    procedure Reset_Style_Check_Options is
    begin
-      Style_Check_Indentation           := 0;
-      Style_Check_Array_Attribute_Index := False;
-      Style_Check_Attribute_Casing      := False;
-      Style_Check_Blanks_At_End         := False;
-      Style_Check_Blank_Lines           := False;
-      Style_Check_Boolean_And_Or        := False;
-      Style_Check_Comments              := False;
-      Style_Check_DOS_Line_Terminator   := False;
-      Style_Check_Mixed_Case_Decls      := False;
-      Style_Check_End_Labels            := False;
-      Style_Check_Form_Feeds            := False;
-      Style_Check_Horizontal_Tabs       := False;
-      Style_Check_If_Then_Layout        := False;
-      Style_Check_Keyword_Casing        := False;
-      Style_Check_Layout                := False;
-      Style_Check_Max_Line_Length       := False;
-      Style_Check_Max_Nesting_Level     := False;
-      Style_Check_Missing_Overriding    := False;
-      Style_Check_Mode_In               := False;
-      Style_Check_Order_Subprograms     := False;
-      Style_Check_Pragma_Casing         := False;
-      Style_Check_References            := False;
-      Style_Check_Separate_Stmt_Lines   := False;
-      Style_Check_Specs                 := False;
-      Style_Check_Standard              := False;
-      Style_Check_Tokens                := False;
-      Style_Check_Xtra_Parens           := False;
+      Style_Check_Indentation            := 0;
+      Style_Check_Array_Attribute_Index  := False;
+      Style_Check_Attribute_Casing       := False;
+      Style_Check_Blanks_At_End          := False;
+      Style_Check_Blank_Lines            := False;
+      Style_Check_Boolean_And_Or         := False;
+      Style_Check_Comments               := False;
+      Style_Check_DOS_Line_Terminator    := False;
+      Style_Check_Mixed_Case_Decls       := False;
+      Style_Check_End_Labels             := False;
+      Style_Check_Form_Feeds             := False;
+      Style_Check_Horizontal_Tabs        := False;
+      Style_Check_If_Then_Layout         := False;
+      Style_Check_Keyword_Casing         := False;
+      Style_Check_Layout                 := False;
+      Style_Check_Max_Line_Length        := False;
+      Style_Check_Max_Nesting_Level      := False;
+      Style_Check_Missing_Overriding     := False;
+      Style_Check_Mode_In                := False;
+      Style_Check_Order_Subprograms      := False;
+      Style_Check_Pragma_Casing          := False;
+      Style_Check_References             := False;
+      Style_Check_Separate_Stmt_Lines    := False;
+      Style_Check_Specs                  := False;
+      Style_Check_Standard               := False;
+      Style_Check_Tokens                 := False;
+      Style_Check_Xtra_Parens            := False;
+      Style_Check_Xtra_Parens_Precedence := False;
    end Reset_Style_Check_Options;
 
    ---------------------
@@ -187,6 +184,7 @@ package body Stylesw is
       Add ('t', Style_Check_Tokens);
       Add ('u', Style_Check_Blank_Lines);
       Add ('x', Style_Check_Xtra_Parens);
+      Add ('z', Style_Check_Xtra_Parens_Precedence);
 
       if Style_Check_Max_Line_Length then
          P := P + 1;
@@ -426,43 +424,46 @@ package body Stylesw is
                     or else Options (Err_Col) not in '0' .. '9';
                end loop;
 
-               Style_Check_Max_Line_Length       := Style_Max_Line_Length /= 0;
+               Style_Check_Max_Line_Length := Style_Max_Line_Length /= 0;
 
             when 'n' =>
-               Style_Check_Standard              := True;
+               Style_Check_Standard               := True;
 
             when 'N' =>
                Reset_Style_Check_Options;
 
             when 'o' =>
-               Style_Check_Order_Subprograms     := True;
+               Style_Check_Order_Subprograms      := True;
 
             when 'O' =>
-               Style_Check_Missing_Overriding    := True;
+               Style_Check_Missing_Overriding     := True;
 
             when 'p' =>
-               Style_Check_Pragma_Casing         := True;
+               Style_Check_Pragma_Casing          := True;
 
             when 'r' =>
-               Style_Check_References            := True;
+               Style_Check_References             := True;
 
             when 's' =>
-               Style_Check_Specs                 := True;
+               Style_Check_Specs                  := True;
 
             when 'S' =>
-               Style_Check_Separate_Stmt_Lines   := True;
+               Style_Check_Separate_Stmt_Lines    := True;
 
             when 't' =>
-               Style_Check_Tokens                := True;
+               Style_Check_Tokens                 := True;
 
             when 'u' =>
-               Style_Check_Blank_Lines           := True;
+               Style_Check_Blank_Lines            := True;
 
             when 'x' =>
-               Style_Check_Xtra_Parens           := True;
+               Style_Check_Xtra_Parens            := True;
 
             when 'y' =>
                Set_Default_Style_Check_Options;
+
+            when 'z' =>
+               Style_Check_Xtra_Parens_Precedence := True;
 
             when ' ' =>
                null;
@@ -491,89 +492,92 @@ package body Stylesw is
                Style_Check_Indentation := 0;
 
             when 'a' =>
-               Style_Check_Attribute_Casing      := False;
+               Style_Check_Attribute_Casing       := False;
 
             when 'A' =>
-               Style_Check_Array_Attribute_Index := False;
+               Style_Check_Array_Attribute_Index  := False;
 
             when 'b' =>
-               Style_Check_Blanks_At_End         := False;
+               Style_Check_Blanks_At_End          := False;
 
             when 'B' =>
-               Style_Check_Boolean_And_Or        := False;
+               Style_Check_Boolean_And_Or         := False;
 
             when 'c' | 'C' =>
-               Style_Check_Comments              := False;
+               Style_Check_Comments               := False;
 
             when 'd' =>
-               Style_Check_DOS_Line_Terminator   := False;
+               Style_Check_DOS_Line_Terminator    := False;
 
             when 'D' =>
-               Style_Check_Mixed_Case_Decls      := False;
+               Style_Check_Mixed_Case_Decls       := False;
 
             when 'e' =>
-               Style_Check_End_Labels            := False;
+               Style_Check_End_Labels             := False;
 
             when 'f' =>
-               Style_Check_Form_Feeds            := False;
+               Style_Check_Form_Feeds             := False;
 
             when 'g' =>
                Reset_Style_Check_Options;
 
             when 'h' =>
-               Style_Check_Horizontal_Tabs       := False;
+               Style_Check_Horizontal_Tabs        := False;
 
             when 'i' =>
-               Style_Check_If_Then_Layout        := False;
+               Style_Check_If_Then_Layout         := False;
 
             when 'I' =>
-               Style_Check_Mode_In               := False;
+               Style_Check_Mode_In                := False;
 
             when 'k' =>
-               Style_Check_Keyword_Casing        := False;
+               Style_Check_Keyword_Casing         := False;
 
             when 'l' =>
-               Style_Check_Layout                := False;
+               Style_Check_Layout                 := False;
 
             when 'L' =>
                Style_Max_Nesting_Level := 0;
 
             when 'm' =>
-               Style_Check_Max_Line_Length       := False;
+               Style_Check_Max_Line_Length        := False;
 
             when 'M' =>
-               Style_Max_Line_Length             := 0;
-               Style_Check_Max_Line_Length       := False;
+               Style_Max_Line_Length              := 0;
+               Style_Check_Max_Line_Length        := False;
 
             when 'n' =>
-               Style_Check_Standard              := False;
+               Style_Check_Standard               := False;
 
             when 'o' =>
-               Style_Check_Order_Subprograms     := False;
+               Style_Check_Order_Subprograms      := False;
 
             when 'O' =>
-               Style_Check_Missing_Overriding    := False;
+               Style_Check_Missing_Overriding     := False;
 
             when 'p' =>
-               Style_Check_Pragma_Casing         := False;
+               Style_Check_Pragma_Casing          := False;
 
             when 'r' =>
-               Style_Check_References            := False;
+               Style_Check_References             := False;
 
             when 's' =>
-               Style_Check_Specs                 := False;
+               Style_Check_Specs                  := False;
 
             when 'S' =>
-               Style_Check_Separate_Stmt_Lines   := False;
+               Style_Check_Separate_Stmt_Lines    := False;
 
             when 't' =>
-               Style_Check_Tokens                := False;
+               Style_Check_Tokens                 := False;
 
             when 'u' =>
-               Style_Check_Blank_Lines           := False;
+               Style_Check_Blank_Lines            := False;
 
             when 'x' =>
-               Style_Check_Xtra_Parens           := False;
+               Style_Check_Xtra_Parens            := False;
+
+            when 'z' =>
+               Style_Check_Xtra_Parens_Precedence := False;
 
             when ' ' =>
                null;

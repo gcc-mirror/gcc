@@ -28,7 +28,6 @@ extern void dump_cand (FILE *, struct iv_cand *);
 extern bool contains_abnormal_ssa_name_p (tree);
 extern class loop *outermost_invariant_loop_for_expr (class loop *, tree);
 extern bool expr_invariant_in_loop_p (class loop *, tree);
-extern tree strip_offset (tree, poly_uint64_pod *);
 bool may_be_nonaddressable_p (tree expr);
 void tree_ssa_iv_optimize (void);
 

@@ -105,9 +105,11 @@ public:
 
   std::string as_string () const;
 
-  Identifier get_identifier () const { return identifier; }
+  Identifier &get_identifier () { return identifier; }
+  const Identifier &get_identifier () const { return identifier; }
 
   std::unique_ptr<Type> &get_type () { return type; }
+  const std::unique_ptr<Type> &get_type () const { return type; }
 
   Location get_locus () const { return locus; }
 };

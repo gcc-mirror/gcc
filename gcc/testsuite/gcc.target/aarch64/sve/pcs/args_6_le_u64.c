@@ -1,5 +1,5 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-O -mlittle-endian -fno-stack-clash-protection -g" } */
+/* { dg-options "-O -mlittle-endian -fno-stack-clash-protection -fno-cprop-registers -fdisable-rtl-combine -g" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #pragma GCC aarch64 "arm_sve.h"

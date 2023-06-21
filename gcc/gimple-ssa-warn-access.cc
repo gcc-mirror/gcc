@@ -1198,10 +1198,10 @@ warn_for_access (location_t loc, tree func, tree expr, int opt,
 
 static void
 get_size_range (range_query *query, tree bound, gimple *stmt, tree range[2],
-		const offset_int bndrng[2])
+		int flags, const offset_int bndrng[2])
 {
   if (bound)
-    get_size_range (query, bound, stmt, range);
+    get_size_range (query, bound, stmt, range, flags);
 
   if (!bndrng || (bndrng[0] == 0 && bndrng[1] == HOST_WIDE_INT_M1U))
     return;
@@ -1347,7 +1347,12 @@ check_access (GimpleOrTree exp, tree dstwrite,
   /* Set RANGE to that of DSTWRITE if non-null, bounded by PAD->DST_BNDRNG
      if valid.  */
   gimple *stmt = pad ? pad->stmt : nullptr;
-  get_size_range (rvals, dstwrite, stmt, range, pad ? pad->dst_bndrng : NULL);
+  get_size_range (rvals, dstwrite, stmt, range,
+		  /* If the destination has known zero size prefer a zero
+		     size range to avoid false positives if that's a
+		     possibility.  */
+		  integer_zerop (dstsize) ? SR_ALLOW_ZERO : 0,
+		  pad ? pad->dst_bndrng : NULL);
 
   tree func = get_callee_fndecl (exp);
   /* Read vs write access by built-ins can be determined from the const
@@ -1442,7 +1447,8 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC_BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (rvals, maxread, stmt, range, pad ? pad->src_bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, 0,
+		      pad ? pad->src_bndrng : NULL);
 
       location_t loc = get_location (exp);
       tree size = dstsize;
@@ -1489,7 +1495,8 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC_BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (rvals, maxread, stmt, range, pad ? pad->src_bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, 0,
+		      pad ? pad->src_bndrng : NULL);
       /* Set OVERREAD for reads starting just past the end of an object.  */
       overread = pad->src.sizrng[1] - pad->src.offrng[0] < pad->src_bndrng[0];
       range[0] = wide_int_to_tree (sizetype, pad->src_bndrng[0]);
@@ -1780,8 +1787,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 
       /* Return false for deallocation functions that are known not
 	 to match.  */
-      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	  || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE, BUILT_IN_REALLOC))
 	return false;
       /* Otherwise proceed below to check the deallocation function's
 	 "*dealloc" attributes to look for one that mentions this operator
@@ -1805,8 +1811,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
 	    return false;
 
-	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE,
+					       BUILT_IN_REALLOC))
 	    return true;
 
 	  alloc_dealloc_kind = alloc_kind_t::builtin;
@@ -2679,7 +2685,7 @@ pass_waccess::check_strncmp (gcall *stmt)
   /* Determine the range of the bound first and bail if it fails; it's
      cheaper than computing the size of the objects.  */
   tree bndrng[2] = { NULL_TREE, NULL_TREE };
-  get_size_range (m_ptr_qry.rvals, bound, stmt, bndrng, adata1.src_bndrng);
+  get_size_range (m_ptr_qry.rvals, bound, stmt, bndrng, 0, adata1.src_bndrng);
   if (!bndrng[0] || integer_zerop (bndrng[0]))
     return;
 
@@ -4166,8 +4172,9 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 
   auto_bitmap visited;
 
-  auto_vec<tree> pointers;
-  pointers.safe_push (ptr);
+  auto_vec<tree, 8> pointers;
+  pointers.quick_push (ptr);
+  hash_map<tree, int> *phi_map = nullptr;
 
   /* Starting with PTR, iterate over POINTERS added by the loop, and
      either warn for their uses in basic blocks dominated by the STMT
@@ -4234,19 +4241,49 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	      tree_code code = gimple_cond_code (cond);
 	      equality = code == EQ_EXPR || code == NE_EXPR;
 	    }
-	  else if (gimple_code (use_stmt) == GIMPLE_PHI)
+	  else if (gphi *phi = dyn_cast <gphi *> (use_stmt))
 	    {
 	      /* Only add a PHI result to POINTERS if all its
-		 operands are related to PTR, otherwise continue.  */
-	      tree lhs = gimple_phi_result (use_stmt);
-	      if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
-		continue;
-
-	      if (TREE_CODE (lhs) == SSA_NAME)
+		 operands are related to PTR, otherwise continue.  The
+		 PHI result is related once we've reached all arguments
+		 through this iteration.  That also means any invariant
+		 argument will make the PHI not related.  For arguments
+		 flowing over natural loop backedges we are optimistic
+		 (and diagnose the first iteration).  */
+	      tree lhs = gimple_phi_result (phi);
+	      if (!phi_map)
+		phi_map = new hash_map<tree, int>;
+	      bool existed_p;
+	      int &related = phi_map->get_or_insert (lhs, &existed_p);
+	      if (!existed_p)
 		{
-		  pointers.safe_push (lhs);
-		  continue;
+		  related = gimple_phi_num_args (phi) - 1;
+		  for (unsigned j = 0; j < gimple_phi_num_args (phi); ++j)
+		    {
+		      if ((unsigned) phi_arg_index_from_use (use_p) == j)
+			continue;
+		      tree arg = gimple_phi_arg_def (phi, j);
+		      edge e = gimple_phi_arg_edge (phi, j);
+		      basic_block arg_bb;
+		      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest)
+			  /* Make sure we are not forward visiting a
+			     backedge argument.  */
+			  && (TREE_CODE (arg) != SSA_NAME
+			      || (!SSA_NAME_IS_DEFAULT_DEF (arg)
+				  && ((arg_bb
+					 = gimple_bb (SSA_NAME_DEF_STMT (arg)))
+				      != e->dest)
+				  && !dominated_by_p (CDI_DOMINATORS,
+						      e->dest, arg_bb))))
+			related--;
+		    }
 		}
+	      else
+		related--;
+
+	      if (related == 0)
+		pointers.safe_push (lhs);
+	      continue;
 	    }
 
 	  /* Warn if USE_STMT is dominated by the deallocation STMT.
@@ -4285,6 +4322,9 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	    }
 	}
     }
+
+  if (phi_map)
+    delete phi_map;
 }
 
 /* Check call STMT for invalid accesses.  */
@@ -4521,39 +4561,34 @@ pass_waccess::check_dangling_stores (basic_block bb,
       if (!m_ptr_qry.get_ref (lhs, stmt, &lhs_ref, 0))
 	continue;
 
-      if (auto_var_p (lhs_ref.ref))
-	continue;
-
-      if (DECL_P (lhs_ref.ref))
+      if (TREE_CODE (lhs_ref.ref) == MEM_REF)
 	{
-	  if (!POINTER_TYPE_P (TREE_TYPE (lhs_ref.ref))
-	      || lhs_ref.deref > 0)
-	    continue;
+	  lhs_ref.ref = TREE_OPERAND (lhs_ref.ref, 0);
+	  ++lhs_ref.deref;
 	}
-      else if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
+      if (TREE_CODE (lhs_ref.ref) == ADDR_EXPR)
+	{
+	  lhs_ref.ref = TREE_OPERAND (lhs_ref.ref, 0);
+	  --lhs_ref.deref;
+	}
+      if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
 	  if (!gimple_nop_p (def_stmt))
 	    /* Avoid looking at or before stores into unknown objects.  */
 	    return;
 
-	  tree var = SSA_NAME_VAR (lhs_ref.ref);
-	  if (TREE_CODE (var) == PARM_DECL && DECL_BY_REFERENCE (var))
-	    /* Avoid by-value arguments transformed into by-reference.  */
-	    continue;
+	  lhs_ref.ref = SSA_NAME_VAR (lhs_ref.ref);
+	}
 
-	}
-      else if (TREE_CODE (lhs_ref.ref) == MEM_REF)
-	{
-	  tree arg = TREE_OPERAND (lhs_ref.ref, 0);
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
-	      if (!gimple_nop_p (def_stmt))
-		return;
-	    }
-	}
+      if (TREE_CODE (lhs_ref.ref) == PARM_DECL
+	  && (lhs_ref.deref - DECL_BY_REFERENCE (lhs_ref.ref)) > 0)
+	/* Assignment through a (real) pointer/reference parameter.  */;
+      else if (VAR_P (lhs_ref.ref)
+	       && !auto_var_p (lhs_ref.ref))
+	/* Assignment to/through a non-local variable.  */;
       else
+	/* Something else, don't warn.  */
 	continue;
 
       if (stores.add (lhs_ref.ref))
@@ -4580,13 +4615,8 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	  location_t loc = DECL_SOURCE_LOCATION (rhs_ref.ref);
 	  inform (loc, "%qD declared here", rhs_ref.ref);
 
-	  if (DECL_P (lhs_ref.ref))
-	    loc = DECL_SOURCE_LOCATION (lhs_ref.ref);
-	  else if (EXPR_HAS_LOCATION (lhs_ref.ref))
-	    loc = EXPR_LOCATION (lhs_ref.ref);
-
-	  if (loc != UNKNOWN_LOCATION)
-	    inform (loc, "%qE declared here", lhs_ref.ref);
+	  loc = DECL_SOURCE_LOCATION (lhs_ref.ref);
+	  inform (loc, "%qD declared here", lhs_ref.ref);
 	}
     }
 

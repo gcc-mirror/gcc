@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512bitalg -mavx512f -mavx512bw" } */
+/* { dg-options "-O2 -mavx512bitalg" } */
 /* { dg-require-effective-target avx512bitalg } */
 
 #define AVX512BITALG

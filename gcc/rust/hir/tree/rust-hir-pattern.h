@@ -424,7 +424,6 @@ protected:
 // HIR node for pattern based on dereferencing the pointers given
 class ReferencePattern : public Pattern
 {
-  bool has_two_amps;
   Mutability mut;
   std::unique_ptr<Pattern> pattern;
   Location locus;
@@ -435,16 +434,15 @@ public:
 
   ReferencePattern (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
-		    bool ref_has_two_amps, Location locus)
-    : has_two_amps (ref_has_two_amps), mut (reference_mut),
-      pattern (std::move (pattern)), locus (locus), mappings (mappings)
+		    Location locus)
+    : mut (reference_mut), pattern (std::move (pattern)), locus (locus),
+      mappings (mappings)
   {}
 
   // Copy constructor requires clone
   ReferencePattern (ReferencePattern const &other)
-    : has_two_amps (other.has_two_amps), mut (other.mut),
-      pattern (other.pattern->clone_pattern ()), locus (other.locus),
-      mappings (other.mappings)
+    : mut (other.mut), pattern (other.pattern->clone_pattern ()),
+      locus (other.locus), mappings (other.mappings)
   {}
 
   // Overload assignment operator to clone
@@ -452,7 +450,6 @@ public:
   {
     pattern = other.pattern->clone_pattern ();
     mut = other.mut;
-    has_two_amps = other.has_two_amps;
     locus = other.locus;
     mappings = other.mappings;
 
@@ -1145,6 +1142,24 @@ public:
     return TuplePatternItemType::RANGED;
   }
 
+  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  {
+    return lower_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  {
+    return lower_patterns;
+  }
+
+  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  {
+    return upper_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  {
+    return upper_patterns;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1212,69 +1227,6 @@ protected:
   TuplePattern *clone_pattern_impl () const override
   {
     return new TuplePattern (*this);
-  }
-};
-
-// HIR node representing a pattern in parentheses, used to control precedence
-class GroupedPattern : public Pattern
-{
-  std::unique_ptr<Pattern> pattern_in_parens;
-  Location locus;
-  Analysis::NodeMapping mappings;
-
-public:
-  std::string as_string () const override
-  {
-    return "(" + pattern_in_parens->as_string () + ")";
-  }
-
-  GroupedPattern (Analysis::NodeMapping mappings,
-		  std::unique_ptr<Pattern> pattern_in_parens, Location locus)
-    : pattern_in_parens (std::move (pattern_in_parens)), locus (locus),
-      mappings (mappings)
-  {}
-
-  // Copy constructor uses clone
-  GroupedPattern (GroupedPattern const &other)
-    : pattern_in_parens (other.pattern_in_parens->clone_pattern ()),
-      locus (other.locus), mappings (other.mappings)
-  {}
-
-  // Overload assignment operator to clone
-  GroupedPattern &operator= (GroupedPattern const &other)
-  {
-    pattern_in_parens = other.pattern_in_parens->clone_pattern ();
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
-
-  // default move semantics
-  GroupedPattern (GroupedPattern &&other) = default;
-  GroupedPattern &operator= (GroupedPattern &&other) = default;
-
-  Location get_locus () const override { return locus; }
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRPatternVisitor &vis) override;
-
-  Analysis::NodeMapping get_pattern_mappings () const override final
-  {
-    return mappings;
-  }
-
-  PatternType get_pattern_type () const override final
-  {
-    return PatternType::GROUPED;
-  }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  GroupedPattern *clone_pattern_impl () const override
-  {
-    return new GroupedPattern (*this);
   }
 };
 

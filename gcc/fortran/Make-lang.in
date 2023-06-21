@@ -278,7 +278,7 @@ $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran.1 \
 	-chmod a-x $@
 
 fortran.uninstall:
-	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	if $(SHELL) -c 'install-info --version | sed 1q | grep -s -v -i debian' >/dev/null 2>&1; then \
 	  echo " install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info"; \
 	  install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
 	else : ; fi; \

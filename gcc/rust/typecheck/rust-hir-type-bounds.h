@@ -30,42 +30,18 @@ class TypeBoundsProbe : public TypeCheckBase
 {
 public:
   static std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
-  Probe (const TyTy::BaseType *receiver)
-  {
-    TypeBoundsProbe probe (receiver);
-    probe.scan ();
-    return probe.trait_references;
-  }
+  Probe (const TyTy::BaseType *receiver);
 
   static bool is_bound_satisfied_for_type (TyTy::BaseType *receiver,
-					   TraitReference *ref)
-  {
-    for (auto &bound : receiver->get_specified_bounds ())
-      {
-	const TraitReference *b = bound.get ();
-	if (b->is_equal (*ref))
-	  return true;
-      }
-
-    std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> bounds
-      = Probe (receiver);
-    for (auto &bound : bounds)
-      {
-	const TraitReference *b = bound.first;
-	if (b->is_equal (*ref))
-	  return true;
-      }
-
-    return false;
-  }
+					   TraitReference *ref);
 
 private:
   void scan ();
+  void assemble_sized_builtin ();
+  void assemble_builtin_candidate (Analysis::RustLangItem::ItemType item);
 
 private:
-  TypeBoundsProbe (const TyTy::BaseType *receiver)
-    : TypeCheckBase (), receiver (receiver)
-  {}
+  TypeBoundsProbe (const TyTy::BaseType *receiver);
 
   const TyTy::BaseType *receiver;
   std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> trait_references;

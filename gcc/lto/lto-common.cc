@@ -958,7 +958,7 @@ lto_register_function_decl_in_symtab (class data_in *data_in, tree decl,
 static void
 lto_maybe_register_decl (class data_in *data_in, tree t, unsigned ix)
 {
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     lto_register_var_decl_in_symtab (data_in, t, ix);
   else if (TREE_CODE (t) == FUNCTION_DECL
 	   && !fndecl_built_in_p (t))

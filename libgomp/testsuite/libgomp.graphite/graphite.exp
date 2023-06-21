@@ -14,17 +14,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-if [info exists lang_library_path] then {
-    unset lang_library_path
-    unset lang_link_flags
-}
-if [info exists lang_test_file] then {
-    unset lang_test_file
-}
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
-}
-
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
@@ -36,6 +25,7 @@ if ![check_effective_target_fgraphite] {
   return
 }
 
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
 # Flags for force-parallel-*.c testcases.
 set PARALLEL_CFLAGS "-ansi -pedantic-errors -O2 \
 -ftree-parallelize-loops=4 -floop-parallelize-all \

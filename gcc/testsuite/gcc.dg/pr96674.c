@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O -fdump-tree-optimized -fwrapv" } */
+/* { dg-require-effective-target int32 } */
 
 #include <limits.h>
 #include <stdbool.h>

@@ -11,7 +11,7 @@ PROGRAM main
   INTEGER, POINTER :: ptr
 
   ASSOCIATE (a => 5) ! { dg-error "is used as array" }
-    PRINT *, a(3)
+    PRINT *, a(3) ! { dg-error "has an array reference" }
   END ASSOCIATE
 
   ASSOCIATE (a => nontarget)

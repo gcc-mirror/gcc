@@ -562,8 +562,10 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is array (1 .. 2) of Interfaces.Unsigned_32;
+   type sigset_t is
+     array (0 .. OS_Constants.SIZEOF_sigset - 1) of unsigned_char;
    pragma Convention (C, sigset_t);
+   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pid_t is new int;
 

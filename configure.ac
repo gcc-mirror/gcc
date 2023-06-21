@@ -1891,6 +1891,28 @@ AC_ARG_ENABLE(linker-plugin-flags,
   extra_linker_plugin_flags=)
 AC_SUBST(extra_linker_plugin_flags)
 
+# Enable --enable-host-pie.
+# Checked early to determine whether jit is an 'all' language
+AC_ARG_ENABLE(host-pie,
+[AS_HELP_STRING([--enable-host-pie],
+		[build position independent host executables])],
+[host_pie=$enableval
+ case $host in
+   x86_64-*-darwin* | aarch64-*-darwin*)
+     if test x$host_pie != xyes ; then
+       # PIC is the default, and actually cannot be switched off.
+       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       host_pie=yes
+     fi ;;
+  *) ;;
+ esac],
+[case $host in
+  *-*-darwin2*) host_pie=yes ;;
+  *) host_pie=no ;;
+ esac])
+
+AC_SUBST(host_pie)
+
 # Enable --enable-host-shared.
 # Checked early to determine whether jit is an 'all' language
 AC_ARG_ENABLE(host-shared,
@@ -1904,20 +1926,37 @@ AC_ARG_ENABLE(host-shared,
        echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
        host_shared=yes
      fi ;;
+   *-*-darwin*)
+     if test x$host_pie == xyes ; then
+       echo configure.ac: warning: PIC code is required for PIE executables. 1>&2
+       host_shared=yes
+     fi ;;
   *) ;;
  esac],
 [case $host in
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
-  *) host_shared=no ;;
+  # Darwin needs PIC objects to link PIE executables.
+  *-*-darwin*) host_shared=host_pie ;;
+  *) host_shared=no;;
  esac])
 
 AC_SUBST(host_shared)
+
+if test x$host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$host_pie = xyes; then
+  PICFLAG=-fPIE
+else
+  PICFLAG=
+fi
+
+AC_SUBST(PICFLAG)
 
 # If we are building PIC/PIE host executables, and we are building dependent
 # libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
 # code.
 host_libs_picflag=
-if test "$host_shared" = "yes";then
+if test "$host_shared" = "yes" -o "$host_pie" = "yes"; then
 host_libs_picflag='--with-pic'
 fi
 AC_SUBST(host_libs_picflag)
@@ -3071,7 +3110,9 @@ esac
 # These force 'configure's to be done one at a time, to avoid problems
 # with contention over a shared config.cache.
 rm -f serdep.tmp
+if test "x${enable_serial_build_configure}" = xyes || test "x${enable_serial_host_configure}" = xyes || test "x${enable_serial_target_configure}" = xyes; then
 echo '# serdep.tmp' > serdep.tmp
+fi
 olditem=
 test "x${enable_serial_build_configure}" = xyes &&
 for item in ${build_configdirs} ; do

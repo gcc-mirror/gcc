@@ -88,8 +88,9 @@ package body Sem_SCIL is
             --  object or parameter declaration. Interface types are still
             --  unsupported.
 
-            elsif Nkind (Ctrl_Tag) in
-                    N_Object_Declaration | N_Parameter_Specification
+            elsif Nkind (Ctrl_Tag) in N_Object_Renaming_Declaration
+                                    | N_Object_Declaration
+                                    | N_Parameter_Specification
             then
                Ctrl_Typ := Etype (Defining_Identifier (Ctrl_Tag));
 

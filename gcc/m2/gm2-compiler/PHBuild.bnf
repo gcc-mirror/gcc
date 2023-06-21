@@ -187,11 +187,6 @@ BEGIN
 END ErrorArray ;
 
 
-PROCEDURE ErrorArrayAt (a: ARRAY OF CHAR; tok: CARDINAL) ;
-BEGIN
-   ErrorStringAt (InitString(a), tok)
-END ErrorArrayAt ;
-
 % declaration PHBuild begin
 
 
@@ -283,76 +278,6 @@ BEGIN
       InsertToken(t)
    END
 END MissingToken ;
-
-
-(*
-   CheckAndInsert -
-*)
-
-PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
-BEGIN
-   IF ((ORD(t)<32) AND (t IN stopset0)) OR
-      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
-      ((ORD(t)>=64) AND (t IN stopset2))
-   THEN
-      WarnMissingToken(t) ;
-      InsertTokenAndRewind(t) ;
-      RETURN( TRUE )
-   ELSE
-      RETURN( FALSE )
-   END
-END CheckAndInsert ;
-
-
-(*
-   InStopSet
-*)
-
-PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
-BEGIN
-   IF ((ORD(t)<32) AND (t IN stopset0)) OR
-      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
-      ((ORD(t)>=64) AND (t IN stopset2))
-   THEN
-      RETURN( TRUE )
-   ELSE
-      RETURN( FALSE )
-   END
-END InStopSet ;
-
-
-(*
-   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
-               If it is not then it will insert a token providing the token
-               is one of ; ] ) } . OF END ,
-
-               if the stopset contains <identtok> then we do not insert a token
-*)
-
-PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
-BEGIN
-   (* and again (see above re: ORD)
-    *)
-   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
-     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
-            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
-      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
-   THEN
-      (* SyntaxCheck would fail since currentoken is not part of the stopset
-         we check to see whether any of currenttoken might be a commonly
-         omitted token.  *)
-      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
-      THEN
-      END
-   END
-END PeepToken ;
 
 
 (*
@@ -637,71 +562,6 @@ Qualident :=                                                               % VAR
                                                                                 END
                                                                              ELSE (* just parse qualident *) %
              { "." Ident }                                                 % END %
-           =:
-
-PushQualident :=                                                           % VAR name         : Name ;
-                                                                                 init, ip1    : CARDINAL ;
-                                                                                 tok, tokstart: CARDINAL ; %
-                                                                           % PushAutoOn %
-             Ident                                                         % IF IsAutoPushOn()
-                                                                             THEN
-                                                                                PopTtok (name, tokstart) ;
-                                                                                tok := tokstart ;
-                                                                                init := GetSym (name) ;
-                                                                                IF init=NulSym
-                                                                                THEN
-                                                                                   PushTFntok (NulSym, NulSym, name, tok)
-                                                                                ELSE
-                                                                                   WHILE IsDefImp (init) OR IsModule (init) DO
-                                                                                      IF currenttoken # periodtok
-                                                                                      THEN
-                                                                                         ErrorArrayAt ("expecting '.' after module in the construction of a qualident", tok) ;
-                                                                                         IF tok#tokstart
-                                                                                         THEN
-                                                                                            tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                         END ;
-                                                                                         PushTtok (init, tok) ;
-                                                                                         PopAuto ;
-                                                                                         RETURN
-                                                                                      ELSE
-                                                                                         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
-                                                                                         StartScope (init) ;
-                                                                                         Ident (stopset0, stopset1, stopset2) ;
-                                                                                         PopTtok (name, tok) ;
-                                                                                         ip1 := GetSym (name) ;
-                                                                                         IF ip1 = NulSym
-                                                                                         THEN
-                                                                                            ErrorArrayAt ("unknown ident in the construction of a qualident", tok) ;
-                                                                                            EndScope ;
-                                                                                            IF tok#tokstart
-                                                                                            THEN
-                                                                                               tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                            END ;
-                                                                                            PushTFntok (NulSym, NulSym, name, tok) ;
-                                                                                            PopAuto ;
-                                                                                            RETURN
-                                                                                         ELSE
-                                                                                            PutIncluded (ip1)
-                                                                                         END ;
-                                                                                         EndScope ;
-                                                                                         CheckCanBeImported (init, ip1) ;
-                                                                                         init := ip1
-                                                                                      END
-                                                                                   END ;
-                                                                                   IF tok#tokstart
-                                                                                   THEN
-                                                                                      tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                   END ;
-                                                                                   IF IsProcedure (init) OR IsProcType (init)
-                                                                                   THEN
-                                                                                      PushTtok (init, tok)
-                                                                                   ELSE
-                                                                                      PushTFtok (init, GetType(init), tok)
-                                                                                   END
-                                                                                END
-                                                                             ELSE %
-             { "." Ident }                                                 % END %
-                                                                           % PopAuto %
            =:
 
 ConstantDeclaration :=                                                     % PushAutoOn %
@@ -1125,13 +985,6 @@ SetOrDesignatorOrFunction :=                                               % VAR
                                                                            % Assert (n = Top ()) %
                            =:
 
--- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
-SimpleDes := { SubDesignator } =:
-
-ActualParameters := "("
-                        ( ExpList |                                         % (* epsilon *) %
-                        ) ")" =:
-
 ConstActualParameters := "("                                                % BuildSizeCheckStart %
                             ( ConstExpList |                                % BuildNulParam %
                             ) ")" =:
@@ -1182,7 +1035,7 @@ IfStatement :=
                                           StatementSequence
               }
               [ "ELSE"
-                      StatementSequence ] "END"
+                       StatementSequence ] "END"
             =:
 
 CaseStatement := "CASE"
@@ -1374,14 +1227,14 @@ NamedOperand := '[' Ident ']' =:
 
 AsmOperandName := [ NamedOperand ] =:
 
-AsmOperands  := AsmOperandName string [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
-             =:
+AsmOperands  := ConstExpression ':' AsmList [ ':' AsmList [ ':' TrashList ] ]
+              =:
 
 AsmList      := [ AsmElement ] { ',' AsmElement } =:
 
-AsmElement   := string '(' Expression ')'
-             =:
+AsmElement   := AsmOperandName ConstExpression '(' Expression ')'
+              =:
 
-TrashList    := [ string ] { ',' string } =:
+TrashList    := [ ConstExpression ] { ',' ConstExpression } =:
 
 FNB

@@ -1,4 +1,4 @@
-// { dg-output "amazing\nwildcard\ncompiler\nproductivity\n" }
+// { dg-output "amazing\r*\nwildcard\r*\ncompiler\r*\nproductivity\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

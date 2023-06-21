@@ -223,7 +223,7 @@ package body Bcheck is
                   end if;
                end if;
 
-               if (not Tolerate_Consistency_Errors) and Verbose_Mode then
+               if not Tolerate_Consistency_Errors and Verbose_Mode then
                   Error_Msg_File_1 := Source.Table (Src).Stamp_File;
 
                   if Source.Table (Src).Source_Found then
@@ -1402,7 +1402,7 @@ package body Bcheck is
                            Secondary := 0;
                         end if;
 
-                        if (Primary /= -1) and (Secondary /= -1) then
+                        if Primary /= -1 and Secondary /= -1 then
                            return (Primary   => Primary,
                                    Secondary => Secondary);
                         end if;
@@ -1421,7 +1421,7 @@ package body Bcheck is
                V2      : constant ALI_Version := Extract_Version (V2_Text);
 
                Include_Version_Numbers_In_Message : constant Boolean :=
-                 (V1 /= V2) and (V1 /= No_Version) and (V2 /= No_Version);
+                 V1 /= V2 and V1 /= No_Version and V2 /= No_Version;
             begin
                Error_Msg_File_1 := ALIs.Table (A).Sfile;
                Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;

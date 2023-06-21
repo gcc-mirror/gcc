@@ -38,7 +38,7 @@
 
 #if __cplusplus >= 201103L
 
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV
 
 #undef feclearexcept
 #undef fegetexceptflag
@@ -74,7 +74,7 @@ namespace std
   using ::feupdateenv;
 } // namespace
 
-#endif // _GLIBCXX_USE_C99_FENV_TR1
+#endif // _GLIBCXX_USE_C99_FENV
 
 #endif // C++11
 

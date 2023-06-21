@@ -300,6 +300,13 @@ public:
 #define SLP_TREE_LANES(S)			 (S)->lanes
 #define SLP_TREE_CODE(S)			 (S)->code
 
+enum vect_partial_vector_style {
+    vect_partial_vectors_none,
+    vect_partial_vectors_while_ult,
+    vect_partial_vectors_avx512,
+    vect_partial_vectors_len
+};
+
 /* Key for map that records association between
    scalar conditions and corresponding loop mask, and
    is populated by vect_record_loop_mask.  */
@@ -591,12 +598,15 @@ is_a_helper <_bb_vec_info *>::test (vec_info *i)
 /* The controls (like masks or lengths) needed by rgroups with nV vectors,
    according to the description above.  */
 struct rgroup_controls {
-  /* The largest nS for all rgroups that use these controls.  */
+  /* The largest nS for all rgroups that use these controls.
+     For vect_partial_vectors_avx512 this is the constant nscalars_per_iter
+     for all members of the group.  */
   unsigned int max_nscalars_per_iter;
 
   /* For the largest nS recorded above, the loop controls divide each scalar
      into FACTOR equal-sized pieces.  This is useful if we need to split
-     element-based accesses into byte-based accesses.  */
+     element-based accesses into byte-based accesses.
+     For vect_partial_vectors_avx512 this records nV instead.  */
   unsigned int factor;
 
   /* This is a vector type with MAX_NSCALARS_PER_ITER * VF / nV elements.
@@ -604,6 +614,10 @@ struct rgroup_controls {
      For length-based controls, it can be any vector type that has the
      specified number of elements; the type of the elements doesn't matter.  */
   tree type;
+
+  /* When there is no uniformly used LOOP_VINFO_RGROUP_COMPARE_TYPE this
+     is the rgroup specific type used.  */
+  tree compare_type;
 
   /* A vector of nV controls, in iteration order.  */
   vec<tree> controls;
@@ -613,7 +627,17 @@ struct rgroup_controls {
   tree bias_adjusted_ctrl;
 };
 
-typedef auto_vec<rgroup_controls> vec_loop_masks;
+struct vec_loop_masks
+{
+  bool is_empty () const { return mask_set.is_empty (); }
+
+  /* Set to record vectype, nvector pairs.  */
+  hash_set<pair_hash <nofree_ptr_hash <tree_node>,
+		      int_hash<unsigned, 0>>> mask_set;
+
+  /* rgroup_controls used for the partial vector scheme.  */
+  auto_vec<rgroup_controls> rgc_vec;
+};
 
 typedef auto_vec<rgroup_controls> vec_loop_lens;
 
@@ -741,6 +765,10 @@ public:
      LOOP_VINFO_USING_PARTIAL_VECTORS_P is true.  */
   tree rgroup_iv_type;
 
+  /* The style used for implementing partial vectors when
+     LOOP_VINFO_USING_PARTIAL_VECTORS_P is true.  */
+  vect_partial_vector_style partial_vector_style;
+
   /* Unknown DRs according to which loop was peeled.  */
   class dr_vec_info *unaligned_dr;
 
@@ -818,6 +846,18 @@ public:
      the vector loop can handle fewer than VF scalars.  */
   bool using_partial_vectors_p;
 
+  /* True if we've decided to use a decrementing loop control IV that counts
+     scalars. This can be done for any loop that:
+
+	(a) uses length "controls"; and
+	(b) can iterate more than once.  */
+  bool using_decrementing_iv_p;
+
+  /* True if we've decided to use output of select_vl to adjust IV of
+     both loop control and data reference pointer. This is only true
+     for single-rgroup control.  */
+  bool using_select_vl_p;
+
   /* True if we've decided to use partially-populated vectors for the
      epilogue of loop.  */
   bool epil_using_partial_vectors_p;
@@ -890,6 +930,8 @@ public:
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P(L) (L)->can_use_partial_vectors_p
 #define LOOP_VINFO_USING_PARTIAL_VECTORS_P(L) (L)->using_partial_vectors_p
+#define LOOP_VINFO_USING_DECREMENTING_IV_P(L) (L)->using_decrementing_iv_p
+#define LOOP_VINFO_USING_SELECT_VL_P(L) (L)->using_select_vl_p
 #define LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P(L)                             \
   (L)->epil_using_partial_vectors_p
 #define LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS(L) (L)->partial_load_store_bias
@@ -900,6 +942,7 @@ public:
 #define LOOP_VINFO_MASK_SKIP_NITERS(L)     (L)->mask_skip_niters
 #define LOOP_VINFO_RGROUP_COMPARE_TYPE(L)  (L)->rgroup_compare_type
 #define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
+#define LOOP_VINFO_PARTIAL_VECTORS_STYLE(L) (L)->partial_vector_style
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_N_STMTS(L)		   (L)->shared->n_stmts
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
@@ -2139,13 +2182,12 @@ extern bool vect_is_simple_use (vec_info *, stmt_vec_info, slp_tree,
 				enum vect_def_type *,
 				tree *, stmt_vec_info * = NULL);
 extern bool vect_maybe_update_slp_op_vectype (slp_tree, tree);
-extern bool supportable_widening_operation (vec_info *,
-					    enum tree_code, stmt_vec_info,
-					    tree, tree, enum tree_code *,
-					    enum tree_code *, int *,
-					    vec<tree> *);
-extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
-					     enum tree_code *, int *,
+extern bool supportable_widening_operation (vec_info*, code_helper,
+					    stmt_vec_info, tree, tree,
+					    code_helper*, code_helper*,
+					    int*, vec<tree> *);
+extern bool supportable_narrowing_operation (code_helper, tree, tree,
+					     code_helper *, int *,
 					     vec<tree> *);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
@@ -2289,12 +2331,14 @@ extern tree vect_halve_mask_nunits (tree, machine_mode);
 extern tree vect_double_mask_nunits (tree, machine_mode);
 extern void vect_record_loop_mask (loop_vec_info, vec_loop_masks *,
 				   unsigned int, tree, tree);
-extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
+extern tree vect_get_loop_mask (loop_vec_info, gimple_stmt_iterator *,
+				vec_loop_masks *,
 				unsigned int, tree, unsigned int);
 extern void vect_record_loop_len (loop_vec_info, vec_loop_lens *, unsigned int,
 				  tree, unsigned int);
-extern tree vect_get_loop_len (loop_vec_info, vec_loop_lens *, unsigned int,
-			       unsigned int);
+extern tree vect_get_loop_len (loop_vec_info, gimple_stmt_iterator *,
+			       vec_loop_lens *, unsigned int, tree,
+			       unsigned int, unsigned int);
 extern gimple_seq vect_gen_len (tree, tree, tree, tree);
 extern stmt_vec_info info_for_reduction (vec_info *, stmt_vec_info);
 extern bool reduction_fn_for_scalar_code (code_helper, internal_fn *);
@@ -2384,6 +2428,7 @@ extern bool compatible_calls_p (gcall *, gcall *);
 /* In tree-vect-patterns.cc.  */
 extern void
 vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
+extern bool vect_get_range_info (tree, wide_int*, wide_int*);
 
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
@@ -2583,4 +2628,7 @@ vect_is_integer_truncation (stmt_vec_info stmt_info)
 	  && TYPE_PRECISION (lhs_type) < TYPE_PRECISION (rhs_type));
 }
 
+/* Build a GIMPLE_ASSIGN or GIMPLE_CALL with the tree_code,
+   or internal_fn contained in ch, respectively.  */
+gimple * vect_gimple_build (tree, code_helper, tree, tree = NULL_TREE);
 #endif  /* GCC_TREE_VECTORIZER_H  */

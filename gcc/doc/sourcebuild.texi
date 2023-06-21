@@ -2514,6 +2514,9 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_complex
+Target supports the execution of @code{amx-complex} instructions.
+
 @item amx_fp16
 Target supports the execution of @code{amx-fp16} instructions.
 
@@ -2774,6 +2777,9 @@ Target supports automatic stack alignment.
 
 @item branch_cost
 Target supports @option{-branch-cost=N}.
+
+@item const_volatile_readonly_section
+Target places const volatile variables in readonly sections.
 
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.

@@ -1,4 +1,4 @@
-// { dg-output "zero to END_RANGE\nzero to END_RANGE\nelse\n" }
+// { dg-output "zero to END_RANGE\r*\nzero to END_RANGE\r*\nelse\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

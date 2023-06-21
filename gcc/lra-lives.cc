@@ -1405,19 +1405,20 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
   point_freq_vec.truncate (0);
   point_freq_vec.reserve_exact (new_length);
   lra_point_freq = point_freq_vec.address ();
-  auto_vec<int, 20> post_order_rev_cfg;
-  inverted_post_order_compute (&post_order_rev_cfg);
-  lra_assert (post_order_rev_cfg.length () == (unsigned) n_basic_blocks_for_fn (cfun));
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, rpo);
+  lra_assert (n == n_basic_blocks_for_fn (cfun));
   bb_live_change_p = false;
-  for (i = post_order_rev_cfg.length () - 1; i >= 0; --i)
+  for (i = 0; i < n; ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, post_order_rev_cfg[i]);
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun) || bb
 	  == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       if (process_bb_lives (bb, curr_point, dead_insn_p))
 	bb_live_change_p = true;
     }
+  free (rpo);
   if (bb_live_change_p)
     {
       /* We need to clear pseudo live info as some pseudos can

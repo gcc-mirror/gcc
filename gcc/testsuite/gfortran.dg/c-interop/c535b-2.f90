@@ -1,11 +1,11 @@
 ! PR 101334
 ! PR 101337
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-additional-options "-fcoarray=single" }
 !
 ! TS 29113
 ! C535b An assumed-rank variable name shall not appear in a designator
-! or expression except as an actual argument corresponding to a dummy 
+! or expression except as an actual argument corresponding to a dummy
 ! argument that is assumed-rank, the argument of the C_LOC function
 ! in the ISO_C_BINDING intrinsic module, or the first argument in a
 ! reference to an intrinsic inquiry function.
@@ -16,7 +16,7 @@
 ! This test file contains tests that are expected to issue diagnostics
 ! for invalid code.
 
-! Check that passing an assumed-rank variable as an actual argument 
+! Check that passing an assumed-rank variable as an actual argument
 ! corresponding to a non-assumed-rank dummy gives a diagnostic.
 
 module m
@@ -57,7 +57,7 @@ subroutine test_calls (x, y)
   ! Make sure each invalid argument produces a diagnostic.
   ! scalar dummies
   call f (x, &  ! { dg-error "(A|a)ssumed.rank" }
-          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" } 
+          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   ! assumed-rank dummies
   call g (x, y)  ! OK
   ! assumed-size dummies
@@ -295,15 +295,15 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
   n &  ! { dg-error "(A|a)ssumed.rank" }
     = j .neqv. m  ! { dg-error "(A|a)ssumed.rank" }
 
-end subroutine  
+end subroutine
 
 ! Check that calls to disallowed intrinsic functions produce a diagnostic.
 ! There are 100+ "elemental" intrinsics defined in the standard, and
 ! 25+ "transformational" intrinsics that accept array operands, and that
 ! doesn't include intrinsics in the standard modules.  To keep the length of
-! this test to something sane, check only a handful of these functions on 
-! the theory that related functions are probably implemented similarly and 
-! probably share the same argument-processing code.  
+! this test to something sane, check only a handful of these functions on
+! the theory that related functions are probably implemented similarly and
+! probably share the same argument-processing code.
 
 subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
   implicit none
@@ -331,7 +331,7 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
     = exp (r2)  ! { dg-error "(A|a)ssumed.rank" }
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
     = sinh (r2)  ! { dg-error "(A|a)ssumed.rank" }
-  
+
   ! bit operations
   l1 &  ! { dg-error "(A|a)ssumed.rank" }
     = blt (i1, &  ! { dg-error "(A|a)ssumed.rank" }

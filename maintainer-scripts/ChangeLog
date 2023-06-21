@@ -1,3 +1,14 @@
+2023-04-20  Arsen Arsenović  <arsen@aarsen.me>
+
+	* update_web_docs_git: Add a mechanism to override makeinfo,
+	texi2dvi and texi2pdf, and default them to
+	/home/gccadmin/texinfo/install-git/bin/${tool}, if present.
+
+2023-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 14 related.
+	Add GCC 13 snapshots from the respective branch.
+
 2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	* update_web_docs_git: Set CONTENTS_OUTPUT_LOCATION=inline in

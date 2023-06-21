@@ -334,6 +334,8 @@ extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];
 
 extern bool rs6000_linux_float_exceptions_rounding_supported_p (void);
+extern unsigned rs6000_linux_libm_function_max_error (unsigned, machine_mode,
+						      bool);
 
 /* Pass management.  */
 namespace gcc { class context; }

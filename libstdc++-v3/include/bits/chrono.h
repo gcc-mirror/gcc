@@ -884,7 +884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// @}
 
     /// @cond undocumented
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 # define _GLIBCXX_CHRONO_INT64_T int64_t
 #elif defined __INT64_TYPE__
 # define _GLIBCXX_CHRONO_INT64_T __INT64_TYPE__

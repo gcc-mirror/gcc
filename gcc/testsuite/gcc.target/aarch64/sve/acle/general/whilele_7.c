@@ -12,7 +12,7 @@ test1 (svbool_t *ptr)
   *ptr = svwhilele_b8_s32 (-svcnth (), svcnth () - 1);
 }
 
-/* { dg-final { scan-assembler {\tptrue\tp[0-7]\.b, all\n} } } */
+/* { dg-final { scan-assembler {\tptrue\tp[0-9]+\.b, all\n} } } */
 
 void
 test2 (svbool_t *ptr)
@@ -20,7 +20,7 @@ test2 (svbool_t *ptr)
   *ptr = svwhilele_b16_s64 (1, svcntw () * 2);
 }
 
-/* { dg-final { scan-assembler {\tptrue\tp[0-7]\.h, all\n} } } */
+/* { dg-final { scan-assembler {\tptrue\tp[0-9]+\.h, all\n} } } */
 
 void
 test3 (svbool_t *ptr)
@@ -28,4 +28,4 @@ test3 (svbool_t *ptr)
   *ptr = svwhilele_b32_s32 (svcntd (), svcntw () + svcntd () - 1);
 }
 
-/* { dg-final { scan-assembler {\tptrue\tp[0-7]\.s, all\n} } } */
+/* { dg-final { scan-assembler {\tptrue\tp[0-9]+\.s, all\n} } } */

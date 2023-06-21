@@ -1,4 +1,4 @@
-// { dg-output "E::One\nE::Two\nbreak!\n" }
+// { dg-output "E::One\r*\nE::Two\r*\nbreak!\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

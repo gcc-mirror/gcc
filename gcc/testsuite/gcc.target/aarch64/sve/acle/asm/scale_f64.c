@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (scale_3_f64_m_tied1, svfloat64_t,
 		z0 = svscale_m (p0, z0, 3))
 
 /*
-** scale_3_f64_m_untied: { xfail *-*-* }
+** scale_3_f64_m_untied:
 **	mov	(z[0-9]+\.d), #3
 **	movprfx	z0, z1
 **	fscale	z0\.d, p0/m, z0\.d, \1
@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (scale_x0_f64_z_tied1, svfloat64_t, int64_t,
 		 z0 = svscale_z (p0, z0, x0))
 
 /*
-** scale_x0_f64_z_untied: { xfail *-*-* }
+** scale_x0_f64_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.d, p0/z, z1\.d
 **	fscale	z0\.d, p0/m, z0\.d, \1
@@ -149,7 +149,7 @@ TEST_UNIFORM_Z (scale_3_f64_z_tied1, svfloat64_t,
 		z0 = svscale_z (p0, z0, 3))
 
 /*
-** scale_3_f64_z_untied: { xfail *-*-* }
+** scale_3_f64_z_untied:
 **	mov	(z[0-9]+\.d), #3
 **	movprfx	z0\.d, p0/z, z1\.d
 **	fscale	z0\.d, p0/m, z0\.d, \1
@@ -232,7 +232,7 @@ TEST_UNIFORM_Z (scale_3_f64_x_tied1, svfloat64_t,
 		z0 = svscale_x (p0, z0, 3))
 
 /*
-** scale_3_f64_x_untied: { xfail *-*-* }
+** scale_3_f64_x_untied:
 **	mov	(z[0-9]+\.d), #3
 **	movprfx	z0, z1
 **	fscale	z0\.d, p0/m, z0\.d, \1

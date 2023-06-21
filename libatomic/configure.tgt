@@ -100,9 +100,7 @@ EOF
 	fi
 	cat > conftestx.c <<EOF
 #ifdef __x86_64__
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
-#error need -mcx16
-#endif
+#error ifunc is always wanted for 16B atomic load
 #else
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
 #error need -march=i686

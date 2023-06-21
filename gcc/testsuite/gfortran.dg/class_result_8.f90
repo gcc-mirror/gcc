@@ -37,5 +37,5 @@ program polymorphic_operators_memory_leaks
    call assign_a_type (a, add_a_type(a,b))
    print *, a%x
 end
-! { dg-final { scan-tree-dump-times "builtin_free" 6 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 5 "original" } }
 ! { dg-final { scan-tree-dump-times "builtin_malloc" 7 "original" } }

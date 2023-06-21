@@ -33,7 +33,6 @@
 # error This file should not be compiled for this configuration.
 #endif
 
-#ifdef  _GLIBCXX_USE_C99_STDINT_TR1
 #include <random>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -46,4 +45,3 @@ namespace std _GLIBCXX_VISIBILITY(default)
   random_device::_M_init_pretr1(const std::string& token)
   { _M_init(token.c_str(), token.length()); }
 } // namespace
-#endif

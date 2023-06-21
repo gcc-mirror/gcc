@@ -1,3 +1,8 @@
+2023-05-06  Dan Horák  <dan@danny.cz>
+
+	PR libffi/109447
+	* src/powerpc/ffi_linux64.c (ffi_prep_args64): Update arg.f128 pointer.
+
 2023-01-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/lib/libffi.exp: Search for both shared and archive

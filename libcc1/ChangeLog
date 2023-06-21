@@ -1,3 +1,9 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* libcc1plugin.cc (plugin_float_type): Ditto.
+	* libcp1plugin.cc (plugin_reactivate_decl): Ditto.
+	(plugin_get_float_type): Ditto.
+
 2022-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_start_lambda_closure_class_type):

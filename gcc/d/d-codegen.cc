@@ -1599,7 +1599,7 @@ underlying_complex_expr (tree type, tree expr)
   /* Build a constructor from the real and imaginary parts.  */
   if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (expr)) &&
       (!INDIRECT_REF_P (expr)
-       || !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (expr, 0)))))
+       || !CONVERT_EXPR_P (TREE_OPERAND (expr, 0))))
     {
       vec <constructor_elt, va_gc> *ve = NULL;
       CONSTRUCTOR_APPEND_ELT (ve, TYPE_FIELDS (type),

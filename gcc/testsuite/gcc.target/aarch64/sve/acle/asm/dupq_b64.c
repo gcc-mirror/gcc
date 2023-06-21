@@ -14,12 +14,12 @@ TEST_UNIFORM_P (dupq_0_b64,
 /*
 ** dupq_1_b64:
 ** (
-**	ptrue	(p[0-7])\.d, all
-**	pfalse	(p[0-7])\.b
+**	ptrue	(p[0-9]+)\.d, all
+**	pfalse	(p[0-9]+)\.b
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	pfalse	(p[0-7])\.b
-**	ptrue	(p[0-7])\.d, all
+**	pfalse	(p[0-9]+)\.b
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret
@@ -31,12 +31,12 @@ TEST_UNIFORM_P (dupq_1_b64,
 /*
 ** dupq_2_b64:
 ** (
-**	pfalse	(p[0-7])\.b
-**	ptrue	(p[0-7])\.d, all
+**	pfalse	(p[0-9]+)\.b
+**	ptrue	(p[0-9]+)\.d, all
 **	trn1	p0\.d, \1\.d, \2\.d
 ** |
-**	ptrue	(p[0-7])\.d, all
-**	pfalse	(p[0-7])\.b
+**	ptrue	(p[0-9]+)\.d, all
+**	pfalse	(p[0-9]+)\.b
 **	trn1	p0\.d, \4\.d, \3\.d
 ** )
 **	ret

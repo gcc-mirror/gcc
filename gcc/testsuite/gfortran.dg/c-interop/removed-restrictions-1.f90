@@ -1,8 +1,8 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 8.1 Removed restrictions on ISO_C_BINDING module procedures
-! 
+!
 ! The subroutine C_F_POINTER from the intrinsic module ISO_C_BINDING has
 ! the restriction in ISO/IEC 1539- 1:2010 that if FPTR is an array, it
 ! shall be of interoperable type.

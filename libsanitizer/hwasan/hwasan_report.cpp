@@ -102,6 +102,15 @@ static StackTrace GetStackTraceFromId(u32 id) {
   return res;
 }
 
+static void MaybePrintAndroidHelpUrl() {
+#if SANITIZER_ANDROID
+  Printf(
+      "Learn more about HWASan reports: "
+      "https://source.android.com/docs/security/test/memory-safety/"
+      "hwasan-reports\n");
+#endif
+}
+
 // A RAII object that holds a copy of the current thread stack ring buffer.
 // The actual stack buffer may change while we are iterating over it (for
 // example, Printf may call syslog() which can itself be built with hwasan).
@@ -322,7 +331,7 @@ static void ShowHeapOrGlobalCandidate(uptr untagged_addr, tag_t *candidate,
            untagged_addr, offset, whence, chunk.UsedSize(), chunk.Beg(),
            chunk.End());
     Printf("%s", d.Allocation());
-    Printf("allocated here:\n");
+    Printf("allocated by thread T%u here:\n", chunk.GetAllocThreadId());
     Printf("%s", d.Default());
     GetStackTraceFromId(chunk.GetAllocStackId()).Print();
     return;
@@ -464,12 +473,12 @@ void PrintAddressDescription(
              har.requested_size, UntagAddr(har.tagged_addr),
              UntagAddr(har.tagged_addr) + har.requested_size);
       Printf("%s", d.Allocation());
-      Printf("freed by thread T%zd here:\n", t->unique_id());
+      Printf("freed by thread T%u here:\n", t->unique_id());
       Printf("%s", d.Default());
       GetStackTraceFromId(har.free_context_id).Print();
 
       Printf("%s", d.Allocation());
-      Printf("previously allocated here:\n", t);
+      Printf("previously allocated by thread T%u here:\n", har.alloc_thread_id);
       Printf("%s", d.Default());
       GetStackTraceFromId(har.alloc_context_id).Print();
 
@@ -492,7 +501,8 @@ void PrintAddressDescription(
   }
 
   // Print the remaining threads, as an extra information, 1 line per thread.
-  hwasanThreadList().VisitAllLiveThreads([&](Thread *t) { t->Announce(); });
+  if (flags()->print_live_threads_info)
+    hwasanThreadList().VisitAllLiveThreads([&](Thread *t) { t->Announce(); });
 
   if (!num_descriptions_printed)
     // We exhausted our possibilities. Bail out.
@@ -600,6 +610,7 @@ void ReportInvalidFree(StackTrace *stack, uptr tagged_addr) {
   if (tag_ptr)
     PrintTagsAroundAddr(tag_ptr);
 
+  MaybePrintAndroidHelpUrl();
   ReportErrorSummary(bug_type, stack);
 }
 
@@ -673,6 +684,7 @@ void ReportTailOverwritten(StackTrace *stack, uptr tagged_addr, uptr orig_size,
   tag_t *tag_ptr = reinterpret_cast<tag_t*>(MemToShadow(untagged_addr));
   PrintTagsAroundAddr(tag_ptr);
 
+  MaybePrintAndroidHelpUrl();
   ReportErrorSummary(bug_type, stack);
 }
 
@@ -742,6 +754,7 @@ void ReportTagMismatch(StackTrace *stack, uptr tagged_addr, uptr access_size,
   if (registers_frame)
     ReportRegisters(registers_frame, pc);
 
+  MaybePrintAndroidHelpUrl();
   ReportErrorSummary(bug_type, stack);
 }
 

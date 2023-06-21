@@ -937,7 +937,7 @@ stmt_after_ip_normal_pos (class loop *loop, gimple *stmt)
   if (sbb != bb)
     return false;
 
-  return stmt == last_stmt (bb);
+  return stmt == last_nondebug_stmt (bb);
 }
 
 /* Returns true if STMT if after the place where the original induction
@@ -1606,7 +1606,10 @@ record_group_use (struct ivopts_data *data, tree *use_p,
     {
       unsigned int i;
 
-      addr_base = strip_offset (iv->base, &addr_offset);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (iv->base)));
+      tree addr_toffset;
+      split_constant_offset (iv->base, &addr_base, &addr_toffset);
+      addr_offset = int_cst_value (addr_toffset);
       for (i = 0; i < data->vgroups.length (); i++)
 	{
 	  struct iv_use *use;
@@ -2942,7 +2945,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
-tree
+static tree
 strip_offset (tree expr, poly_uint64_pod *offset)
 {
   poly_int64 off;
@@ -3582,9 +3585,10 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
       step = fold_convert (sizetype, step);
       record_common_cand (data, base, step, use);
       /* Also record common candidate with offset stripped.  */
-      base = strip_offset (base, &offset);
-      if (maybe_ne (offset, 0U))
-	record_common_cand (data, base, step, use);
+      tree alt_base, alt_offset;
+      split_constant_offset (base, &alt_base, &alt_offset);
+      if (!integer_zerop (alt_offset))
+	record_common_cand (data, alt_base, step, use);
     }
 
   /* At last, add auto-incremental candidates.  Make such variables
@@ -5397,7 +5401,7 @@ may_eliminate_iv (struct ivopts_data *data,
   /* For now works only for exits that dominate the loop latch.
      TODO: extend to other conditions inside loop body.  */
   ex_bb = gimple_bb (use->stmt);
-  if (use->stmt != last_stmt (ex_bb)
+  if (use->stmt != last_nondebug_stmt (ex_bb)
       || gimple_code (use->stmt) != GIMPLE_COND
       || !dominated_by_p (CDI_DOMINATORS, loop->latch, ex_bb))
     return false;
@@ -7267,7 +7271,7 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 
   base = unshare_expr (cand->iv->base);
 
-  create_iv (base, unshare_expr (cand->iv->step),
+  create_iv (base, PLUS_EXPR, unshare_expr (cand->iv->step),
 	     cand->var_before, data->current_loop,
 	     &incr_pos, after, &cand->var_before, &cand->var_after);
 }
@@ -8131,7 +8135,8 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, class loop *loop,
 	{
 	  fprintf (dump_file, "  single exit %d -> %d, exit condition ",
 		   exit->src->index, exit->dest->index);
-	  print_gimple_stmt (dump_file, last_stmt (exit->src), 0, TDF_SLIM);
+	  print_gimple_stmt (dump_file, *gsi_last_bb (exit->src),
+			     0, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
 

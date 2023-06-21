@@ -20,6 +20,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INTERNAL_FN_H
 #define GCC_INTERNAL_FN_H
 
+#include "insn-codes.h"
+#include "insn-opinit.h"
+
+
 /* INTEGER_CST values for IFN_UNIQUE function arg-0.
 
    UNSPEC: Undifferentiated UNIQUE.
@@ -112,6 +116,10 @@ internal_fn_name (enum internal_fn fn)
 }
 
 extern internal_fn lookup_internal_fn (const char *);
+extern void lookup_hilo_internal_fn (internal_fn, internal_fn *, internal_fn *);
+extern void lookup_evenodd_internal_fn (internal_fn, internal_fn *,
+					internal_fn *);
+extern optab direct_internal_fn_optab (internal_fn, tree_pair);
 
 /* Return the ECF_* flags for function FN.  */
 
@@ -210,6 +218,7 @@ extern bool commutative_binary_fn_p (internal_fn);
 extern bool commutative_ternary_fn_p (internal_fn);
 extern int first_commutative_argument (internal_fn);
 extern bool associative_binary_fn_p (internal_fn);
+extern bool widening_fn_p (code_helper);
 
 extern bool set_edom_supported_p (void);
 

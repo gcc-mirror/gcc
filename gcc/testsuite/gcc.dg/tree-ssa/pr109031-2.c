@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fwrapv" } */
 signed char sc;
-signed short ss;
+__INT16_TYPE__ ss;
 
 void testsc() {
   unsigned int g = 0;
@@ -18,9 +18,9 @@ void testsc() {
 }
 
 void testss() {
-  unsigned int g = 0;
-  unsigned int *p1 = &g;
-  signed short *p2 = &ss;
+  __UINT32_TYPE__ g = 0;
+  __UINT32_TYPE__ *p1 = &g;
+  __INT16_TYPE__ *p2 = &ss;
 
   do {
     (*p1)++;

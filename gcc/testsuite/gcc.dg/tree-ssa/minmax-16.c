@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fdump-tree-phiopt -g" } */
+/* { dg-options "-O -fdump-tree-phiopt -fdump-tree-optimized -g" } */
 
 #include <stdint.h>
 
@@ -25,5 +25,8 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 3 "phiopt1" } } */
+/* After phiopt1, will be only 2 MIN_EXPR in the IR (including debug statements). */
+/* xk will only have the final result so the extra debug info does not change anything. */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "phiopt1" } } */

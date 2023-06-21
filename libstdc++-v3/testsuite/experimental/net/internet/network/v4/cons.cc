@@ -111,6 +111,16 @@ test03_errors()
   }
 }
 
+constexpr bool
+test_constexpr()
+{
+  test01();
+  test02();
+  test03();
+  return true;
+}
+
+
 int
 main()
 {
@@ -120,10 +130,5 @@ main()
   test03();
   test03_errors();
 
-  constexpr bool c = []{
-    test01();
-    test02();
-    test03();
-    return true;
-  };
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

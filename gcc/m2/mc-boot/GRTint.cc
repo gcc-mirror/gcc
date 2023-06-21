@@ -934,10 +934,6 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
   RTint_Vector vec;
   Selective_SetOfFd inSet;
   Selective_SetOfFd outSet;
-  unsigned int b4s;
-  unsigned int b4m;
-  unsigned int afs;
-  unsigned int afm;
   unsigned int sec;
   unsigned int micro;
   int maxFd;
@@ -1001,7 +997,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
         }
       if (((untilInterrupt && (inSet == NULL)) && (outSet == NULL)) && ! found)
         {
-          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 732);
+          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 728);
         }
       /* printf('}
       ') ;  */

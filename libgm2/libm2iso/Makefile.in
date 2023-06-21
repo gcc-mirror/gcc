@@ -176,8 +176,8 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	Storage.lo StreamFile.lo StringChan.lo \
 @BUILD_ISOLIB_TRUE@	Strings.lo SWholeIO.lo SysClock.lo \
 @BUILD_ISOLIB_TRUE@	SYSTEM.lo TermFile.lo TERMINATION.lo \
-@BUILD_ISOLIB_TRUE@	TextIO.lo WholeConv.lo WholeIO.lo \
-@BUILD_ISOLIB_TRUE@	WholeStr.lo
+@BUILD_ISOLIB_TRUE@	TextIO.lo TextUtil.lo WholeConv.lo \
+@BUILD_ISOLIB_TRUE@	WholeIO.lo WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
 @BUILD_ISOLIB_TRUE@	ErrnoCategory.lo wraptime.lo RTco.lo \
 @BUILD_ISOLIB_TRUE@	libm2iso_la-wrapsock.lo
@@ -329,7 +329,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PERL = @PERL@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -409,7 +408,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUFFIXES = .c .cc .mod .def .o .obj .lo .a .la
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -512,6 +511,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.def  SysClock.def \
 @BUILD_ISOLIB_TRUE@         SYSTEM.def  TermFile.def \
 @BUILD_ISOLIB_TRUE@         TERMINATION.def  TextIO.def \
+@BUILD_ISOLIB_TRUE@         TextUtil.def \
 @BUILD_ISOLIB_TRUE@         WholeConv.def  WholeIO.def \
 @BUILD_ISOLIB_TRUE@         WholeStr.def  wrapsock.def \
 @BUILD_ISOLIB_TRUE@         wraptime.def
@@ -551,6 +551,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.mod  SysClock.mod \
 @BUILD_ISOLIB_TRUE@         SYSTEM.mod  TermFile.mod \
 @BUILD_ISOLIB_TRUE@         TERMINATION.mod  TextIO.mod \
+@BUILD_ISOLIB_TRUE@         TextUtil.mod \
 @BUILD_ISOLIB_TRUE@         WholeConv.mod  WholeIO.mod \
 @BUILD_ISOLIB_TRUE@         WholeStr.mod
 

@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodules-ts -isystem [srcdir]" }
+// { dg-additional-options "-fmodules-ts -isystem [srcdir] -fno-canonical-system-headers" }
 
 #define empty
 #define nop(X) X

@@ -144,6 +144,7 @@ extern int loongarch_cpu_issue_rate[];
 extern int loongarch_cpu_multipass_dfa_lookahead[];
 
 extern struct loongarch_cache loongarch_cpu_cache[];
+extern struct loongarch_align loongarch_cpu_align[];
 extern struct loongarch_rtx_cost_data loongarch_cpu_rtx_cost_data[];
 
 #ifdef __cplusplus

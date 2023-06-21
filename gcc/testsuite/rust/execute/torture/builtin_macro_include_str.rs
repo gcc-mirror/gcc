@@ -1,4 +1,4 @@
-// { dg-output "hello, include!\n" }
+// { dg-output "hello, include!\r*\n" }
 #[rustc_builtin_macro]
 macro_rules! include_str {
     () => {{}};

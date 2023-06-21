@@ -1,6 +1,7 @@
 /* PR rtl-optimization/101008 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
+/* { dg-require-effective-target int32 } */
 
 typedef unsigned __attribute__((__vector_size__(32))) U;
 typedef unsigned __attribute__((__vector_size__(16))) V;

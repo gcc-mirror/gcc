@@ -38,8 +38,8 @@ test01()
   VERIFY( interval[0] == 0.0 );
   VERIFY( interval[5] == 5.0 );
   VERIFY( density.size() == 5 );
-  VERIFY( density[0] == 0.5 / 6.0 );
-  VERIFY( density[2] == 2.5 / 6.0 );
+  VERIFY( density[0] == double(0.5 / 6.0) );
+  VERIFY( density[2] == double(2.5 / 6.0) );
 }
 
 int main()

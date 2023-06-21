@@ -228,7 +228,7 @@ wrapc_isfinitef (float x)
 /* init - init/finish functions for the module */
 
 void
-_M2_wrapc_init ()
+_M2_wrapc_init (int argc, char *argv[], char *envp[])
 {
 }
 

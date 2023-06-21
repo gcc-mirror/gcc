@@ -1,3 +1,59 @@
+2023-06-16  Alex Coplan  <alex.coplan@arm.com>
+
+	* c.opt (Welaborated-enum-base): New.
+
+2023-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84890
+	* known-headers.cc
+	(suggest_missing_header::~suggest_missing_header): Reword note to
+	avoid negative tone of "forgetting".
+
+2023-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58487
+	* c.opt: Add -Wnrvo.
+
+2023-05-26  Martin Uecker  <uecker@tugraz.at>
+
+	* c-attribs.cc (build_attr_access_from_parms): Split loop to first
+	record all parameters.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* c-ada-spec.cc (has_static_fields): Use _P() defines from tree.h.
+	(dump_ada_declaration): Ditto.
+	(dump_ada_structure): Ditto.
+	* c-common.cc (unsafe_conversion_p): Ditto.
+	(shorten_compare): Ditto.
+	(pointer_int_sum): Ditto.
+	(c_common_truthvalue_conversion): Ditto.
+	(scalar_to_vector): Ditto.
+	* c-common.h (gnu_vector_type_p): Ditto.
+	* c-omp.cc (c_omp_depend_t_p): Ditto.
+	(c_omp_split_clauses): Ditto.
+	* c-ubsan.cc (ubsan_instrument_division): Ditto.
+	* c-warn.cc (conversion_warning): Ditto.
+	(warnings_for_convert_and_check): Ditto.
+
+2023-05-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.cc (print_char_table): Handle %B like %b.
+
+2023-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Use 202311 as
+	__has_c_attribute return for all C2x attributes.
+
+2023-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine __cpp_auto_cast
+	for C++23.
+
+2023-05-01  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.cc (ubsan_maybe_instrument_array_ref): Don't copy_node.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

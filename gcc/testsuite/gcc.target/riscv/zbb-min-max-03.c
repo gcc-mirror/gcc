@@ -6,5 +6,18 @@ int f(int x) {
  return x >= 0 ? x : 0;
 }
 
+unsigned f2(unsigned x, unsigned y) {
+  return x > y ? x : y;
+}
+
+unsigned f3(unsigned x, unsigned y) {
+  return x < y ? x : y;
+}
+
 /* { dg-final { scan-assembler-times "max\t" 1 } } */
 /* { dg-final { scan-assembler-not "li\t" } } */
+/* { dg-final { scan-assembler-times "maxu\t" 1 } } */
+/* { dg-final { scan-assembler-times "minu\t" 1 } } */
+/* { dg-final { scan-assembler-not "zext.w" } } */
+/* { dg-final { scan-assembler-not "sext.w" } } */
+

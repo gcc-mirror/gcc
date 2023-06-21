@@ -1,4 +1,4 @@
-# version 2023b
+# version 2023c
 # This zic input file is in the public domain.
 R d 1916 o - Jun 14 23s 1 S
 R d 1916 1919 - O Su>=1 23s 0 -
@@ -920,11 +920,9 @@ R l 1988 o - Jun 1 0 1 S
 R l 1989 o - May 10 0 1 S
 R l 1990 1992 - May 1 0 1 S
 R l 1992 o - O 4 0 0 -
-R l 1993 2022 - Mar lastSu 0 1 S
+R l 1993 ma - Mar lastSu 0 1 S
 R l 1993 1998 - S lastSu 0 0 -
 R l 1999 ma - O lastSu 0 0 -
-R l 2023 o - Ap 21 0 1 S
-R l 2024 ma - Mar lastSu 0 1 S
 Z Asia/Beirut 2:22 - LMT 1880
 2 l EE%sT
 R NB 1935 1941 - S 14 0 0:20 -

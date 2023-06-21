@@ -29,19 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces.C.Strings; use Interfaces.C.Strings;
-with System;               use System;
+with Interfaces.C.Strings;    use Interfaces.C.Strings;
+with System.Storage_Elements; use System.Storage_Elements;
+with System;                  use System;
 
 with Ada.Unchecked_Conversion;
 
 package body Interfaces.C.Pointers is
 
-   type Addr is mod 2 ** System.Parameters.ptr_bits;
+   subtype Offset is Storage_Offset;
 
-   function To_Pointer is new Ada.Unchecked_Conversion (Addr,      Pointer);
-   function To_Addr    is new Ada.Unchecked_Conversion (Pointer,   Addr);
-   function To_Addr    is new Ada.Unchecked_Conversion (ptrdiff_t, Addr);
-   function To_Ptrdiff is new Ada.Unchecked_Conversion (Addr,      ptrdiff_t);
+   function To_Pointer is new Ada.Unchecked_Conversion (Address,   Pointer);
+   function To_Addr    is new Ada.Unchecked_Conversion (Pointer,   Address);
+   function To_Offset  is new Ada.Unchecked_Conversion (ptrdiff_t, Offset);
+   function To_Ptrdiff is new Ada.Unchecked_Conversion (Offset,    ptrdiff_t);
 
    Elmt_Size : constant ptrdiff_t :=
                  (Element_Array'Component_Size
@@ -59,7 +60,7 @@ package body Interfaces.C.Pointers is
          raise Pointer_Error;
       end if;
 
-      return To_Pointer (To_Addr (Left) + To_Addr (Elmt_Size * Right));
+      return To_Pointer (To_Addr (Left) + To_Offset (Elmt_Size * Right));
    end "+";
 
    function "+" (Left : ptrdiff_t; Right : Pointer) return Pointer is
@@ -68,7 +69,7 @@ package body Interfaces.C.Pointers is
          raise Pointer_Error;
       end if;
 
-      return To_Pointer (To_Addr (Elmt_Size * Left) + To_Addr (Right));
+      return To_Pointer (To_Offset (Elmt_Size * Left) + To_Addr (Right));
    end "+";
 
    ---------
@@ -81,7 +82,7 @@ package body Interfaces.C.Pointers is
          raise Pointer_Error;
       end if;
 
-      return To_Pointer (To_Addr (Left) - To_Addr (Right * Elmt_Size));
+      return To_Pointer (To_Addr (Left) - To_Offset (Right * Elmt_Size));
    end "-";
 
    function "-" (Left : Pointer; Right : Pointer) return ptrdiff_t is

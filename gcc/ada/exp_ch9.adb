@@ -154,8 +154,7 @@ package body Exp_Ch9 is
    --  N is the enclosing construct.
 
    function Build_Entry_Count_Expression
-     (Concurrent_Type : Node_Id;
-      Component_List  : List_Id;
+     (Concurrent_Type : Entity_Id;
       Loc             : Source_Ptr) return Node_Id;
    --  Compute number of entries for concurrent object. This is a count of
    --  simple entries, followed by an expression that computes the length
@@ -618,7 +617,7 @@ package body Exp_Ch9 is
 
       Prev := First_Entity (Ttyp);
       while Chars (Prev) /= Chars (Ent)
-        or else (Ekind (Prev) /= Ekind (Ent))
+        or else Ekind (Prev) /= Ekind (Ent)
         or else not Sem_Ch6.Type_Conformant (Ent, Prev)
       loop
          if Ekind (Prev) = E_Entry then
@@ -1219,9 +1218,9 @@ package body Exp_Ch9 is
       then
          declare
             Ins_Nod : Node_Id;
+            Par_Nod : Node_Id;
 
          begin
-            Set_Has_Master_Entity (Master_Scope);
             Master_Decl := Build_Master_Declaration (Loc);
 
             --  Ensure that the master declaration is placed before its use
@@ -1230,6 +1229,30 @@ package body Exp_Ch9 is
             while not Is_List_Member (Ins_Nod) loop
                Ins_Nod := Parent (Ins_Nod);
             end loop;
+
+            Par_Nod := Parent (List_Containing (Ins_Nod));
+
+            --  For internal blocks created by Wrap_Loop_Statement, Wrap_
+            --  Statements_In_Block, and Build_Abort_Undefer_Block, remember
+            --  that they have a task master entity declaration; required by
+            --  Build_Master_Entity to avoid creating another master entity,
+            --  and also ensures that subsequent calls to Find_Master_Scope
+            --  return this scope as the master scope of Typ.
+
+            if Is_Internal_Block (Par_Nod) then
+               Set_Has_Master_Entity (Entity (Identifier (Par_Nod)));
+
+            elsif Nkind (Par_Nod) = N_Handled_Sequence_Of_Statements
+              and then Is_Internal_Block (Parent (Par_Nod))
+            then
+               Set_Has_Master_Entity (Entity (Identifier (Parent (Par_Nod))));
+
+            --  Otherwise remember that this scope has an associated task
+            --  master entity declaration.
+
+            else
+               Set_Has_Master_Entity (Master_Scope);
+            end if;
 
             Insert_Before (First (List_Containing (Ins_Nod)), Master_Decl);
             Analyze (Master_Decl);
@@ -1404,14 +1427,12 @@ package body Exp_Ch9 is
    ----------------------------------
 
    function Build_Entry_Count_Expression
-     (Concurrent_Type : Node_Id;
-      Component_List  : List_Id;
+     (Concurrent_Type : Entity_Id;
       Loc             : Source_Ptr) return Node_Id
    is
       Eindx  : Nat;
       Ent    : Entity_Id;
       Ecount : Node_Id;
-      Comp   : Node_Id;
       Lo     : Node_Id;
       Hi     : Node_Id;
       Typ    : Entity_Id;
@@ -1435,13 +1456,8 @@ package body Exp_Ch9 is
       --  Loop through entry families building the addition nodes
 
       Ent := First_Entity (Concurrent_Type);
-      Comp := First (Component_List);
       while Present (Ent) loop
          if Ekind (Ent) = E_Entry_Family then
-            while Chars (Ent) /= Chars (Defining_Identifier (Comp)) loop
-               Next (Comp);
-            end loop;
-
             Typ := Entry_Index_Type (Ent);
             Hi := Type_High_Bound (Typ);
             Lo := Type_Low_Bound  (Typ);
@@ -3169,28 +3185,6 @@ package body Exp_Ch9 is
          Par := Parent (Obj_Or_Typ);
       end if;
 
-      --  For transient scopes check if the master entity is already defined
-
-      if Is_Type (Obj_Or_Typ)
-        and then Ekind (Scope (Obj_Or_Typ)) = E_Block
-        and then Is_Internal (Scope (Obj_Or_Typ))
-      then
-         declare
-            Master_Scope : constant Entity_Id :=
-                             Find_Master_Scope (Obj_Or_Typ);
-         begin
-            if Has_Master_Entity (Master_Scope)
-              or else Is_Finalizer (Master_Scope)
-            then
-               return;
-            end if;
-
-            if Present (Current_Entity_In_Scope (Name_uMaster)) then
-               return;
-            end if;
-         end;
-      end if;
-
       --  When creating a master for a record component which is either a task
       --  or access-to-task, the enclosing record is the master scope and the
       --  proper insertion point is the component list.
@@ -3398,6 +3392,7 @@ package body Exp_Ch9 is
 
       Loc : constant Source_Ptr := Sloc (N);
 
+      Block_Id  : Entity_Id;
       Bod_Id    : Entity_Id;
       Bod_Spec  : Node_Id;
       Bod_Stmts : List_Id;
@@ -3456,11 +3451,12 @@ package body Exp_Ch9 is
 
       Analyze_Statements (Bod_Stmts);
 
-      Set_Scope (Entity (Identifier (First (Bod_Stmts))),
-                 Protected_Body_Subprogram (Ent));
+      Block_Id := Entity (Identifier (First (Bod_Stmts)));
 
-      Reset_Scopes_To
-        (First (Bod_Stmts), Entity (Identifier (First (Bod_Stmts))));
+      Set_Scope (Block_Id, Protected_Body_Subprogram (Ent));
+      Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Corresponding_Spec (N)));
+
+      Reset_Scopes_To (First (Bod_Stmts), Block_Id);
 
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
@@ -5468,7 +5464,7 @@ package body Exp_Ch9 is
 
       Prev := First_Entity (Ttyp);
       while Chars (Prev) /= Chars (Ent)
-        or else (Ekind (Prev) /= Ekind (Ent))
+        or else Ekind (Prev) /= Ekind (Ent)
         or else not Sem_Ch6.Type_Conformant (Ent, Prev)
       loop
          if Ekind (Prev) = E_Entry then
@@ -7708,7 +7704,7 @@ package body Exp_Ch9 is
    --         or else K = Ada.Tags.TK_Tagged
    --       then
    --          <dispatching-call>;
-   --          <triggering-statements>
+   --          --  <triggering-statements> (code factorized after if-stmt)
 
    --       else
    --          S :=
@@ -7733,11 +7729,14 @@ package body Exp_Ch9 is
    --                <dispatching-call>;
    --             end if;
 
-   --             <triggering-statements>
+   --             --  <triggering-statements> (code factorized after if-stmt)
    --          else
    --             <else-statements>
+   --             goto L0; -- skip triggering statements
    --          end if;
    --       end if;
+   --       <triggering-statements>
+   --       L0:
    --    end;
 
    procedure Expand_N_Conditional_Entry_Call (N : Node_Id) is
@@ -7753,6 +7752,8 @@ package body Exp_Ch9 is
       Decl           : Node_Id;
       Decls          : List_Id;
       Formals        : List_Id;
+      Label          : Node_Id;
+      Label_Id       : Entity_Id := Empty;
       Lim_Typ_Stmts  : List_Id;
       N_Stats        : List_Id;
       Obj            : Entity_Id;
@@ -7879,12 +7880,13 @@ package body Exp_Ch9 is
          --       then
          --          <dispatching-call>
          --       end if;
-         --       <normal-statements>
+         --       --  <triggering-stataments> (code factorized after if-stmt)
          --    else
          --       <else-statements>
+         --       goto L0; --  skip triggering statements
          --    end if;
 
-         N_Stats := New_Copy_Separate_List (Statements (Alt));
+         N_Stats := New_List;
 
          Prepend_To (N_Stats,
            Make_Implicit_If_Statement (N,
@@ -7918,6 +7920,14 @@ package body Exp_Ch9 is
              Then_Statements =>
                New_List (Blk)));
 
+         Label_Id := Make_Identifier (Loc, New_External_Name ('L', 0));
+         Set_Entity (Label_Id,
+           Make_Defining_Identifier (Loc, Chars (Label_Id)));
+
+         Append_To (Else_Statements (N),
+           Make_Goto_Statement (Loc,
+             Name => New_Occurrence_Of (Entity (Label_Id), Loc)));
+
          Append_To (Conc_Typ_Stmts,
            Make_Implicit_If_Statement (N,
              Condition       => New_Occurrence_Of (B, Loc),
@@ -7926,15 +7936,14 @@ package body Exp_Ch9 is
 
          --  Generate:
          --    <dispatching-call>;
-         --    <triggering-statements>
+         --    --  <triggering-statements>  (code factorized after if-stmt)
 
-         Lim_Typ_Stmts := New_Copy_Separate_List (Statements (Alt));
-         Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Blk));
+         Lim_Typ_Stmts := New_List (New_Copy_Tree (Blk));
 
          --  Generate:
          --    if K = Ada.Tags.TK_Limited_Tagged
          --         or else K = Ada.Tags.TK_Tagged
-         --       then
+         --    then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
@@ -7945,6 +7954,15 @@ package body Exp_Ch9 is
              Condition       => Build_Dispatching_Tag_Check (K, N),
              Then_Statements => Lim_Typ_Stmts,
              Else_Statements => Conc_Typ_Stmts));
+
+         Label := Make_Label (Loc, Label_Id);
+         Append_To (Decls,
+           Make_Implicit_Label_Declaration (Loc,
+             Defining_Identifier => Entity (Label_Id),
+             Label_Construct     => Label));
+
+         Append_List_To (Stmts, Statements (Alt)); --  triggering-statements
+         Append_To (Stmts, Label);
 
          Rewrite (N,
            Make_Block_Statement (Loc,
@@ -8393,9 +8411,11 @@ package body Exp_Ch9 is
       Current_Node : Node_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
+      New_Op_Spec  : Node_Id;
       Op_Body      : Node_Id;
       Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
+      Op_Spec      : Entity_Id;
 
       function Build_Dispatching_Subprogram_Body
         (N        : Node_Id;
@@ -8512,11 +8532,12 @@ package body Exp_Ch9 is
                null;
 
             when N_Subprogram_Body =>
+               Op_Spec := Corresponding_Spec (Op_Body);
 
                --  Do not create bodies for eliminated operations
 
                if not Is_Eliminated (Defining_Entity (Op_Body))
-                 and then not Is_Eliminated (Corresponding_Spec (Op_Body))
+                 and then not Is_Eliminated (Op_Spec)
                then
                   if Lock_Free_Active then
                      New_Op_Body :=
@@ -8531,68 +8552,67 @@ package body Exp_Ch9 is
                   Current_Node := New_Op_Body;
                   Analyze (New_Op_Body);
 
-                  --  When the original protected body has nested subprograms,
-                  --  the new body also has them, so set the flag accordingly
-                  --  and reset the scopes of the top-level nested subprograms
+                  New_Op_Spec := Corresponding_Spec (New_Op_Body);
+
+                  --  When the original subprogram body has nested subprograms,
+                  --  the new body also has them, so set the flag accordingly.
+
+                  Set_Has_Nested_Subprogram
+                    (New_Op_Spec, Has_Nested_Subprogram (New_Op_Spec));
+
+                  --  Similarly, when the original subprogram body uses the
+                  --  secondary stack, the new body also does. This is needed
+                  --  when the cleanup actions of the subprogram are delayed
+                  --  because it contains a package instance with a body.
+
+                  Set_Uses_Sec_Stack (New_Op_Spec, Uses_Sec_Stack (Op_Spec));
+
+                  --  Now reset the scopes of the top-level nested subprograms
                   --  and other declaration entities so that they now refer to
-                  --  the new body's entity. (It would preferable to do this
+                  --  the new body's entity (it would preferable to do this
                   --  within Build_Protected_Sub_Specification, which is called
                   --  from Build_Unprotected_Subprogram_Body, but the needed
                   --  subprogram entity isn't available via Corresponding_Spec
-                  --  until after the above Analyze call.)
+                  --  until after the above Analyze call).
 
-                  if Has_Nested_Subprogram (Corresponding_Spec (Op_Body)) then
-                     Set_Has_Nested_Subprogram
-                       (Corresponding_Spec (New_Op_Body));
-
-                     Reset_Scopes_To
-                       (New_Op_Body, Corresponding_Spec (New_Op_Body));
-                  end if;
+                  Reset_Scopes_To (New_Op_Body, New_Op_Spec);
 
                   --  Build the corresponding protected operation. This is
                   --  needed only if this is a public or private operation of
                   --  the type.
 
-                  --  Why do we need to test for Corresponding_Spec being
-                  --  present here when it's assumed to be set further above
-                  --  in the Is_Eliminated test???
+                  Op_Decl := Unit_Declaration_Node (Op_Spec);
 
-                  if Present (Corresponding_Spec (Op_Body)) then
-                     Op_Decl :=
-                       Unit_Declaration_Node (Corresponding_Spec (Op_Body));
+                  if Nkind (Parent (Op_Decl)) = N_Protected_Definition then
+                     if Lock_Free_Active then
+                        New_Op_Body :=
+                          Build_Lock_Free_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     else
+                        New_Op_Body :=
+                          Build_Protected_Subprogram_Body
+                            (Op_Body, Pid, Specification (New_Op_Body));
+                     end if;
 
-                     if Nkind (Parent (Op_Decl)) = N_Protected_Definition then
-                        if Lock_Free_Active then
-                           New_Op_Body :=
-                             Build_Lock_Free_Protected_Subprogram_Body
-                               (Op_Body, Pid, Specification (New_Op_Body));
-                        else
-                           New_Op_Body :=
-                             Build_Protected_Subprogram_Body (
-                               Op_Body, Pid, Specification (New_Op_Body));
-                        end if;
+                     Insert_After (Current_Node, New_Op_Body);
+                     Current_Node := New_Op_Body;
+                     Analyze (New_Op_Body);
 
-                        Insert_After (Current_Node, New_Op_Body);
-                        Analyze (New_Op_Body);
-                        Current_Node := New_Op_Body;
+                     --  Generate an overriding primitive operation body for
+                     --  this subprogram if the protected type implements
+                     --  an interface.
 
-                        --  Generate an overriding primitive operation body for
-                        --  this subprogram if the protected type implements
-                        --  an interface.
+                     if Ada_Version >= Ada_2005
+                       and then
+                         Present (Interfaces (Corresponding_Record_Type (Pid)))
+                     then
+                        Disp_Op_Body :=
+                          Build_Dispatching_Subprogram_Body (
+                            Op_Body, Pid, New_Op_Body);
 
-                        if Ada_Version >= Ada_2005
-                          and then Present (Interfaces (
-                                     Corresponding_Record_Type (Pid)))
-                        then
-                           Disp_Op_Body :=
-                             Build_Dispatching_Subprogram_Body (
-                               Op_Body, Pid, New_Op_Body);
-
-                           Insert_After (Current_Node, Disp_Op_Body);
-                           Analyze (Disp_Op_Body);
-
-                           Current_Node := Disp_Op_Body;
-                        end if;
+                        Insert_After (Current_Node, Disp_Op_Body);
+                        Current_Node := Disp_Op_Body;
+                        Analyze (Disp_Op_Body);
                      end if;
                   end if;
                end if;
@@ -9220,7 +9240,7 @@ package body Exp_Ch9 is
          declare
             Entry_Count_Expr   : constant Node_Id :=
                                    Build_Entry_Count_Expression
-                                     (Prot_Typ, Cdecls, Loc);
+                                     (Prot_Typ, Loc);
             Num_Attach_Handler : Nat := 0;
             Protection_Subtype : Node_Id;
             Ritem              : Node_Id;
@@ -14204,7 +14224,7 @@ package body Exp_Ch9 is
       Tdec   : Node_Id;
       Tdef   : Node_Id;
       Tnam   : Name_Id;
-      Ttyp   : Node_Id;
+      Ttyp   : Entity_Id;
 
    begin
       Ttyp := Corresponding_Concurrent_Type (Task_Rec);
@@ -14425,14 +14445,7 @@ package body Exp_Ch9 is
 
          --  where a,b... are the entry family names for the task definition
 
-         Ecount :=
-           Build_Entry_Count_Expression
-             (Ttyp,
-              Component_Items
-                (Component_List
-                   (Type_Definition
-                      (Parent (Corresponding_Record_Type (Ttyp))))),
-              Loc);
+         Ecount := Build_Entry_Count_Expression (Ttyp, Loc);
          Append_To (Args, Ecount);
 
          --  Master parameter. This is a reference to the _Master parameter of

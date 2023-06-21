@@ -635,6 +635,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 PICFLAG
+enable_host_pie
+enable_host_shared
 TARGET_LIBRARY_FALSE
 TARGET_LIBRARY_TRUE
 toolexeclibdir
@@ -778,6 +780,7 @@ with_gnu_ld
 enable_libtool_lock
 with_toolexeclibdir
 enable_host_shared
+enable_host_pie
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1420,6 +1423,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-host-shared    build host code as shared libraries
+  --enable-host-pie       build host code as PIE
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -10759,7 +10763,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10762 "configure"
+#line 10766 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10865,7 +10869,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10868 "configure"
+#line 10872 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11548,13 +11552,29 @@ else
   multilib_arg=
 fi
 
+# Enable --enable-host-shared.
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
-  enableval=$enable_host_shared; PICFLAG=-fPIC
+  enableval=$enable_host_shared;
+fi
+
+
+
+# Enable --enable-host-pie.
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie;
+fi
+
+
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
 else
   PICFLAG=
 fi
-
 
 
 ac_config_files="$ac_config_files Makefile"

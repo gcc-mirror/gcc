@@ -1949,7 +1949,7 @@ process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t hostaddrs,
 {
   int dev_num = dev_num64;
   GOMP_PLUGIN_target_rev (fn, mapnum, hostaddrs, sizes, kinds, dev_num,
-			  NULL, NULL, NULL);
+			  NULL);
 }
 
 /* Output any data written to console output from the kernel.  It is expected
@@ -3231,7 +3231,9 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   /* Return -1 if no omp_requires_mask cannot be fulfilled but
      devices were present.  */
   if (hsa_context.agent_count > 0
-      && (omp_requires_mask & ~GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
+      && ((omp_requires_mask
+	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
   return hsa_context.agent_count;
 }

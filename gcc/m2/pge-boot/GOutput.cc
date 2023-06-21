@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -52,7 +53,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GASCII.h"
 #   include "GDynamicStrings.h"
 
-static unsigned int stdout_;
+static bool stdout_;
 static FIO_File outputFile;
 static DynamicStrings_String buffer;
 
@@ -61,7 +62,7 @@ static DynamicStrings_String buffer;
           TRUE is returned if success, FALSE otherwise.
 */
 
-extern "C" unsigned int Output_Open (const char *filename_, unsigned int _filename_high);
+extern "C" bool Output_Open (const char *filename_, unsigned int _filename_high);
 
 /*
    Close - close the output file.
@@ -129,7 +130,7 @@ extern "C" DynamicStrings_String Output_EndBuffer (void);
           TRUE is returned if success, FALSE otherwise.
 */
 
-extern "C" unsigned int Output_Open (const char *filename_, unsigned int _filename_high)
+extern "C" bool Output_Open (const char *filename_, unsigned int _filename_high)
 {
   char filename[_filename_high+1];
 
@@ -139,13 +140,13 @@ extern "C" unsigned int Output_Open (const char *filename_, unsigned int _filena
   if ((StrLib_StrEqual ((const char *) filename, _filename_high, (const char *) "<stdout>", 8)) || (StrLib_StrEqual ((const char *) filename, _filename_high, (const char *) "-", 1)))
     {
       outputFile = FIO_StdOut;
-      stdout_ = TRUE;
-      return TRUE;
+      stdout_ = true;
+      return true;
     }
   else
     {
       outputFile = FIO_OpenToWrite ((const char *) filename, _filename_high);
-      stdout_ = FALSE;
+      stdout_ = false;
       return FIO_IsNoError (outputFile);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -305,7 +306,7 @@ extern "C" DynamicStrings_String Output_EndBuffer (void)
 
 extern "C" void _M2_Output_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
-  stdout_ = TRUE;
+  stdout_ = true;
   buffer = static_cast<DynamicStrings_String> (NULL);
   outputFile = FIO_StdOut;
 }

@@ -8,4 +8,4 @@ int foo(int i)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump "Removing dead stmt \[^\r\n\]* = i_.* == 1" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Removing dead stmt:\[^\r\n\]* = i_.* == 1" "vrp1" } } */

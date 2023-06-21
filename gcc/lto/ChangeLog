@@ -1,3 +1,15 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lto-common.cc (lto_maybe_register_decl): Use _P defines from tree.h.
+	* lto-symtab.cc (warn_type_compatibility_p): Ditto.
+	(lto_symtab_resolve_replaceable_p): Ditto.
+	(lto_symtab_merge_decls_1): Ditto.
+	* lto-symtab.h (lto_symtab_prevailing_decl): Ditto.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling lto1 and runtime libraries
+
 2023-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/108910

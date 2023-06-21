@@ -225,6 +225,7 @@ package body Ch2 is
    function P_Interpolated_String_Literal return Node_Id is
       Elements_List : constant List_Id := New_List;
       NL_Node       : Node_Id;
+      Saved_State   : constant Boolean := Inside_Interpolated_String_Literal;
       String_Node   : Node_Id;
 
    begin
@@ -245,9 +246,17 @@ package body Ch2 is
             --  Interpolated expression
 
             if Token = Tok_Left_Curly_Bracket then
-               Scan; --  past '{'
-               Append_To (Elements_List, P_Expression);
-               T_Right_Curly_Bracket;
+               declare
+                  Saved_In_Expr : constant Boolean :=
+                    Inside_Interpolated_String_Expression;
+
+               begin
+                  Scan; --  past '{'
+                  Inside_Interpolated_String_Expression := True;
+                  Append_To (Elements_List, P_Expression);
+                  Inside_Interpolated_String_Expression := Saved_In_Expr;
+                  T_Right_Curly_Bracket;
+               end;
             else
                if Prev_Token = Tok_String_Literal then
                   NL_Node := New_Node (N_String_Literal, Token_Ptr);
@@ -266,7 +275,7 @@ package body Ch2 is
          end loop;
       end if;
 
-      Inside_Interpolated_String_Literal := False;
+      Inside_Interpolated_String_Literal := Saved_State;
       Set_Expressions (String_Node, Elements_List);
 
       return String_Node;
@@ -371,7 +380,7 @@ package body Ch2 is
 
       if SIS_Entry_Active then
          Import_Check_Required :=
-           (Prag_Name = Name_Import) or else (Prag_Name = Name_Interface);
+           Prag_Name = Name_Import or else Prag_Name = Name_Interface;
       else
          Import_Check_Required := False;
       end if;

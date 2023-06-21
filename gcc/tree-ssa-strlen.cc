@@ -219,12 +219,13 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
   if (!rvals->range_of_expr (vr, val, stmt))
     return NULL_TREE;
 
-  value_range_kind rng = vr.kind ();
+  tree vrmin, vrmax;
+  value_range_kind rng = get_legacy_range (vr, vrmin, vrmax);
   if (rng == VR_RANGE)
     {
       /* Only handle straight ranges.  */
-      minmax[0] = wi::to_wide (vr.min ());
-      minmax[1] = wi::to_wide (vr.max ());
+      minmax[0] = wi::to_wide (vrmin);
+      minmax[1] = wi::to_wide (vrmax);
       return val;
     }
 
@@ -349,18 +350,19 @@ compare_nonzero_chars (strinfo *si, gimple *stmt,
     return -1;
 
   value_range vr;
-  if (!rvals->range_of_expr (vr, si->nonzero_chars, stmt))
-    return -1;
-  value_range_kind rng = vr.kind ();
-  if (rng != VR_RANGE)
+  if (!rvals->range_of_expr (vr, si->nonzero_chars, stmt)
+      || vr.varying_p ()
+      || vr.undefined_p ())
     return -1;
 
   /* If the offset is less than the minimum length or if the bounds
      of the length range are equal return the result of the comparison
      same as in the constant case.  Otherwise return a conservative
      result.  */
-  int cmpmin = compare_tree_int (vr.min (), off);
-  if (cmpmin > 0 || tree_int_cst_equal (vr.min (), vr.max ()))
+  signop sign = TYPE_SIGN (vr.type ());
+  unsigned prec = TYPE_PRECISION (vr.type ());
+  int cmpmin = wi::cmp (vr.lower_bound (), wi::uhwi (off, prec), sign);
+  if (cmpmin > 0 || vr.singleton_p ())
     return cmpmin;
 
   return -1;
@@ -980,42 +982,14 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 		  print_generic_expr (fp, si->nonzero_chars);
 		  if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 		    {
-		      value_range_kind rng = VR_UNDEFINED;
-		      wide_int min, max;
+		      value_range vr;
 		      if (rvals)
-			{
-			  value_range vr;
-			  rvals->range_of_expr (vr, si->nonzero_chars,
-						si->stmt);
-			  rng = vr.kind ();
-			  if (range_int_cst_p (&vr))
-			    {
-			      min = wi::to_wide (vr.min ());
-			      max = wi::to_wide (vr.max ());
-			    }
-			  else
-			    rng = VR_UNDEFINED;
-			}
+			rvals->range_of_expr (vr, si->nonzero_chars,
+					      si->stmt);
 		      else
-			{
-			  value_range vr;
-			  get_range_query (cfun)
-			    ->range_of_expr (vr, si->nonzero_chars);
-			  rng = vr.kind ();
-			  if (!vr.undefined_p ())
-			    {
-			      min = wi::to_wide (vr.min ());
-			      max = wi::to_wide (vr.max ());
-			    }
-			}
-
-		      if (rng == VR_RANGE || rng == VR_ANTI_RANGE)
-			{
-			  fprintf (fp, " %s[%llu, %llu]",
-				   rng == VR_RANGE ? "" : "~",
-				   (long long) min.to_uhwi (),
-				   (long long) max.to_uhwi ());
-			}
+			get_range_query (cfun)->range_of_expr (vr,
+							si->nonzero_chars);
+		      vr.dump (fp);
 		    }
 		}
 
@@ -1248,13 +1222,14 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	    {
 	      value_range vr;
 	      ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, si->stmt);
-	      if (range_int_cst_p (&vr))
-		{
-		  pdata->minlen = vr.min ();
-		  pdata->maxlen = vr.max ();
-		}
-	      else
+	      if (vr.undefined_p () || vr.varying_p ())
 		pdata->minlen = build_zero_cst (size_type_node);
+	      else
+		{
+		  tree type = vr.type ();
+		  pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
+		  pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
+		}
 	    }
 	  else
 	    pdata->minlen = build_zero_cst (size_type_node);
@@ -1292,20 +1267,21 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	{
 	  value_range vr;
 	  ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, stmt);
-	  if (range_int_cst_p (&vr))
+	  if (vr.varying_p () || vr.undefined_p ())
 	    {
-	      pdata->minlen = vr.min ();
-	      pdata->maxlen = vr.max ();
+	      pdata->minlen = build_zero_cst (size_type_node);
+	      pdata->maxlen = build_all_ones_cst (size_type_node);
+	    }
+	  else
+	    {
+	      tree type = vr.type ();
+	      pdata->minlen = wide_int_to_tree (type, vr.lower_bound ());
+	      pdata->maxlen = wide_int_to_tree (type, vr.upper_bound ());
 	      offset_int max = offset_int::from (vr.upper_bound (0), SIGNED);
 	      if (tree maxbound = get_maxbound (si->ptr, stmt, max, ptr_qry))
 		pdata->maxbound = maxbound;
 	      else
 		pdata->maxbound = pdata->maxlen;
-	    }
-	  else
-	    {
-	      pdata->minlen = build_zero_cst (size_type_node);
-	      pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	}
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == INTEGER_CST)
@@ -2919,9 +2895,11 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
       || r.undefined_p ())
     return false;
 
-  cntrange[0] = wi::to_wide (r.min ());
-  cntrange[1] = wi::to_wide (r.max ());
-  if (r.kind () == VR_ANTI_RANGE)
+  tree min, max;
+  value_range_kind kind = get_legacy_range (r, min, max);
+  cntrange[0] = wi::to_wide (min);
+  cntrange[1] = wi::to_wide (max);
+  if (kind == VR_ANTI_RANGE)
     {
       wide_int maxobjsize = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
 
@@ -4086,8 +4064,9 @@ strlen_pass::get_len_or_size (gimple *stmt, tree arg, int idx,
       else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
 	  value_range r;
-	  get_range_query (cfun)->range_of_expr (r, si->nonzero_chars);
-	  if (r.kind () == VR_RANGE)
+	  if (get_range_query (cfun)->range_of_expr (r, si->nonzero_chars)
+	      && !r.undefined_p ()
+	      && !r.varying_p ())
 	    {
 	      lenrng[0] = r.lower_bound ().to_uhwi ();
 	      lenrng[1] = r.upper_bound ().to_uhwi ();
@@ -4808,12 +4787,13 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, gimple *stmt,
 	       && TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
 	  value_range vr;
-	  ptr_qry.rvals->range_of_expr (vr, si->nonzero_chars, stmt);
-	  if (vr.kind () != VR_RANGE)
+	  if (!ptr_qry.rvals->range_of_expr (vr, si->nonzero_chars, stmt)
+	      || vr.undefined_p ()
+	      || vr.varying_p ())
 	    return false;
 
-	  minlen = tree_to_uhwi (vr.min ());
-	  maxlen = tree_to_uhwi (vr.max ());
+	  minlen = vr.lower_bound ().to_uhwi ();
+	  maxlen = vr.upper_bound ().to_uhwi ();
 	}
       else
 	return false;

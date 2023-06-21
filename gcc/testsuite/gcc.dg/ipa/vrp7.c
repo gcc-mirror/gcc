@@ -29,4 +29,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "Setting value range of param 0 \\(now 0\\) \\\[-10, 9\\\]" 1 "cp" } } */
+/* { dg-final { scan-ipa-dump-times "Setting value range of param 0 \\(now 0\\) .irange. int \\\[-10, 9\\\]" 1 "cp" } } */

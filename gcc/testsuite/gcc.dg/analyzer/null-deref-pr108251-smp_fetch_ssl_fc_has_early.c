@@ -1,5 +1,7 @@
 /* Reduced from haproxy's src/ssl_sample.c  */
 
+/* { dg-require-effective-target ptr_eq_long } */
+
 union sample_value {
   long long int sint;
   /* [...snip...]  */

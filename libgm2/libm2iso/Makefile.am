@@ -17,7 +17,7 @@
 
 SUFFIXES = .c .cc .mod .def .o .obj .lo .a .la
 
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs-iso
 
@@ -134,6 +134,7 @@ M2DEFS = ChanConsts.def  CharClass.def \
          SWholeIO.def  SysClock.def \
          SYSTEM.def  TermFile.def \
          TERMINATION.def  TextIO.def \
+         TextUtil.def \
          WholeConv.def  WholeIO.def \
          WholeStr.def  wrapsock.def \
          wraptime.def
@@ -173,6 +174,7 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          SWholeIO.mod  SysClock.mod \
          SYSTEM.mod  TermFile.mod \
          TERMINATION.mod  TextIO.mod \
+         TextUtil.mod \
          WholeConv.mod  WholeIO.mod \
          WholeStr.mod
 

@@ -26,7 +26,7 @@
 #include "rust-location.h"
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
-#include "operator.h"
+#include "util/rust-operators.h"
 #include "tree.h"
 
 // Pointers to these types are created by the backend, passed to the

@@ -77,6 +77,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // in the compiled library instead (src/c++98/globals_io.cc).
 #if !__has_attribute(__init_priority__)
   static ios_base::Init __ioinit;
+#elif defined(_GLIBCXX_SYMVER_GNU)
+  __extension__ __asm (".globl _ZSt21ios_base_library_initv");
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,4 +1,4 @@
-// { dg-output "rust/execute/torture/builtin_macros1.rs" }
+// { dg-output "rust/execute/torture/builtin_macros1.rs\r*" }
 #[rustc_builtin_macro]
 macro_rules! file {
     () => {{}};

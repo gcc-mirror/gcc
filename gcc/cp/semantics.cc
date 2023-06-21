@@ -346,7 +346,7 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
     }
 
   tree cs = current_scope ();
-  if (processing_template_decl
+  if (in_template_context
       && (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL))
     if (tree template_info = get_template_info (cs))
       {
@@ -628,6 +628,17 @@ set_cleanup_locs (tree stmts, location_t loc)
       set_cleanup_locs (stmt, loc);
 }
 
+/* True iff the innermost block scope is a try block.  */
+
+static bool
+at_try_scope ()
+{
+  cp_binding_level *b = current_binding_level;
+  while (b && b->kind == sk_cleanup)
+    b = b->level_chain;
+  return b && b->kind == sk_try;
+}
+
 /* Finish a scope.  */
 
 tree
@@ -635,10 +646,13 @@ do_poplevel (tree stmt_list)
 {
   tree block = NULL;
 
-  maybe_splice_retval_cleanup (stmt_list);
+  bool was_try = at_try_scope ();
 
   if (stmts_are_full_exprs_p ())
     block = poplevel (kept_level_p (), 1, 0);
+
+  /* This needs to come after poplevel merges sk_cleanup statement_lists.  */
+  maybe_splice_retval_cleanup (stmt_list, was_try);
 
   stmt_list = pop_stmt_list (stmt_list);
 
@@ -2070,7 +2084,7 @@ finish_mem_initializers (tree mem_inits)
    right result.  If EVEN_UNEVAL, do this even in unevaluated context.  */
 
 tree
-force_paren_expr (tree expr, bool even_uneval)
+force_paren_expr (tree expr, bool even_uneval /* = false */)
 {
   /* This is only needed for decltype(auto) in C++14.  */
   if (cxx_dialect < cxx14)
@@ -4470,6 +4484,35 @@ finish_underlying_type (tree type)
   return underlying_type;
 }
 
+/* Implement the __type_pack_element keyword: Return the type
+   at index IDX within TYPES.  */
+
+static tree
+finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
+{
+  idx = maybe_constant_value (idx);
+  if (TREE_CODE (idx) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (idx)))
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is not an integral constant");
+      return error_mark_node;
+    }
+  HOST_WIDE_INT val = tree_to_shwi (idx);
+  if (val < 0)
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is negative");
+      return error_mark_node;
+    }
+  if (val >= TREE_VEC_LENGTH (types))
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is out of range");
+      return error_mark_node;
+    }
+  return TREE_VEC_ELT (types, val);
+}
+
 /* Implement the __direct_bases keyword: Return the direct base classes
    of type.  */
 
@@ -4895,6 +4938,7 @@ public:
   tree var;
   tree result;
   hash_table<nofree_ptr_hash <tree_node> > visited;
+  bool simple;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -4909,16 +4953,36 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
      non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
-  /* Change all returns to just refer to the RESULT_DECL; this is a nop,
+  /* If there's a label, we might need to destroy the NRV on goto (92407).  */
+  else if (TREE_CODE (*tp) == LABEL_EXPR)
+    dp->simple = false;
+  /* Change NRV returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
-     about the value of the RESULT_DECL.  */
+     about the value of the RESULT_DECL.  But preserve anything appended
+     by check_return_expr.  */
   else if (TREE_CODE (*tp) == RETURN_EXPR)
-    TREE_OPERAND (*tp, 0) = dp->result;
-  /* Change all cleanups for the NRV to only run when an exception is
-     thrown.  */
+    {
+      tree *p = &TREE_OPERAND (*tp, 0);
+      while (TREE_CODE (*p) == COMPOUND_EXPR)
+	p = &TREE_OPERAND (*p, 0);
+      if (TREE_CODE (*p) == INIT_EXPR
+	  && INIT_EXPR_NRV_P (*p))
+	*p = dp->result;
+    }
+  /* Change all cleanups for the NRV to only run when not returning.  */
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == dp->var)
-    CLEANUP_EH_ONLY (*tp) = 1;
+    {
+      if (dp->simple)
+	CLEANUP_EH_ONLY (*tp) = true;
+      else
+	{
+	  tree cond = build3 (COND_EXPR, void_type_node,
+			      current_retval_sentinel,
+			      void_node, CLEANUP_EXPR (*tp));
+	  CLEANUP_EXPR (*tp) = cond;
+	}
+    }
   /* Replace the DECL_EXPR for the NRV with an initialization of the
      RESULT_DECL, if needed.  */
   else if (TREE_CODE (*tp) == DECL_EXPR
@@ -4958,9 +5022,10 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
    RESULT_DECL for the function.  */
 
 void
-finalize_nrv (tree *tp, tree var, tree result)
+finalize_nrv (tree fndecl, tree var)
 {
   class nrv_data data;
+  tree result = DECL_RESULT (fndecl);
 
   /* Copy name from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);
@@ -4974,7 +5039,14 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   data.var = var;
   data.result = result;
-  cp_walk_tree (tp, finalize_nrv_r, &data, 0);
+
+  /* This is simpler for variables declared in the outer scope of
+     the function so we know that their lifetime always ends with a
+     return; see g++.dg/opt/nrv6.C.  */
+  tree outer = outer_curly_brace_block (fndecl);
+  data.simple = chain_member (var, BLOCK_VARS (outer));
+
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), finalize_nrv_r, &data, 0);
 }
 
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */
@@ -5140,7 +5212,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	t = TREE_OPERAND (t, 0);
       ret = t;
-      while (TREE_CODE (t) == INDIRECT_REF)
+      while (INDIRECT_REF_P (t))
 	{
 	  t = TREE_OPERAND (t, 0);
 	  STRIP_NOPS (t);
@@ -5177,7 +5249,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		}
 	      t = TREE_OPERAND (t, 0);
 	      while (TREE_CODE (t) == MEM_REF
-		     || TREE_CODE (t) == INDIRECT_REF
+		     || INDIRECT_REF_P (t)
 		     || TREE_CODE (t) == ARRAY_REF)
 		{
 		  t = TREE_OPERAND (t, 0);
@@ -5747,6 +5819,13 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    case GOMP_MAP_ALWAYS_TO:
 	    case GOMP_MAP_ALWAYS_FROM:
 	    case GOMP_MAP_ALWAYS_TOFROM:
+	    case GOMP_MAP_PRESENT_ALLOC:
+	    case GOMP_MAP_PRESENT_TO:
+	    case GOMP_MAP_PRESENT_FROM:
+	    case GOMP_MAP_PRESENT_TOFROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_TO:
+	    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+	    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	    case GOMP_MAP_RELEASE:
 	    case GOMP_MAP_DELETE:
 	    case GOMP_MAP_FORCE_TO:
@@ -8068,7 +8147,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  if (REFERENCE_REF_P (t))
 			    t = TREE_OPERAND (t, 0);
 			  if (TREE_CODE (t) == MEM_REF
-			      || TREE_CODE (t) == INDIRECT_REF)
+			      || INDIRECT_REF_P (t))
 			    {
 			      t = TREE_OPERAND (t, 0);
 			      STRIP_NOPS (t);
@@ -8153,7 +8232,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_DECL (c) = t;
 	    }
-	  while (TREE_CODE (t) == INDIRECT_REF
+	  while (INDIRECT_REF_P (t)
 		 || TREE_CODE (t) == ARRAY_REF)
 	    {
 	      t = TREE_OPERAND (t, 0);
@@ -8172,7 +8251,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    remove = true;
 	  indir_component_ref_p = false;
 	  if (TREE_CODE (t) == COMPONENT_REF
-	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
+	      && (INDIRECT_REF_P (TREE_OPERAND (t, 0))
 		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
 	    {
 	      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
@@ -8226,7 +8305,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			t = TREE_OPERAND (t, 0);
 		    }
 		  while (TREE_CODE (t) == MEM_REF
-			 || TREE_CODE (t) == INDIRECT_REF
+			 || INDIRECT_REF_P (t)
 			 || TREE_CODE (t) == ARRAY_REF)
 		    {
 		      t = TREE_OPERAND (t, 0);
@@ -8677,7 +8756,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  t = OMP_CLAUSE_DECL (c);
 		  while (TREE_CODE (t) == TREE_LIST)
 		    t = TREE_CHAIN (t);
-		  while (TREE_CODE (t) == INDIRECT_REF
+		  while (INDIRECT_REF_P (t)
 			 || TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
 		}
@@ -8992,7 +9071,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      t = OMP_CLAUSE_DECL (c);
 	      while (handled_component_p (t)
-		     || TREE_CODE (t) == INDIRECT_REF
+		     || INDIRECT_REF_P (t)
 		     || TREE_CODE (t) == ADDR_EXPR
 		     || TREE_CODE (t) == MEM_REF
 		     || TREE_CODE (t) == NON_LVALUE_EXPR)
@@ -9041,7 +9120,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
 		    t = TREE_OPERAND (t, 0);
 		  if (TREE_CODE (t) == ADDR_EXPR
-		      || TREE_CODE (t) == INDIRECT_REF)
+		      || INDIRECT_REF_P (t))
 		    t = TREE_OPERAND (t, 0);
 		  if (DECL_P (t))
 		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
@@ -9580,7 +9659,7 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
      of DECL_VALUE_EXPRs during the target body walk seems the only way to
      find them.  */
   if (current_closure
-      && (TREE_CODE (t) == VAR_DECL
+      && (VAR_P (t)
 	  || TREE_CODE (t) == PARM_DECL
 	  || TREE_CODE (t) == RESULT_DECL)
       && DECL_HAS_VALUE_EXPR_P (t)
@@ -10001,11 +10080,18 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	  {
 	  case GOMP_MAP_TO:
 	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_PRESENT_TO:
+	  case GOMP_MAP_ALWAYS_PRESENT_TO:
 	  case GOMP_MAP_FROM:
 	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_PRESENT_FROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_FROM:
 	  case GOMP_MAP_TOFROM:
 	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_PRESENT_TOFROM:
+	  case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
 	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_PRESENT_ALLOC:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
@@ -12091,9 +12177,13 @@ check_trait_type (tree type, int kind = 1)
   if (type == NULL_TREE)
     return true;
 
-  if (TREE_CODE (type) == TREE_LIST)
-    return (check_trait_type (TREE_VALUE (type))
-	    && check_trait_type (TREE_CHAIN (type)));
+  if (TREE_CODE (type) == TREE_VEC)
+    {
+      for (tree arg : tree_vec_range (type))
+	if (!check_trait_type (arg, kind))
+	  return false;
+      return true;
+    }
 
   if (kind == 1 && TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     return true; // Array of unknown bound. Don't care about completeness.
@@ -12107,7 +12197,12 @@ check_trait_type (tree type, int kind = 1)
   if (VOID_TYPE_P (type))
     return true;
 
-  return !!complete_type_or_else (strip_array_types (type), NULL_TREE);
+  type = complete_type (strip_array_types (type));
+  if (!COMPLETE_TYPE_P (type)
+      && cxx_incomplete_type_diagnostic (NULL_TREE, type, DK_PERMERROR)
+      && !flag_permissive)
+    return false;
+  return true;
 }
 
 /* Process a trait expression.  */
@@ -12240,7 +12335,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 /* Process a trait type.  */
 
 tree
-finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
+finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
+		   tsubst_flags_t complain)
 {
   if (type1 == error_mark_node
       || type2 == error_mark_node)
@@ -12264,16 +12360,22 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
     {
     case CPTK_UNDERLYING_TYPE:
       return finish_underlying_type (type1);
+
     case CPTK_REMOVE_CV:
       return cv_unqualified (type1);
+
     case CPTK_REMOVE_REFERENCE:
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
       return type1;
+
     case CPTK_REMOVE_CVREF:
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
       return cv_unqualified (type1);
+
+    case CPTK_TYPE_PACK_ELEMENT:
+      return finish_type_pack_element (type1, type2, complain);
 
 #define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
     case CPTK_##CODE:
@@ -12317,8 +12419,8 @@ is_this_parameter (tree t)
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
   gcc_assert (TREE_CODE (t) == PARM_DECL
-	      || (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
-	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
+	      || (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
+	      || (cp_binding_oracle && VAR_P (t)));
   return true;
 }
 

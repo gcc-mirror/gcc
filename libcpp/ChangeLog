@@ -1,3 +1,50 @@
+2023-06-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* macro.cc (_cpp_create_definition): Add location argument.
+	* internal.h (_cpp_create_definition): Adjust prototype.
+	* directives.cc (do_define): Pass new location argument to
+	_cpp_create_definition.
+	(do_undef): Stop passing inferior location to cpp_warning_with_line;
+	the default from cpp_warning is better.
+	(cpp_pop_definition): Pass new location argument to
+	_cpp_create_definition.
+	* pch.cc (cpp_read_state): Likewise.
+
+2023-06-19  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* charset.cc: Reject encodings of codepoints above 0x10FFFF.
+	UTF-16 does not support such codepoints and therefore all
+	Unicode rejects such values.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2023-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/80753
+	* files.cc (struct _cpp_file): Add deferred_error bitfield.
+	(_cpp_find_file): When finding a file in cache with deferred_error
+	set in _cpp_FFK_NORMAL mode, call open_file_failed and clear the flag.
+	Set deferred_error in _cpp_FFK_HAS_INCLUDE mode if open_file_failed
+	hasn't been called.
+
+2023-04-30  Jeff Law  <jlaw@ventanamicro>
+
+	Revert:
+	2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
+2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
 2023-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109098

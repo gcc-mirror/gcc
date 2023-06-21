@@ -207,21 +207,21 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       pragma Assert (Tree.Last  /= 0);
       pragma Assert (Parent (N (Tree.Root)) = 0);
 
-      pragma Assert ((Tree.Length > 1)
+      pragma Assert (Tree.Length > 1
                        or else (Tree.First = Tree.Last
                                  and then Tree.First = Tree.Root));
 
-      pragma Assert ((Left (N (Node)) = 0)
-                        or else (Parent (N (Left (N (Node)))) = Node));
+      pragma Assert (Left (N (Node)) = 0
+                       or else Parent (N (Left (N (Node)))) = Node);
 
-      pragma Assert ((Right (N (Node)) = 0)
-                        or else (Parent (N (Right (N (Node)))) = Node));
+      pragma Assert (Right (N (Node)) = 0
+                       or else Parent (N (Right (N (Node)))) = Node);
 
-      pragma Assert (((Parent (N (Node)) = 0) and then (Tree.Root = Node))
-                        or else ((Parent (N (Node)) /= 0) and then
-                                  ((Left (N (Parent (N (Node)))) = Node)
+      pragma Assert ((Parent (N (Node)) = 0 and then Tree.Root = Node)
+                        or else (Parent (N (Node)) /= 0 and then
+                                  (Left (N (Parent (N (Node)))) = Node
                                       or else
-                                   (Right (N (Parent (N (Node)))) = Node))));
+                                   Right (N (Parent (N (Node)))) = Node)));
 
       if Left (N (Z)) = 0 then
          if Right (N (Z)) = 0 then

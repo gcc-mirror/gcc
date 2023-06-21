@@ -39,9 +39,9 @@ pragma Elaborate_All (System.Task_Primitives.Operations);
 package Ada.Real_Time with
   SPARK_Mode,
   Abstract_State => (Clock_Time with Synchronous),
-  Initializes    => Clock_Time
+  Initializes    => Clock_Time,
+  Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, Real_Time);
 
    pragma Compile_Time_Error
      (Duration'Size /= 64,

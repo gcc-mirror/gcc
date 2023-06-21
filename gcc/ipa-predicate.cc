@@ -132,7 +132,7 @@ ipa_predicate::add_clause (conditions conditions, clause_t new_clause)
 	cc1 = &(*conditions)[c1 - ipa_predicate::first_dynamic_condition];
 	/* We have no way to represent !changed and !is_not_constant
 	   and thus there is no point for looking for them.  */
-	if (cc1->code == changed || cc1->code == is_not_constant)
+	if (cc1->code == changed || cc1->code == is_not_constant || cc1->code == not_sra_candidate)
 	  continue;
 	for (c2 = c1 + 1; c2 < num_conditions; c2++)
 	  if (new_clause & (1 << c2))
@@ -142,6 +142,7 @@ ipa_predicate::add_clause (conditions conditions, clause_t new_clause)
 	      if (cc1->operand_num == cc2->operand_num
 		  && vrp_operand_equal_p (cc1->val, cc2->val)
 		  && cc2->code != is_not_constant
+		  && cc2->code != not_sra_candidate
 		  && cc2->code != changed
 		  && expr_eval_ops_equal_p (cc1->param_ops, cc2->param_ops)
 		  && cc2->agg_contents == cc1->agg_contents
@@ -414,6 +415,11 @@ dump_condition (FILE *f, conditions conditions, int cond)
       if (c->code == ipa_predicate::changed)
 	{
 	  fprintf (f, " changed");
+	  return;
+	}
+      if (c->code == ipa_predicate::not_sra_candidate)
+	{
+	  fprintf (f, " not sra candidate");
 	  return;
 	}
       fprintf (f, " %s ", op_symbol_code (c->code));

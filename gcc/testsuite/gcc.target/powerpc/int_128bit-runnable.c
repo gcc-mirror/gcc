@@ -4,7 +4,7 @@
 
 /* Check that the expected 128-bit instructions are generated if the processor
    supports the 128-bit integer instructions. */
-/* { dg-final { scan-assembler-times {\mvextsd2q\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mvextsd2q\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvslq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsrq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsraq\M} 2 } } */
@@ -18,7 +18,7 @@
 /* { dg-final { scan-assembler-times {\mvmulesd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulosd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulld\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mvdivsq\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvdivsq\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mvdivuq\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvdivesq\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvdiveuq\M} 1 } } */
@@ -90,7 +90,11 @@ int main ()
   vec_arg1_di[0] = 1000;
   vec_arg1_di[1] = -123456;
 
+#ifdef __BIG_ENDIAN__
+  expected_result = -123456;
+#else
   expected_result = 1000;
+#endif
 
   vec_result = vec_signextq (vec_arg1_di);
 
@@ -109,7 +113,11 @@ int main ()
   vec_arg1_di[0] = -123456;
   vec_arg1_di[1] = 1000;
 
+#ifdef __BIG_ENDIAN__
+  expected_result = 1000;
+#else
   expected_result = -123456;
+#endif
 
   vec_result = vec_signextq (vec_arg1_di);
 

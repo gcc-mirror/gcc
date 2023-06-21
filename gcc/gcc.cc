@@ -47,6 +47,9 @@ compilation is specified by a string called a "spec".  */
 #include "opts-jobserver.h"
 #include "common/common-target.h"
 
+#ifndef MATH_LIBRARY
+#define MATH_LIBRARY "m"
+#endif
 
 
 /* Manage the manipulation of env vars.
@@ -1146,12 +1149,12 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!r:%{!nostartfiles:%S}}} \
-    %{static|no-pie|static-pie:} %@{L*} %(mfwrap) %(link_libgcc) " \
+    %{static|no-pie|static-pie:} %@{L*} %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o "" \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
-    %(mflib) " STACK_SPLIT_SPEC "\
+    " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
     %{!nostdlib:%{!r:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*}  \n%(post_link) }}}}}}"
@@ -1454,13 +1457,13 @@ static const struct compiler default_compilers[] =
 		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)\
 			%{!fsyntax-only:%{!S:-o %g.s} \
-			    %{!fdump-ada-spec*:%{!o*:--output-pch %i.gch}\
-					       %W{o*:--output-pch %*}}%V}}\
+			    %{!fdump-ada-spec*:%{!o*:--output-pch %w%i.gch}\
+					       %W{o*:--output-pch %w%*}}%{!S:%V}}}\
 	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
 		    %{!fsyntax-only:%{!S:-o %g.s} \
-		        %{!fdump-ada-spec*:%{!o*:--output-pch %i.gch}\
-					   %W{o*:--output-pch %*}}%V}}}}}}}", 0, 0, 0},
+		        %{!fdump-ada-spec*:%{!o*:--output-pch %w%i.gch}\
+					   %W{o*:--output-pch %w%*}}%{!S:%V}}}}}}}}", 0, 0, 0},
   {".i", "@cpp-output", 0, 0, 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
@@ -4117,6 +4120,48 @@ next_item:
     }
 }
 
+/* Forward certain options to offloading compilation.  */
+
+static void
+forward_offload_option (size_t opt_index, const char *arg, bool validated)
+{
+  switch (opt_index)
+    {
+    case OPT_l:
+      /* Use a '_GCC_' prefix and standard name ('-l_GCC_m' irrespective of the
+	 host's 'MATH_LIBRARY', for example), so that the 'mkoffload's can tell
+	 this has been synthesized here, and translate/drop as necessary.  */
+      /* Note that certain libraries ('-lc', '-lgcc', '-lgomp', for example)
+	 are injected by default in offloading compilation, and therefore not
+	 forwarded here.  */
+      /* GCC libraries.  */
+      if (/* '-lgfortran' */ strcmp (arg, "gfortran") == 0 )
+	save_switch (concat ("-foffload-options=-l_GCC_", arg, NULL),
+		     0, NULL, validated, true);
+      /* Other libraries.  */
+      else
+	{
+	  /* The case will need special consideration where on the host
+	     '!need_math', but for offloading compilation still need
+	     '-foffload-options=-l_GCC_m'.  The problem is that we don't get
+	     here anything like '-lm', because it's not synthesized in
+	     'gcc/fortran/gfortranspec.cc:lang_specific_driver', for example.
+	     Generally synthesizing '-foffload-options=-l_GCC_m' etc. in the
+	     language specific drivers is non-trivial, needs very careful
+	     review of their options handling.  However, this issue is not
+	     actually relevant for the current set of supported host/offloading
+	     configurations.  */
+	  int need_math = (MATH_LIBRARY[0] != '\0');
+	  if (/* '-lm' */ (need_math && strcmp (arg, MATH_LIBRARY) == 0))
+	    save_switch ("-foffload-options=-l_GCC_m",
+			 0, NULL, validated, true);
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Handle a driver option; arguments and return value as for
    handle_option.  */
 
@@ -4375,6 +4420,17 @@ driver_handle_option (struct gcc_options *opts,
       /* POSIX allows separation of -l and the lib arg; canonicalize
 	 by concatenating -l with its arg */
       add_infile (concat ("-l", arg, NULL), "*");
+
+      /* Forward to offloading compilation '-l[...]' flags for standard,
+	 well-known libraries.  */
+      /* Doing this processing here means that we don't get to see libraries
+	 injected via specs, such as '-lquadmath' injected via
+	 '[build]/[target]/libgfortran/libgfortran.spec'.  However, this issue
+	 is not actually relevant for the current set of host/offloading
+	 configurations.  */
+      if (ENABLE_OFFLOADING)
+	forward_offload_option (opt_index, arg, validated);
+
       do_save = false;
       break;
 
@@ -4570,6 +4626,10 @@ driver_handle_option (struct gcc_options *opts,
 	save_switch (concat ("-foffload-options=", arg, NULL),
 		     0, NULL, validated, true);
       do_save = false;
+      break;
+
+    case OPT_gcodeview:
+      add_infile ("--pdb=", "*");
       break;
 
     default:

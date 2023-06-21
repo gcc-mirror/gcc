@@ -2,6 +2,7 @@
    an object of incomplete type
    { dg-do compile }
    { dg-options "-O2 -Wall" }  */
+/* { dg-skip-if "acessing data memory with program memory address" { "avr-*-*" } } */
 
 struct S
 {

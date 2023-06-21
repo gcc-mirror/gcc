@@ -1888,7 +1888,7 @@ oacc_rewrite_var_decl (tree *tp, int *walk_subtrees, void *data)
       *base = *new_decl;
       info->modified = true;
     }
-  else if (TREE_CODE (*tp) == VAR_DECL)
+  else if (VAR_P (*tp))
     {
       tree *new_decl = info->adjusted_vars->get (*tp);
       if (new_decl)

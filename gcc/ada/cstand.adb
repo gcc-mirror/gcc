@@ -1642,8 +1642,7 @@ package body CStand is
 
       for E in Standard_Entity_Type loop
          if Ekind (Standard_Entity (E)) /= E_Operator then
-            Set_Name_Entity_Id
-              (Chars (Standard_Entity (E)), Standard_Entity (E));
+            Set_Current_Entity (Standard_Entity (E));
             Set_Homonym (Standard_Entity (E), Empty);
          end if;
 
@@ -1784,6 +1783,7 @@ package body CStand is
 
       Set_Is_Immediately_Visible  (Ident_Node, True);
       Set_Is_Intrinsic_Subprogram (Ident_Node, True);
+      Set_Is_Not_Self_Hidden (Ident_Node);
 
       Set_Name_Entity_Id (Op, Ident_Node);
       Append_Entity (Ident_Node, Standard_Standard);
@@ -1806,9 +1806,10 @@ package body CStand is
       Set_Is_Public (E);
 
       --  All standard entity names are analyzed manually, and are thus
-      --  frozen as soon as they are created.
+      --  frozen and not self-hidden as soon as they are created.
 
       Set_Is_Frozen (E);
+      Set_Is_Not_Self_Hidden (E);
 
       --  Set debug information required for all standard types
 

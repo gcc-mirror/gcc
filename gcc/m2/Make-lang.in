@@ -455,7 +455,7 @@ MC=m2/boot-bin/mc$(exeext) $(MC_ARGS)
 MC_LIBS=m2/mc-boot-ch/Glibc.o m2/mc-boot-ch/Gmcrts.o
 
 M2LINK=m2/boot-bin/mklink$(exeext)
-GM2_O=
+GM2_O=-O0
 GM2_O_S3=-O
 GM2_OS=-Os
 GM2_G=-g -fm2-g
@@ -478,6 +478,11 @@ GM2_MIN_FLAGS=$(GM2_G) $(GM2_OS) \
  -Wpedantic-cast -Wpedantic-param-names -fno-exceptions \
  -ffunction-sections -fdata-sections $(GM2_CPP)
 
+# ALL_LINKERFLAGS may include -pie (when GCC is configured with
+# --enable-host-pie), so use -fPIE if needed.  (It would not be
+# a good idea to override CFLAGS.)
+GM2_PICFLAGS = $(PICFLAG)
+
 O2=-O2 -g
 SO_O2=-O2 -g -fPIC
 SO=-O0 -g -fPIC
@@ -485,7 +490,6 @@ SO=-O0 -g -fPIC
 # Language-specific object files for the gm2 compiler.
 
 GM2_C_OBJS        = m2/gm2-lang.o \
-                    m2/stor-layout.o \
                     m2/m2pp.o \
                     m2/gm2-gcc/m2assert.o \
                     m2/gm2-gcc/m2block.o \
@@ -505,16 +509,18 @@ GM2_C_OBJS        = m2/gm2-lang.o \
                     m2/gm2-gcc/m2misc.o \
                     m2/gm2-gcc/init.o
 GM2_LIBS          = m2/gm2-compiler/gm2.a \
-                    ../$(target_subdir)/libgm2/libm2pim/.libs/libm2pim.a m2/gm2-libs-boot/choosetemp.o
+                    m2/gm2-libs/libgm2.a \
 
 GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
                     $(GM2-BOOT-O)
 
+m2_OBJS = $(GM2_C_OBJS)
+
 cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
 
-m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
+m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -527,7 +533,7 @@ m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
 m2/stage1/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
-                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
+                            $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) \
                             $(m2.prev)
@@ -569,10 +575,6 @@ m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCI
 	    -DLIBSUBDIR=\"$(libsubdir)\" \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-m2/stor-layout.o: $(srcdir)/stor-layout.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
-	$(COMPILER) -c -DSET_WORD_SIZE=INT_TYPE_SIZE $(ALL_COMPILERFLAGS) \
-            $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
 m2/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) -c -g -DGM2 $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -590,6 +592,13 @@ c-family/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 m2/gm2-gcc/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-gcc/%.def $(MCDEPS)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-gcc/$*.def
+
+ifeq ($(HAVE_PYTHON),yes)
+check-format-error:
+	$(PYTHON) $(srcdir)/m2/tools-src/checkmeta.py -s $(srcdir)/m2/gm2-compiler
+else
+check-format-error:
+endif
 
 # The following tables define the source files which are translated into C using mc
 # and defines the system interface C files.
@@ -1138,6 +1147,11 @@ BUILD-COMPILER-BOOT = $(BUILD-COMPILER-BOOT-H) \
 BUILD-BOOT-H = m2/boot-bin/mc$(exeext) \
                $(BUILD-LIBS-BOOT-H) $(BUILD-COMPILER-BOOT-H) $(TARGET_H) $(PLUGIN_HEADERS)
 
+BUILD-LIBS = $(BUILD-LIBS-BOOT-H) \
+             $(GM2-LIBS-MODS:%.mod=m2/gm2-libs/%.o) \
+             $(GM2-LIBS-CC:%.cc=m2/gm2-libs/%.o) \
+             $(GM2-LIBS-C:%.c=m2/gm2-libs/%.o)
+
 # Core library definition modules used by the modula-2 to C++ translator.
 
 MC-LIB-DEFS = \
@@ -1156,7 +1170,6 @@ MC-LIB-DEFS = \
    IO.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    MemUtils.def \
    NumberIO.def \
@@ -1349,23 +1362,23 @@ m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) \
 
 m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXXFLAGS) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
+	$(CXX) $(CXXFLAGS) $(GM2_PICFLAGS) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXXFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXXFLAGS) $(GM2_PICFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXXFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXXFLAGS) $(GM2_PICFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.cc $(srcdir)/m2/init/mcinit
-	$(CXX) $(CXXFLAGS) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
+	$(CXX) $(CXXFLAGS) $(GM2_PICFLAGS) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
 
 mcflex.o: mcflex.c m2/gm2-libs/gm2-libs-host.h
-	$(CC) $(CFLAGS) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
+	$(CC) $(CFLAGS) $(GM2_PICFLAGS) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
 
 mcflex.c: $(srcdir)/m2/mc/mc.flex
 	flex -t $< > $@
@@ -1373,17 +1386,17 @@ mcflex.c: $(srcdir)/m2/mc/mc.flex
 m2/gm2-libs-boot/M2RTS.o: $(srcdir)/m2/gm2-libs/M2RTS.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) --suppress-noreturn -o=m2/gm2-libs-boot/M2RTS.c $(srcdir)/m2/gm2-libs/M2RTS.mod
-	$(COMPILER) -c -DIN_GCC $(CFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/M2RTS.c -o $@
+	$(COMPILER) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/M2RTS.c -o $@
 
 m2/gm2-libs-boot/%.o: $(srcdir)/m2/gm2-libs-boot/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=m2/gm2-libs-boot/$*.c $(srcdir)/m2/gm2-libs-boot/$*.mod
-	$(COMPILER) -c -DIN_GCC $(CFLAGS) $(MCINCLUDES) m2/gm2-libs-boot/$*.c -o $@
+	$(COMPILER) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) $(MCINCLUDES) m2/gm2-libs-boot/$*.c -o $@
 
 m2/gm2-libs-boot/%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=m2/gm2-libs-boot/$*.c $(srcdir)/m2/gm2-libs/$*.mod
-	$(COMPILER) -c -DIN_GCC $(CFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/$*.c -o $@
+	$(COMPILER) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) m2/gm2-libs-boot/$*.c -o $@
 
 m2/gm2-libs-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1391,49 +1404,49 @@ m2/gm2-libs-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 
 m2/gm2-libs-boot/RTcodummy.o: $(srcdir)/m2/gm2-libs-ch/RTcodummy.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/RTintdummy.o: $(srcdir)/m2/gm2-libs-ch/RTintdummy.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/wrapc.o: $(srcdir)/m2/gm2-libs-ch/wrapc.c m2/gm2-libs-boot/$(SRC_PREFIX)wrapc.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
+	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.cc m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gchoosetemp.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/errno.o: $(srcdir)/m2/gm2-libs-ch/errno.c m2/gm2-libs-boot/$(SRC_PREFIX)errno.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/termios.o: $(srcdir)/m2/gm2-libs-ch/termios.c $(BUILD-LIBS-BOOT-H) m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/SysExceptions.o: $(srcdir)/m2/gm2-libs-ch/SysExceptions.c \
                                   m2/gm2-libs-boot/$(SRC_PREFIX)SysExceptions.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/SysStorage.o: $(srcdir)/m2/gm2-libs/SysStorage.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=m2/gm2-libs-boot/SysStorage.c $(srcdir)/m2/gm2-libs/SysStorage.mod
-	$(COMPILER) -DIN_GCC -c $(CFLAGS) \
+	$(COMPILER) -DIN_GCC -c $(CFLAGS) $(GM2_PICFLAGS) \
           -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(MCINCLUDES) $(INCLUDES) \
           m2/gm2-libs-boot/SysStorage.c -o m2/gm2-libs-boot/SysStorage.o
 
@@ -1506,7 +1519,7 @@ m2/gm2-compiler/%.o: m2/gm2-compiler/%.mod
 
 m2/gm2-libs-iso/%.o: $(srcdir)/m2/gm2-libs-iso/%.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -DBUILD_GM2_LIBS_TARGET -DBUILD_GM2_LIBS -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+	$(CXX) -DBUILD_GM2_LIBS_TARGET -DBUILD_GM2_LIBS -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-iso/%.o: $(srcdir)/m2/gm2-libs-iso/%.mod
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1595,6 +1608,29 @@ m2/gm2-compiler/gm2.a: build-compiler gm2$(exeext)
                     $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler/%.o)
 	$(RANLIB) $@
 
+m2/gm2-libs/libgm2.a: build-compiler gm2$(exeext) $(BUILD-LIBS)
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(AR) cr $@ $(GM2-LIBS-MODS:%.mod=m2/gm2-libs/%.o) \
+                    $(GM2-LIBS-CC:%.cc=m2/gm2-libs/%.o) \
+                    $(GM2-LIBS-C:%.c=m2/gm2-libs/%.o)
+	$(RANLIB) $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(GM2_1) -c $(GM2_FLAGS) -Im2/gm2-libs -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-libs-iso $< -o $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs-ch/%.c m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -DBUILD_GM2_LIBS -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs-ch/%.cc m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+
+m2/gm2-libs/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gchoosetemp.h m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
+
 m2/gm2-libs-boot/libgm2.a: m2/boot-bin/mc$(exeext) $(BUILD-LIBS-BOOT)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(AR) cr $@ $(GM2-LIBS-BOOT-MODS:%.mod=m2/gm2-libs-boot/%.o) \
@@ -1682,7 +1718,6 @@ BUILD-PGE-O = \
    m2/pge-boot/Glibc.o \
    m2/pge-boot/Gerrno.o \
    m2/pge-boot/GUnixArgs.o \
-   m2/pge-boot/GM2LINK.o \
    m2/pge-boot/Gtermios.o \
    m2/pge-boot/GSysExceptions.o \
    m2/pge-boot/Gabort.o \
@@ -1694,11 +1729,11 @@ include m2/Make-maintainer
 else
 m2/pge-boot/%.o: m2/pge-boot/%.c m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
+	$(CXX) $(CFLAGS) $(GM2_PICFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
 m2/pge-boot/%.o: m2/pge-boot/%.cc m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(GM2_PICFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
 $(PGE): $(BUILD-PGE-O)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) -lm

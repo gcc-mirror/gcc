@@ -45,7 +45,7 @@
 # include <emmintrin.h>
 #endif
 
-#if defined(_GLIBCXX_USE_C99_STDINT_TR1) && defined(UINT32_C)
+#ifdef UINT32_C
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -1116,7 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  result_type __x = this->_M_ndx(__urng);
 	  result_type __y = this->_M_ndy(__urng);
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	  return std::hypot(__x, __y);
 #else
 	  return std::sqrt(__x * __x + __y * __y);
@@ -1132,7 +1132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __px(__p.nu(), __p.sigma()), __py(result_type(0), __p.sigma());
 	  result_type __x = this->_M_ndx(__px, __urng);
 	  result_type __y = this->_M_ndy(__py, __urng);
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	  return std::hypot(__x, __y);
 #else
 	  return std::sqrt(__x * __x + __y * __y);
@@ -3923,7 +3923,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include <ext/opt_random.h>
 #include <ext/random.tcc>
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1 && UINT32_C
+#endif // UINT32_C
 
 #endif // C++11
 

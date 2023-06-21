@@ -8,3 +8,6 @@ $(LIB2ADD): $(srcdir)/config/cris/arit.c
 	echo "#define L$$name" > tmp-$@ \
 	&& echo '#include "$<"' >> tmp-$@ \
 	&& mv -f tmp-$@ $@
+
+# Use an appropriate implementation when implementing DImode division.
+HOST_LIBGCC2_CFLAGS += -DTARGET_HAS_NO_HW_DIVIDE

@@ -187,8 +187,6 @@ enum insn_code find_widening_optab_handler_and_mode (optab, machine_mode,
 						     machine_mode,
 						     machine_mode *);
 int can_mult_highpart_p (machine_mode, bool);
-bool can_vec_mask_load_store_p (machine_mode, machine_mode, bool);
-opt_machine_mode get_len_load_store_mode (machine_mode, bool);
 bool can_compare_and_swap_p (machine_mode, bool);
 bool can_atomic_exchange_p (machine_mode, bool);
 bool can_atomic_load_p (machine_mode);

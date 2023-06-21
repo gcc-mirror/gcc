@@ -18,6 +18,7 @@
 // <charconv> is supported in C++14 as a GNU extension
 // { dg-do run { target c++14 } }
 // { dg-add-options ieee }
+// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-rtems* aarch64-*-vxworks* x86_64-*-vxworks* } }
 
 #include <charconv>
 #include <string>
@@ -300,7 +301,7 @@ test_max_mantissa()
 
   if (Float_limits::is_iec559 && Float_limits::digits < UInt_limits::digits)
   {
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
     std::printf("Testing %d-bit float, using %zu-bit integer\n",
 	Float_limits::digits + (int)std::log2(Float_limits::max_exponent) + 1,
 	sizeof(UIntT) * __CHAR_BIT__);
@@ -354,7 +355,7 @@ test06()
 {
   test_max_mantissa<float, unsigned long>();
   test_max_mantissa<double, unsigned long long>();
-#ifdef __GLIBCXX_TYPE_INT_N_0
+#if defined __GLIBCXX_TYPE_INT_N_0 && !defined SKIP_LONG_DOUBLE
   test_max_mantissa<long double, unsigned __GLIBCXX_TYPE_INT_N_0>();
 #endif
 }

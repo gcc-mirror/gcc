@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_H
 #define GCC_GIMPLE_RANGE_H
 
+#include "ssa.h"
 #include "range.h"
 #include "value-query.h"
 #include "gimple-range-op.h"
@@ -63,6 +64,7 @@ public:
   bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
   void register_inferred_ranges (gimple *s);
   void register_transitive_inferred_ranges (basic_block bb);
+  range_query &const_query ();
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   void prefill_name (vrange &r, tree name);
@@ -95,7 +97,7 @@ protected:
   void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
   void check_taken_edge (edge e, fur_source &src);
 
-  ssa_global_cache global;
+  ssa_lazy_cache global;
   gori_compute m_gori;
 };
 

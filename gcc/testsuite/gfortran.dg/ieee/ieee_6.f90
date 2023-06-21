@@ -12,7 +12,7 @@
   type(ieee_status_type) :: s1, s2
   logical :: flags(5), halt(5), haltworks
   type(ieee_round_type) :: mode
-  real :: x
+  real, volatile :: x
 
   ! Test IEEE_GET_STATUS and IEEE_SET_STATUS
 

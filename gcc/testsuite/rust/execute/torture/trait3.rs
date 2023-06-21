@@ -1,4 +1,4 @@
-/* { dg-output "123, 777" } */
+/* { dg-output "123, 777\r*" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }

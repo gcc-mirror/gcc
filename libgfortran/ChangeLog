@@ -1,3 +1,51 @@
+2023-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/109373
+	* configure.ac: Remove support for --enable-intermodule
+	* Makefile.am: Remove onestep path.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2023-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_arithmetic.F90: Add IEEE_MIN_NUM, IEEE_MAX_NUM,
+	IEEE_MIN_NUM_MAG, and IEEE_MAX_NUM_MAG functions.
+
+2023-05-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* io/unit.c (set_internal_unit): Set the internal unit
+	last_char to zero so that previous EOF characters do not
+	influence the next read.
+
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_register): Fix coding style.
+	* io/async.c (update_pdt, async_io): Likewise.
+	* io/format.c (free_format_data): Likewise.
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_register): Call free() unconditionally.
+	* io/async.c (update_pdt, async_io): Likewise.
+	* io/format.c (free_format_data): Likewise.
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
+2023-05-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* io/list_read.c: Add check for a semicolon after a namelist
+	name in read input. Issue a runtime error message.
+
+2023-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* io/list_read.c: Add a check for a comma after a namelist
+	name in read input. Issue a runtime error message.
+
 2023-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* generated/pack_c10.c (pack_c10): Regenerated.

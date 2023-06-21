@@ -31,19 +31,64 @@ if ![info exists DEFAULT_CFLAGS] then {
 }
 
 set gcc_march "rv64gcv_zfh"
+set gcc_mabi  "lp64d"
 if [istarget riscv32-*-*] then {
   set gcc_march "rv32gcv_zfh"
+  set gcc_mabi  "ilp32d"
 }
 
 # Initialize `dg'.
 dg-init
 
 # Main loop.
-set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -O3"
+set CFLAGS "$DEFAULT_CFLAGS -march=$gcc_march -mabi=$gcc_mabi -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
+	"-O3 -ftree-vectorize" $CFLAGS
+
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m8} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m8} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
+    "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/binop/*.\[cS\]]] \
+    "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cmp/*.\[cS\]]] \
+    "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/conversions/*.\[cS\]]] \
+    "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/unop/*.\[cS\]]] \
+    "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/ternop/*.\[cS\]]] \
+    "" "$op"
+}
+
+# widening operation only test on LMUL < 8
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m4} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/widen/*.\[cS\]]] \
+    "" "$op"
+}
+
+# VLS-VLMAX tests
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
+	"-std=c99 -O3 -ftree-vectorize --param riscv-autovec-preference=fixed-vlmax" $CFLAGS
 
 # All done.
 dg-finish

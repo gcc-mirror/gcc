@@ -243,6 +243,8 @@
 #undef v
 // <sys/timer.h> defines trb::func and cputime_tmr::func
 #undef func
+// <sys/thread.h> defines tstate::policy
+#undef policy
 #endif
 
 #ifdef __APPLE__

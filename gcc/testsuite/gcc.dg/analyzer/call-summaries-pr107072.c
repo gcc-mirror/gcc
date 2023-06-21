@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* { dg-additional-options "-fanalyzer-call-summaries --param analyzer-min-snodes-for-call-summary=0" } */
 
 /* There need to be at least two calls to a function for the

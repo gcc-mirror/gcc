@@ -37,4 +37,4 @@ test5 (svbool_t *ptr)
   *ptr = svwhilele_b8_s64 (svcntb (), svcntw ());
 }
 
-/* { dg-final { scan-assembler-times {\tpfalse\tp[0-7]\.b\n} 5 } } */
+/* { dg-final { scan-assembler-times {\tpfalse\tp[0-9]+\.b\n} 5 } } */

@@ -192,8 +192,7 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_address} or
-      @code{unified_shared_memory}
+      @tab complete but no non-host devices provides @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -311,7 +310,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{inoutset} argument to the @code{depend} clause @tab Y @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
       clause in C and C++ @tab Y @tab
-@item @code{present} argument to @code{defaultmap} clause @tab N @tab
+@item @code{present} argument to @code{defaultmap} clause @tab Y @tab
 @item @code{omp_set_num_teams}, @code{omp_set_teams_thread_limit},
       @code{omp_get_max_teams}, @code{omp_get_teams_thread_limit} runtime
       routines @tab Y @tab
@@ -353,6 +352,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Optional comma between directive and clause in the @code{#pragma} form @tab Y @tab
 @item @code{indirect} clause in @code{declare target} @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
+@item @code{present} modifier to the @code{map}, @code{to} and @code{from}
+      clauses @tab Y @tab
 @end multitable
 
 
@@ -383,12 +384,12 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers
       @tab N @tab
 @item If a matching mapped list item is not found in the data environment, the
-      pointer retains its original value @tab N @tab
+      pointer retains its original value @tab Y @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
       @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
-      @tab N @tab
+      @tab Y @tab
 @item New @code{allocators} directive for Fortran @tab N @tab
 @item Deprecation of @code{allocate} directive for Fortran
       allocatables/pointers @tab N @tab
@@ -422,7 +423,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Conforming device numbers and @code{omp_initial_device} and
       @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
 @item Initial value of @emph{default-device-var} ICV with
-      @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
+      @code{OMP_TARGET_OFFLOAD=mandatory} @tab Y @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
       of the @code{interop} construct @tab N @tab
 @end multitable
@@ -1936,7 +1937,10 @@ section 4 of the OpenMP specification in version 4.5, while those
 beginning with @env{GOMP_} are GNU extensions.
 
 @menu
+* OMP_ALLOCATOR::           Set the default allocator
+* OMP_AFFINITY_FORMAT::     Set the format string used for affinity display
 * OMP_CANCELLATION::        Set whether cancellation is activated
+* OMP_DISPLAY_AFFINITY::    Display thread affinity information
 * OMP_DISPLAY_ENV::         Show OpenMP version and environment variables
 * OMP_DEFAULT_DEVICE::      Set the device used in target regions
 * OMP_DYNAMIC::             Dynamic adjustment of threads
@@ -1961,6 +1965,125 @@ beginning with @env{GOMP_} are GNU extensions.
 @end menu
 
 
+@node OMP_ALLOCATOR
+@section @env{OMP_ALLOCATOR} -- Set the default allocator
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Sets the default allocator that is used when no allocator has been specified
+in the @code{allocate} or @code{allocator} clause or if an OpenMP memory
+routine is invoked with the @code{omp_null_allocator} allocator.
+If unset, @code{omp_default_mem_alloc} is used.
+
+The value can either be a predefined allocator or a predefined memory space
+or a predefined memory space followed by a colon and a comma-separated list
+of memory trait and value pairs, separated by @code{=}.
+
+@multitable @columnfractions .45 .45
+@headitem Predefined allocators @tab Predefined memory spaces
+@item omp_default_mem_alloc     @tab omp_default_mem_space
+@item omp_large_cap_mem_alloc   @tab omp_large_cap_mem_space
+@item omp_const_mem_alloc       @tab omp_const_mem_space
+@item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
+@item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
+@item omp_cgroup_mem_alloc      @tab --
+@item omp_pteam_mem_alloc       @tab --
+@item omp_thread_mem_alloc      @tab --
+@end multitable
+
+@multitable @columnfractions .30 .60
+@headitem Trait @tab Allowed values
+@item @code{sync_hint} @tab @code{contended}, @code{uncontended},
+                            @code{serialized}, @code{private}
+@item @code{alignment} @tab Positive integer being a power of two
+@item @code{access}    @tab @code{all}, @code{cgroup},
+                            @code{pteam}, @code{thread}
+@item @code{pool_size} @tab Positive integer
+@item @code{fallback}  @tab @code{default_mem_fb}, @code{null_fb},
+                            @code{abort_fb}, @code{allocator_fb}
+@item @code{fb_data}   @tab @emph{unsupported as it needs an allocator handle}
+@item @code{pinned}    @tab @code{true}, @code{false}
+@item @code{partition} @tab @code{environment}, @code{nearest},
+                            @code{blocked}, @code{interleaved}
+@end multitable
+
+Examples:
+@smallexample
+OMP_ALLOCATOR=omp_high_bw_mem_alloc
+OMP_ALLOCATOR=omp_large_cap_mem_space
+OMP_ALLOCATR=omp_low_lat_mem_space:pinned=true,partition=nearest
+@end smallexample
+
+@c @item @emph{See also}:
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
+@end table
+
+
+
+@node OMP_AFFINITY_FORMAT
+@section @env{OMP_AFFINITY_FORMAT} -- Set the format string used for affinity display
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Sets the format string used when displaying OpenMP thread affinity information.
+Special values are output using @code{%} followed by an optional size
+specification and then either the single-character field type or its long
+name enclosed in curly braces; using @code{%%} will display a literal percent.
+The size specification consists of an optional @code{0.} or @code{.} followed
+by a positive integer, specifing the minimal width of the output.  With
+@code{0.} and numerical values, the output is padded with zeros on the left;
+with @code{.}, the output is padded by spaces on the left; otherwise, the
+output is padded by spaces on the right.  If unset, the value is
+``@code{level %L thread %i affinity %A}''.
+
+Supported field types are:
+
+@multitable @columnfractions .10 .25 .60
+@item t @tab team_num @tab value returned by @code{omp_get_team_num}
+@item T @tab num_teams @tab value returned by @code{omp_get_num_teams}
+@item L @tab nesting_level @tab value returned by @code{omp_get_level}
+@item n @tab thread_num @tab value returned by @code{omp_get_thread_num}
+@item N @tab num_threads @tab value returned by @code{omp_get_num_threads}
+@item a @tab ancestor_tnum
+      @tab value returned by
+           @code{omp_get_ancestor_thread_num(omp_get_level()-1)}
+@item H @tab host @tab name of the host that executes the thread
+@item P @tab process_id @tab process identiﬁer
+@item i @tab native_thread_id @tab native thread identiﬁer
+@item A @tab thread_affinity
+      @tab comma separated list of integer values or ranges, representing the
+           processors on which a process might execute, subject to affinity
+           mechanisms
+@end multitable
+
+For instance, after setting
+
+@smallexample
+OMP_AFFINITY_FORMAT="%0.2a!%n!%.4L!%N;%.2t;%0.2T;%@{team_num@};%@{num_teams@};%A"
+@end smallexample
+
+with either @code{OMP_DISPLAY_AFFINITY} being set or when calling
+@code{omp_display_affinity} with @code{NULL} or an empty string, the program
+might display the following:
+
+@smallexample
+00!0!   1!4; 0;01;0;1;0-11
+00!3!   1!4; 0;01;0;1;0-11
+00!2!   1!4; 0;01;0;1;0-11
+00!1!   1!4; 0;01;0;1;0-11
+@end smallexample
+
+@item @emph{See also}:
+@ref{OMP_DISPLAY_AFFINITY}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.14
+@end table
+
+
+
 @node OMP_CANCELLATION
 @section @env{OMP_CANCELLATION} -- Set whether cancellation is activated
 @cindex Environment Variable
@@ -1975,6 +2098,26 @@ if unset, cancellation is disabled and the @code{cancel} construct is ignored.
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.11
 @end table
+
+
+
+@node OMP_DISPLAY_AFFINITY
+@section @env{OMP_DISPLAY_AFFINITY} -- Display thread affinity information
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+If set to @code{FALSE} or if unset, affinity displaying is disabled.
+If set to @code{TRUE}, the runtime will display affinity information about
+OpenMP threads in a parallel region upon entering the region and every time
+any change occurs.
+
+@item @emph{See also}:
+@ref{OMP_AFFINITY_FORMAT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.13
+@end table
+
 
 
 
@@ -2005,6 +2148,8 @@ Set to choose the device which is used in a @code{target} region, unless the
 value is overridden by @code{omp_set_default_device} or by a @code{device}
 clause.  The value shall be the nonnegative device number. If no device with
 the given device number exists, the code is executed on the host.  If unset,
+@env{OMP_TARGET_OFFLOAD} is @code{mandatory} and no non-host devices are
+available, it is set to @code{omp_invalid_device}.  Otherwise, if unset,
 device number 0 will be used.
 
 
@@ -4458,7 +4603,7 @@ The implementation remark:
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address} or
+@item OpenMP code that has a @code{requires} directive with
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
@@ -4520,8 +4665,8 @@ The implementation remark:
       Per device, reverse offload regions are processed serially such that
       the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a requires directive with @code{unified_address}
-      or @code{unified_shared_memory} will remove any nvptx device from the
+@item OpenMP code that has a @code{requires} directive with
+      @code{unified_shared_memory} will remove any nvptx device from the
       list of available devices (``host fallback'').
 @end itemize
 

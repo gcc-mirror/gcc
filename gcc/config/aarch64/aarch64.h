@@ -1292,4 +1292,14 @@ extern poly_uint16 aarch64_sve_vg;
 		STACK_BOUNDARY / BITS_PER_UNIT)		   \
     : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
+/* Filled in by aarch64_adjust_reg_alloc_order, which is called before
+   the first relevant use.  */
+#define REG_ALLOC_ORDER {}
+#define ADJUST_REG_ALLOC_ORDER aarch64_adjust_reg_alloc_order ()
+
+#define AARCH64_VALID_SHRN_OP(T,S)			\
+((T) == TRUNCATE					\
+ || ((T) == US_TRUNCATE && (S) == LSHIFTRT)		\
+ || ((T) == SS_TRUNCATE && (S) == ASHIFTRT))
+
 #endif /* GCC_AARCH64_H */

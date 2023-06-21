@@ -51,7 +51,7 @@ recursive subroutine s
 end
 
 recursive subroutine s2
-   associate (y => (s2)) ! { dg-error "Associating selector-expression at .1. yields a procedure" }
+   associate (y => (s2)) ! { dg-error "is a procedure name" }
    end associate
 end
 

@@ -11,12 +11,12 @@ mod foo {
         () => {{}};
     }
 
-    fn foo_f() { // { dg-warning "function is never used" }
+    fn foo_f() {
         foo!();
     }
 
-    fn bar_f() { // { dg-warning "function is never used" }
-        baz!();
+    fn bar_f() {
+        baz!(); // { dg-error "unknown macro" }
     }
 }
 

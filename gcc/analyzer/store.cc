@@ -2710,6 +2710,18 @@ tristate
 store::eval_alias_1 (const region *base_reg_a,
 		     const region *base_reg_b) const
 {
+  /* If they're in different memory spaces, they can't alias.  */
+  {
+    enum memory_space memspace_a = base_reg_a->get_memory_space ();
+    if (memspace_a != MEMSPACE_UNKNOWN)
+      {
+	enum memory_space memspace_b = base_reg_b->get_memory_space ();
+	if (memspace_b != MEMSPACE_UNKNOWN
+	    && memspace_a != memspace_b)
+	  return tristate::TS_FALSE;
+      }
+  }
+
   if (const symbolic_region *sym_reg_a
       = base_reg_a->dyn_cast_symbolic_region ())
     {

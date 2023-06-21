@@ -618,7 +618,8 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -664,7 +665,8 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -709,7 +711,8 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, from_ty));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -792,7 +795,8 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
   const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
   subst_mappings.push_back (TyTy::SubstitutionArg (param_ref, unified));
 
-  TyTy::SubstitutionArgumentMappings subst (subst_mappings, expr.get_locus ());
+  TyTy::SubstitutionArgumentMappings subst (subst_mappings, {},
+					    expr.get_locus ());
   infered = SubstMapperInternal::Resolve (adt, subst);
 }
 
@@ -1091,6 +1095,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
+  fn->prepare_higher_ranked_bounds ();
   auto root = receiver_tyty->get_root ();
   if (root->get_kind () == TyTy::TypeKind::ADT)
     {
@@ -1654,6 +1659,11 @@ TypeCheckExpr::resolve_operator_overload (
   TyTy::BaseType *lookup = lookup_tyty;
   TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
   rust_assert (fn->is_method ());
+
+  fn->prepare_higher_ranked_bounds ();
+  rust_debug_loc (expr.get_locus (), "resolved operator overload to: {%u} {%s}",
+		  candidate.candidate.ty->get_ref (),
+		  candidate.candidate.ty->debug_str ().c_str ());
 
   auto root = lhs->get_root ();
   if (root->get_kind () == TyTy::TypeKind::ADT)

@@ -550,7 +550,7 @@ package body Sinput is
                        or else S = Standard_ASCII_Location
                        or else S = System_Location;
 
-         pragma Assert ((S > No_Location) xor Special);
+         pragma Assert (S > No_Location xor Special);
          pragma Assert (Result in Source_File.First .. Source_File.Last);
 
          SFR : Source_File_Record renames Source_File.Table (Result);

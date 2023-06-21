@@ -60,9 +60,22 @@ import os
 import re
 import sys
 
-# Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
-_VALID_TEST_RESULTS_REX = re.compile("%s" % "|".join(_VALID_TEST_RESULTS))
+# <STATE>: <NAME> <DESCRIPTION"
+_VALID_TEST_RESULTS_REX = re.compile('(%s):\s*(\S+)\s*(.*)'
+                                     % "|".join(_VALID_TEST_RESULTS))
+
+# Formats of .sum file sections
+_TOOL_LINE_FORMAT = '\t\t=== %s tests ===\n'
+_EXP_LINE_FORMAT = '\nRunning %s:%s ...\n'
+_SUMMARY_LINE_FORMAT = '\n\t\t=== %s Summary ===\n'
+
+# ... and their compiled regexs.
+_TOOL_LINE_REX = re.compile('^\t\t=== (.*) tests ===\n')
+# Match .exp file name, optionally prefixed by a "tool:" name and a
+# path ending with "testsuite/"
+_EXP_LINE_REX = re.compile('^Running (?:.*:)?(.*) \.\.\.\n')
+_SUMMARY_LINE_REX = re.compile('^\t\t=== (.*) Summary ===\n')
 
 # Subdirectory of srcdir in which to find the manifest file.
 _MANIFEST_SUBDIR = 'contrib/testsuite-management'
@@ -111,20 +124,33 @@ class TestResult(object):
     ordinal: Monotonically increasing integer.
              It is used to keep results for one .exp file sorted
              by the order the tests were run.
+    tool: Top-level testsuite name (aka "tool" in DejaGnu parlance) of the test.
+    exp: Name of .exp testsuite file.
   """
 
-  def __init__(self, summary_line, ordinal=-1):
+  def __init__(self, summary_line, ordinal, tool, exp):
     try:
       (self.attrs, summary_line) = SplitAttributesFromSummaryLine(summary_line)
       try:
         (self.state,
          self.name,
-         self.description) = re.match(r'([A-Z]+):\s*(\S+)\s*(.*)',
-                                      summary_line).groups()
+         self.description) = _VALID_TEST_RESULTS_REX.match(summary_line).groups()
+        if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+          self.description = re.sub(_OPTIONS.srcpath_regex, '',
+                                    self.description)
       except:
-        print('Failed to parse summary line: "%s"' % summary_line)
+        print('Failed to parse summary line: "%s"' % summary_line,
+              file=sys.stderr)
         raise
       self.ordinal = ordinal
+      if tool == None or exp == None:
+        # .sum file seem to be broken.  There was no "tool" and/or "exp"
+        # lines preceding this result.
+        print(f'.sum file seems to be broken: tool="{tool}", exp="{exp}", summary_line="{summary_line}"',
+              file=sys.stderr)
+        raise
+      self.tool = tool
+      self.exp = exp
     except ValueError:
       Error('Cannot parse summary line "%s"' % summary_line)
 
@@ -133,14 +159,27 @@ class TestResult(object):
             self.state, summary_line, self))
 
   def __lt__(self, other):
-    return (self.name < other.name or
-            (self.name == other.name and self.ordinal < other.ordinal))
+    if (self.tool != other.tool):
+      return self.tool < other.tool
+    if (self.exp != other.exp):
+      return self.exp < other.exp
+    if (self.name != other.name):
+      return self.name < other.name
+    return self.ordinal < other.ordinal
 
   def __hash__(self):
-    return hash(self.state) ^ hash(self.name) ^ hash(self.description)
+    return (hash(self.state) ^ hash(self.tool) ^ hash(self.exp)
+            ^ hash(self.name) ^ hash(self.description))
 
+  # Note that we don't include "attrs" in this comparison.  This means that
+  # result entries "FAIL: test" and "flaky | FAIL: test" are considered
+  # the same.  Therefore the ResultSet will preserve only the first occurence.
+  # In practice this means that flaky entries should preceed expected fails
+  # entries.
   def __eq__(self, other):
     return (self.state == other.state and
+            self.tool == other.tool and
+            self.exp == other.exp and
             self.name == other.name and
             self.description == other.description)
 
@@ -170,9 +209,55 @@ class TestResult(object):
     # Return True if the expiration date of this result has passed.
     expiration_date = self.ExpirationDate()
     if expiration_date:
-      now = datetime.date.today()
-      return now > expiration_date
+      return _OPTIONS.expiry_today_date > expiration_date
 
+
+class ResultSet(set):
+  """Describes a set of DejaGNU test results.
+  This set can be read in from .sum files or emitted as a manifest.
+
+  Attributes:
+    current_tool: Name of the current top-level DejaGnu testsuite.
+    current_exp: Name of the current .exp testsuite file.
+    testsuites: A set of (tool, exp) tuples representing encountered testsuites.
+  """
+
+  def __init__(self):
+    super().__init__()
+    self.ResetToolExp()
+    self.testsuites=set()
+
+  def update(self, other):
+    super().update(other)
+    self.testsuites.update(other.testsuites)
+
+  def ResetToolExp(self):
+    self.current_tool = None
+    self.current_exp = None
+
+  def MakeTestResult(self, summary_line, ordinal=-1):
+    return TestResult(summary_line, ordinal,
+                      self.current_tool, self.current_exp)
+
+  def Print(self, outfile=sys.stdout):
+    current_tool = None
+    current_exp = None
+
+    for result in sorted(self):
+      if current_tool != result.tool:
+        current_tool = result.tool
+        outfile.write(_TOOL_LINE_FORMAT % current_tool)
+      if current_exp != result.exp:
+        current_exp = result.exp
+        outfile.write(_EXP_LINE_FORMAT % (current_tool, current_exp))
+      outfile.write('%s\n' % result)
+
+    outfile.write(_SUMMARY_LINE_FORMAT % 'Results')
+
+  # Check if testsuite of expected_result is present in current results.
+  # This is used to compare partial test results against a full manifest.
+  def HasTestsuite(self, expected_result):
+    return (expected_result.tool, expected_result.exp) in self.testsuites
 
 def GetMakefileValue(makefile_name, value_name):
   if os.path.exists(makefile_name):
@@ -210,10 +295,35 @@ def SplitAttributesFromSummaryLine(line):
   return (attrs, line)
 
 
-def IsInterestingResult(line):
+def IsInterestingResult(result_set, line):
   """Return True if line is one of the summary lines we care about."""
   (_, line) = SplitAttributesFromSummaryLine(line)
-  return bool(_VALID_TEST_RESULTS_REX.match(line))
+  valid_result = bool(_VALID_TEST_RESULTS_REX.match(line))
+
+  # If there's no tool defined it means that either the results section hasn't
+  # started yet, or it is already over.
+  if valid_result and result_set.current_tool is None:
+    if _OPTIONS.verbosity >= 3:
+      print(f'WARNING: Result "{line}" found outside sum file boundaries.',
+            file=sys.stderr)
+    return False
+
+  return valid_result
+
+
+def IsToolLine(line):
+  """Return True if line mentions the tool (in DejaGnu terms) for the following tests."""
+  return bool(_TOOL_LINE_REX.match(line))
+
+
+def IsExpLine(line):
+  """Return True if line mentions the .exp file for the following tests."""
+  return bool(_EXP_LINE_REX.match(line))
+
+
+def IsSummaryLine(line):
+  """Return True if line starts .sum footer."""
+  return bool(_SUMMARY_LINE_REX.match(line))
 
 
 def IsInclude(line):
@@ -241,21 +351,36 @@ def GetNegativeResult(line):
 
 def ParseManifestWorker(result_set, manifest_path):
   """Read manifest_path, adding the contents to result_set."""
-  if _OPTIONS.verbosity >= 1:
+  if _OPTIONS.verbosity >= 5:
     print('Parsing manifest file %s.' % manifest_path)
   manifest_file = open(manifest_path, encoding='latin-1', mode='r')
-  for line in manifest_file:
-    line = line.strip()
+  for orig_line in manifest_file:
+    line = orig_line.strip()
     if line == "":
       pass
     elif IsComment(line):
       pass
     elif IsNegativeResult(line):
-      result_set.remove(TestResult(GetNegativeResult(line)))
+      result_set.remove(result_set.MakeTestResult(GetNegativeResult(line)))
     elif IsInclude(line):
       ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
-    elif IsInterestingResult(line):
-      result_set.add(TestResult(line))
+    elif IsInterestingResult(result_set, line):
+      result = result_set.MakeTestResult(line)
+      if result.HasExpired():
+        # Ignore expired manifest entries.
+        if _OPTIONS.verbosity >= 4:
+          print('WARNING: Expected failure "%s" has expired.' % line.strip())
+        continue
+      result_set.add(result)
+    elif IsExpLine(orig_line):
+      result_set.current_exp = _EXP_LINE_REX.match(orig_line).groups()[0]
+      if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+        result_set.current_exp = re.sub(_OPTIONS.srcpath_regex, '',
+                                        result_set.current_exp)
+    elif IsToolLine(orig_line):
+      result_set.current_tool = _TOOL_LINE_REX.match(orig_line).groups()[0]
+    elif IsSummaryLine(orig_line):
+      result_set.ResetToolExp()
     else:
       Error('Unrecognized line in manifest file: %s' % line)
   manifest_file.close()
@@ -263,29 +388,44 @@ def ParseManifestWorker(result_set, manifest_path):
 
 def ParseManifest(manifest_path):
   """Create a set of TestResult instances from the given manifest file."""
-  result_set = set()
+  result_set = ResultSet()
   ParseManifestWorker(result_set, manifest_path)
   return result_set
 
 
 def ParseSummary(sum_fname):
   """Create a set of TestResult instances from the given summary file."""
-  result_set = set()
+  result_set = ResultSet()
   # ordinal is used when sorting the results so that tests within each
   # .exp file are kept sorted.
   ordinal=0
   sum_file = open(sum_fname, encoding='latin-1', mode='r')
   for line in sum_file:
-    if IsInterestingResult(line):
-      result = TestResult(line, ordinal)
+    if IsInterestingResult(result_set, line):
+      result = result_set.MakeTestResult(line, ordinal)
       ordinal += 1
       if result.HasExpired():
+        # ??? What is the use-case for this?  How "expiry" annotations are
+        # ??? supposed to be added to .sum results?
         # Tests that have expired are not added to the set of expected
         # results. If they are still present in the set of actual results,
         # they will cause an error to be reported.
-        print('WARNING: Expected failure "%s" has expired.' % line.strip())
+        if _OPTIONS.verbosity >= 4:
+          print('WARNING: Expected failure "%s" has expired.' % line.strip())
         continue
       result_set.add(result)
+    elif IsExpLine(line):
+      result_set.current_exp = _EXP_LINE_REX.match(line).groups()[0]
+      if _OPTIONS.srcpath_regex and _OPTIONS.srcpath_regex != '':
+        result_set.current_exp = re.sub(_OPTIONS.srcpath_regex, '',
+                                        result_set.current_exp)
+      result_set.testsuites.add((result_set.current_tool,
+                                 result_set.current_exp))
+    elif IsToolLine(line):
+      result_set.current_tool = _TOOL_LINE_REX.match(line).groups()[0]
+      result_set.current_exp = None
+    elif IsSummaryLine(line):
+      result_set.ResetToolExp()
   sum_file.close()
   return result_set
 
@@ -301,7 +441,7 @@ def GetManifest(manifest_path):
   if os.path.exists(manifest_path):
     return ParseManifest(manifest_path)
   else:
-    return set()
+    return ResultSet()
 
 
 def CollectSumFiles(builddir):
@@ -316,12 +456,14 @@ def CollectSumFiles(builddir):
   return sum_files
 
 
-def GetResults(sum_files):
+def GetResults(sum_files, build_results = None):
   """Collect all the test results from the given .sum files."""
-  build_results = set()
+  if build_results == None:
+    build_results = ResultSet()
   for sum_fname in sum_files:
-    print('\t%s' % sum_fname)
-    build_results |= ParseSummary(sum_fname)
+    if _OPTIONS.verbosity >= 3:
+      print('\t%s' % sum_fname)
+    build_results.update(ParseSummary(sum_fname))
   return build_results
 
 
@@ -332,7 +474,7 @@ def CompareResults(manifest, actual):
   """
   # Collect all the actual results not present in the manifest.
   # Results in this set will be reported as errors.
-  actual_vs_manifest = set()
+  actual_vs_manifest = ResultSet()
   for actual_result in actual:
     if actual_result not in manifest:
       actual_vs_manifest.add(actual_result)
@@ -341,18 +483,22 @@ def CompareResults(manifest, actual):
   # in the actual results.
   # Results in this set will be reported as warnings (since
   # they are expected failures that are not failing anymore).
-  manifest_vs_actual = set()
+  manifest_vs_actual = ResultSet()
   for expected_result in manifest:
     # Ignore tests marked flaky.
     if 'flaky' in expected_result.attrs:
       continue
-    if expected_result not in actual:
+    # We try to support comparing partial results vs full manifest
+    # (e.g., manifest has failures for gcc, g++, gfortran, but we ran only
+    # g++ testsuite).  To achieve this we record encountered testsuites in
+    # actual.testsuites set, and then we check it here using HasTestsuite().
+    if expected_result not in actual and actual.HasTestsuite(expected_result):
       manifest_vs_actual.add(expected_result)
 
   return actual_vs_manifest, manifest_vs_actual
 
 
-def GetManifestPath(srcdir, target, user_provided_must_exist):
+def GetManifestPath(user_provided_must_exist):
   """Return the full path to the manifest file."""
   manifest_path = _OPTIONS.manifest
   if manifest_path:
@@ -360,6 +506,7 @@ def GetManifestPath(srcdir, target, user_provided_must_exist):
       Error('Manifest does not exist: %s' % manifest_path)
     return manifest_path
   else:
+    (srcdir, target) = GetBuildData()
     if not srcdir:
       Error('Could not determine the location of GCC\'s source tree. '
             'The Makefile does not contain a definition for "srcdir".')
@@ -383,68 +530,79 @@ def GetBuildData():
       return None, None
   srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
   target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
-  print('Source directory: %s' % srcdir)
-  print('Build target:     %s' % target)
+  if _OPTIONS.verbosity >= 3:
+    print('Source directory: %s' % srcdir)
+    print('Build target:     %s' % target)
   return srcdir, target
 
 
-def PrintSummary(msg, summary):
-  print('\n\n%s' % msg)
-  for result in sorted(summary):
-    print(result)
-
+def PrintSummary(summary):
+  summary.Print()
 
 def GetSumFiles(results, build_dir):
   if not results:
-    print('Getting actual results from build directory %s' % build_dir)
+    if _OPTIONS.verbosity >= 3:
+      print('Getting actual results from build directory %s' % build_dir)
     sum_files = CollectSumFiles(build_dir)
   else:
-    print('Getting actual results from user-provided results')
+    if _OPTIONS.verbosity >= 3:
+      print('Getting actual results from user-provided results')
     sum_files = results.split()
   return sum_files
 
 
-def PerformComparison(expected, actual, ignore_missing_failures):
+def PerformComparison(expected, actual):
   actual_vs_expected, expected_vs_actual = CompareResults(expected, actual)
+
+  if _OPTIONS.inverse_match:
+    # Switch results if inverse comparison is requested.
+    # This is useful in detecting flaky tests that FAILed in expected set,
+    # but PASSed in actual set.
+    actual_vs_expected, expected_vs_actual \
+      = expected_vs_actual, actual_vs_expected
 
   tests_ok = True
   if len(actual_vs_expected) > 0:
-    PrintSummary('Unexpected results in this build (new failures)',
-                 actual_vs_expected)
+    if _OPTIONS.verbosity >= 3:
+      print('\n\nUnexpected results in this build (new failures)')
+    if _OPTIONS.verbosity >= 1:
+      PrintSummary(actual_vs_expected)
     tests_ok = False
 
-  if not ignore_missing_failures and len(expected_vs_actual) > 0:
-    PrintSummary('Expected results not present in this build (fixed tests)'
-                 '\n\nNOTE: This is not a failure.  It just means that these '
-                 'tests were expected\nto fail, but either they worked in '
-                 'this configuration or they were not\npresent at all.\n',
-                 expected_vs_actual)
+  if _OPTIONS.verbosity >= 2 and len(expected_vs_actual) > 0:
+    print('\n\nExpected results not present in this build (fixed tests)'
+          '\n\nNOTE: This is not a failure.  It just means that these '
+          'tests were expected\nto fail, but either they worked in '
+          'this configuration or they were not\npresent at all.\n')
+    PrintSummary(expected_vs_actual)
 
-  if tests_ok:
+  if tests_ok and _OPTIONS.verbosity >= 3:
     print('\nSUCCESS: No unexpected failures.')
 
   return tests_ok
 
 
 def CheckExpectedResults():
-  srcdir, target = GetBuildData()
-  manifest_path = GetManifestPath(srcdir, target, True)
-  print('Manifest:         %s' % manifest_path)
+  manifest_path = GetManifestPath(True)
+  if _OPTIONS.verbosity >= 3:
+    print('Manifest:         %s' % manifest_path)
   manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  if _OPTIONS.verbosity >= 1:
-    PrintSummary('Tests expected to fail', manifest)
-    PrintSummary('\nActual test results', actual)
+  if _OPTIONS.verbosity >= 5:
+    print('\n\nTests expected to fail')
+    PrintSummary(manifest)
+    print('\n\nActual test results')
+    PrintSummary(actual)
 
-  return PerformComparison(manifest, actual, _OPTIONS.ignore_missing_failures)
+  return PerformComparison(manifest, actual)
 
 
 def ProduceManifest():
-  (srcdir, target) = GetBuildData()
-  manifest_path = GetManifestPath(srcdir, target, False)
-  print('Manifest:         %s' % manifest_path)
+  manifest_path = GetManifestPath(False)
+  if _OPTIONS.verbosity >= 3:
+    print('Manifest:         %s' % manifest_path)
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_path)
@@ -452,24 +610,29 @@ def ProduceManifest():
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
   manifest_file = open(manifest_path, encoding='latin-1', mode='w')
-  for result in sorted(actual):
-    print(result)
-    manifest_file.write('%s\n' % result)
+  actual.Print(manifest_file)
+  actual.Print()
   manifest_file.close()
 
   return True
 
 
 def CompareBuilds():
-  (srcdir, target) = GetBuildData()
-
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
-  clean = GetResults(clean_sum_files)
+  clean = ResultSet()
 
-  return PerformComparison(clean, actual, _OPTIONS.ignore_missing_failures)
+  if _OPTIONS.manifest:
+    manifest_path = GetManifestPath(True)
+    if _OPTIONS.verbosity >= 3:
+      print('Manifest:         %s' % manifest_path)
+    clean = GetManifest(manifest_path)
+
+  clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
+  clean = GetResults(clean_sum_files, clean)
+
+  return PerformComparison(clean, actual)
 
 
 def Main(argv):
@@ -491,13 +654,23 @@ def Main(argv):
                     default=False, help='When used with --produce_manifest, '
                     'it will overwrite an existing manifest file '
                     '(default = False)')
-  parser.add_option('--ignore_missing_failures', action='store_true',
-                    dest='ignore_missing_failures', default=False,
-                    help='When a failure is expected in the manifest but '
-                    'it is not found in the actual results, the script '
-                    'produces a note alerting to this fact. This means '
-                    'that the expected failure has been fixed, or '
-                    'it did not run, or it may simply be flaky '
+  parser.add_option('--expiry_date', action='store',
+                    dest='expiry_today_date', default=None,
+                    help='Use provided date YYYYMMDD to decide whether '
+                    'manifest entries with expiry settings have expired '
+                    'or not. (default = Use today date)')
+  parser.add_option('--srcpath', action='store', type='string',
+                    dest='srcpath_regex', default='[^ ]+/testsuite/',
+                    help='Remove provided path (can be a regex) from '
+                    'the result entries.  This is useful to remove '
+                    'occasional filesystem path from the results. '
+                    '(default = "[^ ]+/testsuite/")')
+  parser.add_option('--inverse_match', action='store_true',
+                    dest='inverse_match', default=False,
+                    help='Inverse result sets in comparison. '
+                    'Output unexpected passes as unexpected failures and '
+                    'unexpected failures as unexpected passes. '
+                    'This is used to catch FAIL->PASS flaky tests. '
                     '(default = False)')
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
@@ -515,9 +688,32 @@ def Main(argv):
                     'starting with FAIL, XPASS or UNRESOLVED (default = '
                     '.sum files collected from the build directory).')
   parser.add_option('--verbosity', action='store', dest='verbosity',
-                    type='int', default=0, help='Verbosity level (default = 0)')
+                    type='int', default=3, help='Verbosity level '
+                    '(default = 3). Level 0: only error output, this is '
+                    'useful in scripting when only the exit code is used. '
+                    'Level 1: output unexpected failures. '
+                    'Level 2: output unexpected passes. '
+                    'Level 3: output helpful information. '
+                    'Level 4: output notification on expired entries. '
+                    'Level 5: output debug information.')
   global _OPTIONS
   (_OPTIONS, _) = parser.parse_args(argv[1:])
+
+  # Set "today" date to compare expiration entries against.
+  # Setting expiration date into the future allows re-detection of flaky
+  # tests and creating fresh entries for them before the current flaky entries
+  # expire.
+  if _OPTIONS.expiry_today_date:
+    today_date = re.search(r'(\d\d\d\d)(\d\d)(\d\d)',
+                           _OPTIONS.expiry_today_date)
+    if not today_date:
+        Error('Invalid --expiry_today_date format "%s".  Must be of the form '
+              '"expire=YYYYMMDD"' % _OPTIONS.expiry_today_date)
+    _OPTIONS.expiry_today_date=datetime.date(int(today_date.group(1)),
+                                             int(today_date.group(2)),
+                                             int(today_date.group(3)))
+  else:
+    _OPTIONS.expiry_today_date = datetime.date.today()
 
   if _OPTIONS.produce_manifest:
     retval = ProduceManifest()
@@ -529,7 +725,7 @@ def Main(argv):
   if retval:
     return 0
   else:
-    return 1
+    return 2
 
 
 if __name__ == '__main__':

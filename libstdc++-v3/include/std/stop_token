@@ -395,6 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Stop_state_ref() = default;
 
+      [[__gnu__::__access__(__none__, 2)]]
       explicit
       _Stop_state_ref(const stop_source&)
       : _M_ptr(new _Stop_state_t())

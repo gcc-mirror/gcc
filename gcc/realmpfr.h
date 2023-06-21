@@ -24,6 +24,30 @@
 #include <mpfr.h>
 #include <mpc.h>
 
+class auto_mpfr
+{
+public:
+  auto_mpfr () { mpfr_init (m_mpfr); }
+  explicit auto_mpfr (mpfr_prec_t prec) { mpfr_init2 (m_mpfr, prec); }
+  ~auto_mpfr () { mpfr_clear (m_mpfr); }
+
+  operator mpfr_t& () { return m_mpfr; }
+  mpfr_ptr operator-> () { return m_mpfr; }
+
+  auto_mpfr (const auto_mpfr &) = delete;
+  auto_mpfr &operator= (const auto_mpfr &) = delete;
+
+#if GCC_VERSION < 4008 || GCC_VERSION >= 5000
+  /* GCC 4.8 and 4.9 don't support this, only fixed in PR62101 for 5.0.  */
+  friend void mpfr_clear (auto_mpfr&) = delete;
+  friend void mpfr_init (auto_mpfr&) = delete;
+  friend void mpfr_init2 (auto_mpfr&, mpfr_prec_t) = delete;
+#endif
+
+private:
+  mpfr_t m_mpfr;
+};
+
 /* Convert between MPFR and REAL_VALUE_TYPE.  The caller is
    responsible for initializing and clearing the MPFR parameter.  */
 

@@ -70,11 +70,9 @@ public:
       pattern.get_node_id (), pattern.get_locus (), type);
   }
 
-  void visit (AST::WildcardPattern &pattern) override
+  void visit (AST::GroupedPattern &pattern) override
   {
-    resolver->get_name_scope ().insert (
-      CanonicalPath::new_seg (pattern.get_node_id (), "_"),
-      pattern.get_node_id (), pattern.get_locus (), type);
+    pattern.get_pattern_in_parens ()->accept_vis (*this);
   }
 
   // cases in a match expression

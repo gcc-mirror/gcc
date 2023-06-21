@@ -453,7 +453,7 @@ create_edge_for_control_dependence (struct graph *rdg, basic_block bb,
 			    0, edge_n, bi)
     {
       basic_block cond_bb = cd->get_edge_src (edge_n);
-      gimple *stmt = last_stmt (cond_bb);
+      gimple *stmt = *gsi_last_bb (cond_bb);
       if (stmt && is_ctrl_stmt (stmt))
 	{
 	  struct graph_edge *e;
@@ -1756,11 +1756,12 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
       return;
     }
 
-  poly_uint64 base_offset;
-  unsigned HOST_WIDE_INT const_base_offset;
-  tree base_base = strip_offset (base, &base_offset);
-  if (!base_offset.is_constant (&const_base_offset))
+  tree base_offset;
+  tree base_base;
+  split_constant_offset (base, &base_base, &base_offset);
+  if (!cst_and_fits_in_hwi (base_offset))
     return;
+  unsigned HOST_WIDE_INT const_base_offset = int_cst_value (base_offset);
 
   struct builtin_info *builtin;
   builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
@@ -3587,7 +3588,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   data_reference_p load_dr = NULL, store_dr = NULL;
 
   edge e = single_exit (loop);
-  gcond *cond = safe_dyn_cast <gcond *> (last_stmt (e->src));
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (e->src));
   if (!cond)
     return false;
   /* Ensure loop condition is an (in)equality test and loop is exited either if

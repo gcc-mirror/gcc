@@ -2,18 +2,33 @@ load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib gfortran-dg.exp
 
-global shlib_ext
-global ALWAYS_CFLAGS
+if { $blddir != "" } {
+    set libgfortran_library_path "../libgfortran/.libs"
+    set shlib_ext [get_shlib_extension]
+    if { ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.a"]
+	 && ![file exists "${blddir}/${libgfortran_library_path}/libgfortran.${shlib_ext}"] } {
+        verbose -log "No libgfortran library found, will not execute fortran tests"
+	unset libgfortran_library_path
+	return
+    }
+    lappend lang_library_paths $libgfortran_library_path
 
-set shlib_ext [get_shlib_extension]
-set lang_library_path	"../libgfortran/.libs"
-set lang_link_flags	"-lgfortran -foffload=-lgfortran"
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
+    set libquadmath_library_path "../libquadmath/.libs"
+    if { [file exists "${blddir}/${libquadmath_library_path}/libquadmath.a"]
+	 || [file exists "${blddir}/${libquadmath_library_path}/libquadmath.${shlib_ext}"] } {
+	lappend lang_library_paths $libquadmath_library_path
+    } else {
+	set libquadmath_library_path ""
+    }
+} elseif { ![info exists GFORTRAN_UNDER_TEST] } {
+    verbose -log "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
+    return
 }
-set lang_test_file_found 0
-set quadmath_library_path "../libquadmath/.libs"
-
+if { $blddir != "" } {
+    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
+    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
+}
+lappend ALWAYS_CFLAGS "compiler=$GFORTRAN_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -21,58 +36,31 @@ dg-init
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+
+set ld_library_path $always_ld_library_path
 if { $blddir != "" } {
-    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
-    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
-    # Look for a static libgfortran first.
-    if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
-        set lang_test_file "${lang_library_path}/libgfortran.a"
-        set lang_test_file_found 1
-	# We may have a shared only build, so look for a shared libgfortran.
-    } elseif [file exists "${blddir}/${lang_library_path}/libgfortran.${shlib_ext}"] {
-        set lang_test_file "${lang_library_path}/libgfortran.${shlib_ext}"
-        set lang_test_file_found 1
-    } else {
-        puts "No libgfortran library found, will not execute fortran tests"
+    append ld_library_path ":${blddir}/${libgfortran_library_path}"
+
+    if { $libquadmath_library_path != "" } {
+	append ld_library_path ":${blddir}/${libquadmath_library_path}"
     }
-} elseif [info exists GFORTRAN_UNDER_TEST] {
-    set lang_test_file_found 1
-    # Needs to exist for libgomp.exp.
-    set lang_test_file ""
-} else {
-    puts "GFORTRAN_UNDER_TEST not defined, will not execute fortran tests"
 }
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
 
-if { $lang_test_file_found } {
-    # Gather a list of all tests.
-    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
+# For Fortran we're doing torture testing, as Fortran has far more tests
+# with arrays etc. that testing just -O0 or -O2 is insufficient, that is
+# typically not the case for C/C++.
+gfortran-dg-runtest $tests "" ""
 
-    if { $blddir != "" } {
-	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
-	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
-	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
-	    # Allow for spec subsitution.
-	    lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
-	    append lang_link_flags " -lquadmath"
-	} else {
-	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
-	}
-    } else {
-        set ld_library_path "$always_ld_library_path"
-        if { [check_no_compiler_messages has_libquadmath executable {
-                 int main() {return 0;}
-              } "-lgfortran -lquadmath"] } then {
-            append lang_link_flags " -lquadmath"
-        }
-    }
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
-
-    # For Fortran we're doing torture testing, as Fortran has far more tests
-    # with arrays etc. that testing just -O0 or -O2 is insufficient, that is
-    # typically not the case for C/C++.
-    gfortran-dg-runtest $tests "" ""
+if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
+    unset libgfortran_library_path
+    unset libquadmath_library_path
+    unset lang_library_paths
 }
 
 # All done.

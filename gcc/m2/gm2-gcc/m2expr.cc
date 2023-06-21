@@ -1041,7 +1041,7 @@ m2expr_build_unary_op_check (location_t location, enum tree_code code,
   if (check != NULL)
     result = build2 (COMPOUND_EXPR, argtype, check, result);
 
-  if (TREE_CODE (argtype) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (argtype))
     m2expr_checkRealOverflow (location, code, result);
 
   return m2expr_FoldAndStrip (result);
@@ -2594,7 +2594,7 @@ m2expr_build_binary_op_check (location_t location, enum tree_code code,
   if (check != NULL)
     result = build2 (COMPOUND_EXPR, TREE_TYPE (result), check, result);
 
-  if (TREE_CODE (type1) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type1))
     m2expr_checkRealOverflow (location, code, result);
   return result;
 }
@@ -3855,273 +3855,123 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
     }
 }
 
-/* Append DIGIT to NUM, a number of PRECISION bits being read in base
-   BASE.  */
 
-static int
-append_digit (location_t location,
-	      unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
-              unsigned int digit, unsigned int base)
+/* StrToWideInt return true if an overflow occurs when attempting to convert
+   str to an unsigned ZTYPE the value is contained in the widest_int result.
+   The value result is undefined if true is returned.  */
+
+bool
+m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
+		     widest_int &result, bool issueError)
 {
-  unsigned int shift;
-  int overflow;
-  HOST_WIDE_INT add_high, res_high, test_high;
-  unsigned HOST_WIDE_INT add_low, res_low, test_low;
+  tree type = m2type_GetM2ZType ();
+  unsigned int i = 0;
+  wi::overflow_type overflow = wi::OVF_NONE;
+  widest_int wbase = wi::to_widest (m2decl_BuildIntegerConstant (base));
+  unsigned int digit = 0;
+  result = wi::to_widest (m2decl_BuildIntegerConstant (0));
+  bool base_specifier = false;
 
-  switch (base)
+  while (((str[i] != (char)0) && (overflow == wi::OVF_NONE))
+	 && (! base_specifier))
     {
+      char ch = str[i];
 
-    case 2:
-      shift = 1;
-      break;
-    case 8:
-      shift = 3;
-      break;
-    case 10:
-      shift = 3;
-      break;
-    case 16:
-      shift = 4;
-      break;
+      switch (base)
+	{
+	  /* GNU m2 extension allows 'A' to represent binary literals.  */
+	case 2:
+	  if (ch == 'A')
+	    base_specifier = true;
+	  else if ((ch < '0') || (ch > '1'))
+	    {
+	      if (issueError)
+		error_at (location,
+			  "constant literal %qs contains %qc, expected 0 or 1",
+			  str, ch);
+	      return true;
+	    }
+	  else
+	    digit = (unsigned int) (ch - '0');
+	  break;
+	case 8:
+	  /* An extension of 'B' indicates octal ZTYPE and 'C' octal character.  */
+	  if ((ch == 'B') || (ch == 'C'))
+	    base_specifier = true;
+	  else if ((ch < '0') || (ch > '7'))
+	    {
+	      if (issueError)
+		error_at (location,
+			  "constant literal %qs contains %qc, expected %qs",
+			  str, ch, "0..7");
+	      return true;
+	    }
+	  else
+	    digit = (unsigned int) (ch - '0');
+	  break;
+	case 10:
+	  if ((ch < '0') || (ch > '9'))
+	    {
+	      if (issueError)
+		error_at (location,
+			  "constant literal %qs contains %qc, expected %qs",
+			  str, ch, "0..9");
+	      return true;
+	    }
+	  else
+	    digit = (unsigned int) (ch - '0');
+	  break;
+	case 16:
+	  /* An extension of 'H' indicates hexidecimal ZTYPE.  */
+	  if (ch == 'H')
+	    base_specifier = true;
+	  else if ((ch >= '0') && (ch <= '9'))
+	    digit = (unsigned int) (ch - '0');
+	  else if ((ch >= 'A') && (ch <= 'F'))
+	    digit = ((unsigned int) (ch - 'A')) + 10;
+	  else
+	    {
+	      if (issueError)
+		error_at (location,
+			  "constant literal %qs contains %qc, expected %qs or %qs",
+			  str, ch, "0..9", "A..F");
+	      return true;
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
 
-    default:
-      shift = 3;
-      m2linemap_internal_error_at (location,
-				   "not expecting this base value for a constant");
+      if (! base_specifier)
+	{
+	  widest_int wdigit = wi::to_widest (m2decl_BuildIntegerConstant (digit));
+	  result = wi::umul (result, wbase, &overflow);
+	  if (overflow == wi::OVF_NONE)
+	    result = wi::add (result, wdigit, UNSIGNED, &overflow);
+	}
+      i++;
     }
-
-  /* Multiply by 2, 8 or 16.  Catching this overflow here means we
-     don't need to worry about add_high overflowing.  */
-  if (((*high) >> (INT_TYPE_SIZE - shift)) == 0)
-    overflow = false;
-  else
-    overflow = true;
-
-  res_high = *high << shift;
-  res_low = *low << shift;
-  res_high |= (*low) >> (INT_TYPE_SIZE - shift);
-
-  if (base == 10)
+  if (overflow == wi::OVF_NONE)
     {
-      add_low = (*low) << 1;
-      add_high = ((*high) << 1) + ((*low) >> (INT_TYPE_SIZE - 1));
+      tree value = wide_int_to_tree (type, result);
+      if (m2expr_TreeOverflow (value))
+	{
+	  if (issueError)
+	    error_at (location,
+		      "constant literal %qs exceeds internal ZTYPE range", str);
+	  return true;
+	}
+      return false;
     }
   else
-    add_high = add_low = 0;
-
-  test_low = add_low + digit;
-  if (test_low < add_low)
-    add_high++;
-  add_low += digit;
-
-  test_low = res_low + add_low;
-  if (test_low < res_low)
-    add_high++;
-  test_high = res_high + add_high;
-  if (test_high < res_high)
-    overflow = true;
-
-  *low = res_low + add_low;
-  *high = res_high + add_high;
-
-  return overflow;
+    {
+      if (issueError)
+	error_at (location,
+		  "constant literal %qs exceeds internal ZTYPE range", str);
+      return true;
+    }
 }
 
-/* interpret_integer convert an integer constant into two integer
-   constants.  Heavily borrowed from gcc/cppexp.cc.  */
-
-int
-m2expr_interpret_integer (location_t location, const char *str, unsigned int base,
-                          unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high)
-{
-  unsigned const char *p, *end;
-  int overflow = false;
-  int len;
-
-  *low = 0;
-  *high = 0;
-  p = (unsigned const char *)str;
-  len = strlen (str);
-  end = p + len;
-
-  /* Common case of a single digit.  */
-  if (len == 1)
-    *low = p[0] - '0';
-  else
-    {
-      unsigned int c = 0;
-
-      /* We can add a digit to numbers strictly less than this without
-	 needing the precision and slowness of double integers.  */
-
-      unsigned HOST_WIDE_INT max = ~(unsigned HOST_WIDE_INT)0;
-      max = (max - base + 1) / base + 1;
-
-      for (; p < end; p++)
-        {
-          c = *p;
-
-          if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
-            c = hex_value (c);
-          else
-            return overflow;
-
-          /* Strict inequality for when max is set to zero.  */
-          if (*low < max)
-            *low = (*low) * base + c;
-          else
-            {
-              overflow = append_digit (location, low, high, c, base);
-              max = 0;  /* From now on we always use append_digit.  */
-            }
-        }
-    }
-  return overflow;
-}
-
-/* Append DIGIT to NUM, a number of PRECISION bits being read in base
-   BASE.  */
-
-static int
-append_m2_digit (location_t location,
-		 unsigned int *low, int *high, unsigned int digit,
-                 unsigned int base, bool *needsUnsigned)
-{
-  unsigned int shift;
-  bool overflow;
-  int add_high, res_high, test_high;
-  unsigned int add_low, res_low, test_low;
-  unsigned int add_uhigh, res_uhigh, test_uhigh;
-
-  switch (base)
-    {
-
-    case 2:
-      shift = 1;
-      break;
-    case 8:
-      shift = 3;
-      break;
-    case 10:
-      shift = 3;
-      break;
-    case 16:
-      shift = 4;
-      break;
-
-    default:
-      shift = 3;
-      m2linemap_internal_error_at (location,
-				   "not expecting this base value for a constant");
-    }
-
-  /* Multiply by 2, 8 or 16.  Catching this overflow here means we
-     don't need to worry about add_high overflowing.  */
-  if (((*high) >> (INT_TYPE_SIZE - shift)) == 0)
-    overflow = false;
-  else
-    overflow = true;
-
-  res_high = *high << shift;
-  res_low = *low << shift;
-  res_high |= (*low) >> (INT_TYPE_SIZE - shift);
-
-  if (base == 10)
-    {
-      add_low = (*low) << 1;
-      add_high = ((*high) << 1) + ((*low) >> (INT_TYPE_SIZE - 1));
-    }
-  else
-    add_high = add_low = 0;
-
-  test_low = add_low + digit;
-  if (test_low < add_low)
-    add_high++;
-  add_low += digit;
-
-  test_low = res_low + add_low;
-  if (test_low < res_low)
-    add_high++;
-  test_high = res_high + add_high;
-  if (test_high < res_high)
-    {
-      res_uhigh = res_high;
-      add_uhigh = add_high;
-      test_uhigh = res_uhigh + add_uhigh;
-      if (test_uhigh < res_uhigh)
-	overflow = true;
-      else
-	*needsUnsigned = true;
-    }
-
-  *low = res_low + add_low;
-  *high = res_high + add_high;
-
-  return overflow;
-}
-
-/* interpret_m2_integer convert an integer constant into two integer
-   constants.  Heavily borrowed from gcc/cppexp.cc.  Note that this is a
-   copy of the above code except that it uses `int' rather than
-   HOST_WIDE_INT to allow gm2 to determine what Modula-2 base type to
-   use for this constant and it also sets needsLong and needsUnsigned
-   if an overflow can be avoided by using these techniques.  */
-
-int
-m2expr_interpret_m2_integer (location_t location,
-			     const char *str, unsigned int base,
-                             unsigned int *low, int *high,
-			     bool *needsLong, bool *needsUnsigned)
-{
-  const unsigned char *p, *end;
-  int len;
-  *needsLong = false;
-  *needsUnsigned = false;
-
-  *low = 0;
-  *high = 0;
-  p = (unsigned const char *)str;
-  len = strlen (str);
-  end = p + len;
-
-  /* Common case of a single digit.  */
-  if (len == 1)
-    *low = p[0] - '0';
-  else
-    {
-      unsigned int c = 0;
-
-      /* We can add a digit to numbers strictly less than this without
-	 needing the precision and slowness of double integers.  */
-
-      unsigned int max = ~(unsigned int)0;
-      max = (max - base + 1) / base + 1;
-
-      for (; p < end; p++)
-        {
-          c = *p;
-
-          if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
-            c = hex_value (c);
-          else
-            return false;  /* End of string and no overflow found.  */
-
-          /* Strict inequality for when max is set to zero.  */
-          if (*low < max)
-            *low = (*low) * base + c;
-          else
-            {
-	      *needsLong = true;
-	      if (append_m2_digit (location,
-				   low, high, c, base,
-				   needsUnsigned))
-		return true;  /* We have overflowed so bail out.  */
-              max = 0;  /* From now on we always use append_digit.  */
-            }
-        }
-    }
-  return false;
-}
 
 /* GetSizeOfInBits return the number of bits used to contain, type.  */
 
@@ -4282,6 +4132,16 @@ build_set_full_complement (location_t location)
     }
   return value;
 }
+
+
+/* GetCstInteger return the integer value of the cst tree.  */
+
+int
+m2expr_GetCstInteger (tree cst)
+{
+  return TREE_INT_CST_LOW (cst);
+}
+
 
 /* init initialise this module.  */
 

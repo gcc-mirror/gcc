@@ -1,4 +1,4 @@
-/* { dg-output "S::f\nT1::f\nT2::f\n" } */
+/* { dg-output "S::f\r*\nT1::f\r*\nT2::f\r*\n" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }

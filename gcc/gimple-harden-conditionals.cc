@@ -276,8 +276,8 @@ insert_check_and_trap (location_t loc, gimple_stmt_iterator *gsip,
 }
 
 /* Split edge E, and insert_check_and_trap (see above) in the
-   newly-created block, using detached copies of LHS's and RHS's
-   values (see detach_value above) for the COP compare.  */
+   newly-created block, using already-detached copies of LHS's and
+   RHS's values (see detach_value above) for the COP compare.  */
 
 static inline void
 insert_edge_check_and_trap (location_t loc, edge e,
@@ -300,10 +300,6 @@ insert_edge_check_and_trap (location_t loc, edge e,
 	     src->index, dest->index, chk->index);
 
   gimple_stmt_iterator gsik = gsi_after_labels (chk);
-
-  bool same_p = (lhs == rhs);
-  lhs = detach_value (loc, &gsik, lhs);
-  rhs = same_p ? lhs : detach_value (loc, &gsik, rhs);
 
   insert_check_and_trap (loc, &gsik, flags, cop, lhs, rhs);
 }
@@ -365,6 +361,12 @@ pass_harden_conditional_branches::execute (function *fun)
       if (cop == ERROR_MARK)
 	/* ??? Can we do better?  */
 	continue;
+
+      /* Detach the values before the compares.  If we do so later,
+	 the compiler may use values inferred from the compares.  */
+      bool same_p = (lhs == rhs);
+      lhs = detach_value (loc, &gsi, lhs);
+      rhs = same_p ? lhs : detach_value (loc, &gsi, rhs);
 
       insert_edge_check_and_trap (loc, EDGE_SUCC (bb, 0), cop, lhs, rhs);
       insert_edge_check_and_trap (loc, EDGE_SUCC (bb, 1), cop, lhs, rhs);
@@ -508,6 +510,13 @@ pass_harden_compares::execute (function *fun)
 
 	  tree rhs = copy_ssa_name (lhs);
 
+	  /* Detach the values before the compares, so that the
+	     compiler infers nothing from them, not even from a
+	     throwing compare that didn't throw.  */
+	  bool same_p = (op1 == op2);
+	  op1 = detach_value (loc, &gsi, op1);
+	  op2 = same_p ? op1 : detach_value (loc, &gsi, op2);
+
 	  gimple_stmt_iterator gsi_split = gsi;
 	  /* Don't separate the original assignment from debug stmts
 	     that might be associated with it, and arrange to split the
@@ -528,10 +537,6 @@ pass_harden_compares::execute (function *fun)
 			 " after a throwing compare\n",
 			 gimple_bb (asgn)->index, nbb->index);
 	    }
-
-	  bool same_p = (op1 == op2);
-	  op1 = detach_value (loc, &gsi_split, op1);
-	  op2 = same_p ? op1 : detach_value (loc, &gsi_split, op2);
 
 	  gassign *asgnck = gimple_build_assign (rhs, cop, op1, op2);
 	  gimple_set_location (asgnck, loc);

@@ -162,9 +162,7 @@ package body Ch7 is
 
             --  Move the aspect specifications to the body node
 
-            if Has_Aspects (Dummy_Node) then
-               Move_Aspects (From => Dummy_Node, To => Package_Node);
-            end if;
+            Move_Aspects (From => Dummy_Node, To => Package_Node);
 
             Parse_Decls_Begin_End (Package_Node);
          end if;
@@ -261,7 +259,7 @@ package body Ch7 is
                        and then Start_Column /= Error_Msg_Col
                      then
                         Error_Msg_SC
-                          ("(style) PRIVATE in wrong column, should be@");
+                          ("(style) PRIVATE in wrong column, should be@?l?");
                      end if;
                   end if;
 

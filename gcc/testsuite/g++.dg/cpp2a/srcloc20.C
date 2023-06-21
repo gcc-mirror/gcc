@@ -33,12 +33,12 @@ namespace std {
 using namespace std;
 
 auto a = source_location::current;		// { dg-error "taking address of an immediate function" }
-constexpr auto b = &source_location::current;	// { dg-error "taking address of an immediate function" }
+constexpr auto b = &source_location::current;	// { dg-error "constant evaluation returns address of immediate function" }
 
 void
 foo ()
 {
   auto c = &source_location::current;		// { dg-error "taking address of an immediate function" }
-  constexpr auto d = source_location::current;	// { dg-error "taking address of an immediate function" }
+  constexpr auto d = source_location::current;	// { dg-error "constant evaluation returns address of immediate function" }
   static auto e = source_location::current;	// { dg-error "taking address of an immediate function" }
 }

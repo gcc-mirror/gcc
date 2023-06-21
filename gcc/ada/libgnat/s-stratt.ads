@@ -67,9 +67,7 @@ package System.Stream_Attributes is
    --  (double address) form. The following types are used to hold access
    --  values using unchecked conversions.
 
-   type Thin_Pointer is record
-      P1 : System.Address;
-   end record;
+   subtype Thin_Pointer is System.Address;
 
    type Fat_Pointer is record
       P1 : System.Address;

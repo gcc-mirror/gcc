@@ -43,7 +43,9 @@
 private generic
    type Num is range <>;
 
-package Ada.Text_IO.Integer_IO is
+package Ada.Text_IO.Integer_IO with
+  Always_Terminates
+is
 
    Default_Width : Field := Num'Width;
    Default_Base  : Number_Base := 10;
@@ -53,19 +55,19 @@ package Ada.Text_IO.Integer_IO is
       Item  : out Num;
       Width : Field := 0)
    with
-     Pre      => Is_Open (File) and then Mode (File) = In_File,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Pre               => Is_Open (File) and then Mode (File) = In_File,
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Data_Error | End_Error => Standard.True);
 
    procedure Get
      (Item  : out Num;
       Width : Field := 0)
    with
-     Post     =>
+     Post              =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Data_Error | End_Error => Standard.True);
 
    procedure Put
      (File  : File_Type;
@@ -73,39 +75,39 @@ package Ada.Text_IO.Integer_IO is
       Width : Field := Default_Width;
       Base  : Number_Base := Default_Base)
    with
-     Pre      => Is_Open (File) and then Mode (File) /= In_File,
-     Post     =>
+     Pre               => Is_Open (File) and then Mode (File) /= In_File,
+     Post              =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Layout_Error => Line_Length (File) /= 0);
 
    procedure Put
      (Item  : Num;
       Width : Field := Default_Width;
       Base  : Number_Base := Default_Base)
    with
-     Post     =>
+     Post              =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global   => (In_Out => File_System),
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => (In_Out => File_System),
+     Exceptional_Cases => (Layout_Error => Line_Length /= 0);
 
    procedure Get
      (From : String;
       Item : out Num;
       Last : out Positive)
    with
-     Global   => null,
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => null,
+     Exceptional_Cases => (Data_Error => Standard.True);
 
    procedure Put
      (To   : out String;
       Item : Num;
       Base : Number_Base := Default_Base)
    with
-     Global   => null,
-     Annotate => (GNATprove, Might_Not_Return);
+     Global            => null,
+     Exceptional_Cases => (Layout_Error => Standard.True);
 
 private
    pragma Inline (Get);

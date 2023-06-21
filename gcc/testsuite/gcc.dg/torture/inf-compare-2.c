@@ -3,6 +3,7 @@
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target fenv_exceptions_double } */
 /* { dg-skip-if "fenv" { powerpc-ibm-aix* } } */
+/* { dg-additional-options "-fno-tree-dominator-opts -fno-tree-vrp" } */
 
 #include <fenv.h>
 

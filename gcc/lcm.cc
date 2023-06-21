@@ -99,16 +99,21 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   bitmap_vector_ones (antin, last_basic_block_for_fn (cfun));
 
   /* Put every block on the worklist; this is necessary because of the
-     optimistic initialization of ANTIN above.  */
-  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-  int postorder_num = post_order_compute (postorder, false, false);
-  for (int i = 0; i < postorder_num; ++i)
+     optimistic initialization of ANTIN above.  Use reverse postorder
+     on the inverted graph to make the backward dataflow problem require
+     less iterations.  */
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, rpo);
+  for (int i = 0; i < n; ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	continue;
       *qin++ = bb;
       bb->aux = bb;
     }
-  free (postorder);
+  free (rpo);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
@@ -270,17 +275,15 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  auto_vec<int, 20> postorder;
-  inverted_post_order_compute (&postorder);
-  for (unsigned int i = 0; i < postorder.length (); ++i)
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
+  int n = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, false);
+  for (int i = 0; i < n; ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
-      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	continue;
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (rpo);
 
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. */
@@ -298,13 +301,14 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
       if (qout >= qend)
 	qout = worklist;
 
-      /* Compute the intersection of LATERIN for each incoming edge to B.  */
+      /* Compute LATERIN as the intersection of LATER for each incoming
+	 edge to BB.  */
       bitmap_ones (laterin[bb->index]);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	bitmap_and (laterin[bb->index], laterin[bb->index],
 		    later[(size_t)e->aux]);
 
-      /* Calculate LATER for all outgoing edges.  */
+      /* Calculate LATER for all outgoing edges of BB.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (bitmap_ior_and_compl (later[(size_t) e->aux],
 				  earliest[(size_t) e->aux],
@@ -509,19 +513,17 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   bitmap_vector_ones (avout, last_basic_block_for_fn (cfun));
 
   /* Put every block on the worklist; this is necessary because of the
-     optimistic initialization of AVOUT above.  Use inverted postorder
-     to make the dataflow problem require less iterations.  */
-  auto_vec<int, 20> postorder;
-  inverted_post_order_compute (&postorder);
-  for (unsigned int i = 0; i < postorder.length (); ++i)
+     optimistic initialization of AVOUT above.  Use reverse postorder
+     to make the forward dataflow problem require less iterations.  */
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
+  int n = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, false);
+  for (int i = 0; i < n; ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
-      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	continue;
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (rpo);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];

@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (eor_w0_u16_m_tied1, svuint16_t, uint16_t,
 		 z0 = sveor_m (p0, z0, x0))
 
 /*
-** eor_w0_u16_m_untied: { xfail *-*-* }
+** eor_w0_u16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	eor	z0\.h, p0/m, z0\.h, \1
@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (eor_1_u16_m_tied1, svuint16_t,
 		z0 = sveor_m (p0, z0, 1))
 
 /*
-** eor_1_u16_m_untied: { xfail *-*-* }
+** eor_1_u16_m_untied:
 **	mov	(z[0-9]+\.h), #1
 **	movprfx	z0, z1
 **	eor	z0\.h, p0/m, z0\.h, \1

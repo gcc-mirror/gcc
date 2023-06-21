@@ -264,6 +264,10 @@ along with GCC; see the file COPYING3.  If not see
 /* The number of HWIs needed to store an offset_int.  */
 #define OFFSET_INT_ELTS (ADDR_MAX_PRECISION / HOST_BITS_PER_WIDE_INT)
 
+/* The max number of HWIs needed to store a wide_int of PRECISION.  */
+#define WIDE_INT_MAX_HWIS(PRECISION) \
+  ((PRECISION + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT)
+
 /* The type of result produced by a binary operation on types T1 and T2.
    Defined purely for brevity.  */
 #define WI_BINARY_RESULT(T1, T2) \
@@ -548,6 +552,8 @@ namespace wi
   UNARY_FUNCTION sext (const T &, unsigned int);
   UNARY_FUNCTION zext (const T &, unsigned int);
   UNARY_FUNCTION set_bit (const T &, unsigned int);
+  UNARY_FUNCTION bswap (const T &);
+  UNARY_FUNCTION bitreverse (const T &);
 
   BINARY_FUNCTION min (const T1 &, const T2 &, signop);
   BINARY_FUNCTION smin (const T1 &, const T2 &);
@@ -1082,9 +1088,6 @@ public:
   static wide_int from_array (const HOST_WIDE_INT *, unsigned int,
 			      unsigned int, bool = true);
   static wide_int create (unsigned int);
-
-  /* FIXME: target-dependent, so should disappear.  */
-  wide_int bswap () const;
 };
 
 namespace wi
@@ -1214,7 +1217,7 @@ template <int N>
 class GTY(()) fixed_wide_int_storage
 {
 private:
-  HOST_WIDE_INT val[(N + HOST_BITS_PER_WIDE_INT + 1) / HOST_BITS_PER_WIDE_INT];
+  HOST_WIDE_INT val[WIDE_INT_MAX_HWIS (N)];
   unsigned int len;
 
 public:
@@ -1475,8 +1478,7 @@ trailing_wide_ints <N>::set_precision (unsigned int precision,
   gcc_checking_assert (num_elements <= N);
   m_num_elements = num_elements;
   m_precision = precision;
-  m_max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
-	       / HOST_BITS_PER_WIDE_INT);
+  m_max_len = WIDE_INT_MAX_HWIS (precision);
 }
 
 /* Return a reference to element INDEX.  */
@@ -1505,8 +1507,7 @@ inline size_t
 trailing_wide_ints <N>::extra_size (unsigned int precision,
 				    unsigned int num_elements)
 {
-  unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
-			  / HOST_BITS_PER_WIDE_INT);
+  unsigned int max_len = WIDE_INT_MAX_HWIS (precision);
   gcc_checking_assert (num_elements <= N);
   return (num_elements * max_len - 1) * sizeof (HOST_WIDE_INT);
 }
@@ -1741,13 +1742,16 @@ namespace wi
   int cmpu_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
 		  const HOST_WIDE_INT *, unsigned int);
   unsigned int sext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
-			   unsigned int,
-			   unsigned int, unsigned int);
+			   unsigned int, unsigned int, unsigned int);
   unsigned int zext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
-			   unsigned int,
-			   unsigned int, unsigned int);
+			   unsigned int, unsigned int, unsigned int);
   unsigned int set_bit_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			      unsigned int, unsigned int, unsigned int);
+  unsigned int bswap_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			    unsigned int, unsigned int);
+  unsigned int bitreverse_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+				 unsigned int, unsigned int);
+  
   unsigned int lshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			     unsigned int, unsigned int, unsigned int);
   unsigned int lrshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
@@ -2262,6 +2266,33 @@ wi::set_bit (const T &x, unsigned int bit)
     }
   else
     result.set_len (set_bit_large (val, xi.val, xi.len, precision, bit));
+  return result;
+}
+
+/* Byte swap the integer X.
+   ??? This always swaps 8-bit octets, regardless of BITS_PER_UNIT.
+   This function requires X's precision to be a multiple of 16 bits,
+   so care needs to be taken for targets where BITS_PER_UNIT != 8.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::bswap (const T &x)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
+  result.set_len (bswap_large (val, xi.val, xi.len, precision));
+  return result;
+}
+
+/* Bitreverse the integer X.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::bitreverse (const T &x)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  WIDE_INT_REF_FOR (T) xi (x, precision);
+  result.set_len (bitreverse_large (val, xi.val, xi.len, precision));
   return result;
 }
 
@@ -3185,9 +3216,11 @@ wi::lrotate (const T1 &x, const T2 &y, unsigned int width)
     width = precision;
   WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
   WI_UNARY_RESULT (T1) left = wi::lshift (x, ymod);
-  WI_UNARY_RESULT (T1) right = wi::lrshift (x, wi::sub (width, ymod));
+  WI_UNARY_RESULT (T1) right
+    = wi::lrshift (width != precision ? wi::zext (x, width) : x,
+		   wi::sub (width, ymod));
   if (width != precision)
-    return wi::zext (left, width) | wi::zext (right, width);
+    return wi::zext (left, width) | right;
   return left | right;
 }
 
@@ -3202,10 +3235,11 @@ wi::rrotate (const T1 &x, const T2 &y, unsigned int width)
   if (width == 0)
     width = precision;
   WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
-  WI_UNARY_RESULT (T1) right = wi::lrshift (x, ymod);
+  WI_UNARY_RESULT (T1) right
+    = wi::lrshift (width != precision ? wi::zext (x, width) : x, ymod);
   WI_UNARY_RESULT (T1) left = wi::lshift (x, wi::sub (width, ymod));
   if (width != precision)
-    return wi::zext (left, width) | wi::zext (right, width);
+    return wi::zext (left, width) | right;
   return left | right;
 }
 

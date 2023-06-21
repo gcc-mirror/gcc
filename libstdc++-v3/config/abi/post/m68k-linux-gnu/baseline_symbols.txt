@@ -4232,6 +4232,7 @@ FUNC:_ZSt21__glibcxx_assert_failPKciS0_S0_@@GLIBCXX_3.4.30
 FUNC:_ZSt21__throw_bad_exceptionv@@GLIBCXX_3.4
 FUNC:_ZSt21__throw_runtime_errorPKc@@GLIBCXX_3.4
 FUNC:_ZSt21__to_chars_bfloat16_tPcS_fSt12chars_format@@GLIBCXX_3.4.31
+FUNC:_ZSt21ios_base_library_initv@@GLIBCXX_3.4.32
 FUNC:_ZSt22__from_chars_float16_tPKcS0_RfSt12chars_format@@GLIBCXX_3.4.31
 FUNC:_ZSt22__throw_overflow_errorPKc@@GLIBCXX_3.4
 FUNC:_ZSt23__from_chars_bfloat16_tPKcS0_RfSt12chars_format@@GLIBCXX_3.4.31
@@ -4604,6 +4605,7 @@ OBJECT:0:GLIBCXX_3.4.29
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.30
 OBJECT:0:GLIBCXX_3.4.31
+OBJECT:0:GLIBCXX_3.4.32
 OBJECT:0:GLIBCXX_3.4.4
 OBJECT:0:GLIBCXX_3.4.5
 OBJECT:0:GLIBCXX_3.4.6

@@ -632,10 +632,10 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 CET_HOST_FLAGS
-NO_PIE_FLAG
-NO_PIE_CFLAGS
-enable_default_pie
+LD_PICFLAG
 PICFLAG
+enable_default_pie
+enable_host_pie
 enable_host_shared
 enable_plugin
 pluginlibs
@@ -838,6 +838,7 @@ enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
+DEFAULT_MATCHPD_PARTITIONS
 with_float
 with_cpu
 enable_multiarch
@@ -965,6 +966,7 @@ enable_valgrind_annotations
 enable_multilib
 enable_multiarch
 with_stack_clash_protection_guard_size
+with_matchpd_partitions
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1028,6 +1030,7 @@ enable_link_serialization
 enable_version_specific_runtime_libs
 enable_plugin
 enable_host_shared
+enable_host_pie
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
@@ -1790,6 +1793,7 @@ Optional Features:
                           in a compiler-specific directory
   --enable-plugin         enable plugin support
   --enable-host-shared    build host code as shared libraries
+  --enable-host-pie       build host code as PIE
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-default-pie    enable Position Independent Executable as default
@@ -1826,6 +1830,9 @@ Optional Packages:
   --with-stack-clash-protection-guard-size=size
                           Set the default stack clash protection guard size
                           for specific targets as a power of two in bytes.
+  --with-matchpd-partitions=num
+                          Set the number of partitions to make for gimple and
+                          generic when splitting match.pd. [default=10]
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -6404,7 +6411,7 @@ _ACEOF
 if test "$enable_largefile" != no; then
   case "$host, $build" in
     *-*-aix*,*|*,*-*-aix*)
-      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+      if test "$ac_cv_sizeof_ino_t" = "4" -a "$ac_cv_sizeof_dev_t" = 4; then
 
 $as_echo "#define HOST_STAT_FOR_64BIT_INODES stat64x" >>confdefs.h
 
@@ -7887,6 +7894,21 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define DEFAULT_STK_CLASH_GUARD_SIZE $DEFAULT_STK_CLASH_GUARD_SIZE
 _ACEOF
+
+
+# Specify the number of splits of match.pd to generate.
+
+# Check whether --with-matchpd-partitions was given.
+if test "${with_matchpd_partitions+set}" = set; then :
+  withval=$with_matchpd_partitions; DEFAULT_MATCHPD_PARTITIONS="$with_matchpd_partitions"
+else
+  DEFAULT_MATCHPD_PARTITIONS=10
+fi
+
+if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
+  as_fn_error $? "Invalid value $DEFAULT_MATCHPD_PARTITIONS for --with-matchpd-partitions. Cannot be negative." "$LINENO" 5
+fi
+
 
 
 # Enable __cxa_atexit for C++.
@@ -10622,45 +10644,6 @@ fi
 CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
 LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
-$as_echo_n "checking for zstd.h... " >&6; }
-if ${gcc_cv_header_zstd_h+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  # We require version 1.3.0 or later.  This is the first version that has
-# ZSTD_getFrameContentSize.
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <zstd.h>
-#if ZSTD_VERSION_NUMBER < 10300
-#error "need zstd 1.3.0 or better"
-#endif
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  gcc_cv_header_zstd_h=yes
-else
-  gcc_cv_header_zstd_h=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
-$as_echo "$gcc_cv_header_zstd_h" >&6; }
-if test $gcc_cv_header_zstd_h = yes; then
-
-$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
-
-elif test "x$with_zstd" != x; then
-    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
-fi
-
 # LTO can use zstd compression algorithm
 save_LIBS="$LIBS"
 LIBS=
@@ -10718,11 +10701,52 @@ ac_res=$ac_cv_search_ZSTD_compress
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
+else
+  gcc_cv_header_zstd_h=no
 fi
 
 ZSTD_LIB="$LIBS"
 LIBS="$save_LIBS"
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
+$as_echo_n "checking for zstd.h... " >&6; }
+if ${gcc_cv_header_zstd_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  # We require version 1.3.0 or later.  This is the first version that has
+# ZSTD_getFrameContentSize.
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <zstd.h>
+#if ZSTD_VERSION_NUMBER < 10300
+#error "need zstd 1.3.0 or better"
+#endif
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_header_zstd_h=yes
+else
+  gcc_cv_header_zstd_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
+$as_echo "$gcc_cv_header_zstd_h" >&6; }
+if test $gcc_cv_header_zstd_h = yes; then
+
+$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
+
+elif test "x$with_zstd" != x; then
+    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
+fi
 fi
 
 
@@ -19823,7 +19847,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19826 "configure"
+#line 19850 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19929,7 +19953,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19932 "configure"
+#line 19956 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24389,16 +24413,19 @@ elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
   echo '.byte 0' >> conftest3.s
   if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
-     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
-     && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
-	conftest2.o conftest3.o > /dev/null 2>&1; then
-    gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
-			 | sed -e '/myfoosect/!d' -e N`
-    if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
-      if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
-	gcc_cv_ld_ro_rw_mix=read-only
-      else
-	gcc_cv_ld_ro_rw_mix=read-write
+     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1; then
+    if $gcc_cv_ld -shared -o conftest1.so conftest1.o \
+       conftest2.o conftest3.o > /dev/null 2>&1 \
+       || $gcc_cv_ld -r -o conftest1.so conftest1.o \
+	  conftest2.o conftest3.o > /dev/null 2>&1; then
+      gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
+			   | sed -e '/myfoosect/!d' -e N`
+      if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
+	if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
+	  gcc_cv_ld_ro_rw_mix=read-only
+	else
+	  gcc_cv_ld_ro_rw_mix=read-write
+	fi
       fi
     fi
   fi
@@ -31468,6 +31495,8 @@ $as_echo "$do_link_mutex" >&6; }
 
 if test "$do_link_mutex" = "yes"; then
    DO_LINK_MUTEX=true
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --enable-link-mutex is deprecated and will be removed in the next release, use --enable-link-serialization instead" >&5
+$as_echo "$as_me: WARNING: --enable-link-mutex is deprecated and will be removed in the next release, use --enable-link-serialization instead" >&2;}
 else
    DO_LINK_MUTEX=false
 fi
@@ -32058,12 +32087,16 @@ fi
 # Enable --enable-host-shared
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
-  enableval=$enable_host_shared; PICFLAG=-fPIC
-else
-  PICFLAG=
+  enableval=$enable_host_shared;
 fi
 
 
+
+# Enable --enable-host-pie
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie;
+fi
 
 
 
@@ -32218,10 +32251,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_c_no_fpie" >&5
 $as_echo "$gcc_cv_c_no_fpie" >&6; }
-if test "$gcc_cv_c_no_fpie" = "yes"; then
-  NO_PIE_CFLAGS="-fno-PIE"
-fi
-
 
 # Check if -no-pie works.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -no-pie option" >&5
@@ -32246,9 +32275,26 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_no_pie" >&5
 $as_echo "$gcc_cv_no_pie" >&6; }
-if test "$gcc_cv_no_pie" = "yes"; then
-  NO_PIE_FLAG="-no-pie"
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
+elif test x$gcc_cv_c_no_fpie = xyes; then
+  PICFLAG=-fno-PIE
+else
+  PICFLAG=
 fi
+
+if test x$enable_host_pie = xyes; then
+  LD_PICFLAG=-pie
+elif test x$gcc_cv_no_pie = xyes; then
+  LD_PICFLAG=-no-pie
+else
+  LD_PICFLAG=
+fi
+
+
 
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.

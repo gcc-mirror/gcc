@@ -281,29 +281,6 @@ package body Exp_Ch7 is
    --  does not contain the above constructs, the routine returns an empty
    --  list.
 
-   procedure Build_Finalizer
-     (N           : Node_Id;
-      Clean_Stmts : List_Id;
-      Mark_Id     : Entity_Id;
-      Top_Decls   : List_Id;
-      Defer_Abort : Boolean;
-      Fin_Id      : out Entity_Id);
-   --  N may denote an accept statement, block, entry body, package body,
-   --  package spec, protected body, subprogram body, or a task body. Create
-   --  a procedure which contains finalization calls for all controlled objects
-   --  declared in the declarative or statement region of N. The calls are
-   --  built in reverse order relative to the original declarations. In the
-   --  case of a task body, the routine delays the creation of the finalizer
-   --  until all statements have been moved to the task body procedure.
-   --  Clean_Stmts may contain additional context-dependent code used to abort
-   --  asynchronous calls or complete tasks (see Build_Cleanup_Statements).
-   --  Mark_Id is the secondary stack used in the current context or Empty if
-   --  missing. Top_Decls is the list on which the declaration of the finalizer
-   --  is attached in the non-package case. Defer_Abort indicates that the
-   --  statements passed in perform actions that require abort to be deferred,
-   --  such as for task termination. Fin_Id is the finalizer declaration
-   --  entity.
-
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id);
    --  N is a construct that contains a handled sequence of statements, Fin_Id
    --  is the entity of a finalizer. Create an At_End handler that covers the
@@ -417,13 +394,9 @@ package body Exp_Ch7 is
    --  Check recursively whether a loop or block contains a subprogram that
    --  may need an activation record.
 
-   function Convert_View
-     (Proc : Entity_Id;
-      Arg  : Node_Id;
-      Ind  : Pos := 1) return Node_Id;
+   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id;
    --  Proc is one of the Initialize/Adjust/Finalize operations, and Arg is the
-   --  argument being passed to it. Ind indicates which formal of procedure
-   --  Proc we are trying to match. This function will, if necessary, generate
+   --  argument being passed to it. This function will, if necessary, generate
    --  a conversion between the partial and full view of Arg to match the type
    --  of the formal of Proc, or force a conversion to the class-wide type in
    --  the case where the operation is abstract.
@@ -2138,6 +2111,9 @@ package body Exp_Ch7 is
          --  This variable is used to determine whether a nested package or
          --  instance contains at least one controlled object.
 
+         procedure Process_Package_Body (Decl : Node_Id);
+         --  Process an N_Package_Body node
+
          procedure Processing_Actions
            (Has_No_Init  : Boolean := False;
             Is_Protected : Boolean := False);
@@ -2148,6 +2124,35 @@ package body Exp_Ch7 is
          --  the current declaration may not have initialization proc(s). Flag
          --  Is_Protected should be set when the current declaration denotes a
          --  simple protected object.
+
+         --------------------------
+         -- Process_Package_Body --
+         --------------------------
+
+         procedure Process_Package_Body (Decl : Node_Id) is
+         begin
+            --  Do not inspect an ignored Ghost package body because all
+            --  code found within will not appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+               null;
+
+            elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package then
+               Old_Counter_Val := Counter_Val;
+               Process_Declarations (Declarations (Decl), Preprocess);
+
+               --  The nested package body is the last construct to contain
+               --  a controlled object.
+
+               if Preprocess
+                 and then Top_Level
+                 and then No (Last_Top_Level_Ctrl_Construct)
+                 and then Counter_Val > Old_Counter_Val
+               then
+                  Last_Top_Level_Ctrl_Construct := Decl;
+               end if;
+            end if;
+         end Process_Package_Body;
 
          ------------------------
          -- Processing_Actions --
@@ -2466,99 +2471,15 @@ package body Exp_Ch7 is
                   end if;
                end if;
 
-               --  Call the xxx__finalize_body procedure of a library level
-               --  package instantiation if the body contains finalization
-               --  statements.
-
-               if Present (Generic_Parent (Spec))
-                 and then Is_Library_Level_Entity (Pack_Id)
-                 and then Present (Body_Entity (Generic_Parent (Spec)))
-               then
-                  if Preprocess then
-                     declare
-                        P : Node_Id;
-                     begin
-                        P := Parent (Body_Entity (Generic_Parent (Spec)));
-                        while Present (P)
-                          and then Nkind (P) /= N_Package_Body
-                        loop
-                           P := Parent (P);
-                        end loop;
-
-                        if Present (P) then
-                           Old_Counter_Val := Counter_Val;
-                           Process_Declarations (Declarations (P), Preprocess);
-
-                           --  Note that we are processing the generic body
-                           --  template and not the actually instantiation
-                           --  (which is generated too late for us to process
-                           --  it), so there is no need to update in particular
-                           --  Last_Top_Level_Ctrl_Construct here.
-
-                           if Counter_Val > Old_Counter_Val then
-                              Counter_Val := Old_Counter_Val;
-                              Set_Has_Controlled_Component (Pack_Id);
-                           end if;
-                        end if;
-                     end;
-
-                  elsif Has_Controlled_Component (Pack_Id) then
-
-                     --  We import the xxx__finalize_body routine since the
-                     --  generic body will be instantiated later.
-
-                     declare
-                        Id : constant Node_Id :=
-                          Make_Defining_Identifier (Loc,
-                            New_Finalizer_Name (Defining_Unit_Name (Spec),
-                              For_Spec => False));
-
-                     begin
-                        Set_Has_Qualified_Name       (Id);
-                        Set_Has_Fully_Qualified_Name (Id);
-                        Set_Is_Imported              (Id);
-                        Set_Has_Completion           (Id);
-                        Set_Interface_Name (Id,
-                          Make_String_Literal (Loc,
-                            Strval => Get_Name_String (Chars (Id))));
-
-                        Append_New_To (Finalizer_Stmts,
-                          Make_Subprogram_Declaration (Loc,
-                            Make_Procedure_Specification (Loc,
-                              Defining_Unit_Name => Id)));
-                        Append_To (Finalizer_Stmts,
-                          Make_Procedure_Call_Statement (Loc,
-                            Name => New_Occurrence_Of (Id, Loc)));
-                     end;
-                  end if;
-               end if;
-
             --  Nested package bodies, avoid generics
 
             elsif Nkind (Decl) = N_Package_Body then
+               Process_Package_Body (Decl);
 
-               --  Do not inspect an ignored Ghost package body because all
-               --  code found within will not appear in the final tree.
-
-               if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
-                  null;
-
-               elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
-               then
-                  Old_Counter_Val := Counter_Val;
-                  Process_Declarations (Declarations (Decl), Preprocess);
-
-                  --  The nested package body is the last construct to contain
-                  --  a controlled object.
-
-                  if Preprocess
-                    and then Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                    and then Counter_Val > Old_Counter_Val
-                  then
-                     Last_Top_Level_Ctrl_Construct := Decl;
-                  end if;
-               end if;
+            elsif Nkind (Decl) = N_Package_Body_Stub
+              and then Present (Library_Unit (Decl))
+            then
+               Process_Package_Body (Proper_Body (Unit (Library_Unit (Decl))));
 
             --  Handle a rare case caused by a controlled transient object
             --  created as part of a record init proc. The variable is wrapped
@@ -3526,28 +3447,15 @@ package body Exp_Ch7 is
          end if;
       end if;
 
-      --  Do not process nested packages since those are handled by the
-      --  enclosing scope's finalizer. Do not process non-expanded package
-      --  instantiations since those will be re-analyzed and re-expanded.
+      --  We do not need to process nested packages since they are handled by
+      --  the finalizer of the enclosing scope, including at library level.
+      --  And we do not build two finalizers for an instance without body that
+      --  is a library unit (see Analyze_Package_Instantiation).
 
       if For_Package
-        and then
-          (not Is_Library_Level_Entity (Spec_Id)
-
-            --  Nested packages are library level entities, but do not need to
-            --  be processed separately.
-
-            or else Scope_Depth (Spec_Id) /= Uint_1
-            or else (Is_Generic_Instance (Spec_Id)
-                      and then Package_Instantiation (Spec_Id) /= N))
-
-         --  Still need to process package body instantiations which may
-         --  contain objects requiring finalization.
-
-        and then not
-          (For_Package_Body
-            and then Is_Library_Level_Entity (Spec_Id)
-            and then Is_Generic_Instance (Spec_Id))
+        and then (not Is_Compilation_Unit (Spec_Id)
+                   or else (Is_Generic_Instance (Spec_Id)
+                             and then Package_Instantiation (Spec_Id) = N))
       then
          return;
       end if;
@@ -4490,22 +4398,12 @@ package body Exp_Ch7 is
    -- Convert_View --
    ------------------
 
-   function Convert_View
-     (Proc : Entity_Id;
-      Arg  : Node_Id;
-      Ind  : Pos := 1) return Node_Id
-   is
-      Fent : Entity_Id := First_Entity (Proc);
-      Ftyp : Entity_Id;
+   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id is
+      Ftyp : constant Entity_Id := Etype (First_Formal (Proc));
+
       Atyp : Entity_Id;
 
    begin
-      for J in 2 .. Ind loop
-         Next_Entity (Fent);
-      end loop;
-
-      Ftyp := Etype (Fent);
-
       if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
       else
@@ -4515,11 +4413,13 @@ package body Exp_Ch7 is
       if Is_Abstract_Subprogram (Proc) and then Is_Tagged_Type (Ftyp) then
          return Unchecked_Convert_To (Class_Wide_Type (Ftyp), Arg);
 
-      elsif Ftyp /= Atyp
-        and then Present (Atyp)
-        and then (Is_Private_Type (Ftyp) or else Is_Private_Type (Atyp))
-        and then Base_Type (Underlying_Type (Atyp)) =
-                 Base_Type (Underlying_Type (Ftyp))
+      elsif Present (Atyp)
+        and then Atyp /= Ftyp
+        and then (Is_Private_Type (Ftyp)
+                   or else Is_Private_Type (Atyp)
+                   or else Is_Private_Type (Base_Type (Atyp)))
+        and then Implementation_Base_Type (Atyp) =
+                 Implementation_Base_Type (Ftyp)
       then
          return Unchecked_Convert_To (Ftyp, Arg);
 
@@ -4564,10 +4464,10 @@ package body Exp_Ch7 is
       function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean;
       --  Determine whether arbitrary Id denotes a package or subprogram [body]
 
-      function Find_Enclosing_Transient_Scope return Entity_Id;
+      function Find_Enclosing_Transient_Scope return Int;
       --  Examine the scope stack looking for the nearest enclosing transient
       --  scope within the innermost enclosing package or subprogram. Return
-      --  Empty if no such scope exists.
+      --  its index in the table or else -1 if no such scope exists.
 
       function Find_Transient_Context (N : Node_Id) return Node_Id;
       --  Locate a suitable context for arbitrary node N which may need to be
@@ -4693,7 +4593,7 @@ package body Exp_Ch7 is
       -- Find_Enclosing_Transient_Scope --
       ------------------------------------
 
-      function Find_Enclosing_Transient_Scope return Entity_Id is
+      function Find_Enclosing_Transient_Scope return Int is
       begin
          for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
             declare
@@ -4708,12 +4608,12 @@ package body Exp_Ch7 is
                   exit;
 
                elsif Scope.Is_Transient then
-                  return Scope.Entity;
+                  return Index;
                end if;
             end;
          end loop;
 
-         return Empty;
+         return -1;
       end Find_Enclosing_Transient_Scope;
 
       ----------------------------
@@ -4805,21 +4705,29 @@ package body Exp_Ch7 is
                   return Curr;
 
                when N_Simple_Return_Statement =>
+                  declare
+                     Fun_Id : constant Entity_Id :=
+                       Return_Applies_To (Return_Statement_Entity (Curr));
 
-                  --  A return statement is not a valid transient context when
-                  --  the function itself requires transient scope management
-                  --  because the result will be reclaimed too early.
+                  begin
+                     --  A transient context that must manage the secondary
+                     --  stack cannot be a return statement of a function that
+                     --  itself requires secondary stack management, because
+                     --  the function's result would be reclaimed too early.
+                     --  And returns of thunks never require transient scopes.
 
-                  if Requires_Transient_Scope (Etype
-                       (Return_Applies_To (Return_Statement_Entity (Curr))))
-                  then
-                     return Empty;
+                     if (Manage_Sec_Stack
+                          and then Needs_Secondary_Stack (Etype (Fun_Id)))
+                       or else Is_Thunk (Fun_Id)
+                     then
+                        return Empty;
 
-                  --  General case for return statements
+                     --  General case for return statements
 
-                  else
-                     return Curr;
-                  end if;
+                     else
+                        return Curr;
+                     end if;
+                  end;
 
                --  Special
 
@@ -4902,8 +4810,8 @@ package body Exp_Ch7 is
 
       --  Local variables
 
-      Trans_Id : constant Entity_Id := Find_Enclosing_Transient_Scope;
-      Context  : Node_Id;
+      Trans_Idx : constant Int := Find_Enclosing_Transient_Scope;
+      Context   : Node_Id;
 
    --  Start of processing for Establish_Transient_Scope
 
@@ -4911,13 +4819,29 @@ package body Exp_Ch7 is
       --  Do not create a new transient scope if there is already an enclosing
       --  transient scope within the innermost enclosing package or subprogram.
 
-      if Present (Trans_Id) then
+      if Trans_Idx >= 0 then
 
          --  If the transient scope was requested for purposes of managing the
-         --  secondary stack, then the existing scope must perform this task.
+         --  secondary stack, then the existing scope must perform this task,
+         --  unless the node to be wrapped is a return statement of a function
+         --  that requires secondary stack management, because the function's
+         --  result would be reclaimed too early (see Find_Transient_Context).
 
          if Manage_Sec_Stack then
-            Set_Uses_Sec_Stack (Trans_Id);
+            declare
+               SE : Scope_Stack_Entry renames Scope_Stack.Table (Trans_Idx);
+
+            begin
+               if Nkind (SE.Node_To_Be_Wrapped) /= N_Simple_Return_Statement
+                 or else not
+                   Needs_Secondary_Stack
+                     (Etype
+                       (Return_Applies_To
+                         (Return_Statement_Entity (SE.Node_To_Be_Wrapped))))
+               then
+                  Set_Uses_Sec_Stack (SE.Entity);
+               end if;
+            end;
          end if;
 
          return;
@@ -5032,16 +4956,6 @@ package body Exp_Ch7 is
       --  The current construct does not need any form of servicing
 
       if not Actions_Required then
-         return;
-
-      --  If the current node is a rewritten task body and the descriptors have
-      --  not been delayed (due to some nested instantiations), do not generate
-      --  redundant cleanup actions.
-
-      elsif Is_Task_Body
-        and then Nkind (N) = N_Subprogram_Body
-        and then not Delay_Subprogram_Descriptors (Corresponding_Spec (N))
-      then
          return;
       end if;
 
@@ -5177,7 +5091,9 @@ package body Exp_Ch7 is
    --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
+      Id      : constant Entity_Id := Defining_Entity (N);
       Spec_Id : constant Entity_Id := Corresponding_Spec (N);
+
       Fin_Id  : Entity_Id;
 
    begin
@@ -5231,7 +5147,9 @@ package body Exp_Ch7 is
 
       Qualify_Entity_Names (N);
 
-      if Ekind (Spec_Id) /= E_Generic_Package then
+      if Ekind (Spec_Id) /= E_Generic_Package
+        and then not Delay_Cleanups (Id)
+      then
          Build_Finalizer
            (N           => N,
             Clean_Stmts => No_List,
@@ -5241,16 +5159,7 @@ package body Exp_Ch7 is
             Fin_Id      => Fin_Id);
 
          if Present (Fin_Id) then
-            declare
-               Body_Ent : Node_Id := Defining_Unit_Name (N);
-
-            begin
-               if Nkind (Body_Ent) = N_Defining_Program_Unit_Name then
-                  Body_Ent := Defining_Identifier (Body_Ent);
-               end if;
-
-               Set_Finalizer (Body_Ent, Fin_Id);
-            end;
+            Set_Finalizer (Defining_Entity (N), Fin_Id);
          end if;
       end if;
    end Expand_N_Package_Body;
@@ -5367,7 +5276,9 @@ package body Exp_Ch7 is
 
       Qualify_Entity_Names (N);
 
-      if Ekind (Id) /= E_Generic_Package then
+      if Ekind (Id) /= E_Generic_Package
+        and then not Delay_Cleanups (Id)
+      then
          Build_Finalizer
            (N           => N,
             Clean_Stmts => No_List,
@@ -5376,7 +5287,9 @@ package body Exp_Ch7 is
             Defer_Abort => False,
             Fin_Id      => Fin_Id);
 
-         Set_Finalizer (Id, Fin_Id);
+         if Present (Fin_Id) then
+            Set_Finalizer (Id, Fin_Id);
+         end if;
       end if;
 
       --  If this is a library-level package and unnesting is enabled,

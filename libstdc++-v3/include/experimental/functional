@@ -42,10 +42,7 @@
 #include <unordered_map>
 #include <vector>
 #include <array>
-#include <bits/stl_algo.h>
-#ifdef _GLIBCXX_PARALLEL
-# include <parallel/algorithm> // For std::__parallel::search
-#endif
+#include <bits/stl_algobase.h> // std::max, std::search
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

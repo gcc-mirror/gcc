@@ -230,7 +230,7 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 /* GNU Modula-2 linking fodder.  */
 
 void
-_M2_SysExceptions_init (void)
+_M2_SysExceptions_init (int argc, char *argv[], char *envp[])
 {
 }
 

@@ -455,12 +455,18 @@
 (define_expand "cbranch<mode>4"
   [(set (pc)
         (if_then_else (match_operator 0 "ordered_comparison_operator"
-                        [(match_operand:ALL8 1 "register_operand"  "")
-                         (match_operand:ALL8 2 "nonmemory_operand" "")])
-         (label_ref (match_operand 3 "" ""))
-         (pc)))]
+                        [(match_operand:ALL8 1 "register_operand")
+                         (match_operand:ALL8 2 "nonmemory_operand")])
+                      (label_ref (match_operand 3))
+                      (pc)))]
   "avr_have_dimode"
    {
+    int icode = (int) GET_CODE (operands[0]);
+
+    targetm.canonicalize_comparison (&icode, &operands[1], &operands[2], false);
+    operands[0] = gen_rtx_fmt_ee ((enum rtx_code) icode,
+                                  VOIDmode, operands[1], operands[2]);
+
     rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, ACC_A));
@@ -490,8 +496,8 @@
         (if_then_else (match_operator 0 "ordered_comparison_operator"
                         [(reg:ALL8 ACC_A)
                          (reg:ALL8 ACC_B)])
-         (label_ref (match_operand 1 "" ""))
-         (pc)))]
+                      (label_ref (match_operand 1))
+                      (pc)))]
   "avr_have_dimode"
   "#"
   "&& reload_completed"
@@ -544,8 +550,8 @@
         (if_then_else (match_operator 0 "ordered_comparison_operator"
                         [(reg:ALL8 ACC_A)
                          (match_operand:ALL8 1 "const_operand" "n Ynn")])
-         (label_ref (match_operand 2 "" ""))
-         (pc)))
+                      (label_ref (match_operand 2 "" ""))
+                      (pc)))
    (clobber (match_scratch:QI 3 "=&d"))]
   "avr_have_dimode
    && !s8_operand (operands[1], VOIDmode)"

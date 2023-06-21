@@ -231,7 +231,7 @@ struct MacroExpander
     : cfg (cfg), crate (crate), session (session),
       sub_stack (SubstitutionScope ()),
       expanded_fragment (AST::Fragment::create_error ()),
-      resolver (Resolver::Resolver::get ()),
+      has_changed_flag (false), resolver (Resolver::Resolver::get ()),
       mappings (Analysis::Mappings::get ())
   {}
 
@@ -239,6 +239,12 @@ struct MacroExpander
 
   // Expands all macros in the crate passed in.
   void expand_crate ();
+
+  /**
+   * Expand the eager invocations contained within a builtin macro invocation.
+   * Called by `expand_invoc` when expanding builtin invocations.
+   */
+  void expand_eager_invocations (AST::MacroInvocation &invoc);
 
   /* Expands a macro invocation - possibly make both
    * have similar duck-typed interface and use templates?*/
@@ -315,42 +321,33 @@ struct MacroExpander
 
   void set_expanded_fragment (AST::Fragment &&fragment)
   {
+    if (!fragment.is_error ())
+      has_changed_flag = true;
+
     expanded_fragment = std::move (fragment);
   }
 
-  AST::Fragment take_expanded_fragment (AST::ASTVisitor &vis)
+  AST::Fragment take_expanded_fragment ()
   {
-    AST::Fragment old_fragment = std::move (expanded_fragment);
-    auto accumulator = std::vector<AST::SingleASTNode> ();
+    auto fragment = std::move (expanded_fragment);
     expanded_fragment = AST::Fragment::create_error ();
-    auto early_name_resolver = Resolver::EarlyNameResolver ();
 
-    for (auto &node : old_fragment.get_nodes ())
-      {
-	expansion_depth++;
-
-	node.accept_vis (early_name_resolver);
-	node.accept_vis (vis);
-	// we'll decide the next move according to the outcome of the macro
-	// expansion
-	if (expanded_fragment.is_error ())
-	  accumulator.push_back (node); // if expansion fails, there might be a
-					// non-macro expression we need to keep
-	else
-	  {
-	    // if expansion succeeded, then we need to merge the fragment with
-	    // the contents in the accumulator, so that our final expansion
-	    // result will contain non-macro nodes as it should
-	    auto new_nodes = expanded_fragment.get_nodes ();
-	    std::move (new_nodes.begin (), new_nodes.end (),
-		       std::back_inserter (accumulator));
-	    expanded_fragment = AST::Fragment::complete (accumulator);
-	  }
-	expansion_depth--;
-      }
-
-    return old_fragment;
+    return fragment;
   }
+
+  /**
+   * Has the MacroExpander expanded a macro since its state was last reset?
+   */
+  bool has_changed () const { return has_changed_flag; }
+
+  /**
+   * Reset the expander's "changed" state. This function should be executed at
+   * each iteration in a fixed point loop
+   */
+  void reset_changed_state () { has_changed_flag = false; }
+
+  AST::MacroRulesDefinition *get_last_definition () { return last_def; }
+  AST::MacroInvocation *get_last_invocation () { return last_invoc; }
 
 private:
   AST::Crate &crate;
@@ -358,6 +355,10 @@ private:
   SubstitutionScope sub_stack;
   std::vector<ContextType> context;
   AST::Fragment expanded_fragment;
+  bool has_changed_flag;
+
+  AST::MacroRulesDefinition *last_def;
+  AST::MacroInvocation *last_invoc;
 
 public:
   Resolver::Resolver *resolver;

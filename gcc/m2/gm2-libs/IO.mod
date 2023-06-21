@@ -344,18 +344,12 @@ END EchoOff ;
 *)
 
 PROCEDURE Init ;
+VAR
+   fdi: CARDINAL ;
 BEGIN
-   WITH fdState[0] DO
-      IsEof := FALSE ;
-      IsRaw := FALSE
-   END ;
-   WITH fdState[1] DO
-      IsEof := FALSE ;
-      IsRaw := FALSE
-   END ;
-   WITH fdState[2] DO
-      IsEof := FALSE ;
-      IsRaw := FALSE
+   FOR fdi := 0 TO HIGH (fdState) DO
+      fdState[fdi].IsEof := FALSE ;
+      fdState[fdi].IsRaw := FALSE
    END
 END Init ;
 

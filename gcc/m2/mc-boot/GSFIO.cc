@@ -190,7 +190,6 @@ extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_Stri
 extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
 {
   DynamicStrings_String s;
-  unsigned int c;
 
   s = DynamicStrings_InitString ((const char *) "", 0);
   while (((! (FIO_EOLN (file))) && (! (FIO_EOF (file)))) && (FIO_IsNoError (file)))

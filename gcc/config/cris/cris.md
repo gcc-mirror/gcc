@@ -208,6 +208,9 @@
 ;; Ditto, commutative operators (i.e. not minus).
 (define_code_iterator plusumin [plus umin])
 
+;; For opsplit1.
+(define_code_iterator splitop [and plus])
+
 ;; The addsubbo and nd code-attributes form a hack.  We need to output
 ;; "addu.b", "subu.b" but "bound.b" (no "u"-suffix) which means we'd
 ;; need to refer to one iterator from the next.  But, that can't be
@@ -528,7 +531,7 @@
      emitted) is the final value.  */
   if ((CONST_INT_P (operands[1]) || GET_CODE (operands[1]) == CONST_DOUBLE)
       && ! reload_completed
-      && ! reload_in_progress)
+      && ! lra_in_progress)
     {
       rtx insns;
       rtx op0 = operands[0];
@@ -1328,7 +1331,7 @@
    && operands[1] != frame_pointer_rtx
    && CONST_INT_P (operands[3])
    && (INTVAL (operands[3]) == 2 || INTVAL (operands[3]) == 4)
-   && (reload_in_progress || reload_completed)"
+   && (lra_in_progress || reload_completed)"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -2687,6 +2690,59 @@
     = INTVAL (operands[2]) <= 0xff ? GEN_INT (0xff) :  GEN_INT (0xffff);
 })
 
+;; Avoid, after opsplit1 with AND (below), sequences of:
+;;  lsrq N,R
+;;  lslq M,R
+;;  lsrq M,R
+;; (N < M), where we can fold the first lsrq into the lslq-lsrq, like:
+;;  lslq M-N,R
+;;  lsrq M,R
+;; We have to match this before opsplit1 below and before other peephole2s of
+;; lesser value, since peephole2 matching resumes at the first generated insn,
+;; and thus wouldn't match a pattern of the three shifts after opsplit1/AND.
+;; Note that this lsrandsplit1 is in turn of lesser value than movulsr, since
+;; that one doesn't require the same operand for source and destination, but
+;; they happen to be the same hard-register at peephole2 time even if
+;; naturally separated like in peep2-movulsr2.c, thus this placement.  (Source
+;; and destination will be re-separated and the move optimized out in
+;; cprop_hardreg at time of this writing.)
+;; Testcase: gcc.target/cris/peep2-lsrandsplit1.c
+(define_peephole2 ; lsrandsplit1
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand")
+	  (lshiftrt:SI
+	   (match_operand:SI 1 "register_operand")
+	   (match_operand:SI 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_operand 3 "register_operand")
+	  (and
+	   (match_operand 4 "register_operand")
+	   (match_operand 5 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "REGNO (operands[0]) == REGNO (operands[1])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[0]) == REGNO (operands[4])
+   && (INTVAL (operands[2])
+       < (clz_hwi (INTVAL (operands[5])) - (HOST_BITS_PER_WIDE_INT - 32)))
+   && cris_splittable_constant_p (INTVAL (operands[5]), AND, SImode,
+				  optimize_function_for_speed_p (cfun)) == 2"
+  ;; We're guaranteed by the above hw_clz test (certainly non-zero) and the
+  ;; test for a two-insn return-value from cris_splittable_constant_p, that
+  ;; the cris_splittable_constant_p AND-replacement would be lslq-lsrq.
+  [(parallel
+    [(set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 9)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 10)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+{
+  HOST_WIDE_INT shiftval
+    = clz_hwi (INTVAL (operands[5])) - (HOST_BITS_PER_WIDE_INT - 32);
+  operands[9] = GEN_INT (shiftval - INTVAL (operands[2]));
+  operands[10] = GEN_INT (shiftval);
+})
+
 ;; Testcase for the following four peepholes: gcc.target/cris/peep2-xsrand.c
 
 (define_peephole2 ; asrandb
@@ -2886,6 +2942,71 @@
        : adjust_address (operands[2], zmode, 0));
   operands[3] = gen_rtx_ZERO_EXTEND (SImode, op1);
   operands[4] = GEN_INT (trunc_int_for_mode (INTVAL (operands[1]), QImode));
+})
+
+;; Somewhat similar to andqu, but a different range and expansion,
+;; intended to feed the output into opsplit1 with AND:
+;;  move.d 0x7ffff,$r10
+;;  and.d $r11,$r10
+;; into:
+;;  move.d $r11,$r10
+;;  and.d 0x7ffff,$r10
+;; which opsplit1/AND will change into:
+;;  move.d $r11,$r10 (unaffected by opsplit1/AND; shown only for context)
+;;  lslq 13,$r10
+;;  lsrq 13,$r10
+;; thereby winning in space, but in time only if the 0x7ffff happened to
+;; be unaligned in the code.
+(define_peephole2 ; movandsplit1
+  [(parallel
+    [(set (match_operand 0 "register_operand")
+	  (match_operand 1 "const_int_operand"))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_operand 2 "register_operand")
+	  (and (match_operand 3 "register_operand")
+	       (match_operand 4 "register_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "REGNO (operands[0]) == REGNO (operands[2])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && cris_splittable_constant_p (INTVAL (operands[1]), AND,
+				  GET_MODE (operands[2]),
+				  optimize_function_for_speed_p (cfun))"
+  [(parallel
+    [(set (match_dup 2) (match_dup 4))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 2) (match_dup 5))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+{
+  operands[5] = gen_rtx_AND (GET_MODE (operands[2]), operands[2], operands[1]);
+})
+
+;; Large (read: non-quick) numbers can sometimes be AND:ed by other means.
+;; Testcase: gcc.target/cris/peep2-andsplit1.c
+;; 
+;; Another case is add<ext> N,rx with -126..-64,64..126: it has the same
+;; size and execution time as two addq or subq, but addq and subq can fill
+;; a delay-slot.
+(define_peephole2 ; opsplit1
+  [(parallel
+    [(set (match_operand 0 "register_operand")
+	  (splitop
+	   (match_operand 1 "register_operand")
+	   (match_operand 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+   ;; Operands 0 and 1 can be separate identical objects, at least
+   ;; after matching peepholes above.  */
+  "REGNO (operands[0]) == REGNO (operands[1])
+   && cris_splittable_constant_p (INTVAL (operands[2]), <CODE>,
+				  GET_MODE (operands[0]),
+				  optimize_function_for_speed_p (cfun))"
+  [(const_int 0)]
+{
+  cris_split_constant (INTVAL (operands[2]), <CODE>, GET_MODE (operands[0]),
+		       optimize_function_for_speed_p (cfun),
+		       true, operands[0], operands[0]);
+  DONE;
 })
 
 ;; Fix a decomposed szext: fuse it with the memory operand of the

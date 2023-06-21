@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C535a  An assumed-rank entity shall be a dummy variable that does not

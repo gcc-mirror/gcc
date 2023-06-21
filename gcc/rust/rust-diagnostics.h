@@ -114,27 +114,69 @@ namespace Rust {
  * errors to be ignored, e.g. if backtracking. */
 struct Error
 {
+  enum class Kind
+  {
+    Hint,
+    Err,
+    FatalErr,
+  };
+
+  Kind kind;
   Location locus;
   std::string message;
   // TODO: store more stuff? e.g. node id?
 
-  Error (Location locus, std::string message)
-    : locus (locus), message (std::move (message))
+  Error (Kind kind, Location locus, std::string message)
+    : kind (kind), locus (locus), message (std::move (message))
   {
     message.shrink_to_fit ();
+  }
+
+  Error (Location locus, std::string message)
+  {
+    Error (Kind::Err, locus, std::move (message));
+  }
+
+  static Error Hint (Location locus, std::string message)
+  {
+    return Error (Kind::Hint, locus, std::move (message));
+  }
+
+  static Error Fatal (Location locus, std::string message)
+  {
+    return Error (Kind::FatalErr, locus, std::move (message));
   }
 
   // TODO: the attribute part might be incorrect
   Error (Location locus, const char *fmt,
 	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 
-  // Irreversibly emits the error as an error.
-  void emit_error () const { rust_error_at (locus, "%s", message.c_str ()); }
+  /**
+   * printf-like overload of Error::Hint
+   */
+  static Error Hint (Location locus, const char *fmt, ...)
+    RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
-  // Irreversibly emits the error as a fatal error.
-  void emit_fatal_error () const
+  /**
+   * printf-like overload of Error::Fatal
+   */
+  static Error Fatal (Location locus, const char *fmt, ...)
+    RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+
+  void emit () const
   {
-    rust_fatal_error (locus, "%s", message.c_str ());
+    switch (kind)
+      {
+      case Kind::Hint:
+	rust_inform (locus, "%s", message.c_str ());
+	break;
+      case Kind::Err:
+	rust_error_at (locus, "%s", message.c_str ());
+	break;
+      case Kind::FatalErr:
+	rust_fatal_error (locus, "%s", message.c_str ());
+	break;
+      }
   }
 };
 } // namespace Rust

@@ -57,9 +57,9 @@ PROCEDURE IntToStr (int: INTEGER; VAR str: ARRAY OF CHAR);
 VAR
    s: String ;
 BEGIN
-   s := IntegerToString(int, 0, ' ', TRUE, 10, FALSE) ;
-   CopyOut(str, s) ;
-   s := KillString(s)
+   s := IntegerToString (int, 0, ' ', int < 0, 10, FALSE) ;
+   CopyOut (str, s) ;
+   s := KillString (s)
 END IntToStr ;
 
 

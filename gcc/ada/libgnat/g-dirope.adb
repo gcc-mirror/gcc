@@ -636,7 +636,6 @@ package body GNAT.Directory_Operations is
 
       if not Is_Open (Dir) then
          Free (Dir);
-         Dir := Null_Dir;
          raise Directory_Error;
       end if;
    end Open;

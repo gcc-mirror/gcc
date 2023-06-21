@@ -799,6 +799,26 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	   && (TYPE_PRECISION (vr2->type)
 	       != TREE_INT_CST_LOW (TYPE_SIZE (vr2->type))))
     return false;
+  else if (VECTOR_BOOLEAN_TYPE_P (vr1->type)
+	   && VECTOR_BOOLEAN_TYPE_P (vr2->type))
+    {
+      /* Vector boolean types can have padding, verify we are dealing with
+	 the same number of elements, aka the precision of the types.
+	 For example, In most architecture the precision_size of vbool*_t
+	 types are caculated like below:
+	 precision_size = type_size * 8
+
+	 Unfortunately, the RISC-V will adjust the precision_size for the
+	 vbool*_t in order to align the ISA as below:
+	 type_size      = [1, 1, 1, 1,  2,  4,  8]
+	 precision_size = [1, 2, 4, 8, 16, 32, 64]
+
+	 Then the precision_size of RISC-V vbool*_t will not be the multiple
+	 of the type_size.  We take care of this case consolidated here.  */
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (vr1->type),
+		    TYPE_VECTOR_SUBPARTS (vr2->type)))
+	return false;
+    }
 
   i = 0;
   j = 0;
@@ -1555,7 +1575,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	ctor = base->op0;
       else if (base->opcode == MEM_REF
 	       && base[1].opcode == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == VAR_DECL
+	       && (VAR_P (TREE_OPERAND (base[1].op0, 0))
 		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == CONST_DECL
 		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == STRING_CST))
 	{
@@ -4583,20 +4603,37 @@ static bool
 dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool);
 
 static tree
-vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb)
+vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb,
+				 edge e = NULL)
 {
   if (! vno->predicated_values)
     return vno->u.result;
   for (vn_pval *val = vno->u.values; val; val = val->next)
     for (unsigned i = 0; i < val->n; ++i)
-      /* Do not handle backedge executability optimistically since
-	 when figuring out whether to iterate we do not consider
-	 changed predication.  */
-      if (dominated_by_p_w_unex
-	    (bb, BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]),
-	     false))
-	return val->result;
+      {
+	basic_block cand
+	  = BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]);
+	/* Do not handle backedge executability optimistically since
+	   when figuring out whether to iterate we do not consider
+	   changed predication.
+	   When asking for predicated values on an edge avoid looking
+	   at edge executability for edges forward in our iteration
+	   as well.  */
+	if (e && (e->flags & EDGE_DFS_BACK))
+	  {
+	    if (dominated_by_p (CDI_DOMINATORS, bb, cand))
+	      return val->result;
+	  }
+	else if (dominated_by_p_w_unex (bb, cand, false))
+	  return val->result;
+      }
   return NULL_TREE;
+}
+
+static tree
+vn_nary_op_get_predicated_value (vn_nary_op_t vno, edge e)
+{
+  return vn_nary_op_get_predicated_value (vno, e->src, e);
 }
 
 /* Insert the rhs of STMT into the current hash table with a value number of
@@ -4740,8 +4777,8 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 				 && EDGE_COUNT (idom2->succs) == 2);
 
 	    /* Verify the controlling stmt is the same.  */
-	    gcond *last1 = as_a <gcond *> (last_stmt (idom1));
-	    gcond *last2 = as_a <gcond *> (last_stmt (idom2));
+	    gcond *last1 = as_a <gcond *> (*gsi_last_bb (idom1));
+	    gcond *last2 = as_a <gcond *> (*gsi_last_bb (idom2));
 	    bool inverted_p;
 	    if (! cond_stmts_equal_p (last1, vp1->cclhs, vp1->ccrhs,
 				      last2, vp2->cclhs, vp2->ccrhs,
@@ -4842,7 +4879,7 @@ vn_phi_lookup (gimple *phi, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */
@@ -4897,7 +4934,7 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */
@@ -5928,7 +5965,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 						     ops, &vnresult);
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
-		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
+		    val = vn_nary_op_get_predicated_value (vnresult, e);
 		    if (val && integer_truep (val)
 			&& !(sameval_e && (sameval_e->flags & EDGE_DFS_BACK)))
 		      {
@@ -5947,7 +5984,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		       we can change sameval to def.  */
 		    if (EDGE_COUNT (bb->preds) == 2
 			&& (val = vn_nary_op_get_predicated_value
-				    (vnresult, EDGE_PRED (bb, 0)->src))
+				    (vnresult, EDGE_PRED (bb, 0)))
 			&& integer_truep (val)
 			&& !(e->flags & EDGE_DFS_BACK))
 		      {
@@ -6389,6 +6426,13 @@ expressions_equal_p (tree e1, tree e2, bool match_vn_top_optimistically)
   if (match_vn_top_optimistically
       && (e1 == VN_TOP || e2 == VN_TOP))
     return true;
+
+  /* If only one of them is null, they cannot be equal.  While in general
+     this should not happen for operations like TARGET_MEM_REF some
+     operands are optional and an identity value we could substitute
+     has differing semantics.  */
+  if (!e1 || !e2)
+    return false;
 
   /* SSA_NAME compare pointer equal.  */
   if (TREE_CODE (e1) == SSA_NAME || TREE_CODE (e2) == SSA_NAME)
@@ -8467,8 +8511,7 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
       bitmap_set_bit (worklist, 0);
       while (!bitmap_empty_p (worklist))
 	{
-	  int idx = bitmap_first_set_bit (worklist);
-	  bitmap_clear_bit (worklist, idx);
+	  int idx = bitmap_clear_first_set_bit (worklist);
 	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[idx]);
 	  gcc_assert ((bb->flags & BB_EXECUTABLE)
 		      && !rpo_state[idx].visited);

@@ -27,6 +27,7 @@ See the next chapter for information on the C header file.
                         from such an insn.
 * Output Statement::    For more generality, write C code to output
                         the assembler code.
+* Compact Syntax::      Compact syntax for writing machine descriptors.
 * Predicates::          Controlling what kinds of operands can be used
                         for an insn.
 * Constraints::         Fine-tuning operand selection.
@@ -712,6 +713,168 @@ you can use @samp{*} inside of a @samp{@@} multi-alternative template:
    clrmem %0")
 @end group
 @end smallexample
+
+@node Compact Syntax
+@section Compact Syntax
+@cindex compact syntax
+
+When a @code{define_insn} or @code{define_insn_and_split} has multiple
+alternatives it may be beneficial to use the compact syntax when specifying
+alternatives.
+
+This syntax puts the constraints and attributes on the same horizontal line as
+the instruction assembly template.
+
+As an example
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv"))]
+  ""
+  "@@
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %w1
+   mov\\t%w0, %1
+   #
+   * return aarch64_output_sve_cnt_immediate ('cnt', '%x0', operands[1]);"
+  "&& true"
+   [(const_int 0)]
+  @{
+     aarch64_expand_mov_immediate (operands[0], operands[1]);
+     DONE;
+  @}
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm")
+   (set_attr "arch"   "*,*,*,*,*,sve")
+   (set_attr "length" "4,4,4,4,*,  4")
+]
+)
+@end group
+@end smallexample
+
+can be better expressed as:
+
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: =0, 1; attrs: type, arch, length]
+     [r , r  ; mov_reg  , *   , 4] mov\t%w0, %w1
+     [k , r  ; mov_reg  , *   , 4] ^
+     [r , k  ; mov_reg  , *   , 4] ^
+     [r , M  ; mov_imm  , *   , 4] mov\t%w0, %1
+     [r , n  ; mov_imm  , *   , *] #
+     [r , Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+  @}
+  "&& true"
+  [(const_int 0)]
+  @{
+    aarch64_expand_mov_immediate (operands[0], operands[1]);
+    DONE;
+  @}
+)
+@end group
+@end smallexample
+
+The syntax rules are as follows:
+@itemize @bullet
+@item
+Templates must start with @samp{@{@@} to use the new syntax.
+
+@item
+@samp{@{@@} is followed by a layout in square brackets which is @samp{cons:}
+followed by a comma-separated list of @code{match_operand}/@code{match_scratch}
+operand numbers, then a semicolon, followed by the same for attributes
+(@samp{attrs:}).  Operand modifiers like @code{=} and @code{+} can be placed
+before an operand number.
+Both sections are optional (so you can use only @samp{cons}, or only
+@samp{attrs}, or both), and @samp{cons} must come before @samp{attrs} if
+present.
+
+@item
+Each alternative begins with any amount of whitespace.
+
+@item
+Following the whitespace is a comma-separated list of "constraints" and/or
+"attributes" within brackets @code{[]}, with sections separated by a semicolon.
+
+@item
+Should you want to copy the previous asm line, the symbol @code{^} can be used.
+This allows less copy pasting between alternative and reduces the number of
+lines to update on changes.
+
+@item
+When using C functions for output, the idiom @samp{* return @var{function};}
+can be replaced with the shorthand @samp{<< @var{function};}.
+
+@item
+Following the closing @samp{]} is any amount of whitespace, and then the actual
+asm output.
+
+@item
+Spaces are allowed in the list (they will simply be removed).
+
+@item
+All constraint alternatives should be specified.  For example, a list of
+of three blank alternatives should be written @samp{[,,]} rather than
+@samp{[]}.
+
+@item
+All attribute alternatives should be non-empty, with @samp{*}
+representing the default attribute value.  For example, a list of three
+default attribute values should be written @samp{[*,*,*]} rather than
+@samp{[]}.
+
+@item
+Within an @samp{@{@@} block both multiline and singleline C comments are
+allowed, but when used outside of a C block they must be the only non-whitespace
+blocks on the line.
+
+@item
+Within an @samp{@{@@} block, any iterators that do not get expanded will result
+in an error.  If for some reason it is required to have @code{<} or @code{>} in
+the output then these must be escaped using @samp{\}.
+
+@item
+It is possible to use the @samp{attrs} list to specify some attributes and to
+use the normal @code{set_attr} syntax to specify other attributes.  There must
+not be any overlap between the two lists.
+
+In other words, the following is valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+but this is not valid:
+@smallexample
+@group
+(define_insn_and_split ""
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+	(match_operand:SI 1 "aarch64_mov_operand"))]
+  ""
+  @{@@ [cons: 0, 1; attrs: type, arch, length]@}
+  @dots{} 
+  [(set_attr "arch" "bar")
+   (set_attr "foo" "mov_imm")]
+)
+@end group
+@end smallexample
+
+because it specifies @code{arch} twice.
+@end itemize
 
 @node Predicates
 @section Predicates
@@ -3535,6 +3698,15 @@ An address that is held in a general-purpose register.
 @item S
 A constraint that matches an absolute symbolic address.
 
+@item vr
+A vector register (if available)..
+
+@item vd
+A vector register, excluding v0 (if available).
+
+@item vm
+A vector register, only v0 (if available).
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}
@@ -4965,6 +5137,28 @@ for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
+@cindex @code{select_vl@var{m}} instruction pattern
+@item @code{select_vl@var{m}}
+Set operand 0 to the number of scalar iterations that should be handled
+by one iteration of a vector loop.  Operand 1 is the total number of
+scalar iterations that the loop needs to process and operand 2 is a
+maximum bound on the result (also known as the maximum ``vectorization
+factor'').
+
+The maximum value of operand 0 is given by:
+@smallexample
+operand0 = MIN (operand1, operand2)
+@end smallexample
+However, targets might choose a lower value than this, based on
+target-specific criteria.  Each iteration of the vector loop might
+therefore process a different number of scalar iterations, which in turn
+means that induction variables will have a variable step.  Because of
+this, it is generally not useful to define this instruction if it will
+always calculate the maximum value.
+
+This optab is only useful on targets that implement @samp{len_load_@var{m}}
+and/or @samp{len_store_@var{m}}.
+
 @cindex @code{check_raw_ptrs@var{m}} instruction pattern
 @item @samp{check_raw_ptrs@var{m}}
 Check whether, given two pointers @var{a} and @var{b} and a length @var{len},
@@ -5063,7 +5257,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load (operand 2 - operand 3) elements from vector memory operand 1
+Load (operand 2 + operand 3) elements from memory operand 1
 into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
@@ -5074,7 +5268,7 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes rather than
@@ -5085,7 +5279,7 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store (operand 2 - operand 3) vector elements from vector register operand 1
+Store (operand 2 + operand 3) vector elements from vector register operand 1
 into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
@@ -5096,7 +5290,60 @@ constant bias: it is either a constant 0 or a constant -1.  The predicate on
 operand 3 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 - operand 3) exceeds the number of elements in mode
+If (operand 2 + operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{len_maskload@var{m}@var{n}} instruction pattern
+@item @samp{len_maskload@var{m}@var{n}}
+Perform a masked load from the memory location pointed to by operand 1
+into register operand 0.  (operand 2 + operand 4) elements are loaded from
+memory and other elements in operand 0 are set to undefined values.
+This is a combination of len_load and maskload.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2
+has whichever integer mode the target prefers.  A mask is specified in
+operand 3 which must be of type @var{n}.  The mask has lower precedence than
+the length and is itself subject to length masking,
+i.e. only mask indices < (operand 2 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
+rather than elements, it should only implement this pattern for vectors
+of @code{QI} elements.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{len_maskstore@var{m}@var{n}} instruction pattern
+@item @samp{len_maskstore@var{m}@var{n}}
+Perform a masked store from vector register operand 1 into memory operand 0.
+(operand 2 + operand 4) elements are stored to memory
+and leave the other elements of operand 0 unchanged.
+This is a combination of len_store and maskstore.
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2 has whichever
+integer mode the target prefers.  A mask is specified in operand 3 which must be
+of type @var{n}.  The mask has lower precedence than the length and is itself subject to
+length masking, i.e. only mask indices < (operand 2 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 4 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 + operand 4) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes
@@ -5192,6 +5439,22 @@ is taken only on unsigned overflow.
 @cindex @code{umulv@var{m}4} instruction pattern
 @item @samp{usubv@var{m}4}, @samp{umulv@var{m}4}
 Similar, for other unsigned arithmetic operations.
+
+@cindex @code{uaddc@var{m}5} instruction pattern
+@item @samp{uaddc@var{m}5}
+Adds unsigned operands 2, 3 and 4 (where the last operand is guaranteed to
+have only values 0 or 1) together, sets operand 0 to the result of the
+addition of the 3 operands and sets operand 1 to 1 iff there was
+overflow on the unsigned additions, and to 0 otherwise.  So, it is
+an addition with carry in (operand 4) and carry out (operand 1).
+All operands have the same mode.
+
+@cindex @code{usubc@var{m}5} instruction pattern
+@item @samp{usubc@var{m}5}
+Similarly to @samp{uaddc@var{m}5}, except subtracts unsigned operands 3
+and 4 from operand 2 instead of adding them.  So, it is
+a subtraction with carry/borrow in (operand 4) and carry/borrow out
+(operand 1).  All operands have the same mode.
 
 @cindex @code{addptr@var{m}3} instruction pattern
 @item @samp{addptr@var{m}3}
@@ -5778,6 +6041,16 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
+@cindex @code{uabd@var{m}} instruction pattern
+@cindex @code{sabd@var{m}} instruction pattern
+@item @samp{uabd@var{m}}, @samp{sabd@var{m}}
+Signed and unsigned absolute difference instructions.  These
+instructions find the difference between operands 1 and 2
+then return the absolute value.  A C code equivalent would be:
+@smallexample
+op0 = op1 > op2 ? op1 - op2 : op2 - op1;
+@end smallexample
+
 @cindex @code{avg@var{m}3_floor} instruction pattern
 @cindex @code{uavg@var{m}3_floor} instruction pattern
 @item @samp{avg@var{m}3_floor}
@@ -6027,6 +6300,17 @@ This pattern is not allowed to @code{FAIL}.
 Store the base-@code{FLT_RADIX} logarithm of operand 1 into operand 0.
 Both operands have mode @var{m}, which is a scalar or vector
 floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{signbit@var{m}2} instruction pattern
+@item @samp{signbit@var{m}2}
+Store the sign bit of floating-point operand 1 in operand 0.
+@var{m} is either a scalar or vector mode.  When it is a scalar,
+operand 1 has mode @var{m} but operand 0 must have mode @code{SImode}.
+When @var{m} is a vector, operand 1 has the mode @var{m}.
+operand 0's mode should be an vector integer mode which has
+the same number of elements and the same size as mode @var{m}.
 
 This pattern is not allowed to @code{FAIL}.
 
@@ -8204,6 +8488,13 @@ second operand.  If a machine only supports a constant as the second
 operand, only patterns that match a constant in the second operand need
 be supplied.
 
+@cindex @code{vec_merge}, canonicalization of
+@item
+For the @code{vec_merge} with constant mask(the third operand), the first
+and the second operand can be exchanged by inverting the mask. In such cases,
+a constant is always made the second operand, otherwise the least significant
+bit of the mask is always set(select the first operand first).
+
 @item
 For associative operators, a sequence of operators will always chain
 to the left; for instance, only the left operand of an integer @code{plus}
@@ -8756,21 +9047,21 @@ insns that don't.  Instead, write two separate @code{define_split}
 definitions, one for the insns that are valid and one for the insns that
 are not valid.
 
-The splitter is allowed to split jump instructions into sequence of
-jumps or create new jumps in while splitting non-jump instructions.  As
-the control flow graph and branch prediction information needs to be updated,
-several restriction apply.
+The splitter is allowed to split jump instructions into a sequence of jumps or
+create new jumps while splitting non-jump instructions.  As the control flow
+graph and branch prediction information needs to be updated after the splitter
+runs, several restrictions apply.
 
-Splitting of jump instruction into sequence that over by another jump
-instruction is always valid, as compiler expect identical behavior of new
-jump.  When new sequence contains multiple jump instructions or new labels,
-more assistance is needed.  Splitter is required to create only unconditional
-jumps, or simple conditional jump instructions.  Additionally it must attach a
-@code{REG_BR_PROB} note to each conditional jump.  A global variable
-@code{split_branch_probability} holds the probability of the original branch in case
-it was a simple conditional jump, @minus{}1 otherwise.  To simplify
-recomputing of edge frequencies, the new sequence is required to have only
-forward jumps to the newly created labels.
+Splitting of a jump instruction into a sequence that has another jump
+instruction to the same label is always valid, as the compiler expects
+identical behavior of the new jump.  When the new sequence contains multiple
+jump instructions or new labels, more assistance is needed.  The splitter is
+permitted to create only unconditional jumps, or simple conditional jump
+instructions.  Additionally it must attach a @code{REG_BR_PROB} note to each
+conditional jump.  A global variable @code{split_branch_probability} holds the
+probability of the original branch in case it was a simple conditional jump,
+@minus{}1 otherwise.  To simplify recomputing of edge frequencies, the new
+sequence is permitted to have only forward jumps to the newly-created labels.
 
 @findex define_insn_and_split
 For the common case where the pattern of a define_split exactly matches the
@@ -8952,8 +9243,7 @@ It looks like:
 
 @smallexample
 
-(include
-  @var{pathname})
+(include @var{pathname})
 @end smallexample
 
 For example:
@@ -9351,6 +9641,15 @@ prevents the input insn from being split at all.)
 If the preparation falls through (invokes neither @code{DONE} nor
 @code{FAIL}), then the @code{define_peephole2} uses the replacement
 template.
+
+Insns are scanned in forward order from beginning to end for each basic
+block.  Matches are attempted in order of @code{define_peephole2}
+appearance in the @file{md} file.  After a successful replacement,
+scanning for further opportunities for @code{define_peephole2}, resumes
+with the first generated replacement insn as the first insn to be
+matched against all @code{define_peephole2}.  For the example above,
+after its successful replacement, the first insn that can be matched by
+a @code{define_peephole2} is @code{(set (match_dup 4) (match_dup 1))}.
 
 @end ifset
 @ifset INTERNALS
@@ -11467,11 +11766,10 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
-same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
-those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
-means that each @var{int} has to be a constant defined using define_constant
-or define_c_enum.
+@var{inti} if condition @var{condi} is true.  Int iterators can appear in
+only those rtx fields that have `i', `n', `w', or `p' as the specifier.
+This means that each @var{int} has to be a constant defined using
+@samp{define_constant} or @samp{define_c_enum}.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by
@@ -11482,8 +11780,12 @@ It is possible to define attributes for ints as well as for codes and modes.
 Attributes are defined using:
 
 @smallexample
-(define_int_attr @var{name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
+(define_int_attr @var{attr_name} [(@var{int1} "@var{value1}") @dots{} (@var{intn} "@var{valuen}")])
 @end smallexample
+
+In additon to these user-defined attributes, it is possible to use
+@samp{<@var{name}>} to refer to the current expansion of iterator
+@var{name} (such as @var{int1}, @var{int2}, and so on).
 
 Here's an example of int iterators in action, taken from the ARM port:
 

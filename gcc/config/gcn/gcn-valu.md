@@ -15,6 +15,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; {{{ Vector iterators
+; SV iterators include both scalar and vector modes.
 
 ; Vector modes for specific types
 (define_mode_iterator V_QI
@@ -95,6 +96,10 @@
 		       V32DI V32DF
 		       V64DI V64DF])
 
+; Vector modes for four vector registers
+(define_mode_iterator V_4REG [V2TI V4TI V8TI V16TI V32TI V64TI])
+(define_mode_iterator V_4REG_ALT [V2TI V4TI V8TI V16TI V32TI V64TI])
+
 ; Vector modes with native support
 (define_mode_iterator V_noQI
 		      [V2HI V2HF V2SI V2SF V2DI V2DF
@@ -126,7 +131,16 @@
 		       V32SI V32DI
 		       V64SI V64DI])
 
-; All of above
+(define_mode_iterator SV_SFDF
+		      [SF DF
+		       V2SF V2DF
+		       V4SF V4DF
+		       V8SF V8DF
+		       V16SF V16DF
+		       V32SF V32DF
+		       V64SF V64DF])
+
+; All modes in which we want to do more than just moves.
 (define_mode_iterator V_ALL
 		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF
 		       V4QI V4HI V4HF V4SI V4SF V4DI V4DF
@@ -156,90 +170,122 @@
 		       V16HF V16SF V16DF
 		       V32HF V32SF V32DF
 		       V64HF V64SF V64DF])
+(define_mode_iterator SV_FP
+		      [HF SF DF
+		       V2HF V2SF V2DF
+		       V4HF V4SF V4DF
+		       V8HF V8SF V8DF
+		       V16HF V16SF V16DF
+		       V32HF V32SF V32DF
+		       V64HF V64SF V64DF])
+
+; All modes that need moves, including those without many insns.
+(define_mode_iterator V_MOV
+		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF V2TI
+		       V4QI V4HI V4HF V4SI V4SF V4DI V4DF V4TI
+		       V8QI V8HI V8HF V8SI V8SF V8DI V8DF V8TI
+		       V16QI V16HI V16HF V16SI V16SF V16DI V16DF V16TI
+		       V32QI V32HI V32HF V32SI V32SF V32DI V32DF V32TI
+		       V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
+(define_mode_iterator V_MOV_ALT
+		      [V2QI V2HI V2HF V2SI V2SF V2DI V2DF V2TI
+		       V4QI V4HI V4HF V4SI V4SF V4DI V4DF V4TI
+		       V8QI V8HI V8HF V8SI V8SF V8DI V8DF V8TI
+		       V16QI V16HI V16HF V16SI V16SF V16DI V16DF V16TI
+		       V32QI V32HI V32HF V32SI V32SF V32DI V32DF V32TI
+		       V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
 
 (define_mode_attr scalar_mode
-  [(V2QI "qi") (V2HI "hi") (V2SI "si")
+  [(QI "qi") (HI "hi") (SI "si") (TI "ti")
+   (HF "hf") (SF "sf") (DI "di") (DF "df")
+   (V2QI "qi") (V2HI "hi") (V2SI "si") (V2TI "ti")
    (V2HF "hf") (V2SF "sf") (V2DI "di") (V2DF "df")
-   (V4QI "qi") (V4HI "hi") (V4SI "si")
+   (V4QI "qi") (V4HI "hi") (V4SI "si") (V4TI "ti")
    (V4HF "hf") (V4SF "sf") (V4DI "di") (V4DF "df")
-   (V8QI "qi") (V8HI "hi") (V8SI "si")
+   (V8QI "qi") (V8HI "hi") (V8SI "si") (V8TI "ti")
    (V8HF "hf") (V8SF "sf") (V8DI "di") (V8DF "df")
-   (V16QI "qi") (V16HI "hi") (V16SI "si")
+   (V16QI "qi") (V16HI "hi") (V16SI "si") (V16TI "ti")
    (V16HF "hf") (V16SF "sf") (V16DI "di") (V16DF "df")
-   (V32QI "qi") (V32HI "hi") (V32SI "si")
+   (V32QI "qi") (V32HI "hi") (V32SI "si") (V32TI "ti")
    (V32HF "hf") (V32SF "sf") (V32DI "di") (V32DF "df")
-   (V64QI "qi") (V64HI "hi") (V64SI "si")
+   (V64QI "qi") (V64HI "hi") (V64SI "si") (V64TI "ti")
    (V64HF "hf") (V64SF "sf") (V64DI "di") (V64DF "df")])
 
 (define_mode_attr SCALAR_MODE
-  [(V2QI "QI") (V2HI "HI") (V2SI "SI")
+  [(QI "QI") (HI "HI") (SI "SI") (TI "TI")
+   (HF "HF") (SF "SF") (DI "DI") (DF "DF")
+   (V2QI "QI") (V2HI "HI") (V2SI "SI") (V2TI "TI")
    (V2HF "HF") (V2SF "SF") (V2DI "DI") (V2DF "DF")
-   (V4QI "QI") (V4HI "HI") (V4SI "SI")
+   (V4QI "QI") (V4HI "HI") (V4SI "SI") (V4TI "TI")
    (V4HF "HF") (V4SF "SF") (V4DI "DI") (V4DF "DF")
-   (V8QI "QI") (V8HI "HI") (V8SI "SI")
+   (V8QI "QI") (V8HI "HI") (V8SI "SI") (V8TI "TI")
    (V8HF "HF") (V8SF "SF") (V8DI "DI") (V8DF "DF")
-   (V16QI "QI") (V16HI "HI") (V16SI "SI")
+   (V16QI "QI") (V16HI "HI") (V16SI "SI") (V16TI "TI")
    (V16HF "HF") (V16SF "SF") (V16DI "DI") (V16DF "DF")
-   (V32QI "QI") (V32HI "HI") (V32SI "SI")
+   (V32QI "QI") (V32HI "HI") (V32SI "SI") (V32TI "TI")
    (V32HF "HF") (V32SF "SF") (V32DI "DI") (V32DF "DF")
-   (V64QI "QI") (V64HI "HI") (V64SI "SI")
+   (V64QI "QI") (V64HI "HI") (V64SI "SI") (V64TI "TI")
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
 (define_mode_attr vnsi
-  [(V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
-   (V2SF "v2si") (V2DI "v2si") (V2DF "v2si")
+  [(QI "si") (HI "si") (SI "si") (TI "si")
+   (HF "si") (SF "si") (DI "si") (DF "si")
+   (V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
+   (V2SF "v2si") (V2DI "v2si") (V2DF "v2si") (V2TI "v2si")
    (V4QI "v4si") (V4HI "v4si") (V4HF "v4si") (V4SI "v4si")
-   (V4SF "v4si") (V4DI "v4si") (V4DF "v4si")
+   (V4SF "v4si") (V4DI "v4si") (V4DF "v4si") (V4TI "v4si")
    (V8QI "v8si") (V8HI "v8si") (V8HF "v8si") (V8SI "v8si")
-   (V8SF "v8si") (V8DI "v8si") (V8DF "v8si")
+   (V8SF "v8si") (V8DI "v8si") (V8DF "v8si") (V8TI "v8si")
    (V16QI "v16si") (V16HI "v16si") (V16HF "v16si") (V16SI "v16si")
-   (V16SF "v16si") (V16DI "v16si") (V16DF "v16si")
+   (V16SF "v16si") (V16DI "v16si") (V16DF "v16si") (V16TI "v16si")
    (V32QI "v32si") (V32HI "v32si") (V32HF "v32si") (V32SI "v32si")
-   (V32SF "v32si") (V32DI "v32si") (V32DF "v32si")
+   (V32SF "v32si") (V32DI "v32si") (V32DF "v32si") (V32TI "v32si")
    (V64QI "v64si") (V64HI "v64si") (V64HF "v64si") (V64SI "v64si")
-   (V64SF "v64si") (V64DI "v64si") (V64DF "v64si")])
+   (V64SF "v64si") (V64DI "v64si") (V64DF "v64si") (V64TI "v64si")])
 
 (define_mode_attr VnSI
-  [(V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
-   (V2SF "V2SI") (V2DI "V2SI") (V2DF "V2SI")
+  [(QI "SI") (HI "SI") (SI "SI") (TI "SI")
+   (HF "SI") (SF "SI") (DI "SI") (DF "SI")
+   (V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
+   (V2SF "V2SI") (V2DI "V2SI") (V2DF "V2SI") (V2TI "V2SI")
    (V4QI "V4SI") (V4HI "V4SI") (V4HF "V4SI") (V4SI "V4SI")
-   (V4SF "V4SI") (V4DI "V4SI") (V4DF "V4SI")
+   (V4SF "V4SI") (V4DI "V4SI") (V4DF "V4SI") (V4TI "V4SI")
    (V8QI "V8SI") (V8HI "V8SI") (V8HF "V8SI") (V8SI "V8SI")
-   (V8SF "V8SI") (V8DI "V8SI") (V8DF "V8SI")
+   (V8SF "V8SI") (V8DI "V8SI") (V8DF "V8SI") (V8TI "V8SI")
    (V16QI "V16SI") (V16HI "V16SI") (V16HF "V16SI") (V16SI "V16SI")
-   (V16SF "V16SI") (V16DI "V16SI") (V16DF "V16SI")
+   (V16SF "V16SI") (V16DI "V16SI") (V16DF "V16SI") (V16TI "V16SI")
    (V32QI "V32SI") (V32HI "V32SI") (V32HF "V32SI") (V32SI "V32SI")
-   (V32SF "V32SI") (V32DI "V32SI") (V32DF "V32SI")
+   (V32SF "V32SI") (V32DI "V32SI") (V32DF "V32SI") (V32TI "V32SI")
    (V64QI "V64SI") (V64HI "V64SI") (V64HF "V64SI") (V64SI "V64SI")
-   (V64SF "V64SI") (V64DI "V64SI") (V64DF "V64SI")])
+   (V64SF "V64SI") (V64DI "V64SI") (V64DF "V64SI") (V64TI "V64SI")])
 
 (define_mode_attr vndi
   [(V2QI "v2di") (V2HI "v2di") (V2HF "v2di") (V2SI "v2di")
-   (V2SF "v2di") (V2DI "v2di") (V2DF "v2di")
+   (V2SF "v2di") (V2DI "v2di") (V2DF "v2di") (V2TI "v2di")
    (V4QI "v4di") (V4HI "v4di") (V4HF "v4di") (V4SI "v4di")
-   (V4SF "v4di") (V4DI "v4di") (V4DF "v4di")
+   (V4SF "v4di") (V4DI "v4di") (V4DF "v4di") (V4TI "v4di")
    (V8QI "v8di") (V8HI "v8di") (V8HF "v8di") (V8SI "v8di")
-   (V8SF "v8di") (V8DI "v8di") (V8DF "v8di")
+   (V8SF "v8di") (V8DI "v8di") (V8DF "v8di") (V8TI "v8di")
    (V16QI "v16di") (V16HI "v16di") (V16HF "v16di") (V16SI "v16di")
-   (V16SF "v16di") (V16DI "v16di") (V16DF "v16di")
+   (V16SF "v16di") (V16DI "v16di") (V16DF "v16di") (V16TI "v16di")
    (V32QI "v32di") (V32HI "v32di") (V32HF "v32di") (V32SI "v32di")
-   (V32SF "v32di") (V32DI "v32di") (V32DF "v32di")
+   (V32SF "v32di") (V32DI "v32di") (V32DF "v32di") (V32TI "v32di")
    (V64QI "v64di") (V64HI "v64di") (V64HF "v64di") (V64SI "v64di")
-   (V64SF "v64di") (V64DI "v64di") (V64DF "v64di")])
+   (V64SF "v64di") (V64DI "v64di") (V64DF "v64di") (V64TI "v64di")])
 
 (define_mode_attr VnDI
   [(V2QI "V2DI") (V2HI "V2DI") (V2HF "V2DI") (V2SI "V2DI")
-   (V2SF "V2DI") (V2DI "V2DI") (V2DF "V2DI")
+   (V2SF "V2DI") (V2DI "V2DI") (V2DF "V2DI") (V2TI "V2DI")
    (V4QI "V4DI") (V4HI "V4DI") (V4HF "V4DI") (V4SI "V4DI")
-   (V4SF "V4DI") (V4DI "V4DI") (V4DF "V4DI")
+   (V4SF "V4DI") (V4DI "V4DI") (V4DF "V4DI") (V4TI "V4DI")
    (V8QI "V8DI") (V8HI "V8DI") (V8HF "V8DI") (V8SI "V8DI")
-   (V8SF "V8DI") (V8DI "V8DI") (V8DF "V8DI")
+   (V8SF "V8DI") (V8DI "V8DI") (V8DF "V8DI") (V8TI "V8DI")
    (V16QI "V16DI") (V16HI "V16DI") (V16HF "V16DI") (V16SI "V16DI")
-   (V16SF "V16DI") (V16DI "V16DI") (V16DF "V16DI")
+   (V16SF "V16DI") (V16DI "V16DI") (V16DF "V16DI") (V16TI "V16DI")
    (V32QI "V32DI") (V32HI "V32DI") (V32HF "V32DI") (V32SI "V32DI")
-   (V32SF "V32DI") (V32DI "V32DI") (V32DF "V32DI")
+   (V32SF "V32DI") (V32DI "V32DI") (V32DF "V32DI") (V32TI "V32DI")
    (V64QI "V64DI") (V64HI "V64DI") (V64HF "V64DI") (V64SI "V64DI")
-   (V64SF "V64DI") (V64DI "V64DI") (V64DF "V64DI")])
+   (V64SF "V64DI") (V64DI "V64DI") (V64DF "V64DI") (V64TI "V64DI")])
 
 (define_mode_attr sdwa
   [(V2QI "BYTE_0") (V2HI "WORD_0") (V2SI "DWORD")
@@ -262,38 +308,38 @@
 		   "" "_exec")
 
 (define_subst "vec_merge"
-  [(set (match_operand:V_ALL 0)
-	(match_operand:V_ALL 1))]
+  [(set (match_operand:V_MOV 0)
+	(match_operand:V_MOV 1))]
   ""
   [(set (match_dup 0)
-	(vec_merge:V_ALL
+	(vec_merge:V_MOV
 	  (match_dup 1)
-	  (match_operand:V_ALL 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:V_MOV 3 "gcn_register_or_unspec_operand" "U0")
 	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))])
 
 (define_subst "vec_merge_with_clobber"
-  [(set (match_operand:V_ALL 0)
-	(match_operand:V_ALL 1))
+  [(set (match_operand:V_MOV 0)
+	(match_operand:V_MOV 1))
    (clobber (match_operand 2))]
   ""
   [(set (match_dup 0)
-	(vec_merge:V_ALL
+	(vec_merge:V_MOV
 	  (match_dup 1)
-	  (match_operand:V_ALL 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:V_MOV 3 "gcn_register_or_unspec_operand" "U0")
 	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))
    (clobber (match_dup 2))])
 
 (define_subst "vec_merge_with_vcc"
-  [(set (match_operand:V_ALL 0)
-	(match_operand:V_ALL 1))
+  [(set (match_operand:V_MOV 0)
+	(match_operand:V_MOV 1))
    (set (match_operand:DI 2)
 	(match_operand:DI 3))]
   ""
   [(parallel
      [(set (match_dup 0)
-	   (vec_merge:V_ALL
+	   (vec_merge:V_MOV
 	     (match_dup 1)
-	     (match_operand:V_ALL 4 "gcn_register_or_unspec_operand" "U0")
+	     (match_operand:V_MOV 4 "gcn_register_or_unspec_operand" "U0")
 	     (match_operand:DI 5 "gcn_exec_reg_operand" "e")))
       (set (match_dup 2)
 	   (and:DI (match_dup 3)
@@ -325,8 +371,8 @@
 ; gather/scatter, maskload/store, etc.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:V_ALL 0 "nonimmediate_operand")
-	(match_operand:V_ALL 1 "general_operand"))]
+  [(set (match_operand:V_MOV 0 "nonimmediate_operand")
+	(match_operand:V_MOV 1 "general_operand"))]
   ""
   {
     /* Bitwise reinterpret casts via SUBREG don't work with GCN vector
@@ -395,8 +441,8 @@
 ; A pseudo instruction that helps LRA use the "U0" constraint.
 
 (define_insn "mov<mode>_unspec"
-  [(set (match_operand:V_ALL 0 "nonimmediate_operand" "=v")
-	(match_operand:V_ALL 1 "gcn_unspec_operand"   " U"))]
+  [(set (match_operand:V_MOV 0 "nonimmediate_operand" "=v")
+	(match_operand:V_MOV 1 "gcn_unspec_operand"   " U"))]
   ""
   ""
   [(set_attr "type" "unknown")
@@ -501,6 +547,69 @@
   [(set_attr "type" "vmult,vmult,vmult,*,*")
    (set_attr "length" "16,16,16,16,16")])
 
+(define_insn "*mov<mode>_4reg"
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "=v")
+	(match_operand:V_4REG 1 "general_operand"      "vDB"))]
+  ""
+  {
+    return "v_mov_b32\t%L0, %L1\;"
+           "v_mov_b32\t%H0, %H1\;"
+           "v_mov_b32\t%J0, %J1\;"
+           "v_mov_b32\t%K0, %K1\;";
+  }
+  [(set_attr "type" "vmult")
+   (set_attr "length" "16")])
+
+(define_insn "mov<mode>_exec"
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
+	(vec_merge:V_4REG
+	  (match_operand:V_4REG 1 "general_operand"    "vDB,  v0,  v0, m, v")
+	  (match_operand:V_4REG 2 "gcn_alu_or_unspec_operand"
+						       " U0,vDA0,vDA0,U0,U0")
+	  (match_operand:DI 3 "register_operand"       "  e,  cV,  Sv, e, e")))
+   (clobber (match_scratch:<VnDI> 4		       "= X,   X,   X,&v,&v"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
+  {
+    if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1]))
+      switch (which_alternative)
+	{
+	case 0:
+	  return "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;"
+                 "v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1";
+	case 1:
+	  return "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
+		 "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
+		 "v_cndmask_b32\t%J0, %J2, %J1, vcc\;"
+		 "v_cndmask_b32\t%K0, %K2, %K1, vcc";
+	case 2:
+	  return "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
+		 "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
+		 "v_cndmask_b32\t%J0, %J2, %J1, %3\;"
+		 "v_cndmask_b32\t%K0, %K2, %K1, %3";
+	}
+    else
+      switch (which_alternative)
+	{
+	case 0:
+	  return "v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\;"
+                 "v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1";
+	case 1:
+	  return "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
+		 "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
+		 "v_cndmask_b32\t%J0, %J2, %J1, vcc\;"
+		 "v_cndmask_b32\t%K0, %K2, %K1, vcc";
+	case 2:
+	  return "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
+		 "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
+		 "v_cndmask_b32\t%J0, %J2, %J1, %3\;"
+		 "v_cndmask_b32\t%K0, %K2, %K1, %3";
+	}
+
+    return "#";
+  }
+  [(set_attr "type" "vmult,vmult,vmult,*,*")
+   (set_attr "length" "32")])
+
 ; This variant does not accept an unspec, but does permit MEM
 ; read/modify/write which is necessary for maskstore.
 
@@ -566,12 +675,25 @@
   [(set_attr "type" "vmult,*,*")
    (set_attr "length" "8,12,12")])
 
+(define_insn "mov<mode>_sgprbase"
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "= v, v, m")
+	(unspec:V_4REG
+	  [(match_operand:V_4REG 1 "general_operand"   "vDB, m, v")]
+	  UNSPEC_SGPRBASE))
+   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v"))]
+  "lra_in_progress || reload_completed"
+  "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+   #
+   #"
+  [(set_attr "type" "vmult,*,*")
+   (set_attr "length" "8,12,12")])
+
 ; reload_in was once a standard name, but here it's only referenced by
 ; gcn_secondary_reload.  It allows a reload with a scratch register.
 
 (define_expand "reload_in<mode>"
-  [(set (match_operand:V_ALL 0 "register_operand"     "= v")
-	(match_operand:V_ALL 1 "memory_operand"	      "  m"))
+  [(set (match_operand:V_MOV 0 "register_operand"     "= v")
+	(match_operand:V_MOV 1 "memory_operand"	      "  m"))
    (clobber (match_operand:<VnDI> 2 "register_operand" "=&v"))]
   ""
   {
@@ -582,8 +704,8 @@
 ; reload_out is similar to reload_in, above.
 
 (define_expand "reload_out<mode>"
-  [(set (match_operand:V_ALL 0 "memory_operand"	      "= m")
-	(match_operand:V_ALL 1 "register_operand"     "  v"))
+  [(set (match_operand:V_MOV 0 "memory_operand"	      "= m")
+	(match_operand:V_MOV 1 "register_operand"     "  v"))
    (clobber (match_operand:<VnDI> 2 "register_operand" "=&v"))]
   ""
   {
@@ -594,9 +716,9 @@
 ; Expand scalar addresses into gather/scatter patterns
 
 (define_split
-  [(set (match_operand:V_ALL 0 "memory_operand")
-	(unspec:V_ALL
-	  [(match_operand:V_ALL 1 "general_operand")]
+  [(set (match_operand:V_MOV 0 "memory_operand")
+	(unspec:V_MOV
+	  [(match_operand:V_MOV 1 "general_operand")]
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:<VnDI> 2))]
   ""
@@ -612,10 +734,10 @@
   })
 
 (define_split
-  [(set (match_operand:V_ALL 0 "memory_operand")
-	(vec_merge:V_ALL
-	  (match_operand:V_ALL 1 "general_operand")
-	  (match_operand:V_ALL 2 "")
+  [(set (match_operand:V_MOV 0 "memory_operand")
+	(vec_merge:V_MOV
+	  (match_operand:V_MOV 1 "general_operand")
+	  (match_operand:V_MOV 2 "")
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   ""
@@ -633,14 +755,14 @@
   })
 
 (define_split
-  [(set (match_operand:V_ALL 0 "nonimmediate_operand")
-	(unspec:V_ALL
-	  [(match_operand:V_ALL 1 "memory_operand")]
+  [(set (match_operand:V_MOV 0 "nonimmediate_operand")
+	(unspec:V_MOV
+	  [(match_operand:V_MOV 1 "memory_operand")]
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:<VnDI> 2))]
   ""
   [(set (match_dup 0)
-	(unspec:V_ALL [(match_dup 5) (match_dup 6) (match_dup 7)
+	(unspec:V_MOV [(match_dup 5) (match_dup 6) (match_dup 7)
 		       (mem:BLK (scratch))]
 		      UNSPEC_GATHER))]
   {
@@ -652,16 +774,16 @@
   })
 
 (define_split
-  [(set (match_operand:V_ALL 0 "nonimmediate_operand")
-	(vec_merge:V_ALL
-	  (match_operand:V_ALL 1 "memory_operand")
-	  (match_operand:V_ALL 2 "")
+  [(set (match_operand:V_MOV 0 "nonimmediate_operand")
+	(vec_merge:V_MOV
+	  (match_operand:V_MOV 1 "memory_operand")
+	  (match_operand:V_MOV 2 "")
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   ""
   [(set (match_dup 0)
-	(vec_merge:V_ALL
-	  (unspec:V_ALL [(match_dup 5) (match_dup 6) (match_dup 7)
+	(vec_merge:V_MOV
+	  (unspec:V_MOV [(match_dup 5) (match_dup 6) (match_dup 7)
 			 (mem:BLK (scratch))]
 			 UNSPEC_GATHER)
 	  (match_dup 2)
@@ -718,9 +840,9 @@
    (set_attr "laneselect" "yes")])
 
 (define_expand "vec_set<mode>"
-  [(set (match_operand:V_ALL 0 "register_operand")
-	(vec_merge:V_ALL
-	  (vec_duplicate:V_ALL
+  [(set (match_operand:V_MOV 0 "register_operand")
+	(vec_merge:V_MOV
+	  (vec_duplicate:V_MOV
 	    (match_operand:<SCALAR_MODE> 1 "register_operand"))
 	  (match_dup 0)
 	  (ashift (const_int 1) (match_operand:SI 2 "gcn_alu_operand"))))]
@@ -778,6 +900,15 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "16")])
 
+(define_insn "vec_duplicate<mode><exec>"
+  [(set (match_operand:V_4REG 0 "register_operand"	   "=  v")
+	(vec_duplicate:V_4REG
+	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand" "SvDB")))]
+  ""
+  "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1"
+  [(set_attr "type" "mult")
+   (set_attr "length" "32")])
+
 (define_insn "vec_extract<mode><scalar_mode>"
   [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=Sg")
 	(vec_select:<SCALAR_MODE>
@@ -799,6 +930,18 @@
   "v_readlane_b32 %L0, %L1, %2\;v_readlane_b32 %H0, %H1, %2"
   [(set_attr "type" "vmult")
    (set_attr "length" "16")
+   (set_attr "exec" "none")
+   (set_attr "laneselect" "yes")])
+
+(define_insn "vec_extract<mode><scalar_mode>"
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand"  "=&Sg")
+	(vec_select:<SCALAR_MODE>
+	  (match_operand:V_4REG 1 "register_operand"	   "   v")
+	  (parallel [(match_operand:SI 2 "gcn_alu_operand" " SvB")])))]
+  ""
+  "v_readlane_b32 %L0, %L1, %2\;v_readlane_b32 %H0, %H1, %2\;v_readlane_b32 %J0, %J1, %2\;v_readlane_b32 %K0, %K1, %2"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "32")
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
@@ -828,39 +971,52 @@
   [(set_attr "type" "vmult")
    (set_attr "length" "0,8")])
   
-(define_expand "vec_extract<V_ALL:mode><V_ALL_ALT:mode>"
-  [(match_operand:V_ALL_ALT 0 "register_operand")
-   (match_operand:V_ALL 1 "register_operand")
+(define_insn "vec_extract<V_4REG:mode><V_4REG_ALT:mode>_nop"
+  [(set (match_operand:V_4REG_ALT 0 "register_operand" "=v,v")
+	(vec_select:V_4REG_ALT
+	  (match_operand:V_4REG 1 "register_operand"   " 0,v")
+	  (match_operand 2 "ascending_zero_int_parallel" "")))]
+  "MODE_VF (<V_4REG_ALT:MODE>mode) < MODE_VF (<V_4REG:MODE>mode)
+   && <V_4REG_ALT:SCALAR_MODE>mode == <V_4REG:SCALAR_MODE>mode"
+  "@
+  ; in-place extract %0
+  v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "0,16")])
+  
+(define_expand "vec_extract<V_MOV:mode><V_MOV_ALT:mode>"
+  [(match_operand:V_MOV_ALT 0 "register_operand")
+   (match_operand:V_MOV 1 "register_operand")
    (match_operand 2 "immediate_operand")]
-  "MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)
-   && <V_ALL_ALT:SCALAR_MODE>mode == <V_ALL:SCALAR_MODE>mode"
+  "MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)
+   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode"
   {
-    int numlanes = GET_MODE_NUNITS (<V_ALL_ALT:MODE>mode);
+    int numlanes = GET_MODE_NUNITS (<V_MOV_ALT:MODE>mode);
     int firstlane = INTVAL (operands[2]) * numlanes;
     rtx tmp;
 
     if (firstlane == 0)
       {
-	rtx parallel = gen_rtx_PARALLEL (<V_ALL:MODE>mode,
+	rtx parallel = gen_rtx_PARALLEL (<V_MOV:MODE>mode,
 					  rtvec_alloc (numlanes));
 	for (int i = 0; i < numlanes; i++)
 	  XVECEXP (parallel, 0, i) = GEN_INT (i);
-	emit_insn (gen_vec_extract<V_ALL:mode><V_ALL_ALT:mode>_nop
+	emit_insn (gen_vec_extract<V_MOV:mode><V_MOV_ALT:mode>_nop
 		   (operands[0], operands[1], parallel));
       } else {
         /* FIXME: optimize this by using DPP where available.  */
 
-        rtx permutation = gen_reg_rtx (<V_ALL:VnSI>mode);
-	emit_insn (gen_vec_series<V_ALL:vnsi> (permutation,
+        rtx permutation = gen_reg_rtx (<V_MOV:VnSI>mode);
+	emit_insn (gen_vec_series<V_MOV:vnsi> (permutation,
 					       GEN_INT (firstlane*4),
 					       GEN_INT (4)));
 
-	tmp = gen_reg_rtx (<V_ALL:MODE>mode);
-	emit_insn (gen_ds_bpermute<V_ALL:mode> (tmp, permutation, operands[1],
-						get_exec (<V_ALL:MODE>mode)));
+	tmp = gen_reg_rtx (<V_MOV:MODE>mode);
+	emit_insn (gen_ds_bpermute<V_MOV:mode> (tmp, permutation, operands[1],
+						get_exec (<V_MOV:MODE>mode)));
 
 	emit_move_insn (operands[0],
-			gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+			gen_rtx_SUBREG (<V_MOV_ALT:MODE>mode, tmp, 0));
       }
     DONE;
   })
@@ -868,7 +1024,7 @@
 (define_expand "extract_last_<mode>"
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (match_operand:DI 1 "gcn_alu_operand")
-   (match_operand:V_ALL 2 "register_operand")]
+   (match_operand:V_MOV 2 "register_operand")]
   "can_create_pseudo_p ()"
   {
     rtx dst = operands[0];
@@ -886,7 +1042,7 @@
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
    (match_operand:DI 2 "gcn_alu_operand")
-   (match_operand:V_ALL 3 "register_operand")]
+   (match_operand:V_MOV 3 "register_operand")]
   "can_create_pseudo_p ()"
   {
     rtx dst = operands[0];
@@ -908,7 +1064,7 @@
   })
 
 (define_expand "vec_init<mode><scalar_mode>"
-  [(match_operand:V_ALL 0 "register_operand")
+  [(match_operand:V_MOV 0 "register_operand")
    (match_operand 1)]
   ""
   {
@@ -916,11 +1072,11 @@
     DONE;
   })
 
-(define_expand "vec_init<V_ALL:mode><V_ALL_ALT:mode>"
-  [(match_operand:V_ALL 0 "register_operand")
-   (match_operand:V_ALL_ALT 1)]
-  "<V_ALL:SCALAR_MODE>mode == <V_ALL_ALT:SCALAR_MODE>mode
-   && MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)"
+(define_expand "vec_init<V_MOV:mode><V_MOV_ALT:mode>"
+  [(match_operand:V_MOV 0 "register_operand")
+   (match_operand:V_MOV_ALT 1)]
+  "<V_MOV:SCALAR_MODE>mode == <V_MOV_ALT:SCALAR_MODE>mode
+   && MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)"
   {
     gcn_expand_vector_init (operands[0], operands[1]);
     DONE;
@@ -962,7 +1118,7 @@
 ;; TODO: implement combined gather and zero_extend, but only for -msram-ecc=on
 
 (define_expand "gather_load<mode><vnsi>"
-  [(match_operand:V_ALL 0 "register_operand")
+  [(match_operand:V_MOV 0 "register_operand")
    (match_operand:DI 1 "register_operand")
    (match_operand:<VnSI> 2 "register_operand")
    (match_operand 3 "immediate_operand")
@@ -985,8 +1141,8 @@
 
 ; Allow any address expression
 (define_expand "gather<mode>_expr<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand")
-	(unspec:V_ALL
+  [(set (match_operand:V_MOV 0 "register_operand")
+	(unspec:V_MOV
 	  [(match_operand 1 "")
 	   (match_operand 2 "immediate_operand")
 	   (match_operand 3 "immediate_operand")
@@ -996,8 +1152,8 @@
     {})
 
 (define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand"		   "=v")
-	(unspec:V_ALL
+  [(set (match_operand:V_MOV 0 "register_operand"		   "=v")
+	(unspec:V_MOV
 	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v")
 			(vec_duplicate:<VnDI>
 			  (match_operand 2 "immediate_operand"	   " n")))
@@ -1035,8 +1191,8 @@
    (set_attr "length" "12")])
 
 (define_insn "gather<mode>_insn_1offset_ds<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand"		   "=v")
-	(unspec:V_ALL
+  [(set (match_operand:V_MOV 0 "register_operand"		   "=v")
+	(unspec:V_MOV
 	  [(plus:<VnSI> (match_operand:<VnSI> 1 "register_operand" " v")
 			(vec_duplicate:<VnSI>
 			  (match_operand 2 "immediate_operand"	   " n")))
@@ -1057,8 +1213,8 @@
    (set_attr "length" "12")])
 
 (define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:V_ALL 0 "register_operand"			"=v")
-	(unspec:V_ALL
+  [(set (match_operand:V_MOV 0 "register_operand"			"=v")
+	(unspec:V_MOV
 	  [(plus:<VnDI>
 	     (plus:<VnDI>
 	       (vec_duplicate:<VnDI>
@@ -1093,7 +1249,7 @@
    (match_operand:<VnSI> 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:V_ALL 4 "register_operand")]
+   (match_operand:V_MOV 4 "register_operand")]
   ""
   {
     rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
@@ -1115,7 +1271,7 @@
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:<VnDI> 0 "")
-	   (match_operand:V_ALL 1 "register_operand")
+	   (match_operand:V_MOV 1 "register_operand")
 	   (match_operand 2 "immediate_operand")
 	   (match_operand 3 "immediate_operand")]
 	  UNSPEC_SCATTER))]
@@ -1128,7 +1284,7 @@
 	  [(plus:<VnDI> (match_operand:<VnDI> 0 "register_operand" "v")
 			(vec_duplicate:<VnDI>
 			  (match_operand 1 "immediate_operand"	   "n")))
-	   (match_operand:V_ALL 2 "register_operand"		   "v")
+	   (match_operand:V_MOV 2 "register_operand"		   "v")
 	   (match_operand 3 "immediate_operand"			   "n")
 	   (match_operand 4 "immediate_operand"			   "n")]
 	  UNSPEC_SCATTER))]
@@ -1166,7 +1322,7 @@
 	  [(plus:<VnSI> (match_operand:<VnSI> 0 "register_operand" "v")
 			(vec_duplicate:<VnSI>
 			  (match_operand 1 "immediate_operand"	   "n")))
-	   (match_operand:V_ALL 2 "register_operand"		   "v")
+	   (match_operand:V_MOV 2 "register_operand"		   "v")
 	   (match_operand 3 "immediate_operand"			   "n")
 	   (match_operand 4 "immediate_operand"			   "n")]
 	  UNSPEC_SCATTER))]
@@ -1192,7 +1348,7 @@
 	       (sign_extend:<VnDI>
 		 (match_operand:<VnSI> 1 "register_operand"		" v")))
 	     (vec_duplicate:<VnDI> (match_operand 2 "immediate_operand" " n")))
-	   (match_operand:V_ALL 3 "register_operand"			" v")
+	   (match_operand:V_MOV 3 "register_operand"			" v")
 	   (match_operand 4 "immediate_operand"				" n")
 	   (match_operand 5 "immediate_operand"				" n")]
 	  UNSPEC_SCATTER))]
@@ -2297,8 +2453,9 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm, dest, even));
-                                                             // a*c-b*d 0
+    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));            // a*c-b*d 0
 
     rtx t2_perm = gen_reg_rtx (<MODE>mode);
     emit_insn (gen_dpp_swap_pairs<mode> (t2_perm, t2));          // b*c a*d
@@ -2342,7 +2499,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm,
+                                    gcn_gen_undef (<MODE>mode), even));
 
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
@@ -2366,7 +2524,8 @@
     rtx dest = operands[0];
     rtx x = operands[1];
     rtx y = operands[2];
-    emit_insn (gen_sub<mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, x, y, gcn_gen_undef (<MODE>mode),
+                                    even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, x, y, dest, odd));
@@ -2393,7 +2552,9 @@
 
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
-    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_<cadd_addsub><mode>3_exec (dest, x, y, dest, odd));
@@ -2413,7 +2574,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
@@ -2433,10 +2595,11 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, odd));
 
     DONE;
   })
@@ -2732,6 +2895,23 @@
     DONE;
   })
 
+(define_insn_and_split "one_cmpl<mode>2<exec>"
+  [(set (match_operand:V_DI 0 "register_operand"  "=   v")
+        (not:V_DI
+          (match_operand:V_DI 1 "gcn_alu_operand" "vSvDB")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 3) (not:<VnSI> (match_dup 5)))
+   (set (match_dup 4) (not:<VnSI> (match_dup 6)))]
+  {
+    operands[3] = gcn_operand_part (<VnDI>mode, operands[0], 0);
+    operands[4] = gcn_operand_part (<VnDI>mode, operands[0], 1);
+    operands[5] = gcn_operand_part (<VnDI>mode, operands[1], 0);
+    operands[6] = gcn_operand_part (<VnDI>mode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")])
+
 ;; }}}
 ;; {{{ FP binops - special cases
 
@@ -3004,21 +3184,10 @@
 
 ; Implement ldexp pattern
 
-(define_insn "ldexp<mode>3"
-  [(set (match_operand:FP 0 "register_operand"  "=v")
-	(unspec:FP
-	  [(match_operand:FP 1 "gcn_alu_operand" "vB")
-	   (match_operand:SI 2 "gcn_alu_operand" "vSvA")]
-	  UNSPEC_LDEXP))]
-  ""
-  "v_ldexp%i0\t%0, %1, %2"
-  [(set_attr "type" "vop3a")
-   (set_attr "length" "8")])
-
 (define_insn "ldexp<mode>3<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"     "=  v")
-	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand"   "  vB")
+  [(set (match_operand:SV_FP 0 "register_operand"     "=  v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "gcn_alu_operand"   "  vA")
 	   (match_operand:<VnSI> 2 "gcn_alu_operand" "vSvA")]
 	  UNSPEC_LDEXP))]
   ""
@@ -3171,113 +3340,124 @@
 ;; {{{ FP division
 
 (define_insn "recip<mode>2<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"  "=  v")
-	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand" "vSvB")]
+  [(set (match_operand:SV_FP 0 "register_operand"  "=  v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "gcn_alu_operand" "vSvB")]
 	  UNSPEC_RCP))]
   ""
   "v_rcp%i0\t%0, %1"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
-(define_insn "recip<mode>2"
-  [(set (match_operand:FP 0 "register_operand"	 "=  v")
-	(unspec:FP
-	  [(match_operand:FP 1 "gcn_alu_operand" "vSvB")]
-	  UNSPEC_RCP))]
+;; v_div_scale takes a numerator (op2) and denominator (op1) and returns the
+;; one that matches op3 adjusted for best results in reciprocal division.
+;; It also emits a VCC mask that is intended for input to v_div_fmas.
+;; The caller is expected to call this twice, once for each input.  The output
+;; VCC is the same in both cases, so the caller may discard one.
+(define_insn "div_scale<mode><exec_vcc>"
+  [(set (match_operand:SV_SFDF 0 "register_operand"   "=v")
+	(unspec:SV_SFDF
+	  [(match_operand:SV_SFDF 1 "gcn_alu_operand" "v")
+	   (match_operand:SV_SFDF 2 "gcn_alu_operand" "v")
+	   (match_operand:SV_SFDF 3 "gcn_alu_operand" "v")]
+	  UNSPEC_DIV_SCALE))
+   (set (match_operand:DI 4 "register_operand"        "=SvcV")
+	(unspec:DI
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	  UNSPEC_DIV_SCALE))]
   ""
-  "v_rcp%i0\t%0, %1"
-  [(set_attr "type" "vop1")
+  "v_div_scale%i0\t%0, %4, %3, %1, %2"
+  [(set_attr "type" "vop3b")
    (set_attr "length" "8")])
 
-;; Do division via a = b * 1/c
-;; The v_rcp_* instructions are not sufficiently accurate on their own,
-;; so we use 2 v_fma_* instructions to do one round of Newton-Raphson
-;; which the ISA manual says is enough to improve the reciprocal accuracy.
-;;
-;; FIXME: This does not handle denormals, NaNs, division-by-zero etc.
+;; v_div_fmas is "FMA and Scale" that uses the VCC output from v_div_scale
+;; to conditionally scale the output of the whole division operation.
+;; This is necessary to counter the adjustments made by v_div_scale and
+;; replaces the last FMA instruction of the Newton Raphson algorithm.
+(define_insn "div_fmas<mode><exec>"
+  [(set (match_operand:SV_SFDF 0 "register_operand"       "=v")
+	(unspec:SV_SFDF
+	  [(plus:SV_SFDF
+	     (mult:SV_SFDF
+	       (match_operand:SV_SFDF 1 "gcn_alu_operand" "v")
+	       (match_operand:SV_SFDF 2 "gcn_alu_operand" "v"))
+	     (match_operand:SV_SFDF 3 "gcn_alu_operand"   "v"))
+	   (match_operand:DI 4 "register_operand"         "cV")]
+	  UNSPEC_DIV_FMAS))]
+  ""
+  "v_div_fmas%i0\t%0, %1, %2, %3; %4"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")
+   (set_attr "vccwait" "5")])
+
+;; v_div_fixup takes the inputs and outputs of a division operation already
+;; completed and cleans up the floating-point sign bit, infinity, underflow,
+;; overflow, and NaN status.  It will also emit any FP exceptions.
+;; op1: quotient,  op2: denominator,  op3: numerator
+(define_insn "div_fixup<mode><exec>"
+  [(set (match_operand:SV_FP 0 "register_operand"    "=v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "register_operand" "v")
+	   (match_operand:SV_FP 2 "gcn_alu_operand"  "v")
+	   (match_operand:SV_FP 3 "gcn_alu_operand"  "v")]
+	  UNSPEC_DIV_FIXUP))]
+  ""
+  "v_div_fixup%i0\t%0, %1, %2, %3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
 
 (define_expand "div<mode>3"
-  [(match_operand:V_FP 0 "gcn_valu_dst_operand")
-   (match_operand:V_FP 1 "gcn_valu_src0_operand")
-   (match_operand:V_FP 2 "gcn_valu_src0_operand")]
-  "flag_reciprocal_math"
+  [(match_operand:SV_SFDF 0 "register_operand")
+   (match_operand:SV_SFDF 1 "gcn_alu_operand")
+   (match_operand:SV_SFDF 2 "gcn_alu_operand")]
+  ""
   {
+    rtx numerator = operands[1];
+    rtx denominator = operands[2];
+
+    /* Scale the inputs if they are close to the FP limits.
+       This will be reversed later.  */
+    rtx vcc = gen_reg_rtx (DImode);
+    rtx discardedvcc = gen_reg_rtx (DImode);
+    rtx scaled_numerator = gen_reg_rtx (<MODE>mode);
+    rtx scaled_denominator = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_div_scale<mode> (scaled_denominator,
+				    denominator, numerator,
+				    denominator, discardedvcc));
+    emit_insn (gen_div_scale<mode> (scaled_numerator,
+				    denominator, numerator,
+				    numerator, vcc));
+
+    /* Find the reciprocal of the denominator, and use Newton-Raphson to
+       improve the accuracy over the basic hardware instruction.  */
     rtx one = gcn_vec_constant (<MODE>mode,
 		  const_double_from_real_value (dconst1, <SCALAR_MODE>mode));
     rtx initrcp = gen_reg_rtx (<MODE>mode);
-    rtx fma = gen_reg_rtx (<MODE>mode);
-    rtx rcp;
-    rtx num = operands[1], denom = operands[2];
+    rtx fma1 = gen_reg_rtx (<MODE>mode);
+    rtx rcp = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_recip<mode>2 (initrcp, scaled_denominator));
+    emit_insn (gen_fma<mode>4_negop2 (fma1, initrcp, scaled_denominator, one));
+    emit_insn (gen_fma<mode>4 (rcp, fma1, initrcp, initrcp));
 
-    bool is_rcp = (GET_CODE (num) == CONST_VECTOR
-		   && real_identical
-		        (CONST_DOUBLE_REAL_VALUE
-			  (CONST_VECTOR_ELT (num, 0)), &dconstm1));
+    /* Do the division "a/b" via "a*1/b" and use Newton-Raphson to improve
+       the accuracy.  The "div_fmas" instruction reverses any scaling
+       performed by "div_scale", above.  */
+    rtx div_est = gen_reg_rtx (<MODE>mode);
+    rtx fma2 = gen_reg_rtx (<MODE>mode);
+    rtx fma3 = gen_reg_rtx (<MODE>mode);
+    rtx fma4 = gen_reg_rtx (<MODE>mode);
+    rtx fmas = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (div_est, scaled_numerator, rcp));
+    emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, scaled_denominator,
+				      scaled_numerator));
+    emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
+    emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, scaled_denominator,
+				      scaled_numerator));
+    emit_insn (gen_div_fmas<mode> (fmas, fma4, rcp, fma3, vcc));
 
-    if (is_rcp)
-      rcp = operands[0];
-    else
-      rcp = gen_reg_rtx (<MODE>mode);
-
-    emit_insn (gen_recip<mode>2 (initrcp, denom));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
-    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
-
-    if (!is_rcp)
-      {
-	rtx div_est = gen_reg_rtx (<MODE>mode);
-	rtx fma2 = gen_reg_rtx (<MODE>mode);
-	rtx fma3 = gen_reg_rtx (<MODE>mode);
-	rtx fma4 = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
-	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
-	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
-	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
-	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
-      }
-
-    DONE;
-  })
-
-(define_expand "div<mode>3"
-  [(match_operand:FP 0 "gcn_valu_dst_operand")
-   (match_operand:FP 1 "gcn_valu_src0_operand")
-   (match_operand:FP 2 "gcn_valu_src0_operand")]
-  "flag_reciprocal_math"
-  {
-    rtx one = const_double_from_real_value (dconst1, <MODE>mode);
-    rtx initrcp = gen_reg_rtx (<MODE>mode);
-    rtx fma = gen_reg_rtx (<MODE>mode);
-    rtx rcp;
-    rtx num = operands[1], denom = operands[2];
-
-    bool is_rcp = (GET_CODE (operands[1]) == CONST_DOUBLE
-		   && real_identical (CONST_DOUBLE_REAL_VALUE (operands[1]),
-				      &dconstm1));
-
-    if (is_rcp)
-      rcp = operands[0];
-    else
-      rcp = gen_reg_rtx (<MODE>mode);
-
-    emit_insn (gen_recip<mode>2 (initrcp, denom));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
-    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
-
-    if (!is_rcp)
-      {
-	rtx div_est = gen_reg_rtx (<MODE>mode);
-	rtx fma2 = gen_reg_rtx (<MODE>mode);
-	rtx fma3 = gen_reg_rtx (<MODE>mode);
-	rtx fma4 = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
-	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
-	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
-	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
-	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
-      }
-
+    /* Finally, use "div_fixup" to get the details right and find errors.  */
+    emit_insn (gen_div_fixup<mode> (operands[0], fmas, denominator,
+				    numerator));
     DONE;
   })
 
@@ -3754,8 +3934,8 @@
   })
 
 (define_expand "maskload<mode>di"
-  [(match_operand:V_ALL 0 "register_operand")
-   (match_operand:V_ALL 1 "memory_operand")
+  [(match_operand:V_MOV 0 "register_operand")
+   (match_operand:V_MOV 1 "memory_operand")
    (match_operand 2 "")]
   ""
   {
@@ -3774,8 +3954,8 @@
   })
 
 (define_expand "maskstore<mode>di"
-  [(match_operand:V_ALL 0 "memory_operand")
-   (match_operand:V_ALL 1 "register_operand")
+  [(match_operand:V_MOV 0 "memory_operand")
+   (match_operand:V_MOV 1 "register_operand")
    (match_operand 2 "")]
   ""
   {
@@ -3789,7 +3969,7 @@
   })
 
 (define_expand "mask_gather_load<mode><vnsi>"
-  [(match_operand:V_ALL 0 "register_operand")
+  [(match_operand:V_MOV 0 "register_operand")
    (match_operand:DI 1 "register_operand")
    (match_operand:<VnSI> 2 "register_operand")
    (match_operand 3 "immediate_operand")
@@ -3824,7 +4004,7 @@
    (match_operand:<VnSI> 1 "register_operand")
    (match_operand 2 "immediate_operand")
    (match_operand:SI 3 "gcn_alu_operand")
-   (match_operand:V_ALL 4 "register_operand")
+   (match_operand:V_MOV 4 "register_operand")
    (match_operand:DI 5 "")]
   ""
   {

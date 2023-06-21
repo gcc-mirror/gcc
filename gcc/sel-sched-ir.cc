@@ -1076,10 +1076,10 @@ free_nop_pool (void)
 }
 
 
-/* Skip unspec to support ia64 speculation. Called from rtx_equal_p_cb.
+/* Skip unspec to support ia64 speculation. Called from rtx_equal_p.
    The callback is given two rtxes XX and YY and writes the new rtxes
    to NX and NY in case some needs to be skipped.  */
-static int
+static bool
 skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
 {
   const_rtx x = *xx;
@@ -1091,7 +1091,7 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
     {
       *nx = XVECEXP (x, 0, 0);
       *ny = CONST_CAST_RTX (y);
-      return 1;
+      return true;
     }
 
   if (GET_CODE (y) == UNSPEC
@@ -1100,16 +1100,16 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
     {
       *nx = CONST_CAST_RTX (x);
       *ny = XVECEXP (y, 0, 0);
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
-/* Callback, called from hash_rtx_cb.  Helps to hash UNSPEC rtx X in a correct way
+/* Callback, called from hash_rtx.  Helps to hash UNSPEC rtx X in a correct way
    to support ia64 speculation.  When changes are needed, new rtx X and new mode
    NMODE are written, and the callback returns true.  */
-static int
+static bool
 hash_with_unspec_callback (const_rtx x, machine_mode mode ATTRIBUTE_UNUSED,
                            rtx *nx, machine_mode* nmode)
 {
@@ -1119,10 +1119,10 @@ hash_with_unspec_callback (const_rtx x, machine_mode mode ATTRIBUTE_UNUSED,
     {
       *nx = XVECEXP (x, 0 ,0);
       *nmode = VOIDmode;
-      return 1;
+      return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Returns LHS and RHS are ok to be scheduled separately.  */
@@ -1188,16 +1188,16 @@ vinsn_init (vinsn_t vi, insn_t insn, bool force_unique_p)
     {
       rtx rhs = VINSN_RHS (vi);
 
-      VINSN_HASH (vi) = hash_rtx_cb (rhs, GET_MODE (rhs),
-                                     NULL, NULL, false, hrcf);
-      VINSN_HASH_RTX (vi) = hash_rtx_cb (VINSN_PATTERN (vi),
-                                         VOIDmode, NULL, NULL,
-                                         false, hrcf);
+      VINSN_HASH (vi) = hash_rtx (rhs, GET_MODE (rhs),
+				  NULL, NULL, false, hrcf);
+      VINSN_HASH_RTX (vi) = hash_rtx (VINSN_PATTERN (vi),
+				      VOIDmode, NULL, NULL,
+				      false, hrcf);
     }
   else
     {
-      VINSN_HASH (vi) = hash_rtx_cb (VINSN_PATTERN (vi), VOIDmode,
-                                     NULL, NULL, false, hrcf);
+      VINSN_HASH (vi) = hash_rtx (VINSN_PATTERN (vi), VOIDmode,
+				  NULL, NULL, false, hrcf);
       VINSN_HASH_RTX (vi) = VINSN_HASH (vi);
     }
 
@@ -1602,10 +1602,10 @@ vinsn_equal_p (vinsn_t x, vinsn_t y)
       gcc_assert (VINSN_RHS (x));
       gcc_assert (VINSN_RHS (y));
 
-      return rtx_equal_p_cb (VINSN_RHS (x), VINSN_RHS (y), repcf);
+      return rtx_equal_p (VINSN_RHS (x), VINSN_RHS (y), repcf);
     }
 
-  return rtx_equal_p_cb (VINSN_PATTERN (x), VINSN_PATTERN (y), repcf);
+  return rtx_equal_p (VINSN_PATTERN (x), VINSN_PATTERN (y), repcf);
 }
 
 

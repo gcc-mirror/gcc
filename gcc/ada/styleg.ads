@@ -160,9 +160,13 @@ package Styleg is
    procedure Check_Vertical_Bar;
    --  Called after scanning a vertical bar to check spacing
 
-   procedure Check_Xtra_Parens (Loc : Source_Ptr);
-   --  Called after scanning an if, case, or quantified expression that has at
-   --  least one level of parentheses around the entire expression.
+   procedure Check_Xtra_Parens (N : Node_Id);
+   --  Called after scanning an entire expression (N) that does not require an
+   --  extra level of parentheses.
+
+   procedure Check_Xtra_Parens_Precedence (N : Node_Id);
+   --  Called after scanning a subexpression (N) that does not require an
+   --  extra level of parentheses according to operator precedence rules.
 
    function Mode_In_Check return Boolean;
    pragma Inline (Mode_In_Check);

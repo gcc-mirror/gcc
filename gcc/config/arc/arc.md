@@ -705,6 +705,9 @@ archs4x, archs4xd"
 	(match_operand:QI 1 "move_src_operand"  "rL,rP,q,P,hCm1,cL, I,?Rac,i,?i,T,q,Usd,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)
+   || (CONSTANT_P (operands[1])
+       && (!satisfies_constraint_I (operands[1]) || !optimize_size)
+       && satisfies_constraint_Usc (operands[0]))
    || (satisfies_constraint_Cm3 (operands[1])
        && memory_operand (operands[0], QImode))"
   "@
@@ -1363,7 +1366,10 @@ archs4x, archs4xd"
   [(set (match_operand:SF 0 "move_dest_operand"   "=h,h,   r,r,  q,S,Usc,r,m")
 	(match_operand:SF 1 "move_src_operand"  "hCfZ,E,rCfZ,E,Uts,q,  E,m,r"))]
   "register_operand (operands[0], SFmode)
-   || register_operand (operands[1], SFmode)"
+   || register_operand (operands[1], SFmode)
+   || (CONSTANT_P (operands[1])
+       && (!satisfies_constraint_I (operands[1]) || !optimize_size)
+       && satisfies_constraint_Usc (operands[0]))"
   "@
    mov%?\\t%0,%1
    mov%?\\t%0,%1 ; %A1

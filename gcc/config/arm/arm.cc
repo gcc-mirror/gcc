@@ -69,6 +69,7 @@
 #include "optabs-libfuncs.h"
 #include "gimplify.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
 #include "selftest.h"
 #include "tree-vectorizer.h"
 #include "opts.h"
@@ -505,6 +506,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P arm_function_value_regno_p
+
+#undef TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN arm_gimple_fold_builtin
 
 #undef  TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
@@ -2844,6 +2848,29 @@ arm_init_libfuncs (void)
   speculation_barrier_libfunc = init_one_libfunc ("__speculation_barrier");
 }
 
+/* Implement TARGET_GIMPLE_FOLD_BUILTIN.  */
+static bool
+arm_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+  gimple *new_stmt = NULL;
+  switch (code & ARM_BUILTIN_CLASS)
+    {
+    case ARM_BUILTIN_GENERAL:
+      break;
+    case ARM_BUILTIN_MVE:
+      new_stmt = arm_mve::gimple_fold_builtin (subcode, stmt);
+    }
+  if (!new_stmt)
+    return false;
+
+  gsi_replace (gsi, new_stmt, true);
+  return true;
+}
+
 /* On AAPCS systems, this is the "struct __va_list".  */
 static GTY(()) tree va_list_type;
 
@@ -3900,7 +3927,7 @@ arm_option_reconfigure_globals (void)
   if (target_thread_pointer == TP_AUTO)
     {
       if (arm_arch6k && !TARGET_THUMB1)
-	target_thread_pointer = TP_CP15;
+	target_thread_pointer = TP_TPIDRURO;
       else
 	target_thread_pointer = TP_SOFT;
     }
@@ -7436,8 +7463,7 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
     }
   else
     {
-      if (TREE_CODE (*node) == FUNCTION_TYPE
-	  || TREE_CODE (*node) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (*node))
 	{
 	  if (arm_isr_value (args) == ARM_FT_UNKNOWN)
 	    {
@@ -7447,8 +7473,7 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 	    }
 	}
       else if (TREE_CODE (*node) == POINTER_TYPE
-	       && (TREE_CODE (TREE_TYPE (*node)) == FUNCTION_TYPE
-		   || TREE_CODE (TREE_TYPE (*node)) == METHOD_TYPE)
+	       && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (*node))
 	       && arm_isr_value (args) != ARM_FT_UNKNOWN)
 	{
 	  *node = build_variant_type_copy (*node);
@@ -7656,7 +7681,7 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
     {
       fntype = TREE_TYPE (*node);
 
-      if (TREE_CODE (*node) == VAR_DECL || TREE_CODE (*node) == TYPE_DECL)
+      if (VAR_P (*node) || TREE_CODE (*node) == TYPE_DECL)
 	decl = *node;
     }
   else
@@ -7777,7 +7802,7 @@ arm_set_default_type_attributes (tree type)
   /* Add __attribute__ ((long_call)) to all functions, when
      inside #pragma long_calls or __attribute__ ((short_call)),
      when inside #pragma no_long_calls.  */
-  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     {
       tree type_attr_list, attr_name;
       type_attr_list = TYPE_ATTRIBUTES (type);
@@ -8425,7 +8450,7 @@ arm_is_segment_info_known (rtx orig, bool *is_readonly)
 	      || !DECL_COMMON (SYMBOL_REF_DECL (orig))))
 	{
 	  tree decl = SYMBOL_REF_DECL (orig);
-	  tree init = (TREE_CODE (decl) == VAR_DECL)
+	  tree init = VAR_P (decl)
 	    ? DECL_INITIAL (decl) : (TREE_CODE (decl) == CONSTRUCTOR)
 	    ? decl : 0;
 	  int reloc = 0;
@@ -8434,7 +8459,7 @@ arm_is_segment_info_known (rtx orig, bool *is_readonly)
 	  if (init && init != error_mark_node)
 	    reloc = compute_reloc_for_constant (init);
 
-	  named_section = TREE_CODE (decl) == VAR_DECL
+	  named_section = VAR_P (decl)
 	    && lookup_attribute ("section", DECL_ATTRIBUTES (decl));
 	  readonly = decl_readonly_section (decl, reloc);
 
@@ -9105,9 +9130,7 @@ thumb1_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
       else if (REG_P (XEXP (x, 0))
 	       && (REGNO (XEXP (x, 0)) == FRAME_POINTER_REGNUM
 		   || REGNO (XEXP (x, 0)) == ARG_POINTER_REGNUM
-		   || (REGNO (XEXP (x, 0)) >= FIRST_VIRTUAL_REGISTER
-		       && REGNO (XEXP (x, 0))
-			  <= LAST_VIRTUAL_POINTER_REGISTER))
+		   || VIRTUAL_REGISTER_P (XEXP (x, 0)))
 	       && GET_MODE_SIZE (mode) >= 4
 	       && CONST_INT_P (XEXP (x, 1))
 	       && (INTVAL (XEXP (x, 1)) & 3) == 0)
@@ -13639,6 +13662,19 @@ arm_coproc_mem_operand_no_writeback (rtx op)
   return arm_coproc_mem_operand_wb (op, 0);
 }
 
+/* In non-STRICT mode, return the register number; in STRICT mode return
+   the hard regno or the replacement if it won't be a mem.  Otherwise, return
+   the original pseudo number.  */
+static int
+arm_effective_regno (rtx op, bool strict)
+{
+  gcc_assert (REG_P (op));
+  if (!strict || REGNO (op) < FIRST_PSEUDO_REGISTER
+      || !reg_renumber || reg_renumber[REGNO (op)] < 0)
+    return REGNO (op);
+  return reg_renumber[REGNO (op)];
+}
+
 /* This function returns TRUE on matching mode and op.
 1. For given modes, check for [Rn], return TRUE for Rn <= LO_REGS.
 2. For other modes, check for [Rn], return TRUE for Rn < R15 (expect R13).  */
@@ -13651,7 +13687,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
   /* Match: (mem (reg)).  */
   if (REG_P (op))
     {
-      int reg_no = REGNO (op);
+      reg_no = arm_effective_regno (op, strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
 	       : reg_no < LAST_ARM_REGNUM)
@@ -13662,7 +13698,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
   if (code == POST_INC || code == PRE_DEC
       || code == PRE_INC || code == POST_DEC)
     {
-      reg_no = REGNO (XEXP (op, 0));
+      reg_no = arm_effective_regno (XEXP (op, 0), strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
 	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
@@ -13678,7 +13714,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	   || (reload_completed && code == PLUS && REG_P (XEXP (op, 0))
 	       && GET_CODE (XEXP (op, 1)) == CONST_INT))
     {
-      reg_no = REGNO (XEXP (op, 0));
+      reg_no = arm_effective_regno (XEXP (op, 0), strict);
       if (code == PLUS)
 	val = INTVAL (XEXP (op, 1));
       else
@@ -13892,8 +13928,7 @@ arm_eliminable_register (rtx x)
 {
   return REG_P (x) && (REGNO (x) == FRAME_POINTER_REGNUM
 		       || REGNO (x) == ARG_POINTER_REGNUM
-		       || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-			   && REGNO (x) <= LAST_VIRTUAL_REGISTER));
+		       || VIRTUAL_REGISTER_P (x));
 }
 
 /* Return GENERAL_REGS if a scratch register required to reload x to/from
@@ -30538,7 +30573,7 @@ arm_mangle_type (const_tree type)
     return "St9__va_list";
 
   /* Half-precision floating point types.  */
-  if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
+  if (SCALAR_FLOAT_TYPE_P (type) && TYPE_PRECISION (type) == 16)
     {
       if (TYPE_MAIN_VARIANT (type) == float16_type_node)
 	return NULL;
@@ -31596,13 +31631,13 @@ arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
       switch (GET_MODE_CLASS (cmp_mode))
 	{
 	case MODE_VECTOR_INT:
-	  emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_mode, operands[0],
-				     operands[1], operands[2], mask));
+	  emit_insn (gen_mve_q (VPSELQ_S, VPSELQ_S, cmp_mode, operands[0],
+				operands[1], operands[2], mask));
 	  break;
 	case MODE_VECTOR_FLOAT:
 	  if (TARGET_HAVE_MVE_FLOAT)
-	    emit_insn (gen_mve_vpselq_f (cmp_mode, operands[0],
-					 operands[1], operands[2], mask));
+	    emit_insn (gen_mve_q_f (VPSELQ_F, cmp_mode, operands[0],
+				    operands[1], operands[2], mask));
 	  else
 	    gcc_unreachable ();
 	  break;
@@ -34611,6 +34646,36 @@ arm_get_mask_mode (machine_mode mode)
     return arm_mode_to_pred_mode (mode);
 
   return default_get_mask_mode (mode);
+}
+
+/* Output assembly to read the thread pointer from the appropriate TPIDR
+   register into DEST.  If PRED_P also emit the %? that can be used to
+   output the predication code.  */
+
+const char *
+arm_output_load_tpidr (rtx dst, bool pred_p)
+{
+  char buf[64];
+  int tpidr_coproc_num = -1;
+  switch (target_thread_pointer)
+    {
+    case TP_TPIDRURW:
+      tpidr_coproc_num = 2;
+      break;
+    case TP_TPIDRURO:
+      tpidr_coproc_num = 3;
+      break;
+    case TP_TPIDRPRW:
+      tpidr_coproc_num = 4;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  snprintf (buf, sizeof (buf),
+	    "mrc%s\tp15, 0, %%0, c13, c0, %d\t@ load_tp_hard",
+	    pred_p ? "%?" : "", tpidr_coproc_num);
+  output_asm_insn (buf, &dst);
+  return "";
 }
 
 #include "gt-arm.h"

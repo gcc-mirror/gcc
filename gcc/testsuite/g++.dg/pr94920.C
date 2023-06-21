@@ -1,6 +1,6 @@
 /* PR tree-optimization/94920 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wno-psabi -fdump-tree-optimized" } */
+/* { dg-options "-O2 -Wno-psabi -fdump-tree-forwprop1" } */
 
 typedef int __attribute__((vector_size(4*sizeof(int)))) vint;
 
@@ -60,4 +60,4 @@ __attribute__((noipa)) int qux(int x) {
     return (x >= 0 ? x : 0) + (x >= 0 ? x : 0);
 }
 
-/* { dg-final {scan-tree-dump-times " ABS_EXPR " 6 "optimized" } } */
+/* { dg-final {scan-tree-dump-times " ABS_EXPR " 6 "forwprop1" } } */

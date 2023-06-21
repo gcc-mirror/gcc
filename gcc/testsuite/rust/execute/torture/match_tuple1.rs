@@ -1,4 +1,4 @@
-// { dg-output "x:15\ny:20\n" }
+// { dg-output "x:15\r*\ny:20\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

@@ -85,13 +85,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef DEBUGGING
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #if defined(HAVE_SYS_SOCKET_H)
 
 #define ERROR(X)                                                              \

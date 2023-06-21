@@ -92,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "expmed.h"
 #include "expr.h"
-#include "optabs-query.h"
+#include "optabs-tree.h"
 #include "gimple-pretty-print.h"
 #include "alias.h"
 #include "fold-const.h"
@@ -1157,8 +1157,7 @@ if_convertible_bb_p (class loop *loop, basic_block bb, basic_block exit_bb)
   if (EDGE_COUNT (bb->succs) > 2)
     return false;
 
-  gimple *last = last_stmt (bb);
-  if (gcall *call = safe_dyn_cast <gcall *> (last))
+  if (gcall *call = safe_dyn_cast <gcall *> (*gsi_last_bb (bb)))
     if (gimple_call_ctrl_altering_p (call))
       return false;
 
@@ -1302,7 +1301,6 @@ predicate_bbs (loop_p loop)
     {
       basic_block bb = ifc_bbs[i];
       tree cond;
-      gimple *stmt;
 
       /* The loop latch and loop exit block are always executed and
 	 have no extra conditions to be processed: skip them.  */
@@ -1314,8 +1312,7 @@ predicate_bbs (loop_p loop)
 	}
 
       cond = bb_predicate (bb);
-      stmt = last_stmt (bb);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      if (gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb)))
 	{
 	  tree c2;
 	  edge true_edge, false_edge;
@@ -1873,11 +1870,12 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
   return rhs;
 }
 
-/* Produce condition for all occurrences of ARG in PHI node.  */
+/* Produce condition for all occurrences of ARG in PHI node.  Set *INVERT
+   as to whether the condition is inverted.  */
 
 static tree
 gen_phi_arg_condition (gphi *phi, vec<int> *occur,
-		       gimple_stmt_iterator *gsi)
+		       gimple_stmt_iterator *gsi, bool *invert)
 {
   int len;
   int i;
@@ -1885,6 +1883,7 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
   tree c;
   edge e;
 
+  *invert = false;
   len = occur->length ();
   gcc_assert (len > 0);
   for (i = 0; i < len; i++)
@@ -1895,6 +1894,13 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	{
 	  cond = c;
 	  break;
+	}
+      /* If we have just a single inverted predicate, signal that and
+	 instead invert the COND_EXPR arms.  */
+      if (len == 1 && TREE_CODE (c) == TRUTH_NOT_EXPR)
+	{
+	  c = TREE_OPERAND (c, 0);
+	  *invert = true;
 	}
       c = force_gimple_operand_gsi (gsi, unshare_expr (c),
 				    true, NULL_TREE, true, GSI_SAME_STMT);
@@ -2062,7 +2068,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
     }
 
   /* Put element with max number of occurences to the end of ARGS.  */
-  if (max_ind != -1 && max_ind +1 != (int) args_len)
+  if (max_ind != -1 && max_ind + 1 != (int) args_len)
     std::swap (args[args_len - 1], args[max_ind]);
 
   /* Handle one special case when number of arguments with different values
@@ -2107,18 +2113,23 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       vec<int> *indexes;
       tree type = TREE_TYPE (gimple_phi_result (phi));
       tree lhs;
-      arg1 = args[1];
-      for (i = 0; i < args_len; i++)
+      arg1 = args[args_len - 1];
+      for (i = args_len - 1; i > 0; i--)
 	{
-	  arg0 = args[i];
-	  indexes = phi_arg_map.get (args[i]);
-	  if (i != args_len - 1)
+	  arg0 = args[i - 1];
+	  indexes = phi_arg_map.get (args[i - 1]);
+	  if (i != 1)
 	    lhs = make_temp_ssa_name (type, NULL, "_ifc_");
 	  else
 	    lhs = res;
-	  cond = gen_phi_arg_condition (phi, indexes, gsi);
-	  rhs = fold_build_cond_expr (type, unshare_expr (cond),
-				      arg0, arg1);
+	  bool invert;
+	  cond = gen_phi_arg_condition (phi, indexes, gsi, &invert);
+	  if (invert)
+	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+					arg1, arg0);
+	  else
+	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+					arg0, arg1);
 	  new_stmt = gimple_build_assign (lhs, rhs);
 	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	  update_stmt (new_stmt);
@@ -2627,8 +2638,9 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-	  else if (gimple_plf (stmt, GF_PLF_2)
-		   && is_gimple_call (stmt))
+
+	  if (gimple_plf (gsi_stmt (gsi), GF_PLF_2)
+	      && is_gimple_call (gsi_stmt (gsi)))
 	    {
 	      /* Convert functions that have a SIMD clone to IFN_MASK_CALL.
 		 This will cause the vectorizer to match the "in branch"
@@ -3034,7 +3046,6 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
   basic_block bb;
   unsigned int num = loop->num_nodes;
   unsigned int i;
-  gimple *stmt;
   edge e;
   edge_iterator ei;
   auto_vec<edge> critical_edges;
@@ -3062,9 +3073,8 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
       if (bb == loop->latch || bb_with_exit_edge_p (loop, bb))
 	continue;
 
-      stmt = last_stmt (bb);
       /* Skip basic blocks not ending with conditional branch.  */
-      if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+      if (!safe_is_a <gcond *> (*gsi_last_bb (bb)))
 	continue;
 
       FOR_EACH_EDGE (e, ei, bb->succs)

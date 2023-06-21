@@ -2211,7 +2211,6 @@ ___ucmpdi2:
 ___muldi3:
 #ifdef __v850__
         jarl  __save_r26_r31, r10
-        addi  16,  sp, sp
         mov   r6,  r28
         shr   15,  r28
         movea lo(32767), r0, r14
@@ -2256,7 +2255,6 @@ ___muldi3:
         mulh  r12, r6
         mov   r28,  r17
         mulh  r10, r17
-        add   -16, sp
         mov   r28,  r12
         mulh  r8,  r12
         add   r17, r18

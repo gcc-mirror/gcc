@@ -30,14 +30,18 @@
 // Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
 #define _GLIBCXX_USE_CXX11_ABI 1
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <bit>
+#include <iterator>
+#include <limits>
 #include <string>
 #include <memory_resource>
 #include <cfenv>
 #include <cfloat>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <locale.h>
@@ -60,7 +64,7 @@
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
 #elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113 \
-      && defined(__GLIBC_PREREQ)
+      && defined(__GLIBC_PREREQ) && defined(USE_STRTOD_FOR_FROM_CHARS)
 #define USE_STRTOF128_FOR_FROM_CHARS 1
 extern "C" _Float128 __strtof128(const char*, char**)
   __asm ("strtof128")
@@ -73,10 +77,6 @@ extern "C" _Float128 __strtof128(const char*, char**)
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
     && __SIZE_WIDTH__ >= 32
 # define USE_LIB_FAST_FLOAT 1
-# if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
-// No need to use strtold.
-#  undef USE_STRTOD_FOR_FROM_CHARS
-# endif
 #endif
 
 #if USE_LIB_FAST_FLOAT
@@ -593,6 +593,69 @@ namespace
     return buf.c_str();
   }
 
+  // RAII type to change and restore the locale.
+  struct auto_locale
+  {
+#if _GLIBCXX_HAVE_USELOCALE
+    // When we have uselocale we can change the current thread's locale.
+    const locale_t loc;
+    locale_t orig;
+
+    auto_locale()
+    : loc(::newlocale(LC_ALL_MASK, "C", (locale_t)0))
+    {
+      if (loc)
+	orig = ::uselocale(loc);
+      else
+	ec = errc{errno};
+    }
+
+    ~auto_locale()
+    {
+      if (loc)
+	{
+	  ::uselocale(orig);
+	  ::freelocale(loc);
+	}
+    }
+#else
+    // Otherwise, we can't change the locale and so strtod can't be used.
+    auto_locale() = delete;
+#endif
+
+    explicit operator bool() const noexcept { return ec == errc{}; }
+
+    errc ec{};
+
+    auto_locale(const auto_locale&) = delete;
+    auto_locale& operator=(const auto_locale&) = delete;
+  };
+
+  // RAII type to change and restore the floating-point environment.
+  struct auto_ferounding
+  {
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
+    const int rounding = std::fegetround();
+
+    auto_ferounding()
+    {
+      if (rounding != FE_TONEAREST)
+	std::fesetround(FE_TONEAREST);
+    }
+
+    ~auto_ferounding()
+    {
+      if (rounding != FE_TONEAREST)
+	std::fesetround(rounding);
+    }
+#else
+    auto_ferounding() = default;
+#endif
+
+    auto_ferounding(const auto_ferounding&) = delete;
+    auto_ferounding& operator=(const auto_ferounding&) = delete;
+  };
+
   // Convert the NTBS `str` to a floating-point value of type `T`.
   // If `str` cannot be converted, `value` is unchanged and `0` is returned.
   // Otherwise, let N be the number of characters consumed from `str`.
@@ -603,16 +666,11 @@ namespace
   ptrdiff_t
   from_chars_impl(const char* str, T& value, errc& ec) noexcept
   {
-    if (locale_t loc = ::newlocale(LC_ALL_MASK, "C", (locale_t)0)) [[likely]]
+    auto_locale loc;
+
+    if (loc)
       {
-	locale_t orig = ::uselocale(loc);
-
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	const int rounding = std::fegetround();
-	if (rounding != FE_TONEAREST)
-	  std::fesetround(FE_TONEAREST);
-#endif
-
+	auto_ferounding rounding;
 	const int save_errno = errno;
 	errno = 0;
 	char* endptr;
@@ -643,14 +701,6 @@ namespace
 #endif
 	const int conv_errno = std::__exchange(errno, save_errno);
 
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	if (rounding != FE_TONEAREST)
-	  std::fesetround(rounding);
-#endif
-
-	::uselocale(orig);
-	::freelocale(loc);
-
 	const ptrdiff_t n = endptr - str;
 	if (conv_errno == ERANGE) [[unlikely]]
 	  {
@@ -671,8 +721,8 @@ namespace
 	  }
 	return n;
       }
-    else if (errno == ENOMEM)
-      ec = errc::not_enough_memory;
+    else
+      ec = loc.ec;
 
     return 0;
   }
@@ -1207,7 +1257,7 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
-#if ! USE_STRTOD_FOR_FROM_CHARS
+#if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__ || !defined USE_STRTOD_FOR_FROM_CHARS
   // Either long double is the same as double, or we can't use strtold.
   // In the latter case, this might give an incorrect result (e.g. values
   // out of range of double give an error, even if they fit in long double).
@@ -1268,13 +1318,31 @@ from_chars(const char* first, const char* last, __ieee128& value,
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.
   return from_chars_strtod(first, last, value, fmt);
 }
-#elif defined(USE_STRTOF128_FOR_FROM_CHARS)
+
+extern "C" from_chars_result
+_ZSt10from_charsPKcS0_RDF128_St12chars_format(const char* first,
+					      const char* last,
+					      __ieee128& value,
+					      chars_format fmt) noexcept
+__attribute__((alias ("_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format")));
+#elif __FLT128_MANT_DIG__ == 113 && __LDBL_MANT_DIG__ != 113
+// Overload for _Float128 is not defined inline in <charconv>, define it here.
 from_chars_result
 from_chars(const char* first, const char* last, _Float128& value,
 	   chars_format fmt) noexcept
 {
+#ifdef USE_STRTOF128_FOR_FROM_CHARS
   // fast_float doesn't support IEEE binary128 format, but we can use strtold.
   return from_chars_strtod(first, last, value, fmt);
+#else
+  // Read a long double. This might give an incorrect result (e.g. values
+  // out of range of long double give an error, even if they fit in _Float128).
+  long double ldbl_val;
+  auto res = std::from_chars(first, last, ldbl_val, fmt);
+  if (res.ec == errc{})
+    value = ldbl_val;
+  return res;
+#endif
 }
 #endif
 

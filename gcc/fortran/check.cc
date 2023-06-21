@@ -93,7 +93,7 @@ illegal_boz_arg (gfc_expr *x)
   return false;
 }
 
-/* Some precedures take two arguments such that both cannot be BOZ.  */
+/* Some procedures take two arguments such that both cannot be BOZ.  */
 
 static bool
 boz_args_check(gfc_expr *i, gfc_expr *j)
@@ -1156,23 +1156,23 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
    dimension bi, returning 0 if they are known not to be identical,
    and 1 if they are identical, or if this cannot be determined.  */
 
-static int
+static bool
 identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
 {
   mpz_t a_size, b_size;
-  int ret;
+  bool ret;
 
   gcc_assert (a->rank > ai);
   gcc_assert (b->rank > bi);
 
-  ret = 1;
+  ret = true;
 
   if (gfc_array_dimen_size (a, ai, &a_size))
     {
       if (gfc_array_dimen_size (b, bi, &b_size))
 	{
 	  if (mpz_cmp (a_size, b_size) != 0)
-	    ret = 0;
+	    ret = false;
 
 	  mpz_clear (b_size);
 	}
@@ -4723,7 +4723,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
     }
 
   gfc_simplify_expr (shape, 0);
-  shape_is_const = gfc_is_constant_expr (shape);
+  shape_is_const = gfc_is_constant_array_expr (shape);
 
   if (shape->expr_type == EXPR_ARRAY && shape_is_const)
     {
@@ -4732,6 +4732,8 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       for (i = 0; i < shape_size; ++i)
 	{
 	  e = gfc_constructor_lookup_expr (shape->value.constructor, i);
+	  if (e == NULL)
+	    break;
 	  if (e->expr_type != EXPR_CONSTANT)
 	    continue;
 
@@ -4764,7 +4766,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       if (!type_check (order, 3, BT_INTEGER))
 	return false;
 
-      if (order->expr_type == EXPR_ARRAY && gfc_is_constant_expr (order))
+      if (order->expr_type == EXPR_ARRAY && gfc_is_constant_array_expr (order))
 	{
 	  int i, order_size, dim, perm[GFC_MAX_DIMENSIONS];
 	  gfc_expr *e;

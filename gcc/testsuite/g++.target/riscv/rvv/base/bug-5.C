@@ -304,7 +304,7 @@ vuint8mf8_t var_59 = __riscv_vle8_v_u8mf8(var_66, 1);
 // 54
 
 __riscv_vsetvl_e8mf8(2);
-vint8mf8_t var_19 = __riscv_vsmul_vx_i8mf8(var_20, var_63, 2);
+vint8mf8_t var_19 = __riscv_vsmul_vx_i8mf8(var_20, var_63, 0,2);
 // 79, 28
 
 __riscv_vsetvl_e16mf2(2);
@@ -358,7 +358,7 @@ vbool64_t var_0 = __riscv_vmsne_vx_i16mf4_b64(var_9, var_16, 2);
 // 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 __riscv_vsetvl_e8mf8(1);
-vuint8mf8_t var_1 = __riscv_vnclipu_wx_u8mf8_mu(var_0, var_59, var_2, var_65, 1);
+vuint8mf8_t var_1 = __riscv_vnclipu_wx_u8mf8_mu(var_0, var_59, var_2, var_65, 0, 1);
 // 255
 
 __riscv_vsetvl_e8mf8(2);

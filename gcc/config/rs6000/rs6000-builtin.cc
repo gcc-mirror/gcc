@@ -2840,17 +2840,17 @@ lxvrse_expand_builtin (rtx target, insn_code icode, rtx *op,
   if (icode == CODE_FOR_vsx_lxvrbx)
     {
       temp1  = simplify_gen_subreg (V16QImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_qi_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v16qi_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrhx)
     {
       temp1  = simplify_gen_subreg (V8HImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_hi_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v8hi_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrwx)
     {
       temp1  = simplify_gen_subreg (V4SImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_si_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v4si_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrdx)
     discratch = simplify_gen_subreg (V2DImode, tiscratch, TImode, 0);
@@ -3326,17 +3326,26 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
       case CODE_FOR_fmakf4_odd:
 	icode = CODE_FOR_fmatf4_odd;
 	break;
-      case CODE_FOR_xsxexpqp_kf:
-	icode = CODE_FOR_xsxexpqp_tf;
+      case CODE_FOR_xsxexpqp_kf_di:
+	icode = CODE_FOR_xsxexpqp_tf_di;
 	break;
-      case CODE_FOR_xsxsigqp_kf:
-	icode = CODE_FOR_xsxsigqp_tf;
+      case CODE_FOR_xsxexpqp_kf_v2di:
+	icode = CODE_FOR_xsxexpqp_tf_v2di;
+	break;
+      case CODE_FOR_xsxsigqp_kf_ti:
+	icode = CODE_FOR_xsxsigqp_tf_ti;
+	break;
+      case CODE_FOR_xsxsigqp_kf_v1ti:
+	icode = CODE_FOR_xsxsigqp_tf_v1ti;
 	break;
       case CODE_FOR_xststdcnegqp_kf:
 	icode = CODE_FOR_xststdcnegqp_tf;
 	break;
-      case CODE_FOR_xsiexpqp_kf:
-	icode = CODE_FOR_xsiexpqp_tf;
+      case CODE_FOR_xsiexpqp_kf_di:
+	icode = CODE_FOR_xsiexpqp_tf_di;
+	break;
+      case CODE_FOR_xsiexpqp_kf_v2di:
+	icode = CODE_FOR_xsiexpqp_tf_v2di;
 	break;
       case CODE_FOR_xsiexpqpf_kf:
 	icode = CODE_FOR_xsiexpqpf_tf;

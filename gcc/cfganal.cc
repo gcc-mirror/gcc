@@ -740,7 +740,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
 }
 
 
-/* Helper routine for inverted_post_order_compute
+/* Helper routine for inverted_rev_post_order_compute
    flow_dfs_compute_reverse_execute, and the reverse-CFG
    deapth first search in dominance.cc.
    BB has to belong to a region of CFG
@@ -820,12 +820,14 @@ dfs_find_deadend (basic_block bb)
    and start looking for a "dead end" from that block
    and do another inverted traversal from that block.  */
 
-void
-inverted_post_order_compute (vec<int> *post_order,
-			     sbitmap *start_points)
+int
+inverted_rev_post_order_compute (struct function *fn,
+				 int *rev_post_order,
+				 sbitmap *start_points)
 {
   basic_block bb;
-  post_order->reserve_exact (n_basic_blocks_for_fn (cfun));
+
+  int rev_post_order_num = n_basic_blocks_for_fn (fn) - 1;
 
   if (flag_checking)
     verify_no_unreachable_blocks ();
@@ -855,17 +857,17 @@ inverted_post_order_compute (vec<int> *post_order,
 	}
     }
   else
-  /* Put all blocks that have no successor into the initial work list.  */
-  FOR_ALL_BB_FN (bb, cfun)
-    if (EDGE_COUNT (bb->succs) == 0)
-      {
-        /* Push the initial edge on to the stack.  */
-        if (EDGE_COUNT (bb->preds) > 0)
-          {
-	    stack.quick_push (ei_start (bb->preds));
-            bitmap_set_bit (visited, bb->index);
-          }
-      }
+    /* Put all blocks that have no successor into the initial work list.  */
+    FOR_ALL_BB_FN (bb, cfun)
+      if (EDGE_COUNT (bb->succs) == 0)
+	{
+	  /* Push the initial edge on to the stack.  */
+	  if (EDGE_COUNT (bb->preds) > 0)
+	    {
+	      stack.quick_push (ei_start (bb->preds));
+	      bitmap_set_bit (visited, bb->index);
+	    }
+	}
 
   do
     {
@@ -893,13 +895,13 @@ inverted_post_order_compute (vec<int> *post_order,
                    time, check its predecessors.  */
 		stack.quick_push (ei_start (pred->preds));
               else
-		post_order->quick_push (pred->index);
+		rev_post_order[rev_post_order_num--] = pred->index;
             }
           else
             {
 	      if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && ei_one_before_end_p (ei))
-		post_order->quick_push (bb->index);
+		rev_post_order[rev_post_order_num--] = bb->index;
 
               if (!ei_one_before_end_p (ei))
 		ei_next (&stack.last ());
@@ -957,7 +959,8 @@ inverted_post_order_compute (vec<int> *post_order,
   while (!stack.is_empty ());
 
   /* EXIT_BLOCK is always included.  */
-  post_order->quick_push (EXIT_BLOCK);
+  rev_post_order[rev_post_order_num--] = EXIT_BLOCK;
+  return n_basic_blocks_for_fn (fn);
 }
 
 /* Compute the depth first search order of FN and store in the array

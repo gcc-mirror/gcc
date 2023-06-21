@@ -30,12 +30,11 @@ class CompileVarDecl : public HIRCompileBase, public HIR::HIRPatternVisitor
   using HIR::HIRPatternVisitor::visit;
 
 public:
-  static ::Bvariable *compile (tree fndecl, tree translated_type,
-			       HIR::Pattern *pattern, Context *ctx)
+  static void compile (tree fndecl, tree translated_type, HIR::Pattern *pattern,
+		       std::vector<Bvariable *> &locals, Context *ctx)
   {
-    CompileVarDecl compiler (ctx, fndecl, translated_type);
+    CompileVarDecl compiler (ctx, fndecl, translated_type, locals);
     pattern->accept_vis (compiler);
-    return compiler.compiled_variable;
   }
 
   void visit (HIR::IdentifierPattern &pattern) override
@@ -43,30 +42,18 @@ public:
     if (!pattern.is_mut ())
       translated_type = ctx->get_backend ()->immutable_type (translated_type);
 
-    compiled_variable
+    Bvariable *var
       = ctx->get_backend ()->local_variable (fndecl, pattern.get_identifier (),
 					     translated_type, NULL /*decl_var*/,
 					     pattern.get_locus ());
 
     HirId stmt_id = pattern.get_pattern_mappings ().get_hirid ();
-    ctx->insert_var_decl (stmt_id, compiled_variable);
-  }
+    ctx->insert_var_decl (stmt_id, var);
 
-  void visit (HIR::WildcardPattern &pattern) override
-  {
-    translated_type = ctx->get_backend ()->immutable_type (translated_type);
-
-    compiled_variable
-      = ctx->get_backend ()->local_variable (fndecl, "_", translated_type,
-					     NULL /*decl_var*/,
-					     pattern.get_locus ());
-
-    HirId stmt_id = pattern.get_pattern_mappings ().get_hirid ();
-    ctx->insert_var_decl (stmt_id, compiled_variable);
+    locals.push_back (var);
   }
 
   // Empty visit for unused Pattern HIR nodes.
-  void visit (HIR::GroupedPattern &) override {}
   void visit (HIR::LiteralPattern &) override {}
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
@@ -76,17 +63,19 @@ public:
   void visit (HIR::StructPattern &) override {}
   void visit (HIR::TuplePattern &) override {}
   void visit (HIR::TupleStructPattern &) override {}
+  void visit (HIR::WildcardPattern &) override {}
 
 private:
-  CompileVarDecl (Context *ctx, tree fndecl, tree translated_type)
+  CompileVarDecl (Context *ctx, tree fndecl, tree translated_type,
+		  std::vector<Bvariable *> &locals)
     : HIRCompileBase (ctx), fndecl (fndecl), translated_type (translated_type),
-      compiled_variable (ctx->get_backend ()->error_variable ())
+      locals (locals)
   {}
 
   tree fndecl;
   tree translated_type;
 
-  Bvariable *compiled_variable;
+  std::vector<Bvariable *> &locals;
 };
 
 } // namespace Compile

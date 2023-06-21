@@ -29,4 +29,6 @@ foo (void)
     /* { dg-error "FOO" "enum value in for loop" { target *-*-* } .-1 } */
     /* { dg-error "BAR" "enum tag in for loop" { target *-*-* } .-2 } */
     j += i;
+  for (typedef int T;;) /* { dg-error "non-variable" } */
+    ;
 }

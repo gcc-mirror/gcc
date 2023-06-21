@@ -229,7 +229,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PERL = @PERL@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -332,7 +331,7 @@ top_srcdir = @top_srcdir@
 # Modula-2 support.
 AUTOMAKE_OPTIONS = 1.8 foreign
 SUFFIXES = .c .mod .def .o .obj .lo .a
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Multilib support.
 MAKEOVERRIDES = 

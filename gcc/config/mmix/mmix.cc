@@ -273,9 +273,6 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_output_reload_class
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
 #undef TARGET_LEGITIMATE_CONSTANT_P
@@ -1265,7 +1262,7 @@ static void
 mmix_encode_section_info (tree decl, rtx rtl, int first)
 {
   /* Test for an external declaration, and do nothing if it is one.  */
-  if ((TREE_CODE (decl) == VAR_DECL
+  if ((VAR_P (decl)
        && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl)))
       || (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl)))
     ;
@@ -1294,7 +1291,7 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
      For now, functions and things we know or have been told are constant.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       || TREE_CONSTANT (decl)
-      || (TREE_CODE (decl) == VAR_DECL
+      || (VAR_P (decl)
 	  && TREE_READONLY (decl)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && (!DECL_INITIAL (decl)

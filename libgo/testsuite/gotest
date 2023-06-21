@@ -577,13 +577,13 @@ symtogo() {
 # Find Go benchmark/fuzz/example functions.
 # The argument is the function name prefix.
 findfuncs() {
-	pattern='$1([^a-z].*)?'
+	pattern="$1([^a-z].*)?"
 	syms=$($NM -p -v _gotest_.o | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
 	if $havex; then
 	    xsyms=$($NM -p -v $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
 	    syms="$syms $xsyms"
 	fi
-        $(symtogo "$benchmarksyms")
+        symtogo "$syms"
 }
 
 # Takes an example name and puts any output into the file example.txt.
@@ -643,11 +643,13 @@ exampleoutput() {
 	fi
 	if $havex; then
 	    needxtest=false
-	    if test -n "$testxsyms" -o -n "$benchmarkxsyms"; then
+	    if test -n "$testxsyms"; then
+		needxtest=true
+	    elif echo "$benchmarks" | grep '_test\.' >/dev/null; then
 		needxtest=true
 	    else
 		# Check whether any example has output.
-		for i in $(symtogo "$examplexsyms"); do
+		for i in $(echo "$examples" | grep '_test\.'); do
 		    exampleoutput $i
 		    if test -f example.txt; then
 			rm -f example.txt

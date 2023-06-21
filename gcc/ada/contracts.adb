@@ -62,6 +62,11 @@ with Warnsw;         use Warnsw;
 
 package body Contracts is
 
+   Contract_Error : exception;
+   --  This exception is raised by Add_Contract_Item when it is invoked on an
+   --  invalid pragma. Note that clients of the package must filter them out
+   --  before invoking Add_Contract_Item, so it should not escape the package.
+
    procedure Analyze_Package_Instantiation_Contract (Inst_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of package
    --  instantiation Inst_Id as if they appear at the end of a declarative
@@ -104,8 +109,9 @@ package body Contracts is
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, Subprogram_Variant, invariants and predicates.
-   --  Body_Id denotes the entity of the subprogram body.
+   --  well as Always_Terminates, Contract_Cases, Exceptional_Cases,
+   --  Subprogram_Variant, invariants and predicates. Body_Id denotes the
+   --  entity of the subprogram body.
 
    procedure Preanalyze_Condition
      (Subp : Entity_Id;
@@ -197,7 +203,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry bodies, the applicable pragmas are:
@@ -215,18 +221,21 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry or subprogram declarations, the applicable pragmas are:
+      --    Always_Terminates
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Extensions_Visible
       --    Global
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Subprogram_Variant
       --    Test_Case
       --    Volatile_Function
 
@@ -252,7 +261,9 @@ package body Contracts is
          then
             Add_Classification;
 
-         elsif Prag_Nam in Name_Contract_Cases
+         elsif Prag_Nam in Name_Always_Terminates
+                         | Name_Contract_Cases
+                         | Name_Exceptional_Cases
                          | Name_Subprogram_Variant
                          | Name_Test_Case
          then
@@ -264,7 +275,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Packages or instantiations, the applicable pragmas are:
@@ -285,10 +296,13 @@ package body Contracts is
          elsif Prag_Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
             Add_Classification;
 
+         elsif Prag_Nam = Name_Always_Terminates then
+            Add_Contract_Test_Case;
+
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Package bodies, the applicable pragmas are:
@@ -301,16 +315,19 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  The four volatility refinement pragmas are ok for all types.
       --  Part_Of is ok for task types and protected types.
       --  Depends and Global are ok for task types.
+      --
+      --  Precondition and Postcondition are added separately; they are allowed
+      --  for access-to-subprogram types.
 
       elsif Is_Type (Id) then
          declare
-            Is_OK : constant Boolean :=
+            Is_OK_Classification : constant Boolean :=
               Prag_Nam in Name_Async_Readers
                         | Name_Async_Writers
                         | Name_Effective_Reads
@@ -322,14 +339,21 @@ package body Contracts is
                                        | Name_Global)
               or else (Ekind (Id) = E_Protected_Type
                          and Prag_Nam = Name_Part_Of);
+
          begin
-            if Is_OK then
+            if Is_OK_Classification then
                Add_Classification;
+
+            elsif Ekind (Id) = E_Subprogram_Type
+                and then Prag_Nam in Name_Precondition
+                                   | Name_Postcondition
+            then
+               Add_Pre_Post_Condition;
             else
 
                --  The pragma is not a proper contract item
 
-               raise Program_Error;
+               raise Contract_Error;
             end if;
          end;
 
@@ -353,7 +377,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task bodies, the applicable pragmas are:
@@ -367,7 +391,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task units, the applicable pragmas are:
@@ -402,11 +426,11 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       else
-         raise Program_Error;
+         raise Contract_Error;
       end if;
    end Add_Contract_Item;
 
@@ -584,6 +608,22 @@ package body Contracts is
          else
             Set_Analyzed (Items);
          end if;
+
+      --  When this is a subprogram body not coming from source, for example an
+      --  expression function, it does not cause freezing of previous contracts
+      --  (see Analyze_Subprogram_Body_Helper), in particular not of those on
+      --  its spec if it exists. In this case make sure they have been properly
+      --  analyzed before being expanded below, as we may be invoked during the
+      --  freezing of the subprogram in the middle of its enclosing declarative
+      --  part because the declarative part contains e.g. the declaration of a
+      --  variable initialized by means of a call to the subprogram.
+
+      elsif Nkind (Body_Decl) = N_Subprogram_Body
+        and then not Comes_From_Source (Original_Node (Body_Decl))
+        and then Present (Corresponding_Spec (Body_Decl))
+        and then Present (Contract (Corresponding_Spec (Body_Decl)))
+      then
+         Analyze_Entry_Or_Subprogram_Contract (Corresponding_Spec (Body_Decl));
       end if;
 
       --  Due to the timing of contract analysis, delayed pragmas may be
@@ -628,9 +668,10 @@ package body Contracts is
             Gen_Id => Spec_Id);
       end if;
 
-      --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  Subprogram_Variant, invariants and predicates associated with body
-      --  and its spec. Do not expand the contract of subprogram body stubs.
+      --  Deal with preconditions, [refined] postconditions, Always_Terminates,
+      --  Contract_Cases, Exceptional_Cases, Subprogram_Variant, invariants and
+      --  predicates associated with body and its spec. Do not expand the
+      --  contract of subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -650,7 +691,10 @@ package body Contracts is
       Freeze_Id : Entity_Id := Empty)
    is
       Items     : constant Node_Id := Contract (Subp_Id);
-      Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+      Subp_Decl : constant Node_Id :=
+        (if Ekind (Subp_Id) = E_Subprogram_Type
+         then Associated_Node_For_Itype (Subp_Id)
+         else Unit_Declaration_Node (Subp_Id));
 
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
@@ -750,7 +794,10 @@ package body Contracts is
          while Present (Prag) loop
             Prag_Nam := Pragma_Name (Prag);
 
-            if Prag_Nam = Name_Contract_Cases then
+            if Prag_Nam = Name_Always_Terminates then
+               Analyze_Always_Terminates_In_Decl_Part (Prag);
+
+            elsif Prag_Nam = Name_Contract_Cases then
 
                --  Do not analyze the contract cases of an entry declaration
                --  unless annotating the original tree for GNATprove.
@@ -765,6 +812,9 @@ package body Contracts is
                else
                   Analyze_Contract_Cases_In_Decl_Part (Prag, Freeze_Id);
                end if;
+
+            elsif Prag_Nam = Name_Exceptional_Cases then
+               Analyze_Exceptional_Cases_In_Decl_Part (Prag);
 
             elsif Prag_Nam = Name_Subprogram_Variant then
                Analyze_Subprogram_Variant_In_Decl_Part (Prag);
@@ -990,11 +1040,12 @@ package body Contracts is
             --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
 
             if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
+               Error_Msg_Code := GEC_Volatile_At_Library_Level;
                Error_Msg_N
                  ("effectively volatile "
                     & Decl_Kind
-                    & " & must be declared at library level "
-                    & "(SPARK RM 7.1.3(3))", Type_Or_Obj_Id);
+                    & " & must be declared at library level '[[]']",
+                    Type_Or_Obj_Id);
 
             --  An object of a discriminated type cannot be effectively
             --  volatile except for protected objects (SPARK RM 7.1.3(5)).
@@ -1491,8 +1542,10 @@ package body Contracts is
          Analyze_Entry_Or_Subprogram_Body_Contract (Stub_Id);
 
       --  The stub acts as its own spec, the applicable pragmas are:
+      --    Always_Terminates
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Global
       --    Postcondition
       --    Precondition
@@ -1571,6 +1624,13 @@ package body Contracts is
    begin
       Check_Type_Or_Object_External_Properties
         (Type_Or_Obj_Id => Type_Id);
+
+      --  Analyze Pre/Post on access-to-subprogram type
+
+      if Ekind (Type_Id) in Access_Subprogram_Kind then
+         Analyze_Entry_Or_Subprogram_Contract
+           (Directly_Designated_Type (Type_Id));
+      end if;
    end Analyze_Type_Contract;
 
    ---------------------------------------
@@ -1631,7 +1691,7 @@ package body Contracts is
       --     return
       --        Result_Obj : constant Typ := _Wrapped_Statements
       --     do
-      --        <postconditions statments>
+      --        <postconditions statements>
       --     end return;
       --  end;
 
@@ -1649,7 +1709,7 @@ package body Contracts is
       --
       --  begin
       --     _Wrapped_Statements;
-      --     <postconditions statments>
+      --     <postconditions statements>
       --  end;
 
       --  Create Identifier
@@ -2180,6 +2240,12 @@ package body Contracts is
          else
             Add_Contract_Item (Prag, Templ_Id);
          end if;
+
+      exception
+         --  We do not stop the compilation at this point in the case of an
+         --  invalid pragma because it will be properly diagnosed afterward.
+
+         when Contract_Error => null;
       end Add_Generic_Contract_Pragma;
 
       --  Local variables
@@ -2823,12 +2889,18 @@ package body Contracts is
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
                   if Is_Checked (Prag) then
-                     if Pragma_Name (Prag) = Name_Contract_Cases then
+                     if Pragma_Name (Prag) = Name_Always_Terminates then
+                        Expand_Pragma_Always_Terminates (Prag);
+
+                     elsif Pragma_Name (Prag) = Name_Contract_Cases then
                         Expand_Pragma_Contract_Cases
                           (CCs     => Prag,
                            Subp_Id => Subp_Id,
                            Decls   => Decls,
                            Stmts   => Stmts);
+
+                     elsif Pragma_Name (Prag) = Name_Exceptional_Cases then
+                        Expand_Pragma_Exceptional_Cases (Prag);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant
@@ -4818,9 +4890,6 @@ package body Contracts is
       --  Traverse Expr and clear the Controlling_Argument of calls to
       --  nonabstract functions.
 
-      procedure Remove_Formals (Id : Entity_Id);
-      --  Remove formals from homonym chains and make them not visible
-
       procedure Restore_Original_Selected_Component;
       --  Traverse Expr searching for dispatching calls to functions whose
       --  original node was a selected component, and replace them with
@@ -4870,21 +4939,6 @@ package body Contracts is
          Remove_Ctrl_Args (Expr);
       end Remove_Controlling_Arguments;
 
-      --------------------
-      -- Remove_Formals --
-      --------------------
-
-      procedure Remove_Formals (Id : Entity_Id) is
-         F : Entity_Id := First_Formal (Id);
-
-      begin
-         while Present (F) loop
-            Set_Is_Immediately_Visible (F, False);
-            Remove_Homonym (F);
-            Next_Formal (F);
-         end loop;
-      end Remove_Formals;
-
       -----------------------------------------
       -- Restore_Original_Selected_Component --
       -----------------------------------------
@@ -4926,8 +4980,11 @@ package body Contracts is
 
             begin
                if Par /= Parent_Node then
-                  pragma Assert (not Is_List_Member (Node));
-                  Set_Parent (Node, Parent_Node);
+                  if Is_List_Member (Node) then
+                     Set_List_Parent (List_Containing (Node), Parent_Node);
+                  else
+                     Set_Parent (Node, Parent_Node);
+                  end if;
                end if;
 
                return OK;
@@ -5003,8 +5060,7 @@ package body Contracts is
       Preanalyze_Spec_Expression (Expr, Standard_Boolean);
 
       Inside_Class_Condition_Preanalysis := False;
-      Remove_Formals (Subp);
-      Pop_Scope;
+      End_Scope;
 
       --  If this preanalyzed condition has occurrences of dispatching calls
       --  using the Object.Operation notation, during preanalysis such calls

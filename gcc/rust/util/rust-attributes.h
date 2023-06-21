@@ -242,6 +242,7 @@ private:
   void visit (AST::TuplePattern &pattern);
   void visit (AST::GroupedPattern &pattern);
   void visit (AST::SlicePattern &pattern);
+  void visit (AST::AltPattern &pattern);
 
   // rust-stmt.h
   void visit (AST::EmptyStmt &stmt);

@@ -1,4 +1,4 @@
-// { dg-output "a\nseven\nquote\nelse" }
+// { dg-output "a\r*\nseven\r*\nquote\r*\nelse" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

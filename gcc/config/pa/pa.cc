@@ -6387,7 +6387,7 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	  && type
 	  && (AGGREGATE_TYPE_P (type)
 	      || TREE_CODE (type) == COMPLEX_TYPE
-	      || TREE_CODE (type) == VECTOR_TYPE)))
+	      || VECTOR_TYPE_P (type))))
     {
       /* Return PAD_NONE if justification is not required.  */
       if (type
@@ -9660,7 +9660,7 @@ pa_function_value (const_tree valtype,
 
   if (AGGREGATE_TYPE_P (valtype)
       || TREE_CODE (valtype) == COMPLEX_TYPE
-      || TREE_CODE (valtype) == VECTOR_TYPE)
+      || VECTOR_TYPE_P (valtype))
     {
       HOST_WIDE_INT valsize = int_size_in_bytes (valtype);
 
@@ -9709,7 +9709,7 @@ pa_function_value (const_tree valtype,
   else
     valmode = TYPE_MODE (valtype);
 
-  if (TREE_CODE (valtype) == REAL_TYPE
+  if (SCALAR_FLOAT_TYPE_P (valtype)
       && !AGGREGATE_TYPE_P (valtype)
       && TYPE_MODE (valtype) != TFmode
       && !TARGET_SOFT_FLOAT)
@@ -9784,6 +9784,8 @@ pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
     return NULL_RTX;
 
   arg_size = pa_function_arg_size (mode, type);
+  if (!arg_size)
+    return NULL_RTX;
 
   /* If this arg would be passed partially or totally on the stack, then
      this routine should return zero.  pa_arg_partial_bytes will
@@ -9826,7 +9828,7 @@ pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  || mode == BLKmode
 	  || (type && (AGGREGATE_TYPE_P (type)
 		       || TREE_CODE (type) == COMPLEX_TYPE
-		       || TREE_CODE (type) == VECTOR_TYPE)))
+		       || VECTOR_TYPE_P (type))))
 	{
 	  /* Double-extended precision (80-bit), quad-precision (128-bit)
 	     and aggregates including complex numbers are aligned on
@@ -9886,7 +9888,7 @@ pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  if (mode == BLKmode
 	      || (type && (AGGREGATE_TYPE_P (type)
 			   || TREE_CODE (type) == COMPLEX_TYPE
-			   || TREE_CODE (type) == VECTOR_TYPE)))
+			   || VECTOR_TYPE_P (type))))
 	    {
 	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_REG (DImode, gpr_reg_base),
@@ -9985,15 +9987,16 @@ pa_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   unsigned int max_arg_words = 8;
   unsigned int offset = 0;
+  int arg_size;
 
   if (!TARGET_64BIT)
     return 0;
 
-  if (pa_function_arg_size (arg.mode, arg.type) > 1 && (cum->words & 1))
+  arg_size = pa_function_arg_size (arg.mode, arg.type);
+  if (arg_size > 1 && (cum->words & 1))
     offset = 1;
 
-  if (cum->words + offset + pa_function_arg_size (arg.mode, arg.type)
-      <= max_arg_words)
+  if (cum->words + offset + arg_size <= max_arg_words)
     /* Arg fits fully into registers.  */
     return 0;
   else if (cum->words + offset >= max_arg_words)
@@ -11067,17 +11070,25 @@ pa_starting_frame_offset (void)
   return 8;
 }
 
-/* Figure out the size in words of the function argument.  The size
-   returned by this function should always be greater than zero because
-   we pass variable and zero sized objects by reference.  */
+/* Figure out the size in words of the function argument.  */
 
-HOST_WIDE_INT
+int
 pa_function_arg_size (machine_mode mode, const_tree type)
 {
   HOST_WIDE_INT size;
 
   size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type); 
-  return CEIL (size, UNITS_PER_WORD);
+
+  /* The 64-bit runtime does not restrict the size of stack frames,
+     but the gcc calling conventions limit argument sizes to 1G.  Our
+     prologue/epilogue code limits frame sizes to just under 32 bits.
+     1G is also the maximum frame size that can be handled by the HPUX
+     unwind descriptor.  Since very large TYPE_SIZE_UNIT values can
+     occur for (parallel:BLK []), we need to ignore large arguments
+     passed by value.  */
+  if (size >= (1 << (HOST_BITS_PER_INT - 2)))
+    size = 0;
+  return (int) CEIL (size, UNITS_PER_WORD);
 }
 
 #include "gt-pa.h"

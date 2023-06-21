@@ -9,8 +9,8 @@ typedef int v4si __attribute__ ((vector_size (16)));
 /*
 **bar:
 **	...
-**	addv	s0, v0.4s
-**	fmov	w0, s0
+**	addv	(s[0-9]+), v0.4s
+**	fmov	w0, \1
 **	lsr	w1, w0, 16
 **	add	w0, w1, w0, uxth
 **	ret

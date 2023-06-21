@@ -68,6 +68,15 @@ test03()
   VERIFY( a1.to_bytes() == address_v4::bytes_type( 5, 6, 7, 8 ) );
 }
 
+constexpr bool
+test_constexpr()
+{
+  test01();
+  test02();
+  test03();
+  return true;
+}
+
 int
 main()
 {
@@ -75,10 +84,5 @@ main()
   test02();
   test03();
 
-  constexpr bool c = []{
-    test01();
-    test02();
-    test03();
-    return true;
-  };
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

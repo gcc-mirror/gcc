@@ -200,7 +200,7 @@ struct reg_stat_type {
 
   unsigned HOST_WIDE_INT	last_set_nonzero_bits;
   char				last_set_sign_bit_copies;
-  ENUM_BITFIELD(machine_mode)	last_set_mode : 8;
+  ENUM_BITFIELD(machine_mode)	last_set_mode : MACHINE_MODE_BITSIZE;
 
   /* Set nonzero if references to register n in expressions should not be
      used.  last_set_invalid is set nonzero when this register is being
@@ -235,7 +235,7 @@ struct reg_stat_type {
      truncation if we know that value already contains a truncated
      value.  */
 
-  ENUM_BITFIELD(machine_mode)	truncated_to_mode : 8;
+  ENUM_BITFIELD(machine_mode)	truncated_to_mode : MACHINE_MODE_BITSIZE;
 };
 
 
@@ -1416,6 +1416,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		      statistics_counter_event (cfun, "insn-with-note combine", 1);
 		      goto retry;
 		    }
+		  INSN_CODE (temp) = -1;
 		  SET_SRC (set) = orig_src;
 		  SET_DEST (set) = orig_dest;
 		}
@@ -1734,7 +1735,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   rtx_insn *p;
   rtx link;
   bool all_adjacent = true;
-  int (*is_volatile_p) (const_rtx);
+  bool (*is_volatile_p) (const_rtx);
 
   if (succ)
     {
@@ -5629,6 +5630,28 @@ maybe_swap_commutative_operands (rtx x)
       rtx temp = XEXP (x, 0);
       SUBST (XEXP (x, 0), XEXP (x, 1));
       SUBST (XEXP (x, 1), temp);
+    }
+
+  unsigned n_elts = 0;
+  if (GET_CODE (x) == VEC_MERGE
+      && CONST_INT_P (XEXP (x, 2))
+      && GET_MODE_NUNITS (GET_MODE (x)).is_constant (&n_elts)
+      && (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1))
+	  /* Two operands have same precedence, then
+	     first bit of mask select first operand.  */
+	  || (!swap_commutative_operands_p (XEXP (x, 1), XEXP (x, 0))
+	      && !(UINTVAL (XEXP (x, 2)) & 1))))
+    {
+      rtx temp = XEXP (x, 0);
+      unsigned HOST_WIDE_INT sel = UINTVAL (XEXP (x, 2));
+      unsigned HOST_WIDE_INT mask = HOST_WIDE_INT_1U;
+      if (n_elts == HOST_BITS_PER_WIDE_INT)
+	mask = -1;
+      else
+	mask = (HOST_WIDE_INT_1U << n_elts) - 1;
+      SUBST (XEXP (x, 0), XEXP (x, 1));
+      SUBST (XEXP (x, 1), temp);
+      SUBST (XEXP (x, 2), GEN_INT (~sel & mask));
     }
 }
 
@@ -10054,9 +10077,12 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
 
   /* See what bits may be nonzero in VAROP.  Unlike the general case of
      a call to nonzero_bits, here we don't care about bits outside
-     MODE.  */
+     MODE unless WORD_REGISTER_OPERATIONS is true.  */
 
-  nonzero = nonzero_bits (varop, mode) & GET_MODE_MASK (mode);
+  scalar_int_mode tmode = mode;
+  if (WORD_REGISTER_OPERATIONS && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+    tmode = word_mode;
+  nonzero = nonzero_bits (varop, tmode) & GET_MODE_MASK (tmode);
 
   /* Turn off all bits in the constant that are known to already be zero.
      Thus, if the AND isn't needed at all, we will have CONSTOP == NONZERO_BITS
@@ -10070,7 +10096,7 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
 
   /* If VAROP is a NEG of something known to be zero or 1 and CONSTOP is
      a power of two, we can replace this with an ASHIFT.  */
-  if (GET_CODE (varop) == NEG && nonzero_bits (XEXP (varop, 0), mode) == 1
+  if (GET_CODE (varop) == NEG && nonzero_bits (XEXP (varop, 0), tmode) == 1
       && (i = exact_log2 (constop)) >= 0)
     return simplify_shift_const (NULL_RTX, ASHIFT, mode, XEXP (varop, 0), i);
 

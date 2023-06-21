@@ -19,9 +19,7 @@
 #ifndef RUST_HIR_TRAIT_RESOLVE_H
 #define RUST_HIR_TRAIT_RESOLVE_H
 
-#include "rust-hir-type-check-base.h"
 #include "rust-hir-type-check-type.h"
-#include "rust-hir-trait-ref.h"
 
 namespace Rust {
 namespace Resolver {
@@ -32,12 +30,7 @@ class ResolveTraitItemToRef : public TypeCheckBase,
 public:
   static TraitItemReference
   Resolve (HIR::TraitItem &item, TyTy::BaseType *self,
-	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
-  {
-    ResolveTraitItemToRef resolver (self, std::move (substitutions));
-    item.accept_vis (resolver);
-    return std::move (resolver.resolved);
-  }
+	   std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
   void visit (HIR::TraitItemType &type) override;
 

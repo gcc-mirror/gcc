@@ -182,7 +182,8 @@ main (int argc, const char **argv)
 
   progname = "genopinit";
 
-  if (NUM_OPTABS > 0xffff || MAX_MACHINE_MODE >= 0xff)
+  if (NUM_OPTABS > 0xffff
+    || MAX_MACHINE_MODE >= ((1 << MACHINE_MODE_BITSIZE) - 1))
     fatal ("genopinit range assumptions invalid");
 
   if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
@@ -375,7 +376,8 @@ main (int argc, const char **argv)
 
   fprintf (s_file,
 	   "/* Returns TRUE if the target supports any of the partial vector\n"
-	   "   optabs: while_ult_optab, len_load_optab or len_store_optab,\n"
+	   "   optabs: while_ult_optab, len_load_optab, len_store_optab,\n"
+	   "   len_maskload_optab or len_maskstore_optab,\n"
 	   "   for any mode.  */\n"
 	   "bool\npartial_vectors_supported_p (void)\n{\n");
   bool any_match = false;
@@ -385,7 +387,8 @@ main (int argc, const char **argv)
     {
 #define CMP_NAME(N) !strncmp (p->name, (N), strlen ((N)))
       if (CMP_NAME("while_ult") || CMP_NAME ("len_load")
-	  || CMP_NAME ("len_store"))
+	  || CMP_NAME ("len_store")|| CMP_NAME ("len_maskload")
+	  || CMP_NAME ("len_maskstore"))
 	{
 	  if (first)
 	    fprintf (s_file, " HAVE_%s", p->name);

@@ -51,6 +51,7 @@ EXPORT QUALIFIED PtrToValue,
                  PushRealTree, PopRealTree,
                  PushComplexTree, PopComplexTree,
                  PopConstructorTree,
+                 PopChar,
                  PushCard,
                  PushInt,
                  PushChar,
@@ -258,6 +259,13 @@ PROCEDURE PushInt (i: INTEGER) ;
 *)
 
 PROCEDURE PushChar (c: CHAR) ;
+
+
+(*
+   PopChar - returns the value from the stack in a character.
+*)
+
+PROCEDURE PopChar (tokenno: CARDINAL) : CHAR ;
 
 
 (*

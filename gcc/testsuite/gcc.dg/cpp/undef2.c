@@ -3,9 +3,9 @@
 
 /* { dg-do preprocess } */
 
-#undef __DATE__		/* { dg-warning "-:undefining \"__DATE__\"" } */
-#undef __TIME__		/* { dg-warning "-:undefining \"__TIME__\"" } */
-#undef __FILE__		/* { dg-warning "-:undefining \"__FILE__\"" } */
+#undef __DATE__		/* { dg-warning "undefining \"__DATE__\"" } */
+#undef __TIME__		/* { dg-warning "undefining \"__TIME__\"" } */
+#undef __FILE__		/* { dg-warning "undefining \"__FILE__\"" } */
 #undef __LINE__		/* { dg-warning "undefining \"__LINE__\"" } */
 #undef __STDC__		/* { dg-warning "undefining \"__STDC__\"" } */
 

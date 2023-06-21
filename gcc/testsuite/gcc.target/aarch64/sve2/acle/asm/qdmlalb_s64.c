@@ -75,7 +75,7 @@ TEST_DUAL_Z (qdmlalb_11_s64_tied1, svint64_t, svint32_t,
 	     z0 = svqdmlalb (z0, z4, 11))
 
 /*
-** qdmlalb_11_s64_untied: { xfail *-*-* }
+** qdmlalb_11_s64_untied:
 **	mov	(z[0-9]+\.s), #11
 **	movprfx	z0, z1
 **	sqdmlalb	z0\.d, z4\.s, \1

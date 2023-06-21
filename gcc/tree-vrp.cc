@@ -75,7 +75,7 @@ public:
   ~remove_unreachable () { m_list.release (); }
   void maybe_register_block (basic_block bb);
   bool remove_and_update_globals (bool final_p);
-  vec<edge> m_list;
+  vec<std::pair<int, int> > m_list;
   gimple_ranger &m_ranger;
 };
 
@@ -103,9 +103,9 @@ remove_unreachable::maybe_register_block (basic_block bb)
     return;
 
   if (un0)
-    m_list.safe_push (e1);
+    m_list.safe_push (std::make_pair (e1->src->index, e1->dest->index));
   else
-    m_list.safe_push (e0);
+    m_list.safe_push (std::make_pair (e0->src->index, e0->dest->index));
 }
 
 // Process the edges in the list, change the conditions and removing any
@@ -132,7 +132,12 @@ remove_unreachable::remove_and_update_globals (bool final_p)
   auto_bitmap all_exports;
   for (i = 0; i < m_list.length (); i++)
     {
-      edge e = m_list[i];
+      auto eb = m_list[i];
+      basic_block src = BASIC_BLOCK_FOR_FN (cfun, eb.first);
+      basic_block dest = BASIC_BLOCK_FOR_FN (cfun, eb.second);
+      if (!src || !dest)
+	continue;
+      edge e = find_edge (src, dest);
       gimple *s = gimple_outgoing_range_stmt_p (e->src);
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
       bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
@@ -145,7 +150,9 @@ remove_unreachable::remove_and_update_globals (bool final_p)
       // If this is already a constant condition, don't look either
       if (!lhs_p && !rhs_p)
 	continue;
-
+      // Do not remove addresses early. ie if (x == &y)
+      if (!final_p && lhs_p && TREE_CODE (gimple_cond_rhs (s)) == ADDR_EXPR)
+	continue;
       bool dominate_exit_p = true;
       FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
 	{
@@ -305,15 +312,6 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
   return vr_type;
 }
 
-/* Return true if max and min of VR are INTEGER_CST.  It's not necessary
-   a singleton.  */
-
-bool
-range_int_cst_p (const value_range *vr)
-{
-  return (vr->kind () == VR_RANGE && range_has_numeric_bounds_p (vr));
-}
-
 /* Return the single symbol (an SSA_NAME) contained in T if any, or NULL_TREE
    otherwise.  We only handle additive operations and set NEG to true if the
    symbol is negated and INV to the invariant part, if any.  */
@@ -367,30 +365,6 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   *neg = neg_;
   *inv = inv_;
   return t;
-}
-
-/* Return
-   1 if VAL < VAL2
-   0 if !(VAL < VAL2)
-   -2 if those are incomparable.  */
-int
-operand_less_p (tree val, tree val2)
-{
-  /* LT is folded faster than GE and others.  Inline the common case.  */
-  if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
-    return tree_int_cst_lt (val, val2);
-  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
-    return val == val2 ? 0 : -2;
-  else
-    {
-      int cmp = compare_values (val, val2);
-      if (cmp == -1)
-	return 1;
-      else if (cmp == 0 || cmp == 1)
-	return 0;
-      else
-	return -2;
-    }
 }
 
 /* Compare two values VAL1 and VAL2.  Return
@@ -580,92 +554,6 @@ compare_values (tree val1, tree val2)
   return compare_values_warnv (val1, val2, &sop);
 }
 
-/* If the types passed are supported, return TRUE, otherwise set VR to
-   VARYING and return FALSE.  */
-
-static bool
-supported_types_p (value_range *vr,
-		   tree type0,
-		   tree = NULL)
-{
-  if (!value_range::supports_p (type0))
-    {
-      vr->set_varying (type0);
-      return false;
-    }
-  return true;
-}
-
-/* If any of the ranges passed are defined, return TRUE, otherwise set
-   VR to UNDEFINED and return FALSE.  */
-
-static bool
-defined_ranges_p (value_range *vr,
-		  const value_range *vr0, const value_range *vr1 = NULL)
-{
-  if (vr0->undefined_p () && (!vr1 || vr1->undefined_p ()))
-    {
-      vr->set_undefined ();
-      return false;
-    }
-  return true;
-}
-
-/* Perform a binary operation on a pair of ranges.  */
-
-void
-range_fold_binary_expr (value_range *vr,
-			enum tree_code code,
-			tree expr_type,
-			const value_range *vr0_,
-			const value_range *vr1_)
-{
-  if (!supported_types_p (vr, expr_type)
-      || !defined_ranges_p (vr, vr0_, vr1_))
-    return;
-  range_op_handler op (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-
-  value_range vr0 (*vr0_);
-  value_range vr1 (*vr1_);
-  if (vr0.undefined_p ())
-    vr0.set_varying (expr_type);
-  if (vr1.undefined_p ())
-    vr1.set_varying (expr_type);
-  vr0.normalize_addresses ();
-  vr1.normalize_addresses ();
-  if (!op.fold_range (*vr, expr_type, vr0, vr1))
-    vr->set_varying (expr_type);
-}
-
-/* Perform a unary operation on a range.  */
-
-void
-range_fold_unary_expr (value_range *vr,
-		       enum tree_code code, tree expr_type,
-		       const value_range *vr0,
-		       tree vr0_type)
-{
-  if (!supported_types_p (vr, expr_type, vr0_type)
-      || !defined_ranges_p (vr, vr0))
-    return;
-  range_op_handler op (code, expr_type);
-  if (!op)
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
-
-  value_range vr0_cst (*vr0);
-  vr0_cst.normalize_addresses ();
-  if (!op.fold_range (*vr, expr_type, vr0_cst, value_range (expr_type)))
-    vr->set_varying (expr_type);
-}
-
 /* Helper for overflow_comparison_p
 
    OP0 CODE OP1 is a comparison.  Examine the comparison and potentially
@@ -762,18 +650,17 @@ void
 maybe_set_nonzero_bits (edge e, tree var)
 {
   basic_block cond_bb = e->src;
-  gimple *stmt = last_stmt (cond_bb);
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
   tree cst;
 
-  if (stmt == NULL
-      || gimple_code (stmt) != GIMPLE_COND
-      || gimple_cond_code (stmt) != ((e->flags & EDGE_TRUE_VALUE)
+  if (cond == NULL
+      || gimple_cond_code (cond) != ((e->flags & EDGE_TRUE_VALUE)
 				     ? EQ_EXPR : NE_EXPR)
-      || TREE_CODE (gimple_cond_lhs (stmt)) != SSA_NAME
-      || !integer_zerop (gimple_cond_rhs (stmt)))
+      || TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
+      || !integer_zerop (gimple_cond_rhs (cond)))
     return;
 
-  stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
+  gimple *stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
   if (!is_gimple_assign (stmt)
       || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR
       || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST)
@@ -939,6 +826,8 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
   size_t i, j;
   tree op = gimple_switch_index (switch_stmt);
   tree type = TREE_TYPE (op);
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
   tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
   tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
   find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
@@ -949,7 +838,11 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree label = gimple_switch_label (switch_stmt, i);
       tree case_high
 	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
-      int_range_max label_range (CASE_LOW (label), case_high);
+      wide_int wlow = wi::to_wide (CASE_LOW (label));
+      wide_int whigh = wi::to_wide (case_high);
+      int_range_max label_range (type,
+				 wide_int::from (wlow, prec, sign),
+				 wide_int::from (whigh, prec, sign));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -973,7 +866,9 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
       tree case_high = CASE_HIGH (max_label);
       if (!case_high)
 	case_high = CASE_LOW (max_label);
-      int_range_max label_range (CASE_LOW (min_label), case_high);
+      int_range_max label_range (TREE_TYPE (CASE_LOW (min_label)),
+				 wi::to_wide (CASE_LOW (min_label)),
+				 wi::to_wide (case_high));
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -1047,7 +942,7 @@ public:
     for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))
       m_ranger->register_inferred_ranges (gsi.phi ());
-    m_last_bb_stmt = last_stmt (bb);
+    m_last_bb_stmt = last_nondebug_stmt (bb);
   }
 
   void post_fold_bb (basic_block bb) override
@@ -1099,11 +994,15 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun, false);
   rvrp_folder folder (ranger);
+  phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
   // Remove tagged builtin-unreachable and maybe update globals.
   folder.m_unreachable.remove_and_update_globals (final_p);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    ranger->dump (dump_file);
+    {
+      phi_analysis ().dump (dump_file);
+      ranger->dump (dump_file);
+    }
 
   if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
     {
@@ -1125,6 +1024,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
       array_checker.check ();
     }
 
+  phi_analysis_finalize ();
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();

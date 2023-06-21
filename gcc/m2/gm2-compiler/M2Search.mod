@@ -36,6 +36,8 @@ FROM DynamicStrings IMPORT InitString, InitStringChar,
 
 CONST
    GarbageDebugging = FALSE ;
+   DefaultDefExt    = '.def' ;
+   DefaultModExt    = '.mod' ;
 
 VAR
    Def, Mod: String ;
@@ -156,7 +158,7 @@ BEGIN
       f := KillString (f)
    END ;
    (* Try the GNU Modula-2 default extension.  *)
-   f := CalculateFileName (Stem, Mark (InitString ('def'))) ;
+   f := CalculateFileName (Stem, Mark (InitString (DefaultDefExt))) ;
    RETURN FindSourceFile (f, FullPath, named)
 END FindSourceDefFile ;
 
@@ -182,7 +184,7 @@ BEGIN
       f := KillString (f)
    END ;
    (* Try the GNU Modula-2 default extension.  *)
-   f := CalculateFileName (Stem, Mark (InitString ('mod'))) ;
+   f := CalculateFileName (Stem, Mark (InitString (DefaultModExt))) ;
    RETURN FindSourceFile (f, FullPath, named)
 END FindSourceModFile ;
 

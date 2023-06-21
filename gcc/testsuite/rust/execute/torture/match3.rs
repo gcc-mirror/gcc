@@ -1,4 +1,4 @@
-// { dg-output "Foo::A\nwildcard\nwildcard\nFoo::D 20 80\n" }
+// { dg-output "Foo::A\r*\nwildcard\r*\nwildcard\r*\nFoo::D 20 80\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

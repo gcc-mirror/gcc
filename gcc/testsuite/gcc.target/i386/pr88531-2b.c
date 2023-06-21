@@ -3,4 +3,5 @@
 
 #include "pr88531-2a.c"
 
-/* { dg-final { scan-assembler-times "vmulps" 2 } } */
+/* For ia32 we do not consider V2SFmode vectorization.  */
+/* { dg-final { scan-assembler-times "vmulps" 1 { target { ! ia32 } } } } */

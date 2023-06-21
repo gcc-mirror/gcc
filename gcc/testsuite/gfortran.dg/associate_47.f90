@@ -39,10 +39,9 @@ program p
    end associate
    if (x%d(1) .ne. 'zqrtyd') stop 5
 
-! Substrings of arrays still do not work correctly.
    call foo ('lmnopqrst','ghijklmno')
    associate (y => x%d(:)(2:4))
-!      if (any (y .ne. ['mno','hij'])) stop 6
+      if (any (y .ne. ['mno','hij'])) stop 6
    end associate
 
    call foo ('abcdef','ghijkl')

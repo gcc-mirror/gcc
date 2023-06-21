@@ -820,9 +820,9 @@ package body Endh is
       --  Cases where a label is definitely allowed on the END line
 
       elsif End_Type = E_Name then
-         Syntax_OK := (not Explicit_Start_Label (SS_Index))
+         Syntax_OK := not Explicit_Start_Label (SS_Index)
                          or else
-                      (not Scopes (SS_Index).Lreq);
+                      not Scopes (SS_Index).Lreq;
 
       --  Otherwise we have cases which don't allow labels anyway, so we
       --  certainly accept an END which does not have a label.
@@ -1131,7 +1131,7 @@ package body Endh is
                then
                   Error_Msg_Col := Scopes (Scope.Last).Ecol;
                   Error_Msg
-                    ("(style) END in wrong column, should be@", End_Sloc);
+                    ("(style) END in wrong column, should be@?l?", End_Sloc);
                end if;
             end if;
 
@@ -1164,11 +1164,11 @@ package body Endh is
                        and then
                          (Scope.Last = 1
                             or else
-                              (not Explicit_Start_Label (Scope.Last - 1))
+                              not Explicit_Start_Label (Scope.Last - 1)
                                  or else
-                              (not Same_Label
-                                     (End_Labl,
-                                      Scopes (Scope.Last - 1).Labl)))
+                              not Same_Label
+                                    (End_Labl,
+                                     Scopes (Scope.Last - 1).Labl))
                      then
                         T_Semicolon;
                         Error_Msg ("duplicate end line ignored", End_Loc);

@@ -1006,6 +1006,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->_M_str().compare({__s, __n}); }
       /// @endcond
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3204. sub_match::swap only swaps the base class
+      /// Swap the values of two sub_match objects.
+      void
+      swap(sub_match& __s) noexcept(__is_nothrow_swappable<_BiIter>::value)
+      {
+	this->pair<_BiIter, _BiIter>::swap(__s);
+	std::swap(matched, __s.matched);
+      }
+
     private:
       // Simplified basic_string_view for C++11
       struct __string_view

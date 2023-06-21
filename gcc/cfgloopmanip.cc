@@ -826,7 +826,7 @@ create_empty_loop_on_edge (edge entry_edge,
     }
 
   gsi = gsi_last_bb (loop_header);
-  create_iv (initial_value, stride, iv, loop, &gsi, false,
+  create_iv (initial_value, PLUS_EXPR, stride, iv, loop, &gsi, false,
 	     iv_before, iv_after);
 
   /* Insert loop exit condition.  */

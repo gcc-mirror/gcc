@@ -289,8 +289,8 @@ char **buildargv (const char *input)
 @deftypefn Extension int writeargv (char * const *@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file
-named by FILE, separated by whitespace.  Return 0 on success, non-zero
-if an error occurred while writing to FILE.
+associated with FILE, separated by whitespace.  Return 0 on success,
+non-zero if an error occurred while writing to FILE.
 
 @end deftypefn
 
@@ -299,8 +299,6 @@ if an error occurred while writing to FILE.
 int
 writeargv (char * const *argv, FILE *f)
 {
-  int status = 0;
-
   if (f == NULL)
     return 1;
 
@@ -314,37 +312,26 @@ writeargv (char * const *argv, FILE *f)
 
           if (ISSPACE(c) || c == '\\' || c == '\'' || c == '"')
             if (EOF == fputc ('\\', f))
-              {
-                status = 1;
-                goto done;
-              }
+              return 1;
 
           if (EOF == fputc (c, f))
-            {
-              status = 1;
-              goto done;
-            }
+            return 1;
+	  
           arg++;
         }
 
       /* Write out a pair of quotes for an empty argument.  */
       if (arg == *argv)
-	if (EOF == fputs ("\"\"", f))
-	  {
-	    status = 1;
-	    goto done;
-	  }
+        if (EOF == fputs ("\"\"", f))
+          return 1;
 
       if (EOF == fputc ('\n', f))
-        {
-          status = 1;
-          goto done;
-        }
+        return 1;
+      
       argv++;
     }
 
- done:
-  return status;
+  return 0;
 }
 
 /*

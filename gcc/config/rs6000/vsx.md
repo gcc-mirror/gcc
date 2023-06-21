@@ -396,6 +396,9 @@
 			   V4SF
 			   V2DF
 			   V2DI])
+(define_mode_iterator V2DI_DI  [V2DI DI])
+(define_mode_attr DI_to_TI [(V2DI "V1TI")
+			    (DI   "TI")])
 
 (define_mode_attr VM3_char [(V2DI "d")
 			   (V4SI "w")
@@ -1158,10 +1161,10 @@
   emit_insn (gen_xxspltib_v16qi (tmp, GEN_INT (value)));
 
   if (<MODE>mode == V2DImode)
-    emit_insn (gen_vsx_sign_extend_qi_v2di (op0, tmp));
+    emit_insn (gen_vsx_sign_extend_v16qi_v2di (op0, tmp));
 
   else if (<MODE>mode == V4SImode)
-    emit_insn (gen_vsx_sign_extend_qi_v4si (op0, tmp));
+    emit_insn (gen_vsx_sign_extend_v16qi_v4si (op0, tmp));
 
   else if (<MODE>mode == V8HImode)
     emit_insn (gen_altivec_vupkhsb  (op0, tmp));
@@ -2009,22 +2012,23 @@
   "x<VSv>tsqrt<sd>p %0,%x1"
   [(set_attr "type" "<VStype_simple>")])
 
-;; Fused vector multiply/add instructions. Support the classical Altivec
-;; versions of fma, which allows the target to be a separate register from the
-;; 3 inputs.  Under VSX, the target must be either the addend or the first
-;; multiply.
-
+;; Fused vector multiply/add instructions. Do not generate the Altivec versions
+;; of fma (vmaddfp and vnmsubfp).  These instructions allows the target to be a
+;; separate register from the 3 inputs, which can possibly save an extra move
+;; being generated (assuming all registers are AltiVec registers).  However,
+;; vmaddfp and vnmsubfp can have different behaviors than the VSX instructions
+;; in some corner cases due to VSCR[NJ] being set or if the addend is +0.0
+;; instead of -0.0.
 (define_insn "*vsx_fmav4sf4"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,v")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa")
 	(fma:V4SF
-	  (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa,v")
-	  (match_operand:V4SF 2 "vsx_register_operand" "wa,0,v")
-	  (match_operand:V4SF 3 "vsx_register_operand" "0,wa,v")))]
+	  (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa")
+	  (match_operand:V4SF 2 "vsx_register_operand" "wa,0")
+	  (match_operand:V4SF 3 "vsx_register_operand" "0,wa")))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "@
    xvmaddasp %x0,%x1,%x2
-   xvmaddmsp %x0,%x1,%x3
-   vmaddfp %0,%1,%2,%3"
+   xvmaddmsp %x0,%x1,%x3"
   [(set_attr "type" "vecfloat")])
 
 (define_insn "*vsx_fmav2df4"
@@ -2066,18 +2070,17 @@
   [(set_attr "type" "<VStype_mul>")])
 
 (define_insn "*vsx_nfmsv4sf4"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,v")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa")
 	(neg:V4SF
 	 (fma:V4SF
-	   (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa,v")
-	   (match_operand:V4SF 2 "vsx_register_operand" "wa,0,v")
+	   (match_operand:V4SF 1 "vsx_register_operand" "%wa,wa")
+	   (match_operand:V4SF 2 "vsx_register_operand" "wa,0")
 	   (neg:V4SF
-	     (match_operand:V4SF 3 "vsx_register_operand" "0,wa,v")))))]
+	     (match_operand:V4SF 3 "vsx_register_operand" "0,wa")))))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "@
    xvnmsubasp %x0,%x1,%x2
-   xvnmsubmsp %x0,%x1,%x3
-   vnmsubfp %0,%1,%2,%3"
+   xvnmsubmsp %x0,%x1,%x3"
   [(set_attr "type" "vecfloat")])
 
 (define_insn "*vsx_nfmsv2df4"
@@ -4905,27 +4908,9 @@
  "vextsd2q %0,%1"
 [(set_attr "type" "vecexts")])
 
-(define_expand "vsignextend_v2di_v1ti"
-  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
-	(unspec:V1TI [(match_operand:V2DI 1 "vsx_register_operand" "v")]
-		     UNSPEC_VSX_SIGN_EXTEND))]
-  "TARGET_POWER10"
-{
-  if (BYTES_BIG_ENDIAN)
-    {
-      rtx tmp = gen_reg_rtx (V2DImode);
-
-      emit_insn (gen_altivec_vrevev2di2(tmp, operands[1]));
-      emit_insn (gen_vsx_sign_extend_v2di_v1ti(operands[0], tmp));
-      DONE;
-     }
-
-  emit_insn (gen_vsx_sign_extend_v2di_v1ti(operands[0], operands[1]));
-})
-
 ;; ISA 3.0 vector extend sign support
 
-(define_insn "vsx_sign_extend_qi_<mode>"
+(define_insn "vsx_sign_extend_v16qi_<mode>"
   [(set (match_operand:VSINT_84 0 "vsx_register_operand" "=v")
 	(unspec:VSINT_84
 	 [(match_operand:V16QI 1 "vsx_register_operand" "v")]
@@ -4934,25 +4919,7 @@
   "vextsb2<wd> %0,%1"
   [(set_attr "type" "vecexts")])
 
-(define_expand "vsignextend_qi_<mode>"
-  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
-	(unspec:VIlong
-	 [(match_operand:V16QI 1 "vsx_register_operand" "v")]
-	 UNSPEC_VSX_SIGN_EXTEND))]
-  "TARGET_P9_VECTOR"
-{
-  if (BYTES_BIG_ENDIAN)
-    {
-      rtx tmp = gen_reg_rtx (V16QImode);
-      emit_insn (gen_altivec_vrevev16qi2(tmp, operands[1]));
-      emit_insn (gen_vsx_sign_extend_qi_<mode>(operands[0], tmp));
-    }
-  else
-    emit_insn (gen_vsx_sign_extend_qi_<mode>(operands[0], operands[1]));
-  DONE;
-})
-
-(define_insn "vsx_sign_extend_hi_<mode>"
+(define_insn "vsx_sign_extend_v8hi_<mode>"
   [(set (match_operand:VSINT_84 0 "vsx_register_operand" "=v")
 	(unspec:VSINT_84
 	 [(match_operand:V8HI 1 "vsx_register_operand" "v")]
@@ -4961,49 +4928,13 @@
   "vextsh2<wd> %0,%1"
   [(set_attr "type" "vecexts")])
 
-(define_expand "vsignextend_hi_<mode>"
-  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
-	(unspec:VIlong
-	 [(match_operand:V8HI 1 "vsx_register_operand" "v")]
-	 UNSPEC_VSX_SIGN_EXTEND))]
-  "TARGET_P9_VECTOR"
-{
-  if (BYTES_BIG_ENDIAN)
-    {
-      rtx tmp = gen_reg_rtx (V8HImode);
-      emit_insn (gen_altivec_vrevev8hi2(tmp, operands[1]));
-      emit_insn (gen_vsx_sign_extend_hi_<mode>(operands[0], tmp));
-    }
-  else
-     emit_insn (gen_vsx_sign_extend_hi_<mode>(operands[0], operands[1]));
-  DONE;
-})
-
-(define_insn "vsx_sign_extend_si_v2di"
+(define_insn "vsx_sign_extend_v4si_v2di"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
 	(unspec:V2DI [(match_operand:V4SI 1 "vsx_register_operand" "v")]
 		     UNSPEC_VSX_SIGN_EXTEND))]
   "TARGET_P9_VECTOR"
   "vextsw2d %0,%1"
   [(set_attr "type" "vecexts")])
-
-(define_expand "vsignextend_si_v2di"
-  [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
-	(unspec:V2DI [(match_operand:V4SI 1 "vsx_register_operand" "v")]
-		     UNSPEC_VSX_SIGN_EXTEND))]
-  "TARGET_P9_VECTOR"
-{
-  if (BYTES_BIG_ENDIAN)
-    {
-       rtx tmp = gen_reg_rtx (V4SImode);
-
-       emit_insn (gen_altivec_vrevev4si2(tmp, operands[1]));
-       emit_insn (gen_vsx_sign_extend_si_v2di(operands[0], tmp));
-    }
-  else
-     emit_insn (gen_vsx_sign_extend_si_v2di(operands[0], operands[1]));
-  DONE;
-})
 
 ;; Sign extend DI to TI.  We provide both GPR targets and Altivec targets on
 ;; power10.  On earlier systems, the machine independent code will generate a
@@ -5080,27 +5011,29 @@
 ;; ISA 3.0 Binary Floating-Point Support
 
 ;; VSX Scalar Extract Exponent Quad-Precision
-(define_insn "xsxexpqp_<mode>"
-  [(set (match_operand:DI 0 "altivec_register_operand" "=v")
-	(unspec:DI [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
+(define_insn "xsxexpqp_<IEEE128:mode>_<V2DI_DI:mode>"
+  [(set (match_operand:V2DI_DI 0 "altivec_register_operand" "=v")
+	(unspec:V2DI_DI
+	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXEXPDP))]
   "TARGET_P9_VECTOR"
   "xsxexpqp %0,%1"
   [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Extract Exponent Double-Precision
-(define_insn "xsxexpdp"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DF 1 "vsx_register_operand" "wa")]
+(define_insn "xsxexpdp_<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(unspec:GPR [(match_operand:DF 1 "vsx_register_operand" "wa")]
 	 UNSPEC_VSX_SXEXPDP))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR"
   "xsxexpdp %0,%x1"
   [(set_attr "type" "integer")])
 
 ;; VSX Scalar Extract Significand Quad-Precision
-(define_insn "xsxsigqp_<mode>"
-  [(set (match_operand:TI 0 "altivec_register_operand" "=v")
-	(unspec:TI [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
+(define_insn "xsxsigqp_<IEEE128:mode>_<VEC_TI:mode>"
+  [(set (match_operand:VEC_TI 0 "altivec_register_operand" "=v")
+	(unspec:VEC_TI [(match_operand:IEEE128 1
+			    "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXSIG))]
   "TARGET_P9_VECTOR"
   "xsxsigqp %0,%1"
@@ -5111,7 +5044,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DF 1 "vsx_register_operand" "wa")]
 	 UNSPEC_VSX_SXSIG))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR && TARGET_POWERPC64"
   "xsxsigdp %0,%x1"
   [(set_attr "type" "integer")])
 
@@ -5127,32 +5060,34 @@
   [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Insert Exponent Quad-Precision
-(define_insn "xsiexpqp_<mode>"
+(define_insn "xsiexpqp_<IEEE128:mode>_<V2DI_DI:mode>"
   [(set (match_operand:IEEE128 0 "altivec_register_operand" "=v")
-	(unspec:IEEE128 [(match_operand:TI 1 "altivec_register_operand" "v")
-			 (match_operand:DI 2 "altivec_register_operand" "v")]
+	(unspec:IEEE128 [(match_operand:<DI_to_TI> 1
+			  "altivec_register_operand" "v")
+			 (match_operand:V2DI_DI 2
+			  "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
   "TARGET_P9_VECTOR"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Insert Exponent Double-Precision
-(define_insn "xsiexpdp"
+(define_insn "xsiexpdp_<mode>"
   [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")]
+		    (match_operand:GPR 2 "register_operand" "r")]
 	 UNSPEC_VSX_SIEXPDP))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR && TARGET_POWERPC64"
   "xsiexpdp %x0,%1,%2"
   [(set_attr "type" "fpsimple")])
 
 ;; VSX Scalar Insert Exponent Double-Precision Floating Point Argument
-(define_insn "xsiexpdpf"
+(define_insn "xsiexpdpf_<mode>"
   [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:DF 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")]
+		    (match_operand:GPR 2 "register_operand" "r")]
 	 UNSPEC_VSX_SIEXPDP))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR && TARGET_POWERPC64"
   "xsiexpdp %x0,%1,%2"
   [(set_attr "type" "fpsimple")])
 

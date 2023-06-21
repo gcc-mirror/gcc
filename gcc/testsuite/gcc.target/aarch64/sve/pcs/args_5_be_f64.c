@@ -7,21 +7,21 @@
 /*
 ** callee:
 **	addvl	sp, sp, #-1
-**	str	p4, \[sp\]
-**	ptrue	p4\.b, all
+**	str	(p[4-7]), \[sp\]
+**	ptrue	\1\.b, all
 ** (
-**	ld1d	(z[0-9]+\.d), p4/z, \[x1, #1, mul vl\]
-**	ld1d	(z[0-9]+\.d), p4/z, \[x1\]
-**	st2d	{\2 - \1}, p0, \[x0\]
+**	ld1d	(z[0-9]+\.d), \1/z, \[x1, #1, mul vl\]
+**	ld1d	(z[0-9]+\.d), \1/z, \[x1\]
+**	st2d	{\3 - \2}, p0, \[x0\]
 ** |
-**	ld1d	(z[0-9]+\.d), p4/z, \[x1\]
-**	ld1d	(z[0-9]+\.d), p4/z, \[x1, #1, mul vl\]
-**	st2d	{\3 - \4}, p0, \[x0\]
+**	ld1d	(z[0-9]+\.d), \1/z, \[x1\]
+**	ld1d	(z[0-9]+\.d), \1/z, \[x1, #1, mul vl\]
+**	st2d	{\4 - \5}, p0, \[x0\]
 ** )
 **	st4d	{z0\.d - z3\.d}, p1, \[x0\]
 **	st3d	{z4\.d - z6\.d}, p2, \[x0\]
 **	st1d	z7\.d, p3, \[x0\]
-**	ldr	p4, \[sp\]
+**	ldr	\1, \[sp\]
 **	addvl	sp, sp, #1
 **	ret
 */
@@ -55,8 +55,8 @@ caller (void *x0)
 /* { dg-final { scan-assembler {\tld3d\t{z4\.d - z6\.d}, p[0-7]/z, \[x0, #-3, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tld1d\tz7\.d, p[0-7]/z, \[x0, #2, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tmov\tx1, sp\n} } } */
-/* { dg-final { scan-assembler {\tld2d\t{(z[0-9]+\.d) - z[0-9]+\.d}.*\tst1d\t\1, p[0-7], \[x1\]\n} } } */
-/* { dg-final { scan-assembler {\tld2d\t{z[0-9]+\.d - (z[0-9]+\.d)}.*\tst1d\t\1, p[0-7], \[x1, #1, mul vl\]\n} } } */
+/* { dg-final { scan-assembler {\tld2d\t{(z[0-9]+\.d) - z[0-9]+\.d}.*\tst1d\t\1, p[0-7], \[(?:x1|sp)\]\n} } } */
+/* { dg-final { scan-assembler {\tld2d\t{z[0-9]+\.d - (z[0-9]+\.d)}.*\tst1d\t\1, p[0-7], \[(?:x1|sp), #1, mul vl\]\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp0\.b, vl1\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp1\.h, vl2\n} } } */
 /* { dg-final { scan-assembler {\tptrue\tp2\.s, vl3\n} } } */

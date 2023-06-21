@@ -70,6 +70,7 @@ with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
 with Sem_SCIL;       use Sem_SCIL;
 with Sem_Util;       use Sem_Util;
+                     use Sem_Util.Storage_Model_Support;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -1936,8 +1937,14 @@ package body Exp_Ch6 is
       ----------------------------------
 
       procedure Add_Simple_Call_By_Copy_Code (Force : Boolean) is
+         With_Storage_Model : constant Boolean :=
+           Nkind (Actual) = N_Explicit_Dereference
+             and then
+               Has_Designated_Storage_Model_Aspect (Etype (Prefix (Actual)));
+
+         Cpcod  : List_Id;
          Decl   : Node_Id;
-         F_Typ  : Entity_Id := Etype (Formal);
+         F_Typ  : Entity_Id;
          Incod  : Node_Id;
          Indic  : Node_Id;
          Lhs    : Node_Id;
@@ -1952,6 +1959,8 @@ package body Exp_Ch6 is
             return;
          end if;
 
+         F_Typ := Etype (Formal);
+
          --  Handle formals whose type comes from the limited view
 
          if From_Limited_With (F_Typ)
@@ -1961,11 +1970,11 @@ package body Exp_Ch6 is
          end if;
 
          --  Use formal type for temp, unless formal type is an unconstrained
-         --  array, in which case we don't have to worry about bounds checks,
-         --  and we use the actual type, since that has appropriate bounds.
+         --  composite, in which case we don't have to worry about checks and
+         --  we can use the actual type, since that has appropriate bounds.
 
-         if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
-            Indic := New_Occurrence_Of (Etype (Actual), Loc);
+         if Is_Composite_Type (F_Typ) and then not Is_Constrained (F_Typ) then
+            Indic := New_Occurrence_Of (Get_Actual_Subtype (Actual), Loc);
          else
             Indic := New_Occurrence_Of (F_Typ, Loc);
          end if;
@@ -1974,7 +1983,6 @@ package body Exp_Ch6 is
 
          Reset_Packed_Prefix;
 
-         Temp   := Make_Temporary (Loc, 'T', Actual);
          Incod  := Relocate_Node (Actual);
          Outcod := New_Copy_Tree (Incod);
 
@@ -1982,17 +1990,8 @@ package body Exp_Ch6 is
          --  with the input parameter unless we have an OUT formal or
          --  this is an initialization call.
 
-         --  If the formal is an out parameter with discriminants, the
-         --  discriminants must be captured even if the rest of the object
-         --  is in principle uninitialized, because the discriminants may
-         --  be read by the called subprogram.
-
          if Ekind (Formal) = E_Out_Parameter then
             Incod := Empty;
-
-            if Has_Discriminants (F_Typ) then
-               Indic := New_Occurrence_Of (Etype (Actual), Loc);
-            end if;
 
          elsif Inside_Init_Proc then
 
@@ -2017,15 +2016,31 @@ package body Exp_Ch6 is
             end if;
          end if;
 
-         Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Temp,
-             Object_Definition   => Indic,
-             Expression          => Incod);
+         Cpcod := New_List;
 
-         if Inside_Init_Proc
-           and then No (Incod)
-         then
+         if With_Storage_Model then
+            Temp :=
+              Build_Temporary_On_Secondary_Stack (Loc, Entity (Indic), Cpcod);
+
+            if Present (Incod) then
+               Append_To (Cpcod,
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc)),
+                   Expression => Incod));
+               Set_Suppress_Assignment_Checks (Last (Cpcod));
+            end if;
+
+         else
+            Temp := Make_Temporary (Loc, 'T', Actual);
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => Indic,
+                Expression          => Incod);
+
             --  If the call is to initialize a component of a composite type,
             --  and the component does not depend on discriminants, use the
             --  actual type of the component. This is required in case the
@@ -2035,23 +2050,42 @@ package body Exp_Ch6 is
             --  discriminant, the presence of the initialization in the
             --  declaration will generate an expression for the actual subtype.
 
-            Set_No_Initialization (Decl);
-            Set_Object_Definition (Decl,
-              New_Occurrence_Of (Etype (Actual), Loc));
+            if Inside_Init_Proc and then No (Incod) then
+               Set_No_Initialization (Decl);
+               Set_Object_Definition (Decl,
+                 New_Occurrence_Of (Etype (Actual), Loc));
+            end if;
+
+            Append_To (Cpcod, Decl);
          end if;
 
-         Insert_Action (N, Decl);
+         Insert_Actions (N, Cpcod);
 
          --  The actual is simply a reference to the temporary
 
-         Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
+         if With_Storage_Model then
+            Rewrite (Actual,
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Temp, Loc)));
+         else
+            Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
+         end if;
+
+         Analyze (Actual);
 
          --  Generate copy out if OUT or IN OUT parameter
 
          if Ekind (Formal) /= E_In_Parameter then
             Lhs := Outcod;
-            Rhs := New_Occurrence_Of (Temp, Loc);
-            Set_Is_True_Constant (Temp, False);
+
+            if With_Storage_Model then
+               Rhs :=
+                 Make_Explicit_Dereference (Loc,
+                   Prefix => New_Occurrence_Of (Temp, Loc));
+            else
+               Rhs := New_Occurrence_Of (Temp, Loc);
+               Set_Is_True_Constant (Temp, False);
+            end if;
 
             --  Deal with conversion
 
@@ -2064,6 +2098,7 @@ package body Exp_Ch6 is
               Make_Assignment_Statement (Loc,
                 Name       => Lhs,
                 Expression => Rhs));
+            Set_Suppress_Assignment_Checks (Last (Post_Call));
             Set_Assignment_OK (Name (Last (Post_Call)));
          end if;
       end Add_Simple_Call_By_Copy_Code;
@@ -2452,6 +2487,22 @@ package body Exp_Ch6 is
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
                Add_Simple_Call_By_Copy_Code (Force => True);
 
+            --  If the actual has a nonnative storage model, we need a copy
+
+            elsif Nkind (Actual) = N_Explicit_Dereference
+              and then
+                Has_Designated_Storage_Model_Aspect (Etype (Prefix (Actual)))
+              and then
+                (Present (Storage_Model_Copy_To
+                            (Storage_Model_Object (Etype (Prefix (Actual)))))
+                  or else
+                    (Ekind (Formal) = E_In_Out_Parameter
+                      and then
+                        Present (Storage_Model_Copy_From
+                          (Storage_Model_Object (Etype (Prefix (Actual)))))))
+            then
+               Add_Simple_Call_By_Copy_Code (Force => True);
+
             --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
             --  cases where alignment forces a copy, the back-end generates
@@ -2596,6 +2647,17 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
+               Add_Simple_Call_By_Copy_Code (Force => True);
+
+            --  If the actual has a nonnative storage model, we need a copy
+
+            elsif Nkind (Actual) = N_Explicit_Dereference
+              and then
+                Has_Designated_Storage_Model_Aspect (Etype (Prefix (Actual)))
+              and then
+                Present (Storage_Model_Copy_From
+                           (Storage_Model_Object (Etype (Prefix (Actual)))))
+            then
                Add_Simple_Call_By_Copy_Code (Force => True);
 
             --  If we have a C++ constructor call, we need to create the object
@@ -3028,7 +3090,7 @@ package body Exp_Ch6 is
          --  Start of processing for Insert_Level_Assign
 
          begin
-            --  Examine further nested condtionals
+            --  Examine further nested conditionals
 
             pragma Assert (Nkind (Branch) =
                             N_Expression_With_Actions);
@@ -3343,6 +3405,7 @@ package body Exp_Ch6 is
            or else No (Aspect)
 
            --  Do not fold if multiple applicable predicate aspects
+           or else Has_Ghost_Predicate_Aspect (Subt)
            or else Has_Aspect (Subt, Aspect_Static_Predicate)
            or else Has_Aspect (Subt, Aspect_Predicate)
            or else Augments_Other_Dynamic_Predicate (Aspect)
@@ -5126,8 +5189,16 @@ package body Exp_Ch6 is
       --  Optimization: if the returned value is returned again, then no need
       --  to copy/readjust/finalize, we can just pass the value through (see
       --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
+      --  Note that simple return statements are distributed into conditional
+      --  expressions but we may be invoked before this distribution is done.
 
-      if Nkind (Par) = N_Simple_Return_Statement then
+      if Nkind (Par) = N_Simple_Return_Statement
+        or else (Nkind (Par) = N_If_Expression
+                  and then Nkind (Parent (Par)) = N_Simple_Return_Statement)
+        or else (Nkind (Par) = N_Case_Expression_Alternative
+                  and then
+                    Nkind (Parent (Parent (Par))) = N_Simple_Return_Statement)
+      then
          return;
       end if;
 
@@ -6182,10 +6253,13 @@ package body Exp_Ch6 is
       --  body subprogram points to itself.
 
       Proc := Current_Scope;
-      while Present (Proc)
-        and then Scope (Proc) /= Scop
-      loop
+      while Present (Proc) and then Scope (Proc) /= Scop loop
          Proc := Scope (Proc);
+         if Is_Subprogram (Proc)
+           and then Present (Protected_Subprogram (Proc))
+         then
+            Proc := Protected_Subprogram (Proc);
+         end if;
       end loop;
 
       Corr := Protected_Body_Subprogram (Proc);
@@ -6568,6 +6642,13 @@ package body Exp_Ch6 is
       if Is_Boolean_Type (Exp_Typ) and then Nonzero_Is_True (Exp_Typ) then
          Adjust_Condition (Exp);
          Adjust_Result_Type (Exp, Exp_Typ);
+
+         --  The adjustment of the expression may have rewritten the return
+         --  statement itself, e.g. when it is turned into an if expression.
+
+         if Nkind (N) /= N_Simple_Return_Statement then
+            return;
+         end if;
       end if;
 
       --  Do validity check if enabled for returns
@@ -6815,7 +6896,7 @@ package body Exp_Ch6 is
 
                Temp := Make_Temporary (Loc, 'R', Alloc_Node);
 
-               Insert_List_Before_And_Analyze (N, New_List (
+               Insert_Actions (Exp, New_List (
                  Make_Full_Type_Declaration (Loc,
                    Defining_Identifier => Acc_Typ,
                    Type_Definition     =>
@@ -9240,7 +9321,7 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Etype (Typ))
+                               and then Is_Limited_Record (Typ)
                                and then not Has_Aspect
                                  (Etype (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
@@ -9352,9 +9433,14 @@ package body Exp_Ch6 is
       --  types, and those can be used to call primitives, so the formal needs
       --  to be passed to all such build-in-place functions, primitive or not.
 
+      --  We never use build-in-place if the function has foreign convention,
+      --  but note that it is OK for a build-in-place function to return a
+      --  type with a foreign convention because the machinery ensures there
+      --  is no copying.
+
       return not Restriction_Active (No_Secondary_Stack)
         and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ))
-        and then not Has_Foreign_Convention (Typ);
+        and then not Has_Foreign_Convention (Func_Id);
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------

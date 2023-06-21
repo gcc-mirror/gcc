@@ -364,6 +364,7 @@ build_m2_word64_type_node (location_t location, int loc)
                                       m2decl_BuildIntegerConstant (7), loc);
 }
 
+
 /* GetM2Complex32 return the fixed size complex type.  */
 
 tree
@@ -1246,7 +1247,7 @@ gm2_finish_decl (location_t location, tree decl)
   int was_incomplete = (DECL_SIZE (decl) == 0);
 
   m2assert_AssertLocation (location);
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       if (DECL_SIZE (decl) == 0 && TREE_TYPE (decl) != error_mark_node
           && COMPLETE_TYPE_P (TREE_TYPE (decl)))
@@ -1277,7 +1278,7 @@ gm2_finish_decl (location_t location, tree decl)
      functions, unless the type is an undefined structure or union.  If
      not, it will get done when the type is completed.  */
 
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+  if (VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (DECL_FILE_SCOPE_P (decl))
         {
@@ -1472,6 +1473,22 @@ build_m2_long_real_node (void)
   layout_type (c);
 
   return c;
+}
+
+static tree
+build_m2_ztype_node (void)
+{
+  tree ztype_node;
+
+  /* Define `ZTYPE'.  */
+
+  if (targetm.scalar_mode_supported_p (TImode))
+    ztype_node = gm2_type_for_size (128, 0);
+  else
+    ztype_node = gm2_type_for_size (64, 0);
+  layout_type (ztype_node);
+
+  return ztype_node;
 }
 
 static tree
@@ -1761,7 +1778,7 @@ m2type_InitBaseTypes (location_t location)
   m2_long_card_type_node = build_m2_long_card_node ();
   m2_short_int_type_node = build_m2_short_int_node ();
   m2_short_card_type_node = build_m2_short_card_node ();
-  m2_z_type_node = build_m2_long_int_node ();
+  m2_z_type_node = build_m2_ztype_node ();
   m2_integer8_type_node = build_m2_integer8_type_node (location);
   m2_integer16_type_node = build_m2_integer16_type_node (location);
   m2_integer32_type_node = build_m2_integer32_type_node (location);

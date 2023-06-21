@@ -130,14 +130,6 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
--param=evrp-sparse-threshold=
-Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
-Maximum number of basic blocks before EVRP uses a sparse cache.
-
--param=evrp-switch-limit=
-Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
-Maximum number of outgoing edges in a switch before EVRP will not process it.
-
 -param=fsm-scale-path-stmts=
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.
@@ -908,6 +900,11 @@ Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 9
 Maximum depth of logical expression evaluation ranger will look through when
 evaluating outgoing edge ranges.
 
+-param=ranger-recompute-depth=
+Common Joined UInteger Var(param_ranger_recompute_depth) Init(5) IntegerRange(1, 100) Param Optimization
+Maximum depth of instruction chains to consider for recomputation in the
+outgoing range calculator.
+
 -param=relation-block-limit=
 Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
 Maximum number of relations the oracle will register in a basic block.
@@ -1094,7 +1091,7 @@ Common Joined UInteger Var(param_tracer_min_branch_ratio) Init(10) IntegerRange(
 Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent).
 
 -param=tree-reassoc-width=
-Common Joined UInteger Var(param_tree_reassoc_width) Param Optimization
+Common Joined UInteger Var(param_tree_reassoc_width) IntegerRange(0, 256) Param Optimization
 Set the maximum number of instructions executed in parallel in reassociated tree.  If 0, use the target dependent heuristic.
 
 -param=tsan-distinguish-volatile=
@@ -1174,7 +1171,19 @@ Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRa
 The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
 
 -param=vect-induction-float=
-Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
+Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRange(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
+
+-param=vrp-sparse-threshold=
+Common Joined UInteger Var(param_vrp_sparse_threshold) Init(3000) Optimization Param
+Maximum number of basic blocks before VRP uses a sparse bitmap cache.
+
+-param=vrp-switch-limit=
+Common Joined UInteger Var(param_vrp_switch_limit) Init(50) Optimization Param
+Maximum number of outgoing edges in a switch before VRP will not process it.
+
+-param=vrp-vector-threshold=
+Common Joined UInteger Var(param_vrp_vector_threshold) Init(250) Optimization Param
+Maximum number of basic blocks for VRP to use a basic cache vector.
 
 ; This comment is to ensure we retain the blank line above.

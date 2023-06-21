@@ -423,10 +423,13 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 	    (GET_MODE_BITSIZE (int_mode), 1);
 	  tree vector_type
 	    = get_vectype_for_scalar_type (vinfo, int_type, count);
+	  poly_int64 half_nelts;
 	  if (vector_type
 	      && VECTOR_MODE_P (TYPE_MODE (vector_type))
 	      && known_eq (GET_MODE_SIZE (TYPE_MODE (vector_type)),
-			   GET_MODE_SIZE (base_vector_mode)))
+			   GET_MODE_SIZE (base_vector_mode))
+	      && multiple_p (GET_MODE_NUNITS (TYPE_MODE (vector_type)),
+			     2, &half_nelts))
 	    {
 	      /* Try fusing consecutive sequences of COUNT / NVECTORS elements
 		 together into elements of type INT_TYPE and using the result
@@ -434,7 +437,7 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 	      poly_uint64 nelts = GET_MODE_NUNITS (TYPE_MODE (vector_type));
 	      vec_perm_builder sel1 (nelts, 2, 3);
 	      vec_perm_builder sel2 (nelts, 2, 3);
-	      poly_int64 half_nelts = exact_div (nelts, 2);
+
 	      for (unsigned int i = 0; i < 3; ++i)
 		{
 		  sel1.quick_push (i);
@@ -6066,6 +6069,7 @@ vect_prologue_cost_for_slp (slp_tree node,
     }
   /* ???  We're just tracking whether vectors in a single node are the same.
      Ideally we'd do something more global.  */
+  bool passed = false;
   for (unsigned int start : starts)
     {
       vect_cost_for_stmt kind;
@@ -6075,7 +6079,15 @@ vect_prologue_cost_for_slp (slp_tree node,
 	kind = scalar_to_vec;
       else
 	kind = vec_construct;
-      record_stmt_cost (cost_vec, 1, kind, node, vectype, 0, vect_prologue);
+      /* The target cost hook has no idea which part of the SLP node
+	 we are costing so avoid passing it down more than once.  Pass
+	 it to the first vec_construct or scalar_to_vec part since for those
+	 the x86 backend tries to account for GPR to XMM register moves.  */
+      record_stmt_cost (cost_vec, 1, kind,
+			(kind != vector_load && !passed) ? node : nullptr,
+			vectype, 0, vect_prologue);
+      if (kind != vector_load)
+	passed = true;
     }
 }
 
@@ -7671,15 +7683,28 @@ vect_slp_function (function *fun)
 	{
 	  r |= vect_slp_bbs (bbs, NULL);
 	  bbs.truncate (0);
-	  bbs.quick_push (bb);
 	}
-      else
-	bbs.safe_push (bb);
+
+      /* We need to be able to insert at the head of the region which
+	 we cannot for region starting with a returns-twice call.  */
+      if (bbs.is_empty ())
+	if (gcall *first = safe_dyn_cast <gcall *> (first_stmt (bb)))
+	  if (gimple_call_flags (first) & ECF_RETURNS_TWICE)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "skipping bb%d as start of region as it "
+				 "starts with returns-twice call\n",
+				 bb->index);
+	      continue;
+	    }
+
+      bbs.safe_push (bb);
 
       /* When we have a stmt ending this block and defining a
 	 value we have to insert on edges when inserting after it for
 	 a vector containing its definition.  Avoid this for now.  */
-      if (gimple *last = last_stmt (bb))
+      if (gimple *last = *gsi_last_bb (bb))
 	if (gimple_get_lhs (last)
 	    && is_ctrl_altering_stmt (last))
 	  {
@@ -8099,12 +8124,12 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 
   mode = TYPE_MODE (vectype);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned int nstmts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
   if (! analyze_only)
-    for (unsigned i = SLP_TREE_VEC_STMTS (node).length ();
-	 i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
+    for (unsigned i = SLP_TREE_VEC_STMTS (node).length (); i < nstmts; i++)
       SLP_TREE_VEC_STMTS (node).quick_push (NULL);
 
   /* Generate permutation masks for every NODE. Number of masks for each NODE
@@ -8145,7 +8170,10 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 	 (b) the permutes only need a single vector input.  */
       mask.new_vector (nunits, group_size, 3);
       nelts_to_build = mask.encoded_nelts ();
-      nvectors_per_build = SLP_TREE_VEC_STMTS (node).length ();
+      /* It's possible to obtain zero nstmts during analyze_only, so make
+	 it at least one to ensure the later computation for n_perms
+	 proceed.  */
+      nvectors_per_build = nstmts > 0 ? nstmts : 1;
       in_nlanes = DR_GROUP_SIZE (stmt_info) * 3;
     }
   else
@@ -8214,37 +8242,30 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 	noop_p = false;
       mask[index++] = mask_element;
 
-      if (index == count && !noop_p)
-	{
-	  indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
-	  if (!can_vec_perm_const_p (mode, mode, indices))
-	    {
-	      if (dump_p)
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				   vect_location,
-				   "unsupported vect permute { ");
-		  for (i = 0; i < count; ++i)
-		    {
-		      dump_dec (MSG_MISSED_OPTIMIZATION, mask[i]);
-		      dump_printf (MSG_MISSED_OPTIMIZATION, " ");
-		    }
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
-		}
-	      gcc_assert (analyze_only);
-	      return false;
-	    }
-
-	  ++*n_perms;
-	}
-
       if (index == count)
 	{
-	  if (!analyze_only)
+	  if (!noop_p)
 	    {
-	      tree mask_vec = NULL_TREE;
+	      indices.new_vector (mask, second_vec_index == -1 ? 1 : 2, nunits);
+	      if (!can_vec_perm_const_p (mode, mode, indices))
+		{
+		  if (dump_p)
+		    {
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "unsupported vect permute { ");
+		      for (i = 0; i < count; ++i)
+			{
+			  dump_dec (MSG_MISSED_OPTIMIZATION, mask[i]);
+			  dump_printf (MSG_MISSED_OPTIMIZATION, " ");
+			}
+		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
+		    }
+		  gcc_assert (analyze_only);
+		  return false;
+		}
 
-	      if (! noop_p)
+	      tree mask_vec = NULL_TREE;
+	      if (!analyze_only)
 		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
 
 	      if (second_vec_index == -1)
@@ -8252,37 +8273,42 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 
 	      for (unsigned int ri = 0; ri < nvectors_per_build; ++ri)
 		{
+		  ++*n_perms;
+		  if (analyze_only)
+		    continue;
 		  /* Generate the permute statement if necessary.  */
 		  tree first_vec = dr_chain[first_vec_index + ri];
 		  tree second_vec = dr_chain[second_vec_index + ri];
-		  gimple *perm_stmt;
-		  if (! noop_p)
+		  gassign *stmt = as_a<gassign *> (stmt_info->stmt);
+		  tree perm_dest
+		    = vect_create_destination_var (gimple_assign_lhs (stmt),
+						   vectype);
+		  perm_dest = make_ssa_name (perm_dest);
+		  gimple *perm_stmt
+		    = gimple_build_assign (perm_dest, VEC_PERM_EXPR, first_vec,
+					   second_vec, mask_vec);
+		  vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
+					       gsi);
+		  if (dce_chain)
 		    {
-		      gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-		      tree perm_dest
-			= vect_create_destination_var (gimple_assign_lhs (stmt),
-						       vectype);
-		      perm_dest = make_ssa_name (perm_dest);
-		      perm_stmt
-			= gimple_build_assign (perm_dest, VEC_PERM_EXPR,
-					       first_vec, second_vec,
-					       mask_vec);
-		      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
-						   gsi);
-		      if (dce_chain)
-			{
-			  bitmap_set_bit (used_defs, first_vec_index + ri);
-			  bitmap_set_bit (used_defs, second_vec_index + ri);
-			}
+		      bitmap_set_bit (used_defs, first_vec_index + ri);
+		      bitmap_set_bit (used_defs, second_vec_index + ri);
 		    }
-		  else
-		    {
-		      /* If mask was NULL_TREE generate the requested
-			 identity transform.  */
-		      perm_stmt = SSA_NAME_DEF_STMT (first_vec);
-		      if (dce_chain)
-			bitmap_set_bit (used_defs, first_vec_index + ri);
-		    }
+
+		  /* Store the vector statement in NODE.  */
+		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
+		}
+	    }
+	  else if (!analyze_only)
+	    {
+	      for (unsigned int ri = 0; ri < nvectors_per_build; ++ri)
+		{
+		  tree first_vec = dr_chain[first_vec_index + ri];
+		  /* If mask was NULL_TREE generate the requested
+		     identity transform.  */
+		  gimple *perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+		  if (dce_chain)
+		    bitmap_set_bit (used_defs, first_vec_index + ri);
 
 		  /* Store the vector statement in NODE.  */
 		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;

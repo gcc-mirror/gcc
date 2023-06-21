@@ -1,3 +1,4 @@
+/* { dg-require-effective-target ptr_eq_long } */
 /* { dg-additional-options "-O2 -Wno-shift-count-overflow" } */
 
 struct lisp;

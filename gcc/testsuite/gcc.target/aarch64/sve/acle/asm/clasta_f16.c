@@ -43,8 +43,13 @@ TEST_FOLD_LEFT_D (clasta_d0_f16, float16_t, svfloat16_t,
 
 /*
 ** clasta_d1_f16:
+** (
 **	mov	v0\.h\[0\], v1\.h\[0\]
 **	clasta	h0, p0, h0, z2\.h
+** |
+**	clasta	h1, p0, h1, z2\.h
+**	mov	v0\.h\[0\], v1\.h\[0\]
+** )
 **	ret
 */
 TEST_FOLD_LEFT_D (clasta_d1_f16, float16_t, svfloat16_t,

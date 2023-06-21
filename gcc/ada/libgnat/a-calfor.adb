@@ -590,10 +590,6 @@ package body Ada.Calendar.Formatting is
       Leap_Second : Boolean := False;
       Time_Zone   : Time_Zones.Time_Offset := 0) return Time
    is
-      Adj_Year  : Year_Number  := Year;
-      Adj_Month : Month_Number := Month;
-      Adj_Day   : Day_Number   := Day;
-
       H  : constant Integer := 1;
       M  : constant Integer := 1;
       Se : constant Integer := 1;
@@ -612,32 +608,11 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
 
-      --  A Seconds value of 86_400 denotes a new day. This case requires an
-      --  adjustment to the input values.
-
-      if Seconds = 86_400.0 then
-         if Day < Days_In_Month (Month)
-           or else (Is_Leap (Year)
-                      and then Month = 2)
-         then
-            Adj_Day := Day + 1;
-         else
-            Adj_Day := 1;
-
-            if Month < 12 then
-               Adj_Month := Month + 1;
-            else
-               Adj_Month := 1;
-               Adj_Year  := Year + 1;
-            end if;
-         end if;
-      end if;
-
       return
         Formatting_Operations.Time_Of
-          (Year         => Adj_Year,
-           Month        => Adj_Month,
-           Day          => Adj_Day,
+          (Year         => Year,
+           Month        => Month,
+           Day          => Day,
            Day_Secs     => Seconds,
            Hour         => H,
            Minute       => M,

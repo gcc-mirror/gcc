@@ -1,5 +1,5 @@
 // { dg-additional-options "-w -frust-cfg=A" }
-// { dg-output "test1\n" }
+// { dg-output "test1\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

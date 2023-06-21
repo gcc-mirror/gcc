@@ -51,7 +51,6 @@ class Lifetime;
 class GenericParam;
 class LifetimeParam;
 class ConstGenericParam;
-class MacroItem;
 class TraitItem;
 class InherentImplItem;
 class TraitImplItem;
@@ -150,6 +149,7 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
+class InlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;
@@ -250,6 +250,7 @@ class TuplePatternItemsRanged;
 class TuplePattern;
 class GroupedPattern;
 class SlicePattern;
+class AltPattern;
 
 // rust-type.h
 class TraitBound;

@@ -1384,6 +1384,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	}
       opts->x_flag_var_tracking = 0;
       opts->x_flag_var_tracking_uninit = 0;
+      opts->x_flag_var_tracking_assignments = 0;
     }
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
@@ -3131,6 +3132,9 @@ common_handle_option (struct gcc_options *opts,
     case OPT_g:
       set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set,
                        loc);
+      break;
+
+    case OPT_gcodeview:
       break;
 
     case OPT_gbtf:

@@ -56,9 +56,9 @@ package body GNAT.Dynamic_HTables is
       --  range of Bucket_Range_Type.
 
       return
-        ((Left  and Mask) * Half)
+        (Left  and Mask) * Half
             or
-         (Right and Mask);
+        (Right and Mask);
    end Hash_Two_Keys;
 
    -------------------

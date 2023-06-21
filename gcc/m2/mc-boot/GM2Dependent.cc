@@ -51,7 +51,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define _M2Dependent_C
 
 #   include "Glibc.h"
-#   include "GM2LINK.h"
 #   include "GASCII.h"
 #   include "GSYSTEM.h"
 #   include "GStorage.h"
@@ -61,6 +60,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 
 typedef struct M2Dependent_DependencyList_r M2Dependent_DependencyList;
+
+typedef char *M2Dependent_PtrToChar;
 
 typedef struct M2Dependent__T2_r M2Dependent__T2;
 
@@ -93,6 +94,7 @@ struct M2Dependent__T2_r {
                          };
 
 static M2Dependent__T3 Modules;
+static bool DynamicInitialization;
 static bool Initialized;
 static bool WarningTrace;
 static bool ModuleTrace;
@@ -107,7 +109,7 @@ static bool ForceTrace;
                       module constructor in turn.
 */
 
-extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 
 /*
    DeconstructModules - resolve dependencies and then call each
@@ -127,7 +129,7 @@ extern "C" void M2Dependent_RegisterModule (void * modulename, void * libname, M
 /*
    RequestDependant - used to specify that modulename is dependant upon
                       module dependantmodule.  It only takes effect
-                      if we are not using StaticInitialization.
+                      if we are using DynamicInitialization.
 */
 
 extern "C" void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
@@ -195,20 +197,20 @@ static void toCString (char *str, unsigned int _str_high);
             We cannot use Builtins.def during bootstrap.
 */
 
-static int strcmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b);
+static int strcmp (M2Dependent_PtrToChar a, M2Dependent_PtrToChar b);
 
 /*
    strncmp - return 0 if both strings are equal.
              We cannot use Builtins.def during bootstrap.
 */
 
-static int strncmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b, unsigned int n);
+static int strncmp (M2Dependent_PtrToChar a, M2Dependent_PtrToChar b, unsigned int n);
 
 /*
    strlen - returns the length of string.
 */
 
-static int strlen_ (M2LINK_PtrToChar string);
+static int strlen_ (M2Dependent_PtrToChar string);
 
 /*
    traceprintf - wrap printf with a boolean flag.
@@ -294,7 +296,7 @@ static void ForceModule (void * modname, unsigned int modlen, void * libname, un
                        the dynamic ordering with the preference.
 */
 
-static void ForceDependencies (void);
+static void ForceDependencies (void * overrideliborder);
 
 /*
    CheckApplication - check to see that the application is the last entry in the list.
@@ -360,8 +362,6 @@ static void CheckInitialized (void);
 static M2Dependent_ModuleChain CreateModule (void * name, void * libname, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies)
 {
   M2Dependent_ModuleChain mptr;
-  void * p0;
-  void * p1;
 
   Storage_ALLOCATE ((void **) &mptr, sizeof (M2Dependent__T2));
   mptr->name = name;
@@ -503,7 +503,7 @@ static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state,
     {
       ptr = Modules.array[state-M2Dependent_unregistered];
       do {
-        if (((strncmp (reinterpret_cast<M2LINK_PtrToChar> (ptr->name), reinterpret_cast<M2LINK_PtrToChar> (name), max (namelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2LINK_PtrToChar> (ptr->name)))))) == 0) && ((strncmp (reinterpret_cast<M2LINK_PtrToChar> (ptr->libname), reinterpret_cast<M2LINK_PtrToChar> (libname), max (libnamelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2LINK_PtrToChar> (ptr->libname)))))) == 0))
+        if (((strncmp (reinterpret_cast<M2Dependent_PtrToChar> (ptr->name), reinterpret_cast<M2Dependent_PtrToChar> (name), max (namelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (ptr->name)))))) == 0) && ((strncmp (reinterpret_cast<M2Dependent_PtrToChar> (ptr->libname), reinterpret_cast<M2Dependent_PtrToChar> (libname), max (libnamelen, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (ptr->libname)))))) == 0))
           {
             return ptr;
           }
@@ -523,7 +523,7 @@ static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state,
 
 static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, void * name, void * libname)
 {
-  return LookupModuleN (state, name, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2LINK_PtrToChar> (name))), libname, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2LINK_PtrToChar> (libname))));
+  return LookupModuleN (state, name, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (name))), libname, static_cast<unsigned int> (strlen_ (reinterpret_cast<M2Dependent_PtrToChar> (libname))));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -567,7 +567,7 @@ static void toCString (char *str, unsigned int _str_high)
             We cannot use Builtins.def during bootstrap.
 */
 
-static int strcmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b)
+static int strcmp (M2Dependent_PtrToChar a, M2Dependent_PtrToChar b)
 {
   if ((a != NULL) && (b != NULL))
     {
@@ -600,7 +600,7 @@ static int strcmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b)
              We cannot use Builtins.def during bootstrap.
 */
 
-static int strncmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b, unsigned int n)
+static int strncmp (M2Dependent_PtrToChar a, M2Dependent_PtrToChar b, unsigned int n)
 {
   if (n == 0)
     {
@@ -637,7 +637,7 @@ static int strncmp (M2LINK_PtrToChar a, M2LINK_PtrToChar b, unsigned int n)
    strlen - returns the length of string.
 */
 
-static int strlen_ (M2LINK_PtrToChar string)
+static int strlen_ (M2Dependent_PtrToChar string)
 {
   int count;
 
@@ -910,8 +910,6 @@ static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *de
 
 static void DumpModuleData (bool flag)
 {
-  M2Dependent_ModuleChain mptr;
-
   if (flag)
     {
       DisplayModuleInfo (M2Dependent_unregistered, (const char *) "unregistered", 12);
@@ -993,20 +991,20 @@ static void ForceModule (void * modname, unsigned int modlen, void * libname, un
                        the dynamic ordering with the preference.
 */
 
-static void ForceDependencies (void)
+static void ForceDependencies (void * overrideliborder)
 {
   unsigned int len;
   unsigned int modlen;
   unsigned int liblen;
-  M2LINK_PtrToChar modname;
-  M2LINK_PtrToChar libname;
-  M2LINK_PtrToChar pc;
-  M2LINK_PtrToChar start;
+  M2Dependent_PtrToChar modname;
+  M2Dependent_PtrToChar libname;
+  M2Dependent_PtrToChar pc;
+  M2Dependent_PtrToChar start;
 
-  if (M2LINK_ForcedModuleInitOrder != NULL)
+  if (overrideliborder != NULL)
     {
-      traceprintf2 (ForceTrace, (const char *) "user forcing order: %s\\n", 24, reinterpret_cast<void *> (M2LINK_ForcedModuleInitOrder));
-      pc = M2LINK_ForcedModuleInitOrder;
+      traceprintf2 (ForceTrace, (const char *) "user forcing order: %s\\n", 24, overrideliborder);
+      pc = static_cast<M2Dependent_PtrToChar> (overrideliborder);
       start = pc;
       len = 0;
       modname = NULL;
@@ -1123,7 +1121,7 @@ static bool equal (void * cstr, const char *str_, unsigned int _str_high)
   /* make a local copy of each unbounded array.  */
   memcpy (str, str_, _str_high+1);
 
-  return (strncmp (reinterpret_cast<M2LINK_PtrToChar> (cstr), reinterpret_cast<M2LINK_PtrToChar> (&str), StrLib_StrLen ((const char *) str, _str_high))) == 0;
+  return (strncmp (reinterpret_cast<M2Dependent_PtrToChar> (cstr), reinterpret_cast<M2Dependent_PtrToChar> (&str), StrLib_StrLen ((const char *) str, _str_high))) == 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1239,6 +1237,7 @@ static void Init (void)
     {
       Modules.array[state-M2Dependent_unregistered] = NULL;
     }
+  DynamicInitialization = false;
 }
 
 
@@ -1264,13 +1263,13 @@ static void CheckInitialized (void)
                       module constructor in turn.
 */
 
-extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp)
+extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp)
 {
   M2Dependent_ModuleChain mptr;
-  M2Dependent_ArgCVEnvP nulp;
 
   CheckInitialized ();
-  traceprintf3 (ModuleTrace, (const char *) "application module: %s [%s]\\n", 29, applicationmodule, libname);
+  DynamicInitialization = true;  /* This procedure is only called if we desire dynamic initialization.  */
+  traceprintf3 (ModuleTrace, (const char *) "application module: %s [%s]\\n", 29, applicationmodule, libname);  /* This procedure is only called if we desire dynamic initialization.  */
   mptr = LookupModule (M2Dependent_unordered, applicationmodule, libname);
   if (mptr != NULL)
     {
@@ -1281,7 +1280,7 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * l
   ResolveDependencies (applicationmodule, libname);
   traceprintf (PreTrace, (const char *) "Post resolving dependents\\n", 27);
   DumpModuleData (PostTrace);
-  ForceDependencies ();
+  ForceDependencies (overrideliborder);
   traceprintf (ForceTrace, (const char *) "After user forcing ordering\\n", 29);
   DumpModuleData (ForceTrace);
   CheckApplication ();
@@ -1366,19 +1365,16 @@ extern "C" void M2Dependent_RegisterModule (void * modulename, void * libname, M
   M2Dependent_ModuleChain mptr;
 
   CheckInitialized ();
-  if (! M2LINK_StaticInitialization)
+  mptr = LookupModule (M2Dependent_unordered, modulename, libname);
+  if (mptr == NULL)
     {
-      mptr = LookupModule (M2Dependent_unordered, modulename, libname);
-      if (mptr == NULL)
-        {
-          traceprintf3 (ModuleTrace, (const char *) "module: %s [%s] registering", 27, modulename, libname);
-          moveTo (M2Dependent_unordered, CreateModule (modulename, libname, init, fini, dependencies));
-          traceprintf (ModuleTrace, (const char *) "\\n", 2);
-        }
-      else
-        {
-          warning3 ((const char *) "module: %s [%s] (ignoring duplicate registration)\\n", 51, modulename, libname);
-        }
+      traceprintf3 (ModuleTrace, (const char *) "module: %s [%s] registering", 27, modulename, libname);
+      moveTo (M2Dependent_unordered, CreateModule (modulename, libname, init, fini, dependencies));
+      traceprintf (ModuleTrace, (const char *) "\\n", 2);
+    }
+  else
+    {
+      warning3 ((const char *) "module: %s [%s] (ignoring duplicate registration)\\n", 51, modulename, libname);
     }
 }
 
@@ -1386,16 +1382,13 @@ extern "C" void M2Dependent_RegisterModule (void * modulename, void * libname, M
 /*
    RequestDependant - used to specify that modulename is dependant upon
                       module dependantmodule.  It only takes effect
-                      if we are not using StaticInitialization.
+                      if we are using DynamicInitialization.
 */
 
 extern "C" void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname)
 {
   CheckInitialized ();
-  if (! M2LINK_StaticInitialization)
-    {
-      PerformRequestDependant (modulename, libname, dependantmodule, dependantlibname);
-    }
+  PerformRequestDependant (modulename, libname, dependantmodule, dependantlibname);
 }
 
 extern "C" void _M2_M2Dependent_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])

@@ -68,7 +68,7 @@ get_base_type (tree type)
 
   while (TREE_TYPE (type)
 	 && (TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == REAL_TYPE))
+	     || SCALAR_FLOAT_TYPE_P (type)))
     type = TREE_TYPE (type);
 
   return type;
@@ -692,13 +692,14 @@ build_atomic_load (tree src, bool sync)
     = build_int_cst (integer_type_node,
 		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_src = src;
-  tree t, addr, val;
+  tree type, t, addr, val;
   unsigned int size;
   int fncode;
 
   /* Remove conversions to get the address of the underlying object.  */
   src = remove_conversions (src, false);
-  size = resolve_atomic_size (TREE_TYPE (src));
+  type = TREE_TYPE (src);
+  size = resolve_atomic_size (type);
   if (size == 0)
     return orig_src;
 
@@ -710,7 +711,7 @@ build_atomic_load (tree src, bool sync)
 
   /* First reinterpret the loaded bits in the original type of the load,
      then convert to the expected result type.  */
-  t = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (src), val);
+  t = fold_build1 (VIEW_CONVERT_EXPR, type, val);
   return convert (TREE_TYPE (orig_src), t);
 }
 
@@ -728,13 +729,14 @@ build_atomic_store (tree dest, tree src, bool sync)
     = build_int_cst (integer_type_node,
 		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_dest = dest;
-  tree t, int_type, addr;
+  tree type, t, int_type, addr;
   unsigned int size;
   int fncode;
 
   /* Remove conversions to get the address of the underlying object.  */
   dest = remove_conversions (dest, false);
-  size = resolve_atomic_size (TREE_TYPE (dest));
+  type = TREE_TYPE (dest);
+  size = resolve_atomic_size (type);
   if (size == 0)
     return build_binary_op (MODIFY_EXPR, NULL_TREE, orig_dest, src);
 
@@ -746,12 +748,11 @@ build_atomic_store (tree dest, tree src, bool sync)
      then reinterpret them in the effective type.  But if the original type
      is a padded type with the same size, convert to the inner type instead,
      as we don't want to artificially introduce a CONSTRUCTOR here.  */
-  if (TYPE_IS_PADDING_P (TREE_TYPE (dest))
-      && TYPE_SIZE (TREE_TYPE (dest))
-	 == TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest)))))
-    src = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest))), src);
+  if (TYPE_IS_PADDING_P (type)
+      && TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (type))))
+    src = convert (TREE_TYPE (TYPE_FIELDS (type)), src);
   else
-    src = convert (TREE_TYPE (dest), src);
+    src = convert (type, src);
   src = fold_build1 (VIEW_CONVERT_EXPR, int_type, src);
   addr = build_unary_op (ADDR_EXPR, ptr_type, dest);
 
@@ -877,7 +878,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 them; we'll be putting them back below if needed.  Likewise for
 	 conversions between record types, except for justified modular types.
 	 But don't do this if the right operand is not BLKmode (for packed
-	 arrays) unless we are not changing the mode.  */
+	 arrays) unless we are not changing the mode, or if both ooperands
+	 are view conversions to the same type.  */
       while ((CONVERT_EXPR_P (left_operand)
 	      || TREE_CODE (left_operand) == VIEW_CONVERT_EXPR)
 	     && (((INTEGRAL_TYPE_P (left_type)
@@ -889,7 +891,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		     && TREE_CODE (operand_type (left_operand)) == RECORD_TYPE
 		     && (TYPE_MODE (right_type) == BLKmode
 			 || TYPE_MODE (left_type)
-			    == TYPE_MODE (operand_type (left_operand))))))
+			    == TYPE_MODE (operand_type (left_operand)))
+		     && !(TREE_CODE (left_operand) == VIEW_CONVERT_EXPR
+			  && TREE_CODE (right_operand) == VIEW_CONVERT_EXPR
+			  && left_type == right_type))))
 	{
 	  left_operand = TREE_OPERAND (left_operand, 0);
 	  left_type = TREE_TYPE (left_operand);
@@ -986,7 +991,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    break;
 	}
 
-      gcc_assert (TREE_CODE (result) == INDIRECT_REF
+      gcc_assert (INDIRECT_REF_P (result)
 		  || TREE_CODE (result) == NULL_EXPR
 		  || TREE_CODE (result) == SAVE_EXPR
 		  || DECL_P (result));
@@ -1423,7 +1428,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     the corresponding address, e.g. for an allocator.  However do
 	     it for a return value to expose it for later recognition.  */
 	  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE
-	      || (TREE_CODE (TREE_OPERAND (operand, 1)) == VAR_DECL
+	      || (VAR_P (TREE_OPERAND (operand, 1))
 		  && DECL_RETURN_VALUE_P (TREE_OPERAND (operand, 1))))
 	    {
 	      result = build_unary_op (ADDR_EXPR, result_type,
@@ -1597,11 +1602,11 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
 	  {
 	    TREE_SIDE_EFFECTS (result) = 1;
-	    if (TREE_CODE (result) == INDIRECT_REF)
+	    if (INDIRECT_REF_P (result))
 	      TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
 	  }
 
-	if ((TREE_CODE (result) == INDIRECT_REF
+	if ((INDIRECT_REF_P (result)
 	     || TREE_CODE (result) == UNCONSTRAINED_ARRAY_REF)
 	    && can_never_be_null)
 	  TREE_THIS_NOTRAP (result) = 1;
@@ -2926,7 +2931,7 @@ gnat_protect_expr (tree exp)
 
   /* Likewise if we're indirectly referencing part of something.  */
   if (code == COMPONENT_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == INDIRECT_REF)
+      && INDIRECT_REF_P (TREE_OPERAND (exp, 0)))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
 
@@ -3263,7 +3268,7 @@ gnat_invariant_expr (tree expr)
 
   /* Look through temporaries created to capture values.  */
   while ((TREE_CODE (expr) == CONST_DECL
-	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
+	  || (VAR_P (expr) && TREE_READONLY (expr)))
 	 && decl_function_context (expr) == current_function_decl
 	 && DECL_INITIAL (expr))
     {
@@ -3362,7 +3367,7 @@ object:
   if (TREE_CODE (t) == PARM_DECL)
     return fold_convert (type, expr);
 
-  if (TREE_CODE (t) == VAR_DECL
+  if (VAR_P (t)
       && (DECL_EXTERNAL (t)
 	  || decl_function_context (t) != current_function_decl))
     return fold_convert (type, expr);

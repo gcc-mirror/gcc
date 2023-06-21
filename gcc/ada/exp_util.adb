@@ -1853,7 +1853,15 @@ package body Exp_Util is
 
       begin
          pragma Assert (Present (DIC_Expr));
-         Expr := New_Copy_Tree (DIC_Expr);
+
+         --  We need to preanalyze the expression itself inside a generic to
+         --  be able to capture global references present in it.
+
+         if Inside_A_Generic then
+            Expr := DIC_Expr;
+         else
+            Expr := New_Copy_Tree (DIC_Expr);
+         end if;
 
          --  Perform the following substitution:
 
@@ -3111,7 +3119,14 @@ package body Exp_Util is
                   return;
                end if;
 
-               Expr := New_Copy_Tree (Prag_Expr);
+               --  We need to preanalyze the expression itself inside a generic
+               --  to be able to capture global references present in it.
+
+               if Inside_A_Generic then
+                  Expr := Prag_Expr;
+               else
+                  Expr := New_Copy_Tree (Prag_Expr);
+               end if;
 
                --  Substitute all references to type T with references to the
                --  _object formal parameter.
@@ -4698,6 +4713,55 @@ package body Exp_Util is
 
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
+
+   ----------------------------------------
+   -- Build_Temporary_On_Secondary_Stack --
+   ----------------------------------------
+
+   function Build_Temporary_On_Secondary_Stack
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Code : List_Id) return Entity_Id
+   is
+      Acc_Typ   : Entity_Id;
+      Alloc     : Node_Id;
+      Alloc_Obj : Entity_Id;
+
+   begin
+      pragma Assert (RTE_Available (RE_SS_Pool)
+        and then not Needs_Finalization (Typ));
+
+      Acc_Typ := Make_Temporary (Loc, 'A');
+      Mutate_Ekind (Acc_Typ, E_Access_Type);
+      Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
+
+      Append_To (Code,
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Acc_Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => True,
+              Subtype_Indication =>
+                New_Occurrence_Of (Typ, Loc))));
+
+      Alloc :=
+        Make_Allocator (Loc, Expression => New_Occurrence_Of (Typ, Loc));
+      Set_No_Initialization (Alloc);
+
+      Alloc_Obj := Make_Temporary (Loc, 'R');
+
+      Append_To (Code,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Alloc_Obj,
+          Constant_Present    => True,
+          Object_Definition   =>
+            New_Occurrence_Of (Acc_Typ, Loc),
+          Expression          => Alloc));
+
+      Set_Uses_Sec_Stack (Current_Scope);
+
+      return Alloc_Obj;
+   end Build_Temporary_On_Secondary_Stack;
 
    ---------------------------------------
    -- Build_Transient_Object_Statements --
@@ -7219,6 +7283,7 @@ package body Exp_Util is
             when N_Indexed_Component
               |  N_Selected_Component
               |  N_Aggregate
+              |  N_Extension_Aggregate
             =>
                return True;
 
@@ -8274,6 +8339,13 @@ package body Exp_Util is
       function Is_Allocated (Trans_Id : Entity_Id) return Boolean;
       --  Determine whether transient object Trans_Id is allocated on the heap
 
+      function Is_Indexed_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean;
+      --  Determine whether transient object Trans_Id denotes a container which
+      --  is in the process of being indexed in the statement list starting
+      --  from First_Stmt.
+
       function Is_Iterated_Container
         (Trans_Id   : Entity_Id;
          First_Stmt : Node_Id) return Boolean;
@@ -8548,6 +8620,91 @@ package body Exp_Util is
              and then Nkind (Expr) = N_Allocator;
       end Is_Allocated;
 
+      --------------------------
+      -- Is_Indexed_Container --
+      --------------------------
+
+      function Is_Indexed_Container
+        (Trans_Id   : Entity_Id;
+         First_Stmt : Node_Id) return Boolean
+      is
+         Aspect : Node_Id;
+         Call   : Node_Id;
+         Index  : Entity_Id;
+         Param  : Node_Id;
+         Stmt   : Node_Id;
+         Typ    : Entity_Id;
+
+      begin
+         --  It is not possible to iterate over containers in non-Ada 2012 code
+
+         if Ada_Version < Ada_2012 then
+            return False;
+         end if;
+
+         Typ := Etype (Trans_Id);
+
+         --  Handle access type created for the reference below
+
+         if Is_Access_Type (Typ) then
+            Typ := Designated_Type (Typ);
+         end if;
+
+         --  Look for aspect Constant_Indexing. It may be part of a type
+         --  declaration for a container, or inherited from a base type
+         --  or parent type.
+
+         Aspect := Find_Value_Of_Aspect (Typ, Aspect_Constant_Indexing);
+
+         if Present (Aspect) then
+            Index := Entity (Aspect);
+
+            --  Examine the statements following the container object and
+            --  look for a call to the default indexing routine where the
+            --  first parameter is the transient. Such a call appears as:
+
+            --     It : Access_To_Constant_Reference_Type :=
+            --            Constant_Indexing (Tran_Id.all, ...)'reference;
+
+            Stmt := First_Stmt;
+            while Present (Stmt) loop
+
+               --  Detect an object declaration which is initialized by a
+               --  controlled function call.
+
+               if Nkind (Stmt) = N_Object_Declaration
+                 and then Present (Expression (Stmt))
+                 and then Nkind (Expression (Stmt)) = N_Reference
+                 and then Nkind (Prefix (Expression (Stmt))) = N_Function_Call
+               then
+                  Call := Prefix (Expression (Stmt));
+
+                  --  The call must invoke the default indexing routine of
+                  --  the container and the transient object must appear as
+                  --  the first actual parameter. Skip any calls whose names
+                  --  are not entities.
+
+                  if Is_Entity_Name (Name (Call))
+                    and then Entity (Name (Call)) = Index
+                    and then Present (Parameter_Associations (Call))
+                  then
+                     Param := First (Parameter_Associations (Call));
+
+                     if Nkind (Param) = N_Explicit_Dereference
+                       and then Entity (Prefix (Param)) = Trans_Id
+                     then
+                        return True;
+                     end if;
+                  end if;
+               end if;
+
+               Next (Stmt);
+            end loop;
+         end if;
+
+         return False;
+      end Is_Indexed_Container;
+
       ---------------------------
       -- Is_Iterated_Container --
       ---------------------------
@@ -8572,7 +8729,7 @@ package body Exp_Util is
 
          Typ := Etype (Trans_Id);
 
-         --  Handle access type created for secondary stack use
+         --  Handle access type created for the reference below
 
          if Is_Access_Type (Typ) then
             Typ := Designated_Type (Typ);
@@ -8598,7 +8755,7 @@ package body Exp_Util is
             while Present (Stmt) loop
 
                --  Detect an object declaration which is initialized by a
-               --  secondary stack function call.
+               --  controlled function call.
 
                if Nkind (Stmt) = N_Object_Declaration
                  and then Present (Expression (Stmt))
@@ -8717,7 +8874,11 @@ package body Exp_Util is
           --  transient objects must exist for as long as the loop is around,
           --  otherwise any operation carried out by the iterator will fail.
 
-          and then not Is_Iterated_Container (Obj_Id, Decl);
+          and then not Is_Iterated_Container (Obj_Id, Decl)
+
+          --  Likewise for indexed containers in the context of iterator loops
+
+          and then not Is_Indexed_Container (Obj_Id, Decl);
    end Is_Finalizable_Transient;
 
    ---------------------------------
@@ -9945,6 +10106,8 @@ package body Exp_Util is
 
       --  Compute proper name to use, we need to get this right so that the
       --  right set of check policies apply to the Check pragma we are making.
+      --  The presence or not of a Ghost_Predicate does not influence the
+      --  choice of the applicable check policy.
 
       if Has_Dynamic_Predicate_Aspect (Typ) then
          Nam := Name_Dynamic_Predicate;
@@ -10172,6 +10335,33 @@ package body Exp_Util is
             Make_Index_Or_Discriminant_Constraint (Loc,
               Constraints => List_Constr));
    end Make_Subtype_From_Expr;
+
+   -----------------------------------
+   -- Make_Tag_Assignment_From_Type --
+   -----------------------------------
+
+   function Make_Tag_Assignment_From_Type
+     (Loc    : Source_Ptr;
+      Target : Node_Id;
+      Typ    : Entity_Id) return Node_Id
+   is
+      Nam : constant Node_Id :=
+              Make_Selected_Component (Loc,
+                Prefix => Target,
+                Selector_Name =>
+                  New_Occurrence_Of (First_Tag_Component (Typ), Loc));
+
+   begin
+      Set_Assignment_OK (Nam);
+
+      return
+        Make_Assignment_Statement (Loc,
+          Name       => Nam,
+          Expression =>
+            Unchecked_Convert_To (RTE (RE_Tag),
+              New_Occurrence_Of
+                (Node (First_Elmt (Access_Disp_Table (Typ))), Loc)));
+   end Make_Tag_Assignment_From_Type;
 
    -----------------------------
    -- Make_Variant_Comparison --
@@ -11685,14 +11875,6 @@ package body Exp_Util is
 
       elsif No (Exp_Type)
         or else Ekind (Exp_Type) = E_Access_Attribute_Type
-      then
-         return;
-
-      --  Nothing to do if prior expansion determined that a function call does
-      --  not require side effect removal.
-
-      elsif Nkind (Exp) = N_Function_Call
-        and then No_Side_Effect_Removal (Exp)
       then
          return;
 
@@ -14040,6 +14222,16 @@ package body Exp_Util is
          if Nkind (Original_Node (Par)) in N_Case_Expression | N_If_Expression
          then
             return True;
+
+         --  Stop at contexts where temporaries may be contained
+
+         elsif Nkind (Par) in N_Aggregate
+                            | N_Delta_Aggregate
+                            | N_Extension_Aggregate
+                            | N_Block_Statement
+                            | N_Loop_Statement
+         then
+            return False;
 
          --  Prevent the search from going too far
 

@@ -507,7 +507,7 @@ get_code_for_cast (tree dst_type, tree src_type)
   if (!src_type)
     return NOP_EXPR;
 
-  if (TREE_CODE (src_type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (src_type))
     {
       if (TREE_CODE (dst_type) == INTEGER_TYPE)
 	return FIX_TRUNC_EXPR;
@@ -531,9 +531,9 @@ region_model_manager::get_or_create_cast (tree type, const svalue *arg)
     return arg;
 
   /* Don't attempt to handle casts involving vector types for now.  */
-  if (TREE_CODE (type) == VECTOR_TYPE
+  if (VECTOR_TYPE_P (type)
       || (arg->get_type ()
-	  && TREE_CODE (arg->get_type ()) == VECTOR_TYPE))
+	  && VECTOR_TYPE_P (arg->get_type ())))
     return get_or_create_unknown_svalue (type);
 
   enum tree_code op = get_code_for_cast (type, arg->get_type ());
@@ -1410,7 +1410,7 @@ region_model_manager::get_region_for_label (tree label)
 const decl_region *
 region_model_manager::get_region_for_global (tree expr)
 {
-  gcc_assert (TREE_CODE (expr) == VAR_DECL);
+  gcc_assert (VAR_P (expr));
 
   decl_region **slot = m_globals_map.get (expr);
   if (slot)

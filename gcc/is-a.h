@@ -232,6 +232,19 @@ is_a (U *p)
   return is_a_helper<T>::test (p);
 }
 
+/* Similar to is_a<>, but where the pointer can be NULL, even if
+   is_a_helper<T> doesn't check for NULL.  */
+
+template <typename T, typename U>
+inline bool
+safe_is_a (U *p)
+{
+  if (p)
+    return is_a_helper <T>::test (p);
+  else
+    return false;
+}
+
 /* A generic conversion from a base type U to a derived type T.  See the
    discussion above for when to use this function.  */
 

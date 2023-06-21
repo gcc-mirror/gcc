@@ -16,8 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-LIB1ASMSRC = mips/mips16.S
-LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
+LIB1ASMFUNCS += _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16eqsf2 _m16nesf2 _m16gtsf2 _m16gesf2 _m16lesf2 _m16ltsf2 \
 	_m16unordsf2 \
 	_m16fltsisf _m16fix_truncsfsi _m16fltunsisf \

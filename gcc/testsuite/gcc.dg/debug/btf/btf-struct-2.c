@@ -1,7 +1,7 @@
 /* Test BTF generation for struct type with a member which refers to an
    unsupported type.
 
-   BTF does not support floating point types (among other things). When
+   BTF does not support vector types (among other things). When
    generating BTF for a struct (or union) type, members which refer to
    unsupported types should be skipped.  */
 

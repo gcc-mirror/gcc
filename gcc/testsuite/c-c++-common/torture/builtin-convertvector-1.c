@@ -1,3 +1,5 @@
+/* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
+
 extern
 #ifdef __cplusplus
 "C"

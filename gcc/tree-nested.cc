@@ -1311,7 +1311,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      pdecl = &TREE_OPERAND (OMP_CLAUSE_DECL (clause), 0);
 	      if (TREE_CODE (*pdecl) == POINTER_PLUS_EXPR)
 		pdecl = &TREE_OPERAND (*pdecl, 0);
-	      if (TREE_CODE (*pdecl) == INDIRECT_REF
+	      if (INDIRECT_REF_P (*pdecl)
 		  || TREE_CODE (*pdecl) == ADDR_EXPR)
 		pdecl = &TREE_OPERAND (*pdecl, 0);
 	    }
@@ -1614,7 +1614,7 @@ note_nonlocal_vla_type (struct nesting_info *info, tree type)
     type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
   while (POINTER_TYPE_P (type)
-	 || TREE_CODE (type) == VECTOR_TYPE
+	 || VECTOR_TYPE_P (type)
 	 || TREE_CODE (type) == FUNCTION_TYPE
 	 || TREE_CODE (type) == METHOD_TYPE)
     type = TREE_TYPE (type);
@@ -2097,7 +2097,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      pdecl = &TREE_OPERAND (OMP_CLAUSE_DECL (clause), 0);
 	      if (TREE_CODE (*pdecl) == POINTER_PLUS_EXPR)
 		pdecl = &TREE_OPERAND (*pdecl, 0);
-	      if (TREE_CODE (*pdecl) == INDIRECT_REF
+	      if (INDIRECT_REF_P (*pdecl)
 		  || TREE_CODE (*pdecl) == ADDR_EXPR)
 		pdecl = &TREE_OPERAND (*pdecl, 0);
 	    }
@@ -3234,8 +3234,8 @@ remap_vla_decls (tree block, struct nesting_info *root)
 	val = DECL_VALUE_EXPR (var);
 	type = TREE_TYPE (var);
 
-	if (!(TREE_CODE (val) == INDIRECT_REF
-	      && TREE_CODE (TREE_OPERAND (val, 0)) == VAR_DECL
+	if (! (INDIRECT_REF_P (val)
+	      && VAR_P (TREE_OPERAND (val, 0))
 	      && variably_modified_type_p (type, NULL)))
 	  continue;
 
@@ -3261,8 +3261,8 @@ remap_vla_decls (tree block, struct nesting_info *root)
 	val = DECL_VALUE_EXPR (var);
 	type = TREE_TYPE (var);
 
-	if (!(TREE_CODE (val) == INDIRECT_REF
-	      && TREE_CODE (TREE_OPERAND (val, 0)) == VAR_DECL
+	if (! (INDIRECT_REF_P (val)
+	      && VAR_P (TREE_OPERAND (val, 0))
 	      && variably_modified_type_p (type, NULL)))
 	  continue;
 
@@ -3323,7 +3323,7 @@ fixup_vla_decls (tree block)
       {
 	tree val = DECL_VALUE_EXPR (var);
 
-	if (!(TREE_CODE (val) == INDIRECT_REF
+	if (! (INDIRECT_REF_P (val)
 	      && VAR_P (TREE_OPERAND (val, 0))
 	      && DECL_HAS_VALUE_EXPR_P (TREE_OPERAND (val, 0))))
 	  continue;

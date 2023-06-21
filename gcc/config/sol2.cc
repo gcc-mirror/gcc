@@ -46,7 +46,7 @@ solaris_insert_attributes (tree decl, tree *attributes)
 {
   tree *x, next;
 
-  if (solaris_pending_aligns != NULL && TREE_CODE (decl) == VAR_DECL)
+  if (solaris_pending_aligns != NULL && VAR_P (decl))
     for (x = &solaris_pending_aligns; *x; x = &TREE_CHAIN (*x))
       {
 	tree name = TREE_PURPOSE (*x);

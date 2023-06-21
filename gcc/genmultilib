@@ -170,23 +170,23 @@ if [ "$#" != "0" ]; then
     all=${initial}`echo $first | sed -e 's_|_/_'g`
     first=`echo $first | sed -e 's_|_ _'g`
     echo ${all}/
-    initial="${initial}${all}/" ./tmpmultilib $@
-    ./tmpmultilib $first $@ | grep -v "^${all}"
+    initial="${initial}${all}/" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib $@
+    ${CONFIG_SHELL-/bin/sh} ./tmpmultilib $first $@ | grep -v "^${all}"
     ;;
   *)
     for opt in `echo $first | sed -e 's|/| |'g`; do
       echo ${initial}${opt}/
     done
-    ./tmpmultilib $@
+    ${CONFIG_SHELL-/bin/sh} ./tmpmultilib $@
     for opt in `echo $first | sed -e 's|/| |'g`; do
-      initial="${initial}${opt}/" ./tmpmultilib $@
+      initial="${initial}${opt}/" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib $@
     done
   esac
 fi
 EOF
 chmod +x tmpmultilib
 
-combinations=`initial=/ ./tmpmultilib ${options}`
+combinations=`initial=/ ${CONFIG_SHELL-/bin/sh} ./tmpmultilib ${options}`
 
 # If there exceptions, weed them out now
 if [ -n "${exceptions}" ]; then
@@ -210,7 +210,7 @@ cat >>tmpmultilib2 <<\EOF
   done
 EOF
   chmod +x tmpmultilib2
-  combinations=`./tmpmultilib2 ${combinations}`
+  combinations=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib2 ${combinations}`
 fi
 
 # If the MULTILIB_REQUIRED list are provided,
@@ -236,7 +236,7 @@ cat >>tmpmultilib2 <<\EOF
 EOF
 
    chmod +x tmpmultilib2
-   combinations=`./tmpmultilib2 ${combinations}`
+   combinations=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib2 ${combinations}`
 
 fi
 
@@ -348,12 +348,12 @@ if [ "$#" = "0" ]; then
 else
   first=$1
   shift
-  dirout="${dirout}" optout="${optout}" ./tmpmultilib2 $@
+  dirout="${dirout}" optout="${optout}" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib2 $@
   l=`echo ${first} | sed -e 's/=.*$//' -e 's/?/=/g'`
   r=`echo ${first} | sed -e 's/^.*=//' -e 's/?/=/g'`
   if expr " ${optout} " : ".* ${l} .*" > /dev/null; then
     newopt=`echo " ${optout} " | sed -e "s/ ${l} / ${r} /" -e 's/^ //' -e 's/ $//'`
-    dirout="${dirout}" optout="${newopt}" ./tmpmultilib2 $@
+    dirout="${dirout}" optout="${newopt}" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib2 $@
   fi
 fi
 EOF
@@ -453,14 +453,14 @@ chmod +x tmpmultilib4
 # correct list of options and negations.
 for combo in ${combinations}; do
   # Use the directory names rather than the option names.
-  dirout=`./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
+  dirout=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
 
   # Look through the options.  We must output each option that is
   # present, and negate each option that is not present.
-  optout=`./tmpmultilib4 "${combo}" "${options}"`
+  optout=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib4 "${combo}" "${options}"`
 
   # Output the line with all appropriate matches.
-  dirout="${dirout}" optout="${optout}" ./tmpmultilib2
+  dirout="${dirout}" optout="${optout}" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib2
 done
 
 # Terminate the list of string.
@@ -491,11 +491,11 @@ for rrule in ${multilib_reuse}; do
   if expr "${combinations} " : ".*/${combo}/.*" > /dev/null; then
     if echo "/${copts}/" | grep -E "${options_re}" > /dev/null; then
       combo="/${combo}/"
-      dirout=`./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
+      dirout=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib3 "${combo}" "${todirnames}" "${toosdirnames}" "${enable_multilib}"`
       copts="/${copts}/"
-      optout=`./tmpmultilib4 "${copts}" "${options}"`
+      optout=`${CONFIG_SHELL-/bin/sh} ./tmpmultilib4 "${copts}" "${options}"`
       # Output the line with all appropriate matches.
-      dirout="${dirout}" optout="${optout}" ./tmpmultilib2
+      dirout="${dirout}" optout="${optout}" ${CONFIG_SHELL-/bin/sh} ./tmpmultilib2
     else
       echo "The rule ${rrule} contains an option absent from MULTILIB_OPTIONS." >&2
       exit 1

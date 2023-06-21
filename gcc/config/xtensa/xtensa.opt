@@ -18,6 +18,9 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/xtensa/xtensa-opts.h
+
 mconst16
 Target Mask(CONST16)
 Use CONST16 instruction to load constants.
@@ -64,3 +67,7 @@ Use call0 ABI.
 mabi=windowed
 Target RejectNegative Var(xtensa_windowed_abi, 1)
 Use windowed registers ABI.
+
+mstrict-align
+Target Var(xtensa_strict_alignment) Init(XTENSA_STRICT_ALIGNMENT_UNDEFINED)
+Do not use unaligned memory references.

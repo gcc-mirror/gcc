@@ -270,15 +270,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<_Tp, _Alloc>::
     _M_fill_assign(size_t __n, const value_type& __val)
     {
+      const size_type __sz = size();
       if (__n > capacity())
 	{
+	  if (__n <= __sz)
+	    __builtin_unreachable();
 	  vector __tmp(__n, __val, _M_get_Tp_allocator());
 	  __tmp._M_impl._M_swap_data(this->_M_impl);
 	}
-      else if (__n > size())
+      else if (__n > __sz)
 	{
 	  std::fill(begin(), end(), __val);
-	  const size_type __add = __n - size();
+	  const size_type __add = __n - __sz;
 	  _GLIBCXX_ASAN_ANNOTATE_GROW(__add);
 	  this->_M_impl._M_finish =
 	    std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
@@ -316,10 +319,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
 		    std::forward_iterator_tag)
       {
+	const size_type __sz = size();
 	const size_type __len = std::distance(__first, __last);
 
 	if (__len > capacity())
 	  {
+	    if (__len <= __sz)
+	      __builtin_unreachable();
+
 	    _S_check_init_len(__len, _M_get_Tp_allocator());
 	    pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
 	    std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
@@ -332,14 +339,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    this->_M_impl._M_finish = this->_M_impl._M_start + __len;
 	    this->_M_impl._M_end_of_storage = this->_M_impl._M_finish;
 	  }
-	else if (size() >= __len)
+	else if (__sz >= __len)
 	  _M_erase_at_end(std::copy(__first, __last, this->_M_impl._M_start));
 	else
 	  {
 	    _ForwardIterator __mid = __first;
-	    std::advance(__mid, size());
+	    std::advance(__mid, __sz);
 	    std::copy(__first, __mid, this->_M_impl._M_start);
-	    const size_type __attribute__((__unused__)) __n = __len - size();
+	    const size_type __attribute__((__unused__)) __n = __len - __sz;
 	    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	    this->_M_impl._M_finish =
 	      std::__uninitialized_copy_a(__mid, __last,

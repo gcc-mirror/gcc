@@ -41,13 +41,13 @@
 /* { dg-final { scan-assembler-times "ascii \"node_t.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"arena_t.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 
-/* { dg-final { scan-assembler-times "\[\t \]0x2\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x3\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x4\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x6\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x8\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0xb\[\t \]+\[^\n\]*btv_type" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0xf\[\t \]+\[^\n\]*btv_type" 1 } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'a'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'my_int'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'b'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'foo_int'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'c'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'bar_int'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'd'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'node_t'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'destination'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'CBAR'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'ticket'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'CBARP'" } } */
+/* { dg-final { scan-assembler "BTF_KIND_VAR 'suitcase'\[\\r\\n\]+\[^\\r\\n\]*\[\\r\\n\]+\[^\\r\\n\]*\\(BTF_KIND_TYPEDEF 'arena_t'" } } */
 
 typedef int my_int;
 typedef int foo_int;

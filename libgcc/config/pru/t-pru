@@ -42,6 +42,9 @@ LIB2ADD += \
 
 HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections
 
+# Use an appropriate implementation when implementing DImode division.
+HOST_LIBGCC2_CFLAGS += -DTARGET_HAS_NO_HW_DIVIDE
+
 LIB2FUNCS_EXCLUDE = _muldi3
 
 SHLIB_MAPFILES += $(srcdir)/config/pru/libgcc-eabi.ver

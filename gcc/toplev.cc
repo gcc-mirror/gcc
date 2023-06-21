@@ -323,7 +323,7 @@ wrapup_global_declaration_1 (tree decl)
 {
   /* We're not deferring this any longer.  Assignment is conditional to
      avoid needlessly dirtying PCH pages.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_WITH_VIS)
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl)
       && DECL_DEFER_OUTPUT (decl) != 0)
     DECL_DEFER_OUTPUT (decl) = 0;
 
@@ -829,7 +829,8 @@ output_stack_usage_1 (FILE *cf)
   if (stack_usage_file)
     {
       print_decl_identifier (stack_usage_file, current_function_decl,
-			     PRINT_DECL_ORIGIN | PRINT_DECL_NAME);
+			     PRINT_DECL_ORIGIN | PRINT_DECL_NAME
+			     | PRINT_DECL_REMAP_DEBUG);
       fprintf (stack_usage_file, "\t" HOST_WIDE_INT_PRINT_DEC"\t%s\n",
 	       stack_usage, stack_usage_kind_str[stack_usage_kind]);
     }
@@ -2251,6 +2252,10 @@ toplev::main (int argc, char **argv)
   init_local_tick ();
 
   initialize_plugins ();
+
+  /* Handle the dump options now that plugins have had a chance to install new
+     passes.  */
+  handle_deferred_dump_options ();
 
   if (version_flag)
     print_version (stderr, "", true);

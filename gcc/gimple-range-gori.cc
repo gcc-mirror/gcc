@@ -182,9 +182,9 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
 
   // Set the direct dependency cache entries.
   if (!src.ssa1)
-    src.ssa1 = dep;
-  else if (!src.ssa2 && src.ssa1 != dep)
-    src.ssa2 = dep;
+    src.ssa1 = SSA_NAME_VERSION (dep);
+  else if (!src.ssa2 && src.ssa1 != SSA_NAME_VERSION (dep))
+    src.ssa2 = SSA_NAME_VERSION (dep);
 
   // Don't calculate imports or export/dep chains if BB is not provided.
   // This is usually the case for when the temporal cache wants the direct
@@ -486,7 +486,7 @@ gori_map::calculate_gori (basic_block bb)
   else
     {
       // Do not process switches if they are too large.
-      if (EDGE_COUNT (bb->succs) > (unsigned)param_evrp_switch_limit)
+      if (EDGE_COUNT (bb->succs) > (unsigned)param_vrp_switch_limit)
 	return;
       gswitch *gs = as_a<gswitch *>(stmt);
       name = gimple_range_ssa_p (gimple_switch_index (gs));
@@ -558,12 +558,12 @@ debug (gori_map &g)
 // Construct a gori_compute object.
 
 gori_compute::gori_compute (int not_executable_flag)
-		      : outgoing (param_evrp_switch_limit), tracer ("GORI ")
+		      : outgoing (param_vrp_switch_limit), tracer ("GORI ")
 {
   m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.
-  m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
-  m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
+  m_bool_zero = range_false ();
+  m_bool_one = range_true ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_GORI))
     tracer.enable_trace ();
 }
@@ -731,7 +731,8 @@ range_is_either_true_or_false (const irange &r)
   // so true can be ~[0, 0] (i.e. [1,MAX]).
   tree type = r.type ();
   gcc_checking_assert (range_compatible_p (type, boolean_type_node));
-  return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
+  return (r.singleton_p ()
+	  || !r.contains_p (wi::zero (TYPE_PRECISION (type))));
 }
 
 // Evaluate a binary logical expression by combining the true and
@@ -1308,12 +1309,14 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 // direct dependent is exported, it may also change the computed value of NAME.
 
 bool
-gori_compute::may_recompute_p (tree name, basic_block bb)
+gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
 {
   tree dep1 = depend1 (name);
   tree dep2 = depend2 (name);
 
   // If the first dependency is not set, there is no recomputation.
+  // Dependencies reflect original IL, not current state.   Check if the
+  // SSA_NAME is still valid as well.
   if (!dep1)
     return false;
 
@@ -1322,22 +1325,36 @@ gori_compute::may_recompute_p (tree name, basic_block bb)
   if (is_a<gphi *> (s) || gimple_has_side_effects (s))
     return false;
 
-  // If edge is specified, check if NAME can be recalculated on that edge.
-  if (bb)
-    return ((is_export_p (dep1, bb))
-	    || (dep2 && is_export_p (dep2, bb)));
+  if (!dep2)
+    {
+      // -1 indicates a default param, convert it to the real default.
+      if (depth == -1)
+	{
+	  depth = (int)param_ranger_recompute_depth;
+	  gcc_checking_assert (depth >= 1);
+	}
 
-  return (is_export_p (dep1)) || (dep2 && is_export_p (dep2));
+      bool res = (bb ? is_export_p (dep1, bb) : is_export_p (dep1));
+      if (res || depth <= 1)
+	return res;
+      // Check another level of recomputation.
+      return may_recompute_p (dep1, bb, --depth);
+    }
+  // Two dependencies terminate the depth of the search.
+  if (bb)
+    return is_export_p (dep1, bb) || is_export_p (dep2, bb);
+  else
+    return is_export_p (dep1) || is_export_p (dep2);
 }
 
 // Return TRUE if NAME can be recomputed on edge E.  If any direct dependent
 // is exported on edge E, it may change the computed value of NAME.
 
 bool
-gori_compute::may_recompute_p (tree name, edge e)
+gori_compute::may_recompute_p (tree name, edge e, int depth)
 {
   gcc_checking_assert (e);
-  return may_recompute_p (name, e->src);
+  return may_recompute_p (name, e->src, depth);
 }
 
 
@@ -1461,7 +1478,7 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
   tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
   if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
     return false;
-  range_op_handler hand (gimple_assign_rhs_code (cond_def), type);
+  range_op_handler hand (gimple_assign_rhs_code (cond_def));
   if (!hand)
     return false;
 

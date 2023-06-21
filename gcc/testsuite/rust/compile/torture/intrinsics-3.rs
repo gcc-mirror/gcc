@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 extern "rust-intrinsic" {
     fn not_an_intrinsic();
 }

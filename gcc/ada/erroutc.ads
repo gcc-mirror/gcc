@@ -51,6 +51,10 @@ package Erroutc is
    --  Set true to indicate that the current message contains the insertion
    --  sequence !! (force warnings even in non-main unit source files).
 
+   Has_Error_Code : Boolean := False;
+   --  Set true to indicate that the current message contains the insertion
+   --  sequence [] (insert error code).
+
    Has_Insertion_Line : Boolean := False;
    --  Set True to indicate that the current message contains the insertion
    --  character # (insert line number reference).
@@ -547,6 +551,9 @@ package Erroutc is
    --    Has_Double_Exclam is set True if the message contains the sequence !!
    --    and is otherwise set False.
    --
+   --    Has_Error_Code is set True if the message contains the sequence []
+   --    and is otherwise set False.
+   --
    --    Has_Insertion_Line is set True if the message contains the character #
    --    and is otherwise set False.
    --
@@ -580,6 +587,9 @@ package Erroutc is
    --  Add a single character to the current message. This routine does not
    --  check for special insertion characters (they are just treated as text
    --  characters if they occur).
+
+   procedure Set_Msg_Insertion_Code;
+   --  Handle error code insertion ([] insertion character)
 
    procedure Set_Msg_Insertion_File_Name;
    --  Handle file name insertion (left brace insertion character)

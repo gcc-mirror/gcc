@@ -3014,7 +3014,7 @@ decode_addr_const (tree exp, class addr_const *value)
 	  offset += mem_ref_offset (target).force_shwi ();
 	  target = TREE_OPERAND (TREE_OPERAND (target, 0), 0);
 	}
-      else if (TREE_CODE (target) == INDIRECT_REF
+      else if (INDIRECT_REF_P (target)
 	       && TREE_CODE (TREE_OPERAND (target, 0)) == NOP_EXPR
 	       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (target, 0), 0))
 		  == ADDR_EXPR)
@@ -4876,16 +4876,16 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	tree src_type = TREE_TYPE (src);
 	tree dest_type = TREE_TYPE (value);
 
-	/* Allow conversions between pointer types, floating-point
-	   types, and offset types.  */
+	/* Allow conversions between pointer types and offset types.  */
 	if ((POINTER_TYPE_P (dest_type) && POINTER_TYPE_P (src_type))
-	    || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type))
 	    || (TREE_CODE (dest_type) == OFFSET_TYPE
 		&& TREE_CODE (src_type) == OFFSET_TYPE))
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
-	/* Allow length-preserving conversions between integer types.  */
-	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type)
+	/* Allow length-preserving conversions between integer types and
+	   floating-point types.  */
+	if (((INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
+	     || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type)))
 	    && (TYPE_PRECISION (dest_type) == TYPE_PRECISION (src_type)))
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
@@ -5255,6 +5255,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
       break;
 
     case REAL_TYPE:
+      gcc_assert (size == thissize);
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
       else
@@ -5564,19 +5565,18 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 
   /* Relative index of this element if this is an array component.  */
   HOST_WIDE_INT relative_index
-    = (!local->field
-       ? (local->index
-	  ? (tree_to_shwi (local->index)
-	     - tree_to_shwi (local->min_index))
-	  : local->last_relative_index + 1)
-       : 0);
+    = (local->field
+       ? 0
+       : (local->index
+	  ? tree_to_uhwi (local->index) - tree_to_uhwi (local->min_index)
+	  : local->last_relative_index + 1));
 
   /* Bit position of this element from the start of the containing
      constructor.  */
   HOST_WIDE_INT constructor_relative_ebitpos
-      = (local->field
-	 ? int_bit_position (local->field)
-	 : ebitsize * relative_index);
+    = (local->field
+       ? int_bit_position (local->field)
+       : ebitsize * relative_index);
 
   /* Bit position of this element from the start of a possibly ongoing
      outer byte buffer.  */
@@ -7032,7 +7032,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	}
       else if (reloc & targetm.asm_out.reloc_rw_mask ())
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
-      else if (reloc || flag_merge_constants < 2
+      else if (reloc || (flag_merge_constants < 2 && !DECL_MERGEABLE (decl))
 	       || ((flag_sanitize & SANITIZE_ADDRESS)
 		   /* PR 81697: for architectures that use section anchors we
 		      need to ignore DECL_RTL_SET_P (decl) for string constants

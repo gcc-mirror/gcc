@@ -73,7 +73,7 @@ GRS_OBJS = \
     rust/rust-lex.o \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
-    rust/rust-ast-full-test.o \
+    rust/rust-ast.o \
     rust/rust-ast-fragment.o \
     rust/rust-ast-dump.o \
     rust/rust-hir-dump.o \
@@ -86,10 +86,11 @@ GRS_OBJS = \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
-    rust/rust-hir-full-test.o \
+    rust/rust-hir.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
     rust/rust-abi.o \
+	rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
@@ -115,11 +116,14 @@ GRS_OBJS = \
     rust/rust-pub-restricted-visitor.o \
     rust/rust-privacy-reporter.o \
     rust/rust-tyty.o \
+    rust/rust-tyty-util.o \
     rust/rust-tyty-call.o \
-    rust/rust-tyctx.o \
+    rust/rust-tyty-subst.o \
+    rust/rust-typecheck-context.o \
     rust/rust-tyty-bounds.o \
     rust/rust-hir-type-check-util.o \
     rust/rust-hir-trait-resolve.o \
+    rust/rust-hir-trait-reference.o \
     rust/rust-hir-type-check-item.o \
     rust/rust-hir-type-check-type.o \
     rust/rust-hir-type-check-struct.o \
@@ -130,8 +134,10 @@ GRS_OBJS = \
     rust/rust-hir-type-check-implitem.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
+    rust/rust-type-util.o \
     rust/rust-coercion.o \
     rust/rust-casts.o \
+    rust/rust-unify.o \
     rust/rust-hir-type-check-base.o \
     rust/rust-autoderef.o \
     rust/rust-substitution-mapper.o \
@@ -161,6 +167,8 @@ GRS_OBJS = \
     rust/rust-import-archive.o \
     rust/rust-extern-crate.o \
     rust/rust-builtins.o \
+    rust/rust-feature.o \
+    rust/rust-feature-gate.o \
     $(END)
 # removed object files from here
 

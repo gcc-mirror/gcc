@@ -134,7 +134,7 @@ tree_vector_builder::can_elide_p (const_tree elt) const
 inline void
 tree_vector_builder::note_representative (tree *elt1_ptr, tree elt2)
 {
-  if (CONSTANT_CLASS_P (elt2) && TREE_OVERFLOW (elt2))
+  if (TREE_OVERFLOW_P (elt2))
     {
       gcc_assert (operand_equal_p (*elt1_ptr, elt2, 0));
       if (!TREE_OVERFLOW (elt2))

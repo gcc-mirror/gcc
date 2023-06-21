@@ -791,7 +791,7 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
 	}
       else
 	{
-	  gcc_assert (TREE_CODE (se->expr) == INDIRECT_REF);
+	  gcc_assert (INDIRECT_REF_P (se->expr));
 	  tree ptr = TREE_OPERAND (se->expr, 0);
 
 	  gcc_assert (TREE_CODE (ptr) == POINTER_PLUS_EXPR);
@@ -2620,11 +2620,15 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
+      /* These expressions don't always have the dtype element length set
+	 correctly, rendering them useless for array transfer.  */
       if (expr->ts.type != BT_CLASS
 	 && expr->expr_type == EXPR_VARIABLE
-	 && gfc_expr_attr (expr).pointer)
+	 && ((expr->symtree->n.sym->ts.type == BT_DERIVED && expr->ts.deferred)
+	     || (expr->symtree->n.sym->assoc
+		 && expr->symtree->n.sym->assoc->variable)
+	     || gfc_expr_attr (expr).pointer))
 	goto scalarize;
-
 
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)

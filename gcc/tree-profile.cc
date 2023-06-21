@@ -808,7 +808,7 @@ tree_profiling (void)
       {
 	if (!gimple_has_body_p (node->decl)
 	    || !(!node->clone_of
-	    || node->decl != node->clone_of->decl))
+		 || node->decl != node->clone_of->decl))
 	  continue;
 
 	/* Don't profile functions produced for builtin stuff.  */
@@ -842,12 +842,15 @@ tree_profiling (void)
 	    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	      {
 		gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
-		if (!call)
+		if (!call || gimple_call_internal_p (call))
 		  continue;
 
 		/* We do not clear pure/const on decls without body.  */
 		tree fndecl = gimple_call_fndecl (call);
-		if (fndecl && !gimple_has_body_p (fndecl))
+		cgraph_node *callee;
+		if (fndecl
+		    && (callee = cgraph_node::get (fndecl))
+		    && callee->get_availability (node) == AVAIL_NOT_AVAILABLE)
 		  continue;
 
 		/* Drop the const attribute from the call type (the pure

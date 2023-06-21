@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu99" { target c } } */
 /* { dg-skip-if "ptx can elide zero additions" { "nvptx-*-*" } { "-O0" } { "" } } */
+/* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
 
 #include "complex-sign.h"
 

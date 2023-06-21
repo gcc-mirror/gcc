@@ -35,9 +35,8 @@ with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
-with Stand;          use Stand;
+with Snames;         use Snames;
 with Stylesw;        use Stylesw;
 
 package body Style is
@@ -68,7 +67,7 @@ package body Style is
             end;
          end if;
 
-         Error_Msg_N ("(style) subprogram body has no previous spec", N);
+         Error_Msg_N ("(style) subprogram body has no previous spec?s?", N);
       end if;
    end Body_With_No_Spec;
 
@@ -85,11 +84,11 @@ package body Style is
       if Style_Check_Array_Attribute_Index then
          if D = 1 and then Present (E1) then
             Error_Msg_N -- CODEFIX
-              ("(style) index number not allowed for one dimensional array",
+              ("(style) index number not allowed for one dimensional array?A?",
                E1);
          elsif D > 1 and then No (E1) then
             Error_Msg_N -- CODEFIX
-              ("(style) index number required for multi-dimensional array",
+              ("(style) index number required for multi-dimensional array?A?",
                N);
          end if;
       end if;
@@ -168,7 +167,7 @@ package body Style is
                      Error_Msg_Node_1 := Def;
                      Error_Msg_Sloc := Sloc (Def);
                      Error_Msg -- CODEFIX
-                       ("(style) bad casing of & declared#", Sref, Ref);
+                       ("(style) bad casing of & declared#?r?", Sref, Ref);
                      return;
                   end if;
 
@@ -201,7 +200,7 @@ package body Style is
             else
                --  ASCII is all upper case
 
-               if Entity (Ref) = Standard_ASCII then
+               if Chars (Ref) = Name_ASCII then
                   Cas := All_Upper_Case;
 
                --  Special handling for names in package ASCII
@@ -250,7 +249,7 @@ package body Style is
                   Set_Casing (Cas);
                   Error_Msg_Name_1 := Name_Enter;
                   Error_Msg_N -- CODEFIX
-                    ("(style) bad casing of %% declared in Standard", Ref);
+                    ("(style) bad casing of %% declared in Standard?n?", Ref);
                end if;
             end if;
          end if;
@@ -294,16 +293,16 @@ package body Style is
 
          if Nkind (N) = N_Subprogram_Body then
             Error_Msg_NE -- CODEFIX
-              ("(style) missing OVERRIDING indicator in body of&", N, E);
+              ("(style) missing OVERRIDING indicator in body of&?O?", N, E);
 
          elsif Nkind (N) = N_Abstract_Subprogram_Declaration then
             Error_Msg_NE -- CODEFIX
-              ("(style) missing OVERRIDING indicator in declaration of&",
+              ("(style) missing OVERRIDING indicator in declaration of&?O?",
                 Specification (N), E);
 
          else
             Error_Msg_NE -- CODEFIX
-              ("(style) missing OVERRIDING indicator in declaration of&",
+              ("(style) missing OVERRIDING indicator in declaration of&?O?",
                Nod, E);
          end if;
       end if;
@@ -317,7 +316,7 @@ package body Style is
    begin
       if Style_Check_Order_Subprograms then
          Error_Msg_N -- CODEFIX
-           ("(style) subprogram body& not in alphabetical order", Name);
+           ("(style) subprogram body& not in alphabetical order?o?", Name);
       end if;
    end Subprogram_Not_In_Alpha_Order;
 end Style;

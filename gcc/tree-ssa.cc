@@ -412,8 +412,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
     {
       /* If there's a single use of VAR, and VAR is the entire debug
 	 expression (usecount would have been incremented again
-	 otherwise), and the definition involves only constants and
-	 SSA names, then we can propagate VALUE into this single use,
+	 otherwise), then we can propagate VALUE into this single use,
 	 avoiding the temp.
 
 	 We can also avoid using a temp if VALUE can be shared and
@@ -424,11 +423,9 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	 are deferred to a debug temp, although we could avoid temps
 	 at the expense of duplication of expressions.  */
 
-      if (CONSTANT_CLASS_P (value)
+      if (usecount == 1
 	  || gimple_code (def_stmt) == GIMPLE_PHI
-	  || (usecount == 1
-	      && (!gimple_assign_single_p (def_stmt)
-		  || is_gimple_min_invariant (value)))
+	  || CONSTANT_CLASS_P (value)
 	  || is_gimple_reg (value))
 	;
       else
@@ -466,11 +463,6 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       if (value)
 	{
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	    /* unshare_expr is not needed here.  vexpr is either a
-	       SINGLE_RHS, that can be safely shared, some other RHS
-	       that was unshared when we found it had a single debug
-	       use, or a DEBUG_EXPR_DECL, that can be safely
-	       shared.  */
 	    SET_USE (use_p, unshare_expr (value));
 	  /* If we didn't replace uses with a debug decl fold the
 	     resulting expression.  Otherwise we end up with invalid IL.  */
@@ -1515,7 +1507,7 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
       && is_gimple_reg_type (TREE_TYPE (*tp))
       && ! VOID_TYPE_P (TREE_TYPE (*tp)))
     {
-      if (TREE_CODE (TREE_TYPE (sym)) == VECTOR_TYPE
+      if (VECTOR_TYPE_P (TREE_TYPE (sym))
 	  && useless_type_conversion_p (TREE_TYPE (*tp),
 					TREE_TYPE (TREE_TYPE (sym)))
 	  && multiple_p (mem_ref_offset (*tp),
@@ -1580,13 +1572,29 @@ non_rewritable_mem_ref_base (tree ref)
   if (DECL_P (ref))
     return NULL_TREE;
 
-  if (! (base = CONST_CAST_TREE (strip_invariant_refs (ref))))
+  switch (TREE_CODE (ref))
     {
-      base = get_base_address (ref);
-      if (DECL_P (base))
-	return base;
-      return NULL_TREE;
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
+      if (DECL_P (TREE_OPERAND (ref, 0)))
+	return NULL_TREE;
+      break;
+    case VIEW_CONVERT_EXPR:
+      if (DECL_P (TREE_OPERAND (ref, 0)))
+	{
+	  if (TYPE_SIZE (TREE_TYPE (ref))
+	      != TYPE_SIZE (TREE_TYPE (TREE_OPERAND  (ref, 0))))
+	    return TREE_OPERAND (ref, 0);
+	  return NULL_TREE;
+	}
+      break;
+    /* We would need to rewrite ARRAY_REFs or COMPONENT_REFs and even
+       more so multiple levels of handled components.  */
+    default:;
     }
+
+  base = ref;
 
   /* But watch out for MEM_REFs we cannot lower to a
      VIEW_CONVERT_EXPR or a BIT_FIELD_REF.  */
@@ -1600,7 +1608,7 @@ non_rewritable_mem_ref_base (tree ref)
 	  || VOID_TYPE_P (TREE_TYPE (base))
 	  || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base))
 	return decl;
-      if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
+      if ((VECTOR_TYPE_P (TREE_TYPE (decl))
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
@@ -1638,9 +1646,14 @@ non_rewritable_mem_ref_base (tree ref)
       return decl;
     }
 
+  /* We cannot rewrite a decl in the base.  */
+  base = get_base_address (ref);
+  if (DECL_P (base))
+    return base;
+
   /* We cannot rewrite TARGET_MEM_REFs.  */
-  if (TREE_CODE (base) == TARGET_MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+  else if (TREE_CODE (base) == TARGET_MEM_REF
+	   && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
     {
       tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
       if (! DECL_P (decl))

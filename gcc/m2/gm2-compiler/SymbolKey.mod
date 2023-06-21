@@ -312,7 +312,7 @@ END SearchForAny ;
 
 PROCEDURE ForeachNodeDo (t: SymbolTree; P: PerformOperation) ;
 BEGIN
-   SearchAndDo(t^.Left, P)
+   SearchAndDo (t^.Left, P)
 END ForeachNodeDo ;
 
 
@@ -327,9 +327,9 @@ BEGIN
    IF t#NIL
    THEN
       WITH t^ DO
-         SearchAndDo(Right, P) ;
-         P(KeySym) ;
-         SearchAndDo(Left, P)
+         SearchAndDo (Right, P) ;
+         P (KeySym) ;
+         SearchAndDo (Left, P)
       END
    END
 END SearchAndDo ;

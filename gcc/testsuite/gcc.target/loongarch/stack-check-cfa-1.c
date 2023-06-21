@@ -6,7 +6,7 @@
 #define SIZE 128*1024
 #include "stack-check-prologue.h"
 
-/* { dg-final { scan-assembler-times {\.cfi_def_cfa_offset 131088} 1 } } */
+/* { dg-final { scan-assembler-times {\.cfi_def_cfa_offset 131072} 1 } } */
 /* { dg-final { scan-assembler-times {\.cfi_def_cfa_offset 0} 1 } } */
 
 /* Checks that the CFA notes are correct for every sp adjustment.  */

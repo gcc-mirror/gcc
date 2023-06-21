@@ -296,6 +296,8 @@ public:
   void insert_ast_item (AST::Item *item);
   bool lookup_ast_item (NodeId id, AST::Item **result);
 
+  HIR::ImplBlock *lookup_builtin_marker ();
+
 private:
   Mappings ();
 
@@ -304,6 +306,7 @@ private:
   HirId hirIdIter;
   NodeId nodeIdIter;
   std::map<CrateNum, LocalDefId> localIdIter;
+  HIR::ImplBlock *builtinMarker;
 
   std::map<NodeId, CrateNum> crate_node_to_crate_num;
   std::map<CrateNum, AST::Crate *> ast_crate_mappings;

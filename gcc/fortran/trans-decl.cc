@@ -483,7 +483,7 @@ gfc_set_decl_assembler_name (tree decl, tree name)
 
 /* Returns true if a variable of specified size should go on the stack.  */
 
-int
+bool
 gfc_can_put_var_on_stack (tree size)
 {
   unsigned HOST_WIDE_INT low;
@@ -558,7 +558,7 @@ gfc_finish_decl (tree decl)
     return;
 
   if (DECL_SIZE (decl) == NULL_TREE
-      && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
+      && COMPLETE_TYPE_P (TREE_TYPE (decl)))
     layout_decl (decl, 0);
 
   /* A few consistency checks.  */
@@ -1791,6 +1791,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       return decl;
     }
 
+  if (sym->ts.type == BT_UNKNOWN)
+    gfc_fatal_error ("%s at %C has no default type", sym->name);
+
   if (sym->attr.intrinsic)
     gfc_internal_error ("intrinsic variable which isn't a procedure");
 
@@ -1824,6 +1827,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Add attributes to variables.  Functions are handled elsewhere.  */
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
   decl_attributes (&decl, attributes, 0);
+  if (sym->ts.deferred && VAR_P (length))
+    decl_attributes (&length, attributes, 0);
 
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
@@ -1870,6 +1875,15 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  && !(sym->attr.use_assoc && !intrinsic_array_parameter)))
     gfc_defer_symbol_init (sym);
 
+  /* Set the vptr of unlimited polymorphic pointer variables so that
+     they do not cause segfaults in select type, when the selector
+     is an intrinsic type.  Arrays are captured above.  */
+  if (sym->ts.type == BT_CLASS && UNLIMITED_POLY (sym)
+      && CLASS_DATA (sym)->attr.class_pointer
+      && !CLASS_DATA (sym)->attr.dimension && !sym->attr.dummy
+      && sym->attr.flavor == FL_VARIABLE && !sym->assoc)
+    gfc_defer_symbol_init (sym);
+
   if (sym->ts.type == BT_CHARACTER
       && sym->attr.allocatable
       && !sym->attr.dimension
@@ -1886,7 +1900,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       length = fold_convert (gfc_charlen_type_node, length);
       gfc_finish_var_decl (length, sym);
       if (!sym->attr.associate_var
-	  && TREE_CODE (length) == VAR_DECL
+	  && VAR_P (length)
 	  && sym->value && sym->value->expr_type != EXPR_NULL
 	  && sym->value->ts.u.cl->length)
 	{
@@ -1900,6 +1914,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       else
 	gcc_assert (!sym->value || sym->value->expr_type == EXPR_NULL);
     }
+
 
   gfc_finish_var_decl (decl, sym);
 
@@ -4646,6 +4661,29 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 							   NULL));
       if (sym->assoc)
 	continue;
+
+      /* Set the vptr of unlimited polymorphic pointer variables so that
+	 they do not cause segfaults in select type, when the selector
+	 is an intrinsic type.  */
+      if (sym->ts.type == BT_CLASS && UNLIMITED_POLY (sym)
+	  && sym->attr.flavor == FL_VARIABLE && !sym->assoc
+	  && !sym->attr.dummy && CLASS_DATA (sym)->attr.class_pointer)
+	{
+	  gfc_symbol *vtab;
+	  gfc_init_block (&tmpblock);
+	  vtab = gfc_find_vtab (&sym->ts);
+	  if (!vtab->backend_decl)
+	    {
+	      if (!vtab->attr.referenced)
+		gfc_set_sym_referenced (vtab);
+	      gfc_get_symbol_decl (vtab);
+	    }
+	  tmp = gfc_class_vptr_get (sym->backend_decl);
+	  gfc_add_modify (&tmpblock, tmp,
+			  gfc_build_addr_expr (TREE_TYPE (tmp),
+					       vtab->backend_decl));
+	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
+	}
 
       if (sym->ts.type == BT_DERIVED
 	  && sym->ts.u.derived
@@ -7538,6 +7576,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     }
 
   trans_function_start (sym);
+  gfc_current_locus = sym->declared_at;
 
   gfc_init_block (&init);
   gfc_init_block (&cleanup);
@@ -7617,7 +7656,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	  desc = desc_p;
 	else if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (desc_p))))
 	  {
-	    /* Character(len=*) explict-size/assumed-size array. */
+	    /* Character(len=*) explicit-size/assumed-size array. */
 	    desc = desc_p;
 	    gfc_build_qualified_array (desc, fsym);
 	  }

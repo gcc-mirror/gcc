@@ -40,36 +40,23 @@
 
 /* Performs 1 round of AES decryption of the first m128i using 
    the second m128i as a round key.  */
-extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesdec_si128 (__m128i __X, __m128i __Y)
-{
-  return (__m128i) __builtin_ia32_aesdec128 ((__v2di)__X, (__v2di)__Y);
-}
+#define _mm_aesdec_si128(X, Y) \
+  (__m128i) __builtin_ia32_aesdec128 ((__v2di) (X), (__v2di) (Y))
 
 /* Performs the last round of AES decryption of the first m128i 
    using the second m128i as a round key.  */
-extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesdeclast_si128 (__m128i __X, __m128i __Y)
-{
-  return (__m128i) __builtin_ia32_aesdeclast128 ((__v2di)__X,
-						 (__v2di)__Y);
-}
+#define _mm_aesdeclast_si128(X, Y) \
+  (__m128i) __builtin_ia32_aesdeclast128 ((__v2di) (X), (__v2di) (Y))
 
 /* Performs 1 round of AES encryption of the first m128i using 
    the second m128i as a round key.  */
-extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesenc_si128 (__m128i __X, __m128i __Y)
-{
-  return (__m128i) __builtin_ia32_aesenc128 ((__v2di)__X, (__v2di)__Y);
-}
+#define _mm_aesenc_si128(X, Y) \
+  (__m128i) __builtin_ia32_aesenc128 ((__v2di) (X), (__v2di) (Y))
 
 /* Performs the last round of AES encryption of the first m128i
    using the second m128i as a round key.  */
-extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesenclast_si128 (__m128i __X, __m128i __Y)
-{
-  return (__m128i) __builtin_ia32_aesenclast128 ((__v2di)__X, (__v2di)__Y);
-}
+#define _mm_aesenclast_si128(X, Y) \
+  (__m128i) __builtin_ia32_aesenclast128 ((__v2di) (X), (__v2di) (Y))
 
 /* Performs the InverseMixColumn operation on the source m128i 
    and stores the result into m128i destination.  */

@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target ia32 } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -fpic -pg -save-temps" } */
 
 int main ()

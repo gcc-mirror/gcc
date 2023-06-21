@@ -186,8 +186,6 @@ CALLER (f16, __SVFloat16_t)
 ** caller_bf16:
 **	...
 **	bl	callee_bf16
-**	ptrue	(p[0-7])\.b, all
-**	lasta	h0, \1, z0\.h
 **	ldp	x29, x30, \[sp\], 16
 **	ret
 */

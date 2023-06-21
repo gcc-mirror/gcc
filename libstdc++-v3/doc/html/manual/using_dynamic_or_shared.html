@@ -136,12 +136,21 @@ A quick read of the relevant part of the GCC
       no shared library for it. To use the library you should include
       <code class="filename">&lt;experimental/filesystem&gt;</code>
       and link with <code class="option">-lstdc++fs</code>. The library implementation
-      is incomplete on non-POSIX platforms, specifically Windows support is
-      rudimentary.
+      is incomplete on non-POSIX platforms, specifically Windows is only
+      partially supported.
     </p><p>
-      Due to the experimental nature of the Filesystem library the usual
+      GCC 13 includes an implementation of the C++ Contracts library defined by
+      <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1429r3.pdf" target="_top">P1429R3</a>.
+      Because this is an experimental extension, not part of the C++ standard,
+      it is implemented in a separate library,
+      <code class="filename">libstdc++exp.a</code>, and there is
+      no shared library for it. To use the library you should include
+      <code class="filename">&lt;experimental/contract&gt;</code>
+      and link with <code class="option">-lstdc++exp</code>.
+    </p><p>
+      Due to the experimental nature of these libraries the usual
       guarantees about ABI stability and backwards compatibility do not apply
-      to it. There is no guarantee that the components in any
+      to them. There is no guarantee that the components in any
       <code class="filename">&lt;experimental/xxx&gt;</code>
       header will remain compatible between different GCC releases.
     </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Namespaces </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Concurrency</td></tr></table></div></body></html>

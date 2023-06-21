@@ -873,8 +873,8 @@ size_must_be_zero_p (tree size)
   /* Compute the value of SSIZE_MAX, the largest positive value that
      can be stored in ssize_t, the signed counterpart of size_t.  */
   wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
-  value_range valid_range (build_int_cst (type, 0),
-			   wide_int_to_tree (type, ssize_max));
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  value_range valid_range (type, zero, ssize_max);
   value_range vr;
   if (cfun)
     get_range_query (cfun)->range_of_expr (vr, size);
@@ -5585,6 +5585,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       enum tree_code subcode = ERROR_MARK;
       tree result = NULL_TREE;
       bool cplx_result = false;
+      bool uaddc_usubc = false;
       tree overflow = NULL_TREE;
       switch (gimple_call_internal_fn (stmt))
 	{
@@ -5658,6 +5659,16 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  subcode = MULT_EXPR;
 	  cplx_result = true;
 	  break;
+	case IFN_UADDC:
+	  subcode = PLUS_EXPR;
+	  cplx_result = true;
+	  uaddc_usubc = true;
+	  break;
+	case IFN_USUBC:
+	  subcode = MINUS_EXPR;
+	  cplx_result = true;
+	  uaddc_usubc = true;
+	  break;
 	case IFN_MASK_LOAD:
 	  changed |= gimple_fold_partial_load (gsi, stmt, true);
 	  break;
@@ -5677,6 +5688,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
 	  tree arg0 = gimple_call_arg (stmt, 0);
 	  tree arg1 = gimple_call_arg (stmt, 1);
+	  tree arg2 = NULL_TREE;
 	  tree type = TREE_TYPE (arg0);
 	  if (cplx_result)
 	    {
@@ -5685,9 +5697,26 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		type = NULL_TREE;
 	      else
 		type = TREE_TYPE (TREE_TYPE (lhs));
+	      if (uaddc_usubc)
+		arg2 = gimple_call_arg (stmt, 2);
 	    }
 	  if (type == NULL_TREE)
 	    ;
+	  else if (uaddc_usubc)
+	    {
+	      if (!integer_zerop (arg2))
+		;
+	      /* x = y + 0 + 0; x = y - 0 - 0; */
+	      else if (integer_zerop (arg1))
+		result = arg0;
+	      /* x = 0 + y + 0; */
+	      else if (subcode != MINUS_EXPR && integer_zerop (arg0))
+		result = arg1;
+	      /* x = y - y - 0; */
+	      else if (subcode == MINUS_EXPR
+		       && operand_equal_p (arg0, arg1, 0))
+		result = integer_zero_node;
+	    }
 	  /* x = y + 0; x = y - 0; x = y * 0; */
 	  else if (integer_zerop (arg1))
 	    result = subcode == MULT_EXPR ? integer_zero_node : arg0;
@@ -5702,22 +5731,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    result = arg0;
 	  else if (subcode == MULT_EXPR && integer_onep (arg0))
 	    result = arg1;
-	  else if (TREE_CODE (arg0) == INTEGER_CST
-		   && TREE_CODE (arg1) == INTEGER_CST)
-	    {
-	      if (cplx_result)
-		result = int_const_binop (subcode, fold_convert (type, arg0),
-					  fold_convert (type, arg1));
-	      else
-		result = int_const_binop (subcode, arg0, arg1);
-	      if (result && arith_overflowed_p (subcode, type, arg0, arg1))
-		{
-		  if (cplx_result)
-		    overflow = build_one_cst (type);
-		  else
-		    result = NULL_TREE;
-		}
-	    }
 	  if (result)
 	    {
 	      if (result == integer_zero_node)
@@ -6919,7 +6932,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 }
 
 static basic_block fosa_bb;
-static vec<std::pair<tree, void *> > *fosa_unwind;
+static vec<std::pair<tree, vrange_storage *> > *fosa_unwind;
 static tree
 follow_outer_ssa_edges (tree val)
 {
@@ -7006,7 +7019,7 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 		      type, gimple_assign_lhs (stmt1),
 		      gimple_assign_lhs (stmt2));
   fosa_bb = outer_cond_bb;
-  auto_vec<std::pair<tree, void *>, 8> unwind_stack;
+  auto_vec<std::pair<tree, vrange_storage *>, 8> unwind_stack;
   fosa_unwind = &unwind_stack;
   if (op.resimplify (NULL, (!outer_cond_bb
 			    ? follow_all_ssa_edges : follow_outer_ssa_edges)))

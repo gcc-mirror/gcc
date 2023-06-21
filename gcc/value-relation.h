@@ -170,6 +170,7 @@ public:
   void dump (FILE *f) const override;
 
 protected:
+  inline bool has_equiv_p (unsigned v) { return bitmap_bit_p (m_equiv_set, v); }
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;
 private:

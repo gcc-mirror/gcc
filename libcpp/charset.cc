@@ -1886,6 +1886,13 @@ cpp_valid_utf8_p (const char *buffer, size_t num_bytes)
       int err = one_utf8_to_cppchar (&iter, &bytesleft, &cp);
       if (err)
 	return false;
+
+      /* Additionally, Unicode declares that all codepoints above 0010FFFF are
+	 invalid because they cannot be represented in UTF-16.
+
+	 Reject such values.*/
+      if (cp >= UCS_LIMIT)
+	return false;
     }
   /* No problems encountered.  */
   return true;

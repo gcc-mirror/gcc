@@ -19,7 +19,7 @@ char s[1] = "x";
 char s1[1] = { "x" };
 char t[1] = "xy"; /* { dg-error "initializer-string for array of 'char' is too long" } */
 char t1[1] = { "xy" }; /* { dg-error "initializer-string for array of 'char' is too long" } */
-char u[1] = { "x", "x" }; /* { dg-error "excess elements in 'char' array initializer" } */
+char u[1] = { "x", "x" }; /* { dg-error "excess elements in 'char.1.' initializer" } */
 /* { dg-message "near init" "near" { target *-*-* } .-1 } */
 
 int j = { 1 };

@@ -1,4 +1,4 @@
-/* { dg-output "Hello World" }*/
+/* { dg-output "Hello World\r*" }*/
 extern "C" {
     fn puts(s: *const i8);
 }

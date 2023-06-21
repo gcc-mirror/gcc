@@ -2009,6 +2009,13 @@
   const vsll __builtin_vsx_xxspltd_2di (vsll, const int<1>);
     XXSPLTD_V2DI vsx_xxspltd_v2di {}
 
+  const vsq __builtin_pack_vector_int128 (unsigned long long, \
+                                          unsigned long long);
+    PACK_V1TI packv1ti {}
+
+  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
+    UNPACK_V1TI unpackv1ti {}
+
 
 ; Power7 builtins (ISA 2.06).
 [power7]
@@ -2030,15 +2037,8 @@
   const unsigned int __builtin_divweu (unsigned int, unsigned int);
     DIVWEU diveu_si {}
 
-  const vsq __builtin_pack_vector_int128 (unsigned long long, \
-                                          unsigned long long);
-    PACK_V1TI packv1ti {}
-
   void __builtin_ppc_speculation_barrier ();
     SPECBARR speculation_barrier {}
-
-  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
-    UNPACK_V1TI unpackv1ti {}
 
 
 ; Power7 builtins requiring 64-bit GPRs (even with 32-bit addressing).
@@ -2666,13 +2666,13 @@
     VMSUMUDM altivec_vmsumudm {}
 
   const vsll __builtin_altivec_vprtybd (vsll);
-    VPRTYBD parityv2di2 {}
+    VPRTYBD rs6000_vprtybv2di2 {}
 
   const vsq __builtin_altivec_vprtybq (vsq);
-    VPRTYBQ parityv1ti2 {}
+    VPRTYBQ rs6000_vprtybv1ti2 {}
 
   const vsi __builtin_altivec_vprtybw (vsi);
-    VPRTYBW parityv4si2 {}
+    VPRTYBW rs6000_vprtybv4si2 {}
 
   const vsll __builtin_altivec_vrldmi (vsll, vsll, vsll);
     VRLDMI altivec_vrldmi {}
@@ -2687,19 +2687,19 @@
     VRLWNM altivec_vrlwnm {}
 
   const vsll __builtin_altivec_vsignextsb2d (vsc);
-    VSIGNEXTSB2D vsignextend_qi_v2di {}
+    VSIGNEXTSB2D vsx_sign_extend_v16qi_v2di {}
 
   const vsi __builtin_altivec_vsignextsb2w (vsc);
-    VSIGNEXTSB2W vsignextend_qi_v4si {}
+    VSIGNEXTSB2W vsx_sign_extend_v16qi_v4si {}
 
   const vsll __builtin_altivec_visgnextsh2d (vss);
-    VSIGNEXTSH2D vsignextend_hi_v2di {}
+    VSIGNEXTSH2D vsx_sign_extend_v8hi_v2di {}
 
   const vsi __builtin_altivec_vsignextsh2w (vss);
-    VSIGNEXTSH2W vsignextend_hi_v4si {}
+    VSIGNEXTSH2W vsx_sign_extend_v8hi_v4si {}
 
   const vsll __builtin_altivec_vsignextsw2d (vsi);
-    VSIGNEXTSW2D vsignextend_si_v2di {}
+    VSIGNEXTSW2D vsx_sign_extend_v4si_v2di {}
 
   const vsc __builtin_altivec_vslv (vsc, vsc);
     VSLV vslv {}
@@ -2797,6 +2797,19 @@
   const vsi __builtin_vsx_xxbrw_v4si (vsi);
     XXBRW_V4SI p9_xxbrw_v4si {}
 
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_eq (_Float128, _Float128);
+    VSCEQPEQ xscmpexpqp_eq_kf {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_gt (_Float128, _Float128);
+    VSCEQPGT xscmpexpqp_gt_kf {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_qp_lt (_Float128, _Float128);
+    VSCEQPLT xscmpexpqp_lt_kf {}
+
+  const signed int \
+      __builtin_vsx_scalar_cmp_exp_qp_unordered (_Float128, _Float128);
+    VSCEQPUO xscmpexpqp_unordered_kf {}
+
 
 ; Miscellaneous P9 functions
 [power9]
@@ -2833,6 +2846,8 @@
   const signed int __builtin_dtstsfi_ov_td (const int<6>, _Decimal128);
     TSTSFI_OV_TD dfptstsfi_unordered_td {}
 
+  const signed int  __builtin_vsx_scalar_extract_exp (double);
+    VSEEDP xsxexpdp_si {}
 
 [power9-64]
   void __builtin_altivec_xst_len_r (vsc, void *, long);
@@ -2847,18 +2862,15 @@
   pure vsc __builtin_vsx_lxvl (const void *, signed long);
     LXVL lxvl {}
 
-  const signed long __builtin_vsx_scalar_extract_exp (double);
-    VSEEDP xsxexpdp {}
-
-  const signed long __builtin_vsx_scalar_extract_sig (double);
+  const signed long long __builtin_vsx_scalar_extract_sig (double);
     VSESDP xsxsigdp {}
 
   const double __builtin_vsx_scalar_insert_exp (unsigned long long, \
                                                 unsigned long long);
-    VSIEDP xsiexpdp {}
+    VSIEDP xsiexpdp_di {}
 
   const double __builtin_vsx_scalar_insert_exp_dp (double, unsigned long long);
-    VSIEDPF xsiexpdpf {}
+    VSIEDPF xsiexpdpf_di {}
 
   pure vsc __builtin_vsx_xl_len_r (void *, signed long);
     XL_LEN_R xl_len_r {}
@@ -2879,19 +2891,6 @@
   fpmath _Float128 __builtin_mulf128_round_to_odd (_Float128, _Float128);
     MULF128_ODD mulkf3_odd {}
 
-  const signed int __builtin_vsx_scalar_cmp_exp_qp_eq (_Float128, _Float128);
-    VSCEQPEQ xscmpexpqp_eq_kf {}
-
-  const signed int __builtin_vsx_scalar_cmp_exp_qp_gt (_Float128, _Float128);
-    VSCEQPGT xscmpexpqp_gt_kf {}
-
-  const signed int __builtin_vsx_scalar_cmp_exp_qp_lt (_Float128, _Float128);
-    VSCEQPLT xscmpexpqp_lt_kf {}
-
-  const signed int \
-      __builtin_vsx_scalar_cmp_exp_qp_unordered (_Float128, _Float128);
-    VSCEQPUO xscmpexpqp_unordered_kf {}
-
   fpmath _Float128 __builtin_sqrtf128_round_to_odd (_Float128);
     SQRTF128_ODD sqrtkf2_odd {}
 
@@ -2902,18 +2901,27 @@
     TRUNCF128_ODD trunckfdf2_odd {}
 
   const signed long long __builtin_vsx_scalar_extract_expq (_Float128);
-    VSEEQP xsxexpqp_kf {}
+    VSEEQP xsxexpqp_kf_di {}
+
+  vull __builtin_vsx_scalar_extract_exp_to_vec (_Float128);
+    VSEEQPV xsxexpqp_kf_v2di {}
 
   const signed __int128 __builtin_vsx_scalar_extract_sigq (_Float128);
-    VSESQP xsxsigqp_kf {}
+    VSESQP xsxsigqp_kf_ti {}
+
+  vuq __builtin_vsx_scalar_extract_sig_to_vec (_Float128);
+    VSESQPV xsxsigqp_kf_v1ti {}
 
   const _Float128 __builtin_vsx_scalar_insert_exp_q (unsigned __int128, \
                                                      unsigned long long);
-    VSIEQP xsiexpqp_kf {}
+    VSIEQP xsiexpqp_kf_di {}
 
   const _Float128 __builtin_vsx_scalar_insert_exp_qp (_Float128, \
                                                       unsigned long long);
     VSIEQPF xsiexpqpf_kf {}
+
+  const _Float128 __builtin_vsx_scalar_insert_exp_vqp (vuq, vull);
+    VSIEQPV xsiexpqp_kf_v2di {}
 
   const signed int __builtin_vsx_scalar_test_data_class_qp (_Float128, \
                                                             const int<7>);
@@ -3161,10 +3169,10 @@
   void __builtin_altivec_tr_stxvrbx (vsq, signed long, signed char *);
     TR_STXVRBX vsx_stxvrbx {stvec}
 
-  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed int *);
+  void __builtin_altivec_tr_stxvrhx (vsq, signed long, signed short *);
     TR_STXVRHX vsx_stxvrhx {stvec}
 
-  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed short *);
+  void __builtin_altivec_tr_stxvrwx (vsq, signed long, signed int *);
     TR_STXVRWX vsx_stxvrwx {stvec}
 
   void __builtin_altivec_tr_stxvrdx (vsq, signed long, signed long long *);
@@ -3440,7 +3448,7 @@
     VRLQNM altivec_vrlqnm {}
 
   const vsq __builtin_altivec_vsignext (vsll);
-    VSIGNEXTSD2Q vsignextend_v2di_v1ti {}
+    VSIGNEXTSD2Q vsx_sign_extend_v2di_v1ti {}
 
   const vsc __builtin_altivec_vsldb_v16qi (vsc, vsc, const int<3>);
     VSLDB_V16QI vsldb_v16qi {}

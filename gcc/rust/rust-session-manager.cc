@@ -27,6 +27,7 @@
 #include "rust-hir-type-check.h"
 #include "rust-privacy-check.h"
 #include "rust-const-checker.h"
+#include "rust-feature-gate.h"
 #include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
@@ -192,7 +193,7 @@ Session::handle_option (
 	  else
 	    {
 	      rust_assert (!error.message.empty ());
-	      error.emit_error ();
+	      error.emit ();
 	    }
 	}
       else
@@ -390,7 +391,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
       if (!validate_crate_name (msg_str, error))
 	{
 	  error.locus = attr.get_locus ();
-	  error.emit_error ();
+	  error.emit ();
 	  continue;
 	}
 
@@ -411,7 +412,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
   if (!options.crate_name_set_manually
       && !validate_crate_name (options.crate_name, error))
     {
-      error.emit_error ();
+      error.emit ();
       rust_inform (linemap->get_location (0),
 		   "crate name inferred from this file");
     }
@@ -438,9 +439,9 @@ Session::compile_crate (const char *filename)
       "manner by passing the following flag:\n\n"
       "`-frust-incomplete-and-experimental-compiler-do-not-use`\n\nor by "
       "defining the following environment variable (any value will "
-      "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor"
+      "do)\n\nGCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE\n\nFor "
       "cargo-gccrs, this means passing\n\n"
-      "GCCRS_EXTRA_FLAGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
+      "GCCRS_EXTRA_ARGS=\"-frust-incomplete-and-experimental-compiler-do-not-"
       "use\"\n\nas an environment variable.");
 
   RAIIFile file_wrap (filename);
@@ -557,6 +558,9 @@ Session::compile_crate (const char *filename)
       dump_ast_pretty (parsed_crate, true);
       rust_debug ("END POST-EXPANSION AST DUMP");
     }
+
+  // feature gating
+  FeatureGate ().check (parsed_crate);
 
   if (last_step == CompileOptions::CompileStep::NameResolution)
     return;
@@ -817,9 +821,6 @@ Session::injection (AST::Crate &crate)
 void
 Session::expansion (AST::Crate &crate)
 {
-  /* We need to name resolve macros and imports here */
-  Resolver::EarlyNameResolver ().go (crate);
-
   rust_debug ("started expansion");
 
   /* rustc has a modification to windows PATH temporarily here, which may end
@@ -829,11 +830,41 @@ Session::expansion (AST::Crate &crate)
   // if not, would at least have to configure recursion_limit
   ExpansionCfg cfg;
 
+  auto fixed_point_reached = false;
+  unsigned iterations = 0;
+
   // create extctxt? from parse session, cfg, and resolver?
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
   MacroExpander expander (crate, cfg, *this);
-  expander.expand_crate ();
+
+  while (!fixed_point_reached && iterations < cfg.recursion_limit)
+    {
+      /* We need to name resolve macros and imports here */
+      Resolver::EarlyNameResolver ().go (crate);
+
+      expander.expand_crate ();
+
+      fixed_point_reached = !expander.has_changed ();
+      expander.reset_changed_state ();
+      iterations++;
+
+      if (saw_errors ())
+	break;
+    }
+
+  if (iterations == cfg.recursion_limit)
+    {
+      auto last_invoc = expander.get_last_invocation ();
+      auto last_def = expander.get_last_definition ();
+
+      rust_assert (last_def && last_invoc);
+
+      RichLocation range (last_invoc->get_locus ());
+      range.add_range (last_def->get_locus ());
+
+      rust_error_at (range, "reached recursion limit");
+    }
 
   // error reporting - check unused macros, get missing fragment specifiers
 

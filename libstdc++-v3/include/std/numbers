@@ -49,7 +49,7 @@ namespace numbers
 {
 #define __cpp_lib_math_constants 201907L
 
-  /// @cond undoc
+  /// @cond undocumented
   template<typename _Tp>
     using _Enable_if_floating = enable_if_t<is_floating_point_v<_Tp>, _Tp>;
   /// @endcond

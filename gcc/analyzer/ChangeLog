@@ -1,3 +1,73 @@
+2023-06-10  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/109577
+	* constraint-manager.cc (class sval_finder): Visitor to find
+	childs in svalue trees.
+	(constraint_manager::sval_constrained_p): Add new function to
+	check whether a sval might be part of an constraint.
+	* constraint-manager.h: Add sval_constrained_p function.
+	* region-model.cc (class size_visitor): Reverse behavior to not
+	emit a warning on not explicitly considered cases.
+	(region_model::check_region_size):
+	Adapt to size_visitor changes.
+
+2023-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110112
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Move code to region::calc_initial_value_at_main.
+	* region.cc (region::get_initial_value_at_main): New function.
+	(region::calc_initial_value_at_main): New function, based on code
+	in region_model::get_initial_value_for_global.
+	(region::region): Initialize m_cached_init_sval_at_main.
+	(decl_region::get_svalue_for_constructor): Add a cache, splitting
+	out body to...
+	(decl_region::calc_svalue_for_constructor): ...this new function.
+	* region.h (region::get_initial_value_at_main): New decl.
+	(region::calc_initial_value_at_main): New decl.
+	(region::m_cached_init_sval_at_main): New field.
+	(decl_region::decl_region): Initialize m_ctor_svalue.
+	(decl_region::calc_svalue_for_constructor): New decl.
+	(decl_region::m_ctor_svalue): New field.
+
+2023-06-08  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* bounds-checking.cc (region_model::check_symbolic_bounds): Returns whether the BASE_REG
+	region access was OOB.
+	(region_model::check_region_bounds): Likewise.
+	* region-model.cc (region_model::get_store_value): Creates an
+	unknown svalue on OOB-read access to REG.
+	(region_model::check_region_access): Returns whether an unknown svalue needs be created.
+	(region_model::check_region_for_read): Passes check_region_access return value.
+	* region-model.h: Update prior function definitions.
+
+2023-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109015
+	* kf.cc (class kf_atomic_exchange): New.
+	(class kf_atomic_exchange_n): New.
+	(class kf_atomic_fetch_op): New.
+	(class kf_atomic_op_fetch): New.
+	(class kf_atomic_load): New.
+	(class kf_atomic_load_n): New.
+	(class kf_atomic_store_n): New.
+	(register_atomic_builtins): New function.
+	(register_known_functions): Call register_atomic_builtins.
+
+2023-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::eval_alias_1): Regions in different memory
+	spaces can't alias.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* region-model-manager.cc (get_code_for_cast): Use _P defines from
+	tree.h.
+	(region_model_manager::get_or_create_cast): Ditto.
+	(region_model_manager::get_region_for_global): Ditto.
+	* region-model.cc (region_model::get_lvalue_1): Ditto.
+	* region.cc (decl_region::maybe_get_constant_value): Ditto.
+
 2023-03-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109239

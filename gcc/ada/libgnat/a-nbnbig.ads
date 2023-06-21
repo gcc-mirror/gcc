@@ -30,9 +30,9 @@ pragma Assertion_Policy (Ghost => Ignore);
 package Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    SPARK_Mode,
    Ghost,
-   Pure
+   Pure,
+   Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, Big_Integers_Ghost);
 
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image;
@@ -75,13 +75,13 @@ is
      with Dynamic_Predicate =>
             (if Is_Valid (Big_Positive)
              then Big_Positive > To_Big_Integer (0)),
-          Predicate_Failure => (raise Constraint_Error);
+          Predicate_Failure => raise Constraint_Error;
 
    subtype Big_Natural is Big_Integer
      with Dynamic_Predicate =>
             (if Is_Valid (Big_Natural)
              then Big_Natural >= To_Big_Integer (0)),
-          Predicate_Failure => (raise Constraint_Error);
+          Predicate_Failure => raise Constraint_Error;
 
    function In_Range
      (Arg : Valid_Big_Integer; Low, High : Big_Integer) return Boolean
@@ -96,7 +96,7 @@ is
      Pre    => In_Range (Arg,
                          Low  => To_Big_Integer (Integer'First),
                          High => To_Big_Integer (Integer'Last))
-                or else (raise Constraint_Error),
+                or else raise Constraint_Error,
      Global => null;
 
    generic
@@ -112,7 +112,7 @@ is
         Pre    => In_Range (Arg,
                             Low  => To_Big_Integer (Int'First),
                             High => To_Big_Integer (Int'Last))
-                   or else (raise Constraint_Error),
+                   or else raise Constraint_Error,
         Global => null;
    end Signed_Conversions;
 
@@ -129,7 +129,7 @@ is
         Pre    => In_Range (Arg,
                             Low  => To_Big_Integer (Int'First),
                             High => To_Big_Integer (Int'Last))
-                   or else (raise Constraint_Error),
+                   or else raise Constraint_Error,
         Global => null;
 
    end Unsigned_Conversions;
@@ -207,7 +207,7 @@ is
    with
      Import,
      Pre    => (L /= To_Big_Integer (0) and R /= To_Big_Integer (0))
-             or else (raise Constraint_Error),
+               or else raise Constraint_Error,
      Global => null;
 
 private

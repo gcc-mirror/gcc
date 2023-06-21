@@ -880,7 +880,7 @@ is_pointer_array (tree expr)
       || GFC_CLASS_TYPE_P (TREE_TYPE (expr)))
     return false;
 
-  if (TREE_CODE (expr) == VAR_DECL
+  if (VAR_P (expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
@@ -888,7 +888,7 @@ is_pointer_array (tree expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
-  if (TREE_CODE (expr) == INDIRECT_REF
+  if (INDIRECT_REF_P (expr)
       && GFC_DECL_PTR_ARRAY_P (TREE_OPERAND (expr, 0)))
     return true;
 
@@ -1117,7 +1117,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 
   desc = info->descriptor;
   info->offset = gfc_index_zero_node;
-  if (size == NULL_TREE || integer_zerop (size))
+  if (size == NULL_TREE || (dynamic && integer_zerop (size)))
     {
       /* A callee allocated array.  */
       gfc_conv_descriptor_data_set (pre, desc, null_pointer_node);
@@ -3803,7 +3803,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar,
     {
       if (TREE_CODE (info->descriptor) == COMPONENT_REF)
 	decl = info->descriptor;
-      else if (TREE_CODE (info->descriptor) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (info->descriptor))
 	decl = TREE_OPERAND (info->descriptor, 0);
 
       if (decl == NULL_TREE)
@@ -4057,7 +4057,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     {
       if (TREE_CODE (se->expr) == COMPONENT_REF)
 	decl = se->expr;
-      else if (TREE_CODE (se->expr) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (se->expr))
 	decl = TREE_OPERAND (se->expr, 0);
       else
 	decl = se->expr;
@@ -4069,7 +4069,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	{
 	  decl = se->expr;
-	  if (TREE_CODE (decl) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (decl))
 	    decl = TREE_OPERAND (decl, 0);
 	}
       else
@@ -4982,7 +4982,7 @@ done:
 /* Return true if both symbols could refer to the same data object.  Does
    not take account of aliasing due to equivalence statements.  */
 
-static int
+static bool
 symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
 		     bool lsym_target, bool rsym_pointer, bool rsym_target)
 {
@@ -7568,6 +7568,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
   int full;
   bool subref_array_target = false;
   bool deferred_array_component = false;
+  bool substr = false;
   gfc_expr *arg, *ss_expr;
 
   if (se->want_coarray)
@@ -7618,6 +7619,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  && TREE_CODE (desc) == COMPONENT_REF)
 	deferred_array_component = true;
 
+      substr = info->ref && info->ref->next
+	       && info->ref->next->type == REF_SUBSTRING;
+
       subref_array_target = (is_subref_array (expr)
 			     && (se->direct_byref
 				 || expr->ts.type == BT_CHARACTER));
@@ -7659,7 +7663,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 				      subref_array_target, expr);
 
 	      /* ....and set the span field.  */
-	      tmp = gfc_conv_descriptor_span_get (desc);
+	      if (ss_info->expr->ts.type == BT_CHARACTER)
+		tmp = gfc_conv_descriptor_span_get (desc);
+	      else
+		tmp = gfc_get_array_span (desc, expr);
 	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
 	    }
 	  else if (se->want_pointer)
@@ -7730,6 +7737,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
 	  need_tmp = 1;
 	  if (expr->ts.type == BT_CHARACTER
+		&& expr->ts.u.cl->length
 		&& expr->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 	    get_array_charlen (expr, se);
 
@@ -7915,7 +7923,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
 	{
-	  if (deferred_array_component)
+	  if (deferred_array_component && !substr)
 	    se->string_length = ss_info->string_length;
 	  else
 	    se->string_length =  gfc_get_expr_charlen (expr);
@@ -7926,7 +7934,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  else
 	    tmp = se->string_length;
 
-	  if (expr->ts.deferred && VAR_P (expr->ts.u.cl->backend_decl))
+	  if (expr->ts.deferred && expr->ts.u.cl->backend_decl
+	      && VAR_P (expr->ts.u.cl->backend_decl))
 	    gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl, tmp);
 	  else
 	    expr->ts.u.cl->backend_decl = tmp;
@@ -7991,8 +8000,21 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	    }
 	}
 
+      if (expr->ts.type == BT_CHARACTER
+	  && VAR_P (TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)))))
+	{
+	  tree elem_len = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (parm)));
+	  gfc_add_modify (&loop.pre, elem_len,
+			  fold_convert (TREE_TYPE (elem_len),
+			  gfc_get_array_span (desc, expr)));
+	}
+
       /* Set the span field.  */
-      tmp = gfc_get_array_span (desc, expr);
+      tmp = NULL_TREE;
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+	tmp = gfc_conv_descriptor_span_get (desc);
+      else
+	tmp = gfc_get_array_span (desc, expr);
       if (tmp)
 	gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 
@@ -8576,7 +8598,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 			 "Creating array temporary at %L", &expr->where);
 	}
 
-      /* When optmizing, we can use gfc_conv_subref_array_arg for
+      /* When optimizing, we can use gfc_conv_subref_array_arg for
 	 making the packing and unpacking operation visible to the
 	 optimizers.  */
 
@@ -8766,6 +8788,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 		       tree add_when_allocated)
 {
   tree tmp;
+  tree eltype;
   tree size;
   tree nelems;
   tree null_cond;
@@ -8782,10 +8805,11 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       null_data = gfc_finish_block (&block);
 
       gfc_init_block (&block);
+      eltype = TREE_TYPE (type);
       if (str_sz != NULL_TREE)
 	size = str_sz;
       else
-	size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+	size = TYPE_SIZE_UNIT (eltype);
 
       if (!no_malloc)
 	{
@@ -8812,11 +8836,19 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       else
 	nelems = gfc_index_one_node;
 
+      /* If type is not the array type, then it is the element type.  */
+      if (GFC_ARRAY_TYPE_P (type) || GFC_DESCRIPTOR_TYPE_P (type))
+	eltype = gfc_get_element_type (type);
+      else
+	eltype = type;
+
       if (str_sz != NULL_TREE)
 	tmp = fold_convert (gfc_array_index_type, str_sz);
       else
 	tmp = fold_convert (gfc_array_index_type,
-			    TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+			    TYPE_SIZE_UNIT (eltype));
+
+      tmp = gfc_evaluate_now (tmp, &block);
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      nelems, tmp);
       if (!no_malloc)
@@ -9865,6 +9897,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      /* This component cannot have allocatable components,
 		 therefore add_when_allocated of duplicate_allocatable ()
 		 is always NULL.  */
+	      rank = c->as ? c->as->rank : 0;
 	      tmp = duplicate_allocatable (dcmp, comp, ctype, rank,
 					   false, false, size, NULL_TREE);
 	      gfc_add_expr_to_block (&fnblock, tmp);
@@ -11170,7 +11203,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 }
 
 
-/* Initialize class descriptor's TKR infomation.  */
+/* Initialize class descriptor's TKR information.  */
 
 void
 gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
@@ -11448,6 +11481,12 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
 	  break;
 
 	case AR_FULL:
+	  /* Assumed shape arrays from interface mapping need this fix.  */
+	  if (!ar->as && expr->symtree->n.sym->as)
+	    {
+	      ar->as = gfc_get_array_spec();
+	      *ar->as = *expr->symtree->n.sym->as;
+	    }
 	  newss = gfc_get_array_ss (ss, expr, ar->as->rank, GFC_SS_SECTION);
 	  newss->info->data.array.ref = ref;
 

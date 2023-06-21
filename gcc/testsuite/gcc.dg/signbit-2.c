@@ -2,8 +2,9 @@
 /* { dg-options "-O3 -fdump-tree-optimized" } */
 
 /* This test does not work when the truth type does not match vector type.  */
-/* { dg-additional-options "-mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-msse2 -mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
+/* { dg-additional-options "-maltivec" { target powerpc_altivec_ok } } */
 /* { dg-skip-if "no fallback for MVE" { arm_mve } } */
 
 #include <stdint.h>

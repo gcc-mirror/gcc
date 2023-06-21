@@ -1,4 +1,4 @@
-# Make-maintainer.in build support tools for GNU M2.
+# Make-maintainer.in subsidiary -*- makefile -*- build support for GNU M2 tools.
 
 # Copyright (C) 2022-2023 Free Software Foundation, Inc.
 
@@ -34,13 +34,15 @@ PPG-INTERFACE-CC = UnixArgs.cc ldtoa.cc dtoa.cc
 
 PPG-MODS         = SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
 
+PPG-DEFS         = SymbolKey.def   NameKey.def  Lists.def  bnflex.def  Output.def
+
 # Core library definition modules used by ppg found in the gm2-libs directory.
 
 PPG-LIB-DEFS     = Args.def Assertion.def ASCII.def Debug.def \
                    DynamicStrings.def FIO.def Indexing.def IO.def \
                    NumberIO.def PushBackInput.def \
                    M2Dependent.def \
-                   M2EXCEPTION.def M2LINK.def M2RTS.def \
+                   M2EXCEPTION.def M2RTS.def \
                    RTExceptions.def \
                    StdIO.def SFIO.def StrIO.def StrLib.def \
                    Storage.def StrCase.def SysStorage.def
@@ -97,7 +99,8 @@ BUILD-PPG-H = m2/boot-bin/mc$(exeext) $(BUILD-PPG-LIBS-H)
 
 BUILD-BOOT-PPG-H: $(BUILD-BOOT-H) \
                  m2/gm2-ppg-boot/$(SRC_PREFIX)M2RTS.h \
-                 m2/gm2-ppg-boot/$(SRC_PREFIX)M2Dependent.h
+                 m2/gm2-ppg-boot/$(SRC_PREFIX)M2Dependent.h \
+		 $(PPG-DEFS:%.def=m2/gm2-ppg-boot/$(SRC_PREFIX)%.h)
 
 m2/gm2-ppg-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	-test -d m2/gm2-ppg-boot || $(mkinstalldirs) m2/gm2-ppg-boot
@@ -133,12 +136,10 @@ m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BU
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-ppg-boot/$(SRC_PREFIX)$*.cc -o $@
 
 m2/ppg$(exeext): m2/boot-bin/mc $(BUILD-PPG-O) $(BUILD-MC-INTERFACE-O) m2/gm2-ppg-boot/main.o \
-                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o \
-                 m2/gm2-libs-boot/M2LINK.o
+                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o
 	-test -d m2 || $(mkinstalldirs) m2
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PPG-O) m2/gm2-ppg-boot/main.o \
-                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o \
-                 m2/gm2-libs-boot/M2LINK.o -lm
+                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
 
 m2/gm2-ppg-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	-test -d m2/gm2-ppg-boot || $(mkinstalldirs) m2/gm2-ppg-boot
@@ -168,7 +169,6 @@ PGE-DEF = ASCII.def \
    IO.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    MemUtils.def \
    NumberIO.def \
@@ -198,6 +198,98 @@ PGE-DEF = ASCII.def \
    libm.def \
    termios.def \
    wrapc.def \
+
+PGE-DEPS = Gabort.cc \
+   GArgs.cc \
+   GArgs.h \
+   GASCII.cc \
+   GASCII.h \
+   GAssertion.cc \
+   GAssertion.h \
+   Gbnflex.cc \
+   Gbnflex.h \
+   GBreak.h \
+   GBuiltins.cc \
+   Gcbuiltin.cc \
+   GCmdArgs.h \
+   GDebug.cc \
+   GDebug.h \
+   Gdtoa.cc \
+   Gdtoa.h \
+   GDynamicStrings.cc \
+   GDynamicStrings.h \
+   GEnvironment.h \
+   Gerrno.cc \
+   Gerrno.h \
+   GFIO.cc \
+   GFIO.h \
+   GFormatStrings.h \
+   GFpuIO.h \
+   GIndexing.cc \
+   GIndexing.h \
+   GIO.cc \
+   GIO.h \
+   Gldtoa.cc \
+   Gldtoa.h \
+   Glibc.cc \
+   Glibc.h \
+   Glibm.cc \
+   Glibm.h \
+   GLists.cc \
+   GLists.h \
+   GM2Dependent.cc \
+   GM2Dependent.h \
+   GM2EXCEPTION.cc \
+   GM2EXCEPTION.h \
+   GM2RTS.cc \
+   GM2RTS.h \
+   Gmcrts.cc \
+   Gmcrts.h \
+   GNameKey.cc \
+   GNameKey.h \
+   Gnetwork.h \
+   GNumberIO.cc \
+   GNumberIO.h \
+   GOutput.cc \
+   GOutput.h \
+   Gpge.cc \
+   GPushBackInput.cc \
+   GPushBackInput.h \
+   GRTco.cc \
+   GRTExceptions.cc \
+   GRTExceptions.h \
+   GSArgs.h \
+   GScan.h \
+   GSelective.cc \
+   GSEnvironment.h \
+   GSFIO.cc \
+   GSFIO.h \
+   GStdIO.cc \
+   GStdIO.h \
+   GStorage.cc \
+   GStorage.h \
+   GStrCase.cc \
+   GStrCase.h \
+   GStringConvert.h \
+   GStrIO.cc \
+   GStrIO.h \
+   GStrLib.cc \
+   GStrLib.h \
+   GSymbolKey.cc \
+   GSymbolKey.h \
+   GSysExceptions.cc \
+   GSysExceptions.h \
+   GSysStorage.cc \
+   GSysStorage.h \
+   GSYSTEM.cc \
+   GSYSTEM.h \
+   Gtermios.cc \
+   Gtermios.h \
+   GTimeString.h \
+   GUnixArgs.cc \
+   GUnixArgs.h \
+   Gwrapc.cc \
+   Gwrapc.h
 
 BUILD-PG-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
              $(PPG-INTERFACE-CC:%.cc=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
@@ -252,11 +344,10 @@ m2/gm2-pg-boot/$(SRC_PREFIX)pg.o:  m2/gm2-auto/pg.mod $(MCDEPS) $(BUILD-BOOT-PG-
 m2/pg$(exeext): m2/boot-bin/mc \
     $(BUILD-PG-O) $(GM2-PPG-MODS:%.mod=m2/gm2-pg-boot/%.o) \
     $(BUILD-MC-INTERFACE-O) m2/gm2-pg-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-    m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o
+    m2/mc-boot-ch/$(SRC_PREFIX)abort.o
 	-test -d m2 || $(mkinstalldirs) m2
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PG-O) \
          m2/gm2-pg-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-         m2/gm2-libs-boot/M2LINK.o \
          m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
 
 m2/gm2-auto/pginit:
@@ -369,7 +460,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BU
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
 	$(MCC) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc $(srcdir)/m2/gm2-compiler/$*.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot -Im2/gm2-compiler-boot \
-              -Im2/gm2-libs-boot \
+              -Im2/gm2-libs-boot -Im2/gm2-pge-boot \
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)pge.o:  m2/gm2-auto/pge.mod $(MCDEPS) $(BUILD-BOOT-PGE-H)
@@ -382,11 +473,11 @@ m2/gm2-pge-boot/$(SRC_PREFIX)pge.o:  m2/gm2-auto/pge.mod $(MCDEPS) $(BUILD-BOOT-
 m2/pge$(exeext): m2/boot-bin/mc \
     $(BUILD-PGE-O) $(GM2-PPG-MODS:%.mod=m2/gm2-pge-boot/%.o) \
     $(BUILD-MC-INTERFACE-O) m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-    m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o
+    m2/mc-boot-ch/$(SRC_PREFIX)abort.o
 	-test -d m2 || $(mkinstalldirs) m2
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) \
          m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-         m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o -lm
+         m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
 	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod t > m2/gm2-auto/t.bnf
 	./m2/pge$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t1.mod
 	./m2/pg$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t2.mod
@@ -436,25 +527,29 @@ pge-help: force
 	@echo " make pge-app-push   # copy pge C++ application modules into srcdir/m2/pge-boot"
 	@echo " make pge-clean"
 
-pge-maintainer: $(PGE)
+# pge-maintainer: $(PGE)
+pge-maintainer: pge-clean $(PGE) pge-verify pge-push
 
 # Copy the C++ sources for ppe.mod into $(srcdir)/pge-boot.
 
 pge-push: pge-libs-push pge-app-push
 
 pge-libs-push: force
-	for i in $(cat $(srcdir)/m2/init/ppginit) ; do \
-	    if [ -f $(srcdir)/m2/gm2-libs-ch/${i}.h ] ; then \
-                cp $(srcdir)/m2/gm2-libs-ch/${i}.h $(srcdir) ; \
+	for i in ${PGE-DEPS} ; do \
+	    if [ -f ${srcdir}/m2/gm2-libs-ch/$${i} ] ; then \
+               echo cp ${srcdir}/m2/gm2-libs-ch/$${i} ${srcdir}/m2/pge-boot ; \
+               cp ${srcdir}/m2/gm2-libs-ch/$${i} ${srcdir}/m2/pge-boot ; \
+            elif [ -f m2/gm2-pge-boot/$${i} ] ; then \
+               echo cp m2/gm2-pge-boot/$${i} ${srcdir}/m2/pge-boot ; \
+               cp m2/gm2-pge-boot/$${i} ${srcdir}/m2/pge-boot ; \
+            elif [ -f m2/gm2-compiler-boot/$${i} ] ; then \
+               echo cp m2/gm2-compiler-boot/$${i} ${srcdir}/m2/pge-boot ; \
+               cp m2/gm2-compiler-boot/$${i} ${srcdir}/m2/pge-boot ; \
+            elif [ -f m2/gm2-libs-boot/$${i} ] ; then \
+               echo cp m2/gm2-libs-boot/$${i} ${srcdir}/m2/pge-boot ; \
+               cp m2/gm2-libs-boot/$${i} ${srcdir}/m2/pge-boot ; \
             else \
-                echo "not found ${i}" ; \
-            fi ; \
-	    if [ -f $(srcdir)/m2/gm2-libs-ch/${i}.c* ] ; then \
-                cp $(srcdir)/m2/gm2-libs-ch/${i}.c* $(srcdir) ; \
-	    elif [ -f $(srcdir)/m2/gm2-pge-libs/${i}.c* ] ; then \
-                cp $(srcdir)/m2/gm2-pge-libs/${i}.c* $(srcdir) ; \
-            else \
-                echo "not found ${i}" ; \
+               echo "not found $${i}" ; \
             fi ; \
         done
 
@@ -753,14 +848,14 @@ GM2_LIBS_PARANOID = m2/gm2-compiler-paranoid/gm2.a \
 gm2.paranoid: m2/m2obj3/cc1gm2$(exeext) gm2.verifyparanoid
 
 m2/m2obj3/cc1gm2$(exeext): m2/m2obj2/cc1gm2$(exeext) m2/gm2-compiler-paranoid/m2flex.o \
-                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so m2/gm2-libs-boot/M2LINK.o
+                            $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so
 	-test -d m2/m2obj3 || $(mkinstalldirs) m2/m2obj3
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-paranoid/m2flex.o \
                             attribs.o \
                               $(GM2_LIBS_PARANOID) \
-                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
+                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
                               $(BACKENDLIBS) $(LIBSTDCXX) -lm
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 

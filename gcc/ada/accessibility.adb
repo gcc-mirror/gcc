@@ -1153,7 +1153,7 @@ package body Accessibility is
       --  Obtain the first selector or choice from a given association
 
       function Is_Formal_Of_Current_Function
-        (Assoc_Expr : Entity_Id) return Boolean;
+        (Assoc_Expr : Node_Id) return Boolean;
       --  Predicate to test if a given expression associated with a
       --  discriminant is a formal parameter to the function in which the
       --  return construct we checking applies to.
@@ -1180,7 +1180,7 @@ package body Accessibility is
       -----------------------------------
 
       function Is_Formal_Of_Current_Function
-        (Assoc_Expr : Entity_Id) return Boolean is
+        (Assoc_Expr : Node_Id) return Boolean is
       begin
          return Is_Entity_Name (Assoc_Expr)
                   and then Enclosing_Subprogram

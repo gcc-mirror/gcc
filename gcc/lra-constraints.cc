@@ -1022,6 +1022,34 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	 are ordered.  */
       if (partial_subreg_p (outmode, inmode))
 	{
+	  bool asm_p = asm_noperands (PATTERN (curr_insn)) >= 0;
+	  int hr;
+	  HARD_REG_SET temp_hard_reg_set;
+	  
+	  if (asm_p && (hr = get_hard_regno (out_rtx)) >= 0
+	      && hard_regno_nregs (hr, inmode) > 1)
+	    {
+	      /* See gcc.c-torture/execute/20030222-1.c.
+		 Consider the code for 32-bit (e.g. BE) target:
+		   int i, v; long x; x = v; asm ("" : "=r" (i) : "0" (x));
+		 We generate the following RTL with reload insns:
+  		   1. subreg:si(x:di, 0) = 0;
+		   2. subreg:si(x:di, 4) = v:si;
+		   3. t:di = x:di, dead x;
+		   4. asm ("" : "=r" (subreg:si(t:di,4)) : "0" (t:di))
+		   5. i:si = subreg:si(t:di,4);
+		 If we assign hard reg of x to t, dead code elimination
+		 will remove insn #2 and we will use unitialized hard reg.
+		 So exclude the hard reg of x for t.  We could ignore this
+		 problem for non-empty asm using all x value but it is hard to
+		 check that the asm are expanded into insn realy using x
+		 and setting r.  */
+	      CLEAR_HARD_REG_SET (temp_hard_reg_set);
+	      if (exclude_start_hard_regs != NULL)
+		temp_hard_reg_set = *exclude_start_hard_regs;
+	      SET_HARD_REG_BIT (temp_hard_reg_set, hr);
+	      exclude_start_hard_regs = &temp_hard_reg_set;
+	    }
 	  reg = new_in_reg
 	    = lra_create_new_reg_with_unique_value (inmode, in_rtx, goal_class,
 						    exclude_start_hard_regs,
@@ -3450,6 +3478,41 @@ skip_constraint_modifiers (const char *str)
       }
 }
 
+/* Takes a string of 0 or more comma-separated constraints.  When more
+   than one constraint is present, evaluate whether they all correspond
+   to a single, repeated constraint (e.g. "r,r") or whether we have
+   more than one distinct constraints (e.g. "r,m").  */
+static bool
+constraint_unique (const char *cstr)
+{
+  enum constraint_num ca, cb;
+  ca = CONSTRAINT__UNKNOWN;
+  for (;;)
+    {
+      cstr = skip_constraint_modifiers (cstr);
+      if (*cstr == '\0' || *cstr == ',')
+	cb = CONSTRAINT_X;
+      else
+	{
+	  cb = lookup_constraint (cstr);
+	  if (cb == CONSTRAINT__UNKNOWN)
+	    return false;
+	  cstr += CONSTRAINT_LEN (cstr[0], cstr);
+	}
+      /* Handle the first iteration of the loop.  */
+      if (ca == CONSTRAINT__UNKNOWN)
+	ca = cb;
+      /* Handle the general case of comparing ca with subsequent
+	 constraints.  */
+      else if (ca != cb)
+	return false;
+      if (*cstr == '\0')
+	return true;
+      if (*cstr == ',')
+	cstr += 1;
+    }
+}
+
 /* Major function to make reloads for an address in operand NOP or
    check its correctness (If CHECK_ONLY_P is true). The supported
    cases are:
@@ -3509,9 +3572,7 @@ process_address_1 (int nop, bool check_only_p,
      operand has one address constraint, probably all others constraints are
      address ones.  */
   if (constraint[0] != '\0' && get_constraint_type (cn) != CT_ADDRESS
-      && *skip_constraint_modifiers (constraint
-				     + CONSTRAINT_LEN (constraint[0],
-						       constraint)) != '\0')
+      && !constraint_unique (constraint))
     cn = CONSTRAINT__UNKNOWN;
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
@@ -5061,7 +5122,23 @@ combine_reload_insn (rtx_insn *from, rtx_insn *to)
       curr_insn = to;
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
-      ok_p = !curr_insn_transform (true);
+      for (bool swapped_p = false;;)
+	{
+	  ok_p = !curr_insn_transform (true);
+	  if (ok_p || curr_static_id->commutative < 0)
+	    break;
+	  swap_operands (curr_static_id->commutative);
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file,
+		       "    Swapping %scombined insn operands:\n",
+		       swapped_p ? "back " : "");
+	      dump_insn_slim (lra_dump_file, to);
+	    }
+	  if (swapped_p)
+	    break;
+	  swapped_p = true;
+	}
       curr_insn = saved_insn;
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;

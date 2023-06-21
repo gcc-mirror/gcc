@@ -1099,8 +1099,6 @@ VAR
    i, l,
    point    : INTEGER ;
    t,
-   whole,
-   fraction,
    tenths,
    hundreths: String ;
 BEGIN

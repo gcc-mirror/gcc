@@ -1,0 +1,6 @@
+IMPLEMENTATION MODULE liba ;
+
+PROCEDURE bar ;
+END bar ;
+
+END liba.

@@ -255,6 +255,16 @@ Aspect Ghost
 
 This aspect is equivalent to :ref:`pragma Ghost<Pragma-Ghost>`.
 
+Aspect Ghost_Predicate
+======================
+.. index:: Ghost_Predicate
+
+This aspect introduces a subtype predicate that can reference ghost
+entities. The subtype cannot appear as a subtype_mark in a membership test.
+
+For the detailed semantics of this aspect, see the entry for subtype predicates
+in the SPARK Reference Manual, section 3.2.4.
+
 Aspect Global
 =============
 .. index:: Global

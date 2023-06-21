@@ -1056,6 +1056,139 @@ class svlast_impl : public quiet<function_base>
 public:
   CONSTEXPR svlast_impl (int unspec) : m_unspec (unspec) {}
 
+  bool is_lasta () const { return m_unspec == UNSPEC_LASTA; }
+  bool is_lastb () const { return m_unspec == UNSPEC_LASTB; }
+
+  bool vect_all_same (tree v, int step) const
+  {
+    int i;
+    int nelts = vector_cst_encoded_nelts (v);
+    tree first_el = VECTOR_CST_ENCODED_ELT (v, 0);
+
+    for (i = 0; i < nelts; i += step)
+      if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (v, i), first_el, 0))
+	return false;
+
+    return true;
+  }
+
+  /* Fold a svlast{a/b} call with constant predicate to a BIT_FIELD_REF.
+     BIT_FIELD_REF lowers to Advanced SIMD element extract, so we have to
+     ensure the index of the element being accessed is in the range of a
+     Advanced SIMD vector width.  */
+  gimple *fold (gimple_folder & f) const override
+  {
+    tree pred = gimple_call_arg (f.call, 0);
+    tree val = gimple_call_arg (f.call, 1);
+
+    if (TREE_CODE (pred) == VECTOR_CST)
+      {
+	HOST_WIDE_INT pos;
+	int i = 0;
+	int step = f.type_suffix (0).element_bytes;
+	int step_1 = gcd (step, VECTOR_CST_NPATTERNS (pred));
+	int npats = VECTOR_CST_NPATTERNS (pred);
+	unsigned enelts = vector_cst_encoded_nelts (pred);
+	tree b = NULL_TREE;
+	unsigned HOST_WIDE_INT nelts;
+
+	/* We can optimize 2 cases common to variable and fixed-length cases
+	   without a linear search of the predicate vector:
+	   1.  LASTA if predicate is all true, return element 0.
+	   2.  LASTA if predicate all false, return element 0.  */
+	if (is_lasta () && vect_all_same (pred, step_1))
+	  {
+	    b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+			bitsize_int (step * BITS_PER_UNIT), bitsize_int (0));
+	    return gimple_build_assign (f.lhs, b);
+	  }
+
+	/* Handle the all-false case for LASTB where SVE VL == 128b -
+	   return the highest numbered element.  */
+	if (is_lastb () && known_eq (BYTES_PER_SVE_VECTOR, 16)
+	    && vect_all_same (pred, step_1)
+	    && integer_zerop (VECTOR_CST_ENCODED_ELT (pred, 0)))
+	  {
+	    b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+			bitsize_int (step * BITS_PER_UNIT),
+			bitsize_int ((16 - step) * BITS_PER_UNIT));
+
+	    return gimple_build_assign (f.lhs, b);
+	  }
+
+	/* Determine if there are any repeating non-zero elements in variable
+	   length vectors.  */
+	if (!VECTOR_CST_NELTS (pred).is_constant (&nelts))
+	  {
+	   /* If VECTOR_CST_NELTS_PER_PATTERN (pred) == 2 and every multiple of
+	      'step_1' in
+		[VECTOR_CST_NPATTERNS .. VECTOR_CST_ENCODED_NELTS - 1]
+	      is zero, then we can treat the vector as VECTOR_CST_NPATTERNS
+	      elements followed by all inactive elements.  */
+	    if (VECTOR_CST_NELTS_PER_PATTERN (pred) == 2)
+	      {
+		/* Restrict the scope of search to NPATS if vector is
+		   variable-length for linear search later.  */
+		nelts = npats;
+		for (unsigned j = npats; j < enelts; j += step_1)
+		  {
+		    /* If there are active elements in the repeated pattern of a
+		       variable-length vector, then return NULL as there is no
+		       way to be sure statically if this falls within the
+		       Advanced SIMD range.  */
+		    if (!integer_zerop (VECTOR_CST_ENCODED_ELT (pred, j)))
+		      return NULL;
+		  }
+	      }
+	    else
+	      /* If we're here, it means that for NELTS_PER_PATTERN != 2, there
+		 is a repeating non-zero element.  */
+	      return NULL;
+	  }
+
+	/* If we're here, it means either:
+	   1. The vector is variable-length and there's no active element in the
+	      repeated part of the pattern, or
+	   2. The vector is fixed-length.
+
+	   Fall through to finding the last active element linearly for
+	   for all cases where the last active element is known to be
+	   within a statically-determinable range.  */
+	i = MAX ((int)nelts - step, 0);
+	for (; i >= 0; i -= step)
+	  if (!integer_zerop (VECTOR_CST_ELT (pred, i)))
+	    break;
+
+	if (is_lastb ())
+	  {
+	    /* For LASTB, the element is the last active element.  */
+	    pos = i;
+	  }
+	else
+	  {
+	    /* For LASTA, the element is one after last active element.  */
+	    pos = i + step;
+
+	    /* If last active element is
+	       last element, wrap-around and return first Advanced SIMD
+	       element.  */
+	    if (known_ge (pos, BYTES_PER_SVE_VECTOR))
+	      pos = 0;
+	  }
+
+	/* Out of Advanced SIMD range.  */
+	if (pos < 0 || pos > 15)
+	  return NULL;
+
+	b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+		    bitsize_int (step * BITS_PER_UNIT),
+		    bitsize_int (pos * BITS_PER_UNIT));
+
+	return gimple_build_assign (f.lhs, b);
+      }
+    return NULL;
+  }
+
   rtx
   expand (function_expander &e) const override
   {

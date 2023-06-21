@@ -1,3 +1,100 @@
+2023-06-16  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (Write After Approval): move Matthew Fortune
+	to Write After Approval.
+
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-pie): New check.  Set PICFLAG after this
+	check.
+	* configure: Regenerate.
+
+2023-06-14  Filip Kastl  <filip.kastl@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-06-02  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as MIPS
+	port maintainer.
+	(Write After Approval): Remove myself.
+
+2023-05-30  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* MAINTAINERS: Replace spaces with tabs.
+
+2023-05-27  Benjamin Priour  <vultkayn@gcc.gnu.org>
+
+	* MAINTAINERS: New entry.
+
+2023-05-18  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.tpl: Disable warnings as errors for STAGEautofeedback
+	* Makefile.in: Regenerate
+
+2023-05-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Disable warnings as errors for STAGEautofeedback
+
+2023-05-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Sort.
+
+2023-05-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself.
+
+2023-05-10  Pan Li  <pan2.li@intel.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Define PROFILE_MERGER
+	* Makefile.tpl: Define PROFILE_MERGER
+
+2023-04-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Change my email address.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting
+
+2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-24  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix sorting.
+
+2023-04-21  Peter Foley  <pefoley2@pefoley.com>
+
+	* configure: Regenerate.
+	* configure.ac: Only create serdep.tmp if needed
+
+2023-04-21  “ajit.kumar.agarwal@ibm.com”  <aagarwa@ltcden2-lp1.aus.stglabs.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-04-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	Ref: <680c7bbe-5d6e-07cd-8468-247afc65e1dd@gmail.com>
+
+2023-04-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-03-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* MAINTAINERS: Add myself as OpenMP and libgomp maintainer.

@@ -54,7 +54,7 @@
      ' '        nothing is known
      't'	the size of value written/read corresponds to the size of
 		of the pointed-to type of the argument type
-     '1'...'9'  specifies the size of value written/read is given by the
+     '1'...'9'  specifies the size of value written/read is bound by the
 		specified argument
  */
 
@@ -169,7 +169,7 @@ public:
 	   && str[idx] != 'x' && str[idx] != 'X';
   }
 
-  /* Return true if load of memory pointed to by argument I is specified
+  /* Return true if load of memory pointed to by argument I is bound
      by another argument.  In this case set ARG.  */
   bool
   arg_max_access_size_given_by_arg_p (unsigned int i, unsigned int *arg)

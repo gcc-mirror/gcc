@@ -598,24 +598,64 @@
   [(set_attr "type" "fadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "add<mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=r,r")
-	(plus:GPR (match_operand:GPR 1 "register_operand" "r,r")
-		  (match_operand:GPR 2 "arith_operand" "r,I")))]
+(define_insn_and_split "add<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r,r,r,r")
+	(plus:GPR (match_operand:GPR 1 "register_operand" "r,r,r,r,r,r,r")
+		  (match_operand:GPR 2 "plus_<mode>_operand"
+				       "r,I,La,Lb,Lc,Ld,Le")))]
   ""
-  "add%i2.<d>\t%0,%1,%2";
+  "@
+   add.<d>\t%0,%1,%2
+   addi.<d>\t%0,%1,%2
+   #
+   * operands[2] = GEN_INT (INTVAL (operands[2]) / 65536); \
+     return \"addu16i.d\t%0,%1,%2\";
+   #
+   #
+   #"
+  "CONST_INT_P (operands[2]) && !IMM12_INT (operands[2]) \
+   && !ADDU16I_OPERAND (INTVAL (operands[2]))"
+  [(set (match_dup 0) (plus:GPR (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:GPR (match_dup 0) (match_dup 4)))]
+  {
+    loongarch_split_plus_constant (&operands[2], <MODE>mode);
+  }
   [(set_attr "alu_type" "add")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "insn_count" "1,1,2,1,2,2,2")
+   (set (attr "enabled")
+      (cond
+	[(match_test "<MODE>mode != DImode && which_alternative == 4")
+	 (const_string "no")
+	 (match_test "<MODE>mode != DImode && which_alternative == 5")
+	 (const_string "no")
+	 (match_test "<MODE>mode != SImode && which_alternative == 6")
+	 (const_string "no")]
+	(const_string "yes")))])
 
-(define_insn "*addsi3_extended"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
+(define_insn_and_split "*addsi3_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(sign_extend:DI
-	     (plus:SI (match_operand:SI 1 "register_operand" "r,r")
-		      (match_operand:SI 2 "arith_operand" "r,I"))))]
+	     (plus:SI (match_operand:SI 1 "register_operand" "r,r,r,r")
+		      (match_operand:SI 2 "plus_si_extend_operand"
+					  "r,I,La,Le"))))]
   "TARGET_64BIT"
-  "add%i2.w\t%0,%1,%2"
+  "@
+   add.w\t%0,%1,%2
+   addi.w\t%0,%1,%2
+   #
+   #"
+  "CONST_INT_P (operands[2]) && !IMM12_INT (operands[2])"
+  [(set (subreg:SI (match_dup 0) 0) (plus:SI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0)
+	(sign_extend:DI (plus:SI (subreg:SI (match_dup 0) 0)
+				 (match_dup 4))))]
+  {
+    loongarch_split_plus_constant (&operands[2], SImode);
+  }
   [(set_attr "alu_type" "add")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "SI")
+   (set_attr "insn_count" "1,1,2,2")])
 
 
 ;;
@@ -2448,7 +2488,8 @@
   ""
 {
   if (TARGET_DO_OPTIMIZE_BLOCK_MOVE_P
-      && loongarch_expand_block_move (operands[0], operands[1], operands[2]))
+      && loongarch_expand_block_move (operands[0], operands[1],
+				      operands[2], operands[3]))
     DONE;
   else
     FAIL;
@@ -2854,6 +2895,10 @@
 }
   [(set_attr "type" "branch")])
 
+;; Micro-architecture unconditionally treats a "jr $ra" as "return from subroutine",
+;; non-returning indirect jumps through $ra would interfere with both subroutine
+;; return prediction and the more general indirect branch prediction.
+
 (define_expand "indirect_jump"
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
@@ -2864,7 +2909,7 @@
 })
 
 (define_insn "@indirect_jump<mode>"
-  [(set (pc) (match_operand:P 0 "register_operand" "r"))]
+  [(set (pc) (match_operand:P 0 "register_operand" "e"))]
   ""
   "jr\t%0"
   [(set_attr "type" "jump")
@@ -2887,7 +2932,7 @@
 
 (define_insn "@tablejump<mode>"
   [(set (pc)
-	(match_operand:P 0 "register_operand" "r"))
+	(match_operand:P 0 "register_operand" "e"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "jr\t%0"

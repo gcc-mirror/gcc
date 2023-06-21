@@ -41,7 +41,7 @@
 # include <fenv.h>
 #endif
 
-#ifdef _GLIBCXX_USE_C99_FENV_TR1
+#ifdef _GLIBCXX_USE_C99_FENV
 
 #undef feclearexcept
 #undef fegetexceptflag
@@ -77,7 +77,7 @@ namespace std
   using ::feupdateenv;
 } // namespace std
 
-#endif // _GLIBCXX_USE_C99_FENV_TR1
+#endif // _GLIBCXX_USE_C99_FENV
 
 #endif // C++11
 

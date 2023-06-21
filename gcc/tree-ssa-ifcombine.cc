@@ -405,21 +405,15 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 		   basic_block outer_cond_bb, bool outer_inv, bool result_inv)
 {
   gimple_stmt_iterator gsi;
-  gimple *inner_stmt, *outer_stmt;
-  gcond *inner_cond, *outer_cond;
   tree name1, name2, bit1, bit2, bits1, bits2;
 
-  inner_stmt = last_stmt (inner_cond_bb);
-  if (!inner_stmt
-      || gimple_code (inner_stmt) != GIMPLE_COND)
+  gcond *inner_cond = safe_dyn_cast <gcond *> (*gsi_last_bb (inner_cond_bb));
+  if (!inner_cond)
     return false;
-  inner_cond = as_a <gcond *> (inner_stmt);
 
-  outer_stmt = last_stmt (outer_cond_bb);
-  if (!outer_stmt
-      || gimple_code (outer_stmt) != GIMPLE_COND)
+  gcond *outer_cond = safe_dyn_cast <gcond *> (*gsi_last_bb (outer_cond_bb));
+  if (!outer_cond)
     return false;
-  outer_cond = as_a <gcond *> (outer_stmt);
 
   /* See if we test a single bit of the same name in both tests.  In
      that case remove the outer test, merging both else edges,
@@ -854,10 +848,8 @@ pass_tree_ifcombine::execute (function *fun)
   for (i = n_basic_blocks_for_fn (fun) - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
     {
       basic_block bb = bbs[i];
-      gimple *stmt = last_stmt (bb);
 
-      if (stmt
-	  && gimple_code (stmt) == GIMPLE_COND)
+      if (safe_is_a <gcond *> (*gsi_last_bb (bb)))
 	if (tree_ssa_ifcombine_bb (bb))
 	  {
 	    /* Clear range info from all stmts in BB which is now executed

@@ -59,12 +59,21 @@ CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 
 # In non-release builds, use a date-related module version.
 ifneq ($(DEVPHASE_c),)
-# Some date's don't grok 'r', if so, simply use today's
-# date (don't bootstrap at midnight).
-MODULE_VERSION := $(shell date -r $(srcdir)/cp/module.cc '+%y%m%d-%H%M' \
-  2>/dev/null || date '+%y%m%d-0000' 2>/dev/null || echo 0)
-
-CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
+# Some date's don't grok 'r', if so, simply use today's date,
+# but use date from previous stage if bootstrapping to avoid breaking
+# bootstraps across midnight.
+s-cp-module-version: $(srcdir)/cp/module.cc
+	MODULE_VERSION=`if date -r $(srcdir)/cp/module.cc '+%y%m%d%H%MU' \
+			  2>/dev/null; then :; \
+			elif test ../prev-gcc/s-cp-module-version -nt \
+			       $(srcdir)/cp/module.cc; then \
+			  cat ../prev-gcc/s-cp-module-version; \
+			else \
+			  date '+%y%m%d0000U' 2>/dev/null; \
+			fi`; \
+	echo $${MODULE_VERSION} > s-cp-module-version
+cp/module.o: s-cp-module-version
+CFLAGS-cp/module.o += -DMODULE_VERSION='$(shell cat s-cp-module-version)'
 endif
 
 # Create the compiler driver for g++.
@@ -177,9 +186,34 @@ endif
 # This is the file that depends on the generated header file.
 cp/name-lookup.o: $(srcdir)/cp/std-name-hint.h
 
-cc1plus.fda: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
-	$(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov cc1plus.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
+components_in_prev = "bfd opcodes binutils fixincludes gas gcc gmp mpfr mpc isl gold intl ld libbacktrace libcpp libcody libdecnumber libiberty libiberty-linker-plugin libiconv zlib lto-plugin libctf libsframe"
+components_in_prev_target = "libstdc++-v3 libsanitizer libvtv libgcc libbacktrace libphobos zlib libgomp libatomic"
 
+.PHONY: create_fdas_for_cc1plus
+
+cc1plus.fda: create_fdas_for_cc1plus
+	$(PROFILE_MERGER) $(shell ls -ha cc1plus_*.fda) --output_file cc1plus.fda -gcov_version 2
+
+create_fdas_for_cc1plus: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
+	for component_in_prev in "$(components_in_prev)"; do \
+	  perf_path=../prev-$$component_in_prev/$(PERF_DATA); \
+	  echo "Perf path:"; \
+	  echo $$perf_path; \
+	  if [ -f $$perf_path ]; then \
+	    profile_name=cc1plus_$$component_in_prev.fda; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	  fi; \
+	done;
+
+	for component_in_prev_target in "$(components_in_prev_target)"; do \
+	  perf_path=../prev-$(TARGET_SUBDIR)/$$component_in_prev_target/$(PERF_DATA); \
+	  echo "Perf path:"; \
+	  echo $$perf_path; \
+	  if [ -f $$perf_path ]; then \
+	    profile_name=cc1plus_$$component_in_prev_target.fda; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	  fi; \
+	done;
 #
 # Build hooks:
 
@@ -326,7 +360,7 @@ c++.mostlyclean:
 	-rm -f doc/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
-	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus.fda
+	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus*.fda
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile

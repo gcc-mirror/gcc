@@ -25,5 +25,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 3 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "phiopt1" } } */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "phiopt1" } } */

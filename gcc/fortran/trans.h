@@ -670,7 +670,7 @@ void gfc_restore_sym (gfc_symbol *, gfc_saved_var *);
 void gfc_set_decl_assembler_name (tree, tree);
 
 /* Returns true if a variable of specified size should go on the stack.  */
-int gfc_can_put_var_on_stack (tree);
+bool gfc_can_put_var_on_stack (tree);
 
 /* Set GFC_DECL_SCALAR_* on decl from sym if needed.  */
 void gfc_finish_decl_attrs (tree, symbol_attribute *);

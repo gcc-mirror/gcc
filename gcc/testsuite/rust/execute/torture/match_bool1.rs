@@ -1,4 +1,4 @@
-// { dg-output "182 is more than 100\n55 is less than 100\n" }
+// { dg-output "182 is more than 100\r*\n55 is less than 100\r*\n" }
 
 extern "C" {
     fn printf(s: *const i8, ...);

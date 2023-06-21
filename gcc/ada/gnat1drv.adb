@@ -1396,6 +1396,17 @@ begin
          Back_End_Mode := Skip;
       end if;
 
+      --  Ensure that we properly register a dependency on system.ads, since
+      --  even if we do not semantically depend on this, Targparm has read
+      --  system parameters from the system.ads file.
+
+      Lib.Writ.Ensure_System_Dependency;
+
+      --  Add dependencies, if any, on preprocessing data file and on
+      --  preprocessing definition file(s).
+
+      Prepcomp.Add_Dependencies;
+
       --  At this stage Back_End_Mode is set to indicate if the backend should
       --  be called to generate code. If it is Skip, then code generation has
       --  been turned off, even though code was requested by the original
@@ -1541,17 +1552,6 @@ begin
 
          return;
       end if;
-
-      --  Ensure that we properly register a dependency on system.ads, since
-      --  even if we do not semantically depend on this, Targparm has read
-      --  system parameters from the system.ads file.
-
-      Lib.Writ.Ensure_System_Dependency;
-
-      --  Add dependencies, if any, on preprocessing data file and on
-      --  preprocessing definition file(s).
-
-      Prepcomp.Add_Dependencies;
 
       if GNATprove_Mode then
 

@@ -1705,6 +1705,9 @@ struct line *thisline = (struct line *)
 thisline->length = this_length;
 @end smallexample
 
+In this example, @code{thisline->contents} is an array of @code{char} that
+can hold up to @code{thisline->length} bytes.
+
 Although the size of a zero-length array is zero, an array member of
 this kind may increase the size of the enclosing type as a result of tail
 padding.  The offset of a zero-length array member from the beginning
@@ -3764,7 +3767,7 @@ take function pointer arguments.
 The @code{optimize} attribute is used to specify that a function is to
 be compiled with different optimization options than specified on the
 command line.  The optimize attribute arguments of a function behave
-behave as if appended to the command-line.
+as if appended to the command-line.
 
 Valid arguments are constant non-negative integers and
 strings.  Each numeric argument specifies an optimization @var{level}.
@@ -5667,6 +5670,23 @@ command line (@pxref{MIPS Options}).
 This function attribute instructs the compiler to generate a hazard barrier
 return that clears all execution and instruction hazards while returning,
 instead of generating a normal return instruction.
+
+@item code_readable
+@cindex @code{code_readable} function attribute, MIPS
+For MIPS targets that support PC-relative addressing modes, this attribute
+can be used to control how an object is addressed.  The attribute takes
+a single optional argument:
+
+@table @samp
+@item no
+The function should not read the instruction stream as data.
+@item yes
+The function can read the instruction stream as data.
+@item pcrel
+The function can read the instruction stream in a pc-relative mode.
+@end table
+
+If there is no argument supplied, the default of @code{"yes"} applies.
 @end table
 
 @node MSP430 Function Attributes
@@ -7068,6 +7088,11 @@ Enable/disable the generation of the PREFETCHI instructions.
 @item raoint
 @itemx no-raoint
 Enable/disable the generation of the RAOINT instructions.
+
+@cindex @code{target("amx-complex")} function attribute, x86
+@item amx-complex
+@itemx no-amx-complex
+Enable/disable the generation of the AMX-COMPLEX instructions.
 
 @cindex @code{target("cld")} function attribute, x86
 @item cld
@@ -12018,7 +12043,14 @@ elements in the operand.
 It is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
-@dots{}, an >> bn@}}@. Vector operands must have the same number of
+@dots{}, an >> bn@}}@.  Unlike OpenCL, values of @code{b} are not
+implicitly taken modulo bit width of the base type @code{B}, and the behavior
+is undefined if any @code{bi} is greater than or equal to @code{B}.
+
+In contrast to scalar operations in C and C++, operands of integer vector
+operations do not undergo integer promotions.
+
+Operands of binary vector operations must have the same number of
 elements. 
 
 For convenience, it is allowed to use a binary vector operation
@@ -12805,6 +12837,50 @@ The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
 after addition, conditional jump on carry etc.
  
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_addc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{unsigned long int __builtin_addcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{unsigned long long int __builtin_addcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_add_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_add_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they add 3 unsigned values, set what the last argument
+points to to 1 if any of the two additions overflowed (otherwise 0)
+and return the sum of those 3 unsigned values.  Note, while all
+the first 3 arguments can have arbitrary values, better code will be
+emitted if one of them (preferrably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_subc (unsigned int a, unsigned int b, unsigned int carry_in, unsigned int *carry_out)}
+@defbuiltinx{unsigned long int __builtin_subcl (unsigned long int a, unsigned long int b, unsigned int carry_in, unsigned long int *carry_out)}
+@defbuiltinx{unsigned long long int __builtin_subcll (unsigned long long int a, unsigned long long int b, unsigned long long int carry_in, unsigned long long int *carry_out)}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_sub_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_sub_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they subtract 2 unsigned values from the first unsigned value,
+set what the last argument points to to 1 if any of the two subtractions
+overflowed (otherwise 0) and return the result of the subtractions.
+Note, while all the first 3 arguments can have arbitrary values, better code
+will be emitted if one of them (preferrably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
 @enddefbuiltin
 
 @node x86 specific memory model extensions for transactional memory
@@ -14669,6 +14745,7 @@ instructions, but allow the compiler to schedule those calls.
 * Blackfin Built-in Functions::
 * BPF Built-in Functions::
 * FR-V Built-in Functions::
+* LoongArch Base Built-in Functions::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
@@ -14676,6 +14753,7 @@ instructions, but allow the compiler to schedule those calls.
 * Other MIPS Built-in Functions::
 * MSP430 Built-in Functions::
 * NDS32 Built-in Functions::
+* Nvidia PTX Built-in Functions::
 * Basic PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
@@ -14683,6 +14761,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Matrix-Multiply Assist Built-in Functions::
 * PRU Built-in Functions::
 * RISC-V Built-in Functions::
+* RISC-V Vector Intrinsics::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -16196,6 +16275,134 @@ into the data cache.
 Use the @code{nldub} instruction to load the contents of address @var{x}
 into the data cache.  The instruction is issued in slot I1@.
 @end table
+
+@node LoongArch Base Built-in Functions
+@subsection LoongArch Base Built-in Functions
+
+These built-in functions are available for LoongArch.
+
+Data Type Description:
+@itemize
+@item @code{imm0_31}, a compile-time constant in range 0 to 31;
+@item @code{imm0_16383}, a compile-time constant in range 0 to 16383;
+@item @code{imm0_32767}, a compile-time constant in range 0 to 32767;
+@item @code{imm_n2048_2047}, a compile-time constant in range -2048 to 2047;
+@end itemize
+
+The intrinsics provided are listed below:
+@smallexample
+    unsigned int __builtin_loongarch_movfcsr2gr (imm0_31)
+    void __builtin_loongarch_movgr2fcsr (imm0_31, unsigned int)
+    void __builtin_loongarch_cacop_d (imm0_31, unsigned long int, imm_n2048_2047)
+    unsigned int __builtin_loongarch_cpucfg (unsigned int)
+    void __builtin_loongarch_asrtle_d (long int, long int)
+    void __builtin_loongarch_asrtgt_d (long int, long int)
+    long int __builtin_loongarch_lddir_d (long int, imm0_31)
+    void __builtin_loongarch_ldpte_d (long int, imm0_31)
+
+    int __builtin_loongarch_crc_w_b_w (char, int)
+    int __builtin_loongarch_crc_w_h_w (short, int)
+    int __builtin_loongarch_crc_w_w_w (int, int)
+    int __builtin_loongarch_crc_w_d_w (long int, int)
+    int __builtin_loongarch_crcc_w_b_w (char, int)
+    int __builtin_loongarch_crcc_w_h_w (short, int)
+    int __builtin_loongarch_crcc_w_w_w (int, int)
+    int __builtin_loongarch_crcc_w_d_w (long int, int)
+
+    unsigned int __builtin_loongarch_csrrd_w (imm0_16383)
+    unsigned int __builtin_loongarch_csrwr_w (unsigned int, imm0_16383)
+    unsigned int __builtin_loongarch_csrxchg_w (unsigned int, unsigned int, imm0_16383)
+    unsigned long int __builtin_loongarch_csrrd_d (imm0_16383)
+    unsigned long int __builtin_loongarch_csrwr_d (unsigned long int, imm0_16383)
+    unsigned long int __builtin_loongarch_csrxchg_d (unsigned long int, unsigned long int, imm0_16383)
+
+    unsigned char __builtin_loongarch_iocsrrd_b (unsigned int)
+    unsigned short __builtin_loongarch_iocsrrd_h (unsigned int)
+    unsigned int __builtin_loongarch_iocsrrd_w (unsigned int)
+    unsigned long int __builtin_loongarch_iocsrrd_d (unsigned int)
+    void __builtin_loongarch_iocsrwr_b (unsigned char, unsigned int)
+    void __builtin_loongarch_iocsrwr_h (unsigned short, unsigned int)
+    void __builtin_loongarch_iocsrwr_w (unsigned int, unsigned int)
+    void __builtin_loongarch_iocsrwr_d (unsigned long int, unsigned int)
+
+    void __builtin_loongarch_dbar (imm0_32767)
+    void __builtin_loongarch_ibar (imm0_32767)
+
+    void __builtin_loongarch_syscall (imm0_32767)
+    void __builtin_loongarch_break (imm0_32767)
+@end smallexample
+
+@emph{Note:}Since the control register is divided into 32-bit and 64-bit,
+but the access instruction is not distinguished. So GCC renames the control
+instructions when implementing intrinsics.
+
+Take the csrrd instruction as an example, built-in functions are implemented as follows:
+@smallexample
+  __builtin_loongarch_csrrd_w  // When reading the 32-bit control register use.
+  __builtin_loongarch_csrrd_d  // When reading the 64-bit control register use.
+@end smallexample
+
+For the convenience of use, the built-in functions are encapsulated,
+the encapsulated functions and @code{__drdtime_t, __rdtime_t} are
+defined in the @code{larchintrin.h}. So if you call the following
+function you need to include @code{larchintrin.h}.
+
+@smallexample
+     typedef struct drdtime@{
+            unsigned long dvalue;
+            unsigned long dtimeid;
+     @} __drdtime_t;
+
+     typedef struct rdtime@{
+            unsigned int value;
+            unsigned int timeid;
+     @} __rdtime_t;
+@end smallexample
+
+@smallexample
+    __drdtime_t __rdtime_d (void)
+    __rdtime_t  __rdtimel_w (void)
+    __rdtime_t  __rdtimeh_w (void)
+    unsigned int  __movfcsr2gr (imm0_31)
+    void __movgr2fcsr (imm0_31, unsigned int)
+    void __cacop_d (imm0_31, unsigned long, imm_n2048_2047)
+    unsigned int  __cpucfg (unsigned int)
+    void __asrtle_d (long int, long int)
+    void __asrtgt_d (long int, long int)
+    long int  __lddir_d (long int, imm0_31)
+    void __ldpte_d (long int, imm0_31)
+
+    int  __crc_w_b_w (char, int)
+    int  __crc_w_h_w (short, int)
+    int  __crc_w_w_w (int, int)
+    int  __crc_w_d_w (long int, int)
+    int  __crcc_w_b_w (char, int)
+    int  __crcc_w_h_w (short, int)
+    int  __crcc_w_w_w (int, int)
+    int  __crcc_w_d_w (long int, int)
+
+    unsigned int  __csrrd_w (imm0_16383)
+    unsigned int  __csrwr_w (unsigned int, imm0_16383)
+    unsigned int  __csrxchg_w (unsigned int, unsigned int, imm0_16383)
+    unsigned long  __csrrd_d (imm0_16383)
+    unsigned long  __csrwr_d (unsigned long, imm0_16383)
+    unsigned long  __csrxchg_d (unsigned long, unsigned long, imm0_16383)
+
+    unsigned char   __iocsrrd_b (unsigned int)
+    unsigned short  __iocsrrd_h (unsigned int)
+    unsigned int  __iocsrrd_w (unsigned int)
+    unsigned long  __iocsrrd_d (unsigned int)
+    void __iocsrwr_b (unsigned char, unsigned int)
+    void __iocsrwr_h (unsigned short, unsigned int)
+    void __iocsrwr_w (unsigned int, unsigned int)
+    void __iocsrwr_d (unsigned long, unsigned int)
+
+    void __dbar (imm0_32767)
+    void __ibar (imm0_32767)
+
+    void __syscall (imm0_32767)
+    void __break (imm0_32767)
+@end smallexample
 
 @node MIPS DSP Built-in Functions
 @subsection MIPS DSP Built-in Functions
@@ -17804,6 +18011,20 @@ Enable global interrupt.
 
 @defbuiltin{void __builtin_nds32_setgie_dis (void)}
 Disable global interrupt.
+@enddefbuiltin
+
+@node Nvidia PTX Built-in Functions
+@subsection Nvidia PTX Built-in Functions
+
+These built-in functions are available for the Nvidia PTX target:
+
+@defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
+Reverse the bit order of a 32-bit unsigned integer.
+Disable global interrupt.
+@enddefbuiltin
+
+@defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
+Reverse the bit order of a 64-bit unsigned integer.
 @enddefbuiltin
 
 @node Basic PowerPC Built-in Functions
@@ -19586,6 +19807,10 @@ double scalar_insert_exp (double significand, unsigned long long int exponent);
 ieee_128 scalar_insert_exp (unsigned __int128 significand,
                             unsigned long long int exponent);
 ieee_128 scalar_insert_exp (ieee_128 significand, unsigned long long int exponent);
+vector ieee_128 scalar_insert_exp (vector unsigned __int128 significand,
+                                   vector unsigned long long exponent);
+vector unsigned long long scalar_extract_exp_to_vec (ieee_128);
+vector unsigned __int128  scalar_extract_sig_to_vec (ieee_128);
 
 int scalar_cmp_exp_gt (double arg1, double arg2);
 int scalar_cmp_exp_lt (double arg1, double arg2);
@@ -19601,7 +19826,10 @@ bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
 @end smallexample
 
-The @code{scalar_extract_exp} and @code{scalar_extract_sig}
+The @code{scalar_extract_exp} with a 64-bit source argument
+function requires an environment supporting ISA 3.0 or later.
+The @code{scalar_extract_exp} with a 128-bit source argument
+and @code{scalar_extract_sig}
 functions require a 64-bit environment supporting ISA 3.0 or later.
 The @code{scalar_extract_exp} and @code{scalar_extract_sig} built-in
 functions return the significand and the biased exponent value
@@ -19633,11 +19861,21 @@ of the result are composed of the least significant 11 bits of the
 
 When supplied with a 128-bit first argument, the
 @code{scalar_insert_exp} built-in function returns a quad-precision
-ieee floating point value.  The sign bit of the result is copied from
-the most significant bit of the @code{significand} argument.
-The significand and exponent components of the result are composed of
-the least significant 15 bits of the @code{exponent} argument and the
-least significant 112 bits of the @code{significand} argument respectively.
+IEEE floating point value if the two arguments were scalar.  If the two
+arguments are vectors, the return value is a vector IEEE floating point value.
+The sign bit of the result is copied from the most significant bit of the
+@code{significand} argument.  The significand and exponent components of the
+result are composed of the least significant 15 bits of the @code{exponent}
+argument (element 0 on big-endian and element 1 on little-endian) and the
+least significant 112 bits of the @code{significand} argument
+respectively.  Note, the @code{significand} is the scalar argument or in the
+case of vector arguments, @code{significand} is element 0 for big-endian and
+element 1 for little-endian.
+
+The @code{scalar_extract_exp_to_vec},
+and @code{scalar_extract_sig_to_vec} are similar to
+@code{scalar_extract_exp}, @code{scalar_extract_sig} except they return
+a vector result of type unsigned long long and unsigned __int128 respectively.
 
 The @code{scalar_cmp_exp_gt}, @code{scalar_cmp_exp_lt},
 @code{scalar_cmp_exp_eq}, and @code{scalar_cmp_exp_unordered} built-in
@@ -21113,6 +21351,14 @@ Generates the @code{pause} (hint) machine instruction.  This implies the
 Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
 change architectural state.
 @enddefbuiltin
+
+@node RISC-V Vector Intrinsics
+@subsection RISC-V Vector Intrinsics
+
+GCC supports vector intrinsics as specified in version 0.11 of the RISC-V
+vector intrinsic specification, which is available at the following link:
+@uref{https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v0.11.x}.
+All of these functions are declared in the include file @file{riscv_vector.h}.
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
@@ -25311,12 +25557,12 @@ assumption is valid. For example, @code{assume(n > 0)}.
 @item axiom
 Introduces an axiom definition. Axioms introduce requirements on values.
 
-@kindex axiom
+@kindex forall
 @item forall
 Introduces a universally quantified object in an axiom. For example,
-@code{forall (int n) n + 0 == n}).
+@code{forall (int n) n + 0 == n}.
 
-@kindex axiom
+@kindex concept
 @item concept
 Introduces a concept definition. Concepts are sets of syntactic and semantic
 requirements on types and their values.

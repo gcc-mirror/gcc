@@ -1,7 +1,7 @@
 macro_rules! rep {
-    ($a:literal) => { $a }; // { dg-error "reached recursion limit" }
-    ($a:literal $(, $e:literal)*) => { // { dg-error "reached recursion limit" }
-        $a + rep!(0 $(, $e)*) // { dg-error "Failed to match" }
+    ($a:literal) => { $a };
+    ($a:literal $(, $e:literal)*) => {
+        $a + rep!(0 $(, $e)*) // { dg-error "reached recursion limit" }
     }
 }
 

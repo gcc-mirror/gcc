@@ -85,14 +85,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      * @brief Inserter for quoted strings.
      *
-     *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-     *  DR 2344 quoted()'s interaction with padding is unclear
+     * @headerfile iomanip
      */
     template<typename _CharT, typename _Traits>
       std::basic_ostream<_CharT, _Traits>&
       operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		 const _Quoted_string<const _CharT*, _CharT>& __str)
       {
+	//  _GLIBCXX_RESOLVE_LIB_DEFECTS
+	//  DR 2344 quoted()'s interaction with padding is unclear
 	std::basic_ostringstream<_CharT, _Traits> __ostr;
 	__ostr << __str._M_delim;
 	for (const _CharT* __c = __str._M_string; *__c; ++__c)
@@ -109,14 +110,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      * @brief Inserter for quoted strings.
      *
-     *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-     *  DR 2344 quoted()'s interaction with padding is unclear
+     * @headerfile iomanip
      */
     template<typename _CharT, typename _Traits, typename _String>
       std::basic_ostream<_CharT, _Traits>&
       operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		 const _Quoted_string<_String, _CharT>& __str)
       {
+	//  _GLIBCXX_RESOLVE_LIB_DEFECTS
+	//  DR 2344 quoted()'s interaction with padding is unclear
 	std::basic_ostringstream<_CharT, _Traits> __ostr;
 	__ostr << __str._M_delim;
 	for (auto __c : __str._M_string)
@@ -133,6 +135,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      * @brief Extractor for delimited strings.
      *        The left and right delimiters can be different.
+     *
+     * @headerfile iomanip
      */
     template<typename _CharT, typename _Traits, typename _Alloc>
       std::basic_istream<_CharT, _Traits>&

@@ -1759,7 +1759,9 @@ GLIBCXX_3.4.21 {
 #endif
 
     # ABI-tagged std::basic_string
-    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE1[01]**;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE10_M_[dr]*;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE10_S_compareE[jmy][jmy];
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE11_M_capacityE[jmy];
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_Alloc_hiderC[12]EP[cw]RKS3_;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE13*;
@@ -2514,6 +2516,11 @@ GLIBCXX_3.4.31 {
 
 } GLIBCXX_3.4.30;
 
+GLIBCXX_3.4.32 {
+    _ZSt21ios_base_library_initv;
+    _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE11_S_allocateERS3_[jmy];
+} GLIBCXX_3.4.31;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
@@ -2833,6 +2840,13 @@ CXXABI_1.3.14 {
     _ZTIPKu6__bf16;
 
 } CXXABI_1.3.13;
+
+CXXABI_1.3.15 {
+
+  global:
+    __cxa_call_terminate;
+
+} CXXABI_1.3.14;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {

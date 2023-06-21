@@ -387,13 +387,6 @@ TypeCheckPattern::visit (HIR::IdentifierPattern &)
 }
 
 void
-TypeCheckPattern::visit (HIR::GroupedPattern &)
-{
-  // TODO
-  gcc_unreachable ();
-}
-
-void
 TypeCheckPattern::visit (HIR::QualifiedPathInExpression &)
 {
   // TODO

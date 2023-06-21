@@ -1034,7 +1034,7 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   size_t len;
 
   /* By cleverly playing around with constructors, it is possible
-     to get mismaching types here.  */
+     to get mismatching types here.  */
   if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER
       || op1->ts.kind != op2->ts.kind)
     return ARITH_WRONGCONCAT;
@@ -1662,6 +1662,12 @@ eval_intrinsic (gfc_intrinsic_op op,
     case INTRINSIC_POWER:
       if (!gfc_numeric_ts (&op1->ts) || !gfc_numeric_ts (&op2->ts))
 	goto runtime;
+
+      /* Do not perform conversions if operands are not conformable as
+	 required for the binary intrinsic operators (F2018:10.1.5).
+	 Defer to a possibly overloading user-defined operator.  */
+      if (!gfc_op_rank_conformable (op1, op2))
+	    goto runtime;
 
       /* Insert any necessary type conversions to make the operands
 	 compatible.  */

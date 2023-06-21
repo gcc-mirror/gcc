@@ -59,9 +59,9 @@ void ptr_idx_cst (void)
   T (-1, (int[]){ 1 });         // { dg-warning "array subscript -1 is outside array bounds of 'int\\\[1]'" }
   T ( 0, (int[]){ 1 });
   T (+1, (int[]){ 1 });         // { dg-warning "array subscript 1 is outside array bounds of 'int\\\[1]'" }
-  T (INT_MIN, (int[]){ 1 });    // { dg-warning "array subscript -\[0-9\]+ is outside array bounds of 'int\\\[1]'" "lp64" { xfail ilp32 } }
-  T (INT_MAX, (int[]){ 1 });    // { dg-warning "array subscript \[0-9\]+ is outside array bounds of 'int\\\[1]'" "not-ilp32" { target { ! ilp32 } } }
-                                // { dg-warning "array subscript -1 is outside array bounds of 'int\\\[1]'" "ilp32" { target ilp32 } .-1 }
+  T (INT_MIN, (int[]){ 1 });    // { dg-warning "array subscript -\[0-9\]+ is outside array bounds of 'int\\\[1]'" "lp64" { xfail { ilp32 || avr-*-* } } }
+  T (INT_MAX, (int[]){ 1 });    // { dg-warning "array subscript \[0-9\]+ is outside array bounds of 'int\\\[1]'" "not-ilp32" { target { ! { ilp32 || avr-*-* } } } }
+                                // { dg-warning "array subscript -1 is outside array bounds of 'int\\\[1]'" "ilp32-or-avr" { target { ilp32 || avr-*-* } } .-1 }
   T (SIZE_MAX, (int[]){ 1 });   // { dg-warning "array subscript -?\[0-9\]+ is outside array bounds of 'int\\\[1]'" }
 }
 

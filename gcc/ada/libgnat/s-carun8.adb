@@ -72,7 +72,7 @@ package body System.Compare_Array_Unsigned_8 is
    begin
       --  If operands are non-aligned, or length is too short, go by bytes
 
-      if (ModA (OrA (Left, Right), 4) /= 0) or else Compare_Len < 4 then
+      if ModA (OrA (Left, Right), 4) /= 0 or else Compare_Len < 4 then
          return Compare_Array_U8_Unaligned (Left, Right, Left_Len, Right_Len);
       end if;
 

@@ -991,6 +991,27 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	  pp_string (pp, "attach_zero_length_array_section");
 	  break;
+	case GOMP_MAP_PRESENT_ALLOC:
+	  pp_string (pp, "present,alloc");
+	  break;
+	case GOMP_MAP_PRESENT_TO:
+	  pp_string (pp, "present,to");
+	  break;
+	case GOMP_MAP_PRESENT_FROM:
+	  pp_string (pp, "present,from");
+	  break;
+	case GOMP_MAP_PRESENT_TOFROM:
+	  pp_string (pp, "present,tofrom");
+	  break;
+	case GOMP_MAP_ALWAYS_PRESENT_TO:
+	  pp_string (pp, "always,present,to");
+	  break;
+	case GOMP_MAP_ALWAYS_PRESENT_FROM:
+	  pp_string (pp, "always,present,from");
+	  break;
+	case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+	  pp_string (pp, "always,present,tofrom");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1038,12 +1059,16 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_FROM:
       pp_string (pp, "from(");
+      if (OMP_CLAUSE_MOTION_PRESENT (clause))
+	pp_string (pp, "present:");
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
 
     case OMP_CLAUSE_TO:
       pp_string (pp, "to(");
+      if (OMP_CLAUSE_MOTION_PRESENT (clause))
+	pp_string (pp, "present:");
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
       goto print_clause_size;
@@ -1209,6 +1234,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	  break;
 	case OMP_CLAUSE_DEFAULTMAP_NONE:
 	  pp_string (pp, "none");
+	  break;
+	case OMP_CLAUSE_DEFAULTMAP_PRESENT:
+	  pp_string (pp, "present");
 	  break;
 	case OMP_CLAUSE_DEFAULTMAP_DEFAULT:
 	  pp_string (pp, "default");
@@ -2874,8 +2902,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
       /* Binary arithmetic and logic expressions.  */
-    case WIDEN_PLUS_EXPR:
-    case WIDEN_MINUS_EXPR:
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case MULT_EXPR:
@@ -3831,10 +3857,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VEC_SERIES_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
-    case VEC_WIDEN_PLUS_HI_EXPR:
-    case VEC_WIDEN_PLUS_LO_EXPR:
-    case VEC_WIDEN_MINUS_HI_EXPR:
-    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
     case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
@@ -3962,7 +3984,7 @@ print_declaration (pretty_printer *pp, tree t, int spc, dump_flags_t flags)
   if (TREE_CODE (t) == TYPE_DECL)
     pp_string (pp, "typedef ");
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL) && DECL_REGISTER (t))
+  if (HAS_RTL_P (t) && DECL_REGISTER (t))
     pp_string (pp, "register ");
 
   if (TREE_PUBLIC (t) && DECL_EXTERNAL (t))
@@ -4352,12 +4374,6 @@ op_symbol_code (enum tree_code code)
     case WIDEN_LSHIFT_EXPR:
       return "w<<";
 
-    case WIDEN_PLUS_EXPR:
-      return "w+";
-
-    case WIDEN_MINUS_EXPR:
-      return "w-";
-
     case POINTER_PLUS_EXPR:
       return "+";
 
@@ -4484,7 +4500,7 @@ print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
       break;
 
     case ARRAY_REF:
-      if (TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
+      if (VAR_P (TREE_OPERAND (op0, 0)))
 	dump_function_name (pp, TREE_OPERAND (op0, 0), flags);
       else
 	dump_generic_node (pp, op0, 0, flags, false);

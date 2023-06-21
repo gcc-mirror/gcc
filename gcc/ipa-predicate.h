@@ -78,16 +78,20 @@ struct inline_param_summary
      Value 0 is reserved for compile time invariants. */
   short change_prob;
   unsigned points_to_local_or_readonly_memory : 1;
+  unsigned points_to_possible_sra_candidate : 1;
   bool equal_to (const inline_param_summary &other) const
   {
     return change_prob == other.change_prob
 	   && points_to_local_or_readonly_memory
-	      == other.points_to_local_or_readonly_memory;
+	      == other.points_to_local_or_readonly_memory
+	   && points_to_possible_sra_candidate
+	      == other.points_to_possible_sra_candidate;
   }
   bool useless_p (void) const
   {
     return change_prob == REG_BR_PROB_BASE
-	   && !points_to_local_or_readonly_memory;
+	   && !points_to_local_or_readonly_memory
+	   && !points_to_possible_sra_candidate;
   }
 };
 
@@ -135,6 +139,9 @@ public:
      percentage of executions even when they are not compile time constants.  */
   static const tree_code changed = IDENTIFIER_NODE;
 
+  /* Special condition code we use to check that the parameter is likely SRA
+     candidate.  */
+  static const tree_code not_sra_candidate = TREE_LIST;
 
 
   /* Initialize predicate either to true of false depending on P.  */

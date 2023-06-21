@@ -28,7 +28,7 @@ namespace test
 
   F<float(float)>abs = ::abs;
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
   F<float(float)>		acosh		= ::acosh;
   F<float(float)>		asinh		= ::asinh;
   F<float(float)>		atanh		= ::atanh;

@@ -30,6 +30,8 @@
 #ifndef _GLIBCXX_CXX_CONFIG_H
 #define _GLIBCXX_CXX_CONFIG_H 1
 
+#pragma GCC system_header
+
 // The major release number for the GCC release the C++ library belongs to.
 #define _GLIBCXX_RELEASE
 
@@ -395,6 +397,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // Used to version individual components, e.g. std::_V2::error_category.
 # define _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(X) inline namespace X {
 # define _GLIBCXX_END_INLINE_ABI_NAMESPACE(X)   } // inline namespace X
+#endif
+
+// In the case that we don't have a hosted environment, we can't provide the
+// debugging mode.  Instead, we do our best and downgrade to assertions.
+#if defined(_GLIBCXX_DEBUG) && !__STDC_HOSTED__
+#undef _GLIBCXX_DEBUG
+#define _GLIBCXX_ASSERTIONS 1
 #endif
 
 // Inline namespaces for special modes: debug, parallel.

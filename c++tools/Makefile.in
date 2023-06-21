@@ -22,14 +22,16 @@ libexecdir := @libexecdir@
 target_noncanonical := @target_noncanonical@
 gcc_version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
+INSTALL := @INSTALL@
 INSTALL_PROGRAM := @INSTALL_PROGRAM@
 INSTALL_STRIP_PROGRAM := $(srcdir)/../install-sh -c -s
 AUTOCONF := @AUTOCONF@
 AUTOHEADER := @AUTOHEADER@
 CXX := @CXX@
 CXXFLAGS := @CXXFLAGS@
-PIEFLAG := @PIEFLAG@
-CXXOPTS := $(CXXFLAGS) $(PIEFLAG) -fno-exceptions -fno-rtti
+PICFLAG := @PICFLAG@
+LD_PICFLAG := @LD_PICFLAG@
+CXXOPTS := $(CXXFLAGS) $(PICFLAG) -fno-exceptions -fno-rtti
 LDFLAGS := @LDFLAGS@
 exeext := @EXEEXT@
 LIBIBERTY := ../libiberty/libiberty.a
@@ -41,13 +43,14 @@ all::
 mostlyclean::
 	rm -f $(MAPPER.O)
 
-clean::
+clean:: mostlyclean
 	rm -f g++-mapper-server$(exeext)
 
-distclean::
-	rm -f config.log config.status config.h
+distclean:: clean
+	rm -f config.log config.status config.h config.cache Makefile
+	rm -f $(MAPPER.O:%.o=%.d)
 
-maintainer-clean::
+maintainer-clean:: distclean
 
 install::
 
@@ -88,11 +91,15 @@ ifeq (@CXX_AUX_TOOLS@,yes)
 
 all::g++-mapper-server$(exeext)
 
+ifneq ($(PICFLAG),)
+override LIBIBERTY := ../libiberty/pic/libiberty.a
+endif
+
 MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
 CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I. -I../gcc
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) $(PIEFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
+	+$(CXX) $(LDFLAGS) $(PICFLAG) $(LD_PICFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)
@@ -132,6 +139,6 @@ config.h: config.status config.h.in
 config.status: $(srcdir)/configure $(srcdir)/config.h.in
 	if test -x $@; then ./$@ -recheck; else $< @configure_args@; fi
 
-.PHONY: all check clean distclean maintainer-clean
+.PHONY: all check mostlyclean clean distclean maintainer-clean
 
 -include $(MAPPER.O:.o=.d)

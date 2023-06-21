@@ -1159,7 +1159,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
    variable initializations of the form VAR = N1.
 
    Operand 3: OMP_FOR_COND is vector containing loop
-   conditional expressions of the form VAR {<,>,<=,>=} N2.
+   conditional expressions of the form VAR {<,>,<=,>=,!=} N2.
 
    Operand 4: OMP_FOR_INCR is a vector containing loop index
    increment expressions of the form VAR {+=,-=} INCR.
@@ -1185,7 +1185,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
    OMP_FOR_ORIG_DECLS is a vector field, with each element holding
    a list of VAR_DECLS for the corresponding collapse level.
 
-   The loop index variable VAR must be a signed integer variable,
+   The loop index variable VAR must be an integer variable,
    which is implicitly private to each thread.  For rectangular loops,
    the bounds N1 and N2 and the increment expression
    INCR are required to be loop-invariant integer expressions
@@ -1374,15 +1374,16 @@ DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
 DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 
 /* Widening sad (sum of absolute differences).
-   The first two arguments are of type t1 which should be integer.
-   The third argument and the result are of type t2, such that t2 is at least
-   twice the size of t1.  Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
+   The first two arguments are of type t1 which should be a vector of integers.
+   The third argument and the result are of type t2, such that the size of
+   the elements of t2 is at least twice the size of the elements of t1.
+   Like DOT_PROD_EXPR, SAD_EXPR (arg1,arg2,arg3) is
    equivalent to:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = PLUS_EXPR (tmp2, arg3)
   or:
-       tmp = WIDEN_MINUS_EXPR (arg1, arg2)
+       tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = WIDEN_SUM_EXPR (tmp2, arg3)
  */
@@ -1421,8 +1422,6 @@ DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
    the first argument from type t1 to type t2, and then shifting it
    by the second argument.  */
 DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_PLUS_EXPR, "widen_plus_expr", tcc_binary, 2)
-DEFTREECODE (WIDEN_MINUS_EXPR, "widen_minus_expr", tcc_binary, 2)
 
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
@@ -1487,10 +1486,6 @@ DEFTREECODE (VEC_PACK_FLOAT_EXPR, "vec_pack_float_expr", tcc_binary, 2)
  */
 DEFTREECODE (VEC_WIDEN_LSHIFT_HI_EXPR, "widen_lshift_hi_expr", tcc_binary, 2)
 DEFTREECODE (VEC_WIDEN_LSHIFT_LO_EXPR, "widen_lshift_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_HI_EXPR, "widen_plus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_PLUS_LO_EXPR, "widen_plus_lo_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_HI_EXPR, "widen_minus_hi_expr", tcc_binary, 2)
-DEFTREECODE (VEC_WIDEN_MINUS_LO_EXPR, "widen_minus_lo_expr", tcc_binary, 2)
 
 /* PREDICT_EXPR.  Specify hint for branch prediction.  The
    PREDICT_EXPR_PREDICTOR specify predictor and PREDICT_EXPR_OUTCOME the

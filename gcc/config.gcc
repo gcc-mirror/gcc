@@ -362,7 +362,7 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o aarch-bti-insert.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o arm-mve-builtins-shapes.o arm-mve-builtins-base.o aarch-common.o aarch-bti-insert.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
@@ -435,7 +435,7 @@ i[34567]86-*-* | x86_64-*-*)
 		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h
 		       avxifmaintrin.h avxvnniint8intrin.h avxneconvertintrin.h
 		       cmpccxaddintrin.h amxfp16intrin.h prfchiintrin.h
-		       raointintrin.h"
+		       raointintrin.h amxcomplexintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -2287,7 +2287,7 @@ lm32-*-rtems*)
 	tmake_file="${tmake_file} lm32/t-rtems"
          ;;
 lm32-*-uclinux*)
-        tm_file="elfos.h ${tm_file} gnu-user.h linux.h lm32/uclinux-elf.h"
+        tm_file="elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h lm32/uclinux-elf.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 m32r-*-elf*)
@@ -2441,7 +2441,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  tmake_file="${tmake_file} riscv/t-rtems"
 	  ;;
 	*)
-	  if test "x${with_multilib_generator}" == xdefault; then
+	  if test "x${with_multilib_generator}" = xdefault; then
 		  case "x${enable_multilib}" in
 		  xno) ;;
 		  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
@@ -3488,7 +3488,7 @@ v850*-*-*)
 	use_gcc_stdint=wrap
 	;;
 vax-*-linux*)
-	tm_file="${tm_file} elfos.h gnu-user.h linux.h vax/elf.h vax/linux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h vax/elf.h vax/linux.h"
 	extra_options="${extra_options} vax/elf.opt"
 	;;
 vax-*-netbsdelf*)

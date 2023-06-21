@@ -181,7 +181,7 @@ class exit_range
 {
 public:
   tree name;
-  vrange *range;
+  vrange_storage *range;
   exit_range *next;
 };
 
@@ -221,7 +221,7 @@ infer_range_manager::infer_range_manager (bool do_search)
   // Non-zero elements are very common, so cache them for each ssa-name.
   m_nonzero.create (0);
   m_nonzero.safe_grow_cleared (num_ssa_names + 1);
-  m_range_allocator = new obstack_vrange_allocator;
+  m_range_allocator = new vrange_allocator;
 }
 
 // Destruct a range infer manager.
@@ -246,7 +246,8 @@ infer_range_manager::get_nonzero (tree name)
     m_nonzero.safe_grow_cleared (num_ssa_names + 20);
   if (!m_nonzero[v])
     {
-      m_nonzero[v] = m_range_allocator->alloc_vrange (TREE_TYPE (name));
+      m_nonzero[v]
+	= (irange *) m_range_allocator->alloc (sizeof (int_range <2>));
       m_nonzero[v]->set_nonzero (TREE_TYPE (name));
     }
   return *(m_nonzero[v]);
@@ -292,7 +293,10 @@ infer_range_manager::maybe_adjust_range (vrange &r, tree name, basic_block bb)
   exit_range *ptr = m_on_exit[bb->index].find_ptr (name);
   gcc_checking_assert (ptr);
   // Return true if this exit range changes R, otherwise false.
-  return r.intersect (*(ptr->range));
+  tree type = TREE_TYPE (name);
+  Value_Range tmp (type);
+  ptr->range->get_vrange (tmp, type);
+  return r.intersect (tmp);
 }
 
 // Add range R as an inferred range for NAME in block BB.
@@ -320,17 +324,16 @@ infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
   exit_range *ptr = m_on_exit[bb->index].find_ptr (name);
   if (ptr)
     {
-      Value_Range cur (r);
+      tree type = TREE_TYPE (name);
+      Value_Range cur (r), name_range (type);
+      ptr->range->get_vrange (name_range, type);
       // If no new info is added, just return.
-      if (!cur.intersect (*(ptr->range)))
+      if (!cur.intersect (name_range))
 	return;
       if (ptr->range->fits_p (cur))
-	*(ptr->range) = cur;
+	ptr->range->set_vrange (cur);
       else
-	{
-	  vrange &v = cur;
-	  ptr->range = m_range_allocator->clone (v);
-	}
+	ptr->range = m_range_allocator->clone (cur);
       return;
     }
 

@@ -128,7 +128,6 @@ END WriteS ;
 PROCEDURE ReadS (file: File) : String ;
 VAR
    s: String ;
-   c: CARDINAL ;
 BEGIN
    s := InitString ('') ;
    WHILE (NOT EOLN (file)) AND (NOT EOF (file)) AND IsNoError (file) DO

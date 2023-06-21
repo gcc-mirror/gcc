@@ -254,3 +254,44 @@ Enum(isa_spec_class) String(20191213) Value(ISA_SPEC_CLASS_20191213)
 misa-spec=
 Target RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
 Set the version of RISC-V ISA spec.
+
+minline-atomics
+Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
+Always inline subword atomic operations.
+
+Enum
+Name(riscv_autovec_preference) Type(enum riscv_autovec_preference_enum)
+The RISC-V auto-vectorization preference:
+
+EnumValue
+Enum(riscv_autovec_preference) String(none) Value(NO_AUTOVEC)
+
+EnumValue
+Enum(riscv_autovec_preference) String(scalable) Value(RVV_SCALABLE)
+
+EnumValue
+Enum(riscv_autovec_preference) String(fixed-vlmax) Value(RVV_FIXED_VLMAX)
+
+-param=riscv-autovec-preference=
+Target RejectNegative Joined Enum(riscv_autovec_preference) Var(riscv_autovec_preference) Init(NO_AUTOVEC)
+-param=riscv-autovec-preference=<string>	Set the preference of auto-vectorization in the RISC-V port.
+
+Enum
+Name(riscv_autovec_lmul) Type(enum riscv_autovec_lmul_enum)
+The RVV possible LMUL:
+
+EnumValue
+Enum(riscv_autovec_lmul) String(m1) Value(RVV_M1)
+
+EnumValue
+Enum(riscv_autovec_lmul) String(m2) Value(RVV_M2)
+
+EnumValue
+Enum(riscv_autovec_lmul) String(m4) Value(RVV_M4)
+
+EnumValue
+Enum(riscv_autovec_lmul) String(m8) Value(RVV_M8)
+
+-param=riscv-autovec-lmul=
+Target RejectNegative Joined Enum(riscv_autovec_lmul) Var(riscv_autovec_lmul) Init(RVV_M1)
+-param=riscv-autovec-lmul=<string>	Set the RVV LMUL of auto-vectorization in the RISC-V port.

@@ -1,12 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
-#include <math.h>
-
 void f13(double * restrict z, double * restrict w, double * restrict x, double * restrict y, int n)
 {
     for (int i = 0; i < n; i++) {
-        z[i] = (isunordered(w[i], 0)) ? x[i] + w[i] : y[i] - w[i];
+        z[i] = (__builtin_isunordered(w[i], 0)) ? x[i] + w[i] : y[i] - w[i];
     }
 }
 

@@ -109,9 +109,21 @@ is
 
       procedure Lemma_Euclidean_Mod (Q, F, R : Big_Natural) with
         Pre  => F /= 0,
-        Post => (Q * F + R) mod F = R mod F;
+        Post => (Q * F + R) mod F = R mod F,
+        Subprogram_Variant => (Decreases => Q);
 
-      procedure Lemma_Euclidean_Mod (Q, F, R : Big_Natural) is null;
+      -------------------------
+      -- Lemma_Euclidean_Mod --
+      -------------------------
+
+      procedure Lemma_Euclidean_Mod (Q, F, R : Big_Natural) is
+      begin
+         if Q > 0 then
+            Lemma_Euclidean_Mod (Q - 1, F, R);
+         end if;
+      end Lemma_Euclidean_Mod;
+
+      --  Local variables
 
       Left  : constant Big_Natural := (X + Y) mod B;
       Right : constant Big_Natural := ((X mod B) + (Y mod B)) mod B;
@@ -164,6 +176,9 @@ is
             Lemma_Mod_Mod (A, B);
             Lemma_Exp_Mod (A, Exp - 1, B);
             Lemma_Mult_Mod (A, A ** (Exp - 1), B);
+            pragma Assert
+              ((A mod B) * (A mod B) ** (Exp - 1) = (A mod B) ** Exp);
+            pragma Assert (A * A ** (Exp - 1) = A ** Exp);
             pragma Assert (Left = Right);
          end;
       end if;
@@ -190,6 +205,7 @@ is
             pragma Assert (Left = Right);
          else
             pragma Assert (Y mod B = 0);
+            pragma Assert (Y / B * B = Y);
             pragma Assert ((X * Y) mod B = (X * Y) - (X * Y) / B * B);
             pragma Assert
               ((X * Y) mod B = (X * Y) - (X * (Y / B) * B) / B * B);
@@ -309,6 +325,7 @@ is
             Lemma_Mod_Mod (Rest * Rest, Big (Modulus));
             Lemma_Mod_Ident (Big (Result), Big (Modulus));
             Lemma_Mult_Mod (Big (Result), Rest * Rest, Big (Modulus));
+            pragma Assert (Big (Factor) >= 0);
             Lemma_Mult_Mod (Big (Result), Big (Factor) ** Exp,
                                Big (Modulus));
             pragma Assert (Equal_Modulo

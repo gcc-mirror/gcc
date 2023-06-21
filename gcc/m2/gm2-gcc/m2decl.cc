@@ -122,7 +122,7 @@ m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
     error ("storage size of %qD has not been resolved", decl);
 
   if ((TREE_PUBLIC (decl) == 0) && DECL_EXTERNAL (decl))
-    internal_error ("inconsistant because %qs",
+    internal_error ("inconsistent because %qs",
 		    "PUBLIC_DECL(decl) == 0 && DECL_EXTERNAL(decl) == 1");
 
   m2block_addDeclExpr (build_stmt (location, DECL_EXPR, decl));
@@ -284,23 +284,15 @@ m2decl_DeclareModuleCtor (tree decl)
   return decl;
 }
 
-/* DetermineSizeOfConstant - given, str, and, base, fill in needsLong
-   and needsUnsigned appropriately.  */
+/* ConstantStringExceedsZType return TRUE if str cannot be represented in the ZTYPE.  */
 
 bool
-m2decl_DetermineSizeOfConstant (location_t location,
-				const char *str, unsigned int base,
-                                bool *needsLong, bool *needsUnsigned,
-				bool issueError)
+m2decl_ConstantStringExceedsZType (location_t location,
+				   const char *str, unsigned int base,
+				   bool issueError)
 {
-  unsigned int ulow;
-  int high;
-  bool overflow = m2expr_interpret_m2_integer (location,
-					       str, base, &ulow, &high,
-					       needsLong, needsUnsigned);
-  if (overflow && issueError)
-    error_at (location, "constant %qs is too large", str);
-  return overflow;
+  widest_int wval;
+  return m2expr_StrToWideInt (location, str, base, wval, issueError);
 }
 
 /* BuildConstLiteralNumber - returns a GCC TREE built from the
@@ -311,30 +303,12 @@ tree
 m2decl_BuildConstLiteralNumber (location_t location, const char *str,
 				unsigned int base, bool issueError)
 {
-  tree value, type;
-  unsigned HOST_WIDE_INT low;
-  HOST_WIDE_INT high;
-  HOST_WIDE_INT ival[3];
-  bool overflow = m2expr_interpret_integer (location, str, base, &low, &high);
-  bool needLong, needUnsigned;
+  widest_int wval;
+  tree value;
+  bool overflow = m2expr_StrToWideInt (location, str, base, wval, issueError);
+  value = wide_int_to_tree (m2type_GetM2ZType (), wval);
 
-  ival[0] = low;
-  ival[1] = high;
-  ival[2] = 0;
-
-  widest_int wval = widest_int::from_array (ival, 3);
-
-  bool overflow_m2 = m2decl_DetermineSizeOfConstant (location, str, base,
-						     &needLong, &needUnsigned,
-						     issueError);
-  if (needUnsigned && needLong)
-    type = m2type_GetM2LongCardType ();
-  else
-    type = m2type_GetM2LongIntType ();
-
-  value = wide_int_to_tree (type, wval);
-
-  if (issueError && (overflow || overflow_m2 || m2expr_TreeOverflow (value)))
+  if (issueError && (overflow || m2expr_TreeOverflow (value)))
     error_at (location, "constant %qs is too large", str);
 
   return m2block_RememberConstant (value);

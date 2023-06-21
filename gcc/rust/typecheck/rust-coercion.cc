@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-check-base.h"
 #include "rust-coercion.h"
+#include "rust-unify.h"
 
 namespace Rust {
 namespace Resolver {
@@ -218,7 +219,10 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 	// we might be able to replace this with a can_eq because we default
 	// back to a final unity anyway
 	rust_debug ("coerce_borrowed_pointer -- unify");
-	TyTy::BaseType *result = receiver->unify (expected);
+	TyTy::BaseType *result
+	  = UnifyRules::Resolve (TyTy::TyWithLocation (receiver),
+				 TyTy::TyWithLocation (expected), locus,
+				 true /* commit */, true /* emit_errors */);
 	return CoercionResult{{}, result};
       }
     }

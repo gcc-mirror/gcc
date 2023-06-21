@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-compile-pattern.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
 
@@ -53,7 +54,7 @@ CompileStmt::visit (HIR::LetStmt &stmt)
   if (!stmt.has_init_expr ())
     return;
 
-  const HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
+  HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   HirId stmt_id = stmt_pattern.get_pattern_mappings ().get_hirid ();
 
   TyTy::BaseType *ty = nullptr;
@@ -62,15 +63,6 @@ CompileStmt::visit (HIR::LetStmt &stmt)
       // FIXME this should be an assertion instead
       rust_fatal_error (stmt.get_locus (),
 			"failed to lookup variable declaration type");
-      return;
-    }
-
-  Bvariable *var = nullptr;
-  if (!ctx->lookup_var_decl (stmt_id, &var))
-    {
-      // FIXME this should be an assertion instead and use error mark node
-      rust_fatal_error (stmt.get_locus (),
-			"failed to lookup compiled variable declaration");
       return;
     }
 
@@ -84,7 +76,6 @@ CompileStmt::visit (HIR::LetStmt &stmt)
   bool ok = ctx->get_tyctx ()->lookup_type (
     stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
   rust_assert (ok);
-  tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
 
   Location lvalue_locus = stmt.get_pattern ()->get_locus ();
   Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
@@ -92,23 +83,7 @@ CompileStmt::visit (HIR::LetStmt &stmt)
   init = coercion_site (stmt.get_mappings ().get_hirid (), init, actual,
 			expected, lvalue_locus, rvalue_locus);
 
-  auto fnctx = ctx->peek_fn ();
-  if (ty->is_unit ())
-    {
-      ctx->add_statement (init);
-
-      auto unit_type_init_expr
-	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
-						       rvalue_locus);
-      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
-						    unit_type_init_expr);
-      ctx->add_statement (s);
-    }
-  else
-    {
-      auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var, init);
-      ctx->add_statement (s);
-    }
+  CompilePatternLet::Compile (&stmt_pattern, init, ty, rvalue_locus, ctx);
 }
 
 } // namespace Compile

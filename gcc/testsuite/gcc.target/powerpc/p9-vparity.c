@@ -105,3 +105,4 @@ parity_ti_4u (__uint128_t a)
 /* { dg-final { scan-assembler "vprtybd" } } */
 /* { dg-final { scan-assembler "vprtybq" } } */
 /* { dg-final { scan-assembler "vprtybw" } } */
+/* { dg-final { scan-assembler-not "vpopcntb" } } */

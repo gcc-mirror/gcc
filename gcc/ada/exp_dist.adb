@@ -3118,8 +3118,8 @@ package body Exp_Dist is
       --  Start of processing for Add_RACW_Read_Attribute
 
       begin
-         Build_Stream_Procedure (Loc,
-           RACW_Type, Body_Node, Pnam, Statements, Outp => True);
+         Build_Stream_Procedure
+           (RACW_Type, Body_Node, Pnam, Statements, Outp => True);
          Proc_Decl := Make_Subprogram_Declaration (Loc,
            Copy_Specification (Loc, Specification (Body_Node)));
 
@@ -3354,7 +3354,7 @@ package body Exp_Dist is
 
       begin
          Build_Stream_Procedure
-           (Loc, RACW_Type, Body_Node, Pnam, Statements, Outp => False);
+           (RACW_Type, Body_Node, Pnam, Statements, Outp => False);
 
          Proc_Decl := Make_Subprogram_Declaration (Loc,
            Copy_Specification (Loc, Specification (Body_Node)));
@@ -5800,7 +5800,7 @@ package body Exp_Dist is
 
       begin
          Build_Stream_Procedure
-           (Loc, RACW_Type, Body_Node, Pnam, Statements, Outp => True);
+           (RACW_Type, Body_Node, Pnam, Statements, Outp => True);
 
          Proc_Decl := Make_Subprogram_Declaration (Loc,
            Copy_Specification (Loc, Specification (Body_Node)));
@@ -6103,7 +6103,7 @@ package body Exp_Dist is
 
       begin
          Build_Stream_Procedure
-           (Loc, RACW_Type, Body_Node, Pnam, Statements, Outp => False);
+           (RACW_Type, Body_Node, Pnam, Statements, Outp => False);
 
          Proc_Decl :=
            Make_Subprogram_Declaration (Loc,
@@ -8304,7 +8304,7 @@ package body Exp_Dist is
             CI := Component_Items (Clist);
             VP := Variant_Part (Clist);
 
-            Item := First (CI);
+            Item := First_Non_Pragma (CI);
             while Present (Item) loop
                Def := Defining_Identifier (Item);
 
@@ -8313,7 +8313,7 @@ package body Exp_Dist is
                     (Stmts, Container, Counter, Rec, Def);
                end if;
 
-               Next (Item);
+               Next_Non_Pragma (Item);
             end loop;
 
             if Present (VP) then

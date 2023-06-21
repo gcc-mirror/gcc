@@ -136,8 +136,6 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info, tree scalar_type)
 	  || gimple_assign_rhs_code (assign) == WIDEN_SUM_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_LSHIFT_EXPR
-	  || gimple_assign_rhs_code (assign) == WIDEN_PLUS_EXPR
-	  || gimple_assign_rhs_code (assign) == WIDEN_MINUS_EXPR
 	  || gimple_assign_rhs_code (assign) == FLOAT_EXPR)
 	{
 	  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
@@ -4464,9 +4462,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr));
 	  bool maybe_scatter
 	    = DR_IS_WRITE (dr)
-	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && (targetm.vectorize.builtin_scatter != NULL
-		  || supports_vec_scatter_store_p ());
+	      && !TREE_THIS_VOLATILE (DR_REF (dr));
 
 	  /* If target supports vector gather loads or scatter stores,
 	     see if they can't be used.  */
@@ -5101,7 +5097,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      create_iv (aggr_ptr_init,
+      create_iv (aggr_ptr_init, PLUS_EXPR,
 		 fold_convert (aggr_ptr_type, iv_step),
 		 aggr_ptr, loop, &incr_gsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
@@ -5131,9 +5127,9 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
     {
       standard_iv_increment_position (containing_loop, &incr_gsi,
 				      &insert_after);
-      create_iv (aptr, fold_convert (aggr_ptr_type, DR_STEP (dr)), aggr_ptr,
-		 containing_loop, &incr_gsi, insert_after, &indx_before_incr,
-		 &indx_after_incr);
+      create_iv (aptr, PLUS_EXPR, fold_convert (aggr_ptr_type, DR_STEP (dr)),
+		 aggr_ptr, containing_loop, &incr_gsi, insert_after,
+		 &indx_before_incr, &indx_after_incr);
       incr = gsi_stmt (incr_gsi);
 
       /* Copy the points-to information if it exists. */
@@ -5399,6 +5395,8 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  poly_uint64 nelt = GET_MODE_NUNITS (mode);
 
 	  /* The encoding has 2 interleaved stepped patterns.  */
+	  if(!multiple_p (nelt, 2))
+	    return false;
 	  vec_perm_builder sel (nelt, 2, 3);
 	  sel.quick_grow (6);
 	  for (i = 0; i < 3; i++)

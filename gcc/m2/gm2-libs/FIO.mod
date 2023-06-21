@@ -667,7 +667,6 @@ END ReadNBytes ;
 PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
 VAR
    t     : ADDRESS ;
-   result: INTEGER ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;
@@ -1236,7 +1235,6 @@ END WriteNBytes ;
 PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
 VAR
    t     : ADDRESS ;
-   result: INTEGER ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;

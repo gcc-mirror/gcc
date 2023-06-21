@@ -226,6 +226,10 @@ package body Sem_Ch6 is
    --  Preanalysis of default expressions of subprogram formals. N is the
    --  expression to be analyzed and T is the expected type.
 
+   procedure Set_Formal_Mode (Formal_Id : Entity_Id);
+   --  Set proper Ekind to reflect formal mode (in, out, in out), and set
+   --  miscellaneous other attributes.
+
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
    --  setting the proper validity status for this entity, which depends on
@@ -357,6 +361,13 @@ package body Sem_Ch6 is
 
       Ret := Make_Simple_Return_Statement (LocX, Expr);
 
+      --  Remove parens around the expression, so that if the expression will
+      --  appear without them when pretty-printed in error messages.
+
+      if Paren_Count (Expr) > 0 then
+         Set_Paren_Count (Expr, Paren_Count (Expr) - 1);
+      end if;
+
       New_Body :=
         Make_Subprogram_Body (Loc,
           Specification              => New_Spec,
@@ -379,9 +390,7 @@ package body Sem_Ch6 is
          --  function to the proper body when the expression function acts
          --  as a completion.
 
-         if Has_Aspects (N) then
-            Move_Aspects (N, To => New_Body);
-         end if;
+         Move_Aspects (N, To => New_Body);
 
          Relocate_Pragmas_To_Body (New_Body);
 
@@ -838,6 +847,7 @@ package body Sem_Ch6 is
               and then Serious_Errors_Detected = 0
               and then Is_Access_Type (R_Type)
               and then Nkind (Expr) not in N_Null | N_Raise_Expression
+              and then Is_Access_Type (Etype (Expr))
               and then Is_Interface (Designated_Type (R_Type))
               and then Is_Progenitor (Designated_Type (R_Type),
                                       Designated_Type (Etype (Expr)))
@@ -847,6 +857,14 @@ package body Sem_Ch6 is
             end if;
 
             Resolve (Expr, R_Type);
+
+            --  The expansion of the expression may have rewritten the return
+            --  statement itself, e.g. when it is a conditional expression.
+
+            if Nkind (N) /= N_Simple_Return_Statement then
+               return;
+            end if;
+
             Check_Limited_Return (N, Expr, R_Type);
 
             Check_Return_Construct_Accessibility (N, Stm_Entity);
@@ -942,9 +960,7 @@ package body Sem_Ch6 is
 
          --  Defend against previous errors
 
-         if Nkind (Expr) = N_Empty
-           or else No (Etype (Expr))
-         then
+         if Nkind (Expr) = N_Empty or else No (Etype (Expr)) then
             return;
          end if;
 
@@ -1225,6 +1241,10 @@ package body Sem_Ch6 is
              (E_Function | E_Procedure |
                 E_Generic_Function | E_Generic_Procedure => True,
               others => False));
+         Reinit_Field_To_Zero (Body_Id, F_Needs_No_Actuals);
+         if Ekind (Body_Id) in E_Function | E_Procedure then
+            Reinit_Field_To_Zero (Body_Id, F_Is_Inlined_Always);
+         end if;
          Mutate_Ekind       (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
@@ -2033,7 +2053,7 @@ package body Sem_Ch6 is
 
    procedure Analyze_Return_Type (N : Node_Id) is
       Designator : constant Entity_Id := Defining_Entity (N);
-      Typ        : Entity_Id := Empty;
+      Typ        : Entity_Id;
 
    begin
       --  Normal case where result definition does not indicate an error
@@ -2262,7 +2282,7 @@ package body Sem_Ch6 is
       Mask_Types : Elist_Id  := No_Elist;
       Prot_Typ   : Entity_Id := Empty;
       Spec_Decl  : Node_Id   := Empty;
-      Spec_Id    : Entity_Id;
+      Spec_Id    : Entity_Id := Empty;
 
       Last_Real_Spec_Entity : Entity_Id := Empty;
       --  When we analyze a separate spec, the entity chain ends up containing
@@ -2860,9 +2880,7 @@ package body Sem_Ch6 is
 
                   --  Move aspects to the new spec
 
-                  if Has_Aspects (N) then
-                     Move_Aspects (N, To => Decl);
-                  end if;
+                  Move_Aspects (N, To => Decl);
 
                   Insert_Before (N, Decl);
                   Analyze (Decl);
@@ -3895,6 +3913,7 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
          then
             Set_Has_Delayed_Freeze (Spec_Id);
+            Create_Extra_Formals (Spec_Id);
             Freeze_Before (N, Spec_Id);
          end if;
       end if;
@@ -4002,13 +4021,17 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
-         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (Body_Id, F_Needs_No_Actuals,
+         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, F_Is_Predicate_Function,
-           Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, F_Protected_Subprogram,
-           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (Body_Id, F_Needs_No_Actuals);
+         Reinit_Field_To_Zero (Body_Id, F_Is_Predicate_Function);
+         Reinit_Field_To_Zero (Body_Id, F_Protected_Subprogram);
+         Reinit_Field_To_Zero (Body_Id, F_Is_Inlined_Always);
+         Reinit_Field_To_Zero (Body_Id, F_Is_Generic_Actual_Subprogram);
+         Reinit_Field_To_Zero (Body_Id, F_Is_Primitive_Wrapper);
+         Reinit_Field_To_Zero (Body_Id, F_Is_Private_Primitive);
+         Reinit_Field_To_Zero (Body_Id, F_Original_Protected_Subprogram);
+         Reinit_Field_To_Zero (Body_Id, F_Wrapped_Entity);
 
          if Ekind (Body_Id) = E_Procedure then
             Reinit_Field_To_Zero (Body_Id, F_Receiving_Entry);
@@ -5233,6 +5256,8 @@ package body Sem_Ch6 is
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 
+      Set_Is_Not_Self_Hidden (Designator);
+
       --  Flag Is_Inlined_Always is True by default, and reversed to False for
       --  those subprograms which could be inlined in GNATprove mode (because
       --  Body_To_Inline is non-Empty) but should not be inlined.
@@ -5980,41 +6005,35 @@ package body Sem_Ch6 is
               --  avoids some redundant error messages.
 
               and then not Error_Posted (New_Formal)
+
+              --  It is allowed to omit the null-exclusion in case of stream
+              --  attribute subprograms. We recognize stream subprograms
+              --  through their TSS-generated suffix.
+
+              and then Get_TSS_Name (New_Id) not in TSS_Stream_Read
+                                                  | TSS_Stream_Write
+                                                  | TSS_Stream_Input
+                                                  | TSS_Stream_Output
             then
-               --  It is allowed to omit the null-exclusion in case of stream
-               --  attribute subprograms. We recognize stream subprograms
-               --  through their TSS-generated suffix.
+               --  Here we have a definite conformance error. It is worth
+               --  special casing the error message for the case of a
+               --  controlling formal (which excludes null).
 
-               declare
-                  TSS_Name : constant TSS_Name_Type := Get_TSS_Name (New_Id);
+               if Is_Controlling_Formal (New_Formal) then
+                  Error_Msg_Node_2 := Scope (New_Formal);
+                  Conformance_Error
+                    ("\controlling formal & of & excludes null, "
+                     & "declaration must exclude null as well",
+                     New_Formal);
 
-               begin
-                  if TSS_Name /= TSS_Stream_Read
-                    and then TSS_Name /= TSS_Stream_Write
-                    and then TSS_Name /= TSS_Stream_Input
-                    and then TSS_Name /= TSS_Stream_Output
-                  then
-                     --  Here we have a definite conformance error. It is worth
-                     --  special casing the error message for the case of a
-                     --  controlling formal (which excludes null).
+                  --  Normal case (couldn't we give more detail here???)
 
-                     if Is_Controlling_Formal (New_Formal) then
-                        Error_Msg_Node_2 := Scope (New_Formal);
-                        Conformance_Error
-                         ("\controlling formal & of & excludes null, "
-                          & "declaration must exclude null as well",
-                          New_Formal);
+               else
+                  Conformance_Error
+                    ("\type of & does not match!", New_Formal);
+               end if;
 
-                     --  Normal case (couldn't we give more detail here???)
-
-                     else
-                        Conformance_Error
-                          ("\type of & does not match!", New_Formal);
-                     end if;
-
-                     return;
-                  end if;
-               end;
+               return;
             end if;
          end if;
 
@@ -8391,21 +8410,14 @@ package body Sem_Ch6 is
            Ctype <= Mode_Conformant
              or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
-      elsif Is_Private_Type (Type_2)
-        and then In_Instance
-        and then Present (Full_View (Type_2))
-        and then Base_Types_Match (Type_1, Full_View (Type_2))
-      then
-         return
-           Ctype <= Mode_Conformant
-             or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
-
-      --  Another confusion between views in a nested instance with an
-      --  actual private type whose full view is not in scope.
+      --  The subtype declared for the formal type in an instantiation and the
+      --  actual type are conforming. Note that testing Is_Generic_Actual_Type
+      --  here is not sufficient because the flag is only set in the bodies of
+      --  instances, which is too late for formal subprograms.
 
       elsif Ekind (Type_2) = E_Private_Subtype
-        and then In_Instance
         and then Etype (Type_2) = Type_1
+        and then Present (Generic_Parent_Type (Declaration_Node (Type_2)))
       then
          return True;
 
@@ -9017,8 +9029,8 @@ package body Sem_Ch6 is
                          or else not
                            (Is_Limited_Type (Formal_Type)
                              and then
-                               (Is_Tagged_Type
-                                  (Underlying_Type (Formal_Type)))))
+                               Is_Tagged_Type
+                                 (Underlying_Type (Formal_Type))))
             then
                Set_Extra_Constrained
                  (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "O"));
@@ -10349,7 +10361,7 @@ package body Sem_Ch6 is
                  FCL (Expressions (E1), Expressions (E2));
 
             when N_Integer_Literal =>
-               return (Intval (E1) = Intval (E2))
+               return Intval (E1) = Intval (E2)
                  and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Null =>
@@ -10436,7 +10448,7 @@ package body Sem_Ch6 is
                  FCE (High_Bound (E1), High_Bound (E2));
 
             when N_Real_Literal =>
-               return (Realval (E1) = Realval (E2))
+               return Realval (E1) = Realval (E2)
                  and then not User_Defined_Numeric_Literal_Mismatch;
 
             when N_Selected_Component =>
@@ -10625,21 +10637,16 @@ package body Sem_Ch6 is
 
       else
          declare
-            Typ : constant Entity_Id :=
-                    Underlying_Type (Find_Dispatching_Type (Alias_E));
+            TSS_Name : constant TSS_Name_Type := Get_TSS_Name (E);
+            Typ      : constant Entity_Id :=
+              Underlying_Type (Find_Dispatching_Type (Alias_E));
 
          begin
-            if (Get_TSS_Name (E) = TSS_Stream_Input
-                  and then not Stream_Operation_OK (Typ, TSS_Stream_Input))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Output
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Output))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Read
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Read))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Write
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Write))
+            if TSS_Name in TSS_Stream_Input
+                         | TSS_Stream_Output
+                         | TSS_Stream_Read
+                         | TSS_Stream_Write
+              and then not Stream_Operation_OK (Typ, TSS_Name)
             then
                return False;
             end if;
@@ -11718,7 +11725,7 @@ package body Sem_Ch6 is
 
          begin
             while Present (Param_E1) and then Present (Param_E2) loop
-               if (Ctype >= Mode_Conformant) and then
+               if Ctype >= Mode_Conformant and then
                  Ekind (Defining_Identifier (Param_E1)) /=
                  Ekind (Defining_Identifier (Param_E2))
                then
@@ -13412,6 +13419,8 @@ package body Sem_Ch6 is
       else
          Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
+
+      Set_Is_Not_Self_Hidden (Formal_Id);
 
       --  Set Is_Known_Non_Null for access parameters since the language
       --  guarantees that access parameters are always non-null. We also set

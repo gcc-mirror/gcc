@@ -157,8 +157,10 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* The xnack option is a placeholder, for now.  */
-  if (flag_xnack)
+  /* The xnack option is a placeholder, for now.  Before removing, update
+     gcn-hsa.h's XNACKOPT, gcn.opt's mxnack= default init+descr, and
+     invoke.texi's default description.  */
+  if (flag_xnack != HSACO_ATTR_OFF)
     sorry ("XNACK support");
 }
 
@@ -487,7 +489,7 @@ gcn_class_max_nregs (reg_class_t rclass, machine_mode mode)
       if (vgpr_2reg_mode_p (mode))
 	return 2;
       /* TImode is used by DImode compare_and_swap.  */
-      if (mode == TImode)
+      if (vgpr_4reg_mode_p (mode))
 	return 4;
     }
   else if (rclass == VCC_CONDITIONAL_REG && mode == BImode)
@@ -590,9 +592,9 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
        Therefore, we restrict ourselved to aligned registers.  */
     return (vgpr_1reg_mode_p (mode)
 	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
-	    /* TImode is used by DImode compare_and_swap.  */
-	    || (mode == TImode
-		&& !((regno - FIRST_VGPR_REG) & 3)));
+	    /* TImode is used by DImode compare_and_swap,
+	       and by DIVMOD V64DImode libfuncs.  */
+	    || (!((regno - FIRST_VGPR_REG) & 3) && vgpr_4reg_mode_p (mode)));
   return false;
 }
 
@@ -1324,6 +1326,7 @@ GEN_VN (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
 GEN_VN (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_TI (GEN_VN (PREFIX, ti##SUFFIX, A(PARAMS), A(ARGS))) \
 static rtx \
 gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
 { \
@@ -1338,6 +1341,8 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
     case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS, merge_src, exec); \
     case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS, merge_src, exec); \
     case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS, merge_src, exec); \
+    case E_TImode: \
+	USE_TI (return gen_##PREFIX##vNti##SUFFIX (ARGS, merge_src, exec);) \
     default: \
       break; \
     } \
@@ -1346,6 +1351,14 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
   return NULL_RTX; \
 }
 
+/* These have TImode support.  */
+#define USE_TI(ARGS) ARGS
+GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
+GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
+
+/* These do not have TImode support.  */
+#undef USE_TI
+#define USE_TI(ARGS)
 GEN_VNM (add,3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_vcc_dup, A(rtx dest, rtx src1, rtx src2, rtx vcc),
@@ -1364,12 +1377,11 @@ GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
 		A(dest, addr, src, exec))
 GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
 	 A(dest, addr, as, vol))
-GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
 GEN_VN (mul,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
-GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
 GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 
+#undef USE_TI
 #undef GEN_VNM
 #undef GEN_VN
 #undef GET_VN_FN
@@ -1403,6 +1415,7 @@ get_code_for_##PREFIX##vN##SUFFIX (int nunits) \
 	CODE_FOR (PREFIX, sf) \
 	CODE_FOR (PREFIX, di) \
 	CODE_FOR (PREFIX, df) \
+	CODE_FOR (PREFIX, ti) \
 static int \
 get_code_for_##PREFIX (machine_mode mode) \
 { \
@@ -1418,6 +1431,7 @@ get_code_for_##PREFIX (machine_mode mode) \
     case E_SFmode: return get_code_for_##PREFIX##vNsf (vf); \
     case E_DImode: return get_code_for_##PREFIX##vNdi (vf); \
     case E_DFmode: return get_code_for_##PREFIX##vNdf (vf); \
+    case E_TImode: return get_code_for_##PREFIX##vNti (vf); \
     default: break; \
     } \
   \
@@ -3772,6 +3786,47 @@ gcn_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					      TRAMPOLINE_SIZE)));
 }
 
+/* Implement TARGET_EXPAND_DIVMOD_LIBFUNC.
+
+   There are divmod libfuncs for all modes except TImode.  They return the
+   two values packed into a larger integer/vector.  */
+
+void
+gcn_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0, rtx op1,
+			   rtx *quot, rtx *rem)
+{
+  machine_mode innermode = (VECTOR_MODE_P (mode)
+			    ? GET_MODE_INNER (mode) : mode);
+  machine_mode wideinnermode = VOIDmode;
+  machine_mode widemode = VOIDmode;
+
+  switch (innermode)
+    {
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+      wideinnermode = DImode;
+      break;
+    case E_DImode:
+      wideinnermode = TImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (VECTOR_MODE_P (mode))
+    widemode = VnMODE (GET_MODE_NUNITS (mode), wideinnermode);
+  else
+    widemode = wideinnermode;
+
+  emit_library_call_value (libfunc, gen_rtx_REG (widemode, RETURN_VALUE_REG),
+			   LCT_NORMAL, widemode, op0, mode, op1, mode);
+
+  *quot = gen_rtx_REG (mode, RETURN_VALUE_REG);
+  *rem = gen_rtx_REG (mode,
+		      RETURN_VALUE_REG + (wideinnermode == TImode ? 2 : 1));
+}
+
 /* }}}  */
 /* {{{ Miscellaneous.  */
 
@@ -4210,6 +4265,207 @@ gcn_init_libfuncs (void)
   set_optab_libfunc (popcount_optab, TImode, "__popcountti2");
   set_optab_libfunc (parity_optab, TImode, "__parityti2");
   set_optab_libfunc (bswap_optab, TImode, "__bswapti2");
+
+  set_optab_libfunc (sdivmod_optab, SImode, "__divmodsi4");
+  set_optab_libfunc (udivmod_optab, SImode, "__udivmodsi4");
+  set_optab_libfunc (sdivmod_optab, DImode, "__divmoddi4");
+  set_optab_libfunc (udivmod_optab, DImode, "__udivmoddi4");
+
+  set_optab_libfunc (sdiv_optab, V2QImode, "__divv2qi3");
+  set_optab_libfunc (udiv_optab, V2QImode, "__udivv2qi3");
+  set_optab_libfunc (smod_optab, V2QImode, "__modv2qi3");
+  set_optab_libfunc (umod_optab, V2QImode, "__umodv2qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2QImode, "__divmodv2qi4");
+  set_optab_libfunc (udivmod_optab, V2QImode, "__udivmodv2qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4QImode, "__divv4qi3");
+  set_optab_libfunc (udiv_optab, V4QImode, "__udivv4qi3");
+  set_optab_libfunc (smod_optab, V4QImode, "__modv4qi3");
+  set_optab_libfunc (umod_optab, V4QImode, "__umodv4qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4QImode, "__divmodv4qi4");
+  set_optab_libfunc (udivmod_optab, V4QImode, "__udivmodv4qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8QImode, "__divv8qi3");
+  set_optab_libfunc (udiv_optab, V8QImode, "__udivv8qi3");
+  set_optab_libfunc (smod_optab, V8QImode, "__modv8qi3");
+  set_optab_libfunc (umod_optab, V8QImode, "__umodv8qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8QImode, "__divmodv8qi4");
+  set_optab_libfunc (udivmod_optab, V8QImode, "__udivmodv8qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16QImode, "__divv16qi3");
+  set_optab_libfunc (udiv_optab, V16QImode, "__udivv16qi3");
+  set_optab_libfunc (smod_optab, V16QImode, "__modv16qi3");
+  set_optab_libfunc (umod_optab, V16QImode, "__umodv16qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16QImode, "__divmodv16qi4");
+  set_optab_libfunc (udivmod_optab, V16QImode, "__udivmodv16qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32QImode, "__divv32qi3");
+  set_optab_libfunc (udiv_optab, V32QImode, "__udivv32qi3");
+  set_optab_libfunc (smod_optab, V32QImode, "__modv32qi3");
+  set_optab_libfunc (umod_optab, V32QImode, "__umodv32qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32QImode, "__divmodv32qi4");
+  set_optab_libfunc (udivmod_optab, V32QImode, "__udivmodv32qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64QImode, "__divv64qi3");
+  set_optab_libfunc (udiv_optab, V64QImode, "__udivv64qi3");
+  set_optab_libfunc (smod_optab, V64QImode, "__modv64qi3");
+  set_optab_libfunc (umod_optab, V64QImode, "__umodv64qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64QImode, "__divmodv64qi4");
+  set_optab_libfunc (udivmod_optab, V64QImode, "__udivmodv64qi4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2HImode, "__divv2hi3");
+  set_optab_libfunc (udiv_optab, V2HImode, "__udivv2hi3");
+  set_optab_libfunc (smod_optab, V2HImode, "__modv2hi3");
+  set_optab_libfunc (umod_optab, V2HImode, "__umodv2hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2HImode, "__divmodv2hi4");
+  set_optab_libfunc (udivmod_optab, V2HImode, "__udivmodv2hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4HImode, "__divv4hi3");
+  set_optab_libfunc (udiv_optab, V4HImode, "__udivv4hi3");
+  set_optab_libfunc (smod_optab, V4HImode, "__modv4hi3");
+  set_optab_libfunc (umod_optab, V4HImode, "__umodv4hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4HImode, "__divmodv4hi4");
+  set_optab_libfunc (udivmod_optab, V4HImode, "__udivmodv4hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8HImode, "__divv8hi3");
+  set_optab_libfunc (udiv_optab, V8HImode, "__udivv8hi3");
+  set_optab_libfunc (smod_optab, V8HImode, "__modv8hi3");
+  set_optab_libfunc (umod_optab, V8HImode, "__umodv8hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8HImode, "__divmodv8hi4");
+  set_optab_libfunc (udivmod_optab, V8HImode, "__udivmodv8hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16HImode, "__divv16hi3");
+  set_optab_libfunc (udiv_optab, V16HImode, "__udivv16hi3");
+  set_optab_libfunc (smod_optab, V16HImode, "__modv16hi3");
+  set_optab_libfunc (umod_optab, V16HImode, "__umodv16hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16HImode, "__divmodv16hi4");
+  set_optab_libfunc (udivmod_optab, V16HImode, "__udivmodv16hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32HImode, "__divv32hi3");
+  set_optab_libfunc (udiv_optab, V32HImode, "__udivv32hi3");
+  set_optab_libfunc (smod_optab, V32HImode, "__modv32hi3");
+  set_optab_libfunc (umod_optab, V32HImode, "__umodv32hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32HImode, "__divmodv32hi4");
+  set_optab_libfunc (udivmod_optab, V32HImode, "__udivmodv32hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64HImode, "__divv64hi3");
+  set_optab_libfunc (udiv_optab, V64HImode, "__udivv64hi3");
+  set_optab_libfunc (smod_optab, V64HImode, "__modv64hi3");
+  set_optab_libfunc (umod_optab, V64HImode, "__umodv64hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64HImode, "__divmodv64hi4");
+  set_optab_libfunc (udivmod_optab, V64HImode, "__udivmodv64hi4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2SImode, "__divv2si3");
+  set_optab_libfunc (udiv_optab, V2SImode, "__udivv2si3");
+  set_optab_libfunc (smod_optab, V2SImode, "__modv2si3");
+  set_optab_libfunc (umod_optab, V2SImode, "__umodv2si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2SImode, "__divmodv2si4");
+  set_optab_libfunc (udivmod_optab, V2SImode, "__udivmodv2si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4SImode, "__divv4si3");
+  set_optab_libfunc (udiv_optab, V4SImode, "__udivv4si3");
+  set_optab_libfunc (smod_optab, V4SImode, "__modv4si3");
+  set_optab_libfunc (umod_optab, V4SImode, "__umodv4si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4SImode, "__divmodv4si4");
+  set_optab_libfunc (udivmod_optab, V4SImode, "__udivmodv4si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8SImode, "__divv8si3");
+  set_optab_libfunc (udiv_optab, V8SImode, "__udivv8si3");
+  set_optab_libfunc (smod_optab, V8SImode, "__modv8si3");
+  set_optab_libfunc (umod_optab, V8SImode, "__umodv8si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8SImode, "__divmodv8si4");
+  set_optab_libfunc (udivmod_optab, V8SImode, "__udivmodv8si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16SImode, "__divv16si3");
+  set_optab_libfunc (udiv_optab, V16SImode, "__udivv16si3");
+  set_optab_libfunc (smod_optab, V16SImode, "__modv16si3");
+  set_optab_libfunc (umod_optab, V16SImode, "__umodv16si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16SImode, "__divmodv16si4");
+  set_optab_libfunc (udivmod_optab, V16SImode, "__udivmodv16si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32SImode, "__divv32si3");
+  set_optab_libfunc (udiv_optab, V32SImode, "__udivv32si3");
+  set_optab_libfunc (smod_optab, V32SImode, "__modv32si3");
+  set_optab_libfunc (umod_optab, V32SImode, "__umodv32si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32SImode, "__divmodv32si4");
+  set_optab_libfunc (udivmod_optab, V32SImode, "__udivmodv32si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64SImode, "__divv64si3");
+  set_optab_libfunc (udiv_optab, V64SImode, "__udivv64si3");
+  set_optab_libfunc (smod_optab, V64SImode, "__modv64si3");
+  set_optab_libfunc (umod_optab, V64SImode, "__umodv64si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64SImode, "__divmodv64si4");
+  set_optab_libfunc (udivmod_optab, V64SImode, "__udivmodv64si4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2DImode, "__divv2di3");
+  set_optab_libfunc (udiv_optab, V2DImode, "__udivv2di3");
+  set_optab_libfunc (smod_optab, V2DImode, "__modv2di3");
+  set_optab_libfunc (umod_optab, V2DImode, "__umodv2di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2DImode, "__divmodv2di4");
+  set_optab_libfunc (udivmod_optab, V2DImode, "__udivmodv2di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4DImode, "__divv4di3");
+  set_optab_libfunc (udiv_optab, V4DImode, "__udivv4di3");
+  set_optab_libfunc (smod_optab, V4DImode, "__modv4di3");
+  set_optab_libfunc (umod_optab, V4DImode, "__umodv4di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4DImode, "__divmodv4di4");
+  set_optab_libfunc (udivmod_optab, V4DImode, "__udivmodv4di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8DImode, "__divv8di3");
+  set_optab_libfunc (udiv_optab, V8DImode, "__udivv8di3");
+  set_optab_libfunc (smod_optab, V8DImode, "__modv8di3");
+  set_optab_libfunc (umod_optab, V8DImode, "__umodv8di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8DImode, "__divmodv8di4");
+  set_optab_libfunc (udivmod_optab, V8DImode, "__udivmodv8di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16DImode, "__divv16di3");
+  set_optab_libfunc (udiv_optab, V16DImode, "__udivv16di3");
+  set_optab_libfunc (smod_optab, V16DImode, "__modv16di3");
+  set_optab_libfunc (umod_optab, V16DImode, "__umodv16di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16DImode, "__divmodv16di4");
+  set_optab_libfunc (udivmod_optab, V16DImode, "__udivmodv16di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32DImode, "__divv32di3");
+  set_optab_libfunc (udiv_optab, V32DImode, "__udivv32di3");
+  set_optab_libfunc (smod_optab, V32DImode, "__modv32di3");
+  set_optab_libfunc (umod_optab, V32DImode, "__umodv32di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32DImode, "__divmodv32di4");
+  set_optab_libfunc (udivmod_optab, V32DImode, "__udivmodv32di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64DImode, "__divv64di3");
+  set_optab_libfunc (udiv_optab, V64DImode, "__udivv64di3");
+  set_optab_libfunc (smod_optab, V64DImode, "__modv64di3");
+  set_optab_libfunc (umod_optab, V64DImode, "__umodv64di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64DImode, "__divmodv64di4");
+  set_optab_libfunc (udivmod_optab, V64DImode, "__udivmodv64di4");
+#endif
 }
 
 /* Expand the CMP_SWAP GCN builtins.  We have our own versions that do
@@ -4893,7 +5149,13 @@ gcn_vector_mode_supported_p (machine_mode mode)
 	  || mode == V4SFmode || mode == V4DFmode
 	  || mode == V2QImode || mode == V2HImode
 	  || mode == V2SImode || mode == V2DImode
-	  || mode == V2SFmode || mode == V2DFmode);
+	  || mode == V2SFmode || mode == V2DFmode
+	  /* TImode vectors are allowed to exist for divmod, but there
+	     are almost no instructions defined for them, and the
+	     autovectorizer does not use them.  */
+	  || mode == V64TImode || mode == V32TImode
+	  || mode == V16TImode || mode == V8TImode
+	  || mode == V4TImode || mode == V2TImode);
 }
 
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.
@@ -5361,8 +5623,6 @@ gcn_vectorize_builtin_vectorized_function (unsigned int fn, tree type_out,
 
   machine_mode out_mode = TYPE_MODE (TREE_TYPE (type_out));
   int out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  machine_mode in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  int in_n = TYPE_VECTOR_SUBPARTS (type_in);
   combined_fn cfn = combined_fn (fn);
 
   /* Keep this consistent with the list of vectorized math routines.  */
@@ -5840,6 +6100,7 @@ gcn_md_reorg (void)
       attr_type itype = get_attr_type (insn);
       attr_unit iunit = get_attr_unit (insn);
       attr_delayeduse idelayeduse = get_attr_delayeduse (insn);
+      int ivccwait = get_attr_vccwait (insn);
       HARD_REG_SET ireads, iwrites;
       CLEAR_HARD_REG_SET (ireads);
       CLEAR_HARD_REG_SET (iwrites);
@@ -5917,6 +6178,14 @@ gcn_md_reorg (void)
 	      && ((hard_reg_set_intersect_p
 		   (prev_insn->reads, iwrites))))
 	    nops_rqd = 1 - prev_insn->age;
+
+	  /* Instruction that requires VCC is not written too close before
+	     using it.  */
+	  if (prev_insn->age < ivccwait
+	      && (hard_reg_set_intersect_p
+		  (prev_insn->writes,
+		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
+	    nops_rqd = ivccwait - prev_insn->age;
 	}
 
       /* Insert the required number of NOPs.  */
@@ -6155,11 +6424,12 @@ static void
 output_file_start (void)
 {
   /* In HSACOv4 no attribute setting means the binary supports "any" hardware
-     configuration.  In GCC binaries, this is true for SRAM ECC, but not
-     XNACK.  */
-  const char *xnack = (flag_xnack ? ":xnack+" : ":xnack-");
-  const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
-			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
+     configuration.  */
+  const char *xnack = (flag_xnack == HSACO_ATTR_ON ? ":xnack+"
+		       : flag_xnack == HSACO_ATTR_OFF ? ":xnack-"
+		       : "");
+  const char *sram_ecc = (flag_sram_ecc == HSACO_ATTR_ON ? ":sramecc+"
+			  : flag_sram_ecc == HSACO_ATTR_OFF ? ":sramecc-"
 			  : "");
 
   const char *cpu;
@@ -6203,7 +6473,7 @@ void
 gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 {
   int sgpr, vgpr;
-  bool xnack_enabled = false;
+  bool xnack_enabled = TARGET_XNACK;
 
   fputs ("\n\n", file);
 
@@ -6516,7 +6786,7 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
   tree decl;
   if (cfun
       && (decl = SYMBOL_REF_DECL (x)) != 0
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
     {
       /* LDS symbols (emitted using this hook) are only used at present
@@ -6532,7 +6802,7 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
       /* FIXME: See above -- this condition is unreachable.  */
       if (cfun
 	  && (decl = SYMBOL_REF_DECL (x)) != 0
-	  && TREE_CODE (decl) == VAR_DECL
+	  && VAR_P (decl)
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
     }
@@ -6712,6 +6982,10 @@ print_operand_address (FILE *file, rtx mem)
    O - print offset:n for data share operations.
    ^ - print "_co" suffix for GCN5 mnemonics
    g - print "glc", if appropriate for given MEM
+   L - print low-part of a multi-reg value
+   H - print second part of a multi-reg value (high-part of 2-reg value)
+   J - print third part of a multi-reg value
+   K - print fourth part of a multi-reg value
  */
 
 void
@@ -7251,6 +7525,12 @@ print_operand (FILE *file, rtx x, int code)
     case 'H':
       print_operand (file, gcn_operand_part (GET_MODE (x), x, 1), 0);
       return;
+    case 'J':
+      print_operand (file, gcn_operand_part (GET_MODE (x), x, 2), 0);
+      return;
+    case 'K':
+      print_operand (file, gcn_operand_part (GET_MODE (x), x, 3), 0);
+      return;
     case 'R':
       /* Print a scalar register number as an integer.  Temporary hack.  */
       gcc_assert (REG_P (x));
@@ -7457,6 +7737,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
+#undef  TARGET_EXPAND_DIVMOD_LIBFUNC
+#define TARGET_EXPAND_DIVMOD_LIBFUNC gcn_expand_divmod_libfunc
 #undef  TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED gcn_frame_pointer_rqd
 #undef  TARGET_FUNCTION_ARG

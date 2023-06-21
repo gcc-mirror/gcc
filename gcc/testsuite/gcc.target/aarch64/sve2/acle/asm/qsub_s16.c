@@ -163,7 +163,7 @@ TEST_UNIFORM_ZX (qsub_w0_s16_m_tied1, svint16_t, int16_t,
 		 z0 = svqsub_m (p0, z0, x0))
 
 /*
-** qsub_w0_s16_m_untied: { xfail *-*-* }
+** qsub_w0_s16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	sqsub	z0\.h, p0/m, z0\.h, \1
@@ -184,7 +184,7 @@ TEST_UNIFORM_Z (qsub_1_s16_m_tied1, svint16_t,
 		z0 = svqsub_m (p0, z0, 1))
 
 /*
-** qsub_1_s16_m_untied: { xfail *-*-* }
+** qsub_1_s16_m_untied:
 **	mov	(z[0-9]+\.h), #1
 **	movprfx	z0, z1
 **	sqsub	z0\.h, p0/m, z0\.h, \1

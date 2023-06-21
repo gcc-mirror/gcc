@@ -152,6 +152,9 @@ public:
   /* Remove symbol from symbol table.  */
   void remove (void);
 
+  /* Undo any definition or use of the symbol.  */
+  void reset (void);
+
   /* Dump symtab node to F.  */
   void dump (FILE *f);
 
@@ -193,10 +196,11 @@ public:
   /* Clone reference REF to this symtab_node and set its stmt to STMT.  */
   ipa_ref *clone_reference (ipa_ref *ref, gimple *stmt);
 
-  /* Find the structure describing a reference to REFERRED_NODE
-     and associated with statement STMT.  */
+  /* Find the structure describing a reference to REFERRED_NODE of USE_TYPE and
+     associated with statement STMT or LTO_STMT_UID.  */
   ipa_ref *find_reference (symtab_node *referred_node, gimple *stmt,
-			   unsigned int lto_stmt_uid);
+			   unsigned int lto_stmt_uid,
+			   enum ipa_ref_use use_type);
 
   /* Remove all references that are associated with statement STMT.  */
   void remove_stmt_references (gimple *stmt);
@@ -1065,14 +1069,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Expand function specified by node.  */
   void expand (void);
-
-  /* As an GCC extension we allow redefinition of the function.  The
-     semantics when both copies of bodies differ is not well defined.
-     We replace the old body with new body so in unit at a time mode
-     we always use new body, while in normal mode we may end up with
-     old body inlined into some functions and new body expanded and
-     inlined in others.  */
-  void reset (void);
 
   /* Creates a wrapper from cgraph_node to TARGET node. Thunk is used for this
      kind of wrapper method.  */
@@ -2654,7 +2650,7 @@ inline bool
 decl_in_symtab_p (const_tree decl)
 {
   return (TREE_CODE (decl) == FUNCTION_DECL
-          || (TREE_CODE (decl) == VAR_DECL
+	  || (VAR_P (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))));
 }
 
@@ -3363,7 +3359,7 @@ cgraph_node::optimize_for_size_p (void)
 inline symtab_node *
 symtab_node::get_create (tree node)
 {
-  if (TREE_CODE (node) == VAR_DECL)
+  if (VAR_P (node))
     return varpool_node::get_create (node);
   else
     return cgraph_node::get_create (node);

@@ -3488,7 +3488,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
 
   tree not_tmpl = STRIP_TEMPLATE (decl);
   if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
-       || TREE_CODE (not_tmpl) == VAR_DECL)
+       || VAR_P (not_tmpl))
       && DECL_THIS_STATIC (not_tmpl))
     /* Internal linkage.  */
     return;
@@ -5938,6 +5938,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      DECL_TEMPLATE_INFO (decl) = build_template_info (old, NULL_TREE);
       return;
     }
 
@@ -6759,7 +6760,7 @@ class missing_std_header : public deferred_diagnostic
 	maybe_add_include_fixit (&richloc, header, true);
 	inform (&richloc,
 		"%<std::%s%> is defined in header %qs;"
-		" did you forget to %<#include %s%>?",
+		" this is probably fixable by adding %<#include %s%>",
 		m_name_str, header, header);
       }
     else
@@ -6931,7 +6932,7 @@ consider_decl (tree decl,  best_match <tree, const char *> &bm,
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return;
 
   tree suggestion = DECL_NAME (decl);
@@ -6966,7 +6967,7 @@ maybe_add_fuzzy_decl (auto_vec<tree> &vec, tree decl)
 {
   /* Skip compiler-generated variables (e.g. __for_begin/__for_end
      within range for).  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (VAR_P (decl) && DECL_ARTIFICIAL (decl))
     return false;
 
   tree suggestion = DECL_NAME (decl);
@@ -7448,6 +7449,28 @@ innermost_non_namespace_value (tree name)
   cxx_binding *binding;
   binding = outer_binding (name, /*binding=*/NULL, /*class_p=*/true);
   return binding ? binding->value : NULL_TREE;
+}
+
+/* True iff current_binding_level is within the potential scope of local
+   variable DECL. */
+
+bool
+decl_in_scope_p (tree decl)
+{
+  gcc_checking_assert (DECL_FUNCTION_SCOPE_P (decl));
+
+  tree name = DECL_NAME (decl);
+
+  for (cxx_binding *iter = NULL;
+       (iter = outer_binding (name, iter, /*class_p=*/false)); )
+    {
+      if (!LOCAL_BINDING_P (iter))
+	return false;
+      if (iter->value == decl)
+	return true;
+    }
+
+  return false;
 }
 
 /* Look up NAME in the current binding level and its superiors in the
@@ -8205,9 +8228,6 @@ pop_from_top_level (void)
 
   auto_cond_timevar tv (TV_NAME_LOOKUP);
 
-  /* Clear out class-level bindings cache.  */
-  if (previous_class_level)
-    invalidate_class_lookup_cache ();
   pop_class_stack ();
 
   release_tree_vector (current_lang_base);
@@ -8234,6 +8254,43 @@ pop_from_top_level (void)
      push_to_top_level.  */
   s->prev = free_saved_scope;
   free_saved_scope = s;
+}
+
+/* Like push_to_top_level, but not if D is function-local.  Returns whether we
+   did push to top.  */
+
+bool
+maybe_push_to_top_level (tree d)
+{
+  /* Push if D isn't function-local, or is a lambda function, for which name
+     resolution is already done.  */
+  bool push_to_top
+    = !(current_function_decl
+	&& !LAMBDA_FUNCTION_P (d)
+	&& decl_function_context (d) == current_function_decl);
+
+  if (push_to_top)
+    push_to_top_level ();
+  else
+    {
+      gcc_assert (!processing_template_decl);
+      push_function_context ();
+      cp_unevaluated_operand = 0;
+      c_inhibit_evaluation_warnings = 0;
+    }
+
+  return push_to_top;
+}
+
+/* Return from whatever maybe_push_to_top_level did.  */
+
+void
+maybe_pop_from_top_level (bool push_to_top)
+{
+  if (push_to_top)
+    pop_from_top_level ();
+  else
+    pop_function_context ();
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply

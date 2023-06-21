@@ -54,7 +54,7 @@ TEST_DUAL_ZX (dot_w0_u32_tied1, svuint32_t, svuint8_t, uint8_t,
 	      z0 = svdot (z0, z4, x0))
 
 /*
-** dot_w0_u32_untied: { xfail *-*-* }
+** dot_w0_u32_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	udot	z0\.s, z4\.b, \1
@@ -75,7 +75,7 @@ TEST_DUAL_Z (dot_9_u32_tied1, svuint32_t, svuint8_t,
 	     z0 = svdot (z0, z4, 9))
 
 /*
-** dot_9_u32_untied: { xfail *-*-* }
+** dot_9_u32_untied:
 **	mov	(z[0-9]+\.b), #9
 **	movprfx	z0, z1
 **	udot	z0\.s, z4\.b, \1

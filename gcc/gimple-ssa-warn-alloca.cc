@@ -222,8 +222,9 @@ alloca_call_type (gimple *stmt, bool is_vla)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
-      int_range<2> invalid_range (build_int_cst (size_type_node, 0),
-				  build_int_cst (size_type_node, max_size),
+      int_range<2> invalid_range (size_type_node,
+				  wi::shwi (0, TYPE_PRECISION (size_type_node)),
+				  wi::shwi (max_size, TYPE_PRECISION (size_type_node)),
 				  VR_ANTI_RANGE);
 
       r.intersect (invalid_range);
@@ -256,7 +257,7 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  gimple_ranger *ranger = enable_ranger (fun);
+  enable_ranger (fun);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -379,7 +380,6 @@ pass_walloca::execute (function *fun)
 	    }
 	}
     }
-  ranger->export_global_ranges ();
   disable_ranger (fun);
   return 0;
 }

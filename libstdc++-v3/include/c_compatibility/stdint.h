@@ -56,7 +56,7 @@
 #  endif
 # endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 
 namespace std
 {
@@ -97,7 +97,7 @@ namespace std
   using ::uintptr_t;
 } // namespace
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // _GLIBCXX_USE_C99_STDINT
 
 #else
 

@@ -2,6 +2,7 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do run } */
 /* { dg-options "" } */
+/* { dg-skip-if "double support is incomplete" { "avr-*-*" } } */
 
 #include <float.h>
 #include "fp-int-convert.h"

@@ -27,6 +27,7 @@ with Atree;          use Atree;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -53,13 +54,6 @@ package body Pprint is
      (Expr    : Node_Id;
       Default : String) return String
    is
-      From_Source  : constant Boolean :=
-                       Comes_From_Source (Expr)
-                         and then not Opt.Debug_Generated_Code;
-      Append_Paren : Natural := 0;
-      Left         : Node_Id := Original_Node (Expr);
-      Right        : Node_Id := Original_Node (Expr);
-
       function Expr_Name
         (Expr        : Node_Id;
          Take_Prefix : Boolean := True;
@@ -70,8 +64,24 @@ package body Pprint is
       --  Expand_Type is True and Expr is a type, try to expand Expr (an
       --  internally generated type) into a user understandable name.
 
-      Max_List : constant := 3;
-      --  Limit number of list elements to dump
+      function Count_Parentheses (S : String; C : Character) return Natural
+        with Pre => C in '(' | ')';
+      --  Returns the number of times parenthesis character C should be added
+      --  to string S for getting a correctly parenthesized result. For C = '('
+      --  this means prepending the character, for C = ')' this means appending
+      --  the character.
+
+      function Fix_Parentheses (S : String) return String;
+      --  Counts the number of required opening and closing parentheses in S to
+      --  respectively prepend and append for getting correct parentheses. Then
+      --  returns S with opening parentheses prepended and closing parentheses
+      --  appended so that the result is correctly parenthesized.
+
+      Max_List_Depth : constant := 3;
+      --  Limit number of nested lists to print
+
+      Max_List_Length : constant := 3;
+      --  Limit number of list elements to print
 
       Max_Expr_Elements : constant := 24;
       --  Limit number of elements in an expression for use by Expr_Name
@@ -79,94 +89,82 @@ package body Pprint is
       Num_Elements : Natural := 0;
       --  Current number of elements processed by Expr_Name
 
-      function List_Name
-        (List      : Node_Id;
-         Add_Space : Boolean := True;
-         Add_Paren : Boolean := True) return String;
+      function List_Name (List : List_Id) return String;
       --  Return a string corresponding to List
 
       ---------------
       -- List_Name --
       ---------------
 
-      function List_Name
-        (List      : Node_Id;
-         Add_Space : Boolean := True;
-         Add_Paren : Boolean := True) return String
-      is
-         function Internal_List_Name
-           (List      : Node_Id;
-            First     : Boolean := True;
-            Add_Space : Boolean := True;
-            Add_Paren : Boolean := True;
-            Num       : Natural := 1) return String;
-         --  Created for purposes of recursing on embedded lists
+      function List_Name (List : List_Id) return String is
+         Buf  : Bounded_String;
+         Elmt : Node_Id;
 
-         ------------------------
-         -- Internal_List_Name --
-         ------------------------
-
-         function Internal_List_Name
-           (List      : Node_Id;
-            First     : Boolean := True;
-            Add_Space : Boolean := True;
-            Add_Paren : Boolean := True;
-            Num       : Natural := 1) return String
-         is
-         begin
-            if No (List) then
-               if First or else not Add_Paren then
-                  return "";
-               else
-                  return ")";
-               end if;
-            elsif Num > Max_List then
-               if Add_Paren then
-                  return ", ...)";
-               else
-                  return ", ...";
-               end if;
-            end if;
-
-            --  Continue recursing on the list - handling the first element
-            --  in a special way.
-
-            return
-              (if First then
-                  (if Add_Space and Add_Paren then " ("
-                   elsif Add_Paren then "("
-                   elsif Add_Space then " "
-                   else "")
-               else ", ")
-               & Expr_Name (List)
-               & Internal_List_Name
-                   (List      => Next (List),
-                    First     => False,
-                    Add_Paren => Add_Paren,
-                    Num       => Num + 1);
-         end Internal_List_Name;
-
-      --  Start of processing for List_Name
+         Printed_Elmts : Natural := 0;
 
       begin
-         --  Prevent infinite recursion by limiting depth to 3
+         --  Give up if the printed list is too deep
 
-         if List_Name_Count > 3 then
+         if List_Name_Count > Max_List_Depth then
             return "...";
          end if;
 
          List_Name_Count := List_Name_Count + 1;
 
-         declare
-            Result : constant String :=
-                       Internal_List_Name
-                         (List      => List,
-                          Add_Space => Add_Space,
-                          Add_Paren => Add_Paren);
-         begin
-            List_Name_Count := List_Name_Count - 1;
-            return Result;
-         end;
+         Elmt := First (List);
+         while Present (Elmt) loop
+
+            --  Print component_association as "x | y | z => 12345"
+
+            if Nkind (Elmt) = N_Component_Association then
+               declare
+                  Choice : Node_Id := First (Choices (Elmt));
+               begin
+                  while Present (Choice) loop
+                     Append (Buf, Expr_Name (Choice));
+                     Next (Choice);
+
+                     if Present (Choice) then
+                        Append (Buf, " | ");
+                     end if;
+                  end loop;
+               end;
+               Append (Buf, " => ");
+               Append (Buf, Expr_Name (Expression (Elmt)));
+
+            --  Print parameter_association as "x => 12345"
+
+            elsif Nkind (Elmt) = N_Parameter_Association then
+               Append (Buf, Expr_Name (Selector_Name (Elmt)));
+               Append (Buf, " => ");
+               Append (Buf, Expr_Name (Explicit_Actual_Parameter (Elmt)));
+
+            --  Print expression itself as "12345"
+
+            else
+               Append (Buf, Expr_Name (Elmt));
+            end if;
+
+            Next (Elmt);
+            Printed_Elmts := Printed_Elmts + 1;
+
+            --  Separate next element with a comma, if necessary
+
+            if Present (Elmt) then
+               Append (Buf, ", ");
+
+               --  Abbreviate remaining elements as "...", if limit exceeded
+
+               if Printed_Elmts = Max_List_Length then
+                  Append (Buf, "...");
+                  exit;
+               end if;
+            end if;
+         end loop;
+
+         List_Name_Count := List_Name_Count - 1;
+
+         return To_String (Buf);
       end List_Name;
 
       ---------------
@@ -185,17 +183,44 @@ package body Pprint is
             return "...";
          end if;
 
-         case Nkind (Expr) is
-            when N_Defining_Identifier
-               | N_Identifier
-            =>
+         --  Just print pieces of aggregate nodes, even though they are not
+         --  expressions. It is too much trouble to handle them any better.
+
+         if Nkind (Expr) = N_Component_Association then
+
+            pragma Assert (Box_Present (Expr));
+
+            declare
+               Buf    : Bounded_String;
+               Choice : Node_Id := First (Choices (Expr));
+            begin
+               while Present (Choice) loop
+                  Append (Buf, Expr_Name (Choice));
+                  Next (Choice);
+
+                  if Present (Choice) then
+                     Append (Buf, " | ");
+                  end if;
+               end loop;
+
+               Append (Buf, " => <>");
+
+               return To_String (Buf);
+            end;
+
+         elsif Nkind (Expr) = N_Others_Choice then
+            return "others";
+         end if;
+
+         case N_Subexpr'(Nkind (Expr)) is
+            when N_Identifier =>
                return Ident_Image (Expr, Expression_Image.Expr, Expand_Type);
 
             when N_Character_Literal =>
                declare
                   Char : constant Int := UI_To_Int (Char_Literal_Value (Expr));
                begin
-                  if Char in 32 .. 127 then
+                  if Char in 32 .. 126 then
                      return "'" & Character'Val (Char) & "'";
                   else
                      UI_Image (Char_Literal_Value (Expr));
@@ -218,10 +243,7 @@ package body Pprint is
 
             when N_Aggregate =>
                if Present (Expressions (Expr)) then
-                  return
-                    List_Name
-                      (List      => First (Expressions (Expr)),
-                       Add_Space => False);
+                  return '(' & List_Name (Expressions (Expr)) & ')';
 
                --  Do not return empty string for (others => <>) aggregate
                --  of a componentless record type. At least one caller (the
@@ -234,19 +256,12 @@ package body Pprint is
                   return ("(null record)");
 
                else
-                  return
-                    List_Name
-                      (List      => First (Component_Associations (Expr)),
-                       Add_Space => False,
-                       Add_Paren => False);
+                  return '(' & List_Name (Component_Associations (Expr)) & ')';
                end if;
 
             when N_Extension_Aggregate =>
-               return "(" & Expr_Name (Ancestor_Part (Expr)) & " with "
-                 & List_Name
-                     (List      => First (Expressions (Expr)),
-                      Add_Space => False,
-                      Add_Paren => False) & ")";
+               return '(' & Expr_Name (Ancestor_Part (Expr))
+                 & " with (" & List_Name (Expressions (Expr)) & ')';
 
             when N_Attribute_Reference =>
                if Take_Prefix then
@@ -304,7 +319,7 @@ package body Pprint is
                      return Str;
                   end;
                else
-                  return "'" & Get_Name_String (Attribute_Name (Expr));
+                  return ''' & Get_Name_String (Attribute_Name (Expr));
                end if;
 
             when N_Explicit_Dereference =>
@@ -379,14 +394,6 @@ package body Pprint is
                   return "." & Expr_Name (Selector_Name (Expr));
                end if;
 
-            when N_Component_Association =>
-               return "("
-                 & List_Name
-                     (List      => First (Choices (Expr)),
-                      Add_Space => False,
-                      Add_Paren => False)
-                 & " => " & Expr_Name (Expression (Expr)) & ")";
-
             when N_If_Expression =>
                declare
                   Cond_Expr : constant Node_Id := First (Expressions (Expr));
@@ -434,6 +441,15 @@ package body Pprint is
                       & Expr_Name (Condition (Expr)) & "]";
                else
                   return "[program_error]";
+               end if;
+
+            when N_Raise_Storage_Error =>
+               if Present (Condition (Expr)) then
+                  return
+                    "[storage_error when "
+                      & Expr_Name (Condition (Expr)) & "]";
+               else
+                  return "[storage_error]";
                end if;
 
             when N_Range =>
@@ -573,9 +589,6 @@ package body Pprint is
             when N_Op_Not =>
                return "not (" & Expr_Name (Right_Opnd (Expr)) & ")";
 
-            when N_Parameter_Association =>
-               return Expr_Name (Explicit_Actual_Parameter (Expr));
-
             when N_Type_Conversion =>
 
                --  Most conversions are not very interesting (used inside
@@ -602,9 +615,9 @@ package body Pprint is
                if Take_Prefix then
                   return
                     Expr_Name (Prefix (Expr))
-                      & List_Name (First (Expressions (Expr)));
+                      & " (" & List_Name (Expressions (Expr)) & ')';
                else
-                  return List_Name (First (Expressions (Expr)));
+                  return List_Name (Expressions (Expr));
                end if;
 
             when N_Function_Call =>
@@ -614,31 +627,150 @@ package body Pprint is
                --  parentheses around function call to mark it specially.
 
                if Default = "" then
-                  return '('
-                    & Expr_Name (Name (Expr))
-                    & List_Name (First (Parameter_Associations (Expr)))
-                    & ')';
-               else
+                  if Present (Parameter_Associations (Expr)) then
+                     return '('
+                       & Expr_Name (Name (Expr))
+                       & " ("
+                       & List_Name (Parameter_Associations (Expr))
+                       & "))";
+                  else
+                     return '(' & Expr_Name (Name (Expr)) & ')';
+                  end if;
+               elsif Present (Parameter_Associations (Expr)) then
                   return
                     Expr_Name (Name (Expr))
-                      & List_Name (First (Parameter_Associations (Expr)));
+                      & " (" & List_Name (Parameter_Associations (Expr)) & ')';
+               else
+                  return Expr_Name (Name (Expr));
                end if;
 
             when N_Null =>
                return "null";
 
-            when N_Others_Choice =>
-               return "others";
-
-            when others =>
+            when N_Case_Expression
+               | N_Delta_Aggregate
+               | N_Interpolated_String_Literal
+               | N_Op_Rotate_Left
+               | N_Op_Rotate_Right
+               | N_Operator_Symbol
+               | N_Procedure_Call_Statement
+               | N_Quantified_Expression
+               | N_Raise_Expression
+               | N_Reference
+               | N_Target_Name
+            =>
                return "...";
          end case;
       end Expr_Name;
 
+      -----------------------
+      -- Count_Parentheses --
+      -----------------------
+
+      function Count_Parentheses (S : String; C : Character) return Natural is
+
+         procedure Next_Char (Count : in out Natural; C, D, Ch : Character);
+         --  Process next character Ch and update the number Count of C
+         --  characters to add for correct parenthesizing, where D is the
+         --  opposite parenthesis.
+
+         ---------------
+         -- Next_Char --
+         ---------------
+
+         procedure Next_Char (Count : in out Natural; C, D, Ch : Character) is
+         begin
+            if Ch = D then
+               Count := Count + 1;
+            elsif Ch = C and then Count > 0 then
+               Count := Count - 1;
+            end if;
+         end Next_Char;
+
+         --  Local variables
+
+         Count : Natural := 0;
+
+      --  Start of processing for Count_Parentheses
+
+      begin
+         if C = '(' then
+            for Ch of reverse S loop
+               Next_Char (Count, C, ')', Ch);
+            end loop;
+         else
+            for Ch of S loop
+               Next_Char (Count, C, '(', Ch);
+            end loop;
+         end if;
+
+         return Count;
+      end Count_Parentheses;
+
+      ---------------------
+      -- Fix_Parentheses --
+      ---------------------
+
+      function Fix_Parentheses (S : String) return String is
+         Count_Open  : constant Natural := Count_Parentheses (S, '(');
+         Count_Close : constant Natural := Count_Parentheses (S, ')');
+      begin
+         return (1 .. Count_Open => '(') & S & (1 .. Count_Close => ')');
+      end Fix_Parentheses;
+
+      --  Local variables
+
+      Left, Right : Source_Ptr;
+
    --  Start of processing for Expression_Image
 
    begin
-      if not From_Source then
+      --  Since this is an expression pretty-printer, it should not be called
+      --  for anything but an expression. However, currently CodePeer calls
+      --  it for defining identifiers. This should be fixed in the CodePeer
+      --  itself, but for now simply return the default (if present) or print
+      --  name of the defining identifier.
+
+      if Nkind (Expr) = N_Defining_Identifier then
+         pragma Assert (CodePeer_Mode);
+         if Comes_From_Source (Expr)
+           or else Opt.Debug_Generated_Code
+         then
+            if Default = "" then
+               declare
+                  Nam : constant Name_Id := Chars (Expr);
+                  Buf : Bounded_String
+                    (Max_Length => Natural (Length_Of_Name (Nam)));
+               begin
+                  Adjust_Name_Case (Buf, Sloc (Expr));
+                  Append (Buf, Nam);
+                  return To_String (Buf);
+               end;
+            else
+               return Default;
+            end if;
+         else
+            declare
+               S : constant String :=
+                 Ident_Image
+                   (Expr => Expr, Orig_Expr => Expr, Expand_Type => True);
+            begin
+               if S = "..." then
+                  return Default;
+               else
+                  return S;
+               end if;
+            end;
+         end if;
+      else
+         pragma Assert (Nkind (Expr) in N_Subexpr);
+      end if;
+
+      --  ??? The following should be primarily needed for CodePeer
+
+      if not Comes_From_Source (Expr)
+        or else Opt.Debug_Generated_Code
+      then
          declare
             S : constant String := Expr_Name (Expr);
          begin
@@ -657,269 +789,77 @@ package body Pprint is
       end if;
 
       --  Compute left (start) and right (end) slocs for the expression
-      --  Consider using Sinput.Sloc_Range instead, except that it does not
-      --  work properly currently???
 
-      loop
-         case Nkind (Left) is
-            when N_And_Then
-               | N_Binary_Op
-               | N_Membership_Test
-               | N_Or_Else
-            =>
-               Left := Original_Node (Left_Opnd (Left));
+      Left  := First_Sloc (Expr);
+      Right := Last_Sloc (Expr);
 
-            when N_Attribute_Reference
-               | N_Expanded_Name
-               | N_Explicit_Dereference
-               | N_Indexed_Component
-               | N_Reference
-               | N_Selected_Component
-               | N_Slice
-            =>
-               Left := Original_Node (Prefix (Left));
-
-            when N_Defining_Program_Unit_Name
-               | N_Designator
-               | N_Function_Call
-            =>
-               Left := Original_Node (Name (Left));
-
-            when N_Range =>
-               Left := Original_Node (Low_Bound (Left));
-
-            when N_Qualified_Expression
-               | N_Type_Conversion
-            =>
-               Left := Original_Node (Subtype_Mark (Left));
-
-            --  For any other item, quit loop
-
-            when others =>
-               exit;
-         end case;
-      end loop;
-
-      loop
-         case Nkind (Right) is
-            when N_And_Then
-               | N_Membership_Test
-               | N_Op
-               | N_Or_Else
-            =>
-               Right := Original_Node (Right_Opnd (Right));
-
-            when N_Expanded_Name
-               | N_Selected_Component
-            =>
-               Right := Original_Node (Selector_Name (Right));
-
-            when N_Qualified_Expression
-               | N_Type_Conversion
-            =>
-               Right := Original_Node (Expression (Right));
-
-               --  If argument does not already account for a closing
-               --  parenthesis, count one here.
-
-               if Nkind (Right) not in N_Aggregate | N_Quantified_Expression
-               then
-                  Append_Paren := Append_Paren + 1;
-               end if;
-
-            when N_Designator =>
-               Right := Original_Node (Identifier (Right));
-
-            when N_Defining_Program_Unit_Name =>
-               Right := Original_Node (Defining_Identifier (Right));
-
-            when N_Range =>
-               Right := Original_Node (High_Bound (Right));
-
-            when N_Parameter_Association =>
-               Right := Original_Node (Explicit_Actual_Parameter (Right));
-
-            when N_Component_Association =>
-               if Present (Expression (Right)) then
-                  Right := Expression (Right);
-               else
-                  Right := Last (Choices (Right));
-               end if;
-
-            when N_Indexed_Component =>
-               Right := Original_Node (Last (Expressions (Right)));
-               Append_Paren := Append_Paren + 1;
-
-            when N_Function_Call =>
-               if Present (Parameter_Associations (Right)) then
-                  declare
-                     Rover : Node_Id;
-                     Found : Boolean;
-
-                  begin
-                     --  Avoid source position confusion associated with
-                     --  parameters for which Comes_From_Source is False.
-
-                     Rover := First (Parameter_Associations (Right));
-                     Found := False;
-                     while Present (Rover) loop
-                        if Comes_From_Source (Original_Node (Rover)) then
-                           Right := Original_Node (Rover);
-                           Found := True;
-                        end if;
-
-                        Next (Rover);
-                     end loop;
-
-                     if Found then
-                        Append_Paren := Append_Paren + 1;
-                     end if;
-
-                     --  Quit loop if no Comes_From_Source parameters
-
-                     exit when not Found;
-                  end;
-
-               --  Quit loop if no parameters
-
-               else
-                  exit;
-               end if;
-
-            when N_Quantified_Expression =>
-               Right        := Original_Node (Condition (Right));
-               Append_Paren := Append_Paren + 1;
-
-            when N_Aggregate =>
-               declare
-                  Aggr : constant Node_Id := Right;
-                  Sub  : Node_Id;
-
-               begin
-                  Sub := First (Expressions (Aggr));
-                  while Present (Sub) loop
-                     if Sloc (Sub) > Sloc (Right) then
-                        Right := Sub;
-                     end if;
-
-                     Next (Sub);
-                  end loop;
-
-                  Sub := First (Component_Associations (Aggr));
-                  while Present (Sub) loop
-                     if Sloc (Sub) > Sloc (Right) then
-                        Right := Sub;
-                     end if;
-
-                     Next (Sub);
-                  end loop;
-
-                  exit when Right = Aggr;
-
-                  Append_Paren := Append_Paren + 1;
-               end;
-
-            --  For all other items, quit the loop
-
-            when others =>
-               exit;
-         end case;
-      end loop;
+      if Left > Right then
+         return Default;
+      end if;
 
       declare
-         Scn      : Source_Ptr := Original_Location (Sloc (Left));
-         End_Sloc : constant Source_Ptr :=
-                      Original_Location (Sloc (Right));
-         Src      : constant Source_Buffer_Ptr :=
-                      Source_Text (Get_Source_File_Index (Scn));
+         Scn : Source_Ptr := Left;
+         Src : constant not null Source_Buffer_Ptr :=
+           Source_Text (Get_Source_File_Index (Scn));
 
+         Threshold        : constant := 256;
+         Buffer           : String (1 .. Natural (Right - Left + 1));
+         Index            : Natural := 0;
+         Skipping_Comment : Boolean := False;
+         Underscore       : Boolean := False;
       begin
-         if Scn > End_Sloc then
-            return Default;
-         end if;
+         while Scn <= Right loop
+            case Src (Scn) is
 
-         declare
-            Threshold        : constant := 256;
-            Buffer           : String (1 .. Natural (End_Sloc - Scn));
-            Index            : Natural := 0;
-            Skipping_Comment : Boolean := False;
-            Underscore       : Boolean := False;
+               --  Give up on non ASCII characters
 
-         begin
-            if Right /= Expr then
-               while Scn < End_Sloc loop
-                  case Src (Scn) is
+               when Character'Val (128) .. Character'Last =>
+                  Index := 0;
+                  exit;
 
-                     --  Give up on non ASCII characters
-
-                     when Character'Val (128) .. Character'Last =>
-                        Append_Paren := 0;
-                        Index := 0;
-                        Right := Expr;
-                        exit;
-
-                     when ' '
-                        | ASCII.HT
-                     =>
-                        if not Skipping_Comment and then not Underscore then
-                           Underscore := True;
-                           Index := Index + 1;
-                           Buffer (Index) := ' ';
-                        end if;
-
-                     --  CR/LF/FF is the end of any comment
-
-                     when ASCII.CR
-                        | ASCII.FF
-                        | ASCII.LF
-                     =>
-                        Skipping_Comment := False;
-
-                     when others =>
-                        Underscore := False;
-
-                        if not Skipping_Comment then
-
-                           --  Ignore comment
-
-                           if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
-                              Skipping_Comment := True;
-
-                           else
-                              Index := Index + 1;
-                              Buffer (Index) := Src (Scn);
-                           end if;
-                        end if;
-                  end case;
-
-                  --  Give up on too long strings
-
-                  if Index >= Threshold then
-                     return Buffer (1 .. Index) & "...";
+               when ' '
+                  | ASCII.HT
+               =>
+                  if not Skipping_Comment and then not Underscore then
+                     Underscore := True;
+                     Index := Index + 1;
+                     Buffer (Index) := ' ';
                   end if;
 
-                  Scn := Scn + 1;
-               end loop;
-            end if;
+               --  CR/LF/FF is the end of any comment
 
-            if Index < 1 then
-               declare
-                  S : constant String := Expr_Name (Right);
-               begin
-                  if S = "..." then
-                     return Default;
-                  else
-                     return S;
+               when ASCII.CR
+                  | ASCII.FF
+                  | ASCII.LF
+               =>
+                  Skipping_Comment := False;
+
+               when others =>
+                  Underscore := False;
+
+                  if not Skipping_Comment then
+
+                     --  Ignore comment
+
+                     if Src (Scn) = '-' and then Src (Scn + 1) = '-' then
+                        Skipping_Comment := True;
+                     else
+                        Index := Index + 1;
+                        Buffer (Index) := Src (Scn);
+                     end if;
                   end if;
-               end;
+            end case;
 
-            else
-               return
-                 Buffer (1 .. Index)
-                   & Expr_Name (Right, False)
-                   & (1 .. Append_Paren => ')');
+            --  Give up on too long strings
+
+            if Index >= Threshold then
+               return Buffer (1 .. Index) & "...";
             end if;
-         end;
+
+            Scn := Scn + 1;
+         end loop;
+
+         return Fix_Parentheses (Buffer (1 .. Index));
       end;
    end Expression_Image;
 

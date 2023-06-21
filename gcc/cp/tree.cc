@@ -522,6 +522,7 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
   if (CP_TYPE_CONST_NON_VOLATILE_P (type)
       && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && !VOID_TYPE_P (TREE_TYPE (value))
+      && !TYPE_HAS_MUTABLE_P (type)
       && reduced_constant_expression_p (value))
     TREE_READONLY (decl) = true;
 
@@ -785,8 +786,6 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
   releasing_vec argvec;
   if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		  (type, TREE_TYPE (init)));
       tree init_type = strip_array_types (TREE_TYPE (init));
       tree dummy = build_dummy_object (init_type);
       if (!lvalue_p (init))
@@ -1173,7 +1172,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     }
 
   /* Avoid spurious warnings with VLAs (c++/54583).  */
-  if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
+  if (CAN_HAVE_LOCATION_P (TYPE_SIZE (t)))
     suppress_warning (TYPE_SIZE (t), OPT_Wunused);
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
@@ -1562,7 +1561,8 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
 
 /* Builds a qualified variant of T that is either not a typedef variant
    (the default behavior) or not a typedef variant of a user-facing type
-   (if FLAGS contains STF_USER_FACING).
+   (if FLAGS contains STF_USER_FACING).  If T is not a type, then this
+   just dispatches to strip_typedefs_expr.
 
    E.g. consider the following declarations:
      typedef const int ConstInt;
@@ -1596,25 +1596,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
   if (!t || t == error_mark_node)
     return t;
 
-  if (TREE_CODE (t) == TREE_LIST)
-    {
-      bool changed = false;
-      releasing_vec vec;
-      tree r = t;
-      for (; t; t = TREE_CHAIN (t))
-	{
-	  gcc_assert (!TREE_PURPOSE (t));
-	  tree elt = strip_typedefs (TREE_VALUE (t), remove_attributes, flags);
-	  if (elt != TREE_VALUE (t))
-	    changed = true;
-	  vec_safe_push (vec, elt);
-	}
-      if (changed)
-	r = build_tree_list_vec (vec);
-      return r;
-    }
-
-  gcc_assert (TYPE_P (t));
+  if (!TYPE_P (t))
+    return strip_typedefs_expr (t, remove_attributes, flags);
 
   if (t == TYPE_CANONICAL (t))
     return t;
@@ -1747,12 +1730,7 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 	    for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
 	      {
 		tree arg = TREE_VEC_ELT (args, i);
-		tree strip_arg;
-		if (TYPE_P (arg))
-		  strip_arg = strip_typedefs (arg, remove_attributes, flags);
-		else
-		  strip_arg = strip_typedefs_expr (arg, remove_attributes,
-						   flags);
+		tree strip_arg = strip_typedefs (arg, remove_attributes, flags);
 		TREE_VEC_ELT (new_args, i) = strip_arg;
 		if (strip_arg != arg)
 		  changed = true;
@@ -1799,7 +1777,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 	if (type1 == TRAIT_TYPE_TYPE1 (t) && type2 == TRAIT_TYPE_TYPE2 (t))
 	  result = NULL_TREE;
 	else
-	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2,
+				      tf_warning_or_error);
       }
       break;
     case TYPE_PACK_EXPANSION:
@@ -1879,7 +1858,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
   return cp_build_qualified_type (result, cp_type_quals (t));
 }
 
-/* Like strip_typedefs above, but works on expressions, so that in
+/* Like strip_typedefs above, but works on expressions (and other
+   non-types such as TREE_VEC), so that in
 
    template<class T> struct A
    {
@@ -1903,11 +1883,6 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
   if (DECL_P (t) || CONSTANT_CLASS_P (t))
     return t;
-
-  /* Some expressions have type operands, so let's handle types here rather
-     than check TYPE_P in multiple places below.  */
-  if (TYPE_P (t))
-    return strip_typedefs (t, remove_attributes, flags);
 
   code = TREE_CODE (t);
   switch (code)
@@ -1936,26 +1911,20 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
     case TREE_LIST:
       {
-	releasing_vec vec;
 	bool changed = false;
-	tree it;
-	for (it = t; it; it = TREE_CHAIN (it))
+	releasing_vec vec;
+	r = t;
+	for (; t; t = TREE_CHAIN (t))
 	  {
-	    tree val = strip_typedefs_expr (TREE_VALUE (it),
-					    remove_attributes, flags);
-	    vec_safe_push (vec, val);
-	    if (val != TREE_VALUE (it))
+	    gcc_assert (!TREE_PURPOSE (t));
+	    tree elt = strip_typedefs (TREE_VALUE (t),
+				       remove_attributes, flags);
+	    if (elt != TREE_VALUE (t))
 	      changed = true;
-	    gcc_assert (TREE_PURPOSE (it) == NULL_TREE);
+	    vec_safe_push (vec, elt);
 	  }
 	if (changed)
-	  {
-	    r = NULL_TREE;
-	    FOR_EACH_VEC_ELT_REVERSE (*vec, i, it)
-	      r = tree_cons (NULL_TREE, it, r);
-	  }
-	else
-	  r = t;
+	  r = build_tree_list_vec (vec);
 	return r;
       }
 
@@ -1967,8 +1936,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 	vec_safe_reserve (vec, n);
 	for (i = 0; i < n; ++i)
 	  {
-	    tree op = strip_typedefs_expr (TREE_VEC_ELT (t, i),
-					   remove_attributes, flags);
+	    tree op = strip_typedefs (TREE_VEC_ELT (t, i),
+				      remove_attributes, flags);
 	    vec->quick_push (op);
 	    if (op != TREE_VEC_ELT (t, i))
 	      changed = true;
@@ -1996,15 +1965,15 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 	for (i = 0; i < n; ++i)
 	  {
 	    constructor_elt *e = &(*vec)[i];
-	    tree op = strip_typedefs_expr (e->value, remove_attributes, flags);
+	    tree op = strip_typedefs (e->value, remove_attributes, flags);
 	    if (op != e->value)
 	      {
 		changed = true;
 		e->value = op;
 	      }
 	    gcc_checking_assert
-	      (e->index == strip_typedefs_expr (e->index, remove_attributes,
-						flags));
+	      (e->index == strip_typedefs (e->index, remove_attributes,
+					   flags));
 	  }
 
 	if (!changed && type == TREE_TYPE (t))
@@ -2053,8 +2022,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
     default:
       for (i = 0; i < n; ++i)
-	ops[i] = strip_typedefs_expr (TREE_OPERAND (t, i),
-				      remove_attributes, flags);
+	ops[i] = strip_typedefs (TREE_OPERAND (t, i),
+				 remove_attributes, flags);
       break;
     }
 
@@ -3941,7 +3910,7 @@ is_this_expression (tree t)
 {
   t = get_innermost_component (t);
   /* See through deferences and no-op conversions.  */
-  if (TREE_CODE (t) == INDIRECT_REF)
+  if (INDIRECT_REF_P (t))
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == NOP_EXPR)
     t = TREE_OPERAND (t, 0);
@@ -5075,7 +5044,14 @@ handle_no_unique_addr_attribute (tree* node,
 				 int /*flags*/,
 				 bool* no_add_attrs)
 {
-  if (TREE_CODE (*node) != FIELD_DECL)
+  if (TREE_CODE (*node) == VAR_DECL)
+    {
+      DECL_MERGEABLE (*node) = true;
+      if (pedantic)
+	warning (OPT_Wattributes, "%qE attribute can only be applied to "
+		 "non-static data members", name);
+    }
+  else if (TREE_CODE (*node) != FIELD_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute can only be applied to "
 	       "non-static data members", name);
@@ -5475,7 +5451,8 @@ tree
 cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 		  void *data, hash_set<tree> *pset)
 {
-  enum tree_code code = TREE_CODE (*tp);
+  tree t = *tp;
+  enum tree_code code = TREE_CODE (t);
   tree result;
 
 #define WALK_SUBTREE(NODE)				\
@@ -5486,7 +5463,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     }							\
   while (0)
 
-  if (TYPE_P (*tp))
+  if (TYPE_P (t))
     {
       /* If *WALK_SUBTREES_P is 1, we're interested in the syntactic form of
 	 the argument, so don't look through typedefs, but do walk into
@@ -5498,15 +5475,15 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 
 	 See find_abi_tags_r for an example of setting *WALK_SUBTREES_P to 2
 	 when that's the behavior the walk_tree_fn wants.  */
-      if (*walk_subtrees_p == 1 && typedef_variant_p (*tp))
+      if (*walk_subtrees_p == 1 && typedef_variant_p (t))
 	{
-	  if (tree ti = TYPE_ALIAS_TEMPLATE_INFO (*tp))
+	  if (tree ti = TYPE_ALIAS_TEMPLATE_INFO (t))
 	    WALK_SUBTREE (TI_ARGS (ti));
 	  *walk_subtrees_p = 0;
 	  return NULL_TREE;
 	}
 
-      if (tree ti = TYPE_TEMPLATE_INFO (*tp))
+      if (tree ti = TYPE_TEMPLATE_INFO (t))
 	WALK_SUBTREE (TI_ARGS (ti));
     }
 
@@ -5516,8 +5493,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   switch (code)
     {
     case TEMPLATE_TYPE_PARM:
-      if (template_placeholder_p (*tp))
-	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (*tp));
+      if (template_placeholder_p (t))
+	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (t));
       /* Fall through.  */
     case DEFERRED_PARSE:
     case TEMPLATE_TEMPLATE_PARM:
@@ -5531,63 +5508,63 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case TYPENAME_TYPE:
-      WALK_SUBTREE (TYPE_CONTEXT (*tp));
-      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (*tp));
+      WALK_SUBTREE (TYPE_CONTEXT (t));
+      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (t));
       *walk_subtrees_p = 0;
       break;
 
     case BASELINK:
-      if (BASELINK_QUALIFIED_P (*tp))
-	WALK_SUBTREE (BINFO_TYPE (BASELINK_ACCESS_BINFO (*tp)));
-      WALK_SUBTREE (BASELINK_FUNCTIONS (*tp));
+      if (BASELINK_QUALIFIED_P (t))
+	WALK_SUBTREE (BINFO_TYPE (BASELINK_ACCESS_BINFO (t)));
+      WALK_SUBTREE (BASELINK_FUNCTIONS (t));
       *walk_subtrees_p = 0;
       break;
 
     case PTRMEM_CST:
-      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (TREE_TYPE (t));
       *walk_subtrees_p = 0;
       break;
 
     case TREE_LIST:
-      WALK_SUBTREE (TREE_PURPOSE (*tp));
+      WALK_SUBTREE (TREE_PURPOSE (t));
       break;
 
     case OVERLOAD:
-      WALK_SUBTREE (OVL_FUNCTION (*tp));
-      WALK_SUBTREE (OVL_CHAIN (*tp));
+      WALK_SUBTREE (OVL_FUNCTION (t));
+      WALK_SUBTREE (OVL_CHAIN (t));
       *walk_subtrees_p = 0;
       break;
 
     case USING_DECL:
-      WALK_SUBTREE (DECL_NAME (*tp));
-      WALK_SUBTREE (USING_DECL_SCOPE (*tp));
-      WALK_SUBTREE (USING_DECL_DECLS (*tp));
+      WALK_SUBTREE (DECL_NAME (t));
+      WALK_SUBTREE (USING_DECL_SCOPE (t));
+      WALK_SUBTREE (USING_DECL_DECLS (t));
       *walk_subtrees_p = 0;
       break;
 
     case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (*tp))
-	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (*tp));
+      if (TYPE_PTRMEMFUNC_P (t))
+	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (t));
       break;
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
       {
-        tree args = ARGUMENT_PACK_ARGS (*tp);
+	tree args = ARGUMENT_PACK_ARGS (t);
 	for (tree arg : tree_vec_range (args))
 	  WALK_SUBTREE (arg);
       }
       break;
 
     case TYPE_PACK_EXPANSION:
-      WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (*tp));
+      WALK_SUBTREE (TREE_TYPE (t));
+      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (t));
       *walk_subtrees_p = 0;
       break;
       
     case EXPR_PACK_EXPANSION:
-      WALK_SUBTREE (TREE_OPERAND (*tp, 0));
-      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (*tp));
+      WALK_SUBTREE (TREE_OPERAND (t, 0));
+      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (t));
       *walk_subtrees_p = 0;
       break;
 
@@ -5598,54 +5575,55 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
     case BIT_CAST_EXPR:
-      if (TREE_TYPE (*tp))
-	WALK_SUBTREE (TREE_TYPE (*tp));
+      if (TREE_TYPE (t))
+	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case CONSTRUCTOR:
-      if (COMPOUND_LITERAL_P (*tp))
-	WALK_SUBTREE (TREE_TYPE (*tp));
+      if (COMPOUND_LITERAL_P (t))
+	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case TRAIT_EXPR:
-      WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
-      WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
+      WALK_SUBTREE (TRAIT_EXPR_TYPE1 (t));
+      WALK_SUBTREE (TRAIT_EXPR_TYPE2 (t));
       *walk_subtrees_p = 0;
       break;
 
     case TRAIT_TYPE:
-      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (*tp));
-      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (*tp));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (t));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (t));
       *walk_subtrees_p = 0;
       break;
 
     case DECLTYPE_TYPE:
-      ++cp_unevaluated_operand;
-      /* We can't use WALK_SUBTREE here because of the goto.  */
-      result = cp_walk_tree (&DECLTYPE_TYPE_EXPR (*tp), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
+      {
+	cp_unevaluated u;
+	WALK_SUBTREE (DECLTYPE_TYPE_EXPR (t));
+	*walk_subtrees_p = 0;
+	break;
+      }
 
     case ALIGNOF_EXPR:
     case SIZEOF_EXPR:
     case NOEXCEPT_EXPR:
-      ++cp_unevaluated_operand;
-      result = cp_walk_tree (&TREE_OPERAND (*tp, 0), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
- 
+      {
+	cp_unevaluated u;
+	WALK_SUBTREE (TREE_OPERAND (t, 0));
+	*walk_subtrees_p = 0;
+	break;
+      }
+
     case REQUIRES_EXPR:
       {
 	cp_unevaluated u;
-	for (tree parm = REQUIRES_EXPR_PARMS (*tp); parm; parm = DECL_CHAIN (parm))
+	for (tree parm = REQUIRES_EXPR_PARMS (t); parm; parm = DECL_CHAIN (parm))
 	  /* Walk the types of each parameter, but not the parameter itself,
 	     since doing so would cause false positives in the unexpanded pack
 	     checker if the requires-expr introduces a function parameter pack,
 	     e.g. requires (Ts... ts) { }.   */
 	  WALK_SUBTREE (TREE_TYPE (parm));
-	WALK_SUBTREE (REQUIRES_EXPR_REQS (*tp));
+	WALK_SUBTREE (REQUIRES_EXPR_REQS (t));
 	*walk_subtrees_p = 0;
 	break;
       }
@@ -5656,12 +5634,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	 the containing BIND_EXPR.  Compiler temporaries are
 	 handled here.  And also normal variables in templates,
 	 since do_poplevel doesn't build a BIND_EXPR then.  */
-      if (VAR_P (TREE_OPERAND (*tp, 0))
+      if (VAR_P (TREE_OPERAND (t, 0))
 	  && (processing_template_decl
-	      || (DECL_ARTIFICIAL (TREE_OPERAND (*tp, 0))
-		  && !TREE_STATIC (TREE_OPERAND (*tp, 0)))))
+	      || (DECL_ARTIFICIAL (TREE_OPERAND (t, 0))
+		  && !TREE_STATIC (TREE_OPERAND (t, 0)))))
 	{
-	  tree decl = TREE_OPERAND (*tp, 0);
+	  tree decl = TREE_OPERAND (t, 0);
 	  WALK_SUBTREE (DECL_INITIAL (decl));
 	  WALK_SUBTREE (DECL_SIZE (decl));
 	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
@@ -5671,45 +5649,45 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case LAMBDA_EXPR:
       /* Don't walk into the body of the lambda, but the capture initializers
 	 are part of the enclosing context.  */
-      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (*tp); cap;
+      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t); cap;
 	   cap = TREE_CHAIN (cap))
 	WALK_SUBTREE (TREE_VALUE (cap));
       break;
 
     case CO_YIELD_EXPR:
-      if (TREE_OPERAND (*tp, 1))
+      if (TREE_OPERAND (t, 1))
 	/* Operand 1 is the tree for the relevant co_await which has any
 	   interesting sub-trees.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+	WALK_SUBTREE (TREE_OPERAND (t, 1));
       break;
 
     case CO_AWAIT_EXPR:
-      if (TREE_OPERAND (*tp, 1))
+      if (TREE_OPERAND (t, 1))
 	/* Operand 1 is frame variable.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
-      if (TREE_OPERAND (*tp, 2))
+	WALK_SUBTREE (TREE_OPERAND (t, 1));
+      if (TREE_OPERAND (t, 2))
 	/* Operand 2 has the initialiser, and we need to walk any subtrees
 	   there.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 2));
+	WALK_SUBTREE (TREE_OPERAND (t, 2));
       break;
 
     case CO_RETURN_EXPR:
-      if (TREE_OPERAND (*tp, 0))
+      if (TREE_OPERAND (t, 0))
 	{
-	  if (VOID_TYPE_P (TREE_OPERAND (*tp, 0)))
+	  if (VOID_TYPE_P (TREE_OPERAND (t, 0)))
 	    /* For void expressions, operand 1 is a trivial call, and any
 	       interesting subtrees will be part of operand 0.  */
-	    WALK_SUBTREE (TREE_OPERAND (*tp, 0));
-	  else if (TREE_OPERAND (*tp, 1))
+	    WALK_SUBTREE (TREE_OPERAND (t, 0));
+	  else if (TREE_OPERAND (t, 1))
 	    /* Interesting sub-trees will be in the return_value () call
 	       arguments.  */
-	    WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+	    WALK_SUBTREE (TREE_OPERAND (t, 1));
 	}
       break;
 
     case STATIC_ASSERT:
-      WALK_SUBTREE (STATIC_ASSERT_CONDITION (*tp));
-      WALK_SUBTREE (STATIC_ASSERT_MESSAGE (*tp));
+      WALK_SUBTREE (STATIC_ASSERT_CONDITION (t));
+      WALK_SUBTREE (STATIC_ASSERT_MESSAGE (t));
       break;
 
     default:
@@ -6246,30 +6224,6 @@ cp_tree_code_length (enum tree_code code)
 
     default:
       return TREE_CODE_LENGTH (code);
-    }
-}
-
-/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
-   locations.  */
-
-location_t
-cp_expr_location (const_tree t_)
-{
-  tree t = CONST_CAST_TREE (t_);
-  if (t == NULL_TREE)
-    return UNKNOWN_LOCATION;
-  switch (TREE_CODE (t))
-    {
-    case LAMBDA_EXPR:
-      return LAMBDA_EXPR_LOCATION (t);
-    case STATIC_ASSERT:
-      return STATIC_ASSERT_SOURCE_LOCATION (t);
-    case TRAIT_EXPR:
-      return TRAIT_EXPR_LOCATION (t);
-    case PTRMEM_CST:
-      return PTRMEM_CST_LOCATION (t);
-    default:
-      return EXPR_LOCATION (t);
     }
 }
 

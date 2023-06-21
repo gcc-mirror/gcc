@@ -774,38 +774,25 @@ normalize_concept_check (tree check, tree args, norm_info info)
 
   if (!norm_cache)
     norm_cache = hash_table<norm_hasher>::create_ggc (31);
-  norm_entry entry = {tmpl, targs, NULL_TREE};
-  norm_entry **slot = nullptr;
-  hashval_t hash = 0;
-  bool insert = false;
+  norm_entry *entry = nullptr;
   if (!info.generate_diagnostics ())
     {
       /* Cache the normal form of the substituted concept-id (when not
 	 diagnosing).  */
-      hash = norm_hasher::hash (&entry);
-      slot = norm_cache->find_slot_with_hash (&entry, hash, NO_INSERT);
-      if (slot)
+      norm_entry elt = {tmpl, targs, NULL_TREE};
+      norm_entry **slot = norm_cache->find_slot (&elt, INSERT);
+      if (*slot)
 	return (*slot)->norm;
-      insert = true;
+      entry = ggc_alloc<norm_entry> ();
+      *entry = elt;
+      *slot = entry;
     }
 
-  /* The concept may have been ill-formed.  */
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
-  if (def == error_mark_node)
-    return error_mark_node;
-
   info.update_context (check, args);
   tree norm = normalize_expression (def, targs, info);
-  if (insert)
-    {
-      /* Recompute SLOT since norm_cache may have been expanded during
-	 the recursive call.  */
-      slot = norm_cache->find_slot_with_hash (&entry, hash, INSERT);
-      gcc_checking_assert (!*slot);
-      entry.norm = norm;
-      *slot = ggc_alloc<norm_entry> ();
-      **slot = entry;
-    }
+  if (entry)
+    entry->norm = norm;
   return norm;
 }
 
@@ -2687,9 +2674,16 @@ satisfaction_cache
       *slot = entry;
     }
   else
-    /* We shouldn't get here, but if we do, let's just leave 'entry'
-       empty, effectively disabling the cache.  */
-    return;
+    {
+      /* We're evaluating this atom for the first time, and doing so noisily.
+	 This shouldn't happen outside of error recovery situations involving
+	 unstable satisfaction.  Let's just leave 'entry' empty, effectively
+	 disabling the cache, and remove the empty slot.  */
+      gcc_checking_assert (seen_error ());
+      /* Appease hash_table::check_complete_insertion.  */
+      *slot = ggc_alloc<sat_entry> ();
+      sat_cache->clear_slot (slot);
+    }
 }
 
 /* Returns the cached satisfaction result if we have one and we're not
@@ -3675,6 +3669,16 @@ diagnose_trait_expr (tree expr, tree args)
 
   tree t1 = TRAIT_EXPR_TYPE1 (expr);
   tree t2 = TRAIT_EXPR_TYPE2 (expr);
+  if (t2 && TREE_CODE (t2) == TREE_VEC)
+    {
+      /* Convert the TREE_VEC of arguments into a TREE_LIST, since we can't
+	 directly print a TREE_VEC but we can a TREE_LIST via the E format
+	 specifier.  */
+      tree list = NULL_TREE;
+      for (tree t : tree_vec_range (t2))
+	list = tree_cons (NULL_TREE, t, list);
+      t2 = nreverse (list);
+    }
   switch (TRAIT_EXPR_KIND (expr))
     {
     case CPTK_HAS_NOTHROW_ASSIGN:

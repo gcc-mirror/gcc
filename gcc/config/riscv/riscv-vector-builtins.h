@@ -103,10 +103,12 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 
 /* Bit values used to identify required extensions for RVV intrinsics.  */
 #define RVV_REQUIRE_RV64BIT (1 << 0)	/* Require RV64.  */
-#define RVV_REQUIRE_ZVE64 (1 << 1)	/* Require TARGET_MIN_VLEN > 32.  */
+#define RVV_REQUIRE_ELEN_64 (1 << 1)	/* Require TARGET_VECTOR_ELEN_64.  */
 #define RVV_REQUIRE_ELEN_FP_32 (1 << 2) /* Require FP ELEN >= 32.  */
 #define RVV_REQUIRE_ELEN_FP_64 (1 << 3) /* Require FP ELEN >= 64.  */
 #define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
+#define RVV_REQUIRE_MIN_VLEN_64 (1 << 5)	/* Require TARGET_MIN_VLEN >= 64.  */
+#define RVV_REQUIRE_ELEN_FP_16 (1 << 6) /* Require FP ELEN >= 32.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
@@ -122,6 +124,7 @@ enum operand_type_index
 enum vector_type_index
 {
 #define DEF_RVV_TYPE(NAME, ABI_NAME, NCHARS, ARGS...) VECTOR_TYPE_##NAME,
+#define DEF_RVV_TUPLE_TYPE(NAME, ABI_NAME, NCHARS, ARGS...) VECTOR_TYPE_##NAME,
 #include "riscv-vector-builtins.def"
   NUM_VECTOR_TYPES,
   VECTOR_TYPE_INVALID = NUM_VECTOR_TYPES
@@ -183,6 +186,7 @@ struct rvv_arg_type_info
   tree get_scalar_type (vector_type_index) const;
   tree get_vector_type (vector_type_index) const;
   tree get_tree_type (vector_type_index) const;
+  tree get_tuple_subpart_type (vector_type_index) const;
 };
 
 /* Static information for each operand.  */
@@ -277,6 +281,7 @@ public:
   void append_name (const char *);
   void append_base_name (const char *);
   void append_sew (int);
+  void append_nf (int);
   char *finish_name ();
 
 private:
@@ -409,6 +414,9 @@ public:
   /* Return true if intrinsics has merge operand.  */
   virtual bool has_merge_operand_p () const;
 
+  /* Return true if intrinsics has rounding mode operand.  */
+  virtual bool has_rounding_mode_operand_p () const;
+
   /* Try to fold the given gimple call.  Return the new gimple statement
      on success, otherwise return null.  */
   virtual gimple *fold (gimple_folder &) const { return NULL; }
@@ -430,6 +438,7 @@ public:
 
   machine_mode arg_mode (unsigned int) const;
   machine_mode ret_mode (void) const;
+  unsigned int arg_num (void) const;
   bool check (void);
 
   bool require_immediate (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT) const;
@@ -596,6 +605,12 @@ function_checker::ret_mode () const
   return TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl)));
 }
 
+inline unsigned int
+function_checker::arg_num () const
+{
+  return m_nargs;
+}
+
 /* Default implementation of function_base::call_properties, with conservatively
    correct behavior for floating-point instructions.  */
 inline unsigned int
@@ -647,11 +662,29 @@ function_base::has_merge_operand_p () const
   return true;
 }
 
+/* We choose to return false by default since most of the intrinsics does
+   not have rounding mode operand.  */
+inline bool
+function_base::has_rounding_mode_operand_p () const
+{
+  return false;
+}
+
 /* Since most of intrinsics can be overloaded, we set it true by default.  */
 inline bool
 function_base::can_be_overloaded_p (enum predication_type_index) const
 {
   return true;
+}
+
+/* Return the single field in tuple type TYPE.  */
+inline tree
+tuple_type_field (tree type)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL)
+      return field;
+  gcc_unreachable ();
 }
 
 } // end namespace riscv_vector

@@ -1562,6 +1562,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align > 0
       && RECORD_OR_UNION_TYPE_P (type)
+      && !TYPE_IS_FAT_POINTER_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TYPE_BY_REFERENCE_P (type)
       && TREE_CODE (orig_size) == INTEGER_CST
@@ -2802,7 +2803,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
       if (TREE_CODE (inner) == ADDR_EXPR
 	  && ((TREE_CODE (TREE_OPERAND (inner, 0)) == CALL_EXPR
 	       && !call_is_atomic_load (TREE_OPERAND (inner, 0)))
-	      || (TREE_CODE (TREE_OPERAND (inner, 0)) == VAR_DECL
+	      || (VAR_P (TREE_OPERAND (inner, 0))
 		  && DECL_RETURN_VALUE_P (TREE_OPERAND (inner, 0)))))
 	DECL_RETURN_VALUE_P (var_decl) = 1;
     }
@@ -2853,7 +2854,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      support global BSS sections, uninitialized global variables would
      go in DATA instead, thus increasing the size of the executable.  */
   if (!flag_no_common
-      && TREE_CODE (var_decl) == VAR_DECL
+      && VAR_P (var_decl)
       && TREE_PUBLIC (var_decl)
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
@@ -2871,13 +2872,13 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
     DECL_IGNORED_P (var_decl) = 1;
 
   /* ??? Some attributes cannot be applied to CONST_DECLs.  */
-  if (TREE_CODE (var_decl) == VAR_DECL)
+  if (VAR_P (var_decl))
     process_attributes (&var_decl, &attr_list, true, gnat_node);
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
 
-  if (TREE_CODE (var_decl) == VAR_DECL && asm_name)
+  if (VAR_P (var_decl) && asm_name)
     {
       /* Let the target mangle the name if this isn't a verbatim asm.  */
       if (*IDENTIFIER_POINTER (asm_name) != '*')
@@ -5543,7 +5544,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	}
     }
 
-  /* Likewise if we are converting from a fixed-szie type to a type with self-
+  /* Likewise if we are converting from a fixed-size type to a type with self-
      referential size.  We use the max size to do the padding in this case.  */
   else if (!INDIRECT_REF_P (expr)
 	   && TREE_CODE (expr) != STRING_CST

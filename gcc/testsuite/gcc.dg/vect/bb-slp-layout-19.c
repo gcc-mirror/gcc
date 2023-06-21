@@ -31,4 +31,9 @@ void f()
   e[3] = b3;
 }
 
-/* { dg-final { scan-tree-dump-times "add new stmt: \[^\\n\\r\]* = VEC_PERM_EXPR" 3 "slp1" { target { vect_int_mult && vect_perm } } } } */
+/* On older powerpc hardware (POWER7 and earlier), the default flag
+   -mno-allow-movmisalign prevents vectorization.  On POWER8 and later,
+   when vect_hw_misalign is true, vectorization occurs.  For other
+   targets, ! vect_no_align is a sufficient test.  */
+
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\\n\\r\]* = VEC_PERM_EXPR" 3 "slp1" { target { { vect_int_mult && vect_perm } && { { ! powerpc*-*-* } || { vect_hw_misalign } } } } } } */

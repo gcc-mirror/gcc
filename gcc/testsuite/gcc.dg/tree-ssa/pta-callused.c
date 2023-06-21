@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 --param max-fields-for-field-sensitive=2 -fdump-tree-alias" } */
+/* { dg-options "-O2 --param max-fields-for-field-sensitive=2 -fdump-tree-alias-details" } */
 
 struct Foo {
   int *p, *q;

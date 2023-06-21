@@ -146,7 +146,6 @@ save_CFLAGS="$CFLAGS"
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(NM, nm)
 AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
-AC_PATH_PROG(PERL, perl, perl-not-found-in-path-error)
 AC_PROG_INSTALL
 
 # Configure libtool

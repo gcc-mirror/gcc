@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "opts.h"
 #include "hw-doloop.h"
+#include "targhooks.h"
+#include "case-cfn-macros.h"
 
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
 static char arc_cpu_name[10] = "";
@@ -5782,7 +5784,7 @@ arc_encode_section_info (tree decl, rtx rtl, int first)
 
       SYMBOL_REF_FLAGS (symbol) = flags;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       rtx symbol = XEXP (rtl, 0);
 
@@ -6255,8 +6257,6 @@ arc_call_tls_get_addr (rtx ti)
   return ret;
 }
 
-#define DTPOFF_ZERO_SYM ".tdata"
-
 /* Return a legitimized address for ADDR,
    which is a SYMBOL_REF with tls_model MODEL.  */
 
@@ -6265,36 +6265,16 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
 {
   rtx tmp;
 
-  if (!flag_pic && model == TLS_MODEL_LOCAL_DYNAMIC)
-    model = TLS_MODEL_LOCAL_EXEC;
-
-
   /* The TP pointer needs to be set.  */
   gcc_assert (arc_tp_regno != -1);
 
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
+    case TLS_MODEL_LOCAL_DYNAMIC:
       tmp = gen_reg_rtx (Pmode);
       emit_move_insn (tmp, arc_unspec_offset (addr, UNSPEC_TLS_GD));
       return arc_call_tls_get_addr (tmp);
-
-    case TLS_MODEL_LOCAL_DYNAMIC:
-      rtx base;
-      tree decl;
-      const char *base_name;
-
-      decl = SYMBOL_REF_DECL (addr);
-      base_name = DTPOFF_ZERO_SYM;
-      if (decl && bss_initializer_p (decl))
-	base_name = ".tbss";
-
-      base = gen_rtx_SYMBOL_REF (Pmode, base_name);
-      tmp = gen_reg_rtx (Pmode);
-      emit_move_insn (tmp, arc_unspec_offset (base, UNSPEC_TLS_GD));
-      base = arc_call_tls_get_addr (tmp);
-      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base),
-			   arc_unspec_offset (addr, UNSPEC_TLS_OFF));
 
     case TLS_MODEL_INITIAL_EXEC:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
@@ -8933,7 +8913,7 @@ arc_is_aux_reg_p (rtx pat)
     return false;
 
   /* Get the attributes.  */
-  if (TREE_CODE (addr) == VAR_DECL)
+  if (VAR_P (addr))
     attrs = DECL_ATTRIBUTES (addr);
   else if (TREE_CODE (addr) == MEM_REF)
     attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
@@ -11245,7 +11225,7 @@ arc_is_uncached_mem_p (rtx pat)
 
   /* Get the attributes.  */
   if (TREE_CODE (addr) == MEM_REF
-      || TREE_CODE (addr) == VAR_DECL)
+      || VAR_P (addr))
     {
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
       if (lookup_attribute ("uncached", attrs))
@@ -11313,7 +11293,7 @@ arc_handle_aux_attribute (tree *node,
 	  /* FIXME! add range check.  TREE_INT_CST_LOW (arg) */
 	}
 
-      if (TREE_CODE (*node) == VAR_DECL)
+      if (VAR_P (*node))
 	{
 	  tree fntype = TREE_TYPE (*node);
 	  if (fntype && TREE_CODE (fntype) == POINTER_TYPE)
@@ -11808,6 +11788,37 @@ arc_insn_cost (rtx_insn *insn, bool speed)
   return cost;
 }
 
+static unsigned
+arc_libm_function_max_error (unsigned cfn, machine_mode mode,
+			     bool boundary_p)
+{
+#ifdef OPTION_GLIBC
+  bool glibc_p = OPTION_GLIBC;
+#else
+  bool glibc_p = false;
+#endif
+  if (glibc_p)
+    {
+      int rnd = flag_rounding_math ? 4 : 0;
+      switch (cfn)
+	{
+	CASE_CFN_SIN:
+	CASE_CFN_SIN_FN:
+	  if (!boundary_p && mode == DFmode)
+	    return 7 + rnd;
+	  break;
+	CASE_CFN_COS:
+	CASE_CFN_COS_FN:
+	  if (!boundary_p && mode == DFmode)
+	    return 4 + rnd;
+	default:
+	  break;
+	}
+      return glibc_linux_libm_function_max_error (cfn, mode, boundary_p);
+    }
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
@@ -11831,6 +11842,9 @@ arc_insn_cost (rtx_insn *insn, bool speed)
 
 #undef  TARGET_INSN_COST
 #define TARGET_INSN_COST arc_insn_cost
+
+#undef  TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR arc_libm_function_max_error
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

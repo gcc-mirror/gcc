@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-Wsurprising" }
 
 ! There should be no surprising warnings

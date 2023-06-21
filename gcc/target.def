@@ -2670,6 +2670,23 @@ DEFHOOK
  bool, (int fcode),
  default_libc_has_fast_function)
 
+DEFHOOK
+(libm_function_max_error,
+ "This hook determines expected maximum errors for math functions measured\n\
+in ulps (units of the last place).  0 means 0.5ulps precision (correctly\n\
+rounded).  ~0U means unknown errors.  The @code{combined_fn} @var{cfn}\n\
+argument should identify just which math built-in function it is rather than\n\
+its variant, @var{mode} the variant in terms of floating-point machine mode.\n\
+The hook should also take into account @code{flag_rounding_math} whether it\n\
+is maximum error just in default rounding mode, or in all possible rounding\n\
+modes.  @var{boundary_p} is @code{true} for maximum errors on intrinsic math\n\
+boundaries of functions rather than errors inside of the usual result ranges\n\
+of the functions.  E.g.@ the sin/cos function finite result is in between\n\
+-1.0 and 1.0 inclusive, with @var{boundary_p} true the function returns how\n\
+many ulps below or above those boundaries result could be.",
+ unsigned, (unsigned cfn, machine_mode mode, bool boundary_p),
+ default_libm_function_max_error)
+
 /* True if new jumps cannot be created, to replace existing ones or
    not, at the current point in the compilation.  */
 DEFHOOK
@@ -3474,11 +3491,25 @@ code in @file{optabs.cc}.",
    for further details.  */
 DEFHOOK
 (vector_mode_supported_p,
- "Define this to return nonzero if the port is prepared to handle\n\
+ "Define this to return nonzero if the current target is prepared to handle\n\
 insns involving vector mode @var{mode}.  At the very least, it\n\
 must have move patterns for this mode.",
  bool, (machine_mode mode),
  hook_bool_mode_false)
+
+DEFHOOK
+(vector_mode_supported_any_target_p,
+ "Define this to return nonzero if the port is prepared to handle\n\
+insns involving vector mode @var{mode} in any target configuration.\n\
+Returning @var{true} means that the mode can be used as the @samp{TYPE_MODE}\n\
+for vector types.\n\
+\n\
+The default version of this hook returns true.  The final mode assigned to\n\
+@samp{TYPE_MODE} will also be checked against\n\
+@code{TARGET_VECTOR_MODE_SUPPORTED_P} to take target configuration into\n\
+account.",
+ bool, (machine_mode mode),
+ hook_bool_mode_true)
 
 DEFHOOK
 (compatible_vector_types_p,
@@ -5324,7 +5355,8 @@ DEFHOOK
 (get_raw_result_mode,
  "This target hook returns the mode to be used when accessing raw return\n\
 registers in @code{__builtin_return}.  Define this macro if the value\n\
-in @var{reg_raw_mode} is not correct.",
+in @var{reg_raw_mode} is not correct.  Use @code{VOIDmode} if a register\n\
+should be ignored for @code{__builtin_return} purposes.",
  fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
@@ -5334,7 +5366,8 @@ DEFHOOK
 (get_raw_arg_mode,
  "This target hook returns the mode to be used when accessing raw argument\n\
 registers in @code{__builtin_apply_args}.  Define this macro if the value\n\
-in @var{reg_raw_mode} is not correct.",
+in @var{reg_raw_mode} is not correct.  Use @code{VOIDmode} if a register\n\
+should be ignored for @code{__builtin_apply_args} purposes.",
  fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 

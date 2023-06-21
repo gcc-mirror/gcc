@@ -144,20 +144,44 @@ arm_pragma_arm (cpp_reader *)
   const char *name = TREE_STRING_POINTER (x);
   if (strcmp (name, "arm_mve_types.h") == 0)
     arm_mve::handle_arm_mve_types_h ();
+  else if (strcmp (name, "arm_mve.h") == 0)
+    {
+      if (pragma_lex (&x) == CPP_NAME)
+	{
+	  if (strcmp (IDENTIFIER_POINTER (x), "true") == 0)
+	    arm_mve::handle_arm_mve_h (true);
+	  else if (strcmp (IDENTIFIER_POINTER (x), "false") == 0)
+	    arm_mve::handle_arm_mve_h (false);
+	  else
+	    error ("%<#pragma GCC arm \"arm_mve.h\"%> requires a boolean parameter");
+	}
+    }
   else
     error ("unknown %<#pragma GCC arm%> option %qs", name);
 }
 
-/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  This is currently only
-   used for the MVE related builtins for the CDE extension.
-   Here we ensure the type of arguments is such that the size is correct, and
-   then return a tree that describes the same function call but with the
-   relevant types cast as necessary.  */
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 tree
-arm_resolve_overloaded_builtin (location_t loc, tree fndecl, void *arglist)
+arm_resolve_overloaded_builtin (location_t loc, tree fndecl,
+				void *uncast_arglist)
 {
-  if (arm_describe_resolver (fndecl) == arm_cde_resolver)
-    return arm_resolve_cde_builtin (loc, fndecl, arglist);
+  enum resolver_ident resolver = arm_describe_resolver (fndecl);
+  if (resolver == arm_cde_resolver)
+    return arm_resolve_cde_builtin (loc, fndecl, uncast_arglist);
+  if (resolver == arm_mve_resolver)
+    {
+      vec<tree, va_gc> empty = {};
+      vec<tree, va_gc> *arglist = (uncast_arglist
+				   ? (vec<tree, va_gc> *) uncast_arglist
+				   : &empty);
+      unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+      unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
+      tree new_fndecl = arm_mve::resolve_overloaded_builtin (loc, subcode, arglist);
+      if (new_fndecl == NULL_TREE || new_fndecl == error_mark_node)
+	return new_fndecl;
+      return build_function_call_vec (loc, vNULL, new_fndecl, arglist,
+				      NULL, fndecl);
+    }
   return NULL_TREE;
 }
 
@@ -519,7 +543,9 @@ arm_register_target_pragmas (void)
 {
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = arm_pragma_target_parse;
+
   targetm.resolve_overloaded_builtin = arm_resolve_overloaded_builtin;
+  targetm.check_builtin_call = arm_check_builtin_call;
 
   c_register_pragma ("GCC", "arm", arm_pragma_arm);
 

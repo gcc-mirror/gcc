@@ -1,5 +1,7 @@
 ! { dg-do compile }
 
+! { dg-options "-std=f2008" }
+
 program test
    implicit none
 
@@ -46,8 +48,8 @@ program test
 
 end
 
-! { dg-error "cannot be used in a variable definition context .assignment."  " " { target *-*-* } 21 }
-! { dg-error "cannot be used in a variable definition context .actual argument to INTENT = OUT.INOUT."  " " { target *-*-* } 23 }
-! { dg-error "Pointer assignment target is neither TARGET nor POINTER" " " { target *-*-* } 35 }
+! { dg-error "being used in a variable definition context .assignment."  " " { target *-*-* } 23 }
+! { dg-error "being used in a variable definition context .actual argument to INTENT = OUT.INOUT."  " " { target *-*-* } 25 }
 ! { dg-error "Pointer assignment target is neither TARGET nor POINTER" " " { target *-*-* } 37 }
+! { dg-error "Pointer assignment target is neither TARGET nor POINTER" " " { target *-*-* } 39 }
 

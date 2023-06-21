@@ -379,16 +379,36 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
       if (associated_impl_block != nullptr)
 	{
-	  // get the type of the parent Self
-	  HirId impl_ty_id
-	    = associated_impl_block->get_type ()->get_mappings ().get_hirid ();
-	  TyTy::BaseType *impl_block_ty = nullptr;
-	  bool ok = query_type (impl_ty_id, &impl_block_ty);
-	  rust_assert (ok);
+	  // associated types
+	  HirId impl_block_id
+	    = associated_impl_block->get_mappings ().get_hirid ();
 
-	  if (impl_block_ty->needs_generic_substitutions ())
-	    impl_block_ty
-	      = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
+	  AssociatedImplTrait *associated = nullptr;
+	  bool found_impl_trait
+	    = context->lookup_associated_trait_impl (impl_block_id,
+						     &associated);
+	  TyTy::BaseType *impl_block_ty = nullptr;
+	  if (found_impl_trait)
+	    {
+	      TyTy::TypeBoundPredicate predicate (*associated->get_trait (),
+						  seg.get_locus ());
+	      impl_block_ty
+		= associated->setup_associated_types (prev_segment, predicate);
+	    }
+	  else
+	    {
+	      // get the type of the parent Self
+	      HirId impl_ty_id = associated_impl_block->get_type ()
+				   ->get_mappings ()
+				   .get_hirid ();
+
+	      bool ok = query_type (impl_ty_id, &impl_block_ty);
+	      rust_assert (ok);
+
+	      if (impl_block_ty->needs_generic_substitutions ())
+		impl_block_ty
+		  = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
+	    }
 
 	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
 				     TyTy::TyWithLocation (prev_segment),

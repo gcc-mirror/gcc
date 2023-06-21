@@ -412,6 +412,7 @@ extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
 extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, poly_int64);
 extern void lra_eliminate (bool, bool);
 
+extern poly_int64 lra_update_sp_offset (rtx, poly_int64);
 extern void lra_eliminate_reg_if_possible (rtx *);
 
 

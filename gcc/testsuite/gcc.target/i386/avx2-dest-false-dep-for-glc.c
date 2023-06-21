@@ -5,16 +5,28 @@
 
 #include <immintrin.h>
 
-extern __m256i i1, i2, i3, i4;
-extern __m256d d1, d2;
-extern __m256 f1, f2;
-
-void vperm_test (void)
+__m256i
+foo0 (__m256i i3, __m256i i1, __m256i i2)
 {
-  i3 = _mm256_permutevar8x32_epi32 (i1, i2);
-  i4 = _mm256_permute4x64_epi64 (i1, 12);
-  d2 = _mm256_permute4x64_pd (d1, 12);
-  f2 = _mm256_permutevar8x32_ps (f1, i2);
+  return _mm256_permutevar8x32_epi32 (i1, i2);
+}
+
+__m256i
+foo1 (__m256i i2, __m256i i1)
+{
+  return _mm256_permute4x64_epi64 (i1, 12);
+}
+
+__m256d
+foo2 (__m256d d2, __m256d d1)
+{
+  return _mm256_permute4x64_pd (d1, 12);
+}
+
+__m256
+foo3 (__m256 f2, __m256i i2, __m256 f1)
+{
+  return _mm256_permutevar8x32_ps (f1, i2);
 }
 
 /* { dg-final { scan-assembler-times "vxorps" 4 } } */

@@ -96,7 +96,7 @@
 (define_memory_constraint "Q"
   "@internal"
   (and (match_code "mem")
-       (match_test "cris_base_p (XEXP (op, 0), reload_in_progress
+       (match_test "cris_base_p (XEXP (op, 0), lra_in_progress
 					       || reload_completed)")))
 
 ;; Extra constraints.
@@ -107,7 +107,7 @@
 	    ;; Double indirect: [[reg]] or [[reg+]]?
        (ior (and (match_code "mem" "0")
 		 (match_test "cris_base_or_autoincr_p (XEXP (XEXP (op, 0), 0),
-						       reload_in_progress
+						       lra_in_progress
 						       || reload_completed)"))
 	    ;; Just an explicit indirect reference: [const]?
 	    (match_test "CONSTANT_P (XEXP (op, 0))")
@@ -115,29 +115,29 @@
 	    (and (match_code "plus" "0")
 		      ;; A BDAP constant: [reg+(8|16|32)bit offset]?
 		 (ior (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 0),
-						     reload_in_progress
+						     lra_in_progress
 						     || reload_completed)")
 			   (match_test "CONSTANT_P (XEXP (XEXP (op, 0), 1))"))
 		      ;; A BDAP register: [reg+[reg(+)].S]?
 		      (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 0),
-						     reload_in_progress
+						     lra_in_progress
 						     || reload_completed)")
 			   (match_test "cris_bdap_index_p (XEXP (XEXP (op, 0), 1),
-							   reload_in_progress
+							   lra_in_progress
 							   || reload_completed)"))
 		      ;; Same, but with swapped arguments (no canonical
 		      ;; ordering between e.g. REG and MEM as of LAST_UPDATED
 		      ;; "Thu May 12 03:59:11 UTC 2005").
 		      (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 1),
-						     reload_in_progress
+						     lra_in_progress
 						     || reload_completed)")
 			   (match_test "cris_bdap_index_p (XEXP (XEXP (op, 0), 0),
-							   reload_in_progress
+							   lra_in_progress
 							   || reload_completed)"))
 		      ;; A BIAP: [reg+reg.S] (MULT comes first).
 		      (and (match_test "cris_base_p (XEXP (XEXP (op, 0), 1),
-						     reload_in_progress
+						     lra_in_progress
 						     || reload_completed)")
 			   (match_test "cris_biap_index_p (XEXP (XEXP (op, 0), 0),
-							   reload_in_progress
+							   lra_in_progress
 							   || reload_completed)")))))))

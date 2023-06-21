@@ -34,12 +34,15 @@
 
 #include <bits/move.h>
 
+/* Duplicate definition with unique_ptr.h.  */
+#if __cplusplus > 202002L && defined(__cpp_constexpr_dynamic_alloc)
+# define __cpp_lib_constexpr_memory 202202L
+#elif __cplusplus > 201703L
+# define __cpp_lib_constexpr_memory 201811L
+#endif
+
 #if __cplusplus > 201703L
 #include <concepts>
-# ifndef __cpp_lib_constexpr_memory
-// Defined to a newer value in bits/unique_ptr.h for C++23
-#  define __cpp_lib_constexpr_memory 201811L
-# endif
 namespace __gnu_debug { struct _Safe_iterator_base; }
 #endif
 

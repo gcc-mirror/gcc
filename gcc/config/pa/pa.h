@@ -930,7 +930,7 @@ do {									     \
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION_P(DECL) \
-  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || VAR_P (DECL)) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
 /* Define this macro if references to a symbol must be treated
@@ -952,7 +952,7 @@ do {									     \
 
 #define TEXT_SPACE_P(DECL)\
   (TREE_CODE (DECL) == FUNCTION_DECL					\
-   || (TREE_CODE (DECL) == VAR_DECL					\
+   || (VAR_P (DECL)					\
        && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
        && (! DECL_INITIAL (DECL) || ! pa_reloc_needed (DECL_INITIAL (DECL))) \
        && !flag_pic)							\

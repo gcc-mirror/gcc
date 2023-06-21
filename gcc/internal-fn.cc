@@ -90,6 +90,60 @@ lookup_internal_fn (const char *name)
   return entry ? *entry : IFN_LAST;
 }
 
+/* Geven an internal_fn IFN that is a widening function, return its
+   corresponding LO and HI internal_fns.  */
+
+extern void
+lookup_hilo_internal_fn (internal_fn ifn, internal_fn *lo, internal_fn *hi)
+{
+  gcc_assert (widening_fn_p (ifn));
+
+  switch (ifn)
+    {
+    default:
+      gcc_unreachable ();
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
+    case IFN_##NAME:						\
+      *lo = internal_fn (IFN_##NAME##_LO);			\
+      *hi = internal_fn (IFN_##NAME##_HI);			\
+      break;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    }
+}
+
+/* Given an internal_fn IFN that is a widening function, return its
+   corresponding _EVEN and _ODD internal_fns in *EVEN and *ODD.  */
+
+extern void
+lookup_evenodd_internal_fn (internal_fn ifn, internal_fn *even,
+			    internal_fn *odd)
+{
+  gcc_assert (widening_fn_p (ifn));
+
+  switch (ifn)
+    {
+    default:
+      gcc_unreachable ();
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+#define DEF_INTERNAL_FN(NAME, FLAGS, TYPE)
+#define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T)	\
+    case IFN_##NAME:						\
+      *even = internal_fn (IFN_##NAME##_EVEN);			\
+      *odd = internal_fn (IFN_##NAME##_ODD);			\
+      break;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+#undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    }
+}
+
+
 /* Fnspec of each internal function, indexed by function number.  */
 const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 
@@ -111,6 +165,7 @@ init_internal_fns ()
 #define mask_load_lanes_direct { -1, -1, false }
 #define gather_load_direct { 3, 1, false }
 #define len_load_direct { -1, -1, false }
+#define len_maskload_direct { -1, 3, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
@@ -118,6 +173,7 @@ init_internal_fns ()
 #define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
+#define len_maskstore_direct { 4, 3, false }
 #define vec_set_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define unary_convert_direct { -1, 0, true }
@@ -775,7 +831,8 @@ get_min_precision (tree arg, signop sign)
     return prec + (orig_sign != sign);
   value_range r;
   while (!get_global_range_query ()->range_of_expr (r, arg)
-	 || r.kind () != VR_RANGE)
+	 || r.varying_p ()
+	 || r.undefined_p ())
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
@@ -2721,6 +2778,44 @@ expand_MUL_OVERFLOW (internal_fn, gcall *stmt)
   expand_arith_overflow (MULT_EXPR, stmt);
 }
 
+/* Expand UADDC STMT.  */
+
+static void
+expand_UADDC (internal_fn ifn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree arg3 = gimple_call_arg (stmt, 2);
+  tree type = TREE_TYPE (arg1);
+  machine_mode mode = TYPE_MODE (type);
+  insn_code icode = optab_handler (ifn == IFN_UADDC
+				   ? uaddc5_optab : usubc5_optab, mode);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  rtx op3 = expand_normal (arg3);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx re = gen_reg_rtx (mode);
+  rtx im = gen_reg_rtx (mode);
+  class expand_operand ops[5];
+  create_output_operand (&ops[0], re, mode);
+  create_output_operand (&ops[1], im, mode);
+  create_input_operand (&ops[2], op1, mode);
+  create_input_operand (&ops[3], op2, mode);
+  create_input_operand (&ops[4], op3, mode);
+  expand_insn (icode, 5, ops);
+  write_complex_part (target, re, false, false);
+  write_complex_part (target, im, true, false);
+}
+
+/* Expand USUBC STMT.  */
+
+static void
+expand_USUBC (internal_fn ifn, gcall *stmt)
+{
+  expand_UADDC (ifn, stmt);
+}
+
 /* This should get folded in tree-vectorizer.cc.  */
 
 static void
@@ -2780,12 +2875,13 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
   return fold_build2 (MEM_REF, type, addr, build_int_cst (alias_ptr_type, 0));
 }
 
-/* Expand MASK_LOAD{,_LANES} or LEN_LOAD call STMT using optab OPTAB.  */
+/* Expand MASK_LOAD{,_LANES}, LEN_MASK_LOAD or LEN_LOAD call STMT using optab
+ * OPTAB.  */
 
 static void
 expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[4];
+  class expand_operand ops[5];
   tree type, lhs, rhs, maskt, biast;
   rtx mem, target, mask, bias;
   insn_code icode;
@@ -2820,6 +2916,20 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
       create_input_operand (&ops[3], bias, QImode);
       expand_insn (icode, 4, ops);
     }
+  else if (optab == len_maskload_optab)
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      maskt = gimple_call_arg (stmt, 3);
+      mask = expand_normal (maskt);
+      create_input_operand (&ops[3], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      icode = convert_optab_handler (optab, TYPE_MODE (type),
+				     TYPE_MODE (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 4);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[4], bias, QImode);
+      expand_insn (icode, 5, ops);
+    }
   else
     {
       create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
@@ -2833,13 +2943,15 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_mask_load_optab_fn expand_partial_load_optab_fn
 #define expand_mask_load_lanes_optab_fn expand_mask_load_optab_fn
 #define expand_len_load_optab_fn expand_partial_load_optab_fn
+#define expand_len_maskload_optab_fn expand_partial_load_optab_fn
 
-/* Expand MASK_STORE{,_LANES} or LEN_STORE call STMT using optab OPTAB.  */
+/* Expand MASK_STORE{,_LANES}, LEN_MASK_STORE or LEN_STORE call STMT using optab
+ * OPTAB.  */
 
 static void
 expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[4];
+  class expand_operand ops[5];
   tree type, lhs, rhs, maskt, biast;
   rtx mem, reg, mask, bias;
   insn_code icode;
@@ -2872,6 +2984,19 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
       create_input_operand (&ops[3], bias, QImode);
       expand_insn (icode, 4, ops);
     }
+  else if (optab == len_maskstore_optab)
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      maskt = gimple_call_arg (stmt, 3);
+      mask = expand_normal (maskt);
+      create_input_operand (&ops[3], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 4);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[4], bias, QImode);
+      icode = convert_optab_handler (optab, TYPE_MODE (type), GET_MODE (mask));
+      expand_insn (icode, 5, ops);
+    }
   else
     {
       create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
@@ -2882,6 +3007,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_mask_store_optab_fn expand_partial_store_optab_fn
 #define expand_mask_store_lanes_optab_fn expand_mask_store_optab_fn
 #define expand_len_store_optab_fn expand_partial_store_optab_fn
+#define expand_len_maskstore_optab_fn expand_partial_store_optab_fn
 
 /* Expand VCOND, VCONDU and VCONDEQ optab internal functions.
    The expansion of STMT happens based on OPTAB table associated.  */
@@ -3835,6 +3961,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_len_load_optab_supported_p direct_optab_supported_p
+#define direct_len_maskload_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -3842,6 +3969,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
+#define direct_len_maskstore_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
@@ -3851,7 +3979,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 /* Return the optab used by internal function FN.  */
 
-static optab
+optab
 direct_internal_fn_optab (internal_fn fn, tree_pair types)
 {
   switch (fn)
@@ -3970,6 +4098,11 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_UBSAN_CHECK_MUL:
     case IFN_ADD_OVERFLOW:
     case IFN_MUL_OVERFLOW:
+    case IFN_VEC_WIDEN_PLUS:
+    case IFN_VEC_WIDEN_PLUS_LO:
+    case IFN_VEC_WIDEN_PLUS_HI:
+    case IFN_VEC_WIDEN_PLUS_EVEN:
+    case IFN_VEC_WIDEN_PLUS_ODD:
       return true;
 
     default:
@@ -3989,6 +4122,7 @@ commutative_ternary_fn_p (internal_fn fn)
     case IFN_FMS:
     case IFN_FNMA:
     case IFN_FNMS:
+    case IFN_UADDC:
       return true;
 
     default:
@@ -4043,6 +4177,37 @@ first_commutative_argument (internal_fn fn)
     }
 }
 
+/* Return true if this CODE describes an internal_fn that returns a vector with
+   elements twice as wide as the element size of the input vectors.  */
+
+bool
+widening_fn_p (code_helper code)
+{
+  if (!code.is_fn_code ())
+    return false;
+
+  if (!internal_fn_p ((combined_fn) code))
+    return false;
+
+  internal_fn fn = as_internal_fn ((combined_fn) code);
+  switch (fn)
+    {
+    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
+    #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T) \
+    case IFN_##NAME:						  \
+    case IFN_##NAME##_HI:					  \
+    case IFN_##NAME##_LO:					  \
+    case IFN_##NAME##_EVEN:					  \
+    case IFN_##NAME##_ODD:					  \
+      return true;
+    #include "internal-fn.def"
+    #undef DEF_INTERNAL_WIDENING_OPTAB_FN
+
+    default:
+      return false;
+    }
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool
@@ -4071,6 +4236,8 @@ set_edom_supported_p (void)
     expand_##TYPE##_optab_fn (fn, stmt, which_optab);			\
   }
 #include "internal-fn.def"
+#undef DEF_INTERNAL_OPTAB_FN
+#undef DEF_INTERNAL_SIGNED_OPTAB_FN
 
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
@@ -4079,6 +4246,7 @@ set_edom_supported_p (void)
 
    where STMT is the statement that performs the call. */
 static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
+
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
   0

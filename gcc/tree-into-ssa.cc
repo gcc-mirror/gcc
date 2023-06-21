@@ -2348,8 +2348,7 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what)
 	}
       while (!bitmap_empty_p (worklist))
 	{
-	  int idx = bitmap_first_set_bit (worklist);
-	  bitmap_clear_bit (worklist, idx);
+	  int idx = bitmap_clear_first_set_bit (worklist);
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, idx);
 	  bb->flags |= in_region;
 	  extra_rgn.safe_push (bb);

@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-clones.h"
 #include "attr-fnspec.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -118,9 +119,11 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static hashval_t
   hash (const value_range *p)
     {
-      inchash::hash hstate (p->kind ());
-      inchash::add_expr (p->min (), hstate);
-      inchash::add_expr (p->max (), hstate);
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*p, min, max);
+      inchash::hash hstate (kind);
+      inchash::add_expr (min, hstate);
+      inchash::add_expr (max, hstate);
       return hstate.end ();
     }
   static bool
@@ -174,6 +177,93 @@ struct ipa_cst_ref_desc
 
 static object_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
   ("IPA-PROP ref descriptions");
+
+ipa_vr::ipa_vr ()
+  : m_storage (NULL),
+    m_type (NULL)
+{
+}
+
+ipa_vr::ipa_vr (const vrange &r)
+  : m_storage (ggc_alloc_vrange_storage (r)),
+    m_type (r.type ())
+{
+}
+
+bool
+ipa_vr::equal_p (const vrange &r) const
+{
+  gcc_checking_assert (!r.undefined_p ());
+  return (types_compatible_p (m_type, r.type ()) && m_storage->equal_p (r));
+}
+
+void
+ipa_vr::get_vrange (Value_Range &r) const
+{
+  r.set_type (m_type);
+  m_storage->get_vrange (r, m_type);
+}
+
+void
+ipa_vr::set_unknown ()
+{
+  if (m_storage)
+    ggc_free (m_storage);
+
+  m_storage = NULL;
+}
+
+void
+ipa_vr::streamer_read (lto_input_block *ib, data_in *data_in)
+{
+  struct bitpack_d bp = streamer_read_bitpack (ib);
+  bool known = bp_unpack_value (&bp, 1);
+  if (known)
+    {
+      Value_Range vr;
+      streamer_read_value_range (ib, data_in, vr);
+      if (!m_storage || !m_storage->fits_p (vr))
+	{
+	  if (m_storage)
+	    ggc_free (m_storage);
+	  m_storage = ggc_alloc_vrange_storage (vr);
+	}
+      m_storage->set_vrange (vr);
+      m_type = vr.type ();
+    }
+  else
+    {
+      m_storage = NULL;
+      m_type = NULL;
+    }
+}
+
+void
+ipa_vr::streamer_write (output_block *ob) const
+{
+  struct bitpack_d bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, !!m_storage, 1);
+  streamer_write_bitpack (&bp);
+  if (m_storage)
+    {
+      Value_Range vr (m_type);
+      m_storage->get_vrange (vr, m_type);
+      streamer_write_vrange (ob, vr);
+    }
+}
+
+void
+ipa_vr::dump (FILE *out) const
+{
+  if (known_p ())
+    {
+      Value_Range vr (m_type);
+      m_storage->get_vrange (vr, m_type);
+      vr.dump (out);
+    }
+  else
+    fprintf (out, "NO RANGE");
+}
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -347,6 +437,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	    }
 	  if (jump_func->value.pass_through.agg_preserved)
 	    fprintf (f, ", agg_preserved");
+	  if (jump_func->value.pass_through.refdesc_decremented)
+	    fprintf (f, ", refdesc_decremented");
 	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_ANCESTOR)
@@ -433,13 +525,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 
       if (jump_func->m_vr)
 	{
-	  fprintf (f, "         VR  ");
-	  fprintf (f, "%s[",
-		   (jump_func->m_vr->kind () == VR_ANTI_RANGE) ? "~" : "");
-	  print_decs (wi::to_wide (jump_func->m_vr->min ()), f);
-	  fprintf (f, ", ");
-	  print_decs (wi::to_wide (jump_func->m_vr->max ()), f);
-	  fprintf (f, "]\n");
+	  jump_func->m_vr->dump (f);
+	  fprintf (f, "\n");
 	}
       else
 	fprintf (f, "         Unknown VR\n");
@@ -547,7 +634,7 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
 
   if (TREE_CODE (constant) == ADDR_EXPR
       && (TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL
-	  || (TREE_CODE (TREE_OPERAND (constant, 0)) == VAR_DECL
+	  || (VAR_P (TREE_OPERAND (constant, 0))
 	      && TREE_STATIC (TREE_OPERAND (constant, 0)))))
     {
       struct ipa_cst_ref_desc *rdesc;
@@ -572,6 +659,7 @@ ipa_set_jf_simple_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = NOP_EXPR;
   jfunc->value.pass_through.agg_preserved = agg_preserved;
+  jfunc->value.pass_through.refdesc_decremented = false;
 }
 
 /* Set JFUNC to be an unary pass through jump function.  */
@@ -585,6 +673,7 @@ ipa_set_jf_unary_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = operation;
   jfunc->value.pass_through.agg_preserved = false;
+  jfunc->value.pass_through.refdesc_decremented = false;
 }
 /* Set JFUNC to be an arithmetic pass through jump function.  */
 
@@ -597,6 +686,7 @@ ipa_set_jf_arith_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = operation;
   jfunc->value.pass_through.agg_preserved = false;
+  jfunc->value.pass_through.refdesc_decremented = false;
 }
 
 /* Set JFUNC to be an ancestor jump function.  */
@@ -1526,7 +1616,7 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
 				    gcall *call, gphi *phi)
 {
   HOST_WIDE_INT offset;
-  gimple *assign, *cond;
+  gimple *assign;
   basic_block phi_bb, assign_bb, cond_bb;
   tree tmp, parm, expr, obj;
   int index, i;
@@ -1559,9 +1649,8 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
     return;
 
   cond_bb = single_pred (assign_bb);
-  cond = last_stmt (cond_bb);
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
   if (!cond
-      || gimple_code (cond) != GIMPLE_COND
       || gimple_cond_code (cond) != NE_EXPR
       || gimple_cond_lhs (cond) != parm
       || !integer_zerop (gimple_cond_rhs (cond)))
@@ -2086,7 +2175,12 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 	     whether its value is clobbered any other dominating one.  */
 	  if ((content->value.pass_through.formal_id >= 0
 	       || content->value.pass_through.operand)
-	      && !clobber_by_agg_contents_list_p (all_list, content))
+	      && !clobber_by_agg_contents_list_p (all_list, content)
+	      /* Since IPA-CP stores results with unsigned int offsets, we can
+		 discard those which would not fit now before we stream them to
+		 WPA.  */
+	      && (content->offset + content->size - arg_offset
+		  <= (HOST_WIDE_INT) UINT_MAX * BITS_PER_UNIT))
 	    {
 	      struct ipa_known_agg_contents_list *copy
 			= XALLOCA (struct ipa_known_agg_contents_list);
@@ -2141,7 +2235,7 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
         break;
       t = TREE_CHAIN (t);
     }
-  if (t)
+  if (t && t != void_list_node)
     return TREE_VALUE (t);
   if (!e->callee)
     return NULL;
@@ -2214,7 +2308,8 @@ ipa_get_value_range (value_range *tmp)
 static value_range *
 ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
 {
-  value_range tmp (min, max, kind);
+  value_range tmp (TREE_TYPE (min),
+		   wi::to_wide (min), wi::to_wide (max), kind);
   return ipa_get_value_range (&tmp);
 }
 
@@ -2311,12 +2406,12 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		 of this file uses value_range's, which only hold
 		 integers and pointers.  */
 	      && irange::supports_p (TREE_TYPE (arg))
+	      && irange::supports_p (param_type)
 	      && get_range_query (cfun)->range_of_expr (vr, arg)
 	      && !vr.undefined_p ())
 	    {
-	      value_range resvr;
-	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
-				     &vr, TREE_TYPE (arg));
+	      value_range resvr = vr;
+	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
@@ -2671,8 +2766,8 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
 
-  gimple *branch = last_stmt (bb);
-  if (!branch || gimple_code (branch) != GIMPLE_COND)
+  gcond *branch = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!branch)
     return;
 
   if ((gimple_cond_code (branch) != NE_EXPR
@@ -3309,7 +3404,13 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  ipa_set_jf_unknown (dst);
 		  break;
 		case IPA_JF_CONST:
-		  ipa_set_jf_cst_copy (dst, src);
+		  {
+		    bool rd = ipa_get_jf_pass_through_refdesc_decremented (dst);
+		    ipa_set_jf_cst_copy (dst, src);
+		    if (rd)
+		      ipa_zap_jf_refdesc (dst);
+		  }
+
 		  break;
 
 		case IPA_JF_PASS_THROUGH:
@@ -3666,7 +3767,7 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
   if (!origin)
     return false;
   to_del = origin->caller->find_reference (symbol, origin->call_stmt,
-					   origin->lto_stmt_uid);
+					   origin->lto_stmt_uid, IPA_REF_ADDR);
   if (!to_del)
     return false;
 
@@ -3849,8 +3950,8 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	  if (can_refer)
 	    {
 	      if (!t
-		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE)
-		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE_TRAP)
+		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE,
+					   BUILT_IN_UNREACHABLE_TRAP)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
@@ -4125,7 +4226,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
       struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
       struct ipa_cst_ref_desc *rdesc;
 
-      if (jf->type == IPA_JF_PASS_THROUGH)
+      if (jf->type == IPA_JF_PASS_THROUGH
+	  && !ipa_get_jf_pass_through_refdesc_decremented (jf))
 	{
 	  int src_idx, c, d;
 	  src_idx = ipa_get_jf_pass_through_formal_id (jf);
@@ -4153,7 +4255,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      if (t && TREE_CODE (t) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
 		  && (n = cgraph_node::get (TREE_OPERAND (t, 0)))
-		  && (ref = new_root->find_reference (n, NULL, 0)))
+		  && (ref = new_root->find_reference (n, NULL, 0,
+						      IPA_REF_ADDR)))
 		{
 		  if (dump_file)
 		    fprintf (dump_file, "ipa-prop: Removing cloning-created "
@@ -4174,7 +4277,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
 	      && ipa_get_param_load_dereferenced (old_root_info, i)
 	      && TREE_CODE (cst) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (cst, 0)) == VAR_DECL)
+	      && VAR_P (TREE_OPERAND (cst, 0)))
 	    {
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
@@ -4188,8 +4291,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
 				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
 					== FUNCTION_DECL)
-				       || (TREE_CODE (TREE_OPERAND (cst, 0))
-					   == VAR_DECL)));
+				       || VAR_P (TREE_OPERAND (cst, 0))));
 
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)
@@ -4201,7 +4303,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			 && clone != rdesc->cs->caller)
 		    {
 		      struct ipa_ref *ref;
-		      ref = clone->find_reference (n, NULL, 0);
+		      ref = clone->find_reference (n, NULL, 0, IPA_REF_ADDR);
 		      if (ref)
 			{
 			  if (dump_file)
@@ -4427,7 +4529,8 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 		   gcc_checking_assert (n);
 		   ipa_ref *ref
 		     = src->caller->find_reference (n, src->call_stmt,
-						    src->lto_stmt_uid);
+						    src->lto_stmt_uid,
+						    IPA_REF_ADDR);
 		   gcc_checking_assert (ref);
 		   dst->caller->clone_reference (ref, ref->stmt);
 
@@ -4687,6 +4790,7 @@ ipa_write_jump_function (struct output_block *ob,
 	  streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
+	  gcc_assert (!jump_func->value.pass_through.refdesc_decremented);
 	  streamer_write_bitpack (&bp);
 	}
       else if (TREE_CODE_CLASS (jump_func->value.pass_through.operation)
@@ -4765,10 +4869,12 @@ ipa_write_jump_function (struct output_block *ob,
   streamer_write_bitpack (&bp);
   if (jump_func->m_vr)
     {
+      tree min, max;
+      value_range_kind kind = get_legacy_range (*jump_func->m_vr, min, max);
       streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, jump_func->m_vr->kind ());
-      stream_write_tree (ob, jump_func->m_vr->min (), true);
-      stream_write_tree (ob, jump_func->m_vr->max (), true);
+			   VR_LAST, kind);
+      stream_write_tree (ob, min, true);
+      stream_write_tree (ob, max, true);
     }
 }
 
@@ -5320,19 +5426,7 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node,
 
   streamer_write_uhwi (ob, vec_safe_length (ts->m_vr));
   for (const ipa_vr &parm_vr : ts->m_vr)
-    {
-      struct bitpack_d bp;
-      bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, parm_vr.known, 1);
-      streamer_write_bitpack (&bp);
-      if (parm_vr.known)
-	{
-	  streamer_write_enum (ob->main_stream, value_rang_type,
-			       VR_LAST, parm_vr.type);
-	  streamer_write_wide_int (ob, parm_vr.min);
-	  streamer_write_wide_int (ob, parm_vr.max);
-	}
-    }
+    parm_vr.streamer_write (ob);
 
   streamer_write_uhwi (ob, vec_safe_length (ts->bits));
   for (const ipa_bits *bits_jfunc : ts->bits)
@@ -5383,16 +5477,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 	{
 	  ipa_vr *parm_vr;
 	  parm_vr = &(*ts->m_vr)[i];
-	  struct bitpack_d bp;
-	  bp = streamer_read_bitpack (ib);
-	  parm_vr->known = bp_unpack_value (&bp, 1);
-	  if (parm_vr->known)
-	    {
-	      parm_vr->type = streamer_read_enum (ib, value_range_kind,
-						  VR_LAST);
-	      parm_vr->min = streamer_read_wide_int (ib);
-	      parm_vr->max = streamer_read_wide_int (ib);
-	    }
+	  parm_vr->streamer_read (ib, data_in);
 	}
     }
   count = streamer_read_uhwi (ib);
@@ -5693,16 +5778,9 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   if (!ts || vec_safe_length (ts->bits) == 0)
     return false;
 
-  int i = 0;
-  for (tree p = DECL_ARGUMENTS (current_function_decl);
-       p != parm; p = DECL_CHAIN (p))
-    {
-      i++;
-      /* Ignore static chain.  */
-      if (!p)
-	return false;
-    }
-
+  int i = ts->get_param_index (current_function_decl, parm);
+  if (i < 0)
+    return false;
   clone_info *cinfo = clone_info::get (cnode);
   if (cinfo && cinfo->param_adjustments)
     {
@@ -5719,16 +5797,12 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   return true;
 }
 
-
-/* Update bits info of formal parameters as described in
-   ipcp_transformation.  */
+/* Update bits info of formal parameters of NODE as described in TS.  */
 
 static void
-ipcp_update_bits (struct cgraph_node *node)
+ipcp_update_bits (struct cgraph_node *node, ipcp_transformation *ts)
 {
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-
-  if (!ts || vec_safe_length (ts->bits) == 0)
+  if (vec_safe_is_empty (ts->bits))
     return;
   vec<ipa_bits *, va_gc> &bits = *ts->bits;
   unsigned count = bits.length ();
@@ -5830,27 +5904,12 @@ ipcp_update_bits (struct cgraph_node *node)
     }
 }
 
-bool
-ipa_vr::nonzero_p (tree expr_type) const
-{
-  if (type == VR_ANTI_RANGE && wi::eq_p (min, 0) && wi::eq_p (max, 0))
-    return true;
-
-  unsigned prec = TYPE_PRECISION (expr_type);
-  return (type == VR_RANGE
-	  && TYPE_UNSIGNED (expr_type)
-	  && wi::eq_p (min, wi::one (prec))
-	  && wi::eq_p (max, wi::max_value (prec, TYPE_SIGN (expr_type))));
-}
-
-/* Update value range of formal parameters as described in
-   ipcp_transformation.  */
+/* Update value range of formal parameters of NODE as described in TS.  */
 
 static void
-ipcp_update_vr (struct cgraph_node *node)
+ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 {
-  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  if (!ts || vec_safe_length (ts->m_vr) == 0)
+  if (vec_safe_is_empty (ts->m_vr))
     return;
   const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
   unsigned count = vr.length ();
@@ -5891,38 +5950,21 @@ ipcp_update_vr (struct cgraph_node *node)
       if (!ddef || !is_gimple_reg (parm))
 	continue;
 
-      if (vr[i].known
-	  && (vr[i].type == VR_RANGE || vr[i].type == VR_ANTI_RANGE))
+      if (vr[i].known_p ())
 	{
-	  tree type = TREE_TYPE (ddef);
-	  unsigned prec = TYPE_PRECISION (type);
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (ddef)))
+	  Value_Range tmp;
+	  vr[i].get_vrange (tmp);
+
+	  if (!tmp.undefined_p () && !tmp.varying_p ())
 	    {
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Setting value range of param %u "
 			   "(now %i) ", i, remapped_idx);
-		  fprintf (dump_file, "%s[",
-			   (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
-		  print_decs (vr[i].min, dump_file);
-		  fprintf (dump_file, ", ");
-		  print_decs (vr[i].max, dump_file);
+		  tmp.dump (dump_file);
 		  fprintf (dump_file, "]\n");
 		}
-	      value_range v (type,
-			     wide_int_storage::from (vr[i].min, prec,
-						     TYPE_SIGN (type)),
-			     wide_int_storage::from (vr[i].max, prec,
-						     TYPE_SIGN (type)),
-			     vr[i].type);
-	      set_range_info (ddef, v);
-	    }
-	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
-		   && vr[i].nonzero_p (TREE_TYPE (ddef)))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Setting nonnull for %u\n", i);
-	      set_ptr_nonnull (ddef);
+	      set_range_info (ddef, tmp);
 	    }
 	}
     }
@@ -5943,10 +5985,17 @@ ipcp_transform_function (struct cgraph_node *node)
     fprintf (dump_file, "Modification phase of node %s\n",
 	     node->dump_name ());
 
-  ipcp_update_bits (node);
-  ipcp_update_vr (node);
   ipcp_transformation *ts = ipcp_get_transformation_summary (node);
-  if (!ts || vec_safe_is_empty (ts->m_agg_values))
+  if (!ts
+      || (vec_safe_is_empty (ts->m_agg_values)
+	  && vec_safe_is_empty (ts->bits)
+	  && vec_safe_is_empty (ts->m_vr)))
+    return 0;
+
+  ts->maybe_create_parm_idx_map (cfun->decl);
+  ipcp_update_bits (node, ts);
+  ipcp_update_vr (node, ts);
+  if (vec_safe_is_empty (ts->m_agg_values))
       return 0;
   param_count = count_formal_params (node->decl);
   if (param_count == 0)

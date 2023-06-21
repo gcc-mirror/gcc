@@ -166,18 +166,8 @@ pack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  unsigned i;
-  REAL_VALUE_TYPE r;
-
-  r = TREE_REAL_CST (expr);
-  bp_pack_value (bp, r.cl, 2);
-  bp_pack_value (bp, r.decimal, 1);
-  bp_pack_value (bp, r.sign, 1);
-  bp_pack_value (bp, r.signalling, 1);
-  bp_pack_value (bp, r.canonical, 1);
-  bp_pack_value (bp, r.uexp, EXP_BITS);
-  for (i = 0; i < SIGSZ; i++)
-    bp_pack_value (bp, r.sig[i], HOST_BITS_PER_LONG);
+  REAL_VALUE_TYPE r = TREE_REAL_CST (expr);
+  bp_pack_real_value (bp, &r);
 }
 
 
@@ -749,8 +739,7 @@ write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr)
     stream_write_tree_ref (ob, TYPE_DOMAIN (expr));
   else if (RECORD_OR_UNION_TYPE_P (expr))
     streamer_write_chain (ob, TYPE_FIELDS (expr));
-  else if (TREE_CODE (expr) == FUNCTION_TYPE
-	   || TREE_CODE (expr) == METHOD_TYPE)
+  else if (FUNC_OR_METHOD_TYPE_P (expr))
     stream_write_tree_ref (ob, TYPE_ARG_TYPES (expr));
 
   if (!POINTER_TYPE_P (expr))

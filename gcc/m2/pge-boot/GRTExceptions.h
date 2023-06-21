@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -65,7 +66,7 @@ struct RTExceptions_ProcedureHandler_p { RTExceptions_ProcedureHandler_t proc; }
            and message in the EHBlock for later use.
 */
 
-EXTERN void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message);
+EXTERN void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message) __attribute__ ((noreturn));
 
 /*
    SetExceptionBlock - sets, source, as the active EHB.
@@ -146,7 +147,7 @@ EXTERN void RTExceptions_BaseExceptionsThrow (void);
                         in the exception state.
 */
 
-EXTERN unsigned int RTExceptions_IsInExceptionState (void);
+EXTERN bool RTExceptions_IsInExceptionState (void);
 
 /*
    SetExceptionState - returns the current exception state and
@@ -154,7 +155,7 @@ EXTERN unsigned int RTExceptions_IsInExceptionState (void);
                        to.
 */
 
-EXTERN unsigned int RTExceptions_SetExceptionState (unsigned int to);
+EXTERN bool RTExceptions_SetExceptionState (bool to);
 
 /*
    SwitchExceptionState - assigns, from, with the current exception
@@ -162,7 +163,7 @@ EXTERN unsigned int RTExceptions_SetExceptionState (unsigned int to);
                           to, to.
 */
 
-EXTERN void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to);
+EXTERN void RTExceptions_SwitchExceptionState (bool *from, bool to);
 
 /*
    GetBaseExceptionBlock - returns the initial language exception block

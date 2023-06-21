@@ -33,4 +33,4 @@ int main() {
 /* { dg-output "HWAddressSanitizer: tag-mismatch on address 0x\[0-9a-f\]*.*" } */
 /* { dg-output "READ of size 4 at 0x\[0-9a-f\]* tags: \[\[:xdigit:\]\]\[\[:xdigit:\]\]/\[\[:xdigit:\]\]\[\[:xdigit:\]\] \\(ptr/mem\\) in thread T0.*" } */
 /* { dg-output "freed by thread T0 here:.*" } */
-/* { dg-output "previously allocated here:" } */
+/* { dg-output "previously allocated by thread T0 here:" } */

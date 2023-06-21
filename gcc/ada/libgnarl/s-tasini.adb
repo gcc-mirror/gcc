@@ -758,7 +758,7 @@ package body System.Tasking.Initialization is
    -------------------------
 
    procedure Finalize_Attributes (T : Task_Id) is
-      Attr : Atomic_Address;
+      Attr : System.Address;
 
    begin
       for J in T.Attributes'Range loop

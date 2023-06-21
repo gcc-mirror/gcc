@@ -294,8 +294,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       FOR_EACH_BB_FN (bb, cfun)
 	if (EDGE_COUNT (bb->succs) == 0)
 	  {
-	    gimple *last = last_stmt (bb);
-	    if (gswitch *sw = safe_dyn_cast <gswitch *> (last))
+	    if (gswitch *sw = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
 	      for (unsigned i = 0; i < gimple_switch_num_labels (sw); ++i)
 		{
 		  basic_block label_bb = gimple_switch_label_bb (cfun, sw, i);
@@ -2473,7 +2472,7 @@ c_finish_gimple_return (location_t loc, tree retval)
 
   if (! retval)
     current_function_returns_null = 1;
-  else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
+  else if (valtype == 0 || VOID_TYPE_P (valtype))
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)

@@ -755,9 +755,6 @@ host_os
 host_vendor
 host_cpu
 host
-onestep
-onestep_FALSE
-onestep_TRUE
 target_subdir
 host_subdir
 build_subdir
@@ -809,7 +806,6 @@ ac_user_opts='
 enable_option_checking
 with_build_libsubdir
 enable_version_specific_runtime_libs
-enable_intermodule
 enable_silent_rules
 enable_maintainer_mode
 enable_multilib
@@ -1460,7 +1456,6 @@ Optional Features:
   --enable-version-specific-runtime-libs
                           specify that runtime libraries should be installed
                           in a compiler-specific directory
-  --enable-intermodule    build the library in one step
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-maintainer-mode
@@ -2880,31 +2875,6 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
 $as_echo "$version_specific_libs" >&6; }
-
-# Build with intermodule optimisations
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-intermodule" >&5
-$as_echo_n "checking for --enable-intermodule... " >&6; }
-# Check whether --enable-intermodule was given.
-if test "${enable_intermodule+set}" = set; then :
-  enableval=$enable_intermodule; case "$enable_intermodule" in
-  yes) onestep="-onestep";;
-    *) onestep="";;
-esac
-else
-  onestep=""
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_intermodule" >&5
-$as_echo "$enable_intermodule" >&6; }
- if test x$onestep = x-onestep; then
-  onestep_TRUE=
-  onestep_FALSE='#'
-else
-  onestep_TRUE='#'
-  onestep_FALSE=
-fi
-
-
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #
@@ -12791,7 +12761,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12794 "configure"
+#line 12764 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12897,7 +12867,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12900 "configure"
+#line 12870 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31537,10 +31507,6 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
-if test -z "${onestep_TRUE}" && test -z "${onestep_FALSE}"; then
-  as_fn_error $? "conditional \"onestep\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
 $as_echo_n "checking that generated files are newer than configure... " >&6; }
    if test -n "$am_sleep_pid"; then

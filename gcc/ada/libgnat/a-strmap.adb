@@ -545,7 +545,7 @@ is
                  Result (Char) =
                    ((for some Prev in Ranges'First .. R - 1 =>
                        Char in Ranges (Prev).Low .. Ranges (Prev).High)
-                    or else (Char in Ranges (R).Low .. C)));
+                    or else Char in Ranges (R).Low .. C));
          end loop;
 
          pragma Loop_Invariant

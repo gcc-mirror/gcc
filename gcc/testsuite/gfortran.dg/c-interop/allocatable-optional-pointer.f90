@@ -1,9 +1,9 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 5.3 ALLOCATABLE, OPTIONAL, and POINTER attributes
-! The ALLOCATABLE, OPTIONAL, and POINTER attributes may be specified 
-! for a dummy argument in a procedure interface that has the BIND 
+! The ALLOCATABLE, OPTIONAL, and POINTER attributes may be specified
+! for a dummy argument in a procedure interface that has the BIND
 ! attribute.
 
 subroutine test (a, b, c)

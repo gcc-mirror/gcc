@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (lsl_w0_s8_m_tied1, svint8_t, uint8_t,
 		 z0 = svlsl_m (p0, z0, x0))
 
 /*
-** lsl_w0_s8_m_untied: { xfail *-*-* }
+** lsl_w0_s8_m_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	lsl	z0\.b, p0/m, z0\.b, \1
@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (lsl_8_s8_m_tied1, svint8_t,
 		z0 = svlsl_m (p0, z0, 8))
 
 /*
-** lsl_8_s8_m_untied: { xfail *-*-* }
+** lsl_8_s8_m_untied:
 **	mov	(z[0-9]+\.b), #8
 **	movprfx	z0, z1
 **	lsl	z0\.b, p0/m, z0\.b, \1

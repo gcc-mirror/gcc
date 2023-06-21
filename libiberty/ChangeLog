@@ -1,3 +1,55 @@
+2023-06-15  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac: Also set shared when enable_host_pie.
+	* configure: Regenerate.
+
+2023-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_conversion): Remove incorrect
+	template instantiation handling.
+	* testsuite/demangle-expected: Add testcases.
+
+2023-06-07  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Constant propagate "0" for "status",
+	simplifying the code slightly.
+
+2023-06-06  Costas Argyris  <costas.argyris@gmail.com>
+
+	* argv.c (writeargv): Simplify & remove gotos.
+
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c: fix typos.
+
+2023-06-05  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Check command line length
+	and generate a response file if necessary.
+	(spawn_script): Adjust parameters.
+	(pex_win32_exec_child): Ditto.
+
+2023-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/70790
+	* cp-demangle.c (cplus_demangle_operators): Add the noexcept
+	operator.
+	(d_print_comp_inner) <case DEMANGLE_COMPONENT_UNARY>: Always
+	print parens around the operand of noexcept too.
+	* testsuite/demangle-expected: Test noexcept operator
+	demangling.
+
+2023-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/109306
+	* strstr.c: Revert the 2020-11-13 changes.
+	(strstr): Return s1 if len is 0.
+
+2023-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* obstacks.texi (Preparing for Obstacks): Remove a (broken)
+	reference to the Glibc manual.
+
 2023-03-03  Costas Argyris  <costas.argyris@gmail.com>
 
 	* pex-win32.c (win32_spawn): Fix memory leak of cmdline

@@ -93,23 +93,30 @@ package body Module_Name is
       pragma Convention (C, link_map_acc);
 
       type link_map is record
-         l_addr : Address;
+         l_addr : aliased Address;
          --  Base address of the shared object
 
-         l_name : Address;
+         l_name : aliased Address;
          --  Null-terminated absolute file name
 
-         l_ld   : Address;
+         l_ld   : aliased Address;
          --  Dynamic section
 
-         l_next, l_prev : link_map_acc;
+         l_next, l_prev : aliased link_map_acc;
          --  Chain
       end record;
       pragma Convention (C, link_map);
 
+      type r_debug_state is (RT_CONSISTENT, RT_ADD, RT_DELETE);
+      pragma Convention (C, r_debug_state);
+      pragma Unreferenced (RT_CONSISTENT, RT_ADD, RT_DELETE);
+
       type r_debug_type is record
-         r_version : Integer;
-         r_map : link_map_acc;
+         r_version : aliased int;
+         r_map     : aliased link_map_acc;
+         r_brk     : aliased Address;
+         r_state   : aliased r_debug_state;
+         r_ldbase  : aliased Address;
       end record;
       pragma Convention (C, r_debug_type);
 

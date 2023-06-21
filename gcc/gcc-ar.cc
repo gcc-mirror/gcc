@@ -128,6 +128,9 @@ main (int ac, char **av)
   const char *exe_name;
 #if HAVE_LTO_PLUGIN > 0
   char *plugin;
+  const int j = 2; /* Two extra args, --plugin <plugin>  */
+#else
+  const int j = 0; /* No extra args.  */
 #endif
   int k, status, err;
   const char *err_msg;
@@ -206,25 +209,21 @@ main (int ac, char **av)
 	}
     }
 
+  /* Prepend - if necessary.  */
+  if (is_ar && av[1] && av[1][0] != '-')
+    av[1] = concat ("-", av[1], NULL);
+  
   /* Create new command line with plugin - if we have one, otherwise just
      copy the command through.  */
-  nargv = XCNEWVEC (const char *, ac + 4);
+  nargv = XCNEWVEC (const char *, ac + j + 1); /* +j plugin args +1 for NULL.  */
   nargv[0] = exe_name;
 #if HAVE_LTO_PLUGIN > 0
   nargv[1] = "--plugin";
   nargv[2] = plugin;
-  if (is_ar && av[1] && av[1][0] != '-')
-    av[1] = concat ("-", av[1], NULL);
-  for (k = 1; k < ac; k++)
-    nargv[2 + k] = av[k];
-  nargv[2 + k] = NULL;
-#else
-  if (is_ar && av[1] && av[1][0] != '-')
-    av[1] = concat ("-", av[1], NULL);
-  for (k = 1; k < ac; k++)
-    nargv[k] = av[k];
-  nargv[k] = NULL;
 #endif
+  for (k = 1; k < ac; k++)
+    nargv[j + k] = av[k];
+  nargv[j + k] = NULL;
 
   /* Run utility */
   /* ??? the const is misplaced in pex_one's argv? */

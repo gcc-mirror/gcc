@@ -40,23 +40,33 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/ioctl.h>
 #include <stdio.h>
 
-#if !defined(TRUE)
-#   define TRUE (1==1)
-#endif
-#if !defined(FALSE)
-#   define FALSE (1==0)
-#endif
-
 #include <stdlib.h>
 
 static int fd;
-static int initialized = FALSE;
+static bool initialized = false;
 
+
+void
+initialize_module (void)
+{
+  if (! initialized)
+    {
+      initialized = true;
+      fd = open ("/dev/tty", O_RDONLY);
+      if (fd == -1)
+	{
+	  perror ("unable to open /dev/tty");
+	  exit (1);
+	}
+    }
+}
 
 extern "C" void
 EXPORT(SwitchScroll) (int scrolllock)
 {
   unsigned char leds;
+
+  initialize_module ();
   int r = ioctl (fd, KDGETLED, &leds);
   if (scrolllock)
     leds = leds | LED_SCR;
@@ -69,6 +79,8 @@ extern "C" void
 EXPORT(SwitchNum) (int numlock)
 {
   unsigned char leds;
+
+  initialize_module ();
   int r = ioctl (fd, KDGETLED, &leds);
   if (numlock)
     leds = leds | LED_NUM;
@@ -81,6 +93,8 @@ extern "C" void
 EXPORT(SwitchCaps) (int capslock)
 {
   unsigned char leds;
+
+  initialize_module ();
   int r = ioctl (fd, KDGETLED, &leds);
   if (capslock)
     leds = leds | LED_CAP;
@@ -100,16 +114,6 @@ EXPORT(SwitchLeds) (int numlock, int capslock, int scrolllock)
 extern "C" void
 M2EXPORT(init) (int, char **, char **)
 {
-  if (! initialized)
-    {
-      initialized = TRUE;
-      fd = open ("/dev/tty", O_RDONLY);
-      if (fd == -1)
-	{
-	  perror ("unable to open /dev/tty");
-	  exit (1);
-	}
-    }
 }
 
 #else

@@ -1465,10 +1465,10 @@ compare_access_positions (const void *a, const void *b)
       else if (TREE_CODE (f1->type) != COMPLEX_TYPE
 	       && TREE_CODE (f1->type) != VECTOR_TYPE
 	       && (TREE_CODE (f2->type) == COMPLEX_TYPE
-		   || TREE_CODE (f2->type) == VECTOR_TYPE))
+		   || VECTOR_TYPE_P (f2->type)))
 	return 1;
       else if ((TREE_CODE (f1->type) == COMPLEX_TYPE
-		|| TREE_CODE (f1->type) == VECTOR_TYPE)
+		|| VECTOR_TYPE_P (f1->type))
 	       && TREE_CODE (f2->type) != COMPLEX_TYPE
 	       && TREE_CODE (f2->type) != VECTOR_TYPE)
 	return -1;

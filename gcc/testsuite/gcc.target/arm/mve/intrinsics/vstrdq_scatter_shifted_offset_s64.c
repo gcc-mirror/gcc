@@ -1,21 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vstrd.64	q[0-9]+, \[(?:ip|fp|r[0-9]+), q[0-9]+, uxtw #3\](?:	@.*|)
+**	...
+*/
 void
-foo (int64_t * base, uint64x2_t offset, int64x2_t value)
+foo (int64_t *base, uint64x2_t offset, int64x2_t value)
 {
-  vstrdq_scatter_shifted_offset_s64 (base, offset, value);
+  return vstrdq_scatter_shifted_offset_s64 (base, offset, value);
 }
 
-/* { dg-final { scan-assembler "vstrd.64"  }  } */
 
+/*
+**foo1:
+**	...
+**	vstrd.64	q[0-9]+, \[(?:ip|fp|r[0-9]+), q[0-9]+, uxtw #3\](?:	@.*|)
+**	...
+*/
 void
-foo1 (int64_t * base, uint64x2_t offset, int64x2_t value)
+foo1 (int64_t *base, uint64x2_t offset, int64x2_t value)
 {
-  vstrdq_scatter_shifted_offset (base, offset, value);
+  return vstrdq_scatter_shifted_offset (base, offset, value);
 }
 
-/* { dg-final { scan-assembler "vstrd.64"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

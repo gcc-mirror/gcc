@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 
      * clear			: bitmap_clear
      * smallest_member		: bitmap_first_set_bit
+     * pop_smallest		: bitmap_clear_first_set_bit
      * choose_one		: (not implemented, but could be
 				   in constant time)
 
@@ -133,6 +134,7 @@ along with GCC; see the file COPYING3.  If not see
    amortized time with O(E) worst-case behavior.
 
      * smallest_member
+     * pop_smallest
      * largest_member
      * set_size
      * member_p
@@ -501,6 +503,7 @@ extern void debug (const bitmap_head &ref);
 extern void debug (const bitmap_head *ptr);
 
 extern unsigned bitmap_first_set_bit (const_bitmap);
+extern unsigned bitmap_clear_first_set_bit (bitmap);
 extern unsigned bitmap_last_set_bit (const_bitmap);
 
 /* Compute bitmap hash (for purposes of hashing etc.)  */

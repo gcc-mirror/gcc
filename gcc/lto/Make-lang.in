@@ -74,7 +74,7 @@ lto.srcinfo:
 lto.install-plugin:
 
 lto.mostlyclean:
-	rm -f $(LTO_OBJS) $(LTO_EXE) lto1.fda $(LTO_DUMP_OBJS) $(LTO_DUMP_EXE) lto-dump.fda
+	rm -f $(LTO_OBJS) $(LTO_EXE) lto1*.fda $(LTO_DUMP_OBJS) $(LTO_DUMP_EXE) lto-dump.fda
 
 lto.clean:
 lto.distclean:
@@ -105,8 +105,34 @@ $(LTO_DUMP_EXE): $(LTO_DUMP_OBJS) $(BACKEND) $(LIBDEPS) $(lto2.prev)
 
 lto/lto-dump.o: $(LTO_OBJS)
 
-lto1.fda: ../prev-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
-	$(CREATE_GCOV) -binary ../prev-gcc/lto1$(exeext) -gcov lto1.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1
+components_in_prev = "bfd opcodes binutils fixincludes gas gcc gmp mpfr mpc isl gold intl ld libbacktrace libcpp libcody libdecnumber libiberty libiberty-linker-plugin libiconv zlib lto-plugin libctf libsframe"
+components_in_prev_target = "libstdc++-v3 libsanitizer libvtv libgcc libbacktrace libphobos zlib libgomp libatomic"
+
+.PHONY: create_fdas_for_lto1
+
+lto1.fda: create_fdas_for_lto1
+	$(PROFILE_MERGER) $(shell ls -ha lto1_*.fda) --output_file lto1.fda -gcov_version 2
+
+create_fdas_for_lto1: ../stage1-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
+	for component_in_prev in "$(components_in_prev)"; do \
+	  perf_path=../prev-$$component_in_prev/$(PERF_DATA); \
+	  echo "Perf path:"; \
+	  echo $$perf_path; \
+	  if [ -f $$perf_path ]; then \
+	    profile_name=lto1_$$component_in_prev.fda; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	  fi; \
+	done;
+
+	for component_in_prev_target in "$(components_in_prev_target)"; do \
+	  perf_path=../prev-$(TARGET_SUBDIR)/$$component_in_prev_target/$(PERF_DATA); \
+	  echo "Perf path:"; \
+	  echo $$perf_path; \
+	  if [ -f $$perf_path ]; then \
+	    profile_name=lto1_$$component_in_prev_target.fda; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/lto1$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2; \
+	  fi; \
+	done;
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:

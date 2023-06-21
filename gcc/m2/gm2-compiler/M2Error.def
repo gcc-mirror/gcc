@@ -226,7 +226,7 @@ PROCEDURE FlushWarnings ;
    ErrorAbort0 - aborts compiling, it flushes all warnings and errors before aborting.
 *)
 
-PROCEDURE ErrorAbort0 (a: ARRAY OF CHAR) ;
+PROCEDURE ErrorAbort0 (a: ARRAY OF CHAR) <* noreturn *> ;
 
 
 (*

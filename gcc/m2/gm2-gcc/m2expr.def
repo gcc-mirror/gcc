@@ -44,6 +44,10 @@ TYPE
 PROCEDURE init (location: location_t) ;
 
 
+
+PROCEDURE CheckConstStrZtypeRange (location: location_t;
+				   str: ADDRESS; base: CARDINAL) : BOOLEAN ;
+
 (*
    CompareTrees - returns -1 if e1 < e2, 0 if e1 == e2, and 1 if e1 > e2.
 *)
@@ -581,6 +585,13 @@ PROCEDURE IsTrue (t: Tree) : BOOLEAN ;
 *)
 
 PROCEDURE IsFalse (t: Tree) : BOOLEAN ;
+
+
+(*
+    GetCstInteger - return the integer value of the cst tree.
+*)
+
+PROCEDURE GetCstInteger (cst: Tree) : INTEGER ;
 
 
 (*

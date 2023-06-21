@@ -1,8 +1,8 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 8.1 Removed restrictions on ISO_C_BINDING module procedures
-! 
+!
 ! [...]
 !
 ! The function C_FUNLOC from the intrinsic module ISO_C_BINDING has

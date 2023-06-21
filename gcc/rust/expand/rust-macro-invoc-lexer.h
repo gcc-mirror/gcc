@@ -55,6 +55,9 @@ public:
 
   size_t get_offs () const { return offs; }
 
+  std::vector<std::unique_ptr<AST::Token>>
+  get_token_slice (size_t start_idx, size_t end_idx) const;
+
 private:
   size_t offs;
   std::vector<std::unique_ptr<AST::Token>> token_stream;

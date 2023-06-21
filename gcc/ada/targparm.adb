@@ -660,6 +660,14 @@ package body Targparm is
             Opt.Task_Dispatching_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
+         --  Allow "pragma Style_Checks (On);" and "pragma Style_Checks (Off);"
+         --  to make it possible to have long "pragma Restrictions" line.
+
+         elsif Looking_At_Skip ("pragma Style_Checks (On);") or else
+           Looking_At_Skip ("pragma Style_Checks (Off);")
+         then
+            goto Line_Loop_Continue;
+
          --  No other configuration pragmas are permitted
 
          elsif Looking_At ("pragma ") then

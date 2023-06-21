@@ -1075,7 +1075,6 @@ extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int n
 extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
 {
   RTExceptions_Handler h;
-  RTExceptions_Handler i;
 
   h = findHandler (e, number);
   if (h != NULL)

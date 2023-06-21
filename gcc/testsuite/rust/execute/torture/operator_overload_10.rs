@@ -1,4 +1,4 @@
-/* { dg-output "foo_deref\n123\n" } */
+/* { dg-output "foo_deref\r*\n123\r*\n" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }

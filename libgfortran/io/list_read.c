@@ -3596,8 +3596,12 @@ find_nml_name:
   if (dtp->u.p.nml_read_error)
     goto find_nml_name;
 
-  /* A trailing space is required, we give a little latitude here, 10.9.1.  */
+  /* A trailing space is required, we allow a comma with std=gnu.  */
   c = next_char (dtp);
+  if ((c == ',' && !(compile_options.allow_std & GFC_STD_GNU)) || c == ';')
+    generate_error (&dtp->common, LIBERROR_READ_VALUE,
+		    "Non blank after namelist name not allowed");
+
   if (!is_separator(c) && c != '!')
     {
       unget_char (dtp, c);

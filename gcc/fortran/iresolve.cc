@@ -230,7 +230,9 @@ gfc_resolve_adjustl (gfc_expr *f, gfc_expr *string)
 {
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
-  if (string->ts.u.cl)
+  if (string->ts.deferred)
+    f->ts = string->ts;
+  else if (string->ts.u.cl)
     f->ts.u.cl = gfc_new_charlen (gfc_current_ns, string->ts.u.cl);
 
   f->value.function.name = gfc_get_string ("__adjustl_s%d", f->ts.kind);
@@ -242,7 +244,9 @@ gfc_resolve_adjustr (gfc_expr *f, gfc_expr *string)
 {
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
-  if (string->ts.u.cl)
+  if (string->ts.deferred)
+    f->ts = string->ts;
+  else if (string->ts.u.cl)
     f->ts.u.cl = gfc_new_charlen (gfc_current_ns, string->ts.u.cl);
 
   f->value.function.name = gfc_get_string ("__adjustr_s%d", f->ts.kind);
@@ -2420,7 +2424,7 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
       break;
     }
 
-  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
+  if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_array_expr (shape))
     {
       gfc_constructor *c;
       f->shape = gfc_get_shape (f->rank);
@@ -3100,7 +3104,7 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 }
 
 
-/* Resolve the degree trignometric functions.  This amounts to setting
+/* Resolve the degree trigonometric functions.  This amounts to setting
    the function return type-spec from its argument and building a
    library function names of the form _gfortran_sind_r4.  */
 
@@ -3361,7 +3365,7 @@ gfc_resolve_mvbits (gfc_code *c)
 }
 
 
-/* Set up the call to RANDOM_INIT.  */ 
+/* Set up the call to RANDOM_INIT.  */
 
 void
 gfc_resolve_random_init (gfc_code *c)

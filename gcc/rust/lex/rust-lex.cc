@@ -447,6 +447,7 @@ Lexer::build_token ()
 	      // match arm arrow
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (MATCH_ARROW, loc);
 	    }
@@ -455,6 +456,7 @@ Lexer::build_token ()
 	      // equality operator
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (EQUAL_EQUAL, loc);
 	    }
@@ -473,6 +475,7 @@ Lexer::build_token ()
 	      // return type specifier
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (RETURN_TYPE, loc);
 	    }
@@ -481,6 +484,7 @@ Lexer::build_token ()
 	      // minus-assign
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (MINUS_EQ, loc);
 	    }
@@ -496,6 +500,7 @@ Lexer::build_token ()
 	      // add-assign
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (PLUS_EQ, loc);
 	    }
@@ -517,6 +522,7 @@ Lexer::build_token ()
 	      // multiplication-assign
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (ASTERISK_EQ, loc);
 	    }
@@ -535,6 +541,7 @@ Lexer::build_token ()
 	      // division-assign
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (DIV_EQ, loc);
 	    }
@@ -602,6 +609,8 @@ Lexer::build_token ()
 	      start_line (current_line, max_column_hint);
 
 	      str.shrink_to_fit ();
+
+	      loc += str.size () - 1;
 	      if (is_inner)
 		return Token::make_inner_doc_comment (loc, std::move (str));
 	      else
@@ -756,6 +765,8 @@ Lexer::build_token ()
 		}
 
 	      str.shrink_to_fit ();
+
+	      loc += str.size () - 1;
 	      if (is_inner)
 		return Token::make_inner_doc_comment (loc, std::move (str));
 	      else
@@ -773,6 +784,7 @@ Lexer::build_token ()
 	      // modulo-assign
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (PERCENT_EQ, loc);
 	    }
@@ -788,6 +800,7 @@ Lexer::build_token ()
 	      // xor-assign?
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (CARET_EQ, loc);
 	    }
@@ -805,6 +818,7 @@ Lexer::build_token ()
 		  // left-shift assign
 		  skip_input (1);
 		  current_column += 3;
+		  loc += 2;
 
 		  return Token::make (LEFT_SHIFT_EQ, loc);
 		}
@@ -813,6 +827,7 @@ Lexer::build_token ()
 		  // left-shift
 		  skip_input ();
 		  current_column += 2;
+		  loc += 1;
 
 		  return Token::make (LEFT_SHIFT, loc);
 		}
@@ -822,6 +837,7 @@ Lexer::build_token ()
 	      // smaller than or equal to
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (LESS_OR_EQUAL, loc);
 	    }
@@ -840,6 +856,7 @@ Lexer::build_token ()
 		  // right-shift-assign
 		  skip_input (1);
 		  current_column += 3;
+		  loc += 2;
 
 		  return Token::make (RIGHT_SHIFT_EQ, loc);
 		}
@@ -848,6 +865,7 @@ Lexer::build_token ()
 		  // right-shift
 		  skip_input ();
 		  current_column += 2;
+		  loc += 1;
 
 		  return Token::make (RIGHT_SHIFT, loc);
 		}
@@ -857,6 +875,7 @@ Lexer::build_token ()
 	      // larger than or equal to
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (GREATER_OR_EQUAL, loc);
 	    }
@@ -872,6 +891,7 @@ Lexer::build_token ()
 	      // scope resolution ::
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (SCOPE_RESOLUTION, loc);
 	    }
@@ -888,6 +908,7 @@ Lexer::build_token ()
 	      // not equal boolean operator
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (NOT_EQUAL, loc);
 	    }
@@ -937,6 +958,7 @@ Lexer::build_token ()
 	      // bitwise or-assign?
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (PIPE_EQ, loc);
 	    }
@@ -945,6 +967,7 @@ Lexer::build_token ()
 	      // logical or
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (OR, loc);
 	    }
@@ -961,6 +984,7 @@ Lexer::build_token ()
 	      // bitwise and-assign?
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (AMP_EQ, loc);
 	    }
@@ -969,6 +993,7 @@ Lexer::build_token ()
 	      // logical and
 	      skip_input ();
 	      current_column += 2;
+	      loc += 1;
 
 	      return Token::make (LOGICAL_AND, loc);
 	    }
@@ -987,6 +1012,7 @@ Lexer::build_token ()
 		  // ellipsis
 		  skip_input (1);
 		  current_column += 3;
+		  loc += 2;
 
 		  return Token::make (ELLIPSIS, loc);
 		}
@@ -995,6 +1021,7 @@ Lexer::build_token ()
 		  // ..=
 		  skip_input (1);
 		  current_column += 3;
+		  loc += 2;
 
 		  return Token::make (DOT_DOT_EQ, loc);
 		}
@@ -1003,6 +1030,7 @@ Lexer::build_token ()
 		  // ..
 		  skip_input ();
 		  current_column += 2;
+		  loc += 1;
 
 		  return Token::make (DOT_DOT, loc);
 		}
@@ -1717,6 +1745,8 @@ Lexer::parse_byte_char (Location loc)
 
   current_column += length;
 
+  loc += length - 1;
+
   return Token::make_byte_char (loc, byte_char);
 }
 
@@ -1781,6 +1811,7 @@ Lexer::parse_byte_string (Location loc)
     }
 
   str.shrink_to_fit ();
+  loc += str.size () - 1;
 
   return Token::make_byte_string (loc, std::move (str));
 }
@@ -1861,6 +1892,8 @@ Lexer::parse_raw_byte_string (Location loc)
 
   current_column += length;
 
+  loc += length - 1;
+
   str.shrink_to_fit ();
 
   return Token::make_byte_string (loc, std::move (str));
@@ -1912,6 +1945,7 @@ Lexer::parse_raw_identifier (Location loc)
   else
     {
       str.shrink_to_fit ();
+      loc += length - 1;
 
       return Token::make_identifier (loc, std::move (str));
     }
@@ -2009,6 +2043,8 @@ Lexer::parse_string (Location loc)
     }
 
   str.shrink_to_fit ();
+  loc += length - 1;
+
   return Token::make_string (loc, std::move (str));
 }
 
@@ -2042,6 +2078,8 @@ Lexer::parse_identifier_or_keyword (Location loc)
     return Token::make (UNDERSCORE, loc);
 
   str.shrink_to_fit ();
+
+  loc += length - 1;
 
   TokenId keyword = classify_keyword (str);
   if (keyword == IDENTIFIER)
@@ -2120,6 +2158,8 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
 
   current_column += length;
 
+  loc += length - 1;
+
   str.shrink_to_fit ();
 
   return Token::make_string (loc, std::move (str));
@@ -2183,6 +2223,9 @@ Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
 						 : "<insert unknown base>")));
       return nullptr;
     }
+
+  loc += length - 1;
+
   return Token::make_int (loc, std::move (existent_str), type_hint);
 }
 
@@ -2275,6 +2318,8 @@ Lexer::parse_decimal_int_or_float (Location loc)
 
       current_column += length;
 
+      loc += length - 1;
+
       str.shrink_to_fit ();
       return Token::make_float (loc, std::move (str), type_hint);
     }
@@ -2294,6 +2339,8 @@ Lexer::parse_decimal_int_or_float (Location loc)
       // type hint not allowed
 
       current_column += length;
+
+      loc += length - 1;
 
       str.shrink_to_fit ();
       return Token::make_float (loc, std::move (str), CORETYPE_UNKNOWN);
@@ -2324,6 +2371,8 @@ Lexer::parse_decimal_int_or_float (Location loc)
 
       current_column += length;
 
+      loc += length - 1;
+
       str.shrink_to_fit ();
       return Token::make_float (loc, std::move (str), type_hint);
     }
@@ -2344,6 +2393,8 @@ Lexer::parse_decimal_int_or_float (Location loc)
       length += type_suffix_pair.second;
 
       current_column += length;
+
+      loc += length - 1;
 
       str.shrink_to_fit ();
       return Token::make_int (loc, std::move (str), type_hint);
@@ -2382,6 +2433,8 @@ Lexer::parse_char_or_lifetime (Location loc)
 
       current_column += length;
 
+      loc += length - 1;
+
       return Token::make_char (loc, current_char32);
     }
   else
@@ -2398,6 +2451,8 @@ Lexer::parse_char_or_lifetime (Location loc)
 
 	  // TODO fix due to different widths of utf-8 chars?
 	  current_column += 3;
+
+	  loc += 2;
 
 	  return Token::make_char (loc, current_char32);
 	}
@@ -2420,6 +2475,8 @@ Lexer::parse_char_or_lifetime (Location loc)
 	    }
 
 	  current_column += length;
+
+	  loc += length - 1;
 
 	  str.shrink_to_fit ();
 	  return Token::make_lifetime (loc, std::move (str));

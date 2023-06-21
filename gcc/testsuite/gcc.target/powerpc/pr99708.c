@@ -14,9 +14,17 @@
 int main (void)
 {
   if (__SIZEOF_FLOAT128__ != sizeof (__float128)
-      || __SIZEOF_IBM128__ != sizeof (__ibm128))
+  /* FIXME: Once type __ibm128 gets supported with long-double-64,
+     we shouldn't need this conditional #ifdef and xfail.  */
+#ifdef __SIZEOF_IBM128__
+      || __SIZEOF_IBM128__ != sizeof (__ibm128)
+#else
+      || 1
+#endif
+     )
     abort ();
 
   return 0;
 }
 
+/* { dg-xfail-run-if "unsupported type __ibm128 with long-double-64" { longdouble64 } } */

@@ -542,7 +542,8 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		    && (unit_size = array_ref_element_size (exp),
 			TREE_CODE (unit_size) == INTEGER_CST)
 		    && query->range_of_expr (vr, index)
-		    && vr.kind () == VR_RANGE)
+		    && !vr.varying_p ()
+		    && !vr.undefined_p ())
 		  {
 		    wide_int min = vr.lower_bound ();
 		    wide_int max = vr.upper_bound ();

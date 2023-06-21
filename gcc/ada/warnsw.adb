@@ -93,14 +93,15 @@ package body Warnsw is
 
         '_' =>
          ('b' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' |
-          'n' | 'o' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' =>
+          'n' | 'o' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' =>
            No_Such_Warning,
 
           'a' => X.Warn_On_Anonymous_Allocators,
           'c' => X.Warn_On_Unknown_Compile_Time_Warning,
           'p' => X.Warn_On_Pedantic_Checks,
           'q' => X.Warn_On_Ignored_Equality,
-          'r' => X.Warn_On_Component_Order));
+          'r' => X.Warn_On_Component_Order,
+          's' => X.Warn_On_Ineffective_Predicate_Test));
 
    All_Warnings : constant Warnings_State := --  Warnings set by -gnatw.e
      (X.Elab_Info_Messages |
@@ -130,6 +131,7 @@ package body Warnsw is
       X.Warn_On_Biased_Representation       | -- -gnatw.b
       X.Warn_On_Constant                    | -- -gnatwk
       X.Warn_On_Export_Import               | -- -gnatwx
+      X.Warn_On_Ineffective_Predicate_Test  | -- -gnatw_s
       X.Warn_On_Late_Primitives             | -- -gnatw.j
       X.Warn_On_Modified_Unread             | -- -gnatwm
       X.Warn_On_No_Value_Assigned           | -- -gnatwv

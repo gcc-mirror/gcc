@@ -76,15 +76,13 @@ along with GCC; see the file COPYING3.  If not see
 static tree
 split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
 {
-  gimple *last;
   gcond *stmt;
   affine_iv iv2;
 
   /* BB must end in a simple conditional jump.  */
-  last = last_stmt (bb);
-  if (!last || gimple_code (last) != GIMPLE_COND)
+  stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!stmt)
     return NULL_TREE;
-  stmt = as_a <gcond *> (last);
 
   enum tree_code code = gimple_cond_code (stmt);
 
@@ -158,7 +156,7 @@ patch_loop_exit (class loop *loop, gcond *guard, tree nextval, tree newbound,
 		 bool initial_true)
 {
   edge exit = single_exit (loop);
-  gcond *stmt = as_a <gcond *> (last_stmt (exit->src));
+  gcond *stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   gimple_cond_set_condition (stmt, gimple_cond_code (guard),
 			     nextval, newbound);
   update_stmt (stmt);
@@ -335,7 +333,7 @@ connect_loops (class loop *loop1, class loop *loop2)
   gimple_stmt_iterator gsi;
   edge new_e, skip_e;
 
-  gimple *stmt = last_stmt (exit->src);
+  gcond *stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   skip_stmt = gimple_build_cond (gimple_cond_code (stmt),
 				 gimple_cond_lhs (stmt),
 				 gimple_cond_rhs (stmt),
@@ -571,7 +569,7 @@ split_loop (class loop *loop1)
 	gphi *phi = find_or_create_guard_phi (loop1, guard_iv, &iv);
 	if (!phi)
 	  continue;
-	gcond *guard_stmt = as_a<gcond *> (last_stmt (bbs[i]));
+	gcond *guard_stmt = as_a<gcond *> (*gsi_last_bb (bbs[i]));
 	tree guard_init = PHI_ARG_DEF_FROM_EDGE (phi,
 						 loop_preheader_edge (loop1));
 	enum tree_code guard_code = gimple_cond_code (guard_stmt);
@@ -655,8 +653,8 @@ split_loop (class loop *loop1)
 
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */
-	gcond *force_true = as_a<gcond *> (last_stmt (bbs[i]));
-	gcond *force_false = as_a<gcond *> (last_stmt (get_bb_copy (bbs[i])));
+	gcond *force_true = as_a<gcond *> (*gsi_last_bb (bbs[i]));
+	gcond *force_false = as_a<gcond *> (*gsi_last_bb (get_bb_copy (bbs[i])));
 	if (!initial_true)
 	  std::swap (force_true, force_false);
 	gimple_cond_make_true (force_true);
@@ -1148,8 +1146,7 @@ control_dep_semi_invariant_p (struct loop *loop, basic_block bb,
   for (hash_set<basic_block>::iterator iter = dep_bbs->begin ();
        iter != dep_bbs->end (); ++iter)
     {
-      gimple *last = last_stmt (*iter);
-
+      gimple *last = *gsi_last_bb (*iter);
       if (!last)
 	return false;
 
@@ -1393,7 +1390,7 @@ compute_added_num_insns (struct loop *loop, const_edge branch_edge)
 
   auto_vec<gimple *> worklist;
   hash_set<gimple *> removed;
-  gimple *stmt = last_stmt (cond_bb);
+  gimple *stmt = last_nondebug_stmt (cond_bb);
 
   worklist.safe_push (stmt);
   removed.add (stmt);
@@ -1520,7 +1517,7 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
 {
   basic_block cond_bb = invar_branch->src;
   bool true_invar = !!(invar_branch->flags & EDGE_TRUE_VALUE);
-  gcond *cond = as_a <gcond *> (last_stmt (cond_bb));
+  gcond *cond = as_a <gcond *> (*gsi_last_bb (cond_bb));
 
   gcc_assert (cond_bb->loop_father == loop1);
 
@@ -1544,7 +1541,7 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
     }
 
   basic_block cond_bb_copy = get_bb_copy (cond_bb);
-  gcond *cond_copy = as_a<gcond *> (last_stmt (cond_bb_copy));
+  gcond *cond_copy = as_a<gcond *> (*gsi_last_bb (cond_bb_copy));
 
   /* Replace the condition in loop2 with a bool constant to let PassManager
      remove the variant branch after current pass completes.  */
@@ -1628,12 +1625,10 @@ split_loop_on_cond (struct loop *loop)
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	continue;
 
-      gimple *last = last_stmt (bb);
-
-      if (!last || gimple_code (last) != GIMPLE_COND)
+      gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+      if (!cond)
 	continue;
 
-      gcond *cond = as_a <gcond *> (last);
       edge branch_edge = get_cond_branch_to_split_loop (loop, cond);
 
       if (branch_edge)

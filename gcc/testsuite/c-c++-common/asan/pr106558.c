@@ -8,7 +8,7 @@ int **c = &b;
 int d[1];
 int *e = &d[1];
 
-static int f(int *g) {
+static void f(int *g) {
   *b = e;
   *c = e;
   *b = 2;

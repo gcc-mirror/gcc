@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (lsl_64_s64_m_tied1, svint64_t,
 		z0 = svlsl_m (p0, z0, 64))
 
 /*
-** lsl_64_s64_m_untied: { xfail *-*-* }
+** lsl_64_s64_m_untied:
 **	mov	(z[0-9]+\.d), #64
 **	movprfx	z0, z1
 **	lsl	z0\.d, p0/m, z0\.d, \1

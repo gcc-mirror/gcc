@@ -579,7 +579,7 @@ hextree (tree t)
       hextree (DECL_INITIAL (t));
       hextree (DECL_SAVED_TREE (t));
     }
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     {
       pretty *state = initPretty (FALSE);
 
@@ -2364,7 +2364,7 @@ m2pp_call_expr (pretty *s, tree t)
   int has_return_type = TRUE;
   tree proc;
 
-  if (type && (TREE_CODE (type) == VOID_TYPE))
+  if (type && VOID_TYPE_P (type))
     has_return_type = FALSE;
 
   if (TREE_CODE (call) == ADDR_EXPR || TREE_CODE (call) == NON_LVALUE_EXPR)

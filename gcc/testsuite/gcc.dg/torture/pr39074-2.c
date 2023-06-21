@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-options "-fdump-tree-alias" } */
+/* { dg-options "-fdump-tree-alias-details" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
 #include <stdint.h>

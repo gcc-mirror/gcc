@@ -1788,6 +1788,26 @@ gimple_assign_unary_nop_p (gimple *gs)
               == TYPE_MODE (TREE_TYPE (gimple_assign_rhs1 (gs)))));
 }
 
+/* Return true if GS is an assignment that loads from its rhs1.  */
+
+bool
+gimple_assign_load_p (const gimple *gs)
+{
+  tree rhs;
+  if (!gimple_assign_single_p (gs))
+    return false;
+  rhs = gimple_assign_rhs1 (gs);
+  if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
+    return true;
+  if (handled_component_p (rhs))
+    rhs = TREE_OPERAND (rhs, 0);
+  return (handled_component_p (rhs)
+	  || DECL_P (rhs)
+	  || TREE_CODE (rhs) == MEM_REF
+	  || TREE_CODE (rhs) == TARGET_MEM_REF);
+}
+
+
 /* Set BB to be the basic block holding G.  */
 
 void

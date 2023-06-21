@@ -1,9 +1,15 @@
 ! Program to test mathematical intrinsics
+
+! This file is also 'include'd in:
+!   - 'libgomp/testsuite/libgomp.fortran/fortran-torture_execute_math.f90' (thus the '!$omp' directives)
+!   - 'libgomp/testsuite/libgomp.oacc-fortran/fortran-torture_execute_math.f90' (thus the '!$acc' directives)
+
 subroutine dotest (n, val4, val8, known)
    implicit none
    real(kind=4) val4, known
    real(kind=8) val8
    integer n
+   !$acc routine seq
 
    if (abs (val4 - known) .gt. 0.001) STOP 1
    if (abs (real (val8, kind=4) - known) .gt. 0.001) STOP 2
@@ -14,17 +20,20 @@ subroutine dotestc (n, val4, val8, known)
    complex(kind=4) val4, known
    complex(kind=8) val8
    integer n
+   !$acc routine seq
+
    if (abs (val4 - known) .gt. 0.001) STOP 3
    if (abs (cmplx (val8, kind=4) - known) .gt. 0.001) STOP 4
 end subroutine
 
-program testmath
+subroutine testmath
    implicit none
    real(kind=4) r, two4, half4
    real(kind=8) q, two8, half8
    complex(kind=4) cr
    complex(kind=8) cq
    external dotest, dotestc
+   !$acc routine seq
 
    two4 = 2.0
    two8 = 2.0_8
@@ -96,5 +105,16 @@ program testmath
    cq = log ((-1.0_8, -1.0_8))
    call dotestc (21, cr, cq, (0.3466, -2.3562))
 
-end program
+end subroutine
 
+program main
+   implicit none
+   external testmath
+
+   !$acc serial
+   !$omp target
+   call testmath
+   !$acc end serial
+   !$omp end target
+
+end program

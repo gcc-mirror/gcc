@@ -1221,6 +1221,9 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 			hash_set<type_pair> *visited,
 			location_t loc1, location_t loc2)
 {
+  /* If we are asked to warn, we need warned to keep track if warning was
+     output.  */
+  gcc_assert (!warn || warned);
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
     return true;
@@ -1249,7 +1252,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   if (INTEGRAL_TYPE_P (t1)
       || SCALAR_FLOAT_TYPE_P (t1)
       || FIXED_POINT_TYPE_P (t1)
-      || TREE_CODE (t1) == VECTOR_TYPE
+      || VECTOR_TYPE_P (t1)
       || TREE_CODE (t1) == COMPLEX_TYPE
       || TREE_CODE (t1) == OFFSET_TYPE
       || POINTER_TYPE_P (t1))
@@ -1300,14 +1303,14 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	      warn_odr (t1, t2, NULL, NULL, warn, warned,
 			G_("it is defined as a pointer to different type "
 			   "in another translation unit"));
-	      if (warn && (warned == NULL || *warned))
+	      if (warn && *warned)
 	        warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2),
 				     loc1, loc2);
 	      return false;
 	    }
 	}
 
-      if ((TREE_CODE (t1) == VECTOR_TYPE || TREE_CODE (t1) == COMPLEX_TYPE)
+      if ((VECTOR_TYPE_P (t1) || TREE_CODE (t1) == COMPLEX_TYPE)
 	  && !odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
 					 visited, loc1, loc2))
 	{
@@ -1315,7 +1318,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	  warn_odr (t1, t2, NULL, NULL, warn, warned,
 		    G_("a different type is defined "
 		       "in another translation unit"));
-	  if (warn && (warned == NULL || *warned))
+	  if (warn && *warned)
 	    warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2), loc1, loc2);
 	  return false;
 	}
@@ -1333,7 +1336,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	    warn_odr (t1, t2, NULL, NULL, warn, warned,
 		      G_("a different type is defined in another "
 			 "translation unit"));
-	    if (warn && (warned == NULL || *warned))
+	    if (warn && *warned)
 	      warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2), loc1, loc2);
 	  }
 	gcc_assert (TYPE_STRING_FLAG (t1) == TYPE_STRING_FLAG (t2));
@@ -1375,7 +1378,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	  warn_odr (t1, t2, NULL, NULL, warn, warned,
 		    G_("has different return value "
 		       "in another translation unit"));
-	  if (warn && (warned == NULL || *warned))
+	  if (warn && *warned)
 	    warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2), loc1, loc2);
 	  return false;
 	}
@@ -1398,7 +1401,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		  warn_odr (t1, t2, NULL, NULL, warn, warned,
 			    G_("has different parameters in another "
 			       "translation unit"));
-		  if (warn && (warned == NULL || *warned))
+		  if (warn && *warned)
 		    warn_types_mismatch (TREE_VALUE (parms1),
 					 TREE_VALUE (parms2), loc1, loc2);
 		  return false;
@@ -1484,7 +1487,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    warn_odr (t1, t2, f1, f2, warn, warned,
 			      G_("a field of same name but different type "
 				 "is defined in another translation unit"));
-		    if (warn && (warned == NULL || *warned))
+		    if (warn && *warned)
 		      warn_types_mismatch (TREE_TYPE (f1), TREE_TYPE (f2), loc1, loc2);
 		    return false;
 		  }

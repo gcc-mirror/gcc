@@ -583,10 +583,6 @@ package body Exp_Ch3 is
       Ptr       : Entity_Id;
 
    begin
-      if not Expander_Active then
-         return;
-      end if;
-
       --  Create List of actuals for indirect call. The last parameter of the
       --  subprogram declaration is the access value for the indirect call.
 
@@ -2082,8 +2078,8 @@ package body Exp_Ch3 is
          Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := Default;
-         Kind     : Node_Kind := Nkind (Default);
+         Exp      : Node_Id;
+         Exp_Q    : Node_Id;
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -2094,13 +2090,14 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Take a copy of Exp to ensure that later copies of this component
+         --  Take copy of Default to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
          declare
             Map : Elist_Id := No_Elist;
+
          begin
             if Has_Late_Init_Comp then
                --  Map the type to the _Init parameter in order to
@@ -2131,7 +2128,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+            Exp := New_Copy_Tree (Default, New_Scope => Proc_Id, Map => Map);
          end;
 
          Res := New_List (
@@ -2141,6 +2138,8 @@ package body Exp_Ch3 is
 
          Set_No_Ctrl_Actions (First (Res));
 
+         Exp_Q := Unqualify (Exp);
+
          --  Adjust the tag if tagged (because of possible view conversions).
          --  Suppress the tag adjustment when not Tagged_Type_Expansion because
          --  tags are represented implicitly in objects, and when the record is
@@ -2148,37 +2147,20 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ)
            and then Tagged_Type_Expansion
-           and then Nkind (Exp) /= N_Raise_Expression
-           and then (Nkind (Exp) /= N_Qualified_Expression
-                       or else Nkind (Expression (Exp)) /= N_Raise_Expression)
+           and then Nkind (Exp_Q) /= N_Raise_Expression
          then
             Append_To (Res,
-              Make_Assignment_Statement (Default_Loc,
-                Name       =>
-                  Make_Selected_Component (Default_Loc,
-                    Prefix        =>
-                      New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-                    Selector_Name =>
-                      New_Occurrence_Of
-                        (First_Tag_Component (Typ), Default_Loc)),
-
-                Expression =>
-                  Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Occurrence_Of
-                      (Node (First_Elmt (Access_Disp_Table (Underlying_Type
-                         (Typ)))),
-                       Default_Loc))));
+              Make_Tag_Assignment_From_Type
+                (Default_Loc,
+                 New_Copy_Tree (Lhs, New_Scope => Proc_Id),
+                 Underlying_Type (Typ)));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
-         if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (Default));
-         end if;
-
          if Needs_Finalization (Typ)
-           and then Kind not in N_Aggregate | N_Extension_Aggregate
+           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
@@ -2192,16 +2174,6 @@ package body Exp_Ch3 is
             if Present (Adj_Call) then
                Append_To (Res, Adj_Call);
             end if;
-         end if;
-
-         --  If a component type has a predicate, add check to the component
-         --  assignment. Discriminants are handled at the point of the call,
-         --  which provides for a better error message.
-
-         if Comes_From_Source (Exp)
-           and then Predicate_Enabled (Typ)
-         then
-            Append (Make_Predicate_Check (Typ, Exp), Res);
          end if;
 
          return Res;
@@ -2808,17 +2780,8 @@ package body Exp_Ch3 is
                --  Initialize the primary tag component
 
                Init_Tags_List := New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_uInit),
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Rec_Type), Loc)),
-                   Expression =>
-                     New_Occurrence_Of
-                       (Node
-                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+                 Make_Tag_Assignment_From_Type
+                   (Loc, Make_Identifier (Loc, Name_uInit), Rec_Type));
 
                --  Ada 2005 (AI-251): Initialize the secondary tags components
                --  located at fixed positions (tags whose position depends on
@@ -2897,17 +2860,8 @@ package body Exp_Ch3 is
                --  Initialize the primary tag
 
                Init_Tags_List := New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_uInit),
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Rec_Type), Loc)),
-                   Expression =>
-                     New_Occurrence_Of
-                       (Node
-                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+                 Make_Tag_Assignment_From_Type
+                   (Loc, Make_Identifier (Loc, Name_uInit), Rec_Type));
 
                --  Ada 2005 (AI-251): Initialize the secondary tags components
                --  located at fixed positions (tags whose position depends on
@@ -2946,8 +2900,8 @@ package body Exp_Ch3 is
                   while Present (Next (Ins_Nod))
                     and then
                       (Nkind (Ins_Nod) /= N_If_Statement
-                        or else (Nkind (First (Then_Statements (Ins_Nod)))
-                                   /= N_Procedure_Call_Statement)
+                        or else Nkind (First (Then_Statements (Ins_Nod)))
+                                  /= N_Procedure_Call_Statement
                         or else not Is_Init_Proc
                                       (Name (First (Then_Statements
                                          (Ins_Nod)))))
@@ -6910,6 +6864,12 @@ package body Exp_Ch3 is
 
                  and then not Has_Predicates (Component_Type (Typ))
 
+                 --  Array default component value takes precedence over
+                 --  Init_Or_Norm_Scalars.
+
+                 and then No (Find_Aspect (Typ,
+                                           Aspect_Default_Component_Value))
+
                  --  The component type must have a single initialization value
 
                  and then Simple_Initialization_OK (Component_Type (Typ))
@@ -7154,8 +7114,64 @@ package body Exp_Ch3 is
       function Make_Allocator_For_Return (Expr : Node_Id) return Node_Id is
          Alloc      : Node_Id;
          Alloc_Expr : Entity_Id;
+         Alloc_Typ  : Entity_Id;
 
       begin
+         --  If the return object's declaration does not include an expression,
+         --  then we use its subtype for the allocation. Likewise in the case
+         --  of a degenerate expression like a raise expression.
+
+         if No (Expr)
+           or else Nkind (Original_Node (Expr)) = N_Raise_Expression
+         then
+            Alloc_Typ := Typ;
+
+         --  If the return object's declaration includes an expression, then
+         --  there are two cases: either the nominal subtype of the object is
+         --  definite and we can use it for the allocation directly, or it is
+         --  not and Analyze_Object_Declaration should have built an actual
+         --  subtype from the expression.
+
+         --  However, there are exceptions in the latter case for interfaces
+         --  (see Analyze_Object_Declaration), as well as class-wide types and
+         --  types with unknown discriminants if they are additionally limited
+         --  (see Expand_Subtype_From_Expr), so we must cope with them.
+
+         elsif Is_Interface (Typ) then
+            pragma Assert (Is_Class_Wide_Type (Typ));
+
+            --  For interfaces, we use the type of the expression, except if
+            --  we need to put back a conversion that we have removed earlier
+            --  in the processing.
+
+            if Is_Class_Wide_Type (Etype (Expr)) then
+               Alloc_Typ := Typ;
+            else
+               Alloc_Typ := Etype (Expr);
+            end if;
+
+         elsif Is_Class_Wide_Type (Typ) then
+
+            --  For class-wide types, we have to make sure that we use the
+            --  dynamic type of the expression for the allocation, either by
+            --  means of its (static) subtype or through the actual subtype.
+
+            if Has_Tag_Of_Type (Expr) then
+               Alloc_Typ := Etype (Expr);
+
+            else pragma Assert (Ekind (Typ) = E_Class_Wide_Subtype
+              and then Present (Equivalent_Type (Typ)));
+
+               Alloc_Typ := Typ;
+            end if;
+
+         else pragma Assert (Is_Definite_Subtype (Typ)
+           or else (Has_Unknown_Discriminants (Typ)
+                     and then Is_Limited_View (Typ)));
+
+            Alloc_Typ := Typ;
+         end if;
+
          --  If the return object's declaration includes an expression and the
          --  declaration isn't marked as No_Initialization, then we generate an
          --  allocator with a qualified expression. Although this is necessary
@@ -7181,35 +7197,22 @@ package body Exp_Ch3 is
 
             Alloc_Expr := New_Copy_Tree (Expr);
 
-            --  In the constrained array case, deal with a potential sliding.
-            --  In the interface case, put back a conversion that we may have
-            --  removed earlier in the processing.
-
-            if (Ekind (Typ) = E_Array_Subtype
-                 or else (Is_Interface (Typ)
-                           and then Is_Class_Wide_Type (Etype (Alloc_Expr))))
-              and then Typ /= Etype (Alloc_Expr)
-            then
-               Alloc_Expr := Convert_To (Typ, Alloc_Expr);
+            if Etype (Alloc_Expr) /= Alloc_Typ then
+               Alloc_Expr := Convert_To (Alloc_Typ, Alloc_Expr);
             end if;
-
-            --  We always use the type of the expression for the qualified
-            --  expression, rather than the return object's type. We cannot
-            --  always use the return object's type because the expression
-            --  might be of a specific type and the return object mignt not.
 
             Alloc :=
               Make_Allocator (Loc,
                 Expression =>
                   Make_Qualified_Expression (Loc,
                     Subtype_Mark =>
-                      New_Occurrence_Of (Etype (Alloc_Expr), Loc),
+                      New_Occurrence_Of (Alloc_Typ, Loc),
                     Expression   => Alloc_Expr));
 
          else
             Alloc :=
               Make_Allocator (Loc,
-                Expression => New_Occurrence_Of (Typ, Loc));
+                Expression => New_Occurrence_Of (Alloc_Typ, Loc));
 
             --  If the return object requires default initialization, then it
             --  will happen later following the elaboration of the renaming.
@@ -7338,7 +7341,7 @@ package body Exp_Ch3 is
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
         and then not (Ekind (Typ) in E_Array_Type | E_Array_Subtype
-                      and then (Has_Init_Expression (N)))
+                      and then Has_Init_Expression (N))
       then
          declare
             PS_Count, SS_Count : Int := 0;
@@ -9251,9 +9254,13 @@ package body Exp_Ch3 is
          --  this is indeed the case, associate the Finalize_Address routine
          --  of the full view with the finalization masters of all pending
          --  access types. This scenario applies to anonymous access types as
-         --  well.
+         --  well. But the Finalize_Address routine is missing if the type is
+         --  class-wide and we are under restriction No_Dispatching_Calls, see
+         --  Expand_Freeze_Class_Wide_Type above for the rationale.
 
          elsif Needs_Finalization (Typ)
+           and then (not Is_Class_Wide_Type (Typ)
+                      or else not Restriction_Active (No_Dispatching_Calls))
            and then Present (Pending_Access_Types (Typ))
          then
             E := First_Elmt (Pending_Access_Types (Typ));
@@ -11105,9 +11112,10 @@ package body Exp_Ch3 is
                 Null_Record_Present => True);
 
             --  GNATprove will use expression of an expression function as an
-            --  implicit postcondition. GNAT will not benefit from expression
-            --  function (and would struggle if we add an expression function
-            --  to freezing actions).
+            --  implicit postcondition. GNAT will also benefit from expression
+            --  function to avoid premature freezing, but would struggle if we
+            --  added an expression function to freezing actions, so we create
+            --  the expanded form directly.
 
             if GNATprove_Mode then
                Func_Body :=
@@ -11126,6 +11134,7 @@ package body Exp_Ch3 is
                        Statements => New_List (
                          Make_Simple_Return_Statement (Loc,
                            Expression => Ext_Aggr))));
+               Set_Was_Expression_Function (Func_Body);
             end if;
 
             Append_To (Body_List, Func_Body);
@@ -11145,8 +11154,6 @@ package body Exp_Ch3 is
             --  is a wrapper's body in order to get check suppression right.
 
             Set_Corresponding_Spec (Func_Body, Func_Id);
-
-            Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
 
       <<Next_Prim>>
@@ -11898,8 +11905,8 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if (not No_Run_Time_Mode)
-         and then RTE_Available (RE_Root_Buffer_Type)
+      if not No_Run_Time_Mode
+        and then RTE_Available (RE_Root_Buffer_Type)
       then
          --  No_Run_Time_Mode implies that the declaration of Tag_Typ
          --  (like any tagged type) will be rejected. Given this, avoid
@@ -12085,12 +12092,10 @@ package body Exp_Ch3 is
 
    function Make_Tag_Assignment (N : Node_Id) return Node_Id is
       Loc      : constant Source_Ptr := Sloc (N);
-      Def_If   : constant Entity_Id  := Defining_Identifier (N);
+      Def_Id   : constant Entity_Id  := Defining_Identifier (N);
       Expr     : constant Node_Id    := Expression (N);
-      Typ      : constant Entity_Id  := Etype (Def_If);
+      Typ      : constant Entity_Id  := Etype (Def_Id);
       Full_Typ : constant Entity_Id  := Underlying_Type (Typ);
-
-      New_Ref  : Node_Id;
 
    begin
       --  This expansion activity is called during analysis
@@ -12099,25 +12104,12 @@ package body Exp_Ch3 is
         and then not Is_Class_Wide_Type (Typ)
         and then not Is_CPP_Class (Typ)
         and then Tagged_Type_Expansion
-        and then Nkind (Expr) /= N_Aggregate
-        and then (Nkind (Expr) /= N_Qualified_Expression
-                   or else Nkind (Expression (Expr)) /= N_Aggregate)
+        and then Nkind (Unqualify (Expr)) /= N_Aggregate
       then
-         New_Ref :=
-           Make_Selected_Component (Loc,
-             Prefix        => New_Occurrence_Of (Def_If, Loc),
-             Selector_Name =>
-               New_Occurrence_Of (First_Tag_Component (Full_Typ), Loc));
-
-         Set_Assignment_OK (New_Ref);
-
          return
-           Make_Assignment_Statement (Loc,
-             Name       => New_Ref,
-             Expression =>
-               Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Occurrence_Of
-                   (Node (First_Elmt (Access_Disp_Table (Full_Typ))), Loc)));
+           Make_Tag_Assignment_From_Type
+             (Loc, New_Occurrence_Of (Def_Id, Loc), Full_Typ);
+
       else
          return Empty;
       end if;
@@ -12413,7 +12405,7 @@ package body Exp_Ch3 is
       --  Body of Put_Image
 
       if No (TSS (Tag_Typ, TSS_Put_Image))
-         and then (not No_Run_Time_Mode)
+         and then not No_Run_Time_Mode
          and then RTE_Available (RE_Root_Buffer_Type)
       then
          Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
@@ -12429,14 +12421,14 @@ package body Exp_Ch3 is
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Read)
         and then No (TSS (Tag_Typ, TSS_Stream_Read))
       then
-         Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Read_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Write)
         and then No (TSS (Tag_Typ, TSS_Stream_Write))
       then
-         Build_Record_Write_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Write_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
@@ -12448,14 +12440,14 @@ package body Exp_Ch3 is
         and then No (TSS (Tag_Typ, TSS_Stream_Input))
       then
          Build_Record_Or_Elementary_Input_Function
-           (Loc, Tag_Typ, Decl, Ent);
+           (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
         and then No (TSS (Tag_Typ, TSS_Stream_Output))
       then
-         Build_Record_Or_Elementary_Output_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Or_Elementary_Output_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 

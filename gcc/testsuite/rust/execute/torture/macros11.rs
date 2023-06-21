@@ -1,4 +1,4 @@
-// { dg-output "2" }
+// { dg-output "2\r*" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

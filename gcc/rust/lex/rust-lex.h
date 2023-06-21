@@ -38,13 +38,37 @@ private:
       fclose (file);
   }
 
+  static bool allowed_filetype (const struct stat &statbuf)
+  {
+    // The file could be either
+    // - a regular file
+    // - a char device (/dev/null...)
+    return S_ISREG (statbuf.st_mode) || S_ISCHR (statbuf.st_mode);
+  }
+
 public:
   RAIIFile (const char *filename) : filename (filename)
   {
     if (strcmp (filename, "-") == 0)
-      file = stdin;
+      {
+	file = stdin;
+      }
     else
-      file = fopen (filename, "r");
+      {
+	struct stat statbuf;
+	if (!(file = fopen (filename, "r")))
+	  {
+	    return;
+	  }
+
+	if (-1 == fstat (fileno (file), &statbuf)
+	    || !allowed_filetype (statbuf))
+	  {
+	    fclose (file);
+	    file = nullptr;
+	    errno = EISDIR;
+	  }
+      }
   }
 
   /**

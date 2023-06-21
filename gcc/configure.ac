@@ -473,7 +473,7 @@ AC_CHECK_SIZEOF(dev_t)
 if test "$enable_largefile" != no; then
   case "$host, $build" in
     *-*-aix*,*|*,*-*-aix*)
-      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+      if test "$ac_cv_sizeof_ino_t" = "4" -a "$ac_cv_sizeof_dev_t" = 4; then
 	AC_DEFINE(HOST_STAT_FOR_64BIT_INODES, stat64x,
 	  [Define which stat syscall is able to handle 64bit indodes.])
       fi;;
@@ -920,6 +920,19 @@ fi
 
 AC_DEFINE_UNQUOTED(DEFAULT_STK_CLASH_GUARD_SIZE, $DEFAULT_STK_CLASH_GUARD_SIZE,
 	[Define to larger than zero set the default stack clash protector size.])
+
+# Specify the number of splits of match.pd to generate.
+AC_ARG_WITH(matchpd-partitions,
+[AS_HELP_STRING([--with-matchpd-partitions=num],
+[Set the number of partitions to make for gimple and generic when splitting match.pd. [default=10]])],
+[DEFAULT_MATCHPD_PARTITIONS="$with_matchpd_partitions"], [DEFAULT_MATCHPD_PARTITIONS=10])
+if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
+  AC_MSG_ERROR(m4_normalize([
+		Invalid value $DEFAULT_MATCHPD_PARTITIONS for --with-matchpd-partitions. \
+		Cannot be negative.]))
+fi
+
+AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
 
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
@@ -1515,6 +1528,14 @@ fi
 CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
 LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
 
+# LTO can use zstd compression algorithm
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(ZSTD_compress, zstd,, gcc_cv_header_zstd_h=no)
+ZSTD_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(ZSTD_LIB)
+
 AC_MSG_CHECKING(for zstd.h)
 AC_CACHE_VAL(gcc_cv_header_zstd_h,
 # We require version 1.3.0 or later.  This is the first version that has
@@ -1533,14 +1554,6 @@ if test $gcc_cv_header_zstd_h = yes; then
 elif test "x$with_zstd" != x; then
     as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
-
-# LTO can use zstd compression algorithm
-save_LIBS="$LIBS"
-LIBS=
-AC_SEARCH_LIBS(ZSTD_compress, zstd)
-ZSTD_LIB="$LIBS"
-LIBS="$save_LIBS"
-AC_SUBST(ZSTD_LIB)
 fi
 
 dnl Disabled until we have a complete test for buggy enum bitfields.
@@ -3187,16 +3200,19 @@ elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
   echo '.byte 0' >> conftest3.s
   if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
-     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
-     && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
-	conftest2.o conftest3.o > /dev/null 2>&1; then
-    gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
-			 | sed -e '/myfoosect/!d' -e N`
-    if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
-      if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
-	gcc_cv_ld_ro_rw_mix=read-only
-      else
-	gcc_cv_ld_ro_rw_mix=read-write
+     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1; then
+    if $gcc_cv_ld -shared -o conftest1.so conftest1.o \
+       conftest2.o conftest3.o > /dev/null 2>&1 \
+       || $gcc_cv_ld -r -o conftest1.so conftest1.o \
+	  conftest2.o conftest3.o > /dev/null 2>&1; then
+      gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
+			   | sed -e '/myfoosect/!d' -e N`
+      if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
+	if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
+	  gcc_cv_ld_ro_rw_mix=read-only
+	else
+	  gcc_cv_ld_ro_rw_mix=read-write
+	fi
       fi
     fi
   fi
@@ -7013,6 +7029,7 @@ AC_MSG_RESULT($do_link_mutex)
 
 if test "$do_link_mutex" = "yes"; then
    DO_LINK_MUTEX=true
+   AC_MSG_WARN([--enable-link-mutex is deprecated and will be removed in the next release, use --enable-link-serialization instead])
 else
    DO_LINK_MUTEX=false
 fi
@@ -7399,11 +7416,14 @@ fi
 # Enable --enable-host-shared
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
-		[build host code as shared libraries])],
-[PICFLAG=-fPIC], [PICFLAG=])
+		[build host code as shared libraries])])
 AC_SUBST(enable_host_shared)
-AC_SUBST(PICFLAG)
 
+# Enable --enable-host-pie
+AC_ARG_ENABLE(host-pie,
+[AS_HELP_STRING([--enable-host-pie],
+		[build host code as PIE])])
+AC_SUBST(enable_host_pie)
 
 AC_ARG_ENABLE(libquadmath-support,
 [AS_HELP_STRING([--disable-libquadmath-support],
@@ -7525,10 +7545,6 @@ AC_CACHE_CHECK([for -fno-PIE option],
      [gcc_cv_c_no_fpie=yes],
      [gcc_cv_c_no_fpie=no])
    CXXFLAGS="$saved_CXXFLAGS"])
-if test "$gcc_cv_c_no_fpie" = "yes"; then
-  NO_PIE_CFLAGS="-fno-PIE"
-fi
-AC_SUBST([NO_PIE_CFLAGS])
 
 # Check if -no-pie works.
 AC_CACHE_CHECK([for -no-pie option],
@@ -7539,10 +7555,27 @@ AC_CACHE_CHECK([for -no-pie option],
      [gcc_cv_no_pie=yes],
      [gcc_cv_no_pie=no])
    LDFLAGS="$saved_LDFLAGS"])
-if test "$gcc_cv_no_pie" = "yes"; then
-  NO_PIE_FLAG="-no-pie"
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
+elif test x$gcc_cv_c_no_fpie = xyes; then
+  PICFLAG=-fno-PIE
+else
+  PICFLAG=
 fi
-AC_SUBST([NO_PIE_FLAG])
+
+if test x$enable_host_pie = xyes; then
+  LD_PICFLAG=-pie
+elif test x$gcc_cv_no_pie = xyes; then
+  LD_PICFLAG=-no-pie
+else
+  LD_PICFLAG=
+fi
+
+AC_SUBST([PICFLAG])
+AC_SUBST([LD_PICFLAG])
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.
 GCC_CET_HOST_FLAGS(CET_HOST_FLAGS)

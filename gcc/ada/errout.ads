@@ -307,9 +307,9 @@ package Errout is
    --    Insertion character ?x? ?.x? ?_x? (warning with switch)
    --      "x" is a (lower-case) warning switch character.
    --      Like ??, but if the flag Warn_Doc_Switch is True, adds the string
-   --      "[-gnatwx]", "[-gnatw.x]", or "[-gnatw_x]", at the end of the
-   --      warning message. For continuations, use this on each continuation
-   --      message.
+   --      "[-gnatwx]", "[-gnatw.x]", "[-gnatw_x]", or "[-gnatyx]" (for style
+   --      messages), at the end of the warning message. For continuations, use
+   --      this on each continuation message.
 
    --    Insertion character ?*? (restriction warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string
@@ -404,6 +404,10 @@ package Errout is
    --      This is like [ except that the insertion messages say may/might,
    --      instead of will/would.
 
+   --    Insertion sequence [] (Left and right brackets: error code)
+   --      The insertion sequence [] should be replaced by an error code, whose
+   --      value is given by Error_Msg_Code.
+
    --    Insertion sequence "(style)" (style message)
    --      This appears only at the start of the message (and not any of its
    --      continuations, if any), and indicates that the message is a style
@@ -453,6 +457,11 @@ package Errout is
    Error_Msg_Uint_1 : Uint renames Err_Vars.Error_Msg_Uint_1;
    Error_Msg_Uint_2 : Uint renames Err_Vars.Error_Msg_Uint_2;
    --  Uint values for ^ insertion characters in message
+
+   Error_Msg_Code_Digits : constant := Err_Vars.Error_Msg_Code_Digits;
+   Error_Msg_Code : Nat renames Err_Vars.Error_Msg_Code;
+   --  Nat value for [] insertion sequence in message, where a value of zero
+   --  indicates the absence of an error code.
 
    Error_Msg_Sloc : Source_Ptr renames Err_Vars.Error_Msg_Sloc;
    --  Source location for # insertion character in message
@@ -598,6 +607,21 @@ package Errout is
    function Get_Location (E : Error_Msg_Id) return Source_Ptr
      renames Erroutc.Get_Location;
    --  Returns the flag location of the error message with the given id E
+
+   ------------------------
+   -- GNAT Explain Codes --
+   ------------------------
+
+   --  Explain codes are used in GNATprove to provide more information on
+   --  selected error/warning messages. The subset of those codes used in
+   --  the GNAT frontend are defined here.
+
+   GEC_None                             : constant := 0000;
+   GEC_Volatile_At_Library_Level        : constant := 0001;
+   GEC_Type_Early_Call_Region           : constant := 0003;
+   GEC_Volatile_Non_Interfering_Context : constant := 0004;
+   GEC_Required_Part_Of                 : constant := 0009;
+   GEC_Ownership_Moved_Object           : constant := 0010;
 
    ------------------------
    -- List Pragmas Table --

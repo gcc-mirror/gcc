@@ -1,4 +1,4 @@
-// { dg-output "1\n2\nNaN\n3\n" }
+// { dg-output "1\r*\n2\r*\nNaN\r*\n3\r*\n" }
 
 macro_rules! print_num {
     ($l:literal) => {{

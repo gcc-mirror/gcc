@@ -1,9 +1,9 @@
 ! PR 54753
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C535c If an assumed-size or nonallocatable nonpointer assumed-rank
-! array is an actual argument corresponding to a dummy argument that 
+! array is an actual argument corresponding to a dummy argument that
 ! is an INTENT(OUT) assumed-rank array, it shall not be polymorphic, [...].
 !
 ! This constraint is numbered C839 in the Fortran 2018 standard.
@@ -16,7 +16,7 @@ module t
     integer :: id
     real :: xyz(3)
   end type
-end module  
+end module
 
 module m
   use t
@@ -74,7 +74,7 @@ contains
     class(*) :: a1, a2
     call upoly (a1, a2)
   end subroutine
-  
+
   ! The polymorphic cases for assumed-size are bad.
   subroutine test_assumed_size_nonpolymorphic (a1, a2)
     type(t1) :: a1(*), a2(*)

@@ -1,9 +1,9 @@
 ! PR92482
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 8.7 Interoperability of procedures and procedure interfaces
-! 
+!
 ! If a dummy argument in an interoperable interface is of type
 ! CHARACTER and is allocatable or a pointer, its character length shall
 ! be deferred.

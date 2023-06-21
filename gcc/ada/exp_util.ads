@@ -351,6 +351,18 @@ package Exp_Util is
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
 
+   function Build_Temporary_On_Secondary_Stack
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Code : List_Id) return Entity_Id;
+   --  Build a temporary of type Typ on the secondary stack, appending the
+   --  necessary actions to Code, and return a constant holding the access
+   --  value designating this temporary, under the assumption that Typ does
+   --  not need finalization.
+
+   --  This should be used when Typ can potentially be large, to avoid putting
+   --  too much pressure on the primary stack, for example with storage models.
+
    procedure Build_Transient_Object_Statements
      (Obj_Decl     : Node_Id;
       Fin_Call     : out Node_Id;
@@ -360,9 +372,9 @@ package Exp_Util is
       Ptr_Decl     : out Node_Id;
       Finalize_Obj : Boolean := True);
    --  Subsidiary to the processing of transient objects in transient scopes,
-   --  if expressions, case expressions, expression_with_action nodes, array
-   --  aggregates, and record aggregates. Obj_Decl denotes the declaration of
-   --  the transient object. Generate the following nodes:
+   --  if expressions, case expressions, and expression_with_action nodes.
+   --  Obj_Decl denotes the declaration of the transient object. Generate the
+   --  following nodes:
    --
    --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
    --    object if flag Finalize_Obj is set to True, or finalizes the hook when
@@ -635,13 +647,6 @@ package Exp_Util is
    --  current declarative part to look for an address clause for the object
    --  being declared, and returns the clause if one is found, returns
    --  Empty otherwise.
-   --
-   --  Note: this function can be costly and must be invoked with special care.
-   --  Possibly we could introduce a flag at parse time indicating the presence
-   --  of an address clause to speed this up???
-   --
-   --  Note: currently this function does not scan the private part, that seems
-   --  like a potential bug ???
 
    type Force_Evaluation_Mode is (Relaxed, Strict);
 
@@ -912,6 +917,13 @@ package Exp_Util is
    --  expression E. Unc_Typ is an unconstrained array or record, or a class-
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
+
+   function Make_Tag_Assignment_From_Type
+     (Loc    : Source_Ptr;
+      Target : Node_Id;
+      Typ    : Entity_Id) return Node_Id;
+   --  Return an assignment of the tag of tagged type Typ to prefix Target,
+   --  which must be a record object of a descendant of Typ.
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
@@ -1221,7 +1233,9 @@ package Exp_Util is
    --  extension to verify legality rules on inherited conditions.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N is within a case or an if expression
+   --  Determine whether arbitrary node N is immediately within a case or an if
+   --  expression. The criterion is whether temporaries created by the actions
+   --  attached to N need to outlive an enclosing case or if expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

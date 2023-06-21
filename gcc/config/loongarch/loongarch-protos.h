@@ -83,6 +83,8 @@ extern rtx loongarch_legitimize_call_address (rtx);
 extern rtx loongarch_subword (rtx, bool);
 extern bool loongarch_split_move_p (rtx, rtx);
 extern void loongarch_split_move (rtx, rtx, rtx);
+extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
+extern void loongarch_split_plus_constant (rtx *, machine_mode);
 extern const char *loongarch_output_move (rtx, rtx);
 extern bool loongarch_cfun_has_cprestore_slot_p (void);
 #ifdef RTX_CODE
@@ -93,7 +95,7 @@ extern void loongarch_expand_conditional_trap (rtx);
 #endif
 extern void loongarch_set_return_address (rtx, rtx);
 extern bool loongarch_move_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
-extern bool loongarch_expand_block_move (rtx, rtx, rtx);
+extern bool loongarch_expand_block_move (rtx, rtx, rtx, rtx);
 extern bool loongarch_do_optimize_block_move_p (void);
 
 extern bool loongarch_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,

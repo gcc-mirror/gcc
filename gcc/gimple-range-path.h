@@ -54,9 +54,7 @@ private:
   path_oracle *get_path_oracle () { return (path_oracle *)m_oracle; }
 
   // Cache manipulation.
-  void set_cache (const vrange &r, tree name);
   bool get_cache (vrange &r, tree name);
-  void clear_cache (tree name);
 
   // Methods to compute ranges for the given path.
   bool range_defined_in_block (vrange &, tree name, basic_block bb);
@@ -83,10 +81,7 @@ private:
   void move_next ()	  { --m_pos; }
 
   // Range cache for SSA names.
-  ssa_global_cache *m_cache;
-
-  // Set for each SSA that has an active entry in the cache.
-  bitmap m_has_cache_entry;
+  ssa_lazy_cache m_cache;
 
   // Path being analyzed.
   auto_vec<basic_block> m_path;

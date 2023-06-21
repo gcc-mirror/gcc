@@ -102,16 +102,16 @@ is
 
    function "+" (Left : Time;     Right : Duration) return Time
    with
-     Global => null;
+     SPARK_Mode => Off;
    function "+" (Left : Duration; Right : Time)     return Time
    with
-     Global => null;
+     SPARK_Mode => Off;
    function "-" (Left : Time;     Right : Duration) return Time
    with
-     Global => null;
+     SPARK_Mode => Off;
    function "-" (Left : Time;     Right : Time)     return Duration
    with
-     Global => null;
+     SPARK_Mode => Off;
    --  The first three functions will raise Time_Error if the resulting time
    --  value is less than the start of Ada time in UTC or greater than the
    --  end of Ada time in UTC. The last function will raise Time_Error if the

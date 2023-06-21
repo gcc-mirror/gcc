@@ -1,3 +1,151 @@
+2023-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107583
+	* c-parser.cc (c_parser_declspecs): Add hints to "unknown type
+	name" error.
+
+2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_map): Reword error message for
+	clearness especially with 'omp target (enter/exit) data.'
+
+2023-06-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_defaultmap,
+	c_parser_omp_clause_map): Parse 'present'.
+	(c_parser_omp_clause_to, c_parser_omp_clause_from): Remove.
+	(c_parser_omp_clause_from_to): New; parse to/from clauses with
+	optional present modifer.
+	(c_parser_omp_all_clauses): Update call.
+	(c_parser_omp_target_data, c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Handle new map enum values
+	for 'present' mapping.
+
+2023-05-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/109999
+	* c-parser.cc (c_parser_oacc_all_clauses,
+	c_parser_omp_all_clauses): Improve error wording.
+
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/109450
+	* c-decl.cc (add_decl_expr): New function.
+	(grokdeclarator): Add decl expr for size expression in
+	types pointed to by parameters declared as arrays.
+
+2023-05-23  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/70418
+	PR c/106465
+	PR c/107557
+	PR c/108423
+	* c-decl.cc (start_decl): Make sure size expression are
+	evaluated only in correct context.
+	(grokdeclarator): Size expression in fields may need a bind
+	expression, make sure DECL_EXPR is always created.
+	(grokfield, declspecs_add_type): Pass along size expressions.
+	(finish_struct): Remove unneeded DECL_EXPR.
+	(start_function): Evaluate size expressions for nested functions.
+	* c-parser.cc (c_parser_struct_declarations,
+	c_parser_struct_or_union_specifier): Pass along size expressions.
+	(c_parser_declaration_or_fndef): Evaluate size expression.
+	(c_parser_objc_at_property_declaration,
+	c_parser_objc_class_instance_variables): Adapt.
+	* c-tree.h (grokfield): Adapt declaration.
+
+2023-05-19  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (set_type_context): Remove.
+	(pop_scope, diagnose_mismatched_decls, pushdecl):
+	Remove dead code.
+	* c-typeck.cc (comptypes_internal): Remove dead code.
+	(same_translation_unit_p): Remove.
+	(tagged_types_tu_compatible_p): Some fixes.
+
+2023-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (diagnose_mismatched_decls): Do not handle
+	thread-local declarations as tentative definitions for C2x.
+	(finish_decl): Do not allow thread-local definition with
+	incomplete type for C2x.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* c-convert.cc (c_convert): Ditto.
+	* c-decl.cc (merge_decls): Ditto.
+	* c-parser.cc (c_parser_omp_clause_reduction): Ditto.
+	(c_parser_omp_declare_reduction): Ditto.
+	* c-typeck.cc (build_component_ref): Ditto.
+	(convert_argument): Ditto.
+	(pointer_diff): Ditto.
+	(build_unary_op): Ditto.
+	(build_c_cast): Ditto.
+	(build_modify_expr): Ditto.
+	(store_init_value): Ditto.
+	(constexpr_init_fits_real_type): Ditto.
+	(check_constexpr_init): Ditto.
+	(c_finish_return): Ditto.
+	(handle_omp_array_sections_1): Ditto.
+	(c_finish_omp_clauses): Ditto.
+	* gimple-parser.cc (c_finish_gimple_return): Ditto.
+
+2023-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (check_for_loop_decls): Use pedwarn_c11 for
+	diagnostics.
+
+2023-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (grokdeclarator): Ignore _Atomic on function return
+	type for C2x.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* c-typeck.cc (process_init_element): Print out array type
+	for excessive elements.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/107926
+	* c-typeck.cc (process_init_element): Move the check
+	for string cst until after the error message.
+
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling cc1 and runtime libraries
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109409
+	* c-parser.cc (c_parser_initializer): Move diagnostics about
+	initialization of variable sized object with non-empty initializer
+	after c_parser_expr_no_commas call and ret.set_error (); after it.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107682
+	PR c/109412
+	* c-typeck.cc (pop_init_level): If constructor_type is FUNCTION_TYPE,
+	reject empty initializer as invalid.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Avoid
+	last_stmt.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107041
+	* c-decl.cc (diagnose_mismatched_decls): Avoid -Wenum-int-mismatch
+	warning on acc_on_device declaration.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

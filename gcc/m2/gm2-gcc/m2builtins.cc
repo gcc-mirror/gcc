@@ -552,7 +552,7 @@ m2builtins_GetBuiltinTypeInfo (location_t location, tree type,
 static tree
 doradix (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     {
       enum machine_mode mode = TYPE_MODE (type);
       int radix = REAL_MODE_FORMAT (mode)->b;
@@ -568,7 +568,7 @@ doradix (location_t location ATTRIBUTE_UNUSED, tree type)
 static tree
 doplaces (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     {
       /* Taken from c-family/c-cppbuiltin.cc.  */
       /* The number of decimal digits, q, such that any floating-point
@@ -592,7 +592,7 @@ doplaces (location_t location ATTRIBUTE_UNUSED, tree type)
 static tree
 doexponentmin (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     {
       enum machine_mode mode = TYPE_MODE (type);
       int emin = REAL_MODE_FORMAT (mode)->emin;
@@ -607,7 +607,7 @@ doexponentmin (location_t location ATTRIBUTE_UNUSED, tree type)
 static tree
 doexponentmax (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     {
       enum machine_mode mode = TYPE_MODE (type);
       int emax = REAL_MODE_FORMAT (mode)->emax;
@@ -640,7 +640,7 @@ computeLarge (tree type)
 static tree
 dolarge (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     return computeLarge (type);
   return NULL_TREE;
 }
@@ -667,7 +667,7 @@ computeSmall (tree type)
 static tree
 dosmall (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     return computeSmall (type);
   return NULL_TREE;
 }
@@ -735,7 +735,7 @@ dorounds (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
 static tree
 dogUnderflow (location_t location ATTRIBUTE_UNUSED, tree type)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (type))
     {
       enum machine_mode mode = TYPE_MODE (type);
       const struct real_format *fmt = REAL_MODE_FORMAT (mode);

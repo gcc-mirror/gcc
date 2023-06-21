@@ -449,6 +449,7 @@ extern void resort_type_member_vec (void *, void *,
 extern vec<tree, va_gc> *set_class_bindings (tree, int extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
+extern bool decl_in_scope_p (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
@@ -466,6 +467,8 @@ extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
+extern bool maybe_push_to_top_level (tree);
+extern void maybe_pop_from_top_level (bool);
 extern void push_using_decl_bindings (tree, tree);
 
 /* Lower level interface for modules. */

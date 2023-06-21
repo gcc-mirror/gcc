@@ -35,16 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER "/lib/ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
 
-/* Because RISC-V only has word-sized atomics, it requries libatomic where
-   others do not.  So link libatomic by default, as needed.  */
-#undef LIB_SPEC
-#ifdef LD_AS_NEEDED_OPTION
-#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC \
-  " %{pthread:" LD_AS_NEEDED_OPTION " -latomic " LD_NO_AS_NEEDED_OPTION "}"
-#else
-#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC " -latomic "
-#endif
-
 #define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
 
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
@@ -76,3 +66,5 @@ along with GCC; see the file COPYING3.  If not see
    "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
    "/lib/ "					\
    "/usr/lib/ "
+
+#define RISCV_USE_CUSTOMISED_MULTI_LIB select_by_abi

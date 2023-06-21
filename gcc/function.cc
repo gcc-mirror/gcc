@@ -1838,8 +1838,7 @@ instantiate_decl_rtl (rtx x)
   addr = XEXP (x, 0);
   if (CONSTANT_P (addr)
       || (REG_P (addr)
-	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
-	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
+	  && !VIRTUAL_REGISTER_P (addr)))
     return;
 
   instantiate_virtual_regs_in_rtx (&XEXP (x, 0));
@@ -3873,30 +3872,6 @@ assign_parms (tree fndecl)
     }
 }
 
-/* A subroutine of gimplify_parameters, invoked via walk_tree.
-   For all seen types, gimplify their sizes.  */
-
-static tree
-gimplify_parm_type (tree *tp, int *walk_subtrees, void *data)
-{
-  tree t = *tp;
-
-  *walk_subtrees = 0;
-  if (TYPE_P (t))
-    {
-      if (POINTER_TYPE_P (t))
-	*walk_subtrees = 1;
-      else if (TYPE_SIZE (t) && !TREE_CONSTANT (TYPE_SIZE (t))
-	       && !TYPE_SIZES_GIMPLIFIED (t))
-	{
-	  gimplify_type_sizes (t, (gimple_seq *) data);
-	  *walk_subtrees = 1;
-	}
-    }
-
-  return NULL;
-}
-
 /* Gimplify the parameter list for current_function_decl.  This involves
    evaluating SAVE_EXPRs of variable sized parameters and generating code
    to implement callee-copies reference parameters.  Returns a sequence of
@@ -3932,8 +3907,7 @@ gimplify_parameters (gimple_seq *cleanup)
 	 SAVE_EXPRs (amongst others) onto a pending sizes list.  This
 	 turned out to be less than manageable in the gimple world.
 	 Now we have to hunt them down ourselves.  */
-      walk_tree_without_duplicates (&data.arg.type,
-				    gimplify_parm_type, &stmts);
+      gimplify_type_sizes (TREE_TYPE (parm), &stmts);
 
       if (TREE_CODE (DECL_SIZE_UNIT (parm)) != INTEGER_CST)
 	{

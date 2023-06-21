@@ -70,8 +70,13 @@ float32x4_t ufooq_lane(float32x4_t r, bfloat16x8_t x, bfloat16x4_t y)
 
 /*
 **ufoo_untied:
+** (
 **	mov	v0.8b, v1.8b
 **	bfdot	v0.2s, (v2.4h, v3.4h|v3.4h, v2.4h)
+** |
+**	bfdot	v1.2s, (v2.4h, v3.4h|v3.4h, v2.4h)
+**	mov	v0.8b, v1.8b
+** )
 **	ret
 */
 float32x2_t ufoo_untied(float32x4_t unused, float32x2_t r, bfloat16x4_t x, bfloat16x4_t y)
@@ -81,8 +86,13 @@ float32x2_t ufoo_untied(float32x4_t unused, float32x2_t r, bfloat16x4_t x, bfloa
 
 /*
 **ufooq_lane_untied:
+** (
 **	mov	v0.16b, v1.16b
 **	bfdot	v0.4s, v2.8h, v3.2h\[1\]
+** |
+**	bfdot	v1.4s, v2.8h, v3.2h\[1\]
+**	mov	v0.16b, v1.16b
+** )
 **	ret
 */
 float32x4_t ufooq_lane_untied(float32x4_t unused, float32x4_t r, bfloat16x8_t x, bfloat16x4_t y)

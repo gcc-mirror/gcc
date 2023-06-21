@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 extern "rust-intrinsic" {
     pub fn wrapping_add<T>(l: T, r: T) -> T;
 }

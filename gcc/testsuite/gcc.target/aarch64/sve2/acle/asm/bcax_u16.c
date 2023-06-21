@@ -66,7 +66,7 @@ TEST_UNIFORM_ZX (bcax_w0_u16_tied2, svuint16_t, uint16_t,
 		 z0 = svbcax (z1, z0, x0))
 
 /*
-** bcax_w0_u16_untied: { xfail *-*-*}
+** bcax_w0_u16_untied:
 **	mov	(z[0-9]+)\.h, w0
 **	movprfx	z0, z1
 **	bcax	z0\.d, z0\.d, (z2\.d, \1\.d|\1\.d, z2\.d)
@@ -99,7 +99,7 @@ TEST_UNIFORM_Z (bcax_11_u16_tied2, svuint16_t,
 		z0 = svbcax (z1, z0, 11))
 
 /*
-** bcax_11_u16_untied: { xfail *-*-*}
+** bcax_11_u16_untied:
 **	mov	(z[0-9]+)\.h, #11
 **	movprfx	z0, z1
 **	bcax	z0\.d, z0\.d, (z2\.d, \1\.d|\1\.d, z2\.d)

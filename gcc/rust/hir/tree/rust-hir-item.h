@@ -1226,6 +1226,11 @@ public:
 
   SelfParam &get_self_param () { return self; }
 
+  std::string get_impl_item_name () const override final
+  {
+    return get_function_name ();
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1344,6 +1349,11 @@ public:
   {
     return get_mappings ();
   };
+
+  std::string get_impl_item_name () const override final
+  {
+    return get_new_type_name ();
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2116,7 +2126,7 @@ public:
 
   Expr *get_expr () { return const_expr.get (); }
 
-  std::string get_identifier () { return identifier; }
+  std::string get_identifier () const { return identifier; }
 
   Analysis::NodeMapping get_impl_mappings () const override
   {
@@ -2129,6 +2139,11 @@ public:
   }
 
   ItemKind get_item_kind () const override { return ItemKind::Constant; }
+
+  std::string get_impl_item_name () const override final
+  {
+    return get_identifier ();
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
