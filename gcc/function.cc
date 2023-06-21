@@ -578,8 +578,8 @@ public:
   tree type;
   /* The alignment (in bits) of the slot.  */
   unsigned int align;
-  /* Nonzero if this temporary is currently in use.  */
-  char in_use;
+  /* True if this temporary is currently in use.  */
+  bool in_use;
   /* Nesting level at which this slot is being used.  */
   int level;
   /* The offset of the slot from the frame_pointer, including extra space
@@ -674,7 +674,7 @@ make_slot_available (class temp_slot *temp)
 {
   cut_slot_from_list (temp, temp_slots_at_level (temp->level));
   insert_slot_to_list (temp, &avail_temp_slots);
-  temp->in_use = 0;
+  temp->in_use = false;
   temp->level = -1;
   n_temp_slots_in_use--;
 }
@@ -848,7 +848,7 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
 	  if (known_ge (best_p->size - rounded_size, alignment))
 	    {
 	      p = ggc_alloc<temp_slot> ();
-	      p->in_use = 0;
+	      p->in_use = false;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
 	      p->full_size = best_p->full_size - rounded_size;
@@ -918,7 +918,7 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
     }
 
   p = selected;
-  p->in_use = 1;
+  p->in_use = true;
   p->type = type;
   p->level = temp_slot_level;
   n_temp_slots_in_use++;
@@ -1340,7 +1340,7 @@ has_hard_reg_initial_val (machine_mode mode, unsigned int regno)
   return NULL_RTX;
 }
 
-unsigned int
+void
 emit_initial_value_sets (void)
 {
   struct initial_value_struct *ivs = crtl->hard_reg_initial_vals;
@@ -1348,7 +1348,7 @@ emit_initial_value_sets (void)
   rtx_insn *seq;
 
   if (ivs == 0)
-    return 0;
+    return;
 
   start_sequence ();
   for (i = 0; i < ivs->num_entries; i++)
@@ -1357,7 +1357,6 @@ emit_initial_value_sets (void)
   end_sequence ();
 
   emit_insn_at_entry (seq);
-  return 0;
 }
 
 /* Return the hardreg-pseudoreg initial values pair entry I and
@@ -1535,7 +1534,7 @@ instantiate_virtual_regs_in_rtx (rtx *loc)
 /* A subroutine of instantiate_virtual_regs_in_insn.  Return true if X
    matches the predicate for insn CODE operand OPERAND.  */
 
-static int
+static bool
 safe_insn_predicate (int code, int operand, rtx x)
 {
   return code < 0 || insn_operand_matches ((enum insn_code) code, operand, x);
@@ -1947,7 +1946,7 @@ instantiate_decls (tree fndecl)
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
 
-static unsigned int
+static void
 instantiate_virtual_regs (void)
 {
   rtx_insn *insn;
@@ -2001,8 +2000,6 @@ instantiate_virtual_regs (void)
   /* Indicate that, from now on, assign_stack_local should use
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
-
-  return 0;
 }
 
 namespace {
@@ -2030,7 +2027,8 @@ public:
   /* opt_pass methods: */
   unsigned int execute (function *) final override
     {
-      return instantiate_virtual_regs ();
+      instantiate_virtual_regs ();
+      return 0;
     }
 
 }; // class pass_instantiate_virtual_regs
@@ -2044,12 +2042,12 @@ make_pass_instantiate_virtual_regs (gcc::context *ctxt)
 }
 
 
-/* Return 1 if EXP is an aggregate type (or a value with aggregate type).
+/* Return true if EXP is an aggregate type (or a value with aggregate type).
    This means a type for which function calls must pass an address to the
    function or get an address back from the function.
    EXP may be a type node or an expression (whose type is tested).  */
 
-int
+bool
 aggregate_value_p (const_tree exp, const_tree fntype)
 {
   const_tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
@@ -2069,7 +2067,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
 	  else
 	    /* For internal functions, assume nothing needs to be
 	       returned in memory.  */
-	    return 0;
+	    return false;
 	}
 	break;
       case FUNCTION_DECL:
@@ -2087,10 +2085,10 @@ aggregate_value_p (const_tree exp, const_tree fntype)
       }
 
   if (VOID_TYPE_P (type))
-    return 0;
+    return false;
 
   if (error_operand_p (fntype))
-    return 0;
+    return false;
 
   /* If a record should be passed the same as its first (and only) member
      don't pass it as an aggregate.  */
@@ -2101,25 +2099,25 @@ aggregate_value_p (const_tree exp, const_tree fntype)
      reference, do so.  */
   if ((TREE_CODE (exp) == PARM_DECL || TREE_CODE (exp) == RESULT_DECL)
       && DECL_BY_REFERENCE (exp))
-    return 1;
+    return true;
 
   /* Function types that are TREE_ADDRESSABLE force return in memory.  */
   if (fntype && TREE_ADDRESSABLE (fntype))
-    return 1;
+    return true;
 
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
      and thus can't be returned in registers.  */
   if (TREE_ADDRESSABLE (type))
-    return 1;
+    return true;
 
   if (TYPE_EMPTY_P (type))
-    return 0;
+    return false;
 
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
-    return 1;
+    return true;
 
   if (targetm.calls.return_in_memory (type, fntype))
-    return 1;
+    return true;
 
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
@@ -2128,7 +2126,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   /* If we have something other than a REG (e.g. a PARALLEL), then assume
      it is OK.  */
   if (!REG_P (reg))
-    return 0;
+    return false;
 
   /* Use the default ABI if the type of the function isn't known.
      The scheme for handling interoperability between different ABIs
@@ -2141,9 +2139,9 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
     if (!fixed_regs[regno + i] && !abi.clobbers_full_reg_p (regno + i))
-      return 1;
+      return true;
 
-  return 0;
+  return false;
 }
 
 /* Return true if we should assign DECL a pseudo register; false if it
@@ -5733,26 +5731,26 @@ contains (const rtx_insn *insn, hash_table<insn_cache_hasher> *hash)
   return hash->find (const_cast<rtx_insn *> (insn)) != NULL;
 }
 
-int
+bool
 prologue_contains (const rtx_insn *insn)
 {
   return contains (insn, prologue_insn_hash);
 }
 
-int
+bool
 epilogue_contains (const rtx_insn *insn)
 {
   return contains (insn, epilogue_insn_hash);
 }
 
-int
+bool
 prologue_epilogue_contains (const rtx_insn *insn)
 {
   if (contains (insn, prologue_insn_hash))
-    return 1;
+    return true;
   if (contains (insn, epilogue_insn_hash))
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 void
@@ -6386,14 +6384,13 @@ current_function_name (void)
 }
 
 
-static unsigned int
+static void
 rest_of_handle_check_leaf_regs (void)
 {
 #ifdef LEAF_REGISTERS
   crtl->uses_only_leaf_regs
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
-  return 0;
 }
 
 /* Insert a TYPE into the used types hash table of CFUN.  */
@@ -6518,7 +6515,8 @@ public:
   /* opt_pass methods: */
   unsigned int execute (function *) final override
     {
-      return rest_of_handle_check_leaf_regs ();
+      rest_of_handle_check_leaf_regs ();
+      return 0;
     }
 
 }; // class pass_leaf_regs
@@ -6531,7 +6529,7 @@ make_pass_leaf_regs (gcc::context *ctxt)
   return new pass_leaf_regs (ctxt);
 }
 
-static unsigned int
+static void
 rest_of_handle_thread_prologue_and_epilogue (function *fun)
 {
   /* prepare_shrink_wrap is sensitive to the block structure of the control
@@ -6563,8 +6561,6 @@ rest_of_handle_thread_prologue_and_epilogue (function *fun)
   /* The stack usage info is finalized during prologue expansion.  */
   if (flag_stack_usage_info || flag_callgraph_info)
     output_stack_usage ();
-
-  return 0;
 }
 
 /* Record a final call to CALLEE at LOCATION.  */
@@ -6626,7 +6622,8 @@ public:
   /* opt_pass methods: */
   unsigned int execute (function * fun) final override
     {
-      return rest_of_handle_thread_prologue_and_epilogue (fun);
+      rest_of_handle_thread_prologue_and_epilogue (fun);
+      return 0;
     }
 
 }; // class pass_thread_prologue_and_epilogue
