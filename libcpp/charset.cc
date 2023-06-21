@@ -1891,7 +1891,7 @@ cpp_valid_utf8_p (const char *buffer, size_t num_bytes)
 	 invalid because they cannot be represented in UTF-16.
 
 	 Reject such values.*/
-      if (cp >= UCS_LIMIT)
+      if (cp > UCS_LIMIT)
 	return false;
     }
   /* No problems encountered.  */
