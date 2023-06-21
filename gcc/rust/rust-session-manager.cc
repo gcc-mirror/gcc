@@ -64,7 +64,6 @@ const char *kLexDumpFile = "gccrs.lex.dump";
 const char *kASTDumpFile = "gccrs.ast.dump";
 const char *kASTPrettyDumpFile = "gccrs.ast-pretty.dump";
 const char *kASTPrettyDumpFileExpanded = "gccrs.ast-pretty-expanded.dump";
-const char *kASTDumpTokenStream = "gccrs.ast-tokenstream.dump";
 const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
 const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRPrettyDumpFile = "gccrs.hir-pretty.dump";
@@ -302,7 +301,7 @@ Session::enable_dump (std::string arg)
       rust_error_at (
 	Location (),
 	"dump option was not given a name. choose %<lex%>, %<ast-pretty%>, "
-	"%<ast-tokenstream%>, %<register_plugins%>, %<injection%>, "
+	"%<register_plugins%>, %<injection%>, "
 	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
 	"%<hir-pretty%>, or %<all%>");
       return false;
@@ -319,10 +318,6 @@ Session::enable_dump (std::string arg)
   else if (arg == "ast-pretty")
     {
       options.enable_dump_option (CompileOptions::AST_DUMP_PRETTY);
-    }
-  else if (arg == "ast-tokenstream")
-    {
-      options.enable_dump_option (CompileOptions::AST_DUMP_TOKENSTREAM);
     }
   else if (arg == "register_plugins")
     {
@@ -357,7 +352,7 @@ Session::enable_dump (std::string arg)
       rust_error_at (
 	Location (),
 	"dump option %qs was unrecognised. choose %<lex%>, %<ast-pretty%>, "
-	"%<ast-tokenstream%>, %<register_plugins%>, %<injection%>, "
+	"%<register_plugins%>, %<injection%>, "
 	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
 	"%<hir-pretty%>, or %<all%>",
 	arg.c_str ());
@@ -511,10 +506,6 @@ Session::compile_crate (const char *filename)
   handle_crate_name (*ast_crate.get ());
 
   // dump options except lexer dump
-  if (options.dump_option_enabled (CompileOptions::AST_DUMP_TOKENSTREAM))
-    {
-      dump_tokenstream (*ast_crate.get ());
-    }
   if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
     {
       dump_ast_pretty (*ast_crate.get ());
@@ -919,25 +910,6 @@ Session::dump_ast_pretty (AST::Crate &crate, bool expanded) const
 
   AST::Dump (out).go (crate);
 
-  out.close ();
-}
-
-void
-Session::dump_tokenstream (AST::Crate &crate) const
-{
-  std::ofstream out;
-  out.open (kASTDumpTokenStream);
-  if (out.fail ())
-    {
-      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
-		     kASTDumpTokenStream);
-    }
-  std::vector<TokenPtr> tokens;
-  AST::TokenCollector (tokens).visit (crate);
-  for (auto &token : tokens)
-    {
-      out << token->as_string () << " ";
-    }
   out.close ();
 }
 

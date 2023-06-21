@@ -194,7 +194,6 @@ struct CompileOptions
   {
     LEXER_DUMP,
     AST_DUMP_PRETTY,
-    AST_DUMP_TOKENSTREAM,
     REGISTER_PLUGINS_DUMP,
     INJECTION_DUMP,
     EXPANSION_DUMP,
@@ -252,7 +251,6 @@ struct CompileOptions
   {
     enable_dump_option (DumpOption::LEXER_DUMP);
     enable_dump_option (DumpOption::AST_DUMP_PRETTY);
-    enable_dump_option (DumpOption::AST_DUMP_TOKENSTREAM);
     enable_dump_option (DumpOption::REGISTER_PLUGINS_DUMP);
     enable_dump_option (DumpOption::INJECTION_DUMP);
     enable_dump_option (DumpOption::EXPANSION_DUMP);
@@ -368,7 +366,6 @@ private:
 
   void dump_lex (Parser<Lexer> &parser) const;
   void dump_ast_pretty (AST::Crate &crate, bool expanded = false) const;
-  void dump_tokenstream (AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
 
