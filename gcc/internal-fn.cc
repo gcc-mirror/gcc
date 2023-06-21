@@ -2976,6 +2976,10 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
 
   mem = expand_expr (rhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   gcc_assert (MEM_P (mem));
+  /* The built MEM_REF does not accurately reflect that the load
+     is only partial.  Clear it.  */
+  set_mem_expr (mem, NULL_TREE);
+  clear_mem_offset (mem);
   target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   create_output_operand (&ops[i++], target, TYPE_MODE (type));
   create_fixed_operand (&ops[i++], mem);
@@ -3019,6 +3023,10 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
 
   mem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   gcc_assert (MEM_P (mem));
+  /* The built MEM_REF does not accurately reflect that the store
+     is only partial.  Clear it.  */
+  set_mem_expr (mem, NULL_TREE);
+  clear_mem_offset (mem);
   reg = expand_normal (rhs);
   create_fixed_operand (&ops[i++], mem);
   create_input_operand (&ops[i++], reg, TYPE_MODE (type));
