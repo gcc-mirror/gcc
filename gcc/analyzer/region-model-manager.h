@@ -49,7 +49,8 @@ public:
 					     tree type);
   const svalue *get_or_create_poisoned_svalue (enum poison_kind kind,
 					       tree type);
-  const svalue *get_or_create_initial_value (const region *reg);
+  const svalue *get_or_create_initial_value (const region *reg,
+					     bool check_poisoned = true);
   const svalue *get_ptr_svalue (tree ptr_type, const region *pointee);
   const svalue *get_or_create_unaryop (tree type, enum tree_code op,
 				       const svalue *arg);

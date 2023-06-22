@@ -2373,8 +2373,9 @@ region_model::get_store_value (const region *reg,
   if (reg->empty_p ())
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
+  bool check_poisoned = true;
   if (check_region_for_read (reg, ctxt))
-    return m_mgr->get_or_create_unknown_svalue(reg->get_type());
+    check_poisoned = false;
 
   /* Special-case: handle var_decls in the constant pool.  */
   if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
@@ -2427,7 +2428,7 @@ region_model::get_store_value (const region *reg,
       == RK_GLOBALS)
     return get_initial_value_for_global (reg);
 
-  return m_mgr->get_or_create_initial_value (reg);
+  return m_mgr->get_or_create_initial_value (reg, check_poisoned);
 }
 
 /* Return false if REG does not exist, true if it may do.
@@ -2790,7 +2791,7 @@ region_model::get_string_size (const region *reg) const
 
 /* If CTXT is non-NULL, use it to warn about any problems accessing REG,
    using DIR to determine if this access is a read or write.
-   Return TRUE if an UNKNOWN_SVALUE needs be created.
+   Return TRUE if an OOB access was detected.
    If SVAL_HINT is non-NULL, use it as a hint in diagnostics
    about the value that would be written to REG.  */
 
@@ -2804,10 +2805,10 @@ region_model::check_region_access (const region *reg,
   if (!ctxt)
     return false;
 
-  bool need_unknown_sval = false;
+  bool oob_access_detected = false;
   check_region_for_taint (reg, dir, ctxt);
   if (!check_region_bounds (reg, dir, sval_hint, ctxt))
-    need_unknown_sval = true;
+    oob_access_detected = true;
 
   switch (dir)
     {
@@ -2820,7 +2821,7 @@ region_model::check_region_access (const region *reg,
       check_for_writable_region (reg, ctxt);
       break;
     }
-  return need_unknown_sval;
+  return oob_access_detected;
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems writing to REG.  */
@@ -2834,7 +2835,7 @@ region_model::check_region_for_write (const region *dest_reg,
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems reading from REG.
-  Returns TRUE if an unknown svalue needs be created.  */
+  Returns TRUE if an OOB read was detected.  */
 
 bool
 region_model::check_region_for_read (const region *src_reg,

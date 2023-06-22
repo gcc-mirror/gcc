@@ -293,9 +293,10 @@ region_model_manager::create_unique_svalue (tree type)
    necessary.  */
 
 const svalue *
-region_model_manager::get_or_create_initial_value (const region *reg)
+region_model_manager::get_or_create_initial_value (const region *reg,
+						   bool check_poisoned)
 {
-  if (!reg->can_have_initial_svalue_p ())
+  if (!reg->can_have_initial_svalue_p () && check_poisoned)
     return get_or_create_poisoned_svalue (POISON_KIND_UNINIT,
 					  reg->get_type ());
 
