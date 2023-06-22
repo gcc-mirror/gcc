@@ -2225,7 +2225,8 @@ TokenCollector::visit (ExternBlock &block)
 	Rust::Token::make_string (Location (), std::move (abi)));
     }
 
-  visit_items_as_block (block.get_extern_items ());
+  visit_items_as_block (block.get_extern_items (),
+			{Rust::Token::make (SEMICOLON, Location ())});
 }
 
 static std::pair<TokenId, TokenId>
