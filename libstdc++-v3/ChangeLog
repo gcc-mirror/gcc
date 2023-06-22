@@ -1,3 +1,9 @@
+2023-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR tree-optimization/105651
+	* include/bits/basic_string.tcc (_M_replace): Add an assert
+	to avoid -Wrestrict false positive.
+
 2023-05-30  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
