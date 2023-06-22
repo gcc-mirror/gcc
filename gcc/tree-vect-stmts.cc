@@ -2143,6 +2143,14 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
   if (!VECTOR_MODE_P (vmode))
     return NULL_TREE;
 
+  /* When we are asked to compose the vector from its components let
+     that happen directly.  */
+  if (known_eq (TYPE_VECTOR_SUBPARTS (vtype), nelts))
+    {
+      *ptype = TREE_TYPE (vtype);
+      return vtype;
+    }
+
   poly_uint64 vbsize = GET_MODE_BITSIZE (vmode);
   unsigned int pbsize;
   if (constant_multiple_p (vbsize, nelts, &pbsize))
