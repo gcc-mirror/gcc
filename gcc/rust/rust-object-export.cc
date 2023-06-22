@@ -46,8 +46,8 @@
 #define RUST_EXPORT_SECTION_NAME ".rust_export"
 #endif
 
-#ifndef TARGET_AIX
-#define TARGET_AIX 0
+#ifndef TARGET_AIX_OS
+#define TARGET_AIX_OS 0
 #endif
 
 /* Return whether or not GCC has reported any errors.  */
@@ -91,7 +91,7 @@ rust_write_export_data (const char *bytes, unsigned int size)
     {
       gcc_assert (targetm_common.have_named_sections);
       sec = get_section (RUST_EXPORT_SECTION_NAME,
-			 TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG, NULL);
+			 TARGET_AIX_OS ? SECTION_EXCLUDE : SECTION_DEBUG, NULL);
     }
 
   switch_to_section (sec);
