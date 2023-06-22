@@ -1286,15 +1286,19 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	{
 	  if (load_p
 	      && rhs_code != CFN_GATHER_LOAD
-	      && rhs_code != CFN_MASK_GATHER_LOAD)
+	      && rhs_code != CFN_MASK_GATHER_LOAD
+	      /* Not grouped loads are handled as externals for BB
+		 vectorization.  For loop vectorization we can handle
+		 splats the same we handle single element interleaving.  */
+	      && (is_a <bb_vec_info> (vinfo)
+		  || stmt_info != first_stmt_info))
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: not grouped load %G", stmt);
 
-	      /* FORNOW: Not grouped loads are not supported.  */
-	      if (is_a <bb_vec_info> (vinfo) && i != 0)
+	      if (i != 0)
 		continue;
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
@@ -1302,7 +1306,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    }
 
 	  /* Not memory operation.  */
-	  if (!phi_p
+	  if (!load_p
+	      && !phi_p
 	      && rhs_code.is_tree_code ()
 	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_binary
 	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_unary
@@ -1774,7 +1779,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
     return NULL;
 
   /* If the SLP node is a load, terminate the recursion unless masked.  */
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+  if (STMT_VINFO_DATA_REF (stmt_info)
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
       if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
@@ -1798,8 +1803,12 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    = DR_GROUP_FIRST_ELEMENT (SLP_TREE_SCALAR_STMTS (node)[0]);
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
 	    {
-	      int load_place = vect_get_place_in_interleaving_chain
-		  (load_info, first_stmt_info);
+	      int load_place;
+	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		load_place = vect_get_place_in_interleaving_chain
+				(load_info, first_stmt_info);
+	      else
+		load_place = 0;
 	      gcc_assert (load_place != -1);
 	      load_permutation.safe_push (load_place);
 	    }
@@ -5439,6 +5448,16 @@ vect_optimize_slp_pass::remove_redundant_permutations ()
 		this_load_permuted = true;
 		break;
 	      }
+	  /* When this isn't a grouped access we know it's single element
+	     and contiguous.  */
+	  if (!STMT_VINFO_GROUPED_ACCESS (SLP_TREE_SCALAR_STMTS (node)[0]))
+	    {
+	      if (!this_load_permuted
+		  && (known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1U)
+		      || SLP_TREE_LANES (node) == 1))
+		SLP_TREE_LOAD_PERMUTATION (node).release ();
+	      continue;
+	    }
 	  stmt_vec_info first_stmt_info
 	    = DR_GROUP_FIRST_ELEMENT (SLP_TREE_SCALAR_STMTS (node)[0]);
 	  if (!this_load_permuted
@@ -8129,12 +8148,16 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   tree vectype = SLP_TREE_VECTYPE (node);
   unsigned int group_size = SLP_TREE_SCALAR_STMTS (node).length ();
   unsigned int mask_element;
+  unsigned dr_group_size;
   machine_mode mode;
 
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    return false;
-
-  stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+    dr_group_size = 1;
+  else
+    {
+      stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      dr_group_size = DR_GROUP_SIZE (stmt_info);
+    }
 
   mode = TYPE_MODE (vectype);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -8175,7 +8198,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   unsigned int nelts_to_build;
   unsigned int nvectors_per_build;
   unsigned int in_nlanes;
-  bool repeating_p = (group_size == DR_GROUP_SIZE (stmt_info)
+  bool repeating_p = (group_size == dr_group_size
 		      && multiple_p (nunits, group_size));
   if (repeating_p)
     {
@@ -8188,7 +8211,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 	 it at least one to ensure the later computation for n_perms
 	 proceed.  */
       nvectors_per_build = nstmts > 0 ? nstmts : 1;
-      in_nlanes = DR_GROUP_SIZE (stmt_info) * 3;
+      in_nlanes = dr_group_size * 3;
     }
   else
     {
@@ -8200,7 +8223,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
       mask.new_vector (const_nunits, const_nunits, 1);
       nelts_to_build = const_vf * group_size;
       nvectors_per_build = 1;
-      in_nlanes = const_vf * DR_GROUP_SIZE (stmt_info);
+      in_nlanes = const_vf * dr_group_size;
     }
   auto_sbitmap used_in_lanes (in_nlanes);
   bitmap_clear (used_in_lanes);
@@ -8214,7 +8237,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
     {
       unsigned int iter_num = j / group_size;
       unsigned int stmt_num = j % group_size;
-      unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info) + perm[stmt_num]);
+      unsigned int i = (iter_num * dr_group_size + perm[stmt_num]);
       bitmap_set_bit (used_in_lanes, i);
       if (repeating_p)
 	{

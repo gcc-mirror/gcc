@@ -24,11 +24,17 @@ void rephase (void)
   struct site *s;
   for(i=0,s=lattice;i<sites_on_node;i++,s++)
     for(dir=0;dir<32;dir++)
-      for(j=0;j<3;j++)for(k=0;k<3;k++)
-	{
-	  s->link[dir].e[j][k].real *= s->phase[dir];
-	  s->link[dir].e[j][k].imag *= s->phase[dir];
-	}
+      {
+	for(j=0;j<3;j++)
+	  for(k=0;k<3;k++)
+	    {
+	      s->link[dir].e[j][k].real *= s->phase[dir];
+	      s->link[dir].e[j][k].imag *= s->phase[dir];
+	    }
+	/* Avoid loop vectorizing the outer loop after unrolling
+	   the inners.  */
+	__asm__ volatile ("" : : : "memory");
+      }
 }
 
 int main()

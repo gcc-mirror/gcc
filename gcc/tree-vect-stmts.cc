@@ -1150,6 +1150,8 @@ vect_model_load_cost (vec_info *vinfo,
       /* If the load is permuted then the alignment is determined by
 	 the first group element not by the first scalar stmt DR.  */
       stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      if (!first_stmt_info)
+	first_stmt_info = stmt_info;
       /* Record the cost for the permutation.  */
       unsigned n_perms, n_loads;
       vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
@@ -2203,12 +2205,24 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
-  stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+  stmt_vec_info first_stmt_info;
+  unsigned int group_size;
+  unsigned HOST_WIDE_INT gap;
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      group_size = DR_GROUP_SIZE (first_stmt_info);
+      gap = DR_GROUP_GAP (first_stmt_info);
+    }
+  else
+    {
+      first_stmt_info = stmt_info;
+      group_size = 1;
+      gap = 0;
+    }
   dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
-  unsigned int group_size = DR_GROUP_SIZE (first_stmt_info);
   bool single_element_p = (stmt_info == first_stmt_info
 			   && !DR_GROUP_NEXT_ELEMENT (stmt_info));
-  unsigned HOST_WIDE_INT gap = DR_GROUP_GAP (first_stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* True if the vectorized statements would access beyond the last
@@ -2311,11 +2325,16 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		    *memory_access_type = VMAT_ELEMENTWISE;
 		}
 	    }
-	  else
+	  else if (cmp == 0 && loop_vinfo)
 	    {
-	      gcc_assert (!loop_vinfo || cmp > 0);
-	      *memory_access_type = VMAT_CONTIGUOUS;
+	      gcc_assert (vls_type == VLS_LOAD);
+	      *memory_access_type = VMAT_INVARIANT;
+	      /* Invariant accesses perform only component accesses, alignment
+		 is irrelevant for them.  */
+	      *alignment_support_scheme = dr_unaligned_supported;
 	    }
+	  else
+	    *memory_access_type = VMAT_CONTIGUOUS;
 
 	  /* When we have a contiguous access across loop iterations
 	     but the access in the loop doesn't cover the full vector
@@ -2540,7 +2559,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	 is irrelevant for them.  */
       *alignment_support_scheme = dr_unaligned_supported;
     }
-  else if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+  else if (STMT_VINFO_GROUPED_ACCESS (stmt_info) || slp_node)
     {
       if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
 				      masked_p,
@@ -9464,46 +9483,6 @@ vectorizable_load (vec_info *vinfo,
 	  return false;
 	}
 
-      if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
-	{
-	  slp_perm = true;
-
-	  if (!loop_vinfo)
-	    {
-	      /* In BB vectorization we may not actually use a loaded vector
-		 accessing elements in excess of DR_GROUP_SIZE.  */
-	      stmt_vec_info group_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
-	      group_info = DR_GROUP_FIRST_ELEMENT (group_info);
-	      unsigned HOST_WIDE_INT nunits;
-	      unsigned j, k, maxk = 0;
-	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (slp_node), j, k)
-		if (k > maxk)
-		  maxk = k;
-	      tree vectype = SLP_TREE_VECTYPE (slp_node);
-	      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
-		  || maxk >= (DR_GROUP_SIZE (group_info) & ~(nunits - 1)))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "BB vectorization with gaps at the end of "
-				     "a load is not supported\n");
-		  return false;
-		}
-	    }
-
-	  auto_vec<tree> tem;
-	  unsigned n_perms;
-	  if (!vect_transform_slp_perm_load (vinfo, slp_node, tem, NULL, vf,
-					     true, &n_perms))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				 vect_location,
-				 "unsupported load permutation\n");
-	      return false;
-	    }
-	}
-
       /* Invalidate assumptions made by dependence analysis when vectorization
 	 on the unrolled body effectively re-orders stmts.  */
       if (!PURE_SLP_STMT (stmt_info)
@@ -9520,6 +9499,46 @@ vectorizable_load (vec_info *vinfo,
     }
   else
     group_size = 1;
+
+  if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+    {
+      slp_perm = true;
+
+      if (!loop_vinfo)
+	{
+	  /* In BB vectorization we may not actually use a loaded vector
+	     accessing elements in excess of DR_GROUP_SIZE.  */
+	  stmt_vec_info group_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
+	  group_info = DR_GROUP_FIRST_ELEMENT (group_info);
+	  unsigned HOST_WIDE_INT nunits;
+	  unsigned j, k, maxk = 0;
+	  FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (slp_node), j, k)
+	      if (k > maxk)
+		maxk = k;
+	  tree vectype = SLP_TREE_VECTYPE (slp_node);
+	  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
+	      || maxk >= (DR_GROUP_SIZE (group_info) & ~(nunits - 1)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "BB vectorization with gaps at the end of "
+				 "a load is not supported\n");
+	      return false;
+	    }
+	}
+
+      auto_vec<tree> tem;
+      unsigned n_perms;
+      if (!vect_transform_slp_perm_load (vinfo, slp_node, tem, NULL, vf,
+					 true, &n_perms))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+			     vect_location,
+			     "unsupported load permutation\n");
+	  return false;
+	}
+    }
 
   vect_memory_access_type memory_access_type;
   enum dr_alignment_support alignment_support_scheme;
@@ -9898,10 +9917,19 @@ vectorizable_load (vec_info *vinfo,
       || (!slp && memory_access_type == VMAT_CONTIGUOUS))
     grouped_load = false;
 
-  if (grouped_load)
+  if (grouped_load
+      || (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()))
     {
-      first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      group_size = DR_GROUP_SIZE (first_stmt_info);
+      if (grouped_load)
+	{
+	  first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  group_size = DR_GROUP_SIZE (first_stmt_info);
+	}
+      else
+	{
+	  first_stmt_info = stmt_info;
+	  group_size = 1;
+	}
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
