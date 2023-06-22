@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "analyzer/analyzer-selftests.h"
+#include "text-art/selftests.h"
 
 /* This function needed to be split out from selftest.cc as it references
    tests from the whole source tree, and so is within
@@ -117,6 +118,8 @@ selftest::run_tests ()
 
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();
+
+  text_art_tests ();
 
   /* Run the analyzer selftests (if enabled).  */
   ana::selftest::run_analyzer_selftests ();

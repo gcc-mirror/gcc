@@ -1602,4 +1602,7 @@ bool cpp_input_conversion_is_trivial (const char *input_charset);
 int cpp_check_utf8_bom (const char *data, size_t data_length);
 bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
 
+bool cpp_is_combining_char (cppchar_t c);
+bool cpp_is_printable_char (cppchar_t c);
+
 #endif /* ! LIBCPP_CPPLIB_H */

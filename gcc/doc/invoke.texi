@@ -317,7 +317,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-show-column
 -fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]}
 -fdiagnostics-column-origin=@var{origin}
--fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}}
+-fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}
+-fdiagnostics-text-art-charset=@r{[}none@r{|}ascii@r{|}unicode@r{|}emoji@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -5078,7 +5079,8 @@ options:
 -fno-diagnostics-show-line-numbers
 -fdiagnostics-color=never
 -fdiagnostics-urls=never
--fdiagnostics-path-format=separate-events}
+-fdiagnostics-path-format=separate-events
+-fdiagnostics-text-art-charset=none}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
@@ -5603,6 +5605,25 @@ Unicode characters.  For the example above, the following will be printed:
 @smallexample
  before<CF><80><BF>after
 @end smallexample
+
+@opindex fdiagnostics-text-art-charset
+@item -fdiagnostics-text-art-charset=@var{CHARSET}
+Some diagnostics can contain ``text art'' diagrams: visualizations created
+from text, intended to be viewed in a monospaced font.
+
+This option selects which characters should be used for printing such
+diagrams, if any.  @var{CHARSET} is @samp{none}, @samp{ascii}, @samp{unicode},
+or @samp{emoji}.
+
+The @samp{none} value suppresses the printing of such diagrams.
+The @samp{ascii} value will ensure that such diagrams are pure ASCII
+(``ASCII art'').  The @samp{unicode} value will allow for conservative use of
+unicode drawing characters (such as box-drawing characters).  The @samp{emoji}
+value further adds the possibility of emoji in the output (such as emitting
+U+26A0 WARNING SIGN followed by U+FE0F VARIATION SELECTOR-16 to select the
+emoji variant of the character).
+
+The default is @samp{emoji}.
 
 @opindex fdiagnostics-format
 @item -fdiagnostics-format=@var{FORMAT}

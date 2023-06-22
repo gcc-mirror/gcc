@@ -34009,7 +34009,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "depdir":C) $SHELL $ac_aux_dir/mkinstalldirs $DEPDIR ;;
     "gccdepdir":C)
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer rtl-ssa
+  for lang in $subdirs c-family common analyzer text-art rtl-ssa
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done ;;
