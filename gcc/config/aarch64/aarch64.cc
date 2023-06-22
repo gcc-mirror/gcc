@@ -1929,7 +1929,7 @@ static const struct tune_params ampere1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
-  1,	/* fma_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
