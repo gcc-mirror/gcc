@@ -12,6 +12,8 @@ foo (int aaa, int bbb)
 /* { dg-begin-multiline-output "" }
    r += !aaa == bbb;
              ^~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
    r += !aaa == bbb;
         ^~~~
         (   )

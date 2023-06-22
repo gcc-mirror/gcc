@@ -108,13 +108,6 @@ proc prune_gcc_output { text } {
     # Many tests that use visibility will still pass on platforms that don't support it.
     regsub -all "(^|\n)\[^\n\]*lto1: warning: visibility attribute not supported in this configuration; ignored\[^\n\]*" $text "" text
 
-    # If dg-enable-nn-line-numbers was provided, then obscure source-margin
-    # line numbers by converting them to "NN" form.
-    set text [maybe-handle-nn-line-numbers $text]
-    
-    # Call into multiline.exp to handle any multiline output directives.
-    set text [handle-multiline-outputs $text]
-
     #send_user "After:$text\n"
 
     return $text
