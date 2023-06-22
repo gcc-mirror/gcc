@@ -867,7 +867,8 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   RichLocation r (expr.get_locus ());
   r.add_range (expr.get_array_expr ()->get_locus ());
   r.add_range (expr.get_index_expr ()->get_locus ());
-  rust_error_at (r, "the type %<%s%> cannot be indexed by %<%s%>",
+  rust_error_at (r, ErrorCode ("E0277"),
+		 "the type %<%s%> cannot be indexed by %<%s%>",
 		 array_expr_ty->get_name ().c_str (),
 		 index_expr_ty->get_name ().c_str ());
 }
