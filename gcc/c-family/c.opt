@@ -2403,12 +2403,20 @@ C++ ObjC++
 Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++2b
-C++ ObjC++ Alias(std=c++23)
+C++ ObjC++ Alias(std=c++23) Undocumented
 Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c++23
-C++ ObjC++ Undocumented
+C++ ObjC++
 Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+
+std=c++2c
+C++ ObjC++ Alias(std=c++26)
+Conform to the ISO 2026 C++ draft standard (experimental and incomplete support).
+
+std=c++26
+C++ ObjC++ Undocumented
+Conform to the ISO 2026 C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -2489,12 +2497,20 @@ C++ ObjC++
 Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++2b
-C++ ObjC++ Alias(std=gnu++23)
+C++ ObjC++ Alias(std=gnu++23) Undocumented
 Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++23
-C++ ObjC++ Undocumented
+C++ ObjC++
 Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++2c
+C++ ObjC++ Alias(std=gnu++26)
+Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++26
+C++ ObjC++ Undocumented
+Conform to the ISO 2026 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC

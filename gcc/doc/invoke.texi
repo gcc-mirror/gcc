@@ -2507,6 +2507,18 @@ change in incompatible ways in future releases.
 GNU dialect of @option{-std=c++2b}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
+
+@item c++2c
+@itemx c++26
+The next revision of the ISO C++ standard, planned for
+2026.  Support is highly experimental, and will almost certainly
+change in incompatible ways in future releases.
+
+@item gnu++2c
+@itemx gnu++26
+GNU dialect of @option{-std=c++2c}.  Support is highly experimental,
+and will almost certainly change in incompatible ways in future
+releases.
 @end table
 
 @opindex aux-info
