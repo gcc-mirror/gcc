@@ -21423,16 +21423,23 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (XINT (x, 1) == UNSPEC_PTEST)
 	{
 	  *total = cost->sse_op;
-	  if (XVECLEN (x, 0) == 2
-	      && GET_CODE (XVECEXP (x, 0, 0)) == AND)
+	  rtx test_op0 = XVECEXP (x, 0, 0);
+	  if (!rtx_equal_p (test_op0, XVECEXP (x, 0, 1)))
+	    return false;
+	  if (GET_CODE (test_op0) == AND)
 	    {
-	      rtx andop = XVECEXP (x, 0, 0);
-	      *total += rtx_cost (XEXP (andop, 0), GET_MODE (andop),
-				  AND, opno, speed)
-			+ rtx_cost (XEXP (andop, 1), GET_MODE (andop),
-				    AND, opno, speed);
-	      return true;
+	      rtx and_op0 = XEXP (test_op0, 0);
+	      if (GET_CODE (and_op0) == NOT)
+		and_op0 = XEXP (and_op0, 0);
+	      *total += rtx_cost (and_op0, GET_MODE (and_op0),
+				  AND, 0, speed)
+			+ rtx_cost (XEXP (test_op0, 1), GET_MODE (and_op0),
+				    AND, 1, speed);
 	    }
+	  else
+	    *total = rtx_cost (test_op0, GET_MODE (test_op0),
+			       UNSPEC, 0, speed);
+	  return true;
 	}
       return false;
 

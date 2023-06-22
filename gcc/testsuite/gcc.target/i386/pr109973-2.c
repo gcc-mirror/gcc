@@ -10,4 +10,4 @@ foo (__m128i x, __m128i y)
   return __builtin_ia32_ptestc128 (a, a);
 }
 
-/* { dg-final { scan-assembler "pand" } } */
+/* { dg-final { scan-assembler "movl\[ \\t]*\\\$1, %eax" } } */
