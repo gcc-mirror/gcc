@@ -6392,6 +6392,25 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  else
 		    {
 		    gfc_conv_expr (&parmse, e);
+
+		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
+		       dummy arguments are actually passed by value.
+		       The BIND(C) case is handled elsewhere.
+		       TODO: truncate constant strings to length 1.  */
+		    if (fsym->ts.type == BT_CHARACTER
+			&& !fsym->ts.is_c_interop
+			&& fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+			&& fsym->ts.u.cl->length->ts.type == BT_INTEGER
+			&& (mpz_cmp_ui
+			    (fsym->ts.u.cl->length->value.integer, 1) == 0)
+			&& e->expr_type != EXPR_CONSTANT)
+		      {
+			parmse.expr = gfc_string_to_single_character
+			  (build_int_cst (gfc_charlen_type_node, 1),
+			   parmse.expr,
+			   e->ts.kind);
+		      }
+
 		    if (fsym->attr.optional
 			&& fsym->ts.type != BT_CLASS
 			&& fsym->ts.type != BT_DERIVED)
