@@ -271,7 +271,7 @@
   (VNx1SI "TARGET_MIN_VLEN < 128") VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32") (VNx32SI "TARGET_MIN_VLEN >= 128")
 ])
 
-(define_mode_iterator VF [
+(define_mode_iterator VF_ZVFHMIN [
   (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128")
   (VNx2HF "TARGET_VECTOR_ELEN_FP_16")
   (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
@@ -295,11 +295,12 @@
 
 ;; This iterator is the same as above but with TARGET_VECTOR_ELEN_FP_16
 ;; changed to TARGET_ZVFH.  TARGET_VECTOR_ELEN_FP_16 is also true for
-;; TARGET_ZVFHMIN while we actually disable all instructions apart from
-;; load, store and convert for it.
-;; Consequently the autovec expanders should also only be enabled with
-;; TARGET_ZVFH.
-(define_mode_iterator VF_AUTO [
+;; TARGET_ZVFHMIN while we actually want to disable all instructions apart
+;; from load, store and convert for it.
+;; It is not enough to set the "enabled" attribute to false
+;; since this will only disable insn alternatives in reload but still
+;; allow the instruction and mode to be matched during combine et al.
+(define_mode_iterator VF [
   (VNx1HF "TARGET_ZVFH && TARGET_MIN_VLEN < 128")
   (VNx2HF "TARGET_ZVFH")
   (VNx4HF "TARGET_ZVFH")
@@ -494,7 +495,8 @@
   (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
 ])
 
-(define_mode_iterator VWEXTF [
+;; Same iterator split reason as VF_ZVFHMIN and VF.
+(define_mode_iterator VWEXTF_ZVFHMIN [
   (VNx1SF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128")
   (VNx2SF "TARGET_VECTOR_ELEN_FP_16")
   (VNx4SF "TARGET_VECTOR_ELEN_FP_16")
@@ -509,13 +511,28 @@
   (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
 ])
 
+(define_mode_iterator VWEXTF [
+  (VNx1SF "TARGET_ZVFH && TARGET_MIN_VLEN < 128")
+  (VNx2SF "TARGET_ZVFH")
+  (VNx4SF "TARGET_ZVFH")
+  (VNx8SF "TARGET_ZVFH")
+  (VNx16SF "TARGET_ZVFH && TARGET_MIN_VLEN > 32")
+  (VNx32SF "TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
+
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN < 128")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
+])
+
 (define_mode_iterator VWCONVERTI [
-  (VNx1SI "TARGET_MIN_VLEN < 128 && TARGET_VECTOR_ELEN_FP_16")
-  (VNx2SI "TARGET_VECTOR_ELEN_FP_16")
-  (VNx4SI "TARGET_VECTOR_ELEN_FP_16")
-  (VNx8SI "TARGET_VECTOR_ELEN_FP_16")
-  (VNx16SI "TARGET_MIN_VLEN > 32 && TARGET_VECTOR_ELEN_FP_16")
-  (VNx32SI "TARGET_MIN_VLEN >= 128 && TARGET_VECTOR_ELEN_FP_16")
+  (VNx1SI "TARGET_ZVFH && TARGET_MIN_VLEN < 128")
+  (VNx2SI "TARGET_ZVFH")
+  (VNx4SI "TARGET_ZVFH")
+  (VNx8SI "TARGET_ZVFH")
+  (VNx16SI "TARGET_ZVFH && TARGET_MIN_VLEN > 32")
+  (VNx32SI "TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
 
   (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN < 128")
   (VNx2DI "TARGET_VECTOR_ELEN_64 && TARGET_VECTOR_ELEN_FP_32")
@@ -960,13 +977,13 @@
 ])
 
 (define_mode_iterator VHF [
-  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128")
-  (VNx2HF "TARGET_VECTOR_ELEN_FP_16")
-  (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
-  (VNx8HF "TARGET_VECTOR_ELEN_FP_16")
-  (VNx16HF "TARGET_VECTOR_ELEN_FP_16")
-  (VNx32HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
-  (VNx64HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
+  (VNx1HF "TARGET_ZVFH && TARGET_MIN_VLEN < 128")
+  (VNx2HF "TARGET_ZVFH")
+  (VNx4HF "TARGET_ZVFH")
+  (VNx8HF "TARGET_ZVFH")
+  (VNx16HF "TARGET_ZVFH")
+  (VNx32HF "TARGET_ZVFH && TARGET_MIN_VLEN > 32")
+  (VNx64HF "TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VSF [
@@ -1010,9 +1027,9 @@
 ])
 
 (define_mode_iterator VHF_LMUL1 [
-  (VNx8HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
-  (VNx4HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN == 64")
-  (VNx2HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN == 32")
+  (VNx8HF "TARGET_ZVFH && TARGET_MIN_VLEN >= 128")
+  (VNx4HF "TARGET_ZVFH && TARGET_MIN_VLEN == 64")
+  (VNx2HF "TARGET_ZVFH && TARGET_MIN_VLEN == 32")
 ])
 
 (define_mode_iterator VSF_LMUL1 [

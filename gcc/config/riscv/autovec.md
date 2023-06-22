@@ -499,9 +499,9 @@
 ;; - vfneg.v/vfabs.v
 ;; -------------------------------------------------------------------------------
 (define_expand "<optab><mode>2"
-  [(set (match_operand:VF_AUTO 0 "register_operand")
-    (any_float_unop_nofrm:VF_AUTO
-     (match_operand:VF_AUTO 1 "register_operand")))]
+  [(set (match_operand:VF 0 "register_operand")
+    (any_float_unop_nofrm:VF
+     (match_operand:VF 1 "register_operand")))]
   "TARGET_VECTOR"
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
@@ -516,9 +516,9 @@
 ;; - vfsqrt.v
 ;; -------------------------------------------------------------------------------
 (define_expand "<optab><mode>2"
-  [(set (match_operand:VF_AUTO 0 "register_operand")
-    (any_float_unop:VF_AUTO
-     (match_operand:VF_AUTO 1 "register_operand")))]
+  [(set (match_operand:VF 0 "register_operand")
+    (any_float_unop:VF
+     (match_operand:VF 1 "register_operand")))]
   "TARGET_VECTOR"
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
@@ -648,39 +648,39 @@
 
 (define_expand "fma<mode>4"
   [(parallel
-    [(set (match_operand:VF_AUTO 0 "register_operand")
-	  (fma:VF_AUTO
-	    (match_operand:VF_AUTO 1 "register_operand")
-	    (match_operand:VF_AUTO 2 "register_operand")
-	    (match_operand:VF_AUTO 3 "register_operand")))
+    [(set (match_operand:VF 0 "register_operand")
+	  (fma:VF
+	    (match_operand:VF 1 "register_operand")
+	    (match_operand:VF 2 "register_operand")
+	    (match_operand:VF 3 "register_operand")))
      (clobber (match_dup 4))])]
   "TARGET_VECTOR"
   {
     operands[4] = gen_reg_rtx (Pmode);
   })
 
-(define_insn_and_split "*fma<VF_AUTO:mode><P:mode>"
-  [(set (match_operand:VF_AUTO 0 "register_operand"   "=vr, vr, ?&vr")
-	(fma:VF_AUTO
-	  (match_operand:VF_AUTO 1 "register_operand" " %0, vr,   vr")
-	  (match_operand:VF_AUTO 2 "register_operand" " vr, vr,   vr")
-	  (match_operand:VF_AUTO 3 "register_operand" " vr,  0,   vr")))
+(define_insn_and_split "*fma<VF:mode><P:mode>"
+  [(set (match_operand:VF 0 "register_operand"   "=vr, vr, ?&vr")
+	(fma:VF
+	  (match_operand:VF 1 "register_operand" " %0, vr,   vr")
+	  (match_operand:VF 2 "register_operand" " vr, vr,   vr")
+	  (match_operand:VF 3 "register_operand" " vr,  0,   vr")))
    (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_vsetvl (<VF_AUTO:MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (PLUS, <VF_AUTO:MODE>mode),
+    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (PLUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<VF_AUTO:MODE>")])
+   (set_attr "mode" "<VF:MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFNMSAC and VFNMSUB
@@ -692,41 +692,41 @@
 
 (define_expand "fnma<mode>4"
   [(parallel
-    [(set (match_operand:VF_AUTO 0 "register_operand")
-	  (fma:VF_AUTO
-	    (neg:VF_AUTO
-	      (match_operand:VF_AUTO 1 "register_operand"))
-	    (match_operand:VF_AUTO 2 "register_operand")
-	    (match_operand:VF_AUTO 3 "register_operand")))
+    [(set (match_operand:VF 0 "register_operand")
+	  (fma:VF
+	    (neg:VF
+	      (match_operand:VF 1 "register_operand"))
+	    (match_operand:VF 2 "register_operand")
+	    (match_operand:VF 3 "register_operand")))
      (clobber (match_dup 4))])]
   "TARGET_VECTOR"
   {
     operands[4] = gen_reg_rtx (Pmode);
   })
 
-(define_insn_and_split "*fnma<VF_AUTO:mode><P:mode>"
-  [(set (match_operand:VF_AUTO 0 "register_operand"     "=vr, vr, ?&vr")
-	(fma:VF_AUTO
-	  (neg:VF_AUTO
-	    (match_operand:VF_AUTO 1 "register_operand" " %0, vr,   vr"))
-	  (match_operand:VF_AUTO 2 "register_operand"   " vr, vr,   vr")
-	  (match_operand:VF_AUTO 3 "register_operand"   " vr,  0,   vr")))
+(define_insn_and_split "*fnma<VF:mode><P:mode>"
+  [(set (match_operand:VF 0 "register_operand"     "=vr, vr, ?&vr")
+	(fma:VF
+	  (neg:VF
+	    (match_operand:VF 1 "register_operand" " %0, vr,   vr"))
+	  (match_operand:VF 2 "register_operand"   " vr, vr,   vr")
+	  (match_operand:VF 3 "register_operand"   " vr,  0,   vr")))
    (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_vsetvl (<VF_AUTO:MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (PLUS, <VF_AUTO:MODE>mode),
+    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (PLUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<VF_AUTO:MODE>")])
+   (set_attr "mode" "<VF:MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFMSAC and VFMSUB
@@ -738,41 +738,41 @@
 
 (define_expand "fms<mode>4"
   [(parallel
-    [(set (match_operand:VF_AUTO 0 "register_operand")
-	  (fma:VF_AUTO
-	    (match_operand:VF_AUTO 1 "register_operand")
-	    (match_operand:VF_AUTO 2 "register_operand")
-	    (neg:VF_AUTO
-	      (match_operand:VF_AUTO 3 "register_operand"))))
+    [(set (match_operand:VF 0 "register_operand")
+	  (fma:VF
+	    (match_operand:VF 1 "register_operand")
+	    (match_operand:VF 2 "register_operand")
+	    (neg:VF
+	      (match_operand:VF 3 "register_operand"))))
      (clobber (match_dup 4))])]
   "TARGET_VECTOR"
   {
     operands[4] = gen_reg_rtx (Pmode);
   })
 
-(define_insn_and_split "*fms<VF_AUTO:mode><P:mode>"
-  [(set (match_operand:VF_AUTO 0 "register_operand"     "=vr, vr, ?&vr")
-	(fma:VF_AUTO
-	  (match_operand:VF_AUTO 1 "register_operand"   " %0, vr,   vr")
-	  (match_operand:VF_AUTO 2 "register_operand"   " vr, vr,   vr")
-	  (neg:VF_AUTO
-	    (match_operand:VF_AUTO 3 "register_operand" " vr,  0,   vr"))))
+(define_insn_and_split "*fms<VF:mode><P:mode>"
+  [(set (match_operand:VF 0 "register_operand"     "=vr, vr, ?&vr")
+	(fma:VF
+	  (match_operand:VF 1 "register_operand"   " %0, vr,   vr")
+	  (match_operand:VF 2 "register_operand"   " vr, vr,   vr")
+	  (neg:VF
+	    (match_operand:VF 3 "register_operand" " vr,  0,   vr"))))
    (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_vsetvl (<VF_AUTO:MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (MINUS, <VF_AUTO:MODE>mode),
+    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (MINUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<VF_AUTO:MODE>")])
+   (set_attr "mode" "<VF:MODE>")])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFMSAC and VFMSUB
@@ -784,43 +784,43 @@
 
 (define_expand "fnms<mode>4"
   [(parallel
-    [(set (match_operand:VF_AUTO 0 "register_operand")
-	  (fma:VF_AUTO
-	    (neg:VF_AUTO
-	      (match_operand:VF_AUTO 1 "register_operand"))
-	    (match_operand:VF_AUTO 2 "register_operand")
-	    (neg:VF_AUTO
-	      (match_operand:VF_AUTO 3 "register_operand"))))
+    [(set (match_operand:VF 0 "register_operand")
+	  (fma:VF
+	    (neg:VF
+	      (match_operand:VF 1 "register_operand"))
+	    (match_operand:VF 2 "register_operand")
+	    (neg:VF
+	      (match_operand:VF 3 "register_operand"))))
      (clobber (match_dup 4))])]
   "TARGET_VECTOR"
   {
     operands[4] = gen_reg_rtx (Pmode);
   })
 
-(define_insn_and_split "*fnms<VF_AUTO:mode><P:mode>"
-  [(set (match_operand:VF_AUTO 0 "register_operand"     "=vr, vr, ?&vr")
-	(fma:VF_AUTO
-	  (neg:VF_AUTO
-	    (match_operand:VF_AUTO 1 "register_operand" " %0, vr,   vr"))
-	  (match_operand:VF_AUTO 2 "register_operand"   " vr, vr,   vr")
-	  (neg:VF_AUTO
-	    (match_operand:VF_AUTO 3 "register_operand" " vr,  0,   vr"))))
+(define_insn_and_split "*fnms<VF:mode><P:mode>"
+  [(set (match_operand:VF 0 "register_operand"     "=vr, vr, ?&vr")
+	(fma:VF
+	  (neg:VF
+	    (match_operand:VF 1 "register_operand" " %0, vr,   vr"))
+	  (match_operand:VF 2 "register_operand"   " vr, vr,   vr")
+	  (neg:VF
+	    (match_operand:VF 3 "register_operand" " vr,  0,   vr"))))
    (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_vsetvl (<VF_AUTO:MODE>mode, operands[4]);
+    riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
     if (which_alternative == 2)
       emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (MINUS, <VF_AUTO:MODE>mode),
+    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (MINUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
     DONE;
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<VF_AUTO:MODE>")])
+   (set_attr "mode" "<VF:MODE>")])
 
 ;; =========================================================================
 ;; == SELECT_VL
@@ -923,10 +923,10 @@
 ;; - vfadd.vf/vfsub.vf/...
 ;; -------------------------------------------------------------------------
 (define_expand "<optab><mode>3"
-  [(match_operand:VF_AUTO 0 "register_operand")
-   (any_float_binop:VF_AUTO
-    (match_operand:VF_AUTO 1 "register_operand")
-    (match_operand:VF_AUTO 2 "register_operand"))]
+  [(match_operand:VF 0 "register_operand")
+   (any_float_binop:VF
+    (match_operand:VF 1 "register_operand")
+    (match_operand:VF 2 "register_operand"))]
   "TARGET_VECTOR"
 {
   riscv_vector::emit_vlmax_fp_insn (code_for_pred (<CODE>, <MODE>mode),
@@ -940,10 +940,10 @@
 ;; - vfmin.vf/vfmax.vf
 ;; -------------------------------------------------------------------------
 (define_expand "<optab><mode>3"
-  [(match_operand:VF_AUTO 0 "register_operand")
-   (any_float_binop_nofrm:VF_AUTO
-    (match_operand:VF_AUTO 1 "register_operand")
-    (match_operand:VF_AUTO 2 "register_operand"))]
+  [(match_operand:VF 0 "register_operand")
+   (any_float_binop_nofrm:VF
+    (match_operand:VF 1 "register_operand")
+    (match_operand:VF 2 "register_operand"))]
   "TARGET_VECTOR"
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
