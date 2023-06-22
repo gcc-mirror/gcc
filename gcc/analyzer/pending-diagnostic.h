@@ -180,7 +180,7 @@ class pending_diagnostic
   /* Vfunc for emitting the diagnostic.  The rich_location will have been
      populated with a diagnostic_path.
      Return true if a diagnostic is actually emitted.  */
-  virtual bool emit (rich_location *) = 0;
+  virtual bool emit (rich_location *, logger *) = 0;
 
   /* Hand-coded RTTI: get an ID for the subclass.  */
   virtual const char *get_kind () const = 0;

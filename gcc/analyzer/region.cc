@@ -63,6 +63,332 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+region_offset
+region_offset::make_byte_offset (const region *base_region,
+				 const svalue *num_bytes_sval)
+{
+  if (tree num_bytes_cst = num_bytes_sval->maybe_get_constant ())
+    {
+      gcc_assert (TREE_CODE (num_bytes_cst) == INTEGER_CST);
+      bit_offset_t num_bits = wi::to_offset (num_bytes_cst) * BITS_PER_UNIT;
+      return make_concrete (base_region, num_bits);
+    }
+  else
+    {
+      return make_symbolic (base_region, num_bytes_sval);
+    }
+}
+
+tree
+region_offset::calc_symbolic_bit_offset (const region_model &model) const
+{
+  if (symbolic_p ())
+    {
+      tree num_bytes_expr = model.get_representative_tree (m_sym_offset);
+      if (!num_bytes_expr)
+	return NULL_TREE;
+      tree bytes_to_bits_scale = build_int_cst (size_type_node, BITS_PER_UNIT);
+      return fold_build2 (MULT_EXPR, size_type_node,
+			  num_bytes_expr, bytes_to_bits_scale);
+    }
+  else
+    {
+      tree cst = wide_int_to_tree (size_type_node, m_offset);
+      return cst;
+    }
+}
+
+const svalue *
+region_offset::calc_symbolic_byte_offset (region_model_manager *mgr) const
+{
+  if (symbolic_p ())
+    return m_sym_offset;
+  else
+    {
+      byte_offset_t concrete_byte_offset;
+      if (get_concrete_byte_offset (&concrete_byte_offset))
+	return mgr->get_or_create_int_cst (size_type_node,
+					   concrete_byte_offset);
+      else
+	/* Can't handle bitfields; return UNKNOWN.  */
+	return mgr->get_or_create_unknown_svalue (size_type_node);
+    }
+}
+
+void
+region_offset::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (symbolic_p ())
+    {
+      /* We don't bother showing the base region.  */
+      pp_string (pp, "byte ");
+      m_sym_offset->dump_to_pp (pp, simple);
+    }
+  else
+    {
+      if (m_offset % BITS_PER_UNIT == 0)
+	{
+	  pp_string (pp, "byte ");
+	  pp_wide_int (pp, m_offset / BITS_PER_UNIT, SIGNED);
+	}
+      else
+	{
+	  pp_string (pp, "bit ");
+	  pp_wide_int (pp, m_offset, SIGNED);
+	}
+    }
+}
+
+DEBUG_FUNCTION void
+region_offset::dump (bool simple) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp, simple);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+/* An svalue that matches the pattern (BASE * FACTOR) + OFFSET
+   where FACTOR or OFFSET could be the identity (represented as NULL).  */
+
+struct linear_op
+{
+  linear_op (const svalue *base,
+	     const svalue *factor,
+	     const svalue *offset)
+  : m_base (base), m_factor (factor), m_offset (offset)
+  {
+  }
+
+  bool maybe_get_cst_factor (bit_offset_t *out) const
+  {
+    if (m_factor == nullptr)
+      {
+	*out = 1;
+	return true;
+      }
+    if (tree cst_factor = m_factor->maybe_get_constant ())
+      {
+	*out = wi::to_offset (cst_factor);
+	return true;
+      }
+    return false;
+  }
+
+  bool maybe_get_cst_offset (bit_offset_t *out) const
+  {
+    if (m_offset == nullptr)
+      {
+	*out = 0;
+	return true;
+      }
+    if (tree cst_offset = m_offset->maybe_get_constant ())
+      {
+	*out = wi::to_offset (cst_offset);
+	return true;
+      }
+    return false;
+  }
+
+  static tristate
+  less (const linear_op &a, const linear_op &b)
+  {
+    /* Same base.  */
+    if (a.m_base == b.m_base)
+      {
+	bit_offset_t a_wi_factor;
+	bit_offset_t b_wi_factor;
+	if (a.maybe_get_cst_factor (&a_wi_factor)
+	    && b.maybe_get_cst_factor (&b_wi_factor))
+	  {
+	    if (a_wi_factor != b_wi_factor)
+	      return tristate (a_wi_factor < b_wi_factor);
+	    else
+	      {
+		bit_offset_t a_wi_offset;
+		bit_offset_t b_wi_offset;
+		if (a.maybe_get_cst_offset (&a_wi_offset)
+		    && b.maybe_get_cst_offset (&b_wi_offset))
+		  return tristate (a_wi_offset < b_wi_offset);
+	      }
+	  }
+      }
+    return tristate::unknown ();
+  }
+
+  static tristate
+  le (const linear_op &a, const linear_op &b)
+  {
+    /* Same base.  */
+    if (a.m_base == b.m_base)
+      {
+	bit_offset_t a_wi_factor;
+	bit_offset_t b_wi_factor;
+	if (a.maybe_get_cst_factor (&a_wi_factor)
+	    && b.maybe_get_cst_factor (&b_wi_factor))
+	  {
+	    if (a_wi_factor != b_wi_factor)
+	      return tristate (a_wi_factor <= b_wi_factor);
+	    else
+	      {
+		bit_offset_t a_wi_offset;
+		bit_offset_t b_wi_offset;
+		if (a.maybe_get_cst_offset (&a_wi_offset)
+		    && b.maybe_get_cst_offset (&b_wi_offset))
+		  return tristate (a_wi_offset <= b_wi_offset);
+	      }
+	  }
+      }
+    return tristate::unknown ();
+  }
+
+  static bool
+  from_svalue (const svalue &sval, linear_op *out)
+  {
+    switch (sval.get_kind ())
+      {
+      default:
+	break;
+      case SK_BINOP:
+	{
+	  const binop_svalue &binop_sval ((const binop_svalue &)sval);
+	  if (binop_sval.get_op () == MULT_EXPR)
+	    {
+	      *out = linear_op (binop_sval.get_arg0 (),
+				binop_sval.get_arg1 (),
+				NULL);
+	      return true;
+	    }
+	  else if (binop_sval.get_op () == PLUS_EXPR)
+	    {
+	      if (binop_sval.get_arg0 ()->get_kind () == SK_BINOP)
+		{
+		  const binop_svalue &inner_binop_sval
+		    ((const binop_svalue &)*binop_sval.get_arg0 ());
+		  if (inner_binop_sval.get_op () == MULT_EXPR)
+		    {
+		      *out = linear_op (inner_binop_sval.get_arg0 (),
+					inner_binop_sval.get_arg1 (),
+					binop_sval.get_arg1 ());
+		      return true;
+		    }
+		}
+
+	      *out = linear_op (binop_sval.get_arg0 (),
+				NULL,
+				binop_sval.get_arg1 ());
+	      return true;
+	    }
+	}
+	break;
+      }
+    return false;
+  }
+
+  const svalue *m_base;
+  const svalue *m_factor;
+  const svalue *m_offset;
+};
+
+bool
+operator< (const region_offset &a, const region_offset &b)
+{
+  if (a.symbolic_p ())
+    {
+      if (b.symbolic_p ())
+	{
+	  /* Symbolic vs symbolic.  */
+	  const svalue &a_sval = *a.get_symbolic_byte_offset ();
+	  const svalue &b_sval = *b.get_symbolic_byte_offset ();
+
+	  linear_op op_a (NULL, NULL, NULL);
+	  linear_op op_b (NULL, NULL, NULL);
+	  if (linear_op::from_svalue (a_sval, &op_a)
+	      && linear_op::from_svalue (b_sval, &op_b))
+	    {
+	      tristate ts = linear_op::less (op_a, op_b);
+	      if (ts.is_true ())
+		return true;
+	      else if (ts.is_false ())
+		return false;
+	    }
+	  /* Use svalue's deterministic order, for now.  */
+	  return (svalue::cmp_ptr (a.get_symbolic_byte_offset (),
+				   b.get_symbolic_byte_offset ())
+		  < 0);
+	}
+      else
+	/* Symbolic vs concrete: put all symbolic after all concrete.  */
+	return false;
+    }
+  else
+    {
+      if (b.symbolic_p ())
+	/* Concrete vs symbolic: put all concrete before all symbolic.  */
+	return true;
+      else
+	/* Concrete vs concrete.  */
+	return a.get_bit_offset () < b.get_bit_offset ();
+    }
+}
+
+bool
+operator<= (const region_offset &a, const region_offset &b)
+{
+  if (a.symbolic_p ())
+    {
+      if (b.symbolic_p ())
+	{
+	  /* Symbolic vs symbolic.  */
+	  const svalue &a_sval = *a.get_symbolic_byte_offset ();
+	  const svalue &b_sval = *b.get_symbolic_byte_offset ();
+
+	  linear_op op_a (NULL, NULL, NULL);
+	  linear_op op_b (NULL, NULL, NULL);
+	  if (linear_op::from_svalue (a_sval, &op_a)
+	      && linear_op::from_svalue (b_sval, &op_b))
+	    {
+	      tristate ts = linear_op::le (op_a, op_b);
+	      if (ts.is_true ())
+		return true;
+	      else if (ts.is_false ())
+		return false;
+	    }
+	  /* Use svalue's deterministic order, for now.  */
+	  return (svalue::cmp_ptr (a.get_symbolic_byte_offset (),
+				   b.get_symbolic_byte_offset ())
+		  <= 0);
+	}
+      else
+	/* Symbolic vs concrete: put all symbolic after all concrete.  */
+	return false;
+    }
+  else
+    {
+      if (b.symbolic_p ())
+	/* Concrete vs symbolic: put all concrete before all symbolic.  */
+	return true;
+      else
+	/* Concrete vs concrete.  */
+	return a.get_bit_offset () <= b.get_bit_offset ();
+    }
+}
+
+bool
+operator> (const region_offset &a, const region_offset &b)
+{
+  return b < a;
+}
+
+bool
+operator>= (const region_offset &a, const region_offset &b)
+{
+  return b <= a;
+}
+
 /* class region and its various subclasses.  */
 
 /* class region.  */
@@ -337,6 +663,35 @@ region::get_offset (region_model_manager *mgr) const
   if(!m_cached_offset)
     m_cached_offset = new region_offset (calc_offset (mgr));
   return *m_cached_offset;
+}
+
+/* Get the region_offset for immediately beyond this region.  */
+
+region_offset
+region::get_next_offset (region_model_manager *mgr) const
+{
+  region_offset start = get_offset (mgr);
+
+  bit_size_t bit_size;
+  if (get_bit_size (&bit_size))
+    {
+      if (start.concrete_p ())
+	{
+	  bit_offset_t next_bit_offset = start.get_bit_offset () + bit_size;
+	  return region_offset::make_concrete (start.get_base_region (),
+					       next_bit_offset);
+	}
+    }
+
+  const svalue *start_byte_offset_sval = start.calc_symbolic_byte_offset (mgr);
+  const svalue *byte_size_sval = get_byte_size_sval (mgr);
+  const svalue *sum_sval
+    = mgr->get_or_create_binop (size_type_node,
+				PLUS_EXPR,
+				start_byte_offset_sval,
+				byte_size_sval);
+  return region_offset::make_symbolic (start.get_base_region (),
+				       sum_sval);
 }
 
 /* Base class implementation of region::get_byte_size vfunc.
@@ -617,7 +972,7 @@ region::get_relative_concrete_offset (bit_offset_t *) const
 const svalue *
 region::get_relative_symbolic_offset (region_model_manager *mgr) const
 {
-  return mgr->get_or_create_unknown_svalue (integer_type_node);
+  return mgr->get_or_create_unknown_svalue (ptrdiff_type_node);
 }
 
 /* Attempt to get the position and size of this region expressed as a
@@ -1448,10 +1803,10 @@ field_region::get_relative_symbolic_offset (region_model_manager *mgr) const
   if (get_relative_concrete_offset (&out))
     {
       tree cst_tree
-	= wide_int_to_tree (integer_type_node, out / BITS_PER_UNIT);
+	= wide_int_to_tree (ptrdiff_type_node, out / BITS_PER_UNIT);
       return mgr->get_or_create_constant_svalue (cst_tree);
     }
-  return mgr->get_or_create_unknown_svalue (integer_type_node);
+  return mgr->get_or_create_unknown_svalue (ptrdiff_type_node);
 }
 
 /* class element_region : public region.  */
@@ -1533,14 +1888,14 @@ element_region::get_relative_symbolic_offset (region_model_manager *mgr) const
   HOST_WIDE_INT hwi_byte_size = int_size_in_bytes (elem_type);
   if (hwi_byte_size > 0)
 	  {
-      tree byte_size_tree = wide_int_to_tree (integer_type_node,
+      tree byte_size_tree = wide_int_to_tree (ptrdiff_type_node,
 					      hwi_byte_size);
       const svalue *byte_size_sval
 	= mgr->get_or_create_constant_svalue (byte_size_tree);
-      return mgr->get_or_create_binop (integer_type_node, MULT_EXPR,
+      return mgr->get_or_create_binop (ptrdiff_type_node, MULT_EXPR,
 				       m_index, byte_size_sval);
     }
-  return mgr->get_or_create_unknown_svalue (integer_type_node);
+  return mgr->get_or_create_unknown_svalue (ptrdiff_type_node);
 }
 
 /* class offset_region : public region.  */
@@ -1864,7 +2219,7 @@ bit_range_region::get_relative_symbolic_offset (region_model_manager *mgr)
   const
 {
   byte_offset_t start_byte = m_bits.get_start_bit_offset () / BITS_PER_UNIT;
-  tree start_bit_tree = wide_int_to_tree (integer_type_node, start_byte);
+  tree start_bit_tree = wide_int_to_tree (ptrdiff_type_node, start_byte);
   return mgr->get_or_create_constant_svalue (start_bit_tree);
 }
 
