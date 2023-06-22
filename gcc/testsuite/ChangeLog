@@ -1,3 +1,60 @@
+2023-06-20  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110132
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_FUNC_ok):
+	Extend to ls64.
+	* g++.target/aarch64/acle/acle.exp: New.
+	* g++.target/aarch64/acle/ls64.C: New test.
+	* g++.target/aarch64/acle/ls64_lto.C: New test.
+	* gcc.target/aarch64/acle/ls64_lto.c: New test.
+	* gcc.target/aarch64/acle/pr110132.c: New test.
+
+2023-06-20  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* gcc.target/aarch64/acle/pr110100.c: New test.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/110230
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: Adjust with int128 effective target.
+	* gcc.target/powerpc/pr109932-2.c: Ditto.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109932
+	* gcc.target/powerpc/pr109932-1.c: New test.
+	* gcc.target/powerpc/pr109932-2.c: New test.
+
+2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-06-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110011
+	* gcc.target/powerpc/pr110011.c: New test.
+
+2023-06-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/sparc/pr109541.c: New.
+
+2023-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110227.c: New test.
+
 2023-06-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/109650
