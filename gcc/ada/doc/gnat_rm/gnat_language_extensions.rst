@@ -45,6 +45,27 @@ file, or in a ``.adc`` file corresponding to your project.
 Curated Extensions
 ==================
 
+Local Declarations Without Block
+--------------------------------
+
+A basic_declarative_item may appear at the place of any statement.
+This avoids the heavy syntax of block_statements just to declare
+something locally.
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-local-vars-without-block.md
+For example:
+
+.. code-block:: ada
+
+   if X > 5 then
+      X := X + 1;
+
+      Squared : constant Integer := X**2;
+
+      X := X + Squared;
+   end if;
+
 Conditional when constructs
 ---------------------------
 
