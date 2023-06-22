@@ -1,3 +1,9 @@
+2023-06-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* c-gimplify.cc (fma_supported_p): New helper.
+	(c_gimplify_expr) [PLUS_EXPR, MINUS_EXPR]: Implement FMA
+	contraction.
+
 2023-06-16  Alex Coplan  <alex.coplan@arm.com>
 
 	* c.opt (Welaborated-enum-base): New.

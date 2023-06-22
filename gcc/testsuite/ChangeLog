@@ -1,3 +1,52 @@
+2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/107900
+	PR fortran/110224
+	PR fortran/88688
+	PR fortran/94380
+	PR fortran/95398
+	* gfortran.dg/pr107900.f90 : New test
+	* gfortran.dg/pr110224.f90 : New test
+	* gfortran.dg/pr88688.f90 : New test
+	* gfortran.dg/pr94380.f90 : New test
+	* gfortran.dg/pr95398.f90 : Set -std=f2008, bump the line
+	numbers in the error tests by two and change the text in two.
+
+2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108961
+	* gfortran.dg/pr108961.f90: New test.
+
+2023-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110018
+	* gcc.target/i386/pr110018-1.c: Use explicit signed types.
+	* gcc.target/i386/pr110018-2.c: New test.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sve/gather_earlyclobber.c: New test.
+	* gcc.target/aarch64/sve2/gather_earlyclobber.c: New test.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-partial-vectors-1.c: New testcase.
+	* gcc.target/i386/vect-partial-vectors-2.c: Likewise.
+
+2023-06-21  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512f-copysign.c: New test.
+
+2023-06-21  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512f-dupv2di.c: Add
+	-mprefer-vector-width=512.
+
+2023-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110018-1.c: New test.
+
 2023-06-20  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c++/66290

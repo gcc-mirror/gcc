@@ -1,3 +1,230 @@
+2023-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* function.h (emit_initial_value_sets):
+	Change return type from int to void.
+	(aggregate_value_p): Change return type from int to bool.
+	(prologue_contains): Ditto.
+	(epilogue_contains): Ditto.
+	(prologue_epilogue_contains): Ditto.
+	* function.cc (temp_slot): Make "in_use" variable bool.
+	(make_slot_available): Update for changed "in_use" variable.
+	(assign_stack_temp_for_type): Ditto.
+	(emit_initial_value_sets): Change return type from int to void
+	and update function body accordingly.
+	(instantiate_virtual_regs): Ditto.
+	(rest_of_handle_thread_prologue_and_epilogue): Ditto.
+	(safe_insn_predicate): Change return type from int to bool.
+	(aggregate_value_p): Change return type from int to bool
+	and update function body accordingly.
+	(prologue_contains): Change return type from int to bool.
+	(prologue_epilogue_contains): Ditto.
+
+2023-06-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* common.opt (fp_contract_mode) [on]: Remove fallback.
+	* config/sh/sh.md (*fmasf4): Correct flag_fp_contract_mode test.
+	* doc/invoke.texi (-ffp-contract): Update.
+	* trans-mem.cc (diagnose_tm_1): Skip internal function calls.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Add alternatives to prefer to avoid same input and output Z register.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Revert:
+	2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* optabs-query.cc (can_vec_mask_load_store_p): Move to optabs-tree.cc.
+	(get_len_load_store_mode): Ditto.
+	* optabs-query.h (can_vec_mask_load_store_p): Move to optabs-tree.h.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.cc (can_vec_mask_load_store_p): New function.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.h (can_vec_mask_load_store_p): Ditto.
+	(get_len_load_store_mode): Ditto.
+	* tree-if-conv.cc: include optabs-tree instead of optabs-query
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.cc (add_iv_candidate_for_use): Use
+	split_constant_offset for the POINTER_PLUS_EXPR case.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.cc (record_group_use): Use
+	split_constant_offset.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.cc (classify_builtin_st): Use
+	split_constant_offset.
+	* tree-ssa-loop-ivopts.h (strip_offset): Remove.
+	* tree-ssa-loop-ivopts.cc (strip_offset): Make static.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR other/110329
+	* doc/md.texi: Replace backslashchar.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Overload.  For masked main loops make sure the vectorization
+	factor isn't more than double the number of iterations.
+
+2023-06-21  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Request
+	value duplication by ix86_build_signbit_mask() when AVX512F and
+	not HFmode.
+	* config/i386/sse.md (*<avx512>_vternlog<mode>_all): Convert to
+	2-alternative form. Adjust "mode" attribute. Add "enabled"
+	attribute.
+	(*<avx512>_vpternlog<mode>_1): Also permit when TARGET_AVX512F
+	&& !TARGET_PREFER_AVX256.
+	(*<avx512>_vpternlog<mode>_2): Likewise.
+	(*<avx512>_vpternlog<mode>_3): Likewise.
+
+2023-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110018
+	* tree-vect-stmts.cc (vectorizable_conversion): Use
+	intermiediate integer type for float_expr/fix_trunc_expr when
+	direct optab is not existed.
+
 2023-06-20  Tamar Christina  <tamar.christina@arm.com>
 
 	PR bootstrap/110324

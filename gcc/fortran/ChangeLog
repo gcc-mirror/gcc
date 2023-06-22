@@ -1,3 +1,37 @@
+2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/88688
+	PR fortran/94380
+	PR fortran/107900
+	PR fortran/110224
+	* decl.cc (char_len_param_value): Fix memory leak.
+	(resolve_block_construct): Remove unnecessary static decls.
+	* expr.cc (gfc_is_ptr_fcn): New function.
+	(gfc_check_vardef_context): Use it to permit pointer function
+	result selectors to be used for associate names in variable
+	definition context.
+	* gfortran.h: Prototype for gfc_is_ptr_fcn.
+	* match.cc (build_associate_name): New function.
+	(gfc_match_select_type): Use the new function to replace inline
+	version and to build a new associate name for the case where
+	the supplied associate name is already used for that purpose.
+	* resolve.cc (resolve_assoc_var): Call gfc_is_ptr_fcn to allow
+	associate names with pointer function targets to be used in
+	variable definition context.
+	* trans-decl.cc (gfc_get_symbol_decl): Unlimited polymorphic
+	variables need deferred initialisation of the vptr.
+	(gfc_trans_deferred_vars): Do the vptr initialisation.
+	* trans-stmt.cc (trans_associate_var): Ensure that a pointer
+	associate name points to the target of the selector and not
+	the selector itself.
+
+2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108961
+	* trans-expr.cc (gfc_conv_procedure_call): The hidden string
+	length must not be passed to a formal arg of type(cptr).
+
 2023-06-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_namelist): Fix dump of the allocator
