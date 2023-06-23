@@ -1,3 +1,146 @@
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* access-diagram.cc: New file.
+	* access-diagram.h: New file.
+	* analyzer.h (class region_offset): Add default ctor.
+	(region_offset::make_byte_offset): New decl.
+	(region_offset::concrete_p): New.
+	(region_offset::get_concrete_byte_offset): New.
+	(region_offset::calc_symbolic_bit_offset): New decl.
+	(region_offset::calc_symbolic_byte_offset): New decl.
+	(region_offset::dump_to_pp): New decl.
+	(region_offset::dump): New decl.
+	(operator<, operator<=, operator>, operator>=): New decls for
+	region_offset.
+	* analyzer.opt
+	(-param=analyzer-text-art-string-ellipsis-threshold=): New.
+	(-param=analyzer-text-art-string-ellipsis-head-len=): New.
+	(-param=analyzer-text-art-string-ellipsis-tail-len=): New.
+	(-param=analyzer-text-art-ideal-canvas-width=): New.
+	(fanalyzer-debug-text-art): New.
+	* bounds-checking.cc: Include "intl.h", "diagnostic-diagram.h",
+	and "analyzer/access-diagram.h".
+	(class out_of_bounds::oob_region_creation_event_capacity): New.
+	(out_of_bounds::out_of_bounds): Add "model" and "sval_hint"
+	params.
+	(out_of_bounds::mark_interesting_stuff): Use the base region.
+	(out_of_bounds::add_region_creation_events): Use
+	oob_region_creation_event_capacity.
+	(out_of_bounds::get_dir): New pure vfunc.
+	(out_of_bounds::maybe_show_notes): New.
+	(out_of_bounds::maybe_show_diagram): New.
+	(out_of_bounds::make_access_diagram): New.
+	(out_of_bounds::m_model): New field.
+	(out_of_bounds::m_sval_hint): New field.
+	(out_of_bounds::m_region_creation_event_id): New field.
+	(concrete_out_of_bounds::concrete_out_of_bounds): Update for new
+	fields.
+	(concrete_past_the_end::concrete_past_the_end): Likewise.
+	(concrete_past_the_end::add_region_creation_events): Use
+	oob_region_creation_event_capacity.
+	(concrete_buffer_overflow::concrete_buffer_overflow): Update for
+	new fields.
+	(concrete_buffer_overflow::emit): Replace call to
+	maybe_describe_array_bounds with maybe_show_notes.
+	(concrete_buffer_overflow::get_dir): New.
+	(concrete_buffer_over_read::concrete_buffer_over_read): Update for
+	new fields.
+	(concrete_buffer_over_read::emit): Replace call to
+	maybe_describe_array_bounds with maybe_show_notes.
+	(concrete_buffer_overflow::get_dir): New.
+	(concrete_buffer_underwrite::concrete_buffer_underwrite): Update
+	for new fields.
+	(concrete_buffer_underwrite::emit): Replace call to
+	maybe_describe_array_bounds with maybe_show_notes.
+	(concrete_buffer_underwrite::get_dir): New.
+	(concrete_buffer_under_read::concrete_buffer_under_read): Update
+	for new fields.
+	(concrete_buffer_under_read::emit): Replace call to
+	maybe_describe_array_bounds with maybe_show_notes.
+	(concrete_buffer_under_read::get_dir): New.
+	(symbolic_past_the_end::symbolic_past_the_end): Update for new
+	fields.
+	(symbolic_buffer_overflow::symbolic_buffer_overflow): Likewise.
+	(symbolic_buffer_overflow::emit): Call maybe_show_notes.
+	(symbolic_buffer_overflow::get_dir): New.
+	(symbolic_buffer_over_read::symbolic_buffer_over_read): Update for
+	new fields.
+	(symbolic_buffer_over_read::emit): Call maybe_show_notes.
+	(symbolic_buffer_over_read::get_dir): New.
+	(region_model::check_symbolic_bounds): Add "sval_hint" param.  Pass
+	it and sized_offset_reg to diagnostics.
+	(region_model::check_region_bounds): Add "sval_hint" param, passing
+	it to diagnostics.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Pass logger to
+	pending_diagnostic::emit.
+	* engine.cc: Add logger param to pending_diagnostic::emit
+	implementations.
+	* infinite-recursion.cc: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf.cc: Likewise.  Add nullptr for new param of
+	check_region_for_write.
+	* pending-diagnostic.h: Likewise in decl.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_int_cst): Convert param from
+	poly_int64 to const poly_wide_int_ref &.
+	(region_model_manager::maybe_fold_binop): Support type being NULL
+	when checking for floating-point types.
+	Check for (X + Y) - X => Y.  Be less strict about types when folding
+	associative ops.  Check for (X + Y) * CST => (X * CST) + (Y * CST).
+	* region-model-manager.h
+	(region_model_manager::get_or_create_int_cst): Convert param from
+	poly_int64 to const poly_wide_int_ref &.
+	* region-model.cc: Add logger param to pending_diagnostic::emit
+	implementations.
+	(region_model::check_external_function_for_access_attr): Update
+	for new param of check_region_for_write.
+	(region_model::deref_rvalue): Use nullptr rather than NULL.
+	(region_model::get_capacity): Handle RK_STRING.
+	(region_model::check_region_access): Add "sval_hint" param; pass it to
+	check_region_bounds.
+	(region_model::check_region_for_write): Add "sval_hint" param;
+	pass it to check_region_access.
+	(region_model::check_region_for_read): Add NULL for new param to
+	check_region_access.
+	(region_model::set_value): Pass rhs_sval to
+	check_region_for_write.
+	(region_model::get_representative_path_var_1): Handle SK_CONSTANT
+	in the check for infinite recursion.
+	* region-model.h (region_model::check_region_for_write): Add
+	"sval_hint" param.
+	(region_model::check_region_access): Likewise.
+	(region_model::check_symbolic_bounds): Likewise.
+	(region_model::check_region_bounds): Likewise.
+	* region.cc (region_offset::make_byte_offset): New.
+	(region_offset::calc_symbolic_bit_offset): New.
+	(region_offset::calc_symbolic_byte_offset): New.
+	(region_offset::dump_to_pp): New.
+	(region_offset::dump): New.
+	(struct linear_op): New.
+	(operator<, operator<=, operator>, operator>=): New, for
+	region_offset.
+	(region::get_next_offset): New.
+	(region::get_relative_symbolic_offset): Use ptrdiff_type_node.
+	(field_region::get_relative_symbolic_offset): Likewise.
+	(element_region::get_relative_symbolic_offset): Likewise.
+	(bit_range_region::get_relative_symbolic_offset): Likewise.
+	* region.h (region::get_next_offset): New decl.
+	* sm-fd.cc: Add logger param to pending_diagnostic::emit
+	implementations.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* store.cc (bit_range::contains_p): Allow "out" to be null.
+	* store.h (byte_range::get_start_bit_offset): New.
+	(byte_range::get_next_bit_offset): New.
+	* varargs.cc: Add logger param to pending_diagnostic::emit
+	implementations.
+
 2023-06-10  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/109577

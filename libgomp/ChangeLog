@@ -1,3 +1,12 @@
+2023-06-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Use @var for ICV vars.
+	(OpenMP Environment Variables): Mention _ALL/_DEV/_DEV_<no> variants,
+	document which ICV is set and which scope the ICV has; extend/cleanup
+	some @ref.
+	(Implementation-defined ICV Initialization): New.
+	(nvptx): Document the implementation-defined used per-warp stack size.
+
 2023-06-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/target-51.c: Fix DejaGnu directive syntax

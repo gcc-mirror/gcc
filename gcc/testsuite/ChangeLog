@@ -1,3 +1,79 @@
+2023-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110332
+	* g++.dg/torture/pr110332.C: New testcase.
+	* gcc.dg/torture/pr110332-1.c: Likewise.
+	* gcc.dg/torture/pr110332-2.c: Likewise.
+
+2023-06-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vptest-4.c: New test case.
+	* gcc.target/i386/avx-vptest-5.c: Likewise.
+	* gcc.target/i386/avx-vptest-6.c: Likewise.
+	* gcc.target/i386/pr109973-1.c: Update test case.
+	* gcc.target/i386/pr109973-2.c: Likewise.
+	* gcc.target/i386/sse4_1-ptest-4.c: New test case.
+	* gcc.target/i386/sse4_1-ptest-5.c: Likewise.
+	* gcc.target/i386/sse4_1-ptest-6.c: Likewise.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/data-model-1.c (test_16): Update for
+	out-of-bounds working.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-ascii.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-debug.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-emoji.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-json.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-sarif.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-unicode.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-10.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-11.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-12.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-13.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-14.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-15.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-3.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-4.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-ascii.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-unicode.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-6.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-7.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-8.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-9.c: New test.
+	* gcc.dg/analyzer/pattern-test-2.c: Update expected results.
+	* gcc.dg/analyzer/pr101962.c: Update expected results.
+	* gcc.dg/plugin/analyzer_gil_plugin.c:  Add logger param to
+	pending_diagnostic::emit implementations.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-text-art-ascii-bw.c: New test.
+	* gcc.dg/plugin/diagnostic-test-text-art-ascii-color.c: New test.
+	* gcc.dg/plugin/diagnostic-test-text-art-none.c: New test.
+	* gcc.dg/plugin/diagnostic-test-text-art-unicode-bw.c: New test.
+	* gcc.dg/plugin/diagnostic-test-text-art-unicode-color.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add them.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/Wlogical-not-parentheses-2.c: Split up the
+	multiline directive.
+	* gcc.dg/analyzer/malloc-macro-inline-events.c: Remove redundant
+	dg-regexp directives.
+	* gcc.dg/missing-header-fixit-5.c: Split up the multiline
+	directives.
+	* lib/gcc-dg.exp (gcc-dg-prune): Move call to
+	handle-multiline-outputs from prune_gcc_output to here.
+	* lib/multiline.exp (dg-end-multiline-output): Move call to
+	maybe-handle-nn-line-numbers from prune_gcc_output to here.
+	* lib/prune.exp (prune_gcc_output): Move calls to
+	maybe-handle-nn-line-numbers and handle-multiline-outputs from
+	here to the above.
+
 2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87477
