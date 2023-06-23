@@ -1414,6 +1414,14 @@
   (VNx1DF "VNx1SI") (VNx2DF "VNx2SI") (VNx4DF "VNx4SI") (VNx8DF "VNx8SI") (VNx16DF "VNx16SI")
 ])
 
+(define_mode_attr vnconvert [
+  (VNx1HF "vnx1qi") (VNx2HF "vnx2qi") (VNx4HF "vnx4qi") (VNx8HF "vnx8qi") (VNx16HF "vnx16qi") (VNx32HF "vnx32qi") (VNx64HF "vnx64qi")
+  (VNx1SF "vnx1hi") (VNx2SF "vnx2hi") (VNx4SF "vnx4hi") (VNx8SF "vnx8hi") (VNx16SF "vnx16hi") (VNx32SF "vnx32hi")
+  (VNx1SI "vnx1hf") (VNx2SI "vnx2hf") (VNx4SI "vnx4hf") (VNx8SI "vnx8hf") (VNx16SI "vnx16hf") (VNx32SI "vnx32hf")
+  (VNx1DI "vnx1sf") (VNx2DI "vnx2sf") (VNx4DI "vnx4sf") (VNx8DI "vnx8sf") (VNx16DI "vnx16sf")
+  (VNx1DF "vnx1si") (VNx2DF "vnx2si") (VNx4DF "vnx4si") (VNx8DF "vnx8si") (VNx16DF "vnx16si")
+])
+
 (define_mode_attr VDEMOTE [
   (VNx1DI "VNx2SI") (VNx2DI "VNx4SI")
   (VNx4DI "VNx8SI") (VNx8DI "VNx16SI") (VNx16DI "VNx32SI")

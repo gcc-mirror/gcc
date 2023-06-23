@@ -555,6 +555,82 @@
 })
 
 ;; =========================================================================
+;; == Widening/narrowing Conversions
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT<-FP] Widening Conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfwcvt.rtz.xu.f.v
+;; - vfwcvt.rtz.x.f.v
+;; -------------------------------------------------------------------------
+(define_expand "<optab><vnconvert><mode>2"
+  [(set (match_operand:VWCONVERTI 0 "register_operand")
+	(any_fix:VWCONVERTI
+	  (match_operand:<VNCONVERT> 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_widen (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP<-INT] Widening Conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfwcvt.f.xu.v
+;; - vfwcvt.f.x.v
+;; -------------------------------------------------------------------------
+(define_expand "<float_cvt><vnconvert><mode>2"
+  [(set (match_operand:VF 0 "register_operand")
+	(any_float:VF
+	  (match_operand:<VNCONVERT> 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_widen (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [INT<-FP] Narrowing Conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfncvt.rtz.xu.f.v
+;; - vfncvt.rtz.x.f.v
+;; -------------------------------------------------------------------------
+(define_expand "<optab><mode><vnconvert>2"
+  [(set (match_operand:<VNCONVERT> 0 "register_operand")
+	(any_fix:<VNCONVERT>
+	  (match_operand:VF 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_narrow (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP<-INT] Narrowing Conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfncvt.f.xu.w
+;; - vfncvt.f.x.w
+;; -------------------------------------------------------------------------
+(define_expand "<float_cvt><mode><vnconvert>2"
+  [(set (match_operand:<VNCONVERT> 0 "register_operand")
+	(any_float:<VNCONVERT>
+	  (match_operand:VWCONVERTI 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_narrow (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_fp_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; =========================================================================
 ;; == Unary arithmetic
 ;; =========================================================================
 
