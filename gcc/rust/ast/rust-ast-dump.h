@@ -44,14 +44,35 @@ public:
     TokenCollector collector;
     collector.visit (v);
 
-    auto tokens = collector.collect_tokens ();
-    if (!tokens.empty ())
-      stream << tokens.front ()->as_string ();
-    for (auto it = tokens.cbegin () + 1; it < tokens.cend (); it++)
+    TokenPtr previous = nullptr;
+    for (auto item : collector.collect ())
       {
-	if (require_spacing (*(it - 1), *it))
-	  stream << " ";
-	stream << (*it)->as_string ();
+	switch (item.get_kind ())
+	  {
+	    case AST::CollectItem::Kind::Token: {
+	      TokenPtr current = item.get_token ();
+	      if (require_spacing (previous, current))
+		stream << " ";
+	      stream << current->as_string ();
+	      previous = current;
+	    }
+	    break;
+	  case AST::CollectItem::Kind::Comment:
+	    stream << " /* " << item.get_comment () << " */ ";
+	    break;
+	  case AST::CollectItem::Kind::Indentation:
+	    for (size_t i = 0; i < item.get_indent_level (); i++)
+	      {
+		stream << "    ";
+	      }
+	    break;
+	  case AST::CollectItem::Kind::Newline:
+	    stream << "\n";
+	    previous = nullptr;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
       }
   }
 

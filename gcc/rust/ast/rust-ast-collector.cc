@@ -1276,6 +1276,7 @@ TokenCollector::visit (BlockExpr &expr)
   if (expr.has_tail_expr ())
     {
       visit (expr.get_tail_expr ());
+      comment ("tail expr");
       newline ();
     }
 
