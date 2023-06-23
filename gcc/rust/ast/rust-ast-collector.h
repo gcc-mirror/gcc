@@ -30,7 +30,6 @@ namespace AST {
 class TokenCollector : public ASTVisitor
 {
 public:
-  TokenCollector (std::vector<TokenPtr> &container);
   bool output_trailing_commas = false;
 
   void visit (AST::Crate &crate);
@@ -39,7 +38,7 @@ public:
   std::vector<TokenPtr> collect_tokens () const;
 
 private:
-  std::vector<TokenPtr> &tokens;
+  std::vector<TokenPtr> tokens;
 
   /**
    * Visit all items in given @collection, placing the separator in between but

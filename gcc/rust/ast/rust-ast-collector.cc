@@ -20,10 +20,6 @@
 namespace Rust {
 namespace AST {
 
-TokenCollector::TokenCollector (std::vector<TokenPtr> &container)
-  : tokens (container)
-{}
-
 std::vector<TokenPtr>
 TokenCollector::collect_tokens () const
 {
