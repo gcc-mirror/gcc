@@ -27,6 +27,11 @@ Dump::Dump (std::ostream &stream) : stream (stream), indentation (Indent ()) {}
 bool
 Dump::require_spacing (TokenPtr previous, TokenPtr current)
 {
+  if (previous == nullptr)
+    {
+      return false;
+    }
+
   switch (current->get_id ())
     {
     case EXCLAM:
