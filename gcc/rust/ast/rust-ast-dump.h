@@ -41,8 +41,7 @@ public:
 
   template <typename T> void process (T &v)
   {
-    std::vector<TokenPtr> container;
-    TokenCollector collector (container);
+    TokenCollector collector;
     collector.visit (v);
 
     auto tokens = collector.collect_tokens ();

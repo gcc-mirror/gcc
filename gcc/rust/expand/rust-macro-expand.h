@@ -396,8 +396,7 @@ struct MacroExpander
 	  }
       }
 
-    std::vector<TokenPtr> tokens;
-    AST::TokenCollector collector (tokens);
+    AST::TokenCollector collector;
 
     collector.visit (item);
 
@@ -428,8 +427,7 @@ struct MacroExpander
 	  }
       }
 
-    std::vector<TokenPtr> tokens;
-    AST::TokenCollector collector (tokens);
+    AST::TokenCollector collector;
 
     collector.visit (item);
 
@@ -461,8 +459,7 @@ struct MacroExpander
 	  }
       }
 
-    std::vector<TokenPtr> tokens;
-    AST::TokenCollector collector (tokens);
+    AST::TokenCollector collector;
 
     collector.visit (item);
 
