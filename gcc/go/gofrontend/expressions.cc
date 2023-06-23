@@ -12325,7 +12325,8 @@ Call_expression::intrinsify(Gogo* gogo,
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
     }
-  else if (package == "internal/abi")
+  else if (package == "internal/abi"
+	   || package == "bootstrap/internal/abi") // for bootstrapping gc
     {
       if (is_method)
 	return NULL;
