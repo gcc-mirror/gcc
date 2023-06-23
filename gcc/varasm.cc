@@ -4885,7 +4885,8 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	/* Allow length-preserving conversions between integer types and
 	   floating-point types.  */
 	if (((INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
-	     || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type)))
+	     || (SCALAR_FLOAT_TYPE_P (dest_type)
+		 && SCALAR_FLOAT_TYPE_P (src_type)))
 	    && (TYPE_PRECISION (dest_type) == TYPE_PRECISION (src_type)))
 	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
