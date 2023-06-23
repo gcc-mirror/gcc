@@ -41,6 +41,7 @@ public:
   CollectItem (TokenPtr token) : token (token), kind (Kind::Token) {}
   CollectItem (std::string comment) : comment (comment), kind (Kind::Comment) {}
   CollectItem (Kind kind) : kind (kind) { rust_assert (kind != Kind::Token); }
+  CollectItem (size_t level) : indent_level (level), kind (Kind::Indentation) {}
 
   Kind get_kind () { return kind; }
 
@@ -56,24 +57,35 @@ public:
     return comment;
   }
 
+  size_t get_indent_level ()
+  {
+    rust_assert (kind == Kind::Indentation);
+    return indent_level;
+  }
+
 private:
   TokenPtr token;
   std::string comment;
+  size_t indent_level;
   Kind kind;
 };
 
 class TokenCollector : public ASTVisitor
 {
 public:
+  TokenCollector () : indent_level (0) {}
+
   bool output_trailing_commas = false;
 
   void visit (AST::Crate &crate);
   void visit (AST::Item &item);
 
   std::vector<TokenPtr> collect_tokens () const;
+  std::vector<CollectItem> collect () const;
 
 private:
   std::vector<CollectItem> tokens;
+  size_t indent_level;
 
   void push (TokenPtr token) { tokens.push_back ({token}); }
 
@@ -117,6 +129,7 @@ private:
   void indentation ();
   void increment_indentation ();
   void decrement_indentation ();
+  void comment (std::string comment);
   /**
    * Visit common items of functions: Parameters, return type, block
    */
