@@ -4273,9 +4273,8 @@ maybe_init_list_as_array (tree elttype, tree init)
 
   /* We can't do this if copying from the initializer_list would be
      ill-formed.  */
-  tree copy_argtypes = make_tree_vec (1);
-  TREE_VEC_ELT (copy_argtypes, 0)
-    = cp_build_qualified_type (elttype, TYPE_QUAL_CONST);
+  tree copy_argtypes = build_tree_list
+    (NULL_TREE, cp_build_qualified_type (elttype, TYPE_QUAL_CONST));
   if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
     return NULL_TREE;
 
