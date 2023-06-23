@@ -5833,12 +5833,15 @@ vectorizable_assignment (vec_info *vinfo,
   /* We do not handle bit-precision changes.  */
   if ((CONVERT_EXPR_CODE_P (code)
        || code == VIEW_CONVERT_EXPR)
-      && INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-      && (!type_has_mode_precision_p (TREE_TYPE (scalar_dest))
-	  || !type_has_mode_precision_p (TREE_TYPE (op)))
+      && ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	   && !type_has_mode_precision_p (TREE_TYPE (scalar_dest)))
+	  || (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      && !type_has_mode_precision_p (TREE_TYPE (op))))
       /* But a conversion that does not change the bit-pattern is ok.  */
-      && !((TYPE_PRECISION (TREE_TYPE (scalar_dest))
-	    > TYPE_PRECISION (TREE_TYPE (op)))
+      && !(INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (op))
+	   && (TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	       > TYPE_PRECISION (TREE_TYPE (op)))
 	   && TYPE_UNSIGNED (TREE_TYPE (op))))
     {
       if (dump_enabled_p ())
