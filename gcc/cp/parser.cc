@@ -20017,12 +20017,13 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* Otherwise, look for a type-name.  */
       if (!type)
 	{
-	  if (cxx_dialect >= cxx17)
+	  if (cxx_dialect >= cxx17 || flag_concepts)
 	    cp_parser_parse_tentatively (parser);
 
 	  type = cp_parser_type_name (parser, (qualified_p && typename_p));
 
-	  if (cxx_dialect >= cxx17 && !cp_parser_parse_definitely (parser))
+	  if ((cxx_dialect >= cxx17 || flag_concepts)
+	      && !cp_parser_parse_definitely (parser))
 	    type = NULL_TREE;
 	}
 
