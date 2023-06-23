@@ -34,6 +34,12 @@ TokenCollector::collect_tokens () const
   return result;
 }
 
+std::vector<CollectItem>
+TokenCollector::collect () const
+{
+  return tokens;
+}
+
 void
 TokenCollector::visit (AST::Crate &crate)
 {
@@ -128,19 +134,34 @@ TokenCollector::trailing_comma ()
 
 void
 TokenCollector::newline ()
-{}
+{
+  tokens.push_back ({CollectItem::Kind::Newline});
+}
 
 void
 TokenCollector::indentation ()
-{}
+{
+  tokens.push_back ({indent_level});
+}
 
 void
 TokenCollector::increment_indentation ()
-{}
+{
+  indent_level++;
+}
 
 void
 TokenCollector::decrement_indentation ()
-{}
+{
+  rust_assert (indent_level != 0);
+  indent_level--;
+}
+
+void
+TokenCollector::comment (std::string comment)
+{
+  tokens.push_back ({comment});
+}
 
 void
 TokenCollector::visit (Visitable &v)
