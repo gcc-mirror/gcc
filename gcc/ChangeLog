@@ -1,3 +1,46 @@
+2023-06-22  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110132
+	* config/aarch64/aarch64-builtins.cc (aarch64_general_simulate_builtin):
+	New. Use it ...
+	(aarch64_init_ls64_builtins): ... here. Switch to declaring public ACLE
+	names for builtins.
+	(aarch64_general_init_builtins): Ensure we invoke the arm_acle.h
+	setup if in_lto_p, just like we do for SVE.
+	* config/aarch64/arm_acle.h: (__arm_ld64b): Delete.
+	(__arm_st64b): Delete.
+	(__arm_st64bv): Delete.
+	(__arm_st64bv0): Delete.
+
+2023-06-22  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* config/aarch64/aarch64-builtins.cc (aarch64_expand_builtin_ls64):
+	Use input operand for the destination address.
+	* config/aarch64/aarch64.md (st64b): Fix constraint on address
+	operand.
+
+2023-06-22  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_ls64_builtins_types):
+	Replace eight consecutive spaces with tabs.
+	(aarch64_init_ls64_builtins): Likewise.
+	(aarch64_expand_builtin_ls64): Likewise.
+	* config/aarch64/aarch64.md (ld64b): Likewise.
+	(st64b): Likewise.
+	(st64bv): Likewise
+	(st64bv0): Likewise.
+
 2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

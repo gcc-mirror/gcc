@@ -1,3 +1,25 @@
+2023-06-22  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110132
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_FUNC_ok):
+	Extend to ls64.
+	* g++.target/aarch64/acle/acle.exp: New.
+	* g++.target/aarch64/acle/ls64.C: New test.
+	* g++.target/aarch64/acle/ls64_lto.C: New test.
+	* gcc.target/aarch64/acle/ls64_lto.c: New test.
+	* gcc.target/aarch64/acle/pr110132.c: New test.
+
+2023-06-22  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2023-06-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/110100
+	* gcc.target/aarch64/acle/pr110100.c: New test.
+
 2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
