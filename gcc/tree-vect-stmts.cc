@@ -9593,27 +9593,26 @@ vectorizable_load (vec_info *vinfo,
 	  gimple_set_vuse (new_stmt, vuse);
 	  gsi_insert_on_edge_immediate (pe, new_stmt);
 	}
-      /* These copies are all equivalent, but currently the representation
-	 requires a separate STMT_VINFO_VEC_STMT for each one.  */
-      gimple_stmt_iterator gsi2 = *gsi;
-      gsi_next (&gsi2);
-      for (j = 0; j < ncopies; j++)
+      /* These copies are all equivalent.  */
+      if (hoist_p)
+	new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+				     vectype, NULL);
+      else
 	{
-	  if (hoist_p)
-	    new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
-					 vectype, NULL);
-	  else
-	    new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
-					 vectype, &gsi2);
-	  gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	  if (slp)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-	  else
-	    {
-	      if (j == 0)
-		*vec_stmt = new_stmt;
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
-	    }
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_next (&gsi2);
+	  new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+				       vectype, &gsi2);
+	}
+      gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
+      if (slp)
+	for (j = 0; j < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++j)
+	  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+      else
+	{
+	  for (j = 0; j < ncopies; ++j)
+	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	  *vec_stmt = new_stmt;
 	}
       return true;
     }
