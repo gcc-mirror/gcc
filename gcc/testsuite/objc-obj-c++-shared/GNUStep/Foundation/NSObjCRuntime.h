@@ -29,6 +29,9 @@
 #ifndef __NSObjCRuntime_h_GNUSTEP_BASE_INCLUDE
 #define __NSObjCRuntime_h_GNUSTEP_BASE_INCLUDE
 
+/* Allow the elaborated enum use in _GS_NAMED_ENUM. */
+#pragma GCC system_header
+
 #ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS 1
