@@ -109,6 +109,7 @@ GRS_OBJS = \
     rust/rust-ast-lower-expr.o \
     rust/rust-ast-lower-type.o \
 	rust/rust-ast-lower-stmt.o \
+	rust/rust-rib.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
