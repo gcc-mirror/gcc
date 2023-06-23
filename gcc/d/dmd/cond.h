@@ -52,7 +52,7 @@ public:
     ForeachStatement *aggrfe;
     ForeachRangeStatement *rangefe;
 
-    bool needExpansion;
+    d_bool needExpansion;
 
     StaticForeach *syntaxCopy();
 };

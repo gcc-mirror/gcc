@@ -1383,10 +1383,14 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         imp.semanticRun = PASS.semantic;
 
         // Load if not already done so
-        bool loadErrored = false;
         if (!imp.mod)
         {
-            loadErrored = imp.load(sc);
+            // https://issues.dlang.org/show_bug.cgi?id=22857
+            // if parser errors occur when loading a module
+            // we should just stop compilation
+            if (imp.load(sc))
+                return;
+
             if (imp.mod)
             {
                 imp.mod.importAll(null);
@@ -1427,10 +1431,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 imp.addPackageAccess(scopesym);
             }
 
-            if (!loadErrored)
-            {
-                imp.mod.dsymbolSemantic(null);
-            }
+            imp.mod.dsymbolSemantic(null);
 
             if (imp.mod.needmoduleinfo)
             {

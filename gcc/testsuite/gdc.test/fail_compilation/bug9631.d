@@ -4,7 +4,7 @@ TEST_OUTPUT:
 fail_compilation/bug9631.d(20): Error: cannot implicitly convert expression `F()` of type `bug9631.T1!().F` to `bug9631.T2!().F`
 ---
 */
-
+// DISABLED: win32
 template T1()
 {
     struct F { }

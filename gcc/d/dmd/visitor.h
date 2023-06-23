@@ -10,6 +10,7 @@
 #pragma once
 
 #include "root/dsystem.h"
+#include "root/dcompat.h"   // for d_bool
 
 class Statement;
 class ErrorStatement;
@@ -663,6 +664,6 @@ public:
 class StoppableVisitor : public Visitor
 {
 public:
-    bool stop;
+    d_bool stop;
     StoppableVisitor() : stop(false) {}
 };

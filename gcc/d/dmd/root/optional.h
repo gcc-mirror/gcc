@@ -11,6 +11,8 @@
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/root/optional.h
  */
 
+#include "dcompat.h"    // for d_bool
+
 /// Optional type that is either `empty` or contains a value of type `T`
 template<typename T>
 struct Optional final
@@ -20,7 +22,7 @@ private:
     T value;
 
     /** whether `value` is set **/
-    bool present;
+    d_bool present;
 
 public:
     /** Creates an `Optional` with the given value **/

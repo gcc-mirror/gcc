@@ -36,7 +36,7 @@ struct DString : public DArray<const char>
 };
 
 /// Corresponding C++ type that maps to D size_t
-#if __APPLE__ && __i386__
+#if __APPLE__ && (__i386__ || __ppc__)
 // size_t is 'unsigned long', which makes it mangle differently than D's 'uint'
 typedef unsigned d_size_t;
 #elif MARS && DMD_VERSION >= 2079 && DMD_VERSION <= 2081 && \
@@ -48,4 +48,12 @@ typedef uint64_t d_size_t;
 typedef unsigned d_size_t;
 #else
 typedef size_t d_size_t;
+#endif
+
+/// Corresponding C++ type that maps to D bool
+#if __APPLE__ && __ppc__
+// bool is defined as an 'int', which does not match same size as D
+typedef uint8_t d_bool;
+#else
+typedef bool d_bool;
 #endif

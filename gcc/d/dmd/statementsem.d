@@ -1941,7 +1941,6 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
         if (checkNonAssignmentArrayOp(ifs.condition))
             ifs.condition = ErrorExp.get();
-        ifs.condition = checkGC(scd, ifs.condition);
 
         // Convert to boolean after declaring prm so this works:
         //  if (S prm = S()) {}
@@ -1952,6 +1951,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         // semantic analysis of the skipped code.
         // This feature allows a limited form of conditional compilation.
         ifs.condition = ifs.condition.optimize(WANTvalue);
+
+        // checkGC after optimizing the condition so that
+        // compile time constants are reduced.
+        ifs.condition = checkGC(scd, ifs.condition);
 
         // Save 'root' of two branches (then and else) at the point where it forks
         CtorFlow ctorflow_root = scd.ctorflow.clone();
@@ -4525,8 +4528,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
             decls.append(Dsymbol.arraySyntaxCopy(dbody));
         else
         {
-            if (fs._body) // https://issues.dlang.org/show_bug.cgi?id=17646
-                stmts.push(fs._body.syntaxCopy());
+            stmts.push(fs._body.syntaxCopy());
             s = new CompoundStatement(loc, stmts);
         }
 
