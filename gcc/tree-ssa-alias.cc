@@ -2815,11 +2815,13 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       case IFN_SCATTER_STORE:
       case IFN_MASK_SCATTER_STORE:
       case IFN_LEN_STORE:
+      case IFN_LEN_MASK_STORE:
 	return false;
       case IFN_MASK_STORE_LANES:
 	goto process_args;
       case IFN_MASK_LOAD:
       case IFN_LEN_LOAD:
+      case IFN_LEN_MASK_LOAD:
       case IFN_MASK_LOAD_LANES:
 	{
 	  ao_ref rhs_ref;
