@@ -27,6 +27,41 @@
 namespace Rust {
 namespace AST {
 
+class CollectItem
+{
+public:
+  enum class Kind
+  {
+    Comment,
+    Newline,
+    Indentation,
+    Token,
+  };
+
+  CollectItem (TokenPtr token) : token (token), kind (Kind::Token) {}
+  CollectItem (std::string comment) : comment (comment), kind (Kind::Comment) {}
+  CollectItem (Kind kind) : kind (kind) { rust_assert (kind != Kind::Token); }
+
+  Kind get_kind () { return kind; }
+
+  TokenPtr get_token ()
+  {
+    rust_assert (kind == Kind::Token);
+    return token;
+  }
+
+  std::string get_comment ()
+  {
+    rust_assert (kind == Kind::Comment);
+    return comment;
+  }
+
+private:
+  TokenPtr token;
+  std::string comment;
+  Kind kind;
+};
+
 class TokenCollector : public ASTVisitor
 {
 public:
@@ -38,7 +73,9 @@ public:
   std::vector<TokenPtr> collect_tokens () const;
 
 private:
-  std::vector<TokenPtr> tokens;
+  std::vector<CollectItem> tokens;
+
+  void push (TokenPtr token) { tokens.push_back ({token}); }
 
   /**
    * Visit all items in given @collection, placing the separator in between but
