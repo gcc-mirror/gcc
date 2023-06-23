@@ -4606,6 +4606,7 @@ package body Exp_Ch3 is
 
    function Build_Variant_Record_Equality
      (Typ         : Entity_Id;
+      Spec_Id     : Entity_Id;
       Body_Id     : Entity_Id;
       Param_Specs : List_Id) return Node_Id
    is
@@ -4652,42 +4653,66 @@ package body Exp_Ch3 is
 
       if Is_Unchecked_Union (Typ) then
          declare
+            Right_Formal : constant Entity_Id :=
+              (if Present (Spec_Id) then Last_Formal (Spec_Id) else Right);
+            Scop : constant Entity_Id :=
+              (if Present (Spec_Id) then Spec_Id else Body_Id);
+
+            procedure Decorate_Extra_Formal (F, F_Typ : Entity_Id);
+            --  Decorate extra formal F with type F_Typ
+
+            ---------------------------
+            -- Decorate_Extra_Formal --
+            ---------------------------
+
+            procedure Decorate_Extra_Formal (F, F_Typ : Entity_Id) is
+            begin
+               Mutate_Ekind  (F, E_In_Parameter);
+               Set_Etype     (F, F_Typ);
+               Set_Scope     (F, Scop);
+               Set_Mechanism (F, By_Copy);
+            end Decorate_Extra_Formal;
+
             A          : Entity_Id;
             B          : Entity_Id;
             Discr      : Entity_Id;
             Discr_Type : Entity_Id;
+            Last_Extra : Entity_Id := Empty;
             New_Discrs : Elist_Id;
 
          begin
+            Mutate_Ekind (Body_Id, E_Subprogram_Body);
             New_Discrs := New_Elmt_List;
 
             Discr := First_Discriminant (Typ);
             while Present (Discr) loop
                Discr_Type := Etype (Discr);
 
+               --  Add the new parameters as extra formals
+
                A :=
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Chars (Discr), 'A'));
+
+               Decorate_Extra_Formal (A, Discr_Type);
+
+               if Present (Last_Extra) then
+                  Set_Extra_Formal (Last_Extra, A);
+               else
+                  Set_Extra_Formal (Right_Formal, A);
+                  Set_Extra_Formals (Scop, A);
+               end if;
+
+               Append_Elmt (A, New_Discrs);
 
                B :=
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Chars (Discr), 'B'));
 
-               --  Add new parameters to the parameter list
+               Decorate_Extra_Formal (B, Discr_Type);
 
-               Append_To (Param_Specs,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier => A,
-                   Parameter_Type      =>
-                     New_Occurrence_Of (Discr_Type, Loc)));
-
-               Append_To (Param_Specs,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier => B,
-                   Parameter_Type      =>
-                     New_Occurrence_Of (Discr_Type, Loc)));
-
-               Append_Elmt (A, New_Discrs);
+               Set_Extra_Formal (A, B);
+               Last_Extra := B;
 
                --  Generate the following code to compare each of the inferred
                --  discriminants:
@@ -4706,6 +4731,7 @@ package body Exp_Ch3 is
                      Make_Simple_Return_Statement (Loc,
                        Expression =>
                          New_Occurrence_Of (Standard_False, Loc)))));
+
                Next_Discriminant (Discr);
             end loop;
 
@@ -5319,7 +5345,7 @@ package body Exp_Ch3 is
       --  evaluate the conditions.
 
       procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
-      --  Create An Equality function for the untagged variant record Typ and
+      --  Create an equality function for the untagged variant record Typ and
       --  attach it to the TSS list.
 
       procedure Register_Dispatch_Table_Wrappers (Typ : Entity_Id);
@@ -5417,6 +5443,7 @@ package body Exp_Ch3 is
          Discard_Node (
            Build_Variant_Record_Equality
              (Typ         => Typ,
+              Spec_Id     => Empty,
               Body_Id     => F,
               Param_Specs => New_List (
                 Make_Parameter_Specification (Loc,

@@ -37,6 +37,7 @@ with Expander;       use Expander;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Atag;       use Exp_Atag;
 with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch4;        use Exp_Ch4;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch9;        use Exp_Ch9;
 with Exp_Dbug;       use Exp_Dbug;
@@ -2800,7 +2801,40 @@ package body Exp_Ch6 is
    -----------------
 
    procedure Expand_Call (N : Node_Id) is
-      Post_Call : List_Id;
+      function Is_Unchecked_Union_Equality (N : Node_Id) return Boolean;
+      --  Return True if N is a call to the predefined equality operator of an
+      --  unchecked union type, or a renaming thereof.
+
+      ---------------------------------
+      -- Is_Unchecked_Union_Equality --
+      ---------------------------------
+
+      function Is_Unchecked_Union_Equality (N : Node_Id) return Boolean is
+      begin
+         if Is_Entity_Name (Name (N))
+           and then Ekind (Entity (Name (N))) = E_Function
+           and then Present (First_Formal (Entity (Name (N))))
+           and then
+             Is_Unchecked_Union (Etype (First_Formal (Entity (Name (N)))))
+         then
+            declare
+               Func : constant Entity_Id := Entity (Name (N));
+               Typ  : constant Entity_Id := Etype (First_Formal (Func));
+               Decl : constant Node_Id   :=
+                 Original_Node (Parent (Declaration_Node (Func)));
+
+            begin
+               return Func = TSS (Typ, TSS_Composite_Equality)
+                 or else (Nkind (Decl) = N_Subprogram_Renaming_Declaration
+                           and then Nkind (Name (Decl)) = N_Operator_Symbol
+                           and then Chars (Name (Decl)) = Name_Op_Eq
+                           and then Ekind (Entity (Name (Decl))) = E_Operator);
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Unchecked_Union_Equality;
 
       --  If this is an indirect call through an Access_To_Subprogram
       --  with contract specifications, it is rewritten as a call to
@@ -2814,6 +2848,10 @@ package body Exp_Ch6 is
           and then Ekind (Etype (Name (N))) = E_Subprogram_Type
           and then Present
             (Access_Subprogram_Wrapper (Etype (Name (N))));
+
+      Post_Call : List_Id;
+
+   --  Start of processing for Expand_Call
 
    begin
       pragma Assert (Nkind (N) in N_Entry_Call_Statement
@@ -2889,6 +2927,29 @@ package body Exp_Ch6 is
             Rewrite (N, New_N);
             Analyze_And_Resolve (N, Typ);
          end;
+
+      --  Case of a call to the predefined equality operator of an unchecked
+      --  union type, which requires specific processing.
+
+      elsif Is_Unchecked_Union_Equality (N) then
+         declare
+            Eq  : constant Entity_Id := Entity (Name (N));
+            Lhs : constant Node_Id   := First_Actual (N);
+            Rhs : constant Node_Id   := Next_Actual (Lhs);
+
+         begin
+            Expand_Unchecked_Union_Equality (N, Eq, Lhs, Rhs);
+
+            --  If the call was not rewritten as a raise, expand the actuals
+
+            if Nkind (N) = N_Function_Call then
+               pragma Assert (Check_Number_Of_Actuals (N, Eq));
+               Expand_Actuals (N, Eq, Post_Call);
+               pragma Assert (Is_Empty_List (Post_Call));
+            end if;
+         end;
+
+      --  Normal case
 
       else
          Expand_Call_Helper (N, Post_Call);
