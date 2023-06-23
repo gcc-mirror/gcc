@@ -6034,10 +6034,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     type1 = double_type_node;
 	 }
       tree newtype
-        = (TYPE_PRECISION (TREE_TYPE (@00)) > TYPE_PRECISION (type1)
+        = (element_precision (TREE_TYPE (@00)) > element_precision (type1)
 	   ? TREE_TYPE (@00) : type1);
      }
-     (if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (newtype))
+     (if (element_precision (TREE_TYPE (@0)) > element_precision (newtype))
       (cmp (convert:newtype @00) (convert:newtype @10))))))))
 
 
