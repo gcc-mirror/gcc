@@ -3070,6 +3070,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	return false;
       case IFN_MASK_STORE:
       case IFN_LEN_STORE:
+      case IFN_LEN_MASK_STORE:
       case IFN_MASK_STORE_LANES:
 	{
 	  tree rhs = gimple_call_arg (call,
