@@ -1,3 +1,47 @@
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* tree-ssa-loop-ivcanon.cc (tree_unroll_loops_completely):
+	Clear number of iterations info before cleaning up the CFG.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* dwarf2out.cc (process_scope_var): Continue processing
+	the decl after setting a parent in case the existing DIE
+	was in limbo.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110055
+	* gimplify.cc (gimplify_target_expr): Do not emit
+	CLOBBERs for variables which have static storage duration
+	after gimplifying their initializers.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109983
+	PR tree-optimization/109143
+	* tree-ssa-structalias.cc (struct topo_info): Remove.
+	(init_topo_info): Likewise.
+	(free_topo_info): Likewise.
+	(compute_topo_order): Simplify API, put the component
+	with ESCAPED last so it's processed first.
+	(topo_visit): Adjust.
+	(solve_graph): Likewise.
+
 2023-06-20  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

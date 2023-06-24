@@ -1,3 +1,20 @@
+2023-06-23  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (maybe_init_list_as_array): Build a list.
+
+2023-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110102
+	* call.cc (maybe_init_list_as_array): Check that the element type is
+	copyable.
+
+2023-06-23  Jason Merrill  <jason@redhat.com>
+
+	DR 2735
+	PR c++/109247
+	* call.cc (sfk_copy_or_move): New.
+	(joust): Add tiebreaker for explicit conv and copy ctor.
+
 2023-05-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
