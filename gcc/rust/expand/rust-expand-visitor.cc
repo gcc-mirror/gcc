@@ -724,7 +724,7 @@ ExpandVisitor::visit (AST::CompoundAssignmentExpr &expr)
 void
 ExpandVisitor::visit (AST::GroupedExpr &expr)
 {
-  visit (expr.get_expr_in_parens ());
+  maybe_expand_expr (expr.get_expr_in_parens ());
 }
 
 void
@@ -995,9 +995,9 @@ ExpandVisitor::visit (AST::MatchExpr &expr)
 	visit (pattern);
 
       if (arm.has_match_arm_guard ())
-	visit (arm.get_guard_expr ());
+	maybe_expand_expr (arm.get_guard_expr ());
 
-      visit (match_case.get_expr ());
+      maybe_expand_expr (match_case.get_expr ());
     }
 }
 
@@ -1153,7 +1153,7 @@ ExpandVisitor::visit (AST::EnumItemStruct &item)
 void
 ExpandVisitor::visit (AST::EnumItemDiscriminant &item)
 {
-  visit (item.get_expr ());
+  maybe_expand_expr (item.get_expr ());
 }
 
 void
@@ -1163,7 +1163,7 @@ ExpandVisitor::visit (AST::Enum &enum_item)
     visit (generic);
 
   for (auto &variant : enum_item.get_variants ())
-    visit (variant);
+    variant->accept_vis (*this);
 }
 
 void
@@ -1180,7 +1180,7 @@ ExpandVisitor::visit (AST::ConstantItem &const_item)
 {
   maybe_expand_type (const_item.get_type ());
 
-  visit (const_item.get_expr ());
+  maybe_expand_expr (const_item.get_expr ());
 }
 
 void
@@ -1188,7 +1188,7 @@ ExpandVisitor::visit (AST::StaticItem &static_item)
 {
   maybe_expand_type (static_item.get_type ());
 
-  visit (static_item.get_expr ());
+  maybe_expand_expr (static_item.get_expr ());
 }
 
 void
@@ -1215,7 +1215,7 @@ ExpandVisitor::visit (AST::TraitItemConst &const_item)
   maybe_expand_type (const_item.get_type ());
 
   if (const_item.has_expr ())
-    visit (const_item.get_expr ());
+    maybe_expand_expr (const_item.get_expr ());
 }
 
 void

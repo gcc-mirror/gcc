@@ -714,20 +714,34 @@ EarlyNameResolver::visit (AST::EnumItem &)
 {}
 
 void
-EarlyNameResolver::visit (AST::EnumItemTuple &)
-{}
+EarlyNameResolver::visit (AST::EnumItemTuple &item)
+{
+  for (auto &field : item.get_tuple_fields ())
+    field.get_field_type ()->accept_vis (*this);
+}
 
 void
-EarlyNameResolver::visit (AST::EnumItemStruct &)
-{}
+EarlyNameResolver::visit (AST::EnumItemStruct &item)
+{
+  for (auto &field : item.get_struct_fields ())
+    field.get_field_type ()->accept_vis (*this);
+}
 
 void
-EarlyNameResolver::visit (AST::EnumItemDiscriminant &)
-{}
+EarlyNameResolver::visit (AST::EnumItemDiscriminant &item)
+{
+  item.get_expr ()->accept_vis (*this);
+}
 
 void
-EarlyNameResolver::visit (AST::Enum &)
-{}
+EarlyNameResolver::visit (AST::Enum &enum_item)
+{
+  for (auto &generic : enum_item.get_generic_params ())
+    generic->accept_vis (*this);
+
+  for (auto &variant : enum_item.get_variants ())
+    variant->accept_vis (*this);
+}
 
 void
 EarlyNameResolver::visit (AST::Union &)
