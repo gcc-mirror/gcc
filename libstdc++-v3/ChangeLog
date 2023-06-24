@@ -1,3 +1,156 @@
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/numeric_limits/lowest.cc: Use
+	numeric_limits<T>::is_integer instead of is_integral<T>::value.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document removal of implicit
+	allocator rebinding extensions in strict mode and for C++20.
+	* doc/html/*: Regenerate.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108118
+	* include/bits/shared_ptr_base.h (weak_ptr::operator=):
+	Implement as move-and-swap exactly as specified in the standard.
+	* testsuite/20_util/weak_ptr/cons/self_move.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94540
+	* include/bits/stl_uninitialized.h (__uninitialized_default_1<true>):
+	Construct the first value at *__first instead of on the stack.
+	(__uninitialized_default_n_1<true>): Likewise.
+	Improve comments on several of the non-standard algorithms.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_n/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/94540.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct_n/94540.cc:
+	New test.
+	* testsuite/23_containers/vector/cons/94540.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106607
+	* include/bits/regex_compiler.tcc (_Compiler::_M_cur_int_value):
+	Use built-ins to check for integer overflow in back-reference
+	number.
+	* testsuite/28_regex/basic_regex/106607.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex, swap): Add noexcept to
+	non-throwing functions.
+	* include/bits/regex_automaton.h (_State_base, _State)
+	(_NFA_base): Likewise.
+	* include/bits/regex_compiler.h (_Compiler): Likewise.
+	* include/bits/regex_error.h (regex_error::code()): Likewise.
+	* include/bits/regex_scanner.h (_Scanner): Likewise.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102447
+	* include/bits/regex_compiler.h (_Compiler::_BracketState): New
+	class.
+	(_Compiler::_BrackeyMatcher): New alias template.
+	(_Compiler::_M_expression_term): Change pair<bool, CharT>
+	parameter to _BracketState. Process first character for
+	ECMAScript syntax as well as POSIX.
+	* include/bits/regex_compiler.tcc
+	(_Compiler::_M_insert_bracket_matcher): Pass _BracketState.
+	(_Compiler::_M_expression_term): Use _BracketState to store
+	state between calls. Improve handling of dashes in ranges.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Add more tests for ranges containing dashes. Check invalid
+	ranges with character class at the beginning.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h (_Compiler::_S_validate): New
+	function.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler): Use
+	_S_validate to check flags.
+	* include/bits/regex_error.h (_S_grammar): New error code for
+	internal use.
+	* testsuite/28_regex/basic_regex/ctors/grammar.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc: Add line break in empty while
+	statement.
+	* include/bits/regex_executor.tcc: Avoid unused parameter
+	warning.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103664
+	* include/bits/regex.h (__regex_replace): Declare.
+	(regex_replace): Use it.
+	* include/bits/regex.tcc (__regex_replace): Replace regex_replace
+	definition with __regex_replace.
+	* testsuite/28_regex/algorithms/regex_replace/char/103664.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84110
+	* include/bits/regex_error.h (regex_constants::_S_null): New
+	error code for internal use.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_scan_normal()):
+	Check for null character.
+	* testsuite/28_regex/basic_regex/84110.cc: New test.
+
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_error.h (__throw_regex_error): Fix
+	parameter declaration and use reserved attribute names.
+
+2023-06-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* include/bits/regex_error.h: Avoid warning with -fno-exceptions.
+
 2023-05-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/bits/fs_path.h: Rename __null_terminated to __nul_terminated
