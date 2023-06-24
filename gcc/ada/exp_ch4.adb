@@ -13158,13 +13158,11 @@ package body Exp_Ch4 is
    -- Expand_Unchecked_Union_Equality --
    -------------------------------------
 
-   procedure Expand_Unchecked_Union_Equality
-     (N   : Node_Id;
-      Eq  : Entity_Id;
-      Lhs : Node_Id;
-      Rhs : Node_Id)
-   is
+   procedure Expand_Unchecked_Union_Equality (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
+      Eq  : constant Entity_Id  := Entity (Name (N));
+      Lhs : constant Node_Id    := First_Actual (N);
+      Rhs : constant Node_Id    := Next_Actual (Lhs);
 
       function Get_Discr_Values (Op : Node_Id; Lhs : Boolean) return Elist_Id;
       --  Return the list of inferred discriminant values for Op
@@ -13335,6 +13333,12 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Unchecked_Union_Equality
 
    begin
+      --  Guard against repeated invocation on the same node
+
+      if Present (Next_Actual (Rhs)) then
+         return;
+      end if;
+
       --  If we can infer the discriminants of the operands, make a call to Eq
 
       if Has_Inferable_Discriminants (Lhs)

@@ -2933,12 +2933,10 @@ package body Exp_Ch6 is
 
       elsif Is_Unchecked_Union_Equality (N) then
          declare
-            Eq  : constant Entity_Id := Entity (Name (N));
-            Lhs : constant Node_Id   := First_Actual (N);
-            Rhs : constant Node_Id   := Next_Actual (Lhs);
+            Eq : constant Entity_Id := Entity (Name (N));
 
          begin
-            Expand_Unchecked_Union_Equality (N, Eq, Lhs, Rhs);
+            Expand_Unchecked_Union_Equality (N);
 
             --  If the call was not rewritten as a raise, expand the actuals
 
