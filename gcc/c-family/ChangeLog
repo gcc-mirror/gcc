@@ -1,3 +1,15 @@
+2023-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.h (cxx_dialect): Add cxx26 as a dialect.
+	* c-opts.cc (set_std_cxx26): New.
+	(c_common_handle_option): Set options when -std={c,gnu}++2{c,6} is
+	enabled.
+	(c_common_post_options): Adjust comments.
+	* c.opt: Add options for -std=c++26, std=c++2c, -std=gnu++26,
+	and -std=gnu++2c.
+	(std=c++2b): Mark as Undocumented.
+	(std=c++23): No longer Undocumented.
+
 2023-06-21  Alexander Monakov  <amonakov@ispras.ru>
 
 	* c-gimplify.cc (fma_supported_p): New helper.

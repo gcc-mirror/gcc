@@ -1,3 +1,40 @@
+2023-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/110164
+	* g++.dg/diagnostic/missing-header-pr110164.C: New test.
+
+2023-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_c++23): Return
+	1 also if check_effective_target_c++26.
+	(check_effective_target_c++23_down): New.
+	(check_effective_target_c++26_only): New.
+	(check_effective_target_c++26): New.
+	* g++.dg/cpp23/cplusplus.C: Adjust expected value.
+	* g++.dg/cpp26/cplusplus.C: New test.
+
+2023-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* gfortran.dg/value_9.f90: New test.
+
+2023-06-23   Michael Meissner  <meissner@linux.ibm.com>
+	    Aaron Sawdey   <acsawdey@linux.ibm.com>
+
+	PR target/105325
+	* g++.target/powerpc/pr105325.C: New test.
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update insn counts.
+
+2023-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: Make
+	this header use pragma system_header.
+
+2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* gcc.target/aarch64/sve/pr110280.c: New test.
+
 2023-06-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/110332

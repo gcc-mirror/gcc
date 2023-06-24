@@ -1,3 +1,9 @@
+2023-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* trans-expr.cc (gfc_conv_procedure_call): Pass actual argument
+	to scalar CHARACTER(1),VALUE dummy argument by value.
+
 2023-06-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87477

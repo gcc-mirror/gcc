@@ -1,3 +1,8 @@
+2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/vector.tcc (_M_realloc_insert): Replace try-block
+	with RAII types.
+
 2023-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/array (to_array(T(&)[N])): Remove redundant

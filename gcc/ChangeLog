@@ -1,3 +1,92 @@
+2023-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* doc/cpp.texi (__cplusplus): Document value for -std=c++26 and
+	-std=gnu++26.  Document that for C++23, its value is 202302L.
+	* doc/invoke.texi: Document -std=c++26 and -std=gnu++26.
+	* dwarf2out.cc (highest_c_language): Handle GNU C++26.
+	(gen_compile_unit_die): Likewise.
+
+2023-06-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-phiprop.cc (propagate_with_phi): Compute post dominators on
+	demand.
+	(pass_phiprop::execute): Do not compute it here; return
+	update_ssa_only_virtuals if something changed.
+	(pass_data_phiprop): Remove TODO_update_ssa from todos.
+
+2023-06-23   Michael Meissner  <meissner@linux.ibm.com>
+	    Aaron Sawdey   <acsawdey@linux.ibm.com>
+
+	PR target/105325
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10_one): Fix problems that
+	allowed prefixed lwa to be generated.
+	* config/rs6000/fusion.md: Regenerate.
+	* config/rs6000/predicates.md (ds_form_mem_operand): Delete.
+	* config/rs6000/rs6000.md (prefixed attribute): Add support for load
+	plus compare immediate fused insns.
+	(maybe_prefixed): Likewise.
+
+2023-06-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_subreg):  Optimize lowpart SUBREGs
+	of ASHIFT to const0_rtx with sufficiently large shift count.
+	Optimize highpart SUBREGs of ASHIFT as the shift operand when
+	the shift count is the correct offset.  Optimize SUBREGs of
+	multi-word logic operations if the SUBREGs of both operands
+	can be simplified.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* varasm.cc (initializer_constant_valid_p_1): Only
+	allow conversions between scalar floating point types.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_assignment):
+	Properly handle non-integral operands when analyzing
+	conversions.
+
+2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* match.pd (vec_perm_expr(v, v, mask) -> v): Explicitly build vector
+	using build_vector_from_val with the element of input operand, and
+	mask's type if operand and mask's types don't match.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (tree_simple_nonnegative_warnv_p): Guard
+	the truth_value_p case with !VECTOR_TYPE_P.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_look_through_possible_promotion):
+	Exit early when the type isn't scalar integral.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((outertype)((innertype0)a+(innertype1)b)
+	-> ((newtype)a+(newtype)b)): Use element_precision
+	where appropriate.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (fold_binary_loc): Use element_precision
+	when trying (double)float1 CMP (double)float2 to
+	float1 CMP float2 simplification.
+	* match.pd: Likewise.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Avoid useless
+	copies of VMAT_INVARIANT vectorized stmts, fix SLP support.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vector_vector_composition_type):
+	Handle composition of a vector from a number of elements that
+	happens to match its number of lanes.
+
 2023-06-22  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-bind-now): New check.  Add
