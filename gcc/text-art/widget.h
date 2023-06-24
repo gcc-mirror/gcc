@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TEXT_ART_WIDGET_H
 #define GCC_TEXT_ART_WIDGET_H
 
-#include <vector>
 #include "text-art/canvas.h"
 #include "text-art/table.h"
 

@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #if CHECKING_P
 
-#include "text-art/types.h"
+namespace text_art {
+  class canvas;
+} // namespace text_art
 
 namespace selftest {
 

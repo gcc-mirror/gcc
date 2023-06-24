@@ -2,6 +2,7 @@
 
 /* This plugin exercises the text_art code.  */
 
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"
