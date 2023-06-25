@@ -57,6 +57,10 @@ public:
   Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
 	 bool autoderef_flag = false);
 
+  static std::set<MethodCandidate>
+  Select (std::set<MethodCandidate> &candidates, TyTy::BaseType *receiver,
+	  std::vector<TyTy::BaseType *> arguments);
+
   static std::vector<predicate_candidate> get_predicate_items (
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);

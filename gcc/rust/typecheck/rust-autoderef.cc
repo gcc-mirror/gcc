@@ -170,18 +170,20 @@ resolve_operator_overload_fn (
 	}
     }
 
-  bool have_implementation_for_lang_item = resolved_candidates.size () > 0;
+  auto selected_candidates
+    = MethodResolver::Select (resolved_candidates, lhs, {});
+  bool have_implementation_for_lang_item = selected_candidates.size () > 0;
   if (!have_implementation_for_lang_item)
     return false;
 
-  if (resolved_candidates.size () > 1)
+  if (selected_candidates.size () > 1)
     {
       // no need to error out as we are just trying to see if there is a fit
       return false;
     }
 
   // Get the adjusted self
-  MethodCandidate candidate = *resolved_candidates.begin ();
+  MethodCandidate candidate = *selected_candidates.begin ();
   Adjuster adj (lhs);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 

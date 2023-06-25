@@ -232,6 +232,24 @@ coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 }
 
 TyTy::BaseType *
+try_coercion (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
+	      Location locus)
+{
+  TyTy::BaseType *expected = lhs.get_ty ();
+  TyTy::BaseType *expr = rhs.get_ty ();
+
+  rust_debug ("try_coercion_site id={%u} expected={%s} expr={%s}", id,
+	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
+  auto result = TypeCoercionRules::TryCoerce (expr, expected, locus,
+					      true /*allow-autodref*/);
+  if (result.is_error ())
+    return new TyTy::ErrorType (id);
+
+  return result.tyty;
+}
+
+TyTy::BaseType *
 cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
 	   Location cast_locus)
 {

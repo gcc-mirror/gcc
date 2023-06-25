@@ -41,6 +41,45 @@ MethodResolver::Probe (TyTy::BaseType *receiver,
   return resolver.result;
 }
 
+std::set<MethodCandidate>
+MethodResolver::Select (std::set<MethodCandidate> &candidates,
+			TyTy::BaseType *receiver,
+			std::vector<TyTy::BaseType *> arguments)
+{
+  std::set<MethodCandidate> selected;
+  for (auto &candidate : candidates)
+    {
+      TyTy::BaseType *candidate_type = candidate.candidate.ty;
+      rust_assert (candidate_type->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType &fn = *static_cast<TyTy::FnType *> (candidate_type);
+
+      // match the number of arguments
+      if (fn.num_params () != (arguments.size () + 1))
+	continue;
+
+      // match the arguments
+      bool failed = false;
+      for (size_t i = 0; i < arguments.size (); i++)
+	{
+	  TyTy::BaseType *arg = arguments.at (i);
+	  TyTy::BaseType *param = fn.get_params ().at (i + 1).second;
+	  TyTy::BaseType *coerced
+	    = try_coercion (0, TyTy::TyWithLocation (param),
+			    TyTy::TyWithLocation (arg), Location ());
+	  if (coerced->get_kind () == TyTy::TypeKind::ERROR)
+	    {
+	      failed = true;
+	      break;
+	    }
+	}
+
+      if (!failed)
+	selected.insert (candidate);
+    }
+
+  return selected;
+}
+
 void
 MethodResolver::try_hook (const TyTy::BaseType &r)
 {
