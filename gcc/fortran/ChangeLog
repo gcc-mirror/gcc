@@ -1,3 +1,9 @@
+2023-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* trans-expr.cc (gfc_conv_procedure_call): Truncate constant string
+	argument of length > 1 passed to scalar CHARACTER(1),VALUE dummy.
+
 2023-06-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110360

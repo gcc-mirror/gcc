@@ -1,3 +1,47 @@
+2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-1.c: Adjust tests.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_run_zvfh-9.c: New test.
+
+2023-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_text_art.c: Add
+	#define INCLUDE_VECTOR.
+
 2023-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/110164

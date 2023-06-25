@@ -1,3 +1,8 @@
+2023-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Add #define INCLUDE_VECTOR.
+	* bounds-checking.cc: Likewise.
+
 2023-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106626

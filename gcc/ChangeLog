@@ -1,3 +1,75 @@
+2023-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*<code>qi_ext<mode>_3): New define_insn.
+
+2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (*fma<mode>): set clobber to Pmode in expand stage.
+	(*fma<VI:mode><P:mode>): Ditto.
+	(*fnma<mode>): Ditto.
+	(*fnma<VI:mode><P:mode>): Ditto.
+
+2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (fma<mode>4): New pattern.
+	(*fma<mode>): Ditto.
+	(fnma<mode>4): Ditto.
+	(*fnma<mode>): Ditto.
+	(fms<mode>4): Ditto.
+	(*fms<mode>): Ditto.
+	(fnms<mode>4): Ditto.
+	(*fnms<mode>): Ditto.
+	* config/riscv/riscv-protos.h (emit_vlmax_fp_ternary_insn):
+	New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_fp_ternary_insn): Ditto.
+	* config/riscv/vector.md: Fix attribute bug.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-loop-ivopts.cc (get_mem_type_for_internal_fn):
+	Apply LEN_MASK_{LOAD,STORE}.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-loop-ivopts.cc (get_alias_ptr_type_for_ptr_address):
+	Add LEN_MASK_{LOAD,STORE}.
+
+2023-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Add #define INCLUDE_VECTOR.
+	* diagnostic.cc: Likewise.
+	* text-art/box-drawing.cc: Likewise.
+	* text-art/canvas.cc: Likewise.
+	* text-art/ruler.cc: Likewise.
+	* text-art/selftests.cc: Likewise.
+	* text-art/selftests.h (text_art::canvas): New forward decl.
+	* text-art/style.cc: Add #define INCLUDE_VECTOR.
+	* text-art/styled-string.cc: Likewise.
+	* text-art/table.cc: Likewise.
+	* text-art/table.h: Remove #include <vector>.
+	* text-art/theme.cc: Add #define INCLUDE_VECTOR.
+	* text-art/types.h: Check that INCLUDE_VECTOR is defined.
+	Remove #include of <vector> and <string>.
+	* text-art/widget.cc: Add #define INCLUDE_VECTOR.
+	* text-art/widget.h: Remove #include <vector>.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (expand_partial_store_optab_fn): Adapt for LEN_MASK_STORE.
+	(internal_load_fn_p): Add LEN_MASK_LOAD.
+	(internal_store_fn_p): Add LEN_MASK_STORE.
+	(internal_fn_mask_index): Add LEN_MASK_{LOAD,STORE}.
+	(internal_fn_stored_value_index): Add LEN_MASK_STORE.
+	(internal_len_load_store_bias):  Add LEN_MASK_{LOAD,STORE}.
+	* optabs-tree.cc (can_vec_mask_load_store_p): Adapt for LEN_MASK_{LOAD,STORE}.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.h (can_vec_mask_load_store_p): Ditto.
+	(get_len_load_store_mode): Ditto.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Ditto.
+	(get_all_ones_mask): New function.
+	(vectorizable_store): Apply LEN_MASK_{LOAD,STORE} into vectorizer.
+	(vectorizable_load): Ditto.
+
 2023-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* doc/cpp.texi (__cplusplus): Document value for -std=c++26 and
