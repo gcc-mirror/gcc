@@ -5044,7 +5044,7 @@ vectorizable_conversion (vec_info *vinfo,
 			 gimple **vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
-  tree vec_dest;
+  tree vec_dest, cvt_op = NULL_TREE;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -5569,6 +5569,13 @@ vectorizable_conversion (vec_info *vinfo,
     case NONE:
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
 			 op0, &vec_oprnds0);
+      /* vec_dest is intermediate type operand when multi_step_cvt.  */
+      if (multi_step_cvt)
+	{
+	  cvt_op = vec_dest;
+	  vec_dest = vec_dsts[0];
+	}
+
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	{
 	  /* Arguments are ready, create the new vector stmt.  */
@@ -5576,12 +5583,11 @@ vectorizable_conversion (vec_info *vinfo,
 	  if (multi_step_cvt)
 	    {
 	      gcc_assert (multi_step_cvt == 1);
-	      new_stmt = vect_gimple_build (vec_dest, codecvt1, vop0);
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      new_stmt = vect_gimple_build (cvt_op, codecvt1, vop0);
+	      new_temp = make_ssa_name (cvt_op, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      vop0 = new_temp;
-	      vec_dest = vec_dsts[0];
 	    }
 	  new_stmt = vect_gimple_build (vec_dest, code1, vop0);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
