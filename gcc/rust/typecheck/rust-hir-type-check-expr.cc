@@ -1619,11 +1619,17 @@ TypeCheckExpr::resolve_operator_overload (
 	}
     }
 
-  bool have_implementation_for_lang_item = resolved_candidates.size () > 0;
+  std::vector<TyTy::BaseType *> select_args = {};
+  if (rhs != nullptr)
+    select_args = {rhs};
+  auto selected_candidates
+    = MethodResolver::Select (resolved_candidates, lhs, select_args);
+
+  bool have_implementation_for_lang_item = selected_candidates.size () > 0;
   if (!have_implementation_for_lang_item)
     return false;
 
-  if (resolved_candidates.size () > 1)
+  if (selected_candidates.size () > 1)
     {
       // mutliple candidates
       RichLocation r (expr.get_locus ());
@@ -1637,7 +1643,7 @@ TypeCheckExpr::resolve_operator_overload (
     }
 
   // Get the adjusted self
-  MethodCandidate candidate = *resolved_candidates.begin ();
+  MethodCandidate candidate = *selected_candidates.begin ();
   Adjuster adj (lhs);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
