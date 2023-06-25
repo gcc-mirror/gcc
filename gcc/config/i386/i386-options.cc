@@ -1378,7 +1378,11 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       if (option_strings[IX86_FUNCTION_SPECIFIC_TUNE])
 	opts->x_ix86_tune_string
 	  = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_TUNE]);
-      else if (orig_tune_defaulted)
+      /* If we have explicit arch string and no tune string specified, set
+	 tune_string to NULL and later it will be overriden by arch_string
+	 so target clones can get proper optimization.  */
+      else if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
+	       || orig_tune_defaulted)
 	opts->x_ix86_tune_string = NULL;
 
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
