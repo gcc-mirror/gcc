@@ -865,6 +865,43 @@ emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
 }
 
 /* This function emits a masked instruction.  */
+static void
+emit_vlmax_masked_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a masked instruction.  */
+static void
+emit_nonvlmax_masked_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a masked instruction.  */
 void
 emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
 {
@@ -2744,6 +2781,47 @@ expand_select_vl (rtx *ops)
   scalar_int_mode mode = QImode;
   machine_mode rvv_mode = get_vector_mode (mode, nunits).require ();
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
+}
+
+/* Expand LEN_MASK_{LOAD,STORE}.  */
+void
+expand_load_store (rtx *ops, bool is_load)
+{
+  poly_int64 value;
+  rtx len = ops[2];
+  rtx mask = ops[3];
+  machine_mode mode = GET_MODE (ops[0]);
+
+  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+    {
+      /* If the length operand is equal to VF, it is VLMAX load/store.  */
+      if (is_load)
+	{
+	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
+	  emit_vlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M, m_ops);
+	}
+      else
+	{
+	  len = gen_reg_rtx (Pmode);
+	  emit_vlmax_vsetvl (mode, len);
+	  emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
+				     get_avl_type_rtx (VLMAX)));
+	}
+    }
+  else
+    {
+      if (!satisfies_constraint_K (len))
+	len = force_reg (Pmode, len);
+      if (is_load)
+	{
+	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
+	  emit_nonvlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M,
+				     m_ops, len);
+	}
+      else
+	emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
+				   get_avl_type_rtx (NONVLMAX)));
+    }
 }
 
 } // namespace riscv_vector

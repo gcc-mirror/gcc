@@ -22,29 +22,27 @@
 ;; == Loads/Stores
 ;; =========================================================================
 
-;; len_load/len_store is a sub-optimal pattern for RVV auto-vectorization support.
-;; We will replace them when len_maskload/len_maskstore is supported in loop vectorizer.
-(define_expand "len_load_<mode>"
+(define_expand "len_maskload<mode><vm>"
   [(match_operand:V 0 "register_operand")
    (match_operand:V 1 "memory_operand")
-   (match_operand 2 "vector_length_operand")
-   (match_operand 3 "const_0_operand")]
+   (match_operand 2 "autovec_length_operand")
+   (match_operand:<VM> 3 "vector_mask_operand")
+   (match_operand 4 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
-  				    riscv_vector::RVV_UNOP, operands, operands[2]);
+  riscv_vector::expand_load_store (operands, true);
   DONE;
 })
 
-(define_expand "len_store_<mode>"
+(define_expand "len_maskstore<mode><vm>"
   [(match_operand:V 0 "memory_operand")
    (match_operand:V 1 "register_operand")
-   (match_operand 2 "vector_length_operand")
-   (match_operand 3 "const_0_operand")]
+   (match_operand 2 "autovec_length_operand")
+   (match_operand:<VM> 3 "vector_mask_operand")
+   (match_operand 4 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<MODE>mode),
-  				    riscv_vector::RVV_UNOP, operands, operands[2]);
+  riscv_vector::expand_load_store (operands, false);
   DONE;
 })
 

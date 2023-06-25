@@ -1063,6 +1063,7 @@
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
 	     (match_operand 3 "vector_length_operand"    "   rK")
+	     (match_operand 4 "const_int_operand"        "    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:V 2 "register_operand"         "    vr")
@@ -1071,7 +1072,7 @@
   "vse<sew>.v\t%2,%0%p1"
   [(set_attr "type" "vste")
    (set_attr "mode" "<MODE>")
-   (set (attr "avl_type") (symbol_ref "riscv_vector::NONVLMAX"))
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))
    (set_attr "vl_op_idx" "3")])
 
 ;; vlm.v/vsm.v/vmclr.m/vmset.m.
@@ -1113,6 +1114,7 @@
 	  (unspec:VB
 	    [(match_operand:VB 1 "vector_all_trues_mask_operand" "Wc1")
 	     (match_operand 3 "vector_length_operand"            " rK")
+	     (match_operand 4 "const_int_operand"                "  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (match_operand:VB 2 "register_operand"                 " vr")
@@ -1121,7 +1123,7 @@
   "vsm.v\t%2,%0"
   [(set_attr "type" "vstm")
    (set_attr "mode" "<MODE>")
-   (set (attr "avl_type") (symbol_ref "riscv_vector::NONVLMAX"))
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))
    (set_attr "vl_op_idx" "3")])
 
 (define_insn "@pred_merge<mode>"
@@ -1433,6 +1435,7 @@
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1")
 	     (match_operand 4 "vector_length_operand"    "   rK")
+	     (match_operand 5 "const_int_operand"        "    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:V
@@ -1442,7 +1445,8 @@
   "TARGET_VECTOR"
   "vsse<sew>.v\t%3,%0,%z2%p1"
   [(set_attr "type" "vsts")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated indexed loads/stores
