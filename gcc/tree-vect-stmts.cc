@@ -5263,7 +5263,8 @@ vectorizable_conversion (vec_info *vinfo,
       if ((code == FLOAT_EXPR
 	   && GET_MODE_SIZE (lhs_mode) > GET_MODE_SIZE (rhs_mode))
 	  || (code == FIX_TRUNC_EXPR
-	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)))
+	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)
+	      && !flag_trapping_math))
 	{
 	  bool float_expr_p = code == FLOAT_EXPR;
 	  scalar_mode imode = float_expr_p ? rhs_mode : lhs_mode;
