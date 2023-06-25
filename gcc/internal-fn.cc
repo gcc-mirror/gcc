@@ -2991,7 +2991,7 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
       maskt = gimple_call_arg (stmt, 3);
       mask = expand_normal (maskt);
       create_input_operand (&ops[3], mask, TYPE_MODE (TREE_TYPE (maskt)));
-      biast = gimple_call_arg (stmt, 4);
+      biast = gimple_call_arg (stmt, 5);
       bias = expand_normal (biast);
       create_input_operand (&ops[4], bias, QImode);
       icode = convert_optab_handler (optab, TYPE_MODE (type), GET_MODE (mask));
