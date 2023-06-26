@@ -6713,14 +6713,14 @@
 )
 
 (define_insn "aarch64_sqrshrun_n<mode>_insn"
-  [(set (match_operand:<V2XWIDE> 0 "register_operand" "=w")
-	(smin:<V2XWIDE>
-	  (smax:<V2XWIDE>
-	    (ashiftrt:<V2XWIDE>
-	      (plus:<V2XWIDE>
-		(sign_extend:<V2XWIDE>
+  [(set (match_operand:<DWI> 0 "register_operand" "=w")
+	(smin:<DWI>
+	  (smax:<DWI>
+	    (ashiftrt:<DWI>
+	      (plus:<DWI>
+		(sign_extend:<DWI>
 		  (match_operand:SD_HSDI 1 "register_operand" "w"))
-		(match_operand:<V2XWIDE> 3 "aarch64_int_rnd_operand"))
+		(match_operand:<DWI> 3 "aarch64_int_rnd_operand"))
 	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
 	    (const_int 0))
 	  (const_int <half_mask>)))]
@@ -6736,10 +6736,10 @@
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
   "TARGET_SIMD"
   {
-    int prec = GET_MODE_UNIT_PRECISION (<V2XWIDE>mode);
+    int prec = GET_MODE_UNIT_PRECISION (<DWI>mode);
     wide_int rnd_wi = wi::set_bit_in_zero (INTVAL (operands[2]) - 1, prec);
-    rtx rnd = immed_wide_int_const (rnd_wi, <V2XWIDE>mode);
-    rtx dst = gen_reg_rtx (<V2XWIDE>mode);
+    rtx rnd = immed_wide_int_const (rnd_wi, <DWI>mode);
+    rtx dst = gen_reg_rtx (<DWI>mode);
     emit_insn (gen_aarch64_sqrshrun_n<mode>_insn (dst, operands[1], operands[2], rnd));
     emit_move_insn (operands[0], gen_lowpart (<VNARROWQ>mode, dst));
     DONE;
