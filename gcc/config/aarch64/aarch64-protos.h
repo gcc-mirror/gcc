@@ -759,7 +759,7 @@ bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT,
 					    HOST_WIDE_INT);
 bool aarch64_const_vec_rnd_cst_p (rtx, rtx);
-bool aarch64_const_vec_rsra_rnd_imm_p (rtx);
+bool aarch64_rnd_imm_p (rtx);
 bool aarch64_constant_address_p (rtx);
 bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);

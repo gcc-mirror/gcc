@@ -11761,14 +11761,14 @@ aarch64_extract_vec_duplicate_wide_int (rtx x, wide_int *ret_wi)
   return true;
 }
 
-/* Return true if X is a TImode constant or a constant vector of integer
-   immediates that represent the rounding constant used in the RSRA
-   instructions.
-   The accepted form of the constant is (1 << (C - 1)) where C is within
+/* Return true if X is a scalar or a constant vector of integer
+   immediates that represent the rounding constant used in the fixed-point
+   arithmetic instructions.
+   The accepted form of the constant is (1 << (C - 1)) where C is in the range
    [1, MODE_WIDTH/2].  */
 
 bool
-aarch64_const_vec_rsra_rnd_imm_p (rtx x)
+aarch64_rnd_imm_p (rtx x)
 {
   wide_int rnd_cst;
   if (!aarch64_extract_vec_duplicate_wide_int (x, &rnd_cst))

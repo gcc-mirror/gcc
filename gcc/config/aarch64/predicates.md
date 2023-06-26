@@ -626,15 +626,11 @@
   (and (match_code "const_vector")
        (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 64)")))
 
-(define_predicate "aarch64_simd_rsra_rnd_imm_vec"
+;; A constant or vector of constants that represents an integer rounding
+;; constant added during fixed-point arithmetic calculations
+(define_predicate "aarch64_int_rnd_operand"
   (and (match_code "const_vector,const_int,const_wide_int")
-       (match_test "aarch64_const_vec_rsra_rnd_imm_p (op)")))
-
-(define_predicate "aarch64_simd_rshrn_imm_vec"
-  (and (match_code "const_vector")
-       (match_test "aarch64_const_vec_all_same_in_range_p (op, 1,
-				HOST_WIDE_INT_1U
-				<< (GET_MODE_UNIT_BITSIZE  (mode) - 1))")))
+       (match_test "aarch64_rnd_imm_p (op)")))
 
 (define_predicate "aarch64_simd_raddsubhn_imm_vec"
   (and (match_code "const_vector")
