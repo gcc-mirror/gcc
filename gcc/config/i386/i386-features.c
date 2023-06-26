@@ -1825,9 +1825,7 @@ ix86_add_reg_usage_to_vzerouppers (void)
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  if (TARGET_VZEROUPPER
-      && flag_expensive_optimizations
-      && !optimize_size)
+  if (TARGET_VZEROUPPER)
     {
       /* vzeroupper instructions are inserted immediately after reload to
 	 account for possible spills from 256bit or 512bit registers.  The pass
@@ -1871,9 +1869,7 @@ public:
   virtual bool gate (function *)
     {
       return TARGET_AVX
-	     && ((TARGET_VZEROUPPER
-		  && flag_expensive_optimizations
-		  && !optimize_size)
+	     && (TARGET_VZEROUPPER
 		 || cfun->machine->has_explicit_vzeroupper);
     }
 
