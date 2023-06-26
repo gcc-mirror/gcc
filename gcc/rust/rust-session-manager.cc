@@ -481,18 +481,16 @@ Session::compile_crate (const char *filename)
   // parse file here
   /* create lexer and parser - these are file-specific and so aren't instance
    * variables */
-  Optional<std::ofstream &> dump_lex_opt = Optional<std::ofstream &>::none ();
+  tl::optional<std::ofstream &> dump_lex_opt = tl::nullopt;
   std::ofstream dump_lex_stream;
   if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
     {
       dump_lex_stream.open (kLexDumpFile);
       if (dump_lex_stream.fail ())
-	{
-	  rust_error_at (UNKNOWN_LOCATION, "cannot open %s:%m; ignored",
-			 kLexDumpFile);
-	}
-      auto stream = Optional<std::ofstream &>::some (dump_lex_stream);
-      dump_lex_opt = std::move (stream);
+	rust_error_at (UNKNOWN_LOCATION, "cannot open %s:%m; ignored",
+		       kLexDumpFile);
+
+      dump_lex_opt = dump_lex_stream;
     }
 
   Lexer lex (filename, std::move (file_wrap), linemap, dump_lex_opt);
@@ -1051,8 +1049,8 @@ TargetOptions::dump_target_options () const
     {
       for (const auto &value : pairs.second)
 	{
-	  if (value.is_some ())
-	    out << pairs.first + ": \"" + value.get () + "\"\n";
+	  if (value.has_value ())
+	    out << pairs.first + ": \"" + value.value () + "\"\n";
 	  else
 	    out << pairs.first + "\n";
 	}

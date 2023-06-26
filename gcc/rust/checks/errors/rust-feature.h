@@ -20,7 +20,7 @@
 #define RUST_FEATURE_H
 
 #include "rust-session-manager.h"
-#include "rust-optional.h"
+#include "optional.h"
 
 namespace Rust {
 
@@ -51,13 +51,13 @@ public:
   State state () { return m_state; }
   unsigned issue () { return m_issue; }
 
-  static Optional<Name> as_name (const std::string &name);
+  static tl::optional<Name> as_name (const std::string &name);
   static Feature create (Name name);
 
 private:
   Feature (Name name, State state, const char *name_str,
 	   const char *rustc_since, unsigned issue_number,
-	   const Optional<CompileOptions::Edition> &edition,
+	   const tl::optional<CompileOptions::Edition> &edition,
 	   const char *description)
     : m_state (state), m_name (name), m_name_str (name_str),
       m_rustc_since (rustc_since), m_issue (issue_number), edition (edition),
@@ -69,7 +69,7 @@ private:
   std::string m_name_str;
   std::string m_rustc_since;
   unsigned m_issue;
-  Optional<CompileOptions::Edition> edition;
+  tl::optional<CompileOptions::Edition> edition;
   std::string m_description;
 
   static const std::map<std::string, Name> name_hash_map;

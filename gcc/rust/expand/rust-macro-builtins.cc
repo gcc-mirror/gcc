@@ -123,7 +123,7 @@ std::unordered_map<
     {"Hash", MacroBuiltin::proc_macro_builtin},
 };
 
-// FIXME: This should return an Optional
+// FIXME: This should return an tl::optional
 BuiltinMacro
 builtin_macro_from_string (const std::string &identifier)
 {

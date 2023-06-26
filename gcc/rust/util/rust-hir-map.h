@@ -19,7 +19,7 @@
 #ifndef RUST_HIR_MAP_H
 #define RUST_HIR_MAP_H
 
-#include "rust-optional.h"
+#include "optional.h"
 #include "rust-system.h"
 #include "rust-location.h"
 #include "rust-mapping-common.h"
@@ -303,17 +303,17 @@ public:
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
 
   void insert_module_child (NodeId module, NodeId child);
-  Optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
+  tl::optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
 
   void insert_module_child_item (NodeId module, Resolver::CanonicalPath item);
-  Optional<std::vector<Resolver::CanonicalPath> &>
+  tl::optional<std::vector<Resolver::CanonicalPath> &>
   lookup_module_chidren_items (NodeId module);
-  Optional<Resolver::CanonicalPath &>
+  tl::optional<Resolver::CanonicalPath &>
   lookup_module_child (NodeId module, const std::string &item_name);
 
   void insert_child_item_to_parent_module_mapping (NodeId child_item,
 						   NodeId parent_module);
-  Optional<NodeId> lookup_parent_module (NodeId child_item);
+  tl::optional<NodeId> lookup_parent_module (NodeId child_item);
   bool node_is_module (NodeId query);
 
   void insert_ast_item (AST::Item *item);

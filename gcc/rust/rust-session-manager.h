@@ -30,7 +30,7 @@
 #include "coretypes.h"
 #include "options.h"
 
-#include "rust-optional.h"
+#include "optional.h"
 
 namespace Rust {
 // parser forward decl
@@ -51,7 +51,7 @@ struct TargetOptions
 {
   /* TODO: maybe make private and access through helpers to allow changes to
    * impl */
-  std::unordered_map<std::string, std::unordered_set<Optional<std::string>>>
+  std::unordered_map<std::string, std::unordered_set<tl::optional<std::string>>>
     features;
 
 public:
@@ -60,8 +60,7 @@ public:
   {
     auto it = features.find (key);
     return it != features.end ()
-	   && it->second.find (Optional<std::string>::none ())
-		!= it->second.end ();
+	   && it->second.find (tl::nullopt) != it->second.end ();
   }
 
   // Returns whether a key exists with the given value in the feature set.
@@ -71,7 +70,7 @@ public:
     if (it != features.end ())
       {
 	auto set = it->second;
-	auto it2 = set.find (Optional<std::string>::some (value));
+	auto it2 = set.find (value);
 	if (it2 != set.end ())
 	  return true;
       }
@@ -86,8 +85,8 @@ public:
     if (it != features.end ())
       {
 	auto set = it->second;
-	if (set.size () == 1 && set.begin ()->is_some ())
-	  return set.begin ()->get ();
+	if (set.size () == 1 && set.begin ()->has_value ())
+	  return set.begin ()->value ();
       }
     return "";
   }
@@ -103,8 +102,8 @@ public:
       return {};
 
     for (auto &val : it->second)
-      if (val.is_some ())
-	ret.insert (val.get ());
+      if (val.has_value ())
+	ret.insert (val.value ());
 
     return ret;
   }
@@ -117,13 +116,14 @@ public:
     auto it = features.find (key);
 
     if (it == features.end ())
-      it = features
-	     .insert (
-	       std::make_pair (std::move (key),
-			       std::unordered_set<Optional<std::string>> ()))
-	     .first;
+      it
+	= features
+	    .insert (
+	      std::make_pair (std::move (key),
+			      std::unordered_set<tl::optional<std::string>> ()))
+	    .first;
 
-    return it->second.insert (Optional<std::string>::none ()).second;
+    return it->second.insert (tl::nullopt).second;
   }
 
   // Inserts a key-value pair into the feature set.
@@ -132,13 +132,14 @@ public:
     auto it = features.find (key);
 
     if (it == features.end ())
-      it = features
-	     .insert (
-	       std::make_pair (std::move (key),
-			       std::unordered_set<Optional<std::string>> ()))
-	     .first;
+      it
+	= features
+	    .insert (
+	      std::make_pair (std::move (key),
+			      std::unordered_set<tl::optional<std::string>> ()))
+	    .first;
 
-    it->second.insert (Optional<std::string>::some (std::move (value)));
+    it->second.insert (std::move (value));
   }
 
   // Dump all target options to stderr.

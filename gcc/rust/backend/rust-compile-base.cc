@@ -816,7 +816,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
       rust_assert (ok);				    // found
       rust_assert (trait_item_ref->is_optional ()); // has definition
 
-      // FIXME Optional means it has a definition and an associated
+      // FIXME tl::optional means it has a definition and an associated
       // block which can be a default implementation, if it does not
       // contain an implementation we should actually return
       // error_mark_node

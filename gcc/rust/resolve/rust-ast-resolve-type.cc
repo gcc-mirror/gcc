@@ -198,10 +198,10 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       if (resolved_node_id == UNKNOWN_NODEID
 	  && previous_resolved_node_id == module_scope_id)
 	{
-	  Optional<CanonicalPath &> resolved_child
+	  tl::optional<CanonicalPath &> resolved_child
 	    = mappings->lookup_module_child (module_scope_id,
 					     ident_seg.as_string ());
-	  if (resolved_child.is_some ())
+	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
 	      if (resolver->get_name_scope ().decl_was_declared_here (
