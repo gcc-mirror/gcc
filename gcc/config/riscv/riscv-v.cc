@@ -1258,7 +1258,6 @@ expand_const_vector (rtx target, rtx src)
 	    }
 	  emit_move_insn (target, tmp);
 	}
-      return;
     }
   else if (CONST_VECTOR_STEPPED_P (src))
     {
@@ -1287,9 +1286,20 @@ expand_const_vector (rtx target, rtx src)
 	      */
 	      rtx imm
 		= gen_int_mode (-builder.npatterns (), builder.inner_mode ());
-	      rtx and_ops[] = {target, vid, imm};
+	      rtx tmp = gen_reg_rtx (builder.mode ());
+	      rtx and_ops[] = {tmp, vid, imm};
 	      icode = code_for_pred_scalar (AND, builder.mode ());
 	      emit_vlmax_insn (icode, RVV_BINOP, and_ops);
+	      HOST_WIDE_INT init_val = INTVAL (builder.elt (0));
+	      if (init_val == 0)
+		emit_move_insn (target, tmp);
+	      else
+		{
+		  rtx dup = gen_const_vector_dup (builder.mode (), init_val);
+		  rtx add_ops[] = {target, tmp, dup};
+		  icode = code_for_pred (PLUS, builder.mode ());
+		  emit_vlmax_insn (icode, RVV_BINOP, add_ops);
+		}
 	    }
 	  else
 	    {
