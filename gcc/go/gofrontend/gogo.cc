@@ -52,6 +52,10 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     prefix_from_option_(false),
     relative_import_path_(),
     c_header_(),
+    import_map_(),
+    package_file_(),
+    embed_patterns_(),
+    embed_files_(),
     check_divide_by_zero_(true),
     check_divide_overflow_(true),
     compiling_runtime_(false),
@@ -517,7 +521,20 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
-  Import::Stream* stream = Import::open_package(filename, location,
+  // If we are using an importcfg file we have to check two mappings.
+  // IMPORT_MAP_ is a mapping from package path to real package path,
+  // for vendoring.  PACKAGE_FILE_ is a mapping from package path to
+  // file name, to find the file in the build cache.
+  std::string path = filename;
+  Unordered_map(std::string, std::string)::const_iterator pi;
+  pi = this->import_map_.find(filename);
+  if (pi != this->import_map_.end())
+    path = pi->second;
+  pi = this->package_file_.find(path);
+  if (pi != this->package_file_.end())
+    path = pi->second;
+
+  Import::Stream* stream = Import::open_package(path, location,
 						this->relative_import_path_);
   if (stream == NULL)
     {

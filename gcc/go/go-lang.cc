@@ -90,6 +90,7 @@ static const char *go_prefix = NULL;
 static const char *go_relative_import_path = NULL;
 static const char *go_c_header = NULL;
 static const char *go_embedcfg = NULL;
+static const char *go_importcfg = NULL;
 
 /* Language hooks.  */
 
@@ -111,6 +112,7 @@ go_langhook_init (void)
   args.relative_import_path = go_relative_import_path;
   args.c_header = go_c_header;
   args.embedcfg = go_embedcfg;
+  args.importcfg = go_importcfg;
   args.check_divide_by_zero = go_check_divide_zero;
   args.check_divide_overflow = go_check_divide_overflow;
   args.compiling_runtime = go_compiling_runtime;
@@ -284,6 +286,10 @@ go_langhook_handle_option (
 
     case OPT_fgo_embedcfg_:
       go_embedcfg = arg;
+      break;
+
+    case OPT_fgo_importcfg_:
+      go_importcfg = arg;
       break;
 
     default:
