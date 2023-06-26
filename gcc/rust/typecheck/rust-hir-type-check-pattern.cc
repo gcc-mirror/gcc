@@ -112,7 +112,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 	if (items_no_range.get_patterns ().size () != variant->num_fields ())
 	  {
 	    rust_error_at (
-	      pattern.get_locus (),
+	      pattern.get_locus (), ErrorCode ("E0023"),
 	      "this pattern has %lu fields but the corresponding "
 	      "tuple variant has %lu field",
 	      (unsigned long) items_no_range.get_patterns ().size (),
