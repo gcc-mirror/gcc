@@ -62,7 +62,7 @@ struct test_one_policy
         EXPECT_EQ_N(expected_first, first, n, "wrong effect from for_each");
 
         // Try for_each_n
-        std::for_each_n(__pstl::execution::seq, expected_first, n, Flip<T>(1));
+        std::for_each_n(std::execution::seq, expected_first, n, Flip<T>(1));
         for_each_n(exec, first, n, Flip<T>(1));
         EXPECT_EQ_N(expected_first, first, n, "wrong effect from for_each_n");
     }
@@ -96,7 +96,7 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
     test<int32_t>();

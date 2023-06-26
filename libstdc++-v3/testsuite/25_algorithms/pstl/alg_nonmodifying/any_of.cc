@@ -55,7 +55,7 @@ test(size_t bits)
     {
 
         // Sequence of odd values
-        Sequence<T> in(n, [n, bits](size_t k) { return T(2 * HashBits(n, bits - 1) ^ 1); });
+        Sequence<T> in(n, [n, bits](size_t) { return T(2 * HashBits(n, bits - 1) ^ 1); });
 
         // Even value, or false when T is bool.
         T spike(2 * HashBits(n, bits - 1));
@@ -94,13 +94,13 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
     test<int32_t>(8 * sizeof(int32_t));
     test<uint16_t>(8 * sizeof(uint16_t));
     test<float64_t>(53);
-#if !_PSTL_ICC_16_17_TEST_REDUCTION_BOOL_TYPE_RELEASE_64_BROKEN
+#if !defined(_PSTL_ICC_16_17_TEST_REDUCTION_BOOL_TYPE_RELEASE_64_BROKEN)
     test<bool>(1);
 #endif
 

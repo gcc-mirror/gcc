@@ -84,14 +84,14 @@ template <typename T>
 void
 test_fill_by_type(std::size_t n)
 {
-    Sequence<T> in(n, [](std::size_t v) -> T { return T(0); }); //fill with zeros
+    Sequence<T> in(n, [](std::size_t) -> T { return T(0); }); //fill with zeros
     T value = -1;
 
     invoke_on_all_policies(test_fill(), in.begin(), in.end(), value);
     invoke_on_all_policies(test_fill_n(), in.begin(), n, value);
 }
 
-int32_t
+int
 main()
 {
 

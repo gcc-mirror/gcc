@@ -33,16 +33,17 @@ struct run_remove_copy
               typename T>
     void
     operator()(Policy&& exec, InputIterator first, InputIterator last, OutputIterator out_first,
-               OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size n,
-               const T& value, T trash)
+               OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2, Size n, const T& value,
+               T trash)
     {
         // Cleaning
         std::fill_n(expected_first, n, trash);
         std::fill_n(out_first, n, trash);
 
         // Run copy_if
-        auto i = remove_copy(first, last, expected_first, value);
-        auto k = remove_copy(exec, first, last, out_first, value);
+        auto i = std::remove_copy(first, last, expected_first, value);
+        (void)i;
+        auto k = std::remove_copy(exec, first, last, out_first, value);
         EXPECT_EQ_N(expected_first, out_first, n, "wrong remove_copy effect");
         for (size_t j = 0; j < GuardSize; ++j)
         {
@@ -84,7 +85,7 @@ test(T trash, const T& value, Convert convert, bool check_weakness = true)
     }
 }
 
-int32_t
+int
 main()
 {
 

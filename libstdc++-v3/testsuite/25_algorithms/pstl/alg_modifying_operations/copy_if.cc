@@ -29,7 +29,7 @@ using namespace TestUtils;
 
 struct run_copy_if
 {
-#if _PSTL_ICC_16_VC14_TEST_PAR_TBB_RT_RELEASE_64_BROKEN // dummy specializations to skip testing in case of broken configuration
+#if defined(_PSTL_ICC_16_VC14_TEST_PAR_TBB_RT_RELEASE_64_BROKEN) // dummy specializations to skip testing in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Predicate, typename T>
     void
@@ -131,7 +131,7 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
     test<float64_t>(-666.0, [](const float64_t& x) { return x * x <= 1024; },
@@ -140,12 +140,12 @@ main()
     test<int32_t>(-666, [](const int32_t& x) { return x != 42; },
                   [](size_t j) { return ((j + 1) % 5 & 2) != 0 ? int32_t(j + 1) : 42; });
 
-#if !_PSTL_ICC_17_TEST_MAC_RELEASE_32_BROKEN
+#if !defined(_PSTL_ICC_17_TEST_MAC_RELEASE_32_BROKEN)
     test<Number>(Number(42, OddTag()), IsMultiple(3, OddTag()), [](int32_t j) { return Number(j, OddTag()); });
 #endif
 
-#if !_PSTL_ICC_16_17_TEST_REDUCTION_RELEASE_BROKEN
-    test<int32_t>(-666, [](const int32_t& x) { return true; }, [](size_t j) { return j; }, false);
+#if !defined(_PSTL_ICC_16_17_TEST_REDUCTION_RELEASE_BROKEN)
+    test<int32_t>(-666, [](const int32_t&) { return true; }, [](size_t j) { return j; }, false);
 #endif
 
     test_algo_basic_double<int32_t>(run_for_rnd_fw<test_non_const>());

@@ -67,8 +67,7 @@ struct test_one_policy
 
     template <typename Policy, typename InputIterator1, typename InputIterator2, typename Compare>
     typename std::enable_if<TestUtils::isReverse<InputIterator1>::value, void>::type
-    operator()(Policy&& exec, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2,
-               Compare comp)
+    operator()(Policy&&, InputIterator1, InputIterator1, InputIterator2, InputIterator2, Compare)
     {
     }
 };
@@ -104,11 +103,11 @@ test_includes(Compare compare)
     }
 }
 
-int32_t
+int
 main()
 {
 
-    test_includes<float64_t, float64_t>(__pstl::__internal::__pstl_less());
+    test_includes<float64_t, float64_t>(std::less<>());
     test_includes<Num<int64_t>, Num<int32_t>>([](const Num<int64_t>& x, const Num<int32_t>& y) { return x < y; });
     std::cout << done() << std::endl;
 

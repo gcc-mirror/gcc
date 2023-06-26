@@ -35,24 +35,23 @@ struct test_partition_copy
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2,
               typename UnaryOp>
     void
-    operator()(Policy&& exec, InputIterator first, InputIterator last, OutputIterator true_first,
-               OutputIterator true_last, OutputIterator2 false_first, OutputIterator2 false_last, UnaryOp unary_op)
+    operator()(Policy&& exec, InputIterator first, InputIterator last, OutputIterator true_first, OutputIterator,
+               OutputIterator2 false_first, OutputIterator2, UnaryOp unary_op)
     {
 
         auto actual_ret = std::partition_copy(exec, first, last, true_first, false_first, unary_op);
 
         EXPECT_TRUE(std::distance(true_first, actual_ret.first) == std::count_if(first, last, unary_op),
                     "partition_copy has wrong effect from true sequence");
-        EXPECT_TRUE(std::distance(false_first, actual_ret.second) ==
-                        std::count_if(first, last, __pstl::__internal::__not_pred<UnaryOp>(unary_op)),
+        EXPECT_TRUE(std::distance(false_first, actual_ret.second) == std::count_if(first, last, std::not_fn(unary_op)),
                     "partition_copy has wrong effect from false sequence");
     }
 
     //dummy specialization by iterator type and policy type, in case of broken configuration
-#if _PSTL_ICC_1800_TEST_MONOTONIC_RELEASE_64_BROKEN
+#if defined(_PSTL_ICC_1800_TEST_MONOTONIC_RELEASE_64_BROKEN)
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename UnaryOp>
     void
-    operator()(pstl::execution::unsequenced_policy, std::reverse_iterator<InputIterator> first,
+    operator()(__pstl::execution::unsequenced_policy, std::reverse_iterator<InputIterator> first,
                std::reverse_iterator<InputIterator> last, std::reverse_iterator<OutputIterator> true_first,
                std::reverse_iterator<OutputIterator> true_last, std::reverse_iterator<OutputIterator2> false_first,
                OutputIterator2 false_last, UnaryOp unary_op)
@@ -60,7 +59,7 @@ struct test_partition_copy
     }
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename UnaryOp>
     void
-    operator()(pstl::execution::parallel_unsequenced_policy, std::reverse_iterator<InputIterator> first,
+    operator()(__pstl::execution::parallel_unsequenced_policy, std::reverse_iterator<InputIterator> first,
                std::reverse_iterator<InputIterator> last, std::reverse_iterator<OutputIterator> true_first,
                std::reverse_iterator<OutputIterator> true_last, std::reverse_iterator<OutputIterator2> false_first,
                OutputIterator2 false_last, UnaryOp unary_op)
@@ -106,13 +105,13 @@ struct test_non_const
     }
 };
 
-int32_t
+int
 main()
 {
     test<int32_t>([](const int32_t value) { return value % 2; });
 
-#if !_PSTL_ICC_16_17_TEST_REDUCTION_RELEASE_BROKEN
-    test<int32_t>([](const int32_t value) { return true; });
+#if !defined(_PSTL_ICC_16_17_TEST_REDUCTION_RELEASE_BROKEN)
+    test<int32_t>([](const int32_t) { return true; });
 #endif
 
     test<float64_t>([](const float64_t value) { return value > 2 << 6; });
