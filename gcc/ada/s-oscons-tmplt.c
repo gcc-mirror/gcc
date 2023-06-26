@@ -1545,6 +1545,11 @@ CND(SO_KEEPALIVE, "Enable keep-alive msgs")
 #endif
 CND(SO_LINGER, "Defer close to flush data")
 
+#ifndef SO_BINDTODEVICE
+# define SO_BINDTODEVICE -1
+#endif
+CND(SO_BINDTODEVICE, "Bind to a NIC - Network Interface Controller")
+
 #ifndef SO_BROADCAST
 # define SO_BROADCAST -1
 #endif
