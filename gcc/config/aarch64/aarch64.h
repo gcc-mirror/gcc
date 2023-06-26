@@ -210,6 +210,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SM_ON          (aarch64_isa_flags & AARCH64_FL_SM_ON)
 #define AARCH64_ISA_ZA_ON          (aarch64_isa_flags & AARCH64_FL_ZA_ON)
 #define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
+#define AARCH64_ISA_V8A		   (aarch64_isa_flags & AARCH64_FL_V8A)
+#define AARCH64_ISA_V8_1A	   (aarch64_isa_flags & AARCH64_FL_V8_1A)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
@@ -250,6 +252,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
 #define AARCH64_ISA_V8R		   (aarch64_isa_flags & AARCH64_FL_V8R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
+#define AARCH64_ISA_V8_7A	   (aarch64_isa_flags & AARCH64_FL_V8_7A)
+#define AARCH64_ISA_V8_8A	   (aarch64_isa_flags & AARCH64_FL_V8_8A)
 #define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9A)
 #define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1A)
 #define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2A)
@@ -270,6 +274,19 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* PSTATE.ZA is enabled in the current function body.  */
 #define TARGET_ZA (AARCH64_ISA_ZA_ON)
+/* AARCH64_FL options necessary for system register implementation.  */
+
+/* Define AARCH64_FL aliases for architectural features which are protected
+   by -march flags in binutils but which receive no special treatment by GCC.
+
+   Such flags are inherited from the Binutils definition of system registers
+   and are mapped to the architecture in which the feature is implemented.  */
+#define AARCH64_FL_RAS		   AARCH64_FL_V8A
+#define AARCH64_FL_LOR		   AARCH64_FL_V8_1A
+#define AARCH64_FL_PAN		   AARCH64_FL_V8_1A
+#define AARCH64_FL_AMU		   AARCH64_FL_V8_4A
+#define AARCH64_FL_SCXTNUM	   AARCH64_FL_V8_5A
+#define AARCH64_FL_ID_PFR2	   AARCH64_FL_V8_5A
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (AARCH64_ISA_CRYPTO)
