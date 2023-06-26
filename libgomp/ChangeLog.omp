@@ -1,3 +1,13 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (gomp_map_pointer): Modify zero-length array section
+	pointer handling.
+	(gomp_attach_pointer): Likewise.
+	* testsuite/libgomp.c++/target-lambda-1.C: Update for OpenMP 5.2
+	semantics.
+	* testsuite/libgomp.c++/target-this-3.C: Likewise.
+	* testsuite/libgomp.c++/target-this-4.C: Likewise.
+
 2023-06-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline:

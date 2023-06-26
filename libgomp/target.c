@@ -855,7 +855,7 @@ gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
   if (n == NULL)
     {
       if (allow_zero_length_array_sections)
-	cur_node.tgt_offset = 0;
+	cur_node.tgt_offset = cur_node.host_start;
       else if (devicep->is_usm_ptr_func
 	       && devicep->is_usm_ptr_func ((void*)cur_node.host_start))
 	cur_node.tgt_offset = cur_node.host_start;
@@ -1023,9 +1023,8 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 	{
 	  if (allow_zero_length_array_sections)
 	    /* When allowing attachment to zero-length array sections, we
-	       allow attaching to NULL pointers when the target region is not
-	       mapped.  */
-	    data = 0;
+	       copy the host pointer when the target region is not mapped.  */
+	    data = target;
 	  else
 	    {
 	      gomp_mutex_unlock (&devicep->lock);

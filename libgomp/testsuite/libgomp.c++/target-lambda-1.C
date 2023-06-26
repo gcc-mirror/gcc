@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 
 template <typename L>
 void
@@ -22,9 +23,11 @@ struct S
     auto fn = [=](void) -> bool
       {
 	bool mapped;
+	uintptr_t hostptr = (uintptr_t) ptr;
+	uintptr_t hostiptr = (uintptr_t) iptr;
 	#pragma omp target map(from:mapped)
 	{
-	  mapped = (ptr != NULL && iptr != NULL);
+	  mapped = (ptr != (int*) hostptr && iptr != (int*) hostiptr);
 	  if (mapped)
 	    {
 	      for (int i = 0; i < len; i++)

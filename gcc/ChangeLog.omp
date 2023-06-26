@@ -1,3 +1,10 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Add note about
+	DECL_VALUE_EXPR handling for struct mapping nodes.
+	(gimplify_adjust_omp_clauses): Perform DECL_VALUE_EXPR substitution
+	before DECL_P check.
+
 2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

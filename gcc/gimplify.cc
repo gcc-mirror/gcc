@@ -12090,7 +12090,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	  /* Adding the decl for a struct access: we haven't created
 	     GOMP_MAP_STRUCT nodes yet, so this statement needs to predict
-	     whether they will be created in gimplify_adjust_omp_clauses.  */
+	     whether they will be created in gimplify_adjust_omp_clauses.
+	     NOTE: Technically we should probably look through DECL_VALUE_EXPR
+	     here because something that looks like a DECL_P may actually be a
+	     struct access, e.g. variables in a lambda closure
+	     (__closure->__foo) or class members (this->foo). Currently in both
+	     those cases we map the whole of the containing object (directly in
+	     the C++ FE) though, so struct nodes are not created.  */
 	  if (c == grp_end
 	      && addr_tokens[0]->type == STRUCTURE_BASE
 	      && addr_tokens[0]->u.structure_base_kind == BASE_DECL
@@ -13895,6 +13901,18 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      remove = true;
 	      break;
 	    }
+	  /* If we have a DECL_VALUE_EXPR (e.g. this is a class member and/or
+	     a variable captured in a lambda closure), look through that now
+	     before the DECL_P check below.  (A code other than COMPONENT_REF,
+	     i.e. INDIRECT_REF, will be a VLA/variable-length array
+	     section.  A global var may be a variable in a common block.  We
+	     don't want to do this here for either of those.)  */
+	  if ((ctx->region_type & ORT_ACC) == 0
+	      && DECL_P (decl)
+	      && !is_global_var (decl)
+	      && DECL_HAS_VALUE_EXPR_P (decl)
+	      && TREE_CODE (DECL_VALUE_EXPR (decl)) == COMPONENT_REF)
+	    decl = OMP_CLAUSE_DECL (c) = DECL_VALUE_EXPR (decl);
 	  if (TREE_CODE (decl) == TARGET_EXPR)
 	    {
 	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
