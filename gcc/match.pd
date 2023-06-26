@@ -7454,10 +7454,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  values representable in the TYPE to be within the
 		  range of normal values of ITYPE.  */
 	      (if (element_precision (newtype) < element_precision (itype)
+		   && (!VECTOR_MODE_P (TYPE_MODE (newtype))
+		       || target_supports_op_p (newtype, op, optab_default))
 		   && (flag_unsafe_math_optimizations
 		       || (element_precision (newtype) == element_precision (type)
-			   && real_can_shorten_arithmetic (TYPE_MODE (itype),
-							   TYPE_MODE (type))
+			   && real_can_shorten_arithmetic (element_mode (itype),
+							   element_mode (type))
 			   && !excess_precision_type (newtype)))
 		   && !types_match (itype, newtype))
 		 (convert:type (op (convert:newtype @1)
