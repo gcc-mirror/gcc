@@ -3733,9 +3733,8 @@ vect_optimize_slp (vec_info *vinfo)
       vertices[idx].perm_out = perms.length () - 1;
     }
 
-  /* In addition to the above we have to mark outgoing permutes facing
-     non-reduction graph entries that are not represented as to be
-     materialized.  */
+  /* We have to mark outgoing permutations facing non-associating-reduction
+     graph entries that are not represented as to be materialized.  */
   for (slp_instance instance : vinfo->slp_instances)
     if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
       {
@@ -3743,6 +3742,20 @@ vect_optimize_slp (vec_info *vinfo)
 	   pick this up.  */
 	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_in = 0;
 	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_out = 0;
+      }
+    else if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_reduc_chain)
+      {
+	stmt_vec_info stmt_info
+	  = SLP_TREE_REPRESENTATIVE (SLP_INSTANCE_TREE (instance));
+	stmt_vec_info reduc_info = info_for_reduction (vinfo, stmt_info);
+	if (needs_fold_left_reduction_p (TREE_TYPE
+					   (gimple_get_lhs (stmt_info->stmt)),
+					 STMT_VINFO_REDUC_CODE (reduc_info)))
+	  {
+	    unsigned int node_i = SLP_INSTANCE_TREE (instance)->vertex;
+	    vertices[node_i].perm_in = 0;
+	    vertices[node_i].perm_out = 0;
+	  }
       }
 
   /* Propagate permutes along the graph and compute materialization points.  */
