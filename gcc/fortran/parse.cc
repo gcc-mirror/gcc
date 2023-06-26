@@ -902,6 +902,7 @@ decode_omp_directive (void)
       break;
     case 't':
       matchs ("tile sizes", gfc_match_omp_tile, ST_OMP_TILE);
+      break;
     case 'u':
       matchs ("unroll", gfc_match_omp_unroll, ST_OMP_UNROLL);
       break;

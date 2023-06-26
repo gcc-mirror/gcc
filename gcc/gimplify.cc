@@ -13996,8 +13996,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 				 fb_lvalue) == GS_ERROR)
 		remove = true;
 	      gimplify_omp_ctxp = ctx;
-	       break;
-	     }
+	      break;
+	    }
 
 	 if ((code == OMP_TARGET
 	      || code == OMP_TARGET_DATA
