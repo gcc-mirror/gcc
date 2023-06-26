@@ -77,22 +77,7 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
         bool isMutable;         // true if reference to mutable
     }
 
-    /* Store escapeBy as static data escapeByStorage so we can keep reusing the same
-     * arrays rather than reallocating them.
-     */
-    __gshared EscapeBy[] escapeByStorage;
-    auto escapeBy = escapeByStorage;
-    if (escapeBy.length < len)
-    {
-        auto newPtr = cast(EscapeBy*)mem.xrealloc(escapeBy.ptr, len * EscapeBy.sizeof);
-        // Clear the new section
-        memset(newPtr + escapeBy.length, 0, (len - escapeBy.length) * EscapeBy.sizeof);
-        escapeBy = newPtr[0 .. len];
-        escapeByStorage = escapeBy;
-    }
-    else
-        escapeBy = escapeBy[0 .. len];
-
+    auto escapeBy = new EscapeBy[len];
     const paramLength = tf.parameterList.length;
 
     // Fill in escapeBy[] with arguments[], ethis, and outerVars[]
@@ -210,13 +195,6 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
     {
         escape(i, eb, true);
         escape(i, eb, false);
-    }
-
-    /* Reset the arrays in escapeBy[] so we can reuse them next time through
-     */
-    foreach (ref eb; escapeBy)
-    {
-        eb.er.reset();
     }
 
     return errors;
