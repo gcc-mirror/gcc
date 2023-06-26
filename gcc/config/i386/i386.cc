@@ -22719,6 +22719,35 @@ x86_emit_floatuns (rtx operands[2])
 
   emit_label (donelab);
 }
+
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.
+   Currently it's used to warn for silent implicit conversion between __bf16
+   and short, since __bfloat16 is refined as real __bf16 instead of short
+   since GCC13.  */
+
+static const char *
+ix86_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype)
+      && (TARGET_AVX512BF16 || TARGET_AVXNECONVERT))
+    {
+      /* Warn for silent implicit conversion where user may expect
+	 a bitcast.  */
+      if ((TYPE_MODE (fromtype) == BFmode
+	   && TYPE_MODE (totype) == HImode)
+	  || (TYPE_MODE (totype) == BFmode
+	      && TYPE_MODE (fromtype) == HImode))
+	warning (0, "%<__bfloat16%> is redefined from typedef %<short%> "
+		"to real %<__bf16%> since GCC V13, be careful of "
+		 "implicit conversion between %<__bf16%> and %<short%>; "
+		 "a explicit bitcast may be needed here");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
 
 /* Target hook for scalar_mode_supported_p.  */
 static bool
@@ -25009,6 +25038,9 @@ ix86_run_selftests (void)
 #  undef TARGET_MERGE_DECL_ATTRIBUTES
 #  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
