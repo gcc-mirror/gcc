@@ -252,7 +252,6 @@ machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
-void expand_vcond (rtx *);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);

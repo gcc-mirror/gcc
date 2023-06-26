@@ -2421,28 +2421,6 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
-/* Expand an RVV vcond pattern with operands OPS.  DATA_MODE is the mode
-   of the data being merged and CMP_MODE is the mode of the values being
-   compared.  */
-
-void
-expand_vcond (rtx *ops)
-{
-  machine_mode cmp_mode = GET_MODE (ops[4]);
-  machine_mode data_mode = GET_MODE (ops[1]);
-  machine_mode mask_mode = get_mask_mode (cmp_mode).require ();
-  rtx mask = gen_reg_rtx (mask_mode);
-  if (FLOAT_MODE_P (cmp_mode))
-    {
-      if (expand_vec_cmp_float (mask, GET_CODE (ops[3]), ops[4], ops[5], true))
-	std::swap (ops[1], ops[2]);
-    }
-  else
-    expand_vec_cmp (mask, GET_CODE (ops[3]), ops[4], ops[5]);
-  emit_insn (
-    gen_vcond_mask (data_mode, data_mode, ops[0], ops[1], ops[2], mask));
-}
-
 /* Implement vec_perm<mode>.  */
 
 void

@@ -312,44 +312,6 @@
 )
 
 ;; -------------------------------------------------------------------------
-;; ---- [INT,FP] Compare and select
-;; -------------------------------------------------------------------------
-;; The patterns in this section are synthetic.
-;; -------------------------------------------------------------------------
-
-(define_expand "vcond<V:mode><VI:mode>"
-  [(set (match_operand:V 0 "register_operand")
-	(if_then_else:V
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VI 4 "register_operand")
-	     (match_operand:VI 5 "register_operand")])
-	  (match_operand:V 1 "register_operand")
-	  (match_operand:V 2 "register_operand")))]
-  "TARGET_VECTOR && known_eq (GET_MODE_NUNITS (<V:MODE>mode),
-  		GET_MODE_NUNITS (<VI:MODE>mode))"
-  {
-    riscv_vector::expand_vcond (operands);
-    DONE;
-  }
-)
-
-(define_expand "vcondu<V:mode><VI:mode>"
-  [(set (match_operand:V 0 "register_operand")
-	(if_then_else:V
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VI 4 "register_operand")
-	     (match_operand:VI 5 "register_operand")])
-	  (match_operand:V 1 "register_operand")
-	  (match_operand:V 2 "register_operand")))]
-  "TARGET_VECTOR && known_eq (GET_MODE_NUNITS (<V:MODE>mode),
-  		GET_MODE_NUNITS (<VI:MODE>mode))"
-  {
-    riscv_vector::expand_vcond (operands);
-    DONE;
-  }
-)
-
-;; -------------------------------------------------------------------------
 ;; ---- [INT] Sign and zero extension
 ;; -------------------------------------------------------------------------
 ;; Includes:
