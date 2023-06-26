@@ -1,3 +1,131 @@
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::parse_insn): Ehance
+	AVL propagation.
+	* config/riscv/riscv-vsetvl.h: New function.
+
+2023-06-25  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: change emit_insn to
+	emit_move_insn
+
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (len_load_<mode>): Remove.
+	(len_maskload<mode><vm>): Remove.
+	(len_store_<mode>): New pattern.
+	(len_maskstore<mode><vm>): New pattern.
+	* config/riscv/predicates.md (autovec_length_operand): New predicate.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_load_store): New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_masked_insn): Ditto.
+	(emit_nonvlmax_masked_insn): Ditto.
+	(expand_load_store): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_contiguous_store_insn): Add avl_type operand
+	into pred_store.
+	* config/riscv/vector.md: Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (expand_partial_store_optab_fn): Fix bug of BIAS
+	argument index.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Revert.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Revert changes.
+	* config/riscv/riscv-modes.def (RVV_TUPLE_MODES): Ditto.
+	(ADJUST_ALIGNMENT): Ditto.
+	(RVV_TUPLE_PARTIAL_MODES): Ditto.
+	(ADJUST_NUNITS): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (vfloat16mf4x2_t): Ditto.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Diito.
+	(vfloat16m2x4_t): Diito.
+	(vfloat16m4x2_t): Diito.
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4x2_t): Ditto.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-switch.def (TUPLE_ENTRY): Ditto.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gimple-fold.cc (arith_overflowed_p): Apply LEN_MASK_{LOAD,STORE}.
+	(gimple_fold_partial_load_store_mem_ref): Ditto.
+	(gimple_fold_partial_store): Ditto.
+	(gimple_fold_call): Ditto.
+
+2023-06-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110309
+	* config/i386/sse.md (maskload<mode><avx512fmaskmodelower>):
+	Refine pattern with UNSPEC_MASKLOAD.
+	(maskload<mode><avx512fmaskmodelower>): Ditto.
+	(*<avx512>_load<mode>_mask): Extend mode iterator to
+	VI12HFBF_AVX512VL.
+	(*<avx512>_load<mode>): Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-alias.cc (call_may_clobber_ref_p_1): Add LEN_MASK_STORE.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Apply
+	LEN_MASK_{LOAD,STORE}
+
+2023-06-25  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/vector.md: Add float16 attr at sew、vlmul and ratio.
+
 2023-06-24  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (*<code>qi_ext<mode>_3): New define_insn.

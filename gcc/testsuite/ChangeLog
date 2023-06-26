@@ -1,3 +1,55 @@
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/select_vl-1.c: Add dump checks.
+	* gcc.target/riscv/rvv/autovec/partial/select_vl-2.c: New test.
+
+2023-06-25  Li Xu  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/vlmul_ext-2.c: New test.
+
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-3.h: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup_run-3.c: New test.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/abi-10.c: Revert.
+	* gcc.target/riscv/rvv/base/abi-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-17.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-18.c: Ditto.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/tuple-28.c: Removed.
+	* gcc.target/riscv/rvv/base/tuple-29.c: Removed.
+	* gcc.target/riscv/rvv/base/tuple-30.c: Removed.
+	* gcc.target/riscv/rvv/base/tuple-31.c: Removed.
+	* gcc.target/riscv/rvv/base/tuple-32.c: Removed.
+
+2023-06-25  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110309.c: New test.
+
+2023-06-25  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/abi-10.c: Add float16 tuple type case.
+	* gcc.target/riscv/rvv/base/abi-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-17.c: New test.
+	* gcc.target/riscv/rvv/base/abi-18.c: New test.
+
 2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/ternop/ternop-1.c: Adjust tests.

@@ -1,3 +1,8 @@
+2023-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a45f4e9f43.
+	* dmd/VERSION: Bump version to v2.103.1.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* Make-lang.in: Remove NO_PIE_CFLAGS.

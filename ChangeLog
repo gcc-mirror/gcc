@@ -1,3 +1,15 @@
+2023-06-25  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* MAINTAINERS: Add Lehua Ding to write after approval
+
+2023-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Pass the enable-host-pie value to GCC configure.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Adjust the logic for shared and PIE host flags to
+	ensure that PIE is passed for hosts that require it.
+
 2023-06-16  YunQiang Su  <yunqiang.su@cipunited.com>
 
 	* MAINTAINERS (Write After Approval): move Matthew Fortune
