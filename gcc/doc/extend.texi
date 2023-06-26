@@ -2573,6 +2573,7 @@ The following attributes are supported on most targets.
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
 
+@cindex @code{access} function attribute
 @item access (@var{access-mode}, @var{ref-index})
 @itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
 
@@ -3339,6 +3340,8 @@ int S::interface (int) __attribute__ ((ifunc ("_ZN1S8resolverEv")));
 Indirect functions cannot be weak.  Binutils version 2.20.1 or higher
 and GNU C Library version 2.11.1 are required to use this feature.
 
+@cindex @code{interrupt_handler} function attribute
+@cindex @code{interrupt} function attribute
 @item interrupt
 @itemx interrupt_handler
 Many GCC back ends support attributes to indicate that a function is
