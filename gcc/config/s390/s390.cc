@@ -13706,8 +13706,10 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
     {
       /* Store the alignment to be able to check if we can use
 	 a larl/load-relative instruction.  We only handle the cases
-	 that can go wrong (i.e. no FUNC_DECLs).  */
-      if (DECL_ALIGN (decl) == 0 || DECL_ALIGN (decl) % 16)
+	 that can go wrong (i.e. no FUNC_DECLs).
+	 All symbols without an explicit alignment are assumed to be 2
+	 byte aligned as mandated by our ABI.  */
+      if (DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) % 16)
 	SYMBOL_FLAG_SET_NOTALIGN2 (XEXP (rtl, 0));
       else if (DECL_ALIGN (decl) % 32)
 	SYMBOL_FLAG_SET_NOTALIGN4 (XEXP (rtl, 0));
