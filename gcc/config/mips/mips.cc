@@ -6271,6 +6271,23 @@ mips_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
+/* Given MODE and TYPE of a function argument, return the alignment in
+   bits.
+   In case of typedef, alignment of its original type is
+   used.  */
+
+static unsigned int
+mips_function_arg_alignment (machine_mode mode, const_tree type)
+{
+  if (!type)
+    return GET_MODE_ALIGNMENT (mode);
+
+  if (is_typedef_decl (TYPE_NAME (type)))
+    type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+
+  return TYPE_ALIGN (type);
+}
+
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
    least PARM_BOUNDARY bits of alignment, but will be given anything up
    to STACK_BOUNDARY bits if the type requires it.  */
@@ -6279,8 +6296,8 @@ static unsigned int
 mips_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int alignment;
+  alignment = mips_function_arg_alignment (mode, type);
 
-  alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
   if (alignment < PARM_BOUNDARY)
     alignment = PARM_BOUNDARY;
   if (alignment > STACK_BOUNDARY)
