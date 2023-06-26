@@ -3346,17 +3346,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype)));
 	      if (mask)
 		{
-		  HOST_WIDE_INT start = 0, len = 0;
+		  HOST_WIDE_INT start = 0, length = 0;
 		  unsigned mask_idx = 0;
 		  do
 		    {
 		      if (integer_zerop (VECTOR_CST_ELT (mask, mask_idx)))
 			{
-			  if (len != 0)
+			  if (length != 0)
 			    {
 			      pd.rhs_off = start;
 			      pd.offset = offset2i + start;
-			      pd.size = len;
+			      pd.size = length;
 			      if (ranges_known_overlap_p
 				    (offset, maxsize, pd.offset, pd.size))
 				{
@@ -3367,18 +3367,18 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 				}
 			    }
 			  start = (mask_idx + 1) * elsz;
-			  len = 0;
+			  length = 0;
 			}
 		      else
-			len += elsz;
+			length += elsz;
 		      mask_idx++;
 		    }
 		  while (known_lt (mask_idx, TYPE_VECTOR_SUBPARTS (vectype)));
-		  if (len != 0)
+		  if (length != 0)
 		    {
 		      pd.rhs_off = start;
 		      pd.offset = offset2i + start;
-		      pd.size = len;
+		      pd.size = length;
 		      if (ranges_known_overlap_p (offset, maxsize,
 						  pd.offset, pd.size))
 			return data->push_partial_def (pd, set, set,
