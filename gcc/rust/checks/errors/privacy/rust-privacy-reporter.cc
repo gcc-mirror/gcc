@@ -28,7 +28,7 @@ PrivacyReporter::PrivacyReporter (
   Analysis::Mappings &mappings, Resolver::Resolver &resolver,
   const Rust::Resolver::TypeCheckContext &ty_ctx)
   : mappings (mappings), resolver (resolver), ty_ctx (ty_ctx),
-    current_module (Optional<NodeId>::none ())
+    current_module (tl::nullopt)
 {}
 
 void
@@ -92,7 +92,7 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
       case ModuleVisibility::Restricted: {
 	// If we are in the crate, everything is restricted correctly, but we
 	// can't get a module for it
-	if (current_module.is_none ())
+	if (!current_module.has_value ())
 	  return;
 
 	auto module = mappings.lookup_defid (vis.get_module_id ());
@@ -102,12 +102,12 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 
 	// We are in the module referenced by the pub(restricted) visibility.
 	// This is valid
-	if (mod_node_id == current_module.get ())
+	if (mod_node_id == current_module.value ())
 	  break;
 
 	// FIXME: This needs a LOT of TLC: hinting about the definition, a
 	// string to say if it's a module, function, type, etc...
-	if (!is_child_module (mappings, mod_node_id, current_module.get ()))
+	if (!is_child_module (mappings, mod_node_id, current_module.value ()))
 	  valid = false;
       }
       break;
@@ -584,8 +584,7 @@ PrivacyReporter::visit (HIR::Module &module)
   // FIXME: We also need to think about module privacy
 
   auto old_module = current_module;
-  current_module
-    = Optional<NodeId>::some (module.get_mappings ().get_nodeid ());
+  current_module = module.get_mappings ().get_nodeid ();
 
   for (auto &item : module.get_items ())
     item->accept_vis (*this);

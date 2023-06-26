@@ -622,9 +622,8 @@ public:
 	   Location locus, bool is_semi_coloned = false)
   {
     return std::unique_ptr<MacroInvocation> (
-      new MacroInvocation (InvocKind::Regular, Optional<BuiltinMacro>::none (),
-			   invoc_data, outer_attrs, locus, is_semi_coloned,
-			   {}));
+      new MacroInvocation (InvocKind::Regular, tl::nullopt, invoc_data,
+			   outer_attrs, locus, is_semi_coloned, {}));
   }
 
   /**
@@ -640,9 +639,8 @@ public:
     bool is_semi_coloned = false)
   {
     return std::unique_ptr<MacroInvocation> (
-      new MacroInvocation (InvocKind::Builtin,
-			   Optional<BuiltinMacro>::some (kind), invoc_data,
-			   outer_attrs, locus, is_semi_coloned,
+      new MacroInvocation (InvocKind::Builtin, kind, invoc_data, outer_attrs,
+			   locus, is_semi_coloned,
 			   std::move (pending_eager_invocations)));
   }
 
@@ -685,7 +683,7 @@ public:
   bool has_semicolon () const { return is_semi_coloned; }
 
   InvocKind get_kind () const { return kind; }
-  Optional<BuiltinMacro> get_builtin_kind () const { return builtin_kind; }
+  tl::optional<BuiltinMacro> get_builtin_kind () const { return builtin_kind; }
 
   /**
    * Turn the current MacroInvocation into a builtin macro invocation
@@ -693,7 +691,7 @@ public:
   void map_to_builtin (BuiltinMacro macro)
   {
     kind = InvocKind::Builtin;
-    builtin_kind = Optional<BuiltinMacro>::some (macro);
+    builtin_kind = macro;
   }
 
   /**
@@ -711,7 +709,7 @@ public:
 private:
   /* Full constructor */
   MacroInvocation (
-    InvocKind kind, Optional<BuiltinMacro> builtin_kind,
+    InvocKind kind, tl::optional<BuiltinMacro> builtin_kind,
     MacroInvocData invoc_data, std::vector<Attribute> outer_attrs,
     Location locus, bool is_semi_coloned,
     std::vector<std::unique_ptr<MacroInvocation>> &&pending_eager_invocs)
@@ -748,7 +746,7 @@ private:
   InvocKind kind;
 
   /* If it is a builtin macro, which one */
-  Optional<BuiltinMacro> builtin_kind = Optional<BuiltinMacro>::none ();
+  tl::optional<BuiltinMacro> builtin_kind = tl::nullopt;
 
   /**
    * Pending invocations within a builtin macro invocation. This vector is empty

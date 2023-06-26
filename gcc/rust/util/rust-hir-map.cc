@@ -1035,14 +1035,14 @@ Mappings::insert_module_child (NodeId module, NodeId child)
     it->second.emplace_back (child);
 }
 
-Optional<std::vector<NodeId> &>
+tl::optional<std::vector<NodeId> &>
 Mappings::lookup_module_children (NodeId module)
 {
   auto it = module_child_map.find (module);
   if (it == module_child_map.end ())
-    return Optional<std::vector<NodeId> &>::none ();
+    return tl::nullopt;
 
-  return Optional<std::vector<NodeId> &>::some (it->second);
+  return it->second;
 }
 
 void
@@ -1059,33 +1059,34 @@ Mappings::insert_module_child_item (NodeId module,
     it->second.emplace_back (child);
 }
 
-Optional<std::vector<Resolver::CanonicalPath> &>
+tl::optional<std::vector<Resolver::CanonicalPath> &>
 Mappings::lookup_module_chidren_items (NodeId module)
 {
   auto it = module_child_items.find (module);
   if (it == module_child_items.end ())
-    return Optional<std::vector<Resolver::CanonicalPath> &>::none ();
+    return tl::nullopt;
 
-  return Optional<std::vector<Resolver::CanonicalPath> &>::some (it->second);
+  return it->second;
 }
 
-Optional<Resolver::CanonicalPath &>
+tl::optional<Resolver::CanonicalPath &>
 Mappings::lookup_module_child (NodeId module, const std::string &item_name)
 {
-  Optional<std::vector<Resolver::CanonicalPath> &> children
+  tl::optional<std::vector<Resolver::CanonicalPath> &> children
     = lookup_module_chidren_items (module);
-  if (children.is_none ())
-    return Optional<Resolver::CanonicalPath &>::none ();
+  if (!children.has_value ())
+    return tl::nullopt;
 
   // lookup the children to match the name if we can
-  for (auto &child : children.get ())
+  for (auto &child : children.value ())
     {
       const std::string &raw_identifier = child.get ();
       bool found = raw_identifier.compare (item_name) == 0;
       if (found)
-	return Optional<Resolver::CanonicalPath &>::some (child);
+	return child;
     }
-  return Optional<Resolver::CanonicalPath &>::none ();
+
+  return tl::nullopt;
 }
 
 void
@@ -1095,14 +1096,14 @@ Mappings::insert_child_item_to_parent_module_mapping (NodeId child_item,
   child_to_parent_module_map.insert ({child_item, parent_module});
 }
 
-Optional<NodeId>
+tl::optional<NodeId>
 Mappings::lookup_parent_module (NodeId child_item)
 {
   auto it = child_to_parent_module_map.find (child_item);
   if (it == child_to_parent_module_map.end ())
-    return Optional<NodeId>::none ();
+    return tl::nullopt;
 
-  return Optional<NodeId>::some (it->second);
+  return it->second;
 }
 
 bool
