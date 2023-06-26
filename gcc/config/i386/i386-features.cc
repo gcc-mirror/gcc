@@ -2489,8 +2489,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return TARGET_AVX && TARGET_VZEROUPPER
-	&& flag_expensive_optimizations && !optimize_size;
+      return TARGET_AVX && TARGET_VZEROUPPER;
     }
 
   unsigned int execute (function *) final override
