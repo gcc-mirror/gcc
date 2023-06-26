@@ -569,8 +569,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 bool
 MacroExpander::match_token (Parser<MacroInvocLexer> &parser, AST::Token &token)
 {
-  // FIXME this needs to actually match the content and the type
-  return parser.skip_token (token.get_id ());
+  return parser.skip_token (token.get_tok_ptr ());
 }
 
 bool

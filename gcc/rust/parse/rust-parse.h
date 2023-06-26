@@ -112,6 +112,15 @@ public:
   bool skip_token (TokenId t);
 
   /**
+   * Consume a token, reporting an error if it isn't the next token
+   *
+   * @param token pointer to similar token to consume
+   *
+   * @return true if the token was next, false if it wasn't found
+   */
+  bool skip_token (const_TokenPtr token);
+
+  /**
    * Same as `skip_token` but allows for failure without necessarily reporting
    * an error
    *
@@ -172,6 +181,7 @@ private:
   void skip_after_end_attribute ();
 
   const_TokenPtr expect_token (TokenId t);
+  const_TokenPtr expect_token (const_TokenPtr token_expect);
   void unexpected_token (const_TokenPtr t);
   bool skip_generics_right_angle ();
 
