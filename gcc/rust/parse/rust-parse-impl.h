@@ -11936,6 +11936,15 @@ Parser<ManagedTokenSource>::skip_token (TokenId token_id)
   return expect_token (token_id) != const_TokenPtr ();
 }
 
+/* Checks if current token is similar to inputted token - skips it and returns
+ * true if so, diagnoses an error and returns false otherwise. */
+template <typename ManagedTokenSource>
+bool
+Parser<ManagedTokenSource>::skip_token (const_TokenPtr token)
+{
+  return expect_token (token) != const_TokenPtr ();
+}
+
 /* Checks if current token has inputted id - skips it and returns true if so,
  * returns false otherwise without diagnosing an error */
 template <typename ManagedTokenSource>
@@ -11964,6 +11973,30 @@ Parser<ManagedTokenSource>::expect_token (TokenId token_id)
     {
       Error error (t->get_locus (), "expecting %qs but %qs found",
 		   get_token_description (token_id),
+		   t->get_token_description ());
+      add_error (std::move (error));
+
+      return const_TokenPtr ();
+    }
+}
+
+/* Checks the current token - if same as expected, skips and returns it,
+ * otherwise diagnoses error and returns null. */
+template <typename ManagedTokenSource>
+const_TokenPtr
+Parser<ManagedTokenSource>::expect_token (const_TokenPtr token_expect)
+{
+  const_TokenPtr t = lexer.peek_token ();
+  if (t->get_id () == token_expect->get_id ()
+      && (!t->should_have_str () || t->get_str () == token_expect->get_str ()))
+    {
+      lexer.skip_token ();
+      return t;
+    }
+  else
+    {
+      Error error (t->get_locus (), "expecting %qs but %qs found",
+		   token_expect->get_token_description (),
 		   t->get_token_description ());
       add_error (std::move (error));
 
