@@ -705,15 +705,38 @@ emit_vlmax_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  /* We have a maximum of 11 operands for RVV instruction patterns according to
-   * vector.md.  */
-  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ true,
-		       /*USE_REAL_MERGE_P*/ true, /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true,
-		       /*DEST_MODE*/ dest_mode, /*MASK_MODE*/ mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ true,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ dest_mode,
+					  /*MASK_MODE*/ mask_mode);
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a {VLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
+ * ternary operation which always has a real merge operand.  */
+void
+emit_vlmax_fp_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ true,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true,
+					  /*DEST_MODE*/ dest_mode,
+					  /*MASK_MODE*/ mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
   e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
@@ -842,16 +865,55 @@ emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
 }
 
 /* This function emits a masked instruction.  */
+static void
+emit_vlmax_masked_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a masked instruction.  */
+static void
+emit_nonvlmax_masked_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a masked instruction.  */
 void
 emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
-		       /*FULLY_UNMASKED_P*/ false,
-		       /*USE_REAL_MERGE_P*/ true,
-		       /*HAS_AVL_P*/ true,
-		       /*VLMAX_P*/ true, dest_mode, mask_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_UNDISTURBED);
   e.emit_insn ((enum insn_code) icode, ops);
@@ -2359,28 +2421,6 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
-/* Expand an RVV vcond pattern with operands OPS.  DATA_MODE is the mode
-   of the data being merged and CMP_MODE is the mode of the values being
-   compared.  */
-
-void
-expand_vcond (rtx *ops)
-{
-  machine_mode cmp_mode = GET_MODE (ops[4]);
-  machine_mode data_mode = GET_MODE (ops[1]);
-  machine_mode mask_mode = get_mask_mode (cmp_mode).require ();
-  rtx mask = gen_reg_rtx (mask_mode);
-  if (FLOAT_MODE_P (cmp_mode))
-    {
-      if (expand_vec_cmp_float (mask, GET_CODE (ops[3]), ops[4], ops[5], true))
-	std::swap (ops[1], ops[2]);
-    }
-  else
-    expand_vec_cmp (mask, GET_CODE (ops[3]), ops[4], ops[5]);
-  emit_insn (
-    gen_vcond_mask (data_mode, data_mode, ops[0], ops[1], ops[2], mask));
-}
-
 /* Implement vec_perm<mode>.  */
 
 void
@@ -2719,6 +2759,47 @@ expand_select_vl (rtx *ops)
   scalar_int_mode mode = QImode;
   machine_mode rvv_mode = get_vector_mode (mode, nunits).require ();
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
+}
+
+/* Expand LEN_MASK_{LOAD,STORE}.  */
+void
+expand_load_store (rtx *ops, bool is_load)
+{
+  poly_int64 value;
+  rtx len = ops[2];
+  rtx mask = ops[3];
+  machine_mode mode = GET_MODE (ops[0]);
+
+  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+    {
+      /* If the length operand is equal to VF, it is VLMAX load/store.  */
+      if (is_load)
+	{
+	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
+	  emit_vlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M, m_ops);
+	}
+      else
+	{
+	  len = gen_reg_rtx (Pmode);
+	  emit_vlmax_vsetvl (mode, len);
+	  emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
+				     get_avl_type_rtx (VLMAX)));
+	}
+    }
+  else
+    {
+      if (!satisfies_constraint_K (len))
+	len = force_reg (Pmode, len);
+      if (is_load)
+	{
+	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
+	  emit_nonvlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M,
+				     m_ops, len);
+	}
+      else
+	emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
+				   get_avl_type_rtx (NONVLMAX)));
+    }
 }
 
 } // namespace riscv_vector

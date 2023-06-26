@@ -139,7 +139,7 @@ proc dg-end-multiline-output { args } {
     verbose "within dg-end-multiline-output: multiline_expected_outputs: $multiline_expected_outputs" 3
 }
 
-# Hook to be called by prune.exp's prune_gcc_output to
+# Hook to be called by gcc-dg.exp's gcc-dg-prune to
 # look for the expected multiline outputs, pruning them,
 # reporting PASS for those that are found, and FAIL for
 # those that weren't found.
@@ -149,6 +149,11 @@ proc dg-end-multiline-output { args } {
 proc handle-multiline-outputs { text } {
     global multiline_expected_outputs
     global testname_with_flags
+
+    # If dg-enable-nn-line-numbers was provided, then obscure source-margin
+    # line numbers by converting them to "NN" form.
+    set text [maybe-handle-nn-line-numbers $text]
+    
     set index 0
     foreach entry $multiline_expected_outputs {
 	verbose "  entry: $entry" 3

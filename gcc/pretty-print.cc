@@ -1828,6 +1828,35 @@ pp_string (pretty_printer *pp, const char *str)
   pp_maybe_wrap_text (pp, str, str + strlen (str));
 }
 
+/* Append code point C to the output area of PRETTY-PRINTER, encoding it
+   as UTF-8.  */
+
+void
+pp_unicode_character (pretty_printer *pp, unsigned c)
+{
+  static const uchar masks[6] =  { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  static const uchar limits[6] = { 0x80, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+  size_t nbytes;
+  uchar buf[6], *p = &buf[6];
+
+  nbytes = 1;
+  if (c < 0x80)
+    *--p = c;
+  else
+    {
+      do
+	{
+	  *--p = ((c & 0x3F) | 0x80);
+	  c >>= 6;
+	  nbytes++;
+	}
+      while (c >= 0x3F || (c & limits[nbytes-1]));
+      *--p = (c | masks[nbytes-1]);
+    }
+
+  pp_append_r (pp, (const char *)p, nbytes);
+}
+
 /* Append the leading N characters of STRING to the output area of
    PRETTY-PRINTER, quoting in hexadecimal non-printable characters.
    Setting N = -1 is as if N were set to strlen (STRING).  The STRING

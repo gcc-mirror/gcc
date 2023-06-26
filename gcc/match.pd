@@ -6034,10 +6034,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     type1 = double_type_node;
 	 }
       tree newtype
-        = (TYPE_PRECISION (TREE_TYPE (@00)) > TYPE_PRECISION (type1)
+        = (element_precision (TREE_TYPE (@00)) > element_precision (type1)
 	   ? TREE_TYPE (@00) : type1);
      }
-     (if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (newtype))
+     (if (element_precision (TREE_TYPE (@0)) > element_precision (newtype))
       (cmp (convert:newtype @00) (convert:newtype @10))))))))
 
 
@@ -7428,9 +7428,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && newtype == type
 	      && types_match (newtype, type))
 	    (op (convert:newtype @1) (convert:newtype @2))
-	    (with { if (TYPE_PRECISION (ty1) > TYPE_PRECISION (newtype))
+	    (with { if (element_precision (ty1) > element_precision (newtype))
 		      newtype = ty1;
-		    if (TYPE_PRECISION (ty2) > TYPE_PRECISION (newtype))
+		    if (element_precision (ty2) > element_precision (newtype))
 		      newtype = ty2; }
 	       /* Sometimes this transformation is safe (cannot
 		  change results through affecting double rounding
@@ -7453,9 +7453,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  exponent range for the product or ratio of two
 		  values representable in the TYPE to be within the
 		  range of normal values of ITYPE.  */
-	      (if (TYPE_PRECISION (newtype) < TYPE_PRECISION (itype)
+	      (if (element_precision (newtype) < element_precision (itype)
 		   && (flag_unsafe_math_optimizations
-		       || (TYPE_PRECISION (newtype) == TYPE_PRECISION (type)
+		       || (element_precision (newtype) == element_precision (type)
 			   && real_can_shorten_arithmetic (TYPE_MODE (itype),
 							   TYPE_MODE (type))
 			   && !excess_precision_type (newtype)))
@@ -8672,7 +8672,14 @@ and,
 
 (simplify
  (vec_perm vec_same_elem_p@0 @0 @1)
- @0)
+ (if (types_match (type, TREE_TYPE (@0)))
+  @0
+  (with
+   {
+     tree elem = uniform_vector_p (@0);
+   }
+   (if (elem)
+    { build_vector_from_val (type, elem); }))))
 
 /* Push VEC_PERM earlier if that may help FMA perception (PR101895).  */
 (simplify

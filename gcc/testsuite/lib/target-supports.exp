@@ -10785,7 +10785,35 @@ proc check_effective_target_c++23_only { } {
     return 0
 }
 proc check_effective_target_c++23 { } {
-    return [check_effective_target_c++23_only]
+    if [check_effective_target_c++23_only] {
+	return 1
+    }
+    return [check_effective_target_c++26]
+}
+
+proc check_effective_target_c++23_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [expr ![check_effective_target_c++26] ]
+}
+
+proc check_effective_target_c++26_only { } {
+    global cxx_default
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    if [check-flags { { } { } { -std=c++26 -std=gnu++26 -std=c++2c -std=gnu++2c } }] {
+	return 1
+    }
+    if { $cxx_default == "c++26" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
+}
+
+proc check_effective_target_c++26 { } {
+    return [check_effective_target_c++26_only]
 }
 
 # Check for C++ Concepts support, i.e. -fconcepts flag.

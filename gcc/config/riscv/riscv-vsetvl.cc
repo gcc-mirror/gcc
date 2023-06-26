@@ -2003,9 +2003,51 @@ vector_insn_info::parse_insn (insn_info *insn)
   new_info.parse_insn (def_insn);
   if (!same_vlmax_p (new_info) && !scalar_move_insn_p (insn->rtl ()))
     return;
-  /* TODO: Currently, we don't forward AVL for non-VLMAX vsetvl.  */
-  if (vlmax_avl_p (new_info.get_avl ()))
-    set_avl_info (avl_info (new_info.get_avl (), get_avl_source ()));
+
+  if (new_info.has_avl ())
+    {
+      if (new_info.has_avl_imm ())
+	set_avl_info (avl_info (new_info.get_avl (), nullptr));
+      else
+	{
+	  if (vlmax_avl_p (new_info.get_avl ()))
+	    set_avl_info (avl_info (new_info.get_avl (), get_avl_source ()));
+	  else
+	    {
+	      /* Conservatively propagate non-VLMAX AVL of user vsetvl:
+		 1. The user vsetvl should be same block with the rvv insn.
+		 2. The user vsetvl is the only def insn of rvv insn.
+		 3. The AVL is not modified between def-use chain.
+		 4. The VL is only used by insn within EBB.
+	       */
+	      bool modified_p = false;
+	      for (insn_info *i = def_insn->next_nondebug_insn ();
+		   real_insn_and_same_bb_p (i, get_insn ()->bb ());
+		   i = i->next_nondebug_insn ())
+		{
+		  if (find_access (i->defs (), REGNO (new_info.get_avl ())))
+		    {
+		      modified_p = true;
+		      break;
+		    }
+		}
+
+	      bool has_live_out_use = false;
+	      for (use_info *use : m_avl.get_source ()->all_uses ())
+		{
+		  if (use->is_live_out_use ())
+		    {
+		      has_live_out_use = true;
+		      break;
+		    }
+		}
+	      if (!modified_p && !has_live_out_use
+		  && def_insn == m_avl.get_source ()->insn ()
+		  && m_insn->bb () == def_insn->bb ())
+		set_avl_info (new_info.get_avl_info ());
+	    }
+	}
+    }
 
   if (scalar_move_insn_p (insn->rtl ()) && m_avl.has_non_zero_avl ())
     m_demands[DEMAND_NONZERO_AVL] = true;

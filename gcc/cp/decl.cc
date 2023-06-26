@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -46,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-ubsan.h"
+#include "cp/cp-name-hint.h"
 #include "debug.h"
 #include "plugin.h"
 #include "builtins.h"
@@ -5995,7 +5997,11 @@ start_decl_1 (tree decl, bool initialized)
 	; 			/* An auto type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
+	  auto_diagnostic_group d;
 	  error ("variable %q#D has initializer but incomplete type", decl);
+	  maybe_suggest_missing_header (input_location,
+					TYPE_IDENTIFIER (type),
+					CP_TYPE_CONTEXT (type));
 	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
@@ -6011,8 +6017,12 @@ start_decl_1 (tree decl, bool initialized)
 	gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (type));
       else
 	{
+	  auto_diagnostic_group d;
 	  error ("aggregate %q#D has incomplete type and cannot be defined",
 		 decl);
+	  maybe_suggest_missing_header (input_location,
+					TYPE_IDENTIFIER (type),
+					CP_TYPE_CONTEXT (type));
 	  /* Change the type so that assemble_variable will give
 	     DECL an rtl we can live with: (mem (const_int 0)).  */
 	  type = TREE_TYPE (decl) = error_mark_node;

@@ -1095,6 +1095,12 @@ protection against Return Oriented Programming (ROP) attacks.
 in which case @option{-fPIC} is used when compiling, and @option{-pie} when
 linking.
 
+@item --enable-host-bind-now
+Specify that the @emph{host} executables should be linked with the option
+@option{-Wl,-z,now}, which means that the dynamic linker will resolve all
+symbols when the executables are started, and that in turn allows RELRO to
+mark the GOT read-only, resulting in better security.
+
 @item @anchor{with-gnu-as}--with-gnu-as
 Specify that the compiler should assume that the
 assembler it finds is the GNU assembler.  However, this does not modify

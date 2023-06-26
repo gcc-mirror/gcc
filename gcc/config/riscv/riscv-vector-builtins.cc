@@ -3636,6 +3636,7 @@ function_expander::use_contiguous_store_insn (insn_code icode)
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
     add_input_operand (argno);
 
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
   return generate_insn (icode);
 }
 

@@ -1,3 +1,12 @@
+2023-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/110164
+	* cp-name-hint.h (maybe_suggest_missing_header): New decl.
+	* decl.cc: Define INCLUDE_MEMORY.  Add include of
+	"cp/cp-name-hint.h".
+	(start_decl_1): Call maybe_suggest_missing_header.
+	* name-lookup.cc (maybe_suggest_missing_header): Remove "static".
+
 2023-06-16  Alex Coplan  <alex.coplan@arm.com>
 
 	* parser.cc (cp_parser_enum_specifier): Don't reject

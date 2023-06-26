@@ -340,6 +340,9 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
       gimple *def_stmt;
       tree vuse;
 
+      if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+	calculate_dominance_info (CDI_POST_DOMINATORS);
+
       /* Only replace loads in blocks that post-dominate the PHI node.  That
          makes sure we don't end up speculating loads.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS,
@@ -399,14 +402,18 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	     there are no statements that could read from memory
 	     aliasing the lhs in between the start of bb and use_stmt.
 	     As we require use_stmt to have a VDEF above, loads after
-	     use_stmt will use a different virtual SSA_NAME.  */
+	     use_stmt will use a different virtual SSA_NAME.  When
+	     we reach an edge inserted load the constraints we place
+	     on processing guarantees that program order is preserved
+	     so we can avoid checking those.  */
 	  FOR_EACH_IMM_USE_FAST (vuse_p, vui, vuse)
 	    {
 	      vuse_stmt = USE_STMT (vuse_p);
 	      if (vuse_stmt == use_stmt)
 		continue;
-	      if (!dominated_by_p (CDI_DOMINATORS,
-				   gimple_bb (vuse_stmt), bb))
+	      if (!gimple_bb (vuse_stmt)
+		  || !dominated_by_p (CDI_DOMINATORS,
+				      gimple_bb (vuse_stmt), bb))
 		continue;
 	      if (ref_maybe_used_by_stmt_p (vuse_stmt,
 					    gimple_assign_lhs (use_stmt)))
@@ -481,7 +488,7 @@ const pass_data pass_data_phiprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_phiprop : public gimple_opt_pass
@@ -509,7 +516,6 @@ pass_phiprop::execute (function *fun)
   size_t n;
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   n = num_ssa_names;
   phivn = XCNEWVEC (struct phiprop_d, n);
@@ -535,7 +541,7 @@ pass_phiprop::execute (function *fun)
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  return 0;
+  return did_something ? TODO_update_ssa_only_virtuals : 0;
 }
 
 } // anon namespace

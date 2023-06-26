@@ -401,6 +401,7 @@ extern void pp_indent (pretty_printer *);
 extern void pp_newline (pretty_printer *);
 extern void pp_character (pretty_printer *, int);
 extern void pp_string (pretty_printer *, const char *);
+extern void pp_unicode_character (pretty_printer *, unsigned);
 
 extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);

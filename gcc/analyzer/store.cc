@@ -236,8 +236,8 @@ bit_range::dump () const
   pp_flush (&pp);
 }
 
-/* If OTHER is a subset of this, return true and write
-   to *OUT the relative range of OTHER within this.
+/* If OTHER is a subset of this, return true and, if OUT is
+   non-null, write to *OUT the relative range of OTHER within this.
    Otherwise return false.  */
 
 bool
@@ -246,8 +246,11 @@ bit_range::contains_p (const bit_range &other, bit_range *out) const
   if (contains_p (other.get_start_bit_offset ())
       && contains_p (other.get_last_bit_offset ()))
     {
-      out->m_start_bit_offset = other.m_start_bit_offset - m_start_bit_offset;
-      out->m_size_in_bits = other.m_size_in_bits;
+      if (out)
+	{
+	  out->m_start_bit_offset = other.m_start_bit_offset - m_start_bit_offset;
+	  out->m_size_in_bits = other.m_size_in_bits;
+	}
       return true;
     }
   else

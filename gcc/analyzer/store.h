@@ -350,6 +350,15 @@ struct byte_range
 		      m_size_in_bytes * BITS_PER_UNIT);
   }
 
+  bit_offset_t get_start_bit_offset () const
+  {
+    return m_start_byte_offset * BITS_PER_UNIT;
+  }
+  bit_offset_t get_next_bit_offset () const
+  {
+    return get_next_byte_offset () * BITS_PER_UNIT;
+  }
+
   static int cmp (const byte_range &br1, const byte_range &br2);
 
   byte_offset_t m_start_byte_offset;

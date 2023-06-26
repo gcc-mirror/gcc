@@ -317,7 +317,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-show-column
 -fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]}
 -fdiagnostics-column-origin=@var{origin}
--fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}}
+-fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}
+-fdiagnostics-text-art-charset=@r{[}none@r{|}ascii@r{|}unicode@r{|}emoji@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -2504,6 +2505,18 @@ change in incompatible ways in future releases.
 @item gnu++2b
 @itemx gnu++23
 GNU dialect of @option{-std=c++2b}.  Support is highly experimental,
+and will almost certainly change in incompatible ways in future
+releases.
+
+@item c++2c
+@itemx c++26
+The next revision of the ISO C++ standard, planned for
+2026.  Support is highly experimental, and will almost certainly
+change in incompatible ways in future releases.
+
+@item gnu++2c
+@itemx gnu++26
+GNU dialect of @option{-std=c++2c}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -5078,7 +5091,8 @@ options:
 -fno-diagnostics-show-line-numbers
 -fdiagnostics-color=never
 -fdiagnostics-urls=never
--fdiagnostics-path-format=separate-events}
+-fdiagnostics-path-format=separate-events
+-fdiagnostics-text-art-charset=none}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
@@ -5603,6 +5617,25 @@ Unicode characters.  For the example above, the following will be printed:
 @smallexample
  before<CF><80><BF>after
 @end smallexample
+
+@opindex fdiagnostics-text-art-charset
+@item -fdiagnostics-text-art-charset=@var{CHARSET}
+Some diagnostics can contain ``text art'' diagrams: visualizations created
+from text, intended to be viewed in a monospaced font.
+
+This option selects which characters should be used for printing such
+diagrams, if any.  @var{CHARSET} is @samp{none}, @samp{ascii}, @samp{unicode},
+or @samp{emoji}.
+
+The @samp{none} value suppresses the printing of such diagrams.
+The @samp{ascii} value will ensure that such diagrams are pure ASCII
+(``ASCII art'').  The @samp{unicode} value will allow for conservative use of
+unicode drawing characters (such as box-drawing characters).  The @samp{emoji}
+value further adds the possibility of emoji in the output (such as emitting
+U+26A0 WARNING SIGN followed by U+FE0F VARIATION SELECTOR-16 to select the
+emoji variant of the character).
+
+The default is @samp{emoji}.
 
 @opindex fdiagnostics-format
 @item -fdiagnostics-format=@var{FORMAT}
@@ -10591,6 +10624,15 @@ offset as well as the capacity is symbolic.
 
 See @uref{https://cwe.mitre.org/data/definitions/119.html, CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer}.
 
+For cases where the analyzer is able, it will emit a text art diagram
+visualizing the spatial relationship between the memory region that the
+analyzer predicts would be accessed, versus the range of memory that is
+valid to access: whether they overlap, are touching, are close or far
+apart; which one is before or after in memory, the relative sizes
+involved, the direction of the access (read vs write), and, in some
+cases, the values of data involved.  This diagram can be suppressed
+using @option{-fdiagnostics-text-art-charset=none}.
+
 @opindex Wanalyzer-possible-null-argument
 @opindex Wno-analyzer-possible-null-argument
 @item -Wno-analyzer-possible-null-argument
@@ -11100,6 +11142,12 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-va-list-leak
 -Wanalyzer-va-list-use-after-va-end
 }
+
+@opindex fanalyzer-debug-text-art
+@opindex fno-analyzer-debug-text-art
+@item -fanalyzer-debug-text-art-headings
+This option is intended for analyzer developers.  If enabled,
+the analyzer will add extra annotations to any diagrams it generates.
 
 @opindex fanalyzer-feasibility
 @opindex fno-analyzer-feasibility
@@ -12077,10 +12125,12 @@ This option is enabled by default at optimization levels @option{-O1},
 such as forming of fused multiply-add operations if the target has
 native support for them.
 @option{-ffp-contract=on} enables floating-point expression contraction
-if allowed by the language standard.  This is currently not implemented
-and treated equal to @option{-ffp-contract=off}.
+if allowed by the language standard.  This is implemented for C and C++,
+where it enables contraction within one expression, but not across
+different statements.
 
-The default is @option{-ffp-contract=fast}.
+The default is @option{-ffp-contract=off} for C in a standards compliant mode
+(@option{-std=c11} or similar), @option{-ffp-contract=fast} otherwise.
 
 @opindex fomit-frame-pointer
 @item -fomit-frame-pointer

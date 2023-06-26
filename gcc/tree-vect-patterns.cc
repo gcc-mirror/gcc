@@ -398,8 +398,11 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 				      vect_unpromoted_value *unprom,
 				      bool *single_use_p = NULL)
 {
-  tree res = NULL_TREE;
   tree op_type = TREE_TYPE (op);
+  if (!INTEGRAL_TYPE_P (op_type))
+    return NULL_TREE;
+
+  tree res = NULL_TREE;
   unsigned int orig_precision = TYPE_PRECISION (op_type);
   unsigned int min_precision = orig_precision;
   stmt_vec_info caster = NULL;
@@ -3881,6 +3884,7 @@ vect_recog_vector_vector_shift_pattern (vec_info *vinfo,
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TREE_CODE (oprnd1) != SSA_NAME
       || TYPE_MODE (TREE_TYPE (oprnd0)) == TYPE_MODE (TREE_TYPE (oprnd1))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (oprnd0))
       || !type_has_mode_precision_p (TREE_TYPE (oprnd1))
       || TYPE_PRECISION (TREE_TYPE (lhs))
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))

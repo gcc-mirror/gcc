@@ -1323,7 +1323,7 @@
 	      (plus:<V2XWIDE>
 		(<SHIFTEXTEND>:<V2XWIDE>
 		  (match_operand:VSDQ_I_DI 2 "register_operand" "w"))
-		(match_operand:<V2XWIDE> 4 "aarch64_simd_rsra_rnd_imm_vec"))
+		(match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
 	      (match_operand:VSDQ_I_DI 3 "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>")))
 	  (match_operand:VSDQ_I_DI 1 "register_operand" "0")))]
   "TARGET_SIMD
@@ -6437,7 +6437,7 @@
 	    (plus:<V2XWIDE>
 	      (<SHIFTEXTEND>:<V2XWIDE>
 		(match_operand:VSDQ_I_DI 1 "register_operand" "w"))
-	      (match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	      (match_operand:<V2XWIDE> 3 "aarch64_int_rnd_operand"))
 	    (match_operand:VSDQ_I_DI 2 "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>"))))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
@@ -6557,7 +6557,7 @@
 	    (plus:<V2XWIDE>
 	      (<TRUNCEXTEND>:<V2XWIDE>
 	        (match_operand:VQN 1 "register_operand" "w"))
-	      (match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	      (match_operand:<V2XWIDE> 3 "aarch64_int_rnd_operand"))
 	    (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
@@ -6572,7 +6572,7 @@
 	    (plus:<DWI>
 	      (<TRUNCEXTEND>:<DWI>
 	        (match_operand:SD_HSDI 1 "register_operand" "w"))
-	      (match_operand:<DWI> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+	      (match_operand:<DWI> 3 "aarch64_int_rnd_operand"))
 	    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
@@ -6702,7 +6702,7 @@
 		(plus:<V2XWIDE>
 		  (sign_extend:<V2XWIDE>
 		    (match_operand:VQN 1 "register_operand" "w"))
-		  (match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+		  (match_operand:<V2XWIDE> 3 "aarch64_int_rnd_operand"))
 		(match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))
 	      (match_operand:<V2XWIDE> 4 "aarch64_simd_imm_zero"))
 	    (match_operand:<V2XWIDE> 5 "aarch64_simd_umax_quarter_mode"))))]
@@ -6713,14 +6713,14 @@
 )
 
 (define_insn "aarch64_sqrshrun_n<mode>_insn"
-  [(set (match_operand:<V2XWIDE> 0 "register_operand" "=w")
-	(smin:<V2XWIDE>
-	  (smax:<V2XWIDE>
-	    (ashiftrt:<V2XWIDE>
-	      (plus:<V2XWIDE>
-		(sign_extend:<V2XWIDE>
+  [(set (match_operand:<DWI> 0 "register_operand" "=w")
+	(smin:<DWI>
+	  (smax:<DWI>
+	    (ashiftrt:<DWI>
+	      (plus:<DWI>
+		(sign_extend:<DWI>
 		  (match_operand:SD_HSDI 1 "register_operand" "w"))
-		(match_operand:<V2XWIDE> 3 "aarch64_simd_rsra_rnd_imm_vec"))
+		(match_operand:<DWI> 3 "aarch64_int_rnd_operand"))
 	      (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>"))
 	    (const_int 0))
 	  (const_int <half_mask>)))]
@@ -6736,10 +6736,10 @@
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<ve_mode>")]
   "TARGET_SIMD"
   {
-    int prec = GET_MODE_UNIT_PRECISION (<V2XWIDE>mode);
+    int prec = GET_MODE_UNIT_PRECISION (<DWI>mode);
     wide_int rnd_wi = wi::set_bit_in_zero (INTVAL (operands[2]) - 1, prec);
-    rtx rnd = immed_wide_int_const (rnd_wi, <V2XWIDE>mode);
-    rtx dst = gen_reg_rtx (<V2XWIDE>mode);
+    rtx rnd = immed_wide_int_const (rnd_wi, <DWI>mode);
+    rtx dst = gen_reg_rtx (<DWI>mode);
     emit_insn (gen_aarch64_sqrshrun_n<mode>_insn (dst, operands[1], operands[2], rnd));
     emit_move_insn (operands[0], gen_lowpart (<VNARROWQ>mode, dst));
     DONE;
@@ -6831,7 +6831,7 @@
 	      (plus:<V2XWIDE>
 		(<TRUNCEXTEND>:<V2XWIDE>
 		  (match_operand:VQN 2 "register_operand" "w"))
-		(match_operand:<V2XWIDE> 4 "aarch64_simd_rsra_rnd_imm_vec"))
+		(match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
 	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN
    && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
@@ -6847,7 +6847,7 @@
 	      (plus:<V2XWIDE>
 		(<TRUNCEXTEND>:<V2XWIDE>
 		  (match_operand:VQN 2 "register_operand" "w"))
-		(match_operand:<V2XWIDE> 4 "aarch64_simd_rsra_rnd_imm_vec"))
+		(match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
 	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN
@@ -6965,7 +6965,7 @@
 		  (plus:<V2XWIDE>
 		    (sign_extend:<V2XWIDE>
 		      (match_operand:VQN 2 "register_operand" "w"))
-		    (match_operand:<V2XWIDE> 4 "aarch64_simd_rsra_rnd_imm_vec"))
+		    (match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
 		  (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>"))
 		(match_operand:<V2XWIDE> 5 "aarch64_simd_imm_zero"))
 	      (match_operand:<V2XWIDE> 6 "aarch64_simd_umax_quarter_mode")))))]
@@ -6985,7 +6985,7 @@
 		  (plus:<V2XWIDE>
 		    (sign_extend:<V2XWIDE>
 		      (match_operand:VQN 2 "register_operand" "w"))
-		    (match_operand:<V2XWIDE> 4 "aarch64_simd_rsra_rnd_imm_vec"))
+		    (match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
 		  (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>"))
 		(match_operand:<V2XWIDE> 5 "aarch64_simd_imm_zero"))
 	      (match_operand:<V2XWIDE> 6 "aarch64_simd_umax_quarter_mode")))

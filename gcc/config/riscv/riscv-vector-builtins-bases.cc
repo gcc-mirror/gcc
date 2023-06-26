@@ -1567,7 +1567,7 @@ public:
   {
     tree arg = CALL_EXPR_ARG (e.exp, 0);
     rtx src = expand_normal (arg);
-    emit_insn (gen_rtx_SET (gen_lowpart (e.vector_mode (), e.target), src));
+    emit_move_insn (gen_lowpart (e.vector_mode (), e.target), src);
     return e.target;
   }
 };

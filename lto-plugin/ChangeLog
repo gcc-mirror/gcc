@@ -1,3 +1,9 @@
+2023-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.  Link with
+	-z,now.
+	* configure: Regenerate.
+
 2023-05-11  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/109128

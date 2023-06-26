@@ -1771,7 +1771,7 @@ public:
     return OPT_Wanalyzer_stale_setjmp_buffer;
   }
 
-  bool emit (rich_location *richloc) final override
+  bool emit (rich_location *richloc, logger *) final override
   {
     return warning_at
       (richloc, get_controlling_option (),
@@ -3925,7 +3925,7 @@ public:
     return OPT_Wanalyzer_jump_through_null;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "jump through null pointer");

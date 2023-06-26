@@ -174,7 +174,7 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
 	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
-	     CLK_ASM};
+	     CLK_GNUCXX26, CLK_CXX26, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -1601,5 +1601,8 @@ int cpp_wcwidth (cppchar_t c);
 bool cpp_input_conversion_is_trivial (const char *input_charset);
 int cpp_check_utf8_bom (const char *data, size_t data_length);
 bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
+
+bool cpp_is_combining_char (cppchar_t c);
+bool cpp_is_printable_char (cppchar_t c);
 
 #endif /* ! LIBCPP_CPPLIB_H */

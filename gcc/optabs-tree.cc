@@ -543,19 +543,50 @@ target_supports_op_p (tree type, enum tree_code code,
 	  && optab_handler (ot, TYPE_MODE (type)) != CODE_FOR_nothing);
 }
 
-/* Return true if target supports vector masked load/store for mode.  */
+/* Return true if the target has support for masked load/store.
+   We can support masked load/store by either mask{load,store}
+   or len_mask{load,store}.
+   This helper function checks whether target supports masked
+   load/store and return corresponding IFN in the last argument
+   (IFN_MASK_{LOAD,STORE} or IFN_LEN_MASK_{LOAD,STORE}).  */
+
+static bool
+target_supports_mask_load_store_p (machine_mode mode, machine_mode mask_mode,
+				   bool is_load, internal_fn *ifn)
+{
+  optab op = is_load ? maskload_optab : maskstore_optab;
+  optab len_op = is_load ? len_maskload_optab : len_maskstore_optab;
+  if (convert_optab_handler (op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_MASK_LOAD : IFN_MASK_STORE;
+      return true;
+    }
+  else if (convert_optab_handler (len_op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_LEN_MASK_LOAD : IFN_LEN_MASK_STORE;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if target supports vector masked load/store for mode.
+   An additional output in the last argument which is the IFN pointer.
+   We set IFN as MASK_{LOAD,STORE} or LEN_MASK_{LOAD,STORE} according
+   which optab is supported in the target.  */
 
 bool
 can_vec_mask_load_store_p (machine_mode mode,
 			   machine_mode mask_mode,
-			   bool is_load)
+			   bool is_load,
+			   internal_fn *ifn)
 {
-  optab op = is_load ? maskload_optab : maskstore_optab;
   machine_mode vmode;
 
   /* If mode is vector mode, check it directly.  */
   if (VECTOR_MODE_P (mode))
-    return convert_optab_handler (op, mode, mask_mode) != CODE_FOR_nothing;
+    return target_supports_mask_load_store_p (mode, mask_mode, is_load, ifn);
 
   /* Otherwise, return true if there is some vector mode with
      the mask load/store supported.  */
@@ -569,7 +600,7 @@ can_vec_mask_load_store_p (machine_mode mode,
   vmode = targetm.vectorize.preferred_simd_mode (smode);
   if (VECTOR_MODE_P (vmode)
       && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
-      && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+      && target_supports_mask_load_store_p (vmode, mask_mode, is_load, ifn))
     return true;
 
   auto_vector_modes vector_modes;
@@ -577,8 +608,39 @@ can_vec_mask_load_store_p (machine_mode mode,
   for (machine_mode base_mode : vector_modes)
     if (related_vector_mode (base_mode, smode).exists (&vmode)
 	&& targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
-	&& convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+	&& target_supports_mask_load_store_p (vmode, mask_mode, is_load, ifn))
       return true;
+  return false;
+}
+
+/* Return true if the target has support for len load/store.
+   We can support len load/store by either len_{load,store}
+   or len_mask{load,store}.
+   This helper function checks whether target supports len
+   load/store and return corresponding IFN in the last argument
+   (IFN_LEN_{LOAD,STORE} or IFN_LEN_MASK_{LOAD,STORE}).  */
+
+static bool
+target_supports_len_load_store_p (machine_mode mode, bool is_load,
+				  internal_fn *ifn)
+{
+  optab op = is_load ? len_load_optab : len_store_optab;
+  optab masked_op = is_load ? len_maskload_optab : len_maskstore_optab;
+
+  if (direct_optab_handler (op, mode))
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_LEN_LOAD : IFN_LEN_STORE;
+      return true;
+    }
+  machine_mode mask_mode;
+  if (targetm.vectorize.get_mask_mode (mode).exists (&mask_mode)
+      && convert_optab_handler (masked_op, mode, mask_mode) != CODE_FOR_nothing)
+    {
+      if (ifn)
+	*ifn = is_load ? IFN_LEN_MASK_LOAD : IFN_LEN_MASK_STORE;
+      return true;
+    }
   return false;
 }
 
@@ -587,23 +649,25 @@ can_vec_mask_load_store_p (machine_mode mode,
    There are two flavors for vector load/store with length, one is to measure
    length with bytes, the other is to measure length with lanes.
    As len_{load,store} optabs point out, for the flavor with bytes, we use
-   VnQI to wrap the other supportable same size vector modes.  */
+   VnQI to wrap the other supportable same size vector modes.
+   An additional output in the last argument which is the IFN pointer.
+   We set IFN as LEN_{LOAD,STORE} or LEN_MASK_{LOAD,STORE} according
+   which optab is supported in the target.  */
 
 opt_machine_mode
-get_len_load_store_mode (machine_mode mode, bool is_load)
+get_len_load_store_mode (machine_mode mode, bool is_load, internal_fn *ifn)
 {
-  optab op = is_load ? len_load_optab : len_store_optab;
   gcc_assert (VECTOR_MODE_P (mode));
 
   /* Check if length in lanes supported for this mode directly.  */
-  if (direct_optab_handler (op, mode))
+  if (target_supports_len_load_store_p (mode, is_load, ifn))
     return mode;
 
   /* Check if length in bytes supported for same vector size VnQI.  */
   machine_mode vmode;
   poly_uint64 nunits = GET_MODE_SIZE (mode);
   if (related_vector_mode (mode, QImode, nunits).exists (&vmode)
-      && direct_optab_handler (op, vmode))
+      && target_supports_len_load_store_p (vmode, is_load, ifn))
     return vmode;
 
   return opt_machine_mode ();

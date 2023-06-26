@@ -95,7 +95,8 @@ public:
     return OPT_Wanalyzer_exposure_through_output_file;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc,
+	     logger *) final override
   {
     diagnostic_metadata m;
     /* CWE-532: Information Exposure Through Log Files */

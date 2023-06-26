@@ -2949,7 +2949,7 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
  * OPTAB.  */
 
 static void
-expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[5];
   tree type, lhs, rhs, maskt, biast;
@@ -2957,7 +2957,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
-  rhs = gimple_call_arg (stmt, 3);
+  rhs = gimple_call_arg (stmt, internal_fn_stored_value_index (ifn));
   type = TREE_TYPE (rhs);
   lhs = expand_call_mem_ref (type, stmt, 0);
 
@@ -2991,7 +2991,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
       maskt = gimple_call_arg (stmt, 3);
       mask = expand_normal (maskt);
       create_input_operand (&ops[3], mask, TYPE_MODE (TREE_TYPE (maskt)));
-      biast = gimple_call_arg (stmt, 4);
+      biast = gimple_call_arg (stmt, 5);
       bias = expand_normal (biast);
       create_input_operand (&ops[4], bias, QImode);
       icode = convert_optab_handler (optab, TYPE_MODE (type), GET_MODE (mask));
@@ -4435,6 +4435,7 @@ internal_load_fn_p (internal_fn fn)
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
     case IFN_LEN_LOAD:
+    case IFN_LEN_MASK_LOAD:
       return true;
 
     default:
@@ -4455,6 +4456,7 @@ internal_store_fn_p (internal_fn fn)
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
     case IFN_LEN_STORE:
+    case IFN_LEN_MASK_STORE:
       return true;
 
     default:
@@ -4498,6 +4500,10 @@ internal_fn_mask_index (internal_fn fn)
     case IFN_MASK_SCATTER_STORE:
       return 4;
 
+    case IFN_LEN_MASK_LOAD:
+    case IFN_LEN_MASK_STORE:
+      return 3;
+
     default:
       return (conditional_internal_fn_code (fn) != ERROR_MARK
 	      || get_unconditional_internal_fn (fn) != IFN_LAST ? 0 : -1);
@@ -4518,6 +4524,9 @@ internal_fn_stored_value_index (internal_fn fn)
     case IFN_MASK_SCATTER_STORE:
     case IFN_LEN_STORE:
       return 3;
+
+    case IFN_LEN_MASK_STORE:
+      return 4;
 
     default:
       return -1;
@@ -4583,13 +4592,33 @@ internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
 {
   optab optab = direct_internal_fn_optab (ifn);
   insn_code icode = direct_optab_handler (optab, mode);
+  int bias_opno = 3;
+
+  if (icode == CODE_FOR_nothing)
+    {
+      machine_mode mask_mode;
+      if (!targetm.vectorize.get_mask_mode (mode).exists (&mask_mode))
+	return VECT_PARTIAL_BIAS_UNSUPPORTED;
+      if (ifn == IFN_LEN_LOAD)
+	{
+	  /* Try LEN_MASK_LOAD.  */
+	  optab = direct_internal_fn_optab (IFN_LEN_MASK_LOAD);
+	}
+      else
+	{
+	  /* Try LEN_MASK_STORE.  */
+	  optab = direct_internal_fn_optab (IFN_LEN_MASK_STORE);
+	}
+      icode = convert_optab_handler (optab, mode, mask_mode);
+      bias_opno = 4;
+    }
 
   if (icode != CODE_FOR_nothing)
     {
       /* For now we only support biases of 0 or -1.  Try both of them.  */
-      if (insn_operand_matches (icode, 3, GEN_INT (0)))
+      if (insn_operand_matches (icode, bias_opno, GEN_INT (0)))
 	return 0;
-      if (insn_operand_matches (icode, 3, GEN_INT (-1)))
+      if (insn_operand_matches (icode, bias_opno, GEN_INT (-1)))
 	return -1;
     }
 

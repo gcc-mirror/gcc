@@ -24,6 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic-core.h"
 
+namespace text_art
+{
+  class theme;
+} // namespace text_art
+
 /* An enum for controlling what units to use for the column number
    when diagnostics are output, used by the -fdiagnostics-column-unit option.
    Tabs will be expanded or not according to the value of -ftabstop.  The origin
@@ -170,6 +175,7 @@ class edit_context;
 namespace json { class value; }
 class diagnostic_client_data_hooks;
 class logical_location;
+class diagnostic_diagram;
 
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
@@ -417,6 +423,18 @@ struct diagnostic_context
      Used by SARIF output to give metadata about the client that's
      producing diagnostics.  */
   diagnostic_client_data_hooks *m_client_data_hooks;
+
+  /* Support for diagrams.  */
+  struct
+  {
+    /* Theme to use when generating diagrams.
+       Can be NULL (if text art is disabled).  */
+    text_art::theme *m_theme;
+
+    /* Callback for emitting diagrams.  */
+    void (*m_emission_cb) (diagnostic_context *context,
+			   const diagnostic_diagram &diagram);
+  } m_diagrams;
 };
 
 inline void
@@ -618,5 +636,8 @@ extern json::value *json_from_expanded_location (diagnostic_context *context,
 extern bool warning_enabled_at (location_t, int);
 
 extern char *get_cwe_url (int cwe);
+
+extern void diagnostic_emit_diagram (diagnostic_context *context,
+				     const diagnostic_diagram &diagram);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

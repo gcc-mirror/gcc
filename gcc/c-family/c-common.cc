@@ -1338,6 +1338,10 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
   int uns;
   tree type;
 
+  /* Do not shorten vector operations.  */
+  if (VECTOR_TYPE_P (result_type))
+    return result_type;
+
   /* Cast OP0 and OP1 to RESULT_TYPE.  Doing so prevents
      excessive narrowing when we call get_narrower below.  For
      example, suppose that OP0 is of unsigned int extended

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "selftest.h"
 #include "file-prefix-map.h"
+#include "diagnostic-text-art.h"
 
 /* In this file all option sets are explicit.  */
 #undef OPTION_SET_P
@@ -2886,6 +2887,11 @@ common_handle_option (struct gcc_options *opts,
 					 (enum diagnostics_output_format)value);
 	  break;
 	}
+
+    case OPT_fdiagnostics_text_art_charset_:
+      diagnostics_text_art_charset_init (dc,
+					 (enum diagnostic_text_art_charset)value);
+      break;
 
     case OPT_fdiagnostics_parseable_fixits:
       dc->extra_output_kind = (value

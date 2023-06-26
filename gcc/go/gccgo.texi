@@ -271,6 +271,14 @@ pattern to a list of file names, and @code{Files} maps each file name
 to a full path to the file.  This option is intended for use by the
 @command{go} command to implement @code{//go:embed}.
 
+@cindex @option{-fgo-importcfg}
+@item -fgo-importcfg=@var{file}
+Identify a file that provides mappings for import package paths found
+in the Go source files.  The file can contain two commands:
+@code{importpath} to rename import paths for vendoring and
+@code{packagefile} to map from package path to files containing export
+data.  This option is intended for use by the @command{go} command.
+
 @cindex @option{-g for gccgo}
 @item -g
 This is the standard @command{gcc} option (@pxref{Debugging Options, ,

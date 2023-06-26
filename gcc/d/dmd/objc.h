@@ -37,8 +37,8 @@ struct ObjcSelector
 
 struct ObjcClassDeclaration
 {
-    bool isMeta;
-    bool isExtern;
+    d_bool isMeta;
+    d_bool isExtern;
 
     Identifier* identifier;
     ClassDeclaration* classDeclaration;
@@ -52,7 +52,7 @@ struct ObjcFuncDeclaration
 {
     ObjcSelector* selector;
     VarDeclaration* selectorParameter;
-    bool isOptional;
+    d_bool isOptional;
 };
 
 class Objc

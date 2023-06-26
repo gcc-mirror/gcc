@@ -1,3 +1,646 @@
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::parse_insn): Ehance
+	AVL propagation.
+	* config/riscv/riscv-vsetvl.h: New function.
+
+2023-06-25  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: change emit_insn to
+	emit_move_insn
+
+2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (len_load_<mode>): Remove.
+	(len_maskload<mode><vm>): Remove.
+	(len_store_<mode>): New pattern.
+	(len_maskstore<mode><vm>): New pattern.
+	* config/riscv/predicates.md (autovec_length_operand): New predicate.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_load_store): New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_masked_insn): Ditto.
+	(emit_nonvlmax_masked_insn): Ditto.
+	(expand_load_store): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_contiguous_store_insn): Add avl_type operand
+	into pred_store.
+	* config/riscv/vector.md: Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (expand_partial_store_optab_fn): Fix bug of BIAS
+	argument index.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Revert.
+
+2023-06-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Revert changes.
+	* config/riscv/riscv-modes.def (RVV_TUPLE_MODES): Ditto.
+	(ADJUST_ALIGNMENT): Ditto.
+	(RVV_TUPLE_PARTIAL_MODES): Ditto.
+	(ADJUST_NUNITS): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (vfloat16mf4x2_t): Ditto.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Diito.
+	(vfloat16m2x4_t): Diito.
+	(vfloat16m4x2_t): Diito.
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4x2_t): Ditto.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-switch.def (TUPLE_ENTRY): Ditto.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gimple-fold.cc (arith_overflowed_p): Apply LEN_MASK_{LOAD,STORE}.
+	(gimple_fold_partial_load_store_mem_ref): Ditto.
+	(gimple_fold_partial_store): Ditto.
+	(gimple_fold_call): Ditto.
+
+2023-06-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110309
+	* config/i386/sse.md (maskload<mode><avx512fmaskmodelower>):
+	Refine pattern with UNSPEC_MASKLOAD.
+	(maskload<mode><avx512fmaskmodelower>): Ditto.
+	(*<avx512>_load<mode>_mask): Extend mode iterator to
+	VI12HFBF_AVX512VL.
+	(*<avx512>_load<mode>): Ditto.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-alias.cc (call_may_clobber_ref_p_1): Add LEN_MASK_STORE.
+
+2023-06-25  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Apply
+	LEN_MASK_{LOAD,STORE}
+
+2023-06-25  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/vector.md: Add float16 attr at sew、vlmul and ratio.
+
+2023-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*<code>qi_ext<mode>_3): New define_insn.
+
+2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (*fma<mode>): set clobber to Pmode in expand stage.
+	(*fma<VI:mode><P:mode>): Ditto.
+	(*fnma<mode>): Ditto.
+	(*fnma<VI:mode><P:mode>): Ditto.
+
+2023-06-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (fma<mode>4): New pattern.
+	(*fma<mode>): Ditto.
+	(fnma<mode>4): Ditto.
+	(*fnma<mode>): Ditto.
+	(fms<mode>4): Ditto.
+	(*fms<mode>): Ditto.
+	(fnms<mode>4): Ditto.
+	(*fnms<mode>): Ditto.
+	* config/riscv/riscv-protos.h (emit_vlmax_fp_ternary_insn):
+	New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_fp_ternary_insn): Ditto.
+	* config/riscv/vector.md: Fix attribute bug.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-loop-ivopts.cc (get_mem_type_for_internal_fn):
+	Apply LEN_MASK_{LOAD,STORE}.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-loop-ivopts.cc (get_alias_ptr_type_for_ptr_address):
+	Add LEN_MASK_{LOAD,STORE}.
+
+2023-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Add #define INCLUDE_VECTOR.
+	* diagnostic.cc: Likewise.
+	* text-art/box-drawing.cc: Likewise.
+	* text-art/canvas.cc: Likewise.
+	* text-art/ruler.cc: Likewise.
+	* text-art/selftests.cc: Likewise.
+	* text-art/selftests.h (text_art::canvas): New forward decl.
+	* text-art/style.cc: Add #define INCLUDE_VECTOR.
+	* text-art/styled-string.cc: Likewise.
+	* text-art/table.cc: Likewise.
+	* text-art/table.h: Remove #include <vector>.
+	* text-art/theme.cc: Add #define INCLUDE_VECTOR.
+	* text-art/types.h: Check that INCLUDE_VECTOR is defined.
+	Remove #include of <vector> and <string>.
+	* text-art/widget.cc: Add #define INCLUDE_VECTOR.
+	* text-art/widget.h: Remove #include <vector>.
+
+2023-06-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (expand_partial_store_optab_fn): Adapt for LEN_MASK_STORE.
+	(internal_load_fn_p): Add LEN_MASK_LOAD.
+	(internal_store_fn_p): Add LEN_MASK_STORE.
+	(internal_fn_mask_index): Add LEN_MASK_{LOAD,STORE}.
+	(internal_fn_stored_value_index): Add LEN_MASK_STORE.
+	(internal_len_load_store_bias):  Add LEN_MASK_{LOAD,STORE}.
+	* optabs-tree.cc (can_vec_mask_load_store_p): Adapt for LEN_MASK_{LOAD,STORE}.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.h (can_vec_mask_load_store_p): Ditto.
+	(get_len_load_store_mode): Ditto.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Ditto.
+	(get_all_ones_mask): New function.
+	(vectorizable_store): Apply LEN_MASK_{LOAD,STORE} into vectorizer.
+	(vectorizable_load): Ditto.
+
+2023-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* doc/cpp.texi (__cplusplus): Document value for -std=c++26 and
+	-std=gnu++26.  Document that for C++23, its value is 202302L.
+	* doc/invoke.texi: Document -std=c++26 and -std=gnu++26.
+	* dwarf2out.cc (highest_c_language): Handle GNU C++26.
+	(gen_compile_unit_die): Likewise.
+
+2023-06-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-phiprop.cc (propagate_with_phi): Compute post dominators on
+	demand.
+	(pass_phiprop::execute): Do not compute it here; return
+	update_ssa_only_virtuals if something changed.
+	(pass_data_phiprop): Remove TODO_update_ssa from todos.
+
+2023-06-23   Michael Meissner  <meissner@linux.ibm.com>
+	    Aaron Sawdey   <acsawdey@linux.ibm.com>
+
+	PR target/105325
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10_one): Fix problems that
+	allowed prefixed lwa to be generated.
+	* config/rs6000/fusion.md: Regenerate.
+	* config/rs6000/predicates.md (ds_form_mem_operand): Delete.
+	* config/rs6000/rs6000.md (prefixed attribute): Add support for load
+	plus compare immediate fused insns.
+	(maybe_prefixed): Likewise.
+
+2023-06-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_subreg):  Optimize lowpart SUBREGs
+	of ASHIFT to const0_rtx with sufficiently large shift count.
+	Optimize highpart SUBREGs of ASHIFT as the shift operand when
+	the shift count is the correct offset.  Optimize SUBREGs of
+	multi-word logic operations if the SUBREGs of both operands
+	can be simplified.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* varasm.cc (initializer_constant_valid_p_1): Only
+	allow conversions between scalar floating point types.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_assignment):
+	Properly handle non-integral operands when analyzing
+	conversions.
+
+2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* match.pd (vec_perm_expr(v, v, mask) -> v): Explicitly build vector
+	using build_vector_from_val with the element of input operand, and
+	mask's type if operand and mask's types don't match.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (tree_simple_nonnegative_warnv_p): Guard
+	the truth_value_p case with !VECTOR_TYPE_P.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_look_through_possible_promotion):
+	Exit early when the type isn't scalar integral.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((outertype)((innertype0)a+(innertype1)b)
+	-> ((newtype)a+(newtype)b)): Use element_precision
+	where appropriate.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (fold_binary_loc): Use element_precision
+	when trying (double)float1 CMP (double)float2 to
+	float1 CMP float2 simplification.
+	* match.pd: Likewise.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Avoid useless
+	copies of VMAT_INVARIANT vectorized stmts, fix SLP support.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vector_vector_composition_type):
+	Handle composition of a vector from a number of elements that
+	happens to match its number of lanes.
+
+2023-06-22  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.  Add
+	-Wl,-z,now to LD_PICFLAG if --enable-host-bind-now.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-host-bind-now.
+
+2023-06-22  Di Zhao OS  <dizhao@os.amperecomputing.com>
+
+	* config/aarch64/aarch64.cc: Change fma_reassoc_width for ampere1.
+
+2023-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110332
+	* tree-ssa-phiprop.cc (propagate_with_phi): Always
+	check aliasing with edge inserted loads.
+
+2023-06-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_ptest): Recognize
+	expansion of ptestc with equal operands as producing const1_rtx.
+	* config/i386/i386.cc (ix86_rtx_costs): Provide accurate cost
+	estimates of UNSPEC_PTEST, where the ptest performs the PAND
+	or PAND of its operands.
+	* config/i386/sse.md (define_split): Transform CCCmode UNSPEC_PTEST
+	of reg_equal_p operands into an x86_stc instruction.
+	(define_split): Split pandn/ptestz/set{n?}e into ptestc/set{n?}c.
+	(define_split): Similar to above for strict_low_part destinations.
+	(define_split): Split pandn/ptestz/j{n?}e into ptestc/j{n?}c.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/access-diagram.o.
+	* doc/invoke.texi (Wanalyzer-out-of-bounds): Add description of
+	text art.
+	(fanalyzer-debug-text-art): New.
+
+2023-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add text-art/box-drawing.o,
+	text-art/canvas.o, text-art/ruler.o, text-art/selftests.o,
+	text-art/style.o, text-art/styled-string.o, text-art/table.o,
+	text-art/theme.o, and text-art/widget.o.
+	* color-macros.h (COLOR_FG_BRIGHT_BLACK): New.
+	(COLOR_FG_BRIGHT_RED): New.
+	(COLOR_FG_BRIGHT_GREEN): New.
+	(COLOR_FG_BRIGHT_YELLOW): New.
+	(COLOR_FG_BRIGHT_BLUE): New.
+	(COLOR_FG_BRIGHT_MAGENTA): New.
+	(COLOR_FG_BRIGHT_CYAN): New.
+	(COLOR_FG_BRIGHT_WHITE): New.
+	(COLOR_BG_BRIGHT_BLACK): New.
+	(COLOR_BG_BRIGHT_RED): New.
+	(COLOR_BG_BRIGHT_GREEN): New.
+	(COLOR_BG_BRIGHT_YELLOW): New.
+	(COLOR_BG_BRIGHT_BLUE): New.
+	(COLOR_BG_BRIGHT_MAGENTA): New.
+	(COLOR_BG_BRIGHT_CYAN): New.
+	(COLOR_BG_BRIGHT_WHITE): New.
+	* common.opt (fdiagnostics-text-art-charset=): New option.
+	(diagnostic-text-art.h): New SourceInclude.
+	(diagnostic_text_art_charset) New Enum and EnumValues.
+	* configure: Regenerate.
+	* configure.ac (gccdepdir): Add text-art to loop.
+	* diagnostic-diagram.h: New file.
+	* diagnostic-format-json.cc (json_emit_diagram): New.
+	(diagnostic_output_format_init_json): Wire it up to
+	context->m_diagrams.m_emission_cb.
+	* diagnostic-format-sarif.cc: Include "diagnostic-diagram.h" and
+	"text-art/canvas.h".
+	(sarif_result::on_nested_diagnostic): Move code to...
+	(sarif_result::add_related_location): ...this new function.
+	(sarif_result::on_diagram): New.
+	(sarif_builder::emit_diagram): New.
+	(sarif_builder::make_message_object_for_diagram): New.
+	(sarif_emit_diagram): New.
+	(diagnostic_output_format_init_sarif): Set
+	context->m_diagrams.m_emission_cb to sarif_emit_diagram.
+	* diagnostic-text-art.h: New file.
+	* diagnostic.cc: Include "diagnostic-text-art.h",
+	"diagnostic-diagram.h", and "text-art/theme.h".
+	(diagnostic_initialize): Initialize context->m_diagrams and
+	call diagnostics_text_art_charset_init.
+	(diagnostic_finish): Clean up context->m_diagrams.m_theme.
+	(diagnostic_emit_diagram): New.
+	(diagnostics_text_art_charset_init): New.
+	* diagnostic.h (text_art::theme): New forward decl.
+	(class diagnostic_diagram): Likewise.
+	(diagnostic_context::m_diagrams): New field.
+	(diagnostic_emit_diagram): New decl.
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-text-art-charset=.
+	(-fdiagnostics-plain-output): Add
+	-fdiagnostics-text-art-charset=none.
+	* gcc.cc: Include "diagnostic-text-art.h".
+	(driver_handle_option): Handle OPT_fdiagnostics_text_art_charset_.
+	* opts-common.cc (decode_cmdline_options_to_array): Add
+	"-fdiagnostics-text-art-charset=none" to expanded_args for
+	-fdiagnostics-plain-output.
+	* opts.cc: Include "diagnostic-text-art.h".
+	(common_handle_option): Handle OPT_fdiagnostics_text_art_charset_.
+	* pretty-print.cc (pp_unicode_character): New.
+	* pretty-print.h (pp_unicode_character): New decl.
+	* selftest-run-tests.cc: Include "text-art/selftests.h".
+	(selftest::run_tests): Call text_art_tests.
+	* text-art/box-drawing-chars.inc: New file, generated by
+	contrib/unicode/gen-box-drawing-chars.py.
+	* text-art/box-drawing.cc: New file.
+	* text-art/box-drawing.h: New file.
+	* text-art/canvas.cc: New file.
+	* text-art/canvas.h: New file.
+	* text-art/ruler.cc: New file.
+	* text-art/ruler.h: New file.
+	* text-art/selftests.cc: New file.
+	* text-art/selftests.h: New file.
+	* text-art/style.cc: New file.
+	* text-art/styled-string.cc: New file.
+	* text-art/table.cc: New file.
+	* text-art/table.h: New file.
+	* text-art/theme.cc: New file.
+	* text-art/theme.h: New file.
+	* text-art/types.h: New file.
+	* text-art/widget.cc: New file.
+	* text-art/widget.h: New file.
+
+2023-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* function.h (emit_initial_value_sets):
+	Change return type from int to void.
+	(aggregate_value_p): Change return type from int to bool.
+	(prologue_contains): Ditto.
+	(epilogue_contains): Ditto.
+	(prologue_epilogue_contains): Ditto.
+	* function.cc (temp_slot): Make "in_use" variable bool.
+	(make_slot_available): Update for changed "in_use" variable.
+	(assign_stack_temp_for_type): Ditto.
+	(emit_initial_value_sets): Change return type from int to void
+	and update function body accordingly.
+	(instantiate_virtual_regs): Ditto.
+	(rest_of_handle_thread_prologue_and_epilogue): Ditto.
+	(safe_insn_predicate): Change return type from int to bool.
+	(aggregate_value_p): Change return type from int to bool
+	and update function body accordingly.
+	(prologue_contains): Change return type from int to bool.
+	(prologue_epilogue_contains): Ditto.
+
+2023-06-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* common.opt (fp_contract_mode) [on]: Remove fallback.
+	* config/sh/sh.md (*fmasf4): Correct flag_fp_contract_mode test.
+	* doc/invoke.texi (-ffp-contract): Update.
+	* trans-mem.cc (diagnose_tm_1): Skip internal function calls.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Add alternatives to prefer to avoid same input and output Z register.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Revert:
+	2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* optabs-query.cc (can_vec_mask_load_store_p): Move to optabs-tree.cc.
+	(get_len_load_store_mode): Ditto.
+	* optabs-query.h (can_vec_mask_load_store_p): Move to optabs-tree.h.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.cc (can_vec_mask_load_store_p): New function.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.h (can_vec_mask_load_store_p): Ditto.
+	(get_len_load_store_mode): Ditto.
+	* tree-if-conv.cc: include optabs-tree instead of optabs-query
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.cc (add_iv_candidate_for_use): Use
+	split_constant_offset for the POINTER_PLUS_EXPR case.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.cc (record_group_use): Use
+	split_constant_offset.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.cc (classify_builtin_st): Use
+	split_constant_offset.
+	* tree-ssa-loop-ivopts.h (strip_offset): Remove.
+	* tree-ssa-loop-ivopts.cc (strip_offset): Make static.
+
+2023-06-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_gather_load<mode><v_int_container>):
+	Convert to compact alternatives syntax.
+	(mask_gather_load<mode><v_int_container>): Likewise.
+	(*mask_gather_load<mode><v_int_container>_<su>xtw_unpacked): Likewise.
+	(*mask_gather_load<mode><v_int_container>_sxtw): Likewise.
+	(*mask_gather_load<mode><v_int_container>_uxtw): Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_4HSI:mode><SVE_4BHI:mode>):
+	Likewise.
+	(@aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode><SVE_2BHSI:mode>):
+	Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_<ANY_EXTEND2:su>xtw_unpacked): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_sxtw): Likewise.
+	(*aarch64_gather_load_<ANY_EXTEND:optab><SVE_2HSDI:mode>
+	<SVE_2BHSI:mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(@aarch64_ldff1_gather<mode>): Likewise.
+	(*aarch64_ldff1_gather<mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather<mode>_uxtw): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx4_WIDE:mode>
+	<VNx4_NARROW:mode>): Likewise.
+	(@aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_sxtw): Likewise.
+	(*aarch64_ldff1_gather_<ANY_EXTEND:optab><VNx2_WIDE:mode>
+	<VNx2_NARROW:mode>_uxtw): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_gather_ldnt<mode>): Likewise.
+	(@aarch64_gather_ldnt_<ANY_EXTEND:optab><SVE_FULL_SDI:mode>
+	<SVE_PARTIAL_I:mode>): Likewise.
+
+2023-06-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR other/110329
+	* doc/md.texi: Replace backslashchar.
+
+2023-06-21  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Overload.  For masked main loops make sure the vectorization
+	factor isn't more than double the number of iterations.
+
+2023-06-21  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Request
+	value duplication by ix86_build_signbit_mask() when AVX512F and
+	not HFmode.
+	* config/i386/sse.md (*<avx512>_vternlog<mode>_all): Convert to
+	2-alternative form. Adjust "mode" attribute. Add "enabled"
+	attribute.
+	(*<avx512>_vpternlog<mode>_1): Also permit when TARGET_AVX512F
+	&& !TARGET_PREFER_AVX256.
+	(*<avx512>_vpternlog<mode>_2): Likewise.
+	(*<avx512>_vpternlog<mode>_3): Likewise.
+
+2023-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110018
+	* tree-vect-stmts.cc (vectorizable_conversion): Use
+	intermiediate integer type for float_expr/fix_trunc_expr when
+	direct optab is not existed.
+
 2023-06-20  Tamar Christina  <tamar.christina@arm.com>
 
 	PR bootstrap/110324

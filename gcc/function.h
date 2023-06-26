@@ -657,11 +657,11 @@ extern rtx get_hard_reg_initial_val (machine_mode, unsigned int);
 extern rtx has_hard_reg_initial_val (machine_mode, unsigned int);
 
 /* Called from gimple_expand_cfg.  */
-extern unsigned int emit_initial_value_sets (void);
+extern void emit_initial_value_sets (void);
 
 extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
-extern int aggregate_value_p (const_tree, const_tree);
+extern bool aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
 extern gimple_seq gimplify_parameters (gimple_seq *);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
@@ -702,9 +702,9 @@ extern void clobber_return_register (void);
 extern void expand_function_end (void);
 extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
-extern int prologue_contains (const rtx_insn *);
-extern int epilogue_contains (const rtx_insn *);
-extern int prologue_epilogue_contains (const rtx_insn *);
+extern bool prologue_contains (const rtx_insn *);
+extern bool epilogue_contains (const rtx_insn *);
+extern bool prologue_epilogue_contains (const rtx_insn *);
 extern void record_prologue_seq (rtx_insn *);
 extern void record_epilogue_seq (rtx_insn *);
 extern void emit_return_into_block (bool simple_p, basic_block bb);

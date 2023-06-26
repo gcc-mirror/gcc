@@ -25105,6 +25105,8 @@ static char *producer_string;
 static const char *
 highest_c_language (const char *lang1, const char *lang2)
 {
+  if (strcmp ("GNU C++26", lang1) == 0 || strcmp ("GNU C++26", lang2) == 0)
+    return "GNU C++26";
   if (strcmp ("GNU C++23", lang1) == 0 || strcmp ("GNU C++23", lang2) == 0)
     return "GNU C++23";
   if (strcmp ("GNU C++20", lang1) == 0 || strcmp ("GNU C++20", lang2) == 0)
@@ -25215,7 +25217,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C_plus_plus_14;
 	  else if (strcmp (language_string, "GNU C++17") == 0
 		   || strcmp (language_string, "GNU C++20") == 0
-		   || strcmp (language_string, "GNU C++23") == 0)
+		   || strcmp (language_string, "GNU C++23") == 0
+		   || strcmp (language_string, "GNU C++26") == 0)
 	    /* For now.  */
 	    language = DW_LANG_C_plus_plus_14;
 	}

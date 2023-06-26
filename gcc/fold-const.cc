@@ -12564,10 +12564,10 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	tree targ1 = strip_float_extensions (arg1);
 	tree newtype = TREE_TYPE (targ0);
 
-	if (TYPE_PRECISION (TREE_TYPE (targ1)) > TYPE_PRECISION (newtype))
+	if (element_precision (TREE_TYPE (targ1)) > element_precision (newtype))
 	  newtype = TREE_TYPE (targ1);
 
-	if (TYPE_PRECISION (newtype) < TYPE_PRECISION (TREE_TYPE (arg0)))
+	if (element_precision (newtype) < element_precision (TREE_TYPE (arg0)))
 	  return fold_build2_loc (loc, code, type,
 			      fold_convert_loc (loc, newtype, targ0),
 			      fold_convert_loc (loc, newtype, targ1));
@@ -14530,7 +14530,8 @@ tree_expr_maybe_real_minus_zero_p (const_tree x)
 static bool
 tree_simple_nonnegative_warnv_p (enum tree_code code, tree type)
 {
-  if ((TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
+  if (!VECTOR_TYPE_P (type)
+      && (TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
       && truth_value_p (code))
     /* Truth values evaluate to 0 or 1, which is nonnegative unless we
        have a signed:1 type (where the value is -1 and 0).  */

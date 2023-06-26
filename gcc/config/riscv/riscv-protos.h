@@ -143,6 +143,7 @@ enum insn_type
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
   RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
+  RVV_UNOP_M = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_TERNOP = 5,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
@@ -187,6 +188,7 @@ void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_fp_insn (unsigned, int, rtx *, rtx = 0);
 void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
+void emit_vlmax_fp_ternary_insn (unsigned, int, rtx *, rtx = 0);
 void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
 void emit_vlmax_slide_insn (unsigned, rtx *);
 void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);
@@ -250,9 +252,9 @@ machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
-void expand_vcond (rtx *);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
+void expand_load_store (rtx *, bool);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

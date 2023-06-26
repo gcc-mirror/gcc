@@ -1819,22 +1819,21 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   machine_mode mask_mode;
-  bool using_partial_vectors_p = false;
-  if (targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
-      && can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
-    {
-      nvectors = group_memory_nvectors (group_size * vf, nunits);
-      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
-      using_partial_vectors_p = true;
-    }
-
   machine_mode vmode;
+  bool using_partial_vectors_p = false;
   if (get_len_load_store_mode (vecmode, is_load).exists (&vmode))
     {
       nvectors = group_memory_nvectors (group_size * vf, nunits);
       vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
       unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
       vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, factor);
+      using_partial_vectors_p = true;
+    }
+  else if (targetm.vectorize.get_mask_mode (vecmode).exists (&mask_mode)
+	   && can_vec_mask_load_store_p (vecmode, mask_mode, is_load))
+    {
+      nvectors = group_memory_nvectors (group_size * vf, nunits);
+      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
       using_partial_vectors_p = true;
     }
 
@@ -2142,6 +2141,14 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype)
   machine_mode vmode = TYPE_MODE (vtype);
   if (!VECTOR_MODE_P (vmode))
     return NULL_TREE;
+
+  /* When we are asked to compose the vector from its components let
+     that happen directly.  */
+  if (known_eq (TYPE_VECTOR_SUBPARTS (vtype), nelts))
+    {
+      *ptype = TREE_TYPE (vtype);
+      return vtype;
+    }
 
   poly_uint64 vbsize = GET_MODE_BITSIZE (vmode);
   unsigned int pbsize;
@@ -5037,7 +5044,7 @@ vectorizable_conversion (vec_info *vinfo,
 			 gimple **vec_stmt, slp_tree slp_node,
 			 stmt_vector_for_cost *cost_vec)
 {
-  tree vec_dest;
+  tree vec_dest, cvt_op = NULL_TREE;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -5256,7 +5263,8 @@ vectorizable_conversion (vec_info *vinfo,
       if ((code == FLOAT_EXPR
 	   && GET_MODE_SIZE (lhs_mode) > GET_MODE_SIZE (rhs_mode))
 	  || (code == FIX_TRUNC_EXPR
-	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)))
+	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)
+	      && !flag_trapping_math))
 	{
 	  bool float_expr_p = code == FLOAT_EXPR;
 	  scalar_mode imode = float_expr_p ? rhs_mode : lhs_mode;
@@ -5470,8 +5478,9 @@ vectorizable_conversion (vec_info *vinfo,
       if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (vinfo, stmt_info, ncopies, dt, ndts, slp_node,
-				  cost_vec);
+	  vect_model_simple_cost (vinfo, stmt_info,
+				  ncopies * (1 + multi_step_cvt),
+				  dt, ndts, slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
@@ -5561,6 +5570,13 @@ vectorizable_conversion (vec_info *vinfo,
     case NONE:
       vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
 			 op0, &vec_oprnds0);
+      /* vec_dest is intermediate type operand when multi_step_cvt.  */
+      if (multi_step_cvt)
+	{
+	  cvt_op = vec_dest;
+	  vec_dest = vec_dsts[0];
+	}
+
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
 	{
 	  /* Arguments are ready, create the new vector stmt.  */
@@ -5568,12 +5584,11 @@ vectorizable_conversion (vec_info *vinfo,
 	  if (multi_step_cvt)
 	    {
 	      gcc_assert (multi_step_cvt == 1);
-	      new_stmt = vect_gimple_build (vec_dest, codecvt1, vop0);
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      new_stmt = vect_gimple_build (cvt_op, codecvt1, vop0);
+	      new_temp = make_ssa_name (cvt_op, new_stmt);
 	      gimple_assign_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      vop0 = new_temp;
-	      vec_dest = vec_dsts[0];
 	    }
 	  new_stmt = vect_gimple_build (vec_dest, code1, vop0);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -5825,12 +5840,15 @@ vectorizable_assignment (vec_info *vinfo,
   /* We do not handle bit-precision changes.  */
   if ((CONVERT_EXPR_CODE_P (code)
        || code == VIEW_CONVERT_EXPR)
-      && INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-      && (!type_has_mode_precision_p (TREE_TYPE (scalar_dest))
-	  || !type_has_mode_precision_p (TREE_TYPE (op)))
+      && ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	   && !type_has_mode_precision_p (TREE_TYPE (scalar_dest)))
+	  || (INTEGRAL_TYPE_P (TREE_TYPE (op))
+	      && !type_has_mode_precision_p (TREE_TYPE (op))))
       /* But a conversion that does not change the bit-pattern is ok.  */
-      && !((TYPE_PRECISION (TREE_TYPE (scalar_dest))
-	    > TYPE_PRECISION (TREE_TYPE (op)))
+      && !(INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (op))
+	   && (TYPE_PRECISION (TREE_TYPE (scalar_dest))
+	       > TYPE_PRECISION (TREE_TYPE (op)))
 	   && TYPE_UNSIGNED (TREE_TYPE (op))))
     {
       if (dump_enabled_p ())
@@ -9006,30 +9024,63 @@ vectorizable_store (vec_info *vinfo,
 		  vec_oprnd = new_temp;
 		}
 
-	      /* Arguments are ready.  Create the new vector stmt.  */
-	      if (final_mask)
+	      /* Compute IFN when LOOP_LENS or final_mask valid.  */
+	      machine_mode vmode = TYPE_MODE (vectype);
+	      machine_mode new_vmode = vmode;
+	      internal_fn partial_ifn = IFN_LAST;
+	      /* Produce 'len' and 'bias' argument.  */
+	      tree final_len = NULL_TREE;
+	      tree bias = NULL_TREE;
+	      if (loop_lens)
 		{
-		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
-		  gcall *call
-		    = gimple_build_call_internal (IFN_MASK_STORE, 4,
-						  dataref_ptr, ptr,
-						  final_mask, vec_oprnd);
-		  gimple_call_set_nothrow (call, true);
-		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-		  new_stmt = call;
-		}
-	      else if (loop_lens)
-		{
-		  machine_mode vmode = TYPE_MODE (vectype);
 		  opt_machine_mode new_ovmode
-		    = get_len_load_store_mode (vmode, false);
-		  machine_mode new_vmode = new_ovmode.require ();
+		    = get_len_load_store_mode (vmode, false, &partial_ifn);
+		  new_vmode = new_ovmode.require ();
 		  unsigned factor
 		    = (new_ovmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vmode);
-		  tree final_len
-		    = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
-					 vec_num * ncopies, vectype,
-					 vec_num * j + i, factor);
+		  final_len = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+						 vec_num * ncopies, vectype,
+						 vec_num * j + i, factor);
+		}
+	      else if (final_mask)
+		{
+		  if (!can_vec_mask_load_store_p (vmode,
+						  TYPE_MODE (TREE_TYPE (final_mask)),
+						  false, &partial_ifn))
+		    gcc_unreachable ();
+		}
+
+	      if (partial_ifn == IFN_LEN_MASK_STORE)
+		{
+		  if (!final_len)
+		    {
+		      /* Pass VF value to 'len' argument of
+		         LEN_MASK_STORE if LOOP_LENS is invalid.  */
+		      tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
+		      final_len
+			= build_int_cst (iv_type,
+					 TYPE_VECTOR_SUBPARTS (vectype));
+		    }
+		  if (!final_mask)
+		    {
+		      /* Pass all ones value to 'mask' argument of
+			 LEN_MASK_STORE if final_mask is invalid.  */
+		      mask_vectype = truth_type_for (vectype);
+		      final_mask = build_minus_one_cst (mask_vectype);
+		    }
+		}
+	      if (final_len)
+		{
+		  signed char biasval
+		    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+
+		  bias = build_int_cst (intQI_type_node, biasval);
+		}
+
+	      /* Arguments are ready.  Create the new vector stmt.  */
+	      if (final_len)
+		{
+		  gcall *call;
 		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  /* Need conversion if it's wrapped with VnQI.  */
 		  if (vmode != new_vmode)
@@ -9049,14 +9100,27 @@ vectorizable_store (vec_info *vinfo,
 		      vec_oprnd = var;
 		    }
 
-		  signed char biasval =
-		    LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-
-		  tree bias = build_int_cst (intQI_type_node, biasval);
+		  if (partial_ifn == IFN_LEN_MASK_STORE)
+		    call = gimple_build_call_internal (IFN_LEN_MASK_STORE, 6,
+						       dataref_ptr, ptr,
+						       final_len, final_mask,
+						       vec_oprnd, bias);
+		  else
+		    call
+		      = gimple_build_call_internal (IFN_LEN_STORE, 5,
+						    dataref_ptr, ptr, final_len,
+						    vec_oprnd, bias);
+		  gimple_call_set_nothrow (call, true);
+		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+		  new_stmt = call;
+		}
+	      else if (final_mask)
+		{
+		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  gcall *call
-		    = gimple_build_call_internal (IFN_LEN_STORE, 5, dataref_ptr,
-						  ptr, final_len, vec_oprnd,
-						  bias);
+		    = gimple_build_call_internal (IFN_MASK_STORE, 4,
+						  dataref_ptr, ptr,
+						  final_mask, vec_oprnd);
 		  gimple_call_set_nothrow (call, true);
 		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 		  new_stmt = call;
@@ -9585,27 +9649,26 @@ vectorizable_load (vec_info *vinfo,
 	  gimple_set_vuse (new_stmt, vuse);
 	  gsi_insert_on_edge_immediate (pe, new_stmt);
 	}
-      /* These copies are all equivalent, but currently the representation
-	 requires a separate STMT_VINFO_VEC_STMT for each one.  */
-      gimple_stmt_iterator gsi2 = *gsi;
-      gsi_next (&gsi2);
-      for (j = 0; j < ncopies; j++)
+      /* These copies are all equivalent.  */
+      if (hoist_p)
+	new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+				     vectype, NULL);
+      else
 	{
-	  if (hoist_p)
-	    new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
-					 vectype, NULL);
-	  else
-	    new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
-					 vectype, &gsi2);
-	  gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	  if (slp)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-	  else
-	    {
-	      if (j == 0)
-		*vec_stmt = new_stmt;
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
-	    }
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_next (&gsi2);
+	  new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+				       vectype, &gsi2);
+	}
+      gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
+      if (slp)
+	for (j = 0; j < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++j)
+	  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+      else
+	{
+	  for (j = 0; j < ncopies; ++j)
+	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	  *vec_stmt = new_stmt;
 	}
       return true;
     }
@@ -10366,45 +10429,77 @@ vectorizable_load (vec_info *vinfo,
 					      align, misalign);
 		    align = least_bit_hwi (misalign | align);
 
-		    if (final_mask)
+		    /* Compute IFN when LOOP_LENS or final_mask valid.  */
+		    machine_mode vmode = TYPE_MODE (vectype);
+		    machine_mode new_vmode = vmode;
+		    internal_fn partial_ifn = IFN_LAST;
+		    /* Produce 'len' and 'bias' argument.  */
+		    tree final_len = NULL_TREE;
+		    tree bias = NULL_TREE;
+		    if (loop_lens)
 		      {
-			tree ptr = build_int_cst (ref_type,
-						  align * BITS_PER_UNIT);
-			gcall *call
-			  = gimple_build_call_internal (IFN_MASK_LOAD, 3,
-							dataref_ptr, ptr,
-							final_mask);
-			gimple_call_set_nothrow (call, true);
-			new_stmt = call;
-			data_ref = NULL_TREE;
-		      }
-		    else if (loop_lens && memory_access_type != VMAT_INVARIANT)
-		      {
-			machine_mode vmode = TYPE_MODE (vectype);
 			opt_machine_mode new_ovmode
-			  = get_len_load_store_mode (vmode, true);
-			machine_mode new_vmode = new_ovmode.require ();
+			  = get_len_load_store_mode (vmode, true,
+						     &partial_ifn);
+			new_vmode = new_ovmode.require ();
 			unsigned factor = (new_ovmode == vmode)
 					    ? 1
 					    : GET_MODE_UNIT_SIZE (vmode);
-			tree final_len
+			final_len
 			  = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
 					       vec_num * ncopies, vectype,
 					       vec_num * j + i, factor);
+		      }
+		    else if (final_mask)
+		      {
+			if (!can_vec_mask_load_store_p (
+			      vmode, TYPE_MODE (TREE_TYPE (final_mask)), true,
+			      &partial_ifn))
+			  gcc_unreachable ();
+		      }
+
+		    if (partial_ifn == IFN_LEN_MASK_LOAD)
+		      {
+			if (!final_len)
+			  {
+			    /* Pass VF value to 'len' argument of
+			       LEN_MASK_LOAD if LOOP_LENS is invalid.  */
+			    tree iv_type
+			      = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
+			    final_len
+			      = build_int_cst (iv_type,
+					       TYPE_VECTOR_SUBPARTS (vectype));
+			  }
+			if (!final_mask)
+			  {
+			    /* Pass all ones value to 'mask' argument of
+			       LEN_MASK_LOAD if final_mask is invalid.  */
+			    mask_vectype = truth_type_for (vectype);
+			    final_mask = build_minus_one_cst (mask_vectype);
+			  }
+		      }
+		    if (final_len)
+		      {
+			signed char biasval
+			  = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+
+			bias = build_int_cst (intQI_type_node, biasval);
+		      }
+
+		    if (final_len && memory_access_type != VMAT_INVARIANT)
+		      {
 			tree ptr
 			  = build_int_cst (ref_type, align * BITS_PER_UNIT);
-
-			tree qi_type = unsigned_intQI_type_node;
-
-			signed char biasval =
-			  LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-
-			tree bias = build_int_cst (intQI_type_node, biasval);
-
-			gcall *call
-			  = gimple_build_call_internal (IFN_LEN_LOAD, 4,
-							dataref_ptr, ptr,
-							final_len, bias);
+			gcall *call;
+			if (partial_ifn == IFN_LEN_MASK_LOAD)
+			  call = gimple_build_call_internal (IFN_LEN_MASK_LOAD,
+							     5, dataref_ptr,
+							     ptr, final_len,
+							     final_mask, bias);
+			else
+			  call = gimple_build_call_internal (IFN_LEN_LOAD, 4,
+							     dataref_ptr, ptr,
+							     final_len, bias);
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
 			data_ref = NULL_TREE;
@@ -10412,8 +10507,8 @@ vectorizable_load (vec_info *vinfo,
 			/* Need conversion if it's wrapped with VnQI.  */
 			if (vmode != new_vmode)
 			  {
-			    tree new_vtype
-			      = build_vector_type_for_mode (qi_type, new_vmode);
+			    tree new_vtype = build_vector_type_for_mode (
+			      unsigned_intQI_type_node, new_vmode);
 			    tree var = vect_get_new_ssa_name (new_vtype,
 							      vect_simple_var);
 			    gimple_set_lhs (call, var);
@@ -10424,6 +10519,18 @@ vectorizable_load (vec_info *vinfo,
 			      = gimple_build_assign (vec_dest,
 						     VIEW_CONVERT_EXPR, op);
 			  }
+		      }
+		    else if (final_mask)
+		      {
+			tree ptr = build_int_cst (ref_type,
+						  align * BITS_PER_UNIT);
+			gcall *call
+			  = gimple_build_call_internal (IFN_MASK_LOAD, 3,
+							dataref_ptr, ptr,
+							final_mask);
+			gimple_call_set_nothrow (call, true);
+			new_stmt = call;
+			data_ref = NULL_TREE;
 		      }
 		    else
 		      {

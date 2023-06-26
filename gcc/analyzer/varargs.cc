@@ -403,7 +403,7 @@ public:
 	    && 0 == strcmp (m_usage_fnname, other.m_usage_fnname));
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),
@@ -478,7 +478,7 @@ public:
     return va_list_sm_diagnostic::subclass_equal_p (other);
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     return warning_at (rich_loc, get_controlling_option (),
@@ -892,7 +892,7 @@ public:
     return OPT_Wanalyzer_va_arg_type_mismatch;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
@@ -942,7 +942,7 @@ public:
     return OPT_Wanalyzer_va_list_exhausted;
   }
 
-  bool emit (rich_location *rich_loc) final override
+  bool emit (rich_location *rich_loc, logger *) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;

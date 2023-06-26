@@ -16,7 +16,7 @@ maybe_inc_int_ptr (int *ptr)
 int
 test_1 (void)
 {
-  int stack; /* { dg-message "region created on stack here" } */
+  int stack;
   int *a = &stack;
   a = maybe_inc_int_ptr (a);
   a = maybe_inc_int_ptr (a);

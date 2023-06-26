@@ -7758,6 +7758,38 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	return CONST0_RTX (outermode);
     }
 
+  /* Optimize SUBREGS of scalar integral ASHIFT by a valid constant.  */
+  if (GET_CODE (op) == ASHIFT
+      && SCALAR_INT_MODE_P (innermode)
+      && CONST_INT_P (XEXP (op, 1))
+      && INTVAL (XEXP (op, 1)) > 0
+      && known_gt (GET_MODE_BITSIZE (innermode), INTVAL (XEXP (op, 1))))
+    {
+      HOST_WIDE_INT val = INTVAL (XEXP (op, 1));
+      /* A lowpart SUBREG of a ASHIFT by a constant may fold to zero.  */
+      if (known_eq (subreg_lowpart_offset (outermode, innermode), byte)
+	  && known_le (GET_MODE_BITSIZE (outermode), val))
+        return CONST0_RTX (outermode);
+      /* Optimize the highpart SUBREG of a suitable ASHIFT (ZERO_EXTEND).  */
+      if (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
+	  && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+	  && known_eq (GET_MODE_BITSIZE (outermode), val)
+	  && known_eq (GET_MODE_BITSIZE (innermode), 2 * val)
+	  && known_eq (subreg_highpart_offset (outermode, innermode), byte))
+	return XEXP (XEXP (op, 0), 0);
+    }
+
+  /* Attempt to simplify WORD_MODE SUBREGs of bitwise expressions.  */
+  if (outermode == word_mode
+      && (GET_CODE (op) == IOR || GET_CODE (op) == XOR || GET_CODE (op) == AND)
+      && SCALAR_INT_MODE_P (innermode))
+    {
+      rtx op0 = simplify_subreg (outermode, XEXP (op, 0), innermode, byte);
+      rtx op1 = simplify_subreg (outermode, XEXP (op, 1), innermode, byte);
+      if (op0 && op1)
+	return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
+    }
+
   scalar_int_mode int_outermode, int_innermode;
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)

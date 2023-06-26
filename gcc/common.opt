@@ -1502,6 +1502,29 @@ fdiagnostics-show-path-depths
 Common Var(flag_diagnostics_show_path_depths) Init(0)
 Show stack depths of events in paths.
 
+fdiagnostics-text-art-charset=
+Driver Common Joined RejectNegative Var(flag_diagnostics_text_art_charset) Enum(diagnostic_text_art_charset) Init(DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI)
+-fdiagnostics-text-art-charset=[none|ascii|unicode|emoji]	Determine which characters to use in text arg diagrams.
+
+; Required for these enum values.
+SourceInclude
+diagnostic-text-art.h
+
+Enum
+Name(diagnostic_text_art_charset) Type(int)
+
+EnumValue
+Enum(diagnostic_text_art_charset) String(none) Value(DIAGNOSTICS_TEXT_ART_CHARSET_NONE)
+
+EnumValue
+Enum(diagnostic_text_art_charset) String(ascii) Value(DIAGNOSTICS_TEXT_ART_CHARSET_ASCII)
+
+EnumValue
+Enum(diagnostic_text_art_charset) String(unicode) Value(DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE)
+
+EnumValue
+Enum(diagnostic_text_art_charset) String(emoji) Value(DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI)
+
 fdiagnostics-minimum-margin-width=
 Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
 Set minimum width of left margin of source code when showing source.
@@ -1662,9 +1685,8 @@ Name(fp_contract_mode) Type(enum fp_contract_mode) UnknownError(unknown floating
 EnumValue
 Enum(fp_contract_mode) String(off) Value(FP_CONTRACT_OFF)
 
-; Not implemented, fall back to conservative FP_CONTRACT_OFF.
 EnumValue
-Enum(fp_contract_mode) String(on) Value(FP_CONTRACT_OFF)
+Enum(fp_contract_mode) String(on) Value(FP_CONTRACT_ON)
 
 EnumValue
 Enum(fp_contract_mode) String(fast) Value(FP_CONTRACT_FAST)

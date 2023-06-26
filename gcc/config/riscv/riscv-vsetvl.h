@@ -180,6 +180,7 @@ public:
   bool has_avl_reg () const { return get_value () && REG_P (get_value ()); }
   bool has_avl_no_reg () const { return !get_value (); }
   bool has_non_zero_avl () const;
+  bool has_avl () const { return get_value (); }
 };
 
 /* Basic structure to save VL/VTYPE information.  */
@@ -219,6 +220,7 @@ public:
   bool has_avl_reg () const { return m_avl.has_avl_reg (); }
   bool has_avl_no_reg () const { return m_avl.has_avl_no_reg (); }
   bool has_non_zero_avl () const { return m_avl.has_non_zero_avl (); };
+  bool has_avl () const { return m_avl.has_avl (); }
 
   rtx get_avl () const { return m_avl.get_value (); }
   const avl_info &get_avl_info () const { return m_avl; }
