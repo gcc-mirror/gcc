@@ -5478,8 +5478,9 @@ vectorizable_conversion (vec_info *vinfo,
       if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (vinfo, stmt_info, ncopies, dt, ndts, slp_node,
-				  cost_vec);
+	  vect_model_simple_cost (vinfo, stmt_info,
+				  ncopies * (1 + multi_step_cvt),
+				  dt, ndts, slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
