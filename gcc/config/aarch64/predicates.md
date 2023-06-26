@@ -20,6 +20,10 @@
 
 (include "../arm/common.md")
 
+(define_predicate "aarch64_sysreg_string"
+  (and (match_code "const_string")
+       (match_test "aarch64_valid_sysreg_name_p (XSTR (op, 0))")))
+
 (define_special_predicate "cc_register"
   (and (match_code "reg")
        (and (match_test "REGNO (op) == CC_REGNUM")
