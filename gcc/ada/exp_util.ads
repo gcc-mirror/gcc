@@ -399,16 +399,19 @@ package Exp_Util is
    --  since for floating-point, abs, unary "-", and unary "+" can never
    --  case overflow.
 
-   function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
+   function Component_May_Be_Bit_Aligned
+     (Comp      : Entity_Id;
+      For_Slice : Boolean := False) return Boolean;
    --  This function is in charge of detecting record components that may cause
-   --  trouble for the back end if an attempt is made to access the component
-   --  as a whole. The back end can handle such accesses with no problem if the
-   --  components involved are small (64 bits or less) records or scalar items
+   --  trouble for the back end if an attempt is made to access the component,
+   --  either as a whole if For_Slice is False, or through an array slice if
+   --  For_Slice is True. The back end can handle such accesses only if the
+   --  components involved are small (64/128 bits or less) records or scalars
    --  (including bit-packed arrays represented with a modular type), or else
    --  if they are aligned on byte boundaries (i.e. starting on a byte boundary
    --  and occupying an integral number of bytes).
    --
-   --  However, problems arise for records larger than 64 bits, or for arrays
+   --  However problems arise for records larger than 64/128 bits or for arrays
    --  (other than bit-packed arrays represented with a modular type) if the
    --  component either does not start on a byte boundary or does not occupy an
    --  integral number of bytes (i.e. there are some bits possibly shared with
@@ -998,7 +1001,9 @@ package Exp_Util is
    --  address might be captured in a way we do not detect. A value of True is
    --  returned only if the replacement is safe.
 
-   function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
+   function Possible_Bit_Aligned_Component
+     (N         : Node_Id;
+      For_Slice : Boolean := False) return Boolean;
    --  This function is used during processing the assignment of a record or an
    --  array, or the construction of an aggregate. The argument N is either the
    --  left or the right hand side of an assignment and the function determines
