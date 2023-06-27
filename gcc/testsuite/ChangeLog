@@ -1,3 +1,52 @@
+2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/slp_run-19.c: New test.
+
+2023-06-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/larl-1.c: New test.
+
+2023-06-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/gimple_fold-1.c: New test.
+
+2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: New testcase.
+
+2023-06-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/ashldi3-1.c: New 32-bit test case.
+	* gcc.target/i386/ashlti3-2.c: New 64-bit test case.
+
+2023-06-26  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/aarch64/pr110371.c: New test.
+
+2023-06-26  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110018-1.c: Add -fno-trapping-math to dg-options.
+	* gcc.target/i386/pr110018-2.c: Ditto.
+
+2023-06-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/mvc17.c: New test.
+
+2023-06-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vlmul_ext-2.c: Add -Wno-psabi for dg.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110359
+	* gdc.dg/pr110359.d: New test.
+
 2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/partial/select_vl-1.c: Add dump checks.

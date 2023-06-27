@@ -1,3 +1,12 @@
+2023-06-26  Ian Lance Taylor  <iant@golang.org>
+
+	* lang.opt (fgo-importcfg): New option.
+	* go-c.h (struct go_create_gogo_args): Add importcfg field.
+	* go-lang.cc (go_importcfg): New static variable.
+	(go_langhook_init): Set args.importcfg.
+	(go_langhook_handle_option): Handle -fgo-importcfg.
+	* gccgo.texi (Invoking gccgo): Document -fgo-importcfg.
+
 2023-06-22  Paul E. Murphy  <murphyp@linux.ibm.com>
 
 	* go-backend.cc [TARGET_AIX]: Rename and update usage to TARGET_AIX_OS.

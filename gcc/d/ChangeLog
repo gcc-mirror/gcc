@@ -1,3 +1,10 @@
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110359
+	* d-convert.cc (convert_for_rvalue): Only apply the @safe boolean
+	conversion to boolean fields of a union.
+	(convert_for_condition): Call convert_for_rvalue in the default case.
+
 2023-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd a45f4e9f43.

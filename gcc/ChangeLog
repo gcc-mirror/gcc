@@ -1,3 +1,151 @@
+2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Fix stepped vector
+	with base != 0.
+
+2023-06-26  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/extend.texi (access attribute): Add
+	cindex for it.
+	(interrupt/interrupt_handler attribute):
+	Likewise.
+
+2023-06-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqrshrun_n<mode>_insn):
+	Use <DWI> instead of <V2XWIDE>.
+	(aarch64_sqrshrun_n<mode>): Likewise.
+
+2023-06-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_const_vec_rsra_rnd_imm_p):
+	Rename to...
+	(aarch64_rnd_imm_p): ... This.
+	* config/aarch64/predicates.md (aarch64_simd_rsra_rnd_imm_vec):
+	Rename to...
+	(aarch64_int_rnd_operand): ... This.
+	(aarch64_simd_rshrn_imm_vec): Delete.
+	* config/aarch64/aarch64-simd.md (aarch64_<sra_op>rsra_n<mode>_insn):
+	Adjust for the above.
+	(aarch64_<sra_op>rshr_n<mode><vczle><vczbe>_insn): Likewise.
+	(*aarch64_<shrn_op>rshrn_n<mode>_insn): Likewise.
+	(*aarch64_sqrshrun_n<mode>_insn<vczle><vczbe>): Likewise.
+	(aarch64_sqrshrun_n<mode>_insn): Likewise.
+	(aarch64_<shrn_op>rshrn2_n<mode>_insn_le): Likewise.
+	(aarch64_<shrn_op>rshrn2_n<mode>_insn_be): Likewise.
+	(aarch64_sqrshrun2_n<mode>_insn_le): Likewise.
+	(aarch64_sqrshrun2_n<mode>_insn_be): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_const_vec_rsra_rnd_imm_p):
+	Rename to...
+	(aarch64_rnd_imm_p): ... This.
+
+2023-06-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_encode_section_info): Set
+	SYMBOL_FLAG_SET_NOTALIGN2 only if the symbol has explicitely been
+	misaligned.
+
+2023-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/109849
+	* tree-ssa-dce.cc (make_forwarders_with_degenerate_phis): Fix profile
+	count of newly constructed forwarder block.
+
+2023-06-26  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/optinfo.texi: Fix "steam" -> "stream".
+
+2023-06-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Add LEN_MASK_STORE and
+	fix LEN_STORE.
+	(dse_optimize_stmt): Add LEN_MASK_STORE.
+
+2023-06-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gimple-fold.cc (gimple_fold_partial_load_store_mem_ref): Fix gimple
+	fold of LOAD/STORE with length.
+
+2023-06-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand1_and_operand2_range):
+	Check for interdependence between operands 1 and 2.
+
+2023-06-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.cc (vectorizable_conversion): Take multi_step_cvt
+	into account when costing non-widening/truncating conversions.
+
+2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* tree-vect-slp.cc (vect_optimize_slp_pass::start_choosing_layouts):
+	Materialize permutes before fold-left reductions.
+
+2023-06-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.h: Remove duplicated decl.
+
+2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	* varasm.cc (initializer_constant_valid_p_1): Also
+	constrain the type of value to be scalar integral
+	before dispatching to narrowing_initializer_constant_valid_p.
+
+2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-scopedtables.cc (hashable_expr_equal_p):
+	Use element_precision.
+
+2023-06-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vcond<V:mode><VI:mode>): Remove redundant
+	vcond patterns.
+	(vcondu<V:mode><VI:mode>): Ditto.
+	* config/riscv/riscv-protos.h (expand_vcond): Ditto.
+	* config/riscv/riscv-v.cc (expand_vcond): Ditto.
+
+2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110392
+	* gimple-predicate-analysis.cc (uninit_analysis::is_use_guarded):
+	Do early exits on true/false predicate only after normalization.
+
+2023-06-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Change name "len" into
+	"length".
+
+2023-06-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (peephole2): Simplify zeroing a register
+	followed by an IOR, XOR or PLUS operation on it, into a move.
+	(*ashl<dwi>3_doubleword_highpart): New define_insn_and_split to
+	eliminate (and hide from reload) unnecessary word to doubleword
+	extensions that are followed by left shifts by sufficiently large,
+	but valid, bit counts.
+
+2023-06-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/110371
+	PR tree-optimization/110018
+	* tree-vect-stmts.cc (vectorizable_conversion): Use cvt_op to
+	save intermediate type operand instead of "subtle" vec_dest
+	for case NONE.
+
+2023-06-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/110371
+	PR tree-optimization/110018
+	* tree-vect-stmts.cc (vectorizable_conversion): Don't use
+	intermiediate type for FIX_TRUNC_EXPR when ftrapping-math.
+
+2023-06-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_tree):
+	Override tune_string with arch_string if tune_string is not
+	explicitly specified.
+
 2023-06-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (vector_insn_info::parse_insn): Ehance
