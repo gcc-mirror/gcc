@@ -39,6 +39,11 @@ public:
     : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
+  Identifier (const Identifier &) = default;
+  Identifier (Identifier &&) = default;
+  Identifier &operator= (const Identifier &) = default;
+  Identifier &operator= (Identifier &&) = default;
+
   NodeId get_node_id () const { return node_id; }
   const std::string &as_string () const { return ident; }
 
