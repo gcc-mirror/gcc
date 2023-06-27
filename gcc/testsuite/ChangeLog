@@ -1,3 +1,16 @@
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110359
+	* gdc.dg/pr110359.d: New test.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110113
+	* gdc.test/compilable/test23978.d: New test.
+
 2023-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/110102
