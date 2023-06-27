@@ -6847,7 +6847,12 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       stmt = gimple_build_asm_vec (TREE_STRING_POINTER (ASM_STRING (expr)),
 				   inputs, outputs, clobbers, labels);
 
-      gimple_asm_set_volatile (stmt, ASM_VOLATILE_P (expr) || noutputs == 0);
+      /* asm is volatile if it was marked by the user as volatile or
+	 there are no outputs or this is an asm goto.  */
+      gimple_asm_set_volatile (stmt,
+			       ASM_VOLATILE_P (expr)
+			       || noutputs == 0
+			       || labels);
       gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
       gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
