@@ -58,17 +58,17 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 		# single test.  This should be updated or commented
 		# out whenever the default std_list is updated or newer
 		# C++ effective target is added.
-		if [search_for $test "{ dg-do * { target c++23 } }"] {
-		    set std_list { 23 }
+		if [search_for $test "\{ dg-do * \{ target c++23"] {
+		    set std_list { 23 26 }
+		} elseif [search_for $test "\{ dg-do * \{ target c++26"] {
+		    set std_list { 26 }
 		} else {
 		    set std_list { 98 14 17 20 }
 		}
 	    }
 	    set option_list { }
 	    foreach x $std_list {
-		# Handle "concepts" as C++17 plus Concepts TS.
-		if { $x eq "concepts" } then { set x "17 -fconcepts"
-		} elseif { $x eq "impcx" } then { set x "23 -fimplicit-constexpr" }
+		if { $x eq "impcx" } then { set x "26 -fimplicit-constexpr" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {
