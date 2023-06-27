@@ -13734,7 +13734,7 @@ an extension.  @xref{Variable Length}, for details.
 
 @enddefbuiltin
 
-@defbuiltin{{void *}__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)}
+@defbuiltin{{void *} __builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)}
 Similar to @code{__builtin_alloca_with_align} but takes an extra argument
 specifying an upper bound for @var{size} in case its value cannot be computed
 at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
