@@ -622,6 +622,7 @@ package Errout is
    GEC_Volatile_Non_Interfering_Context : constant := 0004;
    GEC_Required_Part_Of                 : constant := 0009;
    GEC_Ownership_Moved_Object           : constant := 0010;
+   GEC_SPARK_Mode_On_Not_Library_Level  : constant := 0011;
 
    ------------------------
    -- List Pragmas Table --

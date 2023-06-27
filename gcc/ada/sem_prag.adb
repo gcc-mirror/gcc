@@ -24144,7 +24144,8 @@ package body Sem_Prag is
 
                --  Local variables
 
-               Msg_1 : constant String := "incorrect placement of pragma%";
+               Msg_1 : constant String :=
+                 "incorrect placement of pragma% with value ""On"" '[[]']";
                Msg_2 : Name_Id;
 
             --  Start of processing for Check_Library_Level_Entity
@@ -24161,6 +24162,7 @@ package body Sem_Prag is
                  and then Instantiation_Location (Sloc (N)) = No_Location
                then
                   Error_Msg_Name_1 := Pname;
+                  Error_Msg_Code := GEC_SPARK_Mode_On_Not_Library_Level;
                   Error_Msg_N (Fix_Error (Msg_1), N);
 
                   Name_Len := 0;
