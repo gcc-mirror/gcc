@@ -29,6 +29,7 @@ extern const function_shape *const vsetvlmax;
 extern const function_shape *const loadstore;
 extern const function_shape *const indexed_loadstore;
 extern const function_shape *const alu;
+extern const function_shape *const alu_frm;
 extern const function_shape *const widen_alu;
 extern const function_shape *const no_mask_policy;
 extern const function_shape *const return_mask;

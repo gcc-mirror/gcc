@@ -3852,6 +3852,23 @@ function_checker::report_out_of_range (unsigned int argno, HOST_WIDE_INT actual,
 	    actual, argno + 1, fndecl, min, max);
 }
 
+/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
+   the value ACTUAL, whereas the function requires a value in the range
+   [MIN, MAX] or OR_VAL.  ARGNO counts from zero.  */
+void
+function_checker::report_out_of_range_and_not (unsigned int argno,
+					       HOST_WIDE_INT actual,
+					       HOST_WIDE_INT min,
+					       HOST_WIDE_INT max,
+					       HOST_WIDE_INT or_val) const
+{
+  error_at (location,
+	    "passing %wd to argument %d of %qE, which expects"
+	    " a value in the range [%wd, %wd] or %wd",
+	    actual, argno + 1, fndecl, min, max, or_val);
+}
+
+
 /* Check that argument ARGNO is an integer constant expression and
    store its value in VALUE_OUT if so.  The caller should first
    check that argument ARGNO exists.  */
@@ -3887,6 +3904,30 @@ function_checker::require_immediate_range (unsigned int argno,
   if (!IN_RANGE (actual, min, max))
     {
       report_out_of_range (argno, actual, min, max);
+      return false;
+    }
+
+  return true;
+}
+
+/* Check that argument REL_ARGNO is an integer constant expression in the
+   range [MIN, MAX] or OR_VAL.  REL_ARGNO counts from the end of the
+   predication arguments.  */
+bool
+function_checker::require_immediate_range_or (unsigned int argno,
+					      HOST_WIDE_INT min,
+					      HOST_WIDE_INT max,
+					      HOST_WIDE_INT or_val) const
+{
+  gcc_assert (min >= 0 && min <= max);
+  gcc_assert (argno < m_nargs);
+
+  tree arg = m_args[argno];
+  HOST_WIDE_INT actual = tree_to_uhwi (arg);
+
+  if (!IN_RANGE (actual, min, max) && actual != or_val)
+    {
+      report_out_of_range_and_not (argno, actual, min, max, or_val);
       return false;
     }
 

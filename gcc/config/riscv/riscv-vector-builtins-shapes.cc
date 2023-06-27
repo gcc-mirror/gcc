@@ -226,6 +226,73 @@ struct alu_def : public build_base
   }
 };
 
+/* alu_frm_def class.  */
+struct alu_frm_def : public build_base
+{
+  /* Normalize vf<op>_frm to vf<op>.  */
+  static void normalize_base_name (char *to, const char *from, int limit)
+  {
+    strncpy (to, from, limit - 1);
+    char *suffix = strstr (to, "_frm");
+
+    if (suffix)
+      *suffix = '\0';
+
+    to[limit - 1] = '\0';
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    char base_name[16] = {};
+
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
+
+    normalize_base_name (base_name, instance.base_name, sizeof (base_name));
+
+    b.append_base_name (base_name);
+
+    /* vop<sew>_<op> --> vop<sew>_<op>_<type>.  */
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+
+    b.append_name (predication_suffixes[instance.pred]);
+
+    /* According to rvv-intrinsic-doc, it does not add "_rm" suffix
+       for vop_rm C++ overloaded API.  */
+    if (!overloaded_p)
+      b.append_name ("_rm");
+
+    return b.finish_name ();
+  }
+
+  bool check (function_checker &c) const override
+  {
+    gcc_assert (c.any_type_float_p ());
+
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	unsigned int frm_num = c.arg_num () - 2;
+
+	return c.require_immediate_range_or (frm_num, FRM_STATIC_MIN,
+					     FRM_STATIC_MAX, FRM_DYN);
+      }
+
+    return true;
+  }
+};
+
 /* widen_alu_def class. Handle vwadd/vwsub. Unlike
    vadd.vx/vadd.vv/vwmul.vv/vwmul.vx, vwadd.vv/vwadd.vx/vwadd.wv/vwadd.wx has
    'OP' suffix in overloaded API.  */
@@ -743,6 +810,7 @@ SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
 SHAPE(indexed_loadstore, indexed_loadstore)
 SHAPE(alu, alu)
+SHAPE(alu_frm, alu_frm)
 SHAPE(widen_alu, widen_alu)
 SHAPE(no_mask_policy, no_mask_policy)
 SHAPE(return_mask, return_mask)

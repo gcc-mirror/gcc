@@ -281,6 +281,29 @@ public:
   }
 };
 
+/* Implements below instructions for now.
+   - vfadd
+*/
+template<rtx_code CODE>
+class binop_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vf:
+	return e.use_exact_insn (code_for_pred_scalar (CODE, e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2024,6 +2047,7 @@ static CONSTEXPR const viota viota_obj;
 static CONSTEXPR const vid vid_obj;
 static CONSTEXPR const binop<PLUS> vfadd_obj;
 static CONSTEXPR const binop<MINUS> vfsub_obj;
+static CONSTEXPR const binop_frm<PLUS> vfadd_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
 static CONSTEXPR const widen_binop<PLUS> vfwadd_obj;
 static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
@@ -2249,6 +2273,7 @@ BASE (vmsof)
 BASE (viota)
 BASE (vid)
 BASE (vfadd)
+BASE (vfadd_frm)
 BASE (vfsub)
 BASE (vfrsub)
 BASE (vfwadd)

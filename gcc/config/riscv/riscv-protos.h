@@ -277,6 +277,8 @@ enum floating_point_rounding_mode
   FRM_RUP = 3, /* Aka 0b011.  */
   FRM_RMM = 4, /* Aka 0b100.  */
   FRM_DYN = 7, /* Aka 0b111.  */
+  FRM_STATIC_MIN = FRM_RNE,
+  FRM_STATIC_MAX = FRM_RMM,
 };
 
 opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,

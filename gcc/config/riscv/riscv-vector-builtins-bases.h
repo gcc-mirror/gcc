@@ -142,6 +142,7 @@ extern const function_base *const vmsof;
 extern const function_base *const viota;
 extern const function_base *const vid;
 extern const function_base *const vfadd;
+extern const function_base *const vfadd_frm;
 extern const function_base *const vfsub;
 extern const function_base *const vfrsub;
 extern const function_base *const vfwadd;
