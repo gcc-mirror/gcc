@@ -709,7 +709,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
       // bounds otherwise it will be a trait cycle
       HirId implicit_id = mappings->get_next_hir_id ();
       TyTy::ParamType *p
-	= new TyTy::ParamType (param.get_type_representation (),
+	= new TyTy::ParamType (param.get_type_representation ().as_string (),
 			       param.get_locus (), implicit_id, param,
 			       {} /*empty specified bounds*/);
       context->insert_implicit_type (implicit_id, p);
@@ -750,10 +750,10 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 	}
     }
 
-  resolved
-    = new TyTy::ParamType (param.get_type_representation (), param.get_locus (),
-			   param.get_mappings ().get_hirid (), param,
-			   specified_bounds);
+  resolved = new TyTy::ParamType (param.get_type_representation ().as_string (),
+				  param.get_locus (),
+				  param.get_mappings ().get_hirid (), param,
+				  specified_bounds);
 }
 
 void

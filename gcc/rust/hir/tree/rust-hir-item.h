@@ -1230,7 +1230,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_function_name ();
+    return get_function_name ().as_string ();
   }
 
 protected:
@@ -1354,7 +1354,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_new_type_name ();
+    return get_new_type_name ().as_string ();
   }
 
 protected:
@@ -2117,7 +2117,10 @@ public:
 
   // Returns whether constant item is an "unnamed" (wildcard underscore used
   // as identifier) constant.
-  bool is_unnamed () const { return identifier == std::string ("_"); }
+  bool is_unnamed () const
+  {
+    return identifier.as_string () == std::string ("_");
+  }
 
   Location get_locus () const override final { return locus; }
 
@@ -2130,7 +2133,7 @@ public:
 
   Expr *get_expr () { return const_expr.get (); }
 
-  std::string get_identifier () const { return identifier; }
+  Identifier get_identifier () const { return identifier; }
 
   Analysis::NodeMapping get_impl_mappings () const override
   {
@@ -2146,7 +2149,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_identifier ();
+    return get_identifier ().as_string ();
   }
 
 protected:
@@ -2401,7 +2404,7 @@ public:
 
   const std::string trait_identifier () const override final
   {
-    return decl.get_function_name ();
+    return decl.get_function_name ().as_string ();
   }
 
   TraitItemKind get_item_kind () const override final
@@ -2490,7 +2493,10 @@ public:
     return expr;
   }
 
-  const std::string trait_identifier () const override final { return name; }
+  const std::string trait_identifier () const override final
+  {
+    return name.as_string ();
+  }
 
   TraitItemKind get_item_kind () const override final
   {
@@ -2579,7 +2585,10 @@ public:
     return type_param_bounds;
   }
 
-  const std::string trait_identifier () const override final { return name; }
+  const std::string trait_identifier () const override final
+  {
+    return name.as_string ();
+  }
 
   TraitItemKind get_item_kind () const override final
   {
@@ -2999,7 +3008,7 @@ private:
   Analysis::NodeMapping mappings;
 
 public:
-  bool has_name () const { return name != "_"; }
+  bool has_name () const { return name.as_string () != "_"; }
 
   NamedFunctionParam (Analysis::NodeMapping mappings, Identifier name,
 		      std::unique_ptr<Type> param_type)

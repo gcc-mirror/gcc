@@ -241,7 +241,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 void
 TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 {
-  auto it = fields_assigned.find (field.field_name);
+  auto it = fields_assigned.find (field.field_name.as_string ());
   if (it != fields_assigned.end ())
     {
       rust_fatal_error (field.get_locus (), "used more than once");
@@ -250,7 +250,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 
   size_t field_index;
   TyTy::StructFieldType *field_type;
-  bool ok = variant->lookup_field (field.field_name, &field_type, &field_index);
+  bool ok = variant->lookup_field (field.field_name.as_string (), &field_type,
+				   &field_index);
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
@@ -269,7 +270,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 		     field.get_locus ());
   if (resolved_field_value_expr != nullptr)
     {
-      fields_assigned.insert (field.field_name);
+      fields_assigned.insert (field.field_name.as_string ());
       adtFieldIndexToField[field_index] = &field;
     }
 }
@@ -314,7 +315,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
 void
 TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 {
-  auto it = fields_assigned.find (field.get_field_name ());
+  auto it = fields_assigned.find (field.get_field_name ().as_string ());
   if (it != fields_assigned.end ())
     {
       rust_fatal_error (field.get_locus (), "used more than once");
@@ -323,8 +324,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 
   size_t field_index;
   TyTy::StructFieldType *field_type;
-  bool ok = variant->lookup_field (field.get_field_name (), &field_type,
-				   &field_index);
+  bool ok = variant->lookup_field (field.get_field_name ().as_string (),
+				   &field_type, &field_index);
   if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
@@ -336,7 +337,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   Analysis::NodeMapping mappings_copy1 = field.get_mappings ();
   Analysis::NodeMapping mappings_copy2 = field.get_mappings ();
 
-  HIR::PathIdentSegment ident_seg (field.get_field_name ());
+  HIR::PathIdentSegment ident_seg (field.get_field_name ().as_string ());
   HIR::PathExprSegment seg (mappings_copy1, ident_seg, field.get_locus (),
 			    HIR::GenericArgs::create_empty ());
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
@@ -354,7 +355,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   if (resolved_field_value_expr != nullptr)
 
     {
-      fields_assigned.insert (field.get_field_name ());
+      fields_assigned.insert (field.get_field_name ().as_string ());
       adtFieldIndexToField[field_index] = &field;
     }
 }

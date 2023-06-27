@@ -299,8 +299,8 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
 
 	    size_t offs = 0;
-	    ok
-	      = variant->lookup_field (ident.get_identifier (), nullptr, &offs);
+	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
+					nullptr, &offs);
 	    rust_assert (ok);
 
 	    tree binding = error_mark_node;

@@ -561,8 +561,8 @@ CompileExpr::visit (HIR::FieldAccessExpr &expr)
       rust_assert (adt->number_of_variants () == 1);
 
       TyTy::VariantDef *variant = adt->get_variants ().at (0);
-      bool ok
-	= variant->lookup_field (expr.get_field_name (), nullptr, &field_index);
+      bool ok = variant->lookup_field (expr.get_field_name ().as_string (),
+				       nullptr, &field_index);
       rust_assert (ok);
     }
   else if (receiver->get_kind () == TyTy::TypeKind::REF)
@@ -576,8 +576,8 @@ CompileExpr::visit (HIR::FieldAccessExpr &expr)
       rust_assert (adt->number_of_variants () == 1);
 
       TyTy::VariantDef *variant = adt->get_variants ().at (0);
-      bool ok
-	= variant->lookup_field (expr.get_field_name (), nullptr, &field_index);
+      bool ok = variant->lookup_field (expr.get_field_name ().as_string (),
+				       nullptr, &field_index);
       rust_assert (ok);
 
       tree indirect = indirect_expression (receiver_ref, expr.get_locus ());

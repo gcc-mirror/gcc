@@ -503,10 +503,12 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	    size_t offs_end = source.get_offs ();
 	    if (in_repetition)
 	      sub_stack.append_fragment (
-		MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
+		MatchedFragment (fragment->get_ident ().as_string (),
+				 offs_begin, offs_end));
 	    else
 	      sub_stack.insert_metavar (
-		MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
+		MatchedFragment (fragment->get_ident ().as_string (),
+				 offs_begin, offs_end));
 	  }
 	  break;
 
@@ -617,8 +619,8 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 		// creating a metavariable, but a repetition of one, which is
 		// really different.
 		sub_stack.append_fragment (
-		  MatchedFragment (fragment->get_ident (), offs_begin,
-				   offs_end));
+		  MatchedFragment (fragment->get_ident ().as_string (),
+				   offs_begin, offs_end));
 	      }
 	      break;
 
@@ -703,10 +705,10 @@ MacroExpander::match_repetition_skipped_metavars (
   AST::MacroMatchFragment &fragment)
 {
   auto &stack_map = sub_stack.peek ();
-  auto it = stack_map.find (fragment.get_ident ());
+  auto it = stack_map.find (fragment.get_ident ().as_string ());
 
   if (it == stack_map.end ())
-    sub_stack.insert_matches (fragment.get_ident (),
+    sub_stack.insert_matches (fragment.get_ident ().as_string (),
 			      MatchedFragmentContainer::zero ());
 }
 

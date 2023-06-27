@@ -251,7 +251,7 @@ VisItem::as_string () const
 std::string
 Module::as_string () const
 {
-  std::string str = VisItem::as_string () + "mod " + module_name;
+  std::string str = VisItem::as_string () + "mod " + module_name.as_string ();
 
   // Return early if we're dealing with an unloaded module as their body resides
   // in a different file
@@ -298,7 +298,7 @@ StaticItem::as_string () const
   if (has_mut)
     str += " mut";
 
-  str += " " + name;
+  str += " " + name.as_string ();
 
   // DEBUG: null pointer check
   if (type == nullptr)
@@ -339,7 +339,7 @@ TupleStruct::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "struct " + struct_name;
+  str += "struct " + struct_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -476,7 +476,7 @@ Method::as_string () const
 
   str += vis.as_string () + " " + qualifiers.as_string ();
 
-  str += " fn " + method_name;
+  str += " fn " + method_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -537,7 +537,7 @@ StructStruct::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "struct " + struct_name;
+  str += "struct " + struct_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -686,7 +686,7 @@ UseTreeRebind::as_string () const
       // nothing to add, just path
       break;
     case IDENTIFIER:
-      path_str += " as " + identifier;
+      path_str += " as " + identifier.as_string ();
       break;
     case WILDCARD:
       path_str += " as _";
@@ -703,7 +703,7 @@ std::string
 Enum::as_string () const
 {
   std::string str = VisItem::as_string ();
-  str += enum_name;
+  str += enum_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -768,7 +768,7 @@ Trait::as_string () const
   if (has_unsafe)
     str += "unsafe ";
 
-  str += "trait " + name;
+  str += "trait " + name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -851,7 +851,7 @@ Union::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "union " + union_name;
+  str += "union " + union_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -923,7 +923,7 @@ Function::as_string () const
       str += "void ";
     }
 
-  str += function_name;
+  str += function_name.as_string ();
 
   if (has_generics ())
     {
@@ -1110,7 +1110,7 @@ TypeAlias::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += " " + new_type_name;
+  str += " " + new_type_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -1192,7 +1192,7 @@ MacroRulesDefinition::as_string () const
   // TODO: deal with macro_2_0
   str += "macro_rules!";
 
-  str += rule_name;
+  str += rule_name.as_string ();
 
   str += "\n Macro rules: ";
   if (rules.empty ())
@@ -1559,7 +1559,7 @@ std::string
 FieldAccessExpr::as_string () const
 {
   // TODO: rewrite dump to better reflect non-literal exprs
-  return receiver->as_string () + "." + field;
+  return receiver->as_string () + "." + field.as_string ();
 }
 
 std::string
@@ -2179,7 +2179,7 @@ LifetimeParam::as_string () const
 std::string
 MacroMatchFragment::as_string () const
 {
-  return "$" + ident + ": " + frag_spec.as_string ();
+  return "$" + ident.as_string () + ": " + frag_spec.as_string ();
 }
 
 std::string
@@ -2256,7 +2256,7 @@ TypeParam::as_string () const
   else
     str += outer_attr.as_string ();
 
-  str += "\n Identifier: " + type_representation;
+  str += "\n Identifier: " + type_representation.as_string ();
 
   str += "\n Type param bounds: ";
   if (!has_type_param_bounds ())
@@ -2565,7 +2565,7 @@ std::string
 StructExprFieldIdentifierValue::as_string () const
 {
   // TODO: rewrite to work with non-linearisable exprs
-  return field_name + " : " + StructExprFieldWithVal::as_string ();
+  return field_name.as_string () + " : " + StructExprFieldWithVal::as_string ();
 }
 
 std::string
@@ -2604,7 +2604,7 @@ std::string
 EnumItem::as_string () const
 {
   std::string str = VisItem::as_string ();
-  str += variant_name;
+  str += variant_name.as_string ();
 
   return str;
 }
@@ -2691,7 +2691,7 @@ StructField::as_string () const
   if (has_visibility ())
     str += "\n" + visibility.as_string ();
 
-  str += " " + field_name + " : " + field_type->as_string ();
+  str += " " + field_name.as_string () + " : " + field_type->as_string ();
 
   return str;
 }
@@ -2713,7 +2713,7 @@ ExternalTypeItem::as_string () const
 {
   auto str = append_attributes (outer_attrs, OUTER);
 
-  str += "type " + item_name + ";";
+  str += "type " + item_name.as_string () + ";";
 
   return str;
 }
@@ -2733,7 +2733,7 @@ ExternalStaticItem::as_string () const
     str += "mut ";
 
   // add name
-  str += item_name;
+  str += item_name.as_string ();
 
   // add type on new line
   str += "\n Type: " + item_type->as_string ();
@@ -2753,7 +2753,7 @@ ExternalFunctionItem::as_string () const
   str += "fn ";
 
   // add name
-  str += item_name;
+  str += item_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -2850,7 +2850,8 @@ TraitItemFunc::as_string () const
 std::string
 TraitFunctionDecl::as_string () const
 {
-  std::string str = qualifiers.as_string () + "fn " + function_name;
+  std::string str
+    = qualifiers.as_string () + "fn " + function_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -2920,7 +2921,8 @@ TraitItemMethod::as_string () const
 std::string
 TraitMethodDecl::as_string () const
 {
-  std::string str = qualifiers.as_string () + "fn " + function_name;
+  std::string str
+    = qualifiers.as_string () + "fn " + function_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -2979,7 +2981,7 @@ TraitItemConst::as_string () const
   // TODO: rewrite to work with non-linearisable exprs
   std::string str = append_attributes (outer_attrs, OUTER);
 
-  str += "\nconst " + name + " : " + type->as_string ();
+  str += "\nconst " + name.as_string () + " : " + type->as_string ();
 
   if (has_expression ())
     str += " = " + expr->as_string ();
@@ -2992,7 +2994,7 @@ TraitItemType::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
 
-  str += "\ntype " + name;
+  str += "\ntype " + name.as_string ();
 
   str += "\n Type param bounds: ";
   if (!has_type_param_bounds ())
@@ -3167,7 +3169,7 @@ MaybeNamedParam::as_string () const
     case UNNAMED:
       break;
     case IDENTIFIER:
-      str = name + " : ";
+      str = name.as_string () + " : ";
       break;
     case WILDCARD:
       str = "_ : ";
@@ -3216,7 +3218,7 @@ MetaItemSeq::as_string () const
 std::string
 MetaListPaths::as_string () const
 {
-  std::string str = ident + "(";
+  std::string str = ident.as_string () + "(";
 
   auto i = paths.begin ();
   auto e = paths.end ();
@@ -3234,7 +3236,7 @@ MetaListPaths::as_string () const
 std::string
 MetaListNameValueStr::as_string () const
 {
-  std::string str = ident + "(";
+  std::string str = ident.as_string () + "(";
 
   auto i = strs.begin ();
   auto e = strs.end ();
@@ -3313,7 +3315,7 @@ Module::process_file_path ()
   // file that contains the 'mod <file>;' directive
   std::string including_fpath (outer_filename);
 
-  std::string expected_file_path = module_name + ".rs";
+  std::string expected_file_path = module_name.as_string () + ".rs";
   std::string expected_dir_path = "mod.rs";
 
   auto dir_slash_pos = including_fpath.rfind (file_separator);
@@ -3366,8 +3368,8 @@ Module::process_file_path ()
   bool file_mod_found = file_exists (file_mod_path);
 
   // Then, search for <directory>/<module_name>/mod.rs
-  std::string dir_mod_path
-    = current_directory_name + module_name + file_separator + expected_dir_path;
+  std::string dir_mod_path = current_directory_name + module_name.as_string ()
+			     + file_separator + expected_dir_path;
   bool dir_mod_found = file_exists (dir_mod_path);
 
   bool multiple_candidates_found = file_mod_found && dir_mod_found;
@@ -3376,12 +3378,13 @@ Module::process_file_path ()
   if (multiple_candidates_found)
     rust_error_at (locus,
 		   "two candidates found for module %s: %s.rs and %s%smod.rs",
-		   module_name.c_str (), module_name.c_str (),
-		   module_name.c_str (), file_separator);
+		   module_name.as_string ().c_str (),
+		   module_name.as_string ().c_str (),
+		   module_name.as_string ().c_str (), file_separator);
 
   if (no_candidates_found)
     rust_error_at (locus, "no candidate found for module %s",
-		   module_name.c_str ());
+		   module_name.as_string ().c_str ());
 
   if (no_candidates_found || multiple_candidates_found)
     return;
@@ -3878,7 +3881,7 @@ MetaItemLitExpr::check_cfg_predicate (const Session &) const
 bool
 MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 {
-  if (ident == "all")
+  if (ident.as_string () == "all")
     {
       for (const auto &str : strs)
 	{
@@ -3887,7 +3890,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 	}
       return true;
     }
-  else if (ident == "any")
+  else if (ident.as_string () == "any")
     {
       for (const auto &str : strs)
 	{
@@ -3896,7 +3899,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 	}
       return false;
     }
-  else if (ident == "not")
+  else if (ident.as_string () == "not")
     {
       if (strs.size () != 1)
 	{
@@ -3918,7 +3921,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 		     "cfg predicate could not be checked for "
 		     "MetaListNameValueStr with ident of "
 		     "'%s' - ident must be 'all' or 'any'",
-		     ident.c_str ());
+		     ident.as_string ().c_str ());
       return false;
     }
 }
@@ -3926,7 +3929,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 bool
 MetaListPaths::check_cfg_predicate (const Session &session) const
 {
-  if (ident == "all")
+  if (ident.as_string () == "all")
     {
       for (const auto &path : paths)
 	{
@@ -3935,7 +3938,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
 	}
       return true;
     }
-  else if (ident == "any")
+  else if (ident.as_string () == "any")
     {
       for (const auto &path : paths)
 	{
@@ -3944,7 +3947,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
 	}
       return false;
     }
-  else if (ident == "not")
+  else if (ident.as_string () == "not")
     {
       if (paths.size () != 1)
 	{
@@ -3966,7 +3969,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
 		     "cfg predicate could not be checked for "
 		     "MetaListNameValueStr with ident of "
 		     "'%s' - ident must be 'all' or 'any'",
-		     ident.c_str ());
+		     ident.as_string ().c_str ());
       return false;
     }
 }
@@ -4029,7 +4032,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
 bool
 MetaWord::check_cfg_predicate (const Session &session) const
 {
-  return session.options.target_data.has_key (ident);
+  return session.options.target_data.has_key (ident.as_string ());
 }
 
 bool
@@ -4048,10 +4051,13 @@ MetaNameValueStr::check_cfg_predicate (const Session &session) const
   // DEBUG
   rust_debug (
     "checked key-value pair for cfg: '%s', '%s' - is%s in target data",
-    ident.c_str (), str.c_str (),
-    session.options.target_data.has_key_value_pair (ident, str) ? "" : " not");
+    ident.as_string ().c_str (), str.c_str (),
+    session.options.target_data.has_key_value_pair (ident.as_string (), str)
+      ? ""
+      : " not");
 
-  return session.options.target_data.has_key_value_pair (ident, str);
+  return session.options.target_data.has_key_value_pair (ident.as_string (),
+							 str);
 }
 
 bool
@@ -4080,7 +4086,7 @@ MetaNameValueStr::to_attribute () const
   // FIXME: What location do we put here? Is the literal above supposed to have
   // an empty location as well?
   // Should MetaNameValueStr keep a location?
-  return Attribute (SimplePath::from_str (ident, ident_locus),
+  return Attribute (SimplePath::from_str (ident.as_string (), ident_locus),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));
 }
@@ -4107,7 +4113,8 @@ MetaItemSeq::to_attribute () const
 Attribute
 MetaWord::to_attribute () const
 {
-  return Attribute (SimplePath::from_str (ident, ident_locus), nullptr);
+  return Attribute (SimplePath::from_str (ident.as_string (), ident_locus),
+		    nullptr);
 }
 
 Attribute
@@ -4125,7 +4132,7 @@ MetaListPaths::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  return Attribute (SimplePath::from_str (ident, ident_locus),
+  return Attribute (SimplePath::from_str (ident.as_string (), ident_locus),
 		    std::move (new_seq_container));
 }
 
@@ -4140,7 +4147,7 @@ MetaListNameValueStr::to_attribute () const
 
   std::unique_ptr<AttrInputMetaItemContainer> new_seq_container (
     new AttrInputMetaItemContainer (std::move (new_seq)));
-  return Attribute (SimplePath::from_str (ident, ident_locus),
+  return Attribute (SimplePath::from_str (ident.as_string (), ident_locus),
 		    std::move (new_seq_container));
 }
 
@@ -4986,4 +4993,11 @@ MetaWord::accept_vis (ASTVisitor &vis)
 }
 
 } // namespace AST
+
+std::ostream &
+operator<< (std::ostream &os, Identifier const &i)
+{
+  return os << i.as_string ();
+}
+
 } // namespace Rust

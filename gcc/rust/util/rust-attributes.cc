@@ -185,7 +185,7 @@ check_doc_attribute (const AST::Attribute &attribute)
 		      ->get_name_value_pair ();
 
 		// FIXME: Check for other stuff than #[doc(alias = ...)]
-		if (name_value.first == "alias")
+		if (name_value.first.as_string () == "alias")
 		  check_doc_alias (name_value.second, attribute.get_locus ());
 	      }
 	  }

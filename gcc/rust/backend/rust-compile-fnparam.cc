@@ -54,10 +54,8 @@ CompileFnParam::visit (HIR::IdentifierPattern &pattern)
   if (!pattern.is_mut ())
     decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl,
-					       pattern.get_identifier (),
-					       decl_type, locus);
+  compiled_param = ctx->get_backend ()->parameter_variable (
+    fndecl, pattern.get_identifier ().as_string (), decl_type, locus);
 }
 
 void

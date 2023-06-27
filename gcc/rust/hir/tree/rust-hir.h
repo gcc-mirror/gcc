@@ -27,7 +27,6 @@
 #include "rust-diagnostics.h"
 
 namespace Rust {
-typedef std::string Identifier;
 typedef int TupleIndex;
 
 namespace HIR {

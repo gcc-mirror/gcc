@@ -461,7 +461,7 @@ ASTLowerGenericParam::visit (AST::ConstGenericParam &param)
     default_expr = ASTLoweringExpr::translate (
       param.get_default_value ().get_expression ().get ());
 
-  translated = new HIR::ConstGenericParam (param.get_name (),
+  translated = new HIR::ConstGenericParam (param.get_name ().as_string (),
 					   std::unique_ptr<Type> (type),
 					   std::unique_ptr<Expr> (default_expr),
 					   mapping, param.get_locus ());

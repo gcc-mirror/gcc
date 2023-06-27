@@ -901,7 +901,7 @@ void
 EarlyNameResolver::visit (AST::MacroRulesDefinition &rules_def)
 {
   auto path = CanonicalPath::new_seg (rules_def.get_node_id (),
-				      rules_def.get_rule_name ());
+				      rules_def.get_rule_name ().as_string ());
   resolver.get_macro_scope ().insert (path, rules_def.get_node_id (),
 				      rules_def.get_locus ());
 
@@ -979,7 +979,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   if (is_builtin)
     {
       auto builtin_kind
-	= builtin_macro_from_string (rules_def->get_rule_name ());
+	= builtin_macro_from_string (rules_def->get_rule_name ().as_string ());
       invoc.map_to_builtin (builtin_kind);
     }
 

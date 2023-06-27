@@ -54,25 +54,25 @@ DeriveCopy::copy_impl (std::string name)
 void
 DeriveCopy::visit_struct (StructStruct &item)
 {
-  expanded = copy_impl (item.get_struct_name ());
+  expanded = copy_impl (item.get_struct_name ().as_string ());
 }
 
 void
 DeriveCopy::visit_tuple (TupleStruct &item)
 {
-  expanded = copy_impl (item.get_struct_name ());
+  expanded = copy_impl (item.get_struct_name ().as_string ());
 }
 
 void
 DeriveCopy::visit_enum (Enum &item)
 {
-  expanded = copy_impl (item.get_identifier ());
+  expanded = copy_impl (item.get_identifier ().as_string ());
 }
 
 void
 DeriveCopy::visit_union (Union &item)
 {
-  expanded = copy_impl (item.get_identifier ());
+  expanded = copy_impl (item.get_identifier ().as_string ());
 }
 
 } // namespace AST

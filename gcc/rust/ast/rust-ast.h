@@ -28,10 +28,29 @@
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
-typedef std::string Identifier;
 typedef int TupleIndex;
 struct Session;
 struct MacroExpander;
+
+class Identifier
+{
+public:
+  Identifier (std::string ident = "")
+    : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  NodeId get_node_id () const { return node_id; }
+  const std::string &as_string () const { return ident; }
+
+  bool empty () const { return ident.empty (); }
+
+private:
+  std::string ident;
+  NodeId node_id;
+};
+
+std::ostream &
+operator<< (std::ostream &os, Identifier const &i);
 
 namespace AST {
 // foward decl: ast visitor
@@ -60,11 +79,11 @@ class Node : public Visitable
 public:
   /**
    * Get the kind of Node this is. This is used to differentiate various AST
-   * elements with very little overhead when extracting the derived type through
-   * static casting is not necessary.
+   * elements with very little overhead when extracting the derived type
+   * through static casting is not necessary.
    */
-  // FIXME: Mark this as `= 0` in the future to make sure every node implements
-  // it
+  // FIXME: Mark this as `= 0` in the future to make sure every node
+  // implements it
   virtual Kind get_ast_kind () const { return Kind::UNKNOWN; }
 };
 
@@ -93,8 +112,8 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  /* Converts token tree to a flat token stream. Tokens must be pointer to avoid
-   * mutual dependency with Token. */
+  /* Converts token tree to a flat token stream. Tokens must be pointer to
+   * avoid mutual dependency with Token. */
   virtual std::vector<std::unique_ptr<Token>> to_token_stream () const = 0;
 
 protected:
@@ -151,9 +170,9 @@ class Token : public TokenTree, public MacroMatch
 
   const_TokenPtr tok_ref;
 
-  /* new idea: wrapper around const_TokenPtr used for heterogeneuous storage in
-   * token trees. rather than convert back and forth when parsing macros, just
-   * wrap it. */
+  /* new idea: wrapper around const_TokenPtr used for heterogeneuous storage
+   * in token trees. rather than convert back and forth when parsing macros,
+   * just wrap it. */
 
 public:
   // Unique pointer custom clone function
@@ -250,15 +269,15 @@ protected:
   // No virtual for now as not polymorphic but can be in future
   /*virtual*/ Token *clone_token_impl () const { return new Token (*this); }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   Token *clone_token_tree_impl () const final override
   {
     return clone_token_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   Token *clone_macro_match_impl () const final override
   {
     return clone_token_impl ();
@@ -282,8 +301,8 @@ public:
   };
 
 private:
-  /* TODO: maybe make subclasses of each type of literal with their typed values
-   * (or generics) */
+  /* TODO: maybe make subclasses of each type of literal with their typed
+   * values (or generics) */
   std::string value_as_string;
   LitType type;
   PrimitiveCoreType type_hint;
@@ -310,8 +329,8 @@ public:
   bool is_error () const { return type == ERROR; }
 };
 
-/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
- * be defined */
+/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr
+ * to be defined */
 class AttrInputLiteral;
 
 /* TODO: move applicable stuff into here or just don't include it because
@@ -571,8 +590,8 @@ public:
   // Call to parse attribute body to meta item syntax.
   void parse_attr_to_meta_item ();
 
-  /* Determines whether cfg predicate is true and item with attribute should not
-   * be stripped. Attribute body must already be parsed to meta item. */
+  /* Determines whether cfg predicate is true and item with attribute should
+   * not be stripped. Attribute body must already be parsed to meta item. */
   bool check_cfg_predicate (const Session &session) const;
 
   // Returns whether body has been parsed to meta item form or not.
@@ -583,7 +602,8 @@ public:
   std::vector<Attribute> separate_cfg_attrs () const;
 
 protected:
-  // not virtual as currently no subclasses of Attribute, but could be in future
+  // not virtual as currently no subclasses of Attribute, but could be in
+  // future
   /*virtual*/ Attribute *clone_attribute_impl () const
   {
     return new Attribute (*this);
@@ -849,8 +869,8 @@ public:
   DelimType get_delim_type () const { return delim_type; }
 };
 
-/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
- * be defined */
+/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr
+ * to be defined */
 class AttrInputLiteral;
 
 // abstract base meta item class
@@ -879,8 +899,9 @@ class MetaListPaths;
 // Forward decl - defined in rust-macro.h
 class MetaListNameValueStr;
 
-/* Base statement abstract class. Note that most "statements" are not allowed in
- * top-level module scope - only a subclass of statements called "items" are. */
+/* Base statement abstract class. Note that most "statements" are not allowed
+ * in top-level module scope - only a subclass of statements called "items"
+ * are. */
 class Stmt : public Node
 {
 public:
@@ -1022,9 +1043,9 @@ protected:
   // pure virtual clone implementation
   virtual ExprWithoutBlock *clone_expr_without_block_impl () const = 0;
 
-  /* Save having to specify two clone methods in derived classes by making expr
-   * clone return exprwithoutblock clone. Hopefully won't affect performance too
-   * much. */
+  /* Save having to specify two clone methods in derived classes by making
+   * expr clone return exprwithoutblock clone. Hopefully won't affect
+   * performance too much. */
   ExprWithoutBlock *clone_expr_impl () const final override
   {
     return clone_expr_without_block_impl ();
@@ -1042,7 +1063,8 @@ public:
 
 /* HACK: IdentifierExpr, delete when figure out identifier vs expr problem in
  * Pratt parser */
-/* Alternatively, identifiers could just be represented as single-segment paths
+/* Alternatively, identifiers could just be represented as single-segment
+ * paths
  */
 class IdentifierExpr : public ExprWithoutBlock
 {
@@ -1057,7 +1079,7 @@ public:
       locus (locus)
   {}
 
-  std::string as_string () const override { return ident; }
+  std::string as_string () const override { return ident.as_string (); }
 
   Location get_locus () const override final { return locus; }
 
@@ -1181,9 +1203,9 @@ protected:
   // Clone function implementation as pure virtual method
   virtual TypeNoBounds *clone_type_no_bounds_impl () const = 0;
 
-  /* Save having to specify two clone methods in derived classes by making type
-   * clone return typenobounds clone. Hopefully won't affect performance too
-   * much. */
+  /* Save having to specify two clone methods in derived classes by making
+   * type clone return typenobounds clone. Hopefully won't affect performance
+   * too much. */
   TypeNoBounds *clone_type_impl () const final override
   {
     return clone_type_no_bounds_impl ();
@@ -1192,8 +1214,8 @@ protected:
   TypeNoBounds () : Type () {}
 };
 
-/* Abstract base class representing a type param bound - Lifetime and TraitBound
- * extends it */
+/* Abstract base class representing a type param bound - Lifetime and
+ * TraitBound extends it */
 class TypeParamBound : public Visitable
 {
 public:
@@ -1271,16 +1293,16 @@ public:
   std::string get_lifetime_name () const { return lifetime_name; }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   Lifetime *clone_type_param_bound_impl () const override
   {
     return new Lifetime (node_id, lifetime_type, lifetime_name, locus);
   }
 };
 
-/* Base generic parameter in AST. Abstract - can be represented by a Lifetime or
- * Type param */
+/* Base generic parameter in AST. Abstract - can be represented by a Lifetime
+ * or Type param */
 class GenericParam : public Visitable
 {
 public:
@@ -1363,8 +1385,8 @@ public:
   Kind get_kind () const override final { return Kind::Lifetime; }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   LifetimeParam *clone_generic_param_impl () const override
   {
     return new LifetimeParam (*this);
@@ -1956,5 +1978,16 @@ class PathExpr : public ExprWithoutBlock
 };
 } // namespace AST
 } // namespace Rust
+
+namespace std {
+template <> struct less<Rust::Identifier>
+{
+  bool operator() (const Rust::Identifier &lhs,
+		   const Rust::Identifier &rhs) const
+  {
+    return lhs.as_string () < rhs.as_string ();
+  }
+};
+} // namespace std
 
 #endif

@@ -296,7 +296,7 @@ TokenCollector::visit (StructField &field)
       visit (attr);
     }
   visit (field.get_visibility ());
-  auto name = field.get_field_name ();
+  auto name = field.get_field_name ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (field.get_locus (), std::move (name)));
   tokens.push_back (Rust::Token::make (COLON, Location ()));
@@ -358,7 +358,7 @@ TokenCollector::visit (MaybeNamedParam &param)
     {
       visit (attr);
     }
-  auto param_name = param.get_name ();
+  auto param_name = param.get_name ().as_string ();
   switch (param.get_param_kind ())
     {
     case MaybeNamedParam::UNNAMED:
@@ -458,7 +458,7 @@ TokenCollector::visit (AttrInputMetaItemContainer &container)
 void
 TokenCollector::visit (IdentifierExpr &ident_expr)
 {
-  auto ident = ident_expr.get_ident ();
+  auto ident = ident_expr.get_ident ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (ident_expr.get_locus (), std::move (ident)));
 }
@@ -520,7 +520,7 @@ TokenCollector::visit (ConstGenericParam &param)
   // const IDENTIFIER : Type ( = Block | IDENTIFIER | -?LITERAL )?
 
   tokens.push_back (Rust::Token::make (CONST, param.get_locus ()));
-  auto id = param.get_name ();
+  auto id = param.get_name ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (COLON, Location ()));
   visit (param.get_type ());
@@ -632,7 +632,7 @@ TokenCollector::visit (GenericArgsBinding &binding)
 {
   // Syntax:
   //    IDENTIFIER `=` Type
-  auto identifier = binding.get_identifier ();
+  auto identifier = binding.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (binding.get_locus (),
 						  std::move (identifier)));
 
@@ -1128,7 +1128,7 @@ TokenCollector::visit (StructExprFieldIdentifier &expr)
 {
   // TODO: Add attributes
   // visit_items_as_lines (expr.get_attrs ());
-  auto id = expr.get_field_name ();
+  auto id = expr.get_field_name ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
 }
@@ -1217,7 +1217,7 @@ TokenCollector::visit (FieldAccessExpr &expr)
 {
   visit (expr.get_receiver_expr ());
   tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
-  auto field_name = expr.get_field_name ();
+  auto field_name = expr.get_field_name ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (field_name)));
 }
@@ -1524,7 +1524,7 @@ TokenCollector::visit (TypeParam &param)
   // TypeParamBounds :
   //    TypeParamBound ( + TypeParamBound )* +?
 
-  auto id = param.get_type_representation ();
+  auto id = param.get_type_representation ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (param.get_locus (), std::move (id)));
   if (param.has_type_param_bounds ())
@@ -1591,7 +1591,7 @@ void
 TokenCollector::visit (Method &method)
 {
   visit (method.get_visibility ());
-  auto method_name = method.get_method_name ();
+  auto method_name = method.get_method_name ().as_string ();
   tokens.push_back (Rust::Token::make (FN_TOK, method.get_locus ()));
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (method_name)));
@@ -1632,7 +1632,7 @@ TokenCollector::visit (Module &module)
 
   visit_items_as_lines (module.get_outer_attrs ());
   visit (module.get_visibility ());
-  auto name = module.get_name ();
+  auto name = module.get_name ().as_string ();
   tokens.push_back (Rust::Token::make (MOD, module.get_locus ()));
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (name)));
@@ -1733,7 +1733,7 @@ TokenCollector::visit (UseTreeRebind &use_tree)
     {
       case UseTreeRebind::NewBindType::IDENTIFIER: {
 	tokens.push_back (Rust::Token::make (AS, Location ()));
-	auto id = use_tree.get_identifier ();
+	auto id = use_tree.get_identifier ().as_string ();
 	tokens.push_back (
 	  Rust::Token::make_identifier (use_tree.get_locus (), std::move (id)));
       }
@@ -1770,7 +1770,7 @@ TokenCollector::visit (Function &function)
   visit (function.get_visibility ());
 
   tokens.push_back (Rust::Token::make (FN_TOK, function.get_locus ()));
-  auto name = function.get_function_name ();
+  auto name = function.get_function_name ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (name)));
   if (function.has_generics ())
@@ -1808,7 +1808,7 @@ TokenCollector::visit (TypeAlias &type_alias)
   visit_items_as_lines (type_alias.get_outer_attrs ());
   if (type_alias.has_visibility ())
     visit (type_alias.get_visibility ());
-  auto alias_name = type_alias.get_new_type_name ();
+  auto alias_name = type_alias.get_new_type_name ().as_string ();
   tokens.push_back (Rust::Token::make (TYPE, type_alias.get_locus ()));
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (alias_name)));
@@ -1827,7 +1827,7 @@ TokenCollector::visit (StructStruct &struct_item)
   visit_items_as_lines (struct_item.get_outer_attrs ());
   if (struct_item.has_visibility ())
     visit (struct_item.get_visibility ());
-  auto struct_name = struct_item.get_identifier ();
+  auto struct_name = struct_item.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (STRUCT_TOK, struct_item.get_locus ()));
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (struct_name)));
@@ -1850,7 +1850,7 @@ void
 TokenCollector::visit (TupleStruct &tuple_struct)
 {
   visit_items_as_lines (tuple_struct.get_outer_attrs ());
-  auto struct_name = tuple_struct.get_identifier ();
+  auto struct_name = tuple_struct.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (STRUCT_TOK, tuple_struct.get_locus ()));
   tokens.push_back (
     Rust::Token::make_identifier (Location (), std::move (struct_name)));
@@ -1870,7 +1870,7 @@ void
 TokenCollector::visit (EnumItem &item)
 {
   visit_items_as_lines (item.get_outer_attrs ());
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (item.get_locus (), std::move (id)));
 }
@@ -1878,7 +1878,7 @@ TokenCollector::visit (EnumItem &item)
 void
 TokenCollector::visit (EnumItemTuple &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (item.get_locus (), std::move (id)));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -1889,7 +1889,7 @@ TokenCollector::visit (EnumItemTuple &item)
 void
 TokenCollector::visit (EnumItemStruct &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (item.get_locus (), std::move (id)));
   visit_items_as_block (item.get_struct_fields (),
@@ -1899,7 +1899,7 @@ TokenCollector::visit (EnumItemStruct &item)
 void
 TokenCollector::visit (EnumItemDiscriminant &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (item.get_locus (), std::move (id)));
   tokens.push_back (Rust::Token::make (EQUAL, Location ()));
@@ -1913,7 +1913,7 @@ TokenCollector::visit (Enum &enumeration)
   if (enumeration.has_visibility ())
     visit (enumeration.get_visibility ());
   tokens.push_back (Rust::Token::make (ENUM_TOK, enumeration.get_locus ()));
-  auto id = enumeration.get_identifier ();
+  auto id = enumeration.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (enumeration.get_locus (), std::move (id)));
   if (enumeration.has_generics ())
@@ -1929,7 +1929,7 @@ void
 TokenCollector::visit (Union &union_item)
 {
   visit_items_as_lines (union_item.get_outer_attrs ());
-  auto id = union_item.get_identifier ();
+  auto id = union_item.get_identifier ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (union_item.get_locus (), "union"));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
@@ -1974,7 +1974,7 @@ TokenCollector::visit (StaticItem &item)
   tokens.push_back (Rust::Token::make (STATIC_TOK, item.get_locus ()));
   if (item.is_mutable ())
     tokens.push_back (Rust::Token::make (MUT, Location ()));
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (COLON, Location ()));
   visit (item.get_type ());
@@ -2012,7 +2012,7 @@ void
 TokenCollector::visit (TraitItemFunc &item)
 {
   auto func = item.get_trait_function_decl ();
-  auto id = func.get_identifier ();
+  auto id = func.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (FN_TOK, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -2049,7 +2049,7 @@ void
 TokenCollector::visit (TraitItemMethod &item)
 {
   auto method = item.get_trait_method_decl ();
-  auto id = method.get_identifier ();
+  auto id = method.get_identifier ().as_string ();
 
   tokens.push_back (Rust::Token::make (FN_TOK, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
@@ -2071,7 +2071,7 @@ TokenCollector::visit (TraitItemMethod &item)
 void
 TokenCollector::visit (TraitItemConst &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   indentation ();
   tokens.push_back (Rust::Token::make (CONST, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
@@ -2084,7 +2084,7 @@ TokenCollector::visit (TraitItemConst &item)
 void
 TokenCollector::visit (TraitItemType &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   indentation ();
   tokens.push_back (Rust::Token::make (TYPE, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
@@ -2104,7 +2104,7 @@ TokenCollector::visit (Trait &trait)
 
   visit (trait.get_visibility ());
 
-  auto id = trait.get_identifier ();
+  auto id = trait.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (TRAIT, trait.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
 
@@ -2168,7 +2168,7 @@ TokenCollector::visit (ExternalTypeItem &type)
 {
   visit (type.get_visibility ());
 
-  auto id = type.get_identifier ();
+  auto id = type.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (TYPE, Location ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
@@ -2177,7 +2177,7 @@ TokenCollector::visit (ExternalTypeItem &type)
 void
 TokenCollector::visit (ExternalStaticItem &item)
 {
-  auto id = item.get_identifier ();
+  auto id = item.get_identifier ().as_string ();
   visit_items_as_lines (item.get_outer_attrs ());
   if (item.has_visibility ())
     visit (item.get_visibility ());
@@ -2197,7 +2197,7 @@ TokenCollector::visit (ExternalFunctionItem &function)
 {
   visit (function.get_visibility ());
 
-  auto id = function.get_identifier ();
+  auto id = function.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make (FN_TOK, function.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -2247,7 +2247,7 @@ get_delimiters (DelimType delim)
 void
 TokenCollector::visit (MacroMatchFragment &match)
 {
-  auto id = match.get_ident ();
+  auto id = match.get_ident ().as_string ();
   auto frag_spec = match.get_frag_spec ().as_string ();
   tokens.push_back (Rust::Token::make (DOLLAR_SIGN, Location ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
@@ -2318,7 +2318,7 @@ TokenCollector::visit (MacroRulesDefinition &rules_def)
   for (auto &outer_attr : rules_def.get_outer_attrs ())
     visit (outer_attr);
 
-  auto rule_name = rules_def.get_rule_name ();
+  auto rule_name = rules_def.get_rule_name ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (rules_def.get_locus (), "macro_rules"));
   tokens.push_back (Rust::Token::make (EXCLAM, Location ()));
@@ -2361,7 +2361,7 @@ TokenCollector::visit (MetaItemSeq &item)
 void
 TokenCollector::visit (MetaWord &word)
 {
-  auto id = word.get_ident ();
+  auto id = word.get_ident ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (word.get_locus (), std::move (id)));
 }
@@ -2370,7 +2370,7 @@ void
 TokenCollector::visit (MetaNameValueStr &name)
 {
   auto pair = name.get_name_value_pair ();
-  auto id = std::get<0> (pair);
+  auto id = std::get<0> (pair).as_string ();
   auto value = std::get<1> (pair);
   tokens.push_back (
     Rust::Token::make_identifier (name.get_locus (), std::move (id)));
@@ -2384,7 +2384,7 @@ TokenCollector::visit (MetaNameValueStr &name)
 void
 TokenCollector::visit (MetaListPaths &list)
 {
-  auto id = list.get_ident ();
+  auto id = list.get_ident ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (list.get_locus (), std::move (id)));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -2395,7 +2395,7 @@ TokenCollector::visit (MetaListPaths &list)
 void
 TokenCollector::visit (MetaListNameValueStr &list)
 {
-  auto id = list.get_ident ();
+  auto id = list.get_ident ().as_string ();
   tokens.push_back (
     Rust::Token::make_identifier (list.get_locus (), std::move (id)));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -2421,7 +2421,7 @@ TokenCollector::visit (IdentifierPattern &pattern)
     {
       tokens.push_back (Rust::Token::make (MUT, Location ()));
     }
-  auto id = pattern.get_ident ();
+  auto id = pattern.get_ident ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   if (pattern.has_pattern_to_bind ())
     {
@@ -2528,7 +2528,7 @@ void
 TokenCollector::visit (StructPatternFieldIdentPat &pattern)
 {
   visit_items_as_lines (pattern.get_outer_attrs ());
-  auto id = pattern.get_identifier ();
+  auto id = pattern.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (COLON, pattern.get_locus ()));
   visit (pattern.get_ident_pattern ());
@@ -2543,7 +2543,7 @@ TokenCollector::visit (StructPatternFieldIdent &pattern)
   if (pattern.is_mut ())
     tokens.push_back (Rust::Token::make (MUT, Location ()));
 
-  auto id = pattern.get_identifier ();
+  auto id = pattern.get_identifier ().as_string ();
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
 }
 

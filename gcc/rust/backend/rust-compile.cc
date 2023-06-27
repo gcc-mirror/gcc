@@ -316,7 +316,8 @@ HIRCompileBase::compute_address_for_trait_item (
 
       HIR::Function *fn = static_cast<HIR::Function *> (impl_item.get ());
       bool found_associated_item
-	= fn->get_function_name ().compare (ref->get_identifier ()) == 0;
+	= fn->get_function_name ().as_string ().compare (ref->get_identifier ())
+	  == 0;
       if (found_associated_item)
 	associated_function = fn;
     }

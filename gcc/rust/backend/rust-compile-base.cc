@@ -197,13 +197,13 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
 	  if (!converted_item)
 	    continue;
 	  auto key_value = converted_item->get_name_value_pair ();
-	  if (key_value.first.compare ("since") == 0)
+	  if (key_value.first.as_string ().compare ("since") == 0)
 	    {
 	      // valid, but this is handled by Cargo and some third-party audit
 	      // tools
 	      continue;
 	    }
-	  else if (key_value.first.compare ("note") == 0)
+	  else if (key_value.first.as_string ().compare ("note") == 0)
 	    {
 	      const auto &msg_str = key_value.second;
 	      if (value)
@@ -213,7 +213,7 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
 	  else
 	    {
 	      rust_error_at (attr.get_locus (), "unknown meta item %qs",
-			     key_value.first.c_str ());
+			     key_value.first.as_string ().c_str ());
 	    }
 	}
     }

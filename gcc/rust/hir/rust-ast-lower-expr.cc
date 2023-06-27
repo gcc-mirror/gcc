@@ -235,7 +235,7 @@ ASTLoweringExpr::visit (AST::IdentifierExpr &expr)
 				  UNKNOWN_LOCAL_DEFID);
   Analysis::NodeMapping mapping2 (mapping1);
 
-  HIR::PathIdentSegment ident_seg (expr.get_ident ());
+  HIR::PathIdentSegment ident_seg (expr.get_ident ().as_string ());
   HIR::PathExprSegment seg (mapping1, ident_seg, expr.get_locus (),
 			    HIR::GenericArgs::create_empty ());
   translated = new HIR::PathInExpression (mapping2, {seg}, expr.get_locus (),

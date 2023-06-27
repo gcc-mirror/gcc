@@ -1008,11 +1008,12 @@ TypeCheckExpr::visit (HIR::FieldAccessExpr &expr)
   TyTy::VariantDef *vaiant = adt->get_variants ().at (0);
 
   TyTy::StructFieldType *lookup = nullptr;
-  bool found = vaiant->lookup_field (expr.get_field_name (), &lookup, nullptr);
+  bool found = vaiant->lookup_field (expr.get_field_name ().as_string (),
+				     &lookup, nullptr);
   if (!found)
     {
       rust_error_at (expr.get_locus (), "unknown field [%s] for type [%s]",
-		     expr.get_field_name ().c_str (),
+		     expr.get_field_name ().as_string ().c_str (),
 		     adt->as_string ().c_str ());
       return;
     }
@@ -1681,7 +1682,9 @@ TypeCheckExpr::resolve_operator_overload (
       HIR::Function *fn = impl_item.second;
 
       if (parent->has_trait_ref ()
-	  && fn->get_function_name ().compare (associated_item_name) == 0)
+	  && fn->get_function_name ().as_string ().compare (
+	       associated_item_name)
+	       == 0)
 	{
 	  TraitReference *trait_reference
 	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());

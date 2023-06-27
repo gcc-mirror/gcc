@@ -208,7 +208,9 @@ resolve_operator_overload_fn (
       HIR::Function *fn = impl_item.second;
 
       if (parent->has_trait_ref ()
-	  && fn->get_function_name ().compare (associated_item_name) == 0)
+	  && fn->get_function_name ().as_string ().compare (
+	       associated_item_name)
+	       == 0)
 	{
 	  TraitReference *trait_reference
 	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());

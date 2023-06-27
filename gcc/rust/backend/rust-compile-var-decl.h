@@ -42,10 +42,9 @@ public:
     if (!pattern.is_mut ())
       translated_type = ctx->get_backend ()->immutable_type (translated_type);
 
-    Bvariable *var
-      = ctx->get_backend ()->local_variable (fndecl, pattern.get_identifier (),
-					     translated_type, NULL /*decl_var*/,
-					     pattern.get_locus ());
+    Bvariable *var = ctx->get_backend ()->local_variable (
+      fndecl, pattern.get_identifier ().as_string (), translated_type,
+      NULL /*decl_var*/, pattern.get_locus ());
 
     HirId stmt_id = pattern.get_pattern_mappings ().get_hirid ();
     ctx->insert_var_decl (stmt_id, var);

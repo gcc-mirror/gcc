@@ -44,7 +44,7 @@ PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
 
       rust_error_at (info.get_locus (), ErrorCode ("E0408"),
 		     "variable '%s' is not bound in all patterns",
-		     ident.c_str ());
+		     ident.as_string ().c_str ());
     }
 
   for (auto &map_entry : resolver.inconsistent_bindings)
@@ -55,7 +55,7 @@ PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
       rust_error_at (
 	info.get_locus (), ErrorCode ("E0409"),
 	"variable '%s' is bound inconsistently across pattern alternatives",
-	ident.c_str ());
+	ident.as_string ().c_str ());
     }
 }
 
@@ -244,7 +244,7 @@ PatternDeclaration::visit (AST::AltPattern &pattern)
   auto idents = bindings_with_ctx.back ().idents;
   bindings_with_ctx.pop_back ();
   for (auto &ident : idents)
-    bindings_with_ctx.back ().idents.insert (ident);
+    bindings_with_ctx.back ().idents.insert (ident.as_string ());
 
   // ...we repopulate the binding_info_map correctly (the initial bindings
   // stored in the tmp_binding_map + all the bindings from all the alts)
@@ -281,14 +281,14 @@ PatternDeclaration::add_new_binding (Identifier ident, NodeId node_id,
 	  rust_error_at (info.get_locus (), ErrorCode ("E0415"),
 			 "identifier '%s' is bound more than once in the "
 			 "same parameter list",
-			 ident.c_str ());
+			 ident.as_string ().c_str ());
 	}
       else
 	{
 	  rust_error_at (
 	    info.get_locus (), ErrorCode ("E0416"),
 	    "identifier '%s' is bound more than once in the same pattern",
-	    ident.c_str ());
+	    ident.as_string ().c_str ());
 	}
 
       return;
@@ -297,9 +297,9 @@ PatternDeclaration::add_new_binding (Identifier ident, NodeId node_id,
   if (!identifier_or_bound)
     {
       bindings_with_ctx.back ().idents.insert (ident);
-      resolver->get_name_scope ().insert (CanonicalPath::new_seg (node_id,
-								  ident),
-					  node_id, info.get_locus (), type);
+      resolver->get_name_scope ().insert (
+	CanonicalPath::new_seg (node_id, ident.as_string ()), node_id,
+	info.get_locus (), type);
     }
 
   binding_info_map.insert ({ident, info});

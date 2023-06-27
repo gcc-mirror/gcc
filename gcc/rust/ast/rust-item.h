@@ -752,7 +752,7 @@ public:
   // Creates an error state method.
   static Method create_error ()
   {
-    return Method ("", FunctionQualifiers (Location (), NONE, true),
+    return Method ({""}, FunctionQualifiers (Location (), NONE, true),
 		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
@@ -1136,7 +1136,7 @@ public:
   Location get_locus () const override final { return locus; }
 
   // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { module_name = ""; }
+  void mark_for_strip () override { module_name = {""}; }
   bool is_marked_for_strip () const override { return module_name.empty (); }
 
 protected:
@@ -1865,7 +1865,7 @@ public:
   Location get_locus () const override final { return locus; }
 
   // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { struct_name = ""; }
+  void mark_for_strip () override { struct_name = {""}; }
   bool is_marked_for_strip () const override { return struct_name.empty (); }
 
   Identifier get_struct_name () const { return struct_name; }
@@ -2240,7 +2240,7 @@ public:
   Identifier get_identifier () const { return variant_name; }
 
   // Based on idea that name is never empty.
-  void mark_for_strip () override { variant_name = ""; }
+  void mark_for_strip () override { variant_name = {""}; }
   bool is_marked_for_strip () const override { return variant_name.empty (); }
 
 protected:
@@ -2461,7 +2461,7 @@ public:
   Identifier get_identifier () const { return enum_name; }
 
   // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { enum_name = ""; }
+  void mark_for_strip () override { enum_name = {""}; }
   bool is_marked_for_strip () const override { return enum_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -2561,7 +2561,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { union_name = ""; }
+  void mark_for_strip () override { union_name = {""}; }
   bool is_marked_for_strip () const override { return union_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -2907,7 +2907,7 @@ public:
   std::string as_string () const;
 
   // Invalid if function name is empty, so base stripping on that.
-  void mark_for_strip () { function_name = ""; }
+  void mark_for_strip () { function_name = {""}; }
   bool is_marked_for_strip () const { return function_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -3120,7 +3120,7 @@ public:
   std::string as_string () const;
 
   // Invalid if method name is empty, so base stripping on that.
-  void mark_for_strip () { function_name = ""; }
+  void mark_for_strip () { function_name = {""}; }
   bool is_marked_for_strip () const { return function_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -3399,7 +3399,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { name = ""; }
+  void mark_for_strip () override { name = {""}; }
   bool is_marked_for_strip () const override { return name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -3534,7 +3534,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if trait name is empty, so base stripping on that.
-  void mark_for_strip () override { name = ""; }
+  void mark_for_strip () override { name = {""}; }
   bool is_marked_for_strip () const override { return name.empty (); }
 
   // TODO: think of better way to do this
@@ -4346,7 +4346,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Based on idea that nane should never be empty.
-  void mark_for_strip () override { item_name = ""; };
+  void mark_for_strip () override { item_name = {""}; };
   bool is_marked_for_strip () const override { return item_name.empty (); };
 
   // TODO: this mutable getter seems really dodgy. Think up better way.

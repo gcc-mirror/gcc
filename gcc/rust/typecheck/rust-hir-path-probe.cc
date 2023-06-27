@@ -207,7 +207,7 @@ void
 PathProbeType::visit (HIR::TypeAlias &alias)
 {
   Identifier name = alias.get_new_type_name ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = alias.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -227,7 +227,7 @@ void
 PathProbeType::visit (HIR::ConstantItem &constant)
 {
   Identifier name = constant.get_identifier ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = constant.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -247,7 +247,7 @@ void
 PathProbeType::visit (HIR::Function &function)
 {
   Identifier name = function.get_function_name ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = function.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;

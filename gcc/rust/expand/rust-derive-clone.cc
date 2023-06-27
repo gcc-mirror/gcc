@@ -50,7 +50,7 @@ DeriveClone::clone_fn (std::unique_ptr<Expr> &&clone_expr)
   auto big_self_type = builder.single_type_path ("Self");
 
   return std::unique_ptr<TraitImplItem> (
-    new Method ("clone", builder.fn_qualifiers (), /* generics */ {},
+    new Method ({"clone"}, builder.fn_qualifiers (), /* generics */ {},
 		SelfParam (Lifetime::error (), /* is_mut */ false, loc),
 		/* function params */ {}, std::move (big_self_type),
 		WhereClause::create_empty (), std::move (block),
@@ -111,11 +111,11 @@ DeriveClone::visit_tuple (TupleStruct &item)
       clone_call (builder.ref (builder.tuple_idx ("self", idx))));
 
   auto path = std::unique_ptr<Expr> (new PathInExpression (
-    builder.path_in_expression ({item.get_identifier ()})));
+    builder.path_in_expression ({item.get_identifier ().as_string ()})));
   auto constructor = builder.call (std::move (path), std::move (cloned_fields));
 
-  expanded
-    = clone_impl (clone_fn (std::move (constructor)), item.get_identifier ());
+  expanded = clone_impl (clone_fn (std::move (constructor)),
+			 item.get_identifier ().as_string ());
 }
 
 void
@@ -123,16 +123,17 @@ DeriveClone::visit_struct (StructStruct &item)
 {
   if (item.is_unit_struct ())
     {
-      auto unit_ctor = builder.struct_expr_struct (item.get_struct_name ());
+      auto unit_ctor
+	= builder.struct_expr_struct (item.get_struct_name ().as_string ());
       expanded = clone_impl (clone_fn (std::move (unit_ctor)),
-			     item.get_struct_name ());
+			     item.get_struct_name ().as_string ());
       return;
     }
 
   auto cloned_fields = std::vector<std::unique_ptr<StructExprField>> ();
   for (auto &field : item.get_fields ())
     {
-      auto name = field.get_field_name ();
+      auto name = field.get_field_name ().as_string ();
       auto expr = clone_call (
 	builder.ref (builder.field_access (builder.identifier ("self"), name)));
 
@@ -140,9 +141,10 @@ DeriveClone::visit_struct (StructStruct &item)
 	builder.struct_expr_field (std::move (name), std::move (expr)));
     }
 
-  auto ctor
-    = builder.struct_expr (item.get_struct_name (), std::move (cloned_fields));
-  expanded = clone_impl (clone_fn (std::move (ctor)), item.get_struct_name ());
+  auto ctor = builder.struct_expr (item.get_struct_name ().as_string (),
+				   std::move (cloned_fields));
+  expanded = clone_impl (clone_fn (std::move (ctor)),
+			 item.get_struct_name ().as_string ());
 }
 
 void
@@ -177,7 +179,8 @@ DeriveClone::visit_union (Union &item)
 
   auto block = builder.block (std::move (stmts), std::move (tail_expr));
 
-  expanded = clone_impl (clone_fn (std::move (block)), item.get_identifier ());
+  expanded = clone_impl (clone_fn (std::move (block)),
+			 item.get_identifier ().as_string ());
 }
 
 } // namespace AST

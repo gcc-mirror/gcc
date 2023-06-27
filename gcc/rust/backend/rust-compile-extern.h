@@ -60,7 +60,7 @@ public:
 					      &resolved_type);
     rust_assert (ok);
 
-    std::string name = item.get_item_name ();
+    std::string name = item.get_item_name ().as_string ();
     // FIXME this is assuming C ABI
     std::string asm_name = name;
 
@@ -130,8 +130,8 @@ public:
       }
 
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-    std::string ir_symbol_name = function.get_item_name ();
-    std::string asm_name = function.get_item_name ();
+    std::string ir_symbol_name = function.get_item_name ().as_string ();
+    std::string asm_name = function.get_item_name ().as_string ();
     if (fntype->get_abi () == ABI::RUST)
       {
 	// then we need to get the canonical path of it and mangle it

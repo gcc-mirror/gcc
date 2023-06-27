@@ -213,12 +213,10 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       // for compilation to know parameter names. The types are ignored
       // but we reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self ();
-      HIR::IdentifierPattern *self_pattern
-	= new HIR::IdentifierPattern (mapping, "self", self_param.get_locus (),
-				      self_param.is_ref (),
-				      self_param.is_mut () ? Mutability::Mut
-							   : Mutability::Imm,
-				      std::unique_ptr<HIR::Pattern> (nullptr));
+      HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
+	mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
+	self_param.is_mut () ? Mutability::Mut : Mutability::Imm,
+	std::unique_ptr<HIR::Pattern> (nullptr));
       // might have a specified type
       TyTy::BaseType *self_type = nullptr;
       if (self_param.has_type ())
@@ -280,7 +278,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   auto resolved
     = new TyTy::FnType (fn.get_mappings ().get_hirid (),
 			fn.get_mappings ().get_defid (),
-			function.get_function_name (), ident,
+			function.get_function_name ().as_string (), ident,
 			function.is_method ()
 			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
