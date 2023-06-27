@@ -586,17 +586,18 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 		}
 
 	      // resolve to relevant binding
-	      auto binding_item
-		= lookup_associated_type (binding.get_identifier ());
+	      auto binding_item = lookup_associated_type (
+		binding.get_identifier ().as_string ());
 	      if (binding_item.is_error ())
 		{
-		  rust_error_at (binding.get_locus (),
-				 "unknown associated type binding: %s",
-				 binding.get_identifier ().c_str ());
+		  rust_error_at (
+		    binding.get_locus (), "unknown associated type binding: %s",
+		    binding.get_identifier ().as_string ().c_str ());
 		  return SubstitutionArgumentMappings::error ();
 		}
 
-	      binding_arguments[binding.get_identifier ()] = resolved;
+	      binding_arguments[binding.get_identifier ().as_string ()]
+		= resolved;
 	    }
 	}
       else

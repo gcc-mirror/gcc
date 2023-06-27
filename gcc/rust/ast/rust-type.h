@@ -813,7 +813,7 @@ public:
   // Creates an error state param.
   static MaybeNamedParam create_error ()
   {
-    return MaybeNamedParam ("", UNNAMED, nullptr, {}, Location ());
+    return MaybeNamedParam ({""}, UNNAMED, nullptr, {}, Location ());
   }
 
   Location get_locus () const { return locus; }

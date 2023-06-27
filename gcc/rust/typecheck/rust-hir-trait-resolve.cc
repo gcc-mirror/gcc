@@ -40,7 +40,7 @@ ResolveTraitItemToRef::visit (HIR::TraitItemType &type)
   // create trait-item-ref
   Location locus = type.get_locus ();
   bool is_optional = false;
-  std::string identifier = type.get_name ();
+  std::string identifier = type.get_name ().as_string ();
 
   resolved = TraitItemReference (identifier, is_optional,
 				 TraitItemReference::TraitItemType::TYPE, &type,
@@ -53,7 +53,7 @@ ResolveTraitItemToRef::visit (HIR::TraitItemConst &cst)
   // create trait-item-ref
   Location locus = cst.get_locus ();
   bool is_optional = cst.has_expr ();
-  std::string identifier = cst.get_name ();
+  std::string identifier = cst.get_name ().as_string ();
 
   resolved = TraitItemReference (identifier, is_optional,
 				 TraitItemReference::TraitItemType::CONST, &cst,
@@ -66,7 +66,7 @@ ResolveTraitItemToRef::visit (HIR::TraitItemFunc &fn)
   // create trait-item-ref
   Location locus = fn.get_locus ();
   bool is_optional = fn.has_block_defined ();
-  std::string identifier = fn.get_decl ().get_function_name ();
+  std::string identifier = fn.get_decl ().get_function_name ().as_string ();
 
   resolved = TraitItemReference (identifier, is_optional,
 				 TraitItemReference::TraitItemType::FN, &fn,
@@ -185,7 +185,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	    substitutions.push_back (
 	      TyTy::SubstitutionParamMapping (typaram, param_type));
 
-	    if (typaram.get_type_representation ().compare ("Self") == 0)
+	    if (typaram.get_type_representation ().as_string ().compare ("Self")
+		== 0)
 	      {
 		rust_assert (param_type->get_kind () == TyTy::TypeKind::PARAM);
 		TyTy::ParamType *p
@@ -317,7 +318,7 @@ void
 TraitItemReference::resolve_item (HIR::TraitItemType &type)
 {
   TyTy::BaseType *ty
-    = new TyTy::PlaceholderType (type.get_name (),
+    = new TyTy::PlaceholderType (type.get_name ().as_string (),
 				 type.get_mappings ().get_hirid ());
   context->insert_type (type.get_mappings (), ty);
 }
@@ -414,8 +415,9 @@ AssociatedImplTrait::setup_raw_associated_types ()
       HIR::TypeAlias &type = *static_cast<HIR::TypeAlias *> (impl_item.get ());
 
       TraitItemReference *resolved_trait_item = nullptr;
-      bool ok = trait->lookup_trait_item (type.get_new_type_name (),
-					  &resolved_trait_item);
+      bool ok
+	= trait->lookup_trait_item (type.get_new_type_name ().as_string (),
+				    &resolved_trait_item);
       if (!ok)
 	continue;
       if (resolved_trait_item->get_trait_item_type ()
@@ -611,8 +613,9 @@ AssociatedImplTrait::setup_associated_types (
       HIR::TypeAlias &type = *static_cast<HIR::TypeAlias *> (impl_item.get ());
 
       TraitItemReference *resolved_trait_item = nullptr;
-      bool ok = trait->lookup_trait_item (type.get_new_type_name (),
-					  &resolved_trait_item);
+      bool ok
+	= trait->lookup_trait_item (type.get_new_type_name ().as_string (),
+				    &resolved_trait_item);
       if (!ok)
 	continue;
       if (resolved_trait_item->get_trait_item_type ()

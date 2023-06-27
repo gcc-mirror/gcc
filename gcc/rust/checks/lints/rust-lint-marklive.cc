@@ -51,7 +51,7 @@ public:
   // TODO not only fn main can be a entry point.
   void visit (HIR::Function &function) override
   {
-    if (function.get_function_name () == "main")
+    if (function.get_function_name ().as_string () == "main")
       {
 	entryPoints.push_back (function.get_mappings ().get_hirid ());
       }
@@ -224,7 +224,8 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   // get the field index
   size_t index;
   TyTy::StructFieldType *field;
-  bool ok = variant->lookup_field (expr.get_field_name (), &field, &index);
+  bool ok = variant->lookup_field (expr.get_field_name ().as_string (), &field,
+				   &index);
   rust_assert (ok);
   if (index >= variant->num_fields ())
     {

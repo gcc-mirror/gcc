@@ -201,16 +201,16 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
 
 	    TyTy::StructFieldType *field = nullptr;
-	    if (!variant->lookup_field (ident.get_identifier (), &field,
-					nullptr))
+	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
+					&field, nullptr))
 	      {
 		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
 			       "variant %s does not have a field named %s",
 			       variant->get_identifier ().c_str (),
-			       ident.get_identifier ().c_str ());
+			       ident.get_identifier ().as_string ().c_str ());
 		break;
 	      }
-	    named_fields.push_back (ident.get_identifier ());
+	    named_fields.push_back (ident.get_identifier ().as_string ());
 
 	    TyTy::BaseType *fty = field->get_field_type ();
 	    TypeCheckPattern::Resolve (ident.get_pattern ().get (), fty);
@@ -222,16 +222,16 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
 
 	    TyTy::StructFieldType *field = nullptr;
-	    if (!variant->lookup_field (ident.get_identifier (), &field,
-					nullptr))
+	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
+					&field, nullptr))
 	      {
 		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
 			       "variant %s does not have a field named %s",
 			       variant->get_identifier ().c_str (),
-			       ident.get_identifier ().c_str ());
+			       ident.get_identifier ().as_string ().c_str ());
 		break;
 	      }
-	    named_fields.push_back (ident.get_identifier ());
+	    named_fields.push_back (ident.get_identifier ().as_string ());
 
 	    // setup the type on this pattern
 	    TyTy::BaseType *fty = field->get_field_type ();

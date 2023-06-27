@@ -180,10 +180,12 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (new TyTy::VariantDef (
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_mappings ().get_defid (), struct_decl.get_identifier (),
-    ident, TyTy::VariantDef::VariantType::TUPLE, nullptr, std::move (fields)));
+  variants.push_back (
+    new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
+			  struct_decl.get_mappings ().get_defid (),
+			  struct_decl.get_identifier ().as_string (), ident,
+			  TyTy::VariantDef::VariantType::TUPLE, nullptr,
+			  std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
@@ -193,7 +195,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   TyTy::BaseType *type
     = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
-			 struct_decl.get_identifier (), ident,
+			 struct_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::TUPLE_STRUCT,
 			 std::move (variants), std::move (substitutions), repr);
 
@@ -220,8 +222,8 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type,
-				     field.get_locus ());
+				     field.get_field_name ().as_string (),
+				     field_type, field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
@@ -235,10 +237,12 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 
   // its a single variant ADT
   std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (new TyTy::VariantDef (
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_mappings ().get_defid (), struct_decl.get_identifier (),
-    ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
+  variants.push_back (
+    new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
+			  struct_decl.get_mappings ().get_defid (),
+			  struct_decl.get_identifier ().as_string (), ident,
+			  TyTy::VariantDef::VariantType::STRUCT, nullptr,
+			  std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
@@ -248,7 +252,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   TyTy::BaseType *type
     = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
-			 struct_decl.get_identifier (), ident,
+			 struct_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::STRUCT_STRUCT,
 			 std::move (variants), std::move (substitutions), repr);
 
@@ -286,7 +290,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   TyTy::BaseType *type
     = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
-			 enum_decl.get_identifier (), ident,
+			 enum_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
 			 std::move (substitutions));
 
@@ -313,8 +317,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 	= TypeCheckType::Resolve (variant.get_field_type ().get ());
       TyTy::StructFieldType *ty_variant
 	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
-				     variant.get_field_name (), variant_type,
-				     variant.get_locus ());
+				     variant.get_field_name ().as_string (),
+				     variant_type, variant.get_locus ());
       fields.push_back (ty_variant);
       context->insert_type (variant.get_mappings (),
 			    ty_variant->get_field_type ());
@@ -330,15 +334,17 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 
   // there is only a single variant
   std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (new TyTy::VariantDef (
-    union_decl.get_mappings ().get_hirid (),
-    union_decl.get_mappings ().get_defid (), union_decl.get_identifier (),
-    ident, TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
+  variants.push_back (
+    new TyTy::VariantDef (union_decl.get_mappings ().get_hirid (),
+			  union_decl.get_mappings ().get_defid (),
+			  union_decl.get_identifier ().as_string (), ident,
+			  TyTy::VariantDef::VariantType::STRUCT, nullptr,
+			  std::move (fields)));
 
   TyTy::BaseType *type
     = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
 			 mappings->get_next_hir_id (),
-			 union_decl.get_identifier (), ident,
+			 union_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::UNION, std::move (variants),
 			 std::move (substitutions));
 
@@ -473,9 +479,9 @@ TypeCheckItem::visit (HIR::Function &function)
   RustIdent ident{*canonical_path, function.get_locus ()};
   auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				  function.get_mappings ().get_defid (),
-				  function.get_function_name (), ident,
-				  TyTy::FnType::FNTYPE_DEFAULT_FLAGS, ABI::RUST,
-				  std::move (params), ret_type,
+				  function.get_function_name ().as_string (),
+				  ident, TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
+				  ABI::RUST, std::move (params), ret_type,
 				  std::move (substitutions));
 
   context->insert_type (function.get_mappings (), fnType);

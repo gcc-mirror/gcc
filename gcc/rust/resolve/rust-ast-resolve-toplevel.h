@@ -47,8 +47,8 @@ public:
 
   void visit (AST::Module &module) override
   {
-    auto mod
-      = CanonicalPath::new_seg (module.get_node_id (), module.get_name ());
+    auto mod = CanonicalPath::new_seg (module.get_node_id (),
+				       module.get_name ().as_string ());
     auto path = prefix.append (mod);
     auto cpath = canonical_prefix.append (mod);
 
@@ -76,8 +76,9 @@ public:
 
   void visit (AST::TypeAlias &alias) override
   {
-    auto talias = CanonicalPath::new_seg (alias.get_node_id (),
-					  alias.get_new_type_name ());
+    auto talias
+      = CanonicalPath::new_seg (alias.get_node_id (),
+				alias.get_new_type_name ().as_string ());
     auto path = prefix.append (talias);
     auto cpath = canonical_prefix.append (talias);
 
@@ -97,8 +98,9 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
-    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-					struct_decl.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (struct_decl.get_node_id (),
+				struct_decl.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -118,8 +120,9 @@ public:
 
   void visit (AST::Enum &enum_decl) override
   {
-    auto decl = CanonicalPath::new_seg (enum_decl.get_node_id (),
-					enum_decl.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (enum_decl.get_node_id (),
+				enum_decl.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -145,8 +148,8 @@ public:
 
   void visit (AST::EnumItem &item) override
   {
-    auto decl
-      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto decl = CanonicalPath::new_seg (item.get_node_id (),
+					item.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -167,8 +170,8 @@ public:
 
   void visit (AST::EnumItemTuple &item) override
   {
-    auto decl
-      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto decl = CanonicalPath::new_seg (item.get_node_id (),
+					item.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -189,8 +192,8 @@ public:
 
   void visit (AST::EnumItemStruct &item) override
   {
-    auto decl
-      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto decl = CanonicalPath::new_seg (item.get_node_id (),
+					item.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -211,8 +214,8 @@ public:
 
   void visit (AST::EnumItemDiscriminant &item) override
   {
-    auto decl
-      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto decl = CanonicalPath::new_seg (item.get_node_id (),
+					item.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -233,8 +236,9 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
-    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-					struct_decl.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (struct_decl.get_node_id (),
+				struct_decl.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -254,8 +258,9 @@ public:
 
   void visit (AST::Union &union_decl) override
   {
-    auto decl = CanonicalPath::new_seg (union_decl.get_node_id (),
-					union_decl.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (union_decl.get_node_id (),
+				union_decl.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -275,8 +280,8 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
-    auto decl
-      = CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ());
+    auto decl = CanonicalPath::new_seg (var.get_node_id (),
+					var.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -316,8 +321,9 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = CanonicalPath::new_seg (function.get_node_id (),
-					function.get_function_name ());
+    auto decl
+      = CanonicalPath::new_seg (function.get_node_id (),
+				function.get_function_name ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -380,8 +386,8 @@ public:
 
   void visit (AST::Trait &trait) override
   {
-    auto decl
-      = CanonicalPath::new_seg (trait.get_node_id (), trait.get_identifier ());
+    auto decl = CanonicalPath::new_seg (trait.get_node_id (),
+					trait.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 

@@ -178,7 +178,7 @@ CompileItem::visit (HIR::Function &function)
     ctx->push_const_context ();
 
   tree fndecl
-    = compile_function (function.get_function_name (),
+    = compile_function (function.get_function_name ().as_string (),
 			function.get_self_param (),
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),

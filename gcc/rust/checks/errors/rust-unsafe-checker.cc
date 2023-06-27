@@ -152,7 +152,7 @@ check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
 
   // Some intrinsics are safe to call
   if (parent_block->get_abi () == Rust::ABI::INTRINSIC
-      && is_safe_intrinsic (maybe_fn->get_item_name ()))
+      && is_safe_intrinsic (maybe_fn->get_item_name ().as_string ()))
     return;
 
   rust_error_at (locus,

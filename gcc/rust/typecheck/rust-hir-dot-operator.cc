@@ -137,8 +137,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
       if (!func->is_method ())
 	return true;
 
-      bool name_matches
-	= func->get_function_name ().compare (segment_name.as_string ()) == 0;
+      bool name_matches = func->get_function_name ().as_string ().compare (
+			    segment_name.as_string ())
+			  == 0;
       if (!name_matches)
 	return true;
 
@@ -199,103 +200,104 @@ MethodResolver::select (TyTy::BaseType &receiver)
   };
 
   std::vector<trait_item_candidate> trait_fns;
-  mappings->iterate_impl_blocks ([&] (HirId id,
-				      HIR::ImplBlock *impl) mutable -> bool {
-    bool is_trait_impl = impl->has_trait_ref ();
-    if (!is_trait_impl)
-      return true;
-
-    // look for impl implementation else lookup the associated trait item
-    for (auto &impl_item : impl->get_impl_items ())
-      {
-	bool is_fn = impl_item->get_impl_item_type ()
-		     == HIR::ImplItem::ImplItemType::FUNCTION;
-	if (!is_fn)
-	  continue;
-
-	HIR::Function *func = static_cast<HIR::Function *> (impl_item.get ());
-	if (!func->is_method ())
-	  continue;
-
-	bool name_matches
-	  = func->get_function_name ().compare (segment_name.as_string ()) == 0;
-	if (!name_matches)
-	  continue;
-
-	TyTy::BaseType *ty = nullptr;
-	if (!query_type (func->get_mappings ().get_hirid (), &ty))
-	  continue;
-	if (ty->get_kind () == TyTy::TypeKind::ERROR)
-	  continue;
-
-	rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
-	TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-	const TyTy::BaseType *impl_self
-	  = TypeCheckItem::ResolveImplBlockSelf (*impl);
-
-	// see:
-	// https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
-	// https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
-	bool impl_self_is_ptr
-	  = impl_self->get_kind () == TyTy::TypeKind::POINTER;
-	bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
-	if (receiver_is_raw_ptr && impl_self_is_ptr)
-	  {
-	    const TyTy::PointerType &sptr
-	      = *static_cast<const TyTy::PointerType *> (impl_self);
-	    const TyTy::PointerType &ptr
-	      = *static_cast<const TyTy::PointerType *> (raw);
-
-	    // we could do this via lang-item assemblies if we refactor this
-	    bool mut_match = sptr.mutability () == ptr.mutability ();
-	    if (!mut_match)
-	      continue;
-	  }
-	else if (receiver_is_ref && impl_self_is_ref)
-	  {
-	    const TyTy::ReferenceType &sptr
-	      = *static_cast<const TyTy::ReferenceType *> (impl_self);
-	    const TyTy::ReferenceType &ptr
-	      = *static_cast<const TyTy::ReferenceType *> (raw);
-
-	    // we could do this via lang-item assemblies if we refactor this
-	    bool mut_match = sptr.mutability () == ptr.mutability ();
-	    if (!mut_match)
-	      continue;
-	  }
-
-	inherent_impl_fns.push_back ({func, impl, fnty});
+  mappings->iterate_impl_blocks (
+    [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
+      bool is_trait_impl = impl->has_trait_ref ();
+      if (!is_trait_impl)
 	return true;
-      }
 
-    TraitReference *trait_ref
-      = TraitResolver::Resolve (*impl->get_trait_ref ().get ());
-    rust_assert (!trait_ref->is_error ());
+      // look for impl implementation else lookup the associated trait item
+      for (auto &impl_item : impl->get_impl_items ())
+	{
+	  bool is_fn = impl_item->get_impl_item_type ()
+		       == HIR::ImplItem::ImplItemType::FUNCTION;
+	  if (!is_fn)
+	    continue;
 
-    auto item_ref
-      = trait_ref->lookup_trait_item (segment_name.as_string (),
-				      TraitItemReference::TraitItemType::FN);
-    if (item_ref->is_error ())
+	  HIR::Function *func = static_cast<HIR::Function *> (impl_item.get ());
+	  if (!func->is_method ())
+	    continue;
+
+	  bool name_matches = func->get_function_name ().as_string ().compare (
+				segment_name.as_string ())
+			      == 0;
+	  if (!name_matches)
+	    continue;
+
+	  TyTy::BaseType *ty = nullptr;
+	  if (!query_type (func->get_mappings ().get_hirid (), &ty))
+	    continue;
+	  if (ty->get_kind () == TyTy::TypeKind::ERROR)
+	    continue;
+
+	  rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
+	  TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+	  const TyTy::BaseType *impl_self
+	    = TypeCheckItem::ResolveImplBlockSelf (*impl);
+
+	  // see:
+	  // https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
+	  // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
+	  bool impl_self_is_ptr
+	    = impl_self->get_kind () == TyTy::TypeKind::POINTER;
+	  bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
+	  if (receiver_is_raw_ptr && impl_self_is_ptr)
+	    {
+	      const TyTy::PointerType &sptr
+		= *static_cast<const TyTy::PointerType *> (impl_self);
+	      const TyTy::PointerType &ptr
+		= *static_cast<const TyTy::PointerType *> (raw);
+
+	      // we could do this via lang-item assemblies if we refactor this
+	      bool mut_match = sptr.mutability () == ptr.mutability ();
+	      if (!mut_match)
+		continue;
+	    }
+	  else if (receiver_is_ref && impl_self_is_ref)
+	    {
+	      const TyTy::ReferenceType &sptr
+		= *static_cast<const TyTy::ReferenceType *> (impl_self);
+	      const TyTy::ReferenceType &ptr
+		= *static_cast<const TyTy::ReferenceType *> (raw);
+
+	      // we could do this via lang-item assemblies if we refactor this
+	      bool mut_match = sptr.mutability () == ptr.mutability ();
+	      if (!mut_match)
+		continue;
+	    }
+
+	  inherent_impl_fns.push_back ({func, impl, fnty});
+	  return true;
+	}
+
+      TraitReference *trait_ref
+	= TraitResolver::Resolve (*impl->get_trait_ref ().get ());
+      rust_assert (!trait_ref->is_error ());
+
+      auto item_ref
+	= trait_ref->lookup_trait_item (segment_name.as_string (),
+					TraitItemReference::TraitItemType::FN);
+      if (item_ref->is_error ())
+	return true;
+
+      const HIR::Trait *trait = trait_ref->get_hir_trait_ref ();
+      HIR::TraitItem *item = item_ref->get_hir_trait_item ();
+      if (item->get_item_kind () != HIR::TraitItem::TraitItemKind::FUNC)
+	return true;
+
+      HIR::TraitItemFunc *func = static_cast<HIR::TraitItemFunc *> (item);
+      if (!func->get_decl ().is_method ())
+	return true;
+
+      TyTy::BaseType *ty = item_ref->get_tyty ();
+      rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+
+      trait_item_candidate candidate{func, trait, fnty, trait_ref, item_ref};
+      trait_fns.push_back (candidate);
+
       return true;
-
-    const HIR::Trait *trait = trait_ref->get_hir_trait_ref ();
-    HIR::TraitItem *item = item_ref->get_hir_trait_item ();
-    if (item->get_item_kind () != HIR::TraitItem::TraitItemKind::FUNC)
-      return true;
-
-    HIR::TraitItemFunc *func = static_cast<HIR::TraitItemFunc *> (item);
-    if (!func->get_decl ().is_method ())
-      return true;
-
-    TyTy::BaseType *ty = item_ref->get_tyty ();
-    rust_assert (ty->get_kind () == TyTy::TypeKind::FNDEF);
-    TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-
-    trait_item_candidate candidate{func, trait, fnty, trait_ref, item_ref};
-    trait_fns.push_back (candidate);
-
-    return true;
-  });
+    });
 
   // lookup specified bounds for an associated item
   struct precdicate_candidate

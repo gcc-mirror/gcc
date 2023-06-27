@@ -1460,7 +1460,7 @@ public:
       field_name (std::move (field_identifier))
   {}
 
-  std::string as_string () const override { return field_name; }
+  std::string as_string () const override { return field_name.as_string (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;

@@ -420,7 +420,7 @@ Dump::visit (Function &func)
   // function name
   stream << indentation << "func_name: ";
   auto func_name = func.get_function_name ();
-  stream << func_name;
+  stream << func_name.as_string ();
   stream << ",\n";
 
   // return type
@@ -549,7 +549,7 @@ void
 Dump::visit (IdentifierPattern &ident)
 {
   auto ident_name = ident.get_identifier ();
-  stream << ident_name;
+  stream << ident_name.as_string ();
 }
 void
 Dump::visit (WildcardPattern &)

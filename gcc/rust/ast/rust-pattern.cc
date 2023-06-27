@@ -48,7 +48,7 @@ IdentifierPattern::as_string () const
   if (is_mut)
     str += "mut ";
 
-  str += variable_ident;
+  str += variable_ident.as_string ();
 
   if (has_pattern_to_bind ())
     str += " @ " + to_bind->as_string ();
@@ -126,7 +126,7 @@ StructPatternFieldIdentPat::as_string () const
 
   str += "\n";
 
-  str += ident + " : " + ident_pattern->as_string ();
+  str += ident.as_string () + " : " + ident_pattern->as_string ();
 
   return str;
 }
@@ -144,7 +144,7 @@ StructPatternFieldIdent::as_string () const
   if (has_mut)
     str += "mut ";
 
-  str += ident;
+  str += ident.as_string ();
 
   return str;
 }

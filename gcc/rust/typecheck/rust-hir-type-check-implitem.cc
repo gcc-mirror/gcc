@@ -142,13 +142,13 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 
   RustIdent ident{
     CanonicalPath::new_seg (function.get_mappings ().get_nodeid (),
-			    function.get_item_name ()),
+			    function.get_item_name ().as_string ()),
     function.get_locus ()};
 
   auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				  function.get_mappings ().get_defid (),
-				  function.get_item_name (), ident, flags,
-				  parent.get_abi (), std::move (params),
+				  function.get_item_name ().as_string (), ident,
+				  flags, parent.get_abi (), std::move (params),
 				  ret_type, std::move (substitutions));
 
   context->insert_type (function.get_mappings (), fnType);
@@ -225,11 +225,9 @@ TypeCheckImplItem::visit (HIR::Function &function)
       // compilation to know parameter names. The types are ignored but we
       // reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self_param ();
-      HIR::IdentifierPattern *self_pattern
-	= new HIR::IdentifierPattern (mapping, "self", self_param.get_locus (),
-				      self_param.is_ref (),
-				      self_param.get_mut (),
-				      std::unique_ptr<HIR::Pattern> (nullptr));
+      HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
+	mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
+	self_param.get_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
 
       // might have a specified type
       TyTy::BaseType *self_type = nullptr;
@@ -289,14 +287,15 @@ TypeCheckImplItem::visit (HIR::Function &function)
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, function.get_locus ()};
-  auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				  function.get_mappings ().get_defid (),
-				  function.get_function_name (), ident,
-				  function.is_method ()
-				    ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
-				    : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
-				  ABI::RUST, std::move (params), ret_type,
-				  std::move (substitutions));
+  auto fnType
+    = new TyTy::FnType (function.get_mappings ().get_hirid (),
+			function.get_mappings ().get_defid (),
+			function.get_function_name ().as_string (), ident,
+			function.is_method ()
+			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
+			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
+			ABI::RUST, std::move (params), ret_type,
+			std::move (substitutions));
 
   context->insert_type (function.get_mappings (), fnType);
   result = fnType;
@@ -385,7 +384,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
   const auto tref = trait_reference.get ();
   const TraitItemReference *raw_trait_item = nullptr;
   bool found
-    = tref->lookup_trait_item_by_type (constant.get_identifier (),
+    = tref->lookup_trait_item_by_type (constant.get_identifier ().as_string (),
 				       TraitItemReference::TraitItemType::CONST,
 				       &raw_trait_item);
 
@@ -395,7 +394,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
       RichLocation r (constant.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "constant %<%s%> is not a member of trait %<%s%>",
-		     constant.get_identifier ().c_str (),
+		     constant.get_identifier ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
       return;
     }
@@ -420,7 +419,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 
       rust_error_at (
 	r, "constant %<%s%> has an incompatible type for trait %<%s%>",
-	constant.get_identifier ().c_str (),
+	constant.get_identifier ().as_string ().c_str (),
 	trait_reference.get_name ().c_str ());
     }
 }
@@ -436,7 +435,7 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
   const auto tref = trait_reference.get ();
   const TraitItemReference *raw_trait_item = nullptr;
   bool found
-    = tref->lookup_trait_item_by_type (type.get_new_type_name (),
+    = tref->lookup_trait_item_by_type (type.get_new_type_name ().as_string (),
 				       TraitItemReference::TraitItemType::TYPE,
 				       &raw_trait_item);
 
@@ -446,7 +445,7 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
       RichLocation r (type.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "type alias %<%s%> is not a member of trait %<%s%>",
-		     type.get_new_type_name ().c_str (),
+		     type.get_new_type_name ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
       return;
     }
@@ -471,7 +470,7 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 
       rust_error_at (
 	r, "type alias %<%s%> has an incompatible type for trait %<%s%>",
-	type.get_new_type_name ().c_str (),
+	type.get_new_type_name ().as_string ().c_str (),
 	trait_reference.get_name ().c_str ());
     }
 
@@ -496,10 +495,9 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
   // map the impl item to the associated trait item
   const auto tref = trait_reference.get ();
   const TraitItemReference *raw_trait_item = nullptr;
-  bool found
-    = tref->lookup_trait_item_by_type (function.get_function_name (),
-				       TraitItemReference::TraitItemType::FN,
-				       &raw_trait_item);
+  bool found = tref->lookup_trait_item_by_type (
+    function.get_function_name ().as_string (),
+    TraitItemReference::TraitItemType::FN, &raw_trait_item);
 
   // unknown trait item
   if (!found || raw_trait_item->is_error ())
@@ -507,7 +505,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
       RichLocation r (function.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "method %<%s%> is not a member of trait %<%s%>",
-		     function.get_function_name ().c_str (),
+		     function.get_function_name ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
       return;
     }
@@ -532,7 +530,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
 
       rust_error_at (r,
 		     "method %<%s%> has an incompatible type for trait %<%s%>",
-		     function.get_function_name ().c_str (),
+		     function.get_function_name ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
     }
 }

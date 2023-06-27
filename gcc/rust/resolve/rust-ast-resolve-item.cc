@@ -46,8 +46,8 @@ ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
 void
 ResolveTraitItems::visit (AST::TraitItemType &type)
 {
-  auto decl
-    = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
+  auto decl = CanonicalPath::new_seg (type.get_node_id (),
+				      type.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (type.get_node_id (), cpath);
@@ -60,7 +60,8 @@ void
 ResolveTraitItems::visit (AST::TraitItemFunc &func)
 {
   auto decl = CanonicalPath::new_seg (
-    func.get_node_id (), func.get_trait_function_decl ().get_identifier ());
+    func.get_node_id (),
+    func.get_trait_function_decl ().get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (func.get_node_id (), cpath);
@@ -108,9 +109,9 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
 void
 ResolveTraitItems::visit (AST::TraitItemMethod &func)
 {
-  auto decl
-    = CanonicalPath::new_seg (func.get_node_id (),
-			      func.get_trait_method_decl ().get_identifier ());
+  auto decl = CanonicalPath::new_seg (
+    func.get_node_id (),
+    func.get_trait_method_decl ().get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (func.get_node_id (), cpath);
@@ -133,7 +134,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 
   // self turns into (self: Self) as a function param
   AST::SelfParam &self_param = function.get_self_param ();
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), "self",
+  AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
 				       self_param.get_locus (),
 				       self_param.get_has_ref (),
 				       self_param.get_is_mut (),
@@ -186,7 +187,7 @@ void
 ResolveTraitItems::visit (AST::TraitItemConst &constant)
 {
   auto decl = CanonicalPath::new_seg (constant.get_node_id (),
-				      constant.get_identifier ());
+				      constant.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (constant.get_node_id (), cpath);
@@ -214,7 +215,8 @@ void
 ResolveItem::visit (AST::TypeAlias &alias)
 {
   auto talias
-    = CanonicalPath::new_seg (alias.get_node_id (), alias.get_new_type_name ());
+    = CanonicalPath::new_seg (alias.get_node_id (),
+			      alias.get_new_type_name ().as_string ());
   auto path = prefix.append (talias);
   auto cpath = canonical_prefix.append (talias);
   mappings->insert_canonical_path (alias.get_node_id (), cpath);
@@ -237,7 +239,8 @@ ResolveItem::visit (AST::TypeAlias &alias)
 void
 ResolveItem::visit (AST::Module &module)
 {
-  auto mod = CanonicalPath::new_seg (module.get_node_id (), module.get_name ());
+  auto mod = CanonicalPath::new_seg (module.get_node_id (),
+				     module.get_name ().as_string ());
   auto path = prefix.append (mod);
   auto cpath = canonical_prefix.append (mod);
   mappings->insert_canonical_path (module.get_node_id (), cpath);
@@ -271,8 +274,9 @@ ResolveItem::visit (AST::Module &module)
 void
 ResolveItem::visit (AST::TupleStruct &struct_decl)
 {
-  auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-				      struct_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (struct_decl.get_node_id (),
+			      struct_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
@@ -306,7 +310,7 @@ void
 ResolveItem::visit (AST::Enum &enum_decl)
 {
   auto decl = CanonicalPath::new_seg (enum_decl.get_node_id (),
-				      enum_decl.get_identifier ());
+				      enum_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
@@ -337,8 +341,8 @@ ResolveItem::visit (AST::EnumItem &item)
   // Since at this point we cannot have visibilities on enum items anymore, we
   // can skip handling them
 
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -347,8 +351,8 @@ ResolveItem::visit (AST::EnumItem &item)
 void
 ResolveItem::visit (AST::EnumItemTuple &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -365,8 +369,8 @@ ResolveItem::visit (AST::EnumItemTuple &item)
 void
 ResolveItem::visit (AST::EnumItemStruct &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (item.get_node_id (), cpath);
@@ -383,8 +387,8 @@ ResolveItem::visit (AST::EnumItemStruct &item)
 void
 ResolveItem::visit (AST::EnumItemDiscriminant &item)
 {
-  auto decl
-    = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+  auto decl = CanonicalPath::new_seg (item.get_node_id (),
+				      item.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -394,8 +398,9 @@ ResolveItem::visit (AST::EnumItemDiscriminant &item)
 void
 ResolveItem::visit (AST::StructStruct &struct_decl)
 {
-  auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
-				      struct_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (struct_decl.get_node_id (),
+			      struct_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
@@ -428,8 +433,9 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
 void
 ResolveItem::visit (AST::Union &union_decl)
 {
-  auto decl = CanonicalPath::new_seg (union_decl.get_node_id (),
-				      union_decl.get_identifier ());
+  auto decl
+    = CanonicalPath::new_seg (union_decl.get_node_id (),
+			      union_decl.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
@@ -460,8 +466,8 @@ ResolveItem::visit (AST::Union &union_decl)
 void
 ResolveItem::visit (AST::StaticItem &var)
 {
-  auto decl
-    = CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ());
+  auto decl = CanonicalPath::new_seg (var.get_node_id (),
+				      var.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (var.get_node_id (), cpath);
@@ -488,8 +494,9 @@ ResolveItem::visit (AST::ConstantItem &constant)
 void
 ResolveItem::visit (AST::Function &function)
 {
-  auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_function_name ());
+  auto decl
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -611,8 +618,8 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 void
 ResolveItem::visit (AST::Method &method)
 {
-  auto decl
-    = CanonicalPath::new_seg (method.get_node_id (), method.get_method_name ());
+  auto decl = CanonicalPath::new_seg (method.get_node_id (),
+				      method.get_method_name ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (method.get_node_id (), cpath);
@@ -641,7 +648,7 @@ ResolveItem::visit (AST::Method &method)
 
   // self turns into (self: Self) as a function param
   AST::SelfParam &self_param = method.get_self_param ();
-  AST::IdentifierPattern self_pattern (self_param.get_node_id (), "self",
+  AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
 				       self_param.get_locus (),
 				       self_param.get_has_ref (),
 				       self_param.get_is_mut (),
@@ -818,7 +825,7 @@ ResolveItem::visit (AST::Trait &trait)
 
   // we need to inject an implicit self TypeParam here
   AST::TypeParam *implicit_self
-    = new AST::TypeParam ("Self", trait.get_locus ());
+    = new AST::TypeParam ({"Self"}, trait.get_locus ());
   trait.insert_implict_self (
     std::unique_ptr<AST::GenericParam> (implicit_self));
   CanonicalPath Self = CanonicalPath::get_big_self (trait.get_node_id ());
@@ -946,7 +953,7 @@ flatten_rebind (const AST::UseTreeRebind &rebind,
 
       // Add the identifier as a new path
       rebind_path.get_segments ().back ()
-	= AST::SimplePathSegment (new_seg, Location ());
+	= AST::SimplePathSegment (new_seg.as_string (), Location ());
 
       paths.emplace_back (rebind_path);
     }
@@ -1095,7 +1102,7 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 {
   NodeId scope_node_id = function.get_node_id ();
   auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_identifier ());
+				      function.get_identifier ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -1208,7 +1215,7 @@ rust_flatten_rebind (void)
   auto frob = Rust::AST::SimplePath::from_str ("frobulator", Location ());
 
   auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-					  frob, Location (), "saindoux");
+					  frob, Location (), {"saindoux"});
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_rebind (rebind, paths);
@@ -1228,8 +1235,9 @@ rust_flatten_rebind_nested (void)
 
   auto foo_bar_baz = Rust::AST::SimplePath ({foo, bar, baz});
 
-  auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-					  foo_bar_baz, Location (), "saindoux");
+  auto rebind
+    = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
+				foo_bar_baz, Location (), {"saindoux"});
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_rebind (rebind, paths);

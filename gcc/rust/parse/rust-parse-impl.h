@@ -2160,10 +2160,10 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
   Location fragment_locus = lexer.peek_token ()->get_locus ();
   skip_token (DOLLAR_SIGN);
 
-  Identifier ident = "";
+  Identifier ident{""};
   auto identifier = lexer.peek_token ();
   if (identifier->get_id () == UNDERSCORE)
-    ident = "_";
+    ident = {"_"};
   else
     ident = identifier->get_str ();
 
@@ -2411,7 +2411,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
     {
       return nullptr;
     }
-  Identifier name = module_name->get_str ();
+  Identifier name{module_name->get_str ()};
 
   const_TokenPtr t = lexer.peek_token ();
 
@@ -2431,7 +2431,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 	// parse inner attributes
 	AST::AttrVec inner_attrs = parse_inner_attributes ();
 
-	std::string default_path = name;
+	std::string default_path = name.as_string ();
 
 	if (inline_module_stack.empty ())
 	  {
@@ -2445,7 +2445,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 
 	    std::string subdir;
 	    if (get_file_subdir (filename, subdir))
-	      default_path = subdir + file_separator + name;
+	      default_path = subdir + file_separator + name.as_string ();
 	  }
 
 	std::string module_path_name
@@ -2825,7 +2825,7 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 
 		return std::unique_ptr<AST::UseTreeRebind> (
 		  new AST::UseTreeRebind (AST::UseTreeRebind::WILDCARD,
-					  std::move (path), locus, "_"));
+					  std::move (path), locus, {"_"}));
 	      default:
 		add_error (Error (
 		  t->get_locus (),
@@ -9666,7 +9666,7 @@ Parser<ManagedTokenSource>::parse_maybe_named_param (AST::AttrVec outer_attrs)
   else if (current->get_id () == UNDERSCORE && next->get_id () == COLON)
     {
       // wildcard param
-      name = "_";
+      name = {"_"};
       kind = AST::MaybeNamedParam::WILDCARD;
       lexer.skip_token (1);
     }

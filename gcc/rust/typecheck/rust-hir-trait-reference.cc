@@ -158,7 +158,7 @@ std::string
 TraitReference::get_name () const
 {
   rust_assert (!is_error ());
-  return hir_trait_ref->get_name ();
+  return hir_trait_ref->get_name ().as_string ();
 }
 
 std::string

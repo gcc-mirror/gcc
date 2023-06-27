@@ -537,7 +537,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if rule name is empty, so base stripping on that.
-  void mark_for_strip () override { rule_name = ""; }
+  void mark_for_strip () override { rule_name = {""}; }
   bool is_marked_for_strip () const override { return rule_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -921,7 +921,7 @@ public:
     : ident (std::move (ident)), ident_locus (ident_locus)
   {}
 
-  std::string as_string () const override { return ident; }
+  std::string as_string () const override { return ident.as_string (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -960,7 +960,7 @@ public:
 
   std::string as_string () const override
   {
-    return ident + " = \"" + str + "\"";
+    return ident.as_string () + " = \"" + str + "\"";
   }
 
   void accept_vis (ASTVisitor &vis) override;

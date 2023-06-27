@@ -1667,7 +1667,7 @@ public:
       locus (locus)
   {}
 
-  std::string as_string () const override { return field_name; }
+  std::string as_string () const override { return field_name.as_string (); }
 
   Location get_locus () const override final { return locus; }
 
@@ -1741,7 +1741,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  std::string get_field_name () const { return field_name; }
+  std::string get_field_name () const { return field_name.as_string (); }
 
   Location get_locus () const override final { return locus; }
 

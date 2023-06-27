@@ -51,8 +51,8 @@ public:
 
   void visit (AST::TypeAlias &type) override
   {
-    auto decl
-      = CanonicalPath::new_seg (type.get_node_id (), type.get_new_type_name ());
+    auto decl = CanonicalPath::new_seg (type.get_node_id (),
+					type.get_new_type_name ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_type_scope ().insert (
@@ -82,8 +82,9 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = CanonicalPath::new_seg (function.get_node_id (),
-					function.get_function_name ());
+    auto decl
+      = CanonicalPath::new_seg (function.get_node_id (),
+				function.get_function_name ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -99,7 +100,7 @@ public:
   void visit (AST::Method &method) override
   {
     auto decl = CanonicalPath::new_seg (method.get_node_id (),
-					method.get_method_name ());
+					method.get_method_name ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -138,7 +139,7 @@ public:
   {
     auto decl = CanonicalPath::new_seg (
       function.get_node_id (),
-      function.get_trait_function_decl ().get_identifier ());
+      function.get_trait_function_decl ().get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -157,7 +158,8 @@ public:
   void visit (AST::TraitItemMethod &method) override
   {
     auto decl = CanonicalPath::new_seg (
-      method.get_node_id (), method.get_trait_method_decl ().get_identifier ());
+      method.get_node_id (),
+      method.get_trait_method_decl ().get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -175,8 +177,9 @@ public:
 
   void visit (AST::TraitItemConst &constant) override
   {
-    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
-					constant.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (constant.get_node_id (),
+				constant.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -194,8 +197,8 @@ public:
 
   void visit (AST::TraitItemType &type) override
   {
-    auto decl
-      = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
+    auto decl = CanonicalPath::new_seg (type.get_node_id (),
+					type.get_identifier ().as_string ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -233,8 +236,9 @@ public:
 
   void visit (AST::ExternalFunctionItem &function) override
   {
-    auto decl = CanonicalPath::new_seg (function.get_node_id (),
-					function.get_identifier ());
+    auto decl
+      = CanonicalPath::new_seg (function.get_node_id (),
+				function.get_identifier ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -252,8 +256,8 @@ public:
 
   void visit (AST::ExternalStaticItem &item) override
   {
-    auto decl
-      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto decl = CanonicalPath::new_seg (item.get_node_id (),
+					item.get_identifier ().as_string ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (

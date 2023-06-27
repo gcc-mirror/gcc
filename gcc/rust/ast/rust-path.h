@@ -77,7 +77,7 @@ public:
   // Creates an error state generic args binding.
   static GenericArgsBinding create_error ()
   {
-    return GenericArgsBinding ("", nullptr);
+    return GenericArgsBinding ({""}, nullptr);
   }
 
   // Pointer type for type in constructor to enable polymorphism
@@ -159,19 +159,20 @@ public:
 
   static GenericArg create_error ()
   {
-    return GenericArg (nullptr, nullptr, "", Kind::Error, Location ());
+    return GenericArg (nullptr, nullptr, {""}, Kind::Error, Location ());
   }
 
   static GenericArg create_const (std::unique_ptr<Expr> expression)
   {
     auto locus = expression->get_locus ();
-    return GenericArg (std::move (expression), nullptr, "", Kind::Const, locus);
+    return GenericArg (std::move (expression), nullptr, {""}, Kind::Const,
+		       locus);
   }
 
   static GenericArg create_type (std::unique_ptr<Type> type)
   {
     auto locus = type->get_locus ();
-    return GenericArg (nullptr, std::move (type), "", Kind::Type, locus);
+    return GenericArg (nullptr, std::move (type), {""}, Kind::Type, locus);
   }
 
   static GenericArg create_ambiguous (Identifier path, Location locus)
@@ -245,7 +246,7 @@ public:
   {
     rust_assert (kind == Kind::Either);
 
-    return path;
+    return path.as_string ();
   }
 
   std::string as_string () const
@@ -255,7 +256,7 @@ public:
       case Kind::Error:
 	gcc_unreachable ();
       case Kind::Either:
-	return "Ambiguous: " + path;
+	return "Ambiguous: " + path.as_string ();
       case Kind::Const:
 	return "Const: { " + expression->as_string () + " }";
       case Kind::Type:

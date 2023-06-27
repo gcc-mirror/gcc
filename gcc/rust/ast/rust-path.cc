@@ -96,7 +96,7 @@ GenericArg::disambiguate_to_type () const
   rust_assert (get_kind () == Kind::Either);
 
   auto segment = std::unique_ptr<TypePathSegment> (
-    new TypePathSegment (path, false, locus));
+    new TypePathSegment (path.as_string (), false, locus));
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
   segments.emplace_back (std::move (segment));
 
@@ -108,14 +108,14 @@ std::string
 GenericArgsBinding::as_string () const
 {
   // TODO: rewrite to work with non-literalisable types
-  return identifier + " = " + type->as_string ();
+  return identifier.as_string () + " = " + type->as_string ();
 }
 
 std::string
 ConstGenericParam::as_string () const
 {
   std::string str ("ConstGenericParam: ");
-  str += "const " + name + ": " + type->as_string ();
+  str += "const " + name.as_string () + ": " + type->as_string ();
 
   if (has_default_value ())
     str += " = " + get_default_value ().as_string ();
