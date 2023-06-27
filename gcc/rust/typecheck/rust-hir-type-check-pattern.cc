@@ -268,7 +268,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	  i++;
 	}
 
-      rust_error_at (pattern.get_locus (), "pattern does not mention fields %s",
+      rust_error_at (pattern.get_locus (), ErrorCode ("E0027"),
+		     "pattern does not mention fields %s",
 		     missing_fields_str.c_str ());
     }
 }
