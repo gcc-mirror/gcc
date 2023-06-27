@@ -7282,6 +7282,7 @@ extern void module_preprocess_options (cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.cc */
+extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
 
 /* In parser.cc */
