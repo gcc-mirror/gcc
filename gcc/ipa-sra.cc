@@ -3074,6 +3074,8 @@ struct caller_issues
   cgraph_node *candidate;
   /* There is a thunk among callers.  */
   bool thunk;
+  /* Set if there is at least one caller that is OK.  */
+  bool there_is_one;
   /* Call site with no available information.  */
   bool unknown_callsite;
   /* Call from outside the candidate's comdat group.  */
@@ -3116,6 +3118,8 @@ check_for_caller_issues (struct cgraph_node *node, void *data)
 
       if (csum->m_bit_aligned_arg)
 	issues->bit_aligned_aggregate_argument = true;
+
+      issues->there_is_one = true;
     }
   return false;
 }
@@ -3169,6 +3173,13 @@ check_all_callers_for_issues (cgraph_node *node)
       unsigned param_count = vec_safe_length (ifs->m_parameters);
       for (unsigned i = 0; i < param_count; i++)
 	(*ifs->m_parameters)[i].split_candidate = false;
+    }
+  if (!issues.there_is_one)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "There is no call to %s that we can modify.  "
+		 "Disabling all modifications.\n", node->dump_name ());
+      return true;
     }
   return false;
 }
