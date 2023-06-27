@@ -45,6 +45,7 @@ Dump::require_spacing (TokenPtr previous, TokenPtr current)
     case RIGHT_PAREN:
     case DOLLAR_SIGN:
     case SEMICOLON:
+    case COMMA:
       return false;
     default:
       break;

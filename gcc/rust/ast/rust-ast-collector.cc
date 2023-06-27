@@ -452,16 +452,10 @@ TokenCollector::visit (Token &tok)
 void
 TokenCollector::visit (DelimTokenTree &delim_tok_tree)
 {
-  increment_indentation ();
-  newline ();
-  indentation ();
   for (auto &token : delim_tok_tree.to_token_stream ())
     {
       visit (token);
     }
-  decrement_indentation ();
-  newline ();
-  indentation ();
 }
 
 void
@@ -1270,17 +1264,18 @@ TokenCollector::visit (BlockExpr &expr)
   increment_indentation ();
   visit_items_as_lines (expr.get_inner_attrs ());
 
-  visit_items_as_lines (expr.get_statements (),
-			{Rust::Token::make (SEMICOLON, Location ())});
+  visit_items_as_lines (expr.get_statements (), {});
 
   if (expr.has_tail_expr ())
     {
+      indentation ();
       visit (expr.get_tail_expr ());
       comment ("tail expr");
       newline ();
     }
 
   decrement_indentation ();
+  indentation ();
   push (Rust::Token::make (RIGHT_CURLY, expr.get_locus ()));
   newline ();
 }
@@ -2267,7 +2262,10 @@ TokenCollector::visit (MacroMatchRepetition &repetition)
   push (Rust::Token::make (DOLLAR_SIGN, Location ()));
   push (Rust::Token::make (LEFT_PAREN, Location ()));
 
-  visit_items_joined_by_separator (repetition.get_matches (), {});
+  for (auto &match : repetition.get_matches ())
+    {
+      visit (match);
+    }
 
   push (Rust::Token::make (RIGHT_PAREN, Location ()));
 
@@ -2313,7 +2311,6 @@ TokenCollector::visit (MacroRule &rule)
   visit (rule.get_matcher ());
   push (Rust::Token::make (MATCH_ARROW, rule.get_locus ()));
   visit (rule.get_transcriber ().get_token_tree ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
 }
 
 void
@@ -2341,7 +2338,9 @@ TokenCollector::visit (MacroInvocation &invocation)
   push (Rust::Token::make (EXCLAM, Location ()));
   visit (data.get_delim_tok_tree ());
   if (invocation.has_semicolon ())
-    push (Rust::Token::make (SEMICOLON, Location ()));
+    {
+      push (Rust::Token::make (SEMICOLON, Location ()));
+    }
 }
 
 void
@@ -2693,12 +2692,15 @@ TokenCollector::visit (LetStmt &stmt)
       push (Rust::Token::make (EQUAL, Location ()));
       visit (stmt.get_init_expr ());
     }
+  push (Rust::Token::make (SEMICOLON, Location ()));
 }
 
 void
 TokenCollector::visit (ExprStmt &stmt)
 {
   visit (stmt.get_expr ());
+  if (stmt.is_semicolon_followed ())
+    push (Rust::Token::make (SEMICOLON, Location ()));
 }
 
 // rust-type.h
