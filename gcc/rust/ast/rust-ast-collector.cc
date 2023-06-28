@@ -1259,6 +1259,7 @@ TokenCollector::visit (ClosureExprInner &expr)
 void
 TokenCollector::visit (BlockExpr &expr)
 {
+  visit_items_as_lines (expr.get_outer_attrs ());
   push (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
   newline ();
   increment_indentation ();
