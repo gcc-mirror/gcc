@@ -2365,6 +2365,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   /* Handle special case - vector comparsion with boolean result, transform
      it using ptest instruction.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      || (mode == TImode && !TARGET_64BIT)
       || mode == OImode)
     {
       rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
@@ -2372,7 +2373,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
       gcc_assert (code == EQ || code == NE);
 
-      if (mode == OImode)
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
 	{
 	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
 	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);

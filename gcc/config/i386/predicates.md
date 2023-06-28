@@ -1641,6 +1641,18 @@
                (match_operand 0 "comparison_operator")
                (match_operand 0 "ix86_trivial_fp_comparison_operator")))
 
+;; Return true if we can perform this comparison on TImode operands.
+(define_predicate "ix86_timode_comparison_operator"
+  (if_then_else (match_test "TARGET_64BIT")
+		(match_operand 0 "ordered_comparison_operator")
+		(match_operand 0 "bt_comparison_operator")))
+
+;; Return true if this is a valid second operand for a TImode comparison.
+(define_predicate "ix86_timode_comparison_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+		(match_operand 0 "x86_64_general_operand")
+		(match_operand 0 "nonimmediate_operand")))
+
 ;; Nearly general operand, but accept any const_double, since we wish
 ;; to be able to drop them into memory rather than have them get pulled
 ;; into registers.
