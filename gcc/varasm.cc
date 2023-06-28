@@ -4061,10 +4061,16 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
 	   whole element.  Often this is byte_mode and contains more
 	   than one element.  */
 	unsigned int nelts = GET_MODE_NUNITS (mode);
-	unsigned int elt_bits = GET_MODE_BITSIZE (mode) / nelts;
+	unsigned int elt_bits = GET_MODE_PRECISION (mode) / nelts;
 	unsigned int int_bits = MAX (elt_bits, BITS_PER_UNIT);
 	scalar_int_mode int_mode = int_mode_for_size (int_bits, 0).require ();
 	unsigned int mask = GET_MODE_MASK (GET_MODE_INNER (mode));
+
+	/* We allow GET_MODE_PRECISION (mode) <= GET_MODE_BITSIZE (mode) but
+	   only properly handle cases where the difference is less than a
+	   byte.  */
+	gcc_assert (GET_MODE_BITSIZE (mode) - GET_MODE_PRECISION (mode) <
+		    BITS_PER_UNIT);
 
 	/* Build the constant up one integer at a time.  */
 	unsigned int elts_per_int = int_bits / elt_bits;

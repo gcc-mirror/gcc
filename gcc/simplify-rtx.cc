@@ -7076,7 +7076,7 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
       /* CONST_VECTOR_ELT follows target memory order, so no shuffling
 	 is necessary.  The only complication is that MODE_VECTOR_BOOL
 	 vectors can have several elements per byte.  */
-      unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+      unsigned int elt_bits = vector_element_size (GET_MODE_PRECISION (mode),
 						   GET_MODE_NUNITS (mode));
       unsigned int elt = first_byte * BITS_PER_UNIT / elt_bits;
       if (elt_bits < BITS_PER_UNIT)
@@ -7222,7 +7222,7 @@ native_decode_vector_rtx (machine_mode mode, const vec<target_unit> &bytes,
 {
   rtx_vector_builder builder (mode, npatterns, nelts_per_pattern);
 
-  unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+  unsigned int elt_bits = vector_element_size (GET_MODE_PRECISION (mode),
 					       GET_MODE_NUNITS (mode));
   if (elt_bits < BITS_PER_UNIT)
     {
@@ -7359,7 +7359,7 @@ simplify_const_vector_byte_offset (rtx x, poly_uint64 byte)
 {
   /* Cope with MODE_VECTOR_BOOL by operating on bits rather than bytes.  */
   machine_mode mode = GET_MODE (x);
-  unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+  unsigned int elt_bits = vector_element_size (GET_MODE_PRECISION (mode),
 					       GET_MODE_NUNITS (mode));
   /* The number of bits needed to encode one element from each pattern.  */
   unsigned int sequence_bits = CONST_VECTOR_NPATTERNS (x) * elt_bits;
@@ -7414,10 +7414,10 @@ simplify_const_vector_subreg (machine_mode outermode, rtx x,
 
   /* Cope with MODE_VECTOR_BOOL by operating on bits rather than bytes.  */
   unsigned int x_elt_bits
-    = vector_element_size (GET_MODE_BITSIZE (innermode),
+    = vector_element_size (GET_MODE_PRECISION (innermode),
 			   GET_MODE_NUNITS (innermode));
   unsigned int out_elt_bits
-    = vector_element_size (GET_MODE_BITSIZE (outermode),
+    = vector_element_size (GET_MODE_PRECISION (outermode),
 			   GET_MODE_NUNITS (outermode));
 
   /* The number of bits needed to encode one element from every pattern
