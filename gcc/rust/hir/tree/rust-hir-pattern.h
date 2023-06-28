@@ -781,7 +781,7 @@ protected:
 };
 
 // Base abstract class for patterns used in TupleStructPattern
-class TupleStructItems
+class TupleStructItems : public FullVisitable
 {
 public:
   enum ItemType
@@ -1014,7 +1014,7 @@ protected:
 };
 
 // Base abstract class representing TuplePattern patterns
-class TuplePatternItems
+class TuplePatternItems : public FullVisitable
 {
 public:
   enum TuplePatternItemType
@@ -1035,8 +1035,6 @@ public:
   }
 
   virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual TuplePatternItemType get_pattern_type () const = 0;
 

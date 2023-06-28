@@ -835,7 +835,7 @@ protected:
 
 // Base array initialisation internal element representation thing (abstract)
 // aka ArrayElements
-class ArrayElems
+class ArrayElems : public FullVisitable
 {
 public:
   enum ArrayExprType
@@ -1393,7 +1393,7 @@ public:
 
 /* Base HIR node for a single struct expression field (in struct instance
  * creation) - abstract */
-class StructExprField
+class StructExprField : public FullVisitable
 {
 public:
   enum StructExprFieldKind
@@ -2144,6 +2144,7 @@ protected:
 // A block HIR node
 class BlockExpr : public ExprWithBlock, public WithInnerAttrs
 {
+  // FIXME this should be private + get/set
 public:
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
