@@ -1,4 +1,4 @@
-/* { dg-do run { target { riscv_vector } } } */
+/* { dg-do run { target { riscv_vector && riscv_zvfh_hw } } } */
 /* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
 
 #include <assert.h>
@@ -19,14 +19,7 @@
   for (int i = 0; i < SZ; i++)                                                 \
     assert (dst##TYPE1[i] == ((TYPE1) a##TYPE2[i] + (TYPE1) b##TYPE1[i]));
 
-#define RUN_ALL()                                                              \
-  RUN (int16_t, int8_t, -128)                                                  \
-  RUN (uint16_t, uint8_t, 255)                                                 \
-  RUN (int32_t, int16_t, -32768)                                               \
-  RUN (uint32_t, uint16_t, 65535)                                              \
-  RUN (int64_t, int32_t, -2147483648)                                          \
-  RUN (uint64_t, uint32_t, 4294967295)                                         \
-  RUN (double, float, -2147483648)
+#define RUN_ALL() RUN (float, _Float16, -32768)
 
 int
 main ()
