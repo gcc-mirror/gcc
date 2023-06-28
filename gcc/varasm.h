@@ -31,7 +31,7 @@ extern tree tree_output_constant_def (tree);
 extern void make_decl_rtl (tree);
 extern rtx make_decl_rtl_for_debug (tree);
 extern void make_decl_one_only (tree, tree);
-extern int supports_one_only (void);
+extern bool supports_one_only (void);
 extern void resolve_unique_section (tree, int, int);
 extern void mark_referenced (tree);
 extern void mark_decl_referenced (tree);

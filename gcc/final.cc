@@ -163,9 +163,9 @@ static int insn_counter = 0;
 
 static int block_depth;
 
-/* Nonzero if have enabled APP processing of our assembler output.  */
+/* True if have enabled APP processing of our assembler output.  */
 
-static int app_on;
+static bool app_on;
 
 /* If we are outputting an insn sequence, this contains the sequence rtx.
    Zero otherwise.  */
@@ -603,7 +603,7 @@ insn_current_reference_address (rtx_insn *branch)
 
 /* Compute branch alignments based on CFG profile.  */
 
-unsigned int
+void
 compute_alignments (void)
 {
   basic_block bb;
@@ -617,7 +617,7 @@ compute_alignments (void)
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_function_for_size_p (cfun))
-    return 0;
+    return;
 
   if (dump_file)
     {
@@ -721,7 +721,6 @@ compute_alignments (void)
 
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
-  return 0;
 }
 
 /* Grow the LABEL_ALIGN array after new labels are created.  */
@@ -790,7 +789,8 @@ public:
   /* opt_pass methods: */
   unsigned int execute (function *) final override
   {
-    return compute_alignments ();
+    compute_alignments ();
+    return 0;
   }
 
 }; // class pass_compute_alignments
@@ -822,7 +822,7 @@ shorten_branches (rtx_insn *first)
   int max_uid;
   int i;
   rtx_insn *seq;
-  int something_changed = 1;
+  bool something_changed = true;
   char *varying_length;
   rtx body;
   int uid;
@@ -1103,7 +1103,7 @@ shorten_branches (rtx_insn *first)
 
   while (something_changed)
     {
-      something_changed = 0;
+      something_changed = false;
       insn_current_align = MAX_CODE_ALIGN - 1;
       for (insn_current_address = 0, insn = first;
 	   insn != 0;
@@ -1136,7 +1136,7 @@ shorten_branches (rtx_insn *first)
 			{
 			  log = newlog;
 			  LABEL_TO_ALIGNMENT (insn) = log;
-			  something_changed = 1;
+			  something_changed = true;
 			}
 		    }
 		}
@@ -1274,7 +1274,7 @@ shorten_branches (rtx_insn *first)
 		       * GET_MODE_SIZE (table->get_data_mode ()));
 		  insn_current_address += insn_lengths[uid];
 		  if (insn_lengths[uid] != old_length)
-		    something_changed = 1;
+		    something_changed = true;
 		}
 
 	      continue;
@@ -1332,7 +1332,7 @@ shorten_branches (rtx_insn *first)
 		      if (!increasing || inner_length > insn_lengths[inner_uid])
 			{
 			  insn_lengths[inner_uid] = inner_length;
-			  something_changed = 1;
+			  something_changed = true;
 			}
 		      else
 			inner_length = insn_lengths[inner_uid];
@@ -1358,7 +1358,7 @@ shorten_branches (rtx_insn *first)
 	      && (!increasing || new_length > insn_lengths[uid]))
 	    {
 	      insn_lengths[uid] = new_length;
-	      something_changed = 1;
+	      something_changed = true;
 	    }
 	  else
 	    insn_current_address += insn_lengths[uid] - new_length;
@@ -4043,9 +4043,9 @@ asm_fprintf (FILE *file, const char *p, ...)
   va_end (argptr);
 }
 
-/* Return nonzero if this function has no function calls.  */
+/* Return true if this function has no function calls.  */
 
-int
+bool
 leaf_function_p (void)
 {
   rtx_insn *insn;
@@ -4056,29 +4056,29 @@ leaf_function_p (void)
   /* Some back-ends (e.g. s390) want leaf functions to stay leaf
      functions even if they call mcount.  */
   if (crtl->profile && !targetm.keep_leaf_when_profiled ())
-    return 0;
+    return false;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (CALL_P (insn)
 	  && ! SIBLING_CALL_P (insn)
 	  && ! FAKE_CALL_P (insn))
-	return 0;
+	return false;
       if (NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
 	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))
 	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (insn), 0, 0)))
-	return 0;
+	return false;
     }
 
-  return 1;
+  return true;
 }
 
-/* Return 1 if branch is a forward branch.
+/* Return true if branch is a forward branch.
    Uses insn_shuid array, so it works only in the final pass.  May be used by
    output templates to customary add branch prediction hints.
  */
-int
+bool
 final_forward_branch_p (rtx_insn *insn)
 {
   int insn_id, label_id;
@@ -4102,10 +4102,10 @@ final_forward_branch_p (rtx_insn *insn)
 
 #ifdef LEAF_REGISTERS
 
-/* Return 1 if this function uses only the registers that can be
+/* Return bool if this function uses only the registers that can be
    safely renumbered.  */
 
-int
+bool
 only_leaf_regs_used (void)
 {
   int i;
@@ -4114,15 +4114,15 @@ only_leaf_regs_used (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if ((df_regs_ever_live_p (i) || global_regs[i])
 	&& ! permitted_reg_in_leaf_functions[i])
-      return 0;
+      return false;
 
   if (crtl->uses_pic_offset_table
       && pic_offset_table_rtx != 0
       && REG_P (pic_offset_table_rtx)
       && ! permitted_reg_in_leaf_functions[REGNO (pic_offset_table_rtx)])
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Scan all instructions and renumber all registers into those
