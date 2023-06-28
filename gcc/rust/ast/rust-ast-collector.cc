@@ -2194,6 +2194,7 @@ TokenCollector::visit (ExternalStaticItem &item)
 void
 TokenCollector::visit (ExternalFunctionItem &function)
 {
+  visit_items_as_lines (function.get_outer_attrs ());
   visit (function.get_visibility ());
 
   auto id = function.get_identifier ().as_string ();
