@@ -2386,7 +2386,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && vr.nonzero_p ())
 	    addr_nonzero = true;
 	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
@@ -2408,7 +2408,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && Value_Range::supports_type_p (param_type)
 	      && irange::supports_p (TREE_TYPE (arg))
 	      && irange::supports_p (param_type)
-	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && !vr.undefined_p ())
 	    {
 	      Value_Range resvr (vr);
@@ -3190,7 +3190,9 @@ ipa_analyze_node (struct cgraph_node *node)
       bi->cg_edges.safe_push (cs);
     }
 
+  enable_ranger (cfun, false);
   analysis_dom_walker (&fbi).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  disable_ranger (cfun);
 
   ipa_release_body_info (&fbi);
   free_dominance_info (CDI_DOMINATORS);
