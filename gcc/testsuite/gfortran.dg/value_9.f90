@@ -9,7 +9,12 @@ program p
   character      (kind=4), allocatable :: ca4
   character      (kind=4), pointer     :: cp4
   character(len=:,kind=4), allocatable :: cd4
+  character                            :: c  =   "1"
+  character      (kind=4)              :: c4 = 4_"4"
+  character(len=3)                     :: d  =   "210"
+  character(len=3,kind=4)              :: d4 = 4_"321"
   integer :: a = 65
+  integer :: l = 2
   allocate (ca, cp, ca4, cp4)
 
   ! Check len=1 actual argument cases first
@@ -20,15 +25,21 @@ program p
   call val  ("A",char(a))
   call val  ("A",mychar(65))
   call val  ("A",mychar(a))
+  call val  ("1",c)
+  call val  ("1",(c))
   call val4 (4_"C",4_"C")
   call val4 (4_"A",char(65,kind=4))
   call val4 (4_"A",char(a, kind=4))
+  call val4 (4_"4",c4)
+  call val4 (4_"4",(c4))
   call val  (ca,ca)
   call val  (cp,cp)
   call val  (cd,cd)
+  call val  (ca,(ca))
   call val4 (ca4,ca4)
   call val4 (cp4,cp4)
   call val4 (cd4,cd4)
+  call val4 (cd4,(cd4))
   call sub  ("S")
   call sub4 (4_"T")
 
@@ -37,6 +48,18 @@ program p
   call val4 (4_"V**",4_"V//")
   call sub  (  "WTY")
   call sub4 (4_"ZXV")
+  call val  (  "234",  d    )
+  call val4 (4_"345",  d4   )
+  call val  (  "234", (d)   )
+  call val4 (4_"345", (d4)  )
+  call val  (  "234",  d (1:2))
+  call val4 (4_"345",  d4(1:2))
+  call val  (  "234",  d (1:l))
+  call val4 (4_"345",  d4(1:l))
+  call val  ("1",c // d)
+  call val  ("1",trim (c // d))
+  call val4 (4_"4",c4 // d4)
+  call val4 (4_"4",trim (c4 // d4))
   cd = "gkl"; cd4 = 4_"hmn"
   call val  (cd,cd)
   call val4 (cd4,cd4)

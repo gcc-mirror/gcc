@@ -6395,7 +6395,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
 		       dummy arguments are actually passed by value.
-		       Constant strings are truncated to length 1.
+		       Strings are truncated to length 1.
 		       The BIND(C) case is handled elsewhere.  */
 		    if (fsym->ts.type == BT_CHARACTER
 			&& !fsym->ts.is_c_interop
@@ -6405,10 +6405,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			    (fsym->ts.u.cl->length->value.integer, 1) == 0))
 		      {
 			if (e->expr_type != EXPR_CONSTANT)
-			  parmse.expr = gfc_string_to_single_character
-			    (build_int_cst (gfc_charlen_type_node, 1),
-			     parmse.expr,
-			     e->ts.kind);
+			  {
+			    tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+			    gfc_conv_string_parameter (&parmse);
+			    parmse.expr = gfc_string_to_single_character (slen1,
+									  parmse.expr,
+									  e->ts.kind);
+			    /* Truncate resulting string to length 1.  */
+			    parmse.string_length = slen1;
+			  }
 			else if (e->value.character.length > 1)
 			  {
 			    e->value.character.length = 1;
