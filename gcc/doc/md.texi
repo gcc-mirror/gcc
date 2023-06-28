@@ -5091,6 +5091,8 @@ Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
 Set given field in the vector value.  Operand 0 is the vector to modify,
 operand 1 is new value of field and operand 2 specify the field index.
 
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_extract@var{m}@var{n}} instruction pattern
 @item @samp{vec_extract@var{m}@var{n}}
 Extract given field from the vector value.  Operand 1 is the vector, operand 2
@@ -5098,7 +5100,10 @@ specify field index and operand 0 place to store value into.  The
 @var{n} mode is the mode of the field or vector of fields that should be
 extracted, should be either element mode of the vector mode @var{m}, or
 a vector mode with the same element mode and smaller number of elements.
-If @var{n} is a vector mode, the index is counted in units of that mode.
+If @var{n} is a vector mode the index is counted in multiples of
+mode @var{n}.
+
+This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{vec_init@var{m}@var{n}} instruction pattern
 @item @samp{vec_init@var{m}@var{n}}

@@ -42,17 +42,26 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
    internal function based on vector type of selected expansion.
-   i.e.:
+
+   For vec_set:
+
      VIEW_CONVERT_EXPR<int[4]>(u)[_1] = i_4(D);
    =>
      _7 = u;
      _8 = .VEC_SET (_7, i_4(D), _1);
-     u = _8;  */
+     u = _8;
+
+   For vec_extract:
+
+      _3 = VIEW_CONVERT_EXPR<intD.1[4]>(vD.2208)[idx_2(D)];
+   =>
+      _4 = vD.2208;
+      _3 = .VEC_EXTRACT (_4, idx_2(D));  */
 
 static bool
-gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
+gimple_expand_vec_set_extract_expr (struct function *fun,
+				    gimple_stmt_iterator *gsi)
 {
-  enum tree_code code;
   gcall *new_stmt = NULL;
   gassign *ass_stmt = NULL;
   bool cfg_changed = false;
@@ -62,49 +71,84 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
   if (!stmt)
     return false;
 
+  bool is_extract = false;
+
   tree lhs = gimple_assign_lhs (stmt);
-  code = TREE_CODE (lhs);
-  if (code != ARRAY_REF)
+  tree rhs = gimple_assign_rhs1 (stmt);
+  tree val, ref;
+  if (TREE_CODE (lhs) == ARRAY_REF)
+    {
+      /* Assume it is a vec_set.  */
+      val = rhs;
+      ref = lhs;
+    }
+  else if (TREE_CODE (rhs) == ARRAY_REF)
+    {
+      /* vec_extract.  */
+      is_extract = true;
+      val = lhs;
+      ref = rhs;
+    }
+  else
     return false;
 
-  tree val = gimple_assign_rhs1 (stmt);
-  tree op0 = TREE_OPERAND (lhs, 0);
+  tree op0 = TREE_OPERAND (ref, 0);
   if (TREE_CODE (op0) == VIEW_CONVERT_EXPR && DECL_P (TREE_OPERAND (op0, 0))
       && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
-      && TYPE_MODE (TREE_TYPE (lhs))
+      && TYPE_MODE (TREE_TYPE (ref))
 	   == TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 0)))))
     {
-      tree pos = TREE_OPERAND (lhs, 1);
+      tree pos = TREE_OPERAND (ref, 1);
+
       tree view_op0 = TREE_OPERAND (op0, 0);
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
+      machine_mode extract_mode = TYPE_MODE (TREE_TYPE (ref));
+
       if (auto_var_in_fn_p (view_op0, fun->decl)
-	  && !TREE_ADDRESSABLE (view_op0) && can_vec_set_var_idx_p (outermode))
+	  && !TREE_ADDRESSABLE (view_op0)
+	  && ((!is_extract && can_vec_set_var_idx_p (outermode))
+	      || (is_extract
+		  && can_vec_extract_var_idx_p (outermode, extract_mode))))
 	{
 	  location_t loc = gimple_location (stmt);
 	  tree var_src = make_ssa_name (TREE_TYPE (view_op0));
-	  tree var_dst = make_ssa_name (TREE_TYPE (view_op0));
 
 	  ass_stmt = gimple_build_assign (var_src, view_op0);
 	  gimple_set_vuse (ass_stmt, gimple_vuse (stmt));
 	  gimple_set_location (ass_stmt, loc);
 	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
 
-	  new_stmt
-	    = gimple_build_call_internal (IFN_VEC_SET, 3, var_src, val, pos);
-	  gimple_call_set_lhs (new_stmt, var_dst);
-	  gimple_set_location (new_stmt, loc);
-	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+	  if (!is_extract)
+	    {
+	      tree var_dst = make_ssa_name (TREE_TYPE (view_op0));
 
-	  ass_stmt = gimple_build_assign (view_op0, var_dst);
-	  gimple_set_location (ass_stmt, loc);
-	  gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
+	      new_stmt = gimple_build_call_internal (IFN_VEC_SET, 3, var_src,
+						     val, pos);
 
-	  basic_block bb = gimple_bb (stmt);
-	  gimple_move_vops (ass_stmt, stmt);
-	  if (gsi_remove (gsi, true)
-	      && gimple_purge_dead_eh_edges (bb))
-	    cfg_changed = true;
-	  *gsi = gsi_for_stmt (ass_stmt);
+	      gimple_call_set_lhs (new_stmt, var_dst);
+	      gimple_set_location (new_stmt, loc);
+	      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+
+	      ass_stmt = gimple_build_assign (view_op0, var_dst);
+	      gimple_set_location (ass_stmt, loc);
+	      gimple_move_vops (ass_stmt, stmt);
+	      gsi_insert_before (gsi, ass_stmt, GSI_SAME_STMT);
+
+	      basic_block bb = gimple_bb (stmt);
+	      if (gsi_remove (gsi, true)
+		  && gimple_purge_dead_eh_edges (bb))
+		cfg_changed = true;
+	      *gsi = gsi_for_stmt (ass_stmt);
+	    }
+	  else
+	    {
+	      new_stmt
+		= gimple_build_call_internal (IFN_VEC_EXTRACT, 2, var_src, pos);
+	      gimple_call_set_lhs (new_stmt, lhs);
+
+	      gsi_replace (gsi, new_stmt, true);
+	      cfg_changed = true;
+	    }
 	}
     }
 
@@ -317,7 +361,8 @@ gimple_expand_vec_exprs (struct function *fun)
 	      gsi_replace (&gsi, g, false);
 	    }
 
-	  cfg_changed |= gimple_expand_vec_set_expr (fun, &gsi);
+	  cfg_changed |= gimple_expand_vec_set_extract_expr (fun, &gsi);
+
 	  if (gsi_end_p (gsi))
 	    break;
 	}
