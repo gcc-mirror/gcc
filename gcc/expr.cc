@@ -7447,6 +7447,19 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      emit_move_insn (target, ops[0].value);
 	    break;
 	  }
+	/* Use sign-extension for uniform boolean vectors with
+	   integer modes.  */
+	if (!TREE_SIDE_EFFECTS (exp)
+	    && VECTOR_BOOLEAN_TYPE_P (type)
+	    && SCALAR_INT_MODE_P (mode)
+	    && (elt = uniform_vector_p (exp))
+	    && !VECTOR_TYPE_P (TREE_TYPE (elt)))
+	  {
+	    rtx op0 = force_reg (TYPE_MODE (TREE_TYPE (elt)),
+				 expand_normal (elt));
+	    convert_move (target, op0, 0);
+	    break;
+	  }
 
 	n_elts = TYPE_VECTOR_SUBPARTS (type);
 	if (REG_P (target)
