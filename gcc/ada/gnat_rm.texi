@@ -29515,6 +29515,11 @@ basic blocks take note as control flows through them, and, before
 returning, subprograms verify that the taken notes are consistent with
 the control-flow graph.
 
+The performance impact of verification on leaf subprograms can be much
+higher, while the averted risks are much lower on them.
+Instrumentation can be disabled for leaf subprograms with
+@code{-fhardcfr-skip-leaf}.
+
 Functions with too many basic blocks, or with multiple return points,
 call a run-time function to perform the verification.  Other functions
 perform the verification inline before returning.
