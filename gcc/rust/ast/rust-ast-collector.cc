@@ -2192,6 +2192,8 @@ TokenCollector::visit (ExternalFunctionItem &function)
 
   push (Rust::Token::make (FN_TOK, function.get_locus ()));
   push (Rust::Token::make_identifier (Location (), std::move (id)));
+  if (function.has_generics ())
+    visit (function.get_generic_params ());
   push (Rust::Token::make (LEFT_PAREN, Location ()));
 
   visit_items_joined_by_separator (function.get_function_params ());
