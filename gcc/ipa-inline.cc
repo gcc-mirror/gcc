@@ -680,28 +680,60 @@ can_early_inline_edge_p (struct cgraph_edge *e)
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
       return false;
     }
-  /* In early inliner some of callees may not be in SSA form yet
-     (i.e. the callgraph is cyclic and we did not process
-     the callee by early inliner, yet).  We don't have CIF code for this
-     case; later we will re-do the decision in the real inliner.  */
-  if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->caller->decl))
-      || !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (callee->decl)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
-			 "  edge not inlinable: not in SSA form\n");
-      return false;
-    }
-  else if (profile_arc_flag
-	   && ((lookup_attribute ("no_profile_instrument_function",
-				 DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
-	       != (lookup_attribute ("no_profile_instrument_function",
-				     DECL_ATTRIBUTES (callee->decl)) == NULL_TREE)))
+  gcc_assert (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->caller->decl))
+	      && gimple_in_ssa_p (DECL_STRUCT_FUNCTION (callee->decl)));
+  if (profile_arc_flag
+      && ((lookup_attribute ("no_profile_instrument_function",
+			    DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
+	  != (lookup_attribute ("no_profile_instrument_function",
+				DECL_ATTRIBUTES (callee->decl)) == NULL_TREE)))
     return false;
 
   if (!can_inline_edge_p (e, true, true)
       || !can_inline_edge_by_limits_p (e, true, false, true))
     return false;
+  /* When inlining regular functions into always-inline functions
+     during early inlining watch for possible inline cycles.  */
+  if (DECL_DISREGARD_INLINE_LIMITS (caller->decl)
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (caller->decl))
+      && (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+	  || !lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee->decl))))
+    {
+      /* If there are indirect calls, inlining may produce direct call.
+	 TODO: We may lift this restriction if we avoid errors on formely
+	 indirect calls to always_inline functions.  Taking address
+	 of always_inline function is generally bad idea and should
+	 have been declared as undefined, but sadly we allow this.  */
+      if (caller->indirect_calls || e->callee->indirect_calls)
+	return false;
+      ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+      if (callee_info->safe_to_inline_to_always_inline)
+	return callee_info->safe_to_inline_to_always_inline - 1;
+      for (cgraph_edge *e2 = callee->callees; e2; e2 = e2->next_callee)
+	{
+	  struct cgraph_node *callee2 = e2->callee->ultimate_alias_target ();
+	  /* As early inliner runs in RPO order, we will see uninlined
+	     always_inline calls only in the case of cyclic graphs.  */
+	  if (DECL_DISREGARD_INLINE_LIMITS (callee2->decl)
+	      || lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee2->decl)))
+	    {
+	      callee_info->safe_to_inline_to_always_inline = 1;
+	      return false;
+	    }
+	  /* With LTO watch for case where function is later replaced
+	     by always_inline definition.
+	     TODO: We may either stop treating noninlined cross-module always
+	     inlines as errors, or we can extend decl merging to produce
+	     syntacic alias and honor always inline only in units it has
+	     been declared as such.  */
+	  if (flag_lto && callee2->externally_visible)
+	    {
+	      callee_info->safe_to_inline_to_always_inline = 1;
+	      return false;
+	    }
+	}
+      callee_info->safe_to_inline_to_always_inline = 2;
+    }
   return true;
 }
 
@@ -2896,7 +2928,8 @@ ipa_inline (void)
   return remove_functions ? TODO_remove_functions : 0;
 }
 
-/* Inline always-inline function calls in NODE.  */
+/* Inline always-inline function calls in NODE
+   (which itself is possibly inline).  */
 
 static bool
 inline_always_inline_functions (struct cgraph_node *node)
@@ -2907,7 +2940,10 @@ inline_always_inline_functions (struct cgraph_node *node)
   for (e = node->callees; e; e = e->next_callee)
     {
       struct cgraph_node *callee = e->callee->ultimate_alias_target ();
-      if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+      gcc_checking_assert (!callee->aux || callee->aux == (void *)(size_t)1);
+      if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+	  /* Watch for self-recursive cycles.  */
+	  || callee->aux)
 	continue;
 
       if (e->recursive_p ())
@@ -2919,6 +2955,9 @@ inline_always_inline_functions (struct cgraph_node *node)
 	  e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
+      if (callee->definition
+	  && !ipa_fn_summaries->get (callee))
+	compute_fn_summary (callee, true);
 
       if (!can_early_inline_edge_p (e))
 	{
@@ -2936,11 +2975,13 @@ inline_always_inline_functions (struct cgraph_node *node)
 			 "  Inlining %C into %C (always_inline).\n",
 			 e->callee, e->caller);
       inline_call (e, true, NULL, NULL, false);
+      callee->aux = (void *)(size_t)1;
+      /* Inline recursively to handle the case where always_inline function was
+	 not optimized yet since it is a part of a cycle in callgraph.  */
+      inline_always_inline_functions (e->callee);
+      callee->aux = NULL;
       inlined = true;
     }
-  if (inlined)
-    ipa_update_overall_fn_summary (node);
-
   return inlined;
 }
 
@@ -3034,18 +3075,7 @@ early_inliner (function *fun)
 
   if (!optimize
       || flag_no_inline
-      || !flag_early_inlining
-      /* Never inline regular functions into always-inline functions
-	 during incremental inlining.  This sucks as functions calling
-	 always inline functions will get less optimized, but at the
-	 same time inlining of functions calling always inline
-	 function into an always inline function might introduce
-	 cycles of edges to be always inlined in the callgraph.
-
-	 We might want to be smarter and just avoid this type of inlining.  */
-      || (DECL_DISREGARD_INLINE_LIMITS (node->decl)
-	  && lookup_attribute ("always_inline",
-			       DECL_ATTRIBUTES (node->decl))))
+      || !flag_early_inlining)
     ;
   else if (lookup_attribute ("flatten",
 			     DECL_ATTRIBUTES (node->decl)) != NULL)
@@ -3063,7 +3093,8 @@ early_inliner (function *fun)
       /* If some always_inline functions was inlined, apply the changes.
 	 This way we will not account always inline into growth limits and
 	 moreover we will inline calls from always inlines that we skipped
-	 previously because of conditional above.  */
+	 previously because of conditional in can_early_inline_edge_p
+	 which prevents some inlining to always_inline.  */
       if (inlined)
 	{
 	  timevar_push (TV_INTEGRATION);

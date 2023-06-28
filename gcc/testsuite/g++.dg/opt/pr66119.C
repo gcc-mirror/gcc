@@ -3,7 +3,7 @@
    the value of MOVE_RATIO now is.  */
 
 /* { dg-do compile  { target { { i?86-*-* x86_64-*-* } && c++11 } }  }  */
-/* { dg-options "-O3 -mavx -fdump-tree-sra -march=slm -mtune=slm" } */
+/* { dg-options "-O3 -mavx -fdump-tree-sra -march=slm -mtune=slm -fno-early-inlining" } */
 
 #include <immintrin.h>
 
