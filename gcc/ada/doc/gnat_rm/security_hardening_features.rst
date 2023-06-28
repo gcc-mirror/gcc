@@ -500,7 +500,9 @@ gets modified as follows:
 
 Verification may also be performed before No_Return calls, whether all
 of them, with :switch:`-fhardcfr-check-noreturn-calls=always`; all but
-internal subprograms involved in exception-raising or -reraising, with
+internal subprograms involved in exception-raising or -reraising or
+subprograms explicitly marked with both :samp:`No_Return` and
+:samp:`Machine_Attribute` :samp:`expected_throw` pragmas, with
 :switch:`-fhardcfr-check-noreturn-calls=no-xthrow` (default); only
 nothrow ones, with :switch:`-fhardcfr-check-noreturn-calls=nothrow`;
 or none, with :switch:`-fhardcfr-check-noreturn-calls=never`.

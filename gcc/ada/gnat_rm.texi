@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jul 10, 2023
+GNAT Reference Manual , Jul 17, 2023
 
 AdaCore
 
@@ -29666,7 +29666,9 @@ end;
 
 Verification may also be performed before No_Return calls, whether all
 of them, with @code{-fhardcfr-check-noreturn-calls=always}; all but
-internal subprograms involved in exception-raising or -reraising, with
+internal subprograms involved in exception-raising or -reraising or
+subprograms explicitly marked with both @code{No_Return} and
+@code{Machine_Attribute} @code{expected_throw} pragmas, with
 @code{-fhardcfr-check-noreturn-calls=no-xthrow} (default); only
 nothrow ones, with @code{-fhardcfr-check-noreturn-calls=nothrow};
 or none, with @code{-fhardcfr-check-noreturn-calls=never}.
