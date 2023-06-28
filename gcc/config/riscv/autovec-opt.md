@@ -406,6 +406,45 @@
   [(set_attr "type" "vimovvx")
    (set_attr "mode" "<MODE>")])
 
+;; We don't have vfwmul.wv instruction like vfwadd.wv in RVV.
+;; This pattern is an intermediate RTL IR as a pseudo vfwmul.wv to enhance
+;; optimization of instructions combine.
+(define_insn_and_split "*pred_single_widen_mul<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
+       (if_then_else:VWEXTF
+         (unspec:<VM>
+           [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1,vmWc1")
+            (match_operand 5 "vector_length_operand"              "   rK,   rK")
+            (match_operand 6 "const_int_operand"                  "    i,    i")
+            (match_operand 7 "const_int_operand"                  "    i,    i")
+            (match_operand 8 "const_int_operand"                  "    i,    i")
+            (match_operand 9 "const_int_operand"                  "    i,    i")
+            (reg:SI VL_REGNUM)
+            (reg:SI VTYPE_REGNUM)
+            (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+         (mult:VWEXTF
+           (float_extend:VWEXTF
+             (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr,   vr"))
+           (match_operand:VWEXTF 3 "register_operand"             "   vr,   vr"))
+         (match_operand:VWEXTF 2 "vector_merge_operand"           "   vu,    0")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_extend (<MODE>mode);
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+    rtx ops[] = {tmp, operands[4]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops);
+
+    emit_insn (gen_pred (MULT, <MODE>mode, operands[0], operands[1], operands[2],
+                        operands[3], tmp, operands[5], operands[6],
+                        operands[7], operands[8], operands[9]));
+    DONE;
+  }
+  [(set_attr "type" "vfwmul")
+   (set_attr "mode" "<MODE>")])
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFWMACC
 ;; -------------------------------------------------------------------------
