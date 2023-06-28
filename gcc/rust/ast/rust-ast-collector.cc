@@ -2144,6 +2144,9 @@ TokenCollector::visit (TraitImpl &impl)
 {
   visit_items_as_lines (impl.get_outer_attrs ());
   push (Rust::Token::make (IMPL, impl.get_locus ()));
+  visit (impl.get_generic_params ());
+  if (impl.is_exclam ())
+    push (Rust::Token::make (EXCLAM, Location ()));
   visit (impl.get_trait_path ());
   push (Rust::Token::make (FOR, Location ()));
   visit (impl.get_type ());
