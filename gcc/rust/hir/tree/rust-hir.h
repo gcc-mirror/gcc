@@ -41,6 +41,30 @@ class HIRPatternVisitor;
 class HIRImplVisitor;
 class HIRTypeVisitor;
 
+class WithOuterAttrs
+{
+protected:
+  AST::AttrVec outer_attrs;
+
+public:
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+
+  WithOuterAttrs (AST::AttrVec outer_attrs)
+    : outer_attrs (std::move (outer_attrs)){};
+};
+
+class WithInnerAttrs
+{
+protected:
+  AST::AttrVec inner_attrs;
+
+public:
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
+  WithInnerAttrs (AST::AttrVec inner_attrs)
+    : inner_attrs (std::move (inner_attrs)){};
+};
+
 // forward decl for use in token tree method
 class Token;
 
@@ -167,12 +191,9 @@ protected:
 };
 
 // Rust "item" HIR node (declaration of top-level/module-level allowed stuff)
-class Item : public Stmt
+class Item : public Stmt, public WithOuterAttrs
 {
-  AST::AttrVec outer_attrs;
-
   // TODO: should outer attrs be defined here or in each derived class?
-
 public:
   enum class ItemKind
   {
@@ -210,16 +231,13 @@ public:
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
 
-  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
-  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
-
   bool is_item () const override final { return true; }
 
 protected:
   // Constructor
   Item (Analysis::NodeMapping mappings,
 	AST::AttrVec outer_attribs = AST::AttrVec ())
-    : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attribs))
+    : Stmt (std::move (mappings)), WithOuterAttrs (std::move (outer_attribs))
   {}
 
   // Clone function implementation as pure virtual method
@@ -836,9 +854,8 @@ protected:
 };
 
 // A crate HIR object - holds all the data for a single compilation unit
-struct Crate
+struct Crate : public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
@@ -850,13 +867,13 @@ public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items, AST::AttrVec inner_attrs,
 	 Analysis::NodeMapping mappings)
-    : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
+    : WithInnerAttrs (std::move (inner_attrs)), items (std::move (items)),
       mappings (mappings)
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
-    : inner_attrs (other.inner_attrs), mappings (other.mappings)
+    : WithInnerAttrs (other.inner_attrs), mappings (other.mappings)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)

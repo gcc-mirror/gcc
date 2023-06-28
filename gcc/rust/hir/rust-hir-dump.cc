@@ -28,12 +28,12 @@ Dump::go (HIR::Crate &crate)
 {
   stream << "Crate {" << std::endl;
   // inner attributes
-  if (!crate.inner_attrs.empty ())
+  if (!crate.get_inner_attrs ().empty ())
     {
       indentation.increment ();
       stream << indentation;
       stream << "inner_attrs: [";
-      for (auto &attr : crate.inner_attrs)
+      for (auto &attr : crate.get_inner_attrs ())
 	stream << attr.as_string ();
       stream << "]," << std::endl;
       indentation.decrement ();
@@ -272,11 +272,11 @@ Dump::visit (BlockExpr &block_expr)
 
   indentation.increment ();
   // TODO: inner attributes
-  if (!block_expr.inner_attrs.empty ())
+  if (!block_expr.get_inner_attrs ().empty ())
     {
       stream << indentation << "inner_attrs: [";
       indentation.increment ();
-      for (auto &attr : block_expr.inner_attrs)
+      for (auto &attr : block_expr.get_inner_attrs ())
 	{
 	  stream << "\n";
 	  stream << indentation;

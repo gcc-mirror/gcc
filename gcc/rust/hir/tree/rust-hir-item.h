@@ -59,6 +59,7 @@ public:
 
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
+  AST::Attribute &get_outer_attribute () { return outer_attr; }
 
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
 	     Location locus = Location (),
@@ -659,12 +660,10 @@ public:
 };
 
 // Rust module item - abstract base class
-class Module : public VisItem
+class Module : public VisItem, public WithInnerAttrs
 {
   Identifier module_name;
   Location locus;
-  // bool has_inner_attrs;
-  AST::AttrVec inner_attrs;
   // bool has_items;
   std::vector<std::unique_ptr<Item>> items;
 
@@ -674,9 +673,6 @@ public:
   // Returns whether the module has items in its body.
   bool has_items () const { return !items.empty (); }
 
-  // Returns whether the module has any inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
-
   // Full constructor
   Module (Analysis::NodeMapping mappings, Identifier module_name,
 	  Location locus, std::vector<std::unique_ptr<Item>> items,
@@ -685,13 +681,13 @@ public:
 	  AST::AttrVec outer_attrs = AST::AttrVec ())
     : VisItem (std::move (mappings), std::move (visibility),
 	       std::move (outer_attrs)),
-      module_name (module_name), locus (locus),
-      inner_attrs (std::move (inner_attrs)), items (std::move (items))
+      WithInnerAttrs (std::move (inner_attrs)), module_name (module_name),
+      locus (locus), items (std::move (items))
   {}
 
   // Copy constructor with vector clone
   Module (Module const &other)
-    : VisItem (other), inner_attrs (other.inner_attrs)
+    : VisItem (other), WithInnerAttrs (other.inner_attrs)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1447,7 +1443,7 @@ protected:
 };
 
 // A single field in a struct
-struct StructField
+class StructField
 {
 public:
   // bool has_outer_attributes;
@@ -2740,14 +2736,13 @@ protected:
   Trait *clone_item_impl () const override { return new Trait (*this); }
 };
 
-class ImplBlock : public VisItem
+class ImplBlock : public VisItem, public WithInnerAttrs
 {
   std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::unique_ptr<Type> impl_type;
   std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
   Polarity polarity;
-  AST::AttrVec inner_attrs;
   Location locus;
   std::vector<std::unique_ptr<ImplItem>> impl_items;
 
@@ -2760,17 +2755,18 @@ public:
 	     Polarity polarity, Visibility vis, AST::AttrVec inner_attrs,
 	     AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
+      WithInnerAttrs (std::move (inner_attrs)),
       generic_params (std::move (generic_params)),
       impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
       where_clause (std::move (where_clause)), polarity (polarity),
-      inner_attrs (std::move (inner_attrs)), locus (locus),
-      impl_items (std::move (impl_items))
+      locus (locus), impl_items (std::move (impl_items))
   {}
 
   ImplBlock (ImplBlock const &other)
-    : VisItem (other), impl_type (other.impl_type->clone_type ()),
+    : VisItem (other), WithInnerAttrs (other.inner_attrs),
+      impl_type (other.impl_type->clone_type ()),
       where_clause (other.where_clause), polarity (other.polarity),
-      inner_attrs (other.inner_attrs), locus (other.locus)
+      locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2831,9 +2827,6 @@ public:
 
   // Returns the polarity of the impl.
   Polarity get_polarity () const { return polarity; }
-
-  // Returns whether impl has inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
   Location get_locus () const override final { return locus; }
 
@@ -3153,18 +3146,14 @@ protected:
 };
 
 // An extern block HIR node
-class ExternBlock : public VisItem
+class ExternBlock : public VisItem, public WithInnerAttrs
 {
   ABI abi;
-  AST::AttrVec inner_attrs;
   std::vector<std::unique_ptr<ExternalItem>> extern_items;
   Location locus;
 
 public:
   std::string as_string () const override;
-
-  // Returns whether extern block has inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
   // Returns whether extern block has extern items.
   bool has_extern_items () const { return !extern_items.empty (); }
@@ -3176,13 +3165,13 @@ public:
 	       Visibility vis, AST::AttrVec inner_attrs,
 	       AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      abi (abi), inner_attrs (std::move (inner_attrs)),
+      WithInnerAttrs (std::move (inner_attrs)), abi (abi),
       extern_items (std::move (extern_items)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   ExternBlock (ExternBlock const &other)
-    : VisItem (other), abi (other.abi), inner_attrs (other.inner_attrs),
+    : VisItem (other), WithInnerAttrs (other.inner_attrs), abi (other.abi),
       locus (other.locus)
   {
     extern_items.reserve (other.extern_items.size ());
