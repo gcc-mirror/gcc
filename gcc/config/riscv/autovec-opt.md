@@ -405,3 +405,61 @@
   "vmv.x.s\t%0,%1"
   [(set_attr "type" "vimovvx")
    (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] VFWMACC
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfwmacc.vv
+;; -------------------------------------------------------------------------
+
+;; Combine ext + ext + fma ===> widen fma.
+;; Most of circumstantces, LoopVectorizer will generate the following IR:
+;; vect__8.176_40 = (vector([2,2]) double) vect__7.175_41;
+;; vect__11.180_35 = (vector([2,2]) double) vect__10.179_36;
+;; vect__13.182_33 = .FMA (vect__11.180_35, vect__8.176_40, vect__4.172_45);
+(define_insn_and_split "*double_widen_fma<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	  (match_operand:VWEXTF 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_widen_mul (PLUS, <MODE>mode),
+					      riscv_vector::RVV_WIDEN_TERNOP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+;; This helps to match ext + fma.
+(define_insn_and_split "*single_widen_fma<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (match_operand:VWEXTF 3 "register_operand")
+	  (match_operand:VWEXTF 1 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_extend (<MODE>mode);
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+    rtx ext_ops[] = {tmp, operands[2]};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+
+    rtx dst = expand_ternary_op (<MODE>mode, fma_optab, tmp, operands[3],
+				 operands[1], operands[0], 0);
+    emit_move_insn (operands[0], dst);
+    DONE;
+  }
+  [(set_attr "type" "vfwmuladd")
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
