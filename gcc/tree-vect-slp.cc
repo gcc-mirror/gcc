@@ -1291,7 +1291,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		 vectorization.  For loop vectorization we can handle
 		 splats the same we handle single element interleaving.  */
 	      && (is_a <bb_vec_info> (vinfo)
-		  || stmt_info != first_stmt_info))
+		  || stmt_info != first_stmt_info
+		  || STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
