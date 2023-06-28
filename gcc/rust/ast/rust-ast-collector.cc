@@ -2117,14 +2117,7 @@ TokenCollector::visit (Trait &trait)
   push (Rust::Token::make (TRAIT, trait.get_locus ()));
   push (Rust::Token::make_identifier (Location (), std::move (id)));
 
-  // Traits actually have an implicit Self thrown at the start, so we must
-  // expect the number of generic params to be > 1
-  if (trait.get_generic_params ().size () > 1)
-    {
-      push (Rust::Token::make (LEFT_ANGLE, Location ()));
-      visit_items_joined_by_separator (trait.get_generic_params (), COMMA, 1);
-      push (Rust::Token::make (RIGHT_ANGLE, Location ()));
-    }
+  visit (trait.get_generic_params ());
 
   visit_items_as_block (trait.get_trait_items (), {});
 }
