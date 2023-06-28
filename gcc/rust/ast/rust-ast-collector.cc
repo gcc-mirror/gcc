@@ -366,10 +366,8 @@ TokenCollector::visit (FunctionQualifiers &qualifiers)
       push (Rust::Token::make (EXTERN_TOK, qualifiers.get_locus ()));
       if (qualifiers.has_abi ())
 	{
-	  push (Rust::Token::make (DOUBLE_QUOTE, Location ()));
-	  auto abi = qualifiers.get_extern_abi ();
-	  push (Rust::Token::make_identifier (Location (), std::move (abi)));
-	  push (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+	  push (Rust::Token::make_string (Location (),
+					  qualifiers.get_extern_abi ()));
 	}
     }
 }
