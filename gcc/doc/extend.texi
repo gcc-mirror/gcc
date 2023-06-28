@@ -4341,7 +4341,7 @@ through registers.
 In order to satisfy users with different security needs and control the
 run-time overhead at the same time, the @var{choice} parameter provides a
 flexible way to choose the subset of the call-used registers to be zeroed.
-The three basic values of @var{choice} are:
+The four basic values of @var{choice} are:
 
 @itemize @bullet
 @item
@@ -4354,10 +4354,16 @@ the function.
 
 @item
 @samp{all} zeros all call-used registers.
+
+@item
+@samp{leafy} behaves like @samp{used} in a leaf function, and like
+@samp{all} in a nonleaf function.  This makes for leaner zeroing in leaf
+functions, where the set of used registers is known, and that may be
+enough for some purposes of register zeroing.
 @end itemize
 
 In addition to these three basic choices, it is possible to modify
-@samp{used} or @samp{all} as follows:
+@samp{used}, @samp{all}, and @samp{leafy} as follows:
 
 @itemize @bullet
 @item
@@ -4404,10 +4410,28 @@ zeros all call-used registers that pass arguments.
 @item all-gpr-arg
 zeros all call-used general purpose registers that pass
 arguments.
+
+@item leafy
+Same as @samp{used} in a leaf function, and same as @samp{all} in a
+nonleaf function.
+
+@item leafy-gpr
+Same as @samp{used-gpr} in a leaf function, and same as @samp{all-gpr}
+in a nonleaf function.
+
+@item leafy-arg
+Same as @samp{used-arg} in a leaf function, and same as @samp{all-arg}
+in a nonleaf function.
+
+@item leafy-gpr-arg
+Same as @samp{used-gpr-arg} in a leaf function, and same as
+@samp{all-gpr-arg} in a nonleaf function.
+
 @end table
 
 Of this list, @samp{used-arg}, @samp{used-gpr-arg}, @samp{all-arg},
-and @samp{all-gpr-arg} are mainly used for ROP mitigation.
+@samp{all-gpr-arg}, @samp{leafy-arg}, and @samp{leafy-gpr-arg} are
+mainly used for ROP mitigation.
 
 The default for the attribute is controlled by @option{-fzero-call-used-regs}.
 @end table

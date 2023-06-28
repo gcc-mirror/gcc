@@ -2115,6 +2115,10 @@ const struct zero_call_used_regs_opts_s zero_call_used_regs_opts[] =
   ZERO_CALL_USED_REGS_OPT (all-gpr, zero_regs_flags::ALL_GPR),
   ZERO_CALL_USED_REGS_OPT (all-arg, zero_regs_flags::ALL_ARG),
   ZERO_CALL_USED_REGS_OPT (all, zero_regs_flags::ALL),
+  ZERO_CALL_USED_REGS_OPT (leafy-gpr-arg, zero_regs_flags::LEAFY_GPR_ARG),
+  ZERO_CALL_USED_REGS_OPT (leafy-gpr, zero_regs_flags::LEAFY_GPR),
+  ZERO_CALL_USED_REGS_OPT (leafy-arg, zero_regs_flags::LEAFY_ARG),
+  ZERO_CALL_USED_REGS_OPT (leafy, zero_regs_flags::LEAFY),
 #undef ZERO_CALL_USED_REGS_OPT
   {NULL, 0U}
 };
