@@ -301,6 +301,11 @@ is
      Pre  => A * S = B * S + R and then S /= 0,
      Post => A = B + R / S;
 
+   procedure Lemma_Div_Mult (X : Big_Natural; Y : Big_Positive)
+   with
+     Ghost,
+     Post => X / Y * Y > X - Y;
+
    procedure Lemma_Double_Big_2xxSingle
    with
      Ghost,
@@ -639,6 +644,7 @@ is
    is null;
    procedure Lemma_Div_Ge (X, Y, Z : Big_Integer) is null;
    procedure Lemma_Div_Lt (X, Y, Z : Big_Natural) is null;
+   procedure Lemma_Div_Mult (X : Big_Natural; Y : Big_Positive) is null;
    procedure Lemma_Double_Big_2xxSingle is null;
    procedure Lemma_Double_Shift (X : Double_Uns; S, S1 : Double_Uns) is null;
    procedure Lemma_Double_Shift (X : Single_Uns; S, S1 : Natural) is null;
@@ -1449,6 +1455,10 @@ is
               (Double_Uns'(2 ** (M - 1)), 2, Double_Uns'(2**M));
             pragma Assert (Big (Double_Uns'(2))**M = Big_2xx (M));
          end if;
+      else
+         pragma Assert
+           (Big (Double_Uns'(2))**M =
+             (if M < Double_Size then Big_2xx (M) else Big_2xxDouble));
       end if;
    end Lemma_Powers_Of_2_Commutation;
 
@@ -1537,6 +1547,19 @@ is
                        "Q is the quotient of X by Div");
 
       procedure Lemma_Div_Pow2 (X : Double_Uns; I : Natural) is
+
+         --  Local lemmas
+
+         procedure Lemma_Mult_Le (X, Y, Z : Double_Uns)
+         with
+           Ghost,
+           Pre  => X <= 1,
+           Post => X * Z <= Z;
+
+         procedure Lemma_Mult_Le (X, Y, Z : Double_Uns) is null;
+
+         --  Local variables
+
          Div1 : constant Double_Uns := Double_Uns'(2) ** I;
          Div2 : constant Double_Uns := Double_Uns'(2);
          Left : constant Double_Uns := X / Div1 / Div2;
@@ -1544,8 +1567,12 @@ is
          pragma Assert (R2 <= Div2 - 1);
          R1   : constant Double_Uns := X - X / Div1 * Div1;
          pragma Assert (R1 < Div1);
+
+      --  Start of processing for Lemma_Div_Pow2
+
       begin
          pragma Assert (X = Left * (Div1 * Div2) + R2 * Div1 + R1);
+         Lemma_Mult_Le (R2, Div2 - 1, Div1);
          pragma Assert (R2 * Div1 + R1 < Div1 * Div2);
          Lemma_Quot_Rem (X, Div1 * Div2, Left, R2 * Div1 + R1);
          pragma Assert (Left = X / (Div1 * Div2));
@@ -2937,7 +2964,10 @@ is
               Big_2xxSingle * Big (Double_Uns (D (3)))
                             + Big (Double_Uns (D (4))));
          pragma Assert
-           (Big (D (1) & D (2)) < Big (Zu));
+           (By (Big (D (1) & D (2)) < Big (Zu),
+            Big_2xxDouble * (Big (Zu) - Big (D (1) & D (2))) >
+              Big_2xxSingle * Big (Double_Uns (D (3)))
+            + Big (Double_Uns (D (4)))));
 
          --  Loop to compute quotient digits, runs twice for Qd (1) and Qd (2)
 
@@ -2962,7 +2992,7 @@ is
             --  Local ghost variables
 
             Qd1  : Single_Uns := 0 with Ghost;
-            D234 : Big_Integer with Ghost;
+            D234 : Big_Integer with Ghost, Relaxed_Initialization;
             D123 : constant Big_Integer := Big3 (D (1), D (2), D (3))
               with Ghost;
             D4   : constant Big_Integer := Big (Double_Uns (D (4)))
@@ -3015,8 +3045,10 @@ is
                   Lemma_Div_Lt
                     (Big3 (D (J), D (J + 1), D (J + 2)),
                      Big_2xxSingle, Big (Zu));
-                  pragma Assert (Big (Double_Uns (Qd (J))) >=
-                    Big3 (D (J), D (J + 1), D (J + 2)) / Big (Zu));
+                  pragma Assert
+                    (By (Big (Double_Uns (Qd (J))) >=
+                       Big3 (D (J), D (J + 1), D (J + 2)) / Big (Zu),
+                     Big (Double_Uns (Qd (J))) = Big_2xxSingle - 1));
 
                else
                   Qd (J) := Lo ((D (J) & D (J + 1)) / Zhi);
@@ -3025,6 +3057,7 @@ is
                end if;
 
                pragma Assert (for all K in 1 .. J => Qd (K)'Initialized);
+               Lemma_Div_Mult (Big3 (D (J), D (J + 1), D (J + 2)), Big (Zu));
                Lemma_Gt_Mult
                  (Big (Double_Uns (Qd (J))),
                   Big3 (D (J), D (J + 1), D (J + 2)) / Big (Zu),
@@ -3094,6 +3127,11 @@ is
                      Qd (J) := Qd (J) - 1;
 
                      pragma Assert (Qd (J) = Prev);
+                     pragma Assert (Qd (J)'Initialized);
+                     if J = 2 then
+                        pragma Assert (Qd (J - 1)'Initialized);
+                     end if;
+                     pragma Assert (for all K in 1 .. J => Qd (K)'Initialized);
                   end;
 
                   pragma Assert
@@ -3156,11 +3194,18 @@ is
                else
                   pragma Assert (Qd1 = Qd (1));
                   pragma Assert
-                    (Mult * Big_2xx (Scale) =
+                    (By (Mult * Big_2xx (Scale) =
                        Big_2xxSingle * Big (Double_Uns (Qd (1))) * Big (Zu)
                                      + Big (Double_Uns (Qd (2))) * Big (Zu)
                      + Big_2xxSingle * Big (Double_Uns (D (3)))
-                                     + Big (Double_Uns (D (4))));
+                                     + Big (Double_Uns (D (4))),
+                     By (Mult * Big_2xx (Scale) =
+                       Big_2xxSingle * Big (Double_Uns (Qd (1))) * Big (Zu)
+                       + Big3 (D (2), D (3), D (4)) + Big3 (S1, S2, S3),
+                     Mult * Big_2xx (Scale) =
+                       Big_2xxSingle * Big (Double_Uns (Qd (1))) * Big (Zu)
+                       + D234)));
+
                end if;
             end loop;
          end;
@@ -3193,11 +3238,32 @@ is
 
          Ru := Shift_Right (Ru, Scale);
 
-         Lemma_Shift_Right (Zu, Scale);
+         declare
+            --  Local lemma required to help automatic provers
+            procedure Lemma_Div_Congruent
+              (X, Y : Big_Natural;
+               Z    : Big_Positive)
+            with
+              Ghost,
+              Pre  => X = Y,
+              Post => X / Z = Y / Z;
 
-         Zu := Shift_Right (Zu, Scale);
+            procedure Lemma_Div_Congruent
+              (X, Y : Big_Natural;
+               Z    : Big_Positive)
+            is null;
 
-         Lemma_Simplify (Big (Double_Uns'(abs Z)), Big_2xx (Scale));
+         begin
+            Lemma_Shift_Right (Zu, Scale);
+            Lemma_Div_Congruent (Big (Zu),
+                                 Big (Double_Uns'(abs Z)) * Big_2xx (Scale),
+                                 Big_2xx (Scale));
+
+            Zu := Shift_Right (Zu, Scale);
+
+            Lemma_Simplify (Big (Double_Uns'(abs Z)), Big_2xx (Scale));
+            pragma Assert (Big (Zu) = Big (Double_Uns'(abs Z)));
+         end;
       end if;
 
       pragma Assert (Big (Ru) = abs Big_R);
