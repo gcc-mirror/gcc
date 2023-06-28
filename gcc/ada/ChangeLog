@@ -1,3 +1,72 @@
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (LIBIBERTY): Fix condition.
+	(TOOLS_LIBS): Add @LD_PICFLAG@.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Add guard to the
+	code turning the type of the RESULT_DECL into a reference type.
+	(maybe_make_gnu_thunk): Use a more precise guard in the same case.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Case_Statement_to_gnu): Rename boolean
+	constant and use From_Conditional_Expression flag for its value.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d.L): Remove documentation.
+	* exp_ch4.adb (Expand_N_Case_Expression): In the not-by-copy case,
+	do not wrap the case statement in an Expression_With_Actions node.
+	(Expand_N_If_Expression): Do not test
+	Back_End_Handles_Limited_Types
+	* gnat1drv.adb (Adjust_Global_Switches): Do not set it.
+	* opt.ads (Back_End_Handles_Limited_Types): Delete.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Actuals): Check the component type
+	of constants and variables of an array type.
+	(Copy_Generic_Node): Fix bogus handling of iterator
+	specifications.
+
+2023-06-27  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-textio.ads (Get_Line): Use Relaxed_Initialization on
+	the Item parameter of Get_Line.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Revert the latest
+	change as it is subsumed by the machinery in Sem_Ch5.
+	* sem_ch5.adb (Prepare_Iterator_Loop): Also wrap the loop
+	statement in a block in the name contains a function call that
+	returns on the secondary stack.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Scope_Within_Body_Or_Same): New predicate.
+	(Check_Actual_Type): Take into account packages nested in bodies
+	to compute the enclosing scope by means of
+	Scope_Within_Body_Or_Same.
+
+2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Check_Private_View): Also check the type of
+	visible discriminants in record and concurrent types.
+
+2023-06-27  Viljar Indus  <indus@adacore.com>
+
+	* sprint.adb (Print_Node_Actual): Print homogeneous N_Aggregate
+	nodes with brackets.
+
+2023-06-27  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Ensure that container
+	aggregate expressions do not get expanded as records but instead
+	as container aggregates.
+
 2023-06-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Pass

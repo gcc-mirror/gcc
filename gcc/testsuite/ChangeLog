@@ -1,3 +1,95 @@
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-itof-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-ftoi-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-itof-zvfh-run.c: New test.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfwcvt-zvfh-run.c: New test.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-run.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-rv32gcv.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-rv64gcv.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-template.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-template.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vsext-template.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vzext-template.h:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/zvfhmin-1.c: Add int/float conversions.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt-itof-zvfh-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vfcvt_rtz-zvfh-run.c: New file.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/copysign-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/copysign-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/copysign-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/copysign-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/binop/copysign-zvfh-run.c: New test.
+
+2023-06-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/acle/general/dupq_11.c: New test.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gcc.c-torture/compile/asmgoto-6.c: New test.
+
+2023-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96208
+	* gcc.dg/vect/slp-46.c: Adjust for new vectorizations.
+	* gcc.dg/vect/bb-slp-pr65935.c: Adjust.
+
+2023-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
+
+2023-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-30.c: New test.
+
 2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/partial/slp-17.c: New test.

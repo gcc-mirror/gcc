@@ -1,3 +1,144 @@
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<optab><vnconvert><mode>2): New
+	expander.
+	(<float_cvt><vnconvert><mode>2): Ditto.
+	(<optab><mode><vnconvert>2): Ditto.
+	(<float_cvt><mode><vnconvert>2): Ditto.
+	* config/riscv/vector-iterators.md: Add vnconvert.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (extend<v_double_trunc><mode>2): New
+	expander.
+	(extend<v_quad_trunc><mode>2): Ditto.
+	(trunc<mode><v_double_trunc>2): Ditto.
+	(trunc<mode><v_quad_trunc>2): Ditto.
+	* config/riscv/vector-iterators.md: Add VQEXTF and HF to
+	V_QUAD_TRUNC and v_quad_trunc.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<float_cvt><vconvert><mode>2): New
+	expander.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (copysign<mode>3): Add expander.
+	(xorsign<mode>3): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vfsgnjn):
+	New class.
+	* config/riscv/vector-iterators.md (copysign): Remove ncopysign.
+	(xorsign): Ditto.
+	(n): Ditto.
+	(x): Ditto.
+	* config/riscv/vector.md (@pred_ncopysign<mode>): Split off.
+	(@pred_ncopysign<mode>_scalar): Ditto.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: VF_AUTO -> VF.
+	* config/riscv/vector-iterators.md: Introduce VF_ZVFHMIN,
+	VWEXTF_ZVFHMIN and use TARGET_ZVFH in VWCONVERTI, VHF and
+	VHF_LMUL1.
+	* config/riscv/vector.md: Use new iterators.
+
+2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* match.pd: Use element_mode and check if target supports
+	operation with new type.
+
+2023-06-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdupq_impl::fold_nonconst_dupq): New method.
+	(svdupq_impl::fold): Call fold_nonconst_dupq.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gimplify.cc (gimplify_asm_expr): Mark asm with labels as volatile.
+
+2023-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (decide_whether_version_node): Adjust comment.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Adjust
+	for Value_Range.
+	(set_switch_stmt_execution_predicate): Same.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Same.
+
+2023-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Adjust for use with
+	ipa_vr instead of value_range.
+	(gt_pch_nx): Same.
+	(gt_ggc_mx): Same.
+	(ipa_get_value_range): Same.
+	* value-range.cc (gt_pch_nx): Move to ipa-prop.cc and adjust for
+	ipa_vr.
+	(gt_ggc_mx): Same.
+
+2023-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): New.
+	* ipa-prop.cc (ipa_get_value_range): Adjust for ipa_vr.
+	(ipa_set_jfunc_vr): Take a range.
+	(ipa_compute_jump_functions_for_edge): Pass range to
+	ipa_set_jfunc_vr.
+	(ipa_write_jump_function): Call streamer write helper.
+	(ipa_read_jump_function): Call streamer read helper.
+	* ipa-prop.h (class ipa_vr): Change m_vr to an ipa_vr.
+
+2023-06-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gengtype-parse.cc (consume_until_comma_or_eos): Parse "= { ... }"
+	as a probable initializer rather than a probable complete statement.
+
+2023-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96208
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Allow
+	a non-grouped load if it is the same for all lanes.
+	(vect_build_slp_tree_2): Handle not grouped loads.
+	(vect_optimize_slp_pass::remove_redundant_permutations):
+	Likewise.
+	(vect_transform_slp_perm_load_1): Likewise.
+	* tree-vect-stmts.cc (vect_model_load_cost): Likewise.
+	(get_group_load_store_type): Likewise.  Handle
+	invariant accesses.
+	(vectorizable_load): Likewise.
+
+2023-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/110237
+	* config/i386/sse.md (<avx512>_store<mode>_mask): Refine with
+	UNSPEC_MASKMOV.
+	(maskstore<mode><avx512fmaskmodelower): Ditto.
+	(*<avx512>_store<mode>_mask): New define_insn, it's renamed
+	from original <avx512>_store<mode>_mask.
+
+2023-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc (pass_insert_vzeroupper:gate):
+	Move flag_expensive_optimizations && !optimize_size to ..
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	.. this, it makes -mvzeroupper independent of optimization
+	level, but still keeps the behavior of architecture
+	tuning(emit_vzeroupper) unchanged.
+
+2023-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/82735
+	* config/i386/i386.cc (ix86_avx_u127_mode_needed): Don't emit
+	vzeroupper for vzeroupper call_insn.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/extend.texi (__builtin_alloca_with_align_and_max): Fix
+	defbuiltin usage.
+
 2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-v.cc (expand_const_vector): Fix stepped vector
