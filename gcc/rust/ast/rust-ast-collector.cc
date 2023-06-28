@@ -1600,7 +1600,7 @@ TokenCollector::visit (Method &method)
   push (Rust::Token::make_identifier (Location (), std::move (method_name)));
   push (Rust::Token::make (LEFT_PAREN, Location ()));
 
-  push (Rust::Token::make (SELF, Location ()));
+  visit (method.get_self_param ());
   if (!method.get_function_params ().empty ())
     {
       push (Rust::Token::make (COMMA, Location ()));
@@ -2028,20 +2028,21 @@ TokenCollector::visit (SelfParam &param)
 {
   if (param.get_has_ref ())
     {
-      push (Rust::Token::make (AMP, param.get_locus ()));
+      push (Rust::Token::make (AMP, Location ()));
       if (param.has_lifetime ())
 	{
 	  auto lifetime = param.get_lifetime ();
 	  visit (lifetime);
 	}
+      if (param.get_is_mut ())
+	push (Rust::Token::make (MUT, Location ()));
     }
-
-  if (param.get_is_mut ())
-    {
-      push (Rust::Token::make (MUT, Location ()));
-    }
-
   push (Rust::Token::make (SELF, Location ()));
+  if (param.has_type ())
+    {
+      push (Rust::Token::make (COLON, Location ()));
+      visit (param.get_type ());
+    }
 }
 
 void
