@@ -1,3 +1,39 @@
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gimplify.cc (gimplify_asm_expr): Mark asm with labels as volatile.
+
+2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110276
+	* ipa-sra.cc (struct caller_issues): New field there_is_one.
+	(check_for_caller_issues): Set it.
+	(check_all_callers_for_issues): Check it.
+
+2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-06-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110264
+	* config/riscv/riscv-vsetvl.cc (insert_vsetvl): Fix bug.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/extend.texi (__builtin_alloca_with_align_and_max): Fix
+	defbuiltin usage.
+
 2023-06-23  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
