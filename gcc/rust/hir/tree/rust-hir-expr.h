@@ -761,9 +761,8 @@ protected:
 };
 
 // Expression in parentheses (i.e. like literally just any 3 + (2 * 6))
-class GroupedExpr : public ExprWithoutBlock
+class GroupedExpr : public ExprWithoutBlock, public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
   std::unique_ptr<Expr> expr_in_parens;
 
   Location locus;
@@ -771,20 +770,18 @@ class GroupedExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
-
   GroupedExpr (Analysis::NodeMapping mappings,
 	       std::unique_ptr<Expr> parenthesised_expr,
 	       AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
 	       Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
-      inner_attrs (std::move (inner_attribs)),
+      WithInnerAttrs (std::move (inner_attribs)),
       expr_in_parens (std::move (parenthesised_expr)), locus (locus)
   {}
 
   // Copy constructor includes clone for expr_in_parens
   GroupedExpr (GroupedExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), WithInnerAttrs (other.inner_attrs),
       expr_in_parens (other.expr_in_parens->clone_expr ()), locus (other.locus)
   {}
 
@@ -982,17 +979,14 @@ protected:
 };
 
 // Array definition-ish expression
-class ArrayExpr : public ExprWithoutBlock
+class ArrayExpr : public ExprWithoutBlock, public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
   std::unique_ptr<ArrayElems> internal_elements;
 
   Location locus;
 
 public:
   std::string as_string () const override;
-
-  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   // Returns whether array expr has array elems or if it is just empty.
   bool has_array_elems () const { return internal_elements != nullptr; }
@@ -1003,13 +997,13 @@ public:
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
 	     Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
-      inner_attrs (std::move (inner_attribs)),
+      WithInnerAttrs (std::move (inner_attribs)),
       internal_elements (std::move (array_elems)), locus (locus)
   {}
 
   // Copy constructor requires cloning ArrayElems for polymorphism to hold
   ArrayExpr (ArrayExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), WithInnerAttrs (other.inner_attrs),
       locus (other.locus)
   {
     if (other.has_array_elems ())
@@ -1132,10 +1126,8 @@ protected:
 };
 
 // HIR representation of a tuple
-class TupleExpr : public ExprWithoutBlock
+class TupleExpr : public ExprWithoutBlock, public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
-
   std::vector<std::unique_ptr<Expr> > tuple_elems;
   // replaces (inlined version of) TupleElements
 
@@ -1144,20 +1136,18 @@ class TupleExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
-
   TupleExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Expr> > tuple_elements,
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
 	     Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
-      inner_attrs (std::move (inner_attribs)),
+      WithInnerAttrs (std::move (inner_attribs)),
       tuple_elems (std::move (tuple_elements)), locus (locus)
   {}
 
   // copy constructor with vector clone
   TupleExpr (TupleExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), WithInnerAttrs (other.inner_attrs),
       locus (other.locus)
   {
     tuple_elems.reserve (other.tuple_elems.size ());
@@ -1317,16 +1307,12 @@ public:
 };
 
 // Actual HIR node of the struct creator (with no fields). Not abstract!
-class StructExprStruct : public StructExpr
+class StructExprStruct : public StructExpr, public WithInnerAttrs
 {
-  AST::AttrVec inner_attrs;
-
   Location locus;
 
 public:
   std::string as_string () const override;
-
-  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   // Constructor has to call protected constructor of base class
   StructExprStruct (Analysis::NodeMapping mappings,
@@ -1334,7 +1320,7 @@ public:
 		    AST::AttrVec outer_attribs, Location locus)
     : StructExpr (std::move (mappings), std::move (struct_path),
 		  std::move (outer_attribs)),
-      inner_attrs (std::move (inner_attribs)), locus (locus)
+      WithInnerAttrs (std::move (inner_attribs)), locus (locus)
   {}
 
   Location get_locus () const override final { return locus; }
@@ -2156,10 +2142,9 @@ protected:
 };
 
 // A block HIR node
-class BlockExpr : public ExprWithBlock
+class BlockExpr : public ExprWithBlock, public WithInnerAttrs
 {
 public:
-  AST::AttrVec inner_attrs;
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
   bool tail_reachable;
@@ -2182,7 +2167,7 @@ public:
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
 	     Location start_locus, Location end_locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
-      inner_attrs (std::move (inner_attribs)),
+      WithInnerAttrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
       tail_reachable (tail_reachable), start_locus (start_locus),
       end_locus (end_locus)
@@ -2191,7 +2176,7 @@ public:
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), /*statements(other.statements),*/
-      inner_attrs (other.inner_attrs), start_locus (other.start_locus),
+      WithInnerAttrs (other.inner_attrs), start_locus (other.start_locus),
       end_locus (other.end_locus)
   {
     // guard to protect from null pointer dereference
@@ -3645,10 +3630,9 @@ public:
 };
 
 // Match expression HIR node
-class MatchExpr : public ExprWithBlock
+class MatchExpr : public ExprWithBlock, public WithInnerAttrs
 {
   std::unique_ptr<Expr> branch_value;
-  AST::AttrVec inner_attrs;
   std::vector<MatchCase> match_arms;
   Location locus;
 
@@ -3661,16 +3645,16 @@ public:
 	     std::vector<MatchCase> match_arms, AST::AttrVec inner_attrs,
 	     AST::AttrVec outer_attrs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attrs)),
+      WithInnerAttrs (std::move (inner_attrs)),
       branch_value (std::move (branch_value)),
-      inner_attrs (std::move (inner_attrs)),
       match_arms (std::move (match_arms)), locus (locus)
   {}
 
   // Copy constructor requires clone due to unique_ptr
   MatchExpr (MatchExpr const &other)
-    : ExprWithBlock (other), branch_value (other.branch_value->clone_expr ()),
-      inner_attrs (other.inner_attrs), match_arms (other.match_arms),
-      locus (other.locus)
+    : ExprWithBlock (other), WithInnerAttrs (other.inner_attrs),
+      branch_value (other.branch_value->clone_expr ()),
+      match_arms (other.match_arms), locus (other.locus)
   {
     /*match_arms.reserve (other.match_arms.size ());
     for (const auto &e : other.match_arms)
