@@ -1768,6 +1768,8 @@ TokenCollector::visit (Function &function)
   visit_items_as_lines (function.get_outer_attrs ());
 
   visit (function.get_visibility ());
+  auto qualifiers = function.get_qualifiers ();
+  visit (qualifiers);
 
   push (Rust::Token::make (FN_TOK, function.get_locus ()));
   auto name = function.get_function_name ().as_string ();
