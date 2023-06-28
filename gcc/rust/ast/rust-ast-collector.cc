@@ -2197,6 +2197,13 @@ TokenCollector::visit (ExternalFunctionItem &function)
   push (Rust::Token::make (LEFT_PAREN, Location ()));
 
   visit_items_joined_by_separator (function.get_function_params ());
+  if (function.is_variadic ())
+    {
+      push (Rust::Token::make (COMMA, Location ()));
+      // TODO: Add variadic outer attributes?
+      // TODO: Add variadic name once implemented.
+      push (Rust::Token::make (ELLIPSIS, Location ()));
+    }
 
   push (Rust::Token::make (RIGHT_PAREN, Location ()));
   if (function.has_return_type ())
