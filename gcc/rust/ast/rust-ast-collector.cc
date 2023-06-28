@@ -2151,6 +2151,10 @@ TokenCollector::visit (TraitImpl &impl)
   visit (impl.get_trait_path ());
   push (Rust::Token::make (FOR, Location ()));
   visit (impl.get_type ());
+
+  if (impl.has_where_clause ())
+    visit (impl.get_where_clause ());
+
   visit_items_as_block (impl.get_impl_items ());
 }
 
