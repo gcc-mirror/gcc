@@ -2134,7 +2134,7 @@ TokenCollector::visit (InherentImpl &impl)
 {
   visit_items_as_lines (impl.get_outer_attrs ());
   push (Rust::Token::make (IMPL, impl.get_locus ()));
-  // FIXME: Handle generics
+  visit (impl.get_generic_params ());
 
   visit (impl.get_type ());
 
