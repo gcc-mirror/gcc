@@ -631,7 +631,7 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
     visit_items_joined_by_separator (generic_args, COMMA);
     if (!generic_args.empty () && !binding_args.empty ())
       push (Rust::Token::make (COMMA, Location ()));
-    visit_items_joined_by_separator (generic_args, COMMA);
+    visit_items_joined_by_separator (binding_args, COMMA);
   }
 
   push (Rust::Token::make (RIGHT_ANGLE, Location ()));
