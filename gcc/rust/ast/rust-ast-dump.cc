@@ -43,7 +43,6 @@ Dump::require_spacing (TokenPtr previous, TokenPtr current)
     case LEFT_SQUARE:
     case RIGHT_SQUARE:
     case RIGHT_PAREN:
-    case DOLLAR_SIGN:
     case SEMICOLON:
     case COMMA:
     case DOT:
@@ -55,6 +54,7 @@ Dump::require_spacing (TokenPtr previous, TokenPtr current)
   switch (previous->get_id ())
     {
     case SCOPE_RESOLUTION:
+    case DOLLAR_SIGN:
     case LEFT_SQUARE:
     case LEFT_PAREN:
     case AMP:
