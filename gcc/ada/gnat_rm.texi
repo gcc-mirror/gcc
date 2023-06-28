@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jul 04, 2023
+GNAT Reference Manual , Jul 10, 2023
 
 AdaCore
 
@@ -29191,6 +29191,12 @@ pragma Machine_Attribute (Foo, "zero_call_used_regs", "used");
 function Bar return Integer;
 pragma Machine_Attribute (Bar, "zero_call_used_regs", "all");
 --  Before returning, Bar scrubs all call-clobbered registers.
+
+function Baz return Integer;
+pragma Machine_Attribute (Bar, "zero_call_used_regs", "leafy");
+--  Before returning, Bar scrubs call-clobbered registers, either
+--  those it uses itself, if it can be identified as a leaf
+--  function, or all of them otherwise.
 @end example
 
 For usage and more details on the command-line option, on the

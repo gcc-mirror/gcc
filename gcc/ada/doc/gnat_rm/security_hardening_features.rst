@@ -34,6 +34,12 @@ subprograms.
      pragma Machine_Attribute (Bar, "zero_call_used_regs", "all");
      --  Before returning, Bar scrubs all call-clobbered registers.
 
+     function Baz return Integer;
+     pragma Machine_Attribute (Bar, "zero_call_used_regs", "leafy");
+     --  Before returning, Bar scrubs call-clobbered registers, either
+     --  those it uses itself, if it can be identified as a leaf
+     --  function, or all of them otherwise.
+
 
 For usage and more details on the command-line option, on the
 ``zero_call_used_regs`` attribute, and on their use with other
