@@ -1,3 +1,4 @@
+// clang-format off
 
 ///
 // optional - An implementation of std::optional with extensions
@@ -21,11 +22,7 @@
 #define TL_OPTIONAL_VERSION_MINOR 1
 #define TL_OPTIONAL_VERSION_PATCH 0
 
-#include <exception>
-#include <functional>
-#include <new>
-#include <type_traits>
-#include <utility>
+#include "rust-system.h"
 
 #if (defined(_MSC_VER) && _MSC_VER == 1900)
 #define TL_OPTIONAL_MSVC2015
@@ -664,12 +661,6 @@ struct nullopt_t {
 static constexpr nullopt_t nullopt{nullopt_t::do_not_use{},
                                    nullopt_t::do_not_use{}};
 
-class bad_optional_access : public std::exception {
-public:
-  bad_optional_access() = default;
-  const char *what() const noexcept { return "Optional has no value"; }
-};
-
 /// An optional object is an object that contains the storage for another
 /// object and manages the lifetime of this contained object, if any. The
 /// contained object may be initialized after the optional object has been
@@ -1289,24 +1280,28 @@ public:
   TL_OPTIONAL_11_CONSTEXPR T &value() & {
     if (has_value())
       return this->m_value;
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
   TL_OPTIONAL_11_CONSTEXPR const T &value() const & {
     if (has_value())
       return this->m_value;
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
   TL_OPTIONAL_11_CONSTEXPR T &&value() && {
     if (has_value())
       return std::move(this->m_value);
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
 
 #ifndef TL_OPTIONAL_NO_CONSTRR
   TL_OPTIONAL_11_CONSTEXPR const T &&value() const && {
     if (has_value())
       return std::move(this->m_value);
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
 #endif
 
@@ -2012,12 +2007,14 @@ public:
   TL_OPTIONAL_11_CONSTEXPR T &value() {
     if (has_value())
       return *m_value;
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
   TL_OPTIONAL_11_CONSTEXPR const T &value() const {
     if (has_value())
       return *m_value;
-    throw bad_optional_access();
+
+    gcc_unreachable();
   }
 
   /// Returns the stored value if there is one, otherwise returns `u`
