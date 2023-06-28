@@ -374,7 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	return false;
       }
     size_t bytes_left = length;
-    off64_t off_in = 0, off_out = 0;
+    loff_t off_in = 0, off_out = 0;
     ssize_t bytes_copied;
     do
       {

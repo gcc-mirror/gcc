@@ -72473,7 +72473,7 @@ else
 int
 main ()
 {
-copy_file_range(1, nullptr, 2, nullptr, 1, 0);
+copy_file_range(1, (loff_t*)nullptr, 2, (loff_t*)nullptr, 1, 0);
   ;
   return 0;
 }
@@ -72494,7 +72494,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-copy_file_range(1, nullptr, 2, nullptr, 1, 0);
+copy_file_range(1, (loff_t*)nullptr, 2, (loff_t*)nullptr, 1, 0);
   ;
   return 0;
 }

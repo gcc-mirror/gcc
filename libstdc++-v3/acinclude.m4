@@ -5160,7 +5160,7 @@ dnl
       linux*)
 	GCC_TRY_COMPILE_OR_LINK(
 	  [#include <unistd.h>],
-	  [copy_file_range(1, nullptr, 2, nullptr, 1, 0);],
+	  [copy_file_range(1, (loff_t*)nullptr, 2, (loff_t*)nullptr, 1, 0);],
 	  [glibcxx_cv_copy_file_range=yes],
 	  [glibcxx_cv_copy_file_range=no])
 	;;
