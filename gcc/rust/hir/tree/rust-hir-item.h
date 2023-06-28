@@ -146,7 +146,7 @@ protected:
 
 /* "where" clause item base. Abstract - use LifetimeWhereClauseItem,
  * TypeBoundWhereClauseItem */
-class WhereClauseItem
+class WhereClauseItem : public FullVisitable
 {
 public:
   enum ItemType
@@ -803,7 +803,7 @@ protected:
 };
 
 // The path-ish thing referred to in a use declaration - abstract base class
-class UseTree
+class UseTree : public FullVisitable
 {
   Location locus;
 
@@ -819,8 +819,6 @@ public:
   virtual std::string as_string () const = 0;
 
   Location get_locus () const { return locus; }
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -985,6 +983,12 @@ public:
   // Returns whether has path (this should always be true).
   bool has_path () const { return !path.is_empty (); }
 
+  AST::SimplePath get_path () { return path; }
+
+  Identifier get_identifier () const { return identifier; }
+
+  NewBindType get_bind_type () const { return bind_type; }
+
   // Returns whether has identifier (or, rather, is allowed to).
   bool has_identifier () const { return bind_type == IDENTIFIER; }
 
@@ -1045,6 +1049,7 @@ public:
   Location get_locus () const override final { return locus; }
   ItemKind get_item_kind () const override { return ItemKind::UseDeclaration; }
 
+  std::unique_ptr<UseTree> &get_use_tree () { return use_tree; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
@@ -1443,6 +1448,7 @@ protected:
 };
 
 // A single field in a struct
+// FIXME can't this be a TupleStruct + field_name?
 class StructField
 {
 public:
@@ -1511,7 +1517,7 @@ public:
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Location get_locus () { return locus; }
-
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   Visibility &get_visibility () { return visibility; }
 };
 
@@ -1575,7 +1581,7 @@ protected:
 };
 
 // A single field in a tuple
-struct TupleField
+class TupleField
 {
 private:
   // bool has_outer_attributes;
@@ -1638,8 +1644,11 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
+  Visibility &get_visibility () { return visibility; }
+
   Location get_locus () const { return locus; }
 
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   std::unique_ptr<HIR::Type> &get_field_type () { return field_type; }
 };
 
@@ -2236,7 +2245,7 @@ protected:
 };
 
 // Function declaration in traits
-struct TraitFunctionDecl
+class TraitFunctionDecl
 {
 private:
   FunctionQualifiers qualifiers;
@@ -2310,6 +2319,8 @@ public:
 
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  WhereClause &get_where_clause () { return where_clause; }
 
   bool is_method () const { return !self.is_error (); }
 
