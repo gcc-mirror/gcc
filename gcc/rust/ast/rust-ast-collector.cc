@@ -1481,10 +1481,13 @@ TokenCollector::visit (MatchArm &arm)
 void
 TokenCollector::visit (MatchCase &match_case)
 {
+  indentation ();
   visit (match_case.get_arm ());
   push (Rust::Token::make (MATCH_ARROW, Location ()));
   visit (match_case.get_expr ());
+  indentation ();
   push (Rust::Token::make (COMMA, Location ()));
+  newline ();
 }
 
 void
@@ -1493,11 +1496,15 @@ TokenCollector::visit (MatchExpr &expr)
   push (Rust::Token::make (MATCH_TOK, expr.get_locus ()));
   visit (expr.get_scrutinee_expr ());
   push (Rust::Token::make (LEFT_CURLY, Location ()));
+  newline ();
+  increment_indentation ();
   visit_items_as_lines (expr.get_inner_attrs ());
   for (auto &arm : expr.get_match_cases ())
     {
       visit (arm);
     }
+  decrement_indentation ();
+  indentation ();
   push (Rust::Token::make (RIGHT_CURLY, Location ()));
 }
 
