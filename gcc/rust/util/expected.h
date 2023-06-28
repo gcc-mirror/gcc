@@ -1,3 +1,4 @@
+// clang-format off
 ///
 // expected - An implementation of std::expected with extensions
 // Written in 2017 by Sy Brand (tartanllama@gmail.com, @TartanLlama)
@@ -20,10 +21,7 @@
 #define TL_EXPECTED_VERSION_MINOR 1
 #define TL_EXPECTED_VERSION_PATCH 0
 
-#include <exception>
-#include <functional>
-#include <type_traits>
-#include <utility>
+#include "rust-system.h"
 
 #if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
 #define TL_EXPECTED_EXCEPTIONS_ENABLED
@@ -215,9 +213,7 @@ template <typename E>
 #else
   (void)e;
 #ifdef _MSC_VER
-  __assume(0);
-#else
-  __builtin_unreachable();
+  gcc_unreachable();
 #endif
 #endif
 }
