@@ -631,7 +631,31 @@ general_scalar_chain::compute_convert_gain ()
 	    break;
 
 	  case COMPARE:
-	    /* Assume comparison cost is the same.  */
+	    if (XEXP (src, 1) != const0_rtx)
+	      {
+		/* cmp vs. pxor;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (m - 3);
+	      }
+	    else if (GET_CODE (XEXP (src, 0)) != AND)
+	      {
+		/* test vs. pshufd;ptest.  */
+		igain += COSTS_N_INSNS (m - 2);
+	      }
+	    else if (GET_CODE (XEXP (XEXP (src, 0), 0)) != NOT)
+	      {
+		/* and;test vs. pshufd;ptest.  */
+		igain += COSTS_N_INSNS (2 * m - 2);
+	      }
+	    else if (TARGET_BMI)
+	      {
+		/* andn;test vs. pandn;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (2 * m - 3);
+	      }
+	    else
+	      {
+		/* not;and;test vs. pandn;pshufd;ptest.  */
+		igain += COSTS_N_INSNS (3 * m - 3);
+	      }
 	    break;
 
 	  case CONST_INT:
