@@ -694,6 +694,12 @@
   return num_insns > 1;
 })
 
+;; Return true if the operand is a constant that can be loaded with a vspltisw
+;; instruction and then a vupkhsw instruction.
+
+(define_predicate "vspltisw_vupkhsw_constant_split"
+  (and (match_code "const_vector")
+       (match_test "vspltisw_vupkhsw_constant_p (op, mode)")))
 
 ;; Return 1 if the operand is constant that can loaded directly with a XXSPLTIB
 ;; instruction.
@@ -740,6 +746,11 @@
 
       if (TARGET_P9_VECTOR
           && xxspltib_constant_p (op, mode, &num_insns, &value))
+	return true;
+
+      /* V2DI constant within RANGE (-16, 15) can be synthesized with a
+	 vspltisw and a vupkhsw.  */
+      if (vspltisw_vupkhsw_constant_p (op, mode, &value))
 	return true;
 
       return easy_altivec_constant (op, mode);

@@ -6642,6 +6642,36 @@ xxspltib_constant_p (rtx op,
   return true;
 }
 
+/* Return true if OP mode is V2DI and can be synthesized with ISA 2.07
+   instructions vupkhsw and vspltisw.
+
+   Return the constant that is being split via CONSTANT_PTR.  */
+
+bool
+vspltisw_vupkhsw_constant_p (rtx op, machine_mode mode, int *constant_ptr)
+{
+  HOST_WIDE_INT value;
+  rtx elt;
+
+  if (!TARGET_P8_VECTOR)
+    return false;
+
+  if (mode != V2DImode)
+    return false;
+
+  if (!const_vec_duplicate_p (op, &elt))
+    return false;
+
+  value = INTVAL (elt);
+  if (value == 0 || value == 1
+      || !EASY_VECTOR_15 (value))
+    return false;
+
+  if (constant_ptr)
+    *constant_ptr = (int) value;
+  return true;
+}
+
 const char *
 output_vec_const_move (rtx *operands)
 {

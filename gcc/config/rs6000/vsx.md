@@ -1177,6 +1177,30 @@
   [(set_attr "type" "vecperm")
    (set_attr "length" "8")])
 
+(define_insn_and_split "*vspltisw_v2di_split"
+  [(set (match_operand:V2DI 0 "altivec_register_operand" "=v")
+	(match_operand:V2DI 1 "vspltisw_vupkhsw_constant_split" "W"))]
+  "TARGET_P8_VECTOR && vspltisw_vupkhsw_constant_split (operands[1], V2DImode)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx tmp = can_create_pseudo_p ()
+	    ? gen_reg_rtx (V4SImode)
+	    : gen_lowpart (V4SImode, op0);
+  int value;
+
+  vspltisw_vupkhsw_constant_p (op1, V2DImode, &value);
+  emit_insn (gen_altivec_vspltisw (tmp, GEN_INT (value)));
+  emit_insn (gen_altivec_vupkhsw_direct (op0, tmp));
+
+  DONE;
+}
+  [(set_attr "type" "vecperm")
+   (set_attr "length" "8")])
+
 
 ;; Prefer using vector registers over GPRs.  Prefer using ISA 3.0's XXSPLTISB
 ;; or Altivec VSPLITW 0/-1 over XXLXOR/XXLORC to set a register to all 0's or
