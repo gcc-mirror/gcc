@@ -1350,6 +1350,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  && CLASS_DATA (comp)->as)
  	rank = CLASS_DATA (comp)->as->rank;
 
+      if (comp->ts.type == BT_CLASS && cons->expr->ts.type != BT_CLASS)
+	  gfc_find_vtab (&cons->expr->ts);
+
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
 	  && (comp->attr.allocatable || cons->expr->rank))
 	{
@@ -1381,7 +1384,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 			 gfc_basic_typename (comp->ts.type));
 	      t = false;
 	    }
-	  else
+	  else if (!UNLIMITED_POLY (comp))
 	    {
 	      bool t2 = gfc_convert_type (cons->expr, &comp->ts, 1);
 	      if (t)

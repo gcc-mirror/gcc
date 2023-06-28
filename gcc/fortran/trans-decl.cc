@@ -1915,7 +1915,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	gcc_assert (!sym->value || sym->value->expr_type == EXPR_NULL);
     }
 
-
   gfc_finish_var_decl (decl, sym);
 
   if (sym->ts.type == BT_CHARACTER)

@@ -816,9 +816,7 @@ bool
 gfc_is_ptr_fcn (gfc_expr *e)
 {
   return e != NULL && e->expr_type == EXPR_FUNCTION
-	      && (gfc_expr_attr (e).pointer
-		  || (e->ts.type == BT_CLASS
-		      && CLASS_DATA (e)->attr.class_pointer));
+	      && gfc_expr_attr (e).pointer;
 }
 
 
