@@ -2157,22 +2157,7 @@ TokenCollector::visit (TraitImpl &impl)
   visit (impl.get_trait_path ());
   push (Rust::Token::make (FOR, Location ()));
   visit (impl.get_type ());
-  push (Rust::Token::make (LEFT_CURLY, Location ()));
-  newline ();
-
-  increment_indentation ();
-
-  for (auto &item : impl.get_impl_items ())
-    {
-      indentation ();
-      visit (item);
-    }
-
-  decrement_indentation ();
-  newline ();
-
-  push (Rust::Token::make (RIGHT_CURLY, Location ()));
-  newline ();
+  visit_items_as_block (impl.get_impl_items ());
 }
 
 void
