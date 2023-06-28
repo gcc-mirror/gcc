@@ -39,9 +39,10 @@ public:
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
-  LiteralPattern (std::string val, Literal::LitType type, Location locus)
-    : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
-      locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  LiteralPattern (std::string val, Literal::LitType type, Location locus,
+		  PrimitiveCoreType type_hint)
+    : lit (Literal (std::move (val), type, type_hint)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   Location get_locus () const override final { return locus; }

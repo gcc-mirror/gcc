@@ -10397,7 +10397,8 @@ Parser<ManagedTokenSource>::parse_literal_or_range_pattern ()
       // literal pattern
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (range_lower->get_str (), type,
-				 range_lower->get_locus ()));
+				 range_lower->get_locus (),
+				 range_lower->get_type_hint ()));
     }
 }
 
@@ -10559,11 +10560,13 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
     case TRUE_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
-	new AST::LiteralPattern ("true", AST::Literal::BOOL, t->get_locus ()));
+	new AST::LiteralPattern ("true", AST::Literal::BOOL, t->get_locus (),
+				 t->get_type_hint ()));
     case FALSE_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
-	new AST::LiteralPattern ("false", AST::Literal::BOOL, t->get_locus ()));
+	new AST::LiteralPattern ("false", AST::Literal::BOOL, t->get_locus (),
+				 t->get_type_hint ()));
     case CHAR_LITERAL:
     case BYTE_CHAR_LITERAL:
     case INT_LITERAL:
@@ -10573,12 +10576,12 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (t->get_str (), AST::Literal::STRING,
-				 t->get_locus ()));
+				 t->get_locus (), t->get_type_hint ()));
     case BYTE_STRING_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (t->get_str (), AST::Literal::BYTE_STRING,
-				 t->get_locus ()));
+				 t->get_locus (), t->get_type_hint ()));
     // raw string and raw byte string literals too if they are readded to
     // lexer
     case MINUS:
