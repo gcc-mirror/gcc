@@ -18525,7 +18525,7 @@ cp_parser_template_id (cp_parser *parser,
     }
   else if (variable_template_p (templ))
     {
-      template_id = lookup_template_variable (templ, arguments);
+      template_id = lookup_template_variable (templ, arguments, tf_warning_or_error);
       if (TREE_CODE (template_id) == TEMPLATE_ID_EXPR)
 	SET_EXPR_LOCATION (template_id, combined_loc);
     }

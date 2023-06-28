@@ -10335,10 +10335,15 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 /* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST.  */
 
 tree
-lookup_template_variable (tree templ, tree arglist)
+lookup_template_variable (tree templ, tree arglist, tsubst_flags_t complain)
 {
   if (flag_concepts && variable_concept_p (templ))
     return build_concept_check (templ, arglist, tf_none);
+
+  tree parms = DECL_INNERMOST_TEMPLATE_PARMS (templ);
+  arglist = coerce_template_parms (parms, arglist, templ, complain);
+  if (arglist == error_mark_node)
+    return error_mark_node;
 
   /* The type of the expression is NULL_TREE since the template-id could refer
      to an explicit or partial specialization. */
@@ -10359,11 +10364,6 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (templ)) != 1
       || any_dependent_template_arguments_p (arglist))
     return var;
-
-  tree parms = DECL_TEMPLATE_PARMS (templ);
-  arglist = coerce_template_parms (parms, arglist, templ, complain);
-  if (arglist == error_mark_node)
-    return error_mark_node;
 
   if (flag_concepts && !constraints_satisfied_p (templ, arglist))
     {
@@ -10386,7 +10386,9 @@ tree
 lookup_and_finish_template_variable (tree templ, tree targs,
 				     tsubst_flags_t complain)
 {
-  tree var = lookup_template_variable (templ, targs);
+  tree var = lookup_template_variable (templ, targs, complain);
+  if (var == error_mark_node)
+    return error_mark_node;
   /* We may be called while doing a partial substitution, but the
      type of the variable template may be auto, in which case we
      will call do_auto_deduction in mark_used (which clears tf_partial)
@@ -17766,7 +17768,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 
 	if (variable_template_p (tmpl))
-	  return lookup_template_variable (tmpl, targs);
+	  return lookup_template_variable (tmpl, targs, complain);
 	else
 	  return lookup_template_function (tmpl, targs);
       }
@@ -22084,7 +22086,7 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
       /* We need to determine if we're using a partial or explicit
 	 specialization now, because the type of the variable could be
 	 different.  */
-      tree tid = lookup_template_variable (tmpl, targ_ptr);
+      tree tid = build2 (TEMPLATE_ID_EXPR, NULL_TREE, tmpl, targ_ptr);
       tree elt = most_specialized_partial_spec (tid, complain);
       if (elt == error_mark_node)
 	pattern = error_mark_node;

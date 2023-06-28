@@ -7358,7 +7358,7 @@ extern bool redeclare_class_template		(tree, tree, tree);
 extern tree lookup_template_class		(tree, tree, tree, tree,
 						 int, tsubst_flags_t);
 extern tree lookup_template_function		(tree, tree);
-extern tree lookup_template_variable		(tree, tree);
+extern tree lookup_template_variable		(tree, tree, tsubst_flags_t);
 extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool uses_outer_template_parms_in_constraints (tree);

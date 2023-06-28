@@ -2,7 +2,7 @@
 // { dg-do compile { target c++17 } }
 
 template <typename a> using b = typename a ::c;
-template <typename> bool d;
+template <typename, typename> bool d;
 template <typename, typename> struct e {
   template <typename f, typename g> e(f, g) {}
   template <typename h, typename i, typename j>
