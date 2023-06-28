@@ -1604,6 +1604,9 @@ TokenCollector::visit (Method &method)
 {
   visit (method.get_visibility ());
   auto method_name = method.get_method_name ().as_string ();
+  auto qualifiers = method.get_qualifiers ();
+  visit (qualifiers);
+
   push (Rust::Token::make (FN_TOK, method.get_locus ()));
   push (Rust::Token::make_identifier (Location (), std::move (method_name)));
   push (Rust::Token::make (LEFT_PAREN, Location ()));
