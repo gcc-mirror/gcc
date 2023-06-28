@@ -1,3 +1,13 @@
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gimplify.cc (gimplify_asm_expr): Mark asm with labels as volatile.
+
 2023-06-23  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
