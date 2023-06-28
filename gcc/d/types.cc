@@ -49,8 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 static tree
 d_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (TYPE_UNSIGNED (type) == (unsigned) unsignedp)
-    return type;
+  if (VECTOR_TYPE_P (type) || !ANY_INTEGRAL_TYPE_P (type))
+    return signed_or_unsigned_type_for (unsignedp, type);
 
   if (TYPE_PRECISION (type) == TYPE_PRECISION (d_cent_type))
     return unsignedp ? d_ucent_type : d_cent_type;
