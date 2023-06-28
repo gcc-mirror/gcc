@@ -1088,6 +1088,7 @@
     {
       /* Emit the slide down to index 0 in a new vector.  */
       tmp = gen_reg_rtx (<MODE>mode);
+      operands[2] = gen_lowpart (Pmode, operands[2]);
       rtx ops[] = {tmp, RVV_VUNDEF (<MODE>mode), operands[1], operands[2]};
       riscv_vector::emit_vlmax_slide_insn
 	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode), ops);

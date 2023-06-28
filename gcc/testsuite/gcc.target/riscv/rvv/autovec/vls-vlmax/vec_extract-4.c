@@ -19,6 +19,14 @@ typedef double vnx16df __attribute__((vector_size (128)));
     return v[IDX];				\
   }
 
+#define VEC_EXTRACT_VAR4(S,V)			\
+  S						\
+  __attribute__((noipa))			\
+  vec_extract_var_##V (V v, int64_t idx)	\
+  {						\
+    return v[idx];				\
+  }
+
 #define TEST_ALL4(T)				\
   T (_Float16, vnx64hf, 0)			\
   T (_Float16, vnx64hf, 3)			\
@@ -58,17 +66,27 @@ typedef double vnx16df __attribute__((vector_size (128)));
   T (int8_t, vnx128qi, 64)			\
   T (int8_t, vnx128qi, 127)			\
 
-TEST_ALL4 (VEC_EXTRACT)
+#define TEST_ALL_VAR4(T)			\
+  T (_Float16, vnx64hf)				\
+  T (float, vnx32sf)				\
+  T (double, vnx16df)				\
+  T (int64_t, vnx16di)				\
+  T (int32_t, vnx32si)				\
+  T (int16_t, vnx64hi)				\
+  T (int8_t, vnx128qi)				\
 
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m8,\s*ta,\s*ma} 6 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m8,\s*ta,\s*ma} 13 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m8,\s*ta,\s*ma} 10 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m8,\s*ta,\s*ma} 8 } } */
+TEST_ALL4 (VEC_EXTRACT)
+TEST_ALL_VAR4 (VEC_EXTRACT_VAR4)
+
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m8,\s*ta,\s*ma} 7 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m8,\s*ta,\s*ma} 15 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m8,\s*ta,\s*ma} 12 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m8,\s*ta,\s*ma} 10 } } */
 
 /* { dg-final { scan-assembler-times {\tvslidedown.vi} 23 } } */
-/* { dg-final { scan-assembler-times {\tvslidedown.vx} 7 } } */
+/* { dg-final { scan-assembler-times {\tvslidedown.vx} 14 } } */
 
-/* { dg-final { scan-assembler-times {\tvfmv.f.s} 17 } } */
-/* { dg-final { scan-assembler-times {\tvmv.x.s} 20 } } */
+/* { dg-final { scan-assembler-times {\tvfmv.f.s} 20 } } */
+/* { dg-final { scan-assembler-times {\tvmv.x.s} 24 } } */
 
 /* { dg-final { scan-assembler-not {\tsext} } } */
