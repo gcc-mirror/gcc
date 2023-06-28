@@ -420,7 +420,10 @@ Lexer::build_token ()
 	{
 	/* ignore whitespace characters for tokens but continue updating
 	 * location */
-	case '\n': // newline
+	case '\n':   // newline
+	case 0x0085: // next line
+	case 0x2028: // line separator
+	case 0x2029: // paragraph separator
 	  current_line++;
 	  current_column = 1;
 	  // tell line_table that new line starts
@@ -432,9 +435,15 @@ Lexer::build_token ()
 	case ' ': // space
 	  current_column++;
 	  continue;
-	case '\t': // tab
+	case '\t': // horizontal tab
 	  // width of a tab is not well-defined, assume 8 spaces
 	  current_column += 8;
+	  continue;
+	case '\v':   // vertical tab
+	case 0x000c: // form feed
+	case 0x200e: // left-to-right mark
+	case 0x200f: // right-to-left mark
+	  // Ignored.
 	  continue;
 
 	// punctuation - actual tokens
