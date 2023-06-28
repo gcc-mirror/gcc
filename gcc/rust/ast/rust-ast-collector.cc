@@ -2097,8 +2097,10 @@ TokenCollector::visit (TraitItemConst &item)
 void
 TokenCollector::visit (TraitItemType &item)
 {
+  visit_items_as_lines (item.get_outer_attrs ());
   auto id = item.get_identifier ().as_string ();
   indentation ();
+
   push (Rust::Token::make (TYPE, item.get_locus ()));
   push (Rust::Token::make_identifier (Location (), std::move (id)));
   push (Rust::Token::make (SEMICOLON, Location ()));
@@ -2220,6 +2222,7 @@ TokenCollector::visit (ExternalFunctionItem &function)
       push (Rust::Token::make (RETURN_TYPE, Location ()));
       visit (function.get_return_type ());
     }
+  push (Rust::Token::make (SEMICOLON, Location ()));
 }
 
 void
@@ -2234,8 +2237,7 @@ TokenCollector::visit (ExternBlock &block)
       push (Rust::Token::make_string (Location (), std::move (abi)));
     }
 
-  visit_items_as_block (block.get_extern_items (),
-			{Rust::Token::make (SEMICOLON, Location ())});
+  visit_items_as_block (block.get_extern_items (), {});
 }
 
 static std::pair<TokenId, TokenId>
