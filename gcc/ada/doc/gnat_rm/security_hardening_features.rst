@@ -493,17 +493,18 @@ gets modified as follows:
    end;
 
 
-Verification may also be performed before No_Return calls, whether
-only nothrow ones, with
-:switch:`-fhardcfr-check-noreturn-calls=nothrow`, or all of them, with
-:switch:`-fhardcfr-check-noreturn-calls=always`.  The default is
-:switch:`-fhardcfr-check-noreturn-calls=never` for this feature, that
-disables checking before No_Return calls.
+Verification may also be performed before No_Return calls, whether all
+of them, with :switch:`-fhardcfr-check-noreturn-calls=always`; all but
+internal subprograms involved in exception-raising or -reraising, with
+:switch:`-fhardcfr-check-noreturn-calls=no-xthrow` (default); only
+nothrow ones, with :switch:`-fhardcfr-check-noreturn-calls=nothrow`;
+or none, with :switch:`-fhardcfr-check-noreturn-calls=never`.
 
 When a No_Return call returns control to its caller through an
 exception, verification may have already been performed before the
-call, if :switch:`-fhardcfr-check-noreturn-calls=always` is in effect.
-The compiler arranges for already-checked No_Return calls without a
+call, if :switch:`-fhardcfr-check-noreturn-calls=always` or
+:switch:`-fhardcfr-check-noreturn-calls=no-xthrow` is in effect.  The
+compiler arranges for already-checked No_Return calls without a
 preexisting handler to bypass the implicitly-added cleanup handler and
 thus the redundant check, but a local exception or cleanup handler, if
 present, will modify the set of visited blocks, and checking will take
