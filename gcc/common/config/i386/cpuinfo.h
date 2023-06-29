@@ -463,7 +463,6 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE;
       break;
     case 0xa7:
-    case 0xa8:
       /* Rocket Lake.  */
       cpu = "rocketlake";
       CHECK___builtin_cpu_is ("corei7");
@@ -536,9 +535,9 @@ get_intel_cpu (struct __processor_model *cpu_model,
       break;
     case 0x97:
     case 0x9a:
-    case 0xbf:
       /* Alder Lake.  */
     case 0xb7:
+    case 0xbf:
       /* Raptor Lake.  */
     case 0xaa:
     case 0xac:
