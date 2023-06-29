@@ -1853,6 +1853,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
        && !POINTER_TYPE_P (TREE_TYPE (@0))
+       && !VECTOR_TYPE_P (TREE_TYPE (@0))
        && TREE_CODE (TREE_TYPE (@0)) != OFFSET_TYPE
        /* ???  This transform conflicts with fold-const.cc doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
