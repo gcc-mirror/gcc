@@ -1516,6 +1516,19 @@ decompose_param_expr (struct ipa_func_body_info *fbi,
 
       if (TREE_CODE (expr) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (expr))
 	break;
+      stmt = SSA_NAME_DEF_STMT (expr);
+
+      if (gcall *call = dyn_cast <gcall *> (stmt))
+	{
+	  int flags = gimple_call_return_flags (call);
+	  if (!(flags & ERF_RETURNS_ARG))
+	    goto fail;
+	  int arg = flags & ERF_RETURN_ARG_MASK;
+	  if (arg >= (int)gimple_call_num_args (call))
+	    goto fail;
+	  expr = gimple_call_arg (stmt, arg);
+	  continue;
+	}
 
       if (!is_gimple_assign (stmt = SSA_NAME_DEF_STMT (expr)))
 	break;
@@ -1664,6 +1677,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	    }
 	}
       vec_free (param_ops);
+      return;
     }
 
   if (TREE_CODE (op) != SSA_NAME)
