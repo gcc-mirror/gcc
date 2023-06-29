@@ -434,7 +434,8 @@ AssociatedImplTrait::setup_raw_associated_types ()
 
 TyTy::BaseType *
 AssociatedImplTrait::setup_associated_types (
-  const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound)
+  const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound,
+  TyTy::SubstitutionArgumentMappings *args)
 {
   // compute the constrained impl block generic arguments based on self and the
   // higher ranked trait bound
@@ -491,25 +492,27 @@ AssociatedImplTrait::setup_associated_types (
   // generate inference variables for these bound arguments so we can compute
   // their values
   Location locus;
-  std::vector<TyTy::SubstitutionArg> args;
+  std::vector<TyTy::SubstitutionArg> subst_args;
   for (auto &p : substitutions)
     {
       if (p.needs_substitution ())
 	{
 	  TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
-	  args.push_back (TyTy::SubstitutionArg (&p, infer_var.get_tyty ()));
+	  subst_args.push_back (
+	    TyTy::SubstitutionArg (&p, infer_var.get_tyty ()));
 	}
       else
 	{
 	  TyTy::ParamType *param = p.get_param_ty ();
 	  TyTy::BaseType *resolved = param->destructure ();
-	  args.push_back (TyTy::SubstitutionArg (&p, resolved));
+	  subst_args.push_back (TyTy::SubstitutionArg (&p, resolved));
 	  param_mappings[param->get_symbol ()] = resolved->get_ref ();
 	}
     }
 
-  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), {},
-						      locus, param_subst_cb);
+  TyTy::SubstitutionArgumentMappings infer_arguments (std::move (subst_args),
+						      {}, locus,
+						      param_subst_cb);
   TyTy::BaseType *impl_self_infer
     = (!associated_self->is_concrete ())
 	? SubstMapperInternal::Resolve (associated_self, infer_arguments)
@@ -630,6 +633,11 @@ AssociatedImplTrait::setup_associated_types (
       TyTy::BaseType *substituted
 	= SubstMapperInternal::Resolve (lookup, associated_type_args);
       resolved_trait_item->associated_type_set (substituted);
+    }
+
+  if (args != nullptr)
+    {
+      *args = associated_type_args;
     }
 
   return self_result;
