@@ -1,3 +1,14 @@
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.c (pass_insert_vzeroupper:gate):
+	Move flag_expensive_optimizations && !optimize_size to ..
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	.. this, it makes -mvzeroupper independent of optimization
+	level, but still keeps the behavior of architecture
+	tuning(emit_vzeroupper) unchanged.
+	(rest_of_handle_insert_vzeroupper): Remove
+	flag_expensive_optimizations && !optimize_size.
+
 2023-06-20  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
