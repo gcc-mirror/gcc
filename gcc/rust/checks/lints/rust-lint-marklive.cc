@@ -41,10 +41,8 @@ public:
   static std::vector<HirId> find (HIR::Crate &crate)
   {
     FindEntryPoint findEntryPoint;
-    for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-      {
-	it->get ()->accept_vis (findEntryPoint);
-      }
+    for (auto &it : crate.get_items ())
+      it->accept_vis (findEntryPoint);
     return findEntryPoint.getEntryPoint ();
   }
 

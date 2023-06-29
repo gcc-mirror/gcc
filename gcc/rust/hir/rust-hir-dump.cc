@@ -46,7 +46,7 @@ Dump::go (HIR::Crate &crate)
   stream << "items: [";
 
   stream << indentation;
-  for (const auto &item : crate.items)
+  for (const auto &item : crate.get_items ())
     {
       stream << std::endl;
       item->accept_vis (*this);

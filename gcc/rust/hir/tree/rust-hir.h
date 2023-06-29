@@ -863,18 +863,18 @@ protected:
 };
 
 // A crate HIR object - holds all the data for a single compilation unit
-struct Crate : public WithInnerAttrs
+class Crate : public WithInnerAttrs
 {
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
-  std::vector<std::unique_ptr<Item> > items;
+  std::vector<std::unique_ptr<Item>> items;
 
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
-  Crate (std::vector<std::unique_ptr<Item> > items, AST::AttrVec inner_attrs,
+  Crate (std::vector<std::unique_ptr<Item>> items, AST::AttrVec inner_attrs,
 	 Analysis::NodeMapping mappings)
     : WithInnerAttrs (std::move (inner_attrs)), items (std::move (items)),
       mappings (mappings)
@@ -912,6 +912,7 @@ public:
   std::string as_string () const;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  std::vector<std::unique_ptr<Item>> &get_items () { return items; }
 };
 
 // Base path expression HIR node - abstract

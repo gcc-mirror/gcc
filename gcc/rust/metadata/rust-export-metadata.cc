@@ -220,7 +220,7 @@ void
 PublicInterface::gather_export_data ()
 {
   ExportVisItems visitor (context);
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     {
       bool is_vis_item = item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM;
       if (!is_vis_item)

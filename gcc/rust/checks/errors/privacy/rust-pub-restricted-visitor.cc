@@ -57,7 +57,7 @@ PubRestrictedVisitor::go (HIR::Crate &crate)
   // FIXME: When do we insert `super`? `self`?
   // We need wrapper function for these
 
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{

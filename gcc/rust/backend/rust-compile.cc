@@ -43,7 +43,7 @@ CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
 void
 CompileCrate::go ()
 {
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     CompileItem::compile (item.get (), ctx);
 }
 
