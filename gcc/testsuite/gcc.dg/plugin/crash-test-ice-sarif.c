@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdiagnostics-format=sarif-file" } */
+/* { dg-additional-options "-fno-report-bug" } */
 
 extern void inject_ice (void);
 
@@ -56,7 +57,7 @@ void test_inject_ice (void)
              { dg-final { scan-sarif-file "\"contextRegion\": " } }
              { dg-final { scan-sarif-file "\"artifactLocation\": " } }
              { dg-final { scan-sarif-file "\"region\": " } }
-               { dg-final { scan-sarif-file "\"startLine\": 8" } }
+               { dg-final { scan-sarif-file "\"startLine\": 9" } }
                { dg-final { scan-sarif-file "\"startColumn\": 3" } }
                { dg-final { scan-sarif-file "\"endColumn\": 16" } }
          { dg-final { scan-sarif-file "\"message\": " } }
