@@ -37,7 +37,7 @@ VisibilityResolver::go (HIR::Crate &crate)
 
   current_module = crate.get_mappings ().get_defid ();
 
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{

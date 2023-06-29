@@ -44,10 +44,8 @@ public:
   {
     std::set<HirId> live_symbols = Analysis::MarkLive::Analysis (crate);
     ScanDeadcode sdc (live_symbols);
-    for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-      {
-	it->get ()->accept_vis (sdc);
-      }
+    for (auto &it : crate.get_items ())
+      it.get ()->accept_vis (sdc);
   };
 
   void visit (HIR::Function &function) override

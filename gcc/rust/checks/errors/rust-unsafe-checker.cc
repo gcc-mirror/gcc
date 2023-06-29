@@ -34,7 +34,7 @@ UnsafeChecker::UnsafeChecker ()
 void
 UnsafeChecker::go (HIR::Crate &crate)
 {
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     item->accept_vis (*this);
 }
 

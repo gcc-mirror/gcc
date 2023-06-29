@@ -45,9 +45,7 @@ Resolver::resolve (HIR::Crate &crate)
 
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 
-  const auto &items = crate.items;
-
-  for (auto &item : items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{

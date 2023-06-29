@@ -33,8 +33,8 @@ namespace Resolver {
 void
 TypeResolution::Resolve (HIR::Crate &crate)
 {
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    TypeCheckItem::Resolve (*it->get ());
+  for (auto &it : crate.get_items ())
+    TypeCheckItem::Resolve (*it);
 
   if (saw_errors ())
     return;
