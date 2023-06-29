@@ -579,6 +579,10 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
   tree init = DECL_INITIAL (member);
   if (init && DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
     {
+      /* Clear any special tsubst flags; the result of NSDMI instantiation
+	 should be independent of the substitution context.  */
+      complain &= tf_warning_or_error;
+
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
 	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
