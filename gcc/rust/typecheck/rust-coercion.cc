@@ -24,9 +24,11 @@ namespace Resolver {
 
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
-			   Location locus, bool allow_autoderef)
+			   Location locus, bool allow_autoderef,
+			   bool is_cast_site)
 {
-  TypeCoercionRules resolver (expected, locus, true, allow_autoderef, false);
+  TypeCoercionRules resolver (expected, locus, true, allow_autoderef, false,
+			      is_cast_site);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
@@ -34,20 +36,21 @@ TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
 			      TyTy::BaseType *expected, Location locus,
-			      bool allow_autoderef)
+			      bool allow_autoderef, bool is_cast_site)
 {
-  TypeCoercionRules resolver (expected, locus, false, allow_autoderef, true);
+  TypeCoercionRules resolver (expected, locus, false, allow_autoderef, true,
+			      is_cast_site);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
 TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected, Location locus,
 				      bool emit_errors, bool allow_autoderef,
-				      bool try_flag)
+				      bool try_flag, bool is_cast_site)
   : AutoderefCycle (!allow_autoderef), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
     try_result (CoercionResult::get_error ()), emit_errors (emit_errors),
-    try_flag (try_flag)
+    try_flag (try_flag), is_cast_site (is_cast_site)
 {}
 
 bool
@@ -152,10 +155,8 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
 			    TyTy::TyWithLocation (expected),
 			    TyTy::TyWithLocation (receiver),
 			    locus /*unify_locus*/, false /*emit_errors*/,
-			    !try_flag /*commit_if_ok*/, true /*infer*/,
+			    !try_flag /*commit_if_ok*/, try_flag /*infer*/,
 			    try_flag /*cleanup on error*/);
-	rust_debug ("result");
-	result->debug ();
 	if (result->get_kind () != TyTy::TypeKind::ERROR)
 	  {
 	    try_result = CoercionResult{{}, result};
@@ -223,11 +224,23 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
     = new TyTy::PointerType (receiver->get_ref (),
 			     TyTy::TyVar (element->get_ref ()), to_mutbl);
 
+  rust_debug ("coerce_unsafe_ptr unify-site");
+
+  // this is a really annoying case rust allows casts of any ptr to another ptr
+  // types
+  //
+  //  *?   vs *i32  - simple coercion valid
+  //  *?   vs *T    - simple coercion valid
+  //  *i32 vs *i32  - simple coercion valid
+  //  *i32 vs *u8   - simple coercion not valid but allowed in cast site
+  //  *T   vs *u8   - not valid but is allowed in cast site
+
   TyTy::BaseType *result
     = unify_site_and (receiver->get_ref (), TyTy::TyWithLocation (expected),
 		      TyTy::TyWithLocation (coerced_mutability),
-		      locus /*unify_locus*/, false /*emit_errors*/,
-		      !try_flag /*commit_if_ok*/, true /*infer*/,
+		      locus /*unify_locus*/, !try_flag /*emit_errors*/,
+		      !try_flag /*commit_if_ok*/,
+		      try_flag && !is_cast_site /*infer*/,
 		      try_flag /*cleanup on error*/);
   bool unsafe_ptr_coerceion_ok = result->get_kind () != TyTy::TypeKind::ERROR;
   if (unsafe_ptr_coerceion_ok)
@@ -266,10 +279,15 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 	  = unify_site_and (receiver->get_ref (),
 			    TyTy::TyWithLocation (receiver),
 			    TyTy::TyWithLocation (expected), locus,
-			    false /*emit_errors*/, true /*commit_if_ok*/,
-			    false /* FIXME infer do we want to allow this?? */,
-			    true /*cleanup_on_failure*/);
-	return CoercionResult{{}, result};
+			    false /*emit_errors*/, !try_flag /*commit_if_ok*/,
+			    try_flag /* infer */,
+			    try_flag /*cleanup_on_failure*/);
+	bool default_coerceion_ok
+	  = result->get_kind () != TyTy::TypeKind::ERROR;
+	if (default_coerceion_ok)
+	  return CoercionResult{{}, result};
+
+	return TypeCoercionRules::CoercionResult::get_error ();
       }
     }
 

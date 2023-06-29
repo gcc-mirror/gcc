@@ -1,5 +1,89 @@
+// { dg-options "-w" }
+#![feature(intrinsics)]
+
+pub use option::Option::{self, None, Some};
+pub use result::Result::{self, Err, Ok};
+
+mod option {
+    pub enum Option<T> {
+        None,
+        Some(T),
+    }
+}
+
+mod result {
+    pub enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+}
+
+#[lang = "sized"]
+pub trait Sized {}
+
+#[lang = "clone"]
+pub trait Clone: Sized {
+    fn clone(&self) -> Self;
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
+
+mod impls {
+    use super::Clone;
+
+    macro_rules! impl_clone {
+        ($($t:ty)*) => {
+            $(
+                impl Clone for $t {
+                    fn clone(&self) -> Self {
+                        *self
+                    }
+                }
+            )*
+        }
+    }
+
+    impl_clone! {
+        usize u8 u16 u32 u64 // u128
+        isize i8 i16 i32 i64 // i128
+        f32 f64
+        bool char
+    }
+}
+
+#[lang = "copy"]
+pub trait Copy: Clone {
+    // Empty.
+}
+
+mod copy_impls {
+    use super::Copy;
+
+    macro_rules! impl_copy {
+        ($($t:ty)*) => {
+            $(
+                impl Copy for $t {}
+            )*
+        }
+    }
+
+    impl_copy! {
+        usize u8 u16 u32 u64 // u128
+        isize i8 i16 i32 i64 // i128
+        f32 f64
+        bool char
+    }
+}
+
 mod intrinsics {
     extern "rust-intrinsic" {
+        pub fn add_with_overflow<T>(x: T, y: T) -> (T, bool);
+        pub fn wrapping_add<T>(a: T, b: T) -> T;
+        pub fn wrapping_sub<T>(a: T, b: T) -> T;
+        pub fn rotate_left<T>(a: T, b: T) -> T;
+        pub fn rotate_right<T>(a: T, b: T) -> T;
         pub fn offset<T>(ptr: *const T, count: isize) -> *const T;
         pub fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize);
         pub fn move_val_init<T>(dst: *mut T, src: T);
@@ -60,7 +144,7 @@ mod ptr {
         // Loop through x & y, copying them `Block` at a time
         // The optimizer should unroll the loop fully for most types
         // N.B. We can't use a for loop as the `range` impl calls `mem::swap` recursively
-        let mut i = 0;
+        let mut i: usize = 0;
         while i + block_size <= len {
             // Create some uninitialized memory as scratch space
             // Declaring `t` here avoids aligning the stack when this loop is unused
@@ -105,7 +189,7 @@ mod mem {
         }
     }
 
-    pub fn replace<T>(dest: &mut T, mut src: T) -> T {
+    pub fn test(dest: &mut i32, mut src: i32) -> i32 {
         swap(dest, &mut src);
         src
     }
@@ -113,20 +197,4 @@ mod mem {
     pub unsafe fn uninitialized<T>() -> T {
         intrinsics::uninit()
     }
-}
-
-trait Step {
-    fn replace_zero(&mut self) -> Self;
-}
-
-impl Step for i32 {
-    fn replace_zero(&mut self) -> Self {
-        mem::replace(self, 0)
-    }
-}
-
-fn main() -> i32 {
-    let a = 123;
-    a.replace_zero();
-    a
 }

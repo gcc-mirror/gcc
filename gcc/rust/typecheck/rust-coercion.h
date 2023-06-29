@@ -43,11 +43,13 @@ public:
 
   static CoercionResult Coerce (TyTy::BaseType *receiver,
 				TyTy::BaseType *expected, Location locus,
-				bool allow_autoderef);
+				bool allow_autoderef,
+				bool is_cast_site = false);
 
   static CoercionResult TryCoerce (TyTy::BaseType *receiver,
 				   TyTy::BaseType *expected, Location locus,
-				   bool allow_autoderef);
+				   bool allow_autoderef,
+				   bool is_cast_site = false);
 
   CoercionResult coerce_unsafe_ptr (TyTy::BaseType *receiver,
 				    TyTy::PointerType *expected,
@@ -69,7 +71,7 @@ public:
 
 protected:
   TypeCoercionRules (TyTy::BaseType *expected, Location locus, bool emit_errors,
-		     bool allow_autoderef, bool try_flag);
+		     bool allow_autoderef, bool try_flag, bool is_cast_site);
 
   bool select (TyTy::BaseType &autoderefed) override;
 
@@ -88,6 +90,7 @@ private:
   CoercionResult try_result;
   bool emit_errors;
   bool try_flag;
+  bool is_cast_site;
 };
 
 } // namespace Resolver
