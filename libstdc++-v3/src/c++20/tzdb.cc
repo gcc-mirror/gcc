@@ -41,22 +41,17 @@
 # include <cstdlib>   // getenv
 #endif
 
-#ifndef __GTHREADS
-# define USE_ATOMIC_SHARED_PTR 0
-#elif _WIN32
-// std::mutex cannot be constinit, so Windows must use atomic<shared_ptr<>>.
-# define USE_ATOMIC_SHARED_PTR 1
-#elif ATOMIC_POINTER_LOCK_FREE < 2
-# define USE_ATOMIC_SHARED_PTR 0
-#else
-// TODO benchmark atomic<shared_ptr<>> vs mutex.
-# define USE_ATOMIC_SHARED_PTR 1
-#endif
-
 #if defined __GTHREADS && ATOMIC_POINTER_LOCK_FREE == 2
 # define USE_ATOMIC_LIST_HEAD 1
+// TODO benchmark atomic<shared_ptr<>> vs mutex.
+# define USE_ATOMIC_SHARED_PTR 1
 #else
 # define USE_ATOMIC_LIST_HEAD 0
+# define USE_ATOMIC_SHARED_PTR 0
+#endif
+
+#if USE_ATOMIC_SHARED_PTR && ! USE_ATOMIC_LIST_HEAD
+# error Unsupported combination
 #endif
 
 #if ! __cpp_constinit
@@ -106,9 +101,18 @@ namespace std::chrono
     // Dummy no-op mutex type for single-threaded targets.
     struct mutex { void lock() { } void unlock() { } };
 #endif
-    /// XXX std::mutex::mutex() not constexpr on Windows, so can't be constinit
-    constinit mutex list_mutex;
+    inline mutex& list_mutex()
+    {
+#ifdef __GTHREAD_MUTEX_INIT
+      constinit static mutex m;
+#else
+      // Cannot use a constinit mutex, so use a local static.
+      alignas(mutex) constinit static char buf[sizeof(mutex)];
+      static mutex& m = *::new(buf) mutex();
 #endif
+      return m;
+    }
+#endif // ! USE_ATOMIC_SHARED_PTR
 
     struct Rule;
   }
@@ -154,7 +158,7 @@ namespace std::chrono
     static _Node*
     _S_list_head(memory_order)
     {
-      lock_guard<mutex> l(list_mutex);
+      lock_guard<mutex> l(list_mutex());
       return _S_head_owner.get();
     }
 
@@ -1279,7 +1283,7 @@ namespace std::chrono
       }
     // XXX small window here where _S_head_cache still points to previous tzdb.
 #else
-    lock_guard<mutex> l(list_mutex);
+    lock_guard<mutex> l(list_mutex());
     if (const _Node* h = _S_head_owner.get())
       {
 	if (h->db.version == new_head_ptr->db.version)
@@ -1406,11 +1410,12 @@ namespace std::chrono
 #else
     if (Node::_S_list_head(memory_order::relaxed) != nullptr) [[likely]]
     {
-      lock_guard<mutex> l(list_mutex);
+      lock_guard<mutex> l(list_mutex());
       const tzdb& current = Node::_S_head_owner->db;
       if (current.version == version)
 	return current;
     }
+    shared_ptr<Node> head; // Passed as unused arg to _S_replace_head.
 #endif
 
     auto [leaps, leaps_ok] = Node::_S_read_leap_seconds();
@@ -1499,9 +1504,6 @@ namespace std::chrono
     ranges::sort(node->db.links, {}, &time_zone_link::name);
     ranges::stable_sort(node->rules, {}, &Rule::name);
 
-#if ! USE_ATOMIC_SHARED_PTR
-    shared_ptr<Node> head;
-#endif
     return Node::_S_replace_head(std::move(head), std::move(node));
 #else
     __throw_disabled();
@@ -1526,7 +1528,7 @@ namespace std::chrono
 #if USE_ATOMIC_SHARED_PTR
     return const_iterator{_Node::_S_head_owner.load()};
 #else
-    lock_guard<mutex> l(list_mutex);
+    lock_guard<mutex> l(list_mutex());
     return const_iterator{_Node::_S_head_owner};
 #endif
   }
@@ -1539,7 +1541,7 @@ namespace std::chrono
     if (p._M_node) [[likely]]
     {
 #if ! USE_ATOMIC_SHARED_PTR
-      lock_guard<mutex> l(list_mutex);
+      lock_guard<mutex> l(list_mutex());
 #endif
       if (auto next = p._M_node->next) [[likely]]
 	return const_iterator{p._M_node->next = std::move(next->next)};
