@@ -1456,9 +1456,7 @@ is
             pragma Assert (Big (Double_Uns'(2))**M = Big_2xx (M));
          end if;
       else
-         pragma Assert
-           (Big (Double_Uns'(2))**M =
-             (if M < Double_Size then Big_2xx (M) else Big_2xxDouble));
+         pragma Assert (Big (Double_Uns'(2))**M = Big_2xx (M));
       end if;
    end Lemma_Powers_Of_2_Commutation;
 
