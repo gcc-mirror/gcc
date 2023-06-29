@@ -1,3 +1,30 @@
+2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2023-06-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/mvc17.c: New test.
+
+2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106977
+	PR target/110406
+	* gdc.dg/torture/pr110406.d: New test.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
+	* gcc.target/i386/avx-vzeroupper-12.c: Adjust testcase.
+	* gcc.target/i386/avx-vzeroupper-7.c: Ditto.
+	* gcc.target/i386/avx-vzeroupper-9.c: Ditto.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/bf16_short_warn.c: New test.
+
 2023-06-27  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
