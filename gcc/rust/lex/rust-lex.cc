@@ -1736,6 +1736,12 @@ Lexer::parse_byte_char (Location loc)
       // otherwise, get character from direct input character
       byte_char = current_char;
 
+      if (byte_char.value > 0x7f)
+	{
+	  rust_error_at (get_current_location (),
+			 "non-ASCII character in %<byte char%>");
+	}
+
       skip_input ();
       current_char = peek_input ();
       length++;
@@ -1758,8 +1764,6 @@ Lexer::parse_byte_char (Location loc)
   current_column += length;
 
   loc += length - 1;
-
-  // TODO: error when byte_char is non ASCII
   return Token::make_byte_char (loc, byte_char.value);
 }
 
