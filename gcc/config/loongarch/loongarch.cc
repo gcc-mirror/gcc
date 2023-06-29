@@ -1112,7 +1112,9 @@ loongarch_first_stack_step (struct loongarch_frame_info *frame)
 static void
 loongarch_emit_stack_tie (void)
 {
-  emit_insn (gen_stack_tie (Pmode, stack_pointer_rtx, hard_frame_pointer_rtx));
+  emit_insn (gen_stack_tie (Pmode, stack_pointer_rtx,
+			    frame_pointer_needed ? hard_frame_pointer_rtx
+			    : stack_pointer_rtx));
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
