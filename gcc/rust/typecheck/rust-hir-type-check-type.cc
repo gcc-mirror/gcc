@@ -214,6 +214,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     }
 
   // we try to look for the real impl item if possible
+  TyTy::SubstitutionArgumentMappings args
+    = TyTy::SubstitutionArgumentMappings::error ();
   HIR::ImplItem *impl_item = nullptr;
   if (root->is_concrete ())
     {
@@ -223,7 +225,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	= lookup_associated_impl_block (specified_bound, root);
       if (associated_impl_trait != nullptr)
 	{
-	  associated_impl_trait->setup_associated_types (root, specified_bound);
+	  associated_impl_trait->setup_associated_types (root, specified_bound,
+							 &args);
 
 	  for (auto &i :
 	       associated_impl_trait->get_impl_block ()->get_impl_items ())
@@ -260,6 +263,12 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	  // FIXME
 	  // I think query_type should error if required here anyway
 	  return;
+	}
+
+      if (!args.is_error ())
+	{
+	  // apply the args
+	  translated = SubstMapperInternal::Resolve (translated, args);
 	}
 
       root_resolved_node_id = impl_item->get_impl_mappings ().get_nodeid ();
