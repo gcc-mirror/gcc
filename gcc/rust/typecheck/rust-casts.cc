@@ -40,13 +40,15 @@ TypeCastRules::check ()
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L565-L582
   auto possible_coercion
     = TypeCoercionRules::TryCoerce (from.get_ty (), to.get_ty (), locus,
-				    true /*allow-autoderef*/);
+				    true /*allow-autoderef*/,
+				    true /*is_cast_site*/);
   if (!possible_coercion.is_error ())
     {
       // given the attempt was ok we need to ensure we perform it so that any
       // inference variables are unified correctly
       return TypeCoercionRules::Coerce (from.get_ty (), to.get_ty (), locus,
-					true /*allow-autoderef*/);
+					true /*allow-autoderef*/,
+					true /*is_cast_site*/);
     }
 
   // try the simple cast rules
