@@ -1883,7 +1883,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   uint32_t num_decl_states;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size, decl_data->mode_table);
+			   header->main_size, decl_data);
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);

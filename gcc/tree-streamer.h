@@ -114,9 +114,9 @@ bp_pack_machine_mode (struct bitpack_d *bp, machine_mode mode)
 inline machine_mode
 bp_unpack_machine_mode (struct bitpack_d *bp)
 {
-  return (machine_mode)
-	   ((class lto_input_block *)
-	    bp->stream)->mode_table[bp_unpack_enum (bp, machine_mode, 1 << 8)];
+  lto_input_block *ib = (class lto_input_block *) bp->stream;
+  unsigned ix = bp_unpack_enum (bp, machine_mode, 1 << 8);
+  return (machine_mode) ib->file_data->mode_table[ix];
 }
 
 #endif  /* GCC_TREE_STREAMER_H  */

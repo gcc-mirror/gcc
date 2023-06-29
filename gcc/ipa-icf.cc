@@ -2204,7 +2204,7 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset, 0,
-			   header->main_size, file_data->mode_table);
+			   header->main_size, file_data);
 
   data_in
     = lto_data_in_create (file_data, (const char *) data + string_offset,

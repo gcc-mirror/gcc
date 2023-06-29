@@ -1629,11 +1629,11 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
       lto_input_block ib_main (data + main_offset, header->main_size,
-			       file_data->mode_table);
+			       file_data);
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
 	{
 	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
-				  file_data->mode_table);
+				  file_data);
 	  input_function (fn_decl, data_in, &ib_main, &ib_cfg,
 			  dyn_cast <cgraph_node *>(node));
 	}
@@ -1954,7 +1954,7 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   string_offset = sizeof (*header) + header->main_size;
 
   lto_input_block ib (data + sizeof (*header), header->main_size,
-		      file_data->mode_table);
+		      file_data);
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
