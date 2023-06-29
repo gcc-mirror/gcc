@@ -1564,6 +1564,7 @@ struct GTY(()) tree_template_info {
   struct tree_base base;
   tree tmpl;
   tree args;
+  tree partial;
   vec<deferred_access_check, va_gc> *deferred_access_checks;
 };
 
@@ -3755,6 +3756,14 @@ struct GTY(()) lang_decl {
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK (NODE))->args
 #define TI_PENDING_TEMPLATE_FLAG(NODE) \
   TREE_LANG_FLAG_1 (TEMPLATE_INFO_CHECK (NODE))
+
+/* For a class or variable template specialization, this contains the
+   TEMPLATE_INFO result of most_specialized_partial_spec, i.e. the selected
+   partial template specialization and arguments relative to it.  */
+#define TI_PARTIAL_INFO(NODE) \
+  (gcc_checking_assert (PRIMARY_TEMPLATE_P (TI_TEMPLATE (NODE))), \
+   ((struct tree_template_info*)NODE)->partial)
+
 /* For a given TREE_VEC containing a template argument list,
    this property contains the number of arguments that are not
    defaulted.  */
@@ -7398,7 +7407,7 @@ extern bool comp_template_args			(tree, tree, tree * = NULL,
 extern int template_args_equal                  (tree, tree, bool = false);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
-extern tree most_specialized_partial_spec       (tree, tsubst_flags_t);
+extern tree most_specialized_partial_spec       (tree, tsubst_flags_t, bool = false);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,

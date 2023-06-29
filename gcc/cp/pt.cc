@@ -5410,6 +5410,9 @@ process_partial_specialization (tree decl)
     = tree_cons (specargs, tmpl,
                  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
+  /* Link the DECL_TEMPLATE_RESULT back to the partial TEMPLATE_DECL.  */
+  gcc_checking_assert (!TI_PARTIAL_INFO (tinfo));
+  TI_PARTIAL_INFO (tinfo) = build_template_info (tmpl, NULL_TREE);
 
   for (inst = DECL_TEMPLATE_INSTANTIATIONS (maintmpl); inst;
        inst = TREE_CHAIN (inst))
@@ -5420,16 +5423,17 @@ process_partial_specialization (tree decl)
 	     && CLASSTYPE_IMPLICIT_INSTANTIATION (instance))
 	  : DECL_TEMPLATE_INSTANTIATION (instance))
 	{
-	  tree spec = most_specialized_partial_spec (instance, tf_none);
+	  tree partial_ti = most_specialized_partial_spec (instance, tf_none,
+							   /*rechecking=*/true);
 	  tree inst_decl = (DECL_P (instance)
 			    ? instance : TYPE_NAME (instance));
-	  if (!spec)
+	  if (!partial_ti)
 	    /* OK */;
-	  else if (spec == error_mark_node)
+	  else if (partial_ti == error_mark_node)
 	    permerror (input_location,
 		       "declaration of %qD ambiguates earlier template "
 		       "instantiation for %qD", decl, inst_decl);
-	  else if (TREE_VALUE (spec) == tmpl)
+	  else if (TI_TEMPLATE (partial_ti) == tmpl)
 	    permerror (input_location,
 		       "partial specialization of %qD after instantiation "
 		       "of %qD", decl, inst_decl);
@@ -12107,8 +12111,8 @@ instantiate_class_template (tree type)
 
 	 and supposing that we are instantiating S<int*>, ARGS will
 	 presently be {int*} -- but we need {int}.  */
-      pattern = TREE_TYPE (t);
-      args = TREE_PURPOSE (t);
+      pattern = TREE_TYPE (TI_TEMPLATE (t));
+      args = TI_ARGS (t);
     }
   else
     {
@@ -22080,6 +22084,7 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 
   tree pattern = DECL_TEMPLATE_RESULT (gen_tmpl);
 
+  tree partial_ti = NULL_TREE;
   fndecl = NULL_TREE;
   if (VAR_P (pattern))
     {
@@ -22087,13 +22092,13 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	 specialization now, because the type of the variable could be
 	 different.  */
       tree tid = build2 (TEMPLATE_ID_EXPR, NULL_TREE, tmpl, targ_ptr);
-      tree elt = most_specialized_partial_spec (tid, complain);
-      if (elt == error_mark_node)
+      partial_ti = most_specialized_partial_spec (tid, complain);
+      if (partial_ti == error_mark_node)
 	pattern = error_mark_node;
-      else if (elt)
+      else if (partial_ti)
 	{
-	  tree partial_tmpl = TREE_VALUE (elt);
-	  tree partial_args = TREE_PURPOSE (elt);
+	  tree partial_tmpl = TI_TEMPLATE (partial_ti);
+	  tree partial_args = TI_ARGS (partial_ti);
 	  tree partial_pat = DECL_TEMPLATE_RESULT (partial_tmpl);
 	  fndecl = tsubst (partial_pat, partial_args, complain, gen_tmpl);
 	}
@@ -22116,6 +22121,10 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
+  if (VAR_P (pattern))
+    /* Now that we we've formed this variable template specialization,
+       remember the result of most_specialized_partial_spec for it.  */
+    TI_PARTIAL_INFO (DECL_TEMPLATE_INFO (fndecl)) = partial_ti;
 
   set_instantiating_module (fndecl);
 
@@ -25982,10 +25991,12 @@ most_general_template (tree decl)
 
 /* Return the most specialized of the template partial specializations
    which can produce TARGET, a specialization of some class or variable
-   template.  The value returned is actually a TREE_LIST; the TREE_VALUE is
-   a TEMPLATE_DECL node corresponding to the partial specialization, while
-   the TREE_PURPOSE is the set of template arguments that must be
-   substituted into the template pattern in order to generate TARGET.
+   template.  The value returned is a TEMPLATE_INFO; the TI_TEMPLATE is a
+   TEMPLATE_DECL node corresponding to the partial specialization, while
+   the TI_ARGS is the set of template arguments that must be substituted
+   into the template pattern in order to generate TARGET.  The result is
+   cached in the TI_PARTIAL_INFO of the corresponding TEMPLATE_INFO unless
+   RECHECKING is true.
 
    If the choice of partial specialization is ambiguous, a diagnostic
    is issued, and the error_mark_node is returned.  If there are no
@@ -25993,12 +26004,14 @@ most_general_template (tree decl)
    returned, indicating that the primary template should be used.  */
 
 tree
-most_specialized_partial_spec (tree target, tsubst_flags_t complain)
+most_specialized_partial_spec (tree target, tsubst_flags_t complain,
+			       bool rechecking /* = false */)
 {
+  tree tinfo = NULL_TREE;
   tree tmpl, args, decl;
   if (TYPE_P (target))
     {
-      tree tinfo = CLASSTYPE_TEMPLATE_INFO (target);
+      tinfo = CLASSTYPE_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
       decl = TYPE_NAME (target);
@@ -26011,13 +26024,21 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
     }
   else if (VAR_P (target))
     {
-      tree tinfo = DECL_TEMPLATE_INFO (target);
+      tinfo = DECL_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
       decl = target;
     }
   else
     gcc_unreachable ();
+
+  if (!PRIMARY_TEMPLATE_P (tmpl))
+    return NULL_TREE;
+
+  if (!rechecking
+      && tinfo
+      && (VAR_P (target) || COMPLETE_TYPE_P (target)))
+    return TI_PARTIAL_INFO (tinfo);
 
   tree main_tmpl = most_general_template (tmpl);
   tree specs = DECL_TEMPLATE_SPECIALIZATIONS (main_tmpl);
@@ -26068,10 +26089,7 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
 
 	  /* Keep the candidate only if its constraints are satisfied.  */
 	  if (constraints_satisfied_p (ospec_tmpl, spec_args))
-            {
-	      list = tree_cons (spec_args, ospec_tmpl, list);
-              TREE_TYPE (list) = TREE_TYPE (t);
-            }
+	    list = tree_cons (spec_args, ospec_tmpl, list);
 	}
     }
 
@@ -26133,7 +26151,10 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  return champ;
+  tree result = build_template_info (TREE_VALUE (champ), TREE_PURPOSE (champ));
+  if (!rechecking && tinfo)
+    TI_PARTIAL_INFO (tinfo) = result;
+  return result;
 }
 
 /* Explicitly instantiate DECL.  */
@@ -27025,11 +27046,11 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   if (variable_template_specialization_p (d))
     {
       /* Look up an explicit specialization, if any.  */
-      tree elt = most_specialized_partial_spec (d, tf_warning_or_error);
-      if (elt && elt != error_mark_node)
+      tree partial_ti = most_specialized_partial_spec (d, tf_warning_or_error);
+      if (partial_ti && partial_ti != error_mark_node)
 	{
-	  td = TREE_VALUE (elt);
-	  args = TREE_PURPOSE (elt);
+	  td = TI_TEMPLATE (partial_ti);
+	  args = TI_ARGS (partial_ti);
 	}
     }
 

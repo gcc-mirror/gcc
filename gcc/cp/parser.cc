@@ -34352,9 +34352,9 @@ specialization_of (tree type)
 
   /* Determine the template or its partial specialization to which TYPE
      corresponds.  */
-  if (tree spec = most_specialized_partial_spec (type, tf_none))
-    if (spec != error_mark_node)
-      ret = TREE_TYPE (TREE_VALUE (spec));
+  if (tree ti = most_specialized_partial_spec (type, tf_none))
+    if (ti != error_mark_node)
+      ret = TREE_TYPE (TI_TEMPLATE (ti));
 
   if (ret == type)
     ret = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (type);

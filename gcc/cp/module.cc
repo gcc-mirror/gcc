@@ -6364,6 +6364,7 @@ trees_out::core_vals (tree t)
       {
 	WT (((lang_tree_node *)t)->template_info.tmpl);
 	WT (((lang_tree_node *)t)->template_info.args);
+	WT (((lang_tree_node *)t)->template_info.partial);
 
 	const auto *ac = (((lang_tree_node *)t)
 			  ->template_info.deferred_access_checks);
@@ -6851,6 +6852,7 @@ trees_in::core_vals (tree t)
     case TEMPLATE_INFO:
       RT (((lang_tree_node *)t)->template_info.tmpl);
       RT (((lang_tree_node *)t)->template_info.args);
+      RT (((lang_tree_node *)t)->template_info.partial);
       if (unsigned len = u ())
 	{
 	  auto &ac = (((lang_tree_node *)t)
