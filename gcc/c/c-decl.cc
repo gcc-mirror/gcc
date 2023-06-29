@@ -9278,6 +9278,15 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	TYPE_INCLUDES_FLEXARRAY (t)
 	  = is_last_field && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x));
 
+      if (warn_flex_array_member_not_at_end
+	  && !is_last_field
+	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (x))
+	  && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x)))
+	warning_at (DECL_SOURCE_LOCATION (x),
+		    OPT_Wflex_array_member_not_at_end,
+		    "structure containing a flexible array member"
+		    " is not at the end of another structure");
+
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	saw_named_field = true;

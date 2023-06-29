@@ -1751,7 +1751,49 @@ Flexible array members may only appear as the last member of a
 A structure containing a flexible array member, or a union containing
 such a structure (possibly recursively), may not be a member of a
 structure or an element of an array.  (However, these uses are
-permitted by GCC as extensions.)
+permitted by GCC as extensions, see details below.)
+@end itemize
+
+The GCC extension accepts a structure containing an ISO C99 @dfn{flexible array
+member}, or a union containing such a structure (possibly recursively)
+to be a member of a structure.
+
+There are two situations:
+
+@itemize @bullet
+@item
+A structure containing a C99 flexible array member, or a union containing
+such a structure, is the last field of another structure, for example:
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+union union_flex @{ int others; struct flex f; @};
+
+struct out_flex_struct @{ int m; struct flex flex_data; @};
+struct out_flex_union @{ int n; union union_flex flex_data; @};
+@end smallexample
+
+In the above, both @code{out_flex_struct.flex_data.data[]} and
+@code{out_flex_union.flex_data.f.data[]} are considered as flexible arrays too.
+
+@item
+A structure containing a C99 flexible array member, or a union containing
+such a structure, is not the last field of another structure, for example:
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+
+struct mid_flex @{ int m; struct flex flex_data; int n; @};
+@end smallexample
+
+In the above, accessing a member of the array @code{mid_flex.flex_data.data[]}
+might have undefined behavior.  Compilers do not handle such a case
+consistently.  Any code relying on this case should be modified to ensure
+that flexible array members only end up at the ends of structures.
+
+Please use the warning option @option{-Wflex-array-member-not-at-end} to
+identify all such cases in the source code and modify them.  This extension
+is now deprecated.
 @end itemize
 
 Non-empty initialization of zero-length
