@@ -814,7 +814,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
     case N_Pragma:
       if (Is_Pragma_Name (Chars (Pragma_Identifier (gnat_parent))))
 	{
-	  const unsigned char id
+	  const Pragma_Id id
 	    = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_parent)));
 	  return id == Pragma_Inspection_Point;
 	}
@@ -1331,7 +1331,7 @@ Pragma_to_gnu (Node_Id gnat_node)
   if (!Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  const unsigned char id
+  const Pragma_Id id
     = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
 
   /* Save the expression of pragma Compile_Time_{Error|Warning} for later.  */
@@ -1670,7 +1670,8 @@ get_type_length (tree type, tree result_type)
    should place the result type.  ATTRIBUTE is the attribute ID.  */
 
 static tree
-Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
+Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
+		  Attribute_Id attribute)
 {
   const Node_Id gnat_prefix = Prefix (gnat_node);
   tree gnu_prefix = gnat_to_gnu (gnat_prefix);
@@ -2369,6 +2370,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	  case Attr_Bit_Position:
 	    gnu_result = gnu_field_bitpos;
+	    break;
+
+	    /* -Wswitch warning avoidance.  */
+	  default:
 	    break;
 	  }
 
@@ -4292,7 +4297,7 @@ static void
 get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
 {
   Node_Id gnat_parent, gnat_temp;
-  unsigned char attr_id;
+  Attribute_Id attr_id;
 
   /* First, scan the parent to filter out irrelevant cases.  */
   gnat_parent = Parent (gnat_node);
@@ -6854,7 +6859,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Attribute_Reference:
       {
 	/* The attribute designator.  */
-	const int attr = Get_Attribute_Id (Attribute_Name (gnat_node));
+	const Attribute_Id attr = Get_Attribute_Id (Attribute_Name (gnat_node));
 
 	/* The Elab_Spec and Elab_Body attributes are special in that Prefix
 	   is a unit, not an object with a GCC equivalent.  */
