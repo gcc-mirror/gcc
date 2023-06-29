@@ -423,7 +423,10 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
 	  streamer_write_wide_int (ob, r.lower_bound (i));
 	  streamer_write_wide_int (ob, r.upper_bound (i));
 	}
-      streamer_write_wide_int (ob, r.get_nonzero_bits ());
+      // TODO: We could avoid streaming out the value if the mask is -1.
+      irange_bitmask bm = r.get_bitmask ();
+      streamer_write_wide_int (ob, bm.value ());
+      streamer_write_wide_int (ob, bm.mask ());
       return;
     }
   if (is_a <frange> (v))

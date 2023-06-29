@@ -91,7 +91,7 @@ private:
 
   enum value_range_kind m_kind : 3;
 
-  // The length of this is m_num_ranges * 2 + 1 to accomodate the nonzero bits.
+  // The length of this is m_num_ranges * 2 + 2 to accomodate the bitmask.
   HOST_WIDE_INT m_val[1];
 
   // Another variable-length part of the structure following the HWIs.

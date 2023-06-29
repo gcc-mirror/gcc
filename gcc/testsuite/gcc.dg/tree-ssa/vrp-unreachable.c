@@ -39,4 +39,4 @@ void func (unsigned n, unsigned m)
 /* { dg-final { scan-tree-dump-not "dead" "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "builtin_unreachable" 1 "vrp1" } } */
 /* { dg-final { scan-tree-dump-not "builtin_unreachable" "vrp2" } } */
-/* { dg-final { scan-tree-dump-times "fff8" 4 "vrp2" } } */
+/* { dg-final { scan-tree-dump-times "fff8 VALUE 0x0" 4 "vrp2" } } */

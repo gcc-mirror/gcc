@@ -79,6 +79,13 @@ debug (const Value_Range &r)
   fprintf (stderr, "\n");
 }
 
+DEBUG_FUNCTION void
+debug (const irange_bitmask &bm)
+{
+  bm.dump (stderr);
+  fprintf (stderr, "\n");
+}
+
 // Default vrange definitions.
 
 bool
@@ -235,6 +242,23 @@ vrange::dump (FILE *file) const
   pp_flush (&buffer);
 }
 
+void
+irange_bitmask::dump (FILE *file) const
+{
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+  pretty_printer buffer;
+
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
+  pp_string (&buffer, "MASK ");
+  print_hex (m_mask, buf);
+  pp_string (&buffer, buf);
+  pp_string (&buffer, " VALUE ");
+  print_hex (m_value, buf);
+  pp_string (&buffer, buf);
+  pp_flush (&buffer);
+}
+
 namespace inchash
 {
 
@@ -263,7 +287,9 @@ add_vrange (const vrange &v, inchash::hash &hstate,
 	  hstate.add_wide_int (r.lower_bound (i));
 	  hstate.add_wide_int (r.upper_bound (i));
 	}
-      hstate.add_wide_int (r.get_nonzero_bits ());
+      irange_bitmask bm = r.get_bitmask ();
+      hstate.add_wide_int (bm.value ());
+      hstate.add_wide_int (bm.mask ());
       return;
     }
   if (is_a <frange> (v))
@@ -908,7 +934,7 @@ irange::operator= (const irange &src)
   m_num_ranges = lim;
   m_type = src.m_type;
   m_kind = src.m_kind;
-  m_nonzero_mask = src.m_nonzero_mask;
+  m_bitmask = src.m_bitmask;
   if (m_max_ranges == 1)
     normalize_kind ();
   if (flag_checking)
@@ -972,7 +998,7 @@ irange::set (tree type, const wide_int &min, const wide_int &max,
   wide_int max_value = wi::max_value (prec, sign);
 
   m_type = type;
-  m_nonzero_mask = wi::minus_one (prec);
+  m_bitmask.set_unknown (prec);
 
   if (kind == VR_RANGE)
     {
@@ -1059,7 +1085,7 @@ irange::verify_range ()
   unsigned prec = TYPE_PRECISION (m_type);
   if (m_kind == VR_VARYING)
     {
-      gcc_checking_assert (m_nonzero_mask == -1);
+      gcc_checking_assert (m_bitmask.unknown_p ());
       gcc_checking_assert (m_num_ranges == 1);
       gcc_checking_assert (varying_compatible_p ());
       gcc_checking_assert (lower_bound ().get_precision () == prec);
@@ -1077,7 +1103,7 @@ irange::verify_range ()
       int c = wi::cmp (lb, ub, TYPE_SIGN (m_type));
       gcc_checking_assert (c == 0 || c == -1);
     }
-  gcc_checking_assert (m_nonzero_mask.get_precision () == prec);
+  m_bitmask.verify_mask ();
 }
 
 bool
@@ -1101,9 +1127,18 @@ irange::operator== (const irange &other) const
       if (lb != lb_other || ub != ub_other)
 	return false;
     }
-  widest_int nz1 = widest_int::from (get_nonzero_bits (), sign1);
-  widest_int nz2 = widest_int::from (other.get_nonzero_bits (), sign2);
-  return nz1 == nz2;
+
+  irange_bitmask bm1 = get_bitmask ();
+  irange_bitmask bm2 = other.get_bitmask ();
+  widest_int tmp1 = widest_int::from (bm1.mask (), sign1);
+  widest_int tmp2 = widest_int::from (bm2.mask (), sign2);
+  if (tmp1 != tmp2)
+    return false;
+  if (bm1.unknown_p ())
+    return true;
+  tmp1 = widest_int::from (bm1.value (), sign1);
+  tmp2 = widest_int::from (bm2.value (), sign2);
+  return tmp1 == tmp2;
 }
 
 /* If range is a singleton, place it in RESULT and return TRUE.  */
@@ -1143,10 +1178,10 @@ irange::contains_p (const wide_int &cst) const
   if (undefined_p ())
     return false;
 
-  // See if we can exclude CST based on the nonzero bits.
-  if (m_nonzero_mask != -1
+  // See if we can exclude CST based on the known 0 bits.
+  if (!m_bitmask.unknown_p ()
       && cst != 0
-      && wi::bit_and (m_nonzero_mask, cst) == 0)
+      && wi::bit_and (m_bitmask.get_nonzero_bits (), cst) == 0)
     return false;
 
   signop sign = TYPE_SIGN (type ());
@@ -1176,7 +1211,7 @@ irange::irange_single_pair_union (const irange &r)
     {
       // If current upper bound is new upper bound, we're done.
       if (wi::le_p (r.m_base[1], m_base[1], sign))
-	return union_nonzero_bits (r);
+	return union_bitmask (r);
       // Otherwise R has the new upper bound.
       // Check for overlap/touching ranges, or single target range.
       if (m_max_ranges == 1
@@ -1192,7 +1227,7 @@ irange::irange_single_pair_union (const irange &r)
 	}
       // The range has been altered, so normalize it even if nothing
       // changed in the mask.
-      if (!union_nonzero_bits (r))
+      if (!union_bitmask (r))
 	normalize_kind ();
       if (flag_checking)
 	verify_range ();
@@ -1221,7 +1256,7 @@ irange::irange_single_pair_union (const irange &r)
     }
   // The range has been altered, so normalize it even if nothing
   // changed in the mask.
-  if (!union_nonzero_bits (r))
+  if (!union_bitmask (r))
     normalize_kind ();
   if (flag_checking)
     verify_range ();
@@ -1261,7 +1296,7 @@ irange::union_ (const vrange &v)
 
   // If this ranges fully contains R, then we need do nothing.
   if (irange_contains_p (r))
-    return union_nonzero_bits (r);
+    return union_bitmask (r);
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -1356,7 +1391,7 @@ irange::union_ (const vrange &v)
   m_kind = VR_RANGE;
   // The range has been altered, so normalize it even if nothing
   // changed in the mask.
-  if (!union_nonzero_bits (r))
+  if (!union_bitmask (r))
     normalize_kind ();
   if (flag_checking)
     verify_range ();
@@ -1439,13 +1474,13 @@ irange::intersect (const vrange &v)
       if (undefined_p ())
 	return true;
 
-      res |= intersect_nonzero_bits (r);
+      res |= intersect_bitmask (r);
       return res;
     }
 
   // If R fully contains this, then intersection will change nothing.
   if (r.irange_contains_p (*this))
-    return intersect_nonzero_bits (r);
+    return intersect_bitmask (r);
 
   // ?? We could probably come up with something smarter than the
   // worst case scenario here.
@@ -1528,7 +1563,7 @@ irange::intersect (const vrange &v)
   m_kind = VR_RANGE;
   // The range has been altered, so normalize it even if nothing
   // changed in the mask.
-  if (!intersect_nonzero_bits (r))
+  if (!intersect_bitmask (r))
     normalize_kind ();
   if (flag_checking)
     verify_range ();
@@ -1652,7 +1687,7 @@ irange::invert ()
   signop sign = TYPE_SIGN (ttype);
   wide_int type_min = wi::min_value (prec, sign);
   wide_int type_max = wi::max_value (prec, sign);
-  m_nonzero_mask = wi::minus_one (prec);
+  m_bitmask.set_unknown (prec);
 
   // At this point, we need one extra sub-range to represent the
   // inverse.
@@ -1723,45 +1758,45 @@ irange::invert ()
     verify_range ();
 }
 
-// Return the nonzero bits inherent in the range.
+// Return the bitmask inherent in the range.
 
-wide_int
-irange::get_nonzero_bits_from_range () const
+irange_bitmask
+irange::get_bitmask_from_range () const
 {
   wide_int min = lower_bound ();
   wide_int max = upper_bound ();
   wide_int xorv = min ^ max;
+  unsigned prec = TYPE_PRECISION (type ());
+
   if (xorv != 0)
-    {
-      unsigned prec = TYPE_PRECISION (type ());
-      xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-    }
-  return min | xorv;
+    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
+
+  return irange_bitmask (wi::zero (prec), min | xorv);
 }
 
-// If the the nonzero mask can be trivially converted to a range, do
-// so and return TRUE.
+// If the the mask can be trivially converted to a range, do so and
+// return TRUE.
 
 bool
-irange::set_range_from_nonzero_bits ()
+irange::set_range_from_bitmask ()
 {
   gcc_checking_assert (!undefined_p ());
-  if (m_nonzero_mask == -1)
+  if (m_bitmask.unknown_p ())
     return false;
-  unsigned popcount = wi::popcount (m_nonzero_mask);
+  unsigned popcount = wi::popcount (m_bitmask.get_nonzero_bits ());
 
   // If we have only one bit set in the mask, we can figure out the
   // range immediately.
   if (popcount == 1)
     {
       // Make sure we don't pessimize the range.
-      if (!contains_p (m_nonzero_mask))
+      if (!contains_p (m_bitmask.get_nonzero_bits ()))
 	return false;
 
       bool has_zero = contains_zero_p (*this);
-      wide_int nz = m_nonzero_mask;
+      wide_int nz = m_bitmask.get_nonzero_bits ();
       set (m_type, nz, nz);
-      m_nonzero_mask = nz;
+      m_bitmask.set_nonzero_bits (nz);
       if (has_zero)
 	{
 	  int_range<2> zero;
@@ -1781,95 +1816,126 @@ irange::set_range_from_nonzero_bits ()
 }
 
 void
-irange::set_nonzero_bits (const wide_int &bits)
+irange::update_bitmask (const irange_bitmask &bm)
 {
   gcc_checking_assert (!undefined_p ());
 
-  // Drop VARYINGs with a nonzero mask to a plain range.
-  if (m_kind == VR_VARYING && bits != -1)
+  // Drop VARYINGs with known bits to a plain range.
+  if (m_kind == VR_VARYING && !bm.unknown_p ())
     m_kind = VR_RANGE;
 
-  m_nonzero_mask = bits;
-  if (!set_range_from_nonzero_bits ())
+  m_bitmask = bm;
+  if (!set_range_from_bitmask ())
     normalize_kind ();
   if (flag_checking)
     verify_range ();
 }
 
-// Return the nonzero bitmask.  This will return the nonzero bits plus
-// the nonzero bits inherent in the range.
+// Return the bitmask of known bits that includes the bitmask inherent
+// in the range.
+
+irange_bitmask
+irange::get_bitmask () const
+{
+  gcc_checking_assert (!undefined_p ());
+
+  // The mask inherent in the range is calculated on-demand.  For
+  // example, [0,255] does not have known bits set by default.  This
+  // saves us considerable time, because setting it at creation incurs
+  // a large penalty for irange::set.  At the time of writing there
+  // was a 5% slowdown in VRP if we kept the mask precisely up to date
+  // at all times.  Instead, we default to -1 and set it when
+  // explicitly requested.  However, this function will always return
+  // the correct mask.
+  //
+  // This also means that the mask may have a finer granularity than
+  // the range and thus contradict it.  Think of the mask as an
+  // enhancement to the range.  For example:
+  //
+  // [3, 1000] MASK 0xfffffffe VALUE 0x0
+  //
+  // 3 is in the range endpoints, but is excluded per the known 0 bits
+  // in the mask.
+  irange_bitmask bm = get_bitmask_from_range ();
+  if (!m_bitmask.unknown_p ())
+    bm.intersect (m_bitmask);
+  return bm;
+}
+
+// Set the nonzero bits in R into THIS.  Return TRUE and
+// normalize the range if anything changed.
+
+void
+irange::set_nonzero_bits (const wide_int &bits)
+{
+  gcc_checking_assert (!undefined_p ());
+  irange_bitmask bm (wi::zero (TYPE_PRECISION (type ())), bits);
+  update_bitmask (bm);
+}
+
+// Return the nonzero bits in R.
 
 wide_int
 irange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
-  // The nonzero mask inherent in the range is calculated on-demand.
-  // For example, [0,255] does not have a 0xff nonzero mask by default
-  // (unless manually set).  This saves us considerable time, because
-  // setting it at creation incurs a large penalty for irange::set.
-  // At the time of writing there was a 5% slowdown in VRP if we kept
-  // the mask precisely up to date at all times.  Instead, we default
-  // to -1 and set it when explicitly requested.  However, this
-  // function will always return the correct mask.
-  if (m_nonzero_mask == -1)
-    return get_nonzero_bits_from_range ();
-  else
-    return m_nonzero_mask & get_nonzero_bits_from_range ();
+  irange_bitmask bm = get_bitmask ();
+  return bm.value () | bm.mask ();
 }
 
-// Intersect the nonzero bits in R into THIS.  Return TRUE and
-// normalize the range if anything changed.
+// Intersect the bitmask in R into THIS and normalize the range.
+// Return TRUE if the intersection changed anything.
 
 bool
-irange::intersect_nonzero_bits (const irange &r)
+irange::intersect_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
+  if (m_bitmask == r.m_bitmask)
     return false;
 
-  if (m_nonzero_mask != r.m_nonzero_mask)
-    {
-      wide_int nz = get_nonzero_bits () & r.get_nonzero_bits ();
-      // If the nonzero bits did not change, return false.
-      if (nz == get_nonzero_bits ())
-	return false;
+  irange_bitmask bm = get_bitmask ();
+  if (!bm.intersect (r.get_bitmask ()))
+    return false;
 
-      m_nonzero_mask = nz;
-      if (!set_range_from_nonzero_bits ())
-	normalize_kind ();
-      if (flag_checking)
-	verify_range ();
-      return true;
-    }
-  return false;
+  m_bitmask = bm;
+  if (!set_range_from_bitmask ())
+    normalize_kind ();
+  if (flag_checking)
+    verify_range ();
+  return true;
 }
 
-// Union the nonzero bits in R into THIS.  Return TRUE and normalize
-// the range if anything changed.
+// Union the bitmask in R into THIS.  Return TRUE and normalize the
+// range if anything changed.
 
 bool
-irange::union_nonzero_bits (const irange &r)
+irange::union_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (m_nonzero_mask == -1 && r.m_nonzero_mask == -1)
+  if (m_bitmask == r.m_bitmask)
     return false;
 
-  if (m_nonzero_mask != r.m_nonzero_mask)
-    {
-      wide_int save = get_nonzero_bits ();
-      m_nonzero_mask = save | r.get_nonzero_bits ();
-      if (m_nonzero_mask == save)
-	return false;
-      // No need to call set_range_from_nonzero_bits, because we'll
-      // never narrow the range.  Besides, it would cause endless
-      // recursion because of the union_ in
-      // set_range_from_nonzero_bits.
-      normalize_kind ();
-      return true;
-    }
-  return false;
+  irange_bitmask bm = get_bitmask ();
+  if (!bm.union_ (r.get_bitmask ()))
+    return false;
+
+  m_bitmask = bm;
+  // No need to call set_range_from_mask, because we'll never
+  // narrow the range.  Besides, it would cause endless recursion
+  // because of the union_ in set_range_from_mask.
+  normalize_kind ();
+  return true;
+}
+
+void
+irange_bitmask::verify_mask () const
+{
+  gcc_assert (m_value.get_precision () == m_mask.get_precision ());
+  // Unknown bits must have their corresponding value bits cleared as
+  // it simplifies union and intersect.
+  gcc_assert (wi::bit_and (m_mask, m_value) == 0);
 }
 
 void

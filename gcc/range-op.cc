@@ -2876,16 +2876,20 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 	return true;
     }
 
-  // Update the nonzero mask.  Truncating casts are problematic unless
+  // Update the bitmask.  Truncating casts are problematic unless
   // the conversion fits in the resulting outer type.
-  wide_int nz = inner.get_nonzero_bits ();
+  irange_bitmask bm = inner.get_bitmask ();
   if (truncating_cast_p (inner, outer)
-      && wi::rshift (nz, wi::uhwi (TYPE_PRECISION (outer.type ()),
-				   TYPE_PRECISION (inner.type ())),
+      && wi::rshift (bm.mask (),
+		     wi::uhwi (TYPE_PRECISION (outer.type ()),
+			       TYPE_PRECISION (inner.type ())),
 		     TYPE_SIGN (inner.type ())) != 0)
     return true;
-  nz = wide_int::from (nz, TYPE_PRECISION (type), TYPE_SIGN (inner.type ()));
-  r.set_nonzero_bits (nz);
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (inner.type ());
+  bm = irange_bitmask (wide_int::from (bm.value (), prec, sign),
+		       wide_int::from (bm.mask (), prec, sign));
+  r.update_bitmask (bm);
 
   return true;
 }

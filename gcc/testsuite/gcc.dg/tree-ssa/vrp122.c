@@ -16,4 +16,4 @@ int f(unsigned t)
   return 0;
 }
 
-// { dg-final { scan-tree-dump "Global Exported: g_.* NONZERO 0x.*fff0" "evrp" } }
+// { dg-final { scan-tree-dump "Global Exported: g_.* MASK 0x1 VALUE 0x0" "evrp" } }

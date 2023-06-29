@@ -232,7 +232,7 @@ vrange_storage::equal_p (const vrange &r) const
 unsigned char *
 irange_storage::write_lengths_address ()
 {
-  return (unsigned char *)&m_val[(m_num_ranges * 2 + 1)
+  return (unsigned char *)&m_val[(m_num_ranges * 2 + 2)
 				 * WIDE_INT_MAX_HWIS (m_precision)];
 }
 
@@ -301,7 +301,11 @@ irange_storage::set_irange (const irange &r)
       write_wide_int (val, len, r.lower_bound (i));
       write_wide_int (val, len, r.upper_bound (i));
     }
-  write_wide_int (val, len, r.m_nonzero_mask);
+
+  // TODO: We could avoid streaming out the value if the mask is -1.
+  irange_bitmask bm = r.m_bitmask;
+  write_wide_int (val, len, bm.value ());
+  write_wide_int (val, len, bm.mask ());
 
   if (flag_checking)
     {
@@ -367,7 +371,12 @@ irange_storage::get_irange (irange &r, tree type) const
 	  r.union_ (tmp);
 	}
     }
-  read_wide_int (r.m_nonzero_mask, val, *len, m_precision);
+
+  wide_int bits_value, bits_mask;
+  read_wide_int (bits_value, val, *len, m_precision);
+  val += *len++;
+  read_wide_int (bits_mask, val, *len, m_precision);
+  r.m_bitmask = irange_bitmask (bits_value, bits_mask);
   if (r.m_kind == VR_VARYING)
     r.m_kind = VR_RANGE;
 
@@ -399,7 +408,7 @@ irange_storage::size (const irange &r)
     return sizeof (irange_storage);
 
   unsigned prec = TYPE_PRECISION (r.type ());
-  unsigned n = r.num_pairs () * 2 + 1;
+  unsigned n = r.num_pairs () * 2 + 2;
   unsigned hwi_size = ((n * WIDE_INT_MAX_HWIS (prec) - 1)
 		       * sizeof (HOST_WIDE_INT));
   unsigned len_size = n;
@@ -428,7 +437,7 @@ irange_storage::dump () const
   int i, j;
 
   fprintf (stderr, "  lengths = [ ");
-  for (i = 0; i < m_num_ranges * 2 + 1; ++i)
+  for (i = 0; i < m_num_ranges * 2 + 2; ++i)
     fprintf (stderr, "%d ", len[i]);
   fprintf (stderr, "]\n");
 
@@ -443,8 +452,13 @@ irange_storage::dump () const
 		 *val++);
       ++len;
     }
+
+  // Dump value/mask pair.
   for (j = 0; j < *len; ++j)
-    fprintf (stderr, "  [NZ] " HOST_WIDE_INT_PRINT_DEC "\n", *val++);
+    fprintf (stderr, "  [VALUE] " HOST_WIDE_INT_PRINT_DEC "\n", *val++);
+  ++len;
+  for (j = 0; j < *len; ++j)
+    fprintf (stderr, "  [MASK] " HOST_WIDE_INT_PRINT_DEC "\n", *val++);
 }
 
 DEBUG_FUNCTION void

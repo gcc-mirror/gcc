@@ -113,12 +113,146 @@ namespace inchash
   extern void add_vrange (const vrange &, hash &, unsigned flags = 0);
 }
 
+// A pair of values representing the known bits in a range.  Zero bits
+// in MASK cover constant values.  Set bits in MASK cover unknown
+// values.  VALUE are the known bits.
+//
+// Set bits in MASK (no meaningful information) must have their
+// corresponding bits in VALUE cleared, as this speeds up union and
+// intersect.
+
+class irange_bitmask
+{
+public:
+  irange_bitmask () { /* uninitialized */ }
+  irange_bitmask (unsigned prec) { set_unknown (prec); }
+  irange_bitmask (const wide_int &value, const wide_int &mask);
+  wide_int value () const { return m_value; }
+  wide_int mask () const { return m_mask; }
+  void set_unknown (unsigned prec);
+  bool unknown_p () const;
+  unsigned get_precision () const;
+  bool union_ (const irange_bitmask &src);
+  bool intersect (const irange_bitmask &src);
+  bool operator== (const irange_bitmask &src) const;
+  bool operator!= (const irange_bitmask &src) const { return !(*this == src); }
+  void verify_mask () const;
+  void dump (FILE *) const;
+
+  // Convenience functions for nonzero bitmask compatibility.
+  wide_int get_nonzero_bits () const;
+  void set_nonzero_bits (const wide_int &bits);
+private:
+  wide_int m_value;
+  wide_int m_mask;
+};
+
+inline void
+irange_bitmask::set_unknown (unsigned prec)
+{
+  m_value = wi::zero (prec);
+  m_mask = wi::minus_one (prec);
+  if (flag_checking)
+    verify_mask ();
+}
+
+// Return TRUE if THIS does not have any meaningful information.
+
+inline bool
+irange_bitmask::unknown_p () const
+{
+  return m_mask == -1;
+}
+
+inline
+irange_bitmask::irange_bitmask (const wide_int &value, const wide_int &mask)
+{
+  m_value = value;
+  m_mask = mask;
+  if (flag_checking)
+    verify_mask ();
+}
+
+inline unsigned
+irange_bitmask::get_precision () const
+{
+  return m_mask.get_precision ();
+}
+
+// The following two functions are meant for backwards compatability
+// with the nonzero bitmask.  A cleared bit means the value must be 0.
+// A set bit means we have no information for the bit.
+
+// Return the nonzero bits.
+inline wide_int
+irange_bitmask::get_nonzero_bits () const
+{
+  return m_value | m_mask;
+}
+
+// Set the bitmask to the nonzero bits in BITS.
+inline void
+irange_bitmask::set_nonzero_bits (const wide_int &bits)
+{
+  m_value = wi::zero (bits.get_precision ());
+  m_mask = bits;
+  if (flag_checking)
+    verify_mask ();
+}
+
+inline bool
+irange_bitmask::operator== (const irange_bitmask &src) const
+{
+  bool unknown1 = unknown_p ();
+  bool unknown2 = src.unknown_p ();
+  if (unknown1 || unknown2)
+    return unknown1 == unknown2;
+  return m_value == src.m_value && m_mask == src.m_mask;
+}
+
+inline bool
+irange_bitmask::union_ (const irange_bitmask &src)
+{
+  irange_bitmask save (*this);
+  m_mask = (m_mask | src.m_mask) | (m_value ^ src.m_value);
+  m_value = m_value & src.m_value;
+  if (flag_checking)
+    verify_mask ();
+  return *this != save;
+}
+
+inline bool
+irange_bitmask::intersect (const irange_bitmask &src)
+{
+  irange_bitmask save (*this);
+  // If we have two known bits that are incompatible, the resulting
+  // bit is undefined.  It is unclear whether we should set the entire
+  // range to UNDEFINED, or just a subset of it.  For now, set the
+  // entire bitmask to unknown (VARYING).
+  if (wi::bit_and (~(m_mask | src.m_mask),
+		   m_value ^ src.m_value) != 0)
+    {
+      unsigned prec = m_mask.get_precision ();
+      m_mask = wi::minus_one (prec);
+      m_value = wi::zero (prec);
+    }
+  else
+    {
+      m_mask = m_mask & src.m_mask;
+      m_value = m_value | src.m_value;
+    }
+  if (flag_checking)
+    verify_mask ();
+  return *this != save;
+}
+
 // An integer range without any storage.
 
 class GTY((user)) irange : public vrange
 {
   friend value_range_kind get_legacy_range (const irange &, tree &, tree &);
   friend class irange_storage;
+  friend class vrange_printer;
 public:
   // In-place setters.
   void set (tree type, const wide_int &, const wide_int &,
@@ -161,6 +295,8 @@ public:
   virtual bool fits_p (const vrange &r) const override;
   virtual void accept (const vrange_visitor &v) const override;
 
+  void update_bitmask (const irange_bitmask &);
+  irange_bitmask get_bitmask () const;
   // Nonzero masks.
   wide_int get_nonzero_bits () const;
   void set_nonzero_bits (const wide_int &bits);
@@ -187,17 +323,17 @@ private:
   friend void gt_pch_nx (irange *, gt_pointer_operator, void *);
 
   bool varying_compatible_p () const;
-  bool intersect_nonzero_bits (const irange &r);
-  bool union_nonzero_bits (const irange &r);
-  wide_int get_nonzero_bits_from_range () const;
-  bool set_range_from_nonzero_bits ();
+  bool intersect_bitmask (const irange &r);
+  bool union_bitmask (const irange &r);
+  irange_bitmask get_bitmask_from_range () const;
+  bool set_range_from_bitmask ();
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
   bool m_resizable;
   unsigned char m_max_ranges;
   tree m_type;
-  wide_int m_nonzero_mask;
+  irange_bitmask m_bitmask;
 protected:
   wide_int *m_base;
 };
@@ -741,7 +877,7 @@ irange::varying_compatible_p () const
   if (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t))
     return (l == wi::min_value (prec, sign)
 	    && u == wi::max_value (prec, sign)
-	    && m_nonzero_mask == -1);
+	    && m_bitmask.unknown_p ());
   return true;
 }
 
@@ -908,7 +1044,7 @@ irange::set_varying (tree type)
 {
   m_kind = VR_VARYING;
   m_num_ranges = 1;
-  m_nonzero_mask = wi::minus_one (TYPE_PRECISION (type));
+  m_bitmask.set_unknown (TYPE_PRECISION (type));
 
   if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
     {
@@ -966,7 +1102,8 @@ irange::set_nonzero (tree type)
       m_type = type;
       m_kind = VR_RANGE;
       m_base[0] = wi::one (prec);
-      m_base[1] = m_nonzero_mask = wi::minus_one (prec);
+      m_base[1] = wi::minus_one (prec);
+      m_bitmask.set_unknown (prec);
       m_num_ranges = 1;
 
       if (flag_checking)

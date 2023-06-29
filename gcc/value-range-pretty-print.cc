@@ -94,13 +94,16 @@ vrange_printer::print_irange_bound (const wide_int &bound, tree type) const
 void
 vrange_printer::print_irange_bitmasks (const irange &r) const
 {
-  wide_int nz = r.get_nonzero_bits ();
-  if (nz == -1)
+  irange_bitmask bm = r.m_bitmask;
+  if (bm.unknown_p ())
     return;
 
-  pp_string (pp, " NONZERO ");
+  pp_string (pp, " MASK ");
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_hex (nz, buf);
+  print_hex (bm.mask (), buf);
+  pp_string (pp, buf);
+  pp_string (pp, " VALUE ");
+  print_hex (bm.value (), buf);
   pp_string (pp, buf);
 }
 
