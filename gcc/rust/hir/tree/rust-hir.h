@@ -65,6 +65,12 @@ public:
     : inner_attrs (std::move (inner_attrs)){};
 };
 
+class FullVisitable
+{
+public:
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
+};
+
 // forward decl for use in token tree method
 class Token;
 
@@ -155,9 +161,11 @@ public:
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
  * top-level module scope - only a subclass of statements called "items" are. */
-class Stmt : public Node
+class Stmt : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   // Unique pointer custom clone function
   std::unique_ptr<Stmt> clone_stmt () const
   {
@@ -170,7 +178,6 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
   virtual Location get_locus () const = 0;
@@ -253,8 +260,11 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression HIR node - abstract
-class Expr : public Node
+class Expr : public Node, public FullVisitable
 {
+public:
+  using FullVisitable::accept_vis;
+
 protected:
   AST::AttrVec outer_attrs;
   Analysis::NodeMapping mappings;
@@ -322,7 +332,6 @@ public:
   virtual ExprType get_expression_type () const = 0;
 
   virtual void accept_vis (HIRExpressionVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Constructor
@@ -374,9 +383,11 @@ public:
 };
 
 // Pattern base HIR node
-class Pattern : public Node
+class Pattern : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   enum PatternType
   {
     PATH,
@@ -407,7 +418,6 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRPatternVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
@@ -425,9 +435,10 @@ protected:
 class TraitBound;
 
 // Base class for types as represented in HIR - abstract
-class Type : public Node
+class Type : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   // Unique pointer custom clone function
   std::unique_ptr<Type> clone_type () const
   {
@@ -450,7 +461,6 @@ public:
   /* as pointer, shouldn't require definition beforehand, only forward
    * declaration. */
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
@@ -497,9 +507,10 @@ protected:
 
 /* Abstract base class representing a type param bound - Lifetime and TraitBound
  * extends it */
-class TypeParamBound
+class TypeParamBound : public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum BoundType
   {
     LIFETIME,
@@ -515,8 +526,6 @@ public:
   }
 
   virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
 
@@ -590,9 +599,11 @@ protected:
 
 /* Base generic parameter in HIR. Abstract - can be represented by a Lifetime or
  * Type param */
-class GenericParam
+class GenericParam : public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
+
   virtual ~GenericParam () {}
 
   enum class GenericKind
@@ -609,8 +620,6 @@ public:
   }
 
   virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual Location get_locus () const = 0;
 
@@ -768,9 +777,10 @@ private:
 };
 
 // Item used in trait declarations - abstract base class
-class TraitItem : public Node
+class TraitItem : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum TraitItemKind
   {
     FUNC,
@@ -800,7 +810,6 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRTraitItemVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual const std::string trait_identifier () const = 0;
 
@@ -814,9 +823,10 @@ public:
   virtual const AST::AttrVec &get_outer_attrs () const = 0;
 };
 
-class ImplItem : public Node
+class ImplItem : public Node, public FullVisitable
 {
 public:
+  using FullVisitable::accept_vis;
   enum ImplItemType
   {
     FUNCTION,
@@ -837,7 +847,6 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRImplVisitor &vis) = 0;
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
