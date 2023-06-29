@@ -1,3 +1,23 @@
+2023-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* trans-expr.cc (gfc_conv_procedure_call): For non-constant string
+	argument passed to CHARACTER(LEN=1),VALUE dummy, ensure proper
+	dereferencing and truncation of string to length 1.
+
+2023-06-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/49213
+	* expr.cc (gfc_is_ptr_fcn): Remove reference to class_pointer.
+	* resolve.cc (resolve_assoc_var): Call gfc_is_ptr_fcn to allow
+	associate names with pointer function targets to be used in
+	variable definition context.
+	* trans-decl.cc (get_symbol_decl): Remove extraneous line.
+	* trans-expr.cc (alloc_scalar_allocatable_subcomponent): Obtain
+	size of intrinsic and character expressions.
+	(gfc_trans_subcomponent_assign): Expand assignment to class
+	components to include intrinsic and character expressions.
+
 2023-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110360

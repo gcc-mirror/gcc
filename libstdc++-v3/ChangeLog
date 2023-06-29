@@ -1,3 +1,10 @@
+2023-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/109849
+	* include/bits/c++config (std::__terminate): Mark cold.
+	* include/bits/functexcept.h: Mark everything as cold.
+	* libsupc++/exception: Mark terminate and unexpected as cold.
+
 2023-06-26  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/pstl/algorithm_fwd.h: Synchronize with upstream.

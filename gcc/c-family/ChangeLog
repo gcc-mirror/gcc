@@ -1,3 +1,8 @@
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110344
+	* c-cppbuiltin.cc (c_cpp_builtins): Update __cpp_constexpr.
+
 2023-06-26  Richard Biener  <rguenther@suse.de>
 
 	* c-common.cc (shorten_binary_op): Exit early for VECTOR_TYPE

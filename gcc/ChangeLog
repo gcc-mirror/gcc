@@ -1,3 +1,168 @@
+2023-06-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/110144
+	* config/cris/cris.cc (cris_postdbr_cmpelim): Don't apply PATTERN
+	to insn before validating it.
+
+2023-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110334
+	* ipa-fnsummary.h (ipa_fn_summary): Add
+	safe_to_inline_to_always_inline.
+	* ipa-inline.cc (can_early_inline_edge_p): ICE
+	if SSA is not built; do cycle checking for
+	always_inline functions.
+	(inline_always_inline_functions): Be recrusive;
+	watch for cycles; do not updat overall summary.
+	(early_inliner): Do not give up on always_inlines.
+	* ipa-utils.cc (ipa_reverse_postorder): Do not skip
+	always inlines.
+
+2023-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* output.h (leaf_function_p): Change return type from int to bool.
+	(final_forward_branch_p): Ditto.
+	(only_leaf_regs_used): Ditto.
+	(maybe_assemble_visibility): Ditto.
+	* varasm.h (supports_one_only): Ditto.
+	* rtl.h (compute_alignments): Change return type from int to void.
+	* final.cc (app_on): Change return type from int to bool.
+	(compute_alignments): Change return type from int to void
+	and adjust function body accordingly.
+	(shorten_branches):  Change "something_changed" variable
+	type from int to bool.
+	(leaf_function_p):  Change return type from int to bool
+	and adjust function body accordingly.
+	(final_forward_branch_p): Ditto.
+	(only_leaf_regs_used): Ditto.
+	* varasm.cc (contains_pointers_p): Change return type from
+	int to bool and adjust function body accordingly.
+	(compare_constant): Ditto.
+	(maybe_assemble_visibility): Ditto.
+	(supports_one_only): Ditto.
+
+2023-06-28  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR debug/110308
+	* regcprop.cc (maybe_mode_change): Check stack_pointer_rtx mode.
+	(maybe_copy_reg_attrs): New function.
+	(find_oldest_value_reg): Use maybe_copy_reg_attrs.
+	(copyprop_hardreg_forward_1): Ditto.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110434
+	* tree-nrv.cc (pass_nrv::execute): Remove CLOBBERs of
+	VAR we replace with <retval>.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110451
+	* tree-ssa-loop-im.cc (stmt_cost): [VEC_]COND_EXPR and
+	tcc_comparison are expensive.
+
+2023-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_branch): Also use ptest
+	for TImode comparisons on 32-bit architectures.
+	* config/i386/i386.md (cbranch<mode>4): Change from SDWIM to
+	SWIM1248x to exclude/avoid TImode being conditional on -m64.
+	(cbranchti4): New define_expand for TImode on both TARGET_64BIT
+	and/or with TARGET_SSE4_1.
+	* config/i386/predicates.md (ix86_timode_comparison_operator):
+	New predicate that depends upon TARGET_64BIT.
+	(ix86_timode_comparison_operand): Likewise.
+
+2023-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/78794
+	* config/i386/i386-features.cc (compute_convert_gain): Provide
+	more accurate gains for conversion of scalar comparisons to
+	PTEST.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110443
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Reject non-grouped
+	gather loads.
+
+2023-06-28  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (peephole2 for compare_and_move): New.
+	(peephole2 for move_and_compare): New.
+	(mode_iterator WORD): New.  Set the mode to SI/DImode by
+	TARGET_POWERPC64.
+	(*mov<mode>_internal2): Change the mode iterator from P to WORD.
+	(split pattern for compare_and_move): Likewise.
+
+2023-06-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*double_widen_fma<mode>): New pattern.
+	(*single_widen_fma<mode>): Ditto.
+
+2023-06-28  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/104124
+	* config/rs6000/altivec.md (*altivec_vupkhs<VU_char>_direct): Rename
+	to...
+	(altivec_vupkhs<VU_char>_direct): ...this.
+	* config/rs6000/predicates.md (vspltisw_vupkhsw_constant_split): New
+	predicate to test if a constant can be loaded with vspltisw and
+	vupkhsw.
+	(easy_vector_constant): Call vspltisw_vupkhsw_constant_p to Check if
+	a vector constant can be synthesized with a vspltisw and a vupkhsw.
+	* config/rs6000/rs6000-protos.h (vspltisw_vupkhsw_constant_p):
+	Declare.
+	* config/rs6000/rs6000.cc (vspltisw_vupkhsw_constant_p): New
+	function to return true if OP mode is V2DI and can be synthesized
+	with vupkhsw and vspltisw.
+	* config/rs6000/vsx.md (*vspltisw_v2di_split): New insn to load up
+	constants with vspltisw and vupkhsw.
+
+2023-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/110377
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Pass statement to
+	the ranger query.
+	(ipa_analyze_node): Enable ranger.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (TYPE_PRECISION): Check for non-VECTOR_TYPE.
+	(TYPE_PRECISION_RAW): Provide raw access to the precision
+	field.
+	* tree.cc (verify_type_variant): Compare TYPE_PRECISION_RAW.
+	(gimple_canonical_types_compatible_p): Likewise.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields):
+	Stream TYPE_PRECISION_RAW.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields):
+	Likewise.
+	* lto-streamer-out.cc (hash_tree): Hash TYPE_PRECISION_RAW.
+
+2023-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/extend.texi (zero-call-used-regs): Document leafy and
+	variants thereof.
+	* flag-types.h (zero_regs_flags): Add LEAFY_MODE, as well as
+	LEAFY and variants.
+	* function.cc (gen_call_ued_regs_seq): Set only_used for leaf
+	functions in leafy mode.
+	* opts.cc (zero_call_used_regs_opts): Add leafy and variants.
+
+2023-06-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Adapt expand.
+	* config/riscv/vector.md (@pred_single_widen_<plus_minus:optab><mode>):
+	Remove.
+	(@pred_single_widen_add<mode>): New pattern.
+	(@pred_single_widen_sub<mode>): New pattern.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_invalid_conversion): New function.
+	(TARGET_INVALID_CONVERSION): Define as
+	ix86_invalid_conversion.
+
 2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* config/riscv/autovec.md (<optab><vnconvert><mode>2): New

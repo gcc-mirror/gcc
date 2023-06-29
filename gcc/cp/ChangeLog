@@ -1,3 +1,41 @@
+2023-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89442
+	PR c++/107437
+	* cp-tree.h (lookup_template_variable): Add complain parameter.
+	* parser.cc (cp_parser_template_id): Pass tf_warning_or_error
+	to lookup_template_variable.
+	* pt.cc (lookup_template_variable): Add complain parameter.
+	Coerce template arguments here ...
+	(finish_template_variable): ... instead of here.
+	(lookup_and_finish_template_variable): Check for error_mark_node
+	result from lookup_template_variable.
+	(tsubst_copy) <case TEMPLATE_ID_EXPR>: Pass complain to
+	lookup_template_variable.
+	(instantiate_template): Use build2 instead of
+	lookup_template_variable to build a TEMPLATE_ID_EXPR
+	for most_specialized_partial_spec.
+
+2023-06-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110175
+	* typeck.cc (cp_build_unary_op): Check tf_warning before warning.
+
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110334
+	* cp-tree.h (clone_attrs): Declare.
+	* method.cc (implicitly_declare_fn): Use it for inherited
+	constructor.
+	* optimize.cc (clone_attrs): New.
+	(maybe_clone_body): Use it.
+
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110344
+	* constexpr.cc (cxx_eval_constant_expression): In C++26, allow cast
+	from void* to the type of a pointed-to object.
+
 2023-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/110164

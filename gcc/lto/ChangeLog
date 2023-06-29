@@ -1,3 +1,7 @@
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.cc (compare_tree_sccs_1): Use TYPE_PRECISION_RAW.
+
 2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* lto-common.cc (lto_maybe_register_decl): Use _P defines from tree.h.

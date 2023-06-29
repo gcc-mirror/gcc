@@ -1,3 +1,166 @@
+2023-06-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (check_effective_target_lra): Remove
+	cris-*-* from expression for exceptions to LRA.
+
+2023-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110334
+	* g++.dg/opt/pr66119.C: Disable early inlining.
+	* gcc.c-torture/compile/pr110334.c: New test.
+	* gcc.dg/tree-ssa/pr110334.c: New test.
+
+2023-06-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* gfortran.dg/value_9.f90: Add tests for intermediate regression.
+
+2023-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89442
+	PR c++/107437
+	* g++.dg/cpp/pr64127.C: Expect "expected unqualified-id at end
+	of input" error.
+	* g++.dg/cpp0x/alias-decl-ttp1.C: Fix template parameter/argument
+	kind mismatch for variable template has_P_match_V.
+	* g++.dg/cpp1y/pr72759.C: Expect "template argument 1 is invalid"
+	error.
+	* g++.dg/cpp1z/constexpr-if20.C: XFAIL test due to bogus "'i' is
+	not captured" error.
+	* g++.dg/cpp1z/noexcept-type21.C: Fix arity of variable template d.
+	* g++.dg/diagnostic/not-a-function-template-1.C: Add default
+	template argument to variable template A so that A<> is valid.
+	* g++.dg/parse/error56.C: Don't expect "ISO C++ forbids
+	declaration with no type" error.
+	* g++.dg/parse/template30.C: Don't expect "parse error in
+	template argument list" error.
+	* g++.dg/cpp1y/var-templ82.C: New test.
+
+2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106977
+	PR target/110406
+	* gdc.dg/torture/pr110406.d: New test.
+
+2023-06-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110175
+	* g++.dg/cpp0x/decltype-110175.C: New test.
+
+2023-06-28  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	PR debug/110308
+	* g++.dg/torture/pr110308.C: New test.
+
+2023-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu1.c: Fix .fpu
+	scan-assembler.
+	* gcc.target/arm/mve/intrinsics/mve_fp_fpu2.c: Likewise.
+
+2023-06-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/general-c/nomve_fp_1.c: Require arm_fp.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110451
+	* gfortran.dg/vect/pr110451.f: New testcase.
+
+2023-06-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/49213
+	* gfortran.dg/pr49213.f90 : New test
+
+2023-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pieces-memcmp-2.c: New test case.
+
+2023-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110443
+	* gcc.dg/torture/pr110443.c: New testcase.
+
+2023-06-28  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.dg/rtl/powerpc/move_compare_peephole_32.c: New.
+	* gcc.dg/rtl/powerpc/move_compare_peephole_64.c: New.
+
+2023-06-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-8.c: Add floating-point.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-8.c: New test.
+
+2023-06-28  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/104124
+	* gcc.target/powerpc/pr104124.c: New.
+
+2023-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/110377
+	* gcc.dg/ipa/pr110377.c: New test.
+
+2023-06-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110444
+	* gcc.c-torture/compile/pr110444-1.c: New test.
+
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110334
+	* g++.dg/cpp1z/nodiscard-inh1.C: New test.
+
+2023-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/zero-scratch-regs-leafy-1.c: New.
+	* c-c++-common/zero-scratch-regs-leafy-2.c: New.
+	* gcc.target/i386/zero-scratch-regs-leafy-1.c: New.
+	* gcc.target/i386/zero-scratch-regs-leafy-2.c: New.
+
+2023-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp (gld): Note a known mismatch and
+	record a workaround.
+
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110344
+	* g++.dg/cpp26/constexpr-voidptr1.C: New test.
+	* g++.dg/cpp26/constexpr-voidptr2.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C: New test.
+
+2023-06-28  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Update for C++26.
+
+2023-06-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-1.c: Add floating-point.
+	* gcc.target/riscv/rvv/autovec/widen/widen-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-6.c: New test.
+
+2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/mvc17.c: Add -march=x86-64 to dg-options.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/bf16_short_warn.c: New test.
+
 2023-06-27  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/conversions/vfncvt-ftoi-run.c: New test.
