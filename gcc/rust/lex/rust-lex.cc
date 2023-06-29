@@ -306,8 +306,7 @@ Lexer::build_token ()
       Location loc = get_current_location ();
 
       current_char = peek_input ();
-      current_char32 = peek_codepoint_input ();
-      skip_codepoint_input ();
+      skip_input ();
 
       // detect shebang
       // Must be the first thing on the first line, starting with #!
@@ -1089,7 +1088,7 @@ Lexer::build_token ()
 	}
 
       // find identifiers and keywords.
-      if (is_identifier_start (current_char32.value))
+      if (is_identifier_start (current_char.value))
 	return parse_identifier_or_keyword (loc);
 
       // int and float literals
@@ -1998,59 +1997,56 @@ Lexer::skip_broken_string_input (Codepoint current_char)
 	      current_column);
 }
 
-// Parses a unicode string.
+// Parses a string.
 TokenPtr
 Lexer::parse_string (Location loc)
 {
-  Codepoint current_char32;
-
   std::string str;
   str.reserve (16); // some sensible default
 
   int length = 1;
-  current_char32 = peek_codepoint_input ();
+  current_char = peek_input ();
 
   // FIXME: This fails if the input ends. How do we check for EOF?
-  while (current_char32.value != '"' && !current_char32.is_eof ())
+  while (current_char.value != '"' && !current_char.is_eof ())
     {
-      if (current_char32.value == '\\')
+      if (current_char.value == '\\')
 	{
 	  // parse escape
 	  auto utf8_escape_pair = parse_utf8_escape ();
-	  current_char32 = std::get<0> (utf8_escape_pair);
+	  current_char = std::get<0> (utf8_escape_pair);
 
-	  if (current_char32 == Codepoint (0) && std::get<2> (utf8_escape_pair))
+	  if (current_char == Codepoint (0) && std::get<2> (utf8_escape_pair))
 	    length = std::get<1> (utf8_escape_pair) - 1;
 	  else
 	    length += std::get<1> (utf8_escape_pair);
 
-	  if (current_char32 != Codepoint (0)
-	      || !std::get<2> (utf8_escape_pair))
-	    str += current_char32;
+	  if (current_char != Codepoint (0) || !std::get<2> (utf8_escape_pair))
+	    str += current_char.as_string ();
 
-	  // required as parsing utf8 escape only changes current_char
-	  current_char32 = peek_codepoint_input ();
-
+	  // FIXME: should remove this but can't.
+	  // `parse_utf8_escape` does not update `current_char` correctly.
+	  current_char = peek_input ();
 	  continue;
 	}
 
-      length += get_input_codepoint_length ();
+      length++;
 
-      str += current_char32;
-      skip_codepoint_input ();
-      current_char32 = peek_codepoint_input ();
+      str += current_char;
+      skip_input ();
+      current_char = peek_input ();
     }
 
   current_column += length;
 
-  if (current_char32.value == '"')
+  if (current_char.value == '"')
     {
       current_column++;
 
       skip_input ();
       current_char = peek_input ();
     }
-  else if (current_char32.is_eof ())
+  else if (current_char.is_eof ())
     {
       rust_error_at (get_current_location (), "unended string literal");
       return Token::make (END_OF_FILE, get_current_location ());
@@ -2072,22 +2068,22 @@ Lexer::parse_identifier_or_keyword (Location loc)
 {
   std::string str;
   str.reserve (16); // default
-  str += current_char32.as_string ();
+  str += current_char.as_string ();
 
   bool first_is_underscore = current_char == '_';
 
   int length = 1;
-  current_char32 = peek_codepoint_input ();
+  current_char = peek_input ();
 
   // loop through entire name
-  while (is_identifier_continue (current_char32.value))
+  while (is_identifier_continue (current_char.value))
     {
-      auto s = current_char32.as_string ();
+      auto s = current_char.as_string ();
       length++;
 
-      str += current_char32.as_string ();
-      skip_codepoint_input ();
-      current_char32 = peek_codepoint_input ();
+      str += current_char.as_string ();
+      skip_input ();
+      current_char = peek_input ();
     }
 
   current_column += length;
@@ -2141,11 +2137,11 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
 
   length++;
   skip_input ();
-  Codepoint current_char32 = peek_codepoint_input ();
+  current_char = peek_input ();
 
-  while (!current_char32.is_eof ())
+  while (!current_char.is_eof ())
     {
-      if (current_char32.value == '"')
+      if (current_char.value == '"')
 	{
 	  bool enough_hashes = true;
 
@@ -2170,9 +2166,9 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
 
       length++;
 
-      str += current_char32;
-      skip_codepoint_input ();
-      current_char32 = peek_codepoint_input ();
+      str += current_char.as_string ();
+      skip_input ();
+      current_char = peek_input ();
     }
 
   current_column += length;
@@ -2424,29 +2420,27 @@ Lexer::parse_decimal_int_or_float (Location loc)
 TokenPtr
 Lexer::parse_char_or_lifetime (Location loc)
 {
-  Codepoint current_char32;
-
   int length = 1;
 
-  current_char32 = peek_codepoint_input ();
-  if (current_char32.is_eof ())
+  current_char = peek_input ();
+  if (current_char.is_eof ())
     return nullptr;
 
   // parse escaped char literal
-  if (current_char32.value == '\\')
+  if (current_char.value == '\\')
     {
       // parse escape
       auto utf8_escape_pair = parse_utf8_escape ();
-      current_char32 = std::get<0> (utf8_escape_pair);
+      Codepoint escaped_char = std::get<0> (utf8_escape_pair);
       length += std::get<1> (utf8_escape_pair);
 
-      if (peek_codepoint_input ().value != '\'')
+      if (peek_input ().value != '\'')
 	{
 	  rust_error_at (get_current_location (), "unended character literal");
 	}
       else
 	{
-	  skip_codepoint_input ();
+	  skip_input ();
 	  current_char = peek_input ();
 	  length++;
 	}
@@ -2455,15 +2449,16 @@ Lexer::parse_char_or_lifetime (Location loc)
 
       loc += length - 1;
 
-      return Token::make_char (loc, current_char32);
+      return Token::make_char (loc, escaped_char);
     }
   else
     {
-      skip_codepoint_input ();
+      skip_input ();
 
-      if (peek_codepoint_input ().value == '\'')
+      if (peek_input ().value == '\'')
 	{
 	  // parse non-escaped char literal
+	  Codepoint non_escaped_char = current_char;
 
 	  // skip the ' character
 	  skip_input ();
@@ -2474,21 +2469,21 @@ Lexer::parse_char_or_lifetime (Location loc)
 
 	  loc += 2;
 
-	  return Token::make_char (loc, current_char32);
+	  return Token::make_char (loc, non_escaped_char);
 	}
-      else if (is_identifier_start (current_char32.value))
+      else if (is_identifier_start (current_char.value))
 	{
 	  // parse lifetime name
 	  std::string str;
-	  str += current_char32;
+	  str += current_char.as_string ();
 	  length++;
 
-	  current_char32 = peek_codepoint_input ();
-	  while (is_identifier_continue (current_char32.value))
+	  current_char = peek_input ();
+	  while (is_identifier_continue (current_char.value))
 	    {
-	      str += current_char32;
-	      skip_codepoint_input ();
-	      current_char32 = peek_codepoint_input ();
+	      str += current_char.as_string ();
+	      skip_input ();
+	      current_char = peek_input ();
 	      length++;
 	    }
 
@@ -2510,29 +2505,6 @@ Lexer::parse_char_or_lifetime (Location loc)
 	  return nullptr;
 	}
     }
-}
-
-// TODO remove this function
-// Returns the length of the codepoint at the current position.
-int
-Lexer::get_input_codepoint_length ()
-{
-  return 1;
-}
-
-// TODO remove this function
-// Returns the codepoint at the current position.
-Codepoint
-Lexer::peek_codepoint_input ()
-{
-  return peek_input ();
-}
-
-// TODO remove this function
-void
-Lexer::skip_codepoint_input ()
-{
-  skip_input ();
 }
 
 void

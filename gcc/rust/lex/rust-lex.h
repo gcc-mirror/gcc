@@ -136,10 +136,6 @@ private:
   std::pair<long, int> parse_partial_hex_escape ();
   std::pair<Codepoint, int> parse_partial_unicode_escape ();
 
-  int get_input_codepoint_length ();
-  // Peeks the current utf-8 char
-  Codepoint peek_codepoint_input ();
-  void skip_codepoint_input ();
   void skip_broken_string_input (Codepoint current_char);
 
   TokenPtr parse_byte_char (Location loc);
@@ -393,7 +389,6 @@ private:
   int current_column;
   // Current character.
   Codepoint current_char;
-  Codepoint current_char32;
   // Line map.
   Linemap *line_map;
 
