@@ -140,6 +140,15 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 }
 
 void
+emit_invalid_field_error (Location loc, Rust::TyTy::VariantDef *variant,
+			  const std::string &name)
+{
+  rust_error_at (loc, ErrorCode ("E0026"),
+		 "variant %s does not have a field named %s",
+		 variant->get_identifier ().c_str (), name.c_str ());
+}
+
+void
 TypeCheckPattern::visit (HIR::StructPattern &pattern)
 {
   TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
@@ -204,10 +213,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
 					&field, nullptr))
 	      {
-		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
-			       "variant %s does not have a field named %s",
-			       variant->get_identifier ().c_str (),
-			       ident.get_identifier ().as_string ().c_str ());
+		emit_invalid_field_error (ident.get_locus (), variant,
+					  ident.get_identifier ().as_string ());
 		break;
 	      }
 	    named_fields.push_back (ident.get_identifier ().as_string ());
@@ -225,10 +232,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
 					&field, nullptr))
 	      {
-		rust_error_at (ident.get_locus (), ErrorCode ("E0026"),
-			       "variant %s does not have a field named %s",
-			       variant->get_identifier ().c_str (),
-			       ident.get_identifier ().as_string ().c_str ());
+		emit_invalid_field_error (ident.get_locus (), variant,
+					  ident.get_identifier ().as_string ());
 		break;
 	      }
 	    named_fields.push_back (ident.get_identifier ().as_string ());
