@@ -12174,8 +12174,11 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
   machine_mode simd_mode;
   tree vectype;
 
-  if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
-      && !is_float_mode (TYPE_MODE (scalar_type), &inner_mode))
+  if ((!INTEGRAL_TYPE_P (scalar_type)
+       && !POINTER_TYPE_P (scalar_type)
+       && !SCALAR_FLOAT_TYPE_P (scalar_type))
+      || (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
+	  && !is_float_mode (TYPE_MODE (scalar_type), &inner_mode)))
     return NULL_TREE;
 
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
