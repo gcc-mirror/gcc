@@ -1275,7 +1275,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       if (AGGREGATE_TYPE_P (t1))
 	compare_values (TYPE_TYPELESS_STORAGE);
       compare_values (TYPE_EMPTY_P);
-      compare_values (TYPE_NO_NAMED_ARGS_STDARG_P);
+      if (FUNC_OR_METHOD_TYPE_P (t1))
+	compare_values (TYPE_NO_NAMED_ARGS_STDARG_P);
+      if (RECORD_OR_UNION_TYPE_P (t1))
+	compare_values (TYPE_INCLUDES_FLEXARRAY);
       compare_values (TYPE_PACKED);
       compare_values (TYPE_RESTRICT);
       compare_values (TYPE_USER_ALIGN);

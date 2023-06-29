@@ -807,7 +807,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    (...) prototype, where arguments can be accessed with va_start and
    va_arg), as opposed to an unprototyped function.  */
 #define TYPE_NO_NAMED_ARGS_STDARG_P(NODE) \
-  (TYPE_CHECK (NODE)->type_common.no_named_args_stdarg_p)
+  (FUNC_OR_METHOD_CHECK (NODE)->type_common.no_named_args_stdarg_p)
+
+/* True if this RECORD_TYPE or UNION_TYPE includes a flexible array member
+   as the last field recursively.  */
+#define TYPE_INCLUDES_FLEXARRAY(NODE) \
+  (RECORD_OR_UNION_CHECK (NODE)->type_common.no_named_args_stdarg_p)
 
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
