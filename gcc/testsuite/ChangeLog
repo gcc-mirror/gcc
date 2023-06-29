@@ -1,3 +1,10 @@
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
+	* gcc.target/i386/avx-vzeroupper-12.c: Adjust testcase.
+	* gcc.target/i386/avx-vzeroupper-7.c: Ditto.
+	* gcc.target/i386/avx-vzeroupper-9.c: Ditto.
+
 2023-06-27  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
