@@ -1965,6 +1965,7 @@ public:
   }
 
   std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
+  WhereClause &get_where_clause () { return where_clause; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2638,7 +2639,10 @@ public:
     return trait_items;
   }
 
+  WhereClause &get_where_clause () { return where_clause; }
+
   Identifier get_name () const { return name; }
+  bool is_unsafe () const { return unsafety == Unsafety::Unsafe; }
 
   // Mega-constructor
   Trait (Analysis::NodeMapping mappings, Identifier name, Unsafety unsafety,
@@ -2894,6 +2898,7 @@ public:
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRExternalItemVisitor &vis) = 0;
 
+  Visibility &get_visibility () { return visibility; }
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Identifier get_item_name () const { return item_name; }
