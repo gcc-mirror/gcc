@@ -4995,8 +4995,8 @@ divmod_candidate_p (gassign *stmt)
       if (integer_pow2p (op2))
 	return false;
 
-      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
-	  && TYPE_PRECISION (type) <= BITS_PER_WORD)
+      if (element_precision (type) <= HOST_BITS_PER_WIDE_INT
+	  && element_precision (type) <= BITS_PER_WORD)
 	return false;
 
       /* If the divisor is not power of 2 and the precision wider than
