@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -mavx2" } */
+/* { dg-options "-O2 -mavx2 -mmove-max=128 -mstore-max=128" } */
 
 int foo(char *a)
 {
