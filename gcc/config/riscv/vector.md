@@ -462,6 +462,38 @@
 	 (const_string "rod")]
 	 (const_string "none")))
 
+;; Defines rounding mode of an floating-point operation.
+(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,none"
+  (cond
+    [
+      (eq_attr "type" "vfalu")
+      (cond
+	[
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RNE")
+	  (const_string "rne")
+
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RTZ")
+	  (const_string "rtz")
+
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RDN")
+	  (const_string "rdn")
+
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RUP")
+	  (const_string "rup")
+
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RMM")
+	  (const_string "rmm")
+
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RDN")
+	  (const_string "rdn")
+	]
+	(const_string "none")
+      )
+    ]
+    (const_string "none")
+  )
+)
+
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
 ;; -----------------------------------------------------------------
@@ -537,6 +569,27 @@
   "csrwi\tvxrm,%0"
   [(set_attr "type" "wrvxrm")
    (set_attr "mode" "SI")])
+
+;; Set FRM
+(define_insn "fsrm"
+  [
+    (set
+      (reg:SI FRM_REGNUM)
+      (unspec:SI
+	[
+	  (match_operand:SI 0 "register_operand" "=&r")
+	  (match_operand:SI 1 "register_operand" "r")
+	] UNSPEC_FSRM
+      )
+    )
+  ]
+  "TARGET_VECTOR"
+  "fsrm\t%0,%1"
+  [
+    (set_attr "type" "wrfrm")
+    (set_attr "mode" "SI")
+  ]
+)
 
 ;; -----------------------------------------------------------------
 ;; ---- Moves Operations

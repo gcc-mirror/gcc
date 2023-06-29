@@ -7669,6 +7669,16 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
       if (mode != VXRM_MODE_NONE && mode != prev_mode)
 	emit_insn (gen_vxrmsi (gen_int_mode (mode, SImode)));
       break;
+    case RISCV_FRM:
+      if (mode != FRM_MODE_NONE && mode != prev_mode)
+	{
+	  rtx scaler = gen_reg_rtx (SImode);
+	  rtx imm = gen_int_mode (mode, SImode);
+
+	  emit_insn (gen_movsi (scaler, imm));
+	  emit_insn (gen_fsrm (scaler, scaler));
+	}
+      break;
     default:
       gcc_unreachable ();
     }
@@ -7680,11 +7690,14 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
 static int
 riscv_mode_needed (int entity, rtx_insn *insn)
 {
+  int code = recog_memoized (insn);
+
   switch (entity)
     {
     case RISCV_VXRM:
-      return recog_memoized (insn) >= 0 ? get_attr_vxrm_mode (insn)
-					: VXRM_MODE_NONE;
+      return code >= 0 ? get_attr_vxrm_mode (insn) : VXRM_MODE_NONE;
+    case RISCV_FRM:
+      return code >= 0 ? get_attr_frm_mode (insn) : FRM_MODE_NONE;
     default:
       gcc_unreachable ();
     }
@@ -7715,6 +7728,21 @@ global_state_unknown_p (rtx_insn *insn, unsigned int regno)
   return false;
 }
 
+static int
+riscv_entity_mode_after (int regnum, rtx_insn *insn, int mode,
+			 int (*get_attr_mode) (rtx_insn *), int default_mode)
+{
+  if (global_state_unknown_p (insn, regnum))
+    return default_mode;
+  else if (recog_memoized (insn) < 0)
+    return mode;
+
+  rtx reg = gen_rtx_REG (SImode, regnum);
+  bool mentioned_p = reg_mentioned_p (reg, PATTERN (insn));
+
+  return mentioned_p ? get_attr_mode (insn): mode;
+}
+
 /* Return the mode that an insn results in.  */
 
 static int
@@ -7723,15 +7751,13 @@ riscv_mode_after (int entity, int mode, rtx_insn *insn)
   switch (entity)
     {
     case RISCV_VXRM:
-      if (global_state_unknown_p (insn, VXRM_REGNUM))
-	return VXRM_MODE_NONE;
-      else if (recog_memoized (insn) >= 0)
-	return reg_mentioned_p (gen_rtx_REG (SImode, VXRM_REGNUM),
-				PATTERN (insn))
-		 ? get_attr_vxrm_mode (insn)
-		 : mode;
-      else
-	return mode;
+      return riscv_entity_mode_after (VXRM_REGNUM, insn, mode,
+				      (int (*)(rtx_insn *)) get_attr_vxrm_mode,
+				      VXRM_MODE_NONE);
+    case RISCV_FRM:
+      return riscv_entity_mode_after (FRM_REGNUM, insn, mode,
+				      (int (*)(rtx_insn *)) get_attr_frm_mode,
+				      FRM_MODE_NONE);
     default:
       gcc_unreachable ();
     }
@@ -7747,6 +7773,8 @@ riscv_mode_entry (int entity)
     {
     case RISCV_VXRM:
       return VXRM_MODE_NONE;
+    case RISCV_FRM:
+      return FRM_MODE_NONE;
     default:
       gcc_unreachable ();
     }
@@ -7762,6 +7790,8 @@ riscv_mode_exit (int entity)
     {
     case RISCV_VXRM:
       return VXRM_MODE_NONE;
+    case RISCV_FRM:
+      return FRM_MODE_NONE;
     default:
       gcc_unreachable ();
     }

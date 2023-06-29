@@ -81,6 +81,8 @@
   UNSPEC_VCOMPRESS
   UNSPEC_VLEFF
   UNSPEC_MODIFY_VL
+
+  UNSPEC_FSRM
 ])
 
 (define_mode_iterator V [
