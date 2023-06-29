@@ -28,6 +28,7 @@
 
 /* Name_Id values */
 
+typedef Int Name_Id;
 #define  Name_ !! TEMPLATE INSERTION POINT
 
 /* Define the function to return one of the numeric values below. Note
@@ -35,8 +36,9 @@
    than 256 entries is represented that way in Ada.  The operand is a Chars
    field value.  */
 
+typedef Byte Attribute_Id;
 #define Get_Attribute_Id snames__get_attribute_id
-extern unsigned char Get_Attribute_Id (int);
+extern Attribute_Id Get_Attribute_Id (int);
 
 /* Define the numeric values for attributes.  */
 
@@ -44,6 +46,7 @@ extern unsigned char Get_Attribute_Id (int);
 
 /* Define the numeric values for the conventions.  */
 
+typedef Byte Convention_Id;
 #define  Convention_ !! TEMPLATE INSERTION POINT
 
 /* Define the function to check if a Name_Id value is a valid pragma */
@@ -56,8 +59,9 @@ extern Boolean Is_Pragma_Name (Name_Id);
    than 256 entries is represented that way in Ada.  The operand is a Chars
    field value.  */
 
+typedef Byte Pragma_Id;
 #define Get_Pragma_Id snames__get_pragma_id
-extern unsigned char Get_Pragma_Id (int);
+extern Pragma_Id Get_Pragma_Id (int);
 
 /* Define the numeric values for the pragmas. */
 
