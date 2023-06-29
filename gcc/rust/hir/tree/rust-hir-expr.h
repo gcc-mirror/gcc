@@ -3755,6 +3755,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_awaited_expr () { return awaited_expr; }
+
   ExprType get_expression_type () const final override
   {
     return ExprType::Await;
@@ -3808,6 +3810,9 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const override final { return locus; }
+
+  bool get_has_move () const { return has_move; }
+  std::unique_ptr<BlockExpr> &get_block_expr () { return block_expr; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
