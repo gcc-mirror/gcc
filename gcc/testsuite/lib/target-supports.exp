@@ -704,7 +704,7 @@ proc check_effective_target_keeps_null_pointer_checks { } {
 # this allows parallelism of 16 and higher of parallel gcc-auto-profile
 proc profopt-perf-wrapper { } {
     global srcdir
-    return "$srcdir/../config/i386/gcc-auto-profile -m8 "
+    return "$srcdir/../config/i386/gcc-auto-profile --all -m8 "
 }
 
 # Return true if profiling is supported on the target.
