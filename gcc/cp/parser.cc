@@ -765,6 +765,15 @@ cp_lexer_new_main (void)
   return lexer;
 }
 
+/* Create a lexer and parser to be used during preprocess-only mode.
+   This will be filled with tokens to parse when needed by pragma_lex ().  */
+void
+c_init_preprocess ()
+{
+  gcc_assert (!the_parser);
+  the_parser = cp_parser_new (cp_lexer_alloc ());
+}
+
 /* Create a new lexer whose token stream is primed with the tokens in
    CACHE.  When these tokens are exhausted, no new tokens will be read.  */
 
@@ -49694,11 +49703,37 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
   return ret;
 }
 
+/* Helper for pragma_lex in preprocess-only mode; in this mode, we have not
+   populated the lexer with any tokens (the tokens rather being read by
+   c-ppoutput.c's machinery), so we need to read enough tokens now to handle
+   a pragma.  */
+static void
+maybe_read_tokens_for_pragma_lex ()
+{
+  const auto lexer = the_parser->lexer;
+  if (!lexer->buffer->is_empty ())
+    return;
+
+  /* Read the rest of the tokens comprising the pragma line.  */
+  cp_token *tok;
+  do
+    {
+      tok = vec_safe_push (lexer->buffer, cp_token ());
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+      gcc_assert (tok->type != CPP_EOF);
+    } while (tok->type != CPP_PRAGMA_EOL);
+  lexer->next_token = lexer->buffer->address ();
+  lexer->last_token = lexer->next_token + lexer->buffer->length () - 1;
+}
+
 /* The interface the pragma parsers have to the lexer.  */
 
 enum cpp_ttype
 pragma_lex (tree *value, location_t *loc)
 {
+  if (flag_preprocess_only)
+    maybe_read_tokens_for_pragma_lex ();
+
   cp_token *tok = cp_lexer_peek_token (the_parser->lexer);
   enum cpp_ttype ret = tok->type;
 
@@ -49719,6 +49754,16 @@ pragma_lex (tree *value, location_t *loc)
     }
 
   return ret;
+}
+
+void
+pragma_lex_discard_to_eol ()
+{
+  /* We have already read all the tokens, so we just need to discard
+     them here.  */
+  const auto lexer = the_parser->lexer;
+  lexer->next_token = lexer->last_token;
+  lexer->buffer->truncate (0);
 }
 
 

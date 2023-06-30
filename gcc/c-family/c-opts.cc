@@ -1232,6 +1232,7 @@ c_common_init (void)
   if (flag_preprocess_only)
     {
       c_finish_options ();
+      c_init_preprocess ();
       preprocess_file (parse_in);
       return false;
     }

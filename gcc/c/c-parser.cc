@@ -13376,6 +13376,18 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
+void
+pragma_lex_discard_to_eol ()
+{
+  cpp_ttype type;
+  do
+    {
+      type = c_parser_peek_token (the_parser)->type;
+      gcc_assert (type != CPP_EOF);
+      c_parser_consume_token (the_parser);
+    } while (type != CPP_PRAGMA_EOL);
+}
+
 static void
 c_parser_pragma_pch_preprocess (c_parser *parser)
 {
@@ -24759,6 +24771,15 @@ c_parse_file (void)
 
   c_parser_translation_unit (the_parser);
   the_parser = NULL;
+}
+
+void
+c_init_preprocess (void)
+{
+  /* Create a parser for use by pragma_lex during preprocessing.  */
+  the_parser = ggc_alloc<c_parser> ();
+  memset (the_parser, 0, sizeof (c_parser));
+  the_parser->tokens = &the_parser->tokens_buf[0];
 }
 
 /* Parse the body of a function declaration marked with "__RTL".
