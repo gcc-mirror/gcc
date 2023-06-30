@@ -958,6 +958,9 @@
 /* Define if get_nprocs is available in <sys/sysinfo.h>. */
 #undef _GLIBCXX_USE_GET_NPROCS
 
+/* Define if init_priority should be used for iostream initialization. */
+#undef _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE
+
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS
 
