@@ -1475,6 +1475,8 @@ irange::intersect (const vrange &v)
 	return true;
 
       res |= intersect_bitmask (r);
+      if (res)
+	normalize_kind ();
       return res;
     }
 
@@ -1574,7 +1576,7 @@ irange::intersect (const vrange &v)
 // Multirange intersect for a specified wide_int [lb, ub] range.
 // Return TRUE if intersect changed anything.
 //
-// NOTE: It is the caller's responsibility to intersect the nonzero masks.
+// NOTE: It is the caller's responsibility to intersect the mask.
 
 bool
 irange::intersect (const wide_int& lb, const wide_int& ub)
@@ -1633,7 +1635,8 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
     }
 
   m_kind = VR_RANGE;
-  normalize_kind ();
+  // The caller must normalize and verify the range, as the bitmask
+  // still needs to be handled.
   return true;
 }
 
