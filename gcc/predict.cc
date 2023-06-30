@@ -89,6 +89,7 @@ static void predict_paths_leading_to_edge (edge, enum br_predictor,
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
 static void determine_unlikely_bbs ();
+static void estimate_bb_frequencies (bool force);
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -2485,7 +2486,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	    {
 	      if (predictor)
 		*predictor = PRED_MALLOC_NONNULL;
-	      return boolean_true_node;
+	       /* FIXME: This is wrong and we need to convert the logic
+		 to value ranges.  This makes predictor to assume that
+		 malloc always returns (size_t)1 which is not the same
+		 as returning non-NULL.  */
+	      return fold_convert (type, boolean_true_node);
 	    }
 
 	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
@@ -2563,7 +2568,9 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      case BUILT_IN_REALLOC:
 		if (predictor)
 		  *predictor = PRED_MALLOC_NONNULL;
-		return boolean_true_node;
+		/* FIXME: This is wrong and we need to convert the logic
+		   to value ranges.  */
+		return fold_convert (type, boolean_true_node);
 	      default:
 		break;
 	    }
@@ -2575,18 +2582,43 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
   if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
     {
       tree res;
+      tree nop0 = op0;
+      tree nop1 = op1;
+      if (TREE_CODE (op0) != INTEGER_CST)
+	{
+	  /* See if expected value of op0 is good enough to determine the result.  */
+	  nop0 = expr_expected_value (op0, visited, predictor, probability);
+	  if (nop0
+	      && (res = fold_build2 (code, type, nop0, op1)) != NULL
+	      && TREE_CODE (res) == INTEGER_CST)
+	    return res;
+	  if (!nop0)
+	    nop0 = op0;
+	 }
       enum br_predictor predictor2;
       HOST_WIDE_INT probability2;
-      op0 = expr_expected_value (op0, visited, predictor, probability);
-      if (!op0)
+      if (TREE_CODE (op1) != INTEGER_CST)
+	{
+	  /* See if expected value of op1 is good enough to determine the result.  */
+	  nop1 = expr_expected_value (op1, visited, &predictor2, &probability2);
+	  if (nop1
+	      && (res = fold_build2 (code, type, op0, nop1)) != NULL
+	      && TREE_CODE (res) == INTEGER_CST)
+	    {
+	      *predictor = predictor2;
+	      *probability = probability2;
+	      return res;
+	    }
+	  if (!nop1)
+	    nop1 = op1;
+	 }
+      if (nop0 == op0 || nop1 == op1)
 	return NULL;
-      op1 = expr_expected_value (op1, visited, &predictor2, &probability2);
-      if (!op1)
-	return NULL;
-      res = fold_build2 (code, type, op0, op1);
+      /* Finally see if we have two known values.  */
+      res = fold_build2 (code, type, nop0, nop1);
       if (TREE_CODE (res) == INTEGER_CST
-	  && TREE_CODE (op0) == INTEGER_CST
-	  && TREE_CODE (op1) == INTEGER_CST)
+	  && TREE_CODE (nop0) == INTEGER_CST
+	  && TREE_CODE (nop1) == INTEGER_CST)
 	{
 	  /* Combine binary predictions.  */
 	  if (*probability != -1 || probability2 != -1)
@@ -2596,7 +2628,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      *probability = RDIV (p1 * p2, REG_BR_PROB_BASE);
 	    }
 
-	  if (*predictor < predictor2)
+	  if (predictor2 < *predictor)
 	    *predictor = predictor2;
 
 	  return res;
@@ -3894,7 +3926,7 @@ determine_unlikely_bbs ()
    probabilities.  If FORCE is true, the frequencies are used to estimate
    the counts even when there are already non-zero profile counts.  */
 
-void
+static void
 estimate_bb_frequencies (bool force)
 {
   basic_block bb;

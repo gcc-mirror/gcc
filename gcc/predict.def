@@ -51,14 +51,15 @@ DEF_PREDICTOR (PRED_NO_PREDICTION, "no prediction", PROB_ALWAYS, 0)
 DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
 	       PRED_FLAG_FIRST_MATCH)
 
-/* Return value of malloc function is almost always non-null.  */
-DEF_PREDICTOR (PRED_MALLOC_NONNULL, "malloc returned non-NULL", \
-	       PROB_VERY_LIKELY, PRED_FLAG_FIRST_MATCH)
-
 /* Use number of loop iterations determined by # of iterations
    analysis to set probability.  We don't want to use Dempster-Shaffer
    theory here, as the predictions is exact.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_UNINITIALIZED,
+	       PRED_FLAG_FIRST_MATCH)
+
+/* Hints provided by user via __builtin_expect_with_probability.  */
+DEF_PREDICTOR (PRED_BUILTIN_EXPECT_WITH_PROBABILITY,
+	       "__builtin_expect_with_probability", PROB_UNINITIALIZED,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Assume that any given atomic operation has low contention,
@@ -73,11 +74,6 @@ DEF_PREDICTOR (PRED_COMPARE_AND_SWAP, "compare and swap", PROB_VERY_LIKELY,
 DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
-/* Hints provided by user via __builtin_expect_with_probability.  */
-DEF_PREDICTOR (PRED_BUILTIN_EXPECT_WITH_PROBABILITY,
-	       "__builtin_expect_with_probability", PROB_UNINITIALIZED,
-	       PRED_FLAG_FIRST_MATCH)
-
 /* Branches to hot labels are likely.  */
 DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (90),
 	       PRED_FLAG_FIRST_MATCH)
@@ -85,6 +81,10 @@ DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (90),
 /* Branches to cold labels are extremely unlikely.  */
 DEF_PREDICTOR (PRED_COLD_LABEL, "cold label", HITRATE (90),
 	       PRED_FLAG_FIRST_MATCH)
+
+/* Return value of malloc function is almost always non-null.  */
+DEF_PREDICTOR (PRED_MALLOC_NONNULL, "malloc returned non-NULL", \
+	       PROB_VERY_LIKELY, PRED_FLAG_FIRST_MATCH)
 
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
