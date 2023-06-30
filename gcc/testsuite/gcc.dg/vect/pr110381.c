@@ -1,5 +1,7 @@
 /* { dg-do run } */
 
+#include "tree-vect.h"
+
 struct FOO {
    double a;
    double b;
@@ -28,6 +30,8 @@ sum_8_foos(const struct FOO* foos)
 int main()
 {
   struct FOO foos[8];
+
+  check_vect ();
 
   __builtin_memset (foos, 0, sizeof (foos));
   foos[0].a = __DBL_MAX__;
