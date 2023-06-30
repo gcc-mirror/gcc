@@ -336,8 +336,7 @@ ggc_call_count (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  ggc_pch_count_object (state->d, d->obj, d->size,
-			d->note_ptr_fn == gt_pch_p_S);
+  ggc_pch_count_object (state->d, d->obj, d->size);
   state->count++;
   return 1;
 }
@@ -347,8 +346,7 @@ ggc_call_alloc (ptr_data **slot, traversal_state *state)
 {
   struct ptr_data *d = *slot;
 
-  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size,
-				      d->note_ptr_fn == gt_pch_p_S);
+  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size);
   state->ptrs[state->ptrs_i++] = d;
   return 1;
 }
@@ -642,8 +640,7 @@ gt_pch_save (FILE *f)
 				  state.ptrs[i]->note_ptr_cookie,
 				  relocate_ptrs, &state);
       ggc_pch_write_object (state.d, state.f, state.ptrs[i]->obj,
-			    state.ptrs[i]->new_addr, state.ptrs[i]->size,
-			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
+			    state.ptrs[i]->new_addr, state.ptrs[i]->size);
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
 #if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
