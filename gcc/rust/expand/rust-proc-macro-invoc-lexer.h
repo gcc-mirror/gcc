@@ -20,13 +20,14 @@
 #define RUST_PROC_MACRO_INVOC_LEXER_H
 
 #include "rust-lex.h"
+#include "rust-macro-invoc-lexer.h"
 
 namespace Rust {
-class ProcMacroInvocLexer
+class ProcMacroInvocLexer : public MacroInvocLexerBase<const_TokenPtr>
 {
 public:
   ProcMacroInvocLexer (std::vector<const_TokenPtr> stream)
-    : offs (0), token_stream (std::move (stream))
+    : MacroInvocLexerBase (std::move (stream))
   {}
 
   // Returns token n tokens ahead of current position.
@@ -35,29 +36,10 @@ public:
   // Peeks the current token.
   const_TokenPtr peek_token () { return peek_token (0); }
 
-  // Advances current token to n + 1 tokens ahead of current position.
-  void skip_token (int n);
-
-  // Skips the current token.
-  void skip_token () { skip_token (0); }
-
   // Splits the current token into two. Intended for use with nested generics
   // closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
   // this will only work with "simple" tokens like punctuation.
   void split_current_token (TokenId new_left, TokenId new_right);
-
-  std::string get_filename () const
-  {
-    // FIXME
-    rust_unreachable ();
-    return "FIXME";
-  }
-
-  size_t get_offs () const { return offs; }
-
-private:
-  size_t offs;
-  std::vector<const_TokenPtr> token_stream;
 };
 } // namespace Rust
 

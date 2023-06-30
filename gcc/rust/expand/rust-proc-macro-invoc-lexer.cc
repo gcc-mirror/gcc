@@ -30,13 +30,6 @@ ProcMacroInvocLexer::peek_token (int n)
   return token_stream.at (offs + n);
 }
 
-// Advances current token to n + 1 tokens ahead of current position.
-void
-ProcMacroInvocLexer::skip_token (int n)
-{
-  offs += (n + 1);
-}
-
 void
 ProcMacroInvocLexer::split_current_token (TokenId new_left, TokenId new_right)
 {
