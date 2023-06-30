@@ -2893,7 +2893,8 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
     }
 
   // need to apply any autoderef's to the self argument
-  HirId autoderef_mappings_id = expr.get_mappings ().get_hirid ();
+  HIR::Expr *fnexpr = expr.get_fnexpr ();
+  HirId autoderef_mappings_id = fnexpr->get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
 							  &adjustments);
