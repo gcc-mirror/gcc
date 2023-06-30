@@ -22,6 +22,33 @@
 #include "rust-ast.h"
 
 namespace Rust {
+template <class T> class MacroInvocLexerBase
+{
+public:
+  MacroInvocLexerBase (std::vector<T> stream)
+    : offs (0), token_stream (std::move (stream))
+  {}
+
+  // Advances current token to n + 1 tokens ahead of current position.
+  void skip_token (int n) { offs += (n + 1); }
+
+  // Skips the current token.
+  void skip_token () { skip_token (0); }
+
+  std::string get_filename () const
+  {
+    // FIXME
+    gcc_unreachable ();
+    return "FIXME";
+  }
+
+  size_t get_offs () const { return offs; }
+
+protected:
+  size_t offs;
+  std::vector<T> token_stream;
+};
+
 class MacroInvocLexer
 {
 public:
