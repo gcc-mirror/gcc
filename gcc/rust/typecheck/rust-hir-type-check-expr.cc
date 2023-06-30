@@ -1910,7 +1910,8 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   // store the adjustments for code-generation to know what to do which must be
   // stored onto the receiver to so as we don't trigger duplicate deref mappings
   // ICE when an argument is a method call
-  HirId autoderef_mappings_id = expr.get_mappings ().get_hirid ();
+  HIR::Expr *fnexpr = expr.get_fnexpr ();
+  HirId autoderef_mappings_id = fnexpr->get_mappings ().get_hirid ();
   context->insert_autoderef_mappings (autoderef_mappings_id,
 				      std::move (candidate.adjustments));
   context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
