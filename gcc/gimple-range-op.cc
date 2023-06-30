@@ -880,17 +880,20 @@ public:
     if (lh.undefined_p ())
       return false;
     unsigned prec = TYPE_PRECISION (type);
-    wide_int nz = lh.get_nonzero_bits ();
-    wide_int pop = wi::shwi (wi::popcount (nz), prec);
+    irange_bitmask bm = lh.get_bitmask ();
+    wide_int nz = bm.get_nonzero_bits ();
+    wide_int high = wi::shwi (wi::popcount (nz), prec);
     // Calculating the popcount of a singleton is trivial.
     if (lh.singleton_p ())
       {
-	r.set (type, pop, pop);
+	r.set (type, high, high);
 	return true;
       }
     if (cfn_ffs::fold_range (r, type, lh, rh, rel))
       {
-	int_range<2> tmp (type, wi::zero (prec), pop);
+	wide_int known_ones = ~bm.mask () & bm.value ();
+	wide_int low = wi::shwi (wi::popcount (known_ones), prec);
+	int_range<2> tmp (type, low, high);
 	r.intersect (tmp);
 	return true;
       }
