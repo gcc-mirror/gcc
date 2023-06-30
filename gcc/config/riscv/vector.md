@@ -445,22 +445,29 @@
 ;; Defines rounding mode of an fixed-point operation.
 
 (define_attr "vxrm_mode" "rnu,rne,rdn,rod,none"
-  (cond [(and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
-	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RNU"))
-	 (const_string "rnu")
+  (cond
+    [
+      (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
+      (cond
+	[
+	  (match_test "INTVAL (operands[9]) == riscv_vector::VXRM_RNU")
+	  (const_string "rnu")
 
-	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
-	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RNE"))
-	 (const_string "rne")
+	  (match_test "INTVAL (operands[9]) == riscv_vector::VXRM_RNE")
+	  (const_string "rne")
 
-	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
-	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RDN"))
-	 (const_string "rdn")
+	  (match_test "INTVAL (operands[9]) == riscv_vector::VXRM_RDN")
+	  (const_string "rdn")
 
-	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
-	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_ROD"))
-	 (const_string "rod")]
-	 (const_string "none")))
+	  (match_test "INTVAL (operands[9]) == riscv_vector::VXRM_ROD")
+	  (const_string "rod")
+	]
+	(const_string "none")
+      )
+    ]
+    (const_string "none")
+  )
+)
 
 ;; Defines rounding mode of an floating-point operation.
 (define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,none"
