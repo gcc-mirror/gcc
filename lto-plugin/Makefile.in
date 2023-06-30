@@ -298,6 +298,7 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+enable_host_bind_now = @enable_host_bind_now@
 exec_prefix = @exec_prefix@
 gcc_build_dir = @gcc_build_dir@
 get_gcc_base_ver = @get_gcc_base_ver@
