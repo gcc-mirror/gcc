@@ -1,3 +1,49 @@
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/plugin/crash-test-ice-sarif.c: Use -fno-report-bug.  Adjust
+	scan-sarif-file.
+	* gcc.dg/plugin/crash-test-ice-stderr.c: Use -fno-report-bug.
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Use
+	-fno-report-bug.  Adjust scan-sarif-file.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: Use
+	-fno-report-bug.
+
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/i386/pr104610.c: Use -fno-stack-protector.
+	* gcc.target/i386/pr69482-1.c: Likewise.
+
+2023-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-06-13  Harald Anlauf  <anlauf@gmx.de>
+		    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/86277
+	* gfortran.dg/zero_sized_14.f90: New test.
+	* gfortran.dg/zero_sized_15.f90: New test.
+
+2023-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-04-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR testsuite/83904
+	PR fortran/100297
+	* gfortran.dg/allocatable_function_1.f90: Use "__builtin_free "
+	instead of the naive "free".
+	* gfortran.dg/reshape_8.f90: Extend pattern from a simple "data".
+
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110309.c: New test.
+
 2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:

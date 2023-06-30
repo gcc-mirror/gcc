@@ -1,3 +1,22 @@
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/110237
+	* config/i386/sse.md (<avx512>_store<mode>_mask): Refine with
+	UNSPEC_MASKMOV.
+	(maskstore<mode><avx512fmaskmodelower): Ditto.
+	(*<avx512>_store<mode>_mask): New define_insn, it's renamed
+	from original <avx512>_store<mode>_mask.
+
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110309
+	* config/i386/sse.md (maskload<mode><avx512fmaskmodelower>):
+	Refine pattern with UNSPEC_MASKLOAD.
+	(maskload<mode><avx512fmaskmodelower>): Ditto.
+	(*<avx512>_load<mode>_mask): Extend mode iterator to
+	VI12HFBF_AVX512VL.
+	(*<avx512>_load<mode>): Ditto.
+
 2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:

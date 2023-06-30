@@ -1,3 +1,145 @@
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Fix for 32-bit pointers
+	to check __INT_PTR_WIDTH__ instead of sizeof(void*).
+	* configure: Regenerate.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ZONEINFO_DIR): Extend logic for avr and
+	msp430 to all 16-bit targets.
+	* configure: Regenerate.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110239
+	* include/std/format (__format::__parse_integer): Fix buffer
+	overflow for wide chars.
+	(formatter<const void*, C>::format): Cast to uintptr_t instead
+	of uint64_t.
+	* testsuite/std/format/string.cc: Test too-large widths.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110149
+	* include/std/format (formatter<const void*, charT>::parse):
+	Only alow 0 and P for C++26 and non-strict modes.
+	(formatter<const void*, charT>::format): Use toupper for P
+	type, and insert zero-fill characters for 0 option.
+	* testsuite/std/format/functions/format.cc: Check pointer
+	formatting. Only check P2510R3 extensions conditionally.
+	* testsuite/std/format/parse_ctx.cc: Only check P2510R3
+	extensions conditionally.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109741
+	* acinclude.m4 (GLIBCXX_CHECK_ALIGNAS_CACHELINE): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_ALIGNAS_CACHELINE.
+	* src/c++11/shared_ptr.cc (__gnu_internal::get_mutex): Do not
+	align lock table if not supported. use __GCC_DESTRUCTIVE_SIZE
+	instead of hardcoded 64.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100285
+	* include/experimental/internet [IPPROTO_TCP || IPPROTO_UDP]
+	(basic_endpoint, basic_resolver_entry, resolver_base)
+	(basic_resolver_results, basic_resolver): Only define if the tcp
+	or udp protocols will be defined.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/cons/2.cc: Use values that aren't
+	affected by rounding.
+	* testsuite/20_util/from_chars/5.cc: Cast arithmetic result to
+	double before comparing for equality.
+	* testsuite/20_util/from_chars/6.cc: Likewise.
+	* testsuite/20_util/variant/86874.cc: Use values that aren't
+	affected by rounding.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Compare to
+	original value instead of to floating-point-literal.
+	* testsuite/26_numerics/random/discrete_distribution/cons/range.cc:
+	Cast arithmetic result to double before comparing for equality.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/range.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/range.cc:
+	Likewise.
+	* testsuite/26_numerics/valarray/transcend.cc (eq): Check that
+	the absolute difference is less than 0.01 instead of comparing
+	to two decimal places.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Cast arithmetic result to double before comparing for equality.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/10.cc:
+	Likewise.
+	* testsuite/ext/random/hoyt_distribution/cons/parms.cc: Likewise.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Add
+	noexcept to all constructors except the default constructor.
+	(scoped_allocator_adaptor::inner_allocator): Add noexcept.
+	(scoped_allocator_adaptor::outer_allocator): Likewise.
+	* testsuite/20_util/scoped_allocator/noexcept.cc: New test.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/list/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/52799.cc:
+	Removed.
+	* testsuite/23_containers/vector/modifiers/emplace/const_iterator.cc:
+	Removed.
+	* testsuite/23_containers/deque/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/list/modifiers/emplace/1.cc: New
+	test.
+	* testsuite/23_containers/vector/modifiers/emplace/1.cc: New
+	test.
+
 2023-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
