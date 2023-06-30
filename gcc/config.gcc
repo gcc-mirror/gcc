@@ -2491,6 +2491,18 @@ loongarch*-*-linux*)
 	gcc_cv_initfini_array=yes
 	;;
 
+loongarch*-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="${tm_file} loongarch/elf.h loongarch/linux.h"
+	tmake_file="${tmake_file} loongarch/t-linux"
+	gnu_ld=yes
+	gas=yes
+
+	# For .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
@@ -4932,8 +4944,9 @@ case "${target}" in
 		esac
 
 		case ${target} in
-		  *-linux-gnu*)  triplet_os="linux-gnu";;
+		  *-linux-gnu*) triplet_os="linux-gnu";;
 		  *-linux-musl*) triplet_os="linux-musl";;
+		  *-elf*) triplet_os="elf";;
 		  *)
 			  echo "Unsupported target ${target}." 1>&2
 			  exit 1
