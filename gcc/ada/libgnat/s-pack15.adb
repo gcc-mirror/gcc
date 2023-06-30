@@ -89,30 +89,29 @@ package body System.Pack_15 is
       C  : Cluster_Ref     with Address => A'Address, Import;
       RC : Rev_Cluster_Ref with Address => A'Address, Import;
    begin
-      if Rev_SSO then
-         case N07 (Uns (N) mod 8) is
-            when 0 => return RC.E0;
-            when 1 => return RC.E1;
-            when 2 => return RC.E2;
-            when 3 => return RC.E3;
-            when 4 => return RC.E4;
-            when 5 => return RC.E5;
-            when 6 => return RC.E6;
-            when 7 => return RC.E7;
-         end case;
+      return
+         (if Rev_SSO then
+            (case N07 (Uns (N) mod 8) is
+               when 0 => RC.E0,
+               when 1 => RC.E1,
+               when 2 => RC.E2,
+               when 3 => RC.E3,
+               when 4 => RC.E4,
+               when 5 => RC.E5,
+               when 6 => RC.E6,
+               when 7 => RC.E7)
 
-      else
-         case N07 (Uns (N) mod 8) is
-            when 0 => return C.E0;
-            when 1 => return C.E1;
-            when 2 => return C.E2;
-            when 3 => return C.E3;
-            when 4 => return C.E4;
-            when 5 => return C.E5;
-            when 6 => return C.E6;
-            when 7 => return C.E7;
-         end case;
-      end if;
+         else
+            (case N07 (Uns (N) mod 8) is
+               when 0 => C.E0,
+               when 1 => C.E1,
+               when 2 => C.E2,
+               when 3 => C.E3,
+               when 4 => C.E4,
+               when 5 => C.E5,
+               when 6 => C.E6,
+               when 7 => C.E7)
+         );
    end Get_15;
 
    ------------
