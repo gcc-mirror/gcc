@@ -1,3 +1,77 @@
+2023-06-29  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/109849
+	* gcc.dg/ipa/pr109849.c: New test.
+
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/plugin/crash-test-ice-sarif.c: Use -fno-report-bug.  Adjust
+	scan-sarif-file.
+	* gcc.dg/plugin/crash-test-ice-stderr.c: Use -fno-report-bug.
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Use
+	-fno-report-bug.  Adjust scan-sarif-file.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: Use
+	-fno-report-bug.
+
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/i386/pr104610.c: Use -fno-stack-protector.
+	* gcc.target/i386/pr69482-1.c: Likewise.
+
+2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110468
+	* g++.dg/cpp0x/noexcept79.C: New test.
+
+2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110463
+	* g++.dg/cpp0x/constexpr-mutable6.C: New test.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/77650
+	* gcc.dg/variable-sized-type-flex-array.c: New test.
+
+2023-06-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pieces-memcmp-2.c: Specify that 128-bit
+	comparisons are desired, to see if 256-bit instructions are
+	generated inappropriately (fixes test on -march=cascadelake).
+
+2023-06-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/options.exp (check_for_options_with_filter): Handle
+	missing frontend compiler like disabled language.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110452
+	* gcc.target/i386/pr110452.c: New file.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110461
+	* gcc.dg/pr110461.c: New testcase.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/110454
+	* gcc.dg/Wtraditional-conversion-3.c: New testcase.
+
+2023-06-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-2.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-3.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-4.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-5.c: New test.
+
+2023-06-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-error.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm.c: New test.
+
 2023-06-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (check_effective_target_lra): Remove

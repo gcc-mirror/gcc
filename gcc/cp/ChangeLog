@@ -1,3 +1,48 @@
+2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110468
+	* init.cc (maybe_instantiate_nsdmi_init): Mask out all
+	tsubst flags except for tf_warning_or_error.
+
+2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110463
+	* cp-gimplify.cc (cp_fold) <case CONSTRUCTOR>: Propagate
+	CONSTRUCTOR_MUTABLE_POISON.
+
+2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (tree_template_info::partial): New data member.
+	(TI_PARTIAL_INFO): New tree accessor.
+	(most_specialized_partial_spec): Add defaulted bool parameter.
+	* module.cc (trees_out::core_vals) <case TEMPLATE_INFO>: Stream
+	TI_PARTIAL_INFO.
+	(trees_in::core_vals) <case TEMPLATE_INFO>: Likewise.
+	* parser.cc (specialization_of): Adjust after making
+	most_specialized_partial_spec return TEMPLATE_INFO instead
+	of TREE_LIST.
+	* pt.cc (process_partial_specialization): Set TI_PARTIAL_INFO
+	of 'decl' to point back to the partial TEMPLATE_DECL.  Likewise
+	(and pass rechecking=true to most_specialization_partial_spec).
+	(instantiate_class_template): Likewise.
+	(instantiate_template): Set TI_PARTIAL_INFO to the result of
+	most_specialization_partial_spec after forming a variable
+	template specialization.
+	(most_specialized_partial_spec): Add 'rechecking' parameter.
+	Exit early if the template is not primary.  Use the TI_PARTIAL_INFO
+	of the corresponding TEMPLATE_INFO as a cache unless 'rechecking'
+	is true.  Don't bother setting TREE_TYPE of each TREE_LIST.
+	(instantiate_decl): Adjust after making
+	most_specialized_partial_spec return TEMPLATE_INFO instead of
+	TREE_LIST.
+	* ptree.cc (cxx_print_xnode) <case TEMPLATE_INFO>: Dump
+	TI_PARTIAL_INFO.
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Pass correct stage cc1plus when processing
+	profile data collected while building target libraries
+
 2023-06-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/89442

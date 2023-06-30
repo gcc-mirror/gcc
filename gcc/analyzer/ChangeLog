@@ -1,3 +1,15 @@
+2023-06-29  benjamin priour  <priour.be@gmail.com>
+
+	PR analyzer/110198
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value): Take an
+	optional boolean value to bypass poisoning checks
+	* region-model-manager.h: Update declaration of the above function.
+	* region-model.cc (region_model::get_store_value): No longer returns
+	on OOB, but rather gives a boolean to get_or_create_initial_value.
+	(region_model::check_region_access): Update docstring.
+	(region_model::check_region_for_write): Update docstring.
+
 2023-06-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* access-diagram.cc: Add #define INCLUDE_VECTOR.

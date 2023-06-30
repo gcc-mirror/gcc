@@ -1,3 +1,14 @@
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* lto-common.cc (compare_tree_sccs_1): Compare bit
+	TYPE_NO_NAMED_ARGS_STDARG_P or TYPE_INCLUDES_FLEXARRAY properly
+	for its corresponding type.
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Pass correct stage lto when processing
+	profile data collected while building target libraries
+
 2023-06-28  Richard Biener  <rguenther@suse.de>
 
 	* lto-common.cc (compare_tree_sccs_1): Use TYPE_PRECISION_RAW.

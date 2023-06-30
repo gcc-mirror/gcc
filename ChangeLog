@@ -1,3 +1,8 @@
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Remove -gtoggle for STAGEautoprofile
+	* Makefile.tpl: Remove -gtoggle for STAGEautoprofile
+
 2023-06-25  Lehua Ding  <lehua.ding@rivai.ai>
 
 	* MAINTAINERS: Add Lehua Ding to write after approval

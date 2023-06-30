@@ -1,3 +1,24 @@
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (USE_ATOMIC_SHARED_PTR): Define consistently
+	with USE_ATOMIC_LIST_HEAD.
+	(list_mutex): Replace global object with function. Use local
+	static object when std::mutex constructor isn't constexpr.
+
+2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110462
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check that
+	copy_file_range can be called with loff_t* arguments.
+	* configure: Regenerate.
+	* src/filesystem/ops-common.h (copy_file_copy_file_range):
+	Use loff_t for offsets.
+
+2023-06-29  Tom Tromey  <tromey@adacore.com>
+
+	* testsuite/lib/gdb-test.exp (gdb-test): Relax type-printer
+	regexp.
+
 2023-06-28  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/109849

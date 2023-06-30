@@ -1,3 +1,155 @@
+2023-06-29  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/109849
+	* ipa-fnsummary.cc (decompose_param_expr): Skip
+	functions returning its parameter.
+	(set_cond_stmt_execution_predicate): Return early
+	if predicate was constructed.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/77650
+	* doc/extend.texi: Document GCC extension on a structure containing
+	a flexible array member to be a member of another structure.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* print-tree.cc (print_node): Print new bit type_include_flexarray.
+	* tree-core.h (struct tree_type_common): Use bit no_named_args_stdarg_p
+	as type_include_flexarray for RECORD_TYPE or UNION_TYPE.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields): Stream
+	in bit no_named_args_stdarg_p properly for its corresponding type.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields): Stream
+	out bit no_named_args_stdarg_p properly for its corresponding type.
+	* tree.h (TYPE_INCLUDES_FLEXARRAY): New macro TYPE_INCLUDES_FLEXARRAY.
+
+2023-06-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.cc (maybe_set_nonzero_bits): Move from here...
+	* tree-ssa-dom.cc (maybe_set_nonzero_bits): ...to here.
+	* tree-vrp.h (maybe_set_nonzero_bits): Remove.
+
+2023-06-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Do not call verify_range.
+	(frange::normalize_kind): Verify range.
+	(frange::union_nans): Do not call verify_range.
+	(frange::union_): Same.
+	(frange::intersect): Same.
+	(irange::irange_single_pair_union): Call normalize_kind if
+	necessary.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::set_range_from_nonzero_bits): Verify range.
+	(irange::set_nonzero_bits): Call normalize_kind if necessary.
+	(irange::get_nonzero_bits): Tweak comment.
+	(irange::intersect_nonzero_bits): Call normalize_kind if
+	necessary.
+	(irange::union_nonzero_bits): Same.
+	* value-range.h (irange::normalize_kind): Verify range.
+
+2023-06-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* cselib.h (rtx_equal_for_cselib_1):
+	Change return type from int to bool.
+	(references_value_p): Ditto.
+	(rtx_equal_for_cselib_p): Ditto.
+	* expr.h (can_store_by_pieces): Ditto.
+	(try_casesi): Ditto.
+	(try_tablejump): Ditto.
+	(safe_from_p): Ditto.
+	* sbitmap.h (bitmap_equal_p): Ditto.
+	* cselib.cc (references_value_p): Change return type
+	from int to void and adjust function body accordingly.
+	(rtx_equal_for_cselib_1): Ditto.
+	* expr.cc (is_aligning_offset): Ditto.
+	(can_store_by_pieces): Ditto.
+	(mostly_zeros_p): Ditto.
+	(all_zeros_p): Ditto.
+	(safe_from_p): Ditto.
+	(is_aligning_offset): Ditto.
+	(try_casesi): Ditto.
+	(try_tablejump): Ditto.
+	(store_constructor): Change "need_to_clear" and
+	"const_bounds_p" variables to bool.
+	* sbitmap.cc (bitmap_equal_p): 	Change return type from int to bool.
+
+2023-06-29  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-ssa-math-opts.cc (divmod_candidate_p): Use
+	element_precision.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110460
+	* tree-vect-stmts.cc (get_related_vectype_for_scalar_type):
+	Only allow integral, pointer and scalar float type scalar_type.
+
+2023-06-29  Lili Cui  <lili.cui@intel.com>
+
+	PR tree-optimization/110148
+	* tree-ssa-reassoc.cc (rewrite_expr_tree_parallel): Handle loop-carried
+	ops in this function.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110452
+	* expr.cc (store_constructor): Handle uniform boolean
+	vectors with integer mode specially.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110461
+	* match.pd (bitop (convert@2 @0) (convert?@3 @1)): Disable
+	for VECTOR_TYPE_P.
+
+2023-06-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vec.h (gt_pch_nx): Add overloads for va_gc_atomic.
+	(array_slice): Relax va_gc constructor to handle all vectors
+	with a vl_embed layout.
+
+2023-06-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_emit_mode_set): Add emit for FRM.
+	(riscv_mode_needed): Likewise.
+	(riscv_entity_mode_after): Likewise.
+	(riscv_mode_after): Likewise.
+	(riscv_mode_entry): Likewise.
+	(riscv_mode_exit): Likewise.
+	* config/riscv/riscv.h (NUM_MODES_FOR_MODE_SWITCHING): Add number
+	for FRM.
+	* config/riscv/riscv.md: Add FRM register.
+	* config/riscv/vector-iterators.md: Add FRM type.
+	* config/riscv/vector.md (frm_mode): Define new attr for FRM mode.
+	(fsrm): Define new insn for fsrm instruction.
+
+2023-06-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (enum floating_point_rounding_mode):
+	Add macro for static frm min and max.
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class binop_frm): New class for floating-point with frm.
+	(BASE): Add vfadd for frm.
+	* config/riscv/riscv-vector-builtins-bases.h: Likewise.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfadd_frm): Likewise.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct alu_frm_def): New struct for alu with frm.
+	(SHAPE): Add alu with frm.
+	* config/riscv/riscv-vector-builtins-shapes.h: Likewise.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_checker::report_out_of_range_and_not): New function
+	for report out of range and not val.
+	(function_checker::require_immediate_range_or): New function
+	for checking in range or one val.
+	* config/riscv/riscv-vector-builtins.h: Add function decl.
+
+2023-06-29  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove model value 0xa8
+	from Rocketlake, move model value 0xbf from Alderlake to Raptorlake.
+
 2023-06-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/110144

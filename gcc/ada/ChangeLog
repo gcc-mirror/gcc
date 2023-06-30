@@ -1,3 +1,7 @@
+2023-06-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc-interface/decl.cc (gt_pch_nx): Remove overloads for Entity_Id.
+
 2023-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (LIBIBERTY): Fix condition.

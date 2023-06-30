@@ -1,3 +1,24 @@
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/77650
+	* c-decl.cc (finish_struct): Issue warnings for new option.
+
+2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (finish_struct): Set TYPE_INCLUDES_FLEXARRAY for
+	struct/union type.
+
+2023-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/110454
+	* c-typeck.cc (convert_argument): Sink formal_prec compute
+	to where TYPE_PRECISION is valid to use.
+
+2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Pass correct stage cc1 when processing
+	profile data collected while building target libraries
+
 2023-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107583
