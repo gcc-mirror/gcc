@@ -227,6 +227,9 @@ UINT __gnat_current_ccs_encoding;
 
 #elif defined (_WIN32)
 
+/* Cannot redefine abort here.  */
+#undef abort
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <accctrl.h>
