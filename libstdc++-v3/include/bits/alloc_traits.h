@@ -944,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
 	     allocator<_Tp>&)
     {
-      _Destroy(__first, __last);
+      std::_Destroy(__first, __last);
     }
 #endif
   /// @endcond
