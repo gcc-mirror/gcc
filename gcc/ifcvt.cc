@@ -3432,13 +3432,13 @@ try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
 /* We have something like:
 
      if (x > y)
-       { i = a; j = b; k = c; }
+       { i = EXPR_A; j = EXPR_B; k = EXPR_C; }
 
    Make it:
 
-     tmp_i = (x > y) ? a : i;
-     tmp_j = (x > y) ? b : j;
-     tmp_k = (x > y) ? c : k;
+     tmp_i = (x > y) ? EXPR_A : i;
+     tmp_j = (x > y) ? EXPR_B : j;
+     tmp_k = (x > y) ? EXPR_C : k;
      i = tmp_i;
      j = tmp_j;
      k = tmp_k;
@@ -3858,11 +3858,10 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 
 
 
-/* Return true iff basic block TEST_BB is comprised of only
-   (SET (REG) (REG)) insns suitable for conversion to a series
-   of conditional moves.  Also check that we have more than one set
-   (other routines can handle a single set better than we would), and
-   fewer than PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  While going
+/* Return true iff basic block TEST_BB is suitable for conversion to a
+   series of conditional moves.  Also check that we have more than one
+   set (other routines can handle a single set better than we would),
+   and fewer than PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  While going
    through the insns store the sum of their potential costs in COST.  */
 
 static bool
@@ -3888,20 +3887,13 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
 
-      /* We can possibly relax this, but for now only handle REG to REG
-	 (including subreg) moves.  This avoids any issues that might come
-	 from introducing loads/stores that might violate data-race-freedom
-	 guarantees.  */
-      if (!REG_P (dest))
+      /* Do not handle anything involving memory loads/stores since it might
+	 violate data-race-freedom guarantees.  */
+      if (!REG_P (dest) || contains_mem_rtx_p (src))
 	return false;
 
-      if (!((REG_P (src) || CONSTANT_P (src))
-	    || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
-	      && subreg_lowpart_p (src))))
-	return false;
-
-      /* Destination must be appropriate for a conditional write.  */
-      if (!noce_operand_ok (dest))
+      /* Destination and source must be appropriate.  */
+      if (!noce_operand_ok (dest) || !noce_operand_ok (src))
 	return false;
 
       /* We must be able to conditionally move in this mode.  */
