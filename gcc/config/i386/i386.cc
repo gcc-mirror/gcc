@@ -605,13 +605,6 @@ ix86_can_inline_p (tree caller, tree callee)
 	       != (callee_opts->x_target_flags & ~always_inline_safe_mask))
     ret = false;
 
-  /* See if arch, tune, etc. are the same.  */
-  else if (caller_opts->arch != callee_opts->arch)
-    ret = false;
-
-  else if (!always_inline && caller_opts->tune != callee_opts->tune)
-    ret = false;
-
   else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath
 	   /* If the calle doesn't use FP expressions differences in
 	      ix86_fpmath can be ignored.  We are called from FEs
@@ -620,6 +613,23 @@ ix86_can_inline_p (tree caller, tree callee)
 	   && (! ipa_fn_summaries
 	       || ipa_fn_summaries->get (callee_node) == NULL
 	       || ipa_fn_summaries->get (callee_node)->fp_expressions))
+    ret = false;
+
+  /* At this point we cannot identify whether arch or tune setting
+     comes from target attribute or not. So the most conservative way
+     is to allow the callee that uses default arch and tune string to
+     be inlined.  */
+  else if (!strcmp (callee_opts->x_ix86_arch_string, "x86-64")
+	   && !strcmp (callee_opts->x_ix86_tune_string, "generic"))
+    ret = true;
+
+  /* See if arch, tune, etc. are the same. As previous ISA flags already
+     checks if callee's ISA is subset of caller's, do not block
+     always_inline attribute for callee even it has different arch. */
+  else if (!always_inline && caller_opts->arch != callee_opts->arch)
+    ret = false;
+
+  else if (!always_inline && caller_opts->tune != callee_opts->tune)
     ret = false;
 
   else if (!always_inline
