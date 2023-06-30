@@ -4,7 +4,7 @@
 template<typename T> struct A
 {
   template<T> int foo();                        // { dg-error "double" "" { target c++17_down } }
-  template<template<T> class> int bar();        // { dg-bogus {double.*C:7:[^\n]*double} }
+  template<template<T> class> int bar();        // { dg-bogus {double[^\n]*\n[^\n]*C:7:[^\n]*double} "" { xfail c++17_down } }
   // { dg-error "double" "" { target c++17_down } .-1 }
   template<T> struct X;                         // { dg-error "double" "" { target c++17_down } }
 };

@@ -220,6 +220,7 @@ static tree enclosing_instantiation_of (tree tctx);
 static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
 static void mark_template_arguments_used (tree, tree);
+static bool uses_outer_template_parms (tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -4540,12 +4541,7 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
   if (TEMPLATE_PARM_DESCENDANTS (index) == NULL_TREE
       || (TEMPLATE_PARM_LEVEL (TEMPLATE_PARM_DESCENDANTS (index))
 	  != TEMPLATE_PARM_LEVEL (index) - levels)
-      || !(TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-	   ? (comp_template_parms
-	      (DECL_TEMPLATE_PARMS (TYPE_NAME (type)),
-	       DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL
-				    (TEMPLATE_PARM_DESCENDANTS (index)))))
-	   : same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index)))))
+      || !same_type_p (type, TREE_TYPE (TEMPLATE_PARM_DESCENDANTS (index))))
     {
       tree orig_decl = TEMPLATE_PARM_DECL (index);
 
@@ -4707,6 +4703,10 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
+
+  if (TREE_CODE (parm) == TEMPLATE_DECL
+      && !uses_outer_template_parms (parm))
+    TEMPLATE_TEMPLATE_PARM_SIMPLE_P (TREE_TYPE (parm)) = true;
 
   /* Build requirements for the type/template parameter.
      This must be done after SET_DECL_TEMPLATE_PARM_P or
@@ -10973,7 +10973,11 @@ uses_template_parms_level (tree t, int level)
 static bool
 uses_outer_template_parms (tree decl)
 {
-  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  int depth;
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (decl))
+    depth = TEMPLATE_TYPE_LEVEL (TREE_TYPE (decl)) - 1;
+  else
+    depth = template_class_depth (CP_DECL_CONTEXT (decl));
   if (depth == 0)
     return false;
   if (for_each_template_parm (TREE_TYPE (decl), template_parm_outer_level,
@@ -16219,14 +16223,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		t = TYPE_MAIN_VARIANT (t);
 	      }
 
-	    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		&& (arg = TEMPLATE_TYPE_PARM_INDEX (t),
-		    r = TEMPLATE_PARM_DESCENDANTS (arg))
-		&& (TEMPLATE_PARM_LEVEL (r)
-		    == TEMPLATE_PARM_LEVEL (arg) - levels))
-	      /* Cache the simple case of lowering a type parameter.  */
-	      r = TREE_TYPE (r);
-	    else
+	    if (tree d = TEMPLATE_TYPE_DESCENDANTS (t))
+	      if (TEMPLATE_PARM_LEVEL (d) == TEMPLATE_TYPE_LEVEL (t) - levels
+		  && (code == TEMPLATE_TYPE_PARM
+		      || TEMPLATE_TEMPLATE_PARM_SIMPLE_P (t)))
+		/* Cache lowering a type parameter or a simple template
+		   template parameter.  */
+		r = TREE_TYPE (d);
+
+	    if (!r)
 	      {
 		r = copy_type (t);
 		TEMPLATE_TYPE_PARM_INDEX (r)
@@ -16237,7 +16242,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		TYPE_POINTER_TO (r) = NULL_TREE;
 		TYPE_REFERENCE_TO (r) = NULL_TREE;
 
-                if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+		if (code == TEMPLATE_TYPE_PARM)
 		  if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t))
 		    /* Propagate constraints on placeholders since they are
 		       only instantiated during satisfaction.  */
