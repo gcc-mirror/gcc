@@ -1,3 +1,11 @@
+2023-06-29  Paul E. Murphy  <murphyp@linux.ibm.com>
+
+	Backported from master:
+	2023-06-22  Paul E. Murphy  <murphyp@linux.ibm.com>
+
+	* go-backend.c [TARGET_AIX]: Rename and update usage to TARGET_AIX_OS.
+	* go-lang.c: Likewise.
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.
