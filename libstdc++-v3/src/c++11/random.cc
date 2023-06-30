@@ -374,11 +374,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 				      " unsupported token"));
 
 #if defined ENOSYS
-    const int unsupported = ENOSYS;
+    [[maybe_unused]] const int unsupported = ENOSYS;
 #elif defined ENOTSUP
-    const int unsupported = ENOTSUP;
+    [[maybe_unused]] const int unsupported = ENOTSUP;
 #else
-    const int unsupported = 0;
+    [[maybe_unused]] const int unsupported = 0;
 #endif
     int err = 0;
 
