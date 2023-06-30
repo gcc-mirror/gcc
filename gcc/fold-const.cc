@@ -922,8 +922,8 @@ split_tree (tree in, tree type, enum tree_code code,
     {
       tree op0 = TREE_OPERAND (in, 0);
       tree op1 = TREE_OPERAND (in, 1);
-      int neg1_p = TREE_CODE (in) == MINUS_EXPR;
-      int neg_litp_p = 0, neg_conp_p = 0, neg_var_p = 0;
+      bool neg1_p = TREE_CODE (in) == MINUS_EXPR;
+      bool neg_litp_p = false, neg_conp_p = false, neg_var_p = false;
 
       /* First see if either of the operands is a literal, then a constant.  */
       if (TREE_CODE (op0) == INTEGER_CST || TREE_CODE (op0) == REAL_CST
@@ -1450,7 +1450,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       FIXED_VALUE_TYPE f2;
       FIXED_VALUE_TYPE result;
       tree t, type;
-      int sat_p;
+      bool sat_p;
       bool overflow_p;
 
       /* The following codes are handled by fixed_arithmetic.  */
@@ -5680,7 +5680,7 @@ bool
 merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 	      tree high0, int in1_p, tree low1, tree high1)
 {
-  int no_overlap;
+  bool no_overlap;
   int subset;
   int temp;
   tree tem;
@@ -6855,7 +6855,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 		    > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
 		? wide_type : type);
   tree t1, t2;
-  int same_p = tcode == code;
+  bool same_p = tcode == code;
   tree op0 = NULL_TREE, op1 = NULL_TREE;
   bool sub_strict_overflow_p;
 
@@ -7467,17 +7467,17 @@ bool
 tree_swap_operands_p (const_tree arg0, const_tree arg1)
 {
   if (CONSTANT_CLASS_P (arg1))
-    return 0;
+    return false;
   if (CONSTANT_CLASS_P (arg0))
-    return 1;
+    return true;
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
 
   if (TREE_CONSTANT (arg1))
-    return 0;
+    return false;
   if (TREE_CONSTANT (arg0))
-    return 1;
+    return true;
 
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
      for commutative and comparison operators.  Ensuring a canonical
@@ -7486,21 +7486,21 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
   if (TREE_CODE (arg0) == SSA_NAME
       && TREE_CODE (arg1) == SSA_NAME
       && SSA_NAME_VERSION (arg0) > SSA_NAME_VERSION (arg1))
-    return 1;
+    return true;
 
   /* Put SSA_NAMEs last.  */
   if (TREE_CODE (arg1) == SSA_NAME)
-    return 0;
+    return false;
   if (TREE_CODE (arg0) == SSA_NAME)
-    return 1;
+    return true;
 
   /* Put variables last.  */
   if (DECL_P (arg1))
-    return 0;
+    return false;
   if (DECL_P (arg0))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 
@@ -9693,10 +9693,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
       tree a01 = TREE_OPERAND (arg0, 1);
       tree a10 = TREE_OPERAND (arg1, 0);
       tree a11 = TREE_OPERAND (arg1, 1);
-      int commutative = ((TREE_CODE (arg0) == TRUTH_OR_EXPR
-			  || TREE_CODE (arg0) == TRUTH_AND_EXPR)
-			 && (code == TRUTH_AND_EXPR
-			     || code == TRUTH_OR_EXPR));
+      bool commutative = ((TREE_CODE (arg0) == TRUTH_OR_EXPR
+			   || TREE_CODE (arg0) == TRUTH_AND_EXPR)
+			  && (code == TRUTH_AND_EXPR
+			      || code == TRUTH_OR_EXPR));
 
       if (operand_equal_p (a00, a10, 0))
 	return fold_build2_loc (loc, TREE_CODE (arg0), type, a00,
@@ -14012,8 +14012,8 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
 #undef START_FOLD_INIT
 #undef END_FOLD_INIT
 
-/* Determine if first argument is a multiple of second argument.  Return 0 if
-   it is not, or we cannot easily determined it to be.
+/* Determine if first argument is a multiple of second argument.  Return
+   false if it is not, or we cannot easily determined it to be.
 
    An example of the sort of thing we care about (at this point; this routine
    could surely be made more general, and expanded to do what the *_DIV_EXPR's
@@ -14058,17 +14058,17 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
    NOWRAP is mostly used to treat expressions in TYPE_SIZE and friends
    as not wrapping even though they are generally using unsigned arithmetic.  */
 
-int
+bool
 multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 {
   gimple *stmt;
   tree op1, op2;
 
   if (operand_equal_p (top, bottom, 0))
-    return 1;
+    return true;
 
   if (TREE_CODE (type) != INTEGER_TYPE)
-    return 0;
+    return false;
 
   switch (TREE_CODE (top))
     {
@@ -14076,7 +14076,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       /* Bitwise and provides a power of two multiple.  If the mask is
 	 a multiple of BOTTOM then TOP is a multiple of BOTTOM.  */
       if (!integer_pow2p (bottom))
-	return 0;
+	return false;
       return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
 	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
@@ -14087,7 +14087,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if (!nowrap
 	  && !TYPE_OVERFLOW_UNDEFINED (type)
 	  && !integer_pow2p (bottom))
-	return 0;
+	return false;
       if (TREE_CODE (bottom) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 0);
@@ -14097,7 +14097,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	  if (TREE_CODE (op2) == INTEGER_CST)
 	    {
 	      if (multiple_of_p (type, op2, bottom, nowrap))
-		return 1;
+		return true;
 	      /* Handle multiple_of_p ((x * 2 + 2) * 4, 8).  */
 	      if (multiple_of_p (type, bottom, op2, nowrap))
 		{
@@ -14129,7 +14129,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 				    nowrap);
 	    }
 	}
-      return 0;
+      return false;
 
     case MINUS_EXPR:
     case PLUS_EXPR:
@@ -14139,7 +14139,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if (!nowrap
 	  && !TYPE_OVERFLOW_UNDEFINED (type)
 	  && !integer_pow2p (bottom))
-	return 0;
+	return false;
 
       /* Handle cases like op0 + 0xfffffffd as op0 - 3 if the expression has
 	 unsigned type.  For example, (X / 3) + 0xfffffffd is multiple of 3,
@@ -14163,7 +14163,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
-	return 0;
+	return false;
       /* NOWRAP only extends to operations in the outermost type so
 	 make sure to strip it off here.  */
       return multiple_of_p (TREE_TYPE (TREE_OPERAND (top, 0)),
@@ -14178,7 +14178,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 
     case INTEGER_CST:
       if (TREE_CODE (bottom) != INTEGER_CST || integer_zerop (bottom))
-	return 0;
+	return false;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);
 
@@ -14204,7 +14204,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && integer_pow2p (bottom)
 	      && wi::multiple_of_p (wi::to_widest (op2),
 				    wi::to_widest (bottom), UNSIGNED))
-	    return 1;
+	    return true;
 
 	  op1 = gimple_assign_rhs1 (stmt);
 	  if (code == MINUS_EXPR
@@ -14215,7 +14215,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && (code = gimple_assign_rhs_code (stmt)) == TRUNC_MOD_EXPR
 	      && operand_equal_p (op1, gimple_assign_rhs1 (stmt), 0)
 	      && operand_equal_p (bottom, gimple_assign_rhs2 (stmt), 0))
-	    return 1;
+	    return true;
 	}
 
       /* fall through */
@@ -14225,7 +14225,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	return multiple_p (wi::to_poly_widest (top),
 			   wi::to_poly_widest (bottom));
 
-      return 0;
+      return false;
     }
 }
 
