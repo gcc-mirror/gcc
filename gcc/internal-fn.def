@@ -357,6 +357,11 @@ DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_MINUS,
 				first,
 				vec_widen_ssub, vec_widen_usub,
 				binary)
+DEF_INTERNAL_WIDENING_OPTAB_FN (VEC_WIDEN_ABD,
+				ECF_CONST | ECF_NOTHROW,
+				first,
+				vec_widen_sabd, vec_widen_uabd,
+				binary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMADDSUB, ECF_CONST, vec_fmaddsub, ternary)
 DEF_INTERNAL_OPTAB_FN (VEC_FMSUBADD, ECF_CONST, vec_fmsubadd, ternary)
 

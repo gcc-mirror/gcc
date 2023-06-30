@@ -5871,6 +5871,23 @@ signed/unsigned elements of size S@.  Subtract the high/low elements of 2 from
 1 and widen the resulting elements. Put the N/2 results of size 2*S in the
 output vector (operand 0).
 
+@cindex @code{vec_widen_sabd_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_odd_@var{m}} instruction pattern
+@cindex @code{vec_widen_sabd_even_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_odd_@var{m}} instruction pattern
+@cindex @code{vec_widen_uabd_even_@var{m}} instruction pattern
+@item @samp{vec_widen_uabd_hi_@var{m}}, @samp{vec_widen_uabd_lo_@var{m}}
+@itemx @samp{vec_widen_uabd_odd_@var{m}}, @samp{vec_widen_uabd_even_@var{m}}
+@itemx @samp{vec_widen_sabd_hi_@var{m}}, @samp{vec_widen_sabd_lo_@var{m}}
+@itemx @samp{vec_widen_sabd_odd_@var{m}}, @samp{vec_widen_sabd_even_@var{m}}
+Signed/Unsigned widening absolute difference.  Operands 1 and 2 are
+vectors with N signed/unsigned elements of size S@.  Find the absolute
+difference between operands 1 and 2 and widen the resulting elements.
+Put the N/2 results of size 2*S in the output vector (operand 0).
+
 @cindex @code{vec_addsub@var{m}3} instruction pattern
 @item @samp{vec_addsub@var{m}3}
 Alternating subtract, add with even lanes doing subtract and odd
