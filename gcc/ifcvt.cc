@@ -3592,20 +3592,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   return true;
 }
 
-/* Helper function for noce_convert_multiple_sets_1.  If store to
-   DEST can affect P[0] or P[1], clear P[0].  Called via note_stores.  */
-
-static void
-check_for_cc_cmp_clobbers (rtx dest, const_rtx, void *p0)
-{
-  rtx *p = (rtx *) p0;
-  if (p[0] == NULL_RTX)
-    return;
-  if (reg_overlap_mentioned_p (dest, p[0])
-      || (p[1] && reg_overlap_mentioned_p (dest, p[1])))
-    p[0] = NULL_RTX;
-}
-
 /* This goes through all relevant insns of IF_INFO->then_bb and tries to
    create conditional moves.  In case a simple move sufficis the insn
    should be listed in NEED_NO_CMOV.  The rewired-src cases should be
@@ -3731,36 +3717,71 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	 creating an additional compare for each.  If successful, costing
 	 is easier and this sequence is usually preferred.  */
       if (cc_cmp)
-	seq2 = try_emit_cmove_seq (if_info, temp, cond,
-				   new_val, old_val, need_cmov,
-				   &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
+	{
+	  seq2 = try_emit_cmove_seq (if_info, temp, cond,
+				     new_val, old_val, need_cmov,
+				     &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
+
+	  /* The if_then_else in SEQ2 may be affected when cc_cmp/rev_cc_cmp is
+	     clobbered.  We can't safely use the sequence in this case.  */
+	  for (rtx_insn *iter = seq2; iter; iter = NEXT_INSN (iter))
+	    if (modified_in_p (cc_cmp, iter)
+	      || (rev_cc_cmp && modified_in_p (rev_cc_cmp, iter)))
+	      {
+		seq2 = NULL;
+		break;
+	      }
+	}
 
       /* The backend might have created a sequence that uses the
-	 condition.  Check this.  */
-      rtx_insn *walk = seq2;
-      while (walk)
-	{
-	  rtx set = single_set (walk);
+	 condition as a value.  Check this.  */
 
-	  if (!set || !SET_SRC (set))
+      /* We cannot handle anything more complex than a reg or constant.  */
+      if (!REG_P (XEXP (cond, 0)) && !CONSTANT_P (XEXP (cond, 0)))
+	read_comparison = true;
+
+      if (!REG_P (XEXP (cond, 1)) && !CONSTANT_P (XEXP (cond, 1)))
+	read_comparison = true;
+
+      rtx_insn *walk = seq2;
+      int if_then_else_count = 0;
+      while (walk && !read_comparison)
+	{
+	  rtx exprs_to_check[2];
+	  unsigned int exprs_count = 0;
+
+	  rtx set = single_set (walk);
+	  if (set && XEXP (set, 1)
+	      && GET_CODE (XEXP (set, 1)) == IF_THEN_ELSE)
 	    {
-	      walk = NEXT_INSN (walk);
-	      continue;
+	      /* We assume that this is the cmove created by the backend that
+		 naturally uses the condition.  */
+	      exprs_to_check[exprs_count++] = XEXP (XEXP (set, 1), 1);
+	      exprs_to_check[exprs_count++] = XEXP (XEXP (set, 1), 2);
+	      if_then_else_count++;
+	    }
+	  else if (NONDEBUG_INSN_P (walk))
+	    exprs_to_check[exprs_count++] = PATTERN (walk);
+
+	  /* Bail if we get more than one if_then_else because the assumption
+	     above may be incorrect.  */
+	  if (if_then_else_count > 1)
+	    {
+	      read_comparison = true;
+	      break;
 	    }
 
-	  rtx src = SET_SRC (set);
-
-	  if (XEXP (set, 1) && GET_CODE (XEXP (set, 1)) == IF_THEN_ELSE)
-	    ; /* We assume that this is the cmove created by the backend that
-		 naturally uses the condition.  Therefore we ignore it.  */
-	  else
+	  for (unsigned int i = 0; i < exprs_count; i++)
 	    {
-	      if (reg_mentioned_p (XEXP (cond, 0), src)
-		  || reg_mentioned_p (XEXP (cond, 1), src))
-		{
-		  read_comparison = true;
-		  break;
-		}
+	      subrtx_iterator::array_type array;
+	      FOR_EACH_SUBRTX (iter, array, exprs_to_check[i], NONCONST)
+		if (*iter != NULL_RTX
+		    && (reg_overlap_mentioned_p (XEXP (cond, 0), *iter)
+		    || reg_overlap_mentioned_p (XEXP (cond, 1), *iter)))
+		  {
+		    read_comparison = true;
+		    break;
+		  }
 	    }
 
 	  walk = NEXT_INSN (walk);
@@ -3788,22 +3809,32 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	  return false;
 	}
 
-      if (cc_cmp)
-	{
-	  /* Check if SEQ can clobber registers mentioned in
-	     cc_cmp and/or rev_cc_cmp.  If yes, we need to use
-	     only seq1 from that point on.  */
-	  rtx cc_cmp_pair[2] = { cc_cmp, rev_cc_cmp };
-	  for (walk = seq; walk; walk = NEXT_INSN (walk))
+      /* Although we use temporaries if there is register overlap of COND and
+	 TARGET, it is possible that SEQ modifies COND anyway.  For example,
+	 COND may use the flags register and if INSN clobbers flags then
+	 we may be unable to emit a valid sequence (e.g. in x86 that would
+	 require saving and restoring the flags register).  */
+      if (!second_try)
+	for (rtx_insn *iter = seq; iter; iter = NEXT_INSN (iter))
+	  if (modified_in_p (cond, iter))
 	    {
-	      note_stores (walk, check_for_cc_cmp_clobbers, cc_cmp_pair);
-	      if (cc_cmp_pair[0] == NULL_RTX)
-		{
-		  cc_cmp = NULL_RTX;
-		  rev_cc_cmp = NULL_RTX;
-		  break;
-		}
+	      end_sequence ();
+	      return false;
 	    }
+
+      if (cc_cmp && seq == seq1)
+	{
+	  /* Check if SEQ can clobber registers mentioned in cc_cmp/rev_cc_cmp.
+	     If yes, we need to use only SEQ1 from that point on.
+	     Only check when we use SEQ1 since we have already tested SEQ2.  */
+	  for (rtx_insn *iter = seq; iter; iter = NEXT_INSN (iter))
+	    if (modified_in_p (cc_cmp, iter)
+	      || (rev_cc_cmp && modified_in_p (rev_cc_cmp, iter)))
+	      {
+		cc_cmp = NULL_RTX;
+		rev_cc_cmp = NULL_RTX;
+		break;
+	      }
 	}
 
       /* End the sub sequence and emit to the main sequence.  */
