@@ -1984,6 +1984,9 @@
 ;; Same as above, but louder.
 (define_code_attr MAX_OPP [(smax "SMIN") (umax "UMIN")])
 
+;; Map smax and umax to sign_extend and zero_extend
+(define_code_attr USMAX_EXT [(smax "sign_extend") (umax "zero_extend")])
+
 ;; The number of subvectors in an SVE_STRUCT.
 (define_mode_attr vector_count [(VNx32QI "2") (VNx16HI "2")
 				(VNx8SI  "2") (VNx4DI  "2")

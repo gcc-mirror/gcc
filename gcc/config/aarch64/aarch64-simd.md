@@ -975,6 +975,66 @@
   }
 )
 
+(define_insn "aarch64_<su>abdl<mode>_hi_internal"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(abs:<VWIDE>
+	  (minus:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQW 1 "register_operand" "w")
+		(match_operand:VQW 3 "vect_par_cnst_hi_half" "")))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_dup 3))))))]
+  "TARGET_SIMD"
+  "<su>abdl2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_abd_long")]
+)
+
+(define_insn "aarch64_<su>abdl<mode>_lo_internal"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(abs:<VWIDE>
+	  (minus:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQW 1 "register_operand" "w")
+		(match_operand:VQW 3 "vect_par_cnst_lo_half" "")))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_dup 3))))))]
+  "TARGET_SIMD"
+  "<su>abdl\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
+  [(set_attr "type" "neon_abd_long")]
+)
+
+(define_expand "vec_widen_<su>abd_hi_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_<su>abdl<mode>_hi_internal (operands[0], operands[1],
+						       operands[2], p));
+    DONE;
+  }
+)
+
+(define_expand "vec_widen_<su>abd_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
+    emit_insn (gen_aarch64_<su>abdl<mode>_lo_internal (operands[0], operands[1],
+						       operands[2], p));
+    DONE;
+  }
+)
+
 (define_insn "aarch64_<su>abal<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(plus:<VWIDE>
