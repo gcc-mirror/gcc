@@ -5843,9 +5843,19 @@ public:
         }
         if (e->to->ty == Tsarray)
             e1 = resolveSlice(e1);
-        if (e->to->toBasetype()->ty == Tbool && e1->type->ty == Tpointer)
+        Type *tobt = e->to->toBasetype();
+        if (tobt->ty == Tbool && e1->type->ty == Tpointer)
         {
             new(pue) IntegerExp(e->loc, e1->op != TOKnull, e->to);
+            result = pue->exp();
+            return;
+        }
+        else if (tobt->isTypeBasic() && e1->op == TOKnull)
+        {
+            if (tobt->isintegral())
+                new(pue) IntegerExp(e->loc, 0, e->to);
+            else if (tobt->isreal())
+                new(pue) RealExp(e->loc, CTFloat::zero, e->to);
             result = pue->exp();
             return;
         }
