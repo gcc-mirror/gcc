@@ -1277,6 +1277,20 @@ get_symbol_decl (Declaration *decl)
 		DECL_INITIAL (decl->csym) = build_expr (ie, true);
 	    }
 	}
+
+      /* [type-qualifiers/const-and-immutable]
+
+	 `immutable` applies to data that cannot change. Immutable data values,
+	 once constructed, remain the same for the duration of the program's
+	 execution.  */
+      if (vd->isImmutable () && !vd->setInCtorOnly ())
+	TREE_READONLY (decl->csym) = 1;
+
+      /* `const` applies to data that cannot be changed by the const reference
+	 to that data. It may, however, be changed by another reference to that
+	 same data.  */
+      if (vd->isConst () && !vd->isDataseg ())
+	TREE_READONLY (decl->csym) = 1;
     }
 
   /* Set the declaration mangled identifier if static.  */
