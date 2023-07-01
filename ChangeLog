@@ -1,3 +1,7 @@
+2023-06-30  Rishi Raj  <rishiraj45035@gmail.com>
+
+	* MAINTAINERS: Added myself to Write After Approval and DCO
+
 2023-06-29  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Makefile.in: Remove -gtoggle for STAGEautoprofile

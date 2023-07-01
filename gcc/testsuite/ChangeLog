@@ -1,3 +1,72 @@
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/template/nontype12.C: Refine and XFAIL the dg-bogus
+	duplicate diagnostic check.
+
+2023-06-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/101832
+	* gcc.dg/builtin-object-size-pr101832.c: New test.
+
+2023-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20230630-1.c: New test.
+	* gcc.c-torture/execute/20230630-2.c: Likewise.
+	* gcc.c-torture/execute/20230630-3.c: Likewise
+	* gcc.c-torture/execute/20230630-4.c: Likewise
+
+2023-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/110466
+	* jit.dg/jit.exp (jit-check-debug-info): Gracefully handle too
+	early versions of gdb that don't support our dwarf version, via
+	"unsupported".
+
+2023-06-30  David Malcolm  <dmalcolm@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR jit/110466
+	* jit.dg/test-expressions.c (run_test_of_comparison): Fix size
+	param to gcc_jit_type_get_vector.
+	(verify_comparisons): Use a typedef rather than __vector.
+
+2023-06-30  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/109849
+	* gcc.dg/predict-18.c: Improve testcase.
+
+2023-06-30  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* gcc.target/aarch64/abd_2.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_3.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_4.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_none_2.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_none_3.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_none_4.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_run_1.c: Added ABDL testcases.
+	* gcc.target/aarch64/sve/abd_1.c: Added ABDL testcases.
+	* gcc.target/aarch64/sve/abd_2.c: Added ABDL testcases.
+	* gcc.target/aarch64/sve/abd_none_1.c: Added ABDL testcases.
+	* gcc.target/aarch64/sve/abd_none_2.c: Added ABDL testcases.
+	* gcc.target/aarch64/abd_widen_2.c: New file.
+	* gcc.target/aarch64/abd_widen_3.c: New file.
+	* gcc.target/aarch64/abd_widen_4.c: New file.
+
+2023-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110496
+	* gcc.dg/pr110496.c: New testcase.
+
+2023-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: Add check_vect ().
+
+2023-06-30  Jovan Dmitrović  <jovan.dmitrovic@syrmia.com>
+
+	* gcc.target/mips/align-1-n64.c: New test.
+	* gcc.target/mips/align-1-o32.c: New test.
+
 2023-06-29  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/109849

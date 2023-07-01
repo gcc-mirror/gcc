@@ -1,3 +1,118 @@
+2023-06-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR tree-optimization/101832
+	* tree-object-size.cc (addr_object_size): Handle structure/union type
+	when it has flexible size.
+
+2023-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
+	(fold_nonarray_ctor_reference): Likewise.  Specifically deal
+	with integral bit-fields.
+	(fold_ctor_reference): Make sure that the constructor uses the
+	native storage order.
+
+2023-06-30  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/109849
+	* predict.cc (estimate_bb_frequencies): Turn to static function.
+	(expr_expected_value_1): Fix handling of binary expressions with
+	predicted values.
+	* predict.def (PRED_MALLOC_NONNULL): Move later in the priority queue.
+	(PRED_BUILTIN_EXPECT_WITH_PROBABILITY): Move to almost top of the priority
+	queue.
+	* predict.h (estimate_bb_frequencies): No longer declare it.
+
+2023-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* fold-const.h (multiple_of_p): Change return type from int to bool.
+	* fold-const.cc (split_tree): Change negl_p, neg_litp_p,
+	neg_conp_p and neg_var_p variables to bool.
+	(const_binop): Change sat_p variable to bool.
+	(merge_ranges): Change no_overlap variable to bool.
+	(extract_muldiv_1): Change same_p variable to bool.
+	(tree_swap_operands_p): Update function body for bool return type.
+	(fold_truth_andor): Change commutative variable to bool.
+	(multiple_of_p): Change return type
+	from int to void and adjust function body accordingly.
+	* optabs.h (expand_twoval_unop): Change return type from int to bool.
+	(expand_twoval_binop): Ditto.
+	(can_compare_p): Ditto.
+	(have_add2_insn): Ditto.
+	(have_addptr3_insn): Ditto.
+	(have_sub2_insn): Ditto.
+	(have_insn_for): Ditto.
+	* optabs.cc (add_equal_note): Ditto.
+	(widen_operand): Change no_extend argument from int to bool.
+	(expand_binop): Ditto.
+	(expand_twoval_unop): Change return type
+	from int to void and adjust function body accordingly.
+	(expand_twoval_binop): Ditto.
+	(can_compare_p): Ditto.
+	(have_add2_insn): Ditto.
+	(have_addptr3_insn): Ditto.
+	(have_sub2_insn): Ditto.
+	(have_insn_for): Ditto.
+
+2023-06-30  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(vec_widen_<su>abdl_lo_<mode>, vec_widen_<su>abdl_hi_<mode>):
+	Expansions for abd vec widen optabs.
+	(aarch64_<su>abdl<mode>_insn): VQW based abdl RTL.
+	* config/aarch64/iterators.md (USMAX_EXT): Code attributes
+	that give the appropriate extend RTL for the max RTL.
+
+2023-06-30  Oluwatamilore Adebayo  <oluwatamilore.adebayo@arm.com>
+
+	* internal-fn.def (VEC_WIDEN_ABD): New internal hilo optab.
+	* optabs.def (vec_widen_sabd_optab,
+	vec_widen_sabd_hi_optab, vec_widen_sabd_lo_optab,
+	vec_widen_sabd_odd_even, vec_widen_sabd_even_optab,
+	vec_widen_uabd_optab,
+	vec_widen_uabd_hi_optab, vec_widen_uabd_lo_optab,
+	vec_widen_uabd_odd_even, vec_widen_uabd_even_optab):
+	New optabs.
+	* doc/md.texi: Document them.
+	* tree-vect-patterns.cc (vect_recog_abd_pattern): Update to
+	to build a VEC_WIDEN_ABD call if the input precision is smaller
+	than the precision of the output.
+	(vect_recog_widen_abd_pattern): Should an ABD expression be
+	found preceeding an extension, replace the two with a
+	VEC_WIDEN_ABD.
+
+2023-06-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Refactor the common condition.
+
+2023-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110496
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop_1): Re-order
+	verifying and TYPE_PRECISION query for the BIT_FIELD_REF case.
+
+2023-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110489
+	* statistics.cc (curr_statistics_hash): Add argument
+	indicating whether we should allocate the hash.
+	(statistics_fini_pass): If the hash isn't allocated
+	only print the summary header.
+
+2023-06-30  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (TARGET_LRA_P): Remove.
+
+2023-06-30  Jovan Dmitrović  <jovan.dmitrovic@syrmia.com>
+
+	PR target/109435
+	* config/mips/mips.cc (mips_function_arg_alignment): Returns
+	the alignment of function argument. In case of typedef type,
+	it returns the aligment of the aliased type.
+	(mips_function_arg_boundary): Relocated calculation of the
+	aligment of function arguments.
+
 2023-06-29  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/109849

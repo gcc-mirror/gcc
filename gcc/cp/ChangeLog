@@ -1,3 +1,17 @@
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (TEMPLATE_PARM_DESCENDANTS): Harden.
+	(TEMPLATE_TYPE_DESCENDANTS): Define.
+	(TEMPLATE_TEMPLATE_PARM_SIMPLE_P): Define.
+	* pt.cc (reduce_template_parm_level): Revert
+	r14-418-g0bc2a1dc327af9 change.
+	(process_template_parm): Set TEMPLATE_TEMPLATE_PARM_SIMPLE_P
+	appropriately.
+	(uses_outer_template_parms): Determine the outer depth of
+	a template template parm without relying on DECL_CONTEXT.
+	(tsubst) <case TEMPLATE_TEMPLATE_PARM>: Cache lowering a
+	simple template template parm.  Consistently use 'code'.
+
 2023-06-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110468

@@ -1,3 +1,9 @@
+2023-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/108835
+	* gm2-libs/RTint.mod: Do not use NIL timeout setting on select,
+	test failures sequentially, finishing on the first success.
+
 2023-06-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110284

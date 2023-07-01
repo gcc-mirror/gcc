@@ -1,3 +1,7 @@
+2023-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.in: Regenerate.
+
 2023-06-22  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-bind-now): New check.  Link with
