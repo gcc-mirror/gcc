@@ -1,3 +1,25 @@
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-28  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/92752
+	* typeck.c (build_ptrmemfunc): Cast a nullptr constant to the
+	unqualified pointer type not the qualified one.
+
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* cvt.c (noexcept_conv_p): Remove redundant checks and simplify.
+	(fnptr_conv_p): Don't call non_reference.  Use INDIRECT_TYPE_P
+	instead of TYPE_PTR_P.
+	* pt.c (convert_nontype_argument_function): Look through
+	implicit INDIRECT_REFs before calling strip_fnptr_conv.
+
 2023-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

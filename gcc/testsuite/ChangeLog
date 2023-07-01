@@ -1,3 +1,20 @@
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-28  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/92752
+	* g++.dg/warn/Wignored-qualifiers2.C: New test.
+
+2023-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* g++.dg/cpp0x/noexcept68.C: New test.
+
 2023-06-28  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
