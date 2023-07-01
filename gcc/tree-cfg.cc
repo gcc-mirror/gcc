@@ -6658,13 +6658,17 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
    blocks are stored to REGION_COPY in the same order as they had in REGION,
    provided that REGION_COPY is not NULL.
    The function returns false if it is unable to copy the region,
-   true otherwise.  */
+   true otherwise.
+
+   ELIMINATED_EDGE is an edge that is known to be removed in the dupicated
+   region.  */
 
 bool
 gimple_duplicate_sese_region (edge entry, edge exit,
-			    basic_block *region, unsigned n_region,
-			    basic_block *region_copy,
-			    bool update_dominance)
+			      basic_block *region, unsigned n_region,
+			      basic_block *region_copy,
+			      bool update_dominance,
+			      edge eliminated_edge)
 {
   unsigned i;
   bool free_region_copy = false, copying_header = false;
@@ -6743,11 +6747,92 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 	    split_edge_bb_loc (entry), update_dominance);
   if (total_count.initialized_p () && entry_count.initialized_p ())
     {
-      scale_bbs_frequencies_profile_count (region, n_region,
-				           total_count - entry_count,
-				           total_count);
-      scale_bbs_frequencies_profile_count (region_copy, n_region, entry_count,
-				           total_count);
+      if (!eliminated_edge)
+	{
+	  scale_bbs_frequencies_profile_count (region, n_region,
+					       total_count - entry_count,
+					       total_count);
+	  scale_bbs_frequencies_profile_count (region_copy, n_region,
+					       entry_count, total_count);
+	}
+      else
+	{
+	  /* We only support only case where eliminated_edge is one and it
+	     exists first BB.  We also assume that the duplicated region is
+	     acyclic.  So we expect the following:
+
+	       // region_copy_start entry will be scaled to entry_count
+		 if (cond1)         <- this condition will become false
+				       and we update probabilities
+		   goto loop_exit;
+		 if (cond2)
+		   goto loop_exit;
+		 goto loop_header   <- this will be redirected to loop.
+	       // region_copy_end
+	     loop:
+		       <body>
+	       // region start
+	     loop_header:
+		       if (cond1)   <- we need to update probabbility here
+			 goto loop_exit;
+		       if (cond2)   <- and determine scaling factor here.
+			 goto loop_exit;
+		       else
+			 goto loop;
+	       // region end
+
+	     Adding support for more exits can be done similarly,
+	     but only consumer so far is tree-ssa-loop-ch and it uses only this
+	     to handle the common case of peeling headers which have
+	     conditionals known to be always true upon entry.  */
+	  gcc_assert (eliminated_edge->src == region[0]
+		      && EDGE_COUNT (region[0]->succs) == 2
+		      && copying_header);
+
+	  edge e, e_copy, eliminated_edge_copy;
+	  if (EDGE_SUCC (region[0], 0) == eliminated_edge)
+	    {
+	      e = EDGE_SUCC (region[0], 1);
+	      e_copy = EDGE_SUCC (region_copy[0], 1);
+	      eliminated_edge_copy = EDGE_SUCC (region_copy[0], 0);
+	    }
+	  else
+	    {
+	      e = EDGE_SUCC (region[0], 0);
+	      e_copy = EDGE_SUCC (region_copy[0], 0);
+	      eliminated_edge_copy = EDGE_SUCC (region_copy[0], 1);
+	    }
+	  gcc_checking_assert (e != e_copy
+			       && eliminated_edge_copy != eliminated_edge
+			       && eliminated_edge_copy->dest
+				  == eliminated_edge->dest);
+
+
+	  /* Handle first basic block in duplicated region as in the
+	     non-eliminating case.  */
+	  scale_bbs_frequencies_profile_count (region_copy, n_region,
+					       entry_count, total_count);
+	  /* Now update redirecting eliminated edge to the other edge.
+	     Actual CFG update is done by caller.  */
+	  e_copy->probability = profile_probability::always ();
+	  eliminated_edge_copy->probability = profile_probability::never ();
+	  /* Header copying is a special case of jump threading, so use
+	     common code to update loop body exit condition.  */
+	  update_bb_profile_for_threading (region[0], e_copy->count (), e);
+	  /* If we duplicated more conditionals first scale the profile of
+	     rest of the preheader.  Then work out the probability of
+	     entering the loop and scale rest of the loop.  */
+	  if (n_region > 1)
+	    {
+	      scale_bbs_frequencies_profile_count (region_copy + 1,
+						   n_region - 1,
+						   e_copy->count (),
+						   region_copy[1]->count);
+	      scale_bbs_frequencies_profile_count (region + 1, n_region - 1,
+						   e->count (),
+						   region[1]->count);
+	    }
+	}
     }
 
   if (copying_header)
