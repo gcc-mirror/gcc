@@ -4705,7 +4705,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* a ? -1 : 0 -> -a.  No need to check the TYPE_PRECISION not being 1
        here as the powerof2cst case above will handle that case correctly.  */
     (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@1))
-     (negate (convert (convert:boolean_type_node @0))))))
+     (with {
+       auto prec = TYPE_PRECISION (type);
+       auto unsign = TYPE_UNSIGNED (type);
+       tree inttype = build_nonstandard_integer_type (prec, unsign);
+      }
+      (convert (negate (convert:inttype (convert:boolean_type_node @0))))))))
   (if (integer_zerop (@1))
    (with {
       tree booltrue = constant_boolean_node (true, boolean_type_node);
@@ -4724,7 +4729,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      /* a ? -1 : 0 -> -(!a).  No need to check the TYPE_PRECISION not being 1
        here as the powerof2cst case above will handle that case correctly.  */
      (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@2))
-      (negate (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } ))))
+      (with {
+	auto prec = TYPE_PRECISION (type);
+	auto unsign = TYPE_UNSIGNED (type);
+	tree inttype = build_nonstandard_integer_type (prec, unsign);
+       }
+       (convert
+	(negate
+         (convert:inttype
+	  (bit_xor (convert:boolean_type_node @0) { booltrue; } )
+	 )
+	)
+       )
+      )
+     )
     )
    )
   )
