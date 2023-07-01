@@ -807,9 +807,8 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     // but it's a concession to practicality.
     // Casts are unfortunately necessary as `implicitConvTo` is not
     // `const` (and nor is `StringExp`, by extension).
-    static int predicate(const scope Expression* e1, const scope Expression* e2) nothrow
+    static int predicate(const scope Expression* e1, const scope Expression* e2)
     {
-        scope(failure) assert(0, "An exception was thrown");
         return (cast(Expression*)e1).toStringExp().compare((cast(Expression*)e2).toStringExp());
     }
     ale.elements.sort!predicate;
