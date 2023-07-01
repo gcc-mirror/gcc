@@ -922,7 +922,6 @@ update_bb_profile_for_threading (basic_block bb,
 	fprintf (dump_file, "bb %i count became negative after threading",
 		 bb->index);
     }
-  bb->count -= count;
 
   /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
      Watch for overflows.  */
@@ -934,8 +933,8 @@ update_bb_profile_for_threading (basic_block bb,
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "Jump threading proved probability of edge "
-		   "%i->%i too small (it is ",
+	  fprintf (dump_file, "Jump threading proved that the probability of edge "
+		   "%i->%i was originally estimated too small (it is ",
 		   taken_edge->src->index, taken_edge->dest->index);	
 	  taken_edge->probability.dump (dump_file);
 	  fprintf (dump_file, " should be ");
@@ -944,6 +943,8 @@ update_bb_profile_for_threading (basic_block bb,
 	}
       prob = taken_edge->probability.apply_scale (6, 8);
     }
+
+  bb->count -= count;
 
   /* Now rescale the probabilities.  */
   taken_edge->probability -= prob;
