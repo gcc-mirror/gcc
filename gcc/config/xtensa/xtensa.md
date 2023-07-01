@@ -3191,7 +3191,7 @@
 
 (define_insn_and_split "*eqne_INT_MIN"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(match_operator 2 "boolean_operator"
+	(match_operator:SI 2 "boolean_operator"
 		[(match_operand:SI 1 "register_operand" "r")
 		 (const_int -2147483648)]))]
   "TARGET_ABS"
