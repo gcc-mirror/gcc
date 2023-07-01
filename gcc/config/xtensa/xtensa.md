@@ -522,7 +522,7 @@
 	(smax:SI (smin:SI (match_operand:SI 1 "register_operand" "r")
 			  (match_operand:SI 2 "const_int_operand" "i"))
 		 (match_operand:SI 3 "const_int_operand" "i")))]
-  "TARGET_CLAMPS
+  "TARGET_MINMAX && TARGET_CLAMPS
    && xtensa_match_CLAMPS_imms_p (operands[3], operands[2])"
   "#"
   "&& 1"
@@ -540,7 +540,7 @@
 	(smin:SI (smax:SI (match_operand:SI 1 "register_operand" "r")
 			  (match_operand:SI 2 "const_int_operand" "i"))
 		 (match_operand:SI 3 "const_int_operand" "i")))]
-  "TARGET_CLAMPS
+  "TARGET_MINMAX && TARGET_CLAMPS
    && xtensa_match_CLAMPS_imms_p (operands[2], operands[3])"
 {
   static char result[64];

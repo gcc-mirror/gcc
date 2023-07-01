@@ -2649,11 +2649,8 @@ xtensa_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm, rtx scratch,
 bool
 xtensa_match_CLAMPS_imms_p (rtx cst_max, rtx cst_min)
 {
-  int max, min;
-
-  return IN_RANGE (max = exact_log2 (-INTVAL (cst_max)), 7, 22)
-	 && IN_RANGE (min = exact_log2 (INTVAL (cst_min) + 1), 7, 22)
-	 && max == min;
+  return IN_RANGE (exact_log2 (-INTVAL (cst_max)), 7, 22)
+	 && (INTVAL (cst_max) + INTVAL (cst_min)) == -1;
 }
 
 
