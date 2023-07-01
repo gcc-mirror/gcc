@@ -2708,6 +2708,10 @@ public:
 	    if (tb->ty == TY::Tarray)
 	      ctor = d_array_value (type, size_int (e->elements->length), ctor);
 
+	    /* Immutable literals can be placed in rodata.  */
+	    if (tb->isImmutable ())
+	      TREE_READONLY (decl) = 1;
+
 	    d_pushdecl (decl);
 	    rest_of_decl_compilation (decl, 1, 0);
 	  }
