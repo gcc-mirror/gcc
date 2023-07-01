@@ -1,3 +1,10 @@
+2023-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20230630-1.c: New test.
+	* gcc.c-torture/execute/20230630-2.c: Likewise.
+	* gcc.c-torture/execute/20230630-3.c: Likewise
+	* gcc.c-torture/execute/20230630-4.c: Likewise
+
 2023-06-29  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr110309.c: New test.

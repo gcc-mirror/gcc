@@ -1,3 +1,11 @@
+2023-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
+	(fold_nonarray_ctor_reference): Likewise.  Specifically deal
+	with integral bit-fields.
+	(fold_ctor_reference): Make sure that the constructor uses the
+	native storage order.
+
 2023-06-29  liuhongt  <hongtao.liu@intel.com>
 
 	PR rtl-optimization/110237
