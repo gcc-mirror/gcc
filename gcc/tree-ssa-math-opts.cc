@@ -4861,11 +4861,14 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   gsi_remove (&gsi2, true);
   /* Replace the re2 statement with __real__ of the newly added
      .UADDC/.USUBC call.  */
-  gsi2 = gsi_for_stmt (re2);
-  tree rlhs = gimple_assign_lhs (re2);
-  g = gimple_build_assign (rlhs, REALPART_EXPR,
-			   build1 (REALPART_EXPR, TREE_TYPE (rlhs), nlhs));
-  gsi_replace (&gsi2, g, true);
+  if (re2)
+    {
+      gsi2 = gsi_for_stmt (re2);
+      tree rlhs = gimple_assign_lhs (re2);
+      g = gimple_build_assign (rlhs, REALPART_EXPR,
+			       build1 (REALPART_EXPR, TREE_TYPE (rlhs), nlhs));
+      gsi_replace (&gsi2, g, true);
+    }
   if (rhs[2])
     {
       /* If this is the arg1 + arg2 + (ovf1 + ovf2) or
