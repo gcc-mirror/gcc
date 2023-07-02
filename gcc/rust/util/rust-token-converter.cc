@@ -54,7 +54,7 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
 static ProcMacro::Span
 convert (Location location)
 {
-  return ProcMacro::Span::make_span (location.gcc_location (), 0);
+  return ProcMacro::Span::make_span (location, 0);
 }
 
 static Location

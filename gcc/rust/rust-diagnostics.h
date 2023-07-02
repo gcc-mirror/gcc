@@ -204,8 +204,7 @@ struct Error
 
 // rust_sorry_at wraps GCC diagnostic "sorry_at" to accept "Location" instead of
 // "location_t"
-#define rust_sorry_at(location, ...)                                           \
-  sorry_at (location.gcc_location (), __VA_ARGS__)
+#define rust_sorry_at(location, ...) sorry_at (location, __VA_ARGS__)
 
 void
 rust_debug_loc (const Location location, const char *fmt,

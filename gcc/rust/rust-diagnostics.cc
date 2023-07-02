@@ -179,8 +179,7 @@ rust_internal_error_at (const Location location, const char *fmt, ...)
 void
 rust_be_error_at (const Location location, const std::string &errmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  error_at (gcc_loc, "%s", errmsg.c_str ());
+  error_at (location, "%s", errmsg.c_str ());
 }
 
 void
@@ -240,8 +239,7 @@ void
 rust_be_warning_at (const Location location, int opt,
 		    const std::string &warningmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  warning_at (gcc_loc, opt, "%s", warningmsg.c_str ());
+  warning_at (location, opt, "%s", warningmsg.c_str ());
 }
 
 void
@@ -257,8 +255,7 @@ rust_warning_at (const Location location, int opt, const char *fmt, ...)
 void
 rust_be_fatal_error (const Location location, const std::string &fatalmsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  fatal_error (gcc_loc, "%s", fatalmsg.c_str ());
+  fatal_error (location, "%s", fatalmsg.c_str ());
 }
 
 void
@@ -274,8 +271,7 @@ rust_fatal_error (const Location location, const char *fmt, ...)
 void
 rust_be_inform (const Location location, const std::string &infomsg)
 {
-  location_t gcc_loc = location.gcc_location ();
-  inform (gcc_loc, "%s", infomsg.c_str ());
+  inform (location, "%s", infomsg.c_str ());
 }
 
 void

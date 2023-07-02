@@ -473,12 +473,10 @@ transmute_handler (Context *ctx, TyTy::FnType *fntype)
 
   // Return *((orig_type*)&decl)  */
 
-  tree t
-    = build_fold_addr_expr_loc (Location ().gcc_location (), convert_me_expr);
-  t = fold_build1_loc (Location ().gcc_location (), NOP_EXPR,
+  tree t = build_fold_addr_expr_loc (UNKNOWN_LOCATION, convert_me_expr);
+  t = fold_build1_loc (UNKNOWN_LOCATION, NOP_EXPR,
 		       build_pointer_type (target_type_expr), t);
-  tree result_expr
-    = build_fold_indirect_ref_loc (Location ().gcc_location (), t);
+  tree result_expr = build_fold_indirect_ref_loc (UNKNOWN_LOCATION, t);
 
   auto return_statement
     = ctx->get_backend ()->return_statement (fndecl, {result_expr},
@@ -716,8 +714,7 @@ copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
   tree memcpy_raw = nullptr;
   BuiltinsContext::get ().lookup_simple_builtin ("memcpy", &memcpy_raw);
   rust_assert (memcpy_raw);
-  auto memcpy
-    = build_fold_addr_expr_loc (Location ().gcc_location (), memcpy_raw);
+  auto memcpy = build_fold_addr_expr_loc (UNKNOWN_LOCATION, memcpy_raw);
 
   auto copy_call
     = ctx->get_backend ()->call_expression (memcpy, {dst, src, size_expr},
@@ -773,8 +770,7 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
   auto ok
     = BuiltinsContext::get ().lookup_simple_builtin ("prefetch", &prefetch_raw);
   rust_assert (ok);
-  auto prefetch
-    = build_fold_addr_expr_loc (Location ().gcc_location (), prefetch_raw);
+  auto prefetch = build_fold_addr_expr_loc (UNKNOWN_LOCATION, prefetch_raw);
 
   auto prefetch_call
     = ctx->get_backend ()->call_expression (prefetch, {addr, rw_flag, locality},
@@ -870,7 +866,7 @@ atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   rust_assert (atomic_store_raw);
 
   auto atomic_store
-    = build_fold_addr_expr_loc (Location ().gcc_location (), atomic_store_raw);
+    = build_fold_addr_expr_loc (UNKNOWN_LOCATION, atomic_store_raw);
 
   auto store_call
     = ctx->get_backend ()->call_expression (atomic_store,
@@ -930,7 +926,7 @@ atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
   rust_assert (atomic_load_raw);
 
   auto atomic_load
-    = build_fold_addr_expr_loc (Location ().gcc_location (), atomic_load_raw);
+    = build_fold_addr_expr_loc (UNKNOWN_LOCATION, atomic_load_raw);
 
   auto load_call
     = ctx->get_backend ()->call_expression (atomic_load, {src, memorder},

@@ -425,7 +425,7 @@ HIRCompileBase::address_expression (tree expr, Location location)
   if (!mark_addressable (expr, location))
     return error_mark_node;
 
-  return build_fold_addr_expr_loc (location.gcc_location (), expr);
+  return build_fold_addr_expr_loc (location, expr);
 }
 
 tree
@@ -434,7 +434,7 @@ HIRCompileBase::indirect_expression (tree expr, Location locus)
   if (expr == error_mark_node)
     return error_mark_node;
 
-  return build_fold_indirect_ref_loc (locus.gcc_location (), expr);
+  return build_fold_indirect_ref_loc (locus, expr);
 }
 
 std::vector<Bvariable *>
@@ -739,8 +739,7 @@ HIRCompileBase::compile_constant_item (
   ctx->pop_fn ();
 
   // lets fold it into a call expr
-  tree call
-    = build_call_array_loc (locus.gcc_location (), const_type, fndecl, 0, NULL);
+  tree call = build_call_array_loc (locus, const_type, fndecl, 0, NULL);
   tree folded_expr = fold_expr (call);
 
   return named_constant_expression (const_type, ident, folded_expr, locus);
@@ -755,8 +754,7 @@ HIRCompileBase::named_constant_expression (tree type_tree,
     return error_mark_node;
 
   tree name_tree = get_identifier_with_length (name.data (), name.length ());
-  tree decl
-    = build_decl (location.gcc_location (), CONST_DECL, name_tree, type_tree);
+  tree decl = build_decl (location, CONST_DECL, name_tree, type_tree);
   DECL_INITIAL (decl) = const_val;
   TREE_CONSTANT (decl) = 1;
   TREE_READONLY (decl) = 1;
