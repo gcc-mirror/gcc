@@ -64,6 +64,10 @@ public:
     return mappings;
   }
 
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+  bool get_in_parens () { return in_parens; }
+  bool get_opening_question_mark () { return opening_question_mark; }
+
   BoundType get_bound_type () const final override { return TRAITBOUND; }
 
   TypePath &get_path () { return type_path; }
@@ -131,7 +135,10 @@ public:
   ImplTraitType &operator= (ImplTraitType &&other) = default;
 
   std::string as_string () const override;
-
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -186,7 +193,7 @@ public:
   TraitObjectType &operator= (TraitObjectType &&other) = default;
 
   std::string as_string () const override;
-
+  bool get_has_dyn () { return has_dyn; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
@@ -263,7 +270,7 @@ public:
      * parenthesised type, it must be in parentheses. */
     return type_in_parens->to_trait_bound (true);
   }
-
+  std::unique_ptr<Type> &get_type_in_parens () { return type_in_parens; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -295,7 +302,7 @@ public:
   {}
 
   std::string as_string () const override;
-
+  TraitBound &get_trait_bound () { return trait_bound; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -810,6 +817,10 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
+
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+  bool get_is_variadic () { return is_variadic; }
+  FunctionQualifiers &get_function_qualifiers () { return function_qualifiers; }
 
   std::vector<MaybeNamedParam> &get_function_params () { return params; }
   const std::vector<MaybeNamedParam> &get_function_params () const

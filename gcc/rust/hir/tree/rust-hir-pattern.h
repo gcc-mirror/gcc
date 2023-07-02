@@ -131,6 +131,8 @@ public:
   Location get_locus () const override { return locus; }
 
   bool is_mut () const { return mut == Mutability::Mut; }
+  bool get_is_ref () const { return is_ref; }
+  std::unique_ptr<Pattern> &get_to_bind () { return to_bind; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -248,6 +250,7 @@ public:
   Location get_locus () const { return locus; }
 
   Literal get_literal () const { return literal; }
+  bool get_has_minus () const { return has_minus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -390,6 +393,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
+  bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; };
+
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
@@ -524,6 +529,7 @@ public:
 
   Location get_locus () const { return locus; }
   Analysis::NodeMapping get_mappings () const { return mappings; };
+  AST::AttrVec get_outer_attrs () { return outer_attrs; }
 
 protected:
   StructPatternField (Analysis::NodeMapping mappings,
@@ -576,6 +582,9 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  TupleIndex get_index () { return index; }
+  std::unique_ptr<Pattern> &get_tuple_pattern () { return tuple_pattern; }
 
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
@@ -666,7 +675,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
 
   ItemType get_item_type () const override final { return ItemType::IDENT; }
-
+  bool get_has_ref () const { return has_ref; }
   Identifier get_identifier () const { return ident; };
 
 protected:

@@ -155,7 +155,7 @@ TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 						: expr.get_locus ();
   TyTy::BaseType *expr_ty
     = expr.has_return_expr ()
-	? TypeCheckExpr::Resolve (expr.get_expr ())
+	? TypeCheckExpr::Resolve (expr.get_expr ().get ())
 	: TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
   coercion_site (expr.get_mappings ().get_hirid (),
@@ -168,7 +168,8 @@ TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 void
 TypeCheckExpr::visit (HIR::CallExpr &expr)
 {
-  TyTy::BaseType *function_tyty = TypeCheckExpr::Resolve (expr.get_fnexpr ());
+  TyTy::BaseType *function_tyty
+    = TypeCheckExpr::Resolve (expr.get_fnexpr ().get ());
 
   rust_debug_loc (expr.get_locus (), "resolved_call_expr to: {%s}",
 		  function_tyty->get_name ().c_str ());
@@ -482,7 +483,7 @@ TypeCheckExpr::visit (HIR::IfLetExpr &expr)
 		  expr.get_locus ());
     }
 
-  TypeCheckExpr::Resolve (expr.get_if_block ());
+  TypeCheckExpr::Resolve (expr.get_if_block ().get ());
 
   infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 }
@@ -504,8 +505,9 @@ TypeCheckExpr::visit (HIR::IfLetExprConseqElse &expr)
 		  expr.get_locus ());
     }
 
-  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
-  auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_else_block ());
+  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ().get ());
+  auto else_blk_resolved
+    = TypeCheckExpr::Resolve (expr.get_else_block ().get ());
 
   if (if_blk_resolved->get_kind () == TyTy::NEVER)
     infered = else_blk_resolved;
@@ -886,10 +888,11 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
       case HIR::ArrayElems::ArrayExprType::COPIED: {
 	HIR::ArrayElemsCopied &elems
 	  = static_cast<HIR::ArrayElemsCopied &> (elements);
-	element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
+	element_type
+	  = TypeCheckExpr::Resolve (elems.get_elem_to_copy ().get ());
 
 	auto capacity_type
-	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
+	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ().get ());
 
 	TyTy::BaseType *expected_ty = nullptr;
 	bool ok = context->lookup_builtin ("usize", &expected_ty);
@@ -903,7 +906,7 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 				elems.get_num_copies_expr ()->get_locus ()),
 	  expr.get_locus ());
 
-	capacity_expr = elems.get_num_copies_expr ();
+	capacity_expr = elems.get_num_copies_expr ().get ();
       }
       break;
 
@@ -1910,7 +1913,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   // store the adjustments for code-generation to know what to do which must be
   // stored onto the receiver to so as we don't trigger duplicate deref mappings
   // ICE when an argument is a method call
-  HIR::Expr *fnexpr = expr.get_fnexpr ();
+  HIR::Expr *fnexpr = expr.get_fnexpr ().get ();
   HirId autoderef_mappings_id = fnexpr->get_mappings ().get_hirid ();
   context->insert_autoderef_mappings (autoderef_mappings_id,
 				      std::move (candidate.adjustments));

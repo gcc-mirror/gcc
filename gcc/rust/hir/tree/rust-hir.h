@@ -260,7 +260,7 @@ protected:
 class ExprWithoutBlock;
 
 // Base expression HIR node - abstract
-class Expr : public Node, public FullVisitable
+class Expr : public Node, virtual public FullVisitable
 {
 public:
   using FullVisitable::accept_vis;
@@ -383,7 +383,7 @@ public:
 };
 
 // Pattern base HIR node
-class Pattern : public Node, public FullVisitable
+class Pattern : public Node, virtual public FullVisitable
 {
 public:
   using FullVisitable::accept_vis;
@@ -750,6 +750,7 @@ public:
 
   bool has_default_expression () { return default_expression != nullptr; }
 
+  std::string get_name () { return name; }
   std::unique_ptr<Type> &get_type () { return type; }
   std::unique_ptr<Expr> &get_default_expression ()
   {

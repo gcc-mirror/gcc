@@ -715,6 +715,7 @@ public:
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
+  Identifier get_module_name () const { return module_name; }
   std::vector<std::unique_ptr<Item>> &get_items () { return items; };
 
   /* Override that runs the function recursively on all items contained within
@@ -776,6 +777,8 @@ public:
   Location get_locus () const override final { return locus; }
 
   ItemKind get_item_kind () const override { return ItemKind::ExternCrate; }
+  std::string get_referenced_crate () { return referenced_crate; }
+  std::string get_as_clause_name () { return as_clause_name; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -859,6 +862,9 @@ public:
   /* Returns whether has path. Should be made redundant by PathType
    * PATH_PREFIXED. */
   bool has_path () const { return !path.is_empty (); }
+
+  PathType get_glob_type () { return glob_type; }
+  AST::SimplePath get_path () { return path; };
 
   std::string as_string () const override;
 
@@ -944,6 +950,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  PathType get_path_type () { return path_type; }
+  AST::SimplePath get_path () { return path; }
+  std::vector<std::unique_ptr<UseTree>> &get_trees () { return trees; }
 
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
@@ -2495,11 +2505,7 @@ public:
 
   std::unique_ptr<Type> &get_type () { return type; }
 
-  std::unique_ptr<Expr> &get_expr ()
-  {
-    rust_assert (has_expr ());
-    return expr;
-  }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 
   const std::string trait_identifier () const override final
   {

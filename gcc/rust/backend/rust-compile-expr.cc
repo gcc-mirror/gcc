@@ -1633,7 +1633,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
     return true;
   };
 
-  auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+  auto fn_address = CompileExpr::Compile (expr.get_fnexpr ().get (), ctx);
 
   // is this a closure call?
   bool possible_trait_call
@@ -2227,7 +2227,8 @@ CompileExpr::array_copied_expr (Location expr_locus,
     }
 
   ctx->push_const_context ();
-  tree capacity_expr = CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
+  tree capacity_expr
+    = CompileExpr::Compile (elems.get_num_copies_expr ().get (), ctx);
   ctx->pop_const_context ();
 
   if (!TREE_CONSTANT (capacity_expr))
@@ -2237,7 +2238,8 @@ CompileExpr::array_copied_expr (Location expr_locus,
     }
 
   // get the compiled value
-  tree translated_expr = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
+  tree translated_expr
+    = CompileExpr::Compile (elems.get_elem_to_copy ().get (), ctx);
 
   tree max_domain = TYPE_MAX_VALUE (domain);
   tree min_domain = TYPE_MIN_VALUE (domain);
@@ -2893,7 +2895,7 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
     }
 
   // need to apply any autoderef's to the self argument
-  HIR::Expr *fnexpr = expr.get_fnexpr ();
+  HIR::Expr *fnexpr = expr.get_fnexpr ().get ();
   HirId autoderef_mappings_id = fnexpr->get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
