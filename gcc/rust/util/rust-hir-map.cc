@@ -1137,5 +1137,18 @@ Mappings::lookup_builtin_marker ()
   return builtinMarker;
 }
 
+HIR::TraitItem *
+Mappings::lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item)
+{
+  DefId trait_item_id = UNKNOWN_DEFID;
+  bool trait_item_lang_item_defined = lookup_lang_item (item, &trait_item_id);
+
+  // FIXME
+  // make this an error? what does rustc do when a lang item is not defined?
+  rust_assert (trait_item_lang_item_defined);
+
+  return lookup_trait_item_defid (trait_item_id);
+}
+
 } // namespace Analysis
 } // namespace Rust

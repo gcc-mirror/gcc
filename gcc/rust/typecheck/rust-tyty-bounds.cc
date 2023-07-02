@@ -227,22 +227,26 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 	std::vector<std::unique_ptr<HIR::Type>> inputs;
 	inputs.push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
 
+	// resolve the fn_once_output type which assumes there must be an output
+	// set
+	rust_assert (fn.has_return_type ());
+	TypeCheckType::Resolve (fn.get_return_type ().get ());
+
+	HIR::TraitItem *trait_item = mappings->lookup_trait_item_lang_item (
+	  Analysis::RustLangItem::ItemType::FN_ONCE_OUTPUT);
+
+	std::vector<HIR::GenericArgsBinding> bindings;
+	Location output_locus = fn.get_return_type ()->get_locus ();
+	HIR::GenericArgsBinding binding (Identifier (
+					   trait_item->trait_identifier ()),
+					 fn.get_return_type ()->clone_type (),
+					 output_locus);
+	bindings.push_back (std::move (binding));
+
 	args = HIR::GenericArgs ({} /* lifetimes */,
 				 std::move (inputs) /* type_args*/,
-				 {} /* binding_args*/, {} /* const_args */,
-				 final_seg->get_locus ());
-
-	// resolve the fn_once_output type
-	TyTy::BaseType *fn_once_output_ty
-	  = fn.has_return_type ()
-	      ? TypeCheckType::Resolve (fn.get_return_type ().get ())
-	      : TyTy::TupleType::get_unit_type (
-		final_seg->get_mappings ().get_hirid ());
-	context->insert_implicit_type (final_seg->get_mappings ().get_hirid (),
-				       fn_once_output_ty);
-
-	// setup the associated type.. ??
-	// fn_once_output_ty->debug ();
+				 std::move (bindings) /* binding_args*/,
+				 {} /* const_args */, final_seg->get_locus ());
       }
       break;
 

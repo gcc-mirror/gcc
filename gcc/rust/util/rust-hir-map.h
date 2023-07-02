@@ -321,6 +321,9 @@ public:
 
   HIR::ImplBlock *lookup_builtin_marker ();
 
+  HIR::TraitItem *
+  lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item);
+
 private:
   Mappings ();
 
