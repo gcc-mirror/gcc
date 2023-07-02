@@ -1,3 +1,41 @@
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110514
+	* gdc.dg/pr110514a.d: New test.
+	* gdc.dg/pr110514b.d: New test.
+	* gdc.dg/pr110514c.d: New test.
+	* gdc.dg/pr110514d.d: New test.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110471
+	* gdc.dg/pr110471a.d: New test.
+	* gdc.dg/pr110471b.d: New test.
+	* gdc.dg/pr110471c.d: New test.
+
+2023-07-01  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/25623
+	* gfortran.dg/pr25623.f90: New test.
+
+2023-07-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/ifc-20040816-1.c: Reduce number of mismatches
+	from 2 to 1.
+	* gcc.dg/tree-ssa/loop-ch-profile-1.c: New test.
+	* gcc.dg/tree-ssa/loop-ch-profile-2.c: New test.
+
+2023-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/rotate-6.c: New test case.
+	* gcc.target/i386/sse2-stv-1.c: Likewise.
+
+2023-07-01  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103680
+	* gcc.dg/tree-ssa/pr103680.c: New test.
+	* gcc.dg/tree-prof/cmpsf-1.c: Un-xfail.
+
 2023-06-30  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/template/nontype12.C: Refine and XFAIL the dg-bogus

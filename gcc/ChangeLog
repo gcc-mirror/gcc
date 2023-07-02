@@ -1,3 +1,33 @@
+2023-07-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.cc (gimple_duplicate_sese_region): Add elliminated_edge
+	parmaeter; update profile.
+	* tree-cfg.h (gimple_duplicate_sese_region): Update prototype.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Rename to ...
+	(static_loop_exit): ... this; return the edge to be elliminated.
+	(ch_base::copy_headers): Handle profile updating for eliminated exits.
+
+2023-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain): Provide
+	gains/costs for ROTATE and ROTATERT (by an integer constant).
+	(general_scalar_chain::convert_rotate): New helper function to
+	convert a DImode or SImode rotation by an integer constant into
+	SSE vector form.
+	(general_scalar_chain::convert_insn): Call the new convert_rotate
+	for ROTATE and ROTATERT.
+	(general_scalar_to_vector_candidate_p): Consider ROTATE and
+	ROTATERT to be candidates if the second operand is an integer
+	constant, valid for a rotation (or shift) in the given mode.
+	* config/i386/i386-features.h (general_scalar_chain): Add new
+	helper method convert_rotate.
+
+2023-07-01  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103680
+	* cfg.cc (update_bb_profile_for_threading): Fix profile update;
+	make message clearer.
+
 2023-06-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR tree-optimization/101832
