@@ -1,3 +1,8 @@
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110511
+	* gdc.test/compilable/test21794.d: New test.
+
 2023-06-28  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
