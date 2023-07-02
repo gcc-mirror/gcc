@@ -1,3 +1,21 @@
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110468
+	* init.cc (maybe_instantiate_nsdmi_init): Mask out all
+	tsubst flags except for tf_warning_or_error.
+
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110463
+	* cp-gimplify.cc (cp_fold) <case CONSTRUCTOR>: Propagate
+	CONSTRUCTOR_MUTABLE_POISON.
+
 2023-06-23  Jason Merrill  <jason@redhat.com>
 
 	* call.cc (maybe_init_list_as_array): Build a list.

@@ -1,3 +1,24 @@
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110514
+	* decl.cc (get_symbol_decl): Set TREE_READONLY on certain kinds of
+	const and immutable variables.
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Set TREE_READONLY
+	on immutable dynamic array literals.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110471
+	* d-builtins.cc (d_init_versions): Predefine D_ModuleInfo,
+	D_Exceptions, and D_TypeInfo only if feature is enabled.
+	* lang.opt: Add -fexceptions.
+
 2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

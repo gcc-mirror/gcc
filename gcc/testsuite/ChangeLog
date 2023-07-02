@@ -1,3 +1,40 @@
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110514
+	* gdc.dg/pr110514a.d: New test.
+	* gdc.dg/pr110514b.d: New test.
+	* gdc.dg/pr110514c.d: New test.
+	* gdc.dg/pr110514d.d: New test.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110471
+	* gdc.dg/pr110471a.d: New test.
+	* gdc.dg/pr110471b.d: New test.
+	* gdc.dg/pr110471c.d: New test.
+
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110468
+	* g++.dg/cpp0x/noexcept79.C: New test.
+
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110463
+	* g++.dg/cpp0x/constexpr-mutable6.C: New test.
+
 2023-06-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
