@@ -693,9 +693,8 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
 
   tree condition
     = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
-  tree exit_condition
-    = fold_build1_loc (expr.get_locus ().gcc_location (), TRUTH_NOT_EXPR,
-		       boolean_type_node, condition);
+  tree exit_condition = fold_build1_loc (expr.get_locus (), TRUTH_NOT_EXPR,
+					 boolean_type_node, condition);
   tree exit_expr
     = ctx->get_backend ()->exit_expression (exit_condition, expr.get_locus ());
   ctx->add_statement (exit_expr);
@@ -1463,8 +1462,8 @@ CompileExpr::visit (HIR::MatchExpr &expr)
     = ctx->get_backend ()->label_definition_statement (end_label);
 
   // setup the switch-body-block
-  Location start_location; // FIXME
-  Location end_location;   // FIXME
+  Location start_location = UNKNOWN_LOCATION; // FIXME
+  Location end_location = UNKNOWN_LOCATION;   // FIXME
   tree switch_body_block
     = ctx->get_backend ()->block (fndecl, enclosing_scope, {}, start_location,
 				  end_location);
@@ -1503,15 +1502,15 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       ctx->add_statement (assignment);
 
       // go to end label
-      tree goto_end_label = build1_loc (arm_locus.gcc_location (), GOTO_EXPR,
-					void_type_node, end_label);
+      tree goto_end_label
+	= build1_loc (arm_locus, GOTO_EXPR, void_type_node, end_label);
       ctx->add_statement (goto_end_label);
     }
 
   // setup the switch expression
   tree match_body = ctx->pop_block ();
   tree match_expr_stmt
-    = build2_loc (expr.get_locus ().gcc_location (), SWITCH_EXPR,
+    = build2_loc (expr.get_locus (), SWITCH_EXPR,
 		  TREE_TYPE (match_scrutinee_expr_qualifier_expr),
 		  match_scrutinee_expr_qualifier_expr, match_body);
   ctx->add_statement (match_expr_stmt);
@@ -1830,13 +1829,12 @@ CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
   tree vtable_ptr
     = ctx->get_backend ()->struct_field_expression (receiver_ref, 1,
 						    expr_locus);
-  tree vtable_array_access = build4_loc (expr_locus.gcc_location (), ARRAY_REF,
-					 TREE_TYPE (TREE_TYPE (vtable_ptr)),
-					 vtable_ptr, idx, NULL_TREE, NULL_TREE);
+  tree vtable_array_access
+    = build4_loc (expr_locus, ARRAY_REF, TREE_TYPE (TREE_TYPE (vtable_ptr)),
+		  vtable_ptr, idx, NULL_TREE, NULL_TREE);
 
-  tree vcall
-    = build3_loc (expr_locus.gcc_location (), OBJ_TYPE_REF, expected_fntype,
-		  vtable_array_access, receiver_ref, idx);
+  tree vcall = build3_loc (expr_locus, OBJ_TYPE_REF, expected_fntype,
+			   vtable_array_access, receiver_ref, idx);
 
   return vcall;
 }
@@ -2113,8 +2111,8 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
   else if (TREE_CODE (type_to_cast_to) == RECORD_TYPE
 	   || TREE_CODE (type_to_cast_to) == ARRAY_TYPE)
     {
-      return fold_build1_loc (location.gcc_location (), VIEW_CONVERT_EXPR,
-			      type_to_cast_to, expr_tree);
+      return fold_build1_loc (location, VIEW_CONVERT_EXPR, type_to_cast_to,
+			      expr_tree);
     }
   else if (TREE_CODE (type_to_cast_to) == POINTER_TYPE
 	   && RS_DST_FLAG (TREE_TYPE (expr_tree)))
@@ -2143,8 +2141,7 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
 							   location);
     }
 
-  return fold_convert_loc (location.gcc_location (), type_to_cast_to,
-			   expr_tree);
+  return fold_convert_loc (location, type_to_cast_to, expr_tree);
 }
 
 void

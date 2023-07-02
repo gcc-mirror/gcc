@@ -78,7 +78,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
-  Location init_expr_locus;
+  Location init_expr_locus = UNKNOWN_LOCATION;
   if (stmt.has_init_expr ())
     {
       init_expr_locus = stmt.get_init_expr ()->get_locus ();

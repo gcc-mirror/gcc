@@ -491,7 +491,7 @@ AssociatedImplTrait::setup_associated_types (
 
   // generate inference variables for these bound arguments so we can compute
   // their values
-  Location locus;
+  Location locus = UNKNOWN_LOCATION;
   std::vector<TyTy::SubstitutionArg> subst_args;
   for (auto &p : substitutions)
     {

@@ -81,9 +81,8 @@ Gcc_linemap::to_string (Location location)
 
   // Screen out unknown and predeclared locations; produce output
   // only for simple file:line locations.
-  resolved_location
-    = linemap_resolve_location (line_table, location.gcc_location (),
-				LRK_SPELLING_LOCATION, &lmo);
+  resolved_location = linemap_resolve_location (line_table, location,
+						LRK_SPELLING_LOCATION, &lmo);
   if (lmo == NULL || resolved_location < RESERVED_LOCATION_COUNT)
     return "";
   const char *path = LINEMAP_FILE (lmo);
@@ -92,8 +91,8 @@ Gcc_linemap::to_string (Location location)
 
   // Strip the source file down to the base file, to reduce clutter.
   std::stringstream ss;
-  ss << lbasename (path) << ":" << SOURCE_LINE (lmo, location.gcc_location ())
-     << ":" << SOURCE_COLUMN (lmo, location.gcc_location ());
+  ss << lbasename (path) << ":" << SOURCE_LINE (lmo, location) << ":"
+     << SOURCE_COLUMN (lmo, location);
   return ss.str ();
 }
 
@@ -102,7 +101,7 @@ Gcc_linemap::to_string (Location location)
 std::string
 Gcc_linemap::location_file (Location loc)
 {
-  return LOCATION_FILE (loc.gcc_location ());
+  return LOCATION_FILE (loc);
 }
 
 // Return the line number for a given location.
@@ -110,14 +109,14 @@ Gcc_linemap::location_file (Location loc)
 int
 Gcc_linemap::location_line (Location loc)
 {
-  return LOCATION_LINE (loc.gcc_location ());
+  return LOCATION_LINE (loc);
 }
 
 // Return the column number for a given location.
 int
 Gcc_linemap::location_column (Location loc)
 {
-  return LOCATION_COLUMN (loc.gcc_location ());
+  return LOCATION_COLUMN (loc);
 }
 
 // Stop getting locations.
@@ -166,7 +165,7 @@ Gcc_linemap::get_predeclared_location ()
 bool
 Gcc_linemap::is_predeclared (Location loc)
 {
-  return loc.gcc_location () == BUILTINS_LOCATION;
+  return loc == BUILTINS_LOCATION;
 }
 
 // Return whether a location is the unknown location.
@@ -174,7 +173,7 @@ Gcc_linemap::is_predeclared (Location loc)
 bool
 Gcc_linemap::is_unknown (Location loc)
 {
-  return loc.gcc_location () == UNKNOWN_LOCATION;
+  return loc == UNKNOWN_LOCATION;
 }
 
 // Return the Linemap to use for the gcc backend.
@@ -185,8 +184,7 @@ rust_get_linemap ()
   return new Gcc_linemap;
 }
 
-RichLocation::RichLocation (Location root)
-  : gcc_rich_loc (line_table, root.gcc_location ())
+RichLocation::RichLocation (Location root) : gcc_rich_loc (line_table, root)
 {
   /*rich_location (line_maps *set, location_t loc,
 		 const range_label *label = NULL);*/
@@ -197,7 +195,7 @@ RichLocation::~RichLocation () {}
 void
 RichLocation::add_range (Location loc)
 {
-  gcc_rich_loc.add_range (loc.gcc_location ());
+  gcc_rich_loc.add_range (loc);
 }
 
 void
@@ -210,8 +208,7 @@ void
 RichLocation::add_fixit_insert_before (Location where,
 				       const std::string &new_parent)
 {
-  gcc_rich_loc.add_fixit_insert_before (where.gcc_location (),
-					new_parent.c_str ());
+  gcc_rich_loc.add_fixit_insert_before (where, new_parent.c_str ());
 }
 
 void
@@ -224,6 +221,5 @@ void
 RichLocation::add_fixit_insert_after (Location where,
 				      const std::string &new_parent)
 {
-  gcc_rich_loc.add_fixit_insert_after (where.gcc_location (),
-				       new_parent.c_str ());
+  gcc_rich_loc.add_fixit_insert_after (where, new_parent.c_str ());
 }
