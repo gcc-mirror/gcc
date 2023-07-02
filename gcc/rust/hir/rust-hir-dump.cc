@@ -622,13 +622,11 @@ Dump::visit (LetStmt &let_stmt)
   indentation.increment ();
   stream << indentation;
 
-  auto var_pattern = let_stmt.get_pattern ();
-  stream << var_pattern->as_string ();
+  stream << let_stmt.get_pattern ()->as_string ();
   // return type
   if (let_stmt.has_type ())
     {
-      auto ret_type = let_stmt.get_type ();
-      stream << ": " << ret_type->as_string ();
+      stream << ": " << let_stmt.get_type ()->as_string ();
     }
 
   // init expr
@@ -637,8 +635,7 @@ Dump::visit (LetStmt &let_stmt)
       stream << " = Expr: {\n ";
       indentation.increment ();
       stream << indentation;
-      auto expr = let_stmt.get_init_expr ();
-      expr->accept_vis (*this);
+      let_stmt.get_init_expr ()->accept_vis (*this);
       stream << "\n";
       stream << indentation << "}\n";
       indentation.decrement ();
@@ -651,8 +648,7 @@ Dump::visit (LetStmt &let_stmt)
 void
 Dump::visit (ExprStmt &expr_stmt)
 {
-  auto expr = expr_stmt.get_expr ();
-  expr->accept_vis (*this);
+  expr_stmt.get_expr ()->accept_vis (*this);
 }
 
 void

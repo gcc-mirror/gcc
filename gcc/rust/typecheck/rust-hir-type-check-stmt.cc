@@ -38,7 +38,7 @@ TypeCheckStmt::Resolve (HIR::Stmt *stmt)
 void
 TypeCheckStmt::visit (HIR::ExprStmt &stmt)
 {
-  infered = TypeCheckExpr::Resolve (stmt.get_expr ());
+  infered = TypeCheckExpr::Resolve (stmt.get_expr ().get ());
 }
 
 void
@@ -82,7 +82,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
   if (stmt.has_init_expr ())
     {
       init_expr_locus = stmt.get_init_expr ()->get_locus ();
-      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
+      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ().get ());
       if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	return;
 
@@ -94,7 +94,7 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
   Location specified_ty_locus;
   if (stmt.has_type ())
     {
-      specified_ty = TypeCheckType::Resolve (stmt.get_type ());
+      specified_ty = TypeCheckType::Resolve (stmt.get_type ().get ());
       specified_ty_locus = stmt.get_type ()->get_locus ();
     }
 

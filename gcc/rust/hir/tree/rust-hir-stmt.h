@@ -138,11 +138,17 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
 
-  HIR::Type *get_type () { return type.get (); }
+  const std::vector<AST::Attribute> &get_outer_attrs () const
+  {
+    return outer_attrs;
+  }
+  std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  HIR::Expr *get_init_expr () { return init_expr.get (); }
+  std::unique_ptr<HIR::Type> &get_type () { return type; }
 
-  HIR::Pattern *get_pattern () { return variables_pattern.get (); }
+  std::unique_ptr<HIR::Expr> &get_init_expr () { return init_expr; }
+
+  std::unique_ptr<HIR::Pattern> &get_pattern () { return variables_pattern; }
 
   bool is_item () const override final { return false; }
 
@@ -180,7 +186,7 @@ public:
 
   bool is_item () const override final { return false; }
 
-  Expr *get_expr () { return expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 
   // Copy constructor with clone
   ExprStmt (ExprStmt const &other)

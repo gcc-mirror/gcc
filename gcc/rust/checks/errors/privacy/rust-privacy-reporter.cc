@@ -493,9 +493,8 @@ PrivacyReporter::visit (HIR::RangeToInclExpr &)
 void
 PrivacyReporter::visit (HIR::ReturnExpr &expr)
 {
-  auto return_expr = expr.get_expr ();
-  if (return_expr)
-    return_expr->accept_vis (*this);
+  if (expr.get_expr ())
+    expr.get_expr ()->accept_vis (*this);
 }
 
 void
@@ -707,13 +706,11 @@ PrivacyReporter::visit (HIR::EmptyStmt &)
 void
 PrivacyReporter::visit (HIR::LetStmt &stmt)
 {
-  auto type = stmt.get_type ();
-  if (type)
-    check_type_privacy (type);
+  if (stmt.get_type ())
+    check_type_privacy (stmt.get_type ().get ());
 
-  auto init_expr = stmt.get_init_expr ();
-  if (init_expr)
-    init_expr->accept_vis (*this);
+  if (stmt.get_init_expr ())
+    stmt.get_init_expr ()->accept_vis (*this);
 }
 
 void

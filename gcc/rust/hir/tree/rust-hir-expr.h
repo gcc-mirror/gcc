@@ -204,6 +204,8 @@ public:
   Mutability get_mut () const { return mut; }
   bool is_mut () const { return mut == Mutability::Mut; }
 
+  bool is_double_borrow () const { return double_borrow; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -594,6 +596,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  // FIXME: isn't it the same as get_expr() from parent?
   std::unique_ptr<Expr> &get_casted_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
@@ -962,9 +965,9 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  Expr *get_elem_to_copy () { return elem_to_copy.get (); }
+  std::unique_ptr<Expr> &get_elem_to_copy () { return elem_to_copy; }
 
-  Expr *get_num_copies_expr () { return num_copies.get (); }
+  std::unique_ptr<Expr> &get_num_copies_expr () { return num_copies; }
 
   ArrayElems::ArrayExprType get_array_expr_type () const override final
   {
@@ -1650,6 +1653,8 @@ public:
     return fields;
   };
 
+  StructBase *get_struct_base () { return struct_base; }
+
   void set_fields_as_owner (
     std::vector<std::unique_ptr<StructExprField> > new_fields)
   {
@@ -1771,7 +1776,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  Expr *get_fnexpr () { return function.get (); }
+  std::unique_ptr<Expr> &get_fnexpr () { return function; }
 
   size_t num_params () const { return params.size (); }
 
@@ -1863,6 +1868,7 @@ public:
   PathExprSegment &get_method_name () { return method_name; };
   const PathExprSegment &get_method_name () const { return method_name; };
 
+  bool has_params () const { return !params.empty (); }
   size_t num_params () const { return params.size (); }
 
   std::vector<std::unique_ptr<Expr> > &get_arguments () { return params; }
@@ -2120,6 +2126,7 @@ public:
   };
   std::unique_ptr<Expr> &get_expr () { return expr; }
 
+  bool has_params () const { return !params.empty (); }
   std::vector<ClosureParam> &get_params () { return params; }
 
   void accept_vis (HIRFullVisitor &vis) override;
@@ -2153,6 +2160,8 @@ public:
   Location end_locus;
 
   std::string as_string () const override;
+
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   // Returns whether the block contains statements.
   bool has_statements () const { return !statements.empty (); }
@@ -2772,7 +2781,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  Expr *get_expr () { return return_expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return return_expr; }
 
   ExprType get_expression_type () const override final
   {
@@ -3096,6 +3105,10 @@ public:
   void accept_vis (HIRExpressionVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_cond () { return condition; }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3162,6 +3175,7 @@ public:
   void accept_vis (HIRExpressionVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_iterator_expr () { return iterator_expr; }
+  std::unique_ptr<Pattern> &get_pattern () { return pattern; };
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3406,7 +3420,7 @@ public:
     return match_arm_patterns;
   }
 
-  BlockExpr *get_if_block () { return if_block.get (); }
+  std::unique_ptr<BlockExpr> &get_if_block () { return if_block; }
 
   ExprType get_expression_type () const final override
   {
@@ -3479,7 +3493,7 @@ public:
 
   void vis_else_block (HIRFullVisitor &vis) { else_block->accept_vis (vis); }
 
-  ExprWithBlock *get_else_block () { return else_block.get (); }
+  std::unique_ptr<ExprWithBlock> &get_else_block () { return else_block; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3693,7 +3707,7 @@ public:
     rust_assert (branch_value != nullptr);
     return branch_value;
   }
-
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
   std::vector<MatchCase> &get_match_cases () { return match_arms; }
 

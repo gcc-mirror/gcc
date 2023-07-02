@@ -38,7 +38,7 @@ CompileStmt::Compile (HIR::Stmt *stmt, Context *ctx)
 void
 CompileStmt::visit (HIR::ExprStmt &stmt)
 {
-  translated = CompileExpr::Compile (stmt.get_expr (), ctx);
+  translated = CompileExpr::Compile (stmt.get_expr ().get (), ctx);
 }
 
 void
@@ -60,7 +60,7 @@ CompileStmt::visit (HIR::LetStmt &stmt)
       return;
     }
 
-  tree init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+  tree init = CompileExpr::Compile (stmt.get_init_expr ().get (), ctx);
   // FIXME use error_mark_node, check that CompileExpr returns error_mark_node
   // on failure and make this an assertion
   if (init == nullptr)

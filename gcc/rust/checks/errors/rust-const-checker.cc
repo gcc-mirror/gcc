@@ -346,11 +346,10 @@ ConstChecker::check_function_call (HirId fn_id, Location locus)
 void
 ConstChecker::visit (CallExpr &expr)
 {
-  auto fn = expr.get_fnexpr ();
-  if (!fn)
+  if (!expr.get_fnexpr ())
     return;
 
-  NodeId ast_node_id = fn->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
   NodeId ref_node_id;
   HirId definition_id;
 
