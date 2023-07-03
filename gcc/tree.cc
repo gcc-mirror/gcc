@@ -2839,7 +2839,7 @@ grow_tree_vec (tree v, int len MEM_STAT_DECL)
   return v;
 }
 
-/* Return 1 if EXPR is the constant zero, whether it is integral, float or
+/* Return true if EXPR is the constant zero, whether it is integral, float or
    fixed, and scalar, complex or vector.  */
 
 bool
@@ -2850,7 +2850,7 @@ zerop (const_tree expr)
 	  || fixed_zerop (expr));
 }
 
-/* Return 1 if EXPR is the integer constant zero or a complex constant
+/* Return true if EXPR is the integer constant zero or a complex constant
    of zero, or a location wrapper for such a constant.  */
 
 bool
@@ -2874,7 +2874,7 @@ integer_zerop (const_tree expr)
     }
 }
 
-/* Return 1 if EXPR is the integer constant one or the corresponding
+/* Return true if EXPR is the integer constant one or the corresponding
    complex constant, or a location wrapper for such a constant.  */
 
 bool
@@ -2898,9 +2898,9 @@ integer_onep (const_tree expr)
     }
 }
 
-/* Return 1 if EXPR is the integer constant one.  For complex and vector,
-   return 1 if every piece is the integer constant one.
-   Also return 1 for location wrappers for such a constant.  */
+/* Return true if EXPR is the integer constant one.  For complex and vector,
+   return true if every piece is the integer constant one.
+   Also return true for location wrappers for such a constant.  */
 
 bool
 integer_each_onep (const_tree expr)
@@ -2914,8 +2914,8 @@ integer_each_onep (const_tree expr)
     return integer_onep (expr);
 }
 
-/* Return 1 if EXPR is an integer containing all 1's in as much precision as
-   it contains, or a complex or vector whose subparts are such integers,
+/* Return true if EXPR is an integer containing all 1's in as much precision
+   as it contains, or a complex or vector whose subparts are such integers,
    or a location wrapper for such a constant.  */
 
 bool
@@ -2940,8 +2940,8 @@ integer_all_onesp (const_tree expr)
 	  == wi::to_wide (expr));
 }
 
-/* Return 1 if EXPR is the integer constant minus one, or a location wrapper
-   for such a constant.  */
+/* Return true if EXPR is the integer constant minus one, or a location
+   wrapper for such a constant.  */
 
 bool
 integer_minus_onep (const_tree expr)
@@ -2955,8 +2955,8 @@ integer_minus_onep (const_tree expr)
     return integer_all_onesp (expr);
 }
 
-/* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
-   one bit on), or a location wrapper for such a constant.  */
+/* Return true if EXPR is an integer constant that is a power of 2 (i.e., has
+   only one bit on), or a location wrapper for such a constant.  */
 
 bool
 integer_pow2p (const_tree expr)
@@ -2974,7 +2974,7 @@ integer_pow2p (const_tree expr)
   return wi::popcount (wi::to_wide (expr)) == 1;
 }
 
-/* Return 1 if EXPR is an integer constant other than zero or a
+/* Return true if EXPR is an integer constant other than zero or a
    complex constant other than zero, or a location wrapper for such a
    constant.  */
 
@@ -2990,10 +2990,10 @@ integer_nonzerop (const_tree expr)
 		  || integer_nonzerop (TREE_IMAGPART (expr)))));
 }
 
-/* Return 1 if EXPR is the integer constant one.  For vector,
-   return 1 if every piece is the integer constant minus one
+/* Return true if EXPR is the integer constant one.  For vector,
+   return true if every piece is the integer constant minus one
    (representing the value TRUE).
-   Also return 1 for location wrappers for such a constant.  */
+   Also return true for location wrappers for such a constant.  */
 
 bool
 integer_truep (const_tree expr)
@@ -3005,7 +3005,7 @@ integer_truep (const_tree expr)
   return integer_onep (expr);
 }
 
-/* Return 1 if EXPR is the fixed-point constant zero, or a location wrapper
+/* Return true if EXPR is the fixed-point constant zero, or a location wrapper
    for such a constant.  */
 
 bool
@@ -3152,9 +3152,9 @@ tree_ctz (const_tree expr)
     }
 }
 
-/* Return 1 if EXPR is the real constant zero.  Trailing zeroes matter for
-   decimal float constants, so don't return 1 for them.
-   Also return 1 for location wrappers around such a constant.  */
+/* Return true if EXPR is the real constant zero.  Trailing zeroes matter for
+   decimal float constants, so don't return true for them.
+   Also return true for location wrappers around such a constant.  */
 
 bool
 real_zerop (const_tree expr)
@@ -3184,10 +3184,10 @@ real_zerop (const_tree expr)
     }
 }
 
-/* Return 1 if EXPR is the real constant one in real or complex form.
+/* Return true if EXPR is the real constant one in real or complex form.
    Trailing zeroes matter for decimal float constants, so don't return
-   1 for them.
-   Also return 1 for location wrappers around such a constant.  */
+   true for them.
+   Also return true for location wrappers around such a constant.  */
 
 bool
 real_onep (const_tree expr)
@@ -3211,9 +3211,9 @@ real_onep (const_tree expr)
     }
 }
 
-/* Return 1 if EXPR is the real constant minus one.  Trailing zeroes
-   matter for decimal float constants, so don't return 1 for them.
-   Also return 1 for location wrappers around such a constant.  */
+/* Return true if EXPR is the real constant minus one.  Trailing zeroes
+   matter for decimal float constants, so don't return true for them.
+   Also return true for location wrappers around such a constant.  */
 
 bool
 real_minus_onep (const_tree expr)
@@ -3266,7 +3266,7 @@ real_maybe_zerop (const_tree expr)
     }
 }
 
-/* Nonzero if EXP is a constant or a cast of a constant.  */
+/* True if EXP is a constant or a cast of a constant.  */
 
 bool
 really_constant_p (const_tree exp)
@@ -3381,7 +3381,7 @@ chain_index (int idx, tree chain)
   return chain;
 }
 
-/* Return nonzero if ELEM is part of the chain CHAIN.  */
+/* Return true if ELEM is part of the chain CHAIN.  */
 
 bool
 chain_member (const_tree elem, const_tree chain)
@@ -4099,11 +4099,11 @@ contains_placeholder_p (const_tree exp)
   enum tree_code code;
 
   if (!exp)
-    return 0;
+    return false;
 
   code = TREE_CODE (exp);
   if (code == PLACEHOLDER_EXPR)
-    return 1;
+    return true;
 
   switch (TREE_CODE_CLASS (code))
     {
@@ -4138,7 +4138,7 @@ contains_placeholder_p (const_tree exp)
 	case SAVE_EXPR:
 	  /* The save_expr function never wraps anything containing
 	     a PLACEHOLDER_EXPR. */
-	  return 0;
+	  return false;
 
 	default:
 	  break;
@@ -4152,7 +4152,7 @@ contains_placeholder_p (const_tree exp)
 	  return (CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0))
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1)));
 	default:
-	  return 0;
+	  return false;
 	}
 
     case tcc_vl_exp:
@@ -4164,17 +4164,17 @@ contains_placeholder_p (const_tree exp)
 	    const_call_expr_arg_iterator iter;
 	    FOR_EACH_CONST_CALL_EXPR_ARG (arg, iter, exp)
 	      if (CONTAINS_PLACEHOLDER_P (arg))
-		return 1;
-	    return 0;
+		return true;
+	    return false;
 	  }
 	default:
-	  return 0;
+	  return false;
 	}
 
     default:
-      return 0;
+      return false;
     }
-  return 0;
+  return false;
 }
 
 /* Return true if any part of the structure of TYPE involves a PLACEHOLDER_EXPR
@@ -5792,7 +5792,7 @@ tree_map_base_hash (const void *item)
    purposes.  We simply return true if the from tree is marked, so that this
    structure goes away when the from tree goes away.  */
 
-int
+bool
 tree_map_base_marked_p (const void *p)
 {
   return ggc_marked_p (((const struct tree_map_base *) p)->from);
@@ -6088,7 +6088,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 				 TYPE_ATTRIBUTES (b->type))
       || (TREE_CODE (a->type) != COMPLEX_TYPE
           && TYPE_NAME (a->type) != TYPE_NAME (b->type)))
-    return 0;
+    return false;
 
   /* Be careful about comparing arrays before and after the element type
      has been completed; don't compare TYPE_ALIGN unless both types are
@@ -6096,7 +6096,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
   if (COMPLETE_TYPE_P (a->type) && COMPLETE_TYPE_P (b->type)
       && (TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
 	  || TYPE_MODE (a->type) != TYPE_MODE (b->type)))
-    return 0;
+    return false;
 
   switch (TREE_CODE (a->type))
     {
@@ -6106,7 +6106,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case NULLPTR_TYPE:
-      return 1;
+      return true;
 
     case VECTOR_TYPE:
       return known_eq (TYPE_VECTOR_SUBPARTS (a->type),
@@ -6120,7 +6120,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 	       && TREE_CODE (TYPE_VALUES (b->type)) == TREE_LIST
 	       && type_list_equal (TYPE_VALUES (a->type),
 				   TYPE_VALUES (b->type))))
-	return 0;
+	return false;
 
       /* fall through */
 
@@ -6152,7 +6152,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 		  && type_list_equal (TYPE_ARG_TYPES (a->type),
 				      TYPE_ARG_TYPES (b->type)))))
         break;
-      return 0;
+      return false;
     case ARRAY_TYPE:
       /* Don't compare TYPE_TYPELESS_STORAGE flag on aggregates,
 	 where the flag should be inherited from the element type
@@ -6187,16 +6187,16 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
 	      && type_list_equal (TYPE_ARG_TYPES (a->type),
 				  TYPE_ARG_TYPES (b->type))))
 	break;
-      return 0;
+      return false;
 
     default:
-      return 0;
+      return false;
     }
 
   if (lang_hooks.types.type_hash_eq != NULL)
     return lang_hooks.types.type_hash_eq (a->type, b->type);
 
-  return 1;
+  return true;
 }
 
 /* Given TYPE, and HASHCODE its hash code, return the canonical
@@ -6355,17 +6355,17 @@ type_argument_type (const_tree fntype, unsigned argno)
   return NULL_TREE;
 }
 
-/* Nonzero if integer constants T1 and T2
+/* True if integer constants T1 and T2
    represent the same constant value.  */
 
-int
+bool
 tree_int_cst_equal (const_tree t1, const_tree t2)
 {
   if (t1 == t2)
-    return 1;
+    return true;
 
   if (t1 == 0 || t2 == 0)
-    return 0;
+    return false;
 
   STRIP_ANY_LOCATION_WRAPPER (t1);
   STRIP_ANY_LOCATION_WRAPPER (t2);
@@ -6373,9 +6373,9 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
   if (TREE_CODE (t1) == INTEGER_CST
       && TREE_CODE (t2) == INTEGER_CST
       && wi::to_widest (t1) == wi::to_widest (t2))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Return true if T is an INTEGER_CST whose numerical value (extended
@@ -7978,7 +7978,7 @@ tree
 get_narrower (tree op, int *unsignedp_ptr)
 {
   int uns = 0;
-  int first = 1;
+  bool first = true;
   tree win = op;
   bool integral_p = INTEGRAL_TYPE_P (TREE_TYPE (op));
 
@@ -8026,7 +8026,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	     if a zero extension has been stripped, only zero-extensions.  */
 	  else if (uns != TYPE_UNSIGNED (TREE_TYPE (op)))
 	    break;
-	  first = 0;
+	  first = false;
 	}
       else /* bitschange == 0 */
 	{
@@ -8034,7 +8034,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	     preserve the unsignedness.  */
 	  if (first)
 	    uns = TYPE_UNSIGNED (TREE_TYPE (op));
-	  first = 0;
+	  first = false;
 	  op = TREE_OPERAND (op, 0);
 	  /* Keep trying to narrow, but don't assign op to win if it
 	     would turn an integral type into something else.  */
@@ -11194,19 +11194,19 @@ lower_bound_in_type (tree outer, tree inner)
     }
 }
 
-/* Return nonzero if two operands that are suitable for PHI nodes are
+/* Return true if two operands that are suitable for PHI nodes are
    necessarily equal.  Specifically, both ARG0 and ARG1 must be either
    SSA_NAME or invariant.  Note that this is strictly an optimization.
    That is, callers of this function can directly call operand_equal_p
    and get the same result, only slower.  */
 
-int
+bool
 operand_equal_for_phi_arg_p (const_tree arg0, const_tree arg1)
 {
   if (arg0 == arg1)
-    return 1;
+    return true;
   if (TREE_CODE (arg0) == SSA_NAME || TREE_CODE (arg1) == SSA_NAME)
-    return 0;
+    return false;
   return operand_equal_p (arg0, arg1, 0);
 }
 
@@ -11825,7 +11825,7 @@ cl_option_hasher::equal (tree x, tree y)
   const_tree const yt = y;
 
   if (TREE_CODE (xt) != TREE_CODE (yt))
-    return 0;
+    return false;
 
   if (TREE_CODE (xt) == OPTIMIZATION_NODE)
     return cl_optimization_option_eq (TREE_OPTIMIZATION (xt),
