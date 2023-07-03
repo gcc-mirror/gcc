@@ -3726,8 +3726,8 @@ vect_recog_rotate_pattern (vec_info *vinfo,
     return NULL;
 
   if (TREE_CODE (oprnd0) != SSA_NAME
-      || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type)
-      || !INTEGRAL_TYPE_P (type))
+      || !INTEGRAL_TYPE_P (type)
+      || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type))
     return NULL;
 
   stmt_vec_info def_stmt_info;
