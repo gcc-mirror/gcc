@@ -25,6 +25,9 @@
 
 // A location in an input source file.
 
+// Used to replace Location default constructor
+#define UNDEF_LOCATION UNKNOWN_LOCATION
+
 typedef location_t Location;
 
 class RichLocation

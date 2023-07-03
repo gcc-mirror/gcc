@@ -278,14 +278,14 @@ SubstitutionArgumentMappings::operator= (
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::error ()
 {
-  return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false,
+  return SubstitutionArgumentMappings ({}, {}, UNDEF_LOCATION, nullptr, false,
 				       true);
 }
 
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::empty ()
 {
-  return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false,
+  return SubstitutionArgumentMappings ({}, {}, UNDEF_LOCATION, nullptr, false,
 				       false);
 }
 

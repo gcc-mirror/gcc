@@ -65,7 +65,7 @@ MethodResolver::Select (std::set<MethodCandidate> &candidates,
 	  TyTy::BaseType *param = fn.get_params ().at (i + 1).second;
 	  TyTy::BaseType *coerced
 	    = try_coercion (0, TyTy::TyWithLocation (param),
-			    TyTy::TyWithLocation (arg), Location ());
+			    TyTy::TyWithLocation (arg), UNDEF_LOCATION);
 	  if (coerced->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      failed = true;
@@ -325,8 +325,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
 		  fn_self->debug_str ().c_str (),
 		  receiver.debug_str ().c_str ());
 
-      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
-					       false /*allow-autoderef*/);
+      auto res
+	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
+					false /*allow-autoderef*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
@@ -365,8 +366,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
 		  fn_self->debug_str ().c_str (),
 		  receiver.debug_str ().c_str ());
 
-      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
-					       false /*allow-autoderef*/);
+      auto res
+	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
+					false /*allow-autoderef*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
@@ -400,8 +402,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
 	"dot-operator trait_impl_item fn_self={%s} can_eq receiver={%s}",
 	fn_self->debug_str ().c_str (), receiver.debug_str ().c_str ());
 
-      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
-					       false /*allow-autoderef*/);
+      auto res
+	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
+					false /*allow-autoderef*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
@@ -431,8 +434,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
 		  fn_self->debug_str ().c_str (),
 		  receiver.debug_str ().c_str ());
 
-      auto res = TypeCoercionRules::TryCoerce (&receiver, fn_self, Location (),
-					       false /*allow-autoderef*/);
+      auto res
+	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
+					false /*allow-autoderef*/);
       bool ok = !res.is_error ();
       if (ok)
 	{

@@ -25,7 +25,7 @@ const_TokenPtr
 ProcMacroInvocLexer::peek_token (int n)
 {
   if ((offs + n) >= token_stream.size ())
-    return Token::make (END_OF_FILE, Location ());
+    return Token::make (END_OF_FILE, UNDEF_LOCATION);
 
   return token_stream.at (offs + n);
 }

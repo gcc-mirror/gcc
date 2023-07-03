@@ -77,7 +77,7 @@ public:
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
-  TypeParam (Identifier type_representation, Location locus = Location (),
+  TypeParam (Identifier type_representation, Location locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
@@ -575,7 +575,7 @@ public:
   // Creates an error FunctionParam.
   static FunctionParam create_error ()
   {
-    return FunctionParam (nullptr, nullptr, {}, Location ());
+    return FunctionParam (nullptr, nullptr, {}, UNDEF_LOCATION);
   }
 
   std::string as_string () const;
@@ -653,7 +653,8 @@ public:
   // Creates an error visibility.
   static Visibility create_error ()
   {
-    return Visibility (PUB_IN_PATH, SimplePath::create_empty (), Location ());
+    return Visibility (PUB_IN_PATH, SimplePath::create_empty (),
+		       UNDEF_LOCATION);
   }
 
   // Unique pointer custom clone function
@@ -701,7 +702,7 @@ public:
   // Creates a private visibility
   static Visibility create_private ()
   {
-    return Visibility (PRIV, SimplePath::create_empty (), Location ());
+    return Visibility (PRIV, SimplePath::create_empty (), UNDEF_LOCATION);
   }
 
   // Creates a public visibility with a given path or whatever.
@@ -752,7 +753,7 @@ public:
   // Creates an error state method.
   static Method create_error ()
   {
-    return Method ({""}, FunctionQualifiers (Location (), NONE, true),
+    return Method ({""}, FunctionQualifiers (UNDEF_LOCATION, NONE, true),
 		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
@@ -2001,7 +2002,7 @@ public:
   static StructField create_error ()
   {
     return StructField (std::string (""), nullptr, Visibility::create_error (),
-			Location ());
+			UNDEF_LOCATION);
   }
 
   std::string as_string () const;
@@ -2148,7 +2149,7 @@ public:
   // Creates an error state tuple field.
   static TupleField create_error ()
   {
-    return TupleField (nullptr, Visibility::create_error (), Location ());
+    return TupleField (nullptr, Visibility::create_error (), UNDEF_LOCATION);
   }
 
   std::string as_string () const;
@@ -4152,7 +4153,7 @@ public:
   // Creates an error state named function parameter.
   static NamedFunctionParam create_error ()
   {
-    return NamedFunctionParam ("", nullptr, {}, Location ());
+    return NamedFunctionParam ("", nullptr, {}, UNDEF_LOCATION);
   }
 
   NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type,

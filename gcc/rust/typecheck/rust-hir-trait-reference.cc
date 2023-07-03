@@ -387,7 +387,7 @@ TraitReference::is_object_safe (bool emit_error, Location locus) const
   std::vector<const TraitReference *> non_object_super_traits;
   for (auto &item : super_traits)
     {
-      if (!item->is_object_safe (false, Location ()))
+      if (!item->is_object_safe (false, UNDEF_LOCATION))
 	non_object_super_traits.push_back (item);
     }
 

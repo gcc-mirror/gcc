@@ -187,7 +187,7 @@ Lexer::get_current_location ()
     return line_map->get_location (current_column);
   else
     // If we have no linemap, we're lexing something without proper locations
-    return Location ();
+    return UNDEF_LOCATION;
 }
 
 Codepoint

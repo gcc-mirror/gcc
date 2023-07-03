@@ -65,7 +65,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
       {
 	auto result
 	  = unify_site (id, TyTy::TyWithLocation (ty),
-			TyTy::TyWithLocation (default_type), Location ());
+			TyTy::TyWithLocation (default_type), UNDEF_LOCATION);
 	rust_assert (result);
 	rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
 	result->set_ref (id);

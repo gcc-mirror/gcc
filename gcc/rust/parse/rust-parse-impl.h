@@ -571,7 +571,7 @@ Parser<ManagedTokenSource>::parse_attribute_body ()
 
       // Skip past potential further info in attribute (i.e. attr_input)
       skip_after_end_attribute ();
-      return std::make_tuple (std::move (attr_path), nullptr, Location ());
+      return std::make_tuple (std::move (attr_path), nullptr, UNDEF_LOCATION);
     }
 
   std::unique_ptr<AST::AttrInput> attr_input = parse_attr_input ();

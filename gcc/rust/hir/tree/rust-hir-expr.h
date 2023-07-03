@@ -3582,7 +3582,7 @@ public:
   // Creates a match arm in an error state.
   static MatchArm create_error ()
   {
-    Location locus = Location ();
+    Location locus = UNDEF_LOCATION;
     return MatchArm (std::vector<std::unique_ptr<Pattern> > (), locus);
   }
 

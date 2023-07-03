@@ -162,14 +162,14 @@ Fragment::assert_single_fragment (SingleASTNode::NodeType expected) const
 
   if (!is_single_fragment ())
     {
-      rust_error_at (Location (), "fragment is not single");
+      rust_error_at (UNDEF_LOCATION, "fragment is not single");
       fail = true;
     }
 
   if (actual != expected)
     {
       rust_error_at (
-	Location (),
+	UNDEF_LOCATION,
 	"invalid fragment operation: expected %qs node, got %qs node",
 	str_map.find (expected)->second,
 	str_map.find (nodes[0].get_kind ())->second);

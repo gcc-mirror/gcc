@@ -643,7 +643,7 @@ ExpandVisitor::visit (AST::AttrInputLiteral &)
 void
 ExpandVisitor::visit (AST::AttrInputMacro &macro)
 {
-  rust_sorry_at (Location (), "macros in attributes not supported");
+  rust_sorry_at (UNDEF_LOCATION, "macros in attributes not supported");
 }
 
 void

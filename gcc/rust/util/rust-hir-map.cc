@@ -102,7 +102,7 @@ Mappings::Mappings ()
     = new HIR::ImplBlock (node, {}, {}, nullptr, nullptr, HIR::WhereClause ({}),
 			  Positive,
 			  HIR::Visibility (HIR::Visibility::VisType::PUBLIC),
-			  {}, {}, Location ());
+			  {}, {}, UNDEF_LOCATION);
 }
 
 Mappings::~Mappings () { delete builtinMarker; }
@@ -802,7 +802,7 @@ Mappings::lookup_location (HirId id)
 {
   auto it = locations.find (id);
   if (it == locations.end ())
-    return Location ();
+    return UNDEF_LOCATION;
 
   return it->second;
 }

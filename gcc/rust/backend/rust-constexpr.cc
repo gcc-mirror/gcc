@@ -3831,7 +3831,8 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 	member = TREE_OPERAND (member, 1);
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (aggr)))
 	/* Initializing a member of an anonymous union.  */
-	rust_sorry_at (Location (), "cannot handle value initialization yet");
+	rust_sorry_at (UNDEF_LOCATION,
+		       "cannot handle value initialization yet");
       // return build_anon_member_initialization (member, init, vec);
       else
 	/* We're initializing a vtable pointer in a base.  Leave it as
@@ -3842,10 +3843,10 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   /* Value-initialization can produce multiple initializers for the
      same field; use the last one.  */
   if (!vec_safe_is_empty (*vec) && (*vec)->last ().index == member)
-    rust_sorry_at (Location (), "cannot handle value initialization yet");
+    rust_sorry_at (UNDEF_LOCATION, "cannot handle value initialization yet");
   // (*vec)->last ().value = init;
   else
-    rust_sorry_at (Location (), "cannot handle value initialization yet");
+    rust_sorry_at (UNDEF_LOCATION, "cannot handle value initialization yet");
   // CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
 }

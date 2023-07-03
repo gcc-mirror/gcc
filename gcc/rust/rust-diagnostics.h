@@ -200,7 +200,7 @@ struct Error
 } // namespace Rust
 
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
-#define rust_debug(...) rust_debug_loc (Location (), __VA_ARGS__)
+#define rust_debug(...) rust_debug_loc (UNDEF_LOCATION, __VA_ARGS__)
 
 // rust_sorry_at wraps GCC diagnostic "sorry_at" to accept "Location" instead of
 // "location_t"

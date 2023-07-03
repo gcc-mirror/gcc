@@ -1102,7 +1102,7 @@ MacroExpander::import_proc_macros (std::string extern_crate)
     {
       // Extern crate path is not available.
       // FIXME: Emit error
-      rust_error_at (Location (), "Cannot find requested proc macro crate");
+      rust_error_at (UNDEF_LOCATION, "Cannot find requested proc macro crate");
       gcc_unreachable ();
     }
   auto macros = load_macros (path->second);

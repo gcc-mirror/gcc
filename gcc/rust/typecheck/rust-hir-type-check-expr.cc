@@ -940,7 +940,7 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	capacity_expr = new HIR::LiteralExpr (mapping, capacity_str,
 					      HIR::Literal::LitType::INT,
 					      PrimitiveCoreType::CORETYPE_USIZE,
-					      Location (), {});
+					      UNDEF_LOCATION, {});
 
 	// mark the type for this implicit node
 	TyTy::BaseType *expected_ty = nullptr;
