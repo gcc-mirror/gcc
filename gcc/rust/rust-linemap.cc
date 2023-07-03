@@ -44,15 +44,6 @@ public:
 
   int location_column (Location);
 
-protected:
-  Location get_predeclared_location ();
-
-  Location get_unknown_location ();
-
-  bool is_predeclared (Location);
-
-  bool is_unknown (Location);
-
 private:
   // Whether we are currently reading a file.
   bool in_file_;
@@ -142,38 +133,6 @@ Location
 Gcc_linemap::get_location (unsigned column)
 {
   return Location (linemap_position_for_column (line_table, column));
-}
-
-// Get the unknown location.
-
-Location
-Gcc_linemap::get_unknown_location ()
-{
-  return Location (UNKNOWN_LOCATION);
-}
-
-// Get the predeclared location.
-
-Location
-Gcc_linemap::get_predeclared_location ()
-{
-  return Location (BUILTINS_LOCATION);
-}
-
-// Return whether a location is the predeclared location.
-
-bool
-Gcc_linemap::is_predeclared (Location loc)
-{
-  return loc == BUILTINS_LOCATION;
-}
-
-// Return whether a location is the unknown location.
-
-bool
-Gcc_linemap::is_unknown (Location loc)
-{
-  return loc == UNKNOWN_LOCATION;
 }
 
 // Return the Linemap to use for the gcc backend.

@@ -76,24 +76,6 @@ public:
   virtual int location_column (Location) = 0;
 
 protected:
-  // Return a special Location used for predeclared identifiers.  This
-  // Location should be different from that for any actual source
-  // file.  This location will be used for various different types,
-  // functions, and objects created by the frontend.
-  virtual Location get_predeclared_location () = 0;
-
-  // Return a special Location which indicates that no actual location
-  // is known.  This is used for undefined objects and for errors.
-  virtual Location get_unknown_location () = 0;
-
-  // Return whether the argument is the Location returned by
-  // get_predeclared_location.
-  virtual bool is_predeclared (Location) = 0;
-
-  // Return whether the argument is the Location returned by
-  // get_unknown_location.
-  virtual bool is_unknown (Location) = 0;
-
   // The single existing instance of Linemap.
   static Linemap *instance_;
 
@@ -103,34 +85,10 @@ public:
   // an instance of Linemap.
 
   // Return the special Location used for predeclared identifiers.
-  static Location predeclared_location ()
-  {
-    rust_assert (Linemap::instance_ != NULL);
-    return Linemap::instance_->get_predeclared_location ();
-  }
+  static Location predeclared_location () { return BUILTINS_LOCATION; }
 
   // Return the special Location used when no location is known.
-  static Location unknown_location ()
-  {
-    rust_assert (Linemap::instance_ != NULL);
-    return Linemap::instance_->get_unknown_location ();
-  }
-
-  // Return whether the argument is the special location used for
-  // predeclared identifiers.
-  static bool is_predeclared_location (Location loc)
-  {
-    rust_assert (Linemap::instance_ != NULL);
-    return Linemap::instance_->is_predeclared (loc);
-  }
-
-  // Return whether the argument is the special location used when no
-  // location is known.
-  static bool is_unknown_location (Location loc)
-  {
-    rust_assert (Linemap::instance_ != NULL);
-    return Linemap::instance_->is_unknown (loc);
-  }
+  static Location unknown_location () { return UNKNOWN_LOCATION; }
 
   // Produce a human-readable description of a Location.
   static std::string location_to_string (Location loc)
