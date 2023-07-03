@@ -1,3 +1,31 @@
+2023-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110508
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Only replace re2 with
+	REALPART_EXPR opf nlhs if re2 is non-NULL.
+
+2023-07-02  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_match_CLAMPS_imms_p):
+	Simplify.
+	* config/xtensa/xtensa.md (*xtensa_clamps):
+	Add TARGET_MINMAX to the condition.
+
+2023-07-02  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*eqne_INT_MIN):
+	Add missing ":SI" to the match_operator.
+
+2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/108743
+	* config/darwin.opt: Add fconstant-cfstrings alias to
+	mconstant-cfstrings.
+	* doc/invoke.texi: Amend invocation descriptions to reflect
+	that the fconstant-cfstrings is a target-option alias and to
+	add the missing mconstant-cfstrings option description to the
+	Darwin section.
+
 2023-07-01  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.cc (gimple_duplicate_sese_region): Add elliminated_edge

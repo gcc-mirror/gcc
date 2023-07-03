@@ -1,3 +1,11 @@
+2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libdruntime/config/aarch64/switchcontext.S: Exclude ELF-
+	specific constructs for Darwin.
+	* libdruntime/config/arm/switchcontext.S: Likewise.
+	* libdruntime/core/thread/fiber.d: Disable switching fibres
+	between threads.
+
 2023-07-01  Iain Sandoe  <iainsandoe@Apollo-3-VM-Lion-0-187.local>
 
 	PR d/103944

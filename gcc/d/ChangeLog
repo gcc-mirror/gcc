@@ -1,3 +1,10 @@
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110516
+	* intrinsics.cc (expand_volatile_load): Set TREE_SIDE_EFFECTS on the
+	expanded expression.
+	(expand_volatile_store): Likewise.
+
 2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/110514
