@@ -1,3 +1,11 @@
+2023-07-06  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/declare-mapper-15.c: New test.
+	* c-c++-common/gomp/declare-mapper-16.c: New test.
+	* g++.dg/gomp/declare-mapper-1.C: Adjust expected scan output.
+	* gfortran.dg/gomp/declare-mapper-22.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-23.f90: New test.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.dg/gomp/bad-array-shaping-c-1.c: New test.

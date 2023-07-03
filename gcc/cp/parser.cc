@@ -46598,7 +46598,10 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
-				 "#pragma omp target data", pragma_tok);
+				 "#pragma omp target data", pragma_tok, false);
+  if (!processing_template_decl)
+    clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP);
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -46712,7 +46715,11 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
-				 "#pragma omp target enter data", pragma_tok);
+				 "#pragma omp target enter data", pragma_tok,
+				 false);
+  if (!processing_template_decl)
+    clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP);
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -46827,7 +46834,11 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
-				 "#pragma omp target exit data", pragma_tok);
+				 "#pragma omp target exit data", pragma_tok,
+				 false);
+  if (!processing_template_decl)
+    clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_EXIT_DATA);
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP_EXIT_DATA);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -47151,7 +47162,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	OMP_CLAUSE_CHAIN (c) = nc;
       }
   if (!processing_template_decl)
-    clauses = c_omp_instantiate_mappers (clauses);
+    clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_TARGET);
   clauses = finish_omp_clauses (clauses, C_ORT_OMP_TARGET);
 
   c_omp_adjust_map_clauses (clauses, true);

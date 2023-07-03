@@ -6261,7 +6261,10 @@ cxx_omp_map_array_section (location_t loc, tree t)
       if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
 	t = convert_from_reference (t);
 
-      t = build_array_ref (loc, t, low);
+      if (TYPE_PTR_P (TREE_TYPE (t)))
+	t = build_array_ref (loc, t, low);
+      else
+	t = error_mark_node;
     }
 
   return t;

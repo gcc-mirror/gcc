@@ -55,4 +55,4 @@ int main (int argc, char *argv[])
 }
 
 // { dg-final { scan-tree-dump-times {map\(struct:s \[len: 2\]\) map\(alloc:s\.ptr \[len: [0-9]+\]\) map\(tofrom:s\.size \[len: [0-9]+\]\) map\(tofrom:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:s\.ptr \[bias: 0\]\)} 4 "gimple" } }
-// { dg-final { scan-tree-dump-times {map\(struct:s \[len: 2\]\) map\(alloc:s\.ptr \[len: [0-9]+\]\) map\(to:s\.size \[len: [0-9]+\]\) map\(alloc:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:s\.ptr \[bias: 0\]\)} 1 "gimple" } }
+// { dg-final { scan-tree-dump-times {map\(struct:s \[len: 2\]\) map\(alloc:s\.ptr \[len: [0-9]+\]\) map\(alloc:s\.size \[len: [0-9]+\]\) map\(alloc:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:s\.ptr \[bias: 0\]\)} 1 "gimple" } }

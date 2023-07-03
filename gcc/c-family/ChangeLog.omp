@@ -1,3 +1,15 @@
+2023-07-06  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_EXIT_DATA,
+	C_ORT_OMP_EXIT_DATA.
+	(c_omp_instantiate_mappers): Add region type parameter.
+	* c-omp.cc (omp_split_map_kind, omp_join_map_kind,
+	omp_map_decayed_kind): New functions.
+	(omp_instantiate_mapper): Add ORT parameter.  Implement map kind decay
+	for instantiated mapper clauses.
+	(c_omp_instantiate_mappers): Add ORT parameter, pass to
+	omp_instantiate_mapper.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* c-common.h (expand_array_base): Update prototype.

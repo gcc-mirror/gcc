@@ -18319,8 +18319,8 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
   new_clauses = nreverse (new_clauses);
   if (ort != C_ORT_OMP_DECLARE_SIMD)
     {
-      if (ort == C_ORT_OMP_TARGET)
-	new_clauses = c_omp_instantiate_mappers (new_clauses);
+      if (ort & C_ORT_OMP)
+	new_clauses = c_omp_instantiate_mappers (new_clauses, ort);
       new_clauses = finish_omp_clauses (new_clauses, ort);
       if (linear_no_step)
 	for (nc = new_clauses; nc; nc = OMP_CLAUSE_CHAIN (nc))
@@ -19736,7 +19736,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OMP_TARGET_UPDATE:
     case OMP_TARGET_ENTER_DATA:
     case OMP_TARGET_EXIT_DATA:
-      tmp = tsubst_omp_clauses (OMP_STANDALONE_CLAUSES (t), C_ORT_OMP, args,
+      tmp = tsubst_omp_clauses (OMP_STANDALONE_CLAUSES (t),
+				(TREE_CODE (t) == OMP_TARGET_EXIT_DATA
+				 ? C_ORT_OMP_EXIT_DATA : C_ORT_OMP), args,
 				complain, in_decl);
       t = copy_node (t);
       OMP_STANDALONE_CLAUSES (t) = tmp;

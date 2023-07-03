@@ -1,3 +1,15 @@
+2023-07-06  Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_data): Instantiate mappers for
+	'omp target data'.
+	(c_parser_omp_target_enter_data): Instantiate mappers for 'omp target
+	enter data'.
+	(c_parser_omp_target_exit_data): Instantiate mappers for 'omp target
+	exit data'.
+	(c_parser_omp_target): Add c_omp_region_type argument to
+	c_omp_instantiate_mappers call.
+	* c-tree.h (c_omp_instantiate_mappers): Remove spurious prototype.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.cc (c_parser_braced_init): Disallow array-shaping operator

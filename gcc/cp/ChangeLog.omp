@@ -1,3 +1,21 @@
+2023-07-06  Julian Brown  <julian@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_data): Instantiate mappers for 'omp
+	target data'.
+	(cp_parser_omp_target_enter_data): Instantiate mappers for 'omp target
+	enter data'.
+	(cp_parser_omp_target_exit_data): Instantiate mappers for 'omp target
+	exit data'.
+	(cp_parser_omp_target): Add c_omp_region_type argument to
+	c_omp_instantiate_mappers call.
+	* pt.cc (tsubst_omp_clauses): Instantiate mappers for OMP regions other
+	than just C_ORT_OMP_TARGET.
+	(tsubst_expr): Update call to tsubst_omp_clauses for OMP_TARGET_UPDATE,
+	OMP_TARGET_ENTER_DATA, OMP_TARGET_EXIT_DATA stanza.
+	* semantics.cc (cxx_omp_map_array_section): Avoid calling
+	build_array_ref for non-array/non-pointer bases (error reported
+	already).
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* cp-objcp-common.cc (cp_common_init_ts): Add array-shape cast

@@ -10084,6 +10084,180 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa,
   return gfc_finish_block (&block);
 }
 
+static enum gfc_omp_map_op
+omp_split_map_op (enum gfc_omp_map_op op, bool *force_p, bool *always_p,
+		  bool *present_p)
+{
+  *force_p = *always_p = *present_p = false;
+
+  switch (op)
+    {
+    case OMP_MAP_FORCE_ALLOC:
+    case OMP_MAP_FORCE_TO:
+    case OMP_MAP_FORCE_FROM:
+    case OMP_MAP_FORCE_TOFROM:
+    case OMP_MAP_FORCE_PRESENT:
+      *force_p = true;
+      break;
+    case OMP_MAP_ALWAYS_TO:
+    case OMP_MAP_ALWAYS_FROM:
+    case OMP_MAP_ALWAYS_TOFROM:
+      *always_p = true;
+      break;
+    case OMP_MAP_ALWAYS_PRESENT_TO:
+    case OMP_MAP_ALWAYS_PRESENT_FROM:
+    case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+      *always_p = true;
+      /* Fallthrough.  */
+    case OMP_MAP_PRESENT_ALLOC:
+    case OMP_MAP_PRESENT_TO:
+    case OMP_MAP_PRESENT_FROM:
+    case OMP_MAP_PRESENT_TOFROM:
+      *present_p = true;
+      break;
+    default:
+      ;
+    }
+
+  switch (op)
+    {
+    case OMP_MAP_ALLOC:
+    case OMP_MAP_FORCE_ALLOC:
+    case OMP_MAP_PRESENT_ALLOC:
+      return OMP_MAP_ALLOC;
+    case OMP_MAP_TO:
+    case OMP_MAP_FORCE_TO:
+    case OMP_MAP_ALWAYS_TO:
+    case OMP_MAP_PRESENT_TO:
+    case OMP_MAP_ALWAYS_PRESENT_TO:
+      return OMP_MAP_TO;
+    case OMP_MAP_FROM:
+    case OMP_MAP_FORCE_FROM:
+    case OMP_MAP_ALWAYS_FROM:
+    case OMP_MAP_PRESENT_FROM:
+    case OMP_MAP_ALWAYS_PRESENT_FROM:
+      return OMP_MAP_FROM;
+    case OMP_MAP_TOFROM:
+    case OMP_MAP_FORCE_TOFROM:
+    case OMP_MAP_ALWAYS_TOFROM:
+    case OMP_MAP_PRESENT_TOFROM:
+    case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+      return OMP_MAP_TOFROM;
+    default:
+      ;
+    }
+  return op;
+}
+
+static enum gfc_omp_map_op
+omp_join_map_op (enum gfc_omp_map_op op, bool force_p, bool always_p,
+		 bool present_p)
+{
+  gcc_assert (!force_p || !(always_p || present_p));
+
+  switch (op)
+    {
+    case OMP_MAP_ALLOC:
+      if (force_p)
+	return OMP_MAP_FORCE_ALLOC;
+      else if (present_p)
+	return OMP_MAP_PRESENT_ALLOC;
+      break;
+
+    case OMP_MAP_TO:
+      if (force_p)
+	return OMP_MAP_FORCE_TO;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_TO;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_TO;
+      else if (present_p)
+	return OMP_MAP_PRESENT_TO;
+      break;
+
+    case OMP_MAP_FROM:
+      if (force_p)
+	return OMP_MAP_FORCE_FROM;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_FROM;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_FROM;
+      else if (present_p)
+	return OMP_MAP_PRESENT_FROM;
+      break;
+
+    case OMP_MAP_TOFROM:
+      if (force_p)
+	return OMP_MAP_FORCE_TOFROM;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_TOFROM;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_TOFROM;
+      else if (present_p)
+	return OMP_MAP_PRESENT_TOFROM;
+      break;
+
+    default:
+      ;
+    }
+
+  return op;
+}
+
+/* Map kind decay (OpenMP 5.2, 5.8.8 "declare mapper Directive").  Return the
+   map kind to use given MAPPER_KIND specified in the mapper and INVOKED_AS
+   specified on the clause that invokes the mapper.  See also
+   c-family/c-omp.cc:omp_map_decayed_kind.  */
+
+static enum gfc_omp_map_op
+omp_map_decayed_kind (enum gfc_omp_map_op mapper_kind,
+		      enum gfc_omp_map_op invoked_as, bool exit_p)
+{
+  if (invoked_as == OMP_MAP_RELEASE || invoked_as == OMP_MAP_DELETE)
+    return invoked_as;
+
+  bool force_p, always_p, present_p;
+
+  invoked_as = omp_split_map_op (invoked_as, &force_p, &always_p, &present_p);
+  gfc_omp_map_op decay_to;
+
+  switch (mapper_kind)
+    {
+    case OMP_MAP_ALLOC:
+      if (exit_p && invoked_as == OMP_MAP_FROM)
+	decay_to = OMP_MAP_RELEASE;
+      else
+	decay_to = OMP_MAP_ALLOC;
+      break;
+
+    case OMP_MAP_TO:
+      if (invoked_as == OMP_MAP_FROM)
+	decay_to = exit_p ? OMP_MAP_RELEASE : OMP_MAP_ALLOC;
+      else if (invoked_as == OMP_MAP_ALLOC)
+	decay_to = OMP_MAP_ALLOC;
+      else
+	decay_to = OMP_MAP_TO;
+      break;
+
+    case OMP_MAP_FROM:
+      if (invoked_as == OMP_MAP_ALLOC || invoked_as == OMP_MAP_TO)
+	decay_to = OMP_MAP_ALLOC;
+      else
+	decay_to = OMP_MAP_FROM;
+      break;
+
+    case OMP_MAP_TOFROM:
+    case OMP_MAP_UNSET:
+      decay_to = invoked_as;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return omp_join_map_op (decay_to, force_p, always_p, present_p);
+}
+
 static gfc_symtree *gfc_subst_replace;
 static gfc_ref *gfc_subst_prepend_ref;
 
@@ -10150,7 +10324,8 @@ gfc_subst_mapper_var (gfc_symbol **out_sym, gfc_expr **out_expr,
 
 static gfc_omp_namelist **
 gfc_trans_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
-				  gfc_omp_namelist *clause, gfc_omp_udm *udm)
+				  gfc_omp_namelist *clause, gfc_omp_udm *udm,
+				  toc_directive cd)
 {
   /* Here "sym" and "expr" describe the clause as written, to be substituted
      for the dummy variable in the mapper definition.  */
@@ -10231,10 +10406,10 @@ gfc_trans_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
 			    sym, expr, udm->var_sym, mapper_clause->sym,
 			    mapper_clause->expr);
 
-      if (mapper_clause->u.map_op == OMP_MAP_UNSET)
-	new_clause->u.map_op = outer_map_op;
-      else
-	new_clause->u.map_op = mapper_clause->u.map_op;
+      enum gfc_omp_map_op map_clause_op = mapper_clause->u.map_op;
+      new_clause->u.map_op
+	= omp_map_decayed_kind (map_clause_op, outer_map_op,
+				(cd == TOC_OPENMP_EXIT_DATA));
 
       new_clause->where = clause->where;
 
@@ -10243,7 +10418,7 @@ gfc_trans_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
 	{
 	  gfc_omp_udm *inner_udm = mapper_clause->u2.udm->udm;
 	  outlistp = gfc_trans_omp_instantiate_mapper (outlistp, new_clause,
-						       inner_udm);
+						       inner_udm, cd);
 	}
       else
 	{
@@ -10256,7 +10431,8 @@ gfc_trans_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
 }
 
 static void
-gfc_trans_omp_instantiate_mappers (gfc_omp_clauses *clauses)
+gfc_trans_omp_instantiate_mappers (gfc_omp_clauses *clauses,
+				   toc_directive cd = TOC_OPENMP)
 {
   gfc_omp_namelist *clause = clauses->lists[OMP_LIST_MAP];
   gfc_omp_namelist **clausep = &clauses->lists[OMP_LIST_MAP];
@@ -10265,9 +10441,8 @@ gfc_trans_omp_instantiate_mappers (gfc_omp_clauses *clauses)
     {
       if (clause->u2.udm)
 	{
-	  clausep = gfc_trans_omp_instantiate_mapper (clausep,
-						      clause,
-						      clause->u2.udm->udm);
+	  clausep = gfc_trans_omp_instantiate_mapper (clausep, clause,
+						      clause->u2.udm->udm, cd);
 	  *clausep = clause->next;
 	}
       else
@@ -10721,8 +10896,9 @@ gfc_trans_omp_target_data (gfc_code *code)
   tree stmt, omp_clauses;
 
   gfc_start_block (&block);
-  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
-				       code->loc);
+  gfc_omp_clauses *target_data_clauses = code->ext.omp_clauses;
+  gfc_trans_omp_instantiate_mappers (target_data_clauses);
+  omp_clauses = gfc_trans_omp_clauses (&block, target_data_clauses, code->loc);
   stmt = gfc_trans_omp_code (code->block->next, true);
   stmt = build2_loc (gfc_get_location (&code->loc), OMP_TARGET_DATA,
 		     void_type_node, stmt, omp_clauses);
@@ -10737,7 +10913,9 @@ gfc_trans_omp_target_enter_data (gfc_code *code)
   tree stmt, omp_clauses;
 
   gfc_start_block (&block);
-  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
+  gfc_omp_clauses *target_enter_data_clauses = code->ext.omp_clauses;
+  gfc_trans_omp_instantiate_mappers (target_enter_data_clauses);
+  omp_clauses = gfc_trans_omp_clauses (&block, target_enter_data_clauses,
 				       code->loc);
   stmt = build1_loc (input_location, OMP_TARGET_ENTER_DATA, void_type_node,
 		     omp_clauses);
@@ -10752,7 +10930,10 @@ gfc_trans_omp_target_exit_data (gfc_code *code)
   tree stmt, omp_clauses;
 
   gfc_start_block (&block);
-  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
+  gfc_omp_clauses *target_exit_data_clauses = code->ext.omp_clauses;
+  gfc_trans_omp_instantiate_mappers (target_exit_data_clauses,
+				     TOC_OPENMP_EXIT_DATA);
+  omp_clauses = gfc_trans_omp_clauses (&block, target_exit_data_clauses,
 				       code->loc, TOC_OPENMP_EXIT_DATA);
   stmt = build1_loc (input_location, OMP_TARGET_EXIT_DATA, void_type_node,
 		     omp_clauses);

@@ -22931,7 +22931,9 @@ c_parser_omp_target_data (location_t loc, c_parser *parser, bool *if_p)
 
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
-				"#pragma omp target data");
+				"#pragma omp target data", false);
+  clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -23118,7 +23120,9 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
-				"#pragma omp target enter data");
+				"#pragma omp target enter data", false);
+  clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -23228,7 +23232,9 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
-				"#pragma omp target exit data");
+				"#pragma omp target exit data", false);
+  clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_EXIT_DATA);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP_EXIT_DATA);
   c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
@@ -23485,7 +23491,7 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 	OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (c);
 	OMP_CLAUSE_CHAIN (c) = nc;
       }
-  clauses = c_omp_instantiate_mappers (clauses);
+  clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_TARGET);
   clauses  = c_finish_omp_clauses (clauses, C_ORT_OMP_TARGET);
   c_omp_adjust_map_clauses (clauses, true);
 

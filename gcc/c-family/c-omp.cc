@@ -5001,13 +5001,189 @@ remap_mapper_decl_1 (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+static enum gomp_map_kind
+omp_split_map_kind (enum gomp_map_kind op, bool *force_p, bool *always_p,
+		    bool *present_p)
+{
+  *force_p = *always_p = *present_p = false;
+
+  switch (op)
+    {
+    case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_FORCE_PRESENT:
+      *force_p = true;
+      break;
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_ALWAYS_TOFROM:
+      *always_p = true;
+      break;
+    case GOMP_MAP_ALWAYS_PRESENT_TO:
+    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+      *always_p = true;
+      /* Fallthrough.  */
+    case GOMP_MAP_PRESENT_ALLOC:
+    case GOMP_MAP_PRESENT_TO:
+    case GOMP_MAP_PRESENT_FROM:
+    case GOMP_MAP_PRESENT_TOFROM:
+      *present_p = true;
+      break;
+    default:
+      ;
+    }
+
+  switch (op)
+    {
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_FORCE_ALLOC:
+    case GOMP_MAP_PRESENT_ALLOC:
+      return GOMP_MAP_ALLOC;
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_PRESENT_TO:
+    case GOMP_MAP_ALWAYS_PRESENT_TO:
+      return GOMP_MAP_TO;
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_PRESENT_FROM:
+    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+      return GOMP_MAP_FROM;
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_PRESENT_TOFROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+      return GOMP_MAP_TOFROM;
+    default:
+      ;
+    }
+
+  return op;
+}
+
+static enum gomp_map_kind
+omp_join_map_kind (enum gomp_map_kind op, bool force_p, bool always_p,
+		   bool present_p)
+{
+  gcc_assert (!force_p || !(always_p || present_p));
+
+  switch (op)
+    {
+    case GOMP_MAP_ALLOC:
+      if (force_p)
+	return GOMP_MAP_FORCE_ALLOC;
+      else if (present_p)
+	return GOMP_MAP_PRESENT_ALLOC;
+      break;
+
+    case GOMP_MAP_TO:
+      if (force_p)
+	return GOMP_MAP_FORCE_TO;
+      else if (always_p && present_p)
+	return GOMP_MAP_ALWAYS_PRESENT_TO;
+      else if (always_p)
+	return GOMP_MAP_ALWAYS_TO;
+      else if (present_p)
+	return GOMP_MAP_PRESENT_TO;
+      break;
+
+    case GOMP_MAP_FROM:
+      if (force_p)
+	return GOMP_MAP_FORCE_FROM;
+      else if (always_p && present_p)
+	return GOMP_MAP_ALWAYS_PRESENT_FROM;
+      else if (always_p)
+	return GOMP_MAP_ALWAYS_FROM;
+      else if (present_p)
+	return GOMP_MAP_PRESENT_FROM;
+      break;
+
+    case GOMP_MAP_TOFROM:
+      if (force_p)
+	return GOMP_MAP_FORCE_TOFROM;
+      else if (always_p && present_p)
+	return GOMP_MAP_ALWAYS_PRESENT_TOFROM;
+      else if (always_p)
+	return GOMP_MAP_ALWAYS_TOFROM;
+      else if (present_p)
+	return GOMP_MAP_PRESENT_TOFROM;
+      break;
+
+    default:
+      ;
+    }
+
+  return op;
+}
+
+/* Map kind decay (OpenMP 5.2, 5.8.8 "declare mapper Directive").  Return the
+   map kind to use given MAPPER_KIND specified in the mapper and INVOKED_AS
+   specified on the clause that invokes the mapper.  See also
+   fortran/trans-openmp.cc:omp_map_decayed_kind.  */
+
+static enum gomp_map_kind
+omp_map_decayed_kind (enum gomp_map_kind mapper_kind,
+		      enum gomp_map_kind invoked_as, bool exit_p)
+{
+  if (invoked_as == GOMP_MAP_RELEASE || invoked_as == GOMP_MAP_DELETE)
+    return invoked_as;
+
+  bool force_p, always_p, present_p;
+
+  invoked_as = omp_split_map_kind (invoked_as, &force_p, &always_p, &present_p);
+  gomp_map_kind decay_to;
+
+  switch (mapper_kind)
+    {
+    case GOMP_MAP_ALLOC:
+      if (exit_p && invoked_as == GOMP_MAP_FROM)
+	decay_to = GOMP_MAP_RELEASE;
+      else
+	decay_to = GOMP_MAP_ALLOC;
+      break;
+
+    case GOMP_MAP_TO:
+      if (invoked_as == GOMP_MAP_FROM)
+	decay_to = exit_p ? GOMP_MAP_RELEASE : GOMP_MAP_ALLOC;
+      else if (invoked_as == GOMP_MAP_ALLOC)
+	decay_to = GOMP_MAP_ALLOC;
+      else
+	decay_to = GOMP_MAP_TO;
+      break;
+
+    case GOMP_MAP_FROM:
+      if (invoked_as == GOMP_MAP_ALLOC || invoked_as == GOMP_MAP_TO)
+	decay_to = GOMP_MAP_ALLOC;
+      else
+	decay_to = GOMP_MAP_FROM;
+      break;
+
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_UNSET:
+      decay_to = invoked_as;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return omp_join_map_kind (decay_to, force_p, always_p, present_p);
+}
+
 /* Instantiate a mapper MAPPER for expression EXPR, adding new clauses to
    OUTLIST.  OUTER_KIND is the mapping kind to use if not already specified in
    the mapper declaration.  */
 
 static tree *
 omp_instantiate_mapper (tree *outlist, tree mapper, tree expr,
-			enum gomp_map_kind outer_kind)
+			enum gomp_map_kind outer_kind,
+			enum c_omp_region_type ort)
 {
   tree clauses = OMP_DECLARE_MAPPER_CLAUSES (mapper);
   tree dummy_var = OMP_DECLARE_MAPPER_DECL (mapper);
@@ -5064,8 +5240,10 @@ omp_instantiate_mapper (tree *outlist, tree mapper, tree expr,
 
       walk_tree (&unshared, remap_mapper_decl_1, &map_info, NULL);
 
-      if (OMP_CLAUSE_MAP_KIND (unshared) == GOMP_MAP_UNSET)
-	OMP_CLAUSE_SET_MAP_KIND (unshared, outer_kind);
+      enum gomp_map_kind decayed_kind
+	= omp_map_decayed_kind (clause_kind, outer_kind,
+				(ort & C_ORT_EXIT_DATA) != 0);
+      OMP_CLAUSE_SET_MAP_KIND (unshared, decayed_kind);
 
       type = TYPE_MAIN_VARIANT (type);
 
@@ -5082,11 +5260,8 @@ omp_instantiate_mapper (tree *outlist, tree mapper, tree expr,
 	    = lang_hooks.decls.omp_extract_mapper_directive (mapper_fn);
 	  if (nested_mapper != mapper)
 	    {
-	      if (clause_kind == GOMP_MAP_UNSET)
-		clause_kind = outer_kind;
-
 	      outlist = omp_instantiate_mapper (outlist, nested_mapper,
-						t, clause_kind);
+						t, outer_kind, ort);
 	      continue;
 	    }
 	}
@@ -5108,7 +5283,7 @@ omp_instantiate_mapper (tree *outlist, tree mapper, tree expr,
    visible in the current parsing context.  */
 
 tree
-c_omp_instantiate_mappers (tree clauses)
+c_omp_instantiate_mappers (tree clauses, enum c_omp_region_type ort)
 {
   tree c, *pc, mapper_name = NULL_TREE;
 
@@ -5181,7 +5356,7 @@ c_omp_instantiate_mappers (tree clauses)
 	      {
 		tree mapper
 		  = lang_hooks.decls.omp_extract_mapper_directive (mapper_fn);
-		pc = omp_instantiate_mapper (pc, mapper, t, kind);
+		pc = omp_instantiate_mapper (pc, mapper, t, kind, ort);
 		using_mapper = true;
 	      }
 	    else if (mapper_name)

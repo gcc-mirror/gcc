@@ -888,7 +888,6 @@ extern tree c_check_omp_declare_reduction_r (tree *, int *, void *);
 extern tree c_omp_mapper_id (tree);
 extern tree c_omp_mapper_decl (tree);
 extern void c_omp_scan_mapper_bindings (location_t, tree *, tree);
-extern tree c_omp_instantiate_mappers (tree);
 extern bool c_check_in_current_scope (tree);
 extern void c_pushtag (location_t, tree, tree);
 extern void c_bind (location_t, tree, bool);

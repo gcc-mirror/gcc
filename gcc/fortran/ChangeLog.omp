@@ -1,3 +1,17 @@
+2023-07-06  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (omp_split_map_op, omp_join_map_op,
+	omp_map_decayed_kind): New functions.
+	(gfc_trans_omp_instantiate_mapper): Add CD parameter.  Implement map
+	kind decay.
+	(gfc_trans_omp_instantiate_mappers): Add CD parameter.  Pass to above
+	function.
+	(gfc_trans_omp_target_data): Instantiate mappers for 'omp target data'.
+	(gfc_trans_omp_target_enter_data): Instantiate mappers for 'omp target
+	enter data'.
+	(gfc_trans_omp_target_exit_data): Instantiate mappers for 'omp target
+	exit data'.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Handle
