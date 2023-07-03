@@ -7275,6 +7275,13 @@ package body Exp_Ch3 is
       Rewrite_As_Renaming : Boolean := False;
       --  Whether to turn the declaration into a renaming at the end
 
+      Nominal_Subtype_Is_Constrained_Array : constant Boolean :=
+        Comes_From_Source (Obj_Def)
+        and then Is_Array_Type (Typ) and then Is_Constrained (Typ);
+      --  Used to avoid rewriting as a renaming for constrained arrays,
+      --  which is only a problem for source arrays; others have the
+      --  correct bounds (see below).
+
    --  Start of processing for Expand_N_Object_Declaration
 
    begin
@@ -8030,7 +8037,14 @@ package body Exp_Ch3 is
 
                    or else (Nkind (Expr_Q) = N_Slice
                              and then OK_To_Rename_Ref (Prefix (Expr_Q))
-                             and then not Special_Ret_Obj));
+                             and then not Special_Ret_Obj))
+
+                --  If we have "X : S := ...;", and S is a constrained array
+                --  subtype, then we cannot rename, because renamings ignore
+                --  the constraints of S, so that would change the semantics
+                --  (sliding would not occur on the initial value).
+
+                and then not Nominal_Subtype_Is_Constrained_Array;
 
             --  If the type needs finalization and is not inherently limited,
             --  then the target is adjusted after the copy and attached to the
