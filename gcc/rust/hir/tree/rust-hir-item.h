@@ -687,7 +687,7 @@ public:
 
   // Copy constructor with vector clone
   Module (Module const &other)
-    : VisItem (other), WithInnerAttrs (other.inner_attrs)
+    : VisItem (other), WithInnerAttrs (other.inner_attrs), module_name ("")
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)

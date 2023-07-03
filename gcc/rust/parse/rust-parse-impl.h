@@ -1439,7 +1439,7 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
     {
       return nullptr;
     }
-  Identifier rule_name = ident_tok->get_str ();
+  Identifier rule_name{ident_tok};
 
   // DEBUG
   rust_debug ("in macro rules def, about to parse parens.");
@@ -1596,7 +1596,7 @@ Parser<ManagedTokenSource>::parse_decl_macro_def (AST::Visibility vis,
     {
       return nullptr;
     }
-  Identifier rule_name = ident_tok->get_str ();
+  Identifier rule_name{ident_tok};
 
   t = lexer.peek_token ();
   if (t->get_id () == LEFT_PAREN)
@@ -2160,12 +2160,12 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
   Location fragment_locus = lexer.peek_token ()->get_locus ();
   skip_token (DOLLAR_SIGN);
 
-  Identifier ident{""};
+  Identifier ident;
   auto identifier = lexer.peek_token ();
   if (identifier->get_id () == UNDERSCORE)
-    ident = {"_"};
+    ident = {"_", identifier->get_locus ()};
   else
-    ident = identifier->get_str ();
+    ident = {identifier};
 
   if (ident.empty ())
     {
@@ -2411,7 +2411,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
     {
       return nullptr;
     }
-  Identifier name{module_name->get_str ()};
+  Identifier name{module_name};
 
   const_TokenPtr t = lexer.peek_token ();
 
@@ -2817,15 +2817,15 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 
 		return std::unique_ptr<AST::UseTreeRebind> (
 		  new AST::UseTreeRebind (AST::UseTreeRebind::IDENTIFIER,
-					  std::move (path), locus,
-					  t->get_str ()));
+					  std::move (path), locus, t));
 	      case UNDERSCORE:
 		// skip lexer token
 		lexer.skip_token ();
 
 		return std::unique_ptr<AST::UseTreeRebind> (
 		  new AST::UseTreeRebind (AST::UseTreeRebind::WILDCARD,
-					  std::move (path), locus, {"_"}));
+					  std::move (path), locus,
+					  {"_", t->get_locus ()}));
 	      default:
 		add_error (Error (
 		  t->get_locus (),
@@ -2882,7 +2882,7 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
       skip_after_next_block ();
       return nullptr;
     }
-  Identifier function_name = function_name_tok->get_str ();
+  Identifier function_name{function_name_tok};
 
   // parse generic params - if exist
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -3500,8 +3500,7 @@ Parser<ManagedTokenSource>::parse_type_param ()
       // identifier
       return nullptr;
     }
-  // TODO: create identifier from identifier token
-  Identifier ident = identifier_tok->get_str ();
+  Identifier ident{identifier_tok};
   lexer.skip_token ();
 
   // parse type param bounds (if they exist)
@@ -4131,7 +4130,7 @@ Parser<ManagedTokenSource>::parse_type_alias (AST::Visibility vis,
       skip_after_semicolon ();
       return nullptr;
     }
-  Identifier alias_name = alias_name_tok->get_str ();
+  Identifier alias_name{alias_name_tok};
 
   // parse generic params, which may not exist
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -4191,7 +4190,7 @@ Parser<ManagedTokenSource>::parse_struct (AST::Visibility vis,
       // skip after somewhere?
       return nullptr;
     }
-  Identifier struct_name = name_tok->get_str ();
+  Identifier struct_name{name_tok};
 
   // parse generic params, which may or may not exist
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -4387,7 +4386,7 @@ Parser<ManagedTokenSource>::parse_struct_field ()
       // necessarily error
       return AST::StructField::create_error ();
     }
-  Identifier field_name = field_name_tok->get_str ();
+  Identifier field_name{field_name_tok};
   lexer.skip_token ();
 
   if (!skip_token (COLON))
@@ -4513,7 +4512,7 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
   if (enum_name_tok == nullptr)
     return nullptr;
 
-  Identifier enum_name = enum_name_tok->get_str ();
+  Identifier enum_name = {enum_name_tok};
 
   // parse generic params (of enum container, not enum variants) if they exist
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -4643,7 +4642,7 @@ Parser<ManagedTokenSource>::parse_enum_item ()
       return nullptr;
     }
   lexer.skip_token ();
-  Identifier item_name = item_name_tok->get_str ();
+  Identifier item_name{item_name_tok};
 
   // branch based on next token
   const_TokenPtr t = lexer.peek_token ();
@@ -4727,7 +4726,7 @@ Parser<ManagedTokenSource>::parse_union (AST::Visibility vis,
       skip_after_next_block ();
       return nullptr;
     }
-  Identifier union_name = union_name_tok->get_str ();
+  Identifier union_name{union_name_tok};
 
   // parse optional generic parameters
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -4845,7 +4844,7 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   if (!skip_token (COLON))
     {
@@ -4906,7 +4905,7 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   // parse generic parameters (if they exist)
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -5027,7 +5026,7 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	if (ident_tok == nullptr)
 	  return nullptr;
 
-	Identifier ident = ident_tok->get_str ();
+	Identifier ident{ident_tok};
 
 	// parse generic params
 	std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -5162,7 +5161,7 @@ Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs)
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 
@@ -5201,7 +5200,7 @@ Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   if (!skip_token (COLON))
     {
@@ -5568,7 +5567,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   // parse generic params
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -5763,7 +5762,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
     {
       return nullptr;
     }
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   // DEBUG:
   rust_debug (
@@ -5995,7 +5994,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	    skip_after_semicolon ();
 	    return nullptr;
 	  }
-	Identifier ident = ident_tok->get_str ();
+	Identifier ident{ident_tok};
 
 	if (!skip_token (COLON))
 	  {
@@ -6038,7 +6037,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	    skip_after_semicolon ();
 	    return nullptr;
 	  }
-	Identifier ident = ident_tok->get_str ();
+	Identifier ident{ident_tok};
 
 	// parse (optional) generic params
 	std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -6620,7 +6619,7 @@ Parser<ManagedTokenSource>::parse_generic_args_binding ()
       return AST::GenericArgsBinding::create_error ();
     }
   lexer.skip_token ();
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   if (!skip_token (EQUAL))
     {
@@ -7189,7 +7188,7 @@ Parser<ManagedTokenSource>::parse_method ()
       skip_after_next_block ();
       return AST::Method::create_error ();
     }
-  Identifier method_name = ident_tok->get_str ();
+  Identifier method_name{ident_tok};
 
   // parse generic params - if exist
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
@@ -9659,14 +9658,14 @@ Parser<ManagedTokenSource>::parse_maybe_named_param (AST::AttrVec outer_attrs)
   if (current->get_id () == IDENTIFIER && next->get_id () == COLON)
     {
       // named param
-      name = current->get_str ();
+      name = {current};
       kind = AST::MaybeNamedParam::IDENTIFIER;
       lexer.skip_token (1);
     }
   else if (current->get_id () == UNDERSCORE && next->get_id () == COLON)
     {
       // wildcard param
-      name = {"_"};
+      name = {"_", current->get_locus ()};
       kind = AST::MaybeNamedParam::WILDCARD;
       lexer.skip_token (1);
     }
@@ -11093,7 +11092,7 @@ Parser<ManagedTokenSource>::parse_identifier_pattern ()
       // skip somewhere?
       return nullptr;
     }
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   // DEBUG
   rust_debug ("parsed identifier in identifier pattern");
@@ -11518,7 +11517,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (
 	{
 	  case COLON: {
 	    // identifier-pattern
-	    Identifier ident = t->get_str ();
+	    Identifier ident{t};
 	    lexer.skip_token ();
 
 	    skip_token (COLON);
@@ -11543,7 +11542,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (
 	case COMMA:
 	  case RIGHT_CURLY: {
 	    // identifier only
-	    Identifier ident = t->get_str ();
+	    Identifier ident = {t};
 	    lexer.skip_token ();
 
 	    return std::unique_ptr<AST::StructPatternFieldIdent> (
@@ -11581,7 +11580,7 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (
 	  {
 	    return nullptr;
 	  }
-	Identifier ident = ident_tok->get_str ();
+	Identifier ident{ident_tok};
 
 	return std::unique_ptr<AST::StructPatternFieldIdent> (
 	  new AST::StructPatternFieldIdent (std::move (ident), has_ref, has_mut,
@@ -11821,7 +11820,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
       if (lexer.peek_token (1)->get_id () == COLON)
 	{
 	  // struct expr field with identifier and expr
-	  Identifier ident = t->get_str ();
+	  Identifier ident = {t};
 	  lexer.skip_token (1);
 
 	  // parse expression (required)
@@ -11844,7 +11843,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
       else
 	{
 	  // struct expr field with identifier only
-	  Identifier ident = t->get_str ();
+	  Identifier ident{t};
 	  lexer.skip_token ();
 
 	  return std::unique_ptr<AST::StructExprFieldIdentifier> (
@@ -13975,7 +13974,7 @@ Parser<ManagedTokenSource>::parse_field_access_expr (
   if (ident_tok == nullptr)
     return nullptr;
 
-  Identifier ident = ident_tok->get_str ();
+  Identifier ident{ident_tok};
 
   Location locus = struct_expr->get_locus ();
 

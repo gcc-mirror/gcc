@@ -772,7 +772,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // based on idea of identifier no longer existing
-  void mark_for_strip () override { ident = {}; }
+  void mark_for_strip () override { ident = {""}; }
   bool is_marked_for_strip () const override { return ident.empty (); }
 
   const Identifier &get_identifier () const { return ident; }

@@ -35,8 +35,21 @@ struct MacroExpander;
 class Identifier
 {
 public:
-  Identifier (std::string ident = "")
-    : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  // Create dummy identifier
+  Identifier ()
+    : ident (""), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      loc (Location ())
+  {}
+  // Create identifier with dummy location
+  Identifier (std::string ident, Location loc = Location ())
+    : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      loc (loc)
+  {}
+  // Create identifier from token
+  Identifier (const_TokenPtr token)
+    : ident (token->get_str ()),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      loc (token->get_locus ())
   {}
 
   Identifier (const Identifier &) = default;
@@ -45,6 +58,7 @@ public:
   Identifier &operator= (Identifier &&) = default;
 
   NodeId get_node_id () const { return node_id; }
+  Location get_locus () const { return loc; }
   const std::string &as_string () const { return ident; }
 
   bool empty () const { return ident.empty (); }
@@ -52,6 +66,7 @@ public:
 private:
   std::string ident;
   NodeId node_id;
+  Location loc;
 };
 
 std::ostream &
@@ -1099,7 +1114,7 @@ public:
   }
 
   // "Error state" if ident is empty, so base stripping on this.
-  void mark_for_strip () override { ident = {}; }
+  void mark_for_strip () override { ident = {""}; }
   bool is_marked_for_strip () const override { return ident.empty (); }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
