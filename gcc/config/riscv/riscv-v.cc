@@ -2777,7 +2777,7 @@ expand_load_store (rtx *ops, bool is_load)
 {
   poly_int64 value;
   rtx len = ops[2];
-  rtx mask = ops[3];
+  rtx mask = ops[4];
   machine_mode mode = GET_MODE (ops[0]);
 
   if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))

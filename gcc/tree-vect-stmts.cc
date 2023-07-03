@@ -9122,13 +9122,14 @@ vectorizable_store (vec_info *vinfo,
 		  if (partial_ifn == IFN_LEN_MASK_STORE)
 		    call = gimple_build_call_internal (IFN_LEN_MASK_STORE, 6,
 						       dataref_ptr, ptr,
-						       final_len, final_mask,
-						       vec_oprnd, bias);
+						       final_len, bias,
+						       final_mask, vec_oprnd);
 		  else
 		    call
 		      = gimple_build_call_internal (IFN_LEN_STORE, 5,
-						    dataref_ptr, ptr, final_len,
-						    vec_oprnd, bias);
+						    dataref_ptr, ptr,
+						    final_len, bias,
+						    vec_oprnd);
 		  gimple_call_set_nothrow (call, true);
 		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 		  new_stmt = call;
@@ -10523,7 +10524,7 @@ vectorizable_load (vec_info *vinfo,
 			  call = gimple_build_call_internal (IFN_LEN_MASK_LOAD,
 							     5, dataref_ptr,
 							     ptr, final_len,
-							     final_mask, bias);
+							     bias, final_mask);
 			else
 			  call = gimple_build_call_internal (IFN_LEN_LOAD, 4,
 							     dataref_ptr, ptr,

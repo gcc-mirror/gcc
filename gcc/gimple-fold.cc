@@ -5391,11 +5391,12 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
     }
   else
     {
-      tree basic_len = gimple_call_arg (call, 2);
+      internal_fn ifn = gimple_call_internal_fn (call);
+      int len_index = internal_fn_len_index (ifn);
+      tree basic_len = gimple_call_arg (call, len_index);
       if (!poly_int_tree_p (basic_len))
 	return NULL_TREE;
-      unsigned int nargs = gimple_call_num_args (call);
-      tree bias = gimple_call_arg (call, nargs - 1);
+      tree bias = gimple_call_arg (call, len_index + 1);
       gcc_assert (TREE_CODE (bias) == INTEGER_CST);
       /* For LEN_LOAD/LEN_STORE/LEN_MASK_LOAD/LEN_MASK_STORE,
 	 we don't fold when (bias + len) != VF.  */
@@ -5405,7 +5406,6 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
 
       /* For LEN_MASK_{LOAD,STORE}, we should also check whether
 	  the mask is all ones mask.  */
-      internal_fn ifn = gimple_call_internal_fn (call);
       if (ifn == IFN_LEN_MASK_LOAD || ifn == IFN_LEN_MASK_STORE)
 	{
 	  tree mask = gimple_call_arg (call, internal_fn_mask_index (ifn));

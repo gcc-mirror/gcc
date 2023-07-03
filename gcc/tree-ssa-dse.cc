@@ -161,12 +161,13 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 	case IFN_MASK_STORE:
 	case IFN_LEN_MASK_STORE:
 	  {
-	    int stored_value_index
-	      = internal_fn_stored_value_index (gimple_call_internal_fn (stmt));
-	    if (gimple_call_internal_fn (stmt) == IFN_LEN_STORE)
+	    internal_fn ifn = gimple_call_internal_fn (stmt);
+	    int stored_value_index = internal_fn_stored_value_index (ifn);
+	    int len_index = internal_fn_len_index (ifn);
+	    if (ifn == IFN_LEN_STORE)
 	      {
-		tree len = gimple_call_arg (stmt, 2);
-		tree bias = gimple_call_arg (stmt, 4);
+		tree len = gimple_call_arg (stmt, len_index);
+		tree bias = gimple_call_arg (stmt, len_index + 1);
 		if (tree_fits_uhwi_p (len))
 		  {
 		    ao_ref_init_from_ptr_and_size (write,

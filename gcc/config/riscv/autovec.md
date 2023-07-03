@@ -26,8 +26,8 @@
   [(match_operand:V 0 "register_operand")
    (match_operand:V 1 "memory_operand")
    (match_operand 2 "autovec_length_operand")
-   (match_operand:<VM> 3 "vector_mask_operand")
-   (match_operand 4 "const_0_operand")]
+   (match_operand 3 "const_0_operand")
+   (match_operand:<VM> 4 "vector_mask_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_load_store (operands, true);
@@ -38,8 +38,8 @@
   [(match_operand:V 0 "memory_operand")
    (match_operand:V 1 "register_operand")
    (match_operand 2 "autovec_length_operand")
-   (match_operand:<VM> 3 "vector_mask_operand")
-   (match_operand 4 "const_0_operand")]
+   (match_operand 3 "const_0_operand")
+   (match_operand:<VM> 4 "vector_mask_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_load_store (operands, false);

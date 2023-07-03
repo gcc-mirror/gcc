@@ -5302,15 +5302,15 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{len_maskload@var{m}@var{n}} instruction pattern
 @item @samp{len_maskload@var{m}@var{n}}
 Perform a masked load from the memory location pointed to by operand 1
-into register operand 0.  (operand 2 + operand 4) elements are loaded from
+into register operand 0.  (operand 2 + operand 3) elements are loaded from
 memory and other elements in operand 0 are set to undefined values.
 This is a combination of len_load and maskload.
 Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2
 has whichever integer mode the target prefers.  A mask is specified in
-operand 3 which must be of type @var{n}.  The mask has lower precedence than
+operand 4 which must be of type @var{n}.  The mask has lower precedence than
 the length and is itself subject to length masking,
-i.e. only mask indices < (operand 2 + operand 4) are used.
-Operand 4 conceptually has mode @code{QI}.
+i.e. only mask indices < (operand 2 + operand 3) are used.
+Operand 3 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
@@ -5329,14 +5329,14 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{len_maskstore@var{m}@var{n}} instruction pattern
 @item @samp{len_maskstore@var{m}@var{n}}
 Perform a masked store from vector register operand 1 into memory operand 0.
-(operand 2 + operand 4) elements are stored to memory
+(operand 2 + operand 3) elements are stored to memory
 and leave the other elements of operand 0 unchanged.
 This is a combination of len_store and maskstore.
 Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2 has whichever
-integer mode the target prefers.  A mask is specified in operand 3 which must be
+integer mode the target prefers.  A mask is specified in operand 4 which must be
 of type @var{n}.  The mask has lower precedence than the length and is itself subject to
-length masking, i.e. only mask indices < (operand 2 + operand 4) are used.
-Operand 4 conceptually has mode @code{QI}.
+length masking, i.e. only mask indices < (operand 2 + operand 3) are used.
+Operand 3 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
