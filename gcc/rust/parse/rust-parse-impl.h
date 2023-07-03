@@ -606,7 +606,7 @@ AST::SimplePath
 Parser<ManagedTokenSource>::parse_simple_path ()
 {
   bool has_opening_scope_resolution = false;
-  Location locus = Linemap::unknown_location ();
+  Location locus = UNKNOWN_LOCATION;
 
   // don't parse anything if not a path upfront
   if (!is_simple_path_segment (lexer.peek_token ()->get_id ())
@@ -628,7 +628,7 @@ Parser<ManagedTokenSource>::parse_simple_path ()
   AST::SimplePathSegment segment = parse_simple_path_segment ();
 
   // get location if not gotten already
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     locus = segment.get_locus ();
 
   std::vector<AST::SimplePathSegment> segments;
@@ -6764,7 +6764,7 @@ template <typename ManagedTokenSource>
 AST::PathInExpression
 Parser<ManagedTokenSource>::parse_path_in_expression ()
 {
-  Location locus = Linemap::unknown_location ();
+  Location locus = UNKNOWN_LOCATION;
   bool has_opening_scope_resolution = false;
   if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION)
     {
@@ -6778,7 +6778,7 @@ Parser<ManagedTokenSource>::parse_path_in_expression ()
   // create segment vector
   std::vector<AST::PathExprSegment> segments;
 
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
     }
@@ -6949,7 +6949,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_type (
   Location locus = pratt_parsed_loc;
   /* TODO: should this actually be error? is there anywhere where this could
    * be valid? */
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
 
@@ -7381,7 +7381,7 @@ Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
 					      Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       if (!skip_token (LEFT_CURLY))
@@ -7685,7 +7685,7 @@ Parser<ManagedTokenSource>::parse_return_expr (AST::AttrVec outer_attrs,
 					       Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (RETURN_TOK);
@@ -7710,7 +7710,7 @@ Parser<ManagedTokenSource>::parse_break_expr (AST::AttrVec outer_attrs,
 					      Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (BREAK);
@@ -7741,7 +7741,7 @@ Parser<ManagedTokenSource>::parse_continue_expr (AST::AttrVec outer_attrs,
 						 Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (CONTINUE);
@@ -7792,7 +7792,7 @@ Parser<ManagedTokenSource>::parse_if_expr (AST::AttrVec outer_attrs,
 {
   // TODO: make having outer attributes an error?
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       if (!skip_token (IF))
@@ -7950,7 +7950,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
 {
   // TODO: make having outer attributes an error?
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       if (!skip_token (IF))
@@ -8136,7 +8136,7 @@ Parser<ManagedTokenSource>::parse_loop_expr (AST::AttrVec outer_attrs,
 					     Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       if (label.is_error ())
 	locus = lexer.peek_token ()->get_locus ();
@@ -8180,7 +8180,7 @@ Parser<ManagedTokenSource>::parse_while_loop_expr (AST::AttrVec outer_attrs,
 						   Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       if (label.is_error ())
 	locus = lexer.peek_token ()->get_locus ();
@@ -8251,7 +8251,7 @@ std::unique_ptr<AST::WhileLetLoopExpr>
 Parser<ManagedTokenSource>::parse_while_let_loop_expr (AST::AttrVec outer_attrs,
 						       AST::LoopLabel label)
 {
-  Location locus = Linemap::unknown_location ();
+  Location locus = UNKNOWN_LOCATION;
   if (label.is_error ())
     locus = lexer.peek_token ()->get_locus ();
   else
@@ -8325,7 +8325,7 @@ std::unique_ptr<AST::ForLoopExpr>
 Parser<ManagedTokenSource>::parse_for_loop_expr (AST::AttrVec outer_attrs,
 						 AST::LoopLabel label)
 {
-  Location locus = Linemap::unknown_location ();
+  Location locus = UNKNOWN_LOCATION;
   if (label.is_error ())
     locus = lexer.peek_token ()->get_locus ();
   else
@@ -8456,7 +8456,7 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 					      Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (MATCH_TOK);
@@ -8742,7 +8742,7 @@ Parser<ManagedTokenSource>::parse_unsafe_block_expr (AST::AttrVec outer_attrs,
 						     Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (UNSAFE);
@@ -8773,7 +8773,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 					      Location pratt_parsed_loc)
 {
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (LEFT_SQUARE);
@@ -8959,7 +8959,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_expr (
 {
   // adjustment to allow Pratt parsing to reuse function without copy-paste
   Location locus = pratt_parsed_loc;
-  if (locus == Linemap::unknown_location ())
+  if (locus == UNKNOWN_LOCATION)
     {
       locus = lexer.peek_token ()->get_locus ();
       skip_token (LEFT_PAREN);
@@ -10682,9 +10682,10 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	      std::unique_ptr<AST::RangePatternBound> upper_bound
 		= parse_range_pattern_bound ();
 
-	      return std::unique_ptr<AST::RangePattern> (new AST::RangePattern (
-		std::move (lower_bound), std::move (upper_bound),
-		Linemap::unknown_location (), has_ellipsis_syntax));
+	      return std::unique_ptr<AST::RangePattern> (
+		new AST::RangePattern (std::move (lower_bound),
+				       std::move (upper_bound),
+				       UNKNOWN_LOCATION, has_ellipsis_syntax));
 	    }
 	  case EXCLAM:
 	    return parse_macro_invocation_partial (std::move (path),
@@ -11221,9 +11222,10 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	std::unique_ptr<AST::RangePatternBound> upper_bound
 	  = parse_range_pattern_bound ();
 
-	return std::unique_ptr<AST::RangePattern> (new AST::RangePattern (
-	  std::move (lower_bound), std::move (upper_bound),
-	  Linemap::unknown_location (), has_ellipsis_syntax));
+	return std::unique_ptr<AST::RangePattern> (
+	  new AST::RangePattern (std::move (lower_bound),
+				 std::move (upper_bound), UNKNOWN_LOCATION,
+				 has_ellipsis_syntax));
       }
       case PATTERN_BIND: {
 	// only allow on single-segment paths

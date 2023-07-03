@@ -78,9 +78,6 @@ public:
   // Return the special Location used for predeclared identifiers.
   static Location predeclared_location () { return BUILTINS_LOCATION; }
 
-  // Return the special Location used when no location is known.
-  static Location unknown_location () { return UNKNOWN_LOCATION; }
-
   // Produce a human-readable description of a Location.
   static std::string location_to_string (Location loc)
   {

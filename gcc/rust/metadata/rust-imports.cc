@@ -375,7 +375,7 @@ Stream_from_file::Stream_from_file (int fd) : fd_ (fd), data_ ()
 {
   if (lseek (fd, 0, SEEK_SET) != 0)
     {
-      rust_fatal_error (Linemap::unknown_location (), "lseek failed: %m");
+      rust_fatal_error (UNKNOWN_LOCATION, "lseek failed: %m");
       this->set_saw_error ();
     }
 }
@@ -399,7 +399,7 @@ Stream_from_file::do_peek (size_t length, const char **bytes)
   if (got < 0)
     {
       if (!this->saw_error ())
-	rust_fatal_error (Linemap::unknown_location (), "read failed: %m");
+	rust_fatal_error (UNKNOWN_LOCATION, "read failed: %m");
       this->set_saw_error ();
       return false;
     }
@@ -407,7 +407,7 @@ Stream_from_file::do_peek (size_t length, const char **bytes)
   if (lseek (this->fd_, -got, SEEK_CUR) < 0)
     {
       if (!this->saw_error ())
-	rust_fatal_error (Linemap::unknown_location (), "lseek failed: %m");
+	rust_fatal_error (UNKNOWN_LOCATION, "lseek failed: %m");
       this->set_saw_error ();
       return false;
     }
@@ -427,7 +427,7 @@ Stream_from_file::do_advance (size_t skip)
   if (lseek (this->fd_, skip, SEEK_CUR) < 0)
     {
       if (!this->saw_error ())
-	rust_fatal_error (Linemap::unknown_location (), "lseek failed: %m");
+	rust_fatal_error (UNKNOWN_LOCATION, "lseek failed: %m");
       this->set_saw_error ();
     }
   if (!this->data_.empty ())

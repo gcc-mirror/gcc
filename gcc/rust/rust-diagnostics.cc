@@ -119,7 +119,7 @@ expand_message (const char *fmt, va_list ap)
   if (nwr == -1)
     {
       // memory allocation failed
-      rust_be_error_at (Linemap::unknown_location (),
+      rust_be_error_at (UNKNOWN_LOCATION,
 			"memory allocation failed in vasprintf");
       rust_assert (0);
     }
@@ -323,7 +323,7 @@ rust_debug_loc (const Location location, const char *fmt, ...)
   va_end (ap);
   if (nwr == -1)
     {
-      rust_be_error_at (Linemap::unknown_location (),
+      rust_be_error_at (UNKNOWN_LOCATION,
 			"memory allocation failed in vasprintf");
       rust_assert (0);
     }

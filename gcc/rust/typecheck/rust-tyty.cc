@@ -1454,8 +1454,7 @@ VariantDef::get_error_node ()
 {
   static VariantDef node
     = VariantDef (UNKNOWN_HIRID, UNKNOWN_DEFID, "",
-		  {Resolver::CanonicalPath::create_empty (),
-		   Linemap::unknown_location ()},
+		  {Resolver::CanonicalPath::create_empty (), UNKNOWN_LOCATION},
 		  nullptr);
 
   return node;
