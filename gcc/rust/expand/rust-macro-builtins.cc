@@ -354,8 +354,7 @@ parse_single_string_literal (BuiltinMacro kind,
 std::string
 source_relative_path (std::string path, Location locus)
 {
-  std::string compile_fname
-    = Session::get_instance ().linemap->location_file (locus);
+  std::string compile_fname = LOCATION_FILE (locus);
 
   auto dir_separator_pos = compile_fname.rfind (file_separator);
 
@@ -410,8 +409,7 @@ MacroBuiltin::assert_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 AST::Fragment
 MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &)
 {
-  auto current_file
-    = Session::get_instance ().linemap->location_file (invoc_locus);
+  auto current_file = LOCATION_FILE (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
   auto str_token
     = make_token (Token::make_string (invoc_locus, std::move (current_file)));
@@ -422,8 +420,7 @@ MacroBuiltin::file_handler (Location invoc_locus, AST::MacroInvocData &)
 AST::Fragment
 MacroBuiltin::column_handler (Location invoc_locus, AST::MacroInvocData &)
 {
-  auto current_column
-    = Session::get_instance ().linemap->location_to_column (invoc_locus);
+  auto current_column = LOCATION_COLUMN (invoc_locus);
 
   auto column_tok = make_token (
     Token::make_int (invoc_locus, std::to_string (current_column)));
@@ -896,8 +893,7 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 AST::Fragment
 MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &)
 {
-  auto current_line
-    = Session::get_instance ().linemap->location_to_line (invoc_locus);
+  auto current_line = LOCATION_LINE (invoc_locus);
 
   auto line_no = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (std::to_string (current_line), AST::Literal::INT,
