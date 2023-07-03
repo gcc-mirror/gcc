@@ -3025,19 +3025,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(with { tree cst = const_binop (outer_op == inner_op
 					? PLUS_EXPR : MINUS_EXPR,
 					type, @1, @2); }
-	 (if (cst && !TREE_OVERFLOW (cst))
-	  (inner_op @0 { cst; } )
-	  /* X+INT_MAX+1 is X-INT_MIN.  */
-	  (if (INTEGRAL_TYPE_P (type) && cst
-	       && wi::to_wide (cst) == wi::min_value (type))
-	   (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
-	   /* Last resort, use some unsigned type.  */
-	   (with { tree utype = unsigned_type_for (type); }
-	    (if (utype)
-	     (view_convert (inner_op
-			    (view_convert:utype @0)
-			    (view_convert:utype
-			     { drop_tree_overflow (cst); }))))))))))))))
+	 (if (cst)
+	  (if (INTEGRAL_TYPE_P (type) && !TREE_OVERFLOW (cst))
+	   (inner_op @0 { cst; } )
+	   /* X+INT_MAX+1 is X-INT_MIN.  */
+	   (if (INTEGRAL_TYPE_P (type)
+	        && wi::to_wide (cst) == wi::min_value (type))
+	    (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
+	    /* Last resort, use some unsigned type.  */
+	    (with { tree utype = unsigned_type_for (type); }
+	     (if (utype)
+	      (view_convert (inner_op
+			     (view_convert:utype @0)
+			     (view_convert:utype
+			      { TREE_OVERFLOW (cst)
+			        ? drop_tree_overflow (cst) : cst; })))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
