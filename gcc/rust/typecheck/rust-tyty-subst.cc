@@ -606,7 +606,8 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	  for (auto &binding : args.get_binding_args ())
 	    r.add_range (binding.get_locus ());
 
-	  rust_error_at (r, "associated type bindings are not allowed here");
+	  rust_error_at (r, ErrorCode ("E0229"),
+			 "associated type bindings are not allowed here");
 	  return SubstitutionArgumentMappings::error ();
 	}
     }
