@@ -48,14 +48,14 @@ along with GCC; see the file COPYING3.  If not see
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
-   - gather_load: used for {mask_,}gather_load
+   - gather_load: used for {mask_,len_mask,}gather_load
    - len_load: currently just len_load
    - len_maskload: currently just len_maskload
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
-   - scatter_store: used for {mask_,}scatter_store
+   - scatter_store: used for {mask_,len_mask,}scatter_store
    - len_store: currently just len_store
    - len_maskstore: currently just len_maskstore
 
@@ -157,6 +157,8 @@ DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
 		       mask_gather_load, gather_load)
+DEF_INTERNAL_OPTAB_FN (LEN_MASK_GATHER_LOAD, ECF_PURE,
+		       len_mask_gather_load, gather_load)
 
 DEF_INTERNAL_OPTAB_FN (LEN_LOAD, ECF_PURE, len_load, len_load)
 DEF_INTERNAL_OPTAB_FN (LEN_MASK_LOAD, ECF_PURE, len_maskload, len_maskload)
@@ -164,6 +166,8 @@ DEF_INTERNAL_OPTAB_FN (LEN_MASK_LOAD, ECF_PURE, len_maskload, len_maskload)
 DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
 		       mask_scatter_store, scatter_store)
+DEF_INTERNAL_OPTAB_FN (LEN_MASK_SCATTER_STORE, 0,
+		       len_mask_scatter_store, scatter_store)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)

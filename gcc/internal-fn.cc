@@ -3507,7 +3507,6 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
 {
   internal_fn ifn = gimple_call_internal_fn (stmt);
   int rhs_index = internal_fn_stored_value_index (ifn);
-  int mask_index = internal_fn_mask_index (ifn);
   tree base = gimple_call_arg (stmt, 0);
   tree offset = gimple_call_arg (stmt, 1);
   tree scale = gimple_call_arg (stmt, 2);
@@ -3518,19 +3517,14 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
   rtx rhs_rtx = expand_normal (rhs);
 
-  class expand_operand ops[6];
+  class expand_operand ops[8];
   int i = 0;
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
   create_integer_operand (&ops[i++], TYPE_UNSIGNED (TREE_TYPE (offset)));
   create_integer_operand (&ops[i++], scale_int);
   create_input_operand (&ops[i++], rhs_rtx, TYPE_MODE (TREE_TYPE (rhs)));
-  if (mask_index >= 0)
-    {
-      tree mask = gimple_call_arg (stmt, mask_index);
-      rtx mask_rtx = expand_normal (mask);
-      create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
-    }
+  i = add_len_and_mask_args (ops, i, stmt);
 
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)),
 					   TYPE_MODE (TREE_TYPE (offset)));
@@ -3553,18 +3547,13 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
 
   int i = 0;
-  class expand_operand ops[6];
+  class expand_operand ops[8];
   create_output_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
   create_integer_operand (&ops[i++], TYPE_UNSIGNED (TREE_TYPE (offset)));
   create_integer_operand (&ops[i++], scale_int);
-  if (optab == mask_gather_load_optab)
-    {
-      tree mask = gimple_call_arg (stmt, 4);
-      rtx mask_rtx = expand_normal (mask);
-      create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
-    }
+  i = add_len_and_mask_args (ops, i, stmt);
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
 					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
@@ -4415,6 +4404,7 @@ internal_load_fn_p (internal_fn fn)
     case IFN_MASK_LOAD_LANES:
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
+    case IFN_LEN_MASK_GATHER_LOAD:
     case IFN_LEN_LOAD:
     case IFN_LEN_MASK_LOAD:
       return true;
@@ -4436,6 +4426,7 @@ internal_store_fn_p (internal_fn fn)
     case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
+    case IFN_LEN_MASK_SCATTER_STORE:
     case IFN_LEN_STORE:
     case IFN_LEN_MASK_STORE:
       return true;
@@ -4454,8 +4445,10 @@ internal_gather_scatter_fn_p (internal_fn fn)
     {
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
+    case IFN_LEN_MASK_GATHER_LOAD:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
+    case IFN_LEN_MASK_SCATTER_STORE:
       return true;
 
     default:
@@ -4476,6 +4469,10 @@ internal_fn_len_index (internal_fn fn)
     case IFN_LEN_MASK_LOAD:
     case IFN_LEN_MASK_STORE:
       return 2;
+
+    case IFN_LEN_MASK_GATHER_LOAD:
+    case IFN_LEN_MASK_SCATTER_STORE:
+      return 4;
 
     default:
       return -1;
@@ -4502,6 +4499,10 @@ internal_fn_mask_index (internal_fn fn)
     case IFN_LEN_MASK_STORE:
       return 4;
 
+    case IFN_LEN_MASK_GATHER_LOAD:
+    case IFN_LEN_MASK_SCATTER_STORE:
+      return 6;
+
     default:
       return (conditional_internal_fn_code (fn) != ERROR_MARK
 	      || get_unconditional_internal_fn (fn) != IFN_LAST ? 0 : -1);
@@ -4520,6 +4521,7 @@ internal_fn_stored_value_index (internal_fn fn)
     case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
+    case IFN_LEN_MASK_SCATTER_STORE:
       return 3;
 
     case IFN_LEN_STORE:

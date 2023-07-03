@@ -5040,6 +5040,15 @@ operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be loaded from memory and clear if element @var{i}
 of the result should be set to zero.
 
+@cindex @code{len_mask_gather_load@var{m}@var{n}} instruction pattern
+@item @samp{len_mask_gather_load@var{m}@var{n}}
+Like @samp{gather_load@var{m}@var{n}}, but takes an extra length operand (operand 5),
+a bias operand (operand 6) as well as a mask operand (operand 7).  Similar to len_maskload,
+the instruction loads at most (operand 5 + operand 6) elements from memory.
+Bit @var{i} of the mask is set if element @var{i} of the result should
+be loaded from memory and clear if element @var{i} of the result should be undefined.
+Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
+
 @cindex @code{scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{scatter_store@var{m}@var{n}}
 Store a vector of mode @var{m} into several distinct memory locations.
@@ -5068,6 +5077,14 @@ address width.
 Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand as
 operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be stored to memory.
+
+@cindex @code{len_mask_scatter_store@var{m}@var{n}} instruction pattern
+@item @samp{len_mask_scatter_store@var{m}@var{n}}
+Like @samp{scatter_store@var{m}@var{n}}, but takes an extra length operand (operand 5),
+a bias operand (operand 6) as well as a mask operand (operand 7).  The instruction stores
+at most (operand 5 + operand 6) elements of (operand 4) to memory.
+Bit @var{i} of the mask is set if element @var{i} of (operand 4) should be stored.
+Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
 
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
