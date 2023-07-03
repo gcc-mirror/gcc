@@ -60,7 +60,7 @@ public:
 	    if (!implBlock->has_trait_ref ())
 	      {
 		rust_warning_at (
-		  function.get_locus (), 0,
+		  function.get_function_name ().get_locus (), 0,
 		  "associated function is never used: %<%s%>",
 		  function.get_function_name ().as_string ().c_str ());
 	      }
@@ -68,7 +68,8 @@ public:
 	else
 	  {
 	    rust_warning_at (
-	      function.get_locus (), 0, "function is never used: %<%s%>",
+	      function.get_function_name ().get_locus (), 0,
+	      "function is never used: %<%s%>",
 	      function.get_function_name ().as_string ().c_str ());
 	  }
       }

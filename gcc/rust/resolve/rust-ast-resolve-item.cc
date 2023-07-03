@@ -134,6 +134,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 
   // self turns into (self: Self) as a function param
   AST::SelfParam &self_param = function.get_self_param ();
+  // FIXME: which location should be used for Rust::Identifier `self`?
   AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
 				       self_param.get_locus (),
 				       self_param.get_has_ref (),
@@ -648,6 +649,7 @@ ResolveItem::visit (AST::Method &method)
 
   // self turns into (self: Self) as a function param
   AST::SelfParam &self_param = method.get_self_param ();
+  // FIXME: which location should be used for Rust::Identifier `self`?
   AST::IdentifierPattern self_pattern (self_param.get_node_id (), {"self"},
 				       self_param.get_locus (),
 				       self_param.get_has_ref (),
@@ -824,6 +826,7 @@ ResolveItem::visit (AST::Trait &trait)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 
   // we need to inject an implicit self TypeParam here
+  // FIXME: which location should be used for Rust::Identifier `Self`?
   AST::TypeParam *implicit_self
     = new AST::TypeParam ({"Self"}, trait.get_locus ());
   trait.insert_implict_self (
