@@ -594,6 +594,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Grand Ridge.  */
 		  if (has_feature (FEATURE_RAOINT))
 		    cpu = "grandridge";
+		  /* Assume Granite Rapids D.  */
+		  else if (has_feature (FEATURE_AMX_COMPLEX))
+		    cpu = "graniterapids-d";
 		  /* Assume Granite Rapids.  */
 		  else if (has_feature (FEATURE_AMX_FP16))
 		    cpu = "graniterapids";
