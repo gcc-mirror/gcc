@@ -8755,8 +8755,8 @@
   "TARGET_SIMD"
 {
   int start = INTVAL (operands[2]);
-  if (start != 0 && start != <nunits> / 2)
-    FAIL;
+  gcc_assert (start == 0 || start == 1);
+  start *= <nunits> / 2;
   rtx sel = aarch64_gen_stepped_int_parallel (<nunits> / 2, start, 1);
   emit_insn (gen_aarch64_get_half<mode> (operands[0], operands[1], sel));
   DONE;
