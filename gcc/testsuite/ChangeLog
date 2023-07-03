@@ -1,3 +1,27 @@
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch2.d: Fix failed tests.
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108962
+	* gdc.dg/pr108962.d: New test.
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110516
+	* gdc.dg/torture/pr110516a.d: New test.
+	* gdc.dg/torture/pr110516b.d: New test.
+
 2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
