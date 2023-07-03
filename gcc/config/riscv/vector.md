@@ -496,8 +496,8 @@
 	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RMM")
 	  (const_string "rmm")
 
-	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RDN")
-	  (const_string "rdn")
+	  (match_test "INTVAL (operands[9]) == riscv_vector::FRM_DYN")
+	  (const_string "dyn")
 	]
 	(const_string "none")
       )
