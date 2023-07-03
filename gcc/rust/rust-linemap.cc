@@ -38,12 +38,6 @@ public:
 
   std::string to_string (Location);
 
-  std::string location_file (Location);
-
-  int location_line (Location);
-
-  int location_column (Location);
-
 private:
   // Whether we are currently reading a file.
   bool in_file_;
@@ -85,29 +79,6 @@ Gcc_linemap::to_string (Location location)
   ss << lbasename (path) << ":" << SOURCE_LINE (lmo, location) << ":"
      << SOURCE_COLUMN (lmo, location);
   return ss.str ();
-}
-
-// Return the file name for a given location.
-
-std::string
-Gcc_linemap::location_file (Location loc)
-{
-  return LOCATION_FILE (loc);
-}
-
-// Return the line number for a given location.
-
-int
-Gcc_linemap::location_line (Location loc)
-{
-  return LOCATION_LINE (loc);
-}
-
-// Return the column number for a given location.
-int
-Gcc_linemap::location_column (Location loc)
-{
-  return LOCATION_COLUMN (loc);
 }
 
 // Stop getting locations.
