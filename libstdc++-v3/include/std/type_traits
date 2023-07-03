@@ -1740,7 +1740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Select between integral and enum: not possible to be both.
   template<typename _Tp,
 	   bool _IsInt = is_integral<_Tp>::value,
-	   bool _IsEnum = is_enum<_Tp>::value>
+	   bool _IsEnum = __is_enum(_Tp)>
     class __make_unsigned_selector;
 
   template<typename _Tp>
@@ -1900,7 +1900,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Select between integral and enum: not possible to be both.
   template<typename _Tp,
 	   bool _IsInt = is_integral<_Tp>::value,
-	   bool _IsEnum = is_enum<_Tp>::value>
+	   bool _IsEnum = __is_enum(_Tp)>
     class __make_signed_selector;
 
   template<typename _Tp>
@@ -2353,7 +2353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __common_type_fold<_CTp, _Rp, void>
     { };
 
-  template<typename _Tp, bool = is_enum<_Tp>::value>
+  template<typename _Tp, bool = __is_enum(_Tp)>
     struct __underlying_type_impl
     {
       using type = __underlying_type(_Tp);
