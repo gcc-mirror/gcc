@@ -566,13 +566,20 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_SIERRAFOREST;
       break;
     case 0xad:
-    case 0xae:
       /* Granite Rapids.  */
       cpu = "graniterapids";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("graniterapids");
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS;
+      break;
+    case 0xae:
+      /* Granite Rapids D.  */
+      cpu = "graniterapids-d";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("graniterapids-d");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS_D;
       break;
     case 0xb6:
       /* Grand Ridge.  */
