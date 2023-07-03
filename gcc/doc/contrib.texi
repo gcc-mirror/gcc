@@ -1095,8 +1095,7 @@ Todd Vierling for contributions for NetBSD ports.
 Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
 
 @item
-Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML
-guidance and maintaining libstdc++.
+Jonathan Wakely for contributing to and maintaining libstdc++.
 
 @item
 Dean Wakerley for converting the install documentation from HTML to texinfo
