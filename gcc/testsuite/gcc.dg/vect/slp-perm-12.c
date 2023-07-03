@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_pack_trunc } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } } */
 
 #include "tree-vect.h"

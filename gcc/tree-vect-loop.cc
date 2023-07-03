@@ -2144,14 +2144,76 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
 
   /* Only loops that can handle partially-populated vectors can have iteration
      counts less than the vectorization factor.  */
-  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      && vect_known_niters_smaller_than_vf (loop_vinfo))
     {
-      if (vect_known_niters_smaller_than_vf (loop_vinfo))
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: iteration count smaller than "
+			 "vectorization factor.\n");
+      return 0;
+    }
+
+  /* If we know the number of iterations we can do better, for the
+     epilogue we can also decide whether the main loop leaves us
+     with enough iterations, prefering a smaller vector epilog then
+     also possibly used for the case we skip the vector loop.  */
+  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      widest_int scalar_niters
+	= wi::to_widest (LOOP_VINFO_NITERSM1 (loop_vinfo)) + 1;
+      if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+	{
+	  loop_vec_info orig_loop_vinfo
+	    = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
+	  unsigned lowest_vf
+	    = constant_lower_bound (LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo));
+	  int prolog_peeling = 0;
+	  if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
+	    prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (orig_loop_vinfo);
+	  if (prolog_peeling >= 0
+	      && known_eq (LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo),
+			   lowest_vf))
+	    {
+	      unsigned gap
+		= LOOP_VINFO_PEELING_FOR_GAPS (orig_loop_vinfo) ? 1 : 0;
+	      scalar_niters = ((scalar_niters - gap - prolog_peeling)
+			       % lowest_vf + gap);
+	      if (scalar_niters == 0)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "not vectorized: loop never entered\n");
+		  return 0;
+		}
+	    }
+	}
+
+      /* Check that the loop processes at least one full vector.  */
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      if (known_lt (scalar_niters, vf))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: iteration count smaller than "
-			     "vectorization factor.\n");
+			     "loop does not have enough iterations "
+			     "to support vectorization.\n");
+	  return 0;
+	}
+
+      /* If we need to peel an extra epilogue iteration to handle data
+	 accesses with gaps, check that there are enough scalar iterations
+	 available.
+
+	 The check above is redundant with this one when peeling for gaps,
+	 but the distinction is useful for diagnostics.  */
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	  && known_le (scalar_niters, vf))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "loop does not have enough iterations "
+			     "to support peeling for gaps.\n");
 	  return 0;
 	}
     }
@@ -2500,31 +2562,6 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
       if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	gcc_assert (known_lt (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 			      LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)));
-    }
-
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-    {
-      /* Check that the loop processes at least one full vector.  */
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      tree scalar_niters = LOOP_VINFO_NITERS (loop_vinfo);
-      if (known_lt (wi::to_widest (scalar_niters), vf))
-	return opt_result::failure_at (vect_location,
-				       "loop does not have enough iterations"
-				       " to support vectorization.\n");
-
-      /* If we need to peel an extra epilogue iteration to handle data
-	 accesses with gaps, check that there are enough scalar iterations
-	 available.
-
-	 The check above is redundant with this one when peeling for gaps,
-	 but the distinction is useful for diagnostics.  */
-      tree scalar_nitersm1 = LOOP_VINFO_NITERSM1 (loop_vinfo);
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	  && known_lt (wi::to_widest (scalar_nitersm1), vf))
-	return opt_result::failure_at (vect_location,
-				       "loop does not have enough iterations"
-				       " to support peeling for gaps.\n");
     }
 
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
@@ -3002,7 +3039,8 @@ start_over:
      assuming that the loop will be used as a main loop.  We will redo
      this analysis later if we instead decide to use the loop as an
      epilogue loop.  */
-  ok = vect_determine_partial_vectors_and_peeling (loop_vinfo, false);
+  ok = vect_determine_partial_vectors_and_peeling
+	 (loop_vinfo, LOOP_VINFO_EPILOGUE_P (loop_vinfo));
   if (!ok)
     return ok;
 
