@@ -164,7 +164,8 @@ public:
     for (auto &c : candidates)
       r.add_range (c.locus);
 
-    rust_error_at (r, "multiple applicable items in scope for: %s",
+    rust_error_at (r, ErrorCode ("E0034"),
+		   "multiple applicable items in scope for: %s",
 		   query.as_string ().c_str ());
   }
 };
