@@ -292,7 +292,7 @@ resolve_operator_overload_fn (
 	  // requires another deref which is matched to the deref trait impl of
 	  // &&T so this requires another reference and deref call
 
-	  lookup = fn->infer_substitions (Location ());
+	  lookup = fn->infer_substitions (UNDEF_LOCATION);
 	  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 	  fn = static_cast<TyTy::FnType *> (lookup);
 

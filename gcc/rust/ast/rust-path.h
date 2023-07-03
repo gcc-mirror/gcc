@@ -42,7 +42,7 @@ public:
   // Creates an error PathIdentSegment.
   static PathIdentSegment create_error ()
   {
-    return PathIdentSegment ("", Location ());
+    return PathIdentSegment ("", UNDEF_LOCATION);
   }
 
   // Returns whether PathIdentSegment is in an error state.
@@ -82,7 +82,7 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      Location locus = Location ())
+		      Location locus = UNDEF_LOCATION)
     : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
   {}
 
@@ -159,7 +159,7 @@ public:
 
   static GenericArg create_error ()
   {
-    return GenericArg (nullptr, nullptr, {""}, Kind::Error, Location ());
+    return GenericArg (nullptr, nullptr, {""}, Kind::Error, UNDEF_LOCATION);
   }
 
   static GenericArg create_const (std::unique_ptr<Expr> expression)
@@ -407,7 +407,7 @@ public:
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<GenericArg> generic_args,
 	       std::vector<GenericArgsBinding> binding_args,
-	       Location locus = Location ())
+	       Location locus = UNDEF_LOCATION)
     : lifetime_args (std::move (lifetime_args)),
       generic_args (std::move (generic_args)),
       binding_args (std::move (binding_args)), locus (locus)
@@ -506,7 +506,7 @@ public:
   // Creates an error-state path expression segment.
   static PathExprSegment create_error ()
   {
-    return PathExprSegment (PathIdentSegment::create_error (), Location ());
+    return PathExprSegment (PathIdentSegment::create_error (), UNDEF_LOCATION);
   }
 
   std::string as_string () const;
@@ -602,7 +602,7 @@ public:
   // Creates an error state path in expression.
   static PathInExpression create_error ()
   {
-    return PathInExpression ({}, {}, Location ());
+    return PathInExpression ({}, {}, UNDEF_LOCATION);
   }
 
   // Returns whether path in expression is in an error state.
@@ -889,7 +889,7 @@ public:
   // Creates an error state function.
   static TypePathFunction create_error ()
   {
-    return TypePathFunction (true, Location ());
+    return TypePathFunction (true, UNDEF_LOCATION);
   }
 
   // Constructor
@@ -1031,7 +1031,7 @@ public:
   static TypePath create_error ()
   {
     return TypePath (std::vector<std::unique_ptr<TypePathSegment> > (),
-		     Location ());
+		     UNDEF_LOCATION);
   }
 
   // Constructor
@@ -1108,7 +1108,7 @@ private:
 public:
   // Constructor
   QualifiedPathType (std::unique_ptr<Type> invoke_on_type,
-		     Location locus = Location (),
+		     Location locus = UNDEF_LOCATION,
 		     TypePath trait_path = TypePath::create_error ())
     : type_to_invoke_on (std::move (invoke_on_type)),
       trait_path (std::move (trait_path)), locus (locus),
@@ -1212,7 +1212,7 @@ public:
   static QualifiedPathInExpression create_error ()
   {
     return QualifiedPathInExpression (QualifiedPathType::create_error (), {},
-				      {}, Location ());
+				      {}, UNDEF_LOCATION);
   }
 
   Location get_locus () const override final { return locus; }
@@ -1336,7 +1336,7 @@ public:
   {
     return QualifiedPathInType (
       QualifiedPathType::create_error (), nullptr,
-      std::vector<std::unique_ptr<TypePathSegment> > (), Location ());
+      std::vector<std::unique_ptr<TypePathSegment> > (), UNDEF_LOCATION);
   }
 
   std::string as_string () const override;

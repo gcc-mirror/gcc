@@ -273,7 +273,7 @@ PublicInterface::write_to_path (const std::string &path) const
   const char *path_base_name = basename (path.c_str ());
   if (strcmp (path_base_name, expected_file_name.c_str ()) != 0)
     {
-      rust_error_at (Location (),
+      rust_error_at (UNDEF_LOCATION,
 		     "expected metadata-output path to have base file name of: "
 		     "%<%s%> got %<%s%>",
 		     expected_file_name.c_str (), path_base_name);
@@ -299,7 +299,8 @@ PublicInterface::write_to_path (const std::string &path) const
   FILE *nfd = fopen (path.c_str (), "wb");
   if (nfd == NULL)
     {
-      rust_error_at (Location (), "failed to open file %<%s%> for writing: %s",
+      rust_error_at (UNDEF_LOCATION,
+		     "failed to open file %<%s%> for writing: %s",
 		     path.c_str (), xstrerror (errno));
       return;
     }
@@ -307,7 +308,7 @@ PublicInterface::write_to_path (const std::string &path) const
   // write data
   if (fwrite (kMagicHeader, sizeof (kMagicHeader), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -315,7 +316,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   if (fwrite (checksum, sizeof (checksum), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -323,7 +324,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -332,7 +333,7 @@ PublicInterface::write_to_path (const std::string &path) const
   if (fwrite (current_crate_name.c_str (), current_crate_name.size (), 1, nfd)
       < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -340,7 +341,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -348,7 +349,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   if (fwrite (size_buffer.c_str (), size_buffer.size (), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -356,7 +357,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
     {
-      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+      rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		     path.c_str (), xstrerror (errno));
       fclose (nfd);
       return;
@@ -365,7 +366,7 @@ PublicInterface::write_to_path (const std::string &path) const
   if (!buf.empty ())
     if (fwrite (buf.c_str (), buf.size (), 1, nfd) < 1)
       {
-	rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+	rust_error_at (UNDEF_LOCATION, "failed to write to file %<%s%>: %s",
 		       path.c_str (), xstrerror (errno));
 	fclose (nfd);
 	return;

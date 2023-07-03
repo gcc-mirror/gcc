@@ -1609,7 +1609,7 @@ public:
   StructBase &operator= (StructBase &&other) = default;
 
   // Returns a null expr-ed StructBase - error state
-  static StructBase error () { return StructBase (nullptr, Location ()); }
+  static StructBase error () { return StructBase (nullptr, UNDEF_LOCATION); }
 
   // Returns whether StructBase is in error state
   bool is_invalid () const { return base_struct == nullptr; }
@@ -2248,7 +2248,7 @@ public:
   // Creates an error state closure parameter.
   static ClosureParam create_error ()
   {
-    return ClosureParam (nullptr, Location ());
+    return ClosureParam (nullptr, UNDEF_LOCATION);
   }
 
   std::string as_string () const;
@@ -3353,7 +3353,7 @@ class LoopLabel /*: public Node*/
 public:
   std::string as_string () const;
 
-  LoopLabel (Lifetime loop_label, Location locus = Location ())
+  LoopLabel (Lifetime loop_label, Location locus = UNDEF_LOCATION)
     : label (std::move (loop_label)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -4128,7 +4128,7 @@ public:
   // Creates a match arm in an error state.
   static MatchArm create_error ()
   {
-    Location locus = Location ();
+    Location locus = UNDEF_LOCATION;
     return MatchArm (std::vector<std::unique_ptr<Pattern> > (), locus);
   }
 

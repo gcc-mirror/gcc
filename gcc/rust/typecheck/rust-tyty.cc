@@ -463,7 +463,7 @@ BaseType::destructure ()
       if (recurisve_ops++ >= rust_max_recursion_depth)
 	{
 	  rust_error_at (
-	    Location (),
+	    UNDEF_LOCATION,
 	    "%<recursion depth%> count exceeds limit of %i (use "
 	    "%<frust-max-recursion-depth=%> to increase the limit)",
 	    rust_max_recursion_depth);
@@ -515,7 +515,7 @@ BaseType::destructure () const
       if (recurisve_ops++ >= rust_max_recursion_depth)
 	{
 	  rust_error_at (
-	    Location (),
+	    UNDEF_LOCATION,
 	    "%<recursion depth%> count exceeds limit of %i (use "
 	    "%<frust-max-recursion-depth=%> to increase the limit)",
 	    rust_max_recursion_depth);
@@ -1267,12 +1267,12 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
 
 ErrorType::ErrorType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::ERROR,
-	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+	      {Resolver::CanonicalPath::create_empty (), UNDEF_LOCATION}, refs)
 {}
 
 ErrorType::ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::ERROR,
-	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
+	      {Resolver::CanonicalPath::create_empty (), UNDEF_LOCATION}, refs)
 {}
 
 std::string
@@ -3877,7 +3877,7 @@ DynamicObjectType::is_equal (const BaseType &other) const
   if (num_specified_bounds () != other.num_specified_bounds ())
     return false;
 
-  return bounds_compatible (other, Location (), false);
+  return bounds_compatible (other, UNDEF_LOCATION, false);
 }
 
 const std::vector<

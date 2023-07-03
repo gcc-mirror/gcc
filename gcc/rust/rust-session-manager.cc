@@ -115,12 +115,12 @@ validate_crate_name (const std::string &crate_name, Error &error)
 {
   if (crate_name.empty ())
     {
-      error = Error (Location (), "crate name cannot be empty");
+      error = Error (UNDEF_LOCATION, "crate name cannot be empty");
       return false;
     }
   if (crate_name.length () > kMaxNameLength)
     {
-      error = Error (Location (), "crate name cannot exceed %lu characters",
+      error = Error (UNDEF_LOCATION, "crate name cannot exceed %lu characters",
 		     (unsigned long) kMaxNameLength);
       return false;
     }
@@ -128,7 +128,7 @@ validate_crate_name (const std::string &crate_name, Error &error)
     {
       if (!(ISALNUM (c) || c == '_'))
 	{
-	  error = Error (Location (),
+	  error = Error (UNDEF_LOCATION,
 			 "invalid character %<%c%> in crate name: %<%s%>", c,
 			 crate_name.c_str ());
 	  return false;
@@ -197,7 +197,7 @@ Session::handle_option (
       // set the crate name
       if (arg != nullptr)
 	{
-	  auto error = Error (Location (), std::string ());
+	  auto error = Error (UNDEF_LOCATION, std::string ());
 	  if ((ret = validate_crate_name (arg, error)))
 	    {
 	      options.set_crate_name (arg);
@@ -276,7 +276,7 @@ Session::handle_cfg_option (std::string &input)
   if (!parse_cfg_option (input, key, value))
     {
       rust_error_at (
-	Location (),
+	UNDEF_LOCATION,
 	"invalid argument to %<-frust-cfg%>: Accepted formats are "
 	"%<-frust-cfg=key%> or %<-frust-cfg=key=\"value\"%> (quoted)");
       return false;
@@ -299,7 +299,7 @@ Session::enable_dump (std::string arg)
   if (arg.empty ())
     {
       rust_error_at (
-	Location (),
+	UNDEF_LOCATION,
 	"dump option was not given a name. choose %<lex%>, %<ast-pretty%>, "
 	"%<register_plugins%>, %<injection%>, "
 	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
@@ -350,7 +350,7 @@ Session::enable_dump (std::string arg)
   else
     {
       rust_error_at (
-	Location (),
+	UNDEF_LOCATION,
 	"dump option %qs was unrecognised. choose %<lex%>, %<ast-pretty%>, "
 	"%<register_plugins%>, %<injection%>, "
 	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
@@ -367,7 +367,7 @@ void
 Session::handle_input_files (int num_files, const char **files)
 {
   if (num_files != 1)
-    rust_fatal_error (Location (),
+    rust_fatal_error (UNDEF_LOCATION,
 		      "only one file may be specified on the command line");
 
   const auto &file = files[0];
@@ -397,7 +397,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 {
   auto mappings = Analysis::Mappings::get ();
   auto crate_name_changed = false;
-  auto error = Error (Location (), std::string ());
+  auto error = Error (UNDEF_LOCATION, std::string ());
 
   for (const auto &attr : parsed_crate.inner_attrs)
     {
@@ -450,7 +450,7 @@ Session::compile_crate (const char *filename)
   if (!flag_rust_experimental
       && !std::getenv ("GCCRS_INCOMPLETE_AND_EXPERIMENTAL_COMPILER_DO_NOT_USE"))
     rust_fatal_error (
-      Location (), "%s",
+      UNDEF_LOCATION, "%s",
       "gccrs is not yet able to compile Rust code "
       "properly. Most of the errors produced will be gccrs' fault and not the "
       "crate you are trying to compile. Because of this, please reports issues "
@@ -472,7 +472,7 @@ Session::compile_crate (const char *filename)
   RAIIFile file_wrap (filename);
   if (!file_wrap.ok ())
     {
-      rust_error_at (Location (), "cannot open filename %s: %m", filename);
+      rust_error_at (UNDEF_LOCATION, "cannot open filename %s: %m", filename);
       return;
     }
 
@@ -795,7 +795,8 @@ Session::injection (AST::Crate &crate)
     {
       // create "macro use" attribute for use on extern crate item to enable
       // loading macros from it
-      AST::Attribute attr (AST::SimplePath::from_str ("macro_use", Location ()),
+      AST::Attribute attr (AST::SimplePath::from_str ("macro_use",
+						      UNDEF_LOCATION),
 			   nullptr);
 
       // create "extern crate" item with the name
@@ -813,20 +814,21 @@ Session::injection (AST::Crate &crate)
   // FIXME: Once we do want to include the standard library, add the prelude
   // use item
   // std::vector<AST::SimplePathSegment> segments
-  //   = {AST::SimplePathSegment (injected_crate_name, Location ()),
-  //      AST::SimplePathSegment ("prelude", Location ()),
-  //      AST::SimplePathSegment ("v1", Location ())};
+  //   = {AST::SimplePathSegment (injected_crate_name, UNDEF_LOCATION),
+  //      AST::SimplePathSegment ("prelude", UNDEF_LOCATION),
+  //      AST::SimplePathSegment ("v1", UNDEF_LOCATION)};
   // // create use tree and decl
   // std::unique_ptr<AST::UseTreeGlob> use_tree (
   //   new AST::UseTreeGlob (AST::UseTreeGlob::PATH_PREFIXED,
-  //     		  AST::SimplePath (std::move (segments)), Location ()));
+  //     		  AST::SimplePath (std::move (segments)),
+  //     UNDEF_LOCATION));
   // AST::Attribute prelude_attr (AST::SimplePath::from_str ("prelude_import",
-  //     						  Location ()),
+  //     						  UNDEF_LOCATION),
   //     		       nullptr);
   // std::unique_ptr<AST::UseDeclaration> use_decl (
   //   new AST::UseDeclaration (std::move (use_tree),
   //     		     AST::Visibility::create_error (),
-  //     		     {std::move (prelude_attr)}, Location ()));
+  //     		     {std::move (prelude_attr)}, UNDEF_LOCATION));
 
   // crate.items.insert (crate.items.begin (), std::move (use_decl));
 
@@ -1227,7 +1229,7 @@ namespace selftest {
 void
 rust_crate_name_validation_test (void)
 {
-  auto error = Rust::Error (Location (), std::string ());
+  auto error = Rust::Error (UNDEF_LOCATION, std::string ());
   ASSERT_TRUE (Rust::validate_crate_name ("example", error));
   ASSERT_TRUE (Rust::validate_crate_name ("abcdefg_1234", error));
   ASSERT_TRUE (Rust::validate_crate_name ("1", error));

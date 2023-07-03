@@ -41,7 +41,7 @@ load_macros_array (std::string path)
   return *reinterpret_cast<const ProcMacro::ProcmacroArray **> (
     dlsym (handle, PROC_MACRO_DECL_PREFIX.c_str ()));
 #else
-  rust_sorry_at (Location (),
+  rust_sorry_at (UNDEF_LOCATION,
 		 "Procedural macros are not yet supported on windows host");
   gcc_unreachable ();
 #endif

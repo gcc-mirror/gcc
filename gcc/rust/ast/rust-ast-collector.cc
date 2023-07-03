@@ -73,7 +73,7 @@ TokenCollector::visit_items_joined_by_separator (T &collection,
       auto size = collection.size () - end_offset;
       for (size_t i = start_offset + 1; i < size; i++)
 	{
-	  push (Rust::Token::make (separator, Location ()));
+	  push (Rust::Token::make (separator, UNDEF_LOCATION));
 	  visit (collection.at (i));
 	}
     }
@@ -105,10 +105,10 @@ TokenCollector::visit_items_as_block (T &collection,
 				      std::vector<TokenPtr> trailing,
 				      TokenId left_brace, TokenId right_brace)
 {
-  push (Rust::Token::make (left_brace, Location ()));
+  push (Rust::Token::make (left_brace, UNDEF_LOCATION));
   if (collection.empty ())
     {
-      push (Rust::Token::make (right_brace, Location ()));
+      push (Rust::Token::make (right_brace, UNDEF_LOCATION));
       newline ();
     }
   else
@@ -118,7 +118,7 @@ TokenCollector::visit_items_as_block (T &collection,
       visit_items_as_lines (collection, trailing);
       decrement_indentation ();
       indentation ();
-      push (Rust::Token::make (right_brace, Location ()));
+      push (Rust::Token::make (right_brace, UNDEF_LOCATION));
       newline ();
     }
 }
@@ -128,7 +128,7 @@ TokenCollector::trailing_comma ()
 {
   if (output_trailing_commas)
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
     }
 }
 
@@ -173,7 +173,7 @@ void
 TokenCollector::visit (FunctionParam &param)
 {
   visit (param.get_pattern ());
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (param.get_type ());
 }
 
@@ -182,8 +182,8 @@ TokenCollector::visit (Attribute &attrib)
 {
   push (Rust::Token::make (HASH, attrib.get_locus ()));
   if (attrib.is_inner_attribute ())
-    push (Rust::Token::make (EXCLAM, Location ()));
-  push (Rust::Token::make (LEFT_SQUARE, Location ()));
+    push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
+  push (Rust::Token::make (LEFT_SQUARE, UNDEF_LOCATION));
   visit (attrib.get_path ());
 
   if (attrib.has_attr_input ())
@@ -211,7 +211,7 @@ TokenCollector::visit (Attribute &attrib)
 	  gcc_unreachable ();
 	}
     }
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -261,28 +261,28 @@ TokenCollector::visit (Visibility &vis)
       break;
     case Visibility::PUB_CRATE:
       push (Rust::Token::make (PUB, vis.get_locus ()));
-      push (Rust::Token::make (LEFT_PAREN, Location ()));
-      push (Rust::Token::make (CRATE, Location ()));
-      push (Rust::Token::make (RIGHT_PAREN, Location ()));
+      push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
+      push (Rust::Token::make (CRATE, UNDEF_LOCATION));
+      push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
       break;
     case Visibility::PUB_SELF:
       push (Rust::Token::make (PUB, vis.get_locus ()));
-      push (Rust::Token::make (LEFT_PAREN, Location ()));
-      push (Rust::Token::make (SELF, Location ()));
-      push (Rust::Token::make (RIGHT_PAREN, Location ()));
+      push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
+      push (Rust::Token::make (SELF, UNDEF_LOCATION));
+      push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
       break;
     case Visibility::PUB_SUPER:
       push (Rust::Token::make (PUB, vis.get_locus ()));
-      push (Rust::Token::make (LEFT_PAREN, Location ()));
-      push (Rust::Token::make (SUPER, Location ()));
-      push (Rust::Token::make (RIGHT_PAREN, Location ()));
+      push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
+      push (Rust::Token::make (SUPER, UNDEF_LOCATION));
+      push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
       break;
     case Visibility::PUB_IN_PATH:
       push (Rust::Token::make (PUB, vis.get_locus ()));
-      push (Rust::Token::make (LEFT_PAREN, Location ()));
-      push (Rust::Token::make (IN, Location ()));
+      push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
+      push (Rust::Token::make (IN, UNDEF_LOCATION));
       visit (vis.get_path ());
-      push (Rust::Token::make (RIGHT_PAREN, Location ()));
+      push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
       break;
     case Visibility::PRIV:
       break;
@@ -294,16 +294,16 @@ TokenCollector::visit (NamedFunctionParam &param)
 {
   auto name = param.get_name ();
   push (Rust::Token::make_identifier (param.get_locus (), std::move (name)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (param.get_type ());
 }
 
 void
 TokenCollector::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 {
-  push (Rust::Token::make (LEFT_ANGLE, Location ()));
+  push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));
   visit_items_joined_by_separator (params, COMMA);
-  push (Rust::Token::make (RIGHT_ANGLE, Location ()));
+  push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
 }
 
 void
@@ -327,17 +327,17 @@ TokenCollector::visit (StructField &field)
   visit (field.get_visibility ());
   auto name = field.get_field_name ().as_string ();
   push (Rust::Token::make_identifier (field.get_locus (), std::move (name)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (field.get_field_type ());
 }
 
 void
 TokenCollector::visit (std::vector<LifetimeParam> &for_lifetimes)
 {
-  push (Rust::Token::make (FOR, Location ()));
-  push (Rust::Token::make (LEFT_ANGLE, Location ()));
+  push (Rust::Token::make (FOR, UNDEF_LOCATION));
+  push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));
   visit_items_joined_by_separator (for_lifetimes, COMMA);
-  push (Rust::Token::make (RIGHT_ANGLE, Location ()));
+  push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
 }
 
 void
@@ -366,7 +366,7 @@ TokenCollector::visit (FunctionQualifiers &qualifiers)
       push (Rust::Token::make (EXTERN_TOK, qualifiers.get_locus ()));
       if (qualifiers.has_abi ())
 	{
-	  push (Rust::Token::make_string (Location (),
+	  push (Rust::Token::make_string (UNDEF_LOCATION,
 					  qualifiers.get_extern_abi ()));
 	}
     }
@@ -388,12 +388,13 @@ TokenCollector::visit (MaybeNamedParam &param)
     case MaybeNamedParam::UNNAMED:
       break;
     case MaybeNamedParam::IDENTIFIER:
-      push (Rust::Token::make_identifier (Location (), std::move (param_name)));
-      push (Rust::Token::make (COLON, Location ()));
+      push (
+	Rust::Token::make_identifier (UNDEF_LOCATION, std::move (param_name)));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       break;
     case MaybeNamedParam::WILDCARD:
-      push (Rust::Token::make (UNDERSCORE, Location ()));
-      push (Rust::Token::make (COLON, Location ()));
+      push (Rust::Token::make (UNDERSCORE, UNDEF_LOCATION));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       break;
     }
   visit (param.get_type ());
@@ -515,7 +516,7 @@ TokenCollector::visit (LifetimeParam &lifetime_param)
 
   if (lifetime_param.has_lifetime_bounds ())
     {
-      push (Rust::Token::make (COLON, Location ()));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       for (auto &bound : lifetime_param.get_lifetime_bounds ())
 	{
 	  visit (bound);
@@ -531,12 +532,12 @@ TokenCollector::visit (ConstGenericParam &param)
 
   push (Rust::Token::make (CONST, param.get_locus ()));
   auto id = param.get_name ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (param.get_type ());
   if (param.has_default_value ())
     {
-      push (Rust::Token::make (EQUAL, Location ()));
+      push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
       visit (param.get_type ());
     }
 }
@@ -560,19 +561,19 @@ TokenCollector::visit (PathExprSegment &segment)
       if (!lifetime_args.empty ()
 	  && (!generic_args.empty () || !binding_args.empty ()))
 	{
-	  push (Rust::Token::make (COMMA, Location ()));
+	  push (Rust::Token::make (COMMA, UNDEF_LOCATION));
 	}
 
       visit_items_joined_by_separator (binding_args, COMMA);
 
       if (!generic_args.empty () && !binding_args.empty ())
 	{
-	  push (Rust::Token::make (COMMA, Location ()));
+	  push (Rust::Token::make (COMMA, UNDEF_LOCATION));
 	}
 
       visit_items_joined_by_separator (lifetime_args, COMMA);
 
-      push (Rust::Token::make (RIGHT_ANGLE, Location ()));
+      push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
     }
 }
 
@@ -613,9 +614,9 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
     Rust::Token::make_identifier (ident_segment.get_locus (), std::move (id)));
 
   if (segment.get_separating_scope_resolution ())
-    push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+    push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
 
-  push (Rust::Token::make (LEFT_ANGLE, Location ()));
+  push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));
 
   {
     auto &lifetime_args = segment.get_generic_args ().get_lifetime_args ();
@@ -625,14 +626,14 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
     visit_items_joined_by_separator (lifetime_args, COMMA);
     if (!lifetime_args.empty ()
 	&& (!generic_args.empty () || !binding_args.empty ()))
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
     visit_items_joined_by_separator (generic_args, COMMA);
     if (!generic_args.empty () && !binding_args.empty ())
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
     visit_items_joined_by_separator (binding_args, COMMA);
   }
 
-  push (Rust::Token::make (RIGHT_ANGLE, Location ()));
+  push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
 }
 
 void
@@ -644,7 +645,7 @@ TokenCollector::visit (GenericArgsBinding &binding)
   push (Rust::Token::make_identifier (binding.get_locus (),
 				      std::move (identifier)));
 
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (binding.get_type ());
 }
 
@@ -663,7 +664,7 @@ TokenCollector::visit (GenericArg &arg)
       break;
       case GenericArg::Kind::Either: {
 	auto path = arg.get_path ();
-	push (Rust::Token::make_identifier (Location (), std::move (path)));
+	push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (path)));
       }
       break;
     case GenericArg::Kind::Error:
@@ -683,7 +684,7 @@ TokenCollector::visit (TypePathSegmentFunction &segment)
     Rust::Token::make_identifier (ident_segment.get_locus (), std::move (id)));
 
   if (segment.get_separating_scope_resolution ())
-    push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+    push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
 
   if (!segment.is_ident_only ())
     visit (segment.get_type_path_function ());
@@ -700,11 +701,11 @@ TokenCollector::visit (TypePathFunction &type_path_fn)
   push (Rust::Token::make (LEFT_PAREN, type_path_fn.get_locus ()));
   if (type_path_fn.has_inputs ())
     visit_items_joined_by_separator (type_path_fn.get_params (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   if (type_path_fn.has_return_type ())
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (type_path_fn.get_return_type ());
     }
 }
@@ -754,7 +755,7 @@ TokenCollector::visit (QualifiedPathInExpression &path)
   visit (path.get_qualified_path_type ());
   for (auto &segment : path.get_segments ())
     {
-      push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       visit (segment);
     }
 }
@@ -766,10 +767,10 @@ TokenCollector::visit (QualifiedPathType &path)
   visit (path.get_type ());
   if (path.has_as_clause ())
     {
-      push (Rust::Token::make (AS, Location ()));
+      push (Rust::Token::make (AS, UNDEF_LOCATION));
       visit (path.get_as_type_path ());
     }
-  push (Rust::Token::make (RIGHT_ANGLE, Location ()));
+  push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
 }
 
 void
@@ -777,11 +778,11 @@ TokenCollector::visit (QualifiedPathInType &path)
 {
   visit (path.get_qualified_path_type ());
 
-  push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+  push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
   visit (path.get_associated_segment ());
   for (auto &segment : path.get_segments ())
     {
-      push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       visit (segment);
     }
 }
@@ -840,14 +841,14 @@ TokenCollector::visit (LiteralExpr &expr)
 void
 TokenCollector::visit (AttrInputLiteral &literal)
 {
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (literal.get_literal ());
 }
 
 void
 TokenCollector::visit (AttrInputMacro &macro)
 {
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (macro.get_macro ());
 }
 
@@ -873,9 +874,9 @@ TokenCollector::visit (BorrowExpr &expr)
 {
   push (Rust::Token::make (AMP, expr.get_locus ()));
   if (expr.get_is_double_borrow ())
-    push (Rust::Token::make (AMP, Location ()));
+    push (Rust::Token::make (AMP, UNDEF_LOCATION));
   if (expr.get_is_mut ())
-    push (Rust::Token::make (MUT, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
 
   visit (expr.get_borrowed_expr ());
 }
@@ -1082,7 +1083,7 @@ void
 TokenCollector::visit (ArrayElemsCopied &elems)
 {
   visit (elems.get_elem_to_copy ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   visit (elems.get_num_copies ());
 }
 
@@ -1091,7 +1092,7 @@ TokenCollector::visit (ArrayExpr &expr)
 {
   push (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
   visit (expr.get_array_elems ());
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -1100,7 +1101,7 @@ TokenCollector::visit (ArrayIndexExpr &expr)
   visit (expr.get_array_expr ());
   push (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
   visit (expr.get_index_expr ());
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -1109,7 +1110,7 @@ TokenCollector::visit (TupleExpr &expr)
   visit_items_as_lines (expr.get_outer_attrs ());
   push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
   visit_items_joined_by_separator (expr.get_tuple_elems (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -1117,7 +1118,7 @@ TokenCollector::visit (TupleIndexExpr &expr)
 {
   visit (expr.get_tuple_expr ());
   push (Rust::Token::make (DOT, expr.get_locus ()));
-  push (Rust::Token::make_int (Location (),
+  push (Rust::Token::make_int (UNDEF_LOCATION,
 			       std::to_string (expr.get_tuple_index ())));
 }
 
@@ -1143,7 +1144,7 @@ TokenCollector::visit (StructExprFieldIdentifierValue &expr)
   // visit_items_as_lines (expr.get_attrs ());
   auto id = expr.get_field_name ();
   push (Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (expr.get_value ());
 }
 
@@ -1154,14 +1155,14 @@ TokenCollector::visit (StructExprFieldIndexValue &expr)
   // visit_items_as_lines (expr.get_attrs ());
   push (Rust::Token::make_int (expr.get_locus (),
 			       std::to_string (expr.get_index ())));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (expr.get_value ());
 }
 
 void
 TokenCollector::visit (StructBase &base)
 {
-  push (Rust::Token::make (DOT_DOT, Location ()));
+  push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
   visit (base.get_base_struct ());
 }
 
@@ -1173,7 +1174,7 @@ TokenCollector::visit (StructExprStructFields &expr)
   visit_items_joined_by_separator (expr.get_fields (), COMMA);
   if (expr.has_struct_base ())
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
       visit (expr.get_struct_base ());
     }
   else
@@ -1195,11 +1196,11 @@ TokenCollector::visit (CallExpr &expr)
 {
   visit (expr.get_function_expr ());
 
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (expr.get_params (), COMMA);
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -1208,10 +1209,10 @@ TokenCollector::visit (MethodCallExpr &expr)
   visit (expr.get_receiver_expr ());
   push (Rust::Token::make (DOT, expr.get_locus ()));
   visit (expr.get_method_name ());
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
   visit_items_joined_by_separator (expr.get_params (), COMMA);
   trailing_comma ();
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -1220,7 +1221,7 @@ TokenCollector::visit (FieldAccessExpr &expr)
   visit (expr.get_receiver_expr ());
   push (Rust::Token::make (DOT, expr.get_locus ()));
   auto field_name = expr.get_field_name ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (field_name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (field_name)));
 }
 
 void
@@ -1242,9 +1243,9 @@ TokenCollector::visit_closure_common (ClosureExpr &expr)
     {
       push (Rust::Token::make (MOVE, expr.get_locus ()));
     }
-  push (Rust::Token::make (PIPE, Location ()));
+  push (Rust::Token::make (PIPE, UNDEF_LOCATION));
   visit_items_joined_by_separator (expr.get_params (), COMMA);
-  push (Rust::Token::make (PIPE, Location ()));
+  push (Rust::Token::make (PIPE, UNDEF_LOCATION));
 }
 
 void
@@ -1400,13 +1401,13 @@ TokenCollector::visit (WhileLetLoopExpr &expr)
 {
   visit_loop_common (expr);
   push (Rust::Token::make (WHILE, expr.get_locus ()));
-  push (Rust::Token::make (LET, Location ()));
+  push (Rust::Token::make (LET, UNDEF_LOCATION));
   // TODO: The reference mention only one Pattern
   for (auto &item : expr.get_patterns ())
     {
       visit (item);
     }
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_block ());
 }
@@ -1417,7 +1418,7 @@ TokenCollector::visit (ForLoopExpr &expr)
   visit_loop_common (expr);
   push (Rust::Token::make (FOR, expr.get_locus ()));
   visit (expr.get_pattern ());
-  push (Rust::Token::make (IN, Location ()));
+  push (Rust::Token::make (IN, UNDEF_LOCATION));
   visit (expr.get_iterator_expr ());
   visit (expr.get_loop_block ());
 }
@@ -1443,12 +1444,12 @@ void
 TokenCollector::visit (IfLetExpr &expr)
 {
   push (Rust::Token::make (IF, expr.get_locus ()));
-  push (Rust::Token::make (LET, Location ()));
+  push (Rust::Token::make (LET, UNDEF_LOCATION));
   for (auto &pattern : expr.get_patterns ())
     {
       visit (pattern);
     }
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (expr.get_value_expr ());
   visit (expr.get_if_block ());
 }
@@ -1472,7 +1473,7 @@ TokenCollector::visit (MatchArm &arm)
     }
   if (arm.has_match_arm_guard ())
     {
-      push (Rust::Token::make (IF, Location ()));
+      push (Rust::Token::make (IF, UNDEF_LOCATION));
       visit (arm.get_guard_expr ());
     }
 }
@@ -1482,10 +1483,10 @@ TokenCollector::visit (MatchCase &match_case)
 {
   indentation ();
   visit (match_case.get_arm ());
-  push (Rust::Token::make (MATCH_ARROW, Location ()));
+  push (Rust::Token::make (MATCH_ARROW, UNDEF_LOCATION));
   visit (match_case.get_expr ());
   indentation ();
-  push (Rust::Token::make (COMMA, Location ()));
+  push (Rust::Token::make (COMMA, UNDEF_LOCATION));
   newline ();
 }
 
@@ -1494,7 +1495,7 @@ TokenCollector::visit (MatchExpr &expr)
 {
   push (Rust::Token::make (MATCH_TOK, expr.get_locus ()));
   visit (expr.get_scrutinee_expr ());
-  push (Rust::Token::make (LEFT_CURLY, Location ()));
+  push (Rust::Token::make (LEFT_CURLY, UNDEF_LOCATION));
   newline ();
   increment_indentation ();
   visit_items_as_lines (expr.get_inner_attrs ());
@@ -1504,7 +1505,7 @@ TokenCollector::visit (MatchExpr &expr)
     }
   decrement_indentation ();
   indentation ();
-  push (Rust::Token::make (RIGHT_CURLY, Location ()));
+  push (Rust::Token::make (RIGHT_CURLY, UNDEF_LOCATION));
 }
 
 void
@@ -1513,7 +1514,7 @@ TokenCollector::visit (AwaitExpr &expr)
   visit (expr.get_awaited_expr ());
   push (Rust::Token::make (DOT, expr.get_locus ()));
   // TODO: Check status of await keyword (Context dependant ?)
-  push (Rust::Token::make_identifier (Location (), "await"));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, "await"));
 }
 
 void
@@ -1521,7 +1522,7 @@ TokenCollector::visit (AsyncBlockExpr &expr)
 {
   push (Rust::Token::make (ASYNC, expr.get_locus ()));
   if (expr.get_has_move ())
-    push (Rust::Token::make (MOVE, Location ()));
+    push (Rust::Token::make (MOVE, UNDEF_LOCATION));
   visit (expr.get_block_expr ());
 }
 
@@ -1539,12 +1540,12 @@ TokenCollector::visit (TypeParam &param)
   push (Rust::Token::make_identifier (param.get_locus (), std::move (id)));
   if (param.has_type_param_bounds ())
     {
-      push (Rust::Token::make (COLON, Location ()));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       visit_items_joined_by_separator (param.get_type_param_bounds (), PLUS);
     }
   if (param.has_type ())
     {
-      push (Rust::Token::make (EQUAL, Location ()));
+      push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
       visit (param.get_type ());
     }
 }
@@ -1558,7 +1559,7 @@ TokenCollector::visit (WhereClause &rule)
   // 	LifetimeWhereClauseItem
   //  	| TypeBoundWhereClauseItem
 
-  push (Rust::Token::make (WHERE, Location ()));
+  push (Rust::Token::make (WHERE, UNDEF_LOCATION));
   newline ();
   increment_indentation ();
   visit_items_joined_by_separator (rule.get_items (), COMMA);
@@ -1574,7 +1575,7 @@ TokenCollector::visit (LifetimeWhereClauseItem &item)
   //   ( Lifetime + )* Lifetime?
 
   visit (item.get_lifetime ());
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit_items_joined_by_separator (item.get_lifetime_bounds (), PLUS);
 }
 
@@ -1593,7 +1594,7 @@ TokenCollector::visit (TypeBoundWhereClauseItem &item)
 
   visit (item.get_type ());
 
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit_items_joined_by_separator (item.get_type_param_bounds (), PLUS);
 }
 
@@ -1606,27 +1607,27 @@ TokenCollector::visit (Method &method)
   visit (qualifiers);
 
   push (Rust::Token::make (FN_TOK, method.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (method_name)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (method_name)));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit (method.get_self_param ());
   if (!method.get_function_params ().empty ())
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
       visit_items_joined_by_separator (method.get_function_params (), COMMA);
     }
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   if (method.has_return_type ())
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (method.get_return_type ());
     }
 
   auto &block = method.get_definition ();
   if (!block)
-    push (Rust::Token::make (SEMICOLON, Location ()));
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   else
     visit (block);
   newline ();
@@ -1646,16 +1647,16 @@ TokenCollector::visit (Module &module)
   visit (module.get_visibility ());
   auto name = module.get_name ().as_string ();
   push (Rust::Token::make (MOD, module.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (name)));
 
   if (module.get_kind () == Module::UNLOADED)
     {
-      push (Rust::Token::make (SEMICOLON, Location ()));
+      push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
       newline ();
     }
   else /* Module::LOADED */
     {
-      push (Rust::Token::make (LEFT_CURLY, Location ()));
+      push (Rust::Token::make (LEFT_CURLY, UNDEF_LOCATION));
       newline ();
       increment_indentation ();
 
@@ -1664,7 +1665,7 @@ TokenCollector::visit (Module &module)
 
       decrement_indentation ();
 
-      push (Rust::Token::make (RIGHT_CURLY, Location ()));
+      push (Rust::Token::make (RIGHT_CURLY, UNDEF_LOCATION));
       newline ();
     }
 }
@@ -1674,16 +1675,17 @@ TokenCollector::visit (ExternCrate &crate)
 {
   visit_items_as_lines (crate.get_outer_attrs ());
   push (Rust::Token::make (EXTERN_TOK, crate.get_locus ()));
-  push (Rust::Token::make (CRATE, Location ()));
+  push (Rust::Token::make (CRATE, UNDEF_LOCATION));
   auto ref = crate.get_referenced_crate ();
-  push (Rust::Token::make_identifier (Location (), std::move (ref)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (ref)));
   if (crate.has_as_clause ())
     {
       auto as_clause = crate.get_as_clause ();
-      push (Rust::Token::make (AS, Location ()));
-      push (Rust::Token::make_identifier (Location (), std::move (as_clause)));
+      push (Rust::Token::make (AS, UNDEF_LOCATION));
+      push (
+	Rust::Token::make_identifier (UNDEF_LOCATION, std::move (as_clause)));
     }
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 
@@ -1695,16 +1697,16 @@ TokenCollector::visit (UseTreeGlob &use_tree)
       case UseTreeGlob::PathType::PATH_PREFIXED: {
 	auto path = use_tree.get_path ();
 	visit (path);
-	push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+	push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       }
       break;
     case UseTreeGlob::PathType::NO_PATH:
-      push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       break;
     case UseTreeGlob::PathType::GLOBAL:
       break;
     }
-  push (Rust::Token::make (ASTERISK, Location ()));
+  push (Rust::Token::make (ASTERISK, UNDEF_LOCATION));
 }
 
 void
@@ -1715,22 +1717,22 @@ TokenCollector::visit (UseTreeList &use_tree)
       case UseTreeList::PathType::PATH_PREFIXED: {
 	auto path = use_tree.get_path ();
 	visit (path);
-	push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+	push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       }
       break;
     case UseTreeList::PathType::NO_PATH:
-      push (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
       break;
     case UseTreeList::PathType::GLOBAL:
       break;
     }
 
-  push (Rust::Token::make (LEFT_CURLY, Location ()));
+  push (Rust::Token::make (LEFT_CURLY, UNDEF_LOCATION));
   if (use_tree.has_trees ())
     {
       visit_items_joined_by_separator (use_tree.get_trees (), COMMA);
     }
-  push (Rust::Token::make (RIGHT_CURLY, Location ()));
+  push (Rust::Token::make (RIGHT_CURLY, UNDEF_LOCATION));
 }
 
 void
@@ -1741,14 +1743,14 @@ TokenCollector::visit (UseTreeRebind &use_tree)
   switch (use_tree.get_new_bind_type ())
     {
       case UseTreeRebind::NewBindType::IDENTIFIER: {
-	push (Rust::Token::make (AS, Location ()));
+	push (Rust::Token::make (AS, UNDEF_LOCATION));
 	auto id = use_tree.get_identifier ().as_string ();
 	push (
 	  Rust::Token::make_identifier (use_tree.get_locus (), std::move (id)));
       }
       break;
     case UseTreeRebind::NewBindType::WILDCARD:
-      push (Rust::Token::make (AS, Location ()));
+      push (Rust::Token::make (AS, UNDEF_LOCATION));
       push (Rust::Token::make (UNDERSCORE, use_tree.get_locus ()));
       break;
     case UseTreeRebind::NewBindType::NONE:
@@ -1762,7 +1764,7 @@ TokenCollector::visit (UseDeclaration &decl)
   visit_items_as_lines (decl.get_outer_attrs ());
   push (Rust::Token::make (USE, decl.get_locus ()));
   visit (*decl.get_tree ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 
@@ -1782,17 +1784,17 @@ TokenCollector::visit (Function &function)
 
   push (Rust::Token::make (FN_TOK, function.get_locus ()));
   auto name = function.get_function_name ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (name)));
   if (function.has_generics ())
     visit (function.get_generic_params ());
 
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
   visit_items_joined_by_separator (function.get_function_params ());
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   if (function.has_return_type ())
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (function.get_return_type ());
     }
 
@@ -1801,7 +1803,7 @@ TokenCollector::visit (Function &function)
 
   auto &block = function.get_definition ();
   if (!block)
-    push (Rust::Token::make (SEMICOLON, Location ()));
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   else
     visit (block);
   newline ();
@@ -1820,7 +1822,7 @@ TokenCollector::visit (TypeAlias &type_alias)
     visit (type_alias.get_visibility ());
   auto alias_name = type_alias.get_new_type_name ().as_string ();
   push (Rust::Token::make (TYPE, type_alias.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (alias_name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (alias_name)));
 
   if (type_alias.has_generics ())
     visit (type_alias.get_generic_params ());
@@ -1828,9 +1830,9 @@ TokenCollector::visit (TypeAlias &type_alias)
   if (type_alias.has_where_clause ())
     visit (type_alias.get_where_clause ());
 
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (type_alias.get_type_aliased ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -1841,7 +1843,7 @@ TokenCollector::visit (StructStruct &struct_item)
     visit (struct_item.get_visibility ());
   auto struct_name = struct_item.get_identifier ().as_string ();
   push (Rust::Token::make (STRUCT_TOK, struct_item.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (struct_name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (struct_name)));
 
   if (struct_item.has_generics ())
     visit (struct_item.get_generic_params ());
@@ -1849,12 +1851,12 @@ TokenCollector::visit (StructStruct &struct_item)
     visit (struct_item.get_where_clause ());
   if (struct_item.is_unit_struct ())
     {
-      push (Rust::Token::make (SEMICOLON, Location ()));
+      push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
       newline ();
     }
   else
     visit_items_as_block (struct_item.get_fields (),
-			  {Rust::Token::make (COMMA, Location ())});
+			  {Rust::Token::make (COMMA, UNDEF_LOCATION)});
 }
 
 void
@@ -1863,16 +1865,16 @@ TokenCollector::visit (TupleStruct &tuple_struct)
   visit_items_as_lines (tuple_struct.get_outer_attrs ());
   auto struct_name = tuple_struct.get_identifier ().as_string ();
   push (Rust::Token::make (STRUCT_TOK, tuple_struct.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (struct_name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (struct_name)));
   if (tuple_struct.has_generics ())
     visit (tuple_struct.get_generic_params ());
   if (tuple_struct.has_where_clause ())
     visit (tuple_struct.get_where_clause ());
 
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
   visit_items_joined_by_separator (tuple_struct.get_fields (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 
@@ -1889,9 +1891,9 @@ TokenCollector::visit (EnumItemTuple &item)
 {
   auto id = item.get_identifier ().as_string ();
   push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
   visit_items_joined_by_separator (item.get_tuple_fields (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -1900,7 +1902,7 @@ TokenCollector::visit (EnumItemStruct &item)
   auto id = item.get_identifier ().as_string ();
   push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
   visit_items_as_block (item.get_struct_fields (),
-			{Rust::Token::make (COMMA, Location ())});
+			{Rust::Token::make (COMMA, UNDEF_LOCATION)});
 }
 
 void
@@ -1908,7 +1910,7 @@ TokenCollector::visit (EnumItemDiscriminant &item)
 {
   auto id = item.get_identifier ().as_string ();
   push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
-  push (Rust::Token::make (EQUAL, Location ()));
+  push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
   visit (item.get_expr ());
 }
 
@@ -1928,7 +1930,7 @@ TokenCollector::visit (Enum &enumeration)
     visit (enumeration.get_where_clause ());
 
   visit_items_as_block (enumeration.get_variants (),
-			{Rust::Token::make (COMMA, Location ())});
+			{Rust::Token::make (COMMA, UNDEF_LOCATION)});
 }
 
 void
@@ -1937,7 +1939,7 @@ TokenCollector::visit (Union &union_item)
   visit_items_as_lines (union_item.get_outer_attrs ());
   auto id = union_item.get_identifier ().as_string ();
   push (Rust::Token::make_identifier (union_item.get_locus (), "union"));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
   if (union_item.has_generics ())
     visit (union_item.get_generic_params ());
@@ -1946,7 +1948,7 @@ TokenCollector::visit (Union &union_item)
     visit (union_item.get_where_clause ());
 
   visit_items_as_block (union_item.get_variants (),
-			{Rust::Token::make (COMMA, Location ())});
+			{Rust::Token::make (COMMA, UNDEF_LOCATION)});
 }
 
 void
@@ -1956,21 +1958,21 @@ TokenCollector::visit (ConstantItem &item)
   push (Rust::Token::make (CONST, item.get_locus ()));
   if (item.is_unnamed ())
     {
-      push (Rust::Token::make (UNDERSCORE, Location ()));
+      push (Rust::Token::make (UNDERSCORE, UNDEF_LOCATION));
     }
   else
     {
       auto id = item.get_identifier ();
-      push (Rust::Token::make_identifier (Location (), std::move (id)));
+      push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
     }
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (item.get_type ());
   if (item.has_expr ())
     {
-      push (Rust::Token::make (EQUAL, Location ()));
+      push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
       visit (item.get_expr ());
     }
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -1979,20 +1981,20 @@ TokenCollector::visit (StaticItem &item)
   visit_items_as_lines (item.get_outer_attrs ());
   push (Rust::Token::make (STATIC_TOK, item.get_locus ()));
   if (item.is_mutable ())
-    push (Rust::Token::make (MUT, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
 
   auto id = item.get_identifier ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
 
   visit (item.get_type ());
 
   if (item.has_expr ())
     {
-      push (Rust::Token::make (EQUAL, Location ()));
+      push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
       visit (item.get_expr ());
     }
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -2002,7 +2004,7 @@ TokenCollector::visit_function_common (std::unique_ptr<Type> &return_type,
   // FIXME: This should format the `<vis> fn <name> ( [args] )` as well
   if (return_type)
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (return_type);
     }
 
@@ -2012,7 +2014,7 @@ TokenCollector::visit_function_common (std::unique_ptr<Type> &return_type,
     }
   else
     {
-      push (Rust::Token::make (SEMICOLON, Location ()));
+      push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
       newline ();
     }
 }
@@ -2024,12 +2026,12 @@ TokenCollector::visit (TraitItemFunc &item)
   auto id = func.get_identifier ().as_string ();
 
   push (Rust::Token::make (FN_TOK, item.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (func.get_function_params ());
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   visit_function_common (func.get_return_type (), item.get_definition ());
 }
@@ -2039,19 +2041,19 @@ TokenCollector::visit (SelfParam &param)
 {
   if (param.get_has_ref ())
     {
-      push (Rust::Token::make (AMP, Location ()));
+      push (Rust::Token::make (AMP, UNDEF_LOCATION));
       if (param.has_lifetime ())
 	{
 	  auto lifetime = param.get_lifetime ();
 	  visit (lifetime);
 	}
       if (param.get_is_mut ())
-	push (Rust::Token::make (MUT, Location ()));
+	push (Rust::Token::make (MUT, UNDEF_LOCATION));
     }
-  push (Rust::Token::make (SELF, Location ()));
+  push (Rust::Token::make (SELF, UNDEF_LOCATION));
   if (param.has_type ())
     {
-      push (Rust::Token::make (COLON, Location ()));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       visit (param.get_type ());
     }
 }
@@ -2063,18 +2065,18 @@ TokenCollector::visit (TraitItemMethod &item)
   auto id = method.get_identifier ().as_string ();
 
   push (Rust::Token::make (FN_TOK, item.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit (method.get_self_param ());
 
   if (!method.get_function_params ().empty ())
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
       visit_items_joined_by_separator (method.get_function_params (), COMMA);
     }
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   visit_function_common (method.get_return_type (), item.get_definition ());
 }
@@ -2085,10 +2087,10 @@ TokenCollector::visit (TraitItemConst &item)
   auto id = item.get_identifier ().as_string ();
   indentation ();
   push (Rust::Token::make (CONST, item.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (item.get_type ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 
@@ -2100,8 +2102,8 @@ TokenCollector::visit (TraitItemType &item)
   indentation ();
 
   push (Rust::Token::make (TYPE, item.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   newline ();
 }
 
@@ -2119,7 +2121,7 @@ TokenCollector::visit (Trait &trait)
 
   auto id = trait.get_identifier ().as_string ();
   push (Rust::Token::make (TRAIT, trait.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
   visit (trait.get_generic_params ());
 
@@ -2150,9 +2152,9 @@ TokenCollector::visit (TraitImpl &impl)
   push (Rust::Token::make (IMPL, impl.get_locus ()));
   visit (impl.get_generic_params ());
   if (impl.is_exclam ())
-    push (Rust::Token::make (EXCLAM, Location ()));
+    push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
   visit (impl.get_trait_path ());
-  push (Rust::Token::make (FOR, Location ()));
+  push (Rust::Token::make (FOR, UNDEF_LOCATION));
   visit (impl.get_type ());
 
   if (impl.has_where_clause ())
@@ -2168,9 +2170,9 @@ TokenCollector::visit (ExternalTypeItem &type)
 
   auto id = type.get_identifier ().as_string ();
 
-  push (Rust::Token::make (TYPE, Location ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (TYPE, UNDEF_LOCATION));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -2182,13 +2184,13 @@ TokenCollector::visit (ExternalStaticItem &item)
     visit (item.get_visibility ());
   push (Rust::Token::make (STATIC_TOK, item.get_locus ()));
   if (item.is_mut ())
-    push (Rust::Token::make (MUT, Location ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
   visit (item.get_type ());
   // TODO: No expr ? The "(= Expression)?" part from the reference seems missing
   // in the ast.
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -2200,27 +2202,27 @@ TokenCollector::visit (ExternalFunctionItem &function)
   auto id = function.get_identifier ().as_string ();
 
   push (Rust::Token::make (FN_TOK, function.get_locus ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
   if (function.has_generics ())
     visit (function.get_generic_params ());
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (function.get_function_params ());
   if (function.is_variadic ())
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
       // TODO: Add variadic outer attributes?
       // TODO: Add variadic name once implemented.
-      push (Rust::Token::make (ELLIPSIS, Location ()));
+      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
     }
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
   if (function.has_return_type ())
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (function.get_return_type ());
     }
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -2232,7 +2234,7 @@ TokenCollector::visit (ExternBlock &block)
   if (block.has_abi ())
     {
       auto abi = block.get_abi ();
-      push (Rust::Token::make_string (Location (), std::move (abi)));
+      push (Rust::Token::make_string (UNDEF_LOCATION, std::move (abi)));
     }
 
   visit_items_as_block (block.get_extern_items (), {});
@@ -2259,24 +2261,24 @@ TokenCollector::visit (MacroMatchFragment &match)
 {
   auto id = match.get_ident ().as_string ();
   auto frag_spec = match.get_frag_spec ().as_string ();
-  push (Rust::Token::make (DOLLAR_SIGN, Location ()));
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
-  push (Rust::Token::make (COLON, Location ()));
-  push (Rust::Token::make_identifier (Location (), std::move (frag_spec)));
+  push (Rust::Token::make (DOLLAR_SIGN, UNDEF_LOCATION));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
+  push (Rust::Token::make (COLON, UNDEF_LOCATION));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (frag_spec)));
 }
 
 void
 TokenCollector::visit (MacroMatchRepetition &repetition)
 {
-  push (Rust::Token::make (DOLLAR_SIGN, Location ()));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (DOLLAR_SIGN, UNDEF_LOCATION));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   for (auto &match : repetition.get_matches ())
     {
       visit (match);
     }
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   if (repetition.has_sep ())
     {
@@ -2286,13 +2288,13 @@ TokenCollector::visit (MacroMatchRepetition &repetition)
   switch (repetition.get_op ())
     {
     case MacroMatchRepetition::ANY:
-      push (Rust::Token::make (ASTERISK, Location ()));
+      push (Rust::Token::make (ASTERISK, UNDEF_LOCATION));
       break;
     case MacroMatchRepetition::ONE_OR_MORE:
-      push (Rust::Token::make (PLUS, Location ()));
+      push (Rust::Token::make (PLUS, UNDEF_LOCATION));
       break;
     case MacroMatchRepetition::ZERO_OR_ONE:
-      push (Rust::Token::make (QUESTION_MARK, Location ()));
+      push (Rust::Token::make (QUESTION_MARK, UNDEF_LOCATION));
       break;
     case MacroMatchRepetition::NONE:
       break;
@@ -2304,14 +2306,14 @@ TokenCollector::visit (MacroMatcher &matcher)
 {
   auto delimiters = get_delimiters (matcher.get_delim_type ());
 
-  push (Rust::Token::make (delimiters.first, Location ()));
+  push (Rust::Token::make (delimiters.first, UNDEF_LOCATION));
 
   for (auto &item : matcher.get_matches ())
     {
       visit (item);
     }
 
-  push (Rust::Token::make (delimiters.second, Location ()));
+  push (Rust::Token::make (delimiters.second, UNDEF_LOCATION));
 }
 
 void
@@ -2331,12 +2333,12 @@ TokenCollector::visit (MacroRulesDefinition &rules_def)
   auto rule_name = rules_def.get_rule_name ().as_string ();
 
   push (Rust::Token::make_identifier (rules_def.get_locus (), "macro_rules"));
-  push (Rust::Token::make (EXCLAM, Location ()));
+  push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
 
-  push (Rust::Token::make_identifier (Location (), std::move (rule_name)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (rule_name)));
 
   visit_items_as_block (rules_def.get_rules (),
-			{Rust::Token::make (SEMICOLON, Location ())});
+			{Rust::Token::make (SEMICOLON, UNDEF_LOCATION)});
 }
 
 void
@@ -2344,11 +2346,11 @@ TokenCollector::visit (MacroInvocation &invocation)
 {
   auto data = invocation.get_invoc_data ();
   visit (data.get_path ());
-  push (Rust::Token::make (EXCLAM, Location ()));
+  push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
   visit (data.get_delim_tok_tree ());
   if (invocation.has_semicolon ())
     {
-      push (Rust::Token::make (SEMICOLON, Location ()));
+      push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
     }
 }
 
@@ -2364,9 +2366,9 @@ TokenCollector::visit (MetaItemSeq &item)
 {
   visit (item.get_path ());
   // TODO: Double check this, there is probably a mistake.
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
   visit_items_joined_by_separator (item.get_seq (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2386,9 +2388,9 @@ TokenCollector::visit (MetaNameValueStr &name)
 
   push (Rust::Token::make_identifier (name.get_locus (), std::move (id)));
   push (Rust::Token::make (EQUAL, name.get_locus ()));
-  push (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+  push (Rust::Token::make (DOUBLE_QUOTE, UNDEF_LOCATION));
   push (Rust::Token::make_identifier (name.get_locus (), std::move (value)));
-  push (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+  push (Rust::Token::make (DOUBLE_QUOTE, UNDEF_LOCATION));
 }
 
 void
@@ -2397,11 +2399,11 @@ TokenCollector::visit (MetaListPaths &list)
   auto id = list.get_ident ().as_string ();
 
   push (Rust::Token::make_identifier (list.get_locus (), std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (list.get_paths (), COMMA);
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2410,11 +2412,11 @@ TokenCollector::visit (MetaListNameValueStr &list)
   auto id = list.get_ident ().as_string ();
 
   push (Rust::Token::make_identifier (list.get_locus (), std::move (id)));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (list.get_values (), COMMA);
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 // rust-pattern.h
@@ -2433,15 +2435,15 @@ TokenCollector::visit (IdentifierPattern &pattern)
     }
   if (pattern.get_is_mut ())
     {
-      push (Rust::Token::make (MUT, Location ()));
+      push (Rust::Token::make (MUT, UNDEF_LOCATION));
     }
 
   auto id = pattern.get_ident ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
   if (pattern.has_pattern_to_bind ())
     {
-      push (Rust::Token::make (PATTERN_BIND, Location ()));
+      push (Rust::Token::make (PATTERN_BIND, UNDEF_LOCATION));
       visit (pattern.get_pattern_to_bind ());
     }
 }
@@ -2521,7 +2523,7 @@ TokenCollector::visit (ReferencePattern &pattern)
 
   if (pattern.get_is_mut ())
     {
-      push (Rust::Token::make (MUT, Location ()));
+      push (Rust::Token::make (MUT, UNDEF_LOCATION));
     }
 
   visit (pattern.get_referenced_pattern ());
@@ -2545,7 +2547,7 @@ TokenCollector::visit (StructPatternFieldIdentPat &pattern)
   visit_items_as_lines (pattern.get_outer_attrs ());
 
   auto id = pattern.get_identifier ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
   push (Rust::Token::make (COLON, pattern.get_locus ()));
 
@@ -2557,12 +2559,12 @@ TokenCollector::visit (StructPatternFieldIdent &pattern)
 {
   visit_items_as_lines (pattern.get_outer_attrs ());
   if (pattern.is_ref ())
-    push (Rust::Token::make (REF, Location ()));
+    push (Rust::Token::make (REF, UNDEF_LOCATION));
   if (pattern.is_mut ())
-    push (Rust::Token::make (MUT, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
 
   auto id = pattern.get_identifier ().as_string ();
-  push (Rust::Token::make_identifier (Location (), std::move (id)));
+  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 }
 
 void
@@ -2576,7 +2578,7 @@ TokenCollector::visit (StructPattern &pattern)
       visit_items_joined_by_separator (elems.get_struct_pattern_fields ());
       if (elems.has_etc ())
 	{
-	  push (Rust::Token::make (COMMA, Location ()));
+	  push (Rust::Token::make (COMMA, UNDEF_LOCATION));
 	  visit_items_as_lines (elems.get_etc_outer_attrs ());
 	}
     }
@@ -2585,7 +2587,7 @@ TokenCollector::visit (StructPattern &pattern)
       visit_items_as_lines (elems.get_etc_outer_attrs ());
     }
 
-  push (Rust::Token::make (RIGHT_CURLY, Location ()));
+  push (Rust::Token::make (RIGHT_CURLY, UNDEF_LOCATION));
 }
 
 // void TokenCollector::visit(TupleStructItems& ){}
@@ -2606,7 +2608,7 @@ TokenCollector::visit (TupleStructItemsRange &pattern)
     {
       visit (lower);
     }
-  push (Rust::Token::make (DOT_DOT, Location ()));
+  push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
   for (auto &upper : pattern.get_lower_patterns ())
     {
       visit (upper);
@@ -2620,7 +2622,7 @@ TokenCollector::visit (TupleStructPattern &pattern)
   push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
   if (pattern.has_items ())
     visit (pattern.get_items ());
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 // void
@@ -2640,7 +2642,7 @@ TokenCollector::visit (TuplePatternItemsRanged &pattern)
     {
       visit (lower);
     }
-  push (Rust::Token::make (DOT_DOT, Location ()));
+  push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
   for (auto &upper : pattern.get_lower_patterns ())
     {
       visit (upper);
@@ -2652,7 +2654,7 @@ TokenCollector::visit (TuplePattern &pattern)
 {
   push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
   visit (pattern.get_items ());
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2660,7 +2662,7 @@ TokenCollector::visit (GroupedPattern &pattern)
 {
   push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
   visit (pattern.get_pattern_in_parens ());
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2668,7 +2670,7 @@ TokenCollector::visit (SlicePattern &pattern)
 {
   push (Rust::Token::make (LEFT_SQUARE, pattern.get_locus ()));
   visit_items_joined_by_separator (pattern.get_items (), COMMA);
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -2692,16 +2694,16 @@ TokenCollector::visit (LetStmt &stmt)
 
   if (stmt.has_type ())
     {
-      push (Rust::Token::make (COLON, Location ()));
+      push (Rust::Token::make (COLON, UNDEF_LOCATION));
       visit (stmt.get_type ());
     }
 
   if (stmt.has_init_expr ())
     {
-      push (Rust::Token::make (EQUAL, Location ()));
+      push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
       visit (stmt.get_init_expr ());
     }
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
@@ -2709,7 +2711,7 @@ TokenCollector::visit (ExprStmt &stmt)
 {
   visit (stmt.get_expr ());
   if (stmt.is_semicolon_followed ())
-    push (Rust::Token::make (SEMICOLON, Location ()));
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 // rust-type.h
@@ -2762,7 +2764,7 @@ TokenCollector::visit (ParenthesisedType &type)
 
   push (Rust::Token::make (LEFT_PAREN, type.get_locus ()));
   visit (type.get_type_in_parens ());
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2795,7 +2797,7 @@ TokenCollector::visit (TupleType &type)
 
   push (Rust::Token::make (LEFT_PAREN, type.get_locus ()));
   visit_items_joined_by_separator (type.get_elems (), COMMA);
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
 void
@@ -2815,9 +2817,9 @@ TokenCollector::visit (RawPointerType &type)
 
   push (Rust::Token::make (ASTERISK, type.get_locus ()));
   if (type.get_pointer_type () == RawPointerType::MUT)
-    push (Rust::Token::make (MUT, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
   else /* RawPointerType::CONST */
-    push (Rust::Token::make (CONST, Location ()));
+    push (Rust::Token::make (CONST, UNDEF_LOCATION));
 
   visit (type.get_type_pointed_to ());
 }
@@ -2836,7 +2838,7 @@ TokenCollector::visit (ReferenceType &type)
     }
 
   if (type.get_has_mut ())
-    push (Rust::Token::make (MUT, Location ()));
+    push (Rust::Token::make (MUT, UNDEF_LOCATION));
 
   visit (type.get_type_referenced ());
 }
@@ -2849,9 +2851,9 @@ TokenCollector::visit (ArrayType &type)
 
   push (Rust::Token::make (LEFT_SQUARE, type.get_locus ()));
   visit (type.get_elem_type ());
-  push (Rust::Token::make (SEMICOLON, Location ()));
+  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
   visit (type.get_size_expr ());
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -2862,7 +2864,7 @@ TokenCollector::visit (SliceType &type)
 
   push (Rust::Token::make (LEFT_SQUARE, type.get_locus ()));
   visit (type.get_elem_type ());
-  push (Rust::Token::make (RIGHT_SQUARE, Location ()));
+  push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
 }
 
 void
@@ -2899,25 +2901,25 @@ TokenCollector::visit (BareFunctionType &type)
   visit (type.get_function_qualifiers ());
 
   push (Rust::Token::make (FN_TOK, type.get_locus ()));
-  push (Rust::Token::make (LEFT_PAREN, Location ()));
+  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
   visit_items_joined_by_separator (type.get_function_params (), COMMA);
 
   if (type.is_variadic ())
     {
-      push (Rust::Token::make (COMMA, Location ()));
+      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
       for (auto &item : type.get_variadic_attr ())
 	{
 	  visit (item);
 	}
-      push (Rust::Token::make (ELLIPSIS, Location ()));
+      push (Rust::Token::make (ELLIPSIS, UNDEF_LOCATION));
     }
 
-  push (Rust::Token::make (RIGHT_PAREN, Location ()));
+  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 
   if (type.has_return_type ())
     {
-      push (Rust::Token::make (RETURN_TYPE, Location ()));
+      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (type.get_return_type ());
     }
 }

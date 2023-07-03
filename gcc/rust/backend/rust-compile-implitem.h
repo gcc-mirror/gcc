@@ -31,7 +31,7 @@ public:
   static tree Compile (HIR::ImplItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       Location ref_locus = UNDEF_LOCATION)
   {
     CompileInherentImplItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -55,7 +55,7 @@ class CompileTraitItem : public HIRCompileBase, public HIR::HIRTraitItemVisitor
 public:
   static tree Compile (HIR::TraitItem *item, Context *ctx,
 		       TyTy::BaseType *concrete, bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       Location ref_locus = UNDEF_LOCATION)
   {
     CompileTraitItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);

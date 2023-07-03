@@ -89,7 +89,7 @@ PathProbeCandidate::is_full_trait_item_candidate () const
 PathProbeCandidate
 PathProbeCandidate::get_error ()
 {
-  return PathProbeCandidate (ERROR, nullptr, Location (),
+  return PathProbeCandidate (ERROR, nullptr, UNDEF_LOCATION,
 			     ImplItemCandidate{nullptr, nullptr});
 }
 
@@ -343,7 +343,7 @@ PathProbeType::process_associated_trait_for_candidates (
       break;
     }
 
-  const TyTy::TypeBoundPredicate p (*trait_ref, Location ());
+  const TyTy::TypeBoundPredicate p (*trait_ref, UNDEF_LOCATION);
   TyTy::TypeBoundPredicateItem item (&p, trait_item_ref);
 
   TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();

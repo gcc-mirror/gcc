@@ -336,11 +336,12 @@ HIRCompileBase::compute_address_for_trait_item (
       if (lookup_fntype->needs_substitution ())
 	{
 	  TyTy::BaseType *infer
-	    = Resolver::SubstMapper::InferSubst (lookup_fntype, Location ());
+	    = Resolver::SubstMapper::InferSubst (lookup_fntype, UNDEF_LOCATION);
 	  infer
 	    = Resolver::unify_site (infer->get_ref (),
 				    TyTy::TyWithLocation (trait_item_fntype),
-				    TyTy::TyWithLocation (infer), Location ());
+				    TyTy::TyWithLocation (infer),
+				    UNDEF_LOCATION);
 	  rust_assert (infer->get_kind () == TyTy::TypeKind::FNDEF);
 	  lookup_fntype = static_cast<TyTy::FnType *> (infer);
 	}

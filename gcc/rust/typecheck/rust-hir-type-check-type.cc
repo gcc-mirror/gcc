@@ -826,7 +826,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
   if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
     {
       // FIXME
-      rust_error_at (Location (),
+      rust_error_at (UNDEF_LOCATION,
 		     "Failed to lookup type reference for node: %s",
 		     binding_type_path->as_string ().c_str ());
       return;
@@ -837,7 +837,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
   if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
     {
       // FIXME
-      rust_error_at (Location (), "where-clause reverse lookup failure");
+      rust_error_at (UNDEF_LOCATION, "where-clause reverse lookup failure");
       return;
     }
 

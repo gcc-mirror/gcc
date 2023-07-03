@@ -51,7 +51,7 @@ public:
   static TraitItemReference error ()
   {
     return TraitItemReference ("", false, ERROR, nullptr, nullptr, {},
-			       Location ());
+			       UNDEF_LOCATION);
   }
 
   static TraitItemReference &error_node ()

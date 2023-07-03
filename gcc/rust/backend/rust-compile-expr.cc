@@ -1092,7 +1092,7 @@ sort_tuple_patterns (HIR::MatchExpr &expr)
 	  // compile.
 	  auto foo = std::vector<std::unique_ptr<HIR::Pattern>> ();
 	  foo.emplace_back (std::move (result_pattern));
-	  HIR::MatchArm new_arm (std::move (foo), Location (), nullptr,
+	  HIR::MatchArm new_arm (std::move (foo), UNDEF_LOCATION, nullptr,
 				 AST::AttrVec ());
 
 	  HIR::MatchCase new_case (match_case.get_mappings (), new_arm,

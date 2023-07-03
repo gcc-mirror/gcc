@@ -422,7 +422,7 @@ struct MacroExpander
 	if (!mappings->lookup_derive_proc_macro (std::make_pair (crate, name),
 						 macro))
 	  {
-	    rust_error_at (Location (), "procedural macro %s not found",
+	    rust_error_at (UNDEF_LOCATION, "procedural macro %s not found",
 			   name.c_str ());
 	    rust_assert (false);
 	  }
@@ -453,7 +453,7 @@ struct MacroExpander
 	if (!mappings->lookup_bang_proc_macro (std::make_pair (crate, name),
 					       macro))
 	  {
-	    rust_error_at (Location (), "procedural macro %s not found",
+	    rust_error_at (UNDEF_LOCATION, "procedural macro %s not found",
 			   name.c_str ());
 	    rust_assert (false);
 	  }
@@ -485,7 +485,7 @@ struct MacroExpander
 								    name),
 						    macro))
 	  {
-	    rust_error_at (Location (), "procedural macro %s not found",
+	    rust_error_at (UNDEF_LOCATION, "procedural macro %s not found",
 			   name.c_str ());
 	    rust_assert (false);
 	  }

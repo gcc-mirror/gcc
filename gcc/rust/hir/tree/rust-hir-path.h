@@ -76,7 +76,7 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      Location locus = Location ())
+		      Location locus = UNDEF_LOCATION)
     : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
   {}
 
@@ -202,7 +202,7 @@ public:
   GenericArgs &operator= (GenericArgs &&other) = default;
 
   // Creates an empty GenericArgs (no arguments)
-  static GenericArgs create_empty (Location locus = Location ())
+  static GenericArgs create_empty (Location locus = UNDEF_LOCATION)
   {
     return GenericArgs ({}, {}, {}, {}, locus);
   }
@@ -340,7 +340,7 @@ public:
   // Constructor
   PathInExpression (Analysis::NodeMapping mappings,
 		    std::vector<PathExprSegment> path_segments,
-		    Location locus = Location (),
+		    Location locus = UNDEF_LOCATION,
 		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
 		    = std::vector<AST::Attribute> ())
@@ -694,7 +694,7 @@ public:
   {
     return TypePath (Analysis::NodeMapping::get_error (),
 		     std::vector<std::unique_ptr<TypePathSegment> > (),
-		     Location ());
+		     UNDEF_LOCATION);
   }
 
   // Constructor
@@ -856,7 +856,7 @@ public:
   QualifiedPathInExpression (Analysis::NodeMapping mappings,
 			     QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
-			     Location locus = Location (),
+			     Location locus = UNDEF_LOCATION,
 			     std::vector<AST::Attribute> outer_attrs
 			     = std::vector<AST::Attribute> ())
     : PathPattern (std::move (path_segments)),
@@ -923,7 +923,7 @@ public:
     Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
-    Location locus = Location ())
+    Location locus = UNDEF_LOCATION)
     : TypeNoBounds (mappings, locus), path_type (std::move (qual_path_type)),
       associated_segment (std::move (associated_segment)),
       segments (std::move (path_segments))
@@ -1005,7 +1005,7 @@ public:
   static HIR::SimplePath create_empty ()
   {
     return HIR::SimplePath ({}, Analysis::NodeMapping::get_error (),
-			    Location ());
+			    UNDEF_LOCATION);
   }
 
   bool is_error () const { return segments.empty (); }

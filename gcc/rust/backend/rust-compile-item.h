@@ -32,7 +32,7 @@ public:
   static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       Location ref_locus = UNDEF_LOCATION)
   {
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);

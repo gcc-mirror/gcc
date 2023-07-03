@@ -432,7 +432,7 @@ public:
   {
     return MacroRule (MacroMatcher::create_error (locus),
 		      MacroTranscriber (DelimTokenTree::create_empty (),
-					Location ()),
+					UNDEF_LOCATION),
 		      locus);
   }
 
@@ -507,7 +507,7 @@ private:
     : VisItem (std::move (vis), std::vector<Attribute> ()),
       outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
       delim_type (delim_type), rules (std::vector<MacroRule> ()),
-      locus (Location ()), associated_transcriber (associated_transcriber),
+      locus (UNDEF_LOCATION), associated_transcriber (associated_transcriber),
       is_builtin_rule (true), kind (kind)
   {}
 

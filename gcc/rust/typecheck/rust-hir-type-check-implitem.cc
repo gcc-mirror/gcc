@@ -123,7 +123,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 
       HIR::IdentifierPattern *param_pattern
 	= new HIR::IdentifierPattern (mapping, param.get_param_name (),
-				      Location (), false, Mutability::Imm,
+				      UNDEF_LOCATION, false, Mutability::Imm,
 				      std::unique_ptr<HIR::Pattern> (nullptr));
 
       params.push_back (

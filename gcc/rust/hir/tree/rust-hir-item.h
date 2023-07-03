@@ -62,7 +62,7 @@ public:
   AST::Attribute &get_outer_attribute () { return outer_attr; }
 
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
-	     Location locus = Location (),
+	     Location locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
@@ -581,7 +581,7 @@ private:
 public:
   Visibility (VisType vis_type,
 	      HIR::SimplePath path = HIR::SimplePath::create_empty (),
-	      Location locus = Location ())
+	      Location locus = UNDEF_LOCATION)
     : vis_type (vis_type), path (std::move (path)), locus (locus)
   {}
 

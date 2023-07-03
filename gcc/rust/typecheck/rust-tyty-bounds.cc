@@ -395,7 +395,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
 TypeBoundPredicate
 TypeBoundPredicate::error ()
 {
-  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, Location ());
+  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, UNDEF_LOCATION);
   p.error_flag = true;
   return p;
 }

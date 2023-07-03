@@ -38,10 +38,10 @@ public:
   // Create dummy identifier
   Identifier ()
     : ident (""), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      loc (Location ())
+      loc (UNDEF_LOCATION)
   {}
   // Create identifier with dummy location
-  Identifier (std::string ident, Location loc = Location ())
+  Identifier (std::string ident, Location loc = UNDEF_LOCATION)
     : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
       loc (loc)
   {}
@@ -387,7 +387,7 @@ public:
   // Creates an error SimplePathSegment
   static SimplePathSegment create_error ()
   {
-    return SimplePathSegment (std::string (""), Location ());
+    return SimplePathSegment (std::string (""), UNDEF_LOCATION);
   }
 
   std::string as_string () const override;
@@ -419,7 +419,7 @@ public:
   // Constructor
   SimplePath (std::vector<SimplePathSegment> path_segments,
 	      bool has_opening_scope_resolution = false,
-	      Location locus = Location ())
+	      Location locus = UNDEF_LOCATION)
     : opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (path_segments)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
@@ -509,7 +509,7 @@ public:
 
   // Constructor has pointer AttrInput for polymorphism reasons
   Attribute (SimplePath path, std::unique_ptr<AttrInput> input,
-	     Location locus = Location (), bool inner_attribute = false)
+	     Location locus = UNDEF_LOCATION, bool inner_attribute = false)
     : path (std::move (path)), attr_input (std::move (input)), locus (locus),
       inner_attribute (inner_attribute)
   {}
@@ -819,7 +819,7 @@ public:
   DelimTokenTree (DelimType delim_type,
 		  std::vector<std::unique_ptr<TokenTree>> token_trees
 		  = std::vector<std::unique_ptr<TokenTree>> (),
-		  Location locus = Location ())
+		  Location locus = UNDEF_LOCATION)
     : delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
   {}
@@ -1282,13 +1282,13 @@ private:
 public:
   // Constructor
   Lifetime (LifetimeType type, std::string name = std::string (),
-	    Location locus = Location ())
+	    Location locus = UNDEF_LOCATION)
     : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
       lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
   {}
 
   Lifetime (NodeId id, LifetimeType type, std::string name = std::string (),
-	    Location locus = Location ())
+	    Location locus = UNDEF_LOCATION)
     : TypeParamBound (id), lifetime_type (type),
       lifetime_name (std::move (name)), locus (locus)
   {}
@@ -1382,7 +1382,7 @@ public:
   static LifetimeParam create_error ()
   {
     return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (),
-			  Location ());
+			  UNDEF_LOCATION);
   }
 
   // Returns whether the lifetime param is in an error state.

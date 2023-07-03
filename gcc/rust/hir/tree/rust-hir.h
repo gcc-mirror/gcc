@@ -565,7 +565,7 @@ public:
   static Lifetime error ()
   {
     return Lifetime (Analysis::NodeMapping::get_error (),
-		     AST::Lifetime::LifetimeType::NAMED, "", Location ());
+		     AST::Lifetime::LifetimeType::NAMED, "", UNDEF_LOCATION);
   }
 
   std::string as_string () const override;
@@ -670,7 +670,7 @@ public:
 
   // Constructor
   LifetimeParam (Analysis::NodeMapping mappings, Lifetime lifetime,
-		 Location locus = Location (),
+		 Location locus = UNDEF_LOCATION,
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
 		 AST::Attribute outer_attr = AST::Attribute::create_empty ())

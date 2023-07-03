@@ -956,7 +956,7 @@ flatten_rebind (const AST::UseTreeRebind &rebind,
 
       // Add the identifier as a new path
       rebind_path.get_segments ().back ()
-	= AST::SimplePathSegment (new_seg.as_string (), Location ());
+	= AST::SimplePathSegment (new_seg.as_string (), UNDEF_LOCATION);
 
       paths.emplace_back (rebind_path);
     }
@@ -1159,13 +1159,13 @@ namespace selftest {
 static void
 rust_flatten_nested_glob (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foobar = Rust::AST::SimplePath ({foo, bar});
 
   auto glob
     = Rust::AST::UseTreeGlob (Rust::AST::UseTreeGlob::PathType::PATH_PREFIXED,
-			      foobar, Location ());
+			      foobar, UNDEF_LOCATION);
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_glob (glob, paths);
@@ -1179,11 +1179,11 @@ rust_flatten_nested_glob (void)
 static void
 rust_flatten_glob (void)
 {
-  auto frob = Rust::AST::SimplePath::from_str ("frobulator", Location ());
+  auto frob = Rust::AST::SimplePath::from_str ("frobulator", UNDEF_LOCATION);
 
   auto glob
     = Rust::AST::UseTreeGlob (Rust::AST::UseTreeGlob::PathType::PATH_PREFIXED,
-			      frob, Location ());
+			      frob, UNDEF_LOCATION);
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_glob (glob, paths);
@@ -1196,12 +1196,12 @@ rust_flatten_glob (void)
 static void
 rust_flatten_rebind_none (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foobar = Rust::AST::SimplePath ({foo, bar});
 
   auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE,
-					  foobar, Location ());
+					  foobar, UNDEF_LOCATION);
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_rebind (rebind, paths);
@@ -1215,10 +1215,10 @@ rust_flatten_rebind_none (void)
 static void
 rust_flatten_rebind (void)
 {
-  auto frob = Rust::AST::SimplePath::from_str ("frobulator", Location ());
+  auto frob = Rust::AST::SimplePath::from_str ("frobulator", UNDEF_LOCATION);
 
   auto rebind = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-					  frob, Location (), {"saindoux"});
+					  frob, UNDEF_LOCATION, {"saindoux"});
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_rebind (rebind, paths);
@@ -1232,15 +1232,15 @@ rust_flatten_rebind (void)
 static void
 rust_flatten_rebind_nested (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
-  auto baz = Rust::AST::SimplePathSegment ("baz", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
+  auto baz = Rust::AST::SimplePathSegment ("baz", UNDEF_LOCATION);
 
   auto foo_bar_baz = Rust::AST::SimplePath ({foo, bar, baz});
 
   auto rebind
     = Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::IDENTIFIER,
-				foo_bar_baz, Location (), {"saindoux"});
+				foo_bar_baz, UNDEF_LOCATION, {"saindoux"});
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_rebind (rebind, paths);
@@ -1258,28 +1258,29 @@ rust_flatten_rebind_nested (void)
 static void
 rust_flatten_list (void)
 {
-  auto foo = Rust::AST::SimplePathSegment ("foo", Location ());
-  auto bar = Rust::AST::SimplePathSegment ("bar", Location ());
+  auto foo = Rust::AST::SimplePathSegment ("foo", UNDEF_LOCATION);
+  auto bar = Rust::AST::SimplePathSegment ("bar", UNDEF_LOCATION);
   auto foo_bar = Rust::AST::SimplePath ({foo, bar});
 
-  auto baz = Rust::AST::SimplePath::from_str ("baz", Location ());
-  auto bul = Rust::AST::SimplePath::from_str ("bul", Location ());
+  auto baz = Rust::AST::SimplePath::from_str ("baz", UNDEF_LOCATION);
+  auto bul = Rust::AST::SimplePath::from_str ("bul", UNDEF_LOCATION);
 
   // use foo::bar::{baz, bul};
 
   auto use0 = std::unique_ptr<Rust::AST::UseTree> (
     new Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE, baz,
-				  Location ()));
+				  UNDEF_LOCATION));
   auto use1 = std::unique_ptr<Rust::AST::UseTree> (
     new Rust::AST::UseTreeRebind (Rust::AST::UseTreeRebind::NONE, bul,
-				  Location ()));
+				  UNDEF_LOCATION));
 
   auto uses = std::vector<std::unique_ptr<Rust::AST::UseTree>> ();
   uses.emplace_back (std::move (use0));
   uses.emplace_back (std::move (use1));
 
-  auto list = Rust::AST::UseTreeList (Rust::AST::UseTreeList::PATH_PREFIXED,
-				      foo_bar, std::move (uses), Location ());
+  auto list
+    = Rust::AST::UseTreeList (Rust::AST::UseTreeList::PATH_PREFIXED, foo_bar,
+			      std::move (uses), UNDEF_LOCATION);
 
   auto paths = std::vector<Rust::AST::SimplePath> ();
   Rust::Resolver::flatten_list (list, paths);
