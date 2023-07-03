@@ -3670,6 +3670,36 @@ MaybeNamedParam::as_string () const
   return str;
 }
 
+std::string
+enum_to_str (MaybeNamedParam::ParamKind pk)
+{
+  switch (pk)
+    {
+    case MaybeNamedParam::ParamKind::UNNAMED:
+      return "UNNAMED";
+    case MaybeNamedParam::ParamKind::IDENTIFIER:
+      return "IDENTIFIER";
+    case MaybeNamedParam::ParamKind::WILDCARD:
+      return "WILDCARD";
+    }
+  gcc_unreachable ();
+}
+
+std::string
+enum_to_str (UseTreeRebind::NewBindType nbt)
+{
+  switch (nbt)
+    {
+    case UseTreeRebind::NewBindType::NONE:
+      return "NONE";
+    case UseTreeRebind::NewBindType::IDENTIFIER:
+      return "IDENTIFIER";
+    case UseTreeRebind::NewBindType::WILDCARD:
+      return "WILDCARD";
+    }
+  gcc_unreachable ();
+}
+
 /* Override that calls the function recursively on all items contained within
  * the module. */
 void
