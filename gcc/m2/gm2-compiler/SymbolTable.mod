@@ -87,6 +87,10 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 FROM FormatStrings IMPORT HandleEscape ;
 FROM M2Scaffold IMPORT DeclareArgEnvParams ;
 
+FROM M2SymInit IMPORT InitDesc, InitSymInit, GetInitialized, ConfigSymInit,
+                      SetInitialized, SetFieldInitialized, GetFieldInitialized,
+                      PrintSymInit ;
+
 IMPORT Indexing ;
 
 
@@ -117,6 +121,8 @@ TYPE
                                   END ;
 
    LRLists = ARRAY [RightValue..LeftValue] OF List ;
+
+   LRInitDesc = ARRAY [RightValue..LeftValue] OF InitDesc ;
 
    TypeOfSymbol = (RecordSym, VarientSym, DummySym,
                    VarSym, EnumerationSym, SubrangeSym, ArraySym,
@@ -519,6 +525,7 @@ TYPE
                IsWritten     : BOOLEAN ;      (* Is variable written to?     *)
                IsSSA         : BOOLEAN ;      (* Is variable a SSA?          *)
                IsConst       : BOOLEAN ;      (* Is variable read/only?      *)
+               InitState     : LRInitDesc ;   (* Initialization state.       *)
                At            : Where ;        (* Where was sym declared/used *)
                ReadUsageList,                 (* list of var read quads      *)
                WriteUsageList: LRLists ;      (* list of var write quads     *)
@@ -4258,7 +4265,9 @@ BEGIN
             InitList(ReadUsageList[RightValue]) ;
             InitList(WriteUsageList[RightValue]) ;
             InitList(ReadUsageList[LeftValue]) ;
-            InitList(WriteUsageList[LeftValue])
+            InitList(WriteUsageList[LeftValue]) ;
+            InitState[LeftValue] := InitSymInit () ;
+            InitState[RightValue] := InitSymInit ()
          END
       END ;
       (* Add Var to Procedure or Module variable list.  *)
@@ -6696,7 +6705,9 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      VarSym     : Var.Type := VarType |
+      VarSym     : Var.Type := VarType ;
+                   ConfigSymInit (Var.InitState[LeftValue], Sym) ;
+                   ConfigSymInit (Var.InitState[RightValue], Sym) |
       ConstVarSym: ConstVar.Type := VarType
 
       ELSE
@@ -7933,7 +7944,7 @@ BEGIN
       IsHiddenTypeDeclared(CurrentModule) AND
       (TypeName#NulName)
    THEN
-      (* Check to see whether we are declaring a HiddenType. *)
+      (* Check to see whether we are declaring a HiddenType.  *)
       pSym := GetPsym(CurrentModule) ;
       WITH pSym^ DO
          CASE SymbolType OF
@@ -14443,6 +14454,162 @@ BEGIN
       END
    END
 END GetDefaultRecordFieldAlignment ;
+
+
+(*
+   VarCheckReadInit - returns TRUE if sym has been initialized.
+*)
+
+PROCEDURE VarCheckReadInit (sym: CARDINAL; mode: ModeOfAddr) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  RETURN GetInitialized (Var.InitState[mode])
+
+         ELSE
+         END
+      END
+   END ;
+   RETURN FALSE
+END VarCheckReadInit ;
+
+
+(*
+   VarInitState - initializes the init state for variable sym.
+*)
+
+PROCEDURE VarInitState (sym: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  ConfigSymInit (Var.InitState[LeftValue], sym) ;
+                  ConfigSymInit (Var.InitState[RightValue], sym)
+
+         ELSE
+         END
+      END
+   END
+END VarInitState ;
+
+
+(*
+   PutVarInitialized - set sym as initialized.
+*)
+
+PROCEDURE PutVarInitialized (sym: CARDINAL; mode: ModeOfAddr) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  WITH Var DO
+                     SetInitialized (InitState[mode])
+                  END
+
+         ELSE
+         END
+      END
+   END
+END PutVarInitialized ;
+
+
+(*
+   PutVarFieldInitialized - records that field has been initialized with
+                            variable sym.  TRUE is returned if the field
+                            is detected and changed to initialized.
+*)
+
+PROCEDURE PutVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  WITH Var DO
+                     RETURN SetFieldInitialized (InitState[mode], fieldlist)
+                  END
+
+         ELSE
+         END
+      END
+   END ;
+   RETURN FALSE
+END PutVarFieldInitialized ;
+
+
+(*
+   GetVarFieldInitialized - return TRUE if fieldlist has been initialized
+                            within variable sym.
+*)
+
+PROCEDURE GetVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
+                                  fieldlist: List) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  WITH Var DO
+                     RETURN GetFieldInitialized (InitState[mode], fieldlist)
+                  END
+
+         ELSE
+         END
+      END
+   END ;
+   RETURN FALSE
+END GetVarFieldInitialized ;
+
+
+(*
+   PrintInitialized - display variable sym initialization state.
+*)
+
+PROCEDURE PrintInitialized (sym: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      WITH pSym^ DO
+         CASE SymbolType OF
+
+         VarSym:  printf0 ("LeftMode init: ") ;
+                  PrintSymInit (Var.InitState[LeftValue]) ;
+                  printf0 ("RightMode init: ") ;
+                  PrintSymInit (Var.InitState[RightValue])
+
+         ELSE
+         END
+      END
+   END
+END PrintInitialized ;
 
 
 (*
