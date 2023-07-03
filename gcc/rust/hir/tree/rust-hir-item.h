@@ -1009,6 +1009,8 @@ protected:
   }
 };
 
+std::string enum_to_str (UseTreeRebind::NewBindType);
+
 // Rust use declaration (i.e. for modules) HIR node
 class UseDeclaration : public VisItem
 {

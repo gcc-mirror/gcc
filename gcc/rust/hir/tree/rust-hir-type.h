@@ -750,6 +750,8 @@ public:
   Identifier get_name () const { return name; }
 };
 
+std::string enum_to_str (MaybeNamedParam::ParamKind);
+
 /* A function pointer type - can be created via coercion from function items and
  * non- capturing closures. */
 class BareFunctionType : public TypeNoBounds

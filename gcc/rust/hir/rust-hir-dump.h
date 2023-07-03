@@ -19,6 +19,8 @@
 #ifndef RUST_HIR_DUMP_H
 #define RUST_HIR_DUMP_H
 
+#include "rust-hir-expr.h"
+#include "rust-hir-item.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir.h"
 #include "rust-hir-full.h"
@@ -34,8 +36,67 @@ public:
   void go (HIR::Crate &crate);
 
 private:
+  bool beg_of_line;
   Indent indentation;
   std::ostream &stream;
+
+  void put (std::string name, bool newline = true);
+
+  enum delim
+  {
+    CURLY = 0,
+    SQUARE = 1,
+  };
+
+  static std::string delims[2][2];
+
+  void begin (std::string name, enum delim = SQUARE);
+  void end (std::string name, enum delim = SQUARE);
+  void begin_field (std::string name);
+  void end_field (std::string name);
+
+  template <class T>
+  void visit_collection (std::string name,
+			 std::vector<std::unique_ptr<T>> &vec);
+
+  template <class T>
+  void visit_collection (std::string name, std::vector<T> &vec);
+
+  void visit_field (std::string field_name, FullVisitable &v);
+
+  template <class T>
+  void visit_field (std::string field_name, std::unique_ptr<T> &);
+
+  void put_field (std::string field_name, std::string text);
+  void do_vis_item (VisItem &);
+  void do_mappings (const Analysis::NodeMapping &mappings);
+  void do_inner_attrs (WithInnerAttrs &);
+  void do_outer_attrs (std::vector<AST::Attribute> &attrs);
+
+  void do_stmt (Stmt &);
+  void do_item (Item &);
+  void do_type (Type &);
+  void do_expr (Expr &);
+  void do_ifletexpr (IfLetExpr &);
+  void do_pathexpr (PathExpr &);
+  void do_pathpattern (PathPattern &);
+  void do_genericargs (GenericArgs &);
+  void do_typepathsegment (TypePathSegment &);
+  void do_typepathfunction (TypePathFunction &);
+  void do_externalitem (ExternalItem &);
+  void do_operatorexpr (OperatorExpr &);
+  void do_structexprstruct (StructExprStruct &);
+  void do_functionparam (FunctionParam &);
+  void do_qualifiedpathtype (QualifiedPathType &);
+  void do_baseloopexpr (BaseLoopExpr &);
+  void do_traititem (TraitItem &);
+  void do_traitfunctiondecl (TraitFunctionDecl &);
+  void do_namefunctionparam (NamedFunctionParam &);
+  void do_enumitem (EnumItem &);
+  void do_tuplefield (TupleField &);
+  void do_structfield (StructField &);
+  void do_maybenamedparam (MaybeNamedParam &);
+  void do_struct (Struct &);
 
   void visit (AST::Attribute &attribute);
   virtual void visit (Lifetime &) override;
@@ -120,10 +181,12 @@ private:
   virtual void visit (TypeAlias &) override;
   virtual void visit (StructStruct &) override;
   virtual void visit (TupleStruct &) override;
+
   virtual void visit (EnumItem &) override;
   virtual void visit (EnumItemTuple &) override;
   virtual void visit (EnumItemStruct &) override;
   virtual void visit (EnumItemDiscriminant &) override;
+
   virtual void visit (Enum &) override;
   virtual void visit (Union &) override;
   virtual void visit (ConstantItem &) override;

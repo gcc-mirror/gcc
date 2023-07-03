@@ -20,6 +20,8 @@
 
 #ifndef RUST_COMMON
 #define RUST_COMMON
+#include "rust-system.h"
+#include <string>
 
 namespace Rust {
 
@@ -46,6 +48,20 @@ enum AsyncConstStatus
   NONE,
   CONST_FN,
   ASYNC_FN
+};
+
+inline std::string
+enum_to_str (Mutability mut)
+{
+  std::string str;
+  switch (mut)
+    {
+    case Mutability::Imm:
+      return "Imm";
+    case Mutability::Mut:
+      return "Mut";
+    }
+  gcc_unreachable ();
 };
 
 } // namespace Rust
