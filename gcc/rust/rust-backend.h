@@ -52,8 +52,7 @@ public:
     tree type;
     Location location;
 
-    typed_identifier ()
-      : name (), type (NULL_TREE), location (Linemap::unknown_location ())
+    typed_identifier () : name (), type (NULL_TREE), location (UNKNOWN_LOCATION)
     {}
 
     typed_identifier (const std::string &a_name, tree a_type,

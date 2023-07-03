@@ -3610,8 +3610,7 @@ AttributeParser::parse_meta_item_inner ()
 	new MetaListPaths (ident, ident_locus, std::move (path_items)));
     }
 
-  rust_error_at (Linemap::unknown_location (),
-		 "failed to parse any meta item inner");
+  rust_error_at (UNKNOWN_LOCATION, "failed to parse any meta item inner");
   return nullptr;
 }
 
@@ -3905,7 +3904,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
 	{
 	  /* HACK: convert vector platform-dependent size_type to string to
 	   * use in printf */
-	  rust_error_at (Linemap::unknown_location (),
+	  rust_error_at (UNKNOWN_LOCATION,
 			 "cfg predicate could not be checked for "
 			 "MetaListNameValueStr with ident of "
 			 "'not' because there are '%s' elements, not '1'",
@@ -3917,7 +3916,7 @@ MetaListNameValueStr::check_cfg_predicate (const Session &session) const
     }
   else
     {
-      rust_error_at (Linemap::unknown_location (),
+      rust_error_at (UNKNOWN_LOCATION,
 		     "cfg predicate could not be checked for "
 		     "MetaListNameValueStr with ident of "
 		     "'%s' - ident must be 'all' or 'any'",
@@ -3953,7 +3952,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
 	{
 	  // HACK: convert vector platform-dependent size_type to string to
 	  // use in printf
-	  rust_error_at (Linemap::unknown_location (),
+	  rust_error_at (UNKNOWN_LOCATION,
 			 "cfg predicate could not be checked for MetaListPaths "
 			 "with ident of 'not' "
 			 "because there are '%s' elements, not '1'",
@@ -3965,7 +3964,7 @@ MetaListPaths::check_cfg_predicate (const Session &session) const
     }
   else
     {
-      rust_error_at (Linemap::unknown_location (),
+      rust_error_at (UNKNOWN_LOCATION,
 		     "cfg predicate could not be checked for "
 		     "MetaListNameValueStr with ident of "
 		     "'%s' - ident must be 'all' or 'any'",
@@ -4008,7 +4007,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
 	{
 	  /* HACK: convert vector platform-dependent size_type to string to
 	   * use in printf */
-	  rust_error_at (Linemap::unknown_location (),
+	  rust_error_at (UNKNOWN_LOCATION,
 			 "cfg predicate could not be checked for MetaItemSeq "
 			 "with ident of 'not' "
 			 "because there are '%s' elements, not '1'",
@@ -4021,7 +4020,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
   else
     {
       rust_error_at (
-	Linemap::unknown_location (),
+	UNKNOWN_LOCATION,
 	"cfg predicate could not be checked for MetaItemSeq with path of "
 	"'%s' - path must be 'all' or 'any'",
 	path.as_string ().c_str ());

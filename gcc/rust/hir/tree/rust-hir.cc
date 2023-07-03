@@ -2173,7 +2173,7 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
     }
 
   // kind of a HACK to get locus depending on opening scope resolution
-  Location locus = Linemap::unknown_location ();
+  Location locus = UNKNOWN_LOCATION;
   if (with_opening_scope_resolution)
     {
       locus = simple_segments[0].get_locus () - 2; // minus 2 chars for ::
