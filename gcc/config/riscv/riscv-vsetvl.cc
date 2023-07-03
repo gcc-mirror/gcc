@@ -2025,6 +2025,28 @@ vector_insn_info::parse_insn (insn_info *insn)
 		   real_insn_and_same_bb_p (i, get_insn ()->bb ());
 		   i = i->next_nondebug_insn ())
 		{
+		  /* Consider this following sequence:
+
+		       insn 1: vsetvli a5,a3,e8,mf4,ta,mu
+		       insn 2: vsetvli zero,a5,e32,m1,ta,ma
+		       ...
+		       vle32.v v1,0(a1)
+		       vsetvli a2,zero,e32,m1,ta,ma
+		       vadd.vv v1,v1,v1
+		       vsetvli zero,a5,e32,m1,ta,ma
+		       vse32.v v1,0(a0)
+		       ...
+		       insn 3: sub     a3,a3,a5
+		       ...
+
+		       We can local AVL propagate "a3" from insn 1 to insn 2
+		       if no insns between insn 1 and insn 2 modify "a3 even
+		       though insn 3 modifies "a3".
+		       Otherwise, we can't perform local AVL propagation.
+
+		       Early break if we reach the insn 2.  */
+		  if (!before_p (i, insn))
+		    break;
 		  if (find_access (i->defs (), REGNO (new_info.get_avl ())))
 		    {
 		      modified_p = true;
