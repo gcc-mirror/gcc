@@ -4337,6 +4337,11 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	      else if (strcmp (o->name, "desc") == 0
 		       && o->kind == OPTION_STRING)
 		desc = o->info.string;
+	      else if (strcmp (o->name, "string_length") == 0)
+		/* See 'doc/gty.texi'.  */
+		error_at_line (line,
+			       "option `%s' not supported for field `%s' of global `%s'",
+			       o->name, fld->name, name);
 	      else
 		error_at_line (line,
 			       "field `%s' of global `%s' has unknown option `%s'",
@@ -4535,6 +4540,11 @@ write_roots (pair_p variables, bool emit_pch)
 	  deletable_p = 1;
 	else if (strcmp (o->name, "cache") == 0)
 	  ;
+	else if (strcmp (o->name, "string_length") == 0)
+	  /* See 'doc/gty.texi'.  */
+	  error_at_line (&v->line,
+			 "option `%s' not supported for global `%s'",
+			 o->name, v->name);
 	else
 	  error_at_line (&v->line,
 			 "global `%s' has unknown option `%s'",
