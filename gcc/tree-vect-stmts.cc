@@ -261,11 +261,26 @@ vect_mark_relevant (vec<stmt_vec_info> *worklist, stmt_vec_info stmt_info,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "last stmt in pattern. don't mark"
 			 " relevant/live.\n");
+
       stmt_vec_info old_stmt_info = stmt_info;
       stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
       gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == old_stmt_info);
       save_relevant = STMT_VINFO_RELEVANT (stmt_info);
       save_live_p = STMT_VINFO_LIVE_P (stmt_info);
+
+      if (live_p && relevant == vect_unused_in_scope)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vec_stmt_relevant_p: forcing live patern stmt "
+			     "relevant.\n");
+	  relevant = vect_used_only_live;
+	}
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "mark relevant %d, live %d: %G", relevant, live_p,
+			 stmt_info->stmt);
     }
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
