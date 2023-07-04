@@ -167,6 +167,12 @@ Lexer::~Lexer ()
   // line_map->stop();
 }
 
+bool
+Lexer::input_source_is_valid_utf8 ()
+{
+  return raw_input_source->is_valid ();
+}
+
 /* TODO: need to optimise somehow to avoid the virtual function call in the
  * tight loop. Best idea at the moment is CRTP, but that might make lexer
  * implementation annoying when storing the "base class" (i.e. would need
