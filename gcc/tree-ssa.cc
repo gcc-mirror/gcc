@@ -1377,23 +1377,6 @@ ssa_undefined_value_p (tree t, bool partial)
 }
 
 
-/* Return TRUE iff STMT, a gimple statement, references an undefined
-   SSA name.  */
-
-bool
-gimple_uses_undefined_value_p (gimple *stmt)
-{
-  ssa_op_iter iter;
-  tree op;
-
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-    if (ssa_undefined_value_p (op))
-      return true;
-
-  return false;
-}
-
-
 /* Return TRUE iff there are any non-PHI uses of VAR that dominate the
    end of BB.  If we return TRUE and BB is a loop header, then VAR we
    be assumed to be defined within the loop, even if it is marked as

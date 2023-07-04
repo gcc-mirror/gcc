@@ -630,8 +630,11 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
       || gimple_has_side_effects (stmt_to_move))
     return false;
 
-  if (gimple_uses_undefined_value_p (stmt_to_move))
-    return false;
+  ssa_op_iter it;
+  tree use;
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt_to_move, it, SSA_OP_USE)
+    if (ssa_name_maybe_undef_p (use))
+      return false;
 
   /* Allow assignments but allow some builtin/internal calls.
      As const calls don't match any of the above, yet they could
@@ -3967,6 +3970,7 @@ pass_phiopt::execute (function *)
   bool cfgchanged = false;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  mark_ssa_maybe_undefs ();
 
   /* Search every basic block for COND_EXPR we may be able to optimize.
 
