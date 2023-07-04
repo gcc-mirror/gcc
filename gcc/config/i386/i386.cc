@@ -21179,7 +21179,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case IOR:
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	  || SSE_FLOAT_MODE_P (mode))
 	{
 	  /* (ior (not ...) ...) can be a single insn in AVX512.  */
 	  if (GET_CODE (XEXP (x, 0)) == NOT && TARGET_AVX512F
@@ -21206,7 +21207,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case XOR:
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	  || SSE_FLOAT_MODE_P (mode))
 	*total = ix86_vec_cost (mode, cost->sse_op);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
@@ -21220,7 +21222,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  *total = cost->lea;
 	  return true;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	       || SSE_FLOAT_MODE_P (mode))
 	{
 	  /* pandn is a single instruction.  */
 	  if (GET_CODE (XEXP (x, 0)) == NOT)
