@@ -676,6 +676,7 @@ supports_vec_gather_load_p (machine_mode mode)
     this_fn_optabs->supports_vec_gather_load[mode]
       = (supports_vec_convert_optab_p (gather_load_optab, mode)
 	 || supports_vec_convert_optab_p (mask_gather_load_optab, mode)
+	 || supports_vec_convert_optab_p (len_mask_gather_load_optab, mode)
 	 ? 1 : -1);
 
   return this_fn_optabs->supports_vec_gather_load[mode] > 0;
@@ -692,6 +693,7 @@ supports_vec_scatter_store_p (machine_mode mode)
     this_fn_optabs->supports_vec_scatter_store[mode]
       = (supports_vec_convert_optab_p (scatter_store_optab, mode)
 	 || supports_vec_convert_optab_p (mask_scatter_store_optab, mode)
+	 || supports_vec_convert_optab_p (len_mask_scatter_store_optab, mode)
 	 ? 1 : -1);
 
   return this_fn_optabs->supports_vec_scatter_store[mode] > 0;

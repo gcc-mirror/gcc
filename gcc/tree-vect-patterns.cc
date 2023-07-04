@@ -6075,7 +6075,9 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
     mask = vect_convert_mask_for_vectype (mask, gs_vectype, stmt_info,
 					  loop_vinfo);
   else if (gs_info.ifn == IFN_MASK_SCATTER_STORE
-	   || gs_info.ifn == IFN_MASK_GATHER_LOAD)
+	   || gs_info.ifn == IFN_MASK_GATHER_LOAD
+	   || gs_info.ifn == IFN_LEN_MASK_SCATTER_STORE
+	   || gs_info.ifn == IFN_LEN_MASK_GATHER_LOAD)
     mask = build_int_cst (TREE_TYPE (truth_type_for (gs_vectype)), -1);
 
   /* Get the invariant base and non-invariant offset, converting the
