@@ -785,6 +785,13 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       arg_false = arg0;
     }
 
+  /* Do not make conditional undefs unconditional.  */
+  if ((TREE_CODE (arg_true) == SSA_NAME
+       && ssa_name_maybe_undef_p (arg_true))
+      || (TREE_CODE (arg_false) == SSA_NAME
+	  && ssa_name_maybe_undef_p (arg_false)))
+    return false;
+
   tree type = TREE_TYPE (gimple_phi_result (phi));
   result = gimple_simplify_phiopt (early_p, type, stmt,
 				   arg_true, arg_false,
