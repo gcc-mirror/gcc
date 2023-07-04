@@ -2447,7 +2447,6 @@ struct walk_type_data
   int used_length;
   type_p orig_s;
   const char *reorder_fn;
-  bool needs_cast_p;
   bool fn_wants_lvalue;
   bool in_record_p;
   int loopcounter;
@@ -2663,7 +2662,6 @@ walk_type (type_p t, struct walk_type_data *d)
   options_p oo;
   const struct nested_ptr_data *nested_ptr_d = NULL;
 
-  d->needs_cast_p = false;
   for (oo = d->opt; oo; oo = oo->next)
     if (strcmp (oo->name, "length") == 0 && oo->kind == OPTION_STRING)
       length = oo->info.string;
@@ -3186,7 +3184,6 @@ static void
 write_types_process_field (type_p f, const struct walk_type_data *d)
 {
   const struct write_types_data *wtd;
-  const char *cast = d->needs_cast_p ? "(void *)" : "";
   wtd = (const struct write_types_data *) d->cookie;
 
   switch (f->kind)
@@ -3195,8 +3192,8 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_UNDEFINED:
       gcc_unreachable ();
     case TYPE_POINTER:
-      oprintf (d->of, "%*s%s (%s%s", d->indent, "",
-	       wtd->subfield_marker_routine, cast, d->val);
+      oprintf (d->of, "%*s%s (%s", d->indent, "",
+	       wtd->subfield_marker_routine, d->val);
       if (wtd->param_prefix)
 	{
 	  if (f->u.p->kind == TYPE_SCALAR)
@@ -3229,8 +3226,8 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	}
       oprintf (d->of, ");\n");
       if (d->reorder_fn && wtd->reorder_note_routine)
-	oprintf (d->of, "%*s%s (%s%s, %s, %s);\n", d->indent, "",
-		 wtd->reorder_note_routine, cast, d->val,
+	oprintf (d->of, "%*s%s (%s, %s, %s);\n", d->indent, "",
+		 wtd->reorder_note_routine, d->val,
 		 d->prev_val[3], d->reorder_fn);
       break;
 
@@ -3262,16 +3259,16 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	       : nullptr);
 	  if (length_override)
 	    {
-	      oprintf (d->of, "2 (%s%s, ", cast, d->val);
+	      oprintf (d->of, "2 (%s, ", d->val);
 	      output_escaped_param (d, length_override, "string_length");
 	    }
 	  else
-	    oprintf (d->of, " (%s%s", cast, d->val);
+	    oprintf (d->of, " (%s", d->val);
 
 	  oprintf (d->of, ");\n");
 	  if (d->reorder_fn && wtd->reorder_note_routine)
-	    oprintf (d->of, "%*s%s (%s%s, %s%s, %s);\n", d->indent, "",
-		     wtd->reorder_note_routine, cast, d->val, cast, d->val,
+	    oprintf (d->of, "%*s%s (%s, %s, %s);\n", d->indent, "",
+		     wtd->reorder_note_routine, d->val, d->val,
 		     d->reorder_fn);
 	}
       break;
