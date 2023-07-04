@@ -798,7 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [projected], projected
   template<indirectly_readable _Iter,
 	   indirectly_regular_unary_invocable<_Iter> _Proj>
-    using projected = __detail::__projected<_Iter, _Proj>::__type;
+    using projected = typename __detail::__projected<_Iter, _Proj>::__type;
 
   // [alg.req], common algorithm requirements
 
