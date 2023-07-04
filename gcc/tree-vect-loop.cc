@@ -3333,7 +3333,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
   unsigned int suggested_unroll_factor = 1;
-  bool slp_done_for_suggested_uf;
+  bool slp_done_for_suggested_uf = false;
 
   /* Run the main analysis.  */
   opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal,
