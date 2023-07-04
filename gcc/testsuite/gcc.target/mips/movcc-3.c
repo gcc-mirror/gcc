@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "(HAS_MOVN) -mhard-float -mbranch-cost=2" } */
+/* { dg-options "(HAS_MOVN) -mhard-float -mbranch-cost=3" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" "-Os" } { "" } } */
 /* { dg-final { scan-assembler "\tmovt\t" } } */
 /* { dg-final { scan-assembler "\tmovf\t" } } */
