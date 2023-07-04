@@ -1,3 +1,26 @@
+2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Make wsyncbuf and
+	wosyncstream depend on _GLIBCXX_USE_CXX11_ABI.
+
+2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/pstl/pstl_config.h (_PSTL_PRAGMA_SIMD_SCAN,
+	_PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN, _PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN):
+	Define to OpenMP 5.0 pragmas even for GCC 10.0+.
+	(_PSTL_UDS_PRESENT): Define to 1 for GCC 10.0+.
+
+2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (_Destroy): Qualify call.
+	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Likewise.
+	* testsuite/23_containers/vector/cons/destroy-adl.cc: New test.
+
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libstdc++.exp: Remove additional flag handled
+	by Darwin specs.
+
 2023-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110432

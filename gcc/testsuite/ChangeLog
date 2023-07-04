@@ -1,3 +1,168 @@
+2023-07-03  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/zvbb.c: New test.
+	* gcc.target/riscv/zvbc.c: New test.
+	* gcc.target/riscv/zvkg.c: New test.
+	* gcc.target/riscv/zvkn-1.c: New test.
+	* gcc.target/riscv/zvkn.c: New test.
+	* gcc.target/riscv/zvknc-1.c: New test.
+	* gcc.target/riscv/zvknc-2.c: New test.
+	* gcc.target/riscv/zvknc.c: New test.
+	* gcc.target/riscv/zvkned.c: New test.
+	* gcc.target/riscv/zvkng-1.c: New test.
+	* gcc.target/riscv/zvkng-2.c: New test.
+	* gcc.target/riscv/zvkng.c: New test.
+	* gcc.target/riscv/zvknha.c: New test.
+	* gcc.target/riscv/zvknhb.c: New test.
+	* gcc.target/riscv/zvks-1.c: New test.
+	* gcc.target/riscv/zvks.c: New test.
+	* gcc.target/riscv/zvksc-1.c: New test.
+	* gcc.target/riscv/zvksc-2.c: New test.
+	* gcc.target/riscv/zvksc.c: New test.
+	* gcc.target/riscv/zvksed.c: New test.
+	* gcc.target/riscv/zvksg-1.c: New test.
+	* gcc.target/riscv/zvksg-2.c: New test.
+	* gcc.target/riscv/zvksg.c: New test.
+	* gcc.target/riscv/zvksh.c: New test.
+	* gcc.target/riscv/zvkt.c: New test.
+
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/g++.exp: Remove additional flag handled by Darwin specs.
+	* lib/obj-c++.exp: Likewise.
+
+2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* gm2/switches/uninit-variable-checking/fail/testinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallvec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithnoptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/switches-uninit-variable-checking-fail.exp: New file.
+	* gm2/switches/uninit-variable-checking/pass/switches-uninit-variable-checking-pass.exp: New file.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-12.c: New test.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-3.c: Add floating-point.
+	* gcc.target/riscv/rvv/autovec/widen/widen-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-7.c: New test.
+
+2023-07-03  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Revert:
+	2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-12.c: New test.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/widen/widen-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen-complicate-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/widen_run_zvfh-12.c: New test.
+
+2023-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110506
+	* gcc.dg/pr110506-2.c: New testcase.
+
+2023-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110506
+	* gcc.dg/pr110506.c: New testcase.
+
+2023-07-03  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: Add vect_float_strict.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-cache.c: New tests for mips16e2.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2.c: New tests for mips16e2.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2.c: Add new tests for mips16e2.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2.c: New tests for mips16e2.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-gp.c: New tests for mips16e2.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-cmov.c: Added tests for MOVx instructions.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips.exp(mips_option_groups): Add -mmips16e2
+	option.
+	(mips-dg-init): Handle the recognization of mips16e2 targets.
+	(mips-dg-options): Add dependencies for mips16e2.
+
 2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/Wbuiltin_declaration_mismatch2.d: Fix failed tests.

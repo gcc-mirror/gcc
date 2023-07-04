@@ -1,3 +1,68 @@
+2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* Make-lang.in (GM2-COMP-BOOT-DEFS): Add M2SymInit.def.
+	(GM2-COMP-BOOT-MODS): Add M2SymInit.mod.
+	* gm2-compiler/M2BasicBlock.mod: Formatting changes.
+	* gm2-compiler/M2Code.mod: Remove import of VariableAnalysis from
+	M2Quads.  Import VariableAnalysis from M2SymInit.mod.
+	* gm2-compiler/M2GCCDeclare.mod (PrintVerboseFromList):
+	Add debugging print for a component.
+	(TypeConstFullyDeclared): Call RememberType for every type.
+	* gm2-compiler/M2GenGCC.mod (CodeReturnValue): Add parameter to
+	GetQuadOtok.
+	(CodeBecomes): Add parameter to GetQuadOtok.
+	(CodeXIndr): Add parameter to GetQuadOtok.
+	* gm2-compiler/M2Optimize.mod (ReduceBranch): Reformat and
+	preserve operand token positions when reducing the branch
+	quadruples.
+	(ReduceGoto): Reformat.
+	(FoldMultipleGoto): Reformat.
+	(KnownReachable): Reformat.
+	* gm2-compiler/M2Options.def (UninitVariableChecking): New
+	variable declared and exported.
+	(SetUninitVariableChecking): New procedure.
+	* gm2-compiler/M2Options.mod (SetWall): Set
+	UninitVariableChecking.
+	(SetUninitVariableChecking): New procedure.
+	* gm2-compiler/M2Quads.def (PutQuadOtok): Exported and declared.
+	(VariableAnalysis): Removed.
+	* gm2-compiler/M2Quads.mod (PutQuadOtok): New procedure.
+	(doVal): Reformatted.
+	(MarkAsWrite): Reformatted.
+	(MarkArrayAsWritten): Reformatted.
+	(doIndrX): Use PutQuadOtok.
+	(MakeRightValue): Use GenQuadOtok.
+	(MakeLeftValue): Use GenQuadOtok.
+	(CheckReadBeforeInitialized): Remove.
+	(IsNeverAltered): Reformat.
+	(DebugLocation): New procedure.
+	(BuildDesignatorPointer): Use GenQuadO to preserve operand token
+	position.
+	(BuildRelOp): Use GenQuadOtok ditto.
+	* gm2-compiler/SymbolTable.def (VarCheckReadInit): New procedure.
+	(VarInitState): New procedure.
+	(PutVarInitialized): New procedure.
+	(PutVarFieldInitialized): New procedure function.
+	(GetVarFieldInitialized): New procedure function.
+	(PrintInitialized): New procedure.
+	* gm2-compiler/SymbolTable.mod (VarCheckReadInit): New procedure.
+	(VarInitState): New procedure.
+	(PutVarInitialized): New procedure.
+	(PutVarFieldInitialized): New procedure function.
+	(GetVarFieldInitialized): New procedure function.
+	(PrintInitialized): New procedure.
+	(LRInitDesc): New type.
+	(SymVar): InitState new field.
+	(MakeVar): Initialize InitState.
+	* gm2-gcc/m2options.h (M2Options_SetUninitVariableChecking):
+	New function declaration.
+	* gm2-lang.cc (gm2_langhook_handle_option): Detect
+	OPT_Wuninit_variable_checking and call SetUninitVariableChecking.
+	* lang.opt: Add Wuninit-variable-checking.
+	* gm2-compiler/M2SymInit.def: New file.
+	* gm2-compiler/M2SymInit.mod: New file.
+
 2023-06-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/108835

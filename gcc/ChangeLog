@@ -1,3 +1,258 @@
+2023-07-03  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Add support for zvbb,
+	zvbc, zvkg, zvkned, zvknha, zvknhb, zvksed, zvksh, zvkn,
+	zvknc, zvkng, zvks, zvksc, zvksg, zvkt and the implied subsets.
+	* config/riscv/arch-canonicalize: Add canonicalization info for
+	zvkn, zvknc, zvkng, zvks, zvksc, zvksg.
+	* config/riscv/riscv-opts.h (MASK_ZVBB): New macro.
+	(MASK_ZVBC): Likewise.
+	(TARGET_ZVBB): Likewise.
+	(TARGET_ZVBC): Likewise.
+	(MASK_ZVKG): Likewise.
+	(MASK_ZVKNED): Likewise.
+	(MASK_ZVKNHA): Likewise.
+	(MASK_ZVKNHB): Likewise.
+	(MASK_ZVKSED): Likewise.
+	(MASK_ZVKSH): Likewise.
+	(MASK_ZVKN): Likewise.
+	(MASK_ZVKNC): Likewise.
+	(MASK_ZVKNG): Likewise.
+	(MASK_ZVKS): Likewise.
+	(MASK_ZVKSC): Likewise.
+	(MASK_ZVKSG): Likewise.
+	(MASK_ZVKT): Likewise.
+	(TARGET_ZVKG): Likewise.
+	(TARGET_ZVKNED): Likewise.
+	(TARGET_ZVKNHA): Likewise.
+	(TARGET_ZVKNHB): Likewise.
+	(TARGET_ZVKSED): Likewise.
+	(TARGET_ZVKSH): Likewise.
+	(TARGET_ZVKN): Likewise.
+	(TARGET_ZVKNC): Likewise.
+	(TARGET_ZVKNG): Likewise.
+	(TARGET_ZVKS): Likewise.
+	(TARGET_ZVKSC): Likewise.
+	(TARGET_ZVKSG): Likewise.
+	(TARGET_ZVKT): Likewise.
+	* config/riscv/riscv.opt: Introduction of riscv_zv{b,k}_subext.
+
+2023-07-03  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110510
+	* except.h (struct eh_landing_pad_d): Add chain_next GTY.
+
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h: Avoid duplicate multiply_defined specs on
+	earlier Darwin versions with shared libgcc.
+
+2023-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* tree.h (tree_int_cst_equal): Change return type from int to bool.
+	(operand_equal_for_phi_arg_p): Ditto.
+	(tree_map_base_marked_p): Ditto.
+	* tree.cc (contains_placeholder_p): Update function body
+	for bool return type.
+	(type_cache_hasher::equal): Ditto.
+	(tree_map_base_hash): Change return type
+	from int to void and adjust function body accordingly.
+	(tree_int_cst_equal): Ditto.
+	(operand_equal_for_phi_arg_p): Ditto.
+	(get_narrower): Change "first" variable to bool.
+	(cl_option_hasher::equal): Update function body for bool return type.
+	* ggc.h (ggc_set_mark): Change return type from int to bool.
+	(ggc_marked_p): Ditto.
+	* ggc-page.cc (gt_ggc_mx): Change return type
+	from int to void and adjust function body accordingly.
+	(ggc_set_mark): Ditto.
+
+2023-07-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Change order of
+	LEN_MASK_LOAD/LEN_MASK_STORE/LEN_LOAD/LEN_STORE arguments.
+	* config/riscv/riscv-v.cc (expand_load_store): Ditto.
+	* doc/md.texi: Ditto.
+	* gimple-fold.cc (gimple_fold_partial_load_store_mem_ref): Ditto.
+	* internal-fn.cc (len_maskload_direct): Ditto.
+	(len_maskstore_direct): Ditto.
+	(add_len_and_mask_args): New function.
+	(expand_partial_load_optab_fn): Change order of
+	LEN_MASK_LOAD/LEN_MASK_STORE/LEN_LOAD/LEN_STORE arguments.
+	(expand_partial_store_optab_fn): Ditto.
+	(internal_fn_len_index): New function.
+	(internal_fn_mask_index): Change order of
+	LEN_MASK_LOAD/LEN_MASK_STORE/LEN_LOAD/LEN_STORE arguments.
+	(internal_fn_stored_value_index): Ditto.
+	(internal_len_load_store_bias): Ditto.
+	* internal-fn.h (internal_fn_len_index): New function.
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Change order of
+	LEN_MASK_LOAD/LEN_MASK_STORE/LEN_LOAD/LEN_STORE arguments.
+	* tree-vect-stmts.cc (vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+
+2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* doc/gm2.texi (Semantic checking): Include examples using
+	-Wuninit-variable-checking.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*double_widen_fnma<mode>): New pattern.
+	(*single_widen_fnma<mode>): Ditto.
+	(*double_widen_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*double_widen_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (@pred_single_widen_mul<any_extend:su><mode>): Change "@"
+	into "*" in pattern name which simplifies build files.
+	(*pred_single_widen_mul<any_extend:su><mode>): Ditto.
+	(*pred_single_widen_mul<mode>): New pattern.
+
+2023-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_extract<mode><Vhalf>): Expect
+	the index to be 0 or 1.
+
+2023-07-03  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Revert:
+	2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*double_widen_fnma<mode>): New pattern.
+	(*single_widen_fnma<mode>): Ditto.
+	(*double_widen_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*double_widen_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+
+2023-07-03  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*double_widen_fnma<mode>): New pattern.
+	(*single_widen_fnma<mode>): Ditto.
+	(*double_widen_fms<mode>): Ditto.
+	(*single_widen_fms<mode>): Ditto.
+	(*double_widen_fnms<mode>): Ditto.
+	(*single_widen_fnms<mode>): Ditto.
+
+2023-07-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Fix typo.
+
+2023-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110506
+	* tree-vect-patterns.cc (vect_recog_rotate_pattern): Re-order
+	TYPE_PRECISION access with INTEGRAL_TYPE_P check.
+
+2023-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110506
+	* tree-ssa-ccp.cc (get_value_for_expr): Check for integral
+	type before relying on TYPE_PRECISION to produce a nonzero mask.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.md(*and<mode>3_mips16): Generates
+	ZEB/ZEH instructions.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_9bit_offset_address_p): Restrict the
+	address register to M16_REGS for MIPS16.
+	(BUILTIN_AVAIL_MIPS16E2): Defined a new macro.
+	(AVAIL_MIPS16E2_OR_NON_MIPS16): Same as above.
+	(AVAIL_NON_MIPS16 (cache..)): Update to
+	AVAIL_MIPS16E2_OR_NON_MIPS16.
+	* config/mips/mips.h (ISA_HAS_CACHE): Add clause for ISA_HAS_MIPS16E2.
+	* config/mips/mips.md (mips_cache): Mark as extended MIPS16.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.h(ISA_HAS_9BIT_DISPLACEMENT): Add clause
+	for ISA_HAS_MIPS16E2.
+	(ISA_HAS_SYNC): Same as above.
+	(ISA_HAS_LL_SC): Same as above.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_expand_ins_as_unaligned_store):
+	Add logics for generating instruction.
+	* config/mips/mips.h(ISA_HAS_LWL_LWR): Add clause for ISA_HAS_MIPS16E2.
+	* config/mips/mips.md(mov_<load>l): Generates instructions.
+	(mov_<load>r): Same as above.
+	(mov_<store>l): Adjusted for the conditions above.
+	(mov_<store>r): Same as above.
+	(mov_<store>l_mips16e2): Add machine description for `define_insn mov_<store>l_mips16e2`.
+	(mov_<store>r_mips16e2): Add machine description for `define_insn mov_<store>r_mips16e2`.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_symbol_insns_1): Generates LUI instruction.
+	(mips_const_insns): Same as above.
+	(mips_output_move): Same as above.
+	(mips_output_function_prologue): Same as above.
+	* config/mips/mips.md: Same as above
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/constraints.md(Yz): New constraints for mips16e2.
+	* config/mips/mips-protos.h(mips_bit_clear_p): Declared new function.
+	(mips_bit_clear_info): Same as above.
+	* config/mips/mips.cc(mips_bit_clear_info): New function for
+	generating instructions.
+	(mips_bit_clear_p): Same as above.
+	* config/mips/mips.h(ISA_HAS_EXT_INS): Add clause for ISA_HAS_MIPS16E2.
+	* config/mips/mips.md(extended_mips16): Generates EXT and INS instructions.
+	(*and<mode>3): Generates INS instruction.
+	(*and<mode>3_mips16): Generates EXT, INS and ANDI instructions.
+	(ior<mode>3): Add logics for ORI instruction.
+	(*ior<mode>3_mips16_asmacro): Generates ORI instrucion.
+	(*ior<mode>3_mips16): Add logics for XORI instruction.
+	(*xor<mode>3_mips16): Generates XORI instrucion.
+	(*extzv<mode>): Add logics for EXT instruction.
+	(*insv<mode>): Add logics for INS instruction.
+	* config/mips/predicates.md(bit_clear_operand): New predicate for
+	generating bitwise instructions.
+	(and_reg_operand): Add logics for generating bitwise instructions.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_regno_mode_ok_for_base_p): Generate instructions
+	that uses global pointer register.
+	(mips16_unextended_reference_p): Same as above.
+	(mips_pic_base_register): Same as above.
+	(mips_init_relocs): Same as above.
+	* config/mips/mips.h(MIPS16_GP_LOADS): Defined a new macro.
+	(GLOBAL_POINTER_REGNUM): Moved to machine description `mips.md`.
+	* config/mips/mips.md(GLOBAL_POINTER_REGNUM): Moved to here from above.
+	(*lowsi_mips16_gp):New `define_insn *low<mode>_mips16`.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.h(ISA_HAS_CONDMOVE): Add condition for ISA_HAS_MIPS16E2.
+	* config/mips/mips.md(*mov<GPR:mode>_on_<MOVECC:mode>): Add logics for MOVx insts.
+	(*mov<GPR:mode>_on_<MOVECC:mode>_mips16e2): Generate MOVx instruction.
+	(*mov<GPR:mode>_on_<GPR2:mode>_ne): Add logics for MOVx insts.
+	(*mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2): Generate MOVx instruction.
+	* config/mips/predicates.md(reg_or_0_operand_mips16e2): New predicate for MOVx insts.
+
+2023-07-03  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_file_start): Add mips16e2 info
+	for output file.
+	* config/mips/mips.h(__mips_mips16e2): Defined a new
+	predefine macro.
+	(ISA_HAS_MIPS16E2): Defined a new macro.
+	(ASM_SPEC): Pass mmips16e2 to the assembler.
+	* config/mips/mips.opt: Add -m(no-)mips16e2 option.
+	* config/mips/predicates.md: Add clause for TARGET_MIPS16E2.
+	* doc/invoke.texi: Add -m(no-)mips16e2 option..
+
 2023-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/110508

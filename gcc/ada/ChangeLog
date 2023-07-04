@@ -1,3 +1,41 @@
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.ads (Build_Variant_Record_Equality): Add Spec_Id as second
+	parameter.
+	* exp_ch3.adb (Build_Variant_Record_Equality): For unchecked union
+	types, build the additional parameters as extra formal parameters.
+	(Expand_Freeze_Record_Type.Build_Variant_Record_Equality): Pass
+	Empty as Spec_Id in call to Build_Variant_Record_Equality.
+	* exp_ch4.ads (Expand_Unchecked_Union_Equality): New procedure.
+	* exp_ch4.adb (Expand_Composite_Equality): In the presence of a
+	function implementing composite equality, do not special case the
+	unchecked union types, and only convert the operands if the base
+	types are not the same like in Build_Equality_Call.
+	(Build_Equality_Call): Do not special case the unchecked union types
+	and relocate the operands only once.
+	(Expand_N_Op_Eq): Do not special case the unchecked union types.
+	(Expand_Unchecked_Union_Equality): New procedure implementing the
+	specific expansion of calls to the predefined equality function.
+	* exp_ch6.adb (Is_Unchecked_Union_Equality): New predicate.
+	(Expand_Call): Call Is_Unchecked_Union_Equality to determine whether
+	to call Expand_Unchecked_Union_Equality or Expand_Call_Helper.
+	* exp_ch8.adb (Build_Body_For_Renaming): Set Has_Delayed_Freeze flag
+	earlier on Id and pass Id in call to Build_Variant_Record_Equality.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Untagged_Equality): Rename into...
+	(Build_Untagged_Record_Equality): ...this.
+	(Expand_Freeze_Record_Type): Adjust to above renaming and invoke
+	the procedure also for discriminated types without a variant part.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Has_Inferable_Discriminants): In the case of a
+	component with a per-object constraint, also return true if the
+	enclosing object is not of an unchecked union type.
+	In the default case, remove a useless call to Base_Type.
+
 2023-06-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc-interface/decl.cc (gt_pch_nx): Remove overloads for Entity_Id.
