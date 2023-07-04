@@ -82,7 +82,6 @@ static const char *const token_names[] = {
   "ptr_alias",
   "nested_ptr",
   "user",
-  "a param<N>_is option",
   "a number",
   "a scalar type",
   "an identifier",
@@ -95,7 +94,6 @@ static const char *const token_names[] = {
 /* This array is indexed by token code minus FIRST_TOKEN_WITH_VALUE.  */
 /* Keep in sync with 'gengtype.h:enum gty_token'.  */
 static const char *const token_value_format[] = {
-  "%s",
   "'%s'",
   "'%s'",
   "'%s'",

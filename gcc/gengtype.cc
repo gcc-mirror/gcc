@@ -1388,8 +1388,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
    At present:
    - Converts pointer-to-char, with no length parameter, to TYPE_STRING;
    - Similarly for arrays of pointer-to-char;
-   - Converts structures for which a parameter is provided to
-     TYPE_PARAM_STRUCT;
    - Handles "special" options.
 */
 
@@ -3654,7 +3652,7 @@ write_func_for_structure (type_p orig_s, type_p s,
 }
 
 
-/* Write out marker routines for STRUCTURES and PARAM_STRUCTS.  */
+/* Write out marker routines for STRUCTURES.  */
 
 static void
 write_types (outf_p output_header, type_p structures,
@@ -4002,7 +4000,7 @@ write_local_func_for_structure (const_type_p orig_s, type_p s)
       }
 }
 
-/* Write out local marker routines for STRUCTURES and PARAM_STRUCTS.  */
+/* Write out local marker routines for STRUCTURES.  */
 
 static void
 write_local (outf_p output_header, type_p structures)
