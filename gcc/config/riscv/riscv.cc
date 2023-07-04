@@ -7670,8 +7670,19 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
 	emit_insn (gen_vxrmsi (gen_int_mode (mode, SImode)));
       break;
     case RISCV_FRM:
-      if (mode != FRM_MODE_NONE && mode != prev_mode)
+      /* Switching to the dynamic rounding mode is not necessary.  When an
+	 instruction requests it, it effectively uses the rounding mode already
+	 set in the FRM register.  All other rounding modes require us to
+	 switch the rounding mode via the FRM register.  */
+      if (mode != FRM_MODE_DYN && mode != prev_mode)
 	{
+	  /* TODO: By design, FRM_MODE_xxx used by mode switch which is
+	     different from the FRM value like FRM_RTZ defined in
+	     riscv-protos.h.  When mode switching we actually need a conversion
+	     function to convert the mode of mode switching to the actual
+	     FRM value like FRM_RTZ.  For now, the value between the mode of
+	     mode swith and the FRM value in riscv-protos.h take the same value,
+	     and then we leverage this assumption when emit.  */
 	  rtx scaler = gen_reg_rtx (SImode);
 	  rtx imm = gen_int_mode (mode, SImode);
 
@@ -7697,7 +7708,10 @@ riscv_mode_needed (int entity, rtx_insn *insn)
     case RISCV_VXRM:
       return code >= 0 ? get_attr_vxrm_mode (insn) : VXRM_MODE_NONE;
     case RISCV_FRM:
-      return code >= 0 ? get_attr_frm_mode (insn) : FRM_MODE_NONE;
+      /* TODO: Here we may return FRM_MODE_NONE from get_attr_frm_mode, as well
+	 as FRM_MODE_DYN as default.  It is kind of inconsistent and we will
+	 take care of it after dynamic rounding mode.  */
+      return code >= 0 ? get_attr_frm_mode (insn) : FRM_MODE_DYN;
     default:
       gcc_unreachable ();
     }
@@ -7757,7 +7771,7 @@ riscv_mode_after (int entity, int mode, rtx_insn *insn)
     case RISCV_FRM:
       return riscv_entity_mode_after (FRM_REGNUM, insn, mode,
 				      (int (*)(rtx_insn *)) get_attr_frm_mode,
-				      FRM_MODE_NONE);
+				      FRM_MODE_DYN);
     default:
       gcc_unreachable ();
     }
@@ -7774,7 +7788,10 @@ riscv_mode_entry (int entity)
     case RISCV_VXRM:
       return VXRM_MODE_NONE;
     case RISCV_FRM:
-      return FRM_MODE_NONE;
+      /* According to RVV 1.0 spec, all vector floating-point operations use
+	 the dynamic rounding mode in the frm register.  Likewise in other
+	 similar places.  */
+      return FRM_MODE_DYN;
     default:
       gcc_unreachable ();
     }
@@ -7791,7 +7808,7 @@ riscv_mode_exit (int entity)
     case RISCV_VXRM:
       return VXRM_MODE_NONE;
     case RISCV_FRM:
-      return FRM_MODE_NONE;
+      return FRM_MODE_DYN;
     default:
       gcc_unreachable ();
     }
