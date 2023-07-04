@@ -2180,13 +2180,6 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
 		= LOOP_VINFO_PEELING_FOR_GAPS (orig_loop_vinfo) ? 1 : 0;
 	      scalar_niters = ((scalar_niters - gap - prolog_peeling)
 			       % lowest_vf + gap);
-	      if (scalar_niters == 0)
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "not vectorized: loop never entered\n");
-		  return 0;
-		}
 	    }
 	}
 
