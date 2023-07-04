@@ -3240,15 +3240,14 @@
    (set (match_dup 3)
 	(match_dup 7))]
 {
-  uint32_t check = 0;
+  HARD_REG_SET regs;
   int i;
+  CLEAR_HARD_REG_SET (regs);
   for (i = 0; i <= 3; ++i)
-    {
-      uint32_t mask = (uint32_t)1 << REGNO (operands[i]);
-      if (check & mask)
-	FAIL;
-      check |= mask;
-    }
+    if (TEST_HARD_REG_BIT (regs, REGNO (operands[i])))
+      FAIL;
+    else
+      SET_HARD_REG_BIT (regs, REGNO (operands[i]));
   operands[6] = gen_rtx_MEM (SFmode, XEXP (operands[6], 0));
   operands[7] = gen_rtx_MEM (SFmode, XEXP (operands[7], 0));
 })
