@@ -1,3 +1,24 @@
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
+	(fold_nonarray_ctor_reference): Likewise.  Specifically deal
+	with integral bit-fields.
+	(fold_ctor_reference): Make sure that the constructor uses the
+	native storage order.
+
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/108743
+	* config/darwin.opt: Add fconstant-cfstrings alias to
+	mconstant-cfstrings.
+	* doc/invoke.texi: Amend invocation descriptions to reflect
+	that the fconstant-cfstrings is a target-option alias and to
+	add the missing mconstant-cfstrings option description to the
+	Darwin section.
+
 2023-06-29  liuhongt  <hongtao.liu@intel.com>
 
 	PR rtl-optimization/110237

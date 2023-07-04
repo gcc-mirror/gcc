@@ -1,3 +1,12 @@
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/108835
+	* gm2-libs/RTint.mod: Do not use NIL timeout setting on select,
+	test failures sequentially, finishing on the first success.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.
