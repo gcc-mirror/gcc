@@ -175,6 +175,8 @@ public:
   Lexer (Lexer &&other) = default;
   Lexer &operator= (Lexer &&other) = default;
 
+  bool input_source_is_valid_utf8 ();
+
   // Returns token n tokens ahead of current position.
   const_TokenPtr peek_token (int n) { return token_queue.peek (n); }
   // Peeks the current token.
@@ -217,9 +219,9 @@ public:
 
     Codepoint next_codepoint ()
     {
-      uint8_t input = next_byte ();
+      uint32_t input = next_byte ();
 
-      if ((int8_t) input == EOF)
+      if ((int32_t) input == EOF)
 	return Codepoint::eof ();
       else if (input < 128)
 	{
@@ -246,11 +248,13 @@ public:
 	  // 3 bytes or UTF-8 BOM
 	  uint8_t input2 = next_byte ();
 	  // If the second byte is equal to 0xBB then the input is no longer a
-	  // valid UTF-8 char.
+	  // valid UTF-8 char. Then, we check if the third byte makes up a UTF
+	  // BOM.
 	  if (input == 0xEF && input2 == 0xBB)
 	    {
 	      uint8_t input3 = next_byte ();
 	      if (input3 == 0xBF)
+		// found BOM
 		return next_codepoint ();
 	      else
 		return {0xFFFE};
@@ -289,8 +293,6 @@ public:
 	}
       else
 	{
-	  // rust_error_at (get_current_location (),
-	  //   "invalid UTF-8 [SECND] (too long)");
 	  return {0xFFFE};
 	}
     }
@@ -362,8 +364,7 @@ public:
     {
       if (offs >= buffer.size ())
 	return EOF;
-
-      return buffer.at (offs++);
+      return (uint8_t) buffer.at (offs++);
     }
 
   public:

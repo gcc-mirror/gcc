@@ -497,6 +497,14 @@ Session::compile_crate (const char *filename)
 
   Lexer lex (filename, std::move (file_wrap), linemap, dump_lex_opt);
 
+  if (!lex.input_source_is_valid_utf8 ())
+    {
+      rust_error_at (Linemap::unknown_location (),
+		     "cannot read %s; stream did not contain valid UTF-8",
+		     filename);
+      return;
+    }
+
   Parser<Lexer> parser (lex);
 
   // generate crate from parser
