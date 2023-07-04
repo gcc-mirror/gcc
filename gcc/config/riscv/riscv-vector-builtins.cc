@@ -3569,11 +3569,10 @@ function_expander::use_exact_insn (insn_code icode)
   if (base->has_rounding_mode_operand_p ())
     add_input_operand (call_expr_nargs (exp) - 2);
 
-  /* TODO: Currently, we don't support intrinsic that is modeling rounding mode.
-     We add default rounding mode for the intrinsics that didn't model rounding
-     mode yet.  */
+  /* The RVV floating-point only support dynamic rounding mode in the
+     FRM register.  */
   if (opno != insn_data[icode].n_generator_args)
-    add_input_operand (Pmode, const0_rtx);
+    add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);
 }
