@@ -4546,14 +4546,17 @@ package body Sem_Aggr is
                Component_Associations (New_Aggr));
 
             --  If the discriminant constraint is a current instance, mark the
-            --  current aggregate so that the self-reference can be expanded
-            --  later. The constraint may refer to the subtype of aggregate, so
-            --  use base type for comparison.
+            --  current aggregate so that the self-reference can be expanded by
+            --  Build_Record_Aggr_Code.Replace_Type later.
 
             if Nkind (Discr_Val) = N_Attribute_Reference
               and then Is_Entity_Name (Prefix (Discr_Val))
               and then Is_Type (Entity (Prefix (Discr_Val)))
-              and then Base_Type (Etype (N)) = Entity (Prefix (Discr_Val))
+              and then
+                Is_Ancestor
+                  (Entity (Prefix (Discr_Val)),
+                   Etype (N),
+                   Use_Full_View => True)
             then
                Set_Has_Self_Reference (N);
             end if;
