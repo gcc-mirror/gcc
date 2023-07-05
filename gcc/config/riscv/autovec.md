@@ -473,7 +473,7 @@
 ;; -------------------------------------------------------------------------
 (define_insn_and_split "trunc<mode><v_double_trunc>2"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand" "=vr")
-    (truncate:<V_DOUBLE_TRUNC>
+    (float_truncate:<V_DOUBLE_TRUNC>
      (match_operand:VWEXTF_ZVFHMIN 1 "register_operand"      " vr")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -493,7 +493,7 @@
 ;; -------------------------------------------------------------------------
 (define_expand "trunc<mode><v_quad_trunc>2"
   [(set (match_operand:<V_QUAD_TRUNC> 0 "register_operand")
-    (truncate:<V_QUAD_TRUNC>
+    (float_truncate:<V_QUAD_TRUNC>
      (match_operand:VQEXTF 1 "register_operand")))]
   "TARGET_VECTOR && (TARGET_ZVFHMIN || TARGET_ZVFH)"
 {
