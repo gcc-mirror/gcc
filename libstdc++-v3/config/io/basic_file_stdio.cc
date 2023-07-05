@@ -128,7 +128,7 @@ namespace
     for (;;)
       {
 #ifdef _GLIBCXX_USE_STDIO_PURE
-	const std::streamsize __ret = fwrite(__file, 1, __nleft, __file);
+	const std::streamsize __ret = fwrite(__s, 1, __nleft, __file);
 #else
 	const std::streamsize __ret = write(__fd, __s, __nleft);
 #endif
