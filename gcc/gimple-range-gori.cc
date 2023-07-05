@@ -725,36 +725,34 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
 			     op1_trange, op1_frange, op2_trange, op2_frange);
       if (idx)
 	tracer.trailer (idx, "compute_operand", res, name, r);
+      return res;
     }
   // Follow the appropriate operands now.
-  else if (op1_in_chain && op2_in_chain)
-    res = compute_operand1_and_operand2_range (r, handler, lhs, name, src,
-					       vrel_ptr);
-  else if (op1_in_chain)
+  if (op1_in_chain && op2_in_chain)
+    return compute_operand1_and_operand2_range (r, handler, lhs, name, src,
+						vrel_ptr);
+  Value_Range vr;
+  gimple *src_stmt;
+  if (op1_in_chain)
     {
-      Value_Range vr (TREE_TYPE (op1));
+      vr.set_type (TREE_TYPE (op1));
       if (!compute_operand1_range (vr, handler, lhs, src, vrel_ptr))
 	return false;
-      gimple *src_stmt = SSA_NAME_DEF_STMT (op1);
-      gcc_checking_assert (src_stmt);
-      // Then feed this range back as the LHS of the defining statement.
-      return compute_operand_range (r, src_stmt, vr, name, src, vrel_ptr);
-    }
-  else if (op2_in_chain)
-    {
-      Value_Range vr (TREE_TYPE (op2));
-      if (!compute_operand2_range (vr, handler, lhs, src, vrel_ptr))
-	return false;
-      gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
-      gcc_checking_assert (src_stmt);
-      // Then feed this range back as the LHS of the defining statement.
-      return compute_operand_range (r, src_stmt, vr, name, src, vrel_ptr);
+      src_stmt = SSA_NAME_DEF_STMT (op1);
     }
   else
-    gcc_unreachable ();
+    {
+      gcc_checking_assert (op2_in_chain);
+      vr.set_type (TREE_TYPE (op2));
+      if (!compute_operand2_range (vr, handler, lhs, src, vrel_ptr))
+	return false;
+      src_stmt = SSA_NAME_DEF_STMT (op2);
+    }
 
+  gcc_checking_assert (src_stmt);
+  // Then feed this range back as the LHS of the defining statement.
+  return compute_operand_range (r, src_stmt, vr, name, src, vrel_ptr);
   // If neither operand is derived, this statement tells us nothing.
-  return res;
 }
 
 
