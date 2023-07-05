@@ -639,7 +639,7 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (op1 == name)
     return compute_operand1_range (r, handler, lhs, src, vrel_ptr);
   if (op2 == name)
-    return compute_operand2_range (r, handler, lhs, name, src, vrel_ptr);
+    return compute_operand2_range (r, handler, lhs, src, vrel_ptr);
 
   // NAME is not in this stmt, but one of the names in it ought to be
   // derived from it.
@@ -741,7 +741,15 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
       return compute_operand_range (r, src_stmt, vr, name, src, vrel_ptr);
     }
   else if (op2_in_chain)
-    res = compute_operand2_range (r, handler, lhs, name, src, vrel_ptr);
+    {
+      Value_Range vr (TREE_TYPE (op2));
+      if (!compute_operand2_range (vr, handler, lhs, src, vrel_ptr))
+	return false;
+      gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
+      gcc_checking_assert (src_stmt);
+      // Then feed this range back as the LHS of the defining statement.
+      return compute_operand_range (r, src_stmt, vr, name, src, vrel_ptr);
+    }
   else
     gcc_unreachable ();
 
@@ -1188,7 +1196,7 @@ gori_compute::compute_operand1_range (vrange &r,
 bool
 gori_compute::compute_operand2_range (vrange &r,
 				      gimple_range_op_handler &handler,
-				      const vrange &lhs, tree name,
+				      const vrange &lhs,
 				      fur_source &src, value_relation *rel)
 {
   gimple *stmt = handler.stmt ();
@@ -1198,7 +1206,6 @@ gori_compute::compute_operand2_range (vrange &r,
 
   Value_Range op1_range (TREE_TYPE (op1));
   Value_Range op2_range (TREE_TYPE (op2));
-  Value_Range tmp (TREE_TYPE (op2));
 
   src.get_operand (op1_range, op1);
   src.get_operand (op2_range, op2);
@@ -1215,7 +1222,7 @@ gori_compute::compute_operand2_range (vrange &r,
   if (op1 == op2 && gimple_range_ssa_p (op1))
     trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), VREL_EQ);
   // Intersect with range for op2 based on lhs and op1.
-  if (!handler.calc_op2 (tmp, lhs, op1_range, trio))
+  if (!handler.calc_op2 (r, lhs, op1_range, trio))
     return false;
 
   unsigned idx;
@@ -1237,31 +1244,16 @@ gori_compute::compute_operand2_range (vrange &r,
       tracer.print (idx, "Computes ");
       print_generic_expr (dump_file, op2, TDF_SLIM);
       fprintf (dump_file, " = ");
-      tmp.dump (dump_file);
+      r.dump (dump_file);
       fprintf (dump_file, " intersect Known range : ");
       op2_range.dump (dump_file);
       fputc ('\n', dump_file);
     }
   // Intersect the calculated result with the known result and return if done.
-  if (op2 == name)
-    {
-      tmp.intersect (op2_range);
-      r = tmp;
-      if (idx)
-	tracer.trailer (idx, " produces ", true, NULL_TREE, r);
-      return true;
-    }
-  // If the calculation continues, we're using op2_range as the new LHS.
-  op2_range.intersect (tmp);
-
+  r.intersect (op2_range);
   if (idx)
-    tracer.trailer (idx, " produces ", true, op2, op2_range);
-  gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
-  gcc_checking_assert (src_stmt);
-//  gcc_checking_assert (!is_import_p (op2, find.bb));
-
-  // Then feed this range back as the LHS of the defining statement.
-  return compute_operand_range (r, src_stmt, op2_range, name, src, rel);
+    tracer.trailer (idx, " produces ", true, op2, r);
+  return true;
 }
 
 // Calculate a range for NAME from both operand positions of S
@@ -1279,15 +1271,21 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 {
   Value_Range op_range (TREE_TYPE (name));
 
+  Value_Range vr (TREE_TYPE (handler.operand2 ()));
   // Calculate a good a range through op2.
-  if (!compute_operand2_range (r, handler, lhs, name, src, rel))
+  if (!compute_operand2_range (vr, handler, lhs, src, rel))
+    return false;
+  gimple *src_stmt = SSA_NAME_DEF_STMT (handler.operand2 ());
+  gcc_checking_assert (src_stmt);
+  // Then feed this range back as the LHS of the defining statement.
+  if (!compute_operand_range (r, src_stmt, vr, name, src, rel))
     return false;
 
   // Now get the range thru op1.
-  Value_Range vr (TREE_TYPE (handler.operand1 ()));
+  vr.set_type (TREE_TYPE (handler.operand1 ()));
   if (!compute_operand1_range (vr, handler, lhs, src, rel))
     return false;
-  gimple *src_stmt = SSA_NAME_DEF_STMT (handler.operand1 ());
+  src_stmt = SSA_NAME_DEF_STMT (handler.operand1 ());
   gcc_checking_assert (src_stmt);
   // Then feed this range back as the LHS of the defining statement.
   if (!compute_operand_range (op_range, src_stmt, vr, name, src, rel))
