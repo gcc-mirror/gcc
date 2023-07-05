@@ -17366,6 +17366,36 @@
 			(match_dup 2)))]
   "operands[3] = gen_reg_rtx (<MODE>mode);")
 
+(define_split
+  [(set (match_operand:VI 0 "register_operand")
+	(ior:VI
+	  (vec_duplicate:VI
+	    (not:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "nonimmediate_operand")))
+	  (match_operand:VI 2 "vector_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL
+   || (TARGET_AVX512F && !TARGET_PREFER_AVX256)"
+  [(set (match_dup 3)
+	(vec_duplicate:VI (match_dup 1)))
+   (set (match_dup 0)
+	(ior:VI (not:VI (match_dup 3)) (match_dup 2)))]
+  "operands[3] = gen_reg_rtx (<MODE>mode);")
+
+(define_split
+  [(set (match_operand:VI 0 "register_operand")
+	(xor:VI
+	  (vec_duplicate:VI
+	    (not:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "nonimmediate_operand")))
+	  (match_operand:VI 2 "vector_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL
+   || (TARGET_AVX512F && !TARGET_PREFER_AVX256)"
+  [(set (match_dup 3)
+	(vec_duplicate:VI (match_dup 1)))
+   (set (match_dup 0)
+	(not:VI (xor:VI (match_dup 3) (match_dup 2))))]
+  "operands[3] = gen_reg_rtx (<MODE>mode);")
+
 (define_insn "*andnot<mode>3_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VI48_AVX512VL
