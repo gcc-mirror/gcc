@@ -17156,7 +17156,7 @@
 
 (define_expand "one_cmpl<mode>2"
   [(set (match_operand:VI 0 "register_operand")
-	(xor:VI (match_operand:VI 1 "vector_operand")
+	(xor:VI (match_operand:VI 1 "bcst_vector_operand")
 		(match_dup 2)))]
   "TARGET_SSE"
 {
@@ -17168,7 +17168,7 @@
 
 (define_insn "<mask_codefor>one_cmpl<mode>2<mask_name>"
   [(set (match_operand:VI 0 "register_operand" "=v,v")
-	(xor:VI (match_operand:VI 1 "nonimmediate_operand" "v,m")
+	(xor:VI (match_operand:VI 1 "bcst_vector_operand" "vBr,m")
 		(match_operand:VI 2 "vector_all_ones_operand" "BC,BC")))]
   "TARGET_AVX512F
    && (!<mask_applied>
@@ -17190,6 +17190,19 @@
 	(if_then_else (eq_attr "alternative" "1")
 		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
 		      (const_int 1)))])
+
+(define_split
+  [(set (match_operand:VI48_AVX512F 0 "register_operand")
+	(vec_duplicate:VI48_AVX512F
+	  (not:<ssescalarmode>
+	    (match_operand:<ssescalarmode> 1 "nonimmediate_operand"))))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL
+   || (TARGET_AVX512F && !TARGET_PREFER_AVX256)"
+  [(set (match_dup 0)
+	(xor:VI48_AVX512F
+	  (vec_duplicate:VI48_AVX512F (match_dup 1))
+	  (match_dup 2)))]
+  "operands[2] = CONSTM1_RTX (<MODE>mode);")
 
 (define_expand "<sse2_avx2>_andnot<mode>3"
   [(set (match_operand:VI_AVX2 0 "register_operand")
