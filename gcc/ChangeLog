@@ -1,3 +1,8 @@
+2023-07-04  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove model value 0xa8
+	from Rocketlake, remove model value 0xbf from Alderlake.
+
 2023-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
