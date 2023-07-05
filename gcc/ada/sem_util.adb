@@ -29398,7 +29398,11 @@ package body Sem_Util is
    -- Wrong_Type --
    ----------------
 
-   procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id) is
+   procedure Wrong_Type
+     (Expr          : Node_Id;
+      Expected_Type : Entity_Id;
+      Multiple      : Boolean := False)
+   is
       Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
@@ -29485,13 +29489,14 @@ package body Sem_Util is
 
    begin
       --  Don't output message if either type is Any_Type, or if a message
-      --  has already been posted for this node. We need to do the latter
-      --  check explicitly (it is ordinarily done in Errout), because we
-      --  are using ! to force the output of the error messages.
+      --  has already been posted for this node and we do not want multiple
+      --  error messages. We need to do the latter check explicitly (it is
+      --  ordinarily done in Errout) because we are using '!' to force the
+      --  output of the error messages.
 
       if Expec_Type = Any_Type
         or else Found_Type = Any_Type
-        or else Error_Posted (Expr)
+        or else (Error_Posted (Expr) and then not Multiple)
       then
          return;
 

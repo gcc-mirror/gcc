@@ -4099,7 +4099,11 @@ package body Sem_Ch4 is
                            Actual, Etype (Etype (Formal)));
                      end if;
 
-                     Wrong_Type (Actual, Etype (Formal));
+                     --  If we are going to output a secondary error message
+                     --  below, we need to have Wrong_Type output the main one.
+
+                     Wrong_Type
+                       (Actual, Etype (Formal), Multiple => All_Errors_Mode);
 
                      if Nkind (Actual) = N_Op_Eq
                        and then Nkind (Left_Opnd (Actual)) = N_Identifier
