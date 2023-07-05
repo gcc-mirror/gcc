@@ -7259,8 +7259,11 @@ package body Exp_Aggr is
                      --  Iterated component association. Discard
                      --  positional insertion procedure.
 
-                     Add_Named_Subp := Assign_Indexed_Subp;
-                     Add_Unnamed_Subp := Empty;
+                     if not Present (Iterator_Specification (Comp)) then
+                        Add_Named_Subp := Assign_Indexed_Subp;
+                        Add_Unnamed_Subp := Empty;
+                     end if;
+
                      Expand_Iterated_Component (Comp);
                   end if;
 
