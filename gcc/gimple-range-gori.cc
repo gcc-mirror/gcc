@@ -650,6 +650,17 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
+  // If either operand is in the def chain of the other (or they are equal), it
+  // will be evaluated twice and can result in an exponential time calculation.
+  // Instead just evaluate the one operand.
+  if (op1_in_chain && op2_in_chain)
+    {
+      if (in_chain_p (op1, op2) || op1 == op2)
+	op1_in_chain = false;
+      else if (in_chain_p (op2, op1))
+	op2_in_chain = false;
+    }
+
   bool res = false;
   // If the lhs doesn't tell us anything only a relation can possibly enhance
   // the result.
@@ -1275,23 +1286,9 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 {
   Value_Range op_range (TREE_TYPE (name));
 
-  // If op1 is in the def chain of op2, we'll do the work twice to evalaute
-  // op1.  This can result in an exponential time calculation.
-  // Instead just evaluate op2, which will eventualy get to op1.
-  if (in_chain_p (handler.operand1 (), handler.operand2 ()))
-    return compute_operand2_range (r, handler, lhs, name, src, rel);
-
-  // Likewise if op2 is in the def chain of op1.
-  if (in_chain_p (handler.operand2 (), handler.operand1 ()))
-    return compute_operand1_range (r, handler, lhs, name, src, rel);
-
   // Calculate a good a range through op2.
   if (!compute_operand2_range (r, handler, lhs, name, src, rel))
     return false;
-
-  // If op1 == op2 there is again no need to go further.
-  if (handler.operand1 () == handler.operand2 ())
-    return true;
 
   // Now get the range thru op1.
   if (!compute_operand1_range (op_range, handler, lhs, name, src, rel))
