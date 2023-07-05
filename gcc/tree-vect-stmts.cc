@@ -272,7 +272,7 @@ vect_mark_relevant (vec<stmt_vec_info> *worklist, stmt_vec_info stmt_info,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "vec_stmt_relevant_p: forcing live patern stmt "
+			     "vec_stmt_relevant_p: forcing live pattern stmt "
 			     "relevant.\n");
 	  relevant = vect_used_only_live;
 	}
