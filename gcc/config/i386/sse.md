@@ -17616,6 +17616,98 @@
   operands[2] = force_reg (V1TImode, CONSTM1_RTX (V1TImode));
 })
 
+(define_insn "*iornot<mode>3"
+  [(set (match_operand:VI 0 "register_operand" "=v,v,v,v")
+	(ior:VI
+	  (not:VI
+	    (match_operand:VI 1 "bcst_vector_operand" "v,Br,v,m"))
+	  (match_operand:VI 2 "bcst_vector_operand" "vBr,v,m,v")))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
+   && (register_operand (operands[1], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
+{
+  if (!register_operand (operands[1], <MODE>mode))
+    {
+      if (TARGET_AVX512VL)
+	return "vpternlog<ternlogsuffix>\t{$0xdd, %1, %2, %0|%0, %2, %1, 0xdd}";
+      return "vpternlog<ternlogsuffix>\t{$0xdd, %g1, %g2, %g0|%g0, %g2, %g1, 0xdd}";
+    }
+  if (TARGET_AVX512VL)
+    return "vpternlog<ternlogsuffix>\t{$0xbb, %2, %1, %0|%0, %1, %2, 0xbb}";
+  return "vpternlog<ternlogsuffix>\t{$0xbb, %g2, %g1, %g0|%g0, %g1, %g2, 0xbb}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))
+   (set (attr "enabled")
+	(if_then_else (eq_attr "alternative" "2,3")
+		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+		      (const_string "*")))])
+
+(define_insn "*xnor<mode>3"
+  [(set (match_operand:VI 0 "register_operand" "=v,v")
+	(not:VI
+	  (xor:VI
+	    (match_operand:VI 1 "bcst_vector_operand" "%v,v")
+	    (match_operand:VI 2 "bcst_vector_operand" "vBr,m"))))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
+   && (register_operand (operands[1], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
+{
+  if (TARGET_AVX512VL)
+    return "vpternlog<ternlogsuffix>\t{$0x99, %2, %1, %0|%0, %1, %2, 0x99}";
+  else
+    return "vpternlog<ternlogsuffix>\t{$0x99, %g2, %g1, %g0|%g0, %g1, %g2, 0x99}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))
+   (set (attr "enabled")
+	(if_then_else (eq_attr "alternative" "1")
+		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+		      (const_string "*")))])
+
+(define_code_iterator andor [and ior])
+(define_code_attr nlogic [(and "nor") (ior "nand")])
+(define_code_attr ternlog_nlogic [(and "0x11") (ior "0x77")])
+
+(define_insn "*<nlogic><mode>3"
+  [(set (match_operand:VI 0 "register_operand" "=v,v")
+	(andor:VI
+	  (not:VI (match_operand:VI 1 "bcst_vector_operand" "%v,v"))
+	  (not:VI (match_operand:VI 2 "bcst_vector_operand" "vBr,m"))))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && !TARGET_PREFER_AVX256))
+   && (register_operand (operands[1], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
+{
+  if (TARGET_AVX512VL)
+    return "vpternlog<ternlogsuffix>\t{$<ternlog_nlogic>, %2, %1, %0|%0, %1, %2, <ternlog_nlogic>}";
+  else
+    return "vpternlog<ternlogsuffix>\t{$<ternlog_nlogic>, %g2, %g1, %g0|%g0, %g1, %g2, <ternlog_nlogic>}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))
+   (set (attr "enabled")
+	(if_then_else (eq_attr "alternative" "1")
+		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+		      (const_string "*")))])
+
 (define_mode_iterator AVX512ZEXTMASK
   [(DI "TARGET_AVX512BW") (SI "TARGET_AVX512BW") HI])
 
