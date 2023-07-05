@@ -37,4 +37,6 @@ v8di foo_v8di (long long a, v8di b)
     return (__extension__ (v8di) {~a, ~a, ~a, ~a, ~a, ~a, ~a, ~a}) & b;
 }
 
-/* { dg-final { scan-assembler-times "vpandn" 4 } } */
+/* { dg-final { scan-assembler-times "vpandn" 4 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpandn" 2 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$0x44" 2 { target { ia32 } } } } */

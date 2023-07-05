@@ -17210,11 +17210,13 @@
   "TARGET_AVX512F")
 
 (define_insn "*andnot<mode>3"
-  [(set (match_operand:VI 0 "register_operand" "=x,x,v")
+  [(set (match_operand:VI 0 "register_operand" "=x,x,v,v,v")
 	(and:VI
-	  (not:VI (match_operand:VI 1 "vector_operand" "0,x,v"))
-	  (match_operand:VI 2 "bcst_vector_operand" "xBm,xm,vmBr")))]
-  "TARGET_SSE"
+	  (not:VI (match_operand:VI 1 "bcst_vector_operand" "0,x,v,m,Br"))
+	  (match_operand:VI 2 "bcst_vector_operand" "xBm,xm,vmBr,v,v")))]
+  "TARGET_SSE
+   && (register_operand (operands[1], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
 {
   char buf[64];
   const char *ops;
@@ -17281,6 +17283,15 @@
     case 2:
       ops = "v%s%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
       break;
+    case 3:
+    case 4:
+      tmp = "pternlog";
+      ssesuffix = "<ternlogsuffix>";
+      if (which_alternative != 4 || TARGET_AVX512VL)
+	ops = "v%s%s\t{$0x44, %%1, %%2, %%0|%%0, %%2, %%1, $0x44}";
+      else
+	ops = "v%s%s\t{$0x44, %%g1, %%g2, %%g0|%%g0, %%g2, %%g1, $0x44}";
+      break;
     default:
       gcc_unreachable ();
     }
@@ -17289,7 +17300,7 @@
   output_asm_insn (buf, operands);
   return "";
 }
-  [(set_attr "isa" "noavx,avx,avx")
+  [(set_attr "isa" "noavx,avx,avx,*,*")
    (set_attr "type" "sselog")
    (set (attr "prefix_data16")
      (if_then_else
@@ -17297,9 +17308,12 @@
 	    (eq_attr "mode" "TI"))
        (const_string "1")
        (const_string "*")))
-   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "prefix" "orig,vex,evex,evex,evex")
    (set (attr "mode")
-	(cond [(match_test "TARGET_AVX2")
+	(cond [(and (eq_attr "alternative" "3,4")
+		    (match_test "<MODE_SIZE> < 64 && !TARGET_AVX512VL"))
+		 (const_string "XI")
+	       (match_test "TARGET_AVX2")
 		 (const_string "<sseinsnmode>")
 	       (match_test "TARGET_AVX")
 		 (if_then_else
@@ -17310,7 +17324,15 @@
 		    (match_test "optimize_function_for_size_p (cfun)"))
 		 (const_string "V4SF")
 	      ]
-	      (const_string "<sseinsnmode>")))])
+	      (const_string "<sseinsnmode>")))
+   (set (attr "enabled")
+	(cond [(eq_attr "alternative" "3")
+		 (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
+	       (eq_attr "alternative" "4")
+		 (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL
+			      || (TARGET_AVX512F && !TARGET_PREFER_AVX256)")
+	      ]
+	      (const_string "*")))])
 
 ;; PR target/100711: Split notl; vpbroadcastd; vpand as vpbroadcastd; vpandn
 (define_split
