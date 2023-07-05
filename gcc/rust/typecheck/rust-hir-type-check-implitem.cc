@@ -529,7 +529,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
       RichLocation r (function.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
-      rust_error_at (r,
+      rust_error_at (r, ErrorCode ("E0053"),
 		     "method %<%s%> has an incompatible type for trait %<%s%>",
 		     function.get_function_name ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
