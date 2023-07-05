@@ -69,6 +69,7 @@ advance (void)
 /* Diagnostics.  */
 
 /* This array is indexed by the token code minus CHAR_TOKEN_OFFSET.  */
+/* Keep in sync with 'gengtype.h:enum gty_token'.  */
 static const char *const token_names[] = {
   "GTY",
   "typedef",
@@ -80,6 +81,7 @@ static const char *const token_names[] = {
   "...",
   "ptr_alias",
   "nested_ptr",
+  "user",
   "a param<N>_is option",
   "a number",
   "a scalar type",
@@ -91,6 +93,7 @@ static const char *const token_names[] = {
 };
 
 /* This array is indexed by token code minus FIRST_TOKEN_WITH_VALUE.  */
+/* Keep in sync with 'gengtype.h:enum gty_token'.  */
 static const char *const token_value_format[] = {
   "%s",
   "'%s'",
