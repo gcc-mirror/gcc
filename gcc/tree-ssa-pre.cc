@@ -4245,6 +4245,7 @@ compute_avail (function *fun)
 		      else
 			{
 			  ref->set = 0;
+			  ref->base_set = 0;
 			  if (ref1->opcode == MEM_REF)
 			    ref1->op0
 			      = wide_int_to_tree (ptr_type_node,
