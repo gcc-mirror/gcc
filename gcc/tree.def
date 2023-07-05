@@ -565,13 +565,18 @@ DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", tcc_expression, 3)
 
    N = length(mask)
    foreach i in N:
-     M = mask[i] % (2*N)
-     A = M < N ? v0[M] : v1[M-N]
+     M = mask[i] % (length(v0) + length(v1))
+     A[i] = M < length(v0) ? v0[M] : v1[M - length(v0)]
 
-   V0 and V1 are vectors of the same type.  MASK is an integer-typed
-   vector.  The number of MASK elements must be the same with the
-   number of elements in V0 and V1.  The size of the inner type
-   of the MASK and of the V0 and V1 must be the same.
+   V0 and V1 are vectors of the same type.
+
+   When MASK is not constant:
+     MASK is an integer-typed vector.  The number of MASK elements must
+     be the same as the number of elements in V0 and V1.  The size of
+     the inner type of the MASK and of the V0 and V1 must be the same.
+
+   When MASK is constant:
+     MASK is an integer-typed vector.
 */
 DEFTREECODE (VEC_PERM_EXPR, "vec_perm_expr", tcc_expression, 3)
 
