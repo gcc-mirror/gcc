@@ -1,3 +1,39 @@
+2023-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Adjust comment above the
+	calls to Possible_Bit_Aligned_Component on the LHS and RHS. Do not
+	call Is_Possibly_Unaligned_Slice in the slice case.
+	* exp_util.ads (Component_May_Be_Bit_Aligned): Add For_Slice
+	boolean parameter.
+	(Possible_Bit_Aligned_Component): Likewise.
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Do not return False
+	for the slice of a small record or bit-packed array component.
+	(Possible_Bit_Aligned_Component): Pass For_Slice in recursive
+	calls, except in the slice case where True is passed, as well as
+	in call to Component_May_Be_Bit_Aligned.
+
+2023-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.ads (Expand_Unchecked_Union_Equality): Only take a
+	single parameter.
+	* exp_ch4.adb (Expand_Unchecked_Union_Equality): Add guard against
+	repeated invocation on the same node.
+	* exp_ch6.adb (Expand_Call): Only pass a single actual parameter
+	in the call to Expand_Unchecked_Union_Equality.
+
+2023-07-04  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	add No_Use_Of_Attribute & No_Use_Of_Pragma restrictions.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_disp.adb (Inherited_Subprograms): Add parameter to filter
+	out results.
+	* sem_disp.ads: Likewise.
+
 2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch3.ads (Build_Variant_Record_Equality): Add Spec_Id as second

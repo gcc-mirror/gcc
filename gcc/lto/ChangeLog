@@ -1,3 +1,13 @@
+2023-07-04  Pan Li  <pan2.li@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_file_finalize) [!ACCEL_COMPILER]: Initialize
+	'file_data->mode_bits'.
+
+2023-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-common.cc (lto_read_decls): Adjust.
+
 2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
 
 	* lto-common.cc (compare_tree_sccs_1): Compare bit

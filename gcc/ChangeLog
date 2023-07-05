@@ -1,3 +1,158 @@
+2023-07-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110487
+	* match.pd (a !=/== CST1 ? CST2 : CST3): Always
+	build a nonstandard integer and use that.
+
+2023-07-04  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (a?-1:0): Cast type an integer type
+	rather the type before the negative.
+	(a?0:-1): Likewise.
+
+2023-07-04  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (machine_function, xtensa_expand_prologue):
+	Change to use HARD_REG_BIT and its macros.
+	* config/xtensa/xtensa.md
+	(peephole2: regmove elimination during DFmode input reload):
+	Likewise.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110491
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Check
+	whether the PHI args are possibly undefined before folding
+	the COND_EXPR.
+
+2023-07-04  Pan Li  <pan2.li@intel.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-streamer-in.cc (lto_input_mode_table): Stream in the mode
+	bits for machine mode table.
+	* lto-streamer-out.cc (lto_write_mode_table): Stream out the
+	HOST machine mode bits.
+	* lto-streamer.h (struct lto_file_decl_data): New fields mode_bits.
+	* tree-streamer.cc (streamer_mode_table): Take MAX_MACHINE_MODE
+	as the table size.
+	* tree-streamer.h (streamer_mode_table): Ditto.
+	(bp_pack_machine_mode): Take 1 << ceil_log2 (MAX_MACHINE_MODE)
+	as the packing limit.
+	(bp_unpack_machine_mode): Ditto with 'file_data->mode_bits'.
+
+2023-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-streamer.h (class lto_input_block): Capture
+	'lto_file_decl_data *file_data' instead of just
+	'unsigned char *mode_table'.
+	* ipa-devirt.cc (ipa_odr_read_section): Adjust.
+	* ipa-fnsummary.cc (inline_read_section): Likewise.
+	* ipa-icf.cc (sem_item_optimizer::read_section): Likewise.
+	* ipa-modref.cc (read_section): Likewise.
+	* ipa-prop.cc (ipa_prop_read_section, read_replacements_section):
+	Likewise.
+	* ipa-sra.cc (isra_read_summary_section): Likewise.
+	* lto-cgraph.cc (input_cgraph_opt_section): Likewise.
+	* lto-section-in.cc (lto_create_simple_input_block): Likewise.
+	* lto-streamer-in.cc (lto_read_body_or_constructor)
+	(lto_input_toplevel_asms): Likewise.
+	* tree-streamer.h (bp_unpack_machine_mode): Likewise.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-phiopt.cc (pass_phiopt::execute): Mark SSA undefs.
+	(empty_bb_or_one_feeding_into_p): Check for them.
+	* tree-ssa.h (gimple_uses_undefined_value_p): Remove.
+	* tree-ssa.cc (gimple_uses_undefined_value_p): Likewise.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_costing): Remove
+	check guarding scalar_niter underflow.
+
+2023-07-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/110531
+	* tree-vect-loop.cc (vect_analyze_loop_1): initialize
+	slp_done_for_suggested_uf to false.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110228
+	* tree-ssa-ifcombine.cc (pass_tree_ifcombine::execute):
+	Mark SSA may-undefs.
+	(bb_no_side_effects_p): Check stmt uses for undefs.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110436
+	* tree-vect-stmts.cc (vect_mark_relevant): Expand dumping,
+	force live but not relevant pattern stmts relevant.
+
+2023-07-04  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/i386.h: Add PTA_ENQCMD and PTA_UINTR to PTA_SIERRAFOREST.
+	* doc/invoke.texi: Update new isa to march=sierraforest and grandridge.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110495
+	* tree.h (TREE_OVERFLOW): Do not mention VECTOR_CSTs
+	since we do not set TREE_OVERFLOW on those since the
+	introduction of VL vectors.
+	* match.pd (x +- CST +- CST): For VECTOR_CST do not look
+	at TREE_OVERFLOW to determine validity of association.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110310
+	* tree-vect-loop.cc (vect_determine_partial_vectors_and_peeling):
+	Move costing part ...
+	(vect_analyze_loop_costing): ... here.  Integrate better
+	estimate for epilogues from ...
+	(vect_analyze_loop_2): Call vect_determine_partial_vectors_and_peeling
+	with actual epilogue status.
+	* tree-vect-loop-manip.cc (vect_do_peeling): ... here and
+	avoid cancelling epilogue vectorization.
+	(vect_update_epilogue_niters): Remove.  No longer update
+	epilogue LOOP_VINFO_NITERS.
+
+2023-07-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-07-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Fix typo.
+
+2023-07-04  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add len_mask_gather_load/len_mask_scatter_store.
+	* internal-fn.cc (expand_scatter_store_optab_fn): Ditto.
+	(expand_gather_load_optab_fn): Ditto.
+	(internal_load_fn_p): Ditto.
+	(internal_store_fn_p): Ditto.
+	(internal_gather_scatter_fn_p): Ditto.
+	(internal_fn_len_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(internal_fn_stored_value_index): Ditto.
+	* internal-fn.def (LEN_MASK_GATHER_LOAD): Ditto.
+	(LEN_MASK_SCATTER_STORE): Ditto.
+	* optabs.def (OPTAB_CD): Ditto.
+
+2023-07-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(vector_insn_info::parse_insn): Add early break.
+
+2023-07-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (CRIS_UNSPEC_SWAP_BITS): Remove.
+	("cris_swap_bits", "ctzsi2"): Use bitreverse instead.
+
+2023-07-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* dwarf2out.cc (mem_loc_descriptor): Handle BITREVERSE.
+
 2023-07-03  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* common/config/riscv/riscv-common.cc: Add support for zvbb,

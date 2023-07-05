@@ -1,3 +1,40 @@
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110491
+	* gcc.dg/torture/pr110491.c: New testcase.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110376
+	* gcc.dg/torture/pr110376.c: New testcase.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110228
+	* gcc.dg/torture/pr110228.c: New testcase.
+	* gcc.dg/uninit-pr101912.c: Un-XFAIL.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110436
+	* gcc.dg/pr110436.c: New testcase.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110495
+	* gcc.dg/tree-ssa/addadd-2.c: Amend.
+	* gcc.dg/tree-ssa/forwprop-27.c: Adjust.
+
+2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110310
+	* gcc.target/i386/pr110310.c: New testcase.
+	* gcc.dg/vect/slp-perm-12.c: Disable epilogue vectorization.
+
+2023-07-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_prop-1.c: New test.
+
 2023-07-03  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* gcc.target/riscv/zvbb.c: New test.
