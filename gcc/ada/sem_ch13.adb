@@ -15593,8 +15593,6 @@ package body Sem_Ch13 is
          elsif Is_Private_Type (T) and then Has_Discriminants (T) then
             declare
                Decl : constant Node_Id := Declaration_Node (T);
-               Spec : constant List_Id :=
-                 Discriminant_Specifications (Original_Node (Decl));
 
                Discr : Node_Id;
 
@@ -15604,8 +15602,11 @@ package body Sem_Ch13 is
                --  name; then, if it exists, return the discriminant entity of
                --  the same name in the type, which is that of its full view.
 
-               if Present (Spec) then
-                  Discr := First (Spec);
+               if Nkind (Decl) in N_Private_Extension_Declaration
+                                | N_Private_Type_Declaration
+                 and then Present (Discriminant_Specifications (Decl))
+               then
+                  Discr := First (Discriminant_Specifications (Decl));
 
                   while Present (Discr) loop
                      if Chars (Defining_Identifier (Discr)) = Comp then
