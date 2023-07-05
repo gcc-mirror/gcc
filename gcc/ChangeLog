@@ -1,3 +1,8 @@
+2023-07-04  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/i386.h: Add PTA_ENQCMD and PTA_UINTR to PTA_SIERRAFOREST.
+	* doc/invoke.texi: Update new isa to march=sierraforest and grandridge.
+
 2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
