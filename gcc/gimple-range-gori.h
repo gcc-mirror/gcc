@@ -183,7 +183,7 @@ private:
   bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
   bool compute_operand1_range (vrange &r, gimple_range_op_handler &handler,
-			       const vrange &lhs, tree name, fur_source &src,
+			       const vrange &lhs, fur_source &src,
 			       value_relation *rel = NULL);
   bool compute_operand2_range (vrange &r, gimple_range_op_handler &handler,
 			       const vrange &lhs, tree name, fur_source &src,
