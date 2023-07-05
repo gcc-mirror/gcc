@@ -185,6 +185,7 @@ gt_pch_p_S (void *obj ATTRIBUTE_UNUSED, void *x ATTRIBUTE_UNUSED,
 	    gt_pointer_operator op ATTRIBUTE_UNUSED,
 	    void *cookie ATTRIBUTE_UNUSED)
 {
+  gcc_unreachable ();
 }
 
 /* PCH pointer-walking routine for strings.  */
