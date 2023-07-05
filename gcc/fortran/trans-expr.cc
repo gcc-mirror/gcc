@@ -6085,9 +6085,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   else
     info = NULL;
 
-  stmtblock_t post, clobbers;
+  stmtblock_t post, clobbers, dealloc_blk;
   gfc_init_block (&post);
   gfc_init_block (&clobbers);
+  gfc_init_block (&dealloc_blk);
   gfc_init_interface_mapping (&mapping);
   if (!comp)
     {
@@ -6116,6 +6117,32 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   ulim_copy = (formal == NULL)
 	       && UNLIMITED_POLY (sym)
 	       && comp && (strcmp ("_copy", comp->name) == 0);
+
+  /* Scan for allocatable actual arguments passed to allocatable dummy
+     arguments with INTENT(OUT).  As the corresponding actual arguments are
+     deallocated before execution of the procedure, we evaluate actual
+     argument expressions to avoid problems with possible dependencies.  */
+  bool force_eval_args = false;
+  gfc_formal_arglist *tmp_formal;
+  for (arg = args, tmp_formal = formal; arg != NULL;
+       arg = arg->next, tmp_formal = tmp_formal ? tmp_formal->next : NULL)
+    {
+      e = arg->expr;
+      fsym = tmp_formal ? tmp_formal->sym : NULL;
+      if (e && fsym
+	  && e->expr_type == EXPR_VARIABLE
+	  && fsym->attr.intent == INTENT_OUT
+	  && (fsym->ts.type == BT_CLASS && fsym->attr.class_ok
+	      ? CLASS_DATA (fsym)->attr.allocatable
+	      : fsym->attr.allocatable)
+	  && e->symtree
+	  && e->symtree->n.sym
+	  && gfc_variable_attr (e, NULL).allocatable)
+	{
+	  force_eval_args = true;
+	  break;
+	}
+    }
 
   /* Evaluate the arguments.  */
   for (arg = args, argc = 0; arg != NULL;
@@ -6680,7 +6707,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      else
 			tmp = gfc_finish_block (&block);
 
-		      gfc_add_expr_to_block (&se->pre, tmp);
+		      gfc_add_expr_to_block (&dealloc_blk, tmp);
 		    }
 
 		  /* A class array element needs converting back to be a
@@ -6776,6 +6803,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      /* Pass a class array.  */
 	      parmse.use_offset = 1;
 	      gfc_conv_expr_descriptor (&parmse, e);
+	      bool defer_to_dealloc_blk = false;
 
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		 allocated on entry, it must be deallocated.  */
@@ -6816,7 +6844,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  else
 		    tmp = gfc_finish_block (&block);
 
-		  gfc_add_expr_to_block (&se->pre, tmp);
+		  gfc_add_expr_to_block (&dealloc_blk, tmp);
+		  defer_to_dealloc_blk = true;
 		}
 
 	      /* The conversion does not repackage the reference to a class
@@ -6830,6 +6859,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     && e->symtree->n.sym->attr.optional,
 				     CLASS_DATA (fsym)->attr.class_pointer
 				     || CLASS_DATA (fsym)->attr.allocatable);
+
+	      /* Defer repackaging after deallocation.  */
+	      if (defer_to_dealloc_blk)
+		gfc_add_block_to_block (&dealloc_blk, &parmse.pre);
 	    }
 	  else
 	    {
@@ -6980,7 +7013,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					build_empty_stmt (input_location));
 		      }
 		    if (tmp != NULL_TREE)
-		      gfc_add_expr_to_block (&se->pre, tmp);
+		      gfc_add_expr_to_block (&dealloc_blk, tmp);
 		  }
 
 		  tmp = parmse.expr;
@@ -7004,7 +7037,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     void_type_node,
 				     gfc_conv_expr_present (e->symtree->n.sym),
 				       tmp, build_empty_stmt (input_location));
-		  gfc_add_expr_to_block (&se->pre, tmp);
+		  gfc_add_expr_to_block (&dealloc_blk, tmp);
 		}
 	    }
 	}
@@ -7100,6 +7133,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      parmse.string_length = e->symtree->n.sym->ts.u.cl->backend_decl;
 	    }
 	}
+
+      /* If any actual argument of the procedure is allocatable and passed
+	 to an allocatable dummy with INTENT(OUT), we conservatively
+	 evaluate actual argument expressions before deallocations are
+	 performed and the procedure is executed.  May create temporaries.
+	 This ensures we conform to F2023:15.5.3, 15.5.4.  */
+      if (e && fsym && force_eval_args
+	  && fsym->attr.intent != INTENT_OUT
+	  && !gfc_is_constant_expr (e))
+	parmse.expr = gfc_evaluate_now (parmse.expr, &parmse.pre);
 
       if (fsym && need_interface_mapping && e)
 	gfc_add_interface_mapping (&mapping, fsym, &parmse, e);
@@ -7499,6 +7542,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       vec_safe_push (arglist, parmse.expr);
     }
 
+  gfc_add_block_to_block (&se->pre, &dealloc_blk);
   gfc_add_block_to_block (&se->pre, &clobbers);
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
