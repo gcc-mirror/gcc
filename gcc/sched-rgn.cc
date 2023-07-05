@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 /* nr_inter/spec counts interblock/speculative motion for the function.  */
 static int nr_inter, nr_spec;
 
-static int is_cfg_nonregular (void);
+static bool is_cfg_nonregular (void);
 
 /* Number of regions in the procedure.  */
 int nr_regions = 0;
@@ -231,13 +231,13 @@ static edgeset *ancestor_edges;
 #define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (BLOCK_NUM (INSN))))
 
 /* Speculative scheduling functions.  */
-static int check_live_1 (int, rtx);
+static bool check_live_1 (int, rtx);
 static void update_live_1 (int, rtx);
-static int is_pfree (rtx, int, int);
-static int find_conditional_protection (rtx_insn *, int);
-static int is_conditionally_protected (rtx, int, int);
-static int is_prisky (rtx, int, int);
-static int is_exception_free (rtx_insn *, int, int);
+static bool is_pfree (rtx, int, int);
+static bool find_conditional_protection (rtx_insn *, int);
+static bool is_conditionally_protected (rtx, int, int);
+static bool is_prisky (rtx, int, int);
+static bool is_exception_free (rtx_insn *, int, int);
 
 static bool sets_likely_spilled (rtx);
 static void sets_likely_spilled_1 (rtx, const_rtx, void *);
@@ -252,13 +252,14 @@ static void free_pending_lists (void);
 
 /* Functions for construction of the control flow graph.  */
 
-/* Return 1 if control flow graph should not be constructed, 0 otherwise.
+/* Return true if control flow graph should not be constructed,
+   false otherwise.
 
    We decide not to build the control flow graph if there is possibly more
    than one entry to the function, if computed branches exist, if we
    have nonlocal gotos, or if we have an unreachable loop.  */
 
-static int
+static bool
 is_cfg_nonregular (void)
 {
   basic_block b;
@@ -267,17 +268,17 @@ is_cfg_nonregular (void)
   /* If we have a label that could be the target of a nonlocal goto, then
      the cfg is not well structured.  */
   if (nonlocal_goto_handler_labels)
-    return 1;
+    return true;
 
   /* If we have any forced labels, then the cfg is not well structured.  */
   if (forced_labels)
-    return 1;
+    return true;
 
   /* If we have exception handlers, then we consider the cfg not well
      structured.  ?!?  We should be able to handle this now that we
      compute an accurate cfg for EH.  */
   if (current_function_has_exception_handlers ())
-    return 1;
+    return true;
 
   /* If we have insns which refer to labels as non-jumped-to operands,
      then we consider the cfg not well structured.  */
@@ -290,7 +291,7 @@ is_cfg_nonregular (void)
 	/* If this function has a computed jump, then we consider the cfg
 	   not well structured.  */
 	if (JUMP_P (insn) && computed_jump_p (insn))
-	  return 1;
+	  return true;
 
 	if (!INSN_P (insn))
 	  continue;
@@ -310,15 +311,15 @@ is_cfg_nonregular (void)
 		&& find_reg_note (next, REG_LABEL_TARGET,
 				  XEXP (note, 0)) == NULL_RTX)
 	    || BLOCK_FOR_INSN (insn) != BLOCK_FOR_INSN (next))
-	  return 1;
+	  return true;
 
 	set = single_set (insn);
 	if (set == NULL_RTX)
-	  return 1;
+	  return true;
 
 	dest = SET_DEST (set);
 	if (!REG_P (dest) || !dead_or_set_p (next, dest))
-	  return 1;
+	  return true;
       }
 
   /* Unreachable loops with more than one basic block are detected
@@ -332,11 +333,11 @@ is_cfg_nonregular (void)
       if (EDGE_COUNT (b->preds) == 0
 	  || (single_pred_p (b)
 	      && single_pred (b) == b))
-	return 1;
+	return true;
     }
 
   /* All the tests passed.  Consider the cfg well structured.  */
-  return 0;
+  return false;
 }
 
 /* Extract list of edges from a bitmap containing EDGE_TO_BIT bits.  */
@@ -627,8 +628,9 @@ haifa_find_rgns (void)
   int count = 0, sp, idx = 0;
   edge_iterator current_edge;
   edge_iterator *stack;
-  int num_bbs, num_insns, unreachable;
-  int too_large_failure;
+  int num_bbs, num_insns;
+  bool unreachable;
+  bool too_large_failure;
   basic_block bb;
 
   /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
@@ -764,11 +766,11 @@ haifa_find_rgns (void)
      The DFS traversal will mark every block that is reachable from
      the entry node by placing a nonzero value in dfs_nr.  Thus if
      dfs_nr is zero for any block, then it must be unreachable.  */
-  unreachable = 0;
+  unreachable = false;
   FOR_EACH_BB_FN (bb, cfun)
     if (dfs_nr[bb->index] == 0)
       {
-	unreachable = 1;
+	unreachable = true;
 	break;
       }
 
@@ -851,7 +853,7 @@ haifa_find_rgns (void)
 	      /* I is a header of an inner loop, or block 0 in a subroutine
 		 with no loops at all.  */
 	      head = tail = -1;
-	      too_large_failure = 0;
+	      too_large_failure = false;
 	      loop_head = max_hdr[bb->index];
 
               if (extend_regions_p)
@@ -888,7 +890,7 @@ haifa_find_rgns (void)
 
 			if (too_large (jbb->index, &num_bbs, &num_insns))
 			  {
-			    too_large_failure = 1;
+			    too_large_failure = true;
 			    break;
 			  }
 		      }
@@ -912,7 +914,7 @@ haifa_find_rgns (void)
 
 			  if (too_large (node, &num_bbs, &num_insns))
 			    {
-			      too_large_failure = 1;
+			      too_large_failure = true;
 			      break;
 			    }
 			}
@@ -974,7 +976,7 @@ haifa_find_rgns (void)
 
 			  if (too_large (node, &num_bbs, &num_insns))
 			    {
-			      too_large_failure = 1;
+			      too_large_failure = true;
 			      break;
 			    }
 			}
@@ -1157,8 +1159,9 @@ print_region_statistics (int *s1, int s1_sz, int *s2, int s2_sz)
 void
 extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 {
-  int *order, i, rescan = 0, idx = *idxp, iter = 0, max_iter, *max_hdr;
+  int *order, i, idx = *idxp, iter = 0, max_iter, *max_hdr;
   int nblocks = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
+  bool rescan = false;
 
   max_iter = param_max_sched_extend_regions_iters;
 
@@ -1173,7 +1176,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
       if (degree[bbn] >= 0)
 	{
 	  max_hdr[bbn] = bbn;
-	  rescan = 1;
+	  rescan = true;
 	}
       else
         /* This block already was processed in find_rgns.  */
@@ -1193,7 +1196,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 
   while (rescan && iter < max_iter)
     {
-      rescan = 0;
+      rescan = false;
 
       for (i = nblocks - 1; i >= 0; i--)
 	{
@@ -1241,7 +1244,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		  /* If BB start its own region,
 		     update set of headers with BB.  */
 		  bitmap_set_bit (header, bbn);
-		  rescan = 1;
+		  rescan = true;
 		}
 	      else
 		gcc_assert (hdr != -1);
@@ -1658,10 +1661,10 @@ debug_candidates (int trg)
 
 static bitmap_head not_in_df;
 
-/* Return 0 if x is a set of a register alive in the beginning of one
-   of the split-blocks of src, otherwise return 1.  */
+/* Return false if x is a set of a register alive in the beginning of one
+   of the split-blocks of src, otherwise return true.  */
 
-static int
+static bool
 check_live_1 (int src, rtx x)
 {
   int i;
@@ -1669,7 +1672,7 @@ check_live_1 (int src, rtx x)
   rtx reg = SET_DEST (x);
 
   if (reg == 0)
-    return 1;
+    return true;
 
   while (GET_CODE (reg) == SUBREG
 	 || GET_CODE (reg) == ZERO_EXTRACT
@@ -1683,20 +1686,20 @@ check_live_1 (int src, rtx x)
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
 	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
 	  if (check_live_1 (src, XEXP (XVECEXP (reg, 0, i), 0)))
-	    return 1;
+	    return true;
 
-      return 0;
+      return false;
     }
 
   if (!REG_P (reg))
-    return 1;
+    return true;
 
   regno = REGNO (reg);
 
   if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
     {
       /* Global registers are assumed live.  */
-      return 0;
+      return false;
     }
   else
     {
@@ -1717,7 +1720,7 @@ check_live_1 (int src, rtx x)
 				     != CONTAINING_RGN (BB_TO_BLOCK (src))));
 
 		  if (t || REGNO_REG_SET_P (df_get_live_in (b), regno + j))
-		    return 0;
+		    return false;
 		}
 	    }
 	}
@@ -1733,12 +1736,12 @@ check_live_1 (int src, rtx x)
 				 != CONTAINING_RGN (BB_TO_BLOCK (src))));
 
 	      if (t || REGNO_REG_SET_P (df_get_live_in (b), regno))
-		return 0;
+		return false;
 	    }
 	}
     }
 
-  return 1;
+  return true;
 }
 
 /* If x is a set of a register R, mark that R is alive in the beginning
@@ -1789,11 +1792,11 @@ update_live_1 (int src, rtx x)
     }
 }
 
-/* Return 1 if insn can be speculatively moved from block src to trg,
-   otherwise return 0.  Called before first insertion of insn to
+/* Return true if insn can be speculatively moved from block src to trg,
+   otherwise return false.  Called before first insertion of insn to
    ready-list or before the scheduling.  */
 
-static int
+static bool
 check_live (rtx_insn *insn, int src)
 {
   /* Find the registers set by instruction.  */
@@ -1807,12 +1810,12 @@ check_live (rtx_insn *insn, int src)
 	if ((GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 	     || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
 	    && !check_live_1 (src, XVECEXP (PATTERN (insn), 0, j)))
-	  return 0;
+	  return false;
 
-      return 1;
+      return true;
     }
 
-  return 1;
+  return true;
 }
 
 /* Update the live registers info after insn was moved speculatively from
@@ -1835,13 +1838,15 @@ update_live (rtx_insn *insn, int src)
     }
 }
 
-/* Nonzero if block bb_to is equal to, or reachable from block bb_from.  */
+/* True if block bb_to is equal to, or reachable from block bb_from.  */
 #define IS_REACHABLE(bb_from, bb_to)					\
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
-   || (bitmap_bit_p (ancestor_edges[bb_to],					\
-	 EDGE_TO_BIT (single_pred_edge (BASIC_BLOCK_FOR_FN (cfun, \
-							    BB_TO_BLOCK (bb_from)))))))
+   || (bitmap_bit_p							\
+       (ancestor_edges[bb_to],						\
+	EDGE_TO_BIT (single_pred_edge					\
+		     (BASIC_BLOCK_FOR_FN (cfun,				\
+					  BB_TO_BLOCK (bb_from)))))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
@@ -1857,9 +1862,9 @@ set_spec_fed (rtx load_insn)
 }
 
 /* On the path from the insn to load_insn_bb, find a conditional
-branch depending on insn, that guards the speculative load.  */
+   branch depending on insn, that guards the speculative load.  */
 
-static int
+static bool
 find_conditional_protection (rtx_insn *insn, int load_insn_bb)
 {
   sd_iterator_def sd_it;
@@ -1877,12 +1882,12 @@ find_conditional_protection (rtx_insn *insn, int load_insn_bb)
 	  && DEP_TYPE (dep) == REG_DEP_TRUE
 	  && (JUMP_P (next)
 	      || find_conditional_protection (next, load_insn_bb)))
-	return 1;
+	return true;
     }
-  return 0;
+  return false;
 }				/* find_conditional_protection */
 
-/* Returns 1 if the same insn1 that participates in the computation
+/* Returns true if the same insn1 that participates in the computation
    of load_insn's address is feeding a conditional branch that is
    guarding on load_insn. This is true if we find two DEF-USE
    chains:
@@ -1896,7 +1901,7 @@ find_conditional_protection (rtx_insn *insn, int load_insn_bb)
    Locate insn1 by climbing on INSN_BACK_DEPS from load_insn.
    Locate the branch by following INSN_FORW_DEPS from insn1.  */
 
-static int
+static bool
 is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 {
   sd_iterator_def sd_it;
@@ -1921,17 +1926,17 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 
       /* Now search for the conditional-branch.  */
       if (find_conditional_protection (insn1, bb_src))
-	return 1;
+	return true;
 
       /* Recursive step: search another insn1, "above" current insn1.  */
       return is_conditionally_protected (insn1, bb_src, bb_trg);
     }
 
   /* The chain does not exist.  */
-  return 0;
+  return false;
 }				/* is_conditionally_protected */
 
-/* Returns 1 if a clue for "similar load" 'insn2' is found, and hence
+/* Returns true if a clue for "similar load" 'insn2' is found, and hence
    load_insn can move speculatively from bb_src to bb_trg.  All the
    following must hold:
 
@@ -1947,7 +1952,7 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
    load_insn would cause an exception, it would have been caused by
    load2 anyhow.  */
 
-static int
+static bool
 is_pfree (rtx load_insn, int bb_src, int bb_trg)
 {
   sd_iterator_def back_sd_it;
@@ -1956,7 +1961,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
   if (candp->split_bbs.nr_members != 1)
     /* Must have exactly one escape block.  */
-    return 0;
+    return false;
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
@@ -1981,45 +1986,45 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
 		  if (INSN_BB (insn2) == bb_trg)
 		    /* insn2 is the similar load, in the target block.  */
-		    return 1;
+		    return true;
 
 		  if (*(candp->split_bbs.first_member) == BLOCK_FOR_INSN (insn2))
 		    /* insn2 is a similar load, in a split-block.  */
-		    return 1;
+		    return true;
 		}
 	    }
 	}
     }
 
   /* Couldn't find a similar load.  */
-  return 0;
+  return false;
 }				/* is_pfree */
 
-/* Return 1 if load_insn is prisky (i.e. if load_insn is fed by
+/* Return true if load_insn is prisky (i.e. if load_insn is fed by
    a load moved speculatively, or if load_insn is protected by
    a compare on load_insn's address).  */
 
-static int
+static bool
 is_prisky (rtx load_insn, int bb_src, int bb_trg)
 {
   if (FED_BY_SPEC_LOAD (load_insn))
-    return 1;
+    return true;
 
   if (sd_lists_empty_p (load_insn, SD_LIST_BACK))
     /* Dependence may 'hide' out of the region.  */
-    return 1;
+    return true;
 
   if (is_conditionally_protected (load_insn, bb_src, bb_trg))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Insn is a candidate to be moved speculatively from bb_src to bb_trg.
-   Return 1 if insn is exception-free (and the motion is valid)
-   and 0 otherwise.  */
+   Return true if insn is exception-free (and the motion is valid)
+   and false otherwise.  */
 
-static int
+static bool
 is_exception_free (rtx_insn *insn, int bb_src, int bb_trg)
 {
   int insn_class = haifa_classify_insn (insn);
@@ -2028,31 +2033,31 @@ is_exception_free (rtx_insn *insn, int bb_src, int bb_trg)
   switch (insn_class)
     {
     case TRAP_FREE:
-      return 1;
+      return true;
     case TRAP_RISKY:
-      return 0;
+      return false;
     default:;
     }
 
   /* Handle loads.  */
   if (!flag_schedule_speculative_load)
-    return 0;
+    return false;
   IS_LOAD_INSN (insn) = 1;
   switch (insn_class)
     {
     case IFREE:
-      return (1);
+      return true;
     case IRISKY:
-      return 0;
+      return false;
     case PFREE_CANDIDATE:
       if (is_pfree (insn, bb_src, bb_trg))
-	return 1;
+	return true;
       /* Don't 'break' here: PFREE-candidate is also PRISKY-candidate.  */
       /* FALLTHRU */
     case PRISKY_CANDIDATE:
       if (!flag_schedule_speculative_load_dangerous
 	  || is_prisky (insn, bb_src, bb_trg))
-	return 0;
+	return false;
       break;
     default:;
     }
@@ -2069,10 +2074,10 @@ static int sched_n_insns;
 
 /* Implementations of the sched_info functions for region scheduling.  */
 static void init_ready_list (void);
-static int can_schedule_ready_p (rtx_insn *);
+static bool can_schedule_ready_p (rtx_insn *);
 static void begin_schedule_ready (rtx_insn *);
 static ds_t new_ready (rtx_insn *, ds_t);
-static int schedule_more_p (void);
+static bool schedule_more_p (void);
 static const char *rgn_print_insn (const rtx_insn *, int);
 static int rgn_rank (rtx_insn *, rtx_insn *);
 static void compute_jump_reg_dependencies (rtx, regset);
@@ -2083,9 +2088,9 @@ static void rgn_add_block (basic_block, basic_block);
 static void rgn_fix_recovery_cfg (int, int, int);
 static basic_block advance_target_bb (basic_block, rtx_insn *);
 
-/* Return nonzero if there are more insns that should be scheduled.  */
+/* Return true if there are more insns that should be scheduled.  */
 
-static int
+static bool
 schedule_more_p (void)
 {
   return sched_target_n_insns < target_n_insns;
@@ -2151,10 +2156,10 @@ init_ready_list (void)
       }
 }
 
-/* Called after taking INSN from the ready list.  Returns nonzero if this
+/* Called after taking INSN from the ready list.  Returns true if this
    insn can be scheduled, nonzero if we should silently discard it.  */
 
-static int
+static bool
 can_schedule_ready_p (rtx_insn *insn)
 {
   /* An interblock motion?  */
@@ -2162,15 +2167,15 @@ can_schedule_ready_p (rtx_insn *insn)
     {
       /* Cannot schedule this insn unless all operands are live.  */
       if (!check_live (insn, INSN_BB (insn)))
-	return 0;
+	return false;
 
       /* Should not move expensive instructions speculatively.  */
       if (GET_CODE (PATTERN (insn)) != CLOBBER
 	  && !targetm.sched.can_speculate_insn (insn))
-	return 0;
+	return false;
     }
 
-  return 1;
+  return true;
 }
 
 /* Updates counter and other information.  Split from can_schedule_ready_p ()
@@ -2311,10 +2316,10 @@ rgn_rank (rtx_insn *insn1, rtx_insn *insn2)
 }
 
 /* NEXT is an instruction that depends on INSN (a backward dependence);
-   return nonzero if we should include this dependence in priority
+   return true if we should include this dependence in priority
    calculations.  */
 
-int
+bool
 contributes_to_priority (rtx_insn *next, rtx_insn *insn)
 {
   /* NEXT and INSN reside in one ebb.  */

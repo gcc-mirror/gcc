@@ -585,11 +585,11 @@ struct haifa_sched_info
   /* Add all insns that are initially ready to the ready list.  Called once
      before scheduling a set of insns.  */
   void (*init_ready_list) (void);
-  /* Called after taking an insn from the ready list.  Returns nonzero if
-     this insn can be scheduled, nonzero if we should silently discard it.  */
-  int (*can_schedule_ready_p) (rtx_insn *);
-  /* Return nonzero if there are more insns that should be scheduled.  */
-  int (*schedule_more_p) (void);
+  /* Called after taking an insn from the ready list.  Returns true if
+     this insn can be scheduled, false if we should silently discard it.  */
+  bool (*can_schedule_ready_p) (rtx_insn *);
+  /* Return true if there are more insns that should be scheduled.  */
+  bool (*schedule_more_p) (void);
   /* Called after an insn has all its hard dependencies resolved.
      Adjusts status of instruction (which is passed through second parameter)
      to indicate if instruction should be moved to the ready list or the
@@ -605,9 +605,9 @@ struct haifa_sched_info
      static buffer for this.  The ALIGNED parameter should cause the string
      to be formatted so that multiple output lines will line up nicely.  */
   const char *(*print_insn) (const rtx_insn *, int);
-  /* Return nonzero if an insn should be included in priority
+  /* Return true if an insn should be included in priority
      calculations.  */
-  int (*contributes_to_priority) (rtx_insn *, rtx_insn *);
+  bool (*contributes_to_priority) (rtx_insn *, rtx_insn *);
 
   /* Return true if scheduling insn (passed as the parameter) will trigger
      finish of scheduling current block.  */
@@ -1397,7 +1397,7 @@ extern void free_global_sched_pressure_data (void);
 extern int haifa_classify_insn (const_rtx);
 extern void get_ebb_head_tail (basic_block, basic_block,
 			       rtx_insn **, rtx_insn **);
-extern int no_real_insns_p (const rtx_insn *, const rtx_insn *);
+extern bool no_real_insns_p (const rtx_insn *, const rtx_insn *);
 
 extern int insn_sched_cost (rtx_insn *);
 extern int dep_cost_1 (dep_t, dw_t);
@@ -1509,7 +1509,7 @@ extern void dump_rgn_dependencies_dot (FILE *);
 extern void dump_rgn_dependencies_dot (const char *);
 
 extern void free_rgn_deps (void);
-extern int contributes_to_priority (rtx_insn *, rtx_insn *);
+extern bool contributes_to_priority (rtx_insn *, rtx_insn *);
 extern void extend_rgns (int *, int *, sbitmap, int *);
 extern void deps_join (class deps_desc *, class deps_desc *);
 
