@@ -17356,7 +17356,7 @@
 	(and:VI_AVX2
 	  (vec_duplicate:VI_AVX2
 	    (not:<ssescalarmode>
-	      (match_operand:<ssescalarmode> 1 "register_operand")))
+	      (match_operand:<ssescalarmode> 1 "nonimmediate_operand")))
 	  (match_operand:VI_AVX2 2 "vector_operand")))]
   "TARGET_AVX2"
   [(set (match_dup 3)
