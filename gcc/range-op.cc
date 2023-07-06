@@ -3463,6 +3463,14 @@ operator_bitwise_and::op1_range (irange &r, tree type,
   if (r.undefined_p ())
     set_nonzero_range_from_mask (r, type, lhs);
 
+  // For MASK == op1 & MASK, all the bits in MASK must be set in op1.
+  wide_int mask;
+  if (lhs == op2 && lhs.singleton_p (mask))
+    {
+      r.update_bitmask (irange_bitmask (mask, ~mask));
+      return true;
+    }
+
   // For 0 = op1 & MASK, op1 is ~MASK.
   if (lhs.zero_p () && op2.singleton_p ())
     {
