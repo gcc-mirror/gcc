@@ -1,3 +1,260 @@
+2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand_range): Convert to a tail
+	call.
+
+2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand_range): After calling
+	compute_operand2_range, recursively call self if needed.
+	(compute_operand2_range): Turn into a leaf function.
+	(gori_compute::compute_operand1_and_operand2_range): Finish
+	operand2 calculation.
+	* gimple-range-gori.h (compute_operand2_range): Remove name param.
+
+2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand_range): After calling
+	compute_operand1_range, recursively call self if needed.
+	(compute_operand1_range): Turn into a leaf function.
+	(gori_compute::compute_operand1_and_operand2_range): Finish
+	operand1 calculation.
+	* gimple-range-gori.h (compute_operand1_range): Remove name param.
+
+2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand_range): Check for
+	operand interdependence when both op1 and op2 are computed.
+	(compute_operand1_and_operand2_range): No checks required now.
+
+2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (compute_operand_range): Check for
+	a relation between op1 and op2 and use that instead.
+	(compute_operand1_range): Don't look for a relation override.
+	(compute_operand2_range): Ditto.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/contrib.texi (Contributors): Update my entry.
+
+2023-07-05  Filip Kastl  <filip.kastl@gmail.com>
+
+	* value-prof.cc (gimple_mod_subtract_transform): Correct edge
+	prob calculation.
+
+2023-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* sched-int.h (struct haifa_sched_info): Change can_schedule_ready_p,
+	scehdule_more_p and contributes_to_priority indirect frunction
+	type from int to bool.
+	(no_real_insns_p): Change return type from int to bool.
+	(contributes_to_priority): Ditto.
+	* haifa-sched.cc (no_real_insns_p): Change return type from
+	int to bool and adjust function body accordingly.
+	* modulo-sched.cc (try_scheduling_node_in_cycle): Change "success"
+	variable type from int to bool.
+	(ps_insn_advance_column): Change return type from int to bool.
+	(ps_has_conflicts): Ditto. Change "has_conflicts"
+	variable type from int to bool.
+	* sched-deps.cc (deps_may_trap_p): Change return type from int to bool.
+	(conditions_mutex_p): Ditto.
+	* sched-ebb.cc (schedule_more_p): Ditto.
+	(ebb_contributes_to_priority): Change return type from
+	int to bool and adjust function body accordingly.
+	* sched-rgn.cc (is_cfg_nonregular): Ditto.
+	(check_live_1): Ditto.
+	(is_pfree): Ditto.
+	(find_conditional_protection): Ditto.
+	(is_conditionally_protected): Ditto.
+	(is_prisky): Ditto.
+	(is_exception_free): Ditto.
+	(haifa_find_rgns): Change "unreachable" and "too_large_failure"
+	variables from int to bool.
+	(extend_rgns): Change "rescan" variable from int to bool.
+	(check_live): Change return type from
+	int to bool and adjust function body accordingly.
+	(can_schedule_ready_p): Ditto.
+	(schedule_more_p): Ditto.
+	(contributes_to_priority): Ditto.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* doc/md.texi: Document that vec_set and vec_extract must not
+	fail.
+	* gimple-isel.cc (gimple_expand_vec_set_expr): Rename this...
+	(gimple_expand_vec_set_extract_expr): ...to this.
+	(gimple_expand_vec_exprs): Call renamed function.
+	* internal-fn.cc (vec_extract_direct): Add.
+	(expand_vec_extract_optab_fn): New function to expand
+	vec_extract optab.
+	(direct_vec_extract_optab_supported_p): Add.
+	* internal-fn.def (VEC_EXTRACT): Add.
+	* optabs.cc (can_vec_extract_var_idx_p): New function.
+	* optabs.h (can_vec_extract_var_idx_p): Declare.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Add gen_lowpart.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Allow register index operand.
+
+2023-07-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_exact_insn): Use FRM_DYN instead of const0.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Use float_truncate.
+
+2023-07-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (internal_fn_len_index): Apply
+	LEN_MASK_GATHER_LOAD/SCATTER_STORE into vectorizer.
+	(internal_fn_mask_index): Ditto.
+	* optabs-query.cc (supports_vec_gather_load_p): Ditto.
+	(supports_vec_scatter_store_p): Ditto.
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Ditto.
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern): Ditto.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Ditto.
+	(vect_get_strided_load_store_ops): Ditto.
+	(vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* simplify-rtx.cc (native_encode_rtx): Ditto.
+	(native_decode_vector_rtx): Ditto.
+	(simplify_const_vector_byte_offset): Ditto.
+	(simplify_const_vector_subreg): Ditto.
+	* tree.cc (build_truth_vector_type_for_mode): Ditto.
+	* varasm.cc (output_constant_pool_2): Ditto.
+
+2023-07-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.cc (mips_expand_block_move): don't expand for
+	r6 with -mno-unaligned-access option if one or both of src and
+	dest are unaligned. restruct: return directly if length is not const.
+	(mips_block_move_straight): emit_move if ISA_HAS_UNALIGNED_ACCESS.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/100711
+	* config/i386/sse.md: New splitters to simplify
+	not;vec_duplicate as a singular vpternlog.
+	(one_cmpl<mode>2): Allow broadcast for operand 1.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): Likewise.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/100711
+	* config/i386/sse.md: New splitters to simplify
+	not;vec_duplicate;{ior,xor} as vec_duplicate;{iornot,xnor}.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/100711
+	* config/i386/sse.md: Permit non-immediate operand 1 in AVX2
+	form of splitter for PR target/100711.
+
+2023-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110541
+	* tree.def (VEC_PERM_EXPR): Adjust documentation to reflect
+	reality.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/93768
+	* config/i386/sse.md (*andnot<mode>3): Add new alternatives
+	for memory form operand 1.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/93768
+	* config/i386/i386.cc (ix86_rtx_costs): Further special-case
+	bitwise vector operations.
+	* config/i386/sse.md (*iornot<mode>3): New insn.
+	(*xnor<mode>3): Likewise.
+	(*<nlogic><mode>3): Likewise.
+	(andor): New code iterator.
+	(nlogic): New code attribute.
+	(ternlog_nlogic): Likewise.
+
+2023-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_mark_relevant): Fix typo.
+
+2023-07-05  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/vector.md: Add float16 attr at sew、vlmul and ratio.
+
+2023-07-05  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Enable FP16 tuple.
+	* config/riscv/riscv-modes.def (RVV_TUPLE_MODES): New macro.
+	(ADJUST_ALIGNMENT): Ditto.
+	(RVV_TUPLE_PARTIAL_MODES): Ditto.
+	(ADJUST_NUNITS): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (vfloat16mf4x2_t):
+	New types.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4x2_t): New macro.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/riscv-vector-switch.def (TUPLE_ENTRY): New.
+	* config/riscv/riscv.md: New.
+	* config/riscv/vector-iterators.md: New.
+
 2023-07-04  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/110487

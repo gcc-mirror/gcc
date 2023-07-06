@@ -1,3 +1,8 @@
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* trans-types.cc (gfc_type_for_mode): Ditto.
+
 2023-06-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110360

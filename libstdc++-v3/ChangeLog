@@ -1,3 +1,40 @@
+2023-07-05  Thomas Rodgers  <trodgers@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_sorting/set.cc: Delete
+	file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_difference.cc:
+	New file.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_intersection.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_symmetric_difference.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_union.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_util.h:
+	Likewise.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/debug/iterator1_neg.cc:
+	Skip as UNSUPPORTED for C++98 mode.
+	* testsuite/23_containers/forward_list/debug/iterator3_neg.cc:
+	Likewise.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110542
+	* include/bits/stl_uninitialized.h (__uninitialized_default_n):
+	Do not use std::fill_n during constant evaluation.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/vector.tcc (_M_default_append): Replace try-block
+	with RAII types.
+
+2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (projected): Add typename.
+
 2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/headers/iosfwd/synopsis.cc: Make wsyncbuf and

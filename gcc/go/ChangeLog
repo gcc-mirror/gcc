@@ -1,3 +1,8 @@
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* go-lang.cc (go_langhook_type_for_mode): Ditto.
+
 2023-06-26  Ian Lance Taylor  <iant@golang.org>
 
 	* lang.opt (fgo-importcfg): New option.

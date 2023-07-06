@@ -1,3 +1,8 @@
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* backend/rust-tree.cc (c_common_type_for_mode): Ditto.
+
 2023-06-22  Paul E. Murphy  <murphyp@linux.ibm.com>
 
 	* rust-object-export.cc [TARGET_AIX]: Rename and update usage to

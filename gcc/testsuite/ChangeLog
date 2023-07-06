@@ -1,3 +1,110 @@
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: Add
+	tests for variable index.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-run.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-zvfh-run.c:
+	Ditto.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: Adjust
+	test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-zvfh-run.c:
+	Ditto.
+
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/bitmask-9.c: New test.
+
+2023-07-05  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* gcc.target/mips/expand-block-move-r6-no-unaligned.c: new test.
+	* gcc.target/mips/expand-block-move-r6.c: new test.
+
+2023-07-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-perm-9.c: Always use alternate N.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512f-copysign.c: Suppress for 32-bit.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/100711
+	* gcc.target/i386/pr100711-6.c: New test.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/100711
+	* gcc.target/i386/pr100711-4.c: New test.
+	* gcc.target/i386/pr100711-5.c: New test.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/93768
+	* gcc.target/i386/avx512f-andn-di-zmm-2.c: New test.
+	* gcc.target/i386/avx512f-andn-si-zmm-2.c: Adjust expecations
+	towards generated code.
+	* gcc.target/i386/pr100711-3.c: Adjust expectations for 32-bit
+	code.
+
+2023-07-05  Jan Beulich  <jbeulich@suse.com>
+
+	PR target/93768
+	* gcc.target/i386/avx512-binop-not-1.h: New.
+	* gcc.target/i386/avx512-binop-not-2.h: New.
+	* gcc.target/i386/avx512f-orn-si-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-orn-si-zmm-2.c: New test.
+
+2023-07-05  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/abi-10.c: Add float16 tuple type case.
+	* gcc.target/riscv/rvv/base/abi-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-12.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-15.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-17.c: New test.
+	* gcc.target/riscv/rvv/base/abi-18.c: New test.
+
+2023-07-05  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/tuple-28.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-29.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-30.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-31.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-32.c: New test.
+
+2023-07-05  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-cmov.c: Adjust branch cost to
+	encourage if-conversion.
+	* gcc.target/mips/movcc-3.c: Same as above.
+
 2023-07-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/110491

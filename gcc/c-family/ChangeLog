@@ -1,3 +1,8 @@
+2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* c-common.cc (c_common_type_for_mode): Use GET_MODE_PRECISION.
+
 2023-06-29  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/77650
