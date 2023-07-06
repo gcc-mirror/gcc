@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref.h"
 #include "ipa-param-manipulation.h"
 #include "dbgcnt.h"
+#include "lto-streamer.h"
 
 #include "selftest.h"
 
@@ -539,6 +540,12 @@ compile_file (void)
      even when user did not ask for it.  */
   if (flag_generate_lto && !flag_fat_lto_objects)
     {
+      if (flag_bypass_asm)
+        {
+          /* TODO  */
+        }
+      else
+        {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE, "__gnu_lto_slim",
 				      HOST_WIDE_INT_1U, 8);
@@ -550,12 +557,13 @@ compile_file (void)
 			 HOST_WIDE_INT_1U,
 			 HOST_WIDE_INT_1U);
 #endif
+        }
     }
 
   /* Attach a special .ident directive to the end of the file to identify
      the version of GCC which compiled this code.  The format of the .ident
      string is patterned after the ones produced by native SVR4 compilers.  */
-  if (!flag_no_ident)
+  if (!flag_no_ident && !flag_bypass_asm)
     {
       const char *pkg_version = "(GNU) ";
       char *ident_str;
@@ -577,7 +585,11 @@ compile_file (void)
   /* This must be at the end.  Some target ports emit end of file directives
      into the assembly file here, and hence we cannot output anything to the
      assembly file after this point.  */
-  targetm.asm_out.file_end ();
+
+  if (flag_bypass_asm)
+    lto_obj_file_close (lto_get_current_out_file ());
+  else
+    targetm.asm_out.file_end ();
 
   timevar_stop (TV_PHASE_LATE_ASM);
 }
@@ -1819,7 +1831,8 @@ lang_dependent_init (const char *name)
 
   if (!flag_wpa)
     {
-      init_asm_output (name);
+      if (!flag_bypass_asm)
+        init_asm_output (name);
 
       if (!flag_generate_lto && !flag_compare_debug)
 	{

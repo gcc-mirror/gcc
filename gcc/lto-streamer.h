@@ -764,6 +764,30 @@ public:
   lto_location_cache location_cache;
 };
 
+/* Hash table entry to hold the start offset and length of an LTO
+   section in a .o file.  */
+struct lto_section_slot
+{
+  const char *name;
+  intptr_t start;
+  size_t len;
+  struct lto_section_slot *next;
+};
+
+/* A list of section slots */
+struct lto_section_list
+{
+  struct lto_section_slot *first, *last;
+};
+
+/* A file.  */
+struct lto_file
+{
+  /* The name of the file.  */
+  const char *filename;
+  /* The offset for the object inside an ar archive file (or zero).  */
+  off_t offset;
+};
 
 /* In lto-section-in.cc  */
 extern class lto_input_block * lto_create_simple_input_block (
@@ -903,6 +927,17 @@ void lto_output_location_and_block (struct output_block *, struct bitpack_d *,
 void lto_output_init_mode_table (void);
 void lto_prepare_function_for_streaming (cgraph_node *);
 
+/* In lto-elf.c or lto-coff.c  */
+extern lto_file *lto_obj_file_open (const char *filename, bool writable);
+extern void lto_obj_file_close (lto_file *file);
+struct lto_section_list;
+extern htab_t lto_obj_build_section_table (lto_file *file, struct lto_section_list *list, htab_t section_hash_table);
+extern htab_t lto_obj_create_section_hash_table (void);
+extern void lto_obj_begin_section (const char *name);
+extern void lto_obj_append_data (const void *data, size_t len, void *block);
+extern void lto_obj_end_section (void);
+extern lto_file *lto_set_current_out_file (lto_file *file);
+extern lto_file *lto_get_current_out_file (void);
 
 /* In lto-cgraph.cc  */
 extern bool asm_nodes_output;

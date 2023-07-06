@@ -2326,7 +2326,8 @@ lto_file_read (lto_file *file, FILE *resolution_file, int *count)
   struct lto_section_list section_list;
 
   memset (&section_list, 0, sizeof (struct lto_section_list));
-  section_hash_table = lto_obj_build_section_table (file, &section_list);
+  section_hash_table = lto_obj_create_section_hash_table ();
+  section_hash_table = lto_obj_build_section_table (file, &section_list, section_hash_table);
 
   /* Dump the details of LTO objects.  */
   if (flag_lto_dump_objects)

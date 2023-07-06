@@ -38,6 +38,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "debug.h"
+#include "function.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "lto-streamer.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -817,6 +821,19 @@ lhd_begin_section (const char *name)
 {
   section *section;
 
+  if (flag_bypass_asm)
+    {
+      static int initialized = false;
+      if (!initialized)
+	{
+	  gcc_assert (asm_out_file == NULL);
+          lto_set_current_out_file (lto_obj_file_open (asm_file_name, true));
+	  initialized = true;
+	}
+      lto_obj_begin_section (name);
+      return;
+    }
+
   /* Save the old section so we can restore it in lto_end_asm_section.  */
   gcc_assert (!saved_section);
   saved_section = in_section;
@@ -833,8 +850,13 @@ lhd_begin_section (const char *name)
    implementation just calls assemble_string.  */
 
 void
-lhd_append_data (const void *data, size_t len, void *)
+lhd_append_data (const void *data, size_t len, void *v)
 {
+  if (flag_bypass_asm)
+    {
+      lto_obj_append_data (data, len, v);
+      return;
+    }
   if (data)
     {
       timevar_push (TV_IPA_LTO_OUTPUT);
@@ -851,6 +873,11 @@ lhd_append_data (const void *data, size_t len, void *)
 void
 lhd_end_section (void)
 {
+  if (flag_bypass_asm)
+    {
+      lto_obj_end_section ();
+      return;
+    }
   if (saved_section)
     {
       switch_to_section (saved_section);

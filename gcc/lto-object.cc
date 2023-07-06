@@ -21,9 +21,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
+#include "function.h"
+#include "gimple.h"
 #include "diagnostic-core.h"
-#include "lto.h"
+#include "tm.h"
+#include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "simple-object.h"
 
@@ -133,7 +141,13 @@ lto_obj_file_open (const char *filename, bool writable)
     }
   else
     {
-      gcc_assert (saved_attributes != NULL);
+      if (!saved_attributes)
+        {
+          lto_file *tmp = lto_obj_file_open (flag_bypass_asm, false);
+          if (!tmp)
+            goto fail;
+          lto_obj_file_close (tmp);
+        }
       lo->sobj_w = simple_object_start_write (saved_attributes,
 					      LTO_SEGMENT_NAME,
 					      &errmsg, &err);
@@ -148,7 +162,8 @@ fail_errmsg:
     error ("%s: %s", fname, errmsg);
   else
     error ("%s: %s: %s", fname, errmsg, xstrerror (err));
-					 
+
+fail:
   if (lo->fd != -1)
     lto_obj_file_close ((lto_file *) lo);
   free (lo);
@@ -255,15 +270,15 @@ lto_obj_add_section (void *data, const char *name, off_t offset,
    the start and size of each section in the .o file.  */
 
 htab_t
-lto_obj_build_section_table (lto_file *lto_file, struct lto_section_list *list)
+lto_obj_build_section_table (lto_file *lto_file, struct lto_section_list *list,
+                             htab_t section_hash_table)
 {
   struct lto_simple_object *lo = (struct lto_simple_object *) lto_file;
-  htab_t section_hash_table;
+
   struct lto_obj_add_section_data loasd;
   const char *errmsg;
   int err;
 
-  section_hash_table = lto_obj_create_section_hash_table ();
 
   gcc_assert (lo->sobj_r != NULL && lo->sobj_w == NULL);
   loasd.section_hash_table = section_hash_table;

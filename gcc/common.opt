@@ -1169,6 +1169,9 @@ fbtr-bb-exclusive
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fbypass-asm=
+Common Joined Var(flag_bypass_asm)
+
 fcallgraph-info
 Common RejectNegative Var(flag_callgraph_info) Init(NO_CALLGRAPH_INFO);
 Output callgraph information on a per-file basis.

@@ -24,9 +24,9 @@ LTO_EXE = lto1$(exeext)
 LTO_DUMP_EXE = lto-dump$(exeext)
 LTO_DUMP_INSTALL_NAME := $(shell echo lto-dump|sed '$(program_transform_name)')
 # The LTO-specific object files inclued in $(LTO_EXE).
-LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-common.o
+LTO_OBJS = lto/lto-lang.o lto/lto.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-common.o
 lto_OBJS = $(LTO_OBJS)
-LTO_DUMP_OBJS = lto/lto-lang.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-dump.o lto/lto-common.o
+LTO_DUMP_OBJS = lto/lto-lang.o attribs.o lto/lto-partition.o lto/lto-symtab.o lto/lto-dump.o lto/lto-common.o
 lto_dump_OBJS = $(LTO_DUMP_OBJS)
 
 # this is only useful in a LTO bootstrap, but this does not work right
