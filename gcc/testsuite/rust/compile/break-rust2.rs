@@ -1,4 +1,4 @@
 fn main() {
     break (rust);
-    // { dg-error "failed to find name: rust" "" { target *-*-* } .-1 }
+    // { dg-error "cannot find value .rust. in this scope" "" { target *-*-* } .-1 }
 }

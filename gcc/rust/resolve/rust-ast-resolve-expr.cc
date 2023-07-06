@@ -173,7 +173,8 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
     }
   else
     {
-      rust_error_at (expr.get_locus (), "failed to find name: %s",
+      rust_error_at (expr.get_locus (), ErrorCode ("E0425"),
+		     "cannot find value %qs in this scope",
 		     expr.as_string ().c_str ());
     }
 }
