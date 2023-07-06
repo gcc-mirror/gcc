@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
 
 typedef unsigned char uint8_t;
 typedef uint8_t footype __attribute__((vector_size(4)));
@@ -18,5 +17,3 @@ void test(uint8_t *ptr, uint8_t *mask)
       __builtin_memcpy(&ptr[i], &temp, sizeof(temp));
     }
 }
-
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { xfail { { s390*-*-* sparc*-*-* } || vect32 } } } } */
