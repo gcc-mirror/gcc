@@ -3231,11 +3231,24 @@ package body Sem_Aggr is
             Typ := Key_Type;
 
          elsif Present (Iterator_Specification (Comp)) then
+            --  Create a temporary scope to avoid some modifications from
+            --  escaping the Analyze call below. The original Tree will be
+            --  reanalyzed later.
+
+            Ent := New_Internal_Entity
+                     (E_Loop, Current_Scope, Sloc (Comp), 'L');
+            Set_Etype  (Ent, Standard_Void_Type);
+            Set_Parent (Ent, Parent (Comp));
+            Push_Scope (Ent);
+
             Copy    := Copy_Separate_Tree (Iterator_Specification (Comp));
             Id_Name :=
               Chars (Defining_Identifier (Iterator_Specification (Comp)));
 
-            Analyze (Copy);
+            Preanalyze (Copy);
+
+            End_Scope;
+
             Typ := Etype (Defining_Identifier (Copy));
 
          else
