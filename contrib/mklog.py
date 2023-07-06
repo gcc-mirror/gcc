@@ -41,7 +41,34 @@ from unidiff import PatchSet
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
-CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
+
+# Initial commit:
+#   +--------------------------------------------------+
+#   | gccrs: Some title                                |
+#   |                                                  | This is the "start"
+#   | This is some text explaining the commit.         |
+#   | There can be several lines.                      |
+#   |                                                  |<------------------->
+#   | Signed-off-by: My Name <my@mail.com>             | This is the "end"
+#   +--------------------------------------------------+
+#
+# Results in:
+#   +--------------------------------------------------+
+#   | gccrs: Some title                                |
+#   |                                                  |
+#   | This is some text explaining the commit.         | This is the "start"
+#   | There can be several lines.                      |
+#   |                                                  |<------------------->
+#   | gcc/rust/ChangeLog:                              |
+#   |                                                  | This is the generated
+#   |         * some_file (bla):                       | ChangeLog part
+#   |         (foo):                                   |
+#   |                                                  |<------------------->
+#   | Signed-off-by: My Name <my@mail.com>             | This is the "end"
+#   +--------------------------------------------------+
+
+# this regex matches the first line of the "end" in the initial commit message
+FIRST_LINE_OF_END_RE = re.compile('(?i)^(signed-off-by|co-authored-by|#): ')
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
@@ -330,10 +357,7 @@ def update_copyright(data):
 
 
 def skip_line_in_changelog(line):
-    if line.lower().startswith(CO_AUTHORED_BY_PREFIX) or line.startswith('#'):
-        return False
-    return True
-
+    return FIRST_LINE_OF_END_RE.match(line) == None
 
 if __name__ == '__main__':
     extra_args = os.getenv('GCC_MKLOG_ARGS')
