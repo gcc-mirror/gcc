@@ -6488,6 +6488,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    'A'	Print the atomic operation suffix for memory model OP.
    'I'	Print the LR suffix for memory model OP.
    'J'	Print the SC suffix for memory model OP.
+   'L'	Print a non-temporal locality hints instruction.
    'z'	Print x0 if OP is zero, otherwise print OP normally.
    'i'	Print i if the operand is not a register.
    'S'	Print shift-index of single-bit mask OP.
@@ -6681,6 +6682,27 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	fputs (".rl", file);
       break;
     }
+
+    case 'L':
+      {
+	const char *ntl_hint = NULL;
+	switch (INTVAL (op))
+	  {
+	  case 0:
+	    ntl_hint = "ntl.all";
+	    break;
+	  case 1:
+	    ntl_hint = "ntl.pall";
+	    break;
+	  case 2:
+	    ntl_hint = "ntl.p1";
+	    break;
+	  }
+
+      if (ntl_hint)
+	asm_fprintf (file, "%s\n\t", ntl_hint);
+      break;
+      }
 
     case 'i':
       if (code != REG)
