@@ -949,6 +949,9 @@
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
 
+/* Define if fseeko and ftello are available. */
+#undef _GLIBCXX_USE_FSEEKO_FTELLO
+
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY
 
