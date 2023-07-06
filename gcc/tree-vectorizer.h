@@ -2316,8 +2316,7 @@ extern tree neutral_op_for_reduction (tree, code_helper, tree);
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 bool vect_rgroup_iv_might_wrap_p (loop_vec_info, rgroup_controls *);
 /* Used in tree-vect-loop-manip.cc */
-extern opt_result vect_determine_partial_vectors_and_peeling (loop_vec_info,
-							      bool);
+extern opt_result vect_determine_partial_vectors_and_peeling (loop_vec_info);
 /* Used in gimple-loop-interchange.c and tree-parloops.cc.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);

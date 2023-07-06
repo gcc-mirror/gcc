@@ -3461,8 +3461,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 a multiple of the epilogue loop's vectorization factor.
 	 We should have rejected the loop during the analysis phase
 	 if this fails.  */
-      bool res = vect_determine_partial_vectors_and_peeling (epilogue_vinfo,
-							     true);
+      bool res = vect_determine_partial_vectors_and_peeling (epilogue_vinfo);
       gcc_assert (res);
     }
 

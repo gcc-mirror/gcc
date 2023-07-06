@@ -2494,16 +2494,10 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 	    In this case:
 
 	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == false
-
-   When FOR_EPILOGUE_P is true, make this determination based on the
-   assumption that LOOP_VINFO is an epilogue loop, otherwise make it
-   based on the assumption that LOOP_VINFO is the main loop.  The caller
-   has made sure that the number of iterations is set appropriately for
-   this value of FOR_EPILOGUE_P.  */
+ */
 
 opt_result
-vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
-					    bool for_epilogue_p)
+vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
 {
   /* Determine whether there would be any scalar iterations left over.  */
   bool need_peeling_or_partial_vectors_p
@@ -2537,25 +2531,12 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
     }
 
   if (dump_enabled_p ())
-    {
-      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "operating on partial vectors%s.\n",
-			 for_epilogue_p ? " for epilogue loop" : "");
-      else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "operating only on full vectors%s.\n",
-			 for_epilogue_p ? " for epilogue loop" : "");
-    }
-
-  if (for_epilogue_p)
-    {
-      loop_vec_info orig_loop_vinfo = LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo);
-      gcc_assert (orig_loop_vinfo);
-      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-	gcc_assert (known_lt (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-			      LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)));
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "operating on %s vectors%s.\n",
+		     LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+		     ? "partial" : "full",
+		     LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+		     ? " for epilogue loop" : "");
 
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)
     = (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
@@ -3017,11 +2998,19 @@ start_over:
 	LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = true;
     }
 
+  /* Decide whether this loop_vinfo should use partial vectors or peeling,
+     assuming that the loop will be used as a main loop.  We will redo
+     this analysis later if we instead decide to use the loop as an
+     epilogue loop.  */
+  ok = vect_determine_partial_vectors_and_peeling (loop_vinfo);
+  if (!ok)
+    return ok;
+
   /* If we're vectorizing an epilogue loop, the vectorized loop either needs
      to be able to handle fewer than VF scalars, or needs to have a lower VF
      than the main loop.  */
   if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-      && !LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
       poly_uint64 unscaled_vf
 	= exact_div (LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo),
@@ -3031,15 +3020,6 @@ start_over:
 				       "Vectorization factor too high for"
 				       " epilogue loop.\n");
     }
-
-  /* Decide whether this loop_vinfo should use partial vectors or peeling,
-     assuming that the loop will be used as a main loop.  We will redo
-     this analysis later if we instead decide to use the loop as an
-     epilogue loop.  */
-  ok = vect_determine_partial_vectors_and_peeling
-	 (loop_vinfo, LOOP_VINFO_EPILOGUE_P (loop_vinfo));
-  if (!ok)
-    return ok;
 
   /* Check the costings of the loop make vectorizing worthwhile.  */
   res = vect_analyze_loop_costing (loop_vinfo, suggested_unroll_factor);
