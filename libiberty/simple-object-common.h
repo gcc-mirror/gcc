@@ -58,6 +58,24 @@ struct simple_object_write_struct
   simple_object_write_section *last_section;
   /* Private data for the object file format.  */
   void *data;
+  /*The start of the list of symbols.*/
+  simple_object_symbol *symbols;
+  /*The last entry in the list of symbols*/
+  simple_object_symbol *last_symbol;
+};
+
+/*A symbol in object file being created*/
+struct simple_object_symbol_struct
+{
+  /*Next in the list of symbols attached to an
+  simple_object_write*/
+  simple_object_symbol *next;
+  /*The name of this symbol. */
+  char *name;
+  /* Symbol value */
+  unsigned int align;
+  /* Symbol size */
+  size_t size;  
 };
 
 /* A section in an object file being created.  */

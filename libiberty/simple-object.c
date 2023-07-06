@@ -455,6 +455,8 @@ simple_object_start_write (simple_object_attributes *attrs,
   ret->sections = NULL;
   ret->last_section = NULL;
   ret->data = data;
+  ret->symbols=NULL;
+  ret->last_symbol=NULL;
   return ret;
 }
 
@@ -538,6 +540,28 @@ simple_object_write_to_file (simple_object_write *sobj, int descriptor,
 {
   return sobj->functions->write_to_file (sobj, descriptor, err);
 }
+/*Adds a symbol in to common*/
+void
+simple_object_write_add_symbol(simple_object_write *sobj, const char *name,
+size_t size, unsigned int align)
+{
+  simple_object_symbol *symbol;
+  symbol=XNEW(simple_object_symbol);
+  symbol->next=NULL;
+  symbol->name=xstrdup(name);
+  symbol->align=align;
+  symbol->size=size;
+  if(sobj->last_symbol==NULL)
+  {
+    sobj->symbols=symbol;
+    sobj->last_symbol=symbol;
+  }
+  else
+  {
+    sobj->last_symbol->next=symbol;
+    sobj->last_symbol=symbol;
+  }
+}
 
 /* Release an simple_object_write.  */
 
@@ -571,6 +595,16 @@ simple_object_release_write (simple_object_write *sobj)
       XDELETE (section);
       section = next_section;
     }
+  simple_object_symbol *symbol,*next_symbol;
+  symbol=sobj->symbols;
+  while(symbol!=NULL)
+  {
+    next_symbol=symbol->next;
+    free(symbol->name);
+    XDELETE(symbol);
+    symbol=next_symbol;
+
+  }
 
   sobj->functions->release_write (sobj->data);
   XDELETE (sobj);

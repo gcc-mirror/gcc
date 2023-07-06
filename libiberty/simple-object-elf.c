@@ -787,9 +787,14 @@ simple_object_elf_write_ehdr (simple_object_write *sobj, int descriptor,
     ++shnum;
   if (shnum > 0)
     {
-      /* Add a section header for the dummy section and one for
-	 .shstrtab.  */
+      /* Add a section header for the dummy section, 
+      and .shstrtab*/
       shnum += 2;
+      /*add section header for .symtab and .strtab 
+      if symbol exists
+      */
+      if(sobj->symbols) 
+        shnum += 2; 
     }
 
   ehdr_size = (cl == ELFCLASS32
@@ -882,6 +887,51 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
 				       errmsg, err);
 }
 
+/* Write out an ELF Symbol*/
+
+static int 
+simple_object_elf_write_symbol(simple_object_write *sobj, int descriptor,
+            off_t offset, unsigned int st_name, unsigned int st_value, size_t st_size,
+            unsigned char st_info, unsigned char st_other, unsigned int st_shndx, 
+            const char **errmsg, int *err)
+{
+  struct simple_object_elf_attributes *attrs =
+    (struct simple_object_elf_attributes *) sobj->data;
+  const struct elf_type_functions* fns;
+  unsigned char cl;
+  size_t sym_size;
+  unsigned char buf[sizeof (Elf64_External_Shdr)];
+
+  fns = attrs->type_functions;
+  cl = attrs->ei_class;
+
+  sym_size = (cl == ELFCLASS32
+	       ? sizeof (Elf32_External_Shdr)
+	       : sizeof (Elf64_External_Shdr));
+  memset (buf, 0, sizeof (Elf64_External_Shdr));
+
+  if(cl==ELFCLASS32)
+  {
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_name, Elf_Word, st_name);
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_value, Elf_Addr, st_value);
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_size, Elf_Addr, st_size);  
+    buf[4]=st_info;
+    buf[5]=st_other;
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_shndx, Elf_Half, st_shndx);
+  }
+  else
+  {
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_name, Elf_Word, st_name);
+    buf[4]=st_info;
+    buf[5]=st_other;
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_shndx, Elf_Half, st_shndx);
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_value, Elf_Addr, st_value);
+    ELF_SET_FIELD(fns, cl, Sym, buf, st_size, Elf_Addr, st_size);  
+  }
+  return simple_object_internal_write(descriptor, offset,buf,sym_size,
+              errmsg,err); 
+}
+
 /* Write out a complete ELF file.
    Ehdr
    initial dummy Shdr
@@ -932,8 +982,11 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
   if (shnum == 0)
     return NULL;
 
-  /* Add initial dummy Shdr and .shstrtab.  */
+  /* Add initial dummy Shdr and  .shstrtab */
   shnum += 2;
+   /*add initial .symtab and .strtab if symbol exists */
+      if(sobj->symbols) 
+        shnum += 2; 
 
   shdr_offset = ehdr_size;
   sh_offset = shdr_offset + shnum * shdr_size;
@@ -1035,7 +1088,74 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
       sh_name += strlen (section->name) + 1;
       sh_offset += sh_size;
     }
+  /*Write out the whole .symtab and .strtab*/
+  if(sobj->symbols)
+  {
+    unsigned int num_sym = 1;
+    simple_object_symbol *symbol;
 
+    for(symbol=sobj->symbols; symbol!=NULL; symbol=symbol->next)
+    {
+      ++num_sym;
+    } 
+
+    size_t sym_size = cl==ELFCLASS32?sizeof(Elf32_External_Sym):sizeof(Elf64_External_Sym);
+    size_t sh_addralign = cl==ELFCLASS32?0x04:0x08;
+    size_t sh_entsize = sym_size;
+    size_t sh_size = num_sym*sym_size;
+    unsigned int sh_info = 2;
+    if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
+              sh_name, SHT_SYMTAB, 0, 0, sh_offset,
+              sh_size, shnum-2, sh_info,
+              sh_addralign,sh_entsize, &errmsg, err))
+      return errmsg;
+    shdr_offset += shdr_size;
+    sh_name += strlen(".symtab")+1;
+    /*Writes out the dummy symbol */
+
+    if(!simple_object_elf_write_symbol(sobj, descriptor, sh_offset,
+          0,0,0,0,0,SHN_UNDEF,&errmsg,err))
+      return errmsg;
+    sh_offset += sym_size;
+    unsigned int st_name=1;
+    for(symbol=sobj->symbols; symbol!=NULL; symbol=symbol->next)
+    {
+      unsigned int st_value = 1;
+      unsigned int st_size = 1;
+      unsigned char st_info = 17;
+      if(!simple_object_elf_write_symbol(sobj, descriptor, sh_offset,
+          st_name,st_value,st_size,st_info,0,SHN_COMMON,&errmsg,err))
+        return errmsg;
+      sh_offset += sym_size; 
+      st_name += strlen(symbol->name)+1;
+
+    }
+
+    if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
+              sh_name, SHT_STRTAB, 0, 0, sh_offset,
+              st_name, 0, 0,
+              1, 0, &errmsg, err))
+      return errmsg;
+    shdr_offset += shdr_size;
+    sh_name += strlen(".strtab")+1;
+    /*.strtab has a leading zero byte*/
+    zero = 0;
+    if (!simple_object_internal_write (descriptor, sh_offset, &zero, 1,
+              &errmsg, err))
+      return errmsg;
+    ++sh_offset;
+
+    for(symbol=sobj->symbols;symbol!=NULL;symbol=symbol->next)
+    {
+      size_t len=strlen(symbol->name)+1;
+      if (!simple_object_internal_write (descriptor, sh_offset,
+            (const unsigned char *) symbol->name,
+            len, &errmsg, err))
+    return errmsg;
+        sh_offset += len;
+
+    }
+  }
   if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
 				     sh_name, SHT_STRTAB, 0, 0, sh_offset,
 				     sh_name + strlen (".shstrtab") + 1, 0, 0,
@@ -1060,7 +1180,20 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 	return errmsg;
       sh_offset += len;
     }
-
+  /*Adds the name .symtab and .strtab*/
+  if(sobj->symbols)
+  {
+    if (!simple_object_internal_write (descriptor, sh_offset,
+    			     (const unsigned char *) ".symtab",
+    			     strlen (".symtab") + 1, &errmsg, err))
+      return errmsg;
+    sh_offset += strlen(".symtab")+1;
+    if (!simple_object_internal_write (descriptor, sh_offset,
+    			     (const unsigned char *) ".strtab",
+    			     strlen (".strtab") + 1, &errmsg, err))
+      return errmsg;
+    sh_offset += strlen(".strtab")+1;
+  }
   if (!simple_object_internal_write (descriptor, sh_offset,
 				     (const unsigned char *) ".shstrtab",
 				     strlen (".shstrtab") + 1, &errmsg, err))

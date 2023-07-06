@@ -156,6 +156,11 @@ simple_object_start_write (simple_object_attributes *attrs,
 
 typedef struct simple_object_write_section_struct simple_object_write_section;
 
+/* The type simple_object_symbol is a handle for a symbol
+   which is being written. */
+
+typedef struct simple_object_symbol_struct simple_object_symbol;
+
 /* Add a section to SIMPLE_OBJECT.  NAME is the name of the new
    section.  ALIGN is the required alignment expressed as the number
    of required low-order 0 bits (e.g., 2 for alignment to a 32-bit
@@ -190,6 +195,11 @@ simple_object_write_add_data (simple_object_write *simple_object,
 extern const char *
 simple_object_write_to_file (simple_object_write *simple_object,
 			     int descriptor, int *err);
+/*Add a symbol to sobj struct which will be written to common in simple_
+object_write_to_file function*/
+extern void
+simple_object_write_add_symbol(simple_object_write *sobj, const char *name,
+size_t size, unsigned int align);
 
 /* Release all resources associated with SIMPLE_OBJECT, including any
    simple_object_write_section's that may have been created.  */

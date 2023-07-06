@@ -187,7 +187,8 @@ lto_obj_file_close (lto_file *file)
       int err;
 
       gcc_assert (lo->base.offset == 0);
-
+      /*Add __gnu_lto_slim symbol*/      
+      simple_object_write_add_symbol (lo->sobj_w, "__gnu_lto_slim",1,1);
       errmsg = simple_object_write_to_file (lo->sobj_w, lo->fd, &err);
       if (errmsg != NULL)
 	{
