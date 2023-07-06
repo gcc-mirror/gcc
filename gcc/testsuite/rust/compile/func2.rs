@@ -3,5 +3,5 @@ fn test(a: i32, b: i32) -> i32 {
 }
 
 fn main() {
-    let a = test(1); // { dg-error "unexpected number of arguments 1 expected 2" }
+    let a = test(1); // { dg-error "this function takes 2 arguments but 1 argument was supplied" }
 }
