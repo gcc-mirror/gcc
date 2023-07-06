@@ -3176,10 +3176,8 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 	= fold_build2 (MULT_EXPR, sizetype,
 		       fold_convert (sizetype, unshare_expr (DR_STEP (dr))),
 		       loop_len);
-      tree bump = make_temp_ssa_name (sizetype, NULL, "ivtmp");
-      gassign *assign = gimple_build_assign (bump, tmp);
-      gsi_insert_before (gsi, assign, GSI_SAME_STMT);
-      *dataref_bump = bump;
+      *dataref_bump = force_gimple_operand_gsi (gsi, tmp, true, NULL_TREE, true,
+						GSI_SAME_STMT);
     }
   else
     {
