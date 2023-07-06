@@ -901,6 +901,67 @@ brief_dump_cfg (FILE *file, dump_flags_t flags)
     }
 }
 
+/* Set probability of E to NEW_PROB and rescale other edges
+   from E->src so their sum remains the same.  */
+
+void
+set_edge_probability_and_rescale_others (edge e, profile_probability new_prob)
+{
+  edge e2;
+  edge_iterator ei;
+  if (e->probability == new_prob)
+    return;
+  /* If we made E unconditional, drop other frequencies to 0.  */
+  if (new_prob == profile_probability::always ())
+    {
+      FOR_EACH_EDGE (e2, ei, e->src->succs)
+	if (e2 != e)
+	  e2->probability = profile_probability::never ();
+    }
+  else
+    {
+      int n = 0;
+      edge other_e = NULL;
+
+      /* See how many other edges are leaving exit_edge->src.  */
+      FOR_EACH_EDGE (e2, ei, e->src->succs)
+	if (e2 != e && !(e2->flags & EDGE_FAKE))
+	  {
+	    other_e = e2;
+	    n++;
+	  }
+      /* If there is only one other edge with non-zero probability we do not
+	 need to scale which drops quality of profile from precise
+	 to adjusted.  */
+      if (n == 1)
+	other_e->probability = new_prob.invert ();
+      /* Nothing to do if there are no other edges.  */
+      else if (!n)
+	;
+      /* Do scaling if possible.  */
+      else if (e->probability.invert ().nonzero_p ())
+	{
+	  profile_probability num = new_prob.invert (),
+			      den = e->probability.invert ();
+	  FOR_EACH_EDGE (e2, ei, e->src->succs)
+	    if (e2 != e && !(e2->flags & EDGE_FAKE))
+	      e2->probability = e2->probability.apply_scale (num, den);
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     ";; probability of edge %i->%i set reduced from 1."
+		     " The remaining edges are left inconsistent.\n",
+		     e->src->index, e->dest->index);
+	  FOR_EACH_EDGE (e2, ei, e->src->succs)
+	    if (e2 != e && !(e2->flags & EDGE_FAKE))
+	      e2->probability = new_prob.invert ().guessed () / n;
+	}
+    }
+  e->probability = new_prob;
+}
+
 /* An edge originally destinating BB of COUNT has been proved to
    leave the block by TAKEN_EDGE.  Update profile of BB such that edge E can be
    redirected to destination of TAKEN_EDGE.
@@ -912,62 +973,57 @@ void
 update_bb_profile_for_threading (basic_block bb, 
 				 profile_count count, edge taken_edge)
 {
-  edge c;
-  profile_probability prob;
-  edge_iterator ei;
+  gcc_assert (bb == taken_edge->src);
+
+  /* If there is no profile or the threaded path is never executed
+     we don't need to upate.  */
+  if (!bb->count.initialized_p ()
+      || count == profile_count::zero ())
+    return;
 
   if (bb->count < count)
     {
       if (dump_file)
 	fprintf (dump_file, "bb %i count became negative after threading",
 		 bb->index);
+      /* If probabilities looks very off, scale down and reduce to guesses
+	 to avoid dropping the other path close to zero.  */
+      if (bb->count < count.apply_scale (7, 8))
+	count = bb->count.apply_scale (1, 2).guessed ();
     }
 
-  /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
-     Watch for overflows.  */
-  if (bb->count.nonzero_p ())
-    prob = count.probability_in (bb->count);
-  else
-    prob = profile_probability::never ();
-  if (prob > taken_edge->probability)
+  /* If bb->count will become zero, the probabilities on the original path
+     are not really known, but it is probably better to keep original ones
+     then try to invent something new.  */
+  if (!(bb->count <= count))
     {
-      if (dump_file)
+      profile_probability prob;
+      /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
+	 Watch for overflows.  */
+      if (bb->count.nonzero_p ())
+	prob = count.probability_in (bb->count);
+      else
+	prob = taken_edge->probability.apply_scale (1, 2).guessed ();
+      if (prob > taken_edge->probability)
 	{
-	  fprintf (dump_file, "Jump threading proved that the probability of edge "
-		   "%i->%i was originally estimated too small (it is ",
-		   taken_edge->src->index, taken_edge->dest->index);	
-	  taken_edge->probability.dump (dump_file);
-	  fprintf (dump_file, " should be ");
-	  prob.dump (dump_file);
-	  fprintf (dump_file, ")\n");
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Jump threading proved that the probability "
+		       "of edge %i->%i was originally estimated too small. "
+		       "(it is ",
+		       taken_edge->src->index, taken_edge->dest->index);
+	      taken_edge->probability.dump (dump_file);
+	      fprintf (dump_file, " should be ");
+	      prob.dump (dump_file);
+	      fprintf (dump_file, ")\n");
+	    }
+	  prob = taken_edge->probability.apply_scale (6, 8).guessed ();
 	}
-      prob = taken_edge->probability.apply_scale (6, 8);
+      set_edge_probability_and_rescale_others (taken_edge,
+					       (taken_edge->probability - prob)
+					       / prob.invert ());
     }
-
   bb->count -= count;
-
-  /* Now rescale the probabilities.  */
-  taken_edge->probability -= prob;
-  prob = prob.invert ();
-  if (prob == profile_probability::never ())
-    {
-      if (dump_file)
-	fprintf (dump_file, "Edge probabilities of bb %i has been reset, "
-		 "count of block should end up being 0, it is non-zero\n",
-		 bb->index);
-      EDGE_SUCC (bb, 0)->probability = profile_probability::guessed_always ();
-      ei = ei_start (bb->succs);
-      ei_next (&ei);
-      for (; (c = ei_safe_edge (ei)); ei_next (&ei))
-	c->probability = profile_probability::guessed_never ();
-    }
-  else if (!(prob == profile_probability::always ()))
-    {
-      FOR_EACH_EDGE (c, ei, bb->succs)
-	c->probability /= prob;
-    }
-
-  gcc_assert (bb == taken_edge->src);
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
