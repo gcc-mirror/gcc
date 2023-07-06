@@ -10098,7 +10098,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   new_vec, step_vectype, NULL);
 
       vec_def = induc_def;
-      for (i = 1; i < ncopies; i++)
+      for (i = 1; i < ncopies + 1; i++)
 	{
 	  /* vec_i = vec_prev + vec_step  */
 	  gimple_seq stmts = NULL;
@@ -10108,8 +10108,23 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_def = gimple_convert (&stmts, vectype, vec_def);
  
 	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
-	  new_stmt = SSA_NAME_DEF_STMT (vec_def);
-	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	  if (i < ncopies)
+	    {
+	      new_stmt = SSA_NAME_DEF_STMT (vec_def);
+	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	    }
+	  else
+	    {
+	      /* vec_1 = vec_iv + (VF/n * S)
+		 vec_2 = vec_1 + (VF/n * S)
+		 ...
+		 vec_n = vec_prev + (VF/n * S) = vec_iv + VF * S = vec_loop
+
+		 vec_n is used as vec_loop to save the large step register and
+		 related operations.  */
+	      add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
+			   UNKNOWN_LOCATION);
+	    }
 	}
     }
 
