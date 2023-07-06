@@ -1766,10 +1766,19 @@ irange::invert ()
 irange_bitmask
 irange::get_bitmask_from_range () const
 {
+  unsigned prec = TYPE_PRECISION (type ());
   wide_int min = lower_bound ();
   wide_int max = upper_bound ();
+
+  // All the bits of a singleton are known.
+  if (min == max)
+    {
+      wide_int mask = wi::zero (prec);
+      wide_int value = lower_bound ();
+      return irange_bitmask (value, mask);
+    }
+
   wide_int xorv = min ^ max;
-  unsigned prec = TYPE_PRECISION (type ());
 
   if (xorv != 0)
     xorv = wi::mask (prec - wi::clz (xorv), false, prec);
@@ -1786,6 +1795,14 @@ irange::set_range_from_bitmask ()
   gcc_checking_assert (!undefined_p ());
   if (m_bitmask.unknown_p ())
     return false;
+
+  // If all the bits are known, this is a singleton.
+  if (m_bitmask.mask () == 0)
+    {
+      set (m_type, m_bitmask.value (), m_bitmask.value ());
+      return true;
+    }
+
   unsigned popcount = wi::popcount (m_bitmask.get_nonzero_bits ());
 
   // If we have only one bit set in the mask, we can figure out the
