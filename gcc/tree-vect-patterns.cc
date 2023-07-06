@@ -2566,7 +2566,7 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
    Widening with mask first, shift later:
    container = (type_out) container;
    masked = container & (((1 << bitsize) - 1) << bitpos);
-   result = patt2 >> masked;
+   result = masked >> bitpos;
 
    Widening with shift first, mask last:
    container = (type_out) container;
@@ -2577,6 +2577,15 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
    masked = container & (((1 << bitsize) - 1) << bitpos);
    result = masked >> bitpos;
    result = (type_out) result;
+
+   If the bitfield is signed and it's wider than type_out, we need to
+   keep the result sign-extended:
+   container = (type) container;
+   masked = container << (prec - bitsize - bitpos);
+   result = (type_out) (masked >> (prec - bitsize));
+
+   Here type is the signed variant of the wider of type_out and the type
+   of container.
 
    The shifting is always optional depending on whether bitpos != 0.
 
@@ -2636,14 +2645,22 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
   if (BYTES_BIG_ENDIAN)
     shift_n = prec - shift_n - mask_width;
 
+  bool ref_sext = (!TYPE_UNSIGNED (TREE_TYPE (bf_ref)) &&
+		   TYPE_PRECISION (ret_type) > mask_width);
+  bool load_widen = (TYPE_PRECISION (TREE_TYPE (container)) <
+		     TYPE_PRECISION (ret_type));
+
   /* We move the conversion earlier if the loaded type is smaller than the
-     return type to enable the use of widening loads.  */
-  if (TYPE_PRECISION (TREE_TYPE (container)) < TYPE_PRECISION (ret_type)
-      && !useless_type_conversion_p (TREE_TYPE (container), ret_type))
+     return type to enable the use of widening loads.  And if we need a
+     sign extension, we need to convert the loaded value early to a signed
+     type as well.  */
+  if (ref_sext || load_widen)
     {
-      pattern_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (ret_type),
-			       NOP_EXPR, container);
+      tree type = load_widen ? ret_type : container_type;
+      if (ref_sext)
+	type = gimple_signed_type (type);
+      pattern_stmt = gimple_build_assign (vect_recog_temp_ssa_var (type),
+					  NOP_EXPR, container);
       container = gimple_get_lhs (pattern_stmt);
       container_type = TREE_TYPE (container);
       prec = tree_to_uhwi (TYPE_SIZE (container_type));
@@ -2671,7 +2688,7 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
     shift_first = true;
 
   tree result;
-  if (shift_first)
+  if (shift_first && !ref_sext)
     {
       tree shifted = container;
       if (shift_n)
@@ -2694,14 +2711,27 @@ vect_recog_bitfield_ref_pattern (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   else
     {
-      tree mask = wide_int_to_tree (container_type,
-				    wi::shifted_mask (shift_n, mask_width,
-						      false, prec));
-      pattern_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (container_type),
-			       BIT_AND_EXPR, container, mask);
-      tree masked = gimple_assign_lhs (pattern_stmt);
+      tree temp = vect_recog_temp_ssa_var (container_type);
+      if (!ref_sext)
+	{
+	  tree mask = wide_int_to_tree (container_type,
+					wi::shifted_mask (shift_n,
+							  mask_width,
+							  false, prec));
+	  pattern_stmt = gimple_build_assign (temp, BIT_AND_EXPR,
+					      container, mask);
+	}
+      else
+	{
+	  HOST_WIDE_INT shl = prec - shift_n - mask_width;
+	  shift_n += shl;
+	  pattern_stmt = gimple_build_assign (temp, LSHIFT_EXPR,
+					      container,
+					      build_int_cst (sizetype,
+							     shl));
+	}
 
+      tree masked = gimple_assign_lhs (pattern_stmt);
       append_pattern_def_seq (vinfo, stmt_info, pattern_stmt, vectype);
       pattern_stmt
 	= gimple_build_assign (vect_recog_temp_ssa_var (container_type),
