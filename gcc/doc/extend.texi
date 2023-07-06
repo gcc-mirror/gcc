@@ -15260,6 +15260,23 @@ __builtin_arc_sr()
 __builtin_arc_swi()
 @end example
 
+The following built-in functions are available for the ARCv2 family of
+processors.
+
+@example
+int __builtin_arc_clri ();
+void __builtin_arc_kflag (unsigned);
+void __builtin_arc_seti (int);
+@end example
+
+The following built-in functions are available for the ARCv2 family
+and uses @option{-mnorm}.
+
+@example
+int __builtin_arc_ffs (int);
+int __builtin_arc_fls (int);
+@end example
+
 @node ARC SIMD Built-in Functions
 @subsection ARC SIMD Built-in Functions
 
@@ -15484,6 +15501,44 @@ indicating one the registers I0-I7, and the fourth argument must be an
 @example
 void __builtin_arc_vst16_n (__v8hi, const int, const int, const int);
 void __builtin_arc_vst32_n (__v8hi, const int, const int, const int);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=6} or higher.
+
+@example
+__v2hi __builtin_arc_dmach (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmachu (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmpyh (__v2hi, __v2hi);
+__v2hi __builtin_arc_dmpyhu (__v2hi, __v2hi);
+__v2hi __builtin_arc_vaddsub2h (__v2hi, __v2hi);
+__v2hi __builtin_arc_vsubadd2h (__v2hi, __v2hi);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=7} or higher.
+
+@example
+__v2si __builtin_arc_vmac2h (__v2hi, __v2hi);
+__v2si __builtin_arc_vmac2hu (__v2hi, __v2hi);
+__v2si __builtin_arc_vmpy2h (__v2hi, __v2hi);
+__v2si __builtin_arc_vmpy2hu (__v2hi, __v2hi);
+@end example
+
+The following built-in functions are available on systems that uses
+@option{-mmpy-option=8} or higher.
+
+@example
+long long __builtin_arc_qmach (__v4hi, __v4hi);
+long long __builtin_arc_qmachu (__v4hi, __v4hi);
+long long __builtin_arc_qmpyh (__v4hi, __v4hi);
+long long __builtin_arc_qmpyhu (__v4hi, __v4hi);
+long long __builtin_arc_dmacwh (__v2si, __v2hi);
+long long __builtin_arc_dmacwhu (__v2si, __v2hi);
+_v2si __builtin_arc_vaddsub (__v2si, __v2si);
+_v2si __builtin_arc_vsubadd (__v2si, __v2si);
+_v4hi __builtin_arc_vaddsub4h (__v4hi, __v4hi);
+_v4hi __builtin_arc_vsubadd4h (__v4hi, __v4hi);
 @end example
 
 @node ARM iWMMXt Built-in Functions
