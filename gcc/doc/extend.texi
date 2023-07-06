@@ -7243,11 +7243,6 @@ Prefer 256-bit vector width for instructions.
 Prefer 512-bit vector width for instructions.
 @end table
 
-On the x86, the inliner does not inline a
-function that has different target options than the caller, unless the
-callee has a subset of the target options of the caller.  For example
-a function declared with @code{target("sse3")} can inline a function
-with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
 @end table
 
 @cindex @code{indirect_branch} function attribute, x86
@@ -7360,6 +7355,20 @@ This attribute, attached to a global variable or function, is the
 counterpart to option @option{-mno-direct-extern-access}.
 
 @end table
+
+@subsubsection Inlining rules
+On the x86, the inliner does not inline a
+function that has different target options than the caller, unless the
+callee has a subset of the target options of the caller.  For example
+a function declared with @code{target("sse3")} can inline a function
+with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
+
+Besides the basic rule, when a function specifies
+@code{target("arch=@var{ARCH}")} or @code{target("tune=@var{TUNE}")}
+attribute, the inlining rule will be different. It allows inlining of
+a function with default @option{-march=x86-64} and
+@option{-mtune=generic} specified, or a function that has a subset
+of ISA features and marked with always_inline.
 
 @node Xstormy16 Function Attributes
 @subsection Xstormy16 Function Attributes
