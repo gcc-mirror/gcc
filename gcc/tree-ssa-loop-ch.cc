@@ -422,6 +422,7 @@ ch_base::copy_headers (function *fun)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Loop %d never loops.\n", loop->num);
+	  scale_loop_profile (loop, profile_probability::always (), 0);
 	  loops_to_unloop.safe_push (loop);
 	  loops_to_unloop_nunroll.safe_push (0);
 	  continue;
@@ -666,6 +667,7 @@ ch_base::copy_headers (function *fun)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Loop %d no longer loops.\n", loop->num);
+	  scale_loop_profile (loop, profile_probability::always (), 0);
 	  loops_to_unloop.safe_push (loop);
 	  loops_to_unloop_nunroll.safe_push (0);
 	}

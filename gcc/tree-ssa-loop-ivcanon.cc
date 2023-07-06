@@ -906,6 +906,10 @@ try_unroll_loop_completely (class loop *loop,
       if (may_be_zero)
 	bitmap_clear_bit (wont_exit, 1);
 
+      /* If loop was originally estimated to iterate too many times,
+	 reduce the profile to avoid new profile inconsistencies.  */
+      scale_loop_profile (loop, profile_probability::always (), n_unroll);
+
       if (!gimple_duplicate_loop_body_to_header_edge (
 	    loop, loop_preheader_edge (loop), n_unroll, wont_exit, exit,
 	    &edges_to_remove,
@@ -919,6 +923,8 @@ try_unroll_loop_completely (class loop *loop,
 
       free_original_copy_tables ();
     }
+  else
+    scale_loop_profile (loop, profile_probability::always (), 0);
 
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
