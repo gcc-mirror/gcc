@@ -1173,7 +1173,7 @@ try_peel_loop (class loop *loop,
       }
   profile_probability p;
   p = entry_count.probability_in (loop->header->count);
-  scale_loop_profile (loop, p, 0);
+  scale_loop_profile (loop, p, -1);
   bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }

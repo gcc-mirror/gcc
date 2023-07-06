@@ -499,7 +499,7 @@ scale_loop_frequencies (class loop *loop, profile_probability p)
 }
 
 /* Scale profile in LOOP by P.
-   If ITERATION_BOUND is non-zero, scale even further if loop is predicted
+   If ITERATION_BOUND is not -1, scale even further if loop is predicted
    to iterate too many times.
    Before caling this function, preheader block profile should be already
    scaled to final count.  This is necessary because loop iterations are
@@ -510,106 +510,123 @@ void
 scale_loop_profile (class loop *loop, profile_probability p,
 		    gcov_type iteration_bound)
 {
-  edge e, preheader_e;
-  edge_iterator ei;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (!(p == profile_probability::always ()))
     {
-      fprintf (dump_file, ";; Scaling loop %i with scale ",
-	       loop->num);
-      p.dump (dump_file);
-      fprintf (dump_file, " bounding iterations to %i\n",
-	       (int)iteration_bound);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, ";; Scaling loop %i with scale ",
+		   loop->num);
+	  p.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      /* Scale the probabilities.  */
+      scale_loop_frequencies (loop, p);
     }
 
-  /* Scale the probabilities.  */
-  scale_loop_frequencies (loop, p);
-
-  if (iteration_bound == 0)
+  if (iteration_bound == -1)
     return;
 
   gcov_type iterations = expected_loop_iterations_unbounded (loop, NULL, true);
+  if (iterations == -1)
+    return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, ";; guessed iterations after scaling %i\n",
-	       (int)iterations);
+      fprintf (dump_file,
+	       ";; guessed iterations of loop %i:%i new upper bound %i:\n",
+	       loop->num,
+	       (int)iterations,
+	       (int)iteration_bound);
     }
 
   /* See if loop is predicted to iterate too many times.  */
   if (iterations <= iteration_bound)
     return;
 
-  preheader_e = loop_preheader_edge (loop);
+  /* Compute number of invocations of the loop.  */
+  profile_count count_in = profile_count::zero ();
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, loop->header->preds)
+    count_in += e->count ();
 
-  /* We could handle also loops without preheaders, but bounding is
-     currently used only by optimizers that have preheaders constructed.  */
-  gcc_checking_assert (preheader_e);
-  profile_count count_in = preheader_e->count ();
-
-  if (count_in > profile_count::zero ()
-      && loop->header->count.initialized_p ())
+  /* Now scale the loop body so header count is
+     count_in * (iteration_bound + 1)  */
+  profile_probability scale_prob
+    = (count_in *= iteration_bound).probability_in (loop->header->count);
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      profile_count count_delta = profile_count::zero ();
+      fprintf (dump_file, ";; Scaling loop %i with scale ",
+	       loop->num);
+      p.dump (dump_file);
+      fprintf (dump_file, " to reach upper bound %i\n",
+	       (int)iteration_bound);
+    }
+  /* Finally attempt to fix exit edge probability.  */
+  auto_vec<edge> exits = get_loop_exit_edges  (loop);
+  edge exit_edge = single_likely_exit (loop, exits);
 
-      e = single_exit (loop);
-      if (e)
-	{
-	  edge other_e;
-	  FOR_EACH_EDGE (other_e, ei, e->src->succs)
-	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
-		&& e != other_e)
-	      break;
+  /* In a consistent profile unadjusted_exit_count should be same as count_in,
+     however to preserve as much of the original info, avoid recomputing
+     it.  */
+  profile_count unadjusted_exit_count;
+  if (exit_edge)
+    unadjusted_exit_count = exit_edge->count ();
+  scale_loop_frequencies (loop, scale_prob);
 
-	  /* Probability of exit must be 1/iterations.  */
-	  count_delta = e->count ();
-	  e->probability = profile_probability::always () / iteration_bound;
-	  other_e->probability = e->probability.invert ();
-
-	  /* In code below we only handle the following two updates.  */
-	  if (other_e->dest != loop->header
-	      && other_e->dest != loop->latch
-	      && (dump_file && (dump_flags & TDF_DETAILS)))
-	    {
-	      fprintf (dump_file, ";; giving up on update of paths from "
-		       "exit condition to latch\n");
-	    }
-	}
+  if (exit_edge)
+    {
+      profile_count old_exit_count = exit_edge->count ();
+      profile_probability new_probability;
+      if (iteration_bound > 0)
+	new_probability
+	  = unadjusted_exit_count.probability_in (exit_edge->src->count);
       else
-        if (dump_file && (dump_flags & TDF_DETAILS))
-	  fprintf (dump_file, ";; Loop has multiple exit edges; "
-	      		      "giving up on exit condition update\n");
+	new_probability = profile_probability::always ();
+      set_edge_probability_and_rescale_others (exit_edge, new_probability);
+      profile_count new_exit_count = exit_edge->count ();
 
-      /* Roughly speaking we want to reduce the loop body profile by the
-	 difference of loop iterations.  We however can do better if
-	 we look at the actual profile, if it is available.  */
-      p = profile_probability::always ();
+      /* Rescale the remaining edge probabilities and see if there is only
+	 one.  */
+      edge other_edge = NULL;
+      bool found = false;
+      FOR_EACH_EDGE (e, ei, exit_edge->src->succs)
+	if (!(e->flags & EDGE_FAKE)
+	    && !(e->probability == profile_probability::never ())
+	    && !loop_exit_edge_p (loop, e))
+	  {
+	    if (found)
+	      {
+		other_edge = NULL;
+		break;
+	      }
+	    other_edge = e;
+	    found = true;
+	  }
+      /* If there is only loop latch after other edge,
+	 update its profile.  */
+      if (other_edge && other_edge->dest == loop->latch)
+	loop->latch->count -= new_exit_count - old_exit_count;
+      else
+	{
+	  basic_block *body = get_loop_body (loop);
+	  profile_count new_count = exit_edge->src->count - new_exit_count;
+	  profile_count old_count = exit_edge->src->count - old_exit_count;
 
-      count_in *= iteration_bound;
-      p = count_in.probability_in (loop->header->count);
-      if (!(p > profile_probability::never ()))
-	p = profile_probability::very_unlikely ();
+	  for (unsigned int i = 0; i < loop->num_nodes; i++)
+	    if (body[i] != exit_edge->src
+		&& dominated_by_p (CDI_DOMINATORS, body[i], exit_edge->src))
+	      body[i]->count.apply_scale (new_count, old_count);
 
-      if (p == profile_probability::always ()
-	  || !p.initialized_p ())
-	return;
-
-      /* If latch exists, change its count, since we changed
-	 probability of exit.  Theoretically we should update everything from
-	 source of exit edge to latch, but for vectorizer this is enough.  */
-      if (loop->latch && loop->latch != e->src)
-	loop->latch->count += count_delta;
-
-      /* Scale the probabilities.  */
-      scale_loop_frequencies (loop, p);
-
-      /* Change latch's count back.  */
-      if (loop->latch && loop->latch != e->src)
-	loop->latch->count -= count_delta;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; guessed iterations are now %i\n",
-		 (int)expected_loop_iterations_unbounded (loop, NULL, true));
+	  free (body);
+	}
+    }
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file,
+	       ";; Loop has mulitple exits;"
+	       " will leave exit probabilities inconsistent\n");
     }
 }
 

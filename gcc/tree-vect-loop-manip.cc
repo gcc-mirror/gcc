@@ -3191,7 +3191,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       if (prob_vector.initialized_p ())
 	{
 	  scale_bbs_frequencies (&bb_before_loop, 1, prob_vector);
-	  scale_loop_profile (loop, prob_vector, 0);
+	  scale_loop_profile (loop, prob_vector, -1);
 	}
     }
 
@@ -3236,7 +3236,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
 
 	  scale_bbs_frequencies (&bb_after_prolog, 1, prob_prolog);
-	  scale_loop_profile (prolog, prob_prolog, bound_prolog);
+	  scale_loop_profile (prolog, prob_prolog, bound_prolog - 1);
 	}
 
       /* Update init address of DRs.  */
@@ -3378,7 +3378,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
 	      scale_bbs_frequencies (&bb_before_epilog, 1, prob_epilog);
 	    }
-	  scale_loop_profile (epilog, prob_epilog, 0);
+	  scale_loop_profile (epilog, prob_epilog, -1);
 	}
       else
 	slpeel_update_phi_nodes_for_lcssa (epilog);
