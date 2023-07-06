@@ -3021,12 +3021,16 @@ start_over:
      to be able to handle fewer than VF scalars, or needs to have a lower VF
      than the main loop.  */
   if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-      && !LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-      && maybe_ge (LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-		   LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo)))
-    return opt_result::failure_at (vect_location,
-				   "Vectorization factor too high for"
-				   " epilogue loop.\n");
+      && !LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+    {
+      poly_uint64 unscaled_vf
+	= exact_div (LOOP_VINFO_VECT_FACTOR (orig_loop_vinfo),
+		     orig_loop_vinfo->suggested_unroll_factor);
+      if (maybe_ge (LOOP_VINFO_VECT_FACTOR (loop_vinfo), unscaled_vf))
+	return opt_result::failure_at (vect_location,
+				       "Vectorization factor too high for"
+				       " epilogue loop.\n");
+    }
 
   /* Decide whether this loop_vinfo should use partial vectors or peeling,
      assuming that the loop will be used as a main loop.  We will redo
