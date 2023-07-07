@@ -1,3 +1,94 @@
+2023-07-06  Claire Dross  <dross@adacore.com>
+
+	* gcc-interface/Make-lang.in: Add object files of specification
+	files.
+
+2023-07-06  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-vs_int.ads: Instance of Value_I_Spec for Integer.
+	* libgnat/s-vs_lli.ads: Instance of Value_I_Spec for
+	Long_Long_Integer.
+	* libgnat/s-vsllli.ads: Instance of Value_I_Spec for
+	Long_Long_Long_Integer.
+	* libgnat/s-vs_uns.ads: Instance of Value_U_Spec for Unsigned.
+	* libgnat/s-vs_llu.ads: Instance of Value_U_Spec for
+	Long_Long_Unsigned.
+	* libgnat/s-vslllu.ads: Instance of Value_U_Spec for
+	Long_Long_Long_Unsigned.
+	* libgnat/s-imagei.ads: Take instances of Value_*_Spec as
+	parameters.
+	* libgnat/s-imagei.adb: Idem.
+	* libgnat/s-imageu.ads: Idem.
+	* libgnat/s-imageu.adb: Idem.
+	* libgnat/s-valuei.ads: Idem.
+	* libgnat/s-valuei.adb: Idem.
+	* libgnat/s-valueu.ads: Idem.
+	* libgnat/s-valueu.adb: Idem.
+	* libgnat/s-imgint.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-imglli.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-imgllli.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-imglllu.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-imgllu.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-imguns.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-valint.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-vallli.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-valllli.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-vallllu.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-valllu.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-valuns.ads: Adapt instance to new ghost parameters.
+	* libgnat/s-vaispe.ads: Take instance of Value_U_Spec as parameter
+	and remove unused declaration.
+	* libgnat/s-vaispe.adb: Idem.
+	* libgnat/s-vauspe.ads: Remove unused declaration.
+	* libgnat/s-valspe.ads: Factor out the specification part of
+	Val_Util.
+	* libgnat/s-valspe.adb: Idem.
+	* libgnat/s-valuti.ads: Move specification to Val_Spec.
+	* libgnat/s-valuti.adb: Idem.
+	* libgnat/s-valboo.ads: Use Val_Spec.
+	* libgnat/s-valboo.adb: Idem.
+	* libgnat/s-imgboo.adb: Idem.
+	* libgnat/s-imagef.adb: Adapt instances to new ghost parameters.
+	* Makefile.rtl: List new files.
+
+2023-07-06  Viljar Indus  <indus@adacore.com>
+
+	* sem_attr.adb (analyze_attribute.check_array_type): Replace valid
+	indexes with their staticly evaluated values.
+
+2023-07-06  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Reference "Binding
+	with Non-Ada Main Programs" from "Creating a Stand-alone Library
+	to be used in a non-Ada context".
+	* gnat_ugn.texi: Regenerate.
+
+2023-07-06  Viljar Indus  <indus@adacore.com>
+
+	* sem_util.adb (Is_Fully_Initialized_Type): Avoid recalculating
+	the underlying type twice.
+
+2023-07-06  Viljar Indus  <indus@adacore.com>
+
+	* exp_util.adb (Find_Optional_Prim_Op): Stop deriving primitive
+	operation if there is no underlying type to derive it from.
+
+2023-07-06  Yannick Moy  <moy@adacore.com>
+
+	* errout.ads: Add explain code.
+	* sem_prag.adb (Check_Library_Level_Entity): Refine error message
+	and add explain code.
+
+2023-07-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): Add assertion that if no
+	finalization call is generated, then the type of the object being
+	finalized does not require finalization.
+	* freeze.adb (Freeze_Entity): If freezing an already-frozen
+	subtype, do not assume that nothing needs to be done. In the case
+	of a frozen subtype of a non-frozen type or subtype (which is
+	possible), freeze the non-frozen entity.
+
 2023-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch5.adb (Expand_Assign_Array): Adjust comment above the

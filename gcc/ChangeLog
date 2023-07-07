@@ -1,3 +1,156 @@
+2023-07-06  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/25623
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Scale loop frequency to maximal number
+	of iterations determined.
+	* tree-ssa-loop-ivcanon.cc (try_unroll_loop_completely): Likewise.
+
+2023-07-06  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopmanip.cc (scale_loop_profile): Rewrite exit edge
+	probability update to be safe on loops with subloops.
+	Make bound parameter to be iteration bound.
+	* tree-ssa-loop-ivcanon.cc (try_peel_loop): Update call
+	of scale_loop_profile.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Likewise.
+
+2023-07-06  Hao Liu OS  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/110449
+	* tree-vect-loop.cc (vectorizable_induction): use vec_n to replace
+	vec_loop for the unrolled loop.
+
+2023-07-06  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.cc (set_edge_probability_and_rescale_others): New function.
+	(update_bb_profile_for_threading): Use it; simplify the rest.
+	* cfg.h (set_edge_probability_and_rescale_others): Declare.
+	* profile-count.h (profile_probability::apply_scale): New.
+
+2023-07-06  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* doc/extend.texi (ARC Built-in Functions): Update documentation
+	with missing builtins.
+
+2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110556
+	* tree-ssa-tail-merge.cc (gimple_equal_p): Check
+	assign code and all operands of non-stores.
+
+2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110563
+	* tree-vectorizer.h (vect_determine_partial_vectors_and_peeling):
+	Remove second argument.
+	* tree-vect-loop.cc (vect_determine_partial_vectors_and_peeling):
+	Remove for_epilogue_p argument.  Merge assert ...
+	(vect_analyze_loop_2): ... with check done before determining
+	partial vectors by moving it after.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Adjust.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* ggc-common.cc (gt_pch_note_reorder, gt_pch_save): Tighten up a
+	few things re 'reorder' option and strings.
+	* stringpool.cc (gt_pch_p_S): This is now 'gcc_unreachable'.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gengtype-parse.cc: Clean up obsolete parametrized structs
+	remnants.
+	* gengtype.cc: Likewise.
+	* gengtype.h: Likewise.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gengtype.cc (struct walk_type_data): Remove 'needs_cast_p'.
+	Adjust all users.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gengtype-parse.cc (token_names): Add '"user"'.
+	* gengtype.h (gty_token): Add 'UNUSED_PARAM_IS' for use with
+	'FIRST_TOKEN_WITH_VALUE'.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/gty.texi (GTY Options) <string_length>: Enhance.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gengtype.cc (write_root, write_roots): Explicitly reject
+	'string_length' option.
+	* doc/gty.texi (GTY Options) <string_length>: Document.
+
+2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* ggc-internal.h (ggc_pch_count_object, ggc_pch_alloc_object)
+	(ggc_pch_write_object): Remove 'bool is_string' argument.
+	* ggc-common.cc: Adjust.
+	* ggc-page.cc: Likewise.
+
+2023-07-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* dwarf2out.cc (mem_loc_descriptor): Handle COPYSIGN.
+
+2023-07-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* doc/extend.texi: Move x86 inlining rule to a new subsubsection
+	and add description for inling of function with arch and tune
+	attributes.
+
+2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110515
+	* tree-ssa-pre.cc (compute_avail): Make code dealing
+	with hoisting loads with different alias-sets more
+	robust.
+
+2023-07-06  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-stmts.cc (vect_get_strided_load_store_ops): Fix ICE.
+
+2023-07-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (ix86_can_inline_p): If callee has
+	default arch=x86-64 and tune=generic, do not block the
+	inlining to its caller. Also allow callee with different
+	arch= to be inlined if it has always_inline attribute and
+	it's ISA is subset of caller's.
+
+2023-07-06  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs): Adjust rtx_cost for
+	DF/SFmode AND/IOR/XOR/ANDN operations.
+
+2023-07-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110554
+	* tree-vect-generic.cc (expand_vector_condition): For comparisons,
+	just build using boolean_type_node instead of the cond_type.
+	For non-comparisons/non-scalar-bitmask, build a ` != 0` gimple
+	that will feed into the COND_EXPR.
+
+2023-07-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110170
+	* config/i386/i386.md (movdf_internal): Disparage slightly for
+	2 alternatives (r,v) and (v,r) by adding constraint modifier
+	'?'.
+
+2023-07-06  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/106907
+	* config/rs6000/rs6000.cc (rs6000_expand_vector_extract): Remove redundant
+	initialization of new_addr.
+
+2023-07-06  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR tree-optimization/110474
+	* tree-vect-loop.cc (vect_analyze_loop_2): unscale the VF by suggested
+	unroll factor while selecting the epilog vect loop VF.
+
 2023-07-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (compute_operand_range): Convert to a tail

@@ -1,3 +1,15 @@
+2023-07-06  Tianqiang Shuai  <1101282468@qq.com>
+
+	* config/io/basic_file_stdio.cc (xwrite) [USE_STDIO_PURE]: Fix
+	first argument.
+
+2023-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110574
+	* doc/xml/manual/configure.xml: Describe stdio_pure argument to
+	--enable-cstdio.
+	* doc/html/manual/configure.html: Regenerate.
+
 2023-07-05  Thomas Rodgers  <trodgers@redhat.com>
 
 	* testsuite/25_algorithms/pstl/alg_sorting/set.cc: Delete
