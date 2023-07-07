@@ -548,18 +548,23 @@ scale_loop_profile (class loop *loop, profile_probability p,
   profile_count count_in = profile_count::zero ();
   edge e;
   edge_iterator ei;
+  bool found_latch = false;
   FOR_EACH_EDGE (e, ei, loop->header->preds)
-    count_in += e->count ();
+    if (e->src != loop->latch)
+      count_in += e->count ();
+    else
+      found_latch = true;
+  gcc_checking_assert (found_latch);
 
   /* Now scale the loop body so header count is
      count_in * (iteration_bound + 1)  */
   profile_probability scale_prob
-    = (count_in *= iteration_bound).probability_in (loop->header->count);
+    = (count_in * (iteration_bound + 1)).probability_in (loop->header->count);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, ";; Scaling loop %i with scale ",
 	       loop->num);
-      p.dump (dump_file);
+      scale_prob.dump (dump_file);
       fprintf (dump_file, " to reach upper bound %i\n",
 	       (int)iteration_bound);
     }
@@ -593,7 +598,6 @@ scale_loop_profile (class loop *loop, profile_probability p,
       bool found = false;
       FOR_EACH_EDGE (e, ei, exit_edge->src->succs)
 	if (!(e->flags & EDGE_FAKE)
-	    && !(e->probability == profile_probability::never ())
 	    && !loop_exit_edge_p (loop, e))
 	  {
 	    if (found)
@@ -617,7 +621,8 @@ scale_loop_profile (class loop *loop, profile_probability p,
 	  for (unsigned int i = 0; i < loop->num_nodes; i++)
 	    if (body[i] != exit_edge->src
 		&& dominated_by_p (CDI_DOMINATORS, body[i], exit_edge->src))
-	      body[i]->count.apply_scale (new_count, old_count);
+	      body[i]->count = body[i]->count.apply_scale (new_count,
+							   old_count);
 
 	  free (body);
 	}

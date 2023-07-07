@@ -3389,6 +3389,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  gcc_assert (bound != 0);
 	  /* -1 to convert loop iterations to latch iterations.  */
 	  record_niter_bound (epilog, bound - 1, false, true);
+	  scale_loop_profile (epilog, profile_probability::always (),
+			      bound - 1);
 	}
 
       delete_update_ssa ();
