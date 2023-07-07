@@ -803,7 +803,7 @@ Objective-C and Objective-C++ Dialects}.
 -moverride=@var{string}  -mverbose-cost-dump
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
 -mstack-protector-guard-offset=@var{offset} -mtrack-speculation
--moutline-atomics }
+-moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
@@ -16818,6 +16818,20 @@ With @option{--param=aarch64-stp-policy=never}, do not emit stp.
 With @option{--param=aarch64-stp-policy=aligned}, emit stp only if the
 source pointer is aligned to at least double the alignment of the type.
 
+@item aarch64-ldp-alias-check-limit
+Limit on the number of alias checks performed by the AArch64 load/store pair
+fusion pass when attempting to form an ldp/stp.  Higher values make the pass
+more aggressive at re-ordering loads over stores, at the expense of increased
+compile time.
+
+@item aarch64-ldp-writeback
+Param to control which writeback opportunities we try to handle in the AArch64
+load/store pair fusion pass.  A value of zero disables writeback handling.  One
+means we try to form pairs involving one or more existing individual writeback
+accesses where possible.  A value of two means we also try to opportunistically
+form writeback opportunities by folding in trailing destructive updates of the
+base register used by a pair.
+
 @item aarch64-loop-vect-issue-rate-niters
 The tuning for some AArch64 CPUs tries to take both latencies and issue
 rates into account when deciding whether a loop should be vectorized
@@ -21250,6 +21264,16 @@ disables the pass.
 
 @option{-mearly-ra=all} is the default for @option{-O2} and above, and for
 @option{-Os}.  @option{-mearly-ra=none} is the default otherwise.
+
+@opindex mearly-ldp-fusion
+@item -mearly-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs before
+register allocation.  Enabled by default at @samp{-O} and above.
+
+@opindex mlate-ldp-fusion
+@item -mlate-ldp-fusion
+Enable the copy of the AArch64 load/store pair fusion pass that runs after
+register allocation.  Enabled by default at @samp{-O} and above.
 
 @opindex msve-vector-bits
 @item -msve-vector-bits=@var{bits}

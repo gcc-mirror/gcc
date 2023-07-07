@@ -289,6 +289,16 @@ mtrack-speculation
 Target Var(aarch64_track_speculation)
 Generate code to track when the CPU might be speculating incorrectly.
 
+mearly-ldp-fusion
+Target Var(flag_aarch64_early_ldp_fusion) Optimization Init(1)
+Enable the copy of the AArch64 load/store pair fusion pass that runs before
+register allocation.
+
+mlate-ldp-fusion
+Target Var(flag_aarch64_late_ldp_fusion) Optimization Init(1)
+Enable the copy of the AArch64 load/store pair fusion pass that runs after
+register allocation.
+
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(aarch64_stack_protector_guard) Init(SSP_GLOBAL)
 Use given stack-protector guard.
@@ -378,3 +388,16 @@ Enum(aarch64_ldp_stp_policy) String(never) Value(AARCH64_LDP_STP_POLICY_NEVER)
 
 EnumValue
 Enum(aarch64_ldp_stp_policy) String(aligned) Value(AARCH64_LDP_STP_POLICY_ALIGNED)
+
+-param=aarch64-ldp-alias-check-limit=
+Target Joined UInteger Var(aarch64_ldp_alias_check_limit) Init(8) IntegerRange(0, 65536) Param
+Limit on number of alias checks performed when attempting to form an ldp/stp.
+
+-param=aarch64-ldp-writeback=
+Target Joined UInteger Var(aarch64_ldp_writeback) Init(2) IntegerRange(0,2) Param
+Param to control which writeback opportunities we try to handle in the
+load/store pair fusion pass.  A value of zero disables writeback
+handling.  One means we try to form pairs involving one or more existing
+individual writeback accesses where possible.  A value of two means we
+also try to opportunistically form writeback opportunities by folding in
+trailing destructive updates of the base register used by a pair.
