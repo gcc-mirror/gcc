@@ -1443,10 +1443,11 @@ assign_by_spills (void)
 		 pass.  Indicate that it is no longer spilled.  */
 	      bitmap_clear_bit (&all_spilled_pseudos, regno);
 	      assign_hard_regno (hard_regno, regno);
-	      if (! reload_p)
-		/* As non-reload pseudo assignment is changed we
-		   should reconsider insns referring for the
-		   pseudo.  */
+	      if (! reload_p || regno_allocno_class_array[regno] == ALL_REGS)
+		/* As non-reload pseudo assignment is changed we should
+		   reconsider insns referring for the pseudo.  Do the same if a
+		   reload pseudo did not refine its class which can happens
+		   when the pseudo occurs only in reload insns.  */
 		bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
 	}
