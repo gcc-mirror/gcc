@@ -74,7 +74,7 @@ def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
             repo.git.add(full_path)
 
 
-active_refs = ['master', 'releases/gcc-10',
+active_refs = ['master',
                'releases/gcc-11', 'releases/gcc-12', 'releases/gcc-13']
 
 parser = argparse.ArgumentParser(description='Update DATESTAMP and generate '
