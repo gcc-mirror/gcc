@@ -12654,6 +12654,7 @@ ix86_check_builtin_isa_match (unsigned int fcode,
        OPTION_MASK_ISA2_AVXIFMA
      (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_AVX512BF16) or
        OPTION_MASK_ISA2_AVXNECONVERT
+     OPTION_MASK_ISA_AES or (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_VAES)
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -12677,7 +12678,8 @@ ix86_check_builtin_isa_match (unsigned int fcode,
 		 OPTION_MASK_ISA2_AVXIFMA);
   SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VL, OPTION_MASK_ISA2_AVX512BF16, 0,
 		 OPTION_MASK_ISA2_AVXNECONVERT);
-  SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, 0, OPTION_MASK_ISA2_VAES);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, OPTION_MASK_ISA_AVX512VL,
+		 OPTION_MASK_ISA2_VAES);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 
