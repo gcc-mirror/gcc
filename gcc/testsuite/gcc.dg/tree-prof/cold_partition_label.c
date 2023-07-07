@@ -1,7 +1,7 @@
 /* Test case to check if function foo gets split and the cold function
    gets a label.  */
 /* { dg-require-effective-target freorder } */
-/* { dg-options "-O2 -freorder-blocks-and-partition -save-temps -fdump-tree-optimized" } */
+/* { dg-options "-O2 -freorder-blocks-and-partition -save-temps -fdump-tree-optimized-details-blocks" } */
 
 #ifdef FOR_AUTOFDO_TESTING
 #define MAXITER 1000000

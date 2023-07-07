@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-ch2-blocks-details -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fdump-tree-ch2-blocks-details -fdump-tree-optimized-blocks-details" } */
 void foo ();
 void test(int v, int q)
 {
@@ -7,4 +7,6 @@ void test(int v, int q)
 		foo ();
 }
 /* { dg-final { scan-tree-dump-not "Invalid sum" "ch2"} } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized"} } */
+/* dom2 optimizes out the redundant test for loop invariant v/q
+   which leads to inconsistent profile.  */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized"  { xfail *-*-* }} } */

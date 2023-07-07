@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -funswitch-loops -fdump-tree-unswitch-blocks" } */
+/* { dg-options "-O1 -funswitch-loops -fdump-tree-unswitch-blocks-details" } */
 
 int bla(int p)
 {

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized-details-blocks -fdump-ipa-profile-optimized" } */
 unsigned int a[1000];
 unsigned int b = 999;
 unsigned int c = 1002;

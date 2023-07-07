@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized -fdump-ipa-afdo-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized-details-blocks -fdump-ipa-profile-optimized -fdump-ipa-afdo-optimized" } */
 
 static int a1 (void)
 {
