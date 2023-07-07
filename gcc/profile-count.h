@@ -1281,10 +1281,10 @@ public:
   sreal to_sreal_scale (profile_count in, bool *known = NULL) const;
 
   /* Output THIS to F.  */
-  void dump (FILE *f) const;
+  void dump (FILE *f, struct function *fun = NULL) const;
 
   /* Output THIS to BUFFER.  */
-  void dump (char *buffer) const;
+  void dump (char *buffer, struct function *fun = NULL) const;
 
   /* Print THIS to stderr.  */
   void debug () const;
