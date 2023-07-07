@@ -5129,6 +5129,14 @@ foreach { armfunc armflag armdefs } {
 	    return "$flags FLAG"
 	}
 
+        proc check_effective_target_arm_arch_FUNC_link { } {
+	    return [check_no_compiler_messages arm_arch_FUNC_link executable {
+		#include <stdint.h>
+		int dummy;
+		int main (void) { return 0; }
+	    } [add_options_for_arm_arch_FUNC ""]]
+	}
+
 	proc check_effective_target_arm_arch_FUNC_multilib { } {
 	    return [check_runtime arm_arch_FUNC_multilib {
 		int
@@ -5906,6 +5914,7 @@ proc add_options_for_arm_v8_2a_bf16_neon { flags } {
 #   arm_v8m_main_cde: Armv8-m CDE (Custom Datapath Extension).
 #   arm_v8m_main_cde_fp: Armv8-m CDE with FP registers.
 #   arm_v8_1m_main_cde_mve: Armv8.1-m CDE with MVE.
+#   arm_v8_1m_main_cde_mve_fp: Armv8.1-m CDE with MVE with FP support.
 # Usage:
 #   /* { dg-require-effective-target arm_v8m_main_cde_ok } */
 #   /* { dg-add-options arm_v8m_main_cde } */
@@ -5963,6 +5972,24 @@ foreach { armfunc armflag armdef arminc } {
 	    }
 	    global et_FUNC_flags
 	    return "$flags $et_FUNC_flags"
+	}
+
+        proc check_effective_target_FUNC_link { } {
+	    if { ! [check_effective_target_FUNC_ok] } {
+		return 0;
+	    }
+	    return [check_no_compiler_messages FUNC_link executable {
+		#if !(DEF)
+		#error "DEF failed"
+		#endif
+		#include <arm_cde.h>
+		INC
+		int
+		main (void)
+		{
+		    return 0;
+		}
+	    } [add_options_for_FUNC ""]]
 	}
 
 	proc check_effective_target_FUNC_multilib { } {
