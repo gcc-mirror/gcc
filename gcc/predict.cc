@@ -4421,21 +4421,16 @@ force_edge_cold (edge e, bool impossible)
      there.  */
   else if (prob_sum > profile_probability::never ())
     {
-      if (!(e->probability < goal))
-	e->probability = goal;
-
-      profile_probability prob_comp = prob_sum / e->probability.invert ();
-
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Making edge %i->%i %s by redistributing "
-		 "probability to other edges.\n",
-		 e->src->index, e->dest->index,
-		 impossible ? "impossible" : "cold");
-      FOR_EACH_EDGE (e2, ei, e->src->succs)
-	if (e2 != e)
-	  {
-	    e2->probability /= prob_comp;
-	  }
+	{
+	  fprintf (dump_file, "Making edge %i->%i %s by redistributing "
+		   "probability to other edges. Original probability: ",
+		   e->src->index, e->dest->index,
+		   impossible ? "impossible" : "cold");
+	  e->probability.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      set_edge_probability_and_rescale_others (e, goal);
       if (current_ir_type () != IR_GIMPLE
 	  && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	update_br_prob_note (e->src);
