@@ -429,6 +429,16 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 
     default:
       break;
+
+    case SUBREG:
+      /* Transform TImode paradoxical SUBREG into zero_extendditi2.  */
+      if (TARGET_64BIT
+	  && mode == TImode
+	  && SUBREG_P (op1)
+	  && GET_MODE (SUBREG_REG (op1)) == DImode
+	  && SUBREG_BYTE (op1) == 0)
+	op1 = gen_rtx_ZERO_EXTEND (TImode, SUBREG_REG (op1));
+      break;
     }
 
   if ((flag_pic || MACHOPIC_INDIRECT)
@@ -530,6 +540,24 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		op1 = tmp;
 	    }
 	}
+    }
+
+  /* Use *insvti_highpart_1 to set highpart of TImode register.  */
+  if (TARGET_64BIT
+      && mode == DImode
+      && SUBREG_P (op0)
+      && SUBREG_BYTE (op0) == 8
+      && GET_MODE (SUBREG_REG (op0)) == TImode
+      && REG_P (SUBREG_REG (op0))
+      && REG_P (op1))
+    {
+      wide_int mask = wi::mask (64, false, 128);
+      rtx tmp = immed_wide_int_const (mask, TImode);
+      op0 = SUBREG_REG (op0);
+      tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
+      op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
+      op1 = gen_rtx_ASHIFT (TImode, op1, GEN_INT (64));
+      op1 = gen_rtx_IOR (TImode, tmp, op1);
     }
 
   emit_insn (gen_rtx_SET (op0, op1));
