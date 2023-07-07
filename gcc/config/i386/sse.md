@@ -12029,9 +12029,9 @@
   "operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);")
 
 (define_insn "@vec_extract_hi_<mode>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xm,vm,vm")
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xm,vm")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V16_256 1 "register_operand" "x,v,v")
+	  (match_operand:V16_256 1 "register_operand" "x,v")
 	  (parallel [(const_int 8) (const_int 9)
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)
@@ -12039,13 +12039,12 @@
   "TARGET_AVX"
   "@
    vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "isa" "*,avx512dq,avx512f")
-   (set_attr "prefix" "vex,evex,evex")
+   (set_attr "isa" "*,avx512vl")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 (define_insn_and_split "vec_extract_lo_v64qi"
@@ -12144,9 +12143,9 @@
   "operands[1] = gen_lowpart (V16QImode, operands[1]);")
 
 (define_insn "vec_extract_hi_v32qi"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=xm,vm,vm")
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=xm,vm")
 	(vec_select:V16QI
-	  (match_operand:V32QI 1 "register_operand" "x,v,v")
+	  (match_operand:V32QI 1 "register_operand" "x,v")
 	  (parallel [(const_int 16) (const_int 17)
 		     (const_int 18) (const_int 19)
 		     (const_int 20) (const_int 21)
@@ -12158,13 +12157,12 @@
   "TARGET_AVX"
   "@
    vextract%~128\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}
-   vextracti32x4\t{$0x1, %g1, %0|%0, %g1, 0x1}"
+   vextracti32x4\t{$0x1, %1, %0|%0, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "isa" "*,avx512dq,avx512f")
-   (set_attr "prefix" "vex,evex,evex")
+   (set_attr "isa" "*,avx512vl")
+   (set_attr "prefix" "vex,evex")
    (set_attr "mode" "OI")])
 
 ;; NB: *vec_extract<mode>_0 must be placed before *vec_extracthf.
