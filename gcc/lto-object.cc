@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "diagnostic-core.h"
 #include "tm.h"
+#include "cgraph.h"
 #include "lto-streamer.h"
 #include "lto-section-names.h"
 #include "simple-object.h"
