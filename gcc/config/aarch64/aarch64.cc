@@ -12366,6 +12366,11 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
       switch (GET_CODE (x))
 	{
+	case CONST_STRING:
+	  {
+	    asm_fprintf (f, "%s", XSTR (x, 0));
+	    break;
+	  }
 	case REG:
 	  if (aarch64_sve_data_mode_p (GET_MODE (x)))
 	    {
