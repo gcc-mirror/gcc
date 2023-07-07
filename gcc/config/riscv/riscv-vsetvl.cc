@@ -1078,6 +1078,10 @@ local_eliminate_vsetvl_insn (const vector_insn_info &dem)
 
 	  if (has_vtype_op (i->rtl ()))
 	    {
+	      if (!PREV_INSN (i->rtl ()))
+		return;
+	      if (!NONJUMP_INSN_P (PREV_INSN (i->rtl ())))
+		return;
 	      if (!vsetvl_discard_result_insn_p (PREV_INSN (i->rtl ())))
 		return;
 	      rtx avl = get_avl (i->rtl ());
