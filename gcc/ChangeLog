@@ -1,3 +1,7 @@
+2023-07-07  Release Manager
+
+	* GCC 10.5.0 released.
+
 2023-06-28  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/i386-features.c (pass_insert_vzeroupper:gate):
