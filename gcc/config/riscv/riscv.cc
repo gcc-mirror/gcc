@@ -382,6 +382,21 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   false		/* use_divmod_expansion */
 };
 
+/* Costs to use when optimizing for a generic ooo profile.  */
+static const struct riscv_tune_param generic_ooo_tune_info = {
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* fp_add */
+  {COSTS_N_INSNS (5), COSTS_N_INSNS (6)},	/* fp_mul */
+  {COSTS_N_INSNS (7), COSTS_N_INSNS (8)},	/* fp_div */
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},	/* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)},	/* int_div */
+  1,						/* issue_rate */
+  3,						/* branch_cost */
+  4,						/* memory_cost */
+  4,						/* fmv_cost */
+  false,					/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
+};
+
 /* Costs to use when optimizing for size.  */
 static const struct riscv_tune_param optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_add */
@@ -7805,6 +7820,75 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
   return more - 1;
 }
 
+/* Adjust the cost/latency of instructions for scheduling.
+   For now this is just used to change the latency of vector instructions
+   according to their LMUL.  We assume that an insn with LMUL == 8 requires
+   eight times more execution cycles than the same insn with LMUL == 1.
+   As this may cause very high latencies which lead to scheduling artifacts
+   we currently only perform the adjustment when -madjust-lmul-cost is given.
+   */
+static int
+riscv_sched_adjust_cost (rtx_insn *, int, rtx_insn *insn, int cost,
+			 unsigned int)
+{
+  /* Only do adjustments for the generic out-of-order scheduling model.  */
+  if (!TARGET_VECTOR || riscv_microarchitecture != generic_ooo)
+    return cost;
+
+  if (recog_memoized (insn) < 0)
+    return cost;
+
+  enum attr_type type = get_attr_type (insn);
+
+  if (type == TYPE_VFREDO || type == TYPE_VFWREDO)
+    {
+      /* TODO: For ordered reductions scale the base cost relative to the
+	 number of units.  */
+      ;
+    }
+
+  /* Don't do any LMUL-based latency adjustment unless explicitly asked to.  */
+  if (!TARGET_ADJUST_LMUL_COST)
+    return cost;
+
+  /* vsetvl has a vlmul attribute but its latency does not depend on it.  */
+  if (type == TYPE_VSETVL || type == TYPE_VSETVL_PRE)
+    return cost;
+
+  enum riscv_vector::vlmul_type lmul =
+    (riscv_vector::vlmul_type)get_attr_vlmul (insn);
+
+  double factor = 1;
+  switch (lmul)
+    {
+    case riscv_vector::LMUL_2:
+      factor = 2;
+      break;
+    case riscv_vector::LMUL_4:
+      factor = 4;
+      break;
+    case riscv_vector::LMUL_8:
+      factor = 8;
+      break;
+    case riscv_vector::LMUL_F2:
+      factor = 0.5;
+      break;
+    case riscv_vector::LMUL_F4:
+      factor = 0.25;
+      break;
+    case riscv_vector::LMUL_F8:
+      factor = 0.125;
+      break;
+    default:
+      factor = 1;
+    }
+
+  /* If the latency was nonzero, keep it that way.  */
+  int new_cost = MAX (cost > 0 ? 1 : 0, cost * factor);
+
+  return new_cost;
+}
+
 /* Auxiliary function to emit RISC-V ELF attribute. */
 static void
 riscv_emit_attribute ()
@@ -9619,6 +9703,9 @@ riscv_preferred_else_value (unsigned ifn, tree vectype, unsigned int nops,
 
 #undef  TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE riscv_sched_variable_issue
+
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST riscv_sched_adjust_cost
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL riscv_function_ok_for_sibcall

@@ -939,7 +939,8 @@
 	(unspec:P [(match_operand:P 1 "const_int_operand" "i")] UNSPEC_VLMAX))]
   "TARGET_VECTOR"
   ""
-  [(set_attr "type" "vector")])
+  [(set_attr "type" "vsetvl_pre")]
+  )
 
 ;; Set VXRM
 (define_insn "vxrmsi"
