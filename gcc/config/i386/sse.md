@@ -20115,7 +20115,7 @@
   "TARGET_AVX"
   "@
    vextract%~128\t{%2, %1, %0|%0, %1, %2}
-   vextracti32x4\t{%2, %g1, %0|%0, %g1, %2}"
+   vextracti32x4\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
