@@ -13510,7 +13510,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	}
     }
 
-  if (sym->value == NULL && sym->attr.referenced)
+  if (sym->value == NULL && sym->attr.referenced
+      && !(sym->as && sym->as->type == AS_ASSUMED_RANK))
     apply_default_init_local (sym); /* Try to apply a default initialization.  */
 
   /* Determine if the symbol may not have an initializer.  */
