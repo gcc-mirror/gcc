@@ -1,3 +1,8 @@
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py: Remove GCC 10 from
+	active_refs.
+
 2023-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* unicode/gen-box-drawing-chars.py: New file.

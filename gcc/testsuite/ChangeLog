@@ -1,3 +1,80 @@
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr43864-2.c: Avoid matching pre dump with details-blocks.
+	* gcc.dg/pr43864-3.c: Likewise.
+	* gcc.dg/pr43864-4.c: Likewise.
+	* gcc.dg/pr43864.c: Likewise.
+	* gcc.dg/unroll-7.c: xfail.
+
+2023-07-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* lib/target-supports.exp: Collect both kernel and user events for autofdo
+
+2023-07-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/43644
+	PR target/110533
+	* gcc.target/i386/pr110533.c: New test case.
+	* gcc.target/i386/pr43644-2.c: Likewise.
+
+2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108842
+	* gdc.dg/pr98277.d: Add more tests.
+	* gdc.dg/pr108842.d: New test.
+
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-prof/indir-call-prof.C: Add block-details to dump flags.
+	* gcc.dg/pr43864-2.c: Likewise.
+	* gcc.dg/pr43864-3.c: Likewise.
+	* gcc.dg/pr43864-4.c: Likewise.
+	* gcc.dg/pr43864.c: Likewise.
+	* gcc.dg/tree-prof/cold_partition_label.c: Likewise.
+	* gcc.dg/tree-prof/indir-call-prof.c: Likewise.
+	* gcc.dg/tree-prof/update-cunroll-2.c: Likewise.
+	* gcc.dg/tree-prof/update-tailcall.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-ssa/fnsplit-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-ch-profile-2.c: Likewise.
+	* gcc.dg/tree-ssa/update-threading.c: Likewise.
+	* gcc.dg/tree-ssa/update-unswitch-1.c: Likewise.
+	* gcc.dg/unroll-7.c: Likewise.
+	* gcc.dg/unroll-8.c: Likewise.
+	* gfortran.dg/pr25623-2.f90: Likewise.
+	* gfortran.dg/pr25623.f90: Likewise.
+	* gcc.dg/tree-ssa/loop-ch-profile-1.c: Likewise; xfail.
+	* gcc.dg/tree-ssa/update-cunroll.c: Likewise; xfail.
+	* gcc.dg/tree-ssa/update-unroll-1.c: Likewise; xfail.
+
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/vect-profile-upate.c: New test.
+
+2023-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-init-3.c: New test.
+
+2023-07-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr110372.c: New.
+
+2023-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr107009.c: Adjust irange dumping for
+	value/mask changes.
+	* gcc.dg/tree-ssa/vrp-unreachable.c: Same.
+	* gcc.dg/tree-ssa/vrp122.c: Same.
+
+2023-07-07  Pan Li  <pan2.li@intel.com>
+	    Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-6.c: New test.
+
 2023-07-06  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/25623

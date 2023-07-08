@@ -1,3 +1,140 @@
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.cc (profile_count::dump): Add FUN
+	parameter; print relative frequency.
+	(profile_count::debug): Update.
+	* profile-count.h (profile_count::dump): Update
+	prototype.
+
+2023-07-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/43644
+	PR target/110533
+	* config/i386/i386-expand.cc (ix86_expand_move): Convert SETs of
+	TImode destinations from paradoxical SUBREGs (setting the lowpart)
+	into explicit zero extensions.  Use *insvti_highpart_1 instruction
+	to set the highpart of a TImode destination.
+
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* predict.cc (force_edge_cold): Use
+	set_edge_probability_and_rescale_others; improve dumps.
+
+2023-07-07  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopmanip.cc (scale_loop_profile): Fix computation of count_in and scaling blocks
+	after exit.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Scale loop profile of the epilogue if bound
+	is known.
+
+2023-07-07  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (vec_init): Fix default case
+
+2023-07-07  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-assigns.cc (assign_by_spills): Add reload insns involving
+	reload pseudos with non-refined class to be processed on the next
+	sub-pass.
+	* lra-constraints.cc (enough_allocatable_hard_regs_p): New func.
+	(in_class_p): Use it.
+	(print_curr_insn_alt): New func.
+	(process_alt_operands): Use it.  Improve debug info.
+	(curr_insn_transform): Use print_curr_insn_alt.  Refine reload
+	pseudo class if it is not refined yet.
+
+2023-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::get_bitmask_from_range): Return all the
+	known bits for a singleton.
+	(irange::set_range_from_bitmask): Set a range of a singleton when
+	all bits are known.
+
+2023-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::intersect): Leave normalization to
+	caller.
+
+2023-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer-in.cc (streamer_read_value_range): Adjust for
+	value/mask.
+	* data-streamer-out.cc (streamer_write_vrange): Same.
+	* range-op.cc (operator_cast::fold_range): Same.
+	* value-range-pretty-print.cc
+	(vrange_printer::print_irange_bitmasks): Same.
+	* value-range-storage.cc (irange_storage::write_lengths_address):
+	Same.
+	(irange_storage::set_irange): Same.
+	(irange_storage::get_irange): Same.
+	(irange_storage::size): Same.
+	(irange_storage::dump): Same.
+	* value-range-storage.h: Same.
+	* value-range.cc (debug): New.
+	(irange_bitmask::dump): New.
+	(add_vrange): Adjust for value/mask.
+	(irange::operator=): Same.
+	(irange::set): Same.
+	(irange::verify_range): Same.
+	(irange::operator==): Same.
+	(irange::contains_p): Same.
+	(irange::irange_single_pair_union): Same.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::invert): Same.
+	(irange::get_nonzero_bits_from_range): Rename to...
+	(irange::get_bitmask_from_range): ...this.
+	(irange::set_range_from_nonzero_bits): Rename to...
+	(irange::set_range_from_bitmask): ...this.
+	(irange::set_nonzero_bits): Rename to...
+	(irange::update_bitmask): ...this.
+	(irange::get_nonzero_bits): Rename to...
+	(irange::get_bitmask): ...this.
+	(irange::intersect_nonzero_bits): Rename to...
+	(irange::intersect_bitmask): ...this.
+	(irange::union_nonzero_bits): Rename to...
+	(irange::union_bitmask): ...this.
+	(irange_bitmask::verify_mask): New.
+	* value-range.h (class irange_bitmask): New.
+	(irange_bitmask::set_unknown): New.
+	(irange_bitmask::unknown_p): New.
+	(irange_bitmask::irange_bitmask): New.
+	(irange_bitmask::get_precision): New.
+	(irange_bitmask::get_nonzero_bits): New.
+	(irange_bitmask::set_nonzero_bits): New.
+	(irange_bitmask::operator==): New.
+	(irange_bitmask::union_): New.
+	(irange_bitmask::intersect): New.
+	(class irange): Friend vrange_printer.
+	(irange::varying_compatible_p): Adjust for bitmask.
+	(irange::set_varying): Same.
+	(irange::set_nonzero): Same.
+
+2023-07-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (*vec_extractv2ti): Drop g modifiers.
+
+2023-07-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (@vec_extract_hi_<mode>): Drop last
+	alternative. Switch new last alternative's "isa" attribute to
+	"avx512vl".
+	(vec_extract_hi_v32qi): Likewise.
+
+2023-07-07  Pan Li  <pan2.li@intel.com>
+	    Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_emit_mode_set): Avoid emit insn
+	when FRM_MODE_DYN.
+	(riscv_mode_entry): Take FRM_MODE_DYN as entry mode.
+	(riscv_mode_exit): Likewise for exit mode.
+	(riscv_mode_needed): Likewise for needed mode.
+	(riscv_mode_after): Likewise for after mode.
+
+2023-07-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Fix typo.
+
 2023-07-06  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/25623

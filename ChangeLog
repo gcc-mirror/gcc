@@ -1,3 +1,8 @@
+2023-07-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Collect both kernel and user events for autofdo
+	* Makefile.tpl: Collect both kernel and user events for autofdo
+
 2023-06-30  Rishi Raj  <rishiraj45035@gmail.com>
 
 	* MAINTAINERS: Added myself to Write After Approval and DCO
