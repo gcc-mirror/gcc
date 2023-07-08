@@ -1,3 +1,36 @@
+2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108842
+	* gdc.dg/pr98277.d: Add more tests.
+	* gdc.dg/pr108842.d: New test.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110556
+	* gcc.dg/torture/pr110556.c: New testcase.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110515
+	* g++.dg/opt/pr110515.C: New testcase.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: New testcase.
+
 2023-07-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:

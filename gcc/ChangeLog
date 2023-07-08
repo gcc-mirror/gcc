@@ -1,3 +1,45 @@
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110556
+	* tree-ssa-tail-merge.cc (gimple_equal_p): Check
+	assign code and all operands of non-stores.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110515
+	* tree-ssa-pre.cc (compute_avail): Make code dealing
+	with hoisting loads with different alias-sets more
+	robust.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110392
+	* gimple-predicate-analysis.cc (uninit_analysis::is_use_guarded):
+	Do early exits on true/false predicate only after normalization.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* tree-vect-slp.cc (vect_optimize_slp_pass::start_choosing_layouts):
+	Materialize permutes before fold-left reductions.
+
+2023-07-07  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/110560
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn): Fix bug.
+
 2023-07-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backported from master:

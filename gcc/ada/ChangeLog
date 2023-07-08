@@ -1,3 +1,23 @@
+2023-07-07  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Ensure that container
+	aggregate expressions do not get expanded as records but instead
+	as container aggregates.
+
+2023-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Tweak comment.
+	(Expand_Array_Aggregate): Do not delay the expansion if the parent
+	node is a container aggregate.
+
+2023-07-07  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Assignments): Do not mark node for
+	delayed expansion if parent type has the Aggregate aspect.
+	* sem_util.adb (Is_Container_Aggregate): Move...
+	* sem_util.ads (Is_Container_Aggregate): ... here and make it
+	public.
+
 2023-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sinfo.ads (Iterator_Filter): Document field.
