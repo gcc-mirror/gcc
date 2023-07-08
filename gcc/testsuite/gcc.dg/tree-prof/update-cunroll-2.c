@@ -18,4 +18,4 @@ main ()
     t ();
   return 0;
 }
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized" {xfail *-*-*} } } */
+/* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized" } } */

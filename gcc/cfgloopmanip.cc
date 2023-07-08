@@ -580,13 +580,47 @@ scale_loop_profile (class loop *loop, profile_probability p,
     unadjusted_exit_count = exit_edge->count ();
   scale_loop_frequencies (loop, scale_prob);
 
-  if (exit_edge)
+  if (exit_edge && exit_edge->src->loop_father != loop)
+    {
+      fprintf (dump_file,
+	       ";; Loop exit is in inner loop;"
+	       " will leave exit probabilities inconsistent\n");
+    }
+  else if (exit_edge)
     {
       profile_count old_exit_count = exit_edge->count ();
       profile_probability new_probability;
       if (iteration_bound > 0)
-	new_probability
-	  = unadjusted_exit_count.probability_in (exit_edge->src->count);
+	{
+	  /* It may happen that the source basic block of the exit edge is
+	     inside in-loop condition:
+
+		+-> header
+		|    |
+		|   B1
+		|  /  \
+		| |   B2--exit_edge-->
+		|  \  /
+		|   B3
+		+__/
+
+	      If B2 count is smaller than desired exit edge count
+	      the profile was inconsistent with the newly discovered upper bound.
+	      Probablity of edge B1->B2 is too low.  We do not attempt to fix
+	      that (as it is hard in general) but we want to avoid dropping
+	      count of edge B2->B3 to zero may confuse later optimizations.  */
+	  if (unadjusted_exit_count.apply_scale (7, 8) > exit_edge->src->count)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 ";; Source basic block of loop exit count is too small;"
+			 " will leave exit probabilities inconsistent\n");
+	      exit_edge->probability = exit_edge->probability.guessed ();
+	      return;
+	    }
+	  new_probability
+	    = unadjusted_exit_count.probability_in (exit_edge->src->count);
+	}
       else
 	new_probability = profile_probability::always ();
       set_edge_probability_and_rescale_others (exit_edge, new_probability);
@@ -1146,8 +1180,7 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
       profile_count count_le = latch_edge->count ();
       profile_count count_out_orig = orig ? orig->count () : count_in - count_le;
       profile_probability prob_pass_thru = count_le.probability_in (count_in);
-      profile_probability prob_pass_wont_exit =
-	      (count_le + count_out_orig).probability_in (count_in);
+      profile_count new_count_le = count_le + count_out_orig;
 
       if (orig && orig->probability.initialized_p ()
 	  && !(orig->probability == profile_probability::always ()))
@@ -1167,7 +1200,21 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 		  && dominated_by_p (CDI_DOMINATORS, bbs[i], orig->src))
 		bitmap_set_bit (bbs_to_scale, i);
 	    }
+	  /* Since we will scale up all basic blocks dominated by orig, exits
+	     will become more likely; compensate for that.  */
+	  if (after_exit_den.nonzero_p ())
+	    {
+	      auto_vec<edge> exits = get_loop_exit_edges (loop);
+	      for (edge ex : exits)
+		if (ex != orig
+		    && dominated_by_p (CDI_DOMINATORS, ex->src, orig->src))
+		  new_count_le -= ex->count ().apply_scale (after_exit_num
+							    - after_exit_den,
+							    after_exit_den);
+	    }
 	}
+      profile_probability prob_pass_wont_exit =
+	      new_count_le.probability_in (count_in);
 
       scale_step = XNEWVEC (profile_probability, ndupl);
 

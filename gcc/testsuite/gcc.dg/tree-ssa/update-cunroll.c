@@ -11,4 +11,4 @@ int t()
 }
 /* Currently duplicate_loop_body_to_header_edge gets wrong computation of prob_pass_wont_exit
    which assumes that the exit condition is last in the loop.  */
-/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized" { xfail *-*-*}} } */
+/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized" } } */
