@@ -582,9 +582,10 @@ scale_loop_profile (class loop *loop, profile_probability p,
 
   if (exit_edge && exit_edge->src->loop_father != loop)
     {
-      fprintf (dump_file,
-	       ";; Loop exit is in inner loop;"
-	       " will leave exit probabilities inconsistent\n");
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 ";; Loop exit is in inner loop;"
+		 " will leave exit probabilities inconsistent\n");
     }
   else if (exit_edge)
     {
