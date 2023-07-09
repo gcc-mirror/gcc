@@ -1,3 +1,78 @@
+2023-07-08  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/110600
+	* cfgloopmanip.cc (scale_loop_profile): Add mising profile_dump check.
+
+2023-07-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110590
+	* cfgloopmanip.cc (scale_loop_profile): Avoid scaling exits within
+	inner loops and be more careful about inconsistent profiles.
+	(duplicate_loop_body_to_header_edge): Fix profile update when eliminated
+	exit is followed by other exit.
+
+2023-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* cprop.cc (reg_available_p): Change return type from int to bool.
+	(reg_not_set_p): Ditto.
+	(try_replace_reg): Ditto.  Change "success" variable to bool.
+	(cprop_jump): Change return type from int to void
+	and adjust function body accordingly.
+	(constprop_register): Ditto.
+	(cprop_insn): Ditto.  Change "changed" variable to bool.
+	(local_cprop_pass): Change return type from int to void
+	and adjust function body accordingly.
+	(bypass_block): Ditto.  Change "change", "may_be_loop_header"
+	and "removed_p" variables to bool.
+	(bypass_conditional_jumps): Change return type from int to void
+	and adjust function body accordingly.  Change "changed"
+	variable to bool.
+	(one_cprop_pass): Ditto.
+
+2023-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcse.cc (expr_equiv_p): Change return type from int to bool.
+	(oprs_unchanged_p): Change return type from int to void
+	and adjust function body accordingly.
+	(oprs_anticipatable_p): Ditto.
+	(oprs_available_p): Ditto.
+	(insert_expr_in_table): Ditto.  Change "antic_p" and "avail_p"
+	arguments to bool. Change "found" variable to bool.
+	(load_killed_in_block_p): Change return type from int to void and
+	adjust function body accordingly.  Change "avail_p" argument to bool.
+	(pre_expr_reaches_here_p): Change return type from int to void
+	and adjust function body accordingly.
+	(pre_delete): Ditto.  Change "changed" variable to bool.
+	(pre_gcse): Change return type from int to void
+	and adjust function body accordingly. Change "did_insert" and
+	"changed" variables to bool.
+	(one_pre_gcse_pass): Change return type from int to void
+	and adjust function body accordingly.  Change "changed" variable
+	to bool.
+	(should_hoist_expr_to_dom): Change return type from int to void
+	and adjust function body accordingly.  Change
+	"visited_allocated_locally" variable to bool.
+	(hoist_code): Change return type from int to void and adjust
+	function body accordingly.  Change "changed" variable to bool.
+	(one_code_hoisting_pass): Ditto.
+	(pre_edge_insert): Change return type from int to void and adjust
+	function body accordingly.  Change "did_insert" variable to bool.
+	(pre_expr_reaches_here_p_work): Change return type from int to void
+	and adjust function body accordingly.
+	(simple_mem): Ditto.
+	(want_to_gcse_p): Change return type from int to void
+	and adjust function body accordingly.
+	(can_assign_to_reg_without_clobbers_p): Update function body
+	for bool return type.
+	(hash_scan_set): Change "antic_p" and "avail_p" variables to bool.
+	(pre_insert_copies): Change "added_copy" variable to bool.
+
+2023-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/110595
+	PR c++/110596
+	* doc/invoke.texi (Warning Options): Fix typos.
+
 2023-07-07  Jan Hubicka  <jh@suse.cz>
 
 	* profile-count.cc (profile_count::dump): Add FUN

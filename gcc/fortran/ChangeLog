@@ -1,3 +1,29 @@
+2023-07-08  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR fortran/99139
+	PR fortran/99368
+	* match.cc (gfc_match_namelist): Check for host associated or
+	defined types before applying default type.
+	(gfc_match_select_rank): Apply default type to selector of
+	unknown type if possible.
+	* resolve.cc (resolve_fl_variable): Do not apply local default
+	initialization to assumed rank entities.
+
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92178
+	* trans-expr.cc (gfc_conv_procedure_call): Check procedures for
+	allocatable dummy arguments with INTENT(OUT) and move deallocation
+	of actual arguments after evaluation of argument expressions before
+	the procedure is executed.
+
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110585
+	* arith.cc (gfc_compare_expr): Handle equality comparison of constant
+	complex gfc_expr arguments.
+
 2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
 	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 

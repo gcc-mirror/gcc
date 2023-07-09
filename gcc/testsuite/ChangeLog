@@ -1,3 +1,34 @@
+2023-07-08  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/110600
+	* gcc.c-torture/compile/pr110600.c: New test.
+
+2023-07-08  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR fortran/99139
+	PR fortran/99368
+	* gfortran.dg/pr99139.f90 : New test
+	* gfortran.dg/pr99368.f90 : New test
+
+2023-07-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110590
+	* gcc.dg/tree-prof/update-cunroll-2.c: Remove xfail.
+	* gcc.dg/tree-ssa/update-cunroll.c: Likewise.
+
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92178
+	* gfortran.dg/intent_out_16.f90: New test.
+	* gfortran.dg/intent_out_17.f90: New test.
+	* gfortran.dg/intent_out_18.f90: New test.
+
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110585
+	* gfortran.dg/findloc_9.f90: New test.
+
 2023-07-07  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/pr43864-2.c: Avoid matching pre dump with details-blocks.
