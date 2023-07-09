@@ -75,14 +75,6 @@ Linemap::start_line (unsigned lineno, unsigned linesize)
   linemap_line_start (line_table, lineno, linesize);
 }
 
-// Get a location.
-
-Location
-Linemap::get_location (unsigned column)
-{
-  return Location (linemap_position_for_column (line_table, column));
-}
-
 // Return the Linemap to use for the gcc backend.
 
 Linemap *

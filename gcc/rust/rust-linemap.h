@@ -52,10 +52,6 @@ public:
   // This will normally be called for every line in a source file.
   void start_line (unsigned int line_number, unsigned int line_size);
 
-  // Get a Location representing column position COLUMN on the current
-  // line in the current file.
-  Location get_location (unsigned int column);
-
   // Stop generating Location values.  This will be called after all
   // input files have been read, in case any cleanup is required.
   void stop ();
