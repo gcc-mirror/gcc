@@ -41,26 +41,26 @@ public:
   void visit (TyTy::ProjectionType &type) override;
 
   // nothing to do for these
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
-  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
-  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
-  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
-  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
-  void visit (TyTy::CharType &) override { gcc_unreachable (); }
-  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
-  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
-  void visit (TyTy::StrType &) override { gcc_unreachable (); }
-  void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
-  void visit (TyTy::ClosureType &) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override { rust_unreachable (); }
+  void visit (TyTy::TupleType &) override { rust_unreachable (); }
+  void visit (TyTy::FnPtr &) override { rust_unreachable (); }
+  void visit (TyTy::ArrayType &) override { rust_unreachable (); }
+  void visit (TyTy::SliceType &) override { rust_unreachable (); }
+  void visit (TyTy::BoolType &) override { rust_unreachable (); }
+  void visit (TyTy::IntType &) override { rust_unreachable (); }
+  void visit (TyTy::UintType &) override { rust_unreachable (); }
+  void visit (TyTy::FloatType &) override { rust_unreachable (); }
+  void visit (TyTy::USizeType &) override { rust_unreachable (); }
+  void visit (TyTy::ISizeType &) override { rust_unreachable (); }
+  void visit (TyTy::ErrorType &) override { rust_unreachable (); }
+  void visit (TyTy::CharType &) override { rust_unreachable (); }
+  void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
+  void visit (TyTy::PointerType &) override { rust_unreachable (); }
+  void visit (TyTy::ParamType &) override { rust_unreachable (); }
+  void visit (TyTy::StrType &) override { rust_unreachable (); }
+  void visit (TyTy::NeverType &) override { rust_unreachable (); }
+  void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
+  void visit (TyTy::ClosureType &) override { rust_unreachable (); }
 
 private:
   SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus);
@@ -121,27 +121,27 @@ public:
   void visit (TyTy::ADTType &type) override;
   void visit (TyTy::ClosureType &type) override;
 
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
-  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
-  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
-  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
-  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
-  void visit (TyTy::CharType &) override { gcc_unreachable (); }
-  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
-  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
-  void visit (TyTy::StrType &) override { gcc_unreachable (); }
-  void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
-  void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
-  void visit (TyTy::DynamicObjectType &) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override { rust_unreachable (); }
+  void visit (TyTy::TupleType &) override { rust_unreachable (); }
+  void visit (TyTy::FnPtr &) override { rust_unreachable (); }
+  void visit (TyTy::ArrayType &) override { rust_unreachable (); }
+  void visit (TyTy::SliceType &) override { rust_unreachable (); }
+  void visit (TyTy::BoolType &) override { rust_unreachable (); }
+  void visit (TyTy::IntType &) override { rust_unreachable (); }
+  void visit (TyTy::UintType &) override { rust_unreachable (); }
+  void visit (TyTy::FloatType &) override { rust_unreachable (); }
+  void visit (TyTy::USizeType &) override { rust_unreachable (); }
+  void visit (TyTy::ISizeType &) override { rust_unreachable (); }
+  void visit (TyTy::ErrorType &) override { rust_unreachable (); }
+  void visit (TyTy::CharType &) override { rust_unreachable (); }
+  void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
+  void visit (TyTy::PointerType &) override { rust_unreachable (); }
+  void visit (TyTy::ParamType &) override { rust_unreachable (); }
+  void visit (TyTy::StrType &) override { rust_unreachable (); }
+  void visit (TyTy::NeverType &) override { rust_unreachable (); }
+  void visit (TyTy::PlaceholderType &) override { rust_unreachable (); }
+  void visit (TyTy::ProjectionType &) override { rust_unreachable (); }
+  void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
 
 private:
   SubstMapperFromExisting (TyTy::BaseType *concrete, TyTy::BaseType *receiver);

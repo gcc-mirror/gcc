@@ -220,7 +220,7 @@ public:
       current_map.emplace (fragment.fragment_ident,
 			   MatchedFragmentContainer::metavar (fragment));
     else
-      gcc_unreachable ();
+      rust_unreachable ();
   }
 
   /**

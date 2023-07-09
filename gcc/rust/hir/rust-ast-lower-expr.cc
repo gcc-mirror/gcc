@@ -461,7 +461,7 @@ ASTLoweringExpr::visit (AST::CompoundAssignmentExpr &expr)
       op = ArithmeticOrLogicalOperator::RIGHT_SHIFT;
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   HIR::Expr *asignee_expr

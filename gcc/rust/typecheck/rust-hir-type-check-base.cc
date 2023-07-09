@@ -274,7 +274,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 

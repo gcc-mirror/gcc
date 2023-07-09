@@ -339,7 +339,7 @@ PathProbeType::process_associated_trait_for_candidates (
 
     case TraitItemReference::TraitItemType::ERROR:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
@@ -389,7 +389,7 @@ PathProbeType::process_predicate_for_candidates (
 
     case TraitItemReference::TraitItemType::ERROR:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 

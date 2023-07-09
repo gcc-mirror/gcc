@@ -74,8 +74,12 @@ constexpr static const char *file_separator = "/";
 // When using gcc, rust_assert is just gcc_assert.
 #define rust_assert(EXPR) gcc_assert (EXPR)
 
-// When using gcc, rust_unreachable is just gcc_unreachable.
-#define rust_unreachable() gcc_unreachable ()
+/**
+ * rust_unreachable is just a fancy abort which causes an internal compiler
+ * error. This macro is not equivalent to `__builtin_unreachable` and does not
+ * indicate optimizations for the compiler
+ */
+#define rust_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 
 extern void
 rust_preserve_from_gc (tree t);

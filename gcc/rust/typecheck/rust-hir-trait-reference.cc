@@ -94,7 +94,7 @@ TraitItemReference::get_tyty () const
       return get_error ();
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
   return get_error ();
 }
 

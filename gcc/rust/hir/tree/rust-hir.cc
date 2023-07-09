@@ -66,7 +66,7 @@ get_string_in_delims (std::string str_input, AST::DelimType delim_type)
     default:
       return "ERROR-MARK-STRING (delims)";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -128,7 +128,7 @@ Visibility::as_string () const
       return std::string ("pub(in ") + path.get_mappings ().as_string ()
 	     + std::string (")");
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -518,7 +518,7 @@ UseTreeGlob::as_string () const
       // some kind of error
       return "ERROR-PATH";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -1342,7 +1342,7 @@ CompoundAssignmentExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
@@ -1617,7 +1617,7 @@ ArithmeticOrLogicalExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 

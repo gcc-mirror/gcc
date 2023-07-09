@@ -71,7 +71,7 @@ public:
 	    previous = nullptr;
 	    break;
 	  default:
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
       }
   }

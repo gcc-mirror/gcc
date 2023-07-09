@@ -184,7 +184,7 @@ Dump::visit (ArithmeticOrLogicalExpr &aole)
       operator_str = ">>";
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 

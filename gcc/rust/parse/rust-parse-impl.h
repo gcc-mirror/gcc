@@ -713,7 +713,7 @@ Parser<ManagedTokenSource>::parse_simple_path_segment ()
       // test prevent error
       return AST::SimplePathSegment::create_error ();
     }
-  gcc_unreachable ();
+  rust_unreachable ();
   /*rust_error_at(
     t->get_locus(), "invalid token '%s' in simple path segment",
     t->get_token_description());*/
@@ -765,7 +765,7 @@ Parser<ManagedTokenSource>::parse_path_ident_segment ()
       // test prevent error
       return AST::PathIdentSegment::create_error ();
     }
-  gcc_unreachable ();
+  rust_unreachable ();
   // not necessarily an error
 }
 
@@ -876,7 +876,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
       skip_after_end_attribute ();
       return nullptr;
     }
-  gcc_unreachable ();
+  rust_unreachable ();
   // TODO: find out how to stop gcc error on "no return value"
 }
 
@@ -5534,7 +5534,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_item ()
 	  lexer.skip_token (1); // TODO: is this right thing to do?
 	  return nullptr;
 	}
-      gcc_unreachable ();
+      rust_unreachable ();
     default:
       add_error (Error (t->get_locus (),
 			"unrecognised token %qs for item in inherent impl",
@@ -5718,7 +5718,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_item ()
 	  lexer.skip_token (1); // TODO: is this right thing to do?
 	  return nullptr;
 	}
-      gcc_unreachable ();
+      rust_unreachable ();
     default:
       break;
     }
@@ -6703,7 +6703,7 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
 	new AST::TypePathSegment (std::move (ident_segment),
 				  has_separating_scope_resolution, locus));
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 // Parses a function call representation inside a type path.
@@ -9846,7 +9846,7 @@ Parser<ManagedTokenSource>::parse_reference_type ()
 	new AST::ReferenceType (false, parse_reference_type_inner (locus),
 				locus));
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -12337,7 +12337,7 @@ Parser<ManagedTokenSource>::null_denotation_path (
       return std::unique_ptr<AST::PathInExpression> (
 	new AST::PathInExpression (std::move (path)));
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 // Handling of expresions that do not start with a path for `null_denotation`.
@@ -12969,7 +12969,7 @@ get_lbp_for_arithmetic_or_logical_expr (
       return LBP_R_SHIFT;
     default:
       // WTF? should not happen, this is an error
-      gcc_unreachable ();
+      rust_unreachable ();
 
       return LBP_PLUS;
     }
@@ -13241,7 +13241,7 @@ get_lbp_for_comparison_expr (AST::ComparisonExpr::ExprType expr_type)
       return LBP_SMALLER_EQUAL;
     default:
       // WTF? should not happen, this is an error
-      gcc_unreachable ();
+      rust_unreachable ();
 
       return LBP_EQUAL;
     }
@@ -13512,7 +13512,7 @@ get_lbp_for_compound_assignment_expr (
       return LBP_R_SHIFT;
     default:
       // WTF? should not happen, this is an error
-      gcc_unreachable ();
+      rust_unreachable ();
 
       return LBP_PLUS;
     }

@@ -1117,7 +1117,7 @@ sort_tuple_patterns (HIR::MatchExpr &expr)
       else /* TuplePatternItemType::RANGED */
 	{
 	  // FIXME
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
 
@@ -1430,25 +1430,25 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	    else
 	      {
 		// FIXME: There are other cases, but it better not be a Tuple
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	  break;
 
 	  case HIR::Expr::ExprType::Path: {
 	    // FIXME
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
   else
     {
       // FIXME: match on other types of expressions not yet implemented.
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   // setup the end label so the cases can exit properly
@@ -2856,7 +2856,7 @@ CompileExpr::generate_closure_fntype (HIR::ClosureExpr &expr,
   else
     {
       // FIXME error message?
-      gcc_unreachable ();
+      rust_unreachable ();
       return error_mark_node;
     }
 

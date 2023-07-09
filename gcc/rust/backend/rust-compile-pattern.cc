@@ -199,7 +199,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
     {
       case HIR::TupleStructItems::RANGE: {
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
 
@@ -284,13 +284,13 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	{
 	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
 	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
@@ -467,7 +467,7 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 	return;
       }
       default: {
-	gcc_unreachable ();
+	rust_unreachable ();
       }
     }
 }

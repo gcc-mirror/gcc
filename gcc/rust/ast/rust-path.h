@@ -224,7 +224,7 @@ public:
       case Kind::Either:
 	break;
       case Kind::Error:
-	gcc_unreachable ();
+	rust_unreachable ();
       }
   }
 
@@ -254,7 +254,7 @@ public:
     switch (get_kind ())
       {
       case Kind::Error:
-	gcc_unreachable ();
+	rust_unreachable ();
       case Kind::Either:
 	return "Ambiguous: " + path.as_string ();
       case Kind::Const:

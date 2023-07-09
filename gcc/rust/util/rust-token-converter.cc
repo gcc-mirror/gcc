@@ -250,7 +250,7 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	  trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
 	  break;
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
   return trees.back ();
@@ -322,7 +322,7 @@ from_literal (const ProcMacro::Literal &literal,
     case ProcMacro::STR_RAW:
     case ProcMacro::BYTE_STR_RAW:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -383,7 +383,7 @@ from_group (const ProcMacro::Group &g, std::vector<const_TokenPtr> &result)
       from_tokenstream (g.stream, result);
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -414,7 +414,7 @@ from_tokentree (const ProcMacro::TokenTree &tt,
       from_literal (tt.payload.literal, result);
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 

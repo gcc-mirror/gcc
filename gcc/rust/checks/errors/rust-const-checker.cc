@@ -72,7 +72,7 @@ ConstChecker::ctx_to_str (ConstGenericCtx ctx)
     case ConstGenericCtx::Impl:
       return "impl";
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 

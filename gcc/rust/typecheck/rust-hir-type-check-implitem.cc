@@ -259,7 +259,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      break;
 
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	      return;
 	    }
 	}

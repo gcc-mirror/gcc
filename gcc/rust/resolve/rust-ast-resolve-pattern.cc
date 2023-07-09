@@ -96,7 +96,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
     {
       case AST::TupleStructItems::RANGE: {
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
 
@@ -125,7 +125,7 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	{
 	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 

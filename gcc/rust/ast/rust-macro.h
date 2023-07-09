@@ -473,14 +473,14 @@ private:
 
   /**
    * Default function to use as an associated transcriber. This function should
-   * never be called, hence the gcc_unreachable().
+   * never be called, hence the rust_unreachable().
    * If this function is used, then the macro is not builtin and the compiler
    * should make use of the actual rules. If the macro is builtin, then another
    * associated transcriber should be used
    */
   static Fragment dummy_builtin (Location, MacroInvocData &)
   {
-    gcc_unreachable ();
+    rust_unreachable ();
     return Fragment::create_error ();
   }
 

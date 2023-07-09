@@ -38,7 +38,7 @@ public:
   std::string get_filename () const
   {
     // FIXME
-    gcc_unreachable ();
+    rust_unreachable ();
     return "FIXME";
   }
 
@@ -76,7 +76,7 @@ public:
   std::string get_filename () const
   {
     // FIXME
-    gcc_unreachable ();
+    rust_unreachable ();
     return "FIXME";
   }
 

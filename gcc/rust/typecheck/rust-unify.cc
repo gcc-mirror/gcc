@@ -1631,7 +1631,7 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
 
       // FIXME
     case TyTy::PROJECTION:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
 
     case TyTy::DYNAMIC:

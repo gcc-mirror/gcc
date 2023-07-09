@@ -306,7 +306,7 @@ SubstituteCtx::substitute_token (size_t token_idx)
       }
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::vector<std::unique_ptr<AST::Token>>

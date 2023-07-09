@@ -52,7 +52,7 @@ public:
   // this seems like it should not be part of this visitor
   void visit (HIR::TypePathSegmentFunction &segment) override
   {
-    gcc_unreachable ();
+    rust_unreachable ();
   }
 
   // nothing to do for these

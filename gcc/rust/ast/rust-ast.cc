@@ -225,7 +225,7 @@ Visibility::as_string () const
     case PUB_IN_PATH:
       return std::string ("pub(in ") + in_path.as_string () + std::string (")");
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -623,7 +623,7 @@ UseTreeGlob::as_string () const
       // some kind of error
       return "ERROR-PATH";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string

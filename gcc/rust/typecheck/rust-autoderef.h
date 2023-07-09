@@ -83,7 +83,7 @@ public:
       case AdjustmentType::UNSIZE:
 	return "UNSIZE";
       }
-    gcc_unreachable ();
+    rust_unreachable ();
     return "";
   }
 

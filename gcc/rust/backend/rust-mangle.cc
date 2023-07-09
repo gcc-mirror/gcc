@@ -193,7 +193,7 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
       return "";
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 // Add an underscore-terminated base62 integer to the mangling string.
@@ -262,7 +262,7 @@ v0_type_prefix (const TyTy::BaseType *ty)
     return ty_prefix;
 
   // FIXME: We need to fetch more type prefixes
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 static std::string
@@ -291,7 +291,7 @@ v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path)
   v0_add_identifier (mangled, crate_name);
   v0_add_disambiguator (mangled, 62);
 
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -305,7 +305,7 @@ Mangler::mangle_item (const TyTy::BaseType *ty,
     case Mangler::MangleVersion::V0:
       return v0_mangle_item (ty, path);
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
