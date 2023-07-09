@@ -60,11 +60,6 @@ public:
   // input files have been read, in case any cleanup is required.
   void stop ();
 
-  // Produce a human-readable description of a Location, e.g.
-  // "foo.rust:10". Returns an empty string for predeclared, builtin or
-  // unknown locations.
-  std::string to_string (Location);
-
 protected:
   // The single existing instance of Linemap.
   static Linemap *instance_;
@@ -77,12 +72,10 @@ public:
   // Return the special Location used for predeclared identifiers.
   static Location predeclared_location () { return BUILTINS_LOCATION; }
 
-  // Produce a human-readable description of a Location.
-  static std::string location_to_string (Location loc)
-  {
-    rust_assert (Linemap::instance_ != NULL);
-    return Linemap::instance_->to_string (loc);
-  }
+  // Produce a human-readable description of a Location, e.g.
+  // "foo.rust:10". Returns an empty string for predeclared, builtin or
+  // unknown locations.
+  static std::string location_to_string (Location loc);
 
 private:
   // Whether we are currently reading a file.

@@ -246,7 +246,7 @@ Lexer::dump_and_skip (int n)
 				     + std::string (tok->get_type_hint_str ()))
 				  : "")
 	      << " ";
-	  out << get_line_map ()->to_string (loc) << " ";
+	  out << Linemap::location_to_string (loc) << " ";
 	}
 
       token_queue.skip (0);
