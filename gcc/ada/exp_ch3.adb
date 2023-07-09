@@ -6256,6 +6256,11 @@ package body Exp_Ch3 is
       --  temporary. Func_Id is the enclosing function. Ret_Typ is the return
       --  type of Func_Id. Alloc_Expr is the actual allocator.
 
+      function BIP_Function_Call_Id return Entity_Id;
+      --  If the object initialization expression is a call to a build-in-place
+      --  function, return the id of the called function; otherwise return
+      --  Empty.
+
       procedure Count_Default_Sized_Task_Stacks
         (Typ         : Entity_Id;
          Pri_Stacks  : out Int;
@@ -6591,6 +6596,67 @@ package body Exp_Ch3 is
                 Expression => Alloc_Expr);
          end if;
       end Build_Heap_Or_Pool_Allocator;
+
+      --------------------------
+      -- BIP_Function_Call_Id --
+      --------------------------
+
+      function BIP_Function_Call_Id return Entity_Id is
+
+         function Func_Call_Id (Function_Call : Node_Id) return Entity_Id;
+         --  Return the id of the called function.
+
+         function Func_Call_Id (Function_Call : Node_Id) return Entity_Id is
+            Call_Node : constant Node_Id := Unqual_Conv (Function_Call);
+
+         begin
+            if Is_Entity_Name (Name (Call_Node)) then
+               return Entity (Name (Call_Node));
+
+            elsif Nkind (Name (Call_Node)) = N_Explicit_Dereference then
+               return Etype (Name (Call_Node));
+
+            else
+               pragma Assert (Nkind (Name (Call_Node)) = N_Selected_Component);
+               return Etype (Entity (Selector_Name (Name (Call_Node))));
+            end if;
+         end Func_Call_Id;
+
+         --  Local declarations
+
+         BIP_Func_Call : Node_Id;
+         Expr_Q        : constant Node_Id := Unqual_Conv (Expr);
+
+      --  Start of processing for BIP_Function_Call_Id
+
+      begin
+         if Is_Build_In_Place_Function_Call (Expr_Q) then
+            return Func_Call_Id (Expr_Q);
+         end if;
+
+         BIP_Func_Call := Unqual_BIP_Iface_Function_Call (Expr_Q);
+
+         if Present (BIP_Func_Call) then
+
+            --  In the case of an explicitly dereferenced call, return the
+            --  subprogram type.
+
+            if Nkind (Name (BIP_Func_Call)) = N_Explicit_Dereference then
+               return Etype (Name (BIP_Func_Call));
+            else
+               pragma Assert (Is_Entity_Name (Name (BIP_Func_Call)));
+               return Entity (Name (BIP_Func_Call));
+            end if;
+
+         elsif Nkind (Expr_Q) = N_Reference
+                 and then Is_Build_In_Place_Function_Call (Prefix (Expr_Q))
+         then
+            return Func_Call_Id (Prefix (Expr_Q));
+
+         else
+            return Empty;
+         end if;
+      end BIP_Function_Call_Id;
 
       -------------------------------------
       -- Count_Default_Sized_Task_Stacks --
@@ -7272,6 +7338,9 @@ package body Exp_Ch3 is
       --  which case the init proc call must be inserted only after the bodies
       --  of the shared variable procedures have been seen.
 
+      Has_BIP_Init_Expr : Boolean := False;
+      --  Whether the object is initialized with a BIP function call
+
       Rewrite_As_Renaming : Boolean := False;
       --  Whether to turn the declaration into a renaming at the end
 
@@ -7319,12 +7388,29 @@ package body Exp_Ch3 is
          Init_After := Make_Shared_Var_Procs (N);
       end if;
 
+      --  Determine whether the object is initialized with a BIP function call
+
+      if Present (Expr) then
+         Expr_Q := Unqualify (Expr);
+
+         Has_BIP_Init_Expr :=
+           Is_Build_In_Place_Function_Call (Expr_Q)
+             or else Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
+             or else (Nkind (Expr_Q) = N_Reference
+                        and then
+                      Is_Build_In_Place_Function_Call (Prefix (Expr_Q)));
+      end if;
+
       --  If tasks are being declared, make sure we have an activation chain
       --  defined for the tasks (has no effect if we already have one), and
       --  also that a Master variable is established (and that the appropriate
       --  enclosing construct is established as a task master).
 
-      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
+      if Has_Task (Typ)
+        or else Might_Have_Tasks (Typ)
+        or else (Has_BIP_Init_Expr
+                   and then Needs_BIP_Task_Actuals (BIP_Function_Call_Id))
+      then
          Build_Activation_Chain_Entity (N);
 
          if Has_Task (Typ) then
@@ -7332,17 +7418,8 @@ package body Exp_Ch3 is
 
          --  Handle objects initialized with BIP function calls
 
-         elsif Present (Expr) then
-            Expr_Q := Unqualify (Expr);
-
-            if Is_Build_In_Place_Function_Call (Expr_Q)
-              or else Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
-              or else (Nkind (Expr_Q) = N_Reference
-                        and then
-                       Is_Build_In_Place_Function_Call (Prefix (Expr_Q)))
-            then
-               Build_Master_Entity (Def_Id);
-            end if;
+         elsif Has_BIP_Init_Expr then
+            Build_Master_Entity (Def_Id);
          end if;
       end if;
 

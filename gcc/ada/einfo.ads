@@ -4112,7 +4112,7 @@ package Einfo is
 --    Protected_Subprogram
 --       Defined in functions and procedures. Set for the pair of subprograms
 --       which emulate the runtime semantics of a protected subprogram. Denotes
---       the entity of the origial protected subprogram.
+--       the entity of the original protected subprogram.
 
 --    Protection_Object
 --       Applies to protected entries, entry families and subprograms. Denotes

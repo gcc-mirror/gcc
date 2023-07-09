@@ -53,6 +53,7 @@ with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Output;         use Output;
+with Restrict;       use Restrict;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
@@ -4457,6 +4458,10 @@ package body Sem_Ch6 is
          begin
             while Present (Prot_Ext_Formal) loop
                pragma Assert (Present (Impl_Ext_Formal));
+               pragma Assert (not Is_Build_In_Place_Entity (Prot_Ext_Formal)
+                 or else BIP_Suffix_Kind (Impl_Ext_Formal)
+                           = BIP_Suffix_Kind (Prot_Ext_Formal));
+
                Set_Protected_Formal (Prot_Ext_Formal, Impl_Ext_Formal);
                Next_Formal_With_Extras (Prot_Ext_Formal);
                Next_Formal_With_Extras (Impl_Ext_Formal);
@@ -8581,6 +8586,11 @@ package body Sem_Ch6 is
       function Has_Extra_Formals (E : Entity_Id) return Boolean;
       --  Determines if E has its extra formals
 
+      function Might_Need_BIP_Task_Actuals (E : Entity_Id) return Boolean;
+      --  Determines if E is a dispatching primitive returning a limited tagged
+      --  type object since some descendant might return an object with tasks
+      --  (and therefore need the BIP task extra actuals).
+
       function Needs_Accessibility_Check_Extra
         (E      : Entity_Id;
          Formal : Node_Id) return Boolean;
@@ -8655,6 +8665,58 @@ package body Sem_Ch6 is
              (Ekind (E) = E_Function
                 and then Present (Extra_Accessibility_Of_Result (E)));
       end Has_Extra_Formals;
+
+      ---------------------------------
+      -- Might_Need_BIP_Task_Actuals --
+      ---------------------------------
+
+      function Might_Need_BIP_Task_Actuals (E : Entity_Id) return Boolean is
+         Subp_Id  : Entity_Id;
+         Func_Typ : Entity_Id;
+
+      begin
+         if Global_No_Tasking or else No_Run_Time_Mode then
+            return False;
+         end if;
+
+         --  No further check needed if we know that BIP task actuals are
+         --  required.
+
+         if Needs_BIP_Task_Actuals (E) then
+            return True;
+         end if;
+
+         --  For thunks we must rely on their target entity
+
+         if Is_Thunk (E) then
+            Subp_Id := Thunk_Target (E);
+
+         --  For protected subprograms we rely on the subprogram which
+         --  implements the body of the operation (since it is the entity
+         --  that may be a dispatching operation).
+
+         elsif Is_Protected_Type (Scope (E))
+           and then Present (Protected_Body_Subprogram (E))
+         then
+            Subp_Id := Protected_Body_Subprogram (E);
+
+         else
+            Subp_Id := E;
+         end if;
+
+         --  We check the root type of the return type since the same
+         --  decision must be taken for all descendants overriding a
+         --  dispatching operation.
+
+         Func_Typ := Root_Type (Underlying_Type (Etype (Subp_Id)));
+
+         return Ekind (Subp_Id) = E_Function
+           and then not Has_Foreign_Convention (Func_Typ)
+           and then Is_Dispatching_Operation (Subp_Id)
+           and then Is_Tagged_Type (Func_Typ)
+           and then Is_Limited_Type (Func_Typ)
+           and then not Has_Aspect (Func_Typ, Aspect_No_Task_Parts);
+      end Might_Need_BIP_Task_Actuals;
 
       -------------------------------------
       -- Needs_Accessibility_Check_Extra --
@@ -8790,7 +8852,8 @@ package body Sem_Ch6 is
       then
          return;
 
-      --  Initialization procedures don't have extra formals
+      --  Extra formals of Initialization procedures are added by the function
+      --  Exp_Ch3.Init_Formals
 
       elsif Is_Init_Proc (E) then
          return;
@@ -9076,20 +9139,16 @@ package body Sem_Ch6 is
       begin
          Ada_Version := Ada_2022;
 
-         if Needs_Result_Accessibility_Level (Ref_E) then
-            pragma Assert (No (Parent_Subp)
-              or else Needs_Result_Accessibility_Level (Parent_Subp));
-            pragma Assert (No (Alias_Subp)
-              or else Needs_Result_Accessibility_Level (Alias_Subp));
-
+         if Needs_Result_Accessibility_Level (Ref_E)
+           or else
+             (Present (Parent_Subp)
+                and then Needs_Result_Accessibility_Level (Parent_Subp))
+           or else
+             (Present (Alias_Subp)
+                and then Needs_Result_Accessibility_Level (Alias_Subp))
+         then
             Set_Extra_Accessibility_Of_Result (E,
               Add_Extra_Formal (E, Standard_Natural, E, "L"));
-
-         else
-            pragma Assert (No (Parent_Subp)
-              or else not Needs_Result_Accessibility_Level (Parent_Subp));
-            pragma Assert (No (Alias_Subp)
-              or else not Needs_Result_Accessibility_Level (Alias_Subp));
          end if;
 
          Ada_Version := Save_Ada_Version;
@@ -9124,14 +9183,16 @@ package body Sem_Ch6 is
             --  dispatching context and such calls must be handled like calls
             --  to a class-wide function.
 
-            if Needs_BIP_Alloc_Form (Ref_E) then
-               pragma Assert (No (Parent_Subp)
-                 or else Has_BIP_Extra_Formal (Parent_Subp, BIP_Alloc_Form,
-                           Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else Has_BIP_Extra_Formal (Alias_Subp, BIP_Alloc_Form,
-                           Must_Be_Frozen => False));
-
+            if Needs_BIP_Alloc_Form (Ref_E)
+              or else
+                (Present (Parent_Subp)
+                   and then Has_BIP_Extra_Formal (Parent_Subp, BIP_Alloc_Form,
+                              Must_Be_Frozen => False))
+              or else
+                (Present (Alias_Subp)
+                   and then Has_BIP_Extra_Formal (Alias_Subp, BIP_Alloc_Form,
+                              Must_Be_Frozen => False))
+            then
                Discard :=
                  Add_Extra_Formal
                    (E, Standard_Natural,
@@ -9147,87 +9208,57 @@ package body Sem_Ch6 is
                       (E, RTE (RE_Root_Storage_Pool_Ptr),
                        E, BIP_Formal_Suffix (BIP_Storage_Pool));
                end if;
-
-            else
-               pragma Assert (No (Parent_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Parent_Subp, BIP_Alloc_Form,
-                     Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Alias_Subp, BIP_Alloc_Form,
-                     Must_Be_Frozen => False));
             end if;
 
             --  In the case of functions whose result type needs finalization,
             --  add an extra formal which represents the finalization master.
 
-            if Needs_BIP_Finalization_Master (Ref_E) then
-               pragma Assert (No (Parent_Subp)
-                 or else Has_BIP_Extra_Formal (Parent_Subp,
-                           Kind           => BIP_Finalization_Master,
-                           Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else Has_BIP_Extra_Formal (Alias_Subp,
-                           Kind           => BIP_Finalization_Master,
-                           Must_Be_Frozen => False));
-
+            if Needs_BIP_Finalization_Master (Ref_E)
+              or else
+                (Present (Parent_Subp)
+                   and then Has_BIP_Extra_Formal (Parent_Subp,
+                              Kind           => BIP_Finalization_Master,
+                              Must_Be_Frozen => False))
+              or else
+                (Present (Alias_Subp)
+                   and then Has_BIP_Extra_Formal (Alias_Subp,
+                              Kind           => BIP_Finalization_Master,
+                              Must_Be_Frozen => False))
+            then
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Finalization_Master_Ptr),
                     E, BIP_Formal_Suffix (BIP_Finalization_Master));
-
-            else
-               pragma Assert (No (Parent_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Parent_Subp,
-                     Kind           => BIP_Finalization_Master,
-                     Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Alias_Subp,
-                     Kind           => BIP_Finalization_Master,
-                     Must_Be_Frozen => False));
             end if;
 
             --  When the result type contains tasks, add two extra formals: the
             --  master of the tasks to be created, and the caller's activation
             --  chain.
 
-            if Needs_BIP_Task_Actuals (Ref_E) then
-               pragma Assert (No (Parent_Subp)
-                 or else Has_BIP_Extra_Formal (Parent_Subp, BIP_Task_Master,
-                           Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else Has_BIP_Extra_Formal (Alias_Subp, BIP_Task_Master,
-                           Must_Be_Frozen => False)
-                 or else
-                   (Is_Abstract_Subprogram (Ref_E)
-                      and then Is_Predefined_Dispatching_Operation (Ref_E)
-                      and then Is_Interface
-                                 (Find_Dispatching_Type (Alias_Subp))));
-
+            if Needs_BIP_Task_Actuals (Ref_E)
+              or else Might_Need_BIP_Task_Actuals (Ref_E)
+              or else
+                (Present (Parent_Subp)
+                   and then Has_BIP_Extra_Formal (Parent_Subp, BIP_Task_Master,
+                              Must_Be_Frozen => False))
+              or else
+                (Present (Alias_Subp)
+                   and then Has_BIP_Extra_Formal (Alias_Subp, BIP_Task_Master,
+                              Must_Be_Frozen => False))
+            then
                Discard :=
                  Add_Extra_Formal
                    (E, Standard_Integer,
                     E, BIP_Formal_Suffix (BIP_Task_Master));
 
-               Set_Has_Master_Entity (E);
+               if Needs_BIP_Task_Actuals (Ref_E) then
+                  Set_Has_Master_Entity (E);
+               end if;
 
                Discard :=
                  Add_Extra_Formal
                    (E, RTE (RE_Activation_Chain_Access),
                     E, BIP_Formal_Suffix (BIP_Activation_Chain));
-
-            else
-               pragma Assert (No (Parent_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Parent_Subp, BIP_Task_Master,
-                     Must_Be_Frozen => False));
-               pragma Assert (No (Alias_Subp)
-                 or else not
-                   Has_BIP_Extra_Formal (Alias_Subp, BIP_Task_Master,
-                     Must_Be_Frozen => False));
             end if;
 
             --  All build-in-place functions get an extra formal that will be
