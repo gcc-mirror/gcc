@@ -475,9 +475,9 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
 	{
 	  fprintf (file, ";; %sInvalid sum of incoming counts ",
 		   s_indent);
-	  sum.dump (file);
+	  sum.dump (file, fun);
 	  fprintf (file, ", should be ");
-	  bb->count.dump (file);
+	  bb->count.dump (file, fun);
 	  fprintf (file, "\n");
 	}
     }
@@ -525,7 +525,7 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
   if (e->count ().initialized_p () && do_details)
     {
       fputs (" count:", file);
-      e->count ().dump (file);
+      e->count ().dump (file, cfun);
     }
 
   if (e->flags && do_details)
@@ -808,7 +808,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, dump_flags_t flags,
 	  if (bb->count.initialized_p ())
 	    {
 	      fputs (", count ", outf);
-	      bb->count.dump (outf);
+	      bb->count.dump (outf, cfun);
 	    }
 	  if (maybe_hot_bb_p (fun, bb))
 	    fputs (", maybe hot", outf);

@@ -55,5 +55,5 @@ foo (int x, int y, int z)
   baz (&f);
 }
 /* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized"} } */
-/* { dg-final { scan-tree-dump-times "count 0 .precise.," 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "count 0 .precise" 1 "optimized"} } */
 /* { dg-final { scan-rtl-dump-times "COLD_PARTITION" 1 "bbpart"} } */

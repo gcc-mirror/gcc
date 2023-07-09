@@ -94,7 +94,7 @@ profile_count::dump (char *buffer, struct function *fun) const
   else if (fun && initialized_p ()
 	   && fun->cfg
 	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
-    sprintf (buffer, "%" PRId64 " (%s freq %.4f)", m_val,
+    sprintf (buffer, "%" PRId64 " (%s, freq %.4f)", m_val,
 	     profile_quality_display_names[m_quality],
 	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
   else
