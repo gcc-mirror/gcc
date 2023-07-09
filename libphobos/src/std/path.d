@@ -1758,7 +1758,6 @@ immutable(C)[] buildNormalizedPath(C)(const(C[])[] paths...)
 if (isSomeChar!C)
 {
     import std.array : array;
-    import std.exception : assumeUnique;
 
     const(C)[] chained;
     foreach (path; paths)
@@ -1770,7 +1769,7 @@ if (isSomeChar!C)
     }
     auto result = asNormalizedPath(chained);
     // .array returns a copy, so it is unique
-    return () @trusted { return assumeUnique(result.array); } ();
+    return result.array;
 }
 
 ///

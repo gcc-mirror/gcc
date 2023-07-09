@@ -2377,7 +2377,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
         foreach (u, p; f.parameterList)
         {
             auto v = (*funcdecl.parameters)[u];
-            if (!v.isScope() && inferScope(v))
+            if (!v.isScope() && v.type.hasPointers() && inferScope(v))
             {
                 //printf("Inferring scope for %s\n", v.toChars());
                 p.storageClass |= STC.scope_ | STC.scopeinferred;

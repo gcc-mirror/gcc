@@ -83,7 +83,7 @@ public:
             err = true;
             return true;
         }
-        if (f.setGC())
+        if (f.setGC(e.loc, format))
         {
             e.error(format, f.kind(), f.toPrettyChars());
             err = true;
@@ -135,7 +135,7 @@ public:
 
     override void visit(NewExp e)
     {
-        if (e.member && !e.member.isNogc() && f.setGC())
+        if (e.member && !e.member.isNogc() && f.setGC(e.loc, null))
         {
             // @nogc-ness is already checked in NewExp::semantic
             return;
@@ -195,7 +195,7 @@ public:
             err = true;
             return;
         }
-        if (f.setGC())
+        if (f.setGC(e.loc, null))
         {
             err = true;
             return;

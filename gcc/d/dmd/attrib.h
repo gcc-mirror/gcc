@@ -221,7 +221,7 @@ public:
 
 // Mixin declarations
 
-class CompileDeclaration final : public AttribDeclaration
+class MixinDeclaration final : public AttribDeclaration
 {
 public:
     Expressions *exps;
@@ -229,7 +229,7 @@ public:
     ScopeDsymbol *scopesym;
     d_bool compiled;
 
-    CompileDeclaration *syntaxCopy(Dsymbol *s) override;
+    MixinDeclaration *syntaxCopy(Dsymbol *s) override;
     void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     const char *kind() const override;

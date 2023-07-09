@@ -1509,7 +1509,7 @@ struct Gcx
     List*[Bins.B_NUMSMALL] bucket; // free list for each small size
 
     // run a collection when reaching those thresholds (number of used pages)
-    float smallCollectThreshold, largeCollectThreshold;
+    float smallCollectThreshold = 0.0f, largeCollectThreshold = 0.0f;
     uint usedSmallPages, usedLargePages;
     // total number of mapped pages
     uint mappedPages;
@@ -3529,7 +3529,7 @@ struct Pool
         Small = 4,
         Large = 12
     }
-    ShiftBy shiftBy;    // shift count for the divisor used for determining bit indices.
+    ShiftBy shiftBy = void;    // shift count for the divisor used for determining bit indices.
 
     // This tracks how far back we have to go to find the nearest B_PAGE at
     // a smaller address than a B_PAGEPLUS.  To save space, we use a uint.

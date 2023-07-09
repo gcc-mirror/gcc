@@ -14,12 +14,8 @@
 module dmd.lexer;
 
 import core.stdc.ctype;
-import core.stdc.errno;
-import core.stdc.stdarg;
 import core.stdc.stdio;
-import core.stdc.stdlib : getenv;
 import core.stdc.string;
-import core.stdc.time;
 
 import dmd.entity;
 import dmd.errorsink;
@@ -31,16 +27,30 @@ import dmd.root.ctfloat;
 import dmd.common.outbuffer;
 import dmd.root.port;
 import dmd.root.rmem;
-import dmd.root.string;
 import dmd.root.utf;
 import dmd.tokens;
-import dmd.utils;
 
 nothrow:
 
 version (DMDLIB)
 {
     version = LocOffset;
+}
+
+/***********************************************************
+ * Values to use for various magic identifiers
+ */
+struct CompileEnv
+{
+    uint versionNumber;      /// __VERSION__
+    const(char)[] date;      /// __DATE__
+    const(char)[] time;      /// __TIME__
+    const(char)[] vendor;    /// __VENDOR__
+    const(char)[] timestamp; /// __TIMESTAMP__
+
+    bool previewIn;          /// `in` means `[ref] scope const`, accepts rvalues
+    bool ddocOutput;         /// collect embedded documentation comments
+    bool shortenedMethods = true;   /// allow => in normal function declarations
 }
 
 /***********************************************************
@@ -69,6 +79,7 @@ class Lexer
     ubyte wchar_tsize;          /// size of C wchar_t, 2 or 4
 
     ErrorSink eSink;            /// send error messages through this interface
+    CompileEnv compileEnv;      /// environment
 
     private
     {
@@ -87,8 +98,6 @@ class Lexer
         int lastDocLine;        // last line of previous doc comment
 
         Token* tokenFreelist;
-        uint versionNumber;
-        const(char)[] vendor;
     }
 
   nothrow:
@@ -105,13 +114,12 @@ class Lexer
      *  doDocComment = handle documentation comments
      *  commentToken = comments become TOK.comment's
      *  errorSink = where error messages go, must not be null
-     *  vendor = name of the vendor
-     *  versionNumber = version of the caller
+     *  compileEnv = version, vendor, date, time, etc.
      */
     this(const(char)* filename, const(char)* base, size_t begoffset,
         size_t endoffset, bool doDocComment, bool commentToken,
         ErrorSink errorSink,
-        const(char)[] vendor = "DLF", uint versionNumber = 1) pure scope
+        const CompileEnv* compileEnv) pure scope
     {
         scanloc = Loc(filename, 1, 1);
         // debug printf("Lexer::Lexer(%p)\n", base);
@@ -128,8 +136,13 @@ class Lexer
         this.lastDocLine = 0;
         this.eSink = errorSink;
         assert(errorSink);
-        this.versionNumber = versionNumber;
-        this.vendor = vendor;
+        if (compileEnv)
+            this.compileEnv = *compileEnv;
+        else
+        {
+            this.compileEnv.versionNumber = 1;
+            this.compileEnv.vendor = "DLF";
+        }
         //initKeywords();
         /* If first line starts with '#!', ignore the line
          */
@@ -169,10 +182,10 @@ class Lexer
      */
     this(const(char)* filename, const(char)* base, size_t begoffset, size_t endoffset,
         bool doDocComment, bool commentToken, bool whitespaceToken,
-        ErrorSink errorSink
+        ErrorSink errorSink, const CompileEnv* compileEnv = null
         )
     {
-        this(filename, base, begoffset, endoffset, doDocComment, commentToken, errorSink);
+        this(filename, base, begoffset, endoffset, doDocComment, commentToken, errorSink, compileEnv);
         this.whitespaceToken = whitespaceToken;
     }
 
@@ -380,6 +393,15 @@ class Lexer
                     }
                 }
                 continue; // skip white space
+
+            case '\\':
+                if (Ccompile && (p[1] == '\r' || p[1] == '\n'))
+                {
+                    ++p; // ignore \ followed by new line, like VC does
+                    continue;
+                }
+                goto default;
+
             case '0':
                 if (!isZeroSecond(p[1]))        // if numeric literal does not continue
                 {
@@ -571,36 +593,26 @@ class Lexer
 
                     else if (*t.ptr == '_') // if special identifier token
                     {
-                        // Lazy initialization
-                        TimeStampInfo.initialize(t.loc, eSink);
+                        void toToken(const(char)[] s)
+                        {
+                            t.value = TOK.string_;
+                            t.ustring = s.ptr;
+                            t.len = cast(uint)s.length;
+                            t.postfix = 0;
+                        }
 
                         if (id == Id.DATE)
-                        {
-                            t.ustring = TimeStampInfo.date.ptr;
-                            goto Lstr;
-                        }
+                            toToken(compileEnv.date);
                         else if (id == Id.TIME)
-                        {
-                            t.ustring = TimeStampInfo.time.ptr;
-                            goto Lstr;
-                        }
+                            toToken(compileEnv.time);
                         else if (id == Id.VENDOR)
-                        {
-                            t.ustring = vendor.xarraydup.ptr;
-                            goto Lstr;
-                        }
+                            toToken(compileEnv.vendor);
                         else if (id == Id.TIMESTAMP)
-                        {
-                            t.ustring = TimeStampInfo.timestamp.ptr;
-                        Lstr:
-                            t.value = TOK.string_;
-                            t.postfix = 0;
-                            t.len = cast(uint)strlen(t.ustring);
-                        }
+                            toToken(compileEnv.timestamp);
                         else if (id == Id.VERSIONX)
                         {
                             t.value = TOK.int64Literal;
-                            t.unsvalue = versionNumber;
+                            t.unsvalue = compileEnv.versionNumber;
                         }
                         else if (id == Id.EOFX)
                         {
@@ -2570,6 +2582,14 @@ class Lexer
         TOK result;
         bool isOutOfRange = false;
         t.floatvalue = (isWellformedString ? CTFloat.parse(sbufptr, isOutOfRange) : CTFloat.zero);
+
+        bool imaginary = false;
+        if (*p == 'i' && Ccompile)
+        {
+            ++p;
+            imaginary = true;
+        }
+
         switch (*p)
         {
         case 'F':
@@ -2595,11 +2615,17 @@ class Lexer
             result = TOK.float80Literal;
             break;
         }
+
         if ((*p == 'i' || *p == 'I') && !Ccompile)
         {
             if (*p == 'I')
                 error("use 'i' suffix instead of 'I'");
             p++;
+            imaginary = true;
+        }
+
+        if (imaginary)
+        {
             switch (result)
             {
             case TOK.float32Literal:
@@ -3033,7 +3059,10 @@ class Lexer
         auto dc = (lineComment && anyToken) ? &t.lineComment : &t.blockComment;
         // Combine with previous doc comment, if any
         if (*dc)
-            *dc = combineComments(*dc, buf[], newParagraph).toDString();
+        {
+            auto p = combineComments(*dc, buf[], newParagraph);
+            *dc = p ? p[0 .. strlen(p)] : null;
+        }
         else
             *dc = buf.extractSlice(true);
     }
@@ -3080,42 +3109,6 @@ class Lexer
 /******************************* Private *****************************************/
 
 private:
-
-/// Support for `__DATE__`, `__TIME__`, and `__TIMESTAMP__`
-private struct TimeStampInfo
-{
-    private __gshared bool initdone = false;
-
-    // Note: Those properties need to be guarded by a call to `init`
-    // The API isn't safe, and quite brittle, but it was left this way
-    // over performance concerns.
-    // This is currently only called once, from the lexer.
-    __gshared char[11 + 1] date;
-    __gshared char[8 + 1] time;
-    __gshared char[24 + 1] timestamp;
-
-    public static void initialize(const ref Loc loc, ErrorSink eSink) nothrow
-    {
-        if (initdone)
-            return;
-
-        initdone = true;
-        time_t ct;
-        // https://issues.dlang.org/show_bug.cgi?id=20444
-        if (auto p = getenv("SOURCE_DATE_EPOCH"))
-        {
-            if (!ct.parseDigits(p.toDString()))
-                eSink.error(loc, "value of environment variable `SOURCE_DATE_EPOCH` should be a valid UNIX timestamp, not: `%s`", p);
-        }
-        else
-            .time(&ct);
-        const p = ctime(&ct);
-        assert(p);
-        snprintf(&date[0], date.length, "%.6s %.4s", p + 4, p + 20);
-        snprintf(&time[0], time.length, "%.8s", p + 11);
-        snprintf(&timestamp[0], timestamp.length, "%.24s", p);
-    }
-}
 
 private enum LS = 0x2028;       // UTF line separator
 private enum PS = 0x2029;       // UTF paragraph separator
@@ -3366,7 +3359,7 @@ unittest
      */
     string text = "int"; // We rely on the implicit null-terminator
     ErrorSink errorSink = new ErrorSinkStderr;
-    scope Lexer lex1 = new Lexer(null, text.ptr, 0, text.length, false, false, errorSink);
+    scope Lexer lex1 = new Lexer(null, text.ptr, 0, text.length, false, false, errorSink, null);
     TOK tok;
     tok = lex1.nextToken();
     //printf("tok == %s, %d, %d\n", Token::toChars(tok), tok, TOK.int32);
@@ -3402,7 +3395,7 @@ unittest
 
     foreach (testcase; testcases)
     {
-        scope Lexer lex2 = new Lexer(null, testcase.ptr, 0, testcase.length-1, false, false, errorSink);
+        scope Lexer lex2 = new Lexer(null, testcase.ptr, 0, testcase.length-1, false, false, errorSink, null);
         TOK tok = lex2.nextToken();
         size_t iterations = 1;
         while ((tok != TOK.endOfFile) && (iterations++ < testcase.length))

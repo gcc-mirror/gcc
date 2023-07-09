@@ -695,25 +695,15 @@ struct InSituRegion(size_t size, size_t minAlign = platformAlignment)
     import std.conv : to;
     import std.traits : hasMember;
     import std.typecons : Ternary;
+    import core.thread.types : isStackGrowingDown;
 
     static assert(minAlign.isGoodStaticAlignment);
     static assert(size >= minAlign);
 
-    version (X86) enum growDownwards = Yes.growDownwards;
-    else version (X86_64) enum growDownwards = Yes.growDownwards;
-    else version (ARM) enum growDownwards = Yes.growDownwards;
-    else version (AArch64) enum growDownwards = Yes.growDownwards;
-    else version (HPPA) enum growDownwards = No.growDownwards;
-    else version (PPC) enum growDownwards = Yes.growDownwards;
-    else version (PPC64) enum growDownwards = Yes.growDownwards;
-    else version (RISCV32) enum growDownwards = Yes.growDownwards;
-    else version (RISCV64) enum growDownwards = Yes.growDownwards;
-    else version (MIPS32) enum growDownwards = Yes.growDownwards;
-    else version (MIPS64) enum growDownwards = Yes.growDownwards;
-    else version (SPARC) enum growDownwards = Yes.growDownwards;
-    else version (SPARC64) enum growDownwards = Yes.growDownwards;
-    else version (SystemZ) enum growDownwards = Yes.growDownwards;
-    else static assert(0, "Dunno how the stack grows on this architecture.");
+    static if (isStackGrowingDown)
+        enum growDownwards = Yes.growDownwards;
+    else
+        enum growDownwards = No.growDownwards;
 
     @disable this(this);
 

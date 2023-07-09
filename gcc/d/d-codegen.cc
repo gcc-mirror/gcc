@@ -1986,14 +1986,14 @@ build_bounds_slice_condition (SliceExp *se, tree lower, tree upper, tree length)
       tree condition = NULL_TREE;
 
       /* Enforces that `upper <= length`.  */
-      if (!se->upperIsInBounds && length != NULL_TREE)
+      if (!se->upperIsInBounds () && length != NULL_TREE)
 	condition = fold_build2 (GT_EXPR, d_bool_type, upper, length);
       else
 	length = integer_zero_node;
 
       /* Enforces that `lower <= upper`.  No need to check `lower <= length` as
 	 we've already ensured that `upper <= length`.  */
-      if (!se->lowerIsLessThanUpper)
+      if (!se->lowerIsLessThanUpper ())
 	{
 	  tree lwr_cond = fold_build2 (GT_EXPR, d_bool_type, lower, upper);
 

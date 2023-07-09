@@ -2113,7 +2113,7 @@ void test12725()
 
 struct Matrix12728(T, uint m, uint n = m, ubyte f = 0)
 {
-    void foo(uint r)(auto ref in Matrix12728!(T, n, r) b)
+    void foo(uint r)(const auto ref Matrix12728!(T, n, r) b)
     {
     }
 }

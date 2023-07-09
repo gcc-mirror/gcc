@@ -118,55 +118,40 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
     data.setDim(cast(size_t)cntdata);
     data.zero();
 
-    extern (C++) final class PointerBitmapVisitor : Visitor
-    {
-        alias visit = Visitor.visit;
-    public:
-        extern (D) this(Array!(ulong)* _data, ulong _sz_size_t) scope
-        {
-            this.data = _data;
-            this.sz_size_t = _sz_size_t;
-        }
+    ulong offset;
+    bool error;
 
+    void visit(Type t)
+    {
         void setpointer(ulong off)
         {
             ulong ptroff = off / sz_size_t;
             (*data)[cast(size_t)(ptroff / (8 * sz_size_t))] |= 1L << (ptroff % (8 * sz_size_t));
         }
 
-        override void visit(Type t)
+        void visitType(Type t)
         {
             Type tb = t.toBasetype();
             if (tb != t)
-                tb.accept(this);
+                visit(tb);
         }
 
-        override void visit(TypeError t)
+        void visitError(TypeError t)
         {
-            visit(cast(Type)t);
+            visitType(t);
         }
 
-        override void visit(TypeNext t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeBasic t)
+        void visitBasic(TypeBasic t)
         {
             if (t.ty == Tvoid)
                 setpointer(offset);
         }
 
-        override void visit(TypeVector t)
+        void visitVector(TypeVector t)
         {
         }
 
-        override void visit(TypeArray t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeSArray t)
+        void visitSArray(TypeSArray t)
         {
             ulong arrayoff = offset;
             ulong nextsize = t.next.size();
@@ -176,95 +161,67 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
             for (ulong i = 0; i < dim; i++)
             {
                 offset = arrayoff + i * nextsize;
-                t.next.accept(this);
+                visit(t.next);
             }
             offset = arrayoff;
         }
 
-        override void visit(TypeDArray t)
+        void visitDArray(TypeDArray t)
         {
             setpointer(offset + sz_size_t);
         }
 
         // dynamic array is {length,ptr}
-        override void visit(TypeAArray t)
+        void visitAArray(TypeAArray t)
         {
             setpointer(offset);
         }
 
-        override void visit(TypePointer t)
+        void visitPointer(TypePointer t)
         {
             if (t.nextOf().ty != Tfunction) // don't mark function pointers
                 setpointer(offset);
         }
 
-        override void visit(TypeReference t)
+        void visitReference(TypeReference t)
         {
             setpointer(offset);
         }
 
-        override void visit(TypeClass t)
+        void visitClass(TypeClass t)
         {
             setpointer(offset);
         }
 
-        override void visit(TypeFunction t)
+        void visitFunction(TypeFunction t)
         {
         }
 
-        override void visit(TypeDelegate t)
+        void visitDelegate(TypeDelegate t)
         {
             setpointer(offset);
         }
 
-        // delegate is {context, function}
-        override void visit(TypeQualified t)
+        void visitEnum(TypeEnum t)
         {
-            assert(0);
+            visitType(t);
         }
 
-        // assume resolved
-        override void visit(TypeIdentifier t)
+        void visitTuple(TypeTuple t)
         {
-            assert(0);
+            visitType(t);
         }
 
-        override void visit(TypeInstance t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeTypeof t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeReturn t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeEnum t)
-        {
-            visit(cast(Type)t);
-        }
-
-        override void visit(TypeTuple t)
-        {
-            visit(cast(Type)t);
-        }
-
-        override void visit(TypeSlice t)
-        {
-            assert(0);
-        }
-
-        override void visit(TypeNull t)
+        void visitNull(TypeNull t)
         {
             // always a null pointer
         }
 
-        override void visit(TypeStruct t)
+        void visitNoreturn(TypeNoreturn t)
+        {
+        }
+
+        void visitStruct(TypeStruct t)
         {
             ulong structoff = offset;
             foreach (v; t.sym.fields)
@@ -273,38 +230,43 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
                 if (v.type.ty == Tclass)
                     setpointer(offset);
                 else
-                    v.type.accept(this);
+                    visit(v.type);
             }
             offset = structoff;
         }
 
+        void visitDefaultCase(Type t)
+        {
+            //printf("ty = %d\n", t.ty);
+            assert(0);
+        }
+
+        mixin VisitType!void visit;
+        visit.VisitType(t);
+    }
+
+    if (auto tc = t.isTypeClass())
+    {
         // a "toplevel" class is treated as an instance, while TypeClass fields are treated as references
-        void visitClass(TypeClass t)
+        void visitTopLevelClass(TypeClass t)
         {
             ulong classoff = offset;
             // skip vtable-ptr and monitor
             if (t.sym.baseClass)
-                visitClass(cast(TypeClass)t.sym.baseClass.type);
+                visitTopLevelClass(t.sym.baseClass.type.isTypeClass());
             foreach (v; t.sym.fields)
             {
                 offset = classoff + v.offset;
-                v.type.accept(this);
+                visit(v.type);
             }
             offset = classoff;
         }
 
-        Array!(ulong)* data;
-        ulong offset;
-        ulong sz_size_t;
-        bool error;
+        visitTopLevelClass(tc);
     }
-
-    scope PointerBitmapVisitor pbv = new PointerBitmapVisitor(data, sz_size_t);
-    if (t.ty == Tclass)
-        pbv.visitClass(cast(TypeClass)t);
     else
-        t.accept(pbv);
-    return pbv.error ? ulong.max : sz;
+        visit(t);
+    return error ? ulong.max : sz;
 }
 
 /**
@@ -1314,6 +1276,19 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             return ErrorExp.get();
         }
 
+        // https://issues.dlang.org/show_bug.cgi?id=19706
+        // When getting the attributes of the instance of a
+        // templated member function semantic tiargs does
+        // not perform semantic3 on the instance.
+        // For more information see FuncDeclaration.functionSemantic.
+        // For getFunctionAttributes it is mandatory to do
+        // attribute inference.
+        if (fd && fd.parent && fd.parent.isTemplateInstance)
+        {
+            fd.functionSemantic3();
+            tf = cast(TypeFunction)fd.type;
+        }
+
         auto mods = new Expressions();
 
         void addToMods(string str)
@@ -1354,6 +1329,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
          *  "argptr"    extern(D) void dstyle(...), use `__argptr` and `__arguments`
          *  "stdarg"    extern(C) void cstyle(int, ...), use core.stdc.stdarg
          *  "typesafe"  void typesafe(T[] ...)
+         *  "KR"        old K+R style
          */
         // get symbol linkage as a string
         if (dim != 1)
@@ -1388,6 +1364,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             case VarArg.variadic: style = (link == LINK.d)
                                              ? "argptr"
                                              : "stdarg";    break;
+            case VarArg.KRvariadic: style = "KR";           break;
             case VarArg.typesafe: style = "typesafe";       break;
         }
         auto se = new StringExp(e.loc, style);
@@ -2246,65 +2223,65 @@ private void traitNotFound(TraitsExp e)
         // All possible traits
         __gshared Identifier*[59] idents =
         [
-            &Id.isAbstractClass,
-            &Id.isArithmetic,
-            &Id.isAssociativeArray,
-            &Id.isDisabled,
-            &Id.isDeprecated,
-            &Id.isFuture,
-            &Id.isFinalClass,
-            &Id.isPOD,
-            &Id.isNested,
-            &Id.isFloating,
-            &Id.isIntegral,
-            &Id.isScalar,
-            &Id.isStaticArray,
-            &Id.isUnsigned,
-            &Id.isVirtualFunction,
-            &Id.isVirtualMethod,
-            &Id.isAbstractFunction,
-            &Id.isFinalFunction,
-            &Id.isOverrideFunction,
-            &Id.isStaticFunction,
-            &Id.isModule,
-            &Id.isPackage,
-            &Id.isRef,
-            &Id.isOut,
-            &Id.isLazy,
-            &Id.isReturnOnStack,
-            &Id.hasMember,
-            &Id.identifier,
-            &Id.fullyQualifiedName,
-            &Id.getProtection,
-            &Id.getVisibility,
-            &Id.parent,
-            &Id.child,
-            &Id.getLinkage,
-            &Id.getMember,
-            &Id.getOverloads,
-            &Id.getVirtualFunctions,
-            &Id.getVirtualMethods,
-            &Id.classInstanceSize,
-            &Id.classInstanceAlignment,
             &Id.allMembers,
-            &Id.derivedMembers,
-            &Id.isSame,
+            &Id.child,
+            &Id.classInstanceAlignment,
+            &Id.classInstanceSize,
             &Id.compiles,
+            &Id.derivedMembers,
+            &Id.fullyQualifiedName,
             &Id.getAliasThis,
             &Id.getAttributes,
             &Id.getFunctionAttributes,
             &Id.getFunctionVariadicStyle,
-            &Id.getParameterStorageClasses,
-            &Id.getUnitTests,
-            &Id.getVirtualIndex,
-            &Id.getPointerBitmap,
-            &Id.isZeroInit,
-            &Id.getTargetInfo,
+            &Id.getLinkage,
             &Id.getLocation,
-            &Id.hasPostblit,
+            &Id.getMember,
+            &Id.getOverloads,
+            &Id.getParameterStorageClasses,
+            &Id.getPointerBitmap,
+            &Id.getProtection,
+            &Id.getTargetInfo,
+            &Id.getUnitTests,
+            &Id.getVirtualFunctions,
+            &Id.getVirtualIndex,
+            &Id.getVirtualMethods,
+            &Id.getVisibility,
             &Id.hasCopyConstructor,
+            &Id.hasMember,
+            &Id.hasPostblit,
+            &Id.identifier,
+            &Id.isAbstractClass,
+            &Id.isAbstractFunction,
+            &Id.isArithmetic,
+            &Id.isAssociativeArray,
             &Id.isCopyable,
+            &Id.isDeprecated,
+            &Id.isDisabled,
+            &Id.isFinalClass,
+            &Id.isFinalFunction,
+            &Id.isFloating,
+            &Id.isFuture,
+            &Id.isIntegral,
+            &Id.isLazy,
+            &Id.isModule,
+            &Id.isNested,
+            &Id.isOut,
+            &Id.isOverrideFunction,
+            &Id.isPackage,
+            &Id.isPOD,
+            &Id.isRef,
+            &Id.isReturnOnStack,
+            &Id.isSame,
+            &Id.isScalar,
+            &Id.isStaticArray,
+            &Id.isStaticFunction,
+            &Id.isUnsigned,
+            &Id.isVirtualFunction,
+            &Id.isVirtualMethod,
+            &Id.isZeroInit,
             &Id.parameters,
+            &Id.parent,
         ];
 
         StringTable!(bool)* stringTable = cast(StringTable!(bool)*) &traitsStringTable;

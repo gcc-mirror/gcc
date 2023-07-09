@@ -2,6 +2,9 @@
  * The atomic module provides basic support for lock-free
  * concurrent programming.
  *
+ * $(NOTE Use the `-preview=nosharedaccess` compiler flag to detect
+ * unsafe individual read or write operations on shared data.)
+ *
  * Copyright: Copyright Sean Kelly 2005 - 2016.
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Sean Kelly, Alex Rønne Petersen, Manu Evans
@@ -9,6 +12,22 @@
  */
 
 module core.atomic;
+
+///
+@safe unittest
+{
+    int y = 2;
+    shared int x = y; // OK
+
+    //x++; // read modify write error
+    x.atomicOp!"+="(1); // OK
+    //y = x; // read error with preview flag
+    y = x.atomicLoad(); // OK
+    assert(y == 3);
+    //x = 5; // write error with preview flag
+    x.atomicStore(5); // OK
+    assert(x.atomicLoad() == 5);
+}
 
 import core.internal.atomic;
 import core.internal.attributes : betterC;
@@ -1087,42 +1106,6 @@ version (CoreUnittest)
         shared(S*) writeThis2 = null;
         assert(cas(&ptr, ifThis2, writeThis2));
         assert(ptr is null);
-    }
-
-    unittest
-    {
-        import core.thread;
-
-        // Use heap memory to ensure an optimizing
-        // compiler doesn't put things in registers.
-        uint* x = new uint();
-        bool* f = new bool();
-        uint* r = new uint();
-
-        auto thr = new Thread(()
-        {
-            while (!*f)
-            {
-            }
-
-            atomicFence();
-
-            *r = *x;
-        });
-
-        thr.start();
-
-        *x = 42;
-
-        atomicFence();
-
-        *f = true;
-
-        atomicFence();
-
-        thr.join();
-
-        assert(*r == 42);
     }
 
     // === atomicFetchAdd and atomicFetchSub operations ====

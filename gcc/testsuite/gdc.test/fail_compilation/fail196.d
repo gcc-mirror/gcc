@@ -6,15 +6,15 @@ fail_compilation/fail196.d(27): Error: implicit string concatenation is error-pr
 fail_compilation/fail196.d(27):        Use the explicit syntax instead (concatenating literals is `@nogc`): "foo(xxx)" ~ ";\n    assert(s == "
 fail_compilation/fail196.d(28): Error: semicolon needed to end declaration of `s`, instead of `foo`
 fail_compilation/fail196.d(27):        `s` declared here
-fail_compilation/fail196.d(28): Error: found `");\n\n    s = q"` when expecting `;` following statement
-fail_compilation/fail196.d(30): Error: found `";\n    assert(s == "` when expecting `;` following statement
-fail_compilation/fail196.d(31): Error: found `");\n\n    s = q"` when expecting `;` following statement
-fail_compilation/fail196.d(33): Error: found `{` when expecting `;` following statement
-fail_compilation/fail196.d(33): Error: found `}` when expecting `;` following statement
-fail_compilation/fail196.d(34): Error: found `foo` when expecting `;` following statement
-fail_compilation/fail196.d(34): Error: found `}` when expecting `;` following statement
-fail_compilation/fail196.d(36): Error: found `<` when expecting `;` following statement
-fail_compilation/fail196.d(37): Error: found `foo` when expecting `;` following statement
+fail_compilation/fail196.d(28): Error: found `");\n\n    s = q"` when expecting `;` following statement `foo(xxx)` on line fail_compilation/fail196.d(28)
+fail_compilation/fail196.d(30): Error: found `";\n    assert(s == "` when expecting `;` following statement `[foo[xxx]]` on line fail_compilation/fail196.d(30)
+fail_compilation/fail196.d(31): Error: found `");\n\n    s = q"` when expecting `;` following statement `foo[xxx]` on line fail_compilation/fail196.d(31)
+fail_compilation/fail196.d(33): Error: found `{` when expecting `;` following statement `foo` on line fail_compilation/fail196.d(33)
+fail_compilation/fail196.d(33): Error: found `}` when expecting `;` following statement `xxx` on line fail_compilation/fail196.d(33)
+fail_compilation/fail196.d(34): Error: found `foo` when expecting `;` following statement `";\n    assert(s == "` on line fail_compilation/fail196.d(33)
+fail_compilation/fail196.d(34): Error: found `}` when expecting `;` following statement `xxx` on line fail_compilation/fail196.d(34)
+fail_compilation/fail196.d(36): Error: found `<` when expecting `;` following statement `");\n\n    s = q" < foo` on line fail_compilation/fail196.d(34)
+fail_compilation/fail196.d(37): Error: found `foo` when expecting `;` following statement `xxx >> ";\n    assert(s == "` on line fail_compilation/fail196.d(36)
 fail_compilation/fail196.d(37): Error: found `<` instead of statement
 fail_compilation/fail196.d(43): Error: unterminated string constant starting at fail_compilation/fail196.d(43)
 fail_compilation/fail196.d(45): Error: found `End of File` when expecting `}` following compound statement

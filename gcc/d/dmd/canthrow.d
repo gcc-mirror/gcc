@@ -53,7 +53,7 @@ enum CT : BE
  */
 extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustNotThrow)
 {
-    //printf("Expression::canThrow(%d) %s\n", mustNotThrow, toChars());
+    //printf("Expression::canThrow(%d) %s\n", mustNotThrow, e.toChars());
     // stop walking if we determine this expression can throw
     extern (C++) final class CanThrow : StoppableVisitor
     {
@@ -76,10 +76,15 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
             {
                 if (mustNotThrow)
                 {
-                    e.error("%s `%s` is not `nothrow`",
-                        f.kind(), f.toPrettyChars());
+                    e.error("%s `%s` is not `nothrow`", f.kind(), f.toPrettyChars());
+                    if (!f.isDtorDeclaration())
+                        errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
                     e.checkOverridenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                }
+                else if (func)
+                {
+                    func.setThrowCall(e.loc, f);
                 }
                 result |= CT.exception;
             }
@@ -205,7 +210,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
 
         override void visit(ThrowExp te)
         {
-            const res = checkThrow(te.loc, te.e1, mustNotThrow);
+            const res = checkThrow(te.loc, te.e1, mustNotThrow, func);
             assert((res & ~(CT.exception | CT.error)) == 0);
             result |= res;
         }

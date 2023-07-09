@@ -1197,7 +1197,7 @@ extern (C) void* _d_newitemU(scope const TypeInfo _ti) pure nothrow @weak
 }
 
 /// ditto
-extern (C) void* _d_newitemT(in TypeInfo _ti) pure nothrow @weak
+extern (C) void* _d_newitemT(const TypeInfo _ti) pure nothrow @weak
 {
     import core.stdc.string;
     auto p = _d_newitemU(_ti);
@@ -1206,7 +1206,7 @@ extern (C) void* _d_newitemT(in TypeInfo _ti) pure nothrow @weak
 }
 
 /// Same as above, for item with non-zero initializer.
-extern (C) void* _d_newitemiT(in TypeInfo _ti) pure nothrow @weak
+extern (C) void* _d_newitemiT(const TypeInfo _ti) pure nothrow @weak
 {
     import core.stdc.string;
     auto p = _d_newitemU(_ti);
@@ -1286,7 +1286,7 @@ extern (C) CollectHandler rt_getCollectHandler()
 /**
  *
  */
-extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, in void[] segment) nothrow
+extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, scope const(void)[] segment) nothrow
 {
     if (attr & BlkAttr.STRUCTFINAL)
     {
@@ -2230,148 +2230,6 @@ extern (C) void[] _d_arrayappendwd(ref byte[] x, dchar c) @weak
     x = (cast(byte*)xx.ptr)[0 .. xx.length];
     return x;
 }
-
-
-/**
-Concatenate two arrays into a new array
-
----
-void main()
-{
-    int[] x = [10, 20, 30];
-    int[] y = [40, 50];
-    int[] c = x ~ y; // _d_arraycatT(typeid(int[]), (cast(byte*) x)[0..x.length], (cast(byte*) y)[0..y.length]);
-}
----
-
-Params:
-    ti = type that the two arrays share
-    x = left hand side array casted to `byte[]`. Despite this cast, its `.length` is original element length, not byte length
-    y = right hand side array casted to `byte[]`. Despite this cast, its `.length` is original element length, not byte length
-Returns:
-    resulting concatenated array, with `.length` equal to new element length despite `byte` type
-*/
-extern (C) byte[] _d_arraycatT(const TypeInfo ti, byte[] x, byte[] y) @weak
-out (result)
-{
-    auto tinext = unqualify(ti.next);
-    auto sizeelem = tinext.tsize;              // array element size
-    debug(PRINTF) printf("_d_arraycatT(%d,%p ~ %d,%p sizeelem = %d => %d,%p)\n", x.length, x.ptr, y.length, y.ptr, sizeelem, result.length, result.ptr);
-    assert(result.length == x.length + y.length);
-
-    // If a postblit is involved, the contents of result might rightly differ
-    // from the bitwise concatenation of x and y.
-    if (!hasPostblit(tinext))
-    {
-        for (size_t i = 0; i < x.length * sizeelem; i++)
-            assert((cast(byte*)result)[i] == (cast(byte*)x)[i]);
-        for (size_t i = 0; i < y.length * sizeelem; i++)
-            assert((cast(byte*)result)[x.length * sizeelem + i] == (cast(byte*)y)[i]);
-    }
-
-    size_t cap = GC.sizeOf(result.ptr);
-    assert(!cap || cap > result.length * sizeelem);
-}
-do
-{
-    import core.stdc.string;
-    version (none)
-    {
-        /* Cannot use this optimization because:
-         *  char[] a, b;
-         *  char c = 'a';
-         *  b = a ~ c;
-         *  c = 'b';
-         * will change the contents of b.
-         */
-        if (!y.length)
-            return x;
-        if (!x.length)
-            return y;
-    }
-
-    auto tinext = unqualify(ti.next);
-    auto sizeelem = tinext.tsize;              // array element size
-    debug(PRINTF) printf("_d_arraycatT(%d,%p ~ %d,%p sizeelem = %d)\n", x.length, x.ptr, y.length, y.ptr, sizeelem);
-    size_t xlen = x.length * sizeelem;
-    size_t ylen = y.length * sizeelem;
-    size_t len  = xlen + ylen;
-
-    if (!len)
-        return null;
-
-    auto info = __arrayAlloc(len, ti, tinext);
-    byte* p = cast(byte*)__arrayStart(info);
-    p[len] = 0; // guessing this is to optimize for null-terminated arrays?
-    memcpy(p, x.ptr, xlen);
-    memcpy(p + xlen, y.ptr, ylen);
-    // do postblit processing
-    __doPostblit(p, xlen + ylen, tinext);
-
-    auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
-    __setArrayAllocLength(info, len, isshared, tinext);
-    return p[0 .. x.length + y.length];
-}
-
-
-/**
-Concatenate multiple arrays at once
-
-This is more efficient than repeatedly concatenating pairs of arrays because the total size is known in advance.
-
-```
-void main()
-{
-    int[] a, b, c;
-    int[] res = a ~ b ~ c;
-    // _d_arraycatnTX(typeid(int[]),
-    //    [(cast(byte*)a.ptr)[0..a.length], (cast(byte*)b.ptr)[0..b.length], (cast(byte*)c.ptr)[0..c.length]]);
-}
-```
-
-Params:
-    ti = type of arrays to concatenate and resulting array
-    arrs = array of arrays to concatenate, cast to `byte[]` while keeping `.length` the same
-
-Returns:
-    newly created concatenated array, `.length` equal to the total element length despite `void` type
-*/
-extern (C) void[] _d_arraycatnTX(const TypeInfo ti, scope byte[][] arrs) @weak
-{
-    import core.stdc.string;
-
-    size_t length;
-    auto tinext = unqualify(ti.next);
-    auto size = tinext.tsize;   // array element size
-
-    foreach (b; arrs)
-        length += b.length;
-
-    if (!length)
-        return null;
-
-    auto allocsize = length * size;
-    auto info = __arrayAlloc(allocsize, ti, tinext);
-    auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
-    __setArrayAllocLength(info, allocsize, isshared, tinext);
-    void *a = __arrayStart (info);
-
-    size_t j = 0;
-    foreach (b; arrs)
-    {
-        if (b.length)
-        {
-            memcpy(a + j, b.ptr, b.length * size);
-            j += b.length * size;
-        }
-    }
-
-    // do postblit processing
-    __doPostblit(a, j, tinext);
-
-    return a[0..length];
-}
-
 
 /**
 Allocate an array literal

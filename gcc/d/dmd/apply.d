@@ -170,7 +170,7 @@ public:
     {
         if (e.stageflags & stageApply)
             return;
-        int old = e.stageflags;
+        const old = e.stageflags;
         e.stageflags |= stageApply;
         doCond(e.elements.peekSlice()) || applyTo(e);
         e.stageflags = old;

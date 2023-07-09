@@ -4,10 +4,10 @@ TEST_OUTPUT:
 ---
 fail_compilation/previewin.d(4): Error: function `previewin.takeFunction(void function(in real) f)` is not callable using argument types `(void function(real x) pure nothrow @nogc @safe)`
 fail_compilation/previewin.d(4):        cannot pass argument `__lambda1` of type `void function(real x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
-fail_compilation/previewin.d(5): Error: function `previewin.takeFunction(void function(in real) f)` is not callable using argument types `(void function(const(real) x) pure nothrow @nogc @safe)`
-fail_compilation/previewin.d(5):        cannot pass argument `__lambda2` of type `void function(const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
-fail_compilation/previewin.d(6): Error: function `previewin.takeFunction(void function(in real) f)` is not callable using argument types `(void function(ref const(real) x) pure nothrow @nogc @safe)`
-fail_compilation/previewin.d(6):        cannot pass argument `__lambda3` of type `void function(ref const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
+fail_compilation/previewin.d(5): Error: function `previewin.takeFunction(void function(in real) f)` is not callable using argument types `(void function(scope const(real) x) pure nothrow @nogc @safe)`
+fail_compilation/previewin.d(5):        cannot pass argument `__lambda2` of type `void function(scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
+fail_compilation/previewin.d(6): Error: function `previewin.takeFunction(void function(in real) f)` is not callable using argument types `(void function(ref scope const(real) x) pure nothrow @nogc @safe)`
+fail_compilation/previewin.d(6):        cannot pass argument `__lambda3` of type `void function(ref scope const(real) x) pure nothrow @nogc @safe` to parameter `void function(in real) f`
 fail_compilation/previewin.d(15): Error: scope variable `arg` assigned to global variable `myGlobal`
 fail_compilation/previewin.d(16): Error: scope variable `arg` assigned to global variable `myGlobal`
 fail_compilation/previewin.d(17): Error: scope parameter `arg` may not be returned

@@ -840,7 +840,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
         "    else " ~
         "        h = h * 33 + typeid(T).getHash(cast(const void*)&p.tupleof[i]);" ~
         "return h;";
-    fop.fbody = new CompileStatement(loc, new StringExp(loc, code));
+    fop.fbody = new MixinStatement(loc, new StringExp(loc, code));
     Scope* sc2 = sc.push();
     sc2.stc = 0;
     sc2.linkage = LINK.d;
@@ -1261,8 +1261,9 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
 
         // if this field's postblit is not `nothrow`, add a `scope(failure)`
         // block to destroy any prior successfully postblitted fields should
-        // this field's postblit fail
-        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow)
+        // this field's postblit fail.
+        // Don't generate it for betterC code since it cannot throw exceptions.
+        if (fieldsToDestroy.length > 0 && !(cast(TypeFunction)sdv.postblit.type).isnothrow && !global.params.betterC)
         {
              // create a list of destructors that need to be called
             Expression[] dtorCalls;

@@ -185,6 +185,7 @@ private bool lambdaHasSideEffect(Expression e, bool assumeImpureCalls = false)
     case EXP.delete_:
     case EXP.new_:
     case EXP.newAnonymousClass:
+    case EXP.loweredAssignExp:
         return true;
     case EXP.call:
         {

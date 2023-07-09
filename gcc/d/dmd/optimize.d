@@ -371,7 +371,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
     {
         if (e.stageflags & stageOptimize)
             return;
-        int old = e.stageflags;
+        const old = e.stageflags;
         e.stageflags |= stageOptimize;
         if (e.elements)
         {

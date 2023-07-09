@@ -467,7 +467,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         /* Generate identifier for un-named parameter,
                          * because we need it later on.
                          */
-                        fparam.ident = id = Identifier.generateId("_param_", i);
+                        fparam.ident = id = Identifier.generateId("__param_", i);
                         stc |= STC.temp;
                     }
                     Type vtype = fparam.type;

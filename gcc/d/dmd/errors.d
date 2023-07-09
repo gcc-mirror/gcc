@@ -66,6 +66,14 @@ class ErrorSinkCompiler : ErrorSink
         vdeprecationSupplemental(loc, format, ap);
         va_end(ap);
     }
+
+    void message(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vmessage(loc, format, ap);
+        va_end(ap);
+    }
 }
 
 

@@ -44,9 +44,9 @@ package mixin template ParseVisitMethods(AST)
         }
     }
 
-    override void visit(AST.CompileStatement s)
+    override void visit(AST.MixinStatement s)
     {
-        //printf("Visiting CompileStatement\n");
+        //printf("Visiting MixinStatement\n");
         visitArgs(s.exps.peekSlice());
     }
 
@@ -579,7 +579,7 @@ package mixin template ParseVisitMethods(AST)
             de.accept(this);
     }
 
-    override void visit(AST.CompileDeclaration d)
+    override void visit(AST.MixinDeclaration d)
     {
         //printf("Visiting compileDeclaration\n");
         visitArgs(d.exps.peekSlice());

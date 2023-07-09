@@ -373,6 +373,7 @@ extern (C++) abstract class Statement : ASTNode
      *    the downcast statement if it can be downcasted, otherwise `null`
      */
     inout(ErrorStatement)       isErrorStatement()       { return stmt == STMT.Error       ? cast(typeof(return))this : null; }
+    inout(PeelStatement)        isPeelStatement()        { return stmt == STMT.Peel        ? cast(typeof(return))this : null; }
     inout(ScopeStatement)       isScopeStatement()       { return stmt == STMT.Scope       ? cast(typeof(return))this : null; }
     inout(ExpStatement)         isExpStatement()         { return stmt == STMT.Exp         ? cast(typeof(return))this : null; }
     inout(CompoundStatement)    isCompoundStatement()    { return stmt == STMT.Compound    ? cast(typeof(return))this : null; }
@@ -388,7 +389,7 @@ extern (C++) abstract class Statement : ASTNode
     inout(GotoCaseStatement)    isGotoCaseStatement()    { return stmt == STMT.GotoCase    ? cast(typeof(return))this : null; }
     inout(BreakStatement)       isBreakStatement()       { return stmt == STMT.Break       ? cast(typeof(return))this : null; }
     inout(DtorExpStatement)     isDtorExpStatement()     { return stmt == STMT.DtorExp     ? cast(typeof(return))this : null; }
-    inout(CompileStatement)     isCompileStatement()     { return stmt == STMT.Compile     ? cast(typeof(return))this : null; }
+    inout(MixinStatement)       isMixinStatement()       { return stmt == STMT.Mixin       ? cast(typeof(return))this : null; }
     inout(ForwardingStatement)  isForwardingStatement()  { return stmt == STMT.Forwarding  ? cast(typeof(return))this : null; }
     inout(DoStatement)          isDoStatement()          { return stmt == STMT.Do          ? cast(typeof(return))this : null; }
     inout(WhileStatement)       isWhileStatement()       { return stmt == STMT.While       ? cast(typeof(return))this : null; }
@@ -406,6 +407,15 @@ extern (C++) abstract class Statement : ASTNode
     inout(UnrolledLoopStatement) isUnrolledLoopStatement() { return stmt == STMT.UnrolledLoop ? cast(typeof(return))this : null; }
     inout(ForeachRangeStatement) isForeachRangeStatement() { return stmt == STMT.ForeachRange ? cast(typeof(return))this : null; }
     inout(CompoundDeclarationStatement) isCompoundDeclarationStatement() { return stmt == STMT.CompoundDeclaration ? cast(typeof(return))this : null; }
+    inout(CompoundAsmStatement)  isCompoundAsmStatement()  { return stmt == STMT.CompoundAsm  ? cast(typeof(return))this : null; }
+    inout(PragmaStatement)       isPragmaStatement()       { return stmt == STMT.Pragma       ? cast(typeof(return))this : null; }
+    inout(StaticAssertStatement) isStaticAssertStatement() { return stmt == STMT.StaticAssert ? cast(typeof(return))this : null; }
+    inout(CaseRangeStatement)    isCaseRangeStatement()    { return stmt == STMT.CaseRange    ? cast(typeof(return))this : null; }
+    inout(SynchronizedStatement) isSynchronizedStatement() { return stmt == STMT.Synchronized ? cast(typeof(return))this : null; }
+    inout(AsmStatement)          isAsmStatement()          { return stmt == STMT.Asm          ? cast(typeof(return))this : null; }
+    inout(InlineAsmStatement)    isInlineAsmStatement()    { return stmt == STMT.InlineAsm    ? cast(typeof(return))this : null; }
+    inout(GccAsmStatement)       isGccAsmStatement()       { return stmt == STMT.GccAsm       ? cast(typeof(return))this : null; }
+    inout(ImportStatement)       isImportStatement()       { return stmt == STMT.Import       ? cast(typeof(return))this : null; }
 }
 
 /***********************************************************
@@ -518,7 +528,8 @@ extern (C++) final class DtorExpStatement : ExpStatement
 /***********************************************************
  * https://dlang.org/spec/statement.html#mixin-statement
  */
-extern (C++) final class CompileStatement : Statement
+// Note: was called CompileStatement
+extern (C++) final class MixinStatement : Statement
 {
     Expressions* exps;
 
@@ -531,13 +542,13 @@ extern (C++) final class CompileStatement : Statement
 
     extern (D) this(const ref Loc loc, Expressions* exps)
     {
-        super(loc, STMT.Compile);
+        super(loc, STMT.Mixin);
         this.exps = exps;
     }
 
-    override CompileStatement syntaxCopy()
+    override MixinStatement syntaxCopy()
     {
-        return new CompileStatement(loc, Expression.arraySyntaxCopy(exps));
+        return new MixinStatement(loc, Expression.arraySyntaxCopy(exps));
     }
 
     override void accept(Visitor v)
@@ -2083,4 +2094,108 @@ extern (C++) final class ImportStatement : Statement
     {
         v.visit(this);
     }
+}
+
+
+mixin template VisitStatement(Result)
+{
+    Result VisitStatement(Statement s)
+    {
+        final switch (s.stmt)
+        {
+            case STMT.Error:         mixin(visitStmtCase("Error"));
+            case STMT.Scope:         mixin(visitStmtCase("Scope"));
+            case STMT.Exp:           mixin(visitStmtCase("Exp"));
+            case STMT.Compound:      mixin(visitStmtCase("Compound"));
+            case STMT.Return:        mixin(visitStmtCase("Return"));
+            case STMT.If:            mixin(visitStmtCase("If"));
+            case STMT.Conditional:   mixin(visitStmtCase("Conditional"));
+            case STMT.StaticForeach: mixin(visitStmtCase("StaticForeach"));
+            case STMT.Case:          mixin(visitStmtCase("Case"));
+            case STMT.Default:       mixin(visitStmtCase("Default"));
+            case STMT.Label:         mixin(visitStmtCase("Label"));
+            case STMT.Goto:          mixin(visitStmtCase("Goto"));
+            case STMT.GotoDefault:   mixin(visitStmtCase("GotoDefault"));
+            case STMT.GotoCase:      mixin(visitStmtCase("GotoCase"));
+            case STMT.Break:         mixin(visitStmtCase("Break"));
+            case STMT.DtorExp:       mixin(visitStmtCase("DtorExp"));
+            case STMT.Mixin:         mixin(visitStmtCase("Mixin"));
+            case STMT.Forwarding:    mixin(visitStmtCase("Forwarding"));
+            case STMT.Do:            mixin(visitStmtCase("Do"));
+            case STMT.While:         mixin(visitStmtCase("While"));
+            case STMT.For:           mixin(visitStmtCase("For"));
+            case STMT.Foreach:       mixin(visitStmtCase("Foreach"));
+            case STMT.Switch:        mixin(visitStmtCase("Switch"));
+            case STMT.Continue:      mixin(visitStmtCase("Continue"));
+            case STMT.With:          mixin(visitStmtCase("With"));
+            case STMT.TryCatch:      mixin(visitStmtCase("TryCatch"));
+            case STMT.Throw:         mixin(visitStmtCase("Throw"));
+            case STMT.Debug:         mixin(visitStmtCase("Debug"));
+            case STMT.TryFinally:    mixin(visitStmtCase("TryFinally"));
+            case STMT.ScopeGuard:    mixin(visitStmtCase("ScopeGuard"));
+            case STMT.SwitchError:   mixin(visitStmtCase("SwitchError"));
+            case STMT.UnrolledLoop:  mixin(visitStmtCase("UnrolledLoop"));
+            case STMT.ForeachRange:  mixin(visitStmtCase("ForeachRange"));
+            case STMT.CompoundDeclaration: mixin(visitStmtCase("CompoundDeclaration"));
+            case STMT.Peel:          mixin(visitStmtCase("Peel"));
+            case STMT.CompoundAsm:   mixin(visitStmtCase("CompoundAsm"));
+            case STMT.Pragma:        mixin(visitStmtCase("Pragma"));
+            case STMT.StaticAssert:  mixin(visitStmtCase("StaticAssert"));
+            case STMT.CaseRange:     mixin(visitStmtCase("CaseRange"));
+            case STMT.Synchronized:  mixin(visitStmtCase("Synchronized"));
+            case STMT.Asm:           mixin(visitStmtCase("Asm"));
+            case STMT.InlineAsm:     mixin(visitStmtCase("InlineAsm"));
+            case STMT.GccAsm:        mixin(visitStmtCase("GccAsm"));
+            case STMT.Import:        mixin(visitStmtCase("Import"));
+        }
+    }
+}
+
+/****************************************
+ * CTFE-only helper function for VisitInitializer.
+ * Params:
+ *      handler = string for the name of the visit handler
+ * Returns: boilerplate code for a case
+ */
+pure string visitStmtCase(string handler)
+{
+    if (__ctfe)
+    {
+        return
+            "
+            enum isVoid = is(Result == void);
+            auto sx = s.is"~handler~"Statement();
+            static if (__traits(compiles, visit"~handler~"(sx)))
+            {
+                static if (isVoid)
+                {
+                    visit"~handler~"(sx);
+                    return;
+                }
+                else
+                {
+                    if (Result r = visit"~handler~"(sx))
+                        return r;
+                    return Result.init;
+                }
+            }
+            else static if (__traits(compiles, visitDefaultCase(s)))
+            {
+                static if (isVoid)
+                {
+                    visitDefaultCase(sx);
+                    return;
+                }
+                else
+                {
+                    if (Result r = visitDefaultCase(s))
+                        return r;
+                    return Result.init;
+                }
+            }
+            else
+                static assert(0, "~handler~");
+            ";
+    }
+    assert(0);
 }

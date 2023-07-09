@@ -738,7 +738,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Type type)
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', type = %p)\n", id.toChars(), type);
+        //printf("AliasDeclaration(id = '%s', type = %p)\n", ident.toChars(), type);
         //printf("type = '%s'\n", type.toChars());
         this.type = type;
         assert(type);
@@ -747,7 +747,7 @@ extern (C++) final class AliasDeclaration : Declaration
     extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s)
     {
         super(loc, ident);
-        //printf("AliasDeclaration(id = '%s', s = %p)\n", id.toChars(), s);
+        //printf("AliasDeclaration(id = '%s', s = %p)\n", ident.toChars(), s);
         assert(s != this);
         this.aliassym = s;
         assert(s);
@@ -1149,6 +1149,8 @@ extern (C++) class VarDeclaration : Declaration
 
         bool isArgDtorVar;      /// temporary created to handle scope destruction of a function argument
         bool isCmacro;          /// it is a C macro turned into a C declaration
+        bool dllImport;         /// __declspec(dllimport)
+        bool dllExport;         /// __declspec(dllexport)
         version (MARS)
         {
             bool inClosure;         /// is inserted into a GC allocated closure
@@ -1314,7 +1316,7 @@ extern (C++) class VarDeclaration : Declaration
 
     override final bool isExport() const
     {
-        return visibility.kind == Visibility.Kind.export_;
+        return visibility.kind == Visibility.Kind.export_ || dllExport;
     }
 
     override final bool isImportedSymbol() const
@@ -1325,6 +1327,7 @@ extern (C++) class VarDeclaration : Declaration
          *   export extern int sym3 = 0; // error, extern cannot have initializer
          */
         bool result =
+            dllImport ||
             visibility.kind == Visibility.Kind.export_ &&
             storage_class & STC.extern_ &&
             (storage_class & STC.static_ || parent.isModule());
@@ -1931,8 +1934,12 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
         {
             // If the bit-field spans more units of alignment than its type,
             // start a new field at the next alignment boundary.
-            if (fieldState.bitOffset == fieldState.fieldSize * 8)
+            if (fieldState.bitOffset == fieldState.fieldSize * 8 &&
+                fieldState.bitOffset + fieldWidth > memalignsize * 8)
+            {
+                if (log) printf("more units of alignment than its type\n");
                 startNewField();        // the bit field is full
+            }
             else
             {
                 // if alignment boundary is crossed
@@ -1941,7 +1948,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
                 //printf("%s start: %d end: %d memalignsize: %d\n", ad.toChars(), start, end, memalignsize);
                 if (start / (memalignsize * 8) != (end - 1) / (memalignsize * 8))
                 {
-                    //printf("alignment is crossed\n");
+                    if (log) printf("alignment is crossed\n");
                     startNewField();
                 }
             }
@@ -1981,6 +1988,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
             fieldState.bitOffset = pastField;
         }
 
+        //printf("\t%s: offset = %d bitOffset = %d fieldWidth = %d memsize = %d\n", toChars(), offset, bitOffset, fieldWidth, memsize);
         //printf("\t%s: memalignsize = %d\n", toChars(), memalignsize);
         //printf(" addField '%s' to '%s' at offset %d, size = %d\n", toChars(), ad.toChars(), offset, memsize);
     }

@@ -23,7 +23,7 @@ fail_compilation/misc_parser_err_cov1.d(40): Error: semicolon expected following
 fail_compilation/misc_parser_err_cov1.d(40): Error: identifier or `new` expected following `.`, not `+`
 fail_compilation/misc_parser_err_cov1.d(41): Error: identifier or new keyword expected following `(...)`.
 fail_compilation/misc_parser_err_cov1.d(41): Error: expression expected, not `;`
-fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following statement
+fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following statement `(__error) + 0` on line fail_compilation/misc_parser_err_cov1.d(41)
 fail_compilation/misc_parser_err_cov1.d(43): Error: found `End of File` when expecting `}` following compound statement
 ---
 */

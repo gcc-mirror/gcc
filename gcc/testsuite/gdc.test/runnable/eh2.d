@@ -24,7 +24,7 @@ class Abc : Throwable
     {
         printf("foo 1\n");
         x |= 4;
-        throw this;
+        throw cast() this;
         printf("foo 2\n");
         x |= 8;
     }

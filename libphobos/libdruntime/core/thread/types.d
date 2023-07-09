@@ -41,8 +41,9 @@ version (GNU)
 }
 else
 {
-    // this should be true for most architectures
-    enum isStackGrowingDown = true;
+    version (X86) enum isStackGrowingDown = true;
+    else version (X86_64) enum isStackGrowingDown = true;
+    else static assert(0, "It is undefined how the stack grows on this architecture.");
 }
 
 package

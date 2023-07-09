@@ -138,8 +138,13 @@ immutable(void)* g10063(inout int* p) pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(154): Error: `pure` function `testInference.bar14049` cannot call impure function `testInference.foo14049!int.foo14049`
+fail_compilation/testInference.d(149):        which calls `testInference.foo14049!int.foo14049.__lambda2`
+fail_compilation/testInference.d(148):        which calls `testInference.impure14049`
+fail_compilation/testInference.d(143):        which wasn't inferred `pure` because of:
+fail_compilation/testInference.d(143):        `pure` function `testInference.impure14049` cannot access mutable static data `i`
 ---
 */
+#line 143
 auto impure14049() { static int i = 1; return i; }
 
 void foo14049(T)(T val)
@@ -170,8 +175,10 @@ int* f14160() pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(180): Error: `pure` function `testInference.test12422` cannot call impure function `testInference.test12422.bar12422!().bar12422`
+fail_compilation/testInference.d(179):        which calls `testInference.foo12422`
 ---
 */
+#line 175
 int g12422;
 void foo12422() { ++g12422; }
 void test12422() pure
@@ -184,9 +191,15 @@ void test12422() pure
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(198): Error: `pure` function `testInference.test13729a` cannot call impure function `testInference.test13729a.foo`
+fail_compilation/testInference.d(196):        which wasn't inferred `pure` because of:
+fail_compilation/testInference.d(196):        `pure` function `testInference.test13729a.foo` cannot access mutable static data `g13729`
 fail_compilation/testInference.d(206): Error: `pure` function `testInference.test13729b` cannot call impure function `testInference.test13729b.foo!().foo`
+fail_compilation/testInference.d(204):        which wasn't inferred `pure` because of:
+fail_compilation/testInference.d(204):        `pure` function `testInference.test13729b.foo!().foo` cannot access mutable static data `g13729`
 ---
 */
+
+#line 190
 int g13729;
 
 void test13729a() pure
@@ -229,8 +242,10 @@ void test17086_call ()
 TEST_OUTPUT:
 ---
 fail_compilation/testInference.d(238): Error: `pure` function `testInference.test20047_pure_function` cannot call impure function `testInference.test20047_pure_function.bug`
+fail_compilation/testInference.d(237):        which calls `testInference.test20047_impure_function`
 ---
 */
+#line 234
 void test20047_impure_function() {}
 void test20047_pure_function() pure
 {

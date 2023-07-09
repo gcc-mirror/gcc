@@ -1845,7 +1845,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (!e.committed)
         {
             se = e.copy().isStringExp();
-            se.committed = 1;
+            se.committed = true;
             copied = 1;
         }
 
@@ -1887,7 +1887,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             assert(szx <= 255);
             se.sz = cast(ubyte)szx;
             se.len = cast(size_t)tb.isTypeSArray().dim.toInteger();
-            se.committed = 1;
+            se.committed = true;
             se.type = t;
 
             /* If larger than source, pad with zeros.

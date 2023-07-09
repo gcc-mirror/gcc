@@ -1,9 +1,10 @@
 
 module traits_getFunctionAttributes;
 
+alias tuple(T...) = T;
+
 void test_getFunctionAttributes()
 {
-    alias tuple(T...) = T;
 
     struct S
     {
@@ -117,4 +118,15 @@ void test_getFunctionAttributes()
     auto systemDel = delegate() @system { };
     static assert(__traits(getFunctionAttributes, systemDel) == tuple!("pure", "nothrow", "@nogc", "@system"));
     static assert(__traits(getFunctionAttributes, typeof(systemDel)) == tuple!("pure", "nothrow", "@nogc", "@system"));
+}
+
+void bug19706()
+{
+    struct S
+    {
+        static int fImpl(Ret)() { return Ret.init; }
+
+        // tells us: `fImpl!int` is @system
+        static assert(__traits(getFunctionAttributes, fImpl!int) == tuple!("pure", "nothrow", "@nogc", "@safe"));
+    }
 }

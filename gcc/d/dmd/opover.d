@@ -293,6 +293,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 {
                     ie = (*ae.arguments)[0].isIntervalExp();
                 }
+                Type att = null; // first cyclic `alias this` type
                 while (true)
                 {
                     if (ae.e1.op == EXP.error)
@@ -354,7 +355,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         return result;
                     }
                     // Didn't find it. Forward to aliasthis
-                    if (ad.aliasthis && !isRecursiveAliasThis(ae.att1, ae.e1.type))
+                    if (ad.aliasthis && !isRecursiveAliasThis(att, ae.e1.type))
                     {
                         /* Rewrite op(a[arguments]) as:
                          *      op(a.aliasthis[arguments])
@@ -370,13 +371,18 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             }
             e.e1 = e.e1.expressionSemantic(sc);
             e.e1 = resolveProperties(sc, e.e1);
-            if (e.e1.op == EXP.error)
+            Type att = null; // first cyclic `alias this` type
+            while (1)
             {
-                return e.e1;
-            }
-            AggregateDeclaration ad = isAggregate(e.e1.type);
-            if (ad)
-            {
+                if (e.e1.op == EXP.error)
+                {
+                    return e.e1;
+                }
+
+                AggregateDeclaration ad = isAggregate(e.e1.type);
+                if (!ad)
+                    break;
+
                 Dsymbol fd = null;
                 /* Rewrite as:
                  *      e1.opUnary!(op)()
@@ -404,18 +410,18 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     }
                 }
                 // Didn't find it. Forward to aliasthis
-                if (ad.aliasthis && !isRecursiveAliasThis(e.att1, e.e1.type))
+                if (ad.aliasthis && !isRecursiveAliasThis(att, e.e1.type))
                 {
                     /* Rewrite op(e1) as:
                      *      op(e1.aliasthis)
                      */
                     //printf("att una %s e1 = %s\n", EXPtoString(op).ptr, this.e1.type.toChars());
-                    Expression e1 = new DotIdExp(e.loc, e.e1, ad.aliasthis.ident);
-                    UnaExp ue = cast(UnaExp)e.copy();
-                    ue.e1 = e1;
-                    result = ue.trySemantic(sc);
-                    return result;
+                    e.e1 = resolveAliasThis(sc, e.e1, true);
+                    if (e.e1)
+                        continue;
+                    break;
                 }
+                break;
             }
             return result;
         }
@@ -433,6 +439,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 ie = (*ae.arguments)[0].isIntervalExp();
             }
             Expression result;
+            Type att = null; // first cyclic `alias this` type
             while (true)
             {
                 if (ae.e1.op == EXP.error)
@@ -526,7 +533,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     return result;
                 }
                 // Didn't find it. Forward to aliasthis
-                if (ad.aliasthis && !isRecursiveAliasThis(ae.att1, ae.e1.type))
+                if (ad.aliasthis && !isRecursiveAliasThis(att, ae.e1.type))
                 {
                     //printf("att arr e1 = %s\n", this.e1.type.toChars());
                     /* Rewrite op(a[arguments]) as:
@@ -547,7 +554,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
          * This is mostly the same as UnaryExp::op_overload(), but has
          * a different rewrite.
          */
-        Expression visitCast(CastExp e)
+        Expression visitCast(CastExp e, Type att = null)
         {
             //printf("CastExp::op_overload() (%s)\n", e.toChars());
             Expression result;
@@ -578,7 +585,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     return result;
                 }
                 // Didn't find it. Forward to aliasthis
-                if (ad.aliasthis && !isRecursiveAliasThis(e.att1, e.e1.type))
+                if (ad.aliasthis && !isRecursiveAliasThis(att, e.e1.type))
                 {
                     /* Rewrite op(e1) as:
                      *      op(e1.aliasthis)
@@ -587,7 +594,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     {
                         result = e.copy();
                         (cast(UnaExp)result).e1 = e1;
-                        result = result.op_overload(sc);
+                        result = visitCast(result.isCastExp(), att);
                         return result;
                     }
                 }
@@ -997,7 +1004,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     return null;
 
                 import dmd.clone : needOpEquals;
-                if (!global.params.fieldwise && !needOpEquals(sd))
+                if (global.params.fieldwise != FeatureState.enabled && !needOpEquals(sd))
                 {
                     // Use bitwise equality.
                     auto op2 = e.op == EXP.equal ? EXP.identity : EXP.notIdentity;
@@ -1016,12 +1023,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                  * also compare the parent class's equality. Otherwise, compares
                  * the identity of parent context through void*.
                  */
-                if (e.att1 && t1.equivalent(e.att1)) return null;
-                if (e.att2 && t2.equivalent(e.att2)) return null;
-
                 e = e.copy().isEqualExp();
-                if (!e.att1) e.att1 = t1;
-                if (!e.att2) e.att2 = t2;
                 e.e1 = new DotIdExp(e.loc, e.e1, Id._tupleof);
                 e.e2 = new DotIdExp(e.loc, e.e2, Id._tupleof);
 
@@ -1029,18 +1031,6 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 sc2.flags |= SCOPE.noaccesscheck;
                 Expression r = e.expressionSemantic(sc2);
                 sc2.pop();
-
-                /* https://issues.dlang.org/show_bug.cgi?id=15292
-                 * if the rewrite result is same with the original,
-                 * the equality is unresolvable because it has recursive definition.
-                 */
-                if (r.op == e.op &&
-                    r.isEqualExp().e1.type.toBasetype() == t1)
-                {
-                    e.error("cannot compare `%s` because its auto generated member-wise equality has recursive definition",
-                        t1.toChars());
-                    return ErrorExp.get();
-                }
                 return r;
             }
 
@@ -1071,8 +1061,6 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         auto ex1 = (*tup1.exps)[i];
                         auto ex2 = (*tup2.exps)[i];
                         auto eeq = new EqualExp(e.op, e.loc, ex1, ex2);
-                        eeq.att1 = e.att1;
-                        eeq.att2 = e.att2;
 
                         if (!result)
                             result = eeq;
@@ -1114,6 +1102,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 {
                     ie = (*ae.arguments)[0].isIntervalExp();
                 }
+                Type att = null; // first cyclic `alias this` type
                 while (true)
                 {
                     if (ae.e1.op == EXP.error)
@@ -1185,7 +1174,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         return result;
                     }
                     // Didn't find it. Forward to aliasthis
-                    if (ad.aliasthis && !isRecursiveAliasThis(ae.att1, ae.e1.type))
+                    if (ad.aliasthis && !isRecursiveAliasThis(att, ae.e1.type))
                     {
                         /* Rewrite (a[arguments] op= e2) as:
                          *      a.aliasthis[arguments] op= e2

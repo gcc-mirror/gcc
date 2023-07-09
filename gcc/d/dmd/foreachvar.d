@@ -299,7 +299,7 @@ void foreachExpAndVar(Statement s,
             case STMT.Conditional:
             case STMT.While:
             case STMT.Forwarding:
-            case STMT.Compile:
+            case STMT.Mixin:
             case STMT.Peel:
             case STMT.Synchronized:
                 assert(0);              // should have been rewritten

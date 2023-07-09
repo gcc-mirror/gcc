@@ -693,78 +693,22 @@ public:
 
   void visit (CatExp *e) final override
   {
-    Type *tb1 = e->e1->type->toBasetype ();
-    Type *tb2 = e->e2->type->toBasetype ();
-    Type *etype;
-
-    if (tb1->ty == TY::Tarray || tb1->ty == TY::Tsarray)
-      etype = tb1->nextOf ();
-    else
-      etype = tb2->nextOf ();
-
-    tree result;
-
-    if (e->e1->op == EXP::concatenate)
+    /* This error is only emitted during the code generation pass because
+       concatentation is allowed in CTFE.  */
+    if (global.params.betterC)
       {
-	/* Flatten multiple concatenations to an array.
-	   So the expression ((a ~ b) ~ c) becomes [a, b, c]  */
-	int ndims = 2;
-
-	for (Expression *ex = e->e1; ex->op == EXP::concatenate;)
-	  {
-	    if (ex->op == EXP::concatenate)
-	      {
-		ex = ex->isCatExp ()->e1;
-		ndims++;
-	      }
-	  }
-
-	/* Store all concatenation args to a temporary byte[][ndims] array.  */
-	Type *targselem = Type::tint8->arrayOf ();
-	tree var = build_local_temp (make_array_type (targselem, ndims));
-
-	/* Loop through each concatenation from right to left.  */
-	vec <constructor_elt, va_gc> *elms = NULL;
-	CatExp *ce = e;
-	int dim = ndims - 1;
-
-	for (Expression *oe = ce->e2; oe != NULL;
-	     (ce->e1->op != EXP::concatenate
-	      ? (oe = ce->e1)
-	      : (ce = ce->e1->isCatExp (), oe = ce->e2)))
-	  {
-	    tree arg = d_array_convert (etype, oe);
-	    tree index = size_int (dim);
-	    CONSTRUCTOR_APPEND_ELT (elms, index, d_save_expr (arg));
-
-	    /* Finished pushing all arrays.  */
-	    if (oe == ce->e1)
-	      break;
-
-	    dim -= 1;
-	  }
-
-	/* Check there is no logic bug in constructing byte[][] of arrays.  */
-	gcc_assert (dim == 0);
-	tree init = build_constructor (TREE_TYPE (var), elms);
-	var = compound_expr (modify_expr (var, init), var);
-
-	tree arrs = d_array_value (build_ctype (targselem->arrayOf ()),
-				   size_int (ndims), build_address (var));
-
-	result = build_libcall (LIBCALL_ARRAYCATNTX, e->type, 2,
-				build_typeinfo (e, e->type), arrs);
-      }
-    else
-      {
-	/* Handle single concatenation (a ~ b).  */
-	result = build_libcall (LIBCALL_ARRAYCATT, e->type, 3,
-				build_typeinfo (e, e->type),
-				d_array_convert (etype, e->e1),
-				d_array_convert (etype, e->e2));
+	error_at (make_location_t (e->loc),
+		  "array concatenation of expression %qs requires the GC and "
+		  "cannot be used with %<-fno-druntime%>", e->toChars ());
+	this->result_ = error_mark_node;
+	return;
       }
 
-    this->result_ = result;
+    /* All concat expressions should have been rewritten to `_d_arraycatnTX` in
+       the semantic phase.  */
+    gcc_assert (e->lowering);
+
+    this->result_ = build_expr (e->lowering);
   }
 
   /* Build an assignment operator expression.  The right operand is implicitly
@@ -1148,6 +1092,13 @@ public:
 				      e->e2->type, e->e1->type);
 
     this->result_ = build_assign (modifycode, t1, t2);
+  }
+
+  /* Build an assignment expression that has been lowered in the front-end.  */
+
+  void visit (LoweredAssignExp *e) final override
+  {
+    this->result_ = build_expr (e->lowering);
   }
 
   /* Build a throw expression.  */
@@ -2828,7 +2779,7 @@ public:
 
     /* Building sinit trees are delayed until after frontend semantic
        processing has complete.  Build the static initializer now.  */
-    if (e->useStaticInit && !this->constp_)
+    if (e->useStaticInit && !this->constp_ && !e->sd->isCsymbol ())
       {
 	tree init = aggregate_initializer_decl (e->sd);
 

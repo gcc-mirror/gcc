@@ -759,12 +759,7 @@ final:
 
     }
 
-    static if (__traits(hasMember,Stream, "search"))
-    {
-        enum kicked = true;
-    }
-    else
-        enum kicked = false;
+    enum kicked = __traits(hasMember, Stream, "search");
 
     static size_t getThreadSize(const ref Regex!Char re)
     {

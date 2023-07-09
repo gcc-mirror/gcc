@@ -11,7 +11,10 @@
 
 module dmd.globals;
 
+import core.stdc.stdio;
 import core.stdc.stdint;
+import core.stdc.string;
+
 import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
@@ -20,6 +23,8 @@ import dmd.errors;
 import dmd.file_manager;
 import dmd.identifier;
 import dmd.location;
+import dmd.lexer : CompileEnv;
+import dmd.utils;
 
 /// Defines a setting for how compiler warnings and deprecations are handled
 enum DiagnosticReporting : ubyte
@@ -149,7 +154,7 @@ extern (C++) struct Param
     FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
     bool ehnogc;                 // use @nogc exception handling
     bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
-    bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
+    FeatureState fieldwise;      // do struct equality testing field-wise rather than by memcmp()
     bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
     FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
                                  // https://dconf.org/2019/talks/alexandrescu.html
@@ -209,6 +214,7 @@ extern (C++) struct Param
     bool run; // run resulting executable
     Strings runargs; // arguments for executable
     Array!(const(char)*) cppswitches;   // C preprocessor switches
+    const(char)* cpp;                   // if not null, then this specifies the C preprocessor
 
     // Linker stuff
     Array!(const(char)*) objfiles;
@@ -221,30 +227,6 @@ extern (C++) struct Param
     const(char)[] exefile;
     const(char)[] mapfile;
 }
-
-extern (C++) struct structalign_t
-{
-  private:
-    ushort value = 0;  // unknown
-    enum STRUCTALIGN_DEFAULT = 1234;   // default = match whatever the corresponding C compiler does
-    bool pack;         // use #pragma pack semantics
-
-  public:
-  pure @safe @nogc nothrow:
-    bool isDefault() const { return value == STRUCTALIGN_DEFAULT; }
-    void setDefault()      { value = STRUCTALIGN_DEFAULT; }
-    bool isUnknown() const { return value == 0; }  // value is not set
-    void setUnknown()      { value = 0; }
-    void set(uint value)   { this.value = cast(ushort)value; }
-    uint get() const       { return value; }
-    bool isPack() const    { return pack; }
-    void setPack(bool pack) { this.pack = pack; }
-}
-//alias structalign_t = uint;
-
-// magic value means "match whatever the underlying C compiler does"
-// other values are all powers of 2
-//enum STRUCTALIGN_DEFAULT = (cast(structalign_t)~0);
 
 enum mars_ext = "d";        // for D source files
 enum doc_ext  = "html";     // for Ddoc generated files
@@ -270,9 +252,7 @@ extern (C++) struct Global
     Array!(const(char)*)* filePath;     /// Array of char*'s which form the file import lookup path
 
     private enum string _version = import("VERSION");
-    private enum uint _versionNumber = parseVersionNumber(_version);
-
-    const(char)[] vendor;   /// Compiler backend name
+    CompileEnv compileEnv;
 
     Param params;           /// command line parameters
     uint errors;            /// number of errors reported so far
@@ -350,12 +330,12 @@ extern (C++) struct Global
 
     extern (C++) void _init()
     {
-        global.errorSink = new ErrorSinkCompiler;
+        errorSink = new ErrorSinkCompiler;
 
         this.fileManager = new FileManager();
         version (MARS)
         {
-            vendor = "Digital Mars D";
+            compileEnv.vendor = "Digital Mars D";
 
             // -color=auto is the default value
             import dmd.console : detectTerminal;
@@ -363,8 +343,38 @@ extern (C++) struct Global
         }
         else version (IN_GCC)
         {
-            vendor = "GNU D";
+            compileEnv.vendor = "GNU D";
         }
+        compileEnv.versionNumber = parseVersionNumber(_version);
+
+        /* Initialize date, time, and timestamp
+         */
+        import core.stdc.time;
+        import core.stdc.stdlib : getenv;
+
+        time_t ct;
+        // https://issues.dlang.org/show_bug.cgi?id=20444
+        if (auto p = getenv("SOURCE_DATE_EPOCH"))
+        {
+            if (!ct.parseDigits(p[0 .. strlen(p)]))
+                errorSink.error(Loc.initial, "value of environment variable `SOURCE_DATE_EPOCH` should be a valid UNIX timestamp, not: `%s`", p);
+        }
+        else
+            core.stdc.time.time(&ct);
+        const p = ctime(&ct);
+        assert(p);
+
+        __gshared char[11 + 1] date = 0;        // put in BSS segment
+        __gshared char[8  + 1] time = 0;
+        __gshared char[24 + 1] timestamp = 0;
+
+        const dsz = snprintf(&date[0], date.length, "%.6s %.4s", p + 4, p + 20);
+        const tsz = snprintf(&time[0], time.length, "%.8s", p + 11);
+        const tssz = snprintf(&timestamp[0], timestamp.length, "%.24s", p);
+        assert(dsz > 0 && tsz > 0 && tssz > 0);
+        compileEnv.time = time[0 .. tsz];
+        compileEnv.date = date[0 .. dsz];
+        compileEnv.timestamp = timestamp[0 .. tssz];
     }
 
     /**
@@ -415,7 +425,7 @@ extern (C++) struct Global
     */
     extern(C++) uint versionNumber()
     {
-        return _versionNumber;
+        return compileEnv.versionNumber;
     }
 
     /**

@@ -63,34 +63,21 @@ enum BE : int
  */
 int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
 {
-    extern (C++) final class BlockExit : Visitor
-    {
-        alias visit = Visitor.visit;
-    public:
-        FuncDeclaration func;
-        bool mustNotThrow;
-        int result;
+        int result = BE.none;
 
-        extern (D) this(FuncDeclaration func, bool mustNotThrow) scope
-        {
-            this.func = func;
-            this.mustNotThrow = mustNotThrow;
-            result = BE.none;
-        }
-
-        override void visit(Statement s)
+        void visitDefaultCase(Statement s)
         {
             printf("Statement::blockExit(%p)\n", s);
             printf("%s\n", s.toChars());
             assert(0);
         }
 
-        override void visit(ErrorStatement s)
+        void visitError(ErrorStatement s)
         {
             result = BE.none;
         }
 
-        override void visit(ExpStatement s)
+        void visitExp(ExpStatement s)
         {
             result = BE.fallthru;
             if (s.exp)
@@ -115,13 +102,18 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             }
         }
 
-        override void visit(CompileStatement s)
+        void visitDtorExp(DtorExpStatement s)
+        {
+            visitExp(s);
+        }
+
+        void visitMixin(MixinStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(CompoundStatement cs)
+        void visitCompound(CompoundStatement cs)
         {
             //printf("CompoundStatement.blockExit(%p) %d result = x%X\n", cs, cs.statements.length, result);
             result = BE.fallthru;
@@ -175,7 +167,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             }
         }
 
-        override void visit(UnrolledLoopStatement uls)
+        void visitUnrolledLoop(UnrolledLoopStatement uls)
         {
             result = BE.fallthru;
             foreach (s; *uls.statements)
@@ -190,19 +182,19 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             }
         }
 
-        override void visit(ScopeStatement s)
+        void visitScope(ScopeStatement s)
         {
             //printf("ScopeStatement::blockExit(%p)\n", s.statement);
             result = blockExit(s.statement, func, mustNotThrow);
         }
 
-        override void visit(WhileStatement s)
+        void visitWhile(WhileStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(DoStatement s)
+        void visitDo(DoStatement s)
         {
             if (s._body)
             {
@@ -227,7 +219,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result &= ~(BE.break_ | BE.continue_);
         }
 
-        override void visit(ForStatement s)
+        void visitFor(ForStatement s)
         {
             result = BE.fallthru;
             if (s._init)
@@ -259,7 +251,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result |= canThrow(s.increment, func, mustNotThrow);
         }
 
-        override void visit(ForeachStatement s)
+        void visitForeach(ForeachStatement s)
         {
             result = BE.fallthru;
             result |= canThrow(s.aggr, func, mustNotThrow);
@@ -268,13 +260,13 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result |= blockExit(s._body, func, mustNotThrow) & ~(BE.break_ | BE.continue_);
         }
 
-        override void visit(ForeachRangeStatement s)
+        void visitForeachRange(ForeachRangeStatement s)
         {
             assert(global.errors);
             result = BE.fallthru;
         }
 
-        override void visit(IfStatement s)
+        void visitIf(IfStatement s)
         {
             //printf("IfStatement::blockExit(%p)\n", s);
             result = BE.none;
@@ -297,24 +289,24 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             //printf("IfStatement::blockExit(%p) = x%x\n", s, result);
         }
 
-        override void visit(ConditionalStatement s)
+        void visitConditional(ConditionalStatement s)
         {
             result = blockExit(s.ifbody, func, mustNotThrow);
             if (s.elsebody)
                 result |= blockExit(s.elsebody, func, mustNotThrow);
         }
 
-        override void visit(PragmaStatement s)
+        void visitPragma(PragmaStatement s)
         {
             result = BE.fallthru;
         }
 
-        override void visit(StaticAssertStatement s)
+        void visitStaticAssert(StaticAssertStatement s)
         {
             result = BE.fallthru;
         }
 
-        override void visit(SwitchStatement s)
+        void visitSwitch(SwitchStatement s)
         {
             result = BE.none;
             result |= canThrow(s.condition, func, mustNotThrow);
@@ -332,63 +324,63 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result |= BE.fallthru;
         }
 
-        override void visit(CaseStatement s)
+        void visitCase(CaseStatement s)
         {
             result = blockExit(s.statement, func, mustNotThrow);
         }
 
-        override void visit(DefaultStatement s)
+        void visitDefault(DefaultStatement s)
         {
             result = blockExit(s.statement, func, mustNotThrow);
         }
 
-        override void visit(GotoDefaultStatement s)
+        void visitGotoDefault(GotoDefaultStatement s)
         {
             result = BE.goto_;
         }
 
-        override void visit(GotoCaseStatement s)
+        void visitGotoCase(GotoCaseStatement s)
         {
             result = BE.goto_;
         }
 
-        override void visit(SwitchErrorStatement s)
+        void visitSwitchError(SwitchErrorStatement s)
         {
             // Switch errors are non-recoverable
             result = BE.halt;
         }
 
-        override void visit(ReturnStatement s)
+        void visitReturn(ReturnStatement s)
         {
             result = BE.return_;
             if (s.exp)
                 result |= canThrow(s.exp, func, mustNotThrow);
         }
 
-        override void visit(BreakStatement s)
+        void visitBreak(BreakStatement s)
         {
             //printf("BreakStatement::blockExit(%p) = x%x\n", s, s.ident ? BE.goto_ : BE.break_);
             result = s.ident ? BE.goto_ : BE.break_;
         }
 
-        override void visit(ContinueStatement s)
+        void visitContinue(ContinueStatement s)
         {
             result = s.ident ? BE.continue_ | BE.goto_ : BE.continue_;
         }
 
-        override void visit(SynchronizedStatement s)
+        void visitSynchronized(SynchronizedStatement s)
         {
             result = blockExit(s._body, func, mustNotThrow);
         }
 
-        override void visit(WithStatement s)
+        void visitWith(WithStatement s)
         {
             result = BE.none;
             result |= canThrow(s.exp, func, mustNotThrow);
             result |= blockExit(s._body, func, mustNotThrow);
         }
 
-        override void visit(TryCatchStatement s)
+        void visitTryCatch(TryCatchStatement s)
         {
             assert(s._body);
             result = blockExit(s._body, func, false);
@@ -428,7 +420,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result |= catchresult;
         }
 
-        override void visit(TryFinallyStatement s)
+        void visitTryFinally(TryFinallyStatement s)
         {
             result = BE.fallthru;
             if (s._body)
@@ -470,13 +462,13 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result |= finalresult & ~BE.fallthru;
         }
 
-        override void visit(ScopeGuardStatement s)
+        void visitScopeGuard(ScopeGuardStatement s)
         {
             // At this point, this statement is just an empty placeholder
             result = BE.fallthru;
         }
 
-        override void visit(ThrowStatement s)
+        void visitThrow(ThrowStatement s)
         {
             if (s.internalThrow)
             {
@@ -486,16 +478,16 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 return;
             }
 
-            result = checkThrow(s.loc, s.exp, mustNotThrow);
+            result = checkThrow(s.loc, s.exp, mustNotThrow, func);
         }
 
-        override void visit(GotoStatement s)
+        void visitGoto(GotoStatement s)
         {
             //printf("GotoStatement::blockExit(%p)\n", s);
             result = BE.goto_;
         }
 
-        override void visit(LabelStatement s)
+        void visitLabel(LabelStatement s)
         {
             //printf("LabelStatement::blockExit(%p)\n", s);
             result = blockExit(s.statement, func, mustNotThrow);
@@ -503,30 +495,31 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result |= BE.fallthru;
         }
 
-        override void visit(CompoundAsmStatement s)
+        void visitCompoundAsm(CompoundAsmStatement s)
         {
             // Assume the worst
             result = BE.fallthru | BE.return_ | BE.goto_ | BE.halt;
             if (!(s.stc & STC.nothrow_))
             {
-                if (mustNotThrow && !(s.stc & STC.nothrow_))
-                    s.error("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                if(func)
+                    func.setThrow(s.loc, "`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                if (mustNotThrow)
+                    s.error("`asm` statement is assumed to throw - mark it with `nothrow` if it does not"); // TODO
                 else
                     result |= BE.throw_;
             }
         }
 
-        override void visit(ImportStatement s)
+        void visitImport(ImportStatement s)
         {
             result = BE.fallthru;
         }
-    }
 
     if (!s)
         return BE.fallthru;
-    scope BlockExit be = new BlockExit(func, mustNotThrow);
-    s.accept(be);
-    return be.result;
+    mixin VisitStatement!void visit;
+    visit.VisitStatement(s);
+    return result;
 }
 
 /++
@@ -537,10 +530,11 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
  +   loc          = location of the `throw`
  +   exp          = expression yielding the throwable
  +   mustNotThrow = inside of a `nothrow` scope?
+ +   func         = function containing the `throw`
  +
  + Returns: `BE.[err]throw` depending on the type of `exp`
  +/
-BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
+BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow, FuncDeclaration func)
 {
     import dmd.errors : error;
 
@@ -554,6 +548,8 @@ BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
     }
     if (mustNotThrow)
         loc.error("`%s` is thrown but not caught", exp.type.toChars());
+    else if (func)
+        func.setThrow(loc, "`%s` is thrown but not caught", exp.type);
 
     return BE.throw_;
 }

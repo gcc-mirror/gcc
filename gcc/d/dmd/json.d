@@ -833,7 +833,7 @@ public:
     {
         import dmd.target : target;
         objectStart();
-        requiredProperty("vendor", global.vendor);
+        requiredProperty("vendor", global.compileEnv.vendor);
         requiredProperty("version", global.versionString());
         property("__VERSION__", global.versionNumber());
         requiredProperty("interface", determineCompilerInterface());
@@ -1070,13 +1070,13 @@ Determines and returns the compiler interface which is one of `dmd`, `ldc`,
 */
 private extern(D) string determineCompilerInterface()
 {
-    if (global.vendor == "Digital Mars D")
+    if (global.compileEnv.vendor == "Digital Mars D")
         return "dmd";
-    if (global.vendor == "LDC")
+    if (global.compileEnv.vendor == "LDC")
         return "ldc";
-    if (global.vendor == "GNU D")
+    if (global.compileEnv.vendor == "GNU D")
         return "gdc";
-    if (global.vendor == "SDC")
+    if (global.compileEnv.vendor == "SDC")
         return "sdc";
     return null;
 }

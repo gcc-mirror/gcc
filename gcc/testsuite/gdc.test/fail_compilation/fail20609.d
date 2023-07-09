@@ -4,7 +4,7 @@
 fail_compilation/fail20609.d(26): Error: none of the overloads of `this` are callable using argument types `(int)`
 fail_compilation/fail20609.d(23):        Candidate is: `fail20609.Foo.this(string[] args)`
 fail_compilation/fail20609.d(27): Error: none of the overloads of `this` are callable using argument types `(int)`
-fail_compilation/fail20609.d(22):        Candidates are: `fail20609.Foo.this(Object _param_0)`
+fail_compilation/fail20609.d(22):        Candidates are: `fail20609.Foo.this(Object __param_0)`
 fail_compilation/fail20609.d(23):                        `fail20609.Foo.this(string[] args)`
 fail_compilation/fail20609.d(37): Error: none of the overloads of `this` are callable using argument types `(int)`
 fail_compilation/fail20609.d(37):        All possible candidates are marked as `deprecated` or `@disable`

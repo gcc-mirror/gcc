@@ -2270,7 +2270,9 @@ private
                     if (range.front.convertsTo!(Throwable))
                         throw range.front.get!(Throwable);
                     else if (range.front.convertsTo!(shared(Throwable)))
-                        throw range.front.get!(shared(Throwable));
+                        /* Note: a shared type can be caught without the shared qualifier
+                         * so throwing shared will be an error */
+                        throw cast() range.front.get!(shared(Throwable));
                     else
                         throw new PriorityMessageException(range.front.data);
                 }

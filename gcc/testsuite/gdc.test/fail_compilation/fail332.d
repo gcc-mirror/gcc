@@ -1,14 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail332.d(22): Error: function `fail332.foo(int _param_0, ...)` is not callable using argument types `()`
-fail_compilation/fail332.d(22):        missing argument for parameter #1: `int _param_0`
-fail_compilation/fail332.d(23): Error: function `fail332.foo(int _param_0, ...)` is not callable using argument types `(typeof(null))`
-fail_compilation/fail332.d(23):        cannot pass argument `null` of type `typeof(null)` to parameter `int _param_0`
-fail_compilation/fail332.d(25): Error: function `fail332.baz(int[] _param_0...)` is not callable using argument types `(string)`
-fail_compilation/fail332.d(25):        cannot pass argument `""` of type `string` to parameter `int[] _param_0...`
-fail_compilation/fail332.d(26): Error: function `fail332.baz(int[] _param_0...)` is not callable using argument types `(int, typeof(null))`
-fail_compilation/fail332.d(26):        cannot pass argument `null` of type `typeof(null)` to parameter `int[] _param_0...`
+fail_compilation/fail332.d(22): Error: function `fail332.foo(int __param_0, ...)` is not callable using argument types `()`
+fail_compilation/fail332.d(22):        missing argument for parameter #1: `int __param_0`
+fail_compilation/fail332.d(23): Error: function `fail332.foo(int __param_0, ...)` is not callable using argument types `(typeof(null))`
+fail_compilation/fail332.d(23):        cannot pass argument `null` of type `typeof(null)` to parameter `int __param_0`
+fail_compilation/fail332.d(25): Error: function `fail332.baz(int[] __param_0...)` is not callable using argument types `(string)`
+fail_compilation/fail332.d(25):        cannot pass argument `""` of type `string` to parameter `int[] __param_0...`
+fail_compilation/fail332.d(26): Error: function `fail332.baz(int[] __param_0...)` is not callable using argument types `(int, typeof(null))`
+fail_compilation/fail332.d(26):        cannot pass argument `null` of type `typeof(null)` to parameter `int[] __param_0...`
 ---
 */
 

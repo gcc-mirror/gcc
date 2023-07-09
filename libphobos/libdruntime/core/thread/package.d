@@ -18,3 +18,42 @@ public import core.thread.threadbase;
 public import core.thread.threadgroup;
 public import core.thread.types;
 public import core.thread.context;
+
+
+// this test is here to avoid a cyclic dependency between
+// core.thread and core.atomic
+unittest
+{
+    import core.atomic;
+
+    // Use heap memory to ensure an optimizing
+    // compiler doesn't put things in registers.
+    uint* x = new uint();
+    bool* f = new bool();
+    uint* r = new uint();
+
+    auto thr = new Thread(()
+    {
+        while (!*f)
+        {
+        }
+
+        atomicFence();
+
+        *r = *x;
+    });
+
+    thr.start();
+
+    *x = 42;
+
+    atomicFence();
+
+    *f = true;
+
+    atomicFence();
+
+    thr.join();
+
+    assert(*r == 42);
+}

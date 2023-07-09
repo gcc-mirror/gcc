@@ -151,7 +151,7 @@ struct Param
     FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
     d_bool ehnogc;                 // use @nogc exception handling
     d_bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
-    d_bool fieldwise;              // do struct equality testing field-wise rather than by memcmp()
+    FeatureState fieldwise;      // do struct equality testing field-wise rather than by memcmp()
     d_bool fixAliasThis;           // if the current scope has an alias this, check it before searching upper scopes
     FeatureState rvalueRefParam; // allow rvalues to be arguments to ref parameters
                                  // https://dconf.org/2019/talks/alexandrescu.html
@@ -212,6 +212,7 @@ struct Param
     Strings runargs;    // arguments for executable
 
     Array<const char *> cppswitches; // preprocessor switches
+    const char *cpp;                 // if not null, then this specifies the C preprocessor
 
     // Linker stuff
     Array<const char *> objfiles;
@@ -252,6 +253,18 @@ const DString hdr_ext  = "di";       // for D 'header' import files
 const DString json_ext = "json";     // for JSON files
 const DString map_ext  = "map";      // for .map files
 
+struct CompileEnv
+{
+    uint32_t versionNumber;
+    DString date;
+    DString time;
+    DString vendor;
+    DString timestamp;
+    bool previewIn;
+    bool ddocOutput;
+    bool shortenedMethods;
+};
+
 struct Global
 {
     DString inifilename;
@@ -261,7 +274,7 @@ struct Global
     Array<const char *> *path;        // Array of char*'s which form the import lookup path
     Array<const char *> *filePath;    // Array of char*'s which form the file import lookup path
 
-    DString vendor;          // Compiler backend name
+    CompileEnv compileEnv;
 
     Param params;
     unsigned errors;         // number of errors reported so far

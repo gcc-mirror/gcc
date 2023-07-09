@@ -3632,18 +3632,18 @@ auto joiner(RoR, Separator)(RoR r, Separator sep)
 
 /// Ditto
 auto joiner(RoR)(RoR r)
-if (isInputRange!RoR && isInputRange!(ElementType!RoR))
+if (isInputRange!RoR && isInputRange!(Unqual!(ElementType!RoR)))
 {
     static struct Result
     {
     private:
         RoR _items;
-        ElementType!RoR _current;
+        Unqual!(ElementType!RoR) _current;
         enum isBidirectional = isForwardRange!RoR && isForwardRange!(ElementType!RoR) &&
                                isBidirectionalRange!RoR && isBidirectionalRange!(ElementType!RoR);
         static if (isBidirectional)
         {
-            ElementType!RoR _currentBack;
+            Unqual!(ElementType!RoR) _currentBack;
             bool reachedFinalElement;
         }
 
@@ -4291,6 +4291,28 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
 
     static immutable struct S { int[] array; }
     assert([only(S(null))].joiner.front == S(null));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22785
+@safe unittest
+{
+
+    import std.algorithm.iteration : joiner, map;
+    import std.array : array;
+
+    static immutable struct S
+    {
+        int value;
+    }
+
+    static immutable struct T
+    {
+        S[] arr;
+    }
+
+    auto range = [T([S(3)]), T([S(4), S(5)])];
+
+    assert(range.map!"a.arr".joiner.array == [S(3), S(4), S(5)]);
 }
 
 /++

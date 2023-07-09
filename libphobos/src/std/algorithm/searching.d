@@ -119,12 +119,9 @@ template all(alias pred = "a")
     Performs (at most) $(BIGOH range.length) evaluations of `pred`.
      +/
     bool all(Range)(Range range)
-    if (isInputRange!Range)
+    if (isInputRange!Range &&
+        (__traits(isTemplate, pred) || is(typeof(unaryFun!pred(range.front)))))
     {
-        static assert(is(typeof(unaryFun!pred(range.front))),
-                "`" ~ (isSomeString!(typeof(pred))
-                    ? pred.stringof[1..$-1] : pred.stringof)
-                ~ "` isn't a unary predicate function for range.front");
         import std.functional : not;
 
         return find!(not!(unaryFun!pred))(range).empty;
@@ -172,7 +169,8 @@ template any(alias pred = "a")
     Performs (at most) $(BIGOH range.length) evaluations of `pred`.
      +/
     bool any(Range)(Range range)
-    if (isInputRange!Range && is(typeof(unaryFun!pred(range.front))))
+    if (isInputRange!Range &&
+        (__traits(isTemplate, pred) || is(typeof(unaryFun!pred(range.front)))))
     {
         return !find!pred(range).empty;
     }
@@ -1294,17 +1292,6 @@ if (isInputRange!R &&
 
 private enum bool hasConstEmptyMember(T) = is(typeof(((const T* a) => (*a).empty)(null)) : bool);
 
-// Rebindable doesn't work with structs
-// see: https://github.com/dlang/phobos/pull/6136
-private template RebindableOrUnqual(T)
-{
-    import std.typecons : Rebindable;
-    static if (is(T == class) || is(T == interface) || isDynamicArray!T || isAssociativeArray!T)
-        alias RebindableOrUnqual = Rebindable!T;
-    else
-        alias RebindableOrUnqual = Unqual!T;
-}
-
 /**
 Iterates the passed range and selects the extreme element with `less`.
 If the extreme element occurs multiple time, the first occurrence will be
@@ -1313,8 +1300,8 @@ returned.
 Params:
     map = custom accessor for the comparison key
     selector = custom mapping for the extrema selection
-    seed = custom seed to use as initial element
     r = Range from which the extreme value will be selected
+    seedElement = custom seed to use as initial element
 
 Returns:
     The extreme value according to `map` and `selector` of the passed-in values.
@@ -1328,10 +1315,19 @@ in
 }
 do
 {
+    import std.typecons : Rebindable;
+
     alias Element = ElementType!Range;
-    RebindableOrUnqual!Element seed = r.front;
+    Rebindable!Element seed = r.front;
     r.popFront();
-    return extremum!(map, selector)(r, seed);
+    static if (is(Rebindable!Element == T[], T))
+    {
+        return extremum!(map, selector)(r, seed);
+    }
+    else
+    {
+        return extremum!(map, selector)(r, seed.get);
+    }
 }
 
 private auto extremum(alias map, alias selector = "a < b", Range,
@@ -1341,13 +1337,14 @@ if (isInputRange!Range && !isInfinite!Range &&
     !is(CommonType!(ElementType!Range, RangeElementType) == void) &&
      is(typeof(unaryFun!map(ElementType!(Range).init))))
 {
+    import std.typecons : Rebindable;
+
     alias mapFun = unaryFun!map;
     alias selectorFun = binaryFun!selector;
 
     alias Element = ElementType!Range;
     alias CommonElement = CommonType!(Element, RangeElementType);
-    RebindableOrUnqual!CommonElement extremeElement = seedElement;
-
+    Rebindable!CommonElement extremeElement = seedElement;
 
     // if we only have one statement in the loop, it can be optimized a lot better
     static if (__traits(isSame, map, a => a))
@@ -1408,7 +1405,15 @@ if (isInputRange!Range && !isInfinite!Range &&
             }
         }
     }
-    return extremeElement;
+    // Rebindable is an alias to T for arrays
+    static if (is(typeof(extremeElement) == T[], T))
+    {
+        return extremeElement;
+    }
+    else
+    {
+        return extremeElement.get;
+    }
 }
 
 private auto extremum(alias selector = "a < b", Range)(Range r)
@@ -1493,6 +1498,10 @@ if (isInputRange!Range && !isInfinite!Range &&
         assert(d.extremum!`a > b` == 10);
         assert(d.extremum!(a => a, `a > b`) == 10);
     }
+
+    // compiletime
+    enum ctExtremum = iota(1, 5).extremum;
+    assert(ctExtremum == 1);
 }
 
 @nogc @safe nothrow pure unittest
@@ -1524,6 +1533,17 @@ if (isInputRange!Range && !isInfinite!Range &&
     assert(arr.extremum!"a.val".val == 0);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=22786
+@nogc @safe nothrow pure unittest
+{
+    struct S
+    {
+        immutable int value;
+    }
+
+    assert([S(5), S(6)].extremum!"a.value" == S(5));
+}
+
 // find
 /**
 Finds an individual element in an $(REF_ALTTEXT input range, isInputRange, std,range,primitives).
@@ -1552,7 +1572,7 @@ Complexity:
     `find` performs $(BIGOH walkLength(haystack)) evaluations of `pred`.
     There are specializations that improve performance by taking
     advantage of $(REF_ALTTEXT bidirectional, isBidirectionalRange, std,range,primitives)
-    or $(REF_ALTTEXT random access, isRandomAccess, std,range,primitives)
+    or $(REF_ALTTEXT random access, isRandomAccessRange, std,range,primitives)
     ranges (where possible).
 
 Params:

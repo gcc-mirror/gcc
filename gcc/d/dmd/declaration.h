@@ -623,6 +623,9 @@ public:
     FuncDeclarations *inlinedNestedCallees;
 
     AttributeViolation* safetyViolation;
+    AttributeViolation* nogcViolation;
+    AttributeViolation* pureViolation;
+    AttributeViolation* nothrowViolation;
 
     // Formerly FUNCFLAGS
     uint32_t flags;
@@ -672,6 +675,10 @@ public:
     bool isCrtCtor(bool v);
     bool isCrtDtor() const;
     bool isCrtDtor(bool v);
+    bool dllImport() const;
+    bool dllImport(bool v);
+    bool dllExport() const;
+    bool dllExport(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.

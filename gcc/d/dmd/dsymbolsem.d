@@ -1321,6 +1321,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (dsym.errors)
             return;
 
+        if (!(global.params.bitfields || sc.flags & SCOPE.Cfile))
+            dsym.error("use -preview=bitfields for bitfield support");
+
         if (!dsym.parent.isStructDeclaration() && !dsym.parent.isClassDeclaration())
         {
             dsym.error("- bit-field must be member of struct, union, or class");
@@ -1923,9 +1926,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         attribSemantic(sfd);
     }
 
-    private Dsymbols* compileIt(CompileDeclaration cd)
+    private Dsymbols* compileIt(MixinDeclaration cd)
     {
-        //printf("CompileDeclaration::compileIt(loc = %d) %s\n", cd.loc.linnum, cd.exp.toChars());
+        //printf("MixinDeclaration::compileIt(loc = %d) %s\n", cd.loc.linnum, cd.exp.toChars());
         OutBuffer buf;
         if (expressionsToString(buf, sc, cd.exps))
             return null;
@@ -1934,7 +1937,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         const len = buf.length;
         buf.writeByte(0);
         const str = buf.extractSlice()[0 .. len];
-        scope p = new Parser!ASTCodegen(cd.loc, sc._module, str, false, global.errorSink);
+        const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+        auto loc = adjustLocForMixin(str, cd.loc, global.params.mixinOut);
+        scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+        p.transitionIn = global.params.vin;
         p.nextToken();
 
         auto d = p.parseDeclDefs(0);
@@ -1952,9 +1958,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     /***********************************************************
      * https://dlang.org/spec/module.html#mixin-declaration
      */
-    override void visit(CompileDeclaration cd)
+    override void visit(MixinDeclaration cd)
     {
-        //printf("CompileDeclaration::semantic()\n");
+        //printf("MixinDeclaration::semantic()\n");
         if (!cd.compiled)
         {
             cd.decl = compileIt(cd);
@@ -2252,32 +2258,39 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
             /* C11 6.7.2.2
              */
-            assert(ed.memtype);
-            int nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
+            Type commonType = ed.memtype;
+            if (!commonType)
+                commonType = Type.tint32;
+            ulong nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
 
             // C11 6.7.2.2-2 value must be representable as an int.
             // The sizemask represents all values that int will fit into,
             // from 0..uint.max.  We want to cover int.min..uint.max.
-            const mask = Type.tint32.sizemask();
-            IntRange ir = IntRange(SignExtendedNumber(~(mask >> 1), true),
-                                   SignExtendedNumber(mask));
+            IntRange ir = IntRange.fromType(commonType);
 
-            void emSemantic(EnumMember em, ref int nextValue)
+            void emSemantic(EnumMember em, ref ulong nextValue)
             {
                 static void errorReturn(EnumMember em)
                 {
+                    em.value = ErrorExp.get();
                     em.errors = true;
                     em.semanticRun = PASS.semanticdone;
                 }
 
                 em.semanticRun = PASS.semantic;
-                em.type = Type.tint32;
+                em.type = commonType;
                 em._linkage = LINK.c;
                 em.storage_class |= STC.manifest;
                 if (em.value)
                 {
                     Expression e = em.value;
                     assert(e.dyncast() == DYNCAST.expression);
+
+                    /* To merge the type of e with commonType, add 0 of type commonType
+                     */
+                    if (!ed.memtype)
+                        e = new AddExp(em.loc, e, new IntegerExp(em.loc, 0, commonType));
+
                     e = e.expressionSemantic(sc);
                     e = resolveProperties(sc, e);
                     e = e.integralPromotions(sc);
@@ -2291,14 +2304,16 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         em.error("enum member must be an integral constant expression, not `%s` of type `%s`", e.toChars(), e.type.toChars());
                         return errorReturn(em);
                     }
-                    if (!ir.contains(getIntRange(ie)))
+                    if (ed.memtype && !ir.contains(getIntRange(ie)))
                     {
                         // C11 6.7.2.2-2
-                        em.error("enum member value `%s` does not fit in an `int`", e.toChars());
+                        em.error("enum member value `%s` does not fit in `%s`", e.toChars(), commonType.toChars());
                         return errorReturn(em);
                     }
-                    nextValue = cast(int)ie.toInteger();
-                    em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
+                    nextValue = ie.toInteger();
+                    if (!ed.memtype)
+                        commonType = e.type;
+                    em.value = new IntegerExp(em.loc, nextValue, commonType);
                 }
                 else
                 {
@@ -2306,17 +2321,17 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     bool first = (em == (*em.ed.members)[0]);
                     if (!first)
                     {
-                        import core.checkedint : adds;
-                        bool overflow;
-                        nextValue = adds(nextValue, 1, overflow);
-                        if (overflow)
+                        Expression max = getProperty(commonType, null, em.loc, Id.max, 0);
+                        if (nextValue == max.toInteger())
                         {
-                            em.error("initialization with `%d+1` causes overflow for type `int`", nextValue - 1);
+                            em.error("initialization with `%s+1` causes overflow for type `%s`", max.toChars(), commonType.toChars());
                             return errorReturn(em);
                         }
+                        nextValue += 1;
                     }
-                    em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
+                    em.value = new IntegerExp(em.loc, nextValue, commonType);
                 }
+                em.type = commonType;
                 em.semanticRun = PASS.semanticdone;
             }
 
@@ -2325,6 +2340,21 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 if (EnumMember em = s.isEnumMember())
                     emSemantic(em, nextValue);
             });
+
+            if (!ed.memtype)
+            {
+                // cast all members to commonType
+                ed.members.foreachDsymbol( (s)
+                {
+                    if (EnumMember em = s.isEnumMember())
+                    {
+                        em.type = commonType;
+                        em.value = em.value.castTo(sc, commonType);
+                    }
+                });
+            }
+
+            ed.memtype = commonType;
             ed.semanticRun = PASS.semanticdone;
             return;
         }
@@ -4662,7 +4692,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
             sd.visibility = sc.visibility;
 
-            sd.alignment = sc.alignment();
+            if (sd.alignment.isUnknown())       // can be set already by `struct __declspec(align(N)) Tag { ... }`
+                sd.alignment = sc.alignment();
 
             sd.storage_class |= sc.stc;
             if (sd.storage_class & STC.abstract_)
@@ -7227,4 +7258,84 @@ PINLINE evalPragmaInline(Loc loc, Scope* sc, Expressions* args)
         return PINLINE.always;
     else
         return PINLINE.never;
+}
+
+/***************************************************
+ * Set up loc for a parse of a mixin. Append the input text to the mixin.
+ * Params:
+ *      input = mixin text
+ *      loc = location to adjust
+ *      mixinOut = sink for mixin text data
+ * Returns:
+ *      adjusted loc suitable for Parser
+ */
+
+Loc adjustLocForMixin(const(char)[] input, ref const Loc loc, ref Output mixinOut)
+{
+    Loc result;
+    if (mixinOut.doOutput)
+    {
+        const lines = mixinOut.bufferLines;
+        writeMixin(input, loc, mixinOut.bufferLines, *mixinOut.buffer);
+        result = Loc(mixinOut.name.ptr, lines + 2, loc.charnum);
+    }
+    else if (loc.filename)
+    {
+        /* Create a pseudo-filename for the mixin string, as it may not even exist
+         * in the source file.
+         */
+        auto len = strlen(loc.filename) + 7 + (loc.linnum).sizeof * 3 + 1;
+        char* filename = cast(char*)mem.xmalloc(len);
+        snprintf(filename, len, "%s-mixin-%d", loc.filename, cast(int)loc.linnum);
+        result = Loc(filename, loc.linnum, loc.charnum);
+    }
+    else
+        result = loc;
+    return result;
+}
+
+/**************************************
+ * Append source code text to output for better debugging.
+ * Canonicalize line endings.
+ * Params:
+ *      s = source code text
+ *      loc = location of source code text
+ *      lines = line count to update
+ *      output = sink for output
+ */
+private void writeMixin(const(char)[] s, ref const Loc loc, ref int lines, ref OutBuffer buf)
+{
+    buf.writestring("// expansion at ");
+    buf.writestring(loc.toChars());
+    buf.writenl();
+
+    ++lines;
+
+    // write by line to create consistent line endings
+    size_t lastpos = 0;
+    for (size_t i = 0; i < s.length; ++i)
+    {
+        // detect LF and CRLF
+        const c = s[i];
+        if (c == '\n' || (c == '\r' && i+1 < s.length && s[i+1] == '\n'))
+        {
+            buf.writestring(s[lastpos .. i]);
+            buf.writenl();
+            ++lines;
+            if (c == '\r')
+                ++i;
+            lastpos = i + 1;
+        }
+    }
+
+    if(lastpos < s.length)
+        buf.writestring(s[lastpos .. $]);
+
+    if (s.length == 0 || s[$-1] != '\n')
+    {
+        buf.writenl(); // ensure empty line after expansion
+        ++lines;
+    }
+    buf.writenl();
+    ++lines;
 }

@@ -38,6 +38,7 @@ class TemplateDeclaration;
 class ClassDeclaration;
 class OverloadSet;
 class StringExp;
+class LoweredAssignExp;
 struct UnionExp;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
@@ -79,12 +80,12 @@ enum class ModifyFlags
 class Expression : public ASTNode
 {
 public:
-    EXP op;                     // to minimize use of dynamic_cast
-    unsigned char size;         // # of bytes in Expression so we can copy() it
-    d_bool parens;                // if this is a parenthesized expression
     Type *type;                 // !=NULL means that semantic() has been run
     Loc loc;                    // file location
+    EXP op;                     // to minimize use of dynamic_cast
+    d_bool parens;              // if this is a parenthesized expression
 
+    size_t size() const;
     static void _init();
     Expression *copy();
     virtual Expression *syntaxCopy();
@@ -240,6 +241,7 @@ public:
     UnaExp* isUnaExp();
     BinExp* isBinExp();
     BinAssignExp* isBinAssignExp();
+    LoweredAssignExp* isLoweredAssignExp();
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -370,12 +372,12 @@ public:
 class StringExp final : public Expression
 {
 public:
+    utf8_t postfix;      // 'c', 'w', 'd'
+    OwnedBy ownedByCtfe;
     void *string;       // char, wchar, or dchar data
     size_t len;         // number of chars, wchars, or dchars
     unsigned char sz;   // 1: char, 2: wchar, 4: dchar
-    unsigned char committed;    // !=0 if type is committed
-    utf8_t postfix;      // 'c', 'w', 'd'
-    OwnedBy ownedByCtfe;
+    bool committed;     // if type is committed
 
     static StringExp *create(const Loc &loc, const char *s);
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);
@@ -419,10 +421,10 @@ public:
 class ArrayLiteralExp final : public Expression
 {
 public:
-    Expression *basis;
-    Expressions *elements;
     OwnedBy ownedByCtfe;
     d_bool onstack;
+    Expression *basis;
+    Expressions *elements;
 
     static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
     static void emplace(UnionExp *pue, const Loc &loc, Expressions *elements);
@@ -439,9 +441,9 @@ public:
 class AssocArrayLiteralExp final : public Expression
 {
 public:
+    OwnedBy ownedByCtfe;
     Expressions *keys;
     Expressions *values;
-    OwnedBy ownedByCtfe;
 
     bool equals(const RootObject * const o) const override;
     AssocArrayLiteralExp *syntaxCopy() override;
@@ -457,7 +459,13 @@ public:
     Expressions *elements;      // parallels sd->fields[] with NULL entries for fields to skip
     Type *stype;                // final type of result (can be different from sd's type)
 
-    Symbol *sym;                // back end symbol to initialize with literal
+    union
+    {
+        Symbol *sym;                // back end symbol to initialize with literal
+
+        // those fields need to prevent a infinite recursion when one field of struct initialized with 'this' pointer.
+        StructLiteralExp *inlinecopy;
+    };
 
     /** pointer to the origin instance of the expression.
      * once a new expression is created, origin is set to 'this'.
@@ -466,15 +474,13 @@ public:
      */
     StructLiteralExp *origin;
 
-    // those fields need to prevent a infinite recursion when one field of struct initialized with 'this' pointer.
-    StructLiteralExp *inlinecopy;
 
     /** anytime when recursive function is calling, 'stageflags' marks with bit flag of
      * current stage and unmarks before return from this function.
      * 'inlinecopy' uses similar 'stageflags' and from multiple evaluation 'doInline'
      * (with infinite recursion) of this expression.
      */
-    int stageflags;
+    uint8_t stageflags;
 
     d_bool useStaticInit;         // if this is true, use the StructDeclaration's init symbol
     d_bool isOriginal;            // used when moving instances to indicate `this is this.origin`
@@ -693,7 +699,6 @@ class UnaExp : public Expression
 {
 public:
     Expression *e1;
-    Type *att1; // Save alias this type to detect recursion
 
     UnaExp *syntaxCopy() override;
     Expression *incompatibleTypes();
@@ -937,9 +942,15 @@ public:
     Expression *upr;            // NULL if implicit 0
     Expression *lwr;            // NULL if implicit [length - 1]
     VarDeclaration *lengthVar;
-    d_bool upperIsInBounds;       // true if upr <= e1.length
-    d_bool lowerIsLessThanUpper;  // true if lwr <= upr
-    d_bool arrayop;               // an array operation, rather than a slice
+
+    bool upperIsInBounds() const; // true if upr <= e1.length
+    bool upperIsInBounds(bool v);
+    bool lowerIsLessThanUpper() const; // true if lwr <= upr
+    bool lowerIsLessThanUpper(bool v);
+    bool arrayop() const; // an array operation, rather than a slice
+    bool arrayop(bool v);
+private:
+    uint8_t bitFields;
 
     SliceExp *syntaxCopy() override;
     bool isLvalue() override;
@@ -1076,6 +1087,15 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
+class LoweredAssignExp final : public AssignExp
+{
+public:
+    Expression *lowering;
+
+    const char *toChars() const override;
+    void accept(Visitor *v) override { v->visit(this); }
+};
+
 class BlitExp final : public AssignExp
 {
 public:
@@ -1187,6 +1207,8 @@ public:
 class CatExp final : public BinExp
 {
 public:
+    Expression *lowering;  // call to druntime hook `_d_arraycatnTX`
+
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -1372,7 +1394,7 @@ struct UnionExp
 
     UnionExp(Expression *e)
     {
-        memcpy(this, (void *)e, e->size);
+        memcpy(this, (void *)e, e->size());
     }
 
     /* Extract pointer to Expression

@@ -47,7 +47,7 @@ extern (C++) final class ClassReferenceExp : Expression
 
     extern (D) this(const ref Loc loc, StructLiteralExp lit, Type type)
     {
-        super(loc, EXP.classReference, __traits(classInstanceSize, ClassReferenceExp));
+        super(loc, EXP.classReference);
         assert(lit && lit.sd && lit.sd.isClassDeclaration());
         this.value = lit;
         this.type = type;
@@ -132,7 +132,7 @@ extern (C++) final class ThrownExceptionExp : Expression
 
     extern (D) this(const ref Loc loc, ClassReferenceExp victim)
     {
-        super(loc, EXP.thrownException, __traits(classInstanceSize, ThrownExceptionExp));
+        super(loc, EXP.thrownException);
         this.thrown = victim;
         this.type = victim.type;
     }
@@ -170,7 +170,7 @@ extern (C++) final class CTFEExp : Expression
 {
     extern (D) this(EXP tok)
     {
-        super(Loc.initial, tok, __traits(classInstanceSize, CTFEExp));
+        super(Loc.initial, tok);
         type = Type.tvoid;
     }
 
@@ -369,7 +369,6 @@ UnionExp copyLiteral(Expression e)
     case EXP.dotVariable:
     case EXP.int64:
     case EXP.float64:
-    case EXP.char_:
     case EXP.complex80:
     case EXP.void_:
     case EXP.vector:
@@ -1468,7 +1467,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         memset(cast(char*)s + len * sz, 0, sz);
         emplaceExp!(StringExp)(&ue, loc, s[0 .. len * sz], len, sz);
         StringExp es = ue.exp().isStringExp();
-        es.committed = 0;
+        es.committed = false;
         es.type = type;
         return ue;
     }
@@ -1499,7 +1498,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         emplaceExp!(StringExp)(&ue, loc, s[0 .. len * sz], len, sz);
         StringExp es = ue.exp().isStringExp();
         es.sz = sz;
-        es.committed = 0; //es1.committed;
+        es.committed = false; //es1.committed;
         es.type = type;
         return ue;
     }
@@ -1837,7 +1836,6 @@ bool isCtfeValueValid(Expression newval)
     {
         case EXP.int64:
         case EXP.float64:
-        case EXP.char_:
         case EXP.complex80:
             return tb.isscalar();
 

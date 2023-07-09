@@ -7208,7 +7208,7 @@ struct S13630(T)
 {
     T[3] arr;
 
-    this(A...)(auto ref in A args)
+    this(A...)(const auto ref A args)
     {
         auto p = arr.ptr;
 
@@ -7238,7 +7238,7 @@ struct Matrix13827(T, uint N)
         T[N] flat;
     }
 
-    this(A...)(auto ref in A args)
+    this(A...)(const auto ref A args)
     {
         uint k;
 

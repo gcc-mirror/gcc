@@ -1041,7 +1041,8 @@ See_Also:
  */
 enum bool isBidirectionalRange(R) = isForwardRange!R
     && is(typeof((R r) => r.popBack))
-    && is(typeof((R r) { return r.back; } (R.init)) == ElementType!R);
+    && (is(typeof((return ref R r) => r.back)) || is(typeof(ref (return ref R r) => r.back)))
+    && is(typeof(R.init.back.init) == ElementType!R);
 
 ///
 @safe unittest

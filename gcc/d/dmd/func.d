@@ -204,6 +204,7 @@ private struct FUNCFLAG
     bool hasCatches;         /// function has try-catch statements
     bool skipCodegen;        /// do not generate code for this function.
     bool printf;             /// is a printf-like function
+
     bool scanf;              /// is a scanf-like function
     bool noreturn;           /// the function does not return
     bool isNRVO = true;      /// Support for named return value optimization
@@ -214,11 +215,14 @@ private struct FUNCFLAG
     bool hasNoEH;            /// No exception unwinding is needed
     bool inferRetType;       /// Return type is to be inferred
     bool hasDualContext;     /// has a dual-context 'this' parameter
+
     bool hasAlwaysInlines;   /// Contains references to functions that must be inlined
     bool isCrtCtor;          /// Has attribute pragma(crt_constructor)
     bool isCrtDtor;          /// Has attribute pragma(crt_destructor)
     bool hasEscapingSiblings;/// Has sibling functions that escape
     bool computedEscapingSiblings; /// `hasEscapingSiblings` has been computed
+    bool dllImport;          /// __declspec(dllimport)
+    bool dllExport;          /// __declspec(dllexport)
 }
 
 /***********************************************************
@@ -356,6 +360,9 @@ extern (C++) class FuncDeclaration : Declaration
     /// In case of failed `@safe` inference, store the error that made the function `@system` for
     /// better diagnostics
     AttributeViolation* safetyViolation;
+    AttributeViolation* nogcViolation;
+    AttributeViolation* pureViolation;
+    AttributeViolation* nothrowViolation;
 
     /// See the `FUNCFLAG` struct
     import dmd.common.bitfields;
@@ -370,8 +377,8 @@ extern (C++) class FuncDeclaration : Declaration
     extern (D) this(const ref Loc loc, const ref Loc endloc, Identifier ident, StorageClass storage_class, Type type, bool noreturn = false)
     {
         super(loc, ident);
-        //printf("FuncDeclaration(id = '%s', type = %p)\n", id.toChars(), type);
-        //printf("storage_class = x%x\n", storage_class);
+        //.printf("FuncDeclaration(id = '%s', type = %s)\n", ident.toChars(), type.toChars());
+        //.printf("storage_class = x%llx\n", storage_class);
         this.storage_class = storage_class;
         this.type = type;
         if (type)
@@ -1294,14 +1301,14 @@ extern (C++) class FuncDeclaration : Declaration
 
     override final bool isExport() const
     {
-        return visibility.kind == Visibility.Kind.export_;
+        return visibility.kind == Visibility.Kind.export_ || dllExport;
     }
 
     override final bool isImportedSymbol() const
     {
         //printf("isImportedSymbol()\n");
         //printf("protection = %d\n", visibility);
-        return (visibility.kind == Visibility.Kind.export_) && !fbody;
+        return (visibility.kind == Visibility.Kind.export_ || dllImport) && !fbody;
     }
 
     override final bool isCodeseg() const pure nothrow @nogc @safe
@@ -1441,17 +1448,27 @@ extern (C++) class FuncDeclaration : Declaration
     }
 
     /**************************************
-     * The function is doing something impure,
-     * so mark it as impure.
-     * If there's a purity error, return true.
+     * The function is doing something impure, so mark it as impure.
+     *
+     * Params:
+     *     loc = location of impure action
+     *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
+     *     arg0 = (optional) argument to format string
+     *
+     * Returns: `true` if there's a purity error
      */
-    extern (D) final bool setImpure()
+    extern (D) final bool setImpure(Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null)
     {
         if (purityInprocess)
         {
             purityInprocess = false;
+            if (fmt)
+                pureViolation = new AttributeViolation(loc, fmt, this, arg0); // impure action
+            else if (arg0)
+                pureViolation = new AttributeViolation(loc, fmt, arg0); // call to impure function
+
             if (fes)
-                fes.func.setImpure();
+                fes.func.setImpure(loc, fmt, arg0);
         }
         else if (isPure())
             return true;
@@ -1540,7 +1557,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
         if (nogcInprocess)
-            setGC();
+            setGC(loc, null);
         return type.toTypeFunction().isnogc;
     }
 
@@ -1552,10 +1569,16 @@ extern (C++) class FuncDeclaration : Declaration
     /**************************************
      * The function is doing something that may allocate with the GC,
      * so mark it as not nogc (not no-how).
+     *
+     * Params:
+     *     loc = location of impure action
+     *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
+     *     arg0 = (optional) argument to format string
+     *
      * Returns:
      *      true if function is marked as @nogc, meaning a user error occurred
      */
-    extern (D) final bool setGC()
+    extern (D) final bool setGC(Loc loc, const(char)* fmt, RootObject arg0 = null)
     {
         //printf("setGC() %s\n", toChars());
         if (nogcInprocess && semanticRun < PASS.semantic3 && _scope)
@@ -1567,13 +1590,57 @@ extern (C++) class FuncDeclaration : Declaration
         if (nogcInprocess)
         {
             nogcInprocess = false;
+            if (fmt)
+                nogcViolation = new AttributeViolation(loc, fmt, this, arg0); // action that requires GC
+            else if (arg0)
+                nogcViolation = new AttributeViolation(loc, fmt, arg0); // call to non-@nogc function
+
             type.toTypeFunction().isnogc = false;
             if (fes)
-                fes.func.setGC();
+                fes.func.setGC(Loc.init, null, null);
         }
         else if (isNogc())
             return true;
         return false;
+    }
+
+    /**************************************
+     * The function calls non-`@nogc` function f, mark it as not nogc.
+     * Params:
+     *     f = function being called
+     * Returns:
+     *      true if function is marked as @nogc, meaning a user error occurred
+     */
+    extern (D) final bool setGCCall(FuncDeclaration f)
+    {
+        return setGC(loc, null, f);
+    }
+
+    /**************************************
+     * The function is doing something that may throw an exception, register that in case nothrow is being inferred
+     *
+     * Params:
+     *     loc = location of action
+     *     fmt = format string for error message
+     *     arg0 = (optional) argument to format string
+     */
+    extern (D) final void setThrow(Loc loc, const(char)* fmt, RootObject arg0 = null)
+    {
+        if (nothrowInprocess && !nothrowViolation)
+        {
+            nothrowViolation = new AttributeViolation(loc, fmt, arg0); // action that requires GC
+        }
+    }
+
+    /**************************************
+     * The function calls non-`nothrow` function f, register that in case nothrow is being inferred
+     * Params:
+     *     loc = location of call
+     *     f = function being called
+     */
+    extern (D) final void setThrowCall(Loc loc, FuncDeclaration f)
+    {
+        return setThrow(loc, null, f);
     }
 
     extern (D) final void printGCUsage(const ref Loc loc, const(char)* warn)
@@ -2119,7 +2186,7 @@ extern (C++) class FuncDeclaration : Declaration
         if (!needsClosure())
             return false;
 
-        if (setGC())
+        if (setGC(loc, "%s `%s` is `@nogc` yet allocates closure for `%s()` with the GC", this))
         {
             error("is `@nogc` yet allocates closure for `%s()` with the GC", toChars());
             if (global.gag)     // need not report supplemental errors
@@ -4531,18 +4598,51 @@ struct AttributeViolation
 ///   fd = function to check
 ///   maxDepth = up to how many functions deep to report errors
 ///   deprecation = print deprecations instead of errors
-void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool deprecation)
+///   stc = storage class of attribute to check
+void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool deprecation, STC stc)
 {
     auto errorFunc = deprecation ? &deprecationSupplemental : &errorSupplemental;
-    if (auto s = fd.safetyViolation)
+
+    AttributeViolation* s;
+    const(char)* attr;
+    if (stc & STC.safe)
+    {
+        s = fd.safetyViolation;
+        attr = "@safe";
+    }
+    else if (stc & STC.pure_)
+    {
+        s = fd.pureViolation;
+        attr = "pure";
+    }
+    else if (stc & STC.nothrow_)
+    {
+        s = fd.nothrowViolation;
+        attr = "nothrow";
+    }
+    else if (stc & STC.nogc)
+    {
+        s = fd.nogcViolation;
+        attr = "@nogc";
+    }
+
+    if (s)
     {
         if (s.fmtStr)
         {
             errorFunc(s.loc, deprecation ?
-                "which would be `@system` because of:" :
-                "which was inferred `@system` because of:");
-            errorFunc(s.loc, s.fmtStr,
-                s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
+                "which wouldn't be `%s` because of:" :
+                "which wasn't inferred `%s` because of:", attr);
+            if (stc == STC.nogc || stc == STC.pure_)
+            {
+                auto f = (cast(Dsymbol) s.arg0).isFuncDeclaration();
+                errorFunc(s.loc, s.fmtStr, f.kind(), f.toPrettyChars(), s.arg1 ? s.arg1.toChars() : "");
+            }
+            else
+            {
+                errorFunc(s.loc, s.fmtStr,
+                    s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
+            }
         }
         else if (s.arg0.dyncast() == DYNCAST.dsymbol)
         {
@@ -4551,7 +4651,7 @@ void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool depr
                 if (maxDepth > 0)
                 {
                     errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
-                    errorSupplementalInferredSafety(fd2, maxDepth - 1, deprecation);
+                    errorSupplementalInferredAttr(fd2, maxDepth - 1, deprecation, stc);
                 }
             }
         }

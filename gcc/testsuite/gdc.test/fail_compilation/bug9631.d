@@ -66,8 +66,8 @@ fail_compilation/bug9631.d(79): Error: function `bug9631.arg.f(int i, S s)` is n
 fail_compilation/bug9631.d(79):        cannot pass argument `y` of type `bug9631.tem!().S` to parameter `bug9631.S s`
 fail_compilation/bug9631.d(80): Error: function literal `__lambda4(S s)` is not callable using argument types `(S)`
 fail_compilation/bug9631.d(80):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S s`
-fail_compilation/bug9631.d(86): Error: constructor `bug9631.arg.A.this(S _param_0)` is not callable using argument types `(S)`
-fail_compilation/bug9631.d(86):        cannot pass argument `S(0)` of type `bug9631.tem!().S` to parameter `bug9631.S _param_0`
+fail_compilation/bug9631.d(86): Error: constructor `bug9631.arg.A.this(S __param_0)` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(86):        cannot pass argument `S(0)` of type `bug9631.tem!().S` to parameter `bug9631.S __param_0`
 ---
 */
 void arg()
@@ -89,8 +89,8 @@ void arg()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/bug9631.d(106): Error: function `bug9631.targ.ft!().ft(S _param_0)` is not callable using argument types `(S)`
-fail_compilation/bug9631.d(106):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S _param_0`
+fail_compilation/bug9631.d(106): Error: function `bug9631.targ.ft!().ft(S __param_0)` is not callable using argument types `(S)`
+fail_compilation/bug9631.d(106):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S __param_0`
 fail_compilation/bug9631.d(107): Error: none of the overloads of template `bug9631.targ.ft` are callable using argument types `!()(S)`
 fail_compilation/bug9631.d(105):        Candidate is: `ft()(tem!().S)`
 fail_compilation/bug9631.d(109): Error: none of the overloads of template `bug9631.targ.ft2` are callable using argument types `!()(S, int)`

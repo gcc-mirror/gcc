@@ -66,7 +66,7 @@ public:
     void visit(AST.SharedStaticDtorDeclaration s) { visit(cast(AST.StaticDtorDeclaration)s); }
 
     // AttribDeclarations
-    void visit(AST.CompileDeclaration s) { visit(cast(AST.AttribDeclaration)s); }
+    void visit(AST.MixinDeclaration s) { visit(cast(AST.AttribDeclaration)s); }
     void visit(AST.UserAttributeDeclaration s) { visit(cast(AST.AttribDeclaration)s); }
     void visit(AST.LinkDeclaration s) { visit(cast(AST.AttribDeclaration)s); }
     void visit(AST.AnonDeclaration s) { visit(cast(AST.AttribDeclaration)s); }
@@ -99,7 +99,7 @@ public:
     void visit(AST.ReturnStatement s) { visit(cast(AST.Statement)s); }
     void visit(AST.LabelStatement s) { visit(cast(AST.Statement)s); }
     void visit(AST.StaticAssertStatement s) { visit(cast(AST.Statement)s); }
-    void visit(AST.CompileStatement s) { visit(cast(AST.Statement)s); }
+    void visit(AST.MixinStatement s) { visit(cast(AST.Statement)s); }
     void visit(AST.WhileStatement s) { visit(cast(AST.Statement)s); }
     void visit(AST.ForStatement s) { visit(cast(AST.Statement)s); }
     void visit(AST.DoStatement s) { visit(cast(AST.Statement)s); }

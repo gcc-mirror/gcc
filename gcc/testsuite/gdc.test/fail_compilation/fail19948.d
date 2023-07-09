@@ -1,5 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=19948
-
+// DISABLED: win32
 /*
 TEST_OUTPUT:
 ---

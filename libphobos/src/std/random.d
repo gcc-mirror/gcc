@@ -812,7 +812,7 @@ Parameters for the generator.
 
     // Bitmasks used in the 'twist' part of the algorithm
     private enum UIntType lowerMask = (cast(UIntType) 1u << r) - 1,
-                          upperMask = (~lowerMask) & this.max;
+                          upperMask = (~lowerMask) & max;
 
     /*
        Collection of all state variables
@@ -905,17 +905,17 @@ Parameters for the generator.
     private static void seedImpl(UIntType value, ref State mtState) @nogc
     {
         mtState.data[$ - 1] = value;
-        static if (this.max != UIntType.max)
+        static if (max != UIntType.max)
         {
-            mtState.data[$ - 1] &= this.max;
+            mtState.data[$ - 1] &= max;
         }
 
         foreach_reverse (size_t i, ref e; mtState.data[0 .. $ - 1])
         {
             e = f * (mtState.data[i + 1] ^ (mtState.data[i + 1] >> (w - 2))) + cast(UIntType)(n - (i + 1));
-            static if (this.max != UIntType.max)
+            static if (max != UIntType.max)
             {
-                e &= this.max;
+                e &= max;
             }
         }
 

@@ -78,7 +78,7 @@ extern (C++) final class AliasThis : Dsymbol
  * Params:
  *      sc = context
  *      e = expression forming the `this`
- *      gag = if true do not print errors, return null instead
+ *      gag = do not print errors, return `null` instead
  *      findOnly = don't do further processing like resolving properties,
  *                 i.e. just return plain dotExp() result.
  * Returns:
@@ -93,7 +93,7 @@ Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool find
         {
             Loc loc = e.loc;
             Type tthis = (e.op == EXP.type ? e.type : null);
-            const flags = DotExpFlag.noAliasThis | (gag ? DotExpFlag.gag : 0);
+            const flags = cast(DotExpFlag) (DotExpFlag.noAliasThis | (gag * DotExpFlag.gag));
             uint olderrors = gag ? global.startGagging() : 0;
             e = dotExp(ad.type, sc, e, ad.aliasthis.ident, flags);
             if (!e || findOnly)
@@ -200,15 +200,29 @@ bool checkDeprecatedAliasThis(AliasThis at, const ref Loc loc, Scope* sc)
 
 /**************************************
  * Check and set 'att' if 't' is a recursive 'alias this' type
+ *
+ * The goal is to prevent endless loops when there is a cycle in the alias this chain.
+ * Since there is no multiple `alias this`, the chain either ends in a leaf,
+ * or it loops back on itself as some point.
+ *
+ * Example: S0 -> (S1 -> S2 -> S3 -> S1)
+ *
+ * `S0` is not a recursive alias this, so this returns `false`, and a rewrite to `S1` can be tried.
+ * `S1` is a recursive alias this type, but since `att` is initialized to `null`,
+ * this still returns `false`, but `att1` is set to `S1`.
+ * A rewrite to `S2` and `S3` can be tried, but when we want to try a rewrite to `S1` again,
+ * we notice `att == t`, so we're back at the start of the loop, and this returns `true`.
+ *
  * Params:
- *   att = type reference used to detect recursion
- *   t   = 'alias this' type
+ *   att = type reference used to detect recursion. Should be initialized to `null`.
+ *   t   = type of 'alias this' rewrite to attempt
  *
  * Returns:
- *   Whether the 'alias this' is recursive or not
+ *   `false` if the rewrite is safe, `true` if it would loop back around
  */
 bool isRecursiveAliasThis(ref Type att, Type t)
 {
+    //printf("+isRecursiveAliasThis(att = %s, t = %s)\n", att ? att.toChars() : "null", t.toChars());
     auto tb = t.toBasetype();
     if (att && tb.equivalent(att))
         return true;

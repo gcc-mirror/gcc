@@ -134,37 +134,19 @@ void moduleToBuffer2(Module m, OutBuffer* buf, HdrGenState* hgs)
 
 private void statementToBuffer(Statement s, OutBuffer* buf, HdrGenState* hgs)
 {
-    scope v = new StatementPrettyPrintVisitor(buf, hgs);
-    s.accept(v);
-}
-
-private extern (C++) final class StatementPrettyPrintVisitor : Visitor
-{
-    alias visit = Visitor.visit;
-public:
-    OutBuffer* buf;
-    HdrGenState* hgs;
-
-    extern (D) this(OutBuffer* buf, HdrGenState* hgs) scope
+    void visitDefaultCase(Statement s)
     {
-        this.buf = buf;
-        this.hgs = hgs;
+        printf("Statement::toCBuffer() %d\n", s.stmt);
+        assert(0, "unrecognized statement in statementToBuffer()");
     }
 
-    override void visit(Statement s)
-    {
-        buf.writestring("Statement::toCBuffer()");
-        buf.writenl();
-        assert(0);
-    }
-
-    override void visit(ErrorStatement s)
+    void visitError(ErrorStatement s)
     {
         buf.writestring("__error__");
         buf.writenl();
     }
 
-    override void visit(ExpStatement s)
+    void visitExp(ExpStatement s)
     {
         if (s.exp && s.exp.op == EXP.declaration &&
             (cast(DeclarationExp)s.exp).declaration)
@@ -180,7 +162,12 @@ public:
             buf.writenl();
     }
 
-    override void visit(CompileStatement s)
+    void visitDtorExp(DtorExpStatement s)
+    {
+        visitExp(s);
+    }
+
+    void visitMixin(MixinStatement s)
     {
         buf.writestring("mixin(");
         argsToBuffer(s.exps, buf, hgs, null);
@@ -189,25 +176,29 @@ public:
             buf.writenl();
     }
 
-    override void visit(CompoundStatement s)
+    void visitCompound(CompoundStatement s)
     {
         foreach (sx; *s.statements)
         {
             if (sx)
-                sx.accept(this);
+                sx.statementToBuffer(buf, hgs);
         }
     }
 
-    override void visit(CompoundDeclarationStatement s)
+    void visitCompoundAsm(CompoundAsmStatement s)
+    {
+        visitCompound(s);
+    }
+
+    void visitCompoundDeclaration(CompoundDeclarationStatement s)
     {
         bool anywritten = false;
         foreach (sx; *s.statements)
         {
             auto ds = sx ? sx.isExpStatement() : null;
-            if (ds && ds.exp.op == EXP.declaration)
+            if (ds && ds.exp.isDeclarationExp())
             {
-                auto d = (cast(DeclarationExp)ds.exp).declaration;
-                assert(d.isDeclaration());
+                auto d = ds.exp.isDeclarationExp().declaration;
                 if (auto v = d.isVarDeclaration())
                 {
                     scope ppv = new DsymbolPrettyPrintVisitor(buf, hgs);
@@ -223,7 +214,7 @@ public:
             buf.writenl();
     }
 
-    override void visit(UnrolledLoopStatement s)
+    void visitUnrolledLoop(UnrolledLoopStatement s)
     {
         buf.writestring("/*unrolled*/ {");
         buf.writenl();
@@ -231,26 +222,26 @@ public:
         foreach (sx; *s.statements)
         {
             if (sx)
-                sx.accept(this);
+                sx.statementToBuffer(buf, hgs);
         }
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
     }
 
-    override void visit(ScopeStatement s)
+    void visitScope(ScopeStatement s)
     {
         buf.writeByte('{');
         buf.writenl();
         buf.level++;
         if (s.statement)
-            s.statement.accept(this);
+            s.statement.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
     }
 
-    override void visit(WhileStatement s)
+    void visitWhile(WhileStatement s)
     {
         buf.writestring("while (");
         if (auto p = s.param)
@@ -271,28 +262,28 @@ public:
         buf.writeByte(')');
         buf.writenl();
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
     }
 
-    override void visit(DoStatement s)
+    void visitDo(DoStatement s)
     {
         buf.writestring("do");
         buf.writenl();
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
         buf.writestring("while (");
         s.condition.expressionToBuffer(buf, hgs);
         buf.writestring(");");
         buf.writenl();
     }
 
-    override void visit(ForStatement s)
+    void visitFor(ForStatement s)
     {
         buf.writestring("for (");
         if (s._init)
         {
             hgs.forStmtInit++;
-            s._init.accept(this);
+            s._init.statementToBuffer(buf, hgs);
             hgs.forStmtInit--;
         }
         else
@@ -314,13 +305,13 @@ public:
         buf.writenl();
         buf.level++;
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
     }
 
-    private void foreachWithoutBody(ForeachStatement s)
+    void foreachWithoutBody(ForeachStatement s)
     {
         buf.writestring(Token.toString(s.op));
         buf.writestring(" (");
@@ -341,20 +332,20 @@ public:
         buf.writenl();
     }
 
-    override void visit(ForeachStatement s)
+    void visitForeach(ForeachStatement s)
     {
         foreachWithoutBody(s);
         buf.writeByte('{');
         buf.writenl();
         buf.level++;
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
     }
 
-    private void foreachRangeWithoutBody(ForeachRangeStatement s)
+    void foreachRangeWithoutBody(ForeachRangeStatement s)
     {
         buf.writestring(Token.toString(s.op));
         buf.writestring(" (");
@@ -370,39 +361,39 @@ public:
         buf.writenl();
     }
 
-    override void visit(ForeachRangeStatement s)
+    void visitForeachRange(ForeachRangeStatement s)
     {
         foreachRangeWithoutBody(s);
         buf.writeByte('{');
         buf.writenl();
         buf.level++;
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
     }
 
-    override void visit(StaticForeachStatement s)
+    void visitStaticForeach(StaticForeachStatement s)
     {
         buf.writestring("static ");
         if (s.sfe.aggrfe)
         {
-            visit(s.sfe.aggrfe);
+            visitForeach(s.sfe.aggrfe);
         }
         else
         {
             assert(s.sfe.rangefe);
-            visit(s.sfe.rangefe);
+            visitForeachRange(s.sfe.rangefe);
         }
     }
 
-    override void visit(ForwardingStatement s)
+    void visitForwarding(ForwardingStatement s)
     {
-        s.statement.accept(this);
+        s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(IfStatement s)
+    void visitIf(IfStatement s)
     {
         buf.writestring("if (");
         if (Parameter p = s.prm)
@@ -423,12 +414,12 @@ public:
         buf.writenl();
         if (s.ifbody.isScopeStatement())
         {
-            s.ifbody.accept(this);
+            s.ifbody.statementToBuffer(buf, hgs);
         }
         else
         {
             buf.level++;
-            s.ifbody.accept(this);
+            s.ifbody.statementToBuffer(buf, hgs);
             buf.level--;
         }
         if (s.elsebody)
@@ -444,18 +435,18 @@ public:
             }
             if (s.elsebody.isScopeStatement() || s.elsebody.isIfStatement())
             {
-                s.elsebody.accept(this);
+                s.elsebody.statementToBuffer(buf, hgs);
             }
             else
             {
                 buf.level++;
-                s.elsebody.accept(this);
+                s.elsebody.statementToBuffer(buf, hgs);
                 buf.level--;
             }
         }
     }
 
-    override void visit(ConditionalStatement s)
+    void visitConditional(ConditionalStatement s)
     {
         s.condition.conditionToBuffer(buf, hgs);
         buf.writenl();
@@ -463,7 +454,7 @@ public:
         buf.writenl();
         buf.level++;
         if (s.ifbody)
-            s.ifbody.accept(this);
+            s.ifbody.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
@@ -474,14 +465,14 @@ public:
             buf.writeByte('{');
             buf.level++;
             buf.writenl();
-            s.elsebody.accept(this);
+            s.elsebody.statementToBuffer(buf, hgs);
             buf.level--;
             buf.writeByte('}');
         }
         buf.writenl();
     }
 
-    override void visit(PragmaStatement s)
+    void visitPragma(PragmaStatement s)
     {
         buf.writestring("pragma (");
         buf.writestring(s.ident.toString());
@@ -497,7 +488,7 @@ public:
             buf.writeByte('{');
             buf.writenl();
             buf.level++;
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
             buf.level--;
             buf.writeByte('}');
             buf.writenl();
@@ -509,12 +500,12 @@ public:
         }
     }
 
-    override void visit(StaticAssertStatement s)
+    void visitStaticAssert(StaticAssertStatement s)
     {
         s.sa.dsymbolToBuffer(buf, hgs);
     }
 
-    override void visit(SwitchStatement s)
+    void visitSwitch(SwitchStatement s)
     {
         buf.writestring(s.isFinal ? "final switch (" : "switch (");
         s.condition.expressionToBuffer(buf, hgs);
@@ -527,28 +518,28 @@ public:
                 buf.writeByte('{');
                 buf.writenl();
                 buf.level++;
-                s._body.accept(this);
+                s._body.statementToBuffer(buf, hgs);
                 buf.level--;
                 buf.writeByte('}');
                 buf.writenl();
             }
             else
             {
-                s._body.accept(this);
+                s._body.statementToBuffer(buf, hgs);
             }
         }
     }
 
-    override void visit(CaseStatement s)
+    void visitCase(CaseStatement s)
     {
         buf.writestring("case ");
         s.exp.expressionToBuffer(buf, hgs);
         buf.writeByte(':');
         buf.writenl();
-        s.statement.accept(this);
+        s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(CaseRangeStatement s)
+    void visitCaseRange(CaseRangeStatement s)
     {
         buf.writestring("case ");
         s.first.expressionToBuffer(buf, hgs);
@@ -556,23 +547,23 @@ public:
         s.last.expressionToBuffer(buf, hgs);
         buf.writeByte(':');
         buf.writenl();
-        s.statement.accept(this);
+        s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(DefaultStatement s)
+    void visitDefault(DefaultStatement s)
     {
         buf.writestring("default:");
         buf.writenl();
-        s.statement.accept(this);
+        s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(GotoDefaultStatement s)
+    void visitGotoDefault(GotoDefaultStatement s)
     {
         buf.writestring("goto default;");
         buf.writenl();
     }
 
-    override void visit(GotoCaseStatement s)
+    void visitGotoCase(GotoCaseStatement s)
     {
         buf.writestring("goto case");
         if (s.exp)
@@ -584,13 +575,13 @@ public:
         buf.writenl();
     }
 
-    override void visit(SwitchErrorStatement s)
+    void visitSwitchError(SwitchErrorStatement s)
     {
         buf.writestring("SwitchErrorStatement::toCBuffer()");
         buf.writenl();
     }
 
-    override void visit(ReturnStatement s)
+    void visitReturn(ReturnStatement s)
     {
         buf.writestring("return ");
         if (s.exp)
@@ -599,7 +590,7 @@ public:
         buf.writenl();
     }
 
-    override void visit(BreakStatement s)
+    void visitBreak(BreakStatement s)
     {
         buf.writestring("break");
         if (s.ident)
@@ -611,7 +602,7 @@ public:
         buf.writenl();
     }
 
-    override void visit(ContinueStatement s)
+    void visitContinue(ContinueStatement s)
     {
         buf.writestring("continue");
         if (s.ident)
@@ -623,7 +614,7 @@ public:
         buf.writenl();
     }
 
-    override void visit(SynchronizedStatement s)
+    void visitSynchronized(SynchronizedStatement s)
     {
         buf.writestring("synchronized");
         if (s.exp)
@@ -635,21 +626,21 @@ public:
         if (s._body)
         {
             buf.writeByte(' ');
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
         }
     }
 
-    override void visit(WithStatement s)
+    void visitWith(WithStatement s)
     {
         buf.writestring("with (");
         s.exp.expressionToBuffer(buf, hgs);
         buf.writestring(")");
         buf.writenl();
         if (s._body)
-            s._body.accept(this);
+            s._body.statementToBuffer(buf, hgs);
     }
 
-    override void visit(TryCatchStatement s)
+    void visitTryCatch(TryCatchStatement s)
     {
         buf.writestring("try");
         buf.writenl();
@@ -657,29 +648,44 @@ public:
         {
             if (s._body.isScopeStatement())
             {
-                s._body.accept(this);
+                s._body.statementToBuffer(buf, hgs);
             }
             else
             {
                 buf.level++;
-                s._body.accept(this);
+                s._body.statementToBuffer(buf, hgs);
                 buf.level--;
             }
         }
         foreach (c; *s.catches)
         {
-            visit(c);
+            buf.writestring("catch");
+            if (c.type)
+            {
+                buf.writeByte('(');
+                typeToBuffer(c.type, c.ident, buf, hgs);
+                buf.writeByte(')');
+            }
+            buf.writenl();
+            buf.writeByte('{');
+            buf.writenl();
+            buf.level++;
+            if (c.handler)
+                c.handler.statementToBuffer(buf, hgs);
+            buf.level--;
+            buf.writeByte('}');
+            buf.writenl();
         }
     }
 
-    override void visit(TryFinallyStatement s)
+    void visitTryFinally(TryFinallyStatement s)
     {
         buf.writestring("try");
         buf.writenl();
         buf.writeByte('{');
         buf.writenl();
         buf.level++;
-        s._body.accept(this);
+        s._body.statementToBuffer(buf, hgs);
         buf.level--;
         buf.writeByte('}');
         buf.writenl();
@@ -687,25 +693,25 @@ public:
         buf.writenl();
         if (s.finalbody.isScopeStatement())
         {
-            s.finalbody.accept(this);
+            s.finalbody.statementToBuffer(buf, hgs);
         }
         else
         {
             buf.level++;
-            s.finalbody.accept(this);
+            s.finalbody.statementToBuffer(buf, hgs);
             buf.level--;
         }
     }
 
-    override void visit(ScopeGuardStatement s)
+    void visitScopeGuard(ScopeGuardStatement s)
     {
         buf.writestring(Token.toString(s.tok));
         buf.writeByte(' ');
         if (s.statement)
-            s.statement.accept(this);
+            s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(ThrowStatement s)
+    void visitThrow(ThrowStatement s)
     {
         buf.writestring("throw ");
         s.exp.expressionToBuffer(buf, hgs);
@@ -713,15 +719,15 @@ public:
         buf.writenl();
     }
 
-    override void visit(DebugStatement s)
+    void visitDebug(DebugStatement s)
     {
         if (s.statement)
         {
-            s.statement.accept(this);
+            s.statement.statementToBuffer(buf, hgs);
         }
     }
 
-    override void visit(GotoStatement s)
+    void visitGoto(GotoStatement s)
     {
         buf.writestring("goto ");
         buf.writestring(s.ident.toString());
@@ -729,16 +735,16 @@ public:
         buf.writenl();
     }
 
-    override void visit(LabelStatement s)
+    void visitLabel(LabelStatement s)
     {
         buf.writestring(s.ident.toString());
         buf.writeByte(':');
         buf.writenl();
         if (s.statement)
-            s.statement.accept(this);
+            s.statement.statementToBuffer(buf, hgs);
     }
 
-    override void visit(AsmStatement s)
+    void visitAsm(AsmStatement s)
     {
         buf.writestring("asm { ");
         Token* t = s.tokens;
@@ -764,7 +770,17 @@ public:
         buf.writenl();
     }
 
-    override void visit(ImportStatement s)
+    void visitInlineAsm(InlineAsmStatement s)
+    {
+        visitAsm(s);
+    }
+
+    void visitGccAsm(GccAsmStatement s)
+    {
+        visitAsm(s);
+    }
+
+    void visitImport(ImportStatement s)
     {
         foreach (imp; *s.imports)
         {
@@ -772,25 +788,8 @@ public:
         }
     }
 
-    void visit(Catch c)
-    {
-        buf.writestring("catch");
-        if (c.type)
-        {
-            buf.writeByte('(');
-            typeToBuffer(c.type, c.ident, buf, hgs);
-            buf.writeByte(')');
-        }
-        buf.writenl();
-        buf.writeByte('{');
-        buf.writenl();
-        buf.level++;
-        if (c.handler)
-            c.handler.accept(this);
-        buf.level--;
-        buf.writeByte('}');
-        buf.writenl();
-    }
+    mixin VisitStatement!void visit;
+    visit.VisitStatement(s);
 }
 
 private void dsymbolToBuffer(Dsymbol s, OutBuffer* buf, HdrGenState* hgs)
@@ -1160,7 +1159,7 @@ public:
 
     }
 
-    override void visit(CompileDeclaration d)
+    override void visit(MixinDeclaration d)
     {
         buf.writestring("mixin(");
         argsToBuffer(d.exps, buf, hgs, null);
@@ -2321,6 +2320,16 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
     }
 
+    void visitLoweredAssignExp(LoweredAssignExp e)
+    {
+        if (global.params.vcg_ast)
+        {
+            expressionToBuffer(e.lowering, buf, hgs);
+            return;
+        }
+
+        visit(cast(BinExp)e);
+    }
     void visitBin(BinExp e)
     {
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
@@ -2694,6 +2703,7 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
         case EXP.remove:        return visitRemove(e.isRemoveExp());
         case EXP.question:      return visitCond(e.isCondExp());
         case EXP.classReference:        return visitClassReference(e.isClassReferenceExp());
+        case EXP.loweredAssignExp:      return visitLoweredAssignExp(e.isLoweredAssignExp());
     }
 }
 
@@ -2882,8 +2892,7 @@ public:
 
 void toCBuffer(const Statement s, OutBuffer* buf, HdrGenState* hgs)
 {
-    scope v = new StatementPrettyPrintVisitor(buf, hgs);
-    (cast() s).accept(v);
+    (cast()s).statementToBuffer(buf, hgs);
 }
 
 void toCBuffer(const Type t, OutBuffer* buf, const Identifier ident, HdrGenState* hgs)
@@ -3223,6 +3232,7 @@ private void parametersToBuffer(ParameterList pl, OutBuffer* buf, HdrGenState* h
     final switch (pl.varargs)
     {
         case VarArg.none:
+        case VarArg.KRvariadic:
             break;
 
         case VarArg.variadic:
@@ -3817,15 +3827,8 @@ private void initializerToBuffer(Initializer inx, OutBuffer* buf, HdrGenState* h
         buf.writeByte('}');
     }
 
-    final switch (inx.kind)
-    {
-        case InitKind.error:   return visitError (inx.isErrorInitializer ());
-        case InitKind.void_:   return visitVoid  (inx.isVoidInitializer  ());
-        case InitKind.struct_: return visitStruct(inx.isStructInitializer());
-        case InitKind.array:   return visitArray (inx.isArrayInitializer ());
-        case InitKind.exp:     return visitExp   (inx.isExpInitializer   ());
-        case InitKind.C_:      return visitC     (inx.isCInitializer     ());
-    }
+    mixin VisitInitializer!void visit;
+    visit.VisitInitializer(inx);
 }
 
 
@@ -4101,7 +4104,6 @@ string EXPtoString(EXP op)
         EXP.error : "error",
         EXP.objcClassReference : "class",
 
-        EXP.typeof_ : "typeof",
         EXP.mixin_ : "mixin",
 
         EXP.import_ : "import",
@@ -4141,7 +4143,6 @@ string EXPtoString(EXP op)
         EXP.remove : "remove",
         EXP.tuple : "tuple",
         EXP.traits : "__traits",
-        EXP.default_ : "default",
         EXP.overloadSet : "__overloadset",
         EXP.void_ : "void",
         EXP.vectorArray : "vectorarray",
@@ -4232,6 +4233,7 @@ string EXPtoString(EXP op)
         EXP.declaration : "declaration",
 
         EXP.interval : "interval",
+        EXP.loweredAssignExp : "="
     ];
     const p = strings[op];
     if (!p)

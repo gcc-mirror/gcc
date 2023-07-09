@@ -159,7 +159,7 @@ extern int32_t(*f)(int32_t );
 
 extern void special(int32_t a = ptr->i, int32_t b = ptr->get(1, 2), int32_t j = (*f)(1));
 
-extern void variadic(int32_t _param_0, ...);
+extern void variadic(int32_t __param_0_, ...);
 ---
 +/
 
