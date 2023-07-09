@@ -1,3 +1,8 @@
+2023-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/110595
+	* doc/invoke.texi (Warning Options): Fix typo.
+
 2023-07-07  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
