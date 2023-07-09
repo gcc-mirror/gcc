@@ -33,38 +33,37 @@
 class Linemap
 {
 public:
-  Linemap ()
+  Linemap () : in_file_ (false)
   {
     // Only one instance of Linemap is allowed to exist.
     rust_assert (Linemap::instance_ == NULL);
     Linemap::instance_ = this;
   }
 
-  virtual ~Linemap () { Linemap::instance_ = NULL; }
+  ~Linemap () { Linemap::instance_ = NULL; }
 
   // Subsequent Location values will come from the file named
   // FILE_NAME, starting at LINE_BEGIN.  Normally LINE_BEGIN will be
   // 0, but it will be non-zero if the Rust source has a //line comment.
-  virtual void start_file (const char *file_name, unsigned int line_begin) = 0;
+  void start_file (const char *file_name, unsigned int line_begin);
 
   // Subsequent Location values will come from the line LINE_NUMBER,
   // in the current file.  LINE_SIZE is the size of the line in bytes.
   // This will normally be called for every line in a source file.
-  virtual void start_line (unsigned int line_number, unsigned int line_size)
-    = 0;
+  void start_line (unsigned int line_number, unsigned int line_size);
 
   // Get a Location representing column position COLUMN on the current
   // line in the current file.
-  virtual Location get_location (unsigned int column) = 0;
+  Location get_location (unsigned int column);
 
   // Stop generating Location values.  This will be called after all
   // input files have been read, in case any cleanup is required.
-  virtual void stop () = 0;
+  void stop ();
 
   // Produce a human-readable description of a Location, e.g.
   // "foo.rust:10". Returns an empty string for predeclared, builtin or
   // unknown locations.
-  virtual std::string to_string (Location) = 0;
+  std::string to_string (Location);
 
 protected:
   // The single existing instance of Linemap.
@@ -84,6 +83,10 @@ public:
     rust_assert (Linemap::instance_ != NULL);
     return Linemap::instance_->to_string (loc);
   }
+
+private:
+  // Whether we are currently reading a file.
+  bool in_file_;
 };
 
 #endif // !defined(RUST_LINEMAP_H)

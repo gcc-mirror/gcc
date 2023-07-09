@@ -20,35 +20,12 @@
 
 #include "rust-linemap.h"
 
-// This class implements the Linemap interface defined by the
-// frontend.
-
-class Gcc_linemap : public Linemap
-{
-public:
-  Gcc_linemap () : Linemap (), in_file_ (false) {}
-
-  void start_file (const char *file_name, unsigned int line_begin);
-
-  void start_line (unsigned int line_number, unsigned int line_size);
-
-  Location get_location (unsigned int column);
-
-  void stop ();
-
-  std::string to_string (Location);
-
-private:
-  // Whether we are currently reading a file.
-  bool in_file_;
-};
-
 Linemap *Linemap::instance_ = NULL;
 
 // Start getting locations from a new file.
 
 void
-Gcc_linemap::start_file (const char *file_name, unsigned line_begin)
+Linemap::start_file (const char *file_name, unsigned line_begin)
 {
   if (this->in_file_)
     linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
@@ -59,7 +36,7 @@ Gcc_linemap::start_file (const char *file_name, unsigned line_begin)
 // Stringify a location
 
 std::string
-Gcc_linemap::to_string (Location location)
+Linemap::to_string (Location location)
 {
   const line_map_ordinary *lmo;
   location_t resolved_location;
@@ -84,7 +61,7 @@ Gcc_linemap::to_string (Location location)
 // Stop getting locations.
 
 void
-Gcc_linemap::stop ()
+Linemap::stop ()
 {
   linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
   this->in_file_ = false;
@@ -93,7 +70,7 @@ Gcc_linemap::stop ()
 // Start a new line.
 
 void
-Gcc_linemap::start_line (unsigned lineno, unsigned linesize)
+Linemap::start_line (unsigned lineno, unsigned linesize)
 {
   linemap_line_start (line_table, lineno, linesize);
 }
@@ -101,7 +78,7 @@ Gcc_linemap::start_line (unsigned lineno, unsigned linesize)
 // Get a location.
 
 Location
-Gcc_linemap::get_location (unsigned column)
+Linemap::get_location (unsigned column)
 {
   return Location (linemap_position_for_column (line_table, column));
 }
@@ -111,7 +88,7 @@ Gcc_linemap::get_location (unsigned column)
 Linemap *
 rust_get_linemap ()
 {
-  return new Gcc_linemap;
+  return new Linemap;
 }
 
 RichLocation::RichLocation (Location root) : gcc_rich_loc (line_table, root)
