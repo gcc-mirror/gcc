@@ -438,7 +438,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
       && !validate_crate_name (options.crate_name, error))
     {
       error.emit ();
-      rust_inform (linemap->get_location (0),
+      rust_inform (linemap_position_for_column (line_table, 0),
 		   "crate name inferred from this file");
     }
 }
