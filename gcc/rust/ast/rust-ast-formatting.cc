@@ -51,7 +51,7 @@ get_string_in_delims (std::string str_input, DelimType delim_type)
     default:
       return "ERROR-MARK-STRING (delims)";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -64,7 +64,7 @@ get_mode_dump_desc (AttrMode mode)
     case INNER:
       return "inner attributes";
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       return "";
     }
 }

@@ -627,7 +627,7 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
   rust_assert (overflow_builtin != error_mark_node);

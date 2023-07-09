@@ -1229,7 +1229,7 @@ operator_to_tree_code (NegationOperator op)
     case NegationOperator::NOT:
       return TRUTH_NOT_EXPR;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -1266,7 +1266,7 @@ operator_to_tree_code (ArithmeticOrLogicalOperator op, bool floating_point)
     case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
       return RSHIFT_EXPR;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -1288,7 +1288,7 @@ operator_to_tree_code (ComparisonOperator op)
     case ComparisonOperator::LESS_OR_EQUAL:
       return LE_EXPR;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -1302,7 +1302,7 @@ operator_to_tree_code (LazyBooleanOperator op)
     case LazyBooleanOperator::LOGICAL_AND:
       return TRUTH_ANDIF_EXPR;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -1430,7 +1430,7 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
       builtin_ctx.lookup_simple_builtin ("mul_overflow", &builtin);
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     };
 
@@ -2191,10 +2191,10 @@ Gcc_backend::non_zero_size_type (tree type)
       }
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 // Convert EXPR_TREE to TYPE_TREE.  Sometimes the same unnamed Rust type
@@ -2227,7 +2227,7 @@ Gcc_backend::convert_tree (tree type_tree, tree expr_tree, Location location)
 			      expr_tree);
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 // Make a global variable.

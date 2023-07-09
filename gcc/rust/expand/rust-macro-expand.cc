@@ -557,7 +557,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
       }
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   return true;
@@ -750,7 +750,7 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
       res = match_n_matches (parser, rep, match_amount, 0, 1);
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   rust_debug_loc (rep.get_match_locus (), "%s matched %lu times",
@@ -991,7 +991,7 @@ transcribe_context (MacroExpander::ContextType ctx,
     case MacroExpander::ContextType::EXPR:
       return transcribe_expression (parser);
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -1103,7 +1103,7 @@ MacroExpander::import_proc_macros (std::string extern_crate)
       // Extern crate path is not available.
       // FIXME: Emit error
       rust_error_at (UNDEF_LOCATION, "Cannot find requested proc macro crate");
-      gcc_unreachable ();
+      rust_unreachable ();
     }
   auto macros = load_macros (path->second);
 
@@ -1132,7 +1132,7 @@ MacroExpander::import_proc_macros (std::string extern_crate)
 	    macro.payload.bang);
 	  break;
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
 }
@@ -1171,7 +1171,7 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
     case ContextType::TYPE:
     case ContextType::EXPR:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   if (parser.has_errors ())

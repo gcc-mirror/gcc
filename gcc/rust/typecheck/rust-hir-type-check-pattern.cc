@@ -101,7 +101,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
     {
       case HIR::TupleStructItems::RANGE: {
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
 
@@ -201,7 +201,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	{
 	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
 	    // TODO
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  }
 	  break;
 
@@ -334,7 +334,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
 	//     pattern.get_items ().get ());
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
     }

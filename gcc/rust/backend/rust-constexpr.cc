@@ -1132,7 +1132,7 @@ base_field_constructor_elt (vec<constructor_elt, va_gc> *v, tree ref)
     if (ce->index == field)
       return ce;
 
-  gcc_unreachable ();
+  rust_unreachable ();
   return NULL;
 }
 
@@ -1618,7 +1618,7 @@ eval_array_reference (const constexpr_ctx *ctx, tree t, bool lval,
       /* We can't do anything with other tree codes, so use
 	 VERIFY_CONSTANT to complain and fail.  */
       VERIFY_CONSTANT (ary);
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   bool found;
@@ -1855,7 +1855,7 @@ label_matches (const constexpr_ctx *ctx, tree *jump_target, tree stmt)
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
   return false;
 }
@@ -2695,7 +2695,7 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		// TODO
-		gcc_unreachable ();
+		rust_unreachable ();
 		// elt = eval_and_check_array_index (ctx, probe, false,
 		// 				  non_constant_p, overflow_p);
 		if (*non_constant_p)
@@ -3372,7 +3372,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
     {
       // return cxx_eval_internal_function (ctx, t, lval,
       //     			       non_constant_p, overflow_p);
-      gcc_unreachable ();
+      rust_unreachable ();
       return error_mark_node;
     }
 
@@ -3876,7 +3876,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 //	goto found;
 //
 //      default:
-//	gcc_unreachable ();
+//	rust_unreachable ();
 //      }
 // found:
 //
@@ -4143,7 +4143,7 @@ array_index_cmp (tree key, tree index)
 	  return 0;
       }
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -4435,7 +4435,7 @@ get_array_or_vector_nelts (const constexpr_ctx *ctx, tree type,
   else if (VECTOR_TYPE_P (type))
     nelts = size_int (TYPE_VECTOR_SUBPARTS (type));
   else
-    gcc_unreachable ();
+    rust_unreachable ();
 
   /* For VLAs, the number of elements won't be an integer constant.  */
   nelts
@@ -4787,7 +4787,7 @@ eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
     }
   if (fld_seen)
     return fold_convert (TREE_TYPE (t), retval);
-  gcc_unreachable ();
+  rust_unreachable ();
   return error_mark_node;
 }
 
@@ -4876,7 +4876,7 @@ eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
       count = -1;
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
   auto_vec<tree, 10> save_exprs;
   new_ctx.save_exprs = &save_exprs;
@@ -6433,7 +6433,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     default:
       sorry ("unexpected AST of kind %s", get_tree_code_name (TREE_CODE (t)));
-      gcc_unreachable ();
+      rust_unreachable ();
       return false;
     }
 #undef RECUR

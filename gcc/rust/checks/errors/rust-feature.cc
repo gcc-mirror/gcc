@@ -43,7 +43,7 @@ Feature::create (Feature::Name name)
       return Feature (Feature::Name::EXTERN_TYPES, Feature::State::ACTIVE,
 		      "extern_types", "1.23.0", 43467, tl::nullopt, "");
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 

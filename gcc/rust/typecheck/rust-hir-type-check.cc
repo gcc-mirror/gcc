@@ -246,7 +246,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	      break;
 
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	      return nullptr;
 	    }
 	}

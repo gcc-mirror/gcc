@@ -231,7 +231,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
   return resolved_node_id;
@@ -407,7 +407,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
   return resolved_node_id;

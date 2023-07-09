@@ -81,11 +81,17 @@ public:
   void visit (HIR::AsyncBlockExpr &) override {}
 
   // don't need to implement these see rust-hir-type-check-struct-field.h
-  void visit (HIR::StructExprFieldIdentifier &) override { gcc_unreachable (); }
-  void visit (HIR::StructExprFieldIndexValue &) override { gcc_unreachable (); }
+  void visit (HIR::StructExprFieldIdentifier &) override
+  {
+    rust_unreachable ();
+  }
+  void visit (HIR::StructExprFieldIndexValue &) override
+  {
+    rust_unreachable ();
+  }
   void visit (HIR::StructExprFieldIdentifierValue &) override
   {
-    gcc_unreachable ();
+    rust_unreachable ();
   }
 
 protected:

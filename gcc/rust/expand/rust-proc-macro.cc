@@ -43,7 +43,7 @@ load_macros_array (std::string path)
 #else
   rust_sorry_at (UNDEF_LOCATION,
 		 "Procedural macros are not yet supported on windows host");
-  gcc_unreachable ();
+  rust_unreachable ();
 #endif
 }
 
@@ -53,7 +53,7 @@ load_macros (std::string path)
   const ProcMacro::ProcmacroArray *array = load_macros_array (path);
   // Did not load the proc macro
   if (array == nullptr)
-    gcc_unreachable ();
+    rust_unreachable ();
 
   rust_debug ("Found %lu procedural macros", array->length);
 

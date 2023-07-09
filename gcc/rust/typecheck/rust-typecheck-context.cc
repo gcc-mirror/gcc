@@ -638,7 +638,7 @@ TypeCheckContextItem::get_context_type ()
       break;
 
     case ERROR:
-      gcc_unreachable ();
+      rust_unreachable ();
       return nullptr;
     }
 

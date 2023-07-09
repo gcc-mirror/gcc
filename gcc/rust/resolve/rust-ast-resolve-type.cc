@@ -264,7 +264,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
 
@@ -396,7 +396,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 		    // constant or an ambiguous const generic?
 		    // TODO: At that point, will all generics have been
 		    // disambiguated? Can we thus canonical resolve types and
-		    // const and `gcc_unreachable` on ambiguous types?
+		    // const and `rust_unreachable` on ambiguous types?
 		    // This is probably fine as we just want to canonicalize
 		    // types, right?
 		    if (generic.get_kind () == AST::GenericArg::Kind::Type)
@@ -500,7 +500,7 @@ void
 ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
 {
   // FIXME is this actually allowed? dyn A+B
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
@@ -556,7 +556,7 @@ ResolveGenericArgs::resolve_disambiguated_generic (AST::GenericArg &arg)
       ResolveType::go (arg.get_type ().get ());
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 void

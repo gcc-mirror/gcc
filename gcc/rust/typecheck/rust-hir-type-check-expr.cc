@@ -2046,7 +2046,7 @@ TypeCheckExpr::validate_arithmetic_type (
 		     == TyTy::InferType::INTEGRAL));
     }
 
-  gcc_unreachable ();
+  rust_unreachable ();
   return false;
 }
 

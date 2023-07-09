@@ -384,7 +384,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	/* Don't load the value if this is an implicit dereference, or if
@@ -440,7 +440,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	else if (is_volatile && TREE_ADDRESSABLE (type))
@@ -495,7 +495,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			    type);
 		break;
 	      default:
-		gcc_unreachable ();
+		rust_unreachable ();
 	      }
 	  }
 	if (is_reference || !is_volatile || !is_complete
@@ -573,7 +573,7 @@ convert_to_void (tree expr, impl_conv_void implicit)
 			  expr, type);
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	    }
 
 	break;
@@ -1311,7 +1311,7 @@ type_memfn_quals (const_tree type)
   else if (TREE_CODE (type) == METHOD_TYPE)
     return rs_type_quals (class_of_this_parm (type));
   else
-    gcc_unreachable ();
+    rust_unreachable ();
 }
 
 // forked from gcc/cp/pt.cc find_parameter_pack_data
@@ -1882,7 +1882,7 @@ rs_tree_equal (tree t1, tree t2)
     case VOID_CST:
       /* There's only a single VOID_CST node, so we should never reach
 	 here.  */
-      gcc_unreachable ();
+      rust_unreachable ();
 
     case INTEGER_CST:
       return tree_int_cst_equal (t1, t2);
@@ -2049,7 +2049,7 @@ rs_tree_equal (tree t1, tree t2)
       return same_type_p (t1, t2);
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   /* We can get here with --disable-checking.  */
@@ -3645,7 +3645,7 @@ fold_offsetof (tree expr, tree type, enum tree_code ctx)
       return fold_offsetof (t, type);
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   if (!POINTER_TYPE_P (type))
@@ -3922,7 +3922,7 @@ retry:
       break;
 
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -4817,7 +4817,7 @@ fold_builtin_source_location (location_t loc)
 	  else if (strcmp (n, "_M_column") == 0)
 	    val = build_int_cst (TREE_TYPE (field), LOCATION_COLUMN (loc));
 	  else
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	  CONSTRUCTOR_APPEND_ELT (v, field, val);
 	}
 
@@ -5943,7 +5943,7 @@ lvalue_error (location_t loc, enum lvalue_use use)
       error_at (loc, "lvalue required in %<asm%> statement");
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 

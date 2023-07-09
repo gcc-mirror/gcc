@@ -621,7 +621,7 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
 	    break;
 	  }
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
 
@@ -913,7 +913,7 @@ ASTLoweringBase::lower_literal (const AST::Literal &literal)
       type = HIR::Literal::LitType::BOOL;
       break;
     case AST::Literal::LitType::ERROR:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 

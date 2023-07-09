@@ -117,7 +117,7 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
 	return result;
       }
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       return false;
     }
 }
@@ -240,7 +240,7 @@ VisibilityResolver::visit (HIR::ImplBlock &impl)
 	  vis_item = static_cast<HIR::ConstantItem *> (item.get ());
 	  break;
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	  return;
 	}
       vis_item->accept_vis (*this);

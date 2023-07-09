@@ -278,7 +278,7 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	    delim_id = LEFT_CURLY;
 	    break;
 	  default:
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	    break;
 	  }
 	if (contains (allowed_toks, delim_id))

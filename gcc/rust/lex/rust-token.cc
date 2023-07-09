@@ -35,7 +35,7 @@ get_token_description (TokenId id)
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -54,7 +54,7 @@ token_id_to_str (TokenId id)
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -85,13 +85,13 @@ token_id_keyword_string (TokenId id)
       static const std::string str (str_ptr);                                  \
       return str;                                                              \
     }                                                                          \
-    gcc_unreachable ();
+    rust_unreachable ();
 #define RS_TOKEN(a, b)
       RS_TOKEN_LIST
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 

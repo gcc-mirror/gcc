@@ -89,7 +89,7 @@ get_traits_to_derive (AST::Attribute &attr)
     case AST::AttrInput::LITERAL:
     case AST::AttrInput::META_ITEM:
     case AST::AttrInput::MACRO:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
@@ -119,7 +119,7 @@ derive_item (AST::Item &item, const std::string &to_derive,
 	      result.push_back (node.take_item ());
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	    }
 	}
     }
@@ -142,7 +142,7 @@ expand_item_attribute (AST::Item &item, AST::SimplePath &name,
 	      result.push_back (node.take_item ());
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	    }
 	}
     }
@@ -171,7 +171,7 @@ expand_stmt_attribute (T &statement, AST::SimplePath &attribute,
 	      result.push_back (node.take_stmt ());
 	      break;
 	    default:
-	      gcc_unreachable ();
+	      rust_unreachable ();
 	    }
 	}
     }
