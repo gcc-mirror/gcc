@@ -1,3 +1,12 @@
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110585
+	* arith.c (gfc_compare_expr): Handle equality comparison of constant
+	complex gfc_expr arguments.
+
 2023-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
