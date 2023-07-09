@@ -1190,10 +1190,41 @@ package body Exp_Put_Image is
              Parameter_Associations => New_List (Sink_Exp, String_Exp));
       end Put_String_Exp;
 
+      --  Local variables
+
+      Tag_Node : Node_Id;
+
    --  Start of processing for Build_Image_Call
 
    begin
       if Is_Class_Wide_Type (U_Type) then
+
+         --  For interface types we must generate code to displace the pointer
+         --  to the object to reference the base of the underlying object.
+
+         --  Generate:
+         --    To_Tag_Ptr (Image_Prefix'Address).all
+
+         --  Note that Image_Prefix'Address is recursively expanded into a
+         --  call to Ada.Tags.Base_Address (Image_Prefix'Address).
+
+         if Is_Interface (U_Type) then
+            Tag_Node :=
+              Make_Explicit_Dereference (Loc,
+                Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                  Make_Attribute_Reference (Loc,
+                    Prefix => Duplicate_Subexpr (Image_Prefix),
+                    Attribute_Name => Name_Address)));
+
+         --  Common case
+
+         else
+            Tag_Node :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => Duplicate_Subexpr (Image_Prefix),
+                Attribute_Name => Name_Tag);
+         end if;
+
          --  Generate qualified-expression syntax; qualification name comes
          --  from calling Ada.Tags.Wide_Wide_Expanded_Name.
 
@@ -1208,10 +1239,7 @@ package body Exp_Put_Image is
                 (Make_Function_Call (Loc,
                    Name => New_Occurrence_Of
                              (RTE (RE_Wide_Wide_Expanded_Name), Loc),
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => Duplicate_Subexpr (Image_Prefix),
-                       Attribute_Name => Name_Tag))),
+                   Parameter_Associations => New_List (Tag_Node)),
                  Wide_Wide => True);
 
             Qualification : constant Node_Id :=
