@@ -867,7 +867,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
     }
 
   // error[E0277]: the type `[{integer}]` cannot be indexed by `u32`
-  RichLocation r (expr.get_locus ());
+  RichLocation r (line_table, expr.get_locus ());
   r.add_range (expr.get_array_expr ()->get_locus ());
   r.add_range (expr.get_index_expr ()->get_locus ());
   rust_error_at (r, ErrorCode ("E0277"),
@@ -1054,7 +1054,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   if (candidates.size () > 1)
     {
-      RichLocation r (expr.get_method_name ().get_locus ());
+      RichLocation r (line_table, expr.get_method_name ().get_locus ());
       for (auto &c : candidates)
 	r.add_range (c.candidate.locus);
 
@@ -1096,7 +1096,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 
   if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
     {
-      RichLocation r (expr.get_method_name ().get_locus ());
+      RichLocation r (line_table, expr.get_method_name ().get_locus ());
       r.add_range (resolved_candidate.locus);
       rust_error_at (r, "associated impl item is not a method");
       return;
@@ -1106,7 +1106,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
   if (!fn->is_method ())
     {
-      RichLocation r (expr.get_method_name ().get_locus ());
+      RichLocation r (line_table, expr.get_method_name ().get_locus ());
       r.add_range (resolved_candidate.locus);
       rust_error_at (r, "associated function is not a method");
       return;
@@ -1637,7 +1637,7 @@ TypeCheckExpr::resolve_operator_overload (
   if (selected_candidates.size () > 1)
     {
       // mutliple candidates
-      RichLocation r (expr.get_locus ());
+      RichLocation r (line_table, expr.get_locus ());
       for (auto &c : resolved_candidates)
 	r.add_range (c.candidate.locus);
 
@@ -1883,7 +1883,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
 
   if (candidates.size () > 1)
     {
-      RichLocation r (expr.get_locus ());
+      RichLocation r (line_table, expr.get_locus ());
       for (auto &c : candidates)
 	r.add_range (c.candidate.locus);
 
@@ -1929,7 +1929,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
 
   if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
     {
-      RichLocation r (expr.get_locus ());
+      RichLocation r (line_table, expr.get_locus ());
       r.add_range (resolved_candidate.locus);
       rust_error_at (r, "associated impl item is not a method");
       return false;
@@ -1939,7 +1939,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
   if (!fn->is_method ())
     {
-      RichLocation r (expr.get_locus ());
+      RichLocation r (line_table, expr.get_locus ());
       r.add_range (resolved_candidate.locus);
       rust_error_at (r, "associated function is not a method");
       return false;

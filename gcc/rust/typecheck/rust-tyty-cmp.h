@@ -65,7 +65,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -81,7 +81,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -97,7 +97,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -113,7 +113,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -129,7 +129,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -145,7 +145,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -161,7 +161,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -177,7 +177,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -193,7 +193,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -209,7 +209,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -225,7 +225,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -241,7 +241,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -257,7 +257,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -273,7 +273,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -289,7 +289,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -305,7 +305,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -321,7 +321,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -337,7 +337,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -353,7 +353,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -369,7 +369,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -391,7 +391,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -407,7 +407,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),
@@ -423,7 +423,7 @@ public:
 	Location ref_locus = mappings->lookup_location (type.get_ref ());
 	Location base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
-	RichLocation r (ref_locus);
+	RichLocation r (line_table, ref_locus);
 	r.add_range (base_locus);
 	rust_error_at (r, "expected [%s] got [%s]",
 		       get_base ()->as_string ().c_str (),

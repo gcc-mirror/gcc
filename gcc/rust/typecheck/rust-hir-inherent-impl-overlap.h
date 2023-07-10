@@ -128,7 +128,7 @@ public:
   void collision_detected (HIR::ImplItem *query, HIR::ImplItem *dup,
 			   const std::string &name)
   {
-    RichLocation r (dup->get_locus ());
+    RichLocation r (line_table, dup->get_locus ());
     r.add_range (query->get_locus ());
     rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
   }

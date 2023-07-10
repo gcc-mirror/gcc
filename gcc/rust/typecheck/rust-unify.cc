@@ -119,7 +119,7 @@ UnifyRules::emit_type_mismatch () const
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
 
-  RichLocation r (locus);
+  RichLocation r (line_table, locus);
   r.add_range (lhs.get_locus ());
   r.add_range (rhs.get_locus ());
   rust_error_at (r, "expected %<%s%> got %<%s%>",
@@ -130,7 +130,7 @@ void
 UnifyRules::emit_abi_mismatch (const TyTy::FnType &expected,
 			       const TyTy::FnType &got) const
 {
-  RichLocation r (locus);
+  RichLocation r (line_table, locus);
   r.add_range (lhs.get_locus ());
   r.add_range (rhs.get_locus ());
   rust_error_at (r, "mistached abi %<%s%> got %<%s%>",

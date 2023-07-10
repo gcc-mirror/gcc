@@ -239,7 +239,7 @@ rust_be_error_at (const RichLocation &location, const ErrorCode code,
 		  const std::string &errmsg)
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
-  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  rich_location &gcc_loc = const_cast<rich_location &> (location);
   diagnostic_metadata m;
   rust_error_code_rule rule (code);
   m.add_rule (rule);
@@ -311,7 +311,7 @@ void
 rust_be_error_at (const RichLocation &location, const std::string &errmsg)
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
-  rich_location &gcc_loc = const_cast<rich_location &> (location.get ());
+  rich_location &gcc_loc = const_cast<rich_location &> (location);
   error_at (&gcc_loc, "%s", errmsg.c_str ());
 }
 
