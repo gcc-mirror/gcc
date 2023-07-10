@@ -235,7 +235,7 @@ rust_error_at (const Location location, const ErrorCode code, const char *fmt,
 }
 
 void
-rust_be_error_at (const RichLocation &location, const ErrorCode code,
+rust_be_error_at (const rich_location &location, const ErrorCode code,
 		  const std::string &errmsg)
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
@@ -247,7 +247,7 @@ rust_be_error_at (const RichLocation &location, const ErrorCode code,
 }
 
 void
-rust_error_at (const RichLocation &location, const ErrorCode code,
+rust_error_at (const rich_location &location, const ErrorCode code,
 	       const char *fmt, ...)
 {
   va_list ap;
@@ -308,7 +308,7 @@ rust_inform (const Location location, const char *fmt, ...)
 
 // Rich Locations
 void
-rust_be_error_at (const RichLocation &location, const std::string &errmsg)
+rust_be_error_at (const rich_location &location, const std::string &errmsg)
 {
   /* TODO: 'error_at' would like a non-'const' 'rich_location *'.  */
   rich_location &gcc_loc = const_cast<rich_location &> (location);
@@ -316,7 +316,7 @@ rust_be_error_at (const RichLocation &location, const std::string &errmsg)
 }
 
 void
-rust_error_at (const RichLocation &location, const char *fmt, ...)
+rust_error_at (const rich_location &location, const char *fmt, ...)
 {
   va_list ap;
 

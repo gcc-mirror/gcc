@@ -563,7 +563,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	{
 	  if (args.get_binding_args ().size () > get_num_associated_bindings ())
 	    {
-	      RichLocation r (line_table, args.get_locus ());
+	      rich_location r (line_table, args.get_locus ());
 
 	      rust_error_at (r,
 			     "generic item takes at most %lu type binding "
@@ -602,7 +602,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	}
       else
 	{
-	  RichLocation r (line_table, args.get_locus ());
+	  rich_location r (line_table, args.get_locus ());
 	  for (auto &binding : args.get_binding_args ())
 	    r.add_range (binding.get_locus ());
 
@@ -616,7 +616,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
   size_t offs = used_arguments.size ();
   if (args.get_type_args ().size () + offs > substitutions.size ())
     {
-      RichLocation r (line_table, args.get_locus ());
+      rich_location r (line_table, args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
 
       rust_error_at (
@@ -629,7 +629,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 
   if (args.get_type_args ().size () + offs < min_required_substitutions ())
     {
-      RichLocation r (line_table, args.get_locus ());
+      rich_location r (line_table, args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
 
       rust_error_at (
@@ -884,7 +884,7 @@ SubstitutionRef::monomorphize ()
 	      const auto &type_param = subst.get_generic_param ();
 	      const auto *trait_ref = bound.get ();
 
-	      RichLocation r (line_table, type_param.get_locus ());
+	      rich_location r (line_table, type_param.get_locus ());
 	      r.add_range (bound.get_locus ());
 	      r.add_range (mappings.lookup_location (binding->get_ref ()));
 

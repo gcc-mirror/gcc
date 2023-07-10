@@ -412,7 +412,7 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 					   size_t expected_field_count,
 					   size_t got_field_count)
 {
-  RichLocation r (line_table, pattern.get_locus ());
+  rich_location r (line_table, pattern.get_locus ());
   r.add_range (mappings->lookup_location (parent->get_ref ()));
   rust_error_at (r,
 		 "expected a tuple with %lu %s, found one "

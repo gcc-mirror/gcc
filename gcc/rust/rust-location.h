@@ -31,6 +31,4 @@
 
 typedef location_t Location;
 
-typedef rich_location RichLocation;
-
 #endif // !defined(RUST_LOCATION_H)

@@ -160,7 +160,7 @@ public:
   static void Report (std::set<PathProbeCandidate> &candidates,
 		      const HIR::PathIdentSegment &query, Location query_locus)
   {
-    RichLocation r (line_table, query_locus);
+    rich_location r (line_table, query_locus);
     for (auto &c : candidates)
       r.add_range (c.locus);
 

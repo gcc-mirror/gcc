@@ -104,7 +104,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
   if (matched_rule == nullptr)
     {
-      RichLocation r (line_table, invoc_locus);
+      rich_location r (line_table, invoc_locus);
       r.add_range (rules_def.get_locus ());
       rust_error_at (r, "Failed to match any rule within macro");
       return AST::Fragment::create_error ();
