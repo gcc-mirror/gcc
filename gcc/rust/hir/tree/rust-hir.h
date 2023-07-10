@@ -814,7 +814,7 @@ public:
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
-  virtual Location get_trait_locus () const = 0;
+  virtual location_t get_trait_locus () const = 0;
 
   virtual TraitItemKind get_item_kind () const = 0;
 

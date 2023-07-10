@@ -112,7 +112,7 @@ class Lexer
 {
 private:
   // Request new Location for current column in line_table
-  Location get_current_location ();
+  location_t get_current_location ();
 
   // Skips the current input char.
   void skip_input ();
@@ -138,20 +138,20 @@ private:
 
   void skip_broken_string_input (Codepoint current_char);
 
-  TokenPtr parse_byte_char (Location loc);
-  TokenPtr parse_byte_string (Location loc);
-  TokenPtr parse_raw_byte_string (Location loc);
-  TokenPtr parse_raw_identifier (Location loc);
-  TokenPtr parse_string (Location loc);
-  TokenPtr maybe_parse_raw_string (Location loc);
-  TokenPtr parse_raw_string (Location loc, int initial_hash_count);
-  TokenPtr parse_non_decimal_int_literals (Location loc);
-  TokenPtr parse_decimal_int_or_float (Location loc);
-  TokenPtr parse_char_or_lifetime (Location loc);
-  TokenPtr parse_identifier_or_keyword (Location loc);
+  TokenPtr parse_byte_char (location_t loc);
+  TokenPtr parse_byte_string (location_t loc);
+  TokenPtr parse_raw_byte_string (location_t loc);
+  TokenPtr parse_raw_identifier (location_t loc);
+  TokenPtr parse_string (location_t loc);
+  TokenPtr maybe_parse_raw_string (location_t loc);
+  TokenPtr parse_raw_string (location_t loc, int initial_hash_count);
+  TokenPtr parse_non_decimal_int_literals (location_t loc);
+  TokenPtr parse_decimal_int_or_float (location_t loc);
+  TokenPtr parse_char_or_lifetime (location_t loc);
+  TokenPtr parse_identifier_or_keyword (location_t loc);
 
   template <typename IsDigitFunc>
-  TokenPtr parse_non_decimal_int_literal (Location loc,
+  TokenPtr parse_non_decimal_int_literal (location_t loc,
 					  IsDigitFunc is_digit_func,
 					  std::string existent_str, int base);
 

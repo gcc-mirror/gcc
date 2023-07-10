@@ -31,7 +31,7 @@ namespace AST {
 class AstBuilder
 {
 public:
-  AstBuilder (Location loc) : loc (loc) {}
+  AstBuilder (location_t loc) : loc (loc) {}
 
   /* Create an identifier expression (`variable`) */
   std::unique_ptr<Expr> identifier (std::string name);
@@ -107,7 +107,7 @@ private:
   /**
    * Location of the generated AST nodes
    */
-  Location loc;
+  location_t loc;
 };
 
 } // namespace AST

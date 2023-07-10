@@ -41,7 +41,7 @@ public:
       loc (UNDEF_LOCATION)
   {}
   // Create identifier with dummy location
-  Identifier (std::string ident, Location loc = UNDEF_LOCATION)
+  Identifier (std::string ident, location_t loc = UNDEF_LOCATION)
     : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
       loc (loc)
   {}
@@ -66,7 +66,7 @@ public:
 private:
   std::string ident;
   NodeId node_id;
-  Location loc;
+  location_t loc;
 };
 
 std::ostream &
@@ -157,7 +157,7 @@ public:
   virtual ~MacroMatch () {}
 
   virtual std::string as_string () const = 0;
-  virtual Location get_match_locus () const = 0;
+  virtual location_t get_match_locus () const = 0;
 
   // Unique pointer custom clone function
   std::unique_ptr<MacroMatch> clone_macro_match () const
@@ -264,7 +264,10 @@ public:
   }
 
   std::string as_string () const override;
-  Location get_match_locus () const override { return tok_ref->get_locus (); };
+  location_t get_match_locus () const override
+  {
+    return tok_ref->get_locus ();
+  };
 
   void accept_vis (ASTVisitor &vis) override;
 

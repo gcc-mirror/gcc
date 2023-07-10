@@ -173,7 +173,7 @@ Lexer::input_source_is_valid_utf8 ()
   return raw_input_source->is_valid ();
 }
 
-Location
+location_t
 Lexer::get_current_location ()
 {
   if (line_map)
@@ -230,7 +230,7 @@ Lexer::dump_and_skip (int n)
 	  tok = peek_token ();
 	  found_eof |= tok->get_id () == Rust::END_OF_FILE;
 
-	  Location loc = tok->get_locus ();
+	  location_t loc = tok->get_locus ();
 
 	  out << "<id=";
 	  out << tok->token_id_to_str ();
@@ -302,7 +302,7 @@ Lexer::build_token ()
   // loop to go through multiple characters to build a single token
   while (true)
     {
-      Location loc = get_current_location ();
+      location_t loc = get_current_location ();
 
       current_char = peek_input ();
       skip_input ();
@@ -1699,7 +1699,7 @@ Lexer::parse_partial_unicode_escape ()
 
 // Parses a byte character.
 TokenPtr
-Lexer::parse_byte_char (Location loc)
+Lexer::parse_byte_char (location_t loc)
 {
   skip_input ();
   current_column++;
@@ -1767,7 +1767,7 @@ Lexer::parse_byte_char (Location loc)
 
 // Parses a byte string.
 TokenPtr
-Lexer::parse_byte_string (Location loc)
+Lexer::parse_byte_string (location_t loc)
 {
   // byte string
 
@@ -1833,7 +1833,7 @@ Lexer::parse_byte_string (Location loc)
 
 // Parses a raw byte string.
 TokenPtr
-Lexer::parse_raw_byte_string (Location loc)
+Lexer::parse_raw_byte_string (location_t loc)
 {
   // raw byte string literals
   std::string str;
@@ -1916,7 +1916,7 @@ Lexer::parse_raw_byte_string (Location loc)
 
 // Parses a raw identifier.
 TokenPtr
-Lexer::parse_raw_identifier (Location loc)
+Lexer::parse_raw_identifier (location_t loc)
 {
   // raw identifier
   std::string str;
@@ -1998,7 +1998,7 @@ Lexer::skip_broken_string_input (Codepoint current_char)
 
 // Parses a string.
 TokenPtr
-Lexer::parse_string (Location loc)
+Lexer::parse_string (location_t loc)
 {
   std::string str;
   str.reserve (16); // some sensible default
@@ -2063,7 +2063,7 @@ Lexer::parse_string (Location loc)
 
 // Parses an identifier or keyword.
 TokenPtr
-Lexer::parse_identifier_or_keyword (Location loc)
+Lexer::parse_identifier_or_keyword (location_t loc)
 {
   std::string str;
   str.reserve (16); // default
@@ -2104,7 +2104,7 @@ Lexer::parse_identifier_or_keyword (Location loc)
 
 // Possibly returns a raw string token if it exists - otherwise returns null.
 TokenPtr
-Lexer::maybe_parse_raw_string (Location loc)
+Lexer::maybe_parse_raw_string (location_t loc)
 {
   int peek_index = 0;
   while (peek_input (peek_index) == '#')
@@ -2118,7 +2118,7 @@ Lexer::maybe_parse_raw_string (Location loc)
 
 // Returns a raw string token.
 TokenPtr
-Lexer::parse_raw_string (Location loc, int initial_hash_count)
+Lexer::parse_raw_string (location_t loc, int initial_hash_count)
 {
   // raw string literals
   std::string str;
@@ -2181,7 +2181,7 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
 
 template <typename IsDigitFunc>
 TokenPtr
-Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
+Lexer::parse_non_decimal_int_literal (location_t loc, IsDigitFunc is_digit_func,
 				      std::string existent_str, int base)
 {
   int length = 1;
@@ -2245,7 +2245,7 @@ Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
 
 // Parses a hex, binary or octal int literal.
 TokenPtr
-Lexer::parse_non_decimal_int_literals (Location loc)
+Lexer::parse_non_decimal_int_literals (location_t loc)
 {
   std::string str;
   str.reserve (16); // some sensible default
@@ -2278,7 +2278,7 @@ Lexer::parse_non_decimal_int_literals (Location loc)
 
 // Parses a decimal-based int literal or float literal.
 TokenPtr
-Lexer::parse_decimal_int_or_float (Location loc)
+Lexer::parse_decimal_int_or_float (location_t loc)
 {
   std::string str;
   str.reserve (16); // some sensible default
@@ -2417,7 +2417,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 }
 
 TokenPtr
-Lexer::parse_char_or_lifetime (Location loc)
+Lexer::parse_char_or_lifetime (location_t loc)
 {
   int length = 1;
 
@@ -2511,7 +2511,7 @@ Lexer::split_current_token (TokenId new_left, TokenId new_right)
 {
   /* TODO: assert that this TokenId is a "simple token" like punctuation and not
    * like "IDENTIFIER"? */
-  Location current_loc = peek_token ()->get_locus ();
+  location_t current_loc = peek_token ()->get_locus ();
   TokenPtr new_left_tok = Token::make (new_left, current_loc);
   TokenPtr new_right_tok = Token::make (new_right, current_loc + 1);
 

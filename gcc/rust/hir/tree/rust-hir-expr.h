@@ -2121,8 +2121,8 @@ public:
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
   bool tail_reachable;
-  Location start_locus;
-  Location end_locus;
+  location_t start_locus;
+  location_t end_locus;
 
   std::string as_string () const override;
 
@@ -2140,7 +2140,7 @@ public:
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
-	     Location start_locus, Location end_locus)
+	     location_t start_locus, location_t end_locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       WithInnerAttrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
@@ -2193,9 +2193,9 @@ public:
 
   location_t get_locus () const override final { return start_locus; }
 
-  Location get_start_locus () const { return start_locus; }
+  location_t get_start_locus () const { return start_locus; }
 
-  Location get_end_locus () const { return end_locus; }
+  location_t get_end_locus () const { return end_locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
@@ -3935,7 +3935,7 @@ public:
   std::vector<AST::TupleTemplateStr> template_strs;
   std::vector<AST::InlineAsmOperand> operands;
   AST::InlineAsmOptions options;
-  std::vector<Location> line_spans;
+  std::vector<location_t> line_spans;
 };
 } // namespace HIR
 } // namespace Rust

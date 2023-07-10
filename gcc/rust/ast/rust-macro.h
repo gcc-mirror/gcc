@@ -190,7 +190,7 @@ public:
   }
 
   std::string as_string () const override;
-  Location get_match_locus () const override { return locus; };
+  location_t get_match_locus () const override { return locus; };
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -281,7 +281,7 @@ public:
   MacroMatchRepetition &operator= (MacroMatchRepetition &&other) = default;
 
   std::string as_string () const override;
-  Location get_match_locus () const override { return locus; };
+  location_t get_match_locus () const override { return locus; };
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -359,7 +359,7 @@ public:
 
   // Returns whether MacroMatcher is in an error state.
   bool is_error () const { return is_invalid; }
-  Location get_match_locus () const override { return locus; }
+  location_t get_match_locus () const override { return locus; }
 
   std::string as_string () const override;
 
@@ -468,7 +468,7 @@ private:
   std::vector<MacroRule> rules; // inlined form
   location_t locus;
 
-  std::function<Fragment (Location, MacroInvocData &)> associated_transcriber;
+  std::function<Fragment (location_t, MacroInvocData &)> associated_transcriber;
   // Since we can't compare std::functions, we need to use an extra boolean
   bool is_builtin_rule;
   MacroKind kind;
@@ -480,7 +480,7 @@ private:
    * should make use of the actual rules. If the macro is builtin, then another
    * associated transcriber should be used
    */
-  static Fragment dummy_builtin (Location, MacroInvocData &)
+  static Fragment dummy_builtin (location_t, MacroInvocData &)
   {
     rust_unreachable ();
     return Fragment::create_error ();
@@ -502,10 +502,10 @@ private:
       kind (kind)
   {}
 
-  MacroRulesDefinition (
-    Identifier builtin_name, DelimType delim_type,
-    std::function<Fragment (Location, MacroInvocData &)> associated_transcriber,
-    MacroKind kind, Visibility vis)
+  MacroRulesDefinition (Identifier builtin_name, DelimType delim_type,
+			std::function<Fragment (location_t, MacroInvocData &)>
+			  associated_transcriber,
+			MacroKind kind, Visibility vis)
     : VisItem (std::move (vis), std::vector<Attribute> ()),
       outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
       delim_type (delim_type), rules (std::vector<MacroRule> ()),
@@ -560,14 +560,14 @@ public:
   const std::vector<MacroRule> &get_rules () const { return rules; }
 
   bool is_builtin () const { return is_builtin_rule; }
-  const std::function<Fragment (Location, MacroInvocData &)> &
+  const std::function<Fragment (location_t, MacroInvocData &)> &
   get_builtin_transcriber () const
   {
     rust_assert (is_builtin ());
     return associated_transcriber;
   }
   void set_builtin_transcriber (
-    std::function<Fragment (Location, MacroInvocData &)> transcriber)
+    std::function<Fragment (location_t, MacroInvocData &)> transcriber)
   {
     associated_transcriber = transcriber;
     is_builtin_rule = true;
@@ -926,10 +926,10 @@ protected:
 class MetaWord : public MetaItem
 {
   Identifier ident;
-  Location ident_locus;
+  location_t ident_locus;
 
 public:
-  MetaWord (Identifier ident, Location ident_locus)
+  MetaWord (Identifier ident, location_t ident_locus)
     : ident (std::move (ident)), ident_locus (ident_locus)
   {}
 
@@ -962,15 +962,15 @@ protected:
 class MetaNameValueStr : public MetaItem
 {
   Identifier ident;
-  Location ident_locus;
+  location_t ident_locus;
 
   // NOTE: str stored without quotes
   std::string str;
-  Location str_locus;
+  location_t str_locus;
 
 public:
-  MetaNameValueStr (Identifier ident, Location ident_locus, std::string str,
-		    Location str_locus)
+  MetaNameValueStr (Identifier ident, location_t ident_locus, std::string str,
+		    location_t str_locus)
     : ident (std::move (ident)), ident_locus (ident_locus),
       str (std::move (str)), str_locus (str_locus)
   {}
@@ -1019,11 +1019,11 @@ protected:
 class MetaListPaths : public MetaItem
 {
   Identifier ident;
-  Location ident_locus;
+  location_t ident_locus;
   std::vector<SimplePath> paths;
 
 public:
-  MetaListPaths (Identifier ident, Location ident_locus,
+  MetaListPaths (Identifier ident, location_t ident_locus,
 		 std::vector<SimplePath> paths)
     : ident (std::move (ident)), ident_locus (ident_locus),
       paths (std::move (paths))
@@ -1064,11 +1064,11 @@ protected:
 class MetaListNameValueStr : public MetaItem
 {
   Identifier ident;
-  Location ident_locus;
+  location_t ident_locus;
   std::vector<MetaNameValueStr> strs;
 
 public:
-  MetaListNameValueStr (Identifier ident, Location ident_locus,
+  MetaListNameValueStr (Identifier ident, location_t ident_locus,
 			std::vector<MetaNameValueStr> strs)
     : ident (std::move (ident)), ident_locus (ident_locus),
       strs (std::move (strs))
