@@ -653,7 +653,8 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
         {
             Module m = sc._module;
 
-            // While isAncestorPackageOf does an equality check, the fix for issue 17441 adds a check to see if
+            // https://issues.dlang.org/show_bug.cgi?id=17441
+            // While isAncestorPackageOf does an equality check, the fix for the issue adds a check to see if
             // each package's .isModule() properites are equal.
             //
             // Properties generated from `package(foo)` i.e. visibility.pkg have .isModule() == null.

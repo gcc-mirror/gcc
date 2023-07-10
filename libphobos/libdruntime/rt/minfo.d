@@ -268,7 +268,9 @@ struct ModuleGroup
                     }
                 }
                 // trim space to what is needed.
-                edges[i] = (cast(int*)realloc(edge, int.sizeof * nEdges))[0 .. nEdges];
+                edges[i] = nEdges > 0
+                    ? (cast(int*)realloc(edge, int.sizeof * nEdges))[0 .. nEdges]
+                    : null;
             }
         }
 

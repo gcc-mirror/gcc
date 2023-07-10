@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag13884.d(14): Error: functions cannot return a tuple
+fail_compilation/diag13884.d(14): Error: functions cannot return a sequence (use `std.typecons.Tuple`)
 fail_compilation/diag13884.d(21):        instantiated from here: `MapResult!((t) => t.tupleof, Foo[])`
 fail_compilation/diag13884.d(14):        instantiated from here: `map!(Foo[])`
 ---

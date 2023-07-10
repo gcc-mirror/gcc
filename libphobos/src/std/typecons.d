@@ -2955,6 +2955,140 @@ Rebindable!T rebindable(T)(Rebindable!T obj)
     assert(rebindable(pr3341_aa)[321] == 543);
 }
 
+package(std) struct Rebindable2(T)
+{
+private:
+    static if (isAssignable!(typeof(cast() T.init)))
+    {
+        enum useQualifierCast = true;
+
+        typeof(cast() T.init) data;
+    }
+    else
+    {
+        enum useQualifierCast = false;
+
+        align(T.alignof)
+        static struct Payload
+        {
+            static if (hasIndirections!T)
+            {
+                void[T.sizeof] data;
+            }
+            else
+            {
+                ubyte[T.sizeof] data;
+            }
+        }
+
+        Payload data;
+    }
+
+public:
+
+    static if (!__traits(compiles, { T value; }))
+    {
+        @disable this();
+    }
+
+    /**
+     * Constructs a `Rebindable2` from a given value.
+     */
+    this(T value) @trusted
+    {
+        static if (useQualifierCast)
+        {
+            this.data = cast() value;
+        }
+        else
+        {
+            set(value);
+        }
+    }
+
+    /**
+     * Overwrites the currently stored value with `value`.
+     */
+    void opAssign(this This)(T value) @trusted
+    {
+        clear;
+        set(value);
+    }
+
+    /**
+     * Returns the value currently stored in the `Rebindable2`.
+     */
+    T get(this This)() @property @trusted
+    {
+        static if (useQualifierCast)
+        {
+            return cast(T) this.data;
+        }
+        else
+        {
+            return *cast(T*) &this.data;
+        }
+    }
+
+    /// Ditto
+    inout(T) get() inout @property @trusted
+    {
+        static if (useQualifierCast)
+        {
+            return cast(inout(T)) this.data;
+        }
+        else
+        {
+            return *cast(inout(T)*) &this.data;
+        }
+    }
+
+    static if (!useQualifierCast)
+    {
+        ~this() @trusted
+        {
+            clear;
+        }
+    }
+
+private:
+
+    void set(this This)(T value)
+    {
+        static if (useQualifierCast)
+        {
+            this.data = cast() value;
+        }
+        else
+        {
+            // As we're escaping a copy of `value`, deliberately leak a copy:
+            static union DontCallDestructor
+            {
+                T value;
+            }
+            DontCallDestructor copy = DontCallDestructor(value);
+            this.data = *cast(Payload*) &copy;
+        }
+    }
+
+    void clear(this This)()
+    {
+        // work around reinterpreting cast being impossible in CTFE
+        if (__ctfe)
+        {
+            return;
+        }
+
+        // call possible struct destructors
+        .destroy!(No.initialize)(*cast(T*) &this.data);
+    }
+}
+
+package(std) Rebindable2!T rebindable2(T)(T value)
+{
+    return Rebindable2!T(value);
+}
+
 /**
     Similar to `Rebindable!(T)` but strips all qualifiers from the reference as
     opposed to just constness / immutability. Primary intended use case is with

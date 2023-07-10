@@ -1498,8 +1498,8 @@ Optional Features:
   --enable-libphobos-checking[=LIST]
                           enable expensive run-time checks. With LIST, enable
                           only specific categories of checks. Categories are:
-                          yes,no,all,none,release. Flags are: assert or other
-                          strings
+                          yes,no,all,none,release. Flags are: assert,valgrind
+                          or other strings
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -15553,16 +15553,20 @@ for check in release $ac_checking_flags
 do
 	case $check in
 	# These set all the flags to specific states
-	yes|all) RELEASE_FLAG="-fno-release" ; ASSERT_FLAG= ;;
-	no|none|release) RELEASE_FLAG="-frelease" ; ASSERT_FLAG= ;;
+	yes|all)		RELEASE_FLAG="-fno-release" ; ASSERT_FLAG= ;
+				VALGRIND_FLAG= ;;
+	no|none|release)	RELEASE_FLAG="-frelease" ; ASSERT_FLAG= ;
+				VALGRIND_FLAG= ;;
 	# These enable particular checks
-	assert) ASSERT_FLAG="-fassert" ;;
+	assert)			ASSERT_FLAG="-fassert" ;;
+	valgrind)		VALGRIND_FLAG="-fdebug=VALGRIND" ;;
 	# Accept
 	*) ;;
 	esac
 done
 IFS="$ac_save_IFS"
-CHECKING_DFLAGS="$RELEASE_FLAG $ASSERT_FLAG"
+CHECKING_DFLAGS="$RELEASE_FLAG $ASSERT_FLAG $VALGRIND_FLAG"
+
 
 
 # Add drtbegin.o/drtend.o to startfile/endfile specs in libgphobos.spec
@@ -15598,6 +15602,91 @@ else
   as_fn_error $? "cannot find stdio.h." "$LINENO" 5
 fi
 
+
+
+
+  for ac_header in stddef.h stdlib.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+  ac_fn_c_check_header_mongrel "$LINENO" "valgrind.h" "ac_cv_header_valgrind_h" "$ac_includes_default"
+if test "x$ac_cv_header_valgrind_h" = xyes; then :
+  have_valgrind_h=yes
+else
+  have_valgrind_h=no
+fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <valgrind/memcheck.h>" >&5
+$as_echo_n "checking for VALGRIND_DISCARD in <valgrind/memcheck.h>... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <valgrind/memcheck.h>
+  #ifndef VALGRIND_DISCARD
+  #error VALGRIND_DISCARD not defined
+  #endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  have_valgrind_memcheck_h=yes
+else
+  have_valgrind_memcheck_h=no
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_valgrind_memcheck_h" >&5
+$as_echo "$have_valgrind_memcheck_h" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for VALGRIND_DISCARD in <memcheck.h>" >&5
+$as_echo_n "checking for VALGRIND_DISCARD in <memcheck.h>... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <memcheck.h>
+  #ifndef VALGRIND_DISCARD
+  #error VALGRIND_DISCARD not defined
+  #endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  have_memcheck_h=yes
+else
+  have_memcheck_h=no
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_memcheck_h" >&5
+$as_echo "$have_memcheck_h" >&6; }
+
+  if test x$VALGRIND_FLAG != x ; then
+
+$as_echo "#define ENABLE_VALGRIND_CHECKING 1" >>confdefs.h
+
+  fi
+  if test $have_valgrind_memcheck_h = yes; then
+
+$as_echo "#define HAVE_VALGRIND_MEMCHECK_H 1" >>confdefs.h
+
+  fi
+  if test $have_memcheck_h = yes; then
+
+$as_echo "#define HAVE_MEMCHECK_H 1" >>confdefs.h
+
+  fi
+
+  if test x$VALGRIND_FLAG != x; then
+    if (test $have_valgrind_h = no \
+        && test $have_memcheck_h = no \
+        && test $have_valgrind_memcheck_h = no); then
+      as_fn_error $? "*** valgrind checking requested, but
+*** Can't find valgrind/memcheck.h, memcheck.h or valgrind.h" "$LINENO" 5
+    fi
+  fi
 
 
 ac_config_files="$ac_config_files Makefile"

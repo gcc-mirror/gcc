@@ -1242,7 +1242,7 @@ extern (C++) abstract class Expression : ASTNode
             if (!f.isDtorDeclaration())
                 errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.pure_);
 
-            checkOverridenDtor(sc, f, dd => dd.type.toTypeFunction().purity != PURE.impure, "impure");
+            checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().purity != PURE.impure, "impure");
             return true;
         }
         return false;
@@ -1261,7 +1261,7 @@ extern (C++) abstract class Expression : ASTNode
      *   check = current check (e.g. whether it's pure)
      *   checkName = the kind of check (e.g. `"pure"`)
      */
-    extern (D) final void checkOverridenDtor(Scope* sc, FuncDeclaration f,
+    extern (D) final void checkOverriddenDtor(Scope* sc, FuncDeclaration f,
                 scope bool function(DtorDeclaration) check, const string checkName
     ) {
         auto dd = f.isDtorDeclaration();
@@ -1314,7 +1314,7 @@ extern (C++) abstract class Expression : ASTNode
                 field.loc.errorSupplemental(" - %s %s", field.type.toChars(), field.toChars());
 
                 if (fieldSd.dtor.isGenerated())
-                    checkOverridenDtor(sc, fieldSd.dtor, check, checkName);
+                    checkOverriddenDtor(sc, fieldSd.dtor, check, checkName);
                 else
                     fieldSd.dtor.loc.errorSupplemental("   %.*s `%s.~this` is declared here",
                                             cast(int) checkName.length, checkName.ptr, fieldSd.toChars());
@@ -1505,7 +1505,7 @@ extern (C++) abstract class Expression : ASTNode
                     errorSupplementalInferredAttr(f, /*max depth*/ 10, /*deprecation*/ false, STC.safe);
                 .errorSupplemental(f.loc, "`%s` is declared here", prettyChars);
 
-                checkOverridenDtor(sc, f, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
+                checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
 
                 return true;
             }
@@ -1569,7 +1569,7 @@ extern (C++) abstract class Expression : ASTNode
                         f.errorSupplementalInferredAttr(/*max depth*/ 10, /*deprecation*/ false, STC.nogc);
                 }
 
-                checkOverridenDtor(sc, f, dd => dd.type.toTypeFunction().isnogc, "non-@nogc");
+                checkOverriddenDtor(sc, f, dd => dd.type.toTypeFunction().isnogc, "non-@nogc");
 
                 return true;
             }
@@ -4512,7 +4512,7 @@ extern (C++) abstract class BinExp : Expression
         Type t2 = e2.type;
 
         // T opAssign floating yields a floating. Prevent truncating conversions (float to int).
-        // See issue 3841.
+        // See https://issues.dlang.org/show_bug.cgi?id=3841.
         // Should we also prevent double to float (type.isfloating() && type.size() < t2.size()) ?
         if (op == EXP.addAssign || op == EXP.minAssign ||
             op == EXP.mulAssign || op == EXP.divAssign || op == EXP.modAssign ||
@@ -7425,23 +7425,20 @@ extern(D) Modifiable checkModifiable(Expression exp, Scope* sc, ModifyFlags flag
 }
 
 /**
- * Verify if the given identifier is any of
- * _d_array{ctor,setctor,setassign,assign_l, assign_r}.
+ * Verify if the given identifier is _d_array{,set}ctor.
  *
  * Params:
  *  id = the identifier to verify
  *
  * Returns:
- *  `true` if the identifier corresponds to a construction of assignement
- *  runtime hook, `false` otherwise.
+ *  `true` if the identifier corresponds to a construction runtime hook,
+ *  `false` otherwise.
  */
-bool isArrayConstructionOrAssign(const Identifier id)
+bool isArrayConstruction(const Identifier id)
 {
     import dmd.id : Id;
 
-    return id == Id._d_arrayctor || id == Id._d_arraysetctor ||
-        id == Id._d_arrayassign_l || id == Id._d_arrayassign_r ||
-        id == Id._d_arraysetassign;
+    return id == Id._d_arrayctor || id == Id._d_arraysetctor;
 }
 
 /******************************

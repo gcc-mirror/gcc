@@ -14,17 +14,17 @@ runnable/xtest46_gc.d-mixin-33(2996): Deprecation: alias this for classes/interf
 int(int i, long j = 7L)
 long
 C10390(C10390(<recursion>))
-tuple(height)
-tuple(get, get)
-tuple(clear)
-tuple(draw, draw)
+AliasSeq!(height)
+AliasSeq!(get, get)
+AliasSeq!(clear)
+AliasSeq!(draw, draw)
 const(int)
 string[]
 double[]
 double[]
 {}
 runnable/xtest46_gc.d-mixin-33(4702): Deprecation: alias this for classes/interfaces is deprecated
-tuple("m")
+AliasSeq!("m")
 true
 TFunction1: extern (C) void function()
 ---

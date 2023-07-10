@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -checkaction=context
 TEST_OUTPUT:
 ---
-fail_compilation/dassert.d(14): Error: expression `tuple(0, 0)` of type `(int, int)` does not have a boolean value
+fail_compilation/dassert.d(14): Error: expression `AliasSeq!(0, 0)` of type `(int, int)` does not have a boolean value
 fail_compilation/dassert.d(21): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/dassert.d(29): Error: assignment cannot be used as a condition, perhaps `==` was meant?
 fail_compilation/dassert.d(40): Error: expression `issue()` of type `void` does not have a boolean value

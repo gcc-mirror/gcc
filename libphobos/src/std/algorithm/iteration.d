@@ -2026,7 +2026,7 @@ private struct ChunkByGroup(alias eq, Range, bool eqEquivalenceAssured)
         }
     }
 
-    // Cannot be a copy constructor due to issue 22239
+    // Cannot be a copy constructor due to https://issues.dlang.org/show_bug.cgi?id=22239
     this(this) @trusted
     {
         import core.lifetime : emplace;
@@ -2128,7 +2128,7 @@ if (isForwardRange!Range)
         }();
     }
 
-    // Cannot be a copy constructor due to issue 22239
+    // Cannot be a copy constructor due to https://issues.dlang.org/show_bug.cgi?id=22239
     this(this) @trusted
     {
         import core.lifetime : emplace;

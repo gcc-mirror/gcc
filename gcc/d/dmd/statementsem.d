@@ -257,8 +257,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 continue;
             }
 
-            Statements* flt = s.flatten(sc);
-            if (flt)
+            if (auto flt = s.flatten(sc))
             {
                 cs.statements.remove(i);
                 cs.statements.insert(i, flt);
@@ -279,6 +278,24 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 ++i;
                 continue;       // look for errors in rest of statements
             }
+
+            // expand tuple variables in order to attach destruction/exception logic
+            if (auto es = s.isExpStatement())
+            {
+                if (es.exp && es.exp.isDeclarationExp())
+                {
+                    auto de = es.exp.isDeclarationExp();
+                    auto vd = de.declaration.isVarDeclaration();
+                    if (vd && vd.aliasTuple && vd.aliasTuple.objects.length)
+                    {
+                        auto j = i;
+                        cs.statements.insert(i, vd.aliasTuple.objects.length - 1, null);
+                        vd.aliasTuple.foreachVar((v) { (*cs.statements)[j++] = toStatement(v); });
+                        s = (*cs.statements)[i];
+                    }
+                }
+            }
+
             Statement sentry;
             Statement sexception;
             Statement sfinally;
@@ -384,12 +401,11 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         /* Flatten them in place
          */
-        void flatten(Statements* statements)
+        void flattenStatements(ref Statements statements)
         {
             for (size_t i = 0; i < statements.length;)
             {
-                Statement s = (*statements)[i];
-                if (s)
+                if (auto s = statements[i])
                 {
                     if (auto flt = s.flatten(sc))
                     {
@@ -406,7 +422,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
          * 'semantic' may return another CompoundStatement
          * (eg. CaseRangeStatement), so flatten it here.
          */
-        flatten(cs.statements);
+        flattenStatements(*cs.statements);
 
         foreach (s; *cs.statements)
         {
@@ -4298,7 +4314,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     const bool skipCheck = isStatic && needExpansion;
     if (!skipCheck && (dim < 1 || dim > 2))
     {
-        fs.error("only one (value) or two (key,value) arguments for tuple `foreach`");
+        fs.error("only one (value) or two (key,value) arguments allowed for sequence `foreach`");
         return returnEarly();
     }
 

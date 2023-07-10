@@ -2205,7 +2205,7 @@ class Lexer
                 p++;
                 if ((flags & f) && !err)
                 {
-                    error("unrecognized token");
+                    error("repeated integer suffix `%c`", p[-1]);
                     err = true;
                 }
                 flags = cast(FLAGS)(flags | f);

@@ -827,7 +827,7 @@ version (StdUnittest)
 
     // Both sequences must work on either system
 
-    // A sequence of allocs which generates the error described in issue 16564
+    // A sequence of allocs which generates the error described in https://issues.dlang.org/show_bug.cgi?id=16564
     // that is a gap at the end of buf from the perspective of the allocator
 
     // for 64 bit systems (leftover balance = 8 bytes < 16)

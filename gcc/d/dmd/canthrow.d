@@ -80,7 +80,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                     if (!f.isDtorDeclaration())
                         errorSupplementalInferredAttr(f, 10, false, STC.nothrow_);
 
-                    e.checkOverridenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
+                    e.checkOverriddenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
                 }
                 else if (func)
                 {
@@ -118,7 +118,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                     {
                         auto sd = ts.sym;
                         const id = ce.f.ident;
-                        if (sd.postblit && isArrayConstructionOrAssign(id))
+                        if (sd.postblit && isArrayConstruction(id))
                         {
                             checkFuncThrows(ce, sd.postblit);
                             return;

@@ -13,4 +13,4 @@ Tuple!T tuple(T...)(T args)
 
 enum foo = tuple(1, 2).expand;
 static assert(typeof(foo).stringof == "(int, int)");
-static assert(foo.stringof == "tuple(1, 2)");
+static assert(foo.stringof == "AliasSeq!(1, 2)");

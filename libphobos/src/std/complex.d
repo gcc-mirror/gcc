@@ -1066,7 +1066,7 @@ Complex!T asin(T)(Complex!T z)  @safe pure nothrow @nogc
 {
     import std.math.operations : isClose;
     import std.math.constants : PI;
-    version (DigitalMars) {} else // Disabled because of issue 21376
+    version (DigitalMars) {} else // Disabled because of https://issues.dlang.org/show_bug.cgi?id=21376
     assert(isClose(asin(complex(0.5f)), float(PI) / 6));
 }
 
@@ -1092,7 +1092,7 @@ Complex!T acos(T)(Complex!T z)  @safe pure nothrow @nogc
 {
     import std.math.operations : isClose;
     import std.math.constants : PI;
-    version (DigitalMars) {} else // Disabled because of issue 21376
+    version (DigitalMars) {} else // Disabled because of https://issues.dlang.org/show_bug.cgi?id=21376
     assert(isClose(acos(complex(0.5f)), float(PI) / 3));
 }
 

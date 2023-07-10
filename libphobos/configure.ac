@@ -221,24 +221,28 @@ AC_ARG_ENABLE(libphobos-checking,
 		[enable expensive run-time checks.  With LIST,
 		 enable only specific categories of checks.
 		 Categories are: yes,no,all,none,release.
-		 Flags are: assert or other strings])],
+		 Flags are: assert,valgrind or other strings])],
 [ac_checking_flags="${enableval}"],[ac_checking_flags=release])
 IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 for check in release $ac_checking_flags
 do
 	case $check in
 	# These set all the flags to specific states
-	yes|all) RELEASE_FLAG="-fno-release" ; ASSERT_FLAG= ;;
-	no|none|release) RELEASE_FLAG="-frelease" ; ASSERT_FLAG= ;;
+	yes|all)		RELEASE_FLAG="-fno-release" ; ASSERT_FLAG= ;
+				VALGRIND_FLAG= ;;
+	no|none|release)	RELEASE_FLAG="-frelease" ; ASSERT_FLAG= ;
+				VALGRIND_FLAG= ;;
 	# These enable particular checks
-	assert) ASSERT_FLAG="-fassert" ;;
+	assert)			ASSERT_FLAG="-fassert" ;;
+	valgrind)		VALGRIND_FLAG="-fdebug=VALGRIND" ;;
 	# Accept
 	*) ;;
 	esac
 done
 IFS="$ac_save_IFS"
-CHECKING_DFLAGS="$RELEASE_FLAG $ASSERT_FLAG"
+CHECKING_DFLAGS="$RELEASE_FLAG $ASSERT_FLAG $VALGRIND_FLAG"
 AC_SUBST(CHECKING_DFLAGS)
+
 
 # Add drtbegin.o/drtend.o to startfile/endfile specs in libgphobos.spec
 if test "$DCFG_MINFO_BRACKETING" = "false"; then
@@ -268,6 +272,8 @@ AC_SUBST(WARN_DFLAGS)
 # Sanity check for the cross-compilation case:
 AC_CHECK_HEADER(stdio.h,:,
   [AC_MSG_ERROR([cannot find stdio.h.])])
+
+DRUNTIME_LIBRARIES_VALGRIND
 
 AC_CONFIG_FILES(Makefile)
 

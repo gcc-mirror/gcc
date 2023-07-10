@@ -1,6 +1,6 @@
 /* TEST_OUTPUT:
 ---
-tuple((Attrib))
+AliasSeq!((Attrib))
 ---
 */
 

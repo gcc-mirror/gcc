@@ -2450,7 +2450,7 @@ public:
     {
         debug (Debug_DtoH) mixin(traceVisit!e);
 
-        // Valid in most cases, others should be overriden below
+        // Valid in most cases, others should be overridden below
         // to use the appropriate operators  (:: and ->)
         buf.writestring(e.toString());
     }

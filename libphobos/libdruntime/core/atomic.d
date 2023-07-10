@@ -85,7 +85,7 @@ enum MemoryOrder
  * Returns:
  *  The value of 'val'.
  */
-T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(ref return scope const T val) pure nothrow @nogc @trusted
+T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(auto ref return scope const T val) pure nothrow @nogc @trusted
     if (!is(T == shared U, U) && !is(T == shared inout U, U) && !is(T == shared const U, U))
 {
     static if (__traits(isFloating, T))
@@ -99,7 +99,7 @@ T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(ref return scope const T val) 
 }
 
 /// Ditto
-T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(ref return scope shared const T val) pure nothrow @nogc @trusted
+T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(auto ref return scope shared const T val) pure nothrow @nogc @trusted
     if (!hasUnsharedIndirections!T)
 {
     import core.internal.traits : hasUnsharedIndirections;
@@ -109,7 +109,7 @@ T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(ref return scope shared const 
 }
 
 /// Ditto
-TailShared!T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(ref shared const T val) pure nothrow @nogc @trusted
+TailShared!T atomicLoad(MemoryOrder ms = MemoryOrder.seq, T)(auto ref shared const T val) pure nothrow @nogc @trusted
     if (hasUnsharedIndirections!T)
 {
     // HACK: DEPRECATE THIS FUNCTION, IT IS INVALID TO DO ATOMIC LOAD OF SHARED CLASS
@@ -1203,7 +1203,7 @@ version (CoreUnittest)
         }
     }
 
-    @betterC pure nothrow @nogc @safe unittest // issue 16651
+    @betterC pure nothrow @nogc @safe unittest // https://issues.dlang.org/show_bug.cgi?id=16651
     {
         shared ulong a = 2;
         uint b = 1;
@@ -1216,7 +1216,7 @@ version (CoreUnittest)
         assert(c == 1);
     }
 
-    pure nothrow @safe unittest // issue 16230
+    pure nothrow @safe unittest // https://issues.dlang.org/show_bug.cgi?id=16230
     {
         shared int i;
         static assert(is(typeof(atomicLoad(i)) == int));

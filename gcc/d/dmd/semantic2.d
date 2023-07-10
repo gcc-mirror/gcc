@@ -657,6 +657,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
         {
             foreach (base; cd.interfaces)
             {
+                // https://issues.dlang.org/show_bug.cgi?id=22729
+                // interfaces that have errors or that
+                // inherit from interfaces that have errors
+                // might have an uninitialized vtable
+                if (!base.sym.vtbl.length)
+                    continue;
+
                 // first entry is ClassInfo reference
                 auto methods = base.sym.vtbl[base.sym.vtblOffset .. $];
 

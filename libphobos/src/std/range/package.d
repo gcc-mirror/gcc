@@ -3902,24 +3902,17 @@ Returns:
 struct Repeat(T)
 {
 private:
-    //Store a non-qualified T when possible: This is to make Repeat assignable
-    static if ((is(T == class) || is(T == interface)) && (is(T == const) || is(T == immutable)))
-    {
-        import std.typecons : Rebindable;
-        alias UT = Rebindable!T;
-    }
-    else static if (is(T : Unqual!T) && is(Unqual!T : T))
-        alias UT = Unqual!T;
-    else
-        alias UT = T;
-    UT _value;
+    import std.typecons : Rebindable2;
+
+    // Store a rebindable T to make Repeat assignable.
+    Rebindable2!T _value;
 
 public:
     /// Range primitives
-    @property inout(T) front() inout { return _value; }
+    @property inout(T) front() inout { return _value.get; }
 
     /// ditto
-    @property inout(T) back() inout { return _value; }
+    @property inout(T) back() inout { return _value.get; }
 
     /// ditto
     enum bool empty = false;
@@ -3934,7 +3927,7 @@ public:
     @property auto save() inout { return this; }
 
     /// ditto
-    inout(T) opIndex(size_t) inout { return _value; }
+    inout(T) opIndex(size_t) inout { return _value.get; }
 
     /// ditto
     auto opSlice(size_t i, size_t j)
@@ -3959,7 +3952,12 @@ public:
 }
 
 /// Ditto
-Repeat!T repeat(T)(T value) { return Repeat!T(value); }
+Repeat!T repeat(T)(T value)
+{
+    import std.typecons : Rebindable2;
+
+    return Repeat!T(Rebindable2!T(value));
+}
 
 ///
 pure @safe nothrow unittest
@@ -9144,7 +9142,7 @@ public:
         {
             static if (needsEndTracker)
             {
-                if (poppedElems < windowSize)
+                if (nextSource.empty)
                     hasShownPartialBefore = true;
             }
             else
@@ -10124,6 +10122,15 @@ public:
     assert("ab cd".splitter(' ').slide!(No.withPartial)(2).equal!equal([["ab", "cd"]]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23976
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.algorithm.iteration : splitter;
+
+    assert("1<2".splitter('<').slide(2).equal!equal([["1", "2"]]));
+}
+
 private struct OnlyResult(Values...)
 if (Values.length > 1)
 {
@@ -10339,7 +10346,7 @@ if (!is(CommonType!Values == void))
 /// ditto
 auto only()()
 {
-    // cannot use noreturn due to issue 22383
+    // cannot use noreturn due to https://issues.dlang.org/show_bug.cgi?id=22383
     struct EmptyElementType {}
     EmptyElementType[] result;
     return result;

@@ -599,7 +599,7 @@ extern (C++) final class TupleDeclaration : Declaration
 
     override const(char)* kind() const
     {
-        return "tuple";
+        return "sequence";
     }
 
     override Type getType()

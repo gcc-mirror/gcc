@@ -1556,7 +1556,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         if (auto imp = s.isImport())
         {
             // https://issues.dlang.org/show_bug.cgi?id=9692
-            s = imp.mod;
+            // https://issues.dlang.org/show_bug.cgi?id=20008
+            if (imp.pkg)
+                s = imp.pkg;
         }
 
         // https://issues.dlang.org/show_bug.cgi?id=16044
@@ -2116,7 +2118,7 @@ private bool isSame(RootObject o1, RootObject o2, Scope* sc)
             return true;
     }
 
-    // issue 12001, allow isSame, <BasicType>, <BasicType>
+    // https://issues.dlang.org/show_bug.cgi?id=12001, allow isSame, <BasicType>, <BasicType>
     Type t1 = isType(o1);
     Type t2 = isType(o2);
     if (t1 && t2 && t1.equals(t2))

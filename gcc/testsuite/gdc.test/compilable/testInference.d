@@ -171,9 +171,9 @@ template map7017(fun...) if (fun.length >= 1)
     auto map7017()
     {
         struct Result {
-            this(int dummy){}   // impure member function -> inferred to pure by fixing issue 10329
+            this(int dummy){}   // impure member function -> inferred to pure by fixing https://issues.dlang.org/show_bug.cgi?id=10329
         }
-        return Result(0);   // impure call -> inferred to pure by fixing issue 10329
+        return Result(0);   // impure call -> inferred to pure by fixing https://issues.dlang.org/show_bug.cgi?id=10329
     }
 }
 
@@ -588,7 +588,7 @@ auto fb10148(T)()
             static assert(is(typeof(&fc) == void delegate()));
             fa10148();
         }
-        // [1] this is now inferred to @safe by implementing issue 7511
+        // [1] this is now inferred to @safe by implementing https://issues.dlang.org/show_bug.cgi?id=7511
         this(S a) {}
     }
 

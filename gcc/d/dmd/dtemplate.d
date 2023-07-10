@@ -1302,36 +1302,19 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
     /*************************************************
      * Match function arguments against a specific template function.
-     * Input:
-     *      ti
-     *      sc              instantiation scope
-     *      fd
-     *      tthis           'this' argument if !NULL
-     *      argumentList    arguments to function
-     * Output:
-     *      fd              Partially instantiated function declaration
-     *      ti.tdtypes     Expression/Type deduced template arguments
+     *
+     * Params:
+     *     ti = template instance. `ti.tdtypes` will be set to Expression/Type deduced template arguments
+     *     sc = instantiation scope
+     *     fd = Partially instantiated function declaration, which is set to an instantiated function declaration
+     *     tthis = 'this' argument if !NULL
+     *     argumentList = arguments to function
+     *
      * Returns:
      *      match pair of initial and inferred template arguments
      */
     extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateInstance ti, Scope* sc, ref FuncDeclaration fd, Type tthis, ArgumentList argumentList)
     {
-        size_t nfparams;
-        size_t nfargs;
-        size_t ntargs; // array size of tiargs
-        size_t fptupindex = IDX_NOTFOUND;
-        MATCH match = MATCH.exact;
-        MATCH matchTiargs = MATCH.exact;
-        ParameterList fparameters; // function parameter list
-        VarArg fvarargs; // function varargs
-        uint wildmatch = 0;
-        size_t inferStart = 0;
-
-        Loc instLoc = ti.loc;
-        Objects* tiargs = ti.tiargs;
-        auto dedargs = new Objects(parameters.length);
-        Objects* dedtypes = &ti.tdtypes; // for T:T*, the dedargs is the T*, dedtypes is the T
-
         version (none)
         {
             printf("\nTemplateDeclaration.deduceFunctionTemplateMatch() %s\n", toChars());
@@ -1348,8 +1331,10 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
         assert(_scope);
 
+        auto dedargs = new Objects(parameters.length);
         dedargs.zero();
 
+        Objects* dedtypes = &ti.tdtypes; // for T:T*, the dedargs is the T*, dedtypes is the T
         dedtypes.setDim(parameters.length);
         dedtypes.zero();
 
@@ -1393,8 +1378,12 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
-        ntargs = 0;
-        if (tiargs)
+        size_t ntargs = 0; // array size of tiargs
+        size_t inferStart = 0; // index of first parameter to infer
+        const Loc instLoc = ti.loc;
+        MATCH matchTiargs = MATCH.exact;
+
+        if (auto tiargs = ti.tiargs)
         {
             // Set initial template arguments
             ntargs = tiargs.length;
@@ -1460,9 +1449,9 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
-        fparameters = fd.getParameterList();
-        nfparams = fparameters.length; // number of function parameters
-        nfargs = argumentList.length; // number of function arguments
+        ParameterList fparameters = fd.getParameterList(); // function parameter list
+        const nfparams = fparameters.length; // number of function parameters
+        const nfargs = argumentList.length; // number of function arguments
         if (argumentList.hasNames)
             return matcherror(); // TODO: resolve named args
         Expressions* fargs = argumentList.arguments; // TODO: resolve named args
@@ -1473,6 +1462,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
          * void foo(T, A...)(T t, A a);
          * void main() { foo(1,2,3); }
          */
+        size_t fptupindex = IDX_NOTFOUND;
         if (tp) // if variadic
         {
             // TemplateTupleParameter always makes most lesser matching.
@@ -1515,6 +1505,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
         }
 
+        MATCH match = MATCH.exact;
         if (toParent().isModule())
             tthis = null;
         if (tthis)
@@ -1579,6 +1570,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             //printf("\ttp = %p, fptupindex = %d, found = %d, declaredTuple = %s\n", tp, fptupindex, fptupindex != IDX_NOTFOUND, declaredTuple ? declaredTuple.toChars() : NULL);
             size_t argi = 0;
             size_t nfargs2 = nfargs; // nfargs + supplied defaultArgs
+            uint inoutMatch = 0; // for debugging only
             for (size_t parami = 0; parami < nfparams; parami++)
             {
                 Parameter fparam = fparameters[parami];
@@ -1643,7 +1635,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             MATCH m;
                             if (ubyte wm = deduceWildHelper(farg.type, &tt, tid))
                             {
-                                wildmatch |= wm;
+                                inoutMatch |= wm;
                                 m = MATCH.constant;
                             }
                             else
@@ -1896,10 +1888,10 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     if (fparameters.varargs == VarArg.typesafe && parami + 1 == nfparams && argi + 1 < nfargs)
                         goto Lvarargs;
 
-                    uint wm = 0;
-                    MATCH m = deduceType(oarg, paramscope, prmtype, parameters, dedtypes, &wm, inferStart);
-                    //printf("\tL%d deduceType m = %d, wm = x%x, wildmatch = x%x\n", __LINE__, m, wm, wildmatch);
-                    wildmatch |= wm;
+                    uint im = 0;
+                    MATCH m = deduceType(oarg, paramscope, prmtype, parameters, dedtypes, &im, inferStart);
+                    //printf("\tL%d deduceType m = %d, im = x%x, inoutMatch = x%x\n", __LINE__, m, im, inoutMatch);
+                    inoutMatch |= im;
 
                     /* If no match, see if the argument can be matched by using
                      * implicit conversions.
@@ -2087,7 +2079,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             {
                                 uint wm = 0;
                                 m = deduceType(arg, paramscope, ta.next, parameters, dedtypes, &wm, inferStart);
-                                wildmatch |= wm;
+                                inoutMatch |= wm;
                             }
                             if (m == MATCH.nomatch)
                                 return nomatch();

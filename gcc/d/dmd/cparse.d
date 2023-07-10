@@ -4235,7 +4235,7 @@ final class CParser(AST) : Parser!AST
                         return false;
                     /*
                         https://issues.dlang.org/show_bug.cgi?id=22267
-                        Fix issue 22267: If the parser encounters the following
+                        If the parser encounters the following
                             `identifier variableName = (expression);`
                         the initializer is not identified as such since the parentheses
                         cause the parser to keep walking indefinitely

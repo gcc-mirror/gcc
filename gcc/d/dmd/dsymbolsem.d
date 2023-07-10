@@ -587,6 +587,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     const loc = (s ? s : dsym).loc;
                     loc.errorSupplemental("required by type `%s`", dsym.type.toChars());
                 }
+                errorSupplemental(dsym.loc, "see https://dlang.org/spec/struct.html#opaque_struct_unions");
+                errorSupplemental(dsym.loc, "perhaps declare a variable with pointer type `%s*` instead", dsym.type.toChars());
 
                 // Flag variable as error to avoid invalid error messages due to unknown size
                 dsym.type = Type.terror;
@@ -693,7 +695,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 size_t tedim = te.exps.length;
                 if (tedim != nelems)
                 {
-                    error(dsym.loc, "tuple of %d elements cannot be assigned to tuple of %d elements", cast(int)tedim, cast(int)nelems);
+                    error(dsym.loc, "sequence of %d elements cannot be assigned to sequence of %d elements", cast(int)tedim, cast(int)nelems);
                     for (size_t u = tedim; u < nelems; u++) // fill dummy expression
                         te.exps.push(ErrorExp.get());
                 }
@@ -2042,7 +2044,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
         }
         else
-            ns.exp.error("compile time string constant (or tuple) expected, not `%s`",
+            ns.exp.error("compile time string constant (or sequence) expected, not `%s`",
                          ns.exp.toChars());
         attribSemantic(ns);
     }
@@ -2712,7 +2714,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
             if (i + 1 != tempdecl.parameters.length && tp.isTemplateTupleParameter())
             {
-                tempdecl.error("template tuple parameter must be last one");
+                tempdecl.error("template sequence parameter must be the last one");
                 tempdecl.errors = true;
             }
         }
@@ -3963,13 +3965,13 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                             hgs.fullQual = true;
 
                         // https://issues.dlang.org/show_bug.cgi?id=23745
-                        // If the potentially overriden function contains errors,
+                        // If the potentially overridden function contains errors,
                         // inform the user to fix that one first
                         if (fd.errors)
                         {
                             error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
                                 funcdecl.toChars(), fd.toPrettyChars());
-                            errorSupplemental(fd.loc, "Function `%s` contains errors in its declaration, therefore it cannot be correctly overriden",
+                            errorSupplemental(fd.loc, "Function `%s` contains errors in its declaration, therefore it cannot be correctly overridden",
                                 fd.toPrettyChars());
                         }
                         else
@@ -3985,7 +3987,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     {
                         error(funcdecl.loc, "function `%s` does not override any function, did you mean to override %s `%s`?",
                             funcdeclToChars, s.kind, s.toPrettyChars());
-                        errorSupplemental(funcdecl.loc, "Functions are the only declarations that may be overriden");
+                        errorSupplemental(funcdecl.loc, "Functions are the only declarations that may be overridden");
                     }
                 }
                 else
@@ -5897,6 +5899,31 @@ void addEnumMembers(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
     });
 }
 
+/******************************************************
+ * Verifies if the given Identifier is a DRuntime hook. It uses the hooks
+ * defined in `id.d`.
+ *
+ * Params:
+ *  id = Identifier to verify
+ * Returns:
+ *  true if `id` is a DRuntime hook
+ *  false otherwise
+ */
+private bool isDRuntimeHook(Identifier id)
+{
+    return id == Id._d_HookTraceImpl ||
+        id == Id._d_newclassT || id == Id._d_newclassTTrace ||
+        id == Id._d_arraycatnTX || id == Id._d_arraycatnTXTrace ||
+        id == Id._d_newThrowable || id == Id._d_delThrowable ||
+        id == Id._d_arrayassign_l || id == Id._d_arrayassign_r ||
+        id == Id._d_arraysetassign || id == Id._d_arraysetctor ||
+        id == Id._d_arrayctor ||
+        id == Id._d_arraysetlengthTImpl || id == Id._d_arraysetlengthT ||
+        id == Id._d_arraysetlengthTTrace ||
+        id == Id._d_arrayappendT || id == Id._d_arrayappendTTrace ||
+        id == Id._d_arrayappendcTXImpl;
+}
+
 void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList argumentList)
 {
     //printf("[%s] TemplateInstance.dsymbolSemantic('%s', this=%p, gag = %d, sc = %p)\n", tempinst.loc.toChars(), tempinst.toChars(), tempinst, global.gag, sc);
@@ -6376,7 +6403,19 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
         tempinst.deferred = &deferred;
 
         //printf("Run semantic3 on %s\n", toChars());
+
+        /* https://issues.dlang.org/show_bug.cgi?id=23965
+         * DRuntime hooks are not deprecated, but may be used for deprecated
+         * types. Deprecations are disabled while analysing hooks to avoid
+         * spurious error messages.
+         */
+        auto saveUseDeprecated = global.params.useDeprecated;
+        if (sc.isDeprecated() && isDRuntimeHook(tempinst.name))
+            global.params.useDeprecated = DiagnosticReporting.off;
+
         tempinst.trySemantic3(sc2);
+
+        global.params.useDeprecated = saveUseDeprecated;
 
         for (size_t i = 0; i < deferred.length; i++)
         {

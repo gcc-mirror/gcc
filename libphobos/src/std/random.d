@@ -2842,7 +2842,7 @@ auto ref choice(Range)(ref Range range)
            "Choice did not return a valid element from the given Range");
 }
 
-@safe unittest // issue 18631
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=18631
 {
     auto rng = MinstdRand0(42);
     const a = [0,1,2];
@@ -2855,7 +2855,7 @@ auto ref choice(Range)(ref Range range)
     auto z1 = choice(cast(const)[1, 2, 3], rng);
 }
 
-@safe unittest // Ref range (issue 18631 PR)
+@safe unittest // Ref range (https://issues.dlang.org/show_bug.cgi?id=18631 PR)
 {
     struct TestRange
     {

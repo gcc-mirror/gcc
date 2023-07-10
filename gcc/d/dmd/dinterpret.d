@@ -2412,7 +2412,7 @@ public:
                 continue;
             if (ex.op == EXP.voidExpression)
             {
-                e.error("CTFE internal error: void element `%s` in tuple", exp.toChars());
+                e.error("CTFE internal error: void element `%s` in sequence", exp.toChars());
                 assert(0);
             }
 
@@ -3890,7 +3890,7 @@ public:
             newval = copyLiteral(newval).copy();
             assignInPlace(oldval, newval);
         }
-        else if (wantCopy && e.op == EXP.assign)
+        else if (wantCopy && (e.op == EXP.assign || e.op == EXP.loweredAssignExp))
         {
             // Currently postblit/destructor calls on static array are done
             // in the druntime internal functions so they don't appear in AST.
@@ -4299,7 +4299,7 @@ public:
             rb.newval = newval;
             rb.refCopy = wantRef || cow;
             rb.needsPostblit = sd && sd.postblit && e.op != EXP.blit && e.e2.isLvalue();
-            rb.needsDtor = sd && sd.dtor && e.op == EXP.assign;
+            rb.needsDtor = sd && sd.dtor && (e.op == EXP.assign || e.op == EXP.loweredAssignExp);
             if (Expression ex = rb.assignTo(existingAE, cast(size_t)lowerbound, cast(size_t)upperbound))
                 return ex;
 
@@ -4773,12 +4773,11 @@ public:
                     result = CTFEExp.voidexp;
                 return;
             }
-            else if (isArrayConstructionOrAssign(fd.ident))
+            else if (isArrayConstruction(fd.ident))
             {
-                // In expressionsem.d, the following lowerings were performed:
-                // * `T[x] ea = eb;` to `_d_array{,set}ctor(ea[], eb[]);`.
-                // * `ea = eb` to `_d_array{,setassign,assign_l,assign_r}(ea[], eb)`.
-                // The following code will rewrite them back to `ea = eb` and
+                // In expressionsem.d, `T[x] ea = eb;` was lowered to:
+                // `_d_array{,set}ctor(ea[], eb[]);`.
+                // The following code will rewrite it back to `ea = eb` and
                 // then interpret that expression.
 
                 if (fd.ident == Id._d_arrayctor)
@@ -4791,17 +4790,14 @@ public:
                     ea = ea.isCastExp.e1;
 
                 Expression eb = (*e.arguments)[1];
-                if (eb.isCastExp() && fd.ident != Id._d_arraysetctor)
+                if (eb.isCastExp() && fd.ident == Id._d_arrayctor)
                     eb = eb.isCastExp.e1;
 
-                Expression rewrittenExp;
-                if (fd.ident == Id._d_arrayctor || fd.ident == Id._d_arraysetctor)
-                    rewrittenExp = new ConstructExp(e.loc, ea, eb);
-                else
-                    rewrittenExp = new AssignExp(e.loc, ea, eb);
+                ConstructExp ce = new ConstructExp(e.loc, ea, eb);
+                ce.type = ea.type;
 
-                rewrittenExp.type = ea.type;
-                result = interpret(rewrittenExp, istate);
+                ce.type = ea.type;
+                result = interpret(ce, istate);
 
                 return;
             }

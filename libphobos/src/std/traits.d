@@ -5337,7 +5337,7 @@ package template isBlitAssignable(T)
         enum isBlitAssignable = isBlitAssignable!(OriginalType!T);
     }
     else static if (isStaticArray!T && is(T == E[n], E, size_t n))
-    // Workaround for issue 11499 : isStaticArray!T should not be necessary.
+    // Workaround for https://issues.dlang.org/show_bug.cgi?id=11499 : isStaticArray!T should not be necessary.
     {
         enum isBlitAssignable = isBlitAssignable!E;
     }
@@ -8877,7 +8877,9 @@ template getSymbolsByUDA(alias symbol, alias attribute)
         @Attr void c();
     }
 
-    static assert(getSymbolsByUDA!(A, Attr).stringof == "tuple(a, a, c)");
+    alias ola = __traits(getOverloads, A, "a");
+    static assert(__traits(isSame, getSymbolsByUDA!(A, Attr),
+        AliasSeq!(ola[0], ola[1], A.c)));
 }
 
 // getSymbolsByUDA no longer works on modules

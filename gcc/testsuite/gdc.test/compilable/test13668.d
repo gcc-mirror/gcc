@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-tuple("id", "toString", "toHash", "opCmp", "opEquals", "Monitor", "factory")
+AliasSeq!("id", "toString", "toHash", "opCmp", "opEquals", "Monitor", "factory")
 genProps
 ---
 */

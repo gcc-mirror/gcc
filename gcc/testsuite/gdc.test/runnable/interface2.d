@@ -962,11 +962,11 @@ void test1747()
     assert(pia == pc + n);
 
     assert(id.mA() == 1);
-    assert(id.mB() == 2);   // OK <- NG (bugzilla 2013 case)
+    assert(id.mB() == 2);   // OK <- NG (https://issues.dlang.org/show_bug.cgi?id=2013 case)
     assert(id.mD() == 3);
 
     assert(ic.mA() == 1);
-    assert(ic.mB() == 2);   // OK <- NG (bugzilla 2013 case)
+    assert(ic.mB() == 2);   // OK <- NG (https://issues.dlang.org/show_bug.cgi?id=2013 case)
 
     assert(ib.mA() == 1);
     assert(ib.mB() == 2);   // OK <- NG

@@ -8592,7 +8592,7 @@ public:
     Decomposes a Hangul syllable. If `ch` is not a composed syllable
     then this function returns $(LREF Grapheme) containing only `ch` as is.
 */
-Grapheme decomposeHangul(dchar ch) @safe
+Grapheme decomposeHangul(dchar ch) nothrow pure @safe
 {
     immutable idxS = cast(int) ch - jamoSBase;
     if (idxS < 0 || idxS >= jamoSCount) return Grapheme(ch);
@@ -8709,7 +8709,15 @@ enum {
     In cases where the string in question is already normalized,
     it is returned unmodified and no memory allocation happens.
 +/
-inout(C)[] normalize(NormalizationForm norm=NFC, C)(return scope inout(C)[] input)
+/*
+    WARNING: @trusted lambda inside - handle with same care as @trusted
+        functions
+
+    Despite being a template, the attributes do no harm since this doesn't work
+    with user-defined range or character types anyway.
+*/
+pure @safe inout(C)[] normalize(NormalizationForm norm=NFC, C)
+    (return scope inout(C)[] input)
 {
     import std.algorithm.mutation : SwapStrategy;
     import std.algorithm.sorting : sort;
@@ -8790,20 +8798,24 @@ inout(C)[] normalize(NormalizationForm norm=NFC, C)(return scope inout(C)[] inpu
         // reset variables
         decomposed.length = 0;
         () @trusted {
-            decomposed.assumeSafeAppend();
+            // assumeSafeAppend isn't considered pure as of writing, hence the
+            // cast. It isn't pure in the sense that the elements after
+            // the array in question are affected, but we don't use those
+            // making the call pure for our purposes.
+            (cast(void delegate() pure nothrow) {decomposed.assumeSafeAppend();})();
             ccc.length = 0;
-            ccc.assumeSafeAppend();
+            (cast(void delegate() pure nothrow) {ccc.assumeSafeAppend();})();
         } ();
         input = input[anchors[1]..$];
         // and move on
         anchors = splitNormalized!norm(input);
-    }while (anchors[0] != input.length);
+    } while (anchors[0] != input.length);
     app.put(input[0 .. anchors[0]]);
     return () @trusted inout { return cast(inout(C)[]) app.data; } ();
 }
 
 ///
-@safe unittest
+@safe pure unittest
 {
     // any encoding works
     wstring greet = "Hello world";
@@ -8817,7 +8829,7 @@ inout(C)[] normalize(NormalizationForm norm=NFC, C)(return scope inout(C)[] inpu
     assert(normalize!NFKD("ϓ") == "\u03A5\u0301");
 }
 
-@safe unittest
+@safe pure unittest
 {
     import std.conv : text;
 
@@ -8825,18 +8837,9 @@ inout(C)[] normalize(NormalizationForm norm=NFC, C)(return scope inout(C)[] inpu
     assert(normalize!NFKD("2¹⁰") == "210", normalize!NFKD("2¹⁰"));
     assert(normalize!NFD("Äffin") == "A\u0308ffin");
 
-    // check example
-
-    // any encoding works
-    wstring greet = "Hello world";
+    // test with dstring
+    dstring greet = "Hello world";
     assert(normalize(greet) is greet); // the same exact slice
-
-    // An example of a character with all 4 forms being different:
-    // Greek upsilon with acute and hook symbol (code point 0x03D3)
-    assert(normalize!NFC("ϓ") == "\u03D3");
-    assert(normalize!NFD("ϓ") == "\u03D2\u0301");
-    assert(normalize!NFKC("ϓ") == "\u038E");
-    assert(normalize!NFKD("ϓ") == "\u03A5\u0301");
 }
 
 // canonically recompose given slice of code points, works in-place and mutates data

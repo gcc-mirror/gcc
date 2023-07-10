@@ -30,7 +30,7 @@ struct HasDtor
     ~this() {}
 }
 
-// The user-defined dtor is overriden by a generated dtor calling both
+// The user-defined dtor is overridden by a generated dtor calling both
 // - HasDtor.~this
 // - Strict.~this
 struct Strict

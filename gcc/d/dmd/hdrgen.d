@@ -927,7 +927,7 @@ public:
         }
         if (d.decl.length == 0 || (hgs.hdrgen && d.decl.length == 1 && (*d.decl)[0].isUnitTestDeclaration()))
         {
-            // hack for bugzilla 8081
+            // hack for https://issues.dlang.org/show_bug.cgi?id=8081
             if (hasSTC) buf.writeByte(' ');
             buf.writestring("{}");
         }
@@ -2217,13 +2217,13 @@ private void expressionPrettyPrint(Expression e, OutBuffer* buf, HdrGenState* hg
         {
             buf.writeByte('(');
             e.e0.expressionPrettyPrint(buf, hgs);
-            buf.writestring(", tuple(");
+            buf.writestring(", AliasSeq!(");
             argsToBuffer(e.exps, buf, hgs);
             buf.writestring("))");
         }
         else
         {
-            buf.writestring("tuple(");
+            buf.writestring("AliasSeq!(");
             argsToBuffer(e.exps, buf, hgs);
             buf.writeByte(')');
         }
@@ -4141,7 +4141,7 @@ string EXPtoString(EXP op)
         EXP.delegatePointer : "delegateptr",
         EXP.delegateFunctionPointer : "delegatefuncptr",
         EXP.remove : "remove",
-        EXP.tuple : "tuple",
+        EXP.tuple : "sequence",
         EXP.traits : "__traits",
         EXP.overloadSet : "__overloadset",
         EXP.void_ : "void",

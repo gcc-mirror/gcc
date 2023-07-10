@@ -59,7 +59,7 @@ else version (FreeBSD)
     /***
      * Assert failure function in the FreeBSD C library.
      */
-    noreturn __assert(const(char)* exp, const(char)* file, uint line, const(char)* exp);
+    noreturn __assert(const(char)* func, const(char)* file, uint line, const(char)* exp);
 }
 else version (NetBSD)
 {
@@ -67,6 +67,8 @@ else version (NetBSD)
      * Assert failure function in the NetBSD C library.
      */
     noreturn __assert(const(char)* file, int line, const(char)* exp);
+    ///
+    noreturn __assert13(const(char)* file, int line, const(char)* func, const(char)* exp);
 }
 else version (OpenBSD)
 {
@@ -75,14 +77,14 @@ else version (OpenBSD)
      */
     noreturn __assert(const(char)* file, int line, const(char)* exp);
     ///
-    void __assert2(const(char)* file, int line, const(char)* func, const(char)* exp);
+    noreturn __assert2(const(char)* file, int line, const(char)* func, const(char)* exp);
 }
 else version (DragonFlyBSD)
 {
     /***
      * Assert failure function in the DragonFlyBSD C library.
      */
-    noreturn __assert(const(char)* exp, const(char)* file, uint line, const(char)* exp);
+    noreturn __assert(const(char)* func, const(char)* file, uint line, const(char)* exp);
 }
 else version (CRuntime_Glibc)
 {
@@ -97,7 +99,12 @@ else version (CRuntime_Glibc)
 }
 else version (CRuntime_Bionic)
 {
+    /***
+     * Assert failure functions in the Bionic library.
+     */
     noreturn __assert(const(char)* __file, int __line, const(char)* __msg);
+    ///
+    noreturn __assert2(const(char)* __file, int __line, const(char)* __function, const(char)* __msg);
 }
 else version (CRuntime_Musl)
 {

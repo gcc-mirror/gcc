@@ -2922,6 +2922,7 @@ Type typeMerge(Scope* sc, EXP op, ref Expression pe1, ref Expression pe2)
         ubyte mod = MODmerge(t1.mod, t2.mod);
         t1 = t1.castMod(mod);
         t2 = t2.castMod(mod);
+        return Lret(t1);
     }
 
 Lagain:

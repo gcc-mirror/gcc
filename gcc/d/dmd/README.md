@@ -174,7 +174,6 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [cond.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cond.d)              | Evaluate `static if`, `version` `debug `                                                    |
 | [staticcond.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/staticcond.d)  | Lazily evaluate static conditions for `static if`, `static assert` and template constraints |
 | [delegatize.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/delegatize.d)  | Converts expression to delegates for `lazy` parameters                                      |
-| [eh.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/eh.d)                  | Generate tables for exception handling                                                      |
 | [nspace.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/nspace.d)          | Namespace for `extern (C++, Module)`                                                        |
 | [intrange.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/intrange.d)      | [Value range propagation](https://digitalmars.com/articles/b62.html)                        |
 | [dimport.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dimport.d)        | Renamed imports (`import aliasSymbol = pkg1.pkg2.symbol`)                                   |

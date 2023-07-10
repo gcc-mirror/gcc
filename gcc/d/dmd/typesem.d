@@ -121,7 +121,7 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
     const(uinteger_t) d = eindex.toUInteger();
     if (d >= tup.objects.length)
     {
-        .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong)tup.objects.length);
+        .error(loc, "sequence index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong)tup.objects.length);
         pt = Type.terror;
         return;
     }
@@ -525,7 +525,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             uinteger_t d = mtype.dim.toUInteger();
             if (d >= tup.objects.length)
             {
-                .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tup.objects.length);
+                .error(loc, "sequence index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tup.objects.length);
                 return error();
             }
 
@@ -621,7 +621,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 uinteger_t d = mtype.dim.toUInteger();
                 if (d >= tt.arguments.length)
                 {
-                    .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tt.arguments.length);
+                    .error(loc, "sequence index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tt.arguments.length);
                     return error();
                 }
                 Type telem = (*tt.arguments)[cast(size_t)d].type;
@@ -1684,7 +1684,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         Type tbn = tn.toBasetype();
         if (tbn.ty != Ttuple)
         {
-            .error(loc, "can only slice tuple types, not `%s`", tbn.toChars());
+            .error(loc, "can only slice type sequences, not `%s`", tbn.toChars());
             return error();
         }
         TypeTuple tt = cast(TypeTuple)tbn;
@@ -2436,7 +2436,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
         }
         else
         {
-            error(loc, "no property `%s` for tuple `%s`", ident.toChars(), mt.toChars());
+            error(loc, "no property `%s` for sequence `%s`", ident.toChars(), mt.toChars());
             e = ErrorExp.get();
         }
         return e;
@@ -2563,7 +2563,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 const d = mt.dim.toUInteger();
                 if (d >= tup.objects.length)
                 {
-                    error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong) tup.objects.length);
+                    error(loc, "sequence index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong) tup.objects.length);
                     return returnError();
                 }
 

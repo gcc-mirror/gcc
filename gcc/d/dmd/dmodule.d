@@ -53,6 +53,10 @@ import dmd.target;
 import dmd.utils;
 import dmd.visitor;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 // function used to call semantic3 on a module's dependencies
 void semantic3OnDependencies(Module m)
 {
@@ -615,9 +619,18 @@ extern (C++) final class Module : Package
         if (FileName.equals(srcfile.toString(), "object.d"))
         {
             .error(loc, "cannot find source code for runtime library file 'object.d'");
-            errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
-            errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
+            version (IN_LLVM)
+            {
+                errorSupplemental(loc, "ldc2 might not be correctly installed.");
+                errorSupplemental(loc, "Please check your ldc2.conf configuration file.");
+                errorSupplemental(loc, "Installation instructions can be found at http://wiki.dlang.org/LDC.");
+            }
+            version (MARS)
+            {
+                errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
+                const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
+                errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
+            }
         }
         else if (FileName.ext(this.arg) || !loc.isValid())
         {

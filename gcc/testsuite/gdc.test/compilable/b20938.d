@@ -1,4 +1,5 @@
-// issue 20938 - Cannot create const arrays mixing immutable and mutable structs with indirections
+// https://issues.dlang.org/show_bug.cgi?id=20938
+// Cannot create const arrays mixing immutable and mutable structs with indirections
 struct S { int[] a; }
 enum A { a }
 enum B { b }

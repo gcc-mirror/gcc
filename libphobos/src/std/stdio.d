@@ -34,8 +34,16 @@ $(TR $(TD Misc) $(TD
 ))
 ))
 
-Standard I/O functions that extend $(B core.stdc.stdio).  $(B core.stdc.stdio)
+Standard I/O functions that extend $(LINK2 https://dlang.org/phobos/core_stdc_stdio.html, core.stdc.stdio).  $(B core.stdc.stdio)
 is $(D_PARAM public)ally imported when importing $(B std.stdio).
+
+There are three layers of I/O:
+$(OL
+$(LI The lowest layer is the operating system layer. The two main schemes are Windows and Posix.)
+$(LI C's $(TT stdio.h) which unifies the two operating system schemes.)
+$(LI $(TT std.stdio), this module, unifies the various $(TT stdio.h) implementations into
+a high level package for D programs.)
+)
 
 Source: $(PHOBOSSRC std/stdio.d)
 Copyright: Copyright The D Language Foundation 2007-.
@@ -47,6 +55,55 @@ Macros:
 CSTDIO=$(HTTP cplusplus.com/reference/cstdio/$1/, $1)
  */
 module std.stdio;
+
+/*
+# Glossary
+
+The three layers have many terms for their data structures and types.
+Here we try to bring some sanity to them for the intrepid code spelunker.
+
+## Windows
+
+Handle
+
+        A Windows handle is an opaque object of type HANDLE.
+        The `HANDLE` for standard devices can be retrieved with
+        Windows `GetStdHandle()`.
+
+## Posix
+
+file descriptor, aka fileno, aka fildes
+
+        An int from 0..`FOPEN_MAX`, which is an index into some internal data
+        structure.
+        0 is for `stdin`, 1 for `stdout`, 2 for `stderr`.
+        Negative values usually indicate an error.
+
+## stdio.h
+
+`FILE`
+
+        A struct that encapsulates the C library's view of the operating system
+        files. A `FILE` should only be referred to via a pointer.
+
+`fileno`
+
+        A field of `FILE` which is the Posix file descriptor for Posix systems, and
+        and an index into an array of file `HANDLE`s for Windows.
+        This array is how Posix behavior is emulated on Windows.
+        For Digital Mars C, that array is `__osfhnd[]`, and is initialized
+        at program start by the C runtime library.
+        In this module, they are typed as `fileno_t`.
+
+`stdin`, `stdout`, `stderr`
+
+        Global pointers to `FILE` representing standard input, output, and error streams.
+        Being global means there are synchronization issues when multiple threads
+        are doing I/O on the same streams.
+
+## std.stdio
+
+*/
 
 import core.stdc.stddef : wchar_t;
 public import core.stdc.stdio;
@@ -129,6 +186,10 @@ else version (Solaris)
 {
     version = GENERIC_IO;
 }
+else
+{
+    static assert(0, "unsupported operating system");
+}
 
 // Character type used for operating system filesystem APIs
 version (Windows)
@@ -140,6 +201,7 @@ else
     private alias FSChar = char;
 }
 
+private alias fileno_t = int;   // file descriptor, fildes, fileno
 
 version (Windows)
 {
@@ -203,7 +265,7 @@ version (DIGITAL_MARS_STDIO)
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function _fileno was unintentionally available from "
                ~ "std.stdio and will be removed afer 2.107")
-    int _fileno(FILE* f) { return f._file; }
+    fileno_t _fileno(FILE* f) { return f._file; }
 }
 else version (MICROSOFT_STDIO)
 {
@@ -550,7 +612,7 @@ Throws: `ErrnoException` if the file could not be opened.
                                 stdioOpenmode, "'")),
                 name);
 
-        // MSVCRT workaround (issue 14422)
+        // MSVCRT workaround (https://issues.dlang.org/show_bug.cgi?id=14422)
         version (MICROSOFT_STDIO)
         {
             setAppendWin(stdioOpenmode);
@@ -708,7 +770,7 @@ Throws: `ErrnoException` in case of error.
         {
             auto handle = _p.handle;
             _p.handle = null;
-            // fclose disassociates the FILE* even in case of error (issue 19751)
+            // fclose disassociates the FILE* even in case of error (https://issues.dlang.org/show_bug.cgi?id=19751)
             errnoEnforce(.fclose(handle) == 0,
                     "Could not close file `"~_name~"'");
         }
@@ -1140,7 +1202,7 @@ Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
         enforce(isOpen, "Attempting to read from an unopened file");
         version (Windows)
         {
-            immutable fd = .fileno(_p.handle);
+            immutable fileno_t fd = .fileno(_p.handle);
             immutable mode = .__setmode(fd, _O_BINARY);
             scope(exit) .__setmode(fd, mode);
             version (DIGITAL_MARS_STDIO)
@@ -1230,7 +1292,7 @@ Throws: `ErrnoException` if the file is not opened or if the call to `fwrite` fa
 
         version (Windows)
         {
-            immutable fd = .fileno(_p.handle);
+            immutable fileno_t fd = .fileno(_p.handle);
             immutable oldMode = .__setmode(fd, _O_BINARY);
 
             if (oldMode != _O_BINARY)
@@ -2287,7 +2349,7 @@ Returns the `FILE*` corresponding to this object.
 /**
 Returns the file number corresponding to this object.
  */
-    @property int fileno() const @trusted
+    @property fileno_t fileno() const @trusted
     {
         import std.exception : enforce;
 
@@ -3108,10 +3170,13 @@ is empty, throws an `Exception`. In case of an I/O error throws
                 // "wide-oriented" for us.
                 immutable int mode = __setmode(f.fileno, _O_TEXT);
                     // Set some arbitrary mode to obtain the previous one.
-                __setmode(f.fileno, mode); // Restore previous mode.
-                if (mode & (_O_WTEXT | _O_U16TEXT | _O_U8TEXT))
+                if (mode != -1) // __setmode() succeeded
                 {
-                    orientation_ = 1; // wide
+                    __setmode(f.fileno, mode); // Restore previous mode.
+                    if (mode & (_O_WTEXT | _O_U16TEXT | _O_U8TEXT))
+                    {
+                        orientation_ = 1; // wide
+                    }
                 }
             }
             else
@@ -3336,7 +3401,8 @@ is empty, throws an `Exception`. In case of an I/O error throws
 
         version (Windows)
         {
-            int fd, oldMode;
+            fileno_t fd;
+            int oldMode;
             version (DIGITAL_MARS_STDIO)
                 ubyte oldInfo;
         }
@@ -3795,7 +3861,7 @@ void main()
     assert(std.file.readText!string(deleteme) == "y");
 }
 
-@safe unittest // issue 18801
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=18801
 {
     static import std.file;
     import std.string : stripLeft;

@@ -189,7 +189,7 @@ private Expression fromConstInitializer(int result, Expression e1)
         {
             // If it is a comma expression involving a declaration, we mustn't
             // perform a copy -- we'd get two declarations of the same variable.
-            // See bugzilla 4465.
+            // See https://issues.dlang.org/show_bug.cgi?id=4465.
             if (e.op == EXP.comma && e.isCommaExp().e1.isDeclarationExp())
                 e = e1;
             else if (e.type != e1.type && e1.type && e1.type.ty != Tident)

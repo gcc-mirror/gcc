@@ -328,6 +328,8 @@ public:
  *  first access to a __declspec(thread) variable occurs, that is."
  *
  * _tls_index is initialized by the compiler to 0, so we can use this as a test.
+ * Returns:
+ *	true for success, false for failure
  */
 bool dll_fixTLS( HINSTANCE hInstance, void* tlsstart, void* tlsend, void* tls_callbacks_a, int* tlsindex ) nothrow
 {
@@ -448,8 +450,13 @@ int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
     return ldrMod.LoadCount;
 }
 
-// fixup TLS storage, initialize runtime and attach to threads
-// to be called from DllMain with reason DLL_PROCESS_ATTACH
+/*****************************
+ * To be called from DllMain with reason DLL_PROCESS_ATTACH
+ *
+ * fixup TLS storage, initialize runtime and attach to threads
+ * Returns:
+ *	true = success, false = failure
+ */
 bool dll_process_attach( HINSTANCE hInstance, bool attach_threads,
                          void* tlsstart, void* tlsend, void* tls_callbacks_a, int* tlsindex )
 {
@@ -480,7 +487,8 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads,
         }, null );
 }
 
-// same as above, but only usable if druntime is linked statically
+/** same as above, but only usable if druntime is linked statically
+ */
 bool dll_process_attach( HINSTANCE hInstance, bool attach_threads = true )
 {
     version (Win64)
@@ -495,7 +503,9 @@ bool dll_process_attach( HINSTANCE hInstance, bool attach_threads = true )
     }
 }
 
-// to be called from DllMain with reason DLL_PROCESS_DETACH
+/**
+ * to be called from DllMain with reason DLL_PROCESS_DETACH
+ */
 void dll_process_detach( HINSTANCE hInstance, bool detach_threads = true )
 {
     // notify core.thread.joinLowLevelThread that the DLL is about to be unloaded
@@ -527,7 +537,11 @@ static bool tlsCtorRun;
 static this() { tlsCtorRun = true; }
 static ~this() { tlsCtorRun = false; }
 
-// to be called from DllMain with reason DLL_THREAD_ATTACH
+/**
+ * To be called from DllMain with reason DLL_THREAD_ATTACH
+ * Returns:
+ *	true for success, false for failure
+ */
 bool dll_thread_attach( bool attach_thread = true, bool initTls = true )
 {
     // if the OS has not prepared TLS for us, don't attach to the thread
@@ -546,7 +560,11 @@ bool dll_thread_attach( bool attach_thread = true, bool initTls = true )
     return true;
 }
 
-// to be called from DllMain with reason DLL_THREAD_DETACH
+/**
+ * To be called from DllMain with reason DLL_THREAD_DETACH
+ * Returns:
+ *	true for success, false for failure
+ */
 bool dll_thread_detach( bool detach_thread = true, bool exitTls = true )
 {
     // if the OS has not prepared TLS for us, we did not attach to the thread
@@ -562,14 +580,17 @@ bool dll_thread_detach( bool detach_thread = true, bool exitTls = true )
     return true;
 }
 
-/// A simple mixin to provide a $(D DllMain) which calls the necessary
-/// runtime initialization and termination functions automatically.
-///
-/// Instead of writing a custom $(D DllMain), simply write:
-///
-/// ---
-/// mixin SimpleDllMain;
-/// ---
+/**********************************
+ * A mixin to provide a $(D DllMain) which calls the necessary
+ * D runtime initialization and termination functions automatically.
+ *
+ * Example:
+ * ---
+ * module dllmain;
+ * import core.sys.windows.dll;
+ * mixin SimpleDllMain;
+ * ---
+ */
 mixin template SimpleDllMain()
 {
     import core.sys.windows.windef : HINSTANCE, BOOL, DWORD, LPVOID;

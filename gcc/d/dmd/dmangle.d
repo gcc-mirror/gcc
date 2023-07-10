@@ -888,7 +888,7 @@ public:
                 buf.writeByte('V');
                 if (ea.op == EXP.tuple)
                 {
-                    ea.error("tuple is not a valid template value argument");
+                    ea.error("sequence is not a valid template value argument");
                     continue;
                 }
                 // Now that we know it is not an alias, we MUST obtain a value

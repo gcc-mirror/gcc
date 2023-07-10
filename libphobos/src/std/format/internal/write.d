@@ -738,7 +738,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
         assert(FloatingPointControl.rounding == FloatingPointControl.roundToNearest);
     }
 
-    // issue 20320
+    // https://issues.dlang.org/show_bug.cgi?id=20320
     real a = 0.16;
     real b = 0.016;
     assert(format("%.1f", a) == "0.2");
@@ -749,7 +749,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
     assert(format("%.1f", a1) == "0.2");
     assert(format("%.2f", b1) == "0.02");
 
-    // issue 9889
+    // https://issues.dlang.org/show_bug.cgi?id=9889
     assert(format("%.1f", 0.09) == "0.1");
     assert(format("%.1f", -0.09) == "-0.1");
     assert(format("%.1f", 0.095) == "0.1");
@@ -907,7 +907,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 
     // log2 is broken for x87-reals on some computers in CTFE
     // the following test excludes these computers from the test
-    // (issue 21757)
+    // (https://issues.dlang.org/show_bug.cgi?id=21757)
     enum test = cast(int) log2(3.05e2312L);
     static if (real.mant_dig == 64 && test == 7681) // 80 bit reals
     {
@@ -3334,7 +3334,7 @@ if (isSomeString!T1 && isSomeString!T2 && isSomeString!T3 && isSomeString!T4)
     long fractsWidth = fracts.length; // TODO: does not take graphemes into account
     long suffixWidth;
 
-    // TODO: remove this workaround which hides issue 21815
+    // TODO: remove this workaround which hides https://issues.dlang.org/show_bug.cgi?id=21815
     if (f.width > 0)
     {
         prefixWidth = getWidth(prefix);

@@ -16,17 +16,13 @@ module dmd.access;
 import dmd.aggregate;
 import dmd.astenums;
 import dmd.dclass;
-import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.errors;
 import dmd.expression;
-import dmd.func;
 import dmd.globals;
 import dmd.location;
-import dmd.mtype;
 import dmd.tokens;
 
 private enum LOG = false;
