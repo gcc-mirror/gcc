@@ -72,6 +72,10 @@ along with GCC; see the file COPYING3.  If not see
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
    - check_ptrs: used for check_{raw,war}_ptrs
 
+   - cond_len_unary: a conditional unary optab, such as cond_len_neg<mode>
+   - cond_len_binary: a conditional binary optab, such as cond_len_add<mode>
+   - cond_len_ternary: a conditional ternary optab, such as cond_len_fma_rev<mode>
+
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
    SIGNED_OPTAB and UNSIGNED_OPTAB are the optabs for signed and
@@ -247,6 +251,40 @@ DEF_INTERNAL_OPTAB_FN (COND_FNMA, ECF_CONST, cond_fnma, cond_ternary)
 DEF_INTERNAL_OPTAB_FN (COND_FNMS, ECF_CONST, cond_fnms, cond_ternary)
 
 DEF_INTERNAL_OPTAB_FN (COND_NEG, ECF_CONST, cond_neg, cond_unary)
+
+DEF_INTERNAL_OPTAB_FN (COND_LEN_ADD, ECF_CONST, cond_len_add, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_SUB, ECF_CONST, cond_len_sub, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_MUL, ECF_CONST, cond_len_smul, cond_len_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_DIV, ECF_CONST, first, cond_len_sdiv,
+			      cond_len_udiv, cond_len_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_MOD, ECF_CONST, first, cond_len_smod,
+			      cond_len_umod, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_RDIV, ECF_CONST, cond_len_sdiv, cond_len_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_MIN, ECF_CONST, first, cond_len_smin,
+			      cond_len_umin, cond_len_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_MAX, ECF_CONST, first, cond_len_smax,
+			      cond_len_umax, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FMIN, ECF_CONST, cond_len_fmin, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FMAX, ECF_CONST, cond_len_fmax, cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_AND, ECF_CONST | ECF_NOTHROW, cond_len_and,
+		       cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_IOR, ECF_CONST | ECF_NOTHROW, cond_len_ior,
+		       cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_XOR, ECF_CONST | ECF_NOTHROW, cond_len_xor,
+		       cond_len_binary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_SHL, ECF_CONST | ECF_NOTHROW, cond_len_ashl,
+		       cond_len_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_LEN_SHR, ECF_CONST | ECF_NOTHROW, first,
+			      cond_len_ashr, cond_len_lshr, cond_len_binary)
+
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FMA, ECF_CONST, cond_len_fma, cond_len_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FMS, ECF_CONST, cond_len_fms, cond_len_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FNMA, ECF_CONST, cond_len_fnma,
+		       cond_len_ternary)
+DEF_INTERNAL_OPTAB_FN (COND_LEN_FNMS, ECF_CONST, cond_len_fnms,
+		       cond_len_ternary)
+
+DEF_INTERNAL_OPTAB_FN (COND_LEN_NEG, ECF_CONST, cond_len_neg, cond_len_unary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 

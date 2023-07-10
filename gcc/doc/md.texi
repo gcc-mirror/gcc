@@ -7234,6 +7234,86 @@ for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
   op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
 @end smallexample
 
+@cindex @code{cond_len_add@var{mode}} instruction pattern
+@cindex @code{cond_len_sub@var{mode}} instruction pattern
+@cindex @code{cond_len_mul@var{mode}} instruction pattern
+@cindex @code{cond_len_div@var{mode}} instruction pattern
+@cindex @code{cond_len_udiv@var{mode}} instruction pattern
+@cindex @code{cond_len_mod@var{mode}} instruction pattern
+@cindex @code{cond_len_umod@var{mode}} instruction pattern
+@cindex @code{cond_len_and@var{mode}} instruction pattern
+@cindex @code{cond_len_ior@var{mode}} instruction pattern
+@cindex @code{cond_len_xor@var{mode}} instruction pattern
+@cindex @code{cond_len_smin@var{mode}} instruction pattern
+@cindex @code{cond_len_smax@var{mode}} instruction pattern
+@cindex @code{cond_len_umin@var{mode}} instruction pattern
+@cindex @code{cond_len_umax@var{mode}} instruction pattern
+@cindex @code{cond_len_fmin@var{mode}} instruction pattern
+@cindex @code{cond_len_fmax@var{mode}} instruction pattern
+@cindex @code{cond_len_ashl@var{mode}} instruction pattern
+@cindex @code{cond_len_ashr@var{mode}} instruction pattern
+@cindex @code{cond_len_lshr@var{mode}} instruction pattern
+@item @samp{cond_len_add@var{mode}}
+@itemx @samp{cond_len_sub@var{mode}}
+@itemx @samp{cond_len_mul@var{mode}}
+@itemx @samp{cond_len_div@var{mode}}
+@itemx @samp{cond_len_udiv@var{mode}}
+@itemx @samp{cond_len_mod@var{mode}}
+@itemx @samp{cond_len_umod@var{mode}}
+@itemx @samp{cond_len_and@var{mode}}
+@itemx @samp{cond_len_ior@var{mode}}
+@itemx @samp{cond_len_xor@var{mode}}
+@itemx @samp{cond_len_smin@var{mode}}
+@itemx @samp{cond_len_smax@var{mode}}
+@itemx @samp{cond_len_umin@var{mode}}
+@itemx @samp{cond_len_umax@var{mode}}
+@itemx @samp{cond_len_fmin@var{mode}}
+@itemx @samp{cond_len_fmax@var{mode}}
+@itemx @samp{cond_len_ashl@var{mode}}
+@itemx @samp{cond_len_ashr@var{mode}}
+@itemx @samp{cond_len_lshr@var{mode}}
+When operand 1 is true and element index < operand 5 + operand 6, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation only works for the operands are vectors.
+
+@smallexample
+for (i = 0; i < ops[5] + ops[6]; i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_len_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 5 has whichever
+integer mode the target prefers.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
+
+@cindex @code{cond_len_fma@var{mode}} instruction pattern
+@cindex @code{cond_len_fms@var{mode}} instruction pattern
+@cindex @code{cond_len_fnma@var{mode}} instruction pattern
+@cindex @code{cond_len_fnms@var{mode}} instruction pattern
+@item @samp{cond_len_fma@var{mode}}
+@itemx @samp{cond_len_fms@var{mode}}
+@itemx @samp{cond_len_fnma@var{mode}}
+@itemx @samp{cond_len_fnms@var{mode}}
+Like @samp{cond_len_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_len_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < ops[6] + ops[7]; i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
