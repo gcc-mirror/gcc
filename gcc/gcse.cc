@@ -2013,20 +2013,16 @@ process_insert_insn (struct gcse_expr *expr)
   return prepare_copy_insn (reg, exp);
 }
 
-/* Add EXPR to the end of basic block BB.
+/* Return the INSN which is added at the end of the block BB with
+   same instruction pattern with PAT.  */
 
-   This is used by both the PRE and code hoisting.  */
-
-static void
-insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
+rtx_insn *
+insert_insn_end_basic_block (rtx_insn *pat, basic_block bb)
 {
   rtx_insn *insn = BB_END (bb);
   rtx_insn *new_insn;
-  rtx reg = expr->reaching_reg;
-  int regno = REGNO (reg);
-  rtx_insn *pat, *pat_end;
+  rtx_insn *pat_end;
 
-  pat = process_insert_insn (expr);
   gcc_assert (pat && INSN_P (pat));
 
   pat_end = pat;
@@ -2086,6 +2082,21 @@ insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
 	break;
       pat = NEXT_INSN (pat);
     }
+  return new_insn;
+}
+
+/* Add EXPR to the end of basic block BB.
+
+   This is used by both the PRE and code hoisting.  */
+
+static void
+insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
+{
+  rtx reg = expr->reaching_reg;
+  int regno = REGNO (reg);
+
+  rtx_insn *insn = process_insert_insn (expr);
+  rtx_insn *new_insn = insert_insn_end_basic_block (insn, bb);
 
   gcse_create_count++;
 
