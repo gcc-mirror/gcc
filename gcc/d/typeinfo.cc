@@ -1421,7 +1421,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
       /* If TypeInfo has not been declared, warn about each location once.  */
       static Loc warnloc;
 
-      if (loc.filename && !warnloc.equals (loc))
+      if (loc.filename () && !warnloc.equals (loc))
 	{
 	  error_at (make_location_t (loc),
 		    "%<object.TypeInfo%> could not be found, "

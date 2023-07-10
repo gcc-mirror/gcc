@@ -446,7 +446,15 @@ private final class CppMangleVisitor : Visitor
                 if (this.context.res.dyncast() == DYNCAST.dsymbol)
                     parentti = this.context.res.asFuncDecl().parent.isTemplateInstance();
                 else
-                    parentti = this.context.res.asType().toDsymbol(null).parent.isTemplateInstance();
+                {
+                    auto parent = this.context.res.asType().toDsymbol(null).parent;
+                    parentti = parent.isTemplateInstance();
+                    // https://issues.dlang.org/show_bug.cgi?id=22760
+                    // The template instance may sometimes have the form
+                    // S1!int.S1, therefore the above instruction might yield null
+                    if (parentti is null && parent.parent)
+                        parentti = parent.parent.isTemplateInstance();
+                }
                 return (*parentti.tiargs)[arg];
             }());
         scope (exit) this.context.pop(prev);

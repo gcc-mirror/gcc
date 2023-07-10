@@ -162,7 +162,7 @@ void atomicStore(MemoryOrder ms = MemoryOrder.seq, T, V)(ref shared T val, V new
 }
 
 /// Ditto
-void atomicStore(MemoryOrder ms = MemoryOrder.seq, T, V)(ref shared T val, shared V newval) pure nothrow @nogc @trusted
+void atomicStore(MemoryOrder ms = MemoryOrder.seq, T, V)(ref shared T val, auto ref shared V newval) pure nothrow @nogc @trusted
     if (is(T == class))
 {
     static assert (is (V : T), "Can't assign `newval` of type `shared " ~ V.stringof ~ "` to `shared " ~ T.stringof ~ "`.");

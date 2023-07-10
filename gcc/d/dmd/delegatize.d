@@ -14,7 +14,6 @@
 module dmd.delegatize;
 
 import core.stdc.stdio;
-import dmd.apply;
 import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
@@ -27,6 +26,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.location;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.statement;
 import dmd.tokens;
 import dmd.visitor;

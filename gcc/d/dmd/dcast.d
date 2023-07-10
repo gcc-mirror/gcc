@@ -71,6 +71,8 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
 
         if (const match = (sc && sc.flags & SCOPE.Cfile) ? e.cimplicitConvTo(t) : e.implicitConvTo(t))
         {
+            // no need for an extra cast when matching is exact
+
             if (match == MATCH.convert && e.type.isTypeNoreturn())
             {
                 return specialNoreturnCast(e, t);
@@ -88,6 +90,8 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
             auto ad = isAggregate(e.type);
             if (ad && ad.aliasthis)
             {
+                if (!ad.type || ad.type.isTypeError())
+                    return e;
                 auto ts = ad.type.isTypeStruct();
                 const adMatch = ts
                     ? ts.implicitConvToWithoutAliasThis(t)

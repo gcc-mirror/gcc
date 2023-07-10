@@ -607,8 +607,6 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
             //printf("BinExp::op_overload() (%s)\n", e.toChars());
             Identifier id = opId(e);
             Identifier id_r = opId_r(e);
-            Expressions args1;
-            Expressions args2;
             int argsset = 0;
             AggregateDeclaration ad1 = isAggregate(e.e1.type);
             AggregateDeclaration ad2 = isAggregate(e.e2.type);
@@ -701,6 +699,8 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     }
                 }
             }
+            Expressions* args1 = new Expressions();
+            Expressions* args2 = new Expressions();
             if (s || s_r)
             {
                 /* Try:
@@ -709,16 +709,16 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                  * and see which is better.
                  */
                 args1.setDim(1);
-                args1[0] = e.e1;
-                expandTuples(&args1);
+                (*args1)[0] = e.e1;
+                expandTuples(args1);
                 args2.setDim(1);
-                args2[0] = e.e2;
-                expandTuples(&args2);
+                (*args2)[0] = e.e2;
+                expandTuples(args2);
                 argsset = 1;
                 MatchAccumulator m;
                 if (s)
                 {
-                    functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
+                    functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(args2));
                     if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
@@ -727,7 +727,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 FuncDeclaration lastf = m.lastf;
                 if (s_r)
                 {
-                    functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
+                    functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(args1));
                     if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
@@ -791,16 +791,16 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         if (!argsset)
                         {
                             args1.setDim(1);
-                            args1[0] = e.e1;
-                            expandTuples(&args1);
+                            (*args1)[0] = e.e1;
+                            expandTuples(args1);
                             args2.setDim(1);
-                            args2[0] = e.e2;
-                            expandTuples(&args2);
+                            (*args2)[0] = e.e2;
+                            expandTuples(args2);
                         }
                         MatchAccumulator m;
                         if (s_r)
                         {
-                            functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
+                            functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, ArgumentList(args2));
                             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
@@ -809,7 +809,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         FuncDeclaration lastf = m.lastf;
                         if (s)
                         {
-                            functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
+                            functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, ArgumentList(args1));
                             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
@@ -1197,7 +1197,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 return ErrorExp.get();
             }
             Identifier id = opId(e);
-            Expressions args2;
+            Expressions* args2 = new Expressions();
             AggregateDeclaration ad1 = isAggregate(e.e1.type);
             Dsymbol s = null;
             Objects* tiargs = null;
@@ -1240,10 +1240,10 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                  *      a.opOpAssign(b)
                  */
                 args2.setDim(1);
-                args2[0] = e.e2;
-                expandTuples(&args2);
+                (*args2)[0] = e.e2;
+                expandTuples(args2);
                 MatchAccumulator m;
-                functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
+                functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(args2));
                 if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 {
                     return ErrorExp.get();
@@ -1322,12 +1322,12 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
          *      b.opEquals(a)
          * and see which is better.
          */
-        Expressions args1 = Expressions(1);
-        args1[0] = e.e1;
-        expandTuples(&args1);
-        Expressions args2 = Expressions(1);
-        args2[0] = e.e2;
-        expandTuples(&args2);
+        Expressions* args1 = new Expressions(1);
+        (*args1)[0] = e.e1;
+        expandTuples(args1);
+        Expressions* args2 = new Expressions(1);
+        (*args2)[0] = e.e2;
+        expandTuples(args2);
         MatchAccumulator m;
         if (0 && s && s_r)
         {
@@ -1336,7 +1336,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         }
         if (s)
         {
-            functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
+            functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(args2));
             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
@@ -1344,7 +1344,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         int count = m.count;
         if (s_r)
         {
-            functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
+            functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(args1));
             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }

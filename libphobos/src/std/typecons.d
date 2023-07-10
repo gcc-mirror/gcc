@@ -7406,11 +7406,11 @@ pure @system unittest
     foreach (MyRefCounted; AliasSeq!(SafeRefCounted, RefCounted))
     {
         MyRefCounted!int* p;
+        auto rc1 = MyRefCounted!int(5);
+        p = &rc1;
+        assert(rc1 == 5);
+        assert(rc1._refCounted._store._count == 1);
         {
-            auto rc1 = MyRefCounted!int(5);
-            p = &rc1;
-            assert(rc1 == 5);
-            assert(rc1._refCounted._store._count == 1);
             auto rc2 = rc1;
             assert(rc1._refCounted._store._count == 2);
             // Reference semantics
@@ -7421,6 +7421,8 @@ pure @system unittest
             rc1 = rc2;
             assert(rc1._refCounted._store._count == 2);
         }
+        // Artificially end scope of rc1 by calling ~this() explicitly
+        rc1.__xdtor();
         assert(p._refCounted._store == null);
 
         // [Safe]RefCounted as a member

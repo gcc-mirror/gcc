@@ -108,3 +108,17 @@ void test2456b()
         catch (Throwable) {}    // NG
     }
 }
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail2456.d(121): Deprecation: can only catch mutable or const qualified types, not `immutable(Exception)`
+---
+*/
+void main() {
+    try {
+        throw new Exception("");
+    } catch (immutable Exception e) {
+        assert(0);
+    }
+}

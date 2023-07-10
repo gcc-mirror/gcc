@@ -91,9 +91,9 @@ TEST_OUTPUT:
 ---
 fail_compilation/bug9631.d(106): Error: function `bug9631.targ.ft!().ft(S __param_0)` is not callable using argument types `(S)`
 fail_compilation/bug9631.d(106):        cannot pass argument `x` of type `bug9631.S` to parameter `bug9631.tem!().S __param_0`
-fail_compilation/bug9631.d(107): Error: none of the overloads of template `bug9631.targ.ft` are callable using argument types `!()(S)`
+fail_compilation/bug9631.d(107): Error: template `bug9631.targ.ft` is not callable using argument types `!()(S)`
 fail_compilation/bug9631.d(105):        Candidate is: `ft()(tem!().S)`
-fail_compilation/bug9631.d(109): Error: none of the overloads of template `bug9631.targ.ft2` are callable using argument types `!()(S, int)`
+fail_compilation/bug9631.d(109): Error: template `bug9631.targ.ft2` is not callable using argument types `!()(S, int)`
 fail_compilation/bug9631.d(108):        Candidate is: `ft2(T)(S, T)`
 ---
 */

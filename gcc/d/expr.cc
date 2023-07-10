@@ -2296,11 +2296,12 @@ public:
 	    return;
 	  }
 
+	/* This case should have been rewritten to `_d_newitemT' during the
+	   semantic phase.  */
+	gcc_assert (e->lowering);
+
 	/* Generate: _d_newitemT()  */
-	libcall_fn libcall = htype->isZeroInit ()
-	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
-	tree arg = build_typeinfo (e, e->newtype);
-	new_call = build_libcall (libcall, tb, 1, arg);
+	new_call = build_expr (e->lowering);
 
 	if (e->member || !e->arguments)
 	  {
@@ -2423,11 +2424,12 @@ public:
 	    return;
 	  }
 
-	libcall_fn libcall = tpointer->next->isZeroInit (e->loc)
-	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
+	/* This case should have been rewritten to `_d_newitemT' during the
+	   semantic phase.  */
+	gcc_assert (e->lowering);
 
-	tree arg = build_typeinfo (e, e->newtype);
-	result = build_libcall (libcall, tb, 1, arg);
+	/* Generate: _d_newitemT()  */
+	result = build_expr (e->lowering);
 
 	if (e->arguments && e->arguments->length == 1)
 	  {

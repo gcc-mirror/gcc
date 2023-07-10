@@ -42,6 +42,7 @@ extern (C) void main()
     test18472();
     testRuntimeLowerings();
     test18457();
+    test20737();
 }
 
 /*******************************************/
@@ -198,4 +199,14 @@ void test18457()
         assert(dtor == 0);
     }
     assert(dtor == 1);
+}
+
+/**********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=20737
+int tlsVar;
+
+int test20737()
+{
+    tlsVar = 123;
+    return 0;
 }

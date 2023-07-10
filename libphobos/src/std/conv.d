@@ -102,21 +102,6 @@ private auto convError(S, T)(S source, string fn = __FILE__, size_t ln = __LINE_
     return new ConvException(msg, fn, ln);
 }
 
-private auto convError(S, T)(S source, int radix, string fn = __FILE__, size_t ln = __LINE__)
-{
-    string msg;
-
-    if (source.empty)
-        msg = text("Unexpected end of input when converting from type " ~ S.stringof ~ " base ", radix,
-                " to type " ~ T.stringof);
-    else
-        msg = text("Unexpected '", source.front,
-            "' when converting from type " ~ S.stringof ~ " base ", radix,
-            " to type " ~ T.stringof);
-
-    return new ConvException(msg, fn, ln);
-}
-
 @safe pure/* nothrow*/  // lazy parameter bug
 private auto parseError(lazy string msg, string fn = __FILE__, size_t ln = __LINE__)
 {
@@ -1023,7 +1008,15 @@ if (!(is(S : T) &&
     else static if (isIntegral!S && !is(S == enum))
     {
         // other integral-to-string conversions with default radix
-        return toImpl!(T, S)(value, 10);
+
+        import core.internal.string : signedToTempString, unsignedToTempString;
+
+        alias EEType = Unqual!(ElementEncodingType!T);
+        EEType[long.sizeof * 3 + 1] buf = void;
+        EEType[] t = isSigned!S
+            ?   signedToTempString!(10, false, EEType)(value, buf)
+            : unsignedToTempString!(10, false, EEType)(value, buf);
+        return t.dup;
     }
     else static if (is(S == void[]) || is(S == const(void)[]) || is(S == immutable(void)[]))
     {
@@ -5726,33 +5719,13 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
         {
             void initialize(UT value)
             {
-                bool neg = false;
-                if (value < 10)
-                {
-                    if (value >= 0)
-                    {
-                        lwr = 0;
-                        upr = 1;
-                        buf[0] = cast(char)(cast(uint) value + '0');
-                        return;
-                    }
-                    value = -value;
-                    neg = true;
-                }
-                auto i = cast(uint) buf.length - 1;
-                while (cast(Unsigned!UT) value >= 10)
-                {
-                    buf[i] = cast(ubyte)('0' + cast(Unsigned!UT) value % 10);
-                    value = unsigned(value) / 10;
-                    --i;
-                }
-                buf[i] = cast(char)(cast(uint) value + '0');
-                if (neg)
-                {
-                    buf[i - 1] = '-';
-                    --i;
-                }
-                lwr = i;
+                import core.internal.string : signedToTempString, unsignedToTempString;
+
+                char[] t = value < 0
+                    ?   signedToTempString!(10, false, char)(value, buf)
+                    : unsignedToTempString!(10, false, char)(value, buf);
+
+                lwr = cast(uint) (buf.length - t.length);
                 upr = cast(uint) buf.length;
             }
 

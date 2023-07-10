@@ -653,7 +653,7 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
     if (!ce.names)
         ce.names = new Identifiers();
     ce.names.shift(null);
-
+    ce.isUfcsRewrite = true;
     return null;
 }
 
@@ -1254,12 +1254,12 @@ private Expression resolvePropertiesX(Scope* sc, Expression e1, Expression e2 = 
                 return ErrorExp.get();
             e2 = resolveProperties(sc, e2);
 
-            Expressions a;
+            Expressions* a = new Expressions();
             a.push(e2);
 
             for (size_t i = 0; i < os.a.length; i++)
             {
-                if (FuncDeclaration f = resolveFuncCall(loc, sc, os.a[i], tiargs, tthis, ArgumentList(&a), FuncResolveFlag.quiet))
+                if (FuncDeclaration f = resolveFuncCall(loc, sc, os.a[i], tiargs, tthis, ArgumentList(a), FuncResolveFlag.quiet))
                 {
                     if (f.errors)
                         return ErrorExp.get();
@@ -1378,10 +1378,10 @@ private Expression resolvePropertiesX(Scope* sc, Expression e1, Expression e2 = 
                 return ErrorExp.get();
             e2 = resolveProperties(sc, e2);
 
-            Expressions a;
+            Expressions* a = new Expressions();
             a.push(e2);
 
-            FuncDeclaration fd = resolveFuncCall(loc, sc, s, tiargs, tthis, ArgumentList(&a), FuncResolveFlag.quiet);
+            FuncDeclaration fd = resolveFuncCall(loc, sc, s, tiargs, tthis, ArgumentList(a), FuncResolveFlag.quiet);
             if (fd && fd.type)
             {
                 if (fd.errors)
@@ -3574,6 +3574,51 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         result = exp;
     }
 
+    /**
+     * Sets the `lowering` field of a `NewExp` to a call to `_d_newitemT` unless
+     * compiling with `-betterC` or within `__traits(compiles)`.
+     *
+     * Params:
+     *  ne = the `NewExp` to lower
+     */
+    private void tryLowerToNewItem(NewExp ne)
+    {
+        if (global.params.betterC || !sc.needsCodegen())
+            return;
+
+        auto hook = global.params.tracegc ? Id._d_newitemTTrace : Id._d_newitemT;
+        if (!verifyHookExist(ne.loc, *sc, hook, "new struct"))
+            return;
+
+        /* Lower the memory allocation and initialization of `new T()` to
+         * `_d_newitemT!T()`.
+         */
+        Expression id = new IdentifierExp(ne.loc, Id.empty);
+        id = new DotIdExp(ne.loc, id, Id.object);
+        auto tiargs = new Objects();
+        /*
+         * Remove `inout`, `const`, `immutable` and `shared` to reduce the
+         * number of generated `_d_newitemT` instances.
+         */
+        auto t = ne.type.nextOf.unqualify(MODFlags.wild | MODFlags.const_ |
+            MODFlags.immutable_ | MODFlags.shared_);
+        tiargs.push(t);
+        id = new DotTemplateInstanceExp(ne.loc, id, hook, tiargs);
+
+        auto arguments = new Expressions();
+        if (global.params.tracegc)
+        {
+            auto funcname = (sc.callsc && sc.callsc.func) ?
+                sc.callsc.func.toPrettyChars() : sc.func.toPrettyChars();
+            arguments.push(new StringExp(ne.loc, ne.loc.filename.toDString()));
+            arguments.push(new IntegerExp(ne.loc, ne.loc.linnum, Type.tint32));
+            arguments.push(new StringExp(ne.loc, funcname.toDString()));
+        }
+        id = new CallExp(ne.loc, id, arguments);
+
+        ne.lowering = id.expressionSemantic(sc);
+    }
+
     override void visit(NewExp exp)
     {
         static if (LOGSEMANTIC)
@@ -4007,6 +4052,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
 
             exp.type = exp.type.pointerTo();
+            tryLowerToNewItem(exp);
         }
         else if (tb.ty == Tarray)
         {
@@ -4078,6 +4124,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
 
             exp.type = exp.type.pointerTo();
+            tryLowerToNewItem(exp);
         }
         else if (tb.ty == Taarray)
         {
@@ -5192,7 +5239,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             {
                 s = (cast(TemplateExp)exp.e1).td;
             L2:
-                exp.f = resolveFuncCall(exp.loc, sc, s, tiargs, null, exp.argumentList, FuncResolveFlag.standard);
+                exp.f = resolveFuncCall(exp.loc, sc, s, tiargs, null, exp.argumentList,
+                    exp.isUfcsRewrite ? FuncResolveFlag.ufcs : FuncResolveFlag.standard);
                 if (!exp.f || exp.f.errors)
                     return setError();
                 if (exp.f.needThis())
@@ -5301,6 +5349,13 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     buf.writeByte(')');
 
                     //printf("tf = %s, args = %s\n", tf.deco, (*arguments)[0].type.deco);
+                    if (exp.isUfcsRewrite)
+                    {
+                        const arg = (*exp.argumentList.arguments)[0];
+                        .error(exp.loc, "no property `%s` for `%s` of type `%s`", exp.f.ident.toChars(), arg.toChars(), arg.type.toChars());
+                        .errorSupplemental(exp.loc, "the following error occured while looking for a UFCS match");
+                    }
+
                     .error(exp.loc, "%s `%s%s` is not callable using argument types `%s`",
                         exp.f.kind(), exp.f.toPrettyChars(), parametersTypeToChars(tf.parameterList), buf.peekChars());
                     if (failMessage)
@@ -6733,7 +6788,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
             if (exp.ident != Id.__sizeof)
             {
-                result = fieldLookup(exp.e1, sc, exp.ident);
+                result = fieldLookup(exp.e1, sc, exp.ident, exp.arrow);
                 return;
             }
         }
@@ -9068,7 +9123,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             else if (sc.flags & SCOPE.Cfile && e1x.isDotIdExp())
             {
                 auto die = e1x.isDotIdExp();
-                e1x = fieldLookup(die.e1, sc, die.ident);
+                e1x = fieldLookup(die.e1, sc, die.ident, die.arrow);
             }
             else if (auto die = e1x.isDotIdExp())
             {
@@ -11023,7 +11078,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         /* `_d_arraycatnTX` canot be used with `-betterC`, but `CatExp`s may be
          * used with `-betterC`, but only during CTFE.
          */
-        if (global.params.betterC)
+        if (global.params.betterC || !sc.needsCodegen())
             return;
 
         if (auto ce = exp.isCatExp())
@@ -13175,10 +13230,20 @@ Expression dotIdSemanticProp(DotIdExp exp, Scope* sc, bool gag)
                 Expression se = new ScopeExp(exp.loc, imp.pkg);
                 return se.expressionSemantic(sc);
             }
+
+            if (auto attr = s.isAttribDeclaration())
+            {
+                if (auto sm = ie.sds.search(exp.loc, exp.ident, flags))
+                {
+                    auto es = new DsymbolExp(exp.loc, sm);
+                    return es;
+                }
+            }
+
             // BUG: handle other cases like in IdentifierExp::semantic()
             debug
             {
-                printf("s = '%s', kind = '%s'\n", s.toChars(), s.kind());
+                printf("s = %p '%s', kind = '%s'\n", s, s.toChars(), s.kind());
             }
             assert(0);
         }

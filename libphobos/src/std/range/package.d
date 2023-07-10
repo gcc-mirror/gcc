@@ -232,7 +232,7 @@ module std.range;
 public import std.array;
 public import std.range.interfaces;
 public import std.range.primitives;
-public import std.typecons : Flag, Yes, No;
+public import std.typecons : Flag, Yes, No, Rebindable, rebindable;
 
 import std.internal.attributes : betterC;
 import std.meta : aliasSeqOf, allSatisfy, anySatisfy, staticMap;
@@ -978,6 +978,11 @@ if (Ranges.length > 0 &&
             static if (bidirectional) size_t backIndex;
             else enum backIndex = source.length;
 
+            this(typeof(Result.tupleof) fields)
+            {
+                this.tupleof = fields;
+            }
+
         public:
             this(R input)
             {
@@ -1376,25 +1381,34 @@ if (Ranges.length > 0 &&
             static if (allSatisfy!(hasLength, R) && allSatisfy!(hasSlicing, R))
                 auto opSlice(size_t begin, size_t end) return scope
                 {
-                    auto result = this;
+                    // force staticMap type conversion to Rebindable
+                    static struct ResultRanges
+                    {
+                        staticMap!(Rebindable, Ranges) fields;
+                    }
+                    auto sourceI(size_t i)() => rebindable(this.source[i]);
+                    auto resultRanges = ResultRanges(staticMap!(sourceI, aliasSeqOf!(R.length.iota))).fields;
+                    size_t resultFrontIndex = this.frontIndex;
+                    static if (bidirectional)
+                        size_t resultBackIndex = this.backIndex;
 
                     sw: switch (frontIndex)
                     {
                         static foreach (i; 0 .. R.length)
                         {
                         case i:
-                            immutable len = result.source[i].length;
+                            immutable len = resultRanges[i].length;
                             if (len <= begin)
                             {
-                                result.source[i] = result.source[i]
+                                resultRanges[i] = resultRanges[i]
                                     [len .. len];
                                 begin -= len;
-                                result.frontIndex++;
+                                resultFrontIndex++;
                                 goto case;
                             }
                             else
                             {
-                                result.source[i] = result.source[i]
+                                resultRanges[i] = resultRanges[i]
                                     [begin .. len];
                                 break sw;
                             }
@@ -1418,18 +1432,18 @@ if (Ranges.length > 0 &&
                         static foreach_reverse (i; 1 .. R.length + 1)
                         {
                         case i:
-                            immutable len = result.source[i-1].length;
+                            immutable len = resultRanges[i-1].length;
                             if (len <= cut)
                             {
-                                result.source[i-1] = result.source[i-1]
+                                resultRanges[i-1] = resultRanges[i-1]
                                     [0 .. 0];
                                 cut -= len;
-                                result.backIndex--;
+                                resultBackIndex--;
                                 goto case;
                             }
                             else
                             {
-                                result.source[i-1] = result.source[i-1]
+                                resultRanges[i-1] = resultRanges[i-1]
                                     [0 .. len - cut];
                                 break sw2;
                             }
@@ -1445,7 +1459,10 @@ if (Ranges.length > 0 &&
                         assert(0, "Internal library error. Please report it.");
                     }
 
-                    return result;
+                    static if (bidirectional)
+                        return Result(resultRanges, resultFrontIndex, resultBackIndex);
+                    else
+                        return Result(resultRanges, resultFrontIndex);
                 }
         }
         return Result(rs);
@@ -1641,6 +1658,18 @@ pure @safe unittest
     auto r = refRange(&s).chain("bar");
     assert(equal(r.save, "foobar"));
     assert(equal(r, "foobar"));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23844
+pure @safe unittest
+{
+    struct S
+    {
+        immutable int value;
+    }
+
+    auto range = chain(only(S(5)), only(S(6)));
+    assert(range.array == [S(5), S(6)]);
 }
 
 pure @safe nothrow @nogc unittest

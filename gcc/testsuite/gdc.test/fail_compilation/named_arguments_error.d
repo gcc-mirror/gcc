@@ -15,7 +15,7 @@ fail_compilation/named_arguments_error.d(38): Error: no named argument `element`
 fail_compilation/named_arguments_error.d(39): Error: no named argument `number` allowed for scalar
 fail_compilation/named_arguments_error.d(40): Error: cannot implicitly convert expression `g(x: 3, y: 4, z: 5)` of type `int` to `string`
 fail_compilation/named_arguments_error.d(41): Error: named arguments with Implicit Function Template Instantiation are not supported yet
-fail_compilation/named_arguments_error.d(41): Error: none of the overloads of template `named_arguments_error.tempfun` are callable using argument types `!()(string, int)`
+fail_compilation/named_arguments_error.d(41): Error: template `named_arguments_error.tempfun` is not callable using argument types `!()(string, int)`
 fail_compilation/named_arguments_error.d(45):        Candidate is: `tempfun(T, U)(T t, U u)`
 ---
 */

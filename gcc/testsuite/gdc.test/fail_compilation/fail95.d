@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail95.d(19): Error: none of the overloads of template `fail95.A` are callable using argument types `!()(int)`
+fail_compilation/fail95.d(19): Error: template `fail95.A` is not callable using argument types `!()(int)`
 fail_compilation/fail95.d(11):        Candidate is: `A(alias T)(T)`
 ---
 */

@@ -26,6 +26,10 @@ import dmd.location;
 import dmd.lexer : CompileEnv;
 import dmd.utils;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 /// Defines a setting for how compiler warnings and deprecations are handled
 enum DiagnosticReporting : ubyte
 {

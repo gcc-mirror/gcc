@@ -1273,8 +1273,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 }
                 else if (auto td = sfront.isTemplateDeclaration())
                 {
-                    Expressions a;
-                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, ArgumentList(&a), FuncResolveFlag.quiet))
+                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, ArgumentList(), FuncResolveFlag.quiet))
                         tfront = f.type;
                 }
                 else if (auto d = sfront.toAlias().isDeclaration())
@@ -2733,7 +2732,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 tbret = tret.toBasetype();
             }
 
-            if (inferRef) // deduce 'auto ref'
+            // https://issues.dlang.org/show_bug.cgi?id=23914
+            if (inferRef && !resType.isTypeNoreturn()) // deduce 'auto ref'
                 tf.isref = false;
 
             if (tbret.ty != Tvoid && !resType.isTypeNoreturn()) // if non-void return
@@ -3593,6 +3593,11 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             cas.error("`asm` statement is assumed to be impure - mark it with `pure` if it is not");
         if (!(cas.stc & STC.nogc) && sc.func.setGC(cas.loc, "`asm` statement in %s `%s` is assumed to use the GC - mark it with `@nogc` if it does not"))
             cas.error("`asm` statement is assumed to use the GC - mark it with `@nogc` if it does not");
+        // @@@DEPRECATED_2.114@@@
+        // change deprecation() to error(), add `else` and remove `| STC.safe`
+        // to turn deprecation into an error when deprecation cycle is over
+        if (cas.stc & STC.safe)
+            cas.deprecation("`asm` statement cannot be marked `@safe`, use `@system` or `@trusted` instead");
         if (!(cas.stc & (STC.trusted | STC.safe)))
         {
             sc.setUnsafe(false, cas.loc, "`asm` statement is assumed to be `@system` - mark it with `@trusted` if it is not");
@@ -4044,6 +4049,13 @@ void catchSemantic(Catch c, Scope* sc)
 
         // reference .object.Throwable
         c.type = getThrowable();
+    }
+    else if (!c.type.isNaked() && !c.type.isConst())
+    {
+        // @@@DEPRECATED_2.113@@@
+        // Deprecated in 2.103, change into an error & uncomment in 2.113
+        deprecation(c.loc, "can only catch mutable or const qualified types, not `%s`", c.type.toChars());
+        //c.errors = true;
     }
     c.type = c.type.typeSemantic(c.loc, sc);
     if (c.type == Type.terror)

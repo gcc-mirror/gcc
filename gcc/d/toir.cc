@@ -780,8 +780,8 @@ public:
 
     this->do_label (label);
 
-    if (this->is_return_label (s->ident) && this->func_->fensure != NULL)
-      this->build_stmt (this->func_->fensure);
+    if (this->is_return_label (s->ident) && this->func_->fensure () != NULL)
+      this->build_stmt (this->func_->fensure ());
     else if (s->statement)
       this->build_stmt (s->statement);
   }

@@ -20,7 +20,6 @@ import dmd.root.rootobject;
 import dmd.root.rmem;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.declaration;

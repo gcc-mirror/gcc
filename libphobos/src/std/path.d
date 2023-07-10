@@ -3955,7 +3955,7 @@ if (isConvertibleToString!Range)
     }
     -----
 */
-string expandTilde(string inputPath) @safe nothrow
+string expandTilde(return scope const string inputPath) @safe nothrow
 {
     version (Posix)
     {
@@ -4138,7 +4138,7 @@ string expandTilde(string inputPath) @safe nothrow
 }
 
 ///
-@system unittest
+@safe unittest
 {
     version (Posix)
     {
@@ -4153,7 +4153,7 @@ string expandTilde(string inputPath) @safe nothrow
     }
 }
 
-@system unittest
+@safe unittest
 {
     version (Posix)
     {
@@ -4204,6 +4204,26 @@ string expandTilde(string inputPath) @safe nothrow
         assert(expandTilde("~Idontexist/hey") == "~Idontexist/hey");
     }
 }
+
+@safe unittest
+{
+    version (Posix)
+    {
+        import std.process : environment;
+
+        string testPath(scope const string source_path) {
+            return source_path.expandTilde;
+        }
+
+        auto oldHome = environment["HOME"];
+        scope(exit) environment["HOME"] = oldHome;
+
+        environment["HOME"] = "dmd/test";
+        assert(testPath("~/") == "dmd/test/");
+        assert(testPath("~") == "dmd/test");
+    }
+}
+
 
 version (StdUnittest)
 {

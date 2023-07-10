@@ -769,11 +769,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             return;
         if (e.arguments)
         {
-            Type t1 = e.e1.type.toBasetype();
-            if (auto td = t1.isTypeDelegate())
-                t1 = td.next;
             // t1 can apparently be void for __ArrayDtor(T) calls
-            if (auto tf = t1.isTypeFunction())
+            if (auto tf = e.calledFunctionType())
             {
                 foreach (i, ref arg; (*e.arguments)[])
                 {

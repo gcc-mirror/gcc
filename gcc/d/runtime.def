@@ -70,11 +70,6 @@ DEF_D_RUNTIME (DYNAMIC_CAST, "_d_dynamic_cast", RT(OBJECT),
 DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
 	       P2(OBJECT, CLASSINFO), 0)
 
-/* Used when calling new on a pointer.  The `i' variant is for when the
-   initializer is nonzero.  */
-DEF_D_RUNTIME (NEWITEMT, "_d_newitemT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a
    multi-dimensional array.  */

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail8009.d(9): Error: none of the overloads of template `fail8009.filter` are callable using argument types `!()(void)`
+fail_compilation/fail8009.d(9): Error: template `fail8009.filter` is not callable using argument types `!()(void)`
 fail_compilation/fail8009.d(8):        Candidate is: `filter(R)(scope bool delegate(ref BAD!R) func)`
 ---
 */

@@ -685,6 +685,7 @@ private void getoptImpl(T...)(ref string[] args, ref configuration cfg,
 
     import std.algorithm.mutation : remove;
     import std.conv : to;
+    import std.uni : toLower;
     static if (opts.length)
     {
         static if (is(typeof(opts[0]) : config))
@@ -708,7 +709,10 @@ private void getoptImpl(T...)(ref string[] args, ref configuration cfg,
 
             if (optionHelp.optLong.length)
             {
-                assert(optionHelp.optLong !in visitedLongOpts,
+                auto name = optionHelp.optLong;
+                if (!cfg.caseSensitive)
+                    name = name.toLower();
+                assert(name !in visitedLongOpts,
                     "Long option " ~ optionHelp.optLong ~ " is multiply defined");
 
                 visitedLongOpts[optionHelp.optLong] = [];
@@ -716,7 +720,10 @@ private void getoptImpl(T...)(ref string[] args, ref configuration cfg,
 
             if (optionHelp.optShort.length)
             {
-                assert(optionHelp.optShort !in visitedShortOpts,
+                auto name = optionHelp.optShort;
+                if (!cfg.caseSensitive)
+                    name = name.toLower();
+                assert(name !in visitedShortOpts,
                     "Short option " ~ optionHelp.optShort
                     ~ " is multiply defined");
 
@@ -1779,6 +1786,14 @@ void defaultGetoptFormatter(Output)(Output output, string text, Option[] opt, st
     assertThrown!AssertError(getopt(args, "abc", &abc, "abc", &abc));
     assertThrown!AssertError(getopt(args, "abc|a", &abc, "def|a", &def));
     assertNotThrown!AssertError(getopt(args, "abc", &abc, "def", &def));
+
+    // https://issues.dlang.org/show_bug.cgi?id=23940
+    assertThrown!AssertError(getopt(args,
+            "abc", &abc, "ABC", &def));
+    assertThrown!AssertError(getopt(args, config.caseInsensitive,
+            "abc", &abc, "ABC", &def));
+    assertNotThrown!AssertError(getopt(args, config.caseSensitive,
+            "abc", &abc, "ABC", &def));
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=17327 repeated option use

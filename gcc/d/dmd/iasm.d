@@ -23,13 +23,14 @@ import dmd.tokens;
 import dmd.statement;
 import dmd.statementsem;
 
-version (MARS)
-{
-    import dmd.iasmdmd;
-}
-else version (IN_GCC)
+version (IN_GCC)
 {
     import dmd.iasmgcc;
+}
+else
+{
+    import dmd.iasmdmd;
+    version = MARS;
 }
 
 /************************ AsmStatement ***************************************/

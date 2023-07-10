@@ -21,7 +21,7 @@ __error__
 }
 }
 )`
-fail_compilation/e15876_3.d(28): Error: semicolon expected following function declaration
+fail_compilation/e15876_3.d(28): Error: semicolon expected following function declaration, not `End of File`
 ---
 */
 d(={for

@@ -527,7 +527,8 @@ private extern(C) void _d_setSameMutex(shared Object ownee, shared Object owner)
 
 void setSameMutex(shared Object ownee, shared Object owner)
 {
-    _d_setSameMutex(ownee, owner);
+    import core.atomic : atomicLoad;
+    _d_setSameMutex(atomicLoad(ownee), atomicLoad(owner));
 }
 
 @system unittest
@@ -4532,6 +4533,7 @@ version (D_ProfileGC)
 {
     public import core.internal.array.appending : _d_arrayappendTTrace;
     public import core.internal.array.concatenation : _d_arraycatnTXTrace;
+    public import core.lifetime : _d_newitemTTrace;
 }
 public import core.internal.array.appending : _d_arrayappendcTXImpl;
 public import core.internal.array.comparison : __cmp;
@@ -4560,6 +4562,7 @@ public import core.lifetime : _d_delstructImpl;
 public import core.lifetime : _d_newThrowable;
 public import core.lifetime : _d_newclassT;
 public import core.lifetime : _d_newclassTTrace;
+public import core.lifetime : _d_newitemT;
 
 public @trusted @nogc nothrow pure extern (C) void _d_delThrowable(scope Throwable);
 

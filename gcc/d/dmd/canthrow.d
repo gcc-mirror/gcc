@@ -14,7 +14,6 @@
 module dmd.canthrow;
 
 import dmd.aggregate;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.astenums;
@@ -26,6 +25,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
+import dmd.postordervisitor;
 import dmd.root.rootobject;
 import dmd.tokens;
 import dmd.visitor;
@@ -133,16 +133,9 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
              */
             if (ce.f && ce.f == func)
                 return;
-            Type t = ce.e1.type.toBasetype();
-            auto tf = t.isTypeFunction();
+            const tf = ce.calledFunctionType();
             if (tf && tf.isnothrow)
                 return;
-            else
-            {
-                auto td = t.isTypeDelegate();
-                if (td && td.nextOf().isTypeFunction().isnothrow)
-                    return;
-            }
 
             if (ce.f)
                 checkFuncThrows(ce, ce.f);

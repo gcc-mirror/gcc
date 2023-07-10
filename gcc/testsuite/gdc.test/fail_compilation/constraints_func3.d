@@ -23,21 +23,21 @@ fail_compilation/imports/constraints.d(42):                        `overload(T, 
   must satisfy one of the following constraints:
 `       N!T
        N!V`
-fail_compilation/constraints_func3.d(56): Error: none of the overloads of template `imports.constraints.variadic` are callable using argument types `!()()`
+fail_compilation/constraints_func3.d(56): Error: template `imports.constraints.variadic` is not callable using argument types `!()()`
 fail_compilation/imports/constraints.d(43):        Candidate is: `variadic(A, T...)(A a, T v)`
-fail_compilation/constraints_func3.d(57): Error: none of the overloads of template `imports.constraints.variadic` are callable using argument types `!()(int)`
+fail_compilation/constraints_func3.d(57): Error: template `imports.constraints.variadic` is not callable using argument types `!()(int)`
 fail_compilation/imports/constraints.d(43):        Candidate is: `variadic(A, T...)(A a, T v)`
   with `A = int,
        T = ()`
   must satisfy the following constraint:
 `       N!int`
-fail_compilation/constraints_func3.d(58): Error: none of the overloads of template `imports.constraints.variadic` are callable using argument types `!()(int, int)`
+fail_compilation/constraints_func3.d(58): Error: template `imports.constraints.variadic` is not callable using argument types `!()(int, int)`
 fail_compilation/imports/constraints.d(43):        Candidate is: `variadic(A, T...)(A a, T v)`
   with `A = int,
        T = (int)`
   must satisfy the following constraint:
 `       N!int`
-fail_compilation/constraints_func3.d(59): Error: none of the overloads of template `imports.constraints.variadic` are callable using argument types `!()(int, int, int)`
+fail_compilation/constraints_func3.d(59): Error: template `imports.constraints.variadic` is not callable using argument types `!()(int, int, int)`
 fail_compilation/imports/constraints.d(43):        Candidate is: `variadic(A, T...)(A a, T v)`
   with `A = int,
        T = (int, int)`

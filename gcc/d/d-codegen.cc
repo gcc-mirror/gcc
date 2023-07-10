@@ -50,11 +50,11 @@ make_location_t (const Loc &loc)
 {
   location_t gcc_location = input_location;
 
-  if (loc.filename)
+  if (const char *filename = loc.filename ())
     {
-      linemap_add (line_table, LC_ENTER, 0, loc.filename, loc.linnum);
-      linemap_line_start (line_table, loc.linnum, 0);
-      gcc_location = linemap_position_for_column (line_table, loc.charnum);
+      linemap_add (line_table, LC_ENTER, 0, filename, loc.linnum ());
+      linemap_line_start (line_table, loc.linnum (), 0);
+      gcc_location = linemap_position_for_column (line_table, loc.charnum ());
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
     }
 
@@ -1872,8 +1872,10 @@ void_okay_p (tree t)
 static tree
 build_filename_from_loc (const Loc &loc)
 {
-  const char *filename = loc.filename
-    ? loc.filename : d_function_chain->module->srcfile.toChars ();
+  const char *filename = loc.filename ();
+
+  if (filename == NULL)
+    filename = d_function_chain->module->srcfile.toChars ();
 
   unsigned length = strlen (filename);
   tree str = build_string (length, filename);
@@ -1890,17 +1892,17 @@ tree
 build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 {
   tree file;
-  tree line = size_int (loc.linnum);
+  tree line = size_int (loc.linnum ());
 
   switch (libcall)
     {
     case LIBCALL_ASSERT_MSG:
     case LIBCALL_UNITTEST_MSG:
       /* File location is passed as a D string.  */
-      if (loc.filename)
+      if (const char *filename = loc.filename ())
 	{
-	  unsigned len = strlen (loc.filename);
-	  tree str = build_string (len, loc.filename);
+	  unsigned len = strlen (filename);
+	  tree str = build_string (len, filename);
 	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
 
 	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
@@ -1939,7 +1941,7 @@ build_array_bounds_call (const Loc &loc)
     {
       return build_libcall (LIBCALL_ARRAYBOUNDSP, Type::tvoid, 2,
 			    build_filename_from_loc (loc),
-			    size_int (loc.linnum));
+			    size_int (loc.linnum ()));
     }
 }
 
@@ -1968,7 +1970,8 @@ build_bounds_index_condition (IndexExp *ie, tree index, tree length)
     {
       boundserr = build_libcall (LIBCALL_ARRAYBOUNDS_INDEXP, Type::tvoid, 4,
 				 build_filename_from_loc (ie->e2->loc),
-				 size_int (ie->e2->loc.linnum), index, length);
+				 size_int (ie->e2->loc.linnum ()),
+				 index, length);
     }
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
@@ -2017,7 +2020,7 @@ build_bounds_slice_condition (SliceExp *se, tree lower, tree upper, tree length)
 	      boundserr = build_libcall (LIBCALL_ARRAYBOUNDS_SLICEP,
 					 Type::tvoid, 5,
 					 build_filename_from_loc (se->loc),
-					 size_int (se->loc.linnum),
+					 size_int (se->loc.linnum ()),
 					 lower, upper, length);
 	    }
 
@@ -2659,8 +2662,8 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
      of the calling function non-locally.  So we add all parameters with nested
      refs to the function frame, this should also mean overriding methods will
      have the same frame layout when inheriting a contract.  */
-  if ((global.params.useIn == CHECKENABLEon && fd->frequire)
-      || (global.params.useOut == CHECKENABLEon && fd->fensure))
+  if ((global.params.useIn == CHECKENABLEon && fd->frequire ())
+      || (global.params.useOut == CHECKENABLEon && fd->fensure ()))
     {
       if (fd->parameters)
 	{
@@ -2870,8 +2873,8 @@ get_frameinfo (FuncDeclaration *fd)
 
       /* In checkNestedReference, references from contracts are not added to the
 	 closureVars array, so assume all parameters referenced.  */
-      if ((global.params.useIn == CHECKENABLEon && fd->frequire)
-	  || (global.params.useOut == CHECKENABLEon && fd->fensure))
+      if ((global.params.useIn == CHECKENABLEon && fd->frequire ())
+	  || (global.params.useOut == CHECKENABLEon && fd->fensure ()))
 	FRAMEINFO_CREATES_FRAME (ffi) = 1;
 
       /* If however `fd` is nested (deeply) in a function that creates a

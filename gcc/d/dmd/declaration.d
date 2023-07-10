@@ -44,6 +44,10 @@ import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
+
 /************************************
  * Check to see the aggregate type is nested and its context pointer is
  * accessible from the current scope.
@@ -633,9 +637,7 @@ extern (C++) final class TupleDeclaration : Declaration
                 version (none)
                 {
                     buf.printf("_%s_%d", ident.toChars(), i);
-                    const len = buf.offset;
-                    const name = buf.extractSlice().ptr;
-                    auto id = Identifier.idPool(name, len);
+                    auto id = Identifier.idPool(buf.extractSlice());
                     auto arg = new Parameter(STC.in_, t, id, null);
                 }
                 else

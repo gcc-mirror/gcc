@@ -534,22 +534,19 @@ enum class BUILTIN : unsigned char
 Expression *eval_builtin(const Loc &loc, FuncDeclaration *fd, Expressions *arguments);
 BUILTIN isBuiltin(FuncDeclaration *fd);
 
+struct ContractInfo;
+
 class FuncDeclaration : public Declaration
 {
 public:
-    Statements *frequires;              // in contracts
-    Ensures *fensures;                  // out contracts
-    Statement *frequire;                // lowered in contract
-    Statement *fensure;                 // lowered out contract
     Statement *fbody;
 
     FuncDeclarations foverrides;        // functions this function overrides
-    FuncDeclaration *fdrequire;         // function that does the in contract
-    FuncDeclaration *fdensure;          // function that does the out contract
 
-    Expressions *fdrequireParams;       // argument list for __require
-    Expressions *fdensureParams;        // argument list for __ensure
+private:
+    ContractInfo *contracts;            // contract information
 
+public:
     const char *mangleString;           // mangled symbol created from mangleExact()
 
     VarDeclaration *vresult;            // result variable for out contracts
@@ -686,6 +683,22 @@ public:
 
     static FuncDeclaration *create(const Loc &loc, const Loc &endloc, Identifier *id, StorageClass storage_class, Type *type, bool noreturn = false);
     FuncDeclaration *syntaxCopy(Dsymbol *) override;
+    Statements *frequires();
+    Ensures *fensures();
+    Statement *frequire();
+    Statement *fensure();
+    FuncDeclaration *fdrequire();
+    FuncDeclaration *fdensure();
+    Expressions *fdrequireParams();
+    Expressions *fdensureParams();
+    Statements *frequires(Statements *frs);
+    Ensures *fensures(Statements *fes);
+    Statement *frequire(Statement *fr);
+    Statement *fensure(Statement *fe);
+    FuncDeclaration *fdrequire(FuncDeclaration *fdr);
+    FuncDeclaration *fdensure(FuncDeclaration *fde);
+    Expressions *fdrequireParams(Expressions *fdrp);
+    Expressions *fdensureParams(Expressions *fdep);
     bool functionSemantic();
     bool functionSemantic3();
     bool equals(const RootObject * const o) const override final;

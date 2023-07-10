@@ -36,12 +36,12 @@ void main()
         enum a = 1;
     }
 
- /+ struct S
+    struct S2
     {
         int value;
         alias this = value;
     }
-    auto s = S(10);
+    auto s = S2(10);
     int n = s;
-    assert(n == 10); +/
+    assert(n == 10);
 }

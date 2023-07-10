@@ -2777,6 +2777,70 @@ if (is(T == class))
     return cast(T) p;
 }
 
+/**
+ * TraceGC wrapper around $(REF _d_newclassT, core,lifetime).
+ */
+T _d_newclassTTrace(T)(string file, int line, string funcname) @trusted
+{
+    version (D_TypeInfo)
+    {
+        import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
+        mixin(TraceHook!(T.stringof, "_d_newclassT"));
+
+        return _d_newclassT!T();
+    }
+    else
+        assert(0, "Cannot create new class if compiling without support for runtime type information!");
+}
+
+/**
+ * Allocate an initialized non-array item.
+ *
+ * This is an optimization to avoid things needed for arrays like the __arrayPad(size).
+ * Used to allocate struct instances on the heap.
+ *
+ * ---
+ * struct Sz {int x = 0;}
+ * struct Si {int x = 3;}
+ *
+ * void main()
+ * {
+ *     new Sz(); // uses zero-initialization
+ *     new Si(); // uses Si.init
+ * }
+ * ---
+ *
+ * Returns:
+ *     newly allocated item
+ */
+T* _d_newitemT(T)() @trusted
+{
+    import core.internal.lifetime : emplaceInitializer;
+    import core.internal.traits : hasElaborateDestructor, hasIndirections;
+    import core.memory : GC;
+
+    auto flags = !hasIndirections!T ? GC.BlkAttr.NO_SCAN : GC.BlkAttr.NONE;
+    immutable tiSize = hasElaborateDestructor!T ? size_t.sizeof : 0;
+    immutable itemSize = T.sizeof;
+    immutable totalSize = itemSize + tiSize;
+    if (tiSize)
+        flags |= GC.BlkAttr.STRUCTFINAL | GC.BlkAttr.FINALIZE;
+
+    auto blkInfo = GC.qalloc(totalSize, flags, null);
+    auto p = blkInfo.base;
+
+    if (tiSize)
+    {
+        // The GC might not have cleared the padding area in the block.
+        *cast(TypeInfo*) (p + (itemSize & ~(size_t.sizeof - 1))) = null;
+        *cast(TypeInfo*) (p + blkInfo.size - tiSize) = cast() typeid(T);
+    }
+
+    emplaceInitializer(*(cast(T*) p));
+
+    return cast(T*) p;
+}
+
 // Test allocation
 @safe unittest
 {
@@ -2805,15 +2869,134 @@ if (is(T == class))
     }
 }
 
-T _d_newclassTTrace(T)(string file, int line, string funcname) @trusted
+// Test allocation
+@safe unittest
 {
-    version (D_TypeInfo)
-    {
-        import core.internal.array.utils: TraceHook, gcStatsPure, accumulatePure;
-        mixin(TraceHook!(T.stringof, "_d_newclassT"));
+    struct S { }
+    S* s = _d_newitemT!S();
 
-        return _d_newclassT!T();
+    assert(s !is null);
+}
+
+// Test initializers
+@safe unittest
+{
+    {
+        // zero-initialization
+        struct S { int x, y; }
+        S* s = _d_newitemT!S();
+
+        assert(s.x == 0);
+        assert(s.y == 0);
     }
-    else
-        assert(0, "Cannot create new class if compiling without support for runtime type information!");
+    {
+        // S.init
+        struct S { int x = 2, y = 3; }
+        S* s = _d_newitemT!S();
+
+        assert(s.x == 2);
+        assert(s.y == 3);
+    }
+}
+
+// Test GC attributes
+version (CoreUnittest)
+{
+    struct S1
+    {
+        int x = 5;
+    }
+    struct S2
+    {
+        int x;
+        this(int x) { this.x = x; }
+    }
+    struct S3
+    {
+        int[4] x;
+        this(int x) { this.x[] = x; }
+    }
+    struct S4
+    {
+        int *x;
+    }
+
+}
+@system unittest
+{
+    import core.memory : GC;
+
+    auto s1 = new S1;
+    assert(s1.x == 5);
+    assert(GC.getAttr(s1) == GC.BlkAttr.NO_SCAN);
+
+    auto s2 = new S2(3);
+    assert(s2.x == 3);
+    assert(GC.getAttr(s2) == GC.BlkAttr.NO_SCAN);
+
+    auto s3 = new S3(1);
+    assert(s3.x == [1, 1, 1, 1]);
+    assert(GC.getAttr(s3) == GC.BlkAttr.NO_SCAN);
+    debug(SENTINEL) {} else
+        assert(GC.sizeOf(s3) == 16);
+
+    auto s4 = new S4;
+    assert(s4.x == null);
+    assert(GC.getAttr(s4) == 0);
+}
+
+// Test struct finalizers exception handling
+debug(SENTINEL) {} else
+@system unittest
+{
+    import core.memory : GC;
+
+    bool test(E)()
+    {
+        import core.exception;
+        static struct S1
+        {
+            E exc;
+            ~this() { throw exc; }
+        }
+
+        bool caught = false;
+        S1* s = new S1(new E("test onFinalizeError"));
+        try
+        {
+            GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0 .. 1]);
+        }
+        catch (FinalizeError err)
+        {
+            caught = true;
+        }
+        catch (E)
+        {
+        }
+        GC.free(s);
+        return caught;
+    }
+
+    assert(test!Exception);
+    import core.exception : InvalidMemoryOperationError;
+    assert(!test!InvalidMemoryOperationError);
+}
+
+version (D_ProfileGC)
+{
+    /**
+    * TraceGC wrapper around $(REF _d_newitemT, core,lifetime).
+    */
+    T* _d_newitemTTrace(T)(string file, int line, string funcname) @trusted
+    {
+        version (D_TypeInfo)
+        {
+            import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
+            mixin(TraceHook!(T.stringof, "_d_newitemT"));
+
+            return _d_newitemT!T();
+        }
+        else
+            assert(0, "Cannot create new `struct` if compiling without support for runtime type information!");
+    }
 }

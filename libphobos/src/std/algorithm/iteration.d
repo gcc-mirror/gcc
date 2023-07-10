@@ -7939,15 +7939,23 @@ See_Also:
 $(REF nextPermutation, std,algorithm,sorting).
 */
 Permutations!Range permutations(Range)(Range r)
-if (isRandomAccessRange!Range && hasLength!Range)
 {
+    static assert(isRandomAccessRange!Range, Range.stringof,
+            " must be a RandomAccessRange");
+    static assert(hasLength!Range, Range.stringof
+            , " must have a length");
+
     return typeof(return)(r);
 }
 
 /// ditto
 struct Permutations(Range)
-if (isRandomAccessRange!Range && hasLength!Range)
 {
+    static assert(isRandomAccessRange!Range, Range.stringof,
+            " must be a RandomAccessRange");
+    static assert(hasLength!Range, Range.stringof
+            , " must have a length");
+
     private size_t[] _indices, _state;
     private Range _r;
     private bool _empty;

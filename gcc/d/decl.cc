@@ -1083,7 +1083,7 @@ build_decl_tree (Dsymbol *d)
   location_t saved_location = input_location;
 
   /* Set input location, empty DECL_SOURCE_FILE can crash debug generator.  */
-  if (d->loc.filename)
+  if (d->loc.filename ())
     input_location = make_location_t (d->loc);
   else
     input_location = make_location_t (Loc ("<no_file>", 1, 0));
@@ -2064,7 +2064,7 @@ start_function (FuncDeclaration *fd)
   allocate_struct_function (fndecl, false);
 
   /* Store the end of the function.  */
-  if (fd->endloc.filename)
+  if (fd->endloc.filename ())
     cfun->function_end_locus = make_location_t (fd->endloc);
   else
     cfun->function_end_locus = DECL_SOURCE_LOCATION (fndecl);

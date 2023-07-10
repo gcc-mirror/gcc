@@ -152,7 +152,7 @@ T[] signedToTempString(uint radix = 10, bool upperCase = false, T)(long value, r
     if (neg)
     {
         // about to do a slice without a bounds check
-        auto trustedSlice(return scope char[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..r.length+1]; }
+        auto trustedSlice(return scope T[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..r.length+1]; }
         r = trustedSlice(r);
         r[0] = '-';
     }
@@ -189,6 +189,12 @@ unittest
     assert(int.min.signedToTempString(buf) == "-2147483648");
     assert(long.max.signedToTempString(buf) == "9223372036854775807");
     assert(long.min.signedToTempString(buf) == "-9223372036854775808");
+
+    wchar[65] wbuf = void;
+    assert(1.signedToTempString(wbuf) == "1"w);
+
+    dchar[65] dbuf = void;
+    assert(1.signedToTempString(dbuf) == "1"d);
 
     // use stack allocated struct version
     assert(0.signedToTempString() == "0");

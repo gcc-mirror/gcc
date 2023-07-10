@@ -4515,10 +4515,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 }
                 if (_init)
                 {
-                    if (isThis)
-                        error(token.loc, "cannot use syntax `alias this = %s`, use `alias %s this` instead", _init.toChars(), _init.toChars());
-                    else
-                        error("alias cannot have initializer");
+                    error("alias cannot have initializer");
                 }
                 v = new AST.AliasDeclaration(aliasLoc, ident, t);
 
@@ -4780,23 +4777,20 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             addComment(s, comment);
             return a;
         }
-        version (none)
+        /* Look for:
+         *  alias this = identifier;
+         */
+        if (token.value == TOK.this_ && peekNext() == TOK.assign && peekNext2() == TOK.identifier)
         {
-            /* Look for:
-             *  alias this = identifier;
-             */
-            if (token.value == TOK.this_ && peekNext() == TOK.assign && peekNext2() == TOK.identifier)
-            {
-                check(TOK.this_);
-                check(TOK.assign);
-                auto s = new AliasThis(loc, token.ident);
-                nextToken();
-                check(TOK.semicolon, "`alias this = Identifier`");
-                auto a = new Dsymbols();
-                a.push(s);
-                addComment(s, comment);
-                return a;
-            }
+            check(TOK.this_);
+            check(TOK.assign);
+            auto s = new AST.AliasThis(loc, token.ident);
+            nextToken();
+            check(TOK.semicolon, "`alias this = Identifier`");
+            auto a = new AST.Dsymbols();
+            a.push(s);
+            addComment(s, comment);
+            return a;
         }
         /* Look for:
          *  alias identifier = type;
@@ -5032,7 +5026,8 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 stc = STC.ref_;
                 nextToken();
             }
-            if (token.value != TOK.leftParenthesis && token.value != TOK.leftCurly)
+            if (token.value != TOK.leftParenthesis && token.value != TOK.leftCurly &&
+                token.value != TOK.goesTo)
             {
                 // function type (parameters) { statements... }
                 // delegate type (parameters) { statements... }
@@ -5331,7 +5326,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         error("cannot use function constraints for non-template functions. Use `static if` instead");
                 }
                 else
-                    error("semicolon expected following function declaration");
+                    error("semicolon expected following function declaration, not `%s`", token.toChars());
             }
             break;
         }
@@ -7081,7 +7076,7 @@ LagainStc:
 
     private void checkParens(TOK value, AST.Expression e)
     {
-        if (precedence[e.op] == PREC.rel && !e.parens)
+        if (precedence[e.op] == PREC.rel)
             error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`", e.toChars(), Token.toChars(value));
     }
 
@@ -8485,7 +8480,6 @@ LagainStc:
                 // ( expression )
                 nextToken();
                 e = parseExpression();
-                e.parens = true;
                 check(loc, TOK.rightParenthesis);
                 break;
             }
@@ -8806,9 +8800,9 @@ LagainStc:
                                         nextToken();
                                         return AST.ErrorExp.get();
                                     }
-                                    e = new AST.TypeExp(loc, t);
-                                    e.parens = true;
-                                    e = parsePostExp(e);
+                                    auto te = new AST.TypeExp(loc, t);
+                                    te.parens = true;
+                                    e = parsePostExp(te);
                                 }
                                 else
                                 {
@@ -9115,14 +9109,18 @@ LagainStc:
     private AST.Expression parseAndExp()
     {
         Loc loc = token.loc;
+        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseCmpExp();
         while (token.value == TOK.and)
         {
-            checkParens(TOK.and, e);
-            nextToken();
+            if (!parens)
+                checkParens(TOK.and, e);
+            parens = nextToken() == TOK.leftParenthesis;
             auto e2 = parseCmpExp();
-            checkParens(TOK.and, e2);
+            if (!parens)
+                checkParens(TOK.and, e2);
             e = new AST.AndExp(loc, e, e2);
+            parens = true;              // don't call checkParens() for And
             loc = token.loc;
         }
         return e;
@@ -9130,32 +9128,42 @@ LagainStc:
 
     private AST.Expression parseXorExp()
     {
-        const loc = token.loc;
+        Loc loc = token.loc;
 
+        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseAndExp();
         while (token.value == TOK.xor)
         {
-            checkParens(TOK.xor, e);
-            nextToken();
+            if (!parens)
+                checkParens(TOK.xor, e);
+            parens = nextToken() == TOK.leftParenthesis;
             auto e2 = parseAndExp();
-            checkParens(TOK.xor, e2);
+            if (!parens)
+                checkParens(TOK.xor, e2);
             e = new AST.XorExp(loc, e, e2);
+            parens = true;
+            loc = token.loc;
         }
         return e;
     }
 
     private AST.Expression parseOrExp()
     {
-        const loc = token.loc;
+        Loc loc = token.loc;
 
+        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseXorExp();
         while (token.value == TOK.or)
         {
-            checkParens(TOK.or, e);
-            nextToken();
+            if (!parens)
+                checkParens(TOK.or, e);
+            parens = nextToken() == TOK.leftParenthesis;
             auto e2 = parseXorExp();
-            checkParens(TOK.or, e2);
+            if (!parens)
+                checkParens(TOK.or, e2);
             e = new AST.OrExp(loc, e, e2);
+            parens = true;
+            loc = token.loc;
         }
         return e;
     }
@@ -9206,6 +9214,7 @@ LagainStc:
 
     AST.Expression parseAssignExp()
     {
+        bool parens = token.value == TOK.leftParenthesis;
         AST.Expression e;
         e = parseCondExp();
         if (e is null)
@@ -9214,7 +9223,7 @@ LagainStc:
         // require parens for e.g. `t ? a = 1 : b = 2`
         void checkRequiredParens()
         {
-            if (e.op == EXP.question && !e.parens)
+            if (e.op == EXP.question && !parens)
                 eSink.error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`",
                     e.toChars(), Token.toChars(token.value));
         }

@@ -17,7 +17,6 @@ import core.stdc.string;
 
 import dmd.aggregate;
 import dmd.aliasthis;
-import dmd.apply;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
@@ -77,6 +76,10 @@ import dmd.target;
 import dmd.templateparamsem;
 import dmd.typesem;
 import dmd.visitor;
+
+version (IN_GCC) {}
+else version (IN_LLVM) {}
+else version = MARS;
 
 enum LOG = false;
 
@@ -484,7 +487,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             // Infering the type requires running semantic,
             // so mark the scope as ctfe if required
-            bool needctfe = (dsym.storage_class & (STC.manifest | STC.static_)) != 0;
+            bool needctfe = (dsym.storage_class & (STC.manifest | STC.static_)) != 0 || !sc.func;
             if (needctfe)
             {
                 sc.flags |= SCOPE.condition;
@@ -1366,9 +1369,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     {
         static if (LOG)
         {
-            printf("Import::semantic('%s') %s\n", toPrettyChars(), id.toChars());
+            printf("Import::semantic('%s') %s\n", imp.toPrettyChars(), imp.id.toChars());
             scope(exit)
-                printf("-Import::semantic('%s'), pkg = %p\n", toChars(), pkg);
+                printf("-Import::semantic('%s'), pkg = %p\n", imp.toChars(), imp.pkg);
         }
         if (imp.semanticRun > PASS.initial)
             return;
@@ -1434,7 +1437,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 imp.addPackageAccess(scopesym);
             }
 
-            imp.mod.dsymbolSemantic(null);
+            // if a module has errors it means that parsing has failed.
+            if (!imp.mod.errors)
+                imp.mod.dsymbolSemantic(null);
 
             if (imp.mod.needmoduleinfo)
             {
@@ -1463,7 +1468,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else
                 {
                     Dsymbol s = imp.mod.search_correct(imp.names[i]);
-                    if (s)
+                    // https://issues.dlang.org/show_bug.cgi?id=23908
+                    // Don't suggest symbols from the importer's module
+                    if (s && s.parent != importer)
                         imp.mod.error(imp.loc, "import `%s` not found, did you mean %s `%s`?", imp.names[i].toChars(), s.kind(), s.toPrettyChars());
                     else
                         imp.mod.error(imp.loc, "import `%s` not found", imp.names[i].toChars());
@@ -7124,8 +7131,9 @@ bool determineFields(AggregateDeclaration ad)
     // determineFields can be called recursively from one of the fields's v.semantic
     ad.fields.setDim(0);
 
-    static int func(Dsymbol s, AggregateDeclaration ad)
+    static int func(Dsymbol s, void* ctx)
     {
+        auto ad = cast(AggregateDeclaration)ctx;
         auto v = s.isVarDeclaration();
         if (!v)
             return 0;
@@ -7141,7 +7149,7 @@ bool determineFields(AggregateDeclaration ad)
         if (v.aliasTuple)
         {
             // If this variable was really a tuple, process each element.
-            return v.aliasTuple.foreachVar(tv => tv.apply(&func, ad));
+            return v.aliasTuple.foreachVar(tv => tv.apply(&func, cast(void*) ad));
         }
 
         if (v.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.ctfe | STC.templateparameter))
@@ -7173,7 +7181,7 @@ bool determineFields(AggregateDeclaration ad)
         for (size_t i = 0; i < ad.members.length; i++)
         {
             auto s = (*ad.members)[i];
-            if (s.apply(&func, ad))
+            if (s.apply(&func, cast(void *)ad))
             {
                 if (ad.sizeok != Sizeok.none)
                 {

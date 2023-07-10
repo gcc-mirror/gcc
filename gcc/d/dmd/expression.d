@@ -19,7 +19,6 @@ import core.stdc.string;
 
 import dmd.aggregate;
 import dmd.aliasthis;
-import dmd.apply;
 import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astenums;
@@ -56,6 +55,7 @@ import dmd.nspace;
 import dmd.objc;
 import dmd.opover;
 import dmd.optimize;
+import dmd.postordervisitor;
 import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.filename;
@@ -699,6 +699,20 @@ VarDeclaration expToVariable(Expression e)
             case EXP.super_:
                 return (cast(ThisExp)e).var.isVarDeclaration();
 
+            // Temporaries for rvalues that need destruction
+            // are of form: (T s = rvalue, s). For these cases
+            // we can just return var declaration of `s`. However,
+            // this is intentionally not calling `Expression.extractLast`
+            // because at this point we cannot infer the var declaration
+            // of more complex generated comma expressions such as the
+            // one for the array append hook.
+            case EXP.comma:
+            {
+                if (auto ve = e.isCommaExp().e2.isVarExp())
+                    return ve.var.isVarDeclaration();
+
+                return null;
+            }
             default:
                 return null;
         }
@@ -723,7 +737,6 @@ extern (C++) abstract class Expression : ASTNode
     Type type;      // !=null means that semantic() has been run
     Loc loc;        // file location
     const EXP op;   // to minimize use of dynamic_cast
-    bool parens;    // if this is a parenthesized expression
 
     extern (D) this(const ref Loc loc, EXP op) scope
     {
@@ -1529,6 +1542,11 @@ extern (C++) abstract class Expression : ASTNode
         if (sc.intypeof == 1)
             return false;
         if (sc.flags & (SCOPE.ctfe | SCOPE.debug_))
+            return false;
+        /* The original expression (`new S(...)`) will be verified instead. This
+         * is to keep errors related to the original code and not the lowering.
+         */
+        if (f.ident == Id._d_newitemT)
             return false;
 
         if (!f.isNogc())
@@ -2338,6 +2356,7 @@ extern (C++) final class ComplexExp : Expression
 extern (C++) class IdentifierExp : Expression
 {
     Identifier ident;
+    bool parens;        // if it appears as (identifier)
 
     extern (D) this(const ref Loc loc, Identifier ident) scope
     {
@@ -3520,6 +3539,8 @@ extern (C++) final class CompoundLiteralExp : Expression
  */
 extern (C++) final class TypeExp : Expression
 {
+    bool parens;    // if this is a parenthesized expression
+
     extern (D) this(const ref Loc loc, Type type)
     {
         super(loc, EXP.type);
@@ -3672,7 +3693,7 @@ extern (C++) final class NewExp : Expression
     bool onstack;               // allocate on stack
     bool thrownew;              // this NewExp is the expression of a ThrowStatement
 
-    Expression lowering;        // lowered druntime hook: `_d_newclass`
+    Expression lowering;        // lowered druntime hook: `_d_new{class,itemT}`
 
     /// Puts the `arguments` and `names` into an `ArgumentList` for easily passing them around.
     /// The fields are still separate for backwards compatibility
@@ -5188,6 +5209,7 @@ extern (C++) final class CallExp : UnaExp
     bool directcall;        // true if a virtual call is devirtualized
     bool inDebugStatement;  /// true if this was in a debug statement
     bool ignoreAttributes;  /// don't enforce attributes (e.g. call @gc function in @nogc code)
+    bool isUfcsRewrite;     /// the first argument was pushed in here by a UFCS rewrite
     VarDeclaration vthis2;  // container for multi-context
 
     /// Puts the `arguments` and `names` into an `ArgumentList` for easily passing them around.
@@ -5327,6 +5349,26 @@ extern (C++) final class CallExp : UnaExp
     {
         v.visit(this);
     }
+}
+
+/**
+ * Get the called function type from a call expression
+ * Params:
+ *   ce = function call expression. Must have had semantic analysis done.
+ * Returns: called function type, or `null` if error / no semantic analysis done
+ */
+TypeFunction calledFunctionType(CallExp ce)
+{
+    Type t = ce.e1.type;
+    if (!t)
+        return null;
+    t = t.toBasetype();
+    if (auto tf = t.isTypeFunction())
+        return tf;
+    else if (auto td = t.isTypeDelegate())
+        return td.nextOf().isTypeFunction();
+    else
+        return null;
 }
 
 FuncDeclaration isFuncAddress(Expression e, bool* hasOverloads = null)
@@ -7058,9 +7100,7 @@ extern (C++) final class FileInitExp : DefaultInitExp
             s = loc.isValid() ? loc.filename : sc._module.ident.toChars();
 
         Expression e = new StringExp(loc, s.toDString());
-        e = e.expressionSemantic(sc);
-        e = e.castTo(sc, type);
-        return e;
+        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)
@@ -7082,8 +7122,7 @@ extern (C++) final class LineInitExp : DefaultInitExp
     override Expression resolveLoc(const ref Loc loc, Scope* sc)
     {
         Expression e = new IntegerExp(loc, loc.linnum, Type.tint32);
-        e = e.castTo(sc, type);
-        return e;
+        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)
@@ -7106,9 +7145,7 @@ extern (C++) final class ModuleInitExp : DefaultInitExp
     {
         const auto s = (sc.callsc ? sc.callsc : sc)._module.toPrettyChars().toDString();
         Expression e = new StringExp(loc, s);
-        e = e.expressionSemantic(sc);
-        e = e.castTo(sc, type);
-        return e;
+        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)
@@ -7137,9 +7174,7 @@ extern (C++) final class FuncInitExp : DefaultInitExp
         else
             s = "";
         Expression e = new StringExp(loc, s.toDString());
-        e = e.expressionSemantic(sc);
-        e.type = Type.tstring;
-        return e;
+        return e.expressionSemantic(sc);
     }
 
     override void accept(Visitor v)

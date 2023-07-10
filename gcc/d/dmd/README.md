@@ -99,7 +99,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [strictvisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/strictvisitor.d)                       | Visitor that forces derived classes to implement `visit` for every possible node |
 | [visitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor.d)                                   | A visitor implementing `visit` for all nodes present in the compiler             |
 | [transitivevisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/transitivevisitor.d)               | Provide a mixin template with visit methods for the parse time AST               |
-| [apply.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/apply.d)                                       | Depth-first expression visitor                                                   |
+| [postordervisitor.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/postordervisitor.d)                                       | Depth-first expression visitor                                                   |
 | [sapply.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sapply.d)                                     | Depth-first statement visitor                                                    |
 | [statement_rewrite_walker.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/statement_rewrite_walker.d) | Statement visitor that allows replacing the currently visited node               |
 

@@ -48,25 +48,6 @@ version (NoBackend)
         }
     }
 }
-else version (MARS)
-{
-    public import dmd.backend.cc : block, Blockx, Symbol;
-    public import dmd.backend.type : type;
-    public import dmd.backend.el : elem;
-    public import dmd.backend.code_x86 : code;
-
-    extern (C++)
-    {
-        Statement asmSemantic(AsmStatement s, Scope* sc);
-
-        void toObjFile(Dsymbol ds, bool multiobj);
-
-        extern(C++) abstract class ObjcGlue
-        {
-            static void initialize();
-        }
-    }
-}
 else version (IN_GCC)
 {
     extern (C++) union tree_node;
@@ -88,4 +69,12 @@ else version (IN_GCC)
     }
 }
 else
-    static assert(false, "Unsupported compiler backend");
+{
+    public import dmd.backend.cc : block, Blockx, Symbol;
+    public import dmd.backend.type : type;
+    public import dmd.backend.el : elem;
+    public import dmd.backend.code_x86 : code;
+    public import dmd.iasm : asmSemantic;
+    public import dmd.objc_glue : ObjcGlue;
+    public import dmd.toobj : toObjFile;
+}

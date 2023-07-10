@@ -161,6 +161,16 @@ package mixin template ParseVisitMethods(AST)
             s._body.accept(this);
     }
 
+    override void visit(AST.StaticForeachStatement s)
+	{
+        // printf("Visiting StaticForeachStatement\n");
+		if (s.sfe.aggrfe)
+            s.sfe.aggrfe.accept(this);
+
+		if (s.sfe.rangefe)
+            s.sfe.rangefe.accept(this);
+	}
+
     override void visit(AST.IfStatement s)
     {
         //printf("Visiting IfStatement\n");

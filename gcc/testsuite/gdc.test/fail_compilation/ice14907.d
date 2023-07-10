@@ -6,7 +6,7 @@ fail_compilation/ice14907.d(19):        while looking for match for `S!()`
 fail_compilation/ice14907.d(15): Error: template `ice14907.f(int v = f)()` recursive template expansion
 fail_compilation/ice14907.d(20):        while looking for match for `f!()`
 fail_compilation/ice14907.d(15): Error: template `ice14907.f(int v = f)()` recursive template expansion
-fail_compilation/ice14907.d(21): Error: none of the overloads of template `ice14907.f` are callable using argument types `!()()`
+fail_compilation/ice14907.d(21): Error: template `ice14907.f` is not callable using argument types `!()()`
 fail_compilation/ice14907.d(15):        Candidate is: `f(int v = f)()`
 ---
 */

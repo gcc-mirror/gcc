@@ -376,17 +376,17 @@ version (Posix)
 {
     // https://issues.dlang.org/show_bug.cgi?id=16398
     // test the "pseudo" alignedReallocate for Posix
-    void[] s = AlignedMallocator.instance.alignedAllocate(16, 32);
-    (cast(ubyte[]) s)[] = ubyte(1);
-    AlignedMallocator.instance.alignedReallocate(s, 32, 32);
+    void[] b = AlignedMallocator.instance.alignedAllocate(16, 32);
+    (cast(ubyte[]) b)[] = ubyte(1);
+    AlignedMallocator.instance.alignedReallocate(b, 32, 32);
     ubyte[16] o;
     o[] = 1;
-    assert((cast(ubyte[]) s)[0 .. 16] == o);
-    AlignedMallocator.instance.alignedReallocate(s, 4, 32);
-    assert((cast(ubyte[]) s)[0 .. 3] == o[0 .. 3]);
-    AlignedMallocator.instance.alignedReallocate(s, 128, 32);
-    assert((cast(ubyte[]) s)[0 .. 3] == o[0 .. 3]);
-    AlignedMallocator.instance.deallocate(s);
+    assert((cast(ubyte[]) b)[0 .. 16] == o);
+    AlignedMallocator.instance.alignedReallocate(b, 4, 32);
+    assert((cast(ubyte[]) b)[0 .. 3] == o[0 .. 3]);
+    AlignedMallocator.instance.alignedReallocate(b, 128, 32);
+    assert((cast(ubyte[]) b)[0 .. 3] == o[0 .. 3]);
+    AlignedMallocator.instance.deallocate(b);
 
     void[] c;
     AlignedMallocator.instance.alignedReallocate(c, 32, 32);

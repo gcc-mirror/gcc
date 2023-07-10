@@ -587,6 +587,9 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
          */
         t = t.toBasetype();
 
+        if (auto tv = t.isTypeVector())
+            t = tv.basetype;
+
         /* If `{ expression }` return the expression initializer
          */
         ExpInitializer isBraceExpression()

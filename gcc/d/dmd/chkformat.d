@@ -177,6 +177,8 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
                         errorMsg(null, e, (c_longsize == 4 ? "uint" : "ulong"), t);
                     else
                         errorMsg(null, e, (c_longsize == 4 ? "int" : "long"), t);
+                    if (t.isintegral() && t.size() != c_longsize)
+                        errorSupplemental(e.loc, "C `long` is %d bytes on your system", c_longsize);
                 }
                 break;
 
