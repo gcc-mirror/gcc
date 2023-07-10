@@ -47,11 +47,6 @@ public:
   // 0, but it will be non-zero if the Rust source has a //line comment.
   void start_file (const char *file_name, unsigned int line_begin);
 
-  // Subsequent Location values will come from the line LINE_NUMBER,
-  // in the current file.  LINE_SIZE is the size of the line in bytes.
-  // This will normally be called for every line in a source file.
-  void start_line (unsigned int line_number, unsigned int line_size);
-
   // Stop generating Location values.  This will be called after all
   // input files have been read, in case any cleanup is required.
   void stop ();
