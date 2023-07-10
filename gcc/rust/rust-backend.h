@@ -50,7 +50,7 @@ public:
   {
     std::string name;
     tree type;
-    Location location;
+    location_t location;
 
     typed_identifier () : name (), type (NULL_TREE), location (UNKNOWN_LOCATION)
     {}
@@ -116,19 +116,19 @@ public:
   virtual tree function_type (const typed_identifier &receiver,
 			      const std::vector<typed_identifier> &parameters,
 			      const std::vector<typed_identifier> &results,
-			      tree result_struct, Location location)
+			      tree result_struct, location_t location)
     = 0;
 
   virtual tree
   function_type_varadic (const typed_identifier &receiver,
 			 const std::vector<typed_identifier> &parameters,
 			 const std::vector<typed_identifier> &results,
-			 tree result_struct, Location location)
+			 tree result_struct, location_t location)
     = 0;
 
   virtual tree function_ptr_type (tree result,
 				  const std::vector<tree> &praameters,
-				  Location location)
+				  location_t location)
     = 0;
 
   // Get a struct type.
@@ -366,10 +366,10 @@ public:
   // be put into a unique section if possible; this is intended to
   // permit the linker to garbage collect the variable if it is not
   // referenced.  LOCATION is where the variable was defined.
-  virtual Bvariable *global_variable (const std::string &name,
-				      const std::string &asm_name, tree btype,
-				      bool is_external, bool is_hidden,
-				      bool in_unique_section, Location location)
+  virtual Bvariable *
+  global_variable (const std::string &name, const std::string &asm_name,
+		   tree btype, bool is_external, bool is_hidden,
+		   bool in_unique_section, location_t location)
     = 0;
 
   // A global variable will 1) be initialized to zero, or 2) be
@@ -394,20 +394,20 @@ public:
   // the frontend will call init_statement to set the initial value.
   virtual Bvariable *local_variable (tree function, const std::string &name,
 				     tree type, Bvariable *decl_var,
-				     Location location)
+				     location_t location)
     = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
   virtual Bvariable *parameter_variable (tree function, const std::string &name,
-					 tree type, Location location)
+					 tree type, location_t location)
     = 0;
 
   // Create a static chain parameter.  This is the closure parameter.
   virtual Bvariable *static_chain_variable (tree function,
 					    const std::string &name, tree type,
-					    Location location)
+					    location_t location)
     = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
@@ -423,7 +423,7 @@ public:
   // *PSTATEMENT to a statement which initializes the variable.
   virtual Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
 					 tree init, bool address_is_taken,
-					 Location location, tree *pstatement)
+					 location_t location, tree *pstatement)
     = 0;
 
   // Labels.

@@ -157,7 +157,7 @@ rust_close_quote ()
 }
 
 void
-rust_be_internal_error_at (const Location location, const std::string &errmsg)
+rust_be_internal_error_at (const location_t location, const std::string &errmsg)
 {
   std::string loc_str = Linemap::location_to_string (location);
   if (loc_str.empty ())
@@ -167,7 +167,7 @@ rust_be_internal_error_at (const Location location, const std::string &errmsg)
 }
 
 void
-rust_internal_error_at (const Location location, const char *fmt, ...)
+rust_internal_error_at (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -177,13 +177,13 @@ rust_internal_error_at (const Location location, const char *fmt, ...)
 }
 
 void
-rust_be_error_at (const Location location, const std::string &errmsg)
+rust_be_error_at (const location_t location, const std::string &errmsg)
 {
   error_at (location, "%s", errmsg.c_str ());
 }
 
 void
-rust_error_at (const Location location, const char *fmt, ...)
+rust_error_at (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -213,7 +213,7 @@ private:
 };
 
 void
-rust_be_error_at (const Location location, const ErrorCode code,
+rust_be_error_at (const location_t location, const ErrorCode code,
 		  const std::string &errmsg)
 {
   rich_location gcc_loc (line_table, location);
@@ -224,7 +224,7 @@ rust_be_error_at (const Location location, const ErrorCode code,
 }
 
 void
-rust_error_at (const Location location, const ErrorCode code, const char *fmt,
+rust_error_at (const location_t location, const ErrorCode code, const char *fmt,
 	       ...)
 {
   va_list ap;
@@ -258,14 +258,14 @@ rust_error_at (const rich_location &location, const ErrorCode code,
 }
 
 void
-rust_be_warning_at (const Location location, int opt,
+rust_be_warning_at (const location_t location, int opt,
 		    const std::string &warningmsg)
 {
   warning_at (location, opt, "%s", warningmsg.c_str ());
 }
 
 void
-rust_warning_at (const Location location, int opt, const char *fmt, ...)
+rust_warning_at (const location_t location, int opt, const char *fmt, ...)
 {
   va_list ap;
 
@@ -275,13 +275,13 @@ rust_warning_at (const Location location, int opt, const char *fmt, ...)
 }
 
 void
-rust_be_fatal_error (const Location location, const std::string &fatalmsg)
+rust_be_fatal_error (const location_t location, const std::string &fatalmsg)
 {
   fatal_error (location, "%s", fatalmsg.c_str ());
 }
 
 void
-rust_fatal_error (const Location location, const char *fmt, ...)
+rust_fatal_error (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -291,13 +291,13 @@ rust_fatal_error (const Location location, const char *fmt, ...)
 }
 
 void
-rust_be_inform (const Location location, const std::string &infomsg)
+rust_be_inform (const location_t location, const std::string &infomsg)
 {
   inform (location, "%s", infomsg.c_str ());
 }
 
 void
-rust_inform (const Location location, const char *fmt, ...)
+rust_inform (const location_t location, const char *fmt, ...)
 {
   va_list ap;
 
@@ -332,7 +332,7 @@ rust_be_debug_p (void)
 }
 
 void
-rust_debug_loc (const Location location, const char *fmt, ...)
+rust_debug_loc (const location_t location, const char *fmt, ...)
 {
   if (!rust_be_debug_p ())
     return;
@@ -374,7 +374,7 @@ va_constructor (Error::Kind kind, location_t locus, const char *fmt,
   return Error (kind, locus, message);
 }
 
-Error::Error (const Location location, const char *fmt, ...)
+Error::Error (const location_t location, const char *fmt, ...)
   : kind (Kind::Err), locus (location)
 {
   va_list ap;
@@ -384,7 +384,7 @@ Error::Error (const Location location, const char *fmt, ...)
 }
 
 Error
-Error::Hint (const Location location, const char *fmt, ...)
+Error::Hint (const location_t location, const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
@@ -393,7 +393,7 @@ Error::Hint (const Location location, const char *fmt, ...)
 }
 
 Error
-Error::Fatal (const Location location, const char *fmt, ...)
+Error::Fatal (const location_t location, const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);

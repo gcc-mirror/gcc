@@ -213,7 +213,7 @@ struct Error
 #define rust_sorry_at(location, ...) sorry_at (location, __VA_ARGS__)
 
 void
-rust_debug_loc (const Location location, const char *fmt,
+rust_debug_loc (const location_t location, const char *fmt,
 		...) ATTRIBUTE_PRINTF_2;
 
 #endif // !defined(RUST_DIAGNOSTICS_H)

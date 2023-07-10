@@ -36,7 +36,7 @@ Linemap::start_file (const char *file_name, unsigned line_begin)
 // Stringify a location
 
 std::string
-Linemap::location_to_string (Location location)
+Linemap::location_to_string (location_t location)
 {
   const line_map_ordinary *lmo;
   location_t resolved_location;

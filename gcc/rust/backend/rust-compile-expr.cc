@@ -2070,7 +2070,7 @@ CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
 
 tree
 CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
-				   Location location)
+				   location_t location)
 {
   if (type_to_cast_to == error_mark_node || expr_tree == error_mark_node
       || TREE_TYPE (expr_tree) == error_mark_node)

@@ -59,7 +59,7 @@
 // zero-sized global, create an expression that refers to the decl but
 // has zero size.
 tree
-Bvariable::get_tree (Location location) const
+Bvariable::get_tree (location_t location) const
 {
   if (this->t_ == error_mark_node)
     return error_mark_node;
@@ -242,7 +242,7 @@ public:
   Bvariable *global_variable (const std::string &var_name,
 			      const std::string &asm_name, tree type,
 			      bool is_external, bool is_hidden,
-			      bool in_unique_section, Location location);
+			      bool in_unique_section, location_t location);
 
   void global_variable_set_init (Bvariable *, tree);
 
@@ -899,7 +899,8 @@ Gcc_backend::fill_in_array (tree fill, tree element_type, tree length_tree)
 // Return a named version of a type.
 
 tree
-Gcc_backend::named_type (const std::string &name, tree type, Location location)
+Gcc_backend::named_type (const std::string &name, tree type,
+			 location_t location)
 {
   if (type == error_mark_node)
     return error_mark_node;
@@ -1000,7 +1001,7 @@ Gcc_backend::zero_expression (tree t)
 // An expression that references a variable.
 
 tree
-Gcc_backend::var_expression (Bvariable *var, Location location)
+Gcc_backend::var_expression (Bvariable *var, location_t location)
 {
   return var->get_tree (location);
 }
@@ -1097,7 +1098,7 @@ Gcc_backend::boolean_constant_expression (bool val)
 // Return the real part of a complex expression.
 
 tree
-Gcc_backend::real_part_expression (tree complex_tree, Location location)
+Gcc_backend::real_part_expression (tree complex_tree, location_t location)
 {
   if (complex_tree == error_mark_node)
     return error_mark_node;
@@ -1111,7 +1112,7 @@ Gcc_backend::real_part_expression (tree complex_tree, Location location)
 // Return the imaginary part of a complex expression.
 
 tree
-Gcc_backend::imag_part_expression (tree complex_tree, Location location)
+Gcc_backend::imag_part_expression (tree complex_tree, location_t location)
 {
   if (complex_tree == error_mark_node)
     return error_mark_node;
@@ -1126,7 +1127,7 @@ Gcc_backend::imag_part_expression (tree complex_tree, Location location)
 
 tree
 Gcc_backend::complex_expression (tree real_tree, tree imag_tree,
-				 Location location)
+				 location_t location)
 {
   if (real_tree == error_mark_node || imag_tree == error_mark_node)
     return error_mark_node;
@@ -1143,7 +1144,7 @@ Gcc_backend::complex_expression (tree real_tree, tree imag_tree,
 
 tree
 Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
-				 Location location)
+				 location_t location)
 {
   if (type_tree == error_mark_node || expr_tree == error_mark_node
       || TREE_TYPE (expr_tree) == error_mark_node)
@@ -1178,7 +1179,7 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
 
 tree
 Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
-				      Location location)
+				      location_t location)
 {
   if (struct_tree == error_mark_node
       || TREE_TYPE (struct_tree) == error_mark_node)
@@ -1209,7 +1210,7 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
 // Return an expression that executes BSTAT before BEXPR.
 
 tree
-Gcc_backend::compound_expression (tree stat, tree expr, Location location)
+Gcc_backend::compound_expression (tree stat, tree expr, location_t location)
 {
   if (stat == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -1224,7 +1225,7 @@ Gcc_backend::compound_expression (tree stat, tree expr, Location location)
 tree
 Gcc_backend::conditional_expression (tree, tree type_tree, tree cond_expr,
 				     tree then_expr, tree else_expr,
-				     Location location)
+				     location_t location)
 {
   if (type_tree == error_mark_node || cond_expr == error_mark_node
       || then_expr == error_mark_node || else_expr == error_mark_node)
@@ -1335,7 +1336,7 @@ is_floating_point (tree t)
 // Return an expression for the negation operation OP EXPR.
 tree
 Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
-				  Location location)
+				  location_t location)
 {
   /* Check if the expression is an error, in which case we return an error
      expression. */
@@ -1372,7 +1373,7 @@ Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
 tree
 Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
 					       tree left, tree right,
-					       Location location)
+					       location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1473,7 +1474,7 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
 // with overflow checking when possible
 tree
 Gcc_backend::arithmetic_or_logical_expression_checked (
-  ArithmeticOrLogicalOperator op, tree left, tree right, Location location,
+  ArithmeticOrLogicalOperator op, tree left, tree right, location_t location,
   Bvariable *receiver_var)
 {
   /* Check if either expression is an error, in which case we return an error
@@ -1522,7 +1523,7 @@ Gcc_backend::arithmetic_or_logical_expression_checked (
 // Return an expression for the comparison operation LEFT OP RIGHT.
 tree
 Gcc_backend::comparison_expression (ComparisonOperator op, tree left_tree,
-				    tree right_tree, Location location)
+				    tree right_tree, location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1542,7 +1543,7 @@ Gcc_backend::comparison_expression (ComparisonOperator op, tree left_tree,
 // Return an expression for the lazy boolean operation LEFT OP RIGHT.
 tree
 Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
-				      tree right_tree, Location location)
+				      tree right_tree, location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1565,7 +1566,7 @@ Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
 tree
 Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 				     const std::vector<tree> &vals,
-				     int union_index, Location location)
+				     int union_index, location_t location)
 {
   if (type_tree == error_mark_node)
     return error_mark_node;
@@ -1680,7 +1681,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 tree
 Gcc_backend::array_constructor_expression (
   tree type_tree, const std::vector<unsigned long> &indexes,
-  const std::vector<tree> &vals, Location location)
+  const std::vector<tree> &vals, location_t location)
 {
   if (type_tree == error_mark_node)
     return error_mark_node;
@@ -1804,7 +1805,7 @@ Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
 
 tree
 Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
-				     Location location)
+				     location_t location)
 {
   if (array_tree == error_mark_node || TREE_TYPE (array_tree) == error_mark_node
       || index_tree == error_mark_node)
@@ -1827,7 +1828,7 @@ Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
 Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
-			      tree chain_expr, Location location)
+			      tree chain_expr, location_t location)
 {
   if (fn == error_mark_node || TREE_TYPE (fn) == error_mark_node)
     return error_mark_node;
@@ -1938,7 +1939,7 @@ Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
 // Assignment.
 
 tree
-Gcc_backend::assignment_statement (tree lhs, tree rhs, Location location)
+Gcc_backend::assignment_statement (tree lhs, tree rhs, location_t location)
 {
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
@@ -1963,7 +1964,7 @@ Gcc_backend::assignment_statement (tree lhs, tree rhs, Location location)
 // Return.
 
 tree
-Gcc_backend::return_statement (tree fntree, tree val, Location location)
+Gcc_backend::return_statement (tree fntree, tree val, location_t location)
 {
   if (fntree == error_mark_node)
     return error_mark_node;
@@ -1988,7 +1989,8 @@ Gcc_backend::return_statement (tree fntree, tree val, Location location)
 
 tree
 Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
-					  tree finally_stmt, Location location)
+					  tree finally_stmt,
+					  location_t location)
 {
   if (try_stmt == error_mark_node || except_stmt == error_mark_node
       || finally_stmt == error_mark_node)
@@ -2008,7 +2010,7 @@ Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
 
 tree
 Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
-			   Location location)
+			   location_t location)
 {
   if (cond_tree == error_mark_node || then_tree == error_mark_node
       || else_tree == error_mark_node)
@@ -2220,7 +2222,7 @@ Gcc_backend::non_zero_size_type (tree type)
 // representations.  Make sure this does not confuse the middle-end.
 
 tree
-Gcc_backend::convert_tree (tree type_tree, tree expr_tree, Location location)
+Gcc_backend::convert_tree (tree type_tree, tree expr_tree, location_t location)
 {
   if (type_tree == TREE_TYPE (expr_tree))
     return expr_tree;
@@ -2254,7 +2256,7 @@ Bvariable *
 Gcc_backend::global_variable (const std::string &var_name,
 			      const std::string &asm_name, tree type_tree,
 			      bool is_external, bool is_hidden,
-			      bool in_unique_section, Location location)
+			      bool in_unique_section, location_t location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2319,7 +2321,7 @@ Gcc_backend::global_variable_set_init (Bvariable *var, tree expr_tree)
 Bvariable *
 Gcc_backend::local_variable (tree function, const std::string &name,
 			     tree type_tree, Bvariable *decl_var,
-			     Location location)
+			     location_t location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2340,7 +2342,7 @@ Gcc_backend::local_variable (tree function, const std::string &name,
 
 Bvariable *
 Gcc_backend::parameter_variable (tree function, const std::string &name,
-				 tree type_tree, Location location)
+				 tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2357,7 +2359,7 @@ Gcc_backend::parameter_variable (tree function, const std::string &name,
 
 Bvariable *
 Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
-				    tree type_tree, Location location)
+				    tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2390,7 +2392,7 @@ Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
 Bvariable *
 Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
 				 tree init_tree, bool is_address_taken,
-				 Location location, tree *pstatement)
+				 location_t location, tree *pstatement)
 {
   gcc_assert (fndecl != NULL_TREE);
   if (type_tree == error_mark_node || init_tree == error_mark_node
@@ -2453,7 +2455,8 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
 // Make a label.
 
 tree
-Gcc_backend::label (tree func_tree, const std::string &name, Location location)
+Gcc_backend::label (tree func_tree, const std::string &name,
+		    location_t location)
 {
   tree decl;
   if (name.empty ())
@@ -2488,7 +2491,7 @@ Gcc_backend::label_definition_statement (tree label)
 // Make a goto statement.
 
 tree
-Gcc_backend::goto_statement (tree label, Location location)
+Gcc_backend::goto_statement (tree label, location_t location)
 {
   return fold_build1_loc (location, GOTO_EXPR, void_type_node, label);
 }
@@ -2496,7 +2499,7 @@ Gcc_backend::goto_statement (tree label, Location location)
 // Get the address of a label.
 
 tree
-Gcc_backend::label_address (tree label, Location location)
+Gcc_backend::label_address (tree label, location_t location)
 {
   TREE_USED (label) = 1;
   TREE_ADDRESSABLE (label) = 1;
@@ -2510,7 +2513,7 @@ Gcc_backend::label_address (tree label, Location location)
 tree
 Gcc_backend::function (tree functype, const std::string &name,
 		       const std::string &asm_name, unsigned int flags,
-		       Location location)
+		       location_t location)
 {
   if (functype != error_mark_node)
     {
@@ -2554,7 +2557,7 @@ Gcc_backend::function (tree functype, const std::string &name,
 
 tree
 Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
-				       tree defer_tree, Location location)
+				       tree defer_tree, location_t location)
 {
   if (undefer_tree == error_mark_node || defer_tree == error_mark_node
       || function == error_mark_node)
