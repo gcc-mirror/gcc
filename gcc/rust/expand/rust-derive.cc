@@ -23,7 +23,7 @@
 namespace Rust {
 namespace AST {
 
-DeriveVisitor::DeriveVisitor (Location loc)
+DeriveVisitor::DeriveVisitor (location_t loc)
   : loc (loc), builder (AstBuilder (loc))
 {}
 

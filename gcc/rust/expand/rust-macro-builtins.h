@@ -118,51 +118,52 @@ class MacroBuiltin
 {
 public:
   static const BiMap<std::string, BuiltinMacro> builtins;
-  static std::unordered_map<
-    std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
+  static std::unordered_map<std::string, std::function<AST::Fragment (
+					   location_t, AST::MacroInvocData &)>>
     builtin_transcribers;
 
-  static AST::Fragment assert_handler (Location invoc_locus,
+  static AST::Fragment assert_handler (location_t invoc_locus,
 				       AST::MacroInvocData &invoc);
 
-  static AST::Fragment file_handler (Location invoc_locus,
+  static AST::Fragment file_handler (location_t invoc_locus,
 				     AST::MacroInvocData &invoc);
 
-  static AST::Fragment column_handler (Location invoc_locus,
+  static AST::Fragment column_handler (location_t invoc_locus,
 				       AST::MacroInvocData &invoc);
 
-  static AST::Fragment include_bytes_handler (Location invoc_locus,
+  static AST::Fragment include_bytes_handler (location_t invoc_locus,
 					      AST::MacroInvocData &invoc);
 
-  static AST::Fragment include_str_handler (Location invoc_locus,
+  static AST::Fragment include_str_handler (location_t invoc_locus,
 					    AST::MacroInvocData &invoc);
 
-  static AST::Fragment stringify_handler (Location invoc_locus,
+  static AST::Fragment stringify_handler (location_t invoc_locus,
 					  AST::MacroInvocData &invoc);
 
-  static AST::Fragment compile_error_handler (Location invoc_locus,
+  static AST::Fragment compile_error_handler (location_t invoc_locus,
 					      AST::MacroInvocData &invoc);
 
-  static AST::Fragment concat_handler (Location invoc_locus,
+  static AST::Fragment concat_handler (location_t invoc_locus,
 				       AST::MacroInvocData &invoc);
 
-  static AST::Fragment env_handler (Location invoc_locus,
+  static AST::Fragment env_handler (location_t invoc_locus,
 				    AST::MacroInvocData &invoc);
 
-  static AST::Fragment cfg_handler (Location invoc_locus,
+  static AST::Fragment cfg_handler (location_t invoc_locus,
 				    AST::MacroInvocData &invoc);
 
-  static AST::Fragment include_handler (Location invoc_locus,
+  static AST::Fragment include_handler (location_t invoc_locus,
 					AST::MacroInvocData &invoc);
 
-  static AST::Fragment line_handler (Location invoc_locus,
+  static AST::Fragment line_handler (location_t invoc_locus,
 				     AST::MacroInvocData &invoc);
 
-  static AST::Fragment sorry (Location invoc_locus, AST::MacroInvocData &invoc);
+  static AST::Fragment sorry (location_t invoc_locus,
+			      AST::MacroInvocData &invoc);
 
   /* Builtin procedural macros do not work directly on tokens, but still need a
    * builtin transcriber to be considered proper builtin macros */
-  static AST::Fragment proc_macro_builtin (Location, AST::MacroInvocData &);
+  static AST::Fragment proc_macro_builtin (location_t, AST::MacroInvocData &);
 };
 } // namespace Rust
 

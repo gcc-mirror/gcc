@@ -139,7 +139,7 @@ public:
 
   std::unique_ptr<AST::BlockExpr>
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
@@ -167,7 +167,7 @@ public:
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::Token> parse_identifier_or_keyword_token ();
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
-  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
+  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, location_t>
   parse_attribute_body ();
   AST::AttrVec parse_inner_attributes ();
   std::unique_ptr<AST::MacroInvocation>
@@ -192,7 +192,7 @@ private:
   AST::AttrVec parse_outer_attributes ();
   AST::Attribute parse_outer_attribute ();
   std::unique_ptr<AST::AttrInput> parse_attr_input ();
-  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
+  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, location_t>
   parse_doc_comment ();
 
   // Path-related
@@ -210,9 +210,9 @@ private:
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).
-  parse_qualified_path_in_expression (Location pratt_parsed_loc
+  parse_qualified_path_in_expression (location_t pratt_parsed_loc
 				      = UNKNOWN_LOCATION);
-  AST::QualifiedPathType parse_qualified_path_type (Location pratt_parsed_loc
+  AST::QualifiedPathType parse_qualified_path_type (location_t pratt_parsed_loc
 						    = UNKNOWN_LOCATION);
   AST::QualifiedPathInType parse_qualified_path_in_type ();
 
@@ -565,18 +565,18 @@ private:
   // token should be skipped).
   std::unique_ptr<AST::IfExpr>
   parse_if_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		 Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		 location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::IfLetExpr>
   parse_if_let_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		     Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::LoopExpr>
   parse_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		   AST::LoopLabel label = AST::LoopLabel::error (),
-		   Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		   location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLoopExpr>
   parse_while_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 			 AST::LoopLabel label = AST::LoopLabel::error (),
-			 Location pratt_parsed_loc = UNKNOWN_LOCATION);
+			 location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLetLoopExpr>
   parse_while_let_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 			     AST::LoopLabel label = AST::LoopLabel::error ());
@@ -585,7 +585,7 @@ private:
 		       AST::LoopLabel label = AST::LoopLabel::error ());
   std::unique_ptr<AST::MatchExpr>
   parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   AST::MatchArm parse_match_arm ();
   std::vector<std::unique_ptr<AST::Pattern> >
   parse_match_arm_patterns (TokenId end_token_id);
@@ -606,22 +606,22 @@ private:
   // token should be skipped).
   std::unique_ptr<AST::ReturnExpr>
   parse_return_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		     Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::BreakExpr>
   parse_break_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::ContinueExpr>
   parse_continue_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		       Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		       location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::UnsafeBlockExpr>
   parse_unsafe_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			   Location pratt_parsed_loc = UNKNOWN_LOCATION);
+			   location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::ArrayExpr>
   parse_array_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    Location pratt_parsed_loc = UNKNOWN_LOCATION);
+		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::ExprWithoutBlock>
   parse_grouped_or_tuple_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			       Location pratt_parsed_loc = UNKNOWN_LOCATION);
+			       location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::StructExprField> parse_struct_expr_field ();
   bool will_be_expr_with_block ();
 

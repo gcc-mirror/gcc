@@ -27,7 +27,7 @@ namespace AST {
 class DeriveClone : DeriveVisitor
 {
 public:
-  DeriveClone (Location loc);
+  DeriveClone (location_t loc);
 
   std::unique_ptr<AST::Item> go (Item &item);
 

@@ -87,7 +87,7 @@ DeriveClone::clone_impl (std::unique_ptr<TraitImplItem> &&clone_fn,
 
 // TODO: Create new `make_qualified_call` helper function
 
-DeriveClone::DeriveClone (Location loc)
+DeriveClone::DeriveClone (location_t loc)
   : DeriveVisitor (loc), expanded (nullptr)
 {}
 

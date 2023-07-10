@@ -38,9 +38,9 @@ public:
 				       BuiltinMacro to_derive);
 
 protected:
-  DeriveVisitor (Location loc);
+  DeriveVisitor (location_t loc);
 
-  Location loc;
+  location_t loc;
   AstBuilder builder;
 
 private:
