@@ -136,6 +136,8 @@ public:
     return *this;
   }
 
+  std::unique_ptr<Expr> &get_expression () { return expression; }
+
 private:
   std::unique_ptr<Expr> expression;
   Location locus;
@@ -604,16 +606,8 @@ public:
   };
   std::vector<std::unique_ptr<Type> > &get_params () { return inputs; };
 
-  const std::unique_ptr<Type> &get_return_type () const
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  };
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  };
+  const std::unique_ptr<Type> &get_return_type () const { return return_type; };
+  std::unique_ptr<Type> &get_return_type () { return return_type; };
 };
 
 // Segment used in type path with a function argument
@@ -815,11 +809,7 @@ public:
 
   std::unique_ptr<Type> &get_type () { return type; }
 
-  std::unique_ptr<TypePath> &get_trait ()
-  {
-    rust_assert (has_as_clause ());
-    return trait;
-  }
+  std::unique_ptr<TypePath> &get_trait () { return trait; }
 
   bool trait_has_generic_args () const
   {

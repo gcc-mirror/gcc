@@ -119,11 +119,7 @@ public:
 
   Identifier get_type_representation () const { return type_representation; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (type != nullptr);
-    return type;
-  }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   Analysis::NodeMapping get_type_mappings () const
   {
@@ -455,11 +451,7 @@ public:
 
   ImplicitSelfKind get_self_kind () const { return self_kind; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (has_type ());
-    return type;
-  }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
@@ -1213,11 +1205,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
-  {
-    rust_assert (function_body != nullptr);
-    return function_body;
-  }
+  std::unique_ptr<BlockExpr> &get_definition () { return function_body; }
 
   const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 
@@ -1229,11 +1217,7 @@ public:
   bool has_return_type () const { return return_type != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   bool is_method () const { return !self.is_error (); }
 
@@ -1348,11 +1332,7 @@ public:
 
   WhereClause &get_where_clause () { return where_clause; }
 
-  std::unique_ptr<Type> &get_type_aliased ()
-  {
-    rust_assert (existing_type != nullptr);
-    return existing_type;
-  }
+  std::unique_ptr<Type> &get_type_aliased () { return existing_type; }
 
   Identifier get_new_type_name () const { return new_type_name; }
 
@@ -1518,11 +1498,7 @@ public:
 
   Identifier get_field_name () const { return field_name; }
 
-  std::unique_ptr<Type> &get_field_type ()
-  {
-    rust_assert (field_type != nullptr);
-    return field_type;
-  }
+  std::unique_ptr<Type> &get_field_type () { return field_type; }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -2343,11 +2319,7 @@ public:
     return generic_params;
   }
 
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   std::vector<FunctionParam> &get_function_params () { return function_params; }
 
@@ -2414,11 +2386,7 @@ public:
 
   bool has_block_defined () const { return block_expr != nullptr; }
 
-  std::unique_ptr<BlockExpr> &get_block_expr ()
-  {
-    rust_assert (has_block_defined ());
-    return block_expr;
-  }
+  std::unique_ptr<BlockExpr> &get_block_expr () { return block_expr; }
 
   const std::string trait_identifier () const override final
   {
@@ -2860,11 +2828,7 @@ public:
 
   bool has_trait_ref () const { return trait_ref != nullptr; }
 
-  std::unique_ptr<TypePath> &get_trait_ref ()
-  {
-    rust_assert (has_trait_ref ());
-    return trait_ref;
-  }
+  std::unique_ptr<TypePath> &get_trait_ref () { return trait_ref; }
 
   WhereClause &get_where_clause () { return where_clause; }
 

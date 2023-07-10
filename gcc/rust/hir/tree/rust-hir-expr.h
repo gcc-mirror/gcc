@@ -597,15 +597,10 @@ public:
   void accept_vis (HIRExpressionVisitor &vis) override;
 
   // FIXME: isn't it the same as get_expr() from parent?
-  std::unique_ptr<Expr> &get_casted_expr ()
-  {
-    rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
-  }
+  std::unique_ptr<Expr> &get_casted_expr () { return main_or_left_expr; }
 
   std::unique_ptr<Type> &get_type_to_convert_to ()
   {
-    rust_assert (type_to_convert_to != nullptr);
     return type_to_convert_to;
   }
 
@@ -739,17 +734,9 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_left_expr ()
-  {
-    rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
-  }
+  std::unique_ptr<Expr> &get_left_expr () { return main_or_left_expr; }
 
-  std::unique_ptr<Expr> &get_right_expr ()
-  {
-    rust_assert (right_expr != nullptr);
-    return right_expr;
-  }
+  std::unique_ptr<Expr> &get_right_expr () { return right_expr; }
 
   void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
@@ -809,11 +796,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_expr_in_parens ()
-  {
-    rust_assert (expr_in_parens != nullptr);
-    return expr_in_parens;
-  }
+  std::unique_ptr<Expr> &get_expr_in_parens () { return expr_in_parens; }
 
   ExprType get_expression_type () const override final
   {
@@ -1258,11 +1241,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_tuple_expr ()
-  {
-    rust_assert (tuple_expr != nullptr);
-    return tuple_expr;
-  }
+  std::unique_ptr<Expr> &get_tuple_expr () { return tuple_expr; }
 
   ExprType get_expression_type () const override final
   {
@@ -1947,11 +1926,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_receiver_expr ()
-  {
-    rust_assert (receiver != nullptr);
-    return receiver;
-  }
+  std::unique_ptr<Expr> &get_receiver_expr () { return receiver; }
 
   Identifier get_field_name () const { return field; }
 
@@ -2041,17 +2016,9 @@ public:
   }
   std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  std::unique_ptr<Pattern> &get_pattern ()
-  {
-    rust_assert (pattern != nullptr);
-    return pattern;
-  }
+  std::unique_ptr<Pattern> &get_pattern () { return pattern; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (has_type_given ());
-    return type;
-  }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   Location get_locus () const { return locus; }
 };
@@ -2119,11 +2086,7 @@ public:
 
   bool has_return_type () const { return return_type != nullptr; }
 
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  };
+  std::unique_ptr<Type> &get_return_type () { return return_type; };
   std::unique_ptr<Expr> &get_expr () { return expr; }
 
   bool has_params () const { return !params.empty (); }
@@ -3409,11 +3372,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_scrutinee_expr ()
-  {
-    rust_assert (value != nullptr);
-    return value;
-  }
+  std::unique_ptr<Expr> &get_scrutinee_expr () { return value; }
 
   std::vector<std::unique_ptr<Pattern> > &get_patterns ()
   {
@@ -3593,11 +3552,7 @@ public:
     return match_arm_patterns;
   }
 
-  std::unique_ptr<Expr> &get_guard_expr ()
-  {
-    rust_assert (has_match_arm_guard ());
-    return guard_expr;
-  }
+  std::unique_ptr<Expr> &get_guard_expr () { return guard_expr; }
 
   Location get_locus () const { return locus; }
 };
@@ -3702,11 +3657,7 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_scrutinee_expr ()
-  {
-    rust_assert (branch_value != nullptr);
-    return branch_value;
-  }
+  std::unique_ptr<Expr> &get_scrutinee_expr () { return branch_value; }
   AST::AttrVec get_inner_attrs () const { return inner_attrs; }
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
   std::vector<MatchCase> &get_match_cases () { return match_arms; }

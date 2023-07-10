@@ -405,17 +405,9 @@ public:
     return PatternType::RANGE;
   }
 
-  std::unique_ptr<RangePatternBound> &get_lower_bound ()
-  {
-    rust_assert (lower != nullptr);
-    return lower;
-  }
+  std::unique_ptr<RangePatternBound> &get_lower_bound () { return lower; }
 
-  std::unique_ptr<RangePatternBound> &get_upper_bound ()
-  {
-    rust_assert (upper != nullptr);
-    return upper;
-  }
+  std::unique_ptr<RangePatternBound> &get_upper_bound () { return upper; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -484,11 +476,7 @@ public:
     return PatternType::REFERENCE;
   }
 
-  std::unique_ptr<Pattern> &get_referenced_pattern ()
-  {
-    rust_assert (pattern != nullptr);
-    return pattern;
-  }
+  std::unique_ptr<Pattern> &get_referenced_pattern () { return pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
