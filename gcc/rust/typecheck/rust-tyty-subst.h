@@ -138,7 +138,7 @@ public:
   // ParamTy
   bool is_concrete () const;
 
-  Location get_locus () const;
+  location_t get_locus () const;
 
   size_t size () const;
 

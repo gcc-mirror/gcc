@@ -65,7 +65,7 @@ public:
     return std::unique_ptr<LiteralExpr> (clone_literal_expr_impl ());
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   bool is_literal () const override final { return true; }
 
@@ -192,7 +192,7 @@ public:
 
   std::string as_string () const override { return lit_expr.as_string (); }
 
-  Location get_locus () const override { return lit_expr.get_locus (); }
+  location_t get_locus () const override { return lit_expr.get_locus (); }
 
   LiteralExpr get_literal () const { return lit_expr; }
 
@@ -232,7 +232,7 @@ public:
   //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
   //  now.
   // Maybe we will figure out when we really need the location in the future.
-  Location get_locus () const override { return UNKNOWN_LOCATION; }
+  location_t get_locus () const override { return UNKNOWN_LOCATION; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -301,7 +301,7 @@ protected:
   OperatorExpr &operator= (OperatorExpr &&other) = default;
 
 public:
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { main_or_left_expr = nullptr; }
@@ -953,7 +953,7 @@ public:
   GroupedExpr (GroupedExpr &&other) = default;
   GroupedExpr &operator= (GroupedExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1185,7 +1185,7 @@ public:
   ArrayExpr (ArrayExpr &&other) = default;
   ArrayExpr &operator= (ArrayExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1268,7 +1268,7 @@ public:
   ArrayIndexExpr (ArrayIndexExpr &&other) = default;
   ArrayIndexExpr &operator= (ArrayIndexExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1381,7 +1381,7 @@ public:
   /* Note: syntactically, can disambiguate single-element tuple from parens with
    * comma, i.e. (0,) rather than (0) */
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1465,7 +1465,7 @@ public:
   TupleIndexExpr (TupleIndexExpr &&other) = default;
   TupleIndexExpr &operator= (TupleIndexExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1554,7 +1554,7 @@ public:
       inner_attrs (std::move (inner_attribs)), locus (locus)
   {}
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1641,7 +1641,7 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   NodeId get_node_id () const { return node_id; }
 
@@ -1669,7 +1669,7 @@ public:
 
   std::string as_string () const override { return field_name.as_string (); }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1743,7 +1743,7 @@ public:
 
   std::string get_field_name () const { return field_name.as_string (); }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1774,7 +1774,7 @@ public:
 
   TupleIndex get_index () const { return index; }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1958,7 +1958,7 @@ public:
   // Returns whether function call has parameters.
   bool has_params () const { return !params.empty (); }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2058,7 +2058,7 @@ public:
   MethodCallExpr (MethodCallExpr &&other) = default;
   MethodCallExpr &operator= (MethodCallExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2151,7 +2151,7 @@ public:
   FieldAccessExpr (FieldAccessExpr &&other) = default;
   FieldAccessExpr &operator= (FieldAccessExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2269,7 +2269,7 @@ public:
     return type;
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 // Base closure definition expression AST node - abstract
@@ -2290,7 +2290,7 @@ protected:
 public:
   std::string as_string () const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<ClosureParam> &get_params () const { return params; }
@@ -2458,7 +2458,7 @@ public:
     return std::unique_ptr<BlockExpr> (clone_block_expr_impl ());
   }
 
-  Location get_locus () const override final { return start_locus; }
+  location_t get_locus () const override final { return start_locus; }
 
   Location get_start_locus () const { return start_locus; }
   Location get_end_locus () const { return end_locus; }
@@ -2643,7 +2643,7 @@ public:
       locus (locus)
   {}
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2732,7 +2732,7 @@ public:
   BreakExpr (BreakExpr &&other) = default;
   BreakExpr &operator= (BreakExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2776,7 +2776,7 @@ protected:
   RangeExpr (location_t locus) : locus (locus) {}
 
 public:
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   std::vector<Attribute> &get_outer_attrs () override final
   {
@@ -3228,7 +3228,7 @@ public:
   ReturnExpr (ReturnExpr &&other) = default;
   ReturnExpr &operator= (ReturnExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3310,7 +3310,7 @@ public:
   UnsafeBlockExpr (UnsafeBlockExpr &&other) = default;
   UnsafeBlockExpr &operator= (UnsafeBlockExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3365,7 +3365,7 @@ public:
   // Creates an error state LoopLabel.
   static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   Lifetime &get_lifetime () { return label; }
 
@@ -3431,7 +3431,7 @@ public:
 
   LoopLabel &get_loop_label () { return loop_label; }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   // Invalid if loop block is null, so base stripping on that.
   void mark_for_strip () override { loop_block = nullptr; }
@@ -3755,7 +3755,7 @@ public:
    * vector of else ifs - i.e. not like a switch statement. TODO - is this a
    * better approach? or does it not parse correctly and have downsides? */
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3936,7 +3936,7 @@ public:
     return std::unique_ptr<IfLetExpr> (clone_if_let_expr_impl ());
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4155,7 +4155,7 @@ public:
     return match_arm_patterns;
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 /* A "match case" - a correlated match arm and resulting expression. Not
@@ -4271,7 +4271,7 @@ public:
   MatchExpr (MatchExpr &&other) = default;
   MatchExpr &operator= (MatchExpr &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4357,7 +4357,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4439,7 +4439,7 @@ public:
   std::string as_string () const override;
 
   bool get_has_move () { return has_move; }
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

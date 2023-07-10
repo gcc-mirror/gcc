@@ -46,7 +46,7 @@ public:
       locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -128,7 +128,7 @@ public:
   IdentifierPattern (IdentifierPattern &&other) = default;
   IdentifierPattern &operator= (IdentifierPattern &&other) = default;
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   bool is_mut () const { return mut == Mutability::Mut; }
   bool get_is_ref () const { return is_ref; }
@@ -171,7 +171,7 @@ public:
     : locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -247,7 +247,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   Literal get_literal () const { return literal; }
   bool get_has_minus () const { return has_minus; }
@@ -281,7 +281,7 @@ public:
 
   std::string as_string () const override { return path.as_string (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  location_t get_locus () const { return path.get_locus (); }
 
   PathInExpression &get_path () { return path; }
   const PathInExpression &get_path () const { return path; }
@@ -317,7 +317,7 @@ public:
 
   std::string as_string () const override { return path.as_string (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  location_t get_locus () const { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -388,7 +388,7 @@ public:
   RangePattern (RangePattern &&other) = default;
   RangePattern &operator= (RangePattern &&other) = default;
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -469,7 +469,7 @@ public:
     return mappings;
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   PatternType get_pattern_type () const override final
   {
@@ -515,7 +515,7 @@ public:
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual ItemType get_item_type () const = 0;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
   Analysis::NodeMapping get_mappings () const { return mappings; };
   AST::AttrVec get_outer_attrs () { return outer_attrs; }
 
@@ -750,7 +750,7 @@ public:
 
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
-  Location get_locus () const override { return path.get_locus (); }
+  location_t get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -982,7 +982,7 @@ public:
   TupleStructPattern (TupleStructPattern &&other) = default;
   TupleStructPattern &operator= (TupleStructPattern &&other) = default;
 
-  Location get_locus () const override { return path.get_locus (); }
+  location_t get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -1214,7 +1214,7 @@ public:
     return *this;
   }
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -1289,7 +1289,7 @@ public:
     return items;
   }
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
@@ -1361,7 +1361,7 @@ public:
     return alts;
   }
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;

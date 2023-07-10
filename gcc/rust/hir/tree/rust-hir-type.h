@@ -56,7 +56,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -741,7 +741,7 @@ public:
     return MaybeNamedParam ({""}, UNNAMED, nullptr, UNDEF_LOCATION);
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   std::unique_ptr<Type> &get_type () { return param_type; }
 

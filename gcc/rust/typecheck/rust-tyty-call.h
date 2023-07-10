@@ -92,7 +92,7 @@ public:
     : mapping (mapping), argument_type (argument_type), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   BaseType *get_argument_type () { return argument_type; }
 

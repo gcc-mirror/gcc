@@ -180,7 +180,7 @@ public:
 
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual bool is_unit_check_needed () const { return false; }
 
@@ -320,7 +320,7 @@ public:
 
   virtual ~Expr () {}
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
@@ -422,7 +422,7 @@ public:
 
   virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual PatternType get_pattern_type () const = 0;
 
@@ -464,7 +464,7 @@ public:
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
-  virtual Location get_locus () const { return locus; }
+  virtual location_t get_locus () const { return locus; }
 
 protected:
   Type (Analysis::NodeMapping mappings, location_t locus)
@@ -529,7 +529,7 @@ public:
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual BoundType get_bound_type () const = 0;
 
@@ -579,7 +579,7 @@ public:
     return lifetime_type;
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   Analysis::NodeMapping get_mappings () const override final
   {
@@ -621,7 +621,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -709,7 +709,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -746,7 +746,7 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override final;
 
-  Location get_locus () const override final { return locus; };
+  location_t get_locus () const override final { return locus; };
 
   bool has_default_expression () { return default_expression != nullptr; }
 
@@ -850,7 +850,7 @@ public:
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual ImplItemType get_impl_item_type () const = 0;
 

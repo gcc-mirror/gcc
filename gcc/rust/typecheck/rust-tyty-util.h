@@ -56,7 +56,7 @@ public:
   explicit TyWithLocation (BaseType *ty);
 
   BaseType *get_ty () const { return ty; }
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
 private:
   BaseType *ty;

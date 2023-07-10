@@ -384,7 +384,7 @@ public:
   TokenId get_id () const { return token_id; }
 
   // Gets location of the token.
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   // Set location of the token.
   void set_locus (location_t locus) { this->locus = locus; }
