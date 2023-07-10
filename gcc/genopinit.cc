@@ -182,8 +182,7 @@ main (int argc, const char **argv)
 
   progname = "genopinit";
 
-  if (NUM_OPTABS > 0xffff
-    || MAX_MACHINE_MODE >= ((1 << MACHINE_MODE_BITSIZE) - 1))
+  if (NUM_OPTABS > 0xfff || NUM_MACHINE_MODES > 0x3ff)
     fatal ("genopinit range assumptions invalid");
 
   if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
@@ -439,7 +438,7 @@ main (int argc, const char **argv)
 	   "bool\n"
 	   "swap_optab_enable (optab op, machine_mode m, bool set)\n"
 	   "{\n"
-	   "  unsigned scode = (op << 16) | m;\n"
+	   "  unsigned scode = (op << 20) | m;\n"
 	   "  int i = lookup_handler (scode);\n"
 	   "  if (i >= 0)\n"
 	   "    {\n"
