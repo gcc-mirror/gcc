@@ -57,7 +57,7 @@ public:
   void insert_name (
     const CanonicalPath &path, NodeId id, location_t locus, bool shadow,
     ItemType type,
-    std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
+    std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb);
 
   bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident);
   bool lookup_name (const CanonicalPath &ident, NodeId *id);
@@ -88,10 +88,10 @@ class Scope
 public:
   Scope (CrateNum crate_num);
 
-  void
-  insert (const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
-	  Rib::ItemType type,
-	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
+  void insert (
+    const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
+    Rib::ItemType type,
+    std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb);
 
   void insert (const CanonicalPath &ident, NodeId id, location_t locus,
 	       Rib::ItemType type = Rib::ItemType::Unknown);

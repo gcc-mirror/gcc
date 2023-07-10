@@ -132,7 +132,7 @@ protected:
 
   static tree indirect_expression (tree expr, location_t locus);
 
-  static bool mark_addressable (tree, Location);
+  static bool mark_addressable (tree, location_t);
 
   static std::vector<Bvariable *>
   compile_locals_for_block (Context *ctx, Resolver::Rib &rib, tree fndecl);

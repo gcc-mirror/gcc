@@ -118,7 +118,7 @@ public:
   try_package_in_directory (const std::string &, Location);
 
   // Constructor.
-  Import (std::unique_ptr<Stream>, Location);
+  Import (std::unique_ptr<Stream>, location_t);
 
   // The location of the import statement.
   location_t location () const { return this->location_; }
@@ -161,16 +161,16 @@ private:
   static int try_suffixes (std::string *);
 
   static std::unique_ptr<Stream> find_export_data (const std::string &filename,
-						   int fd, Location);
+						   int fd, location_t);
 
   static std::unique_ptr<Stream>
   find_object_export_data (const std::string &filename, int fd, off_t offset,
-			   Location);
+			   location_t);
 
   static bool is_archive_magic (const char *);
 
   static std::unique_ptr<Stream>
-  find_archive_export_data (const std::string &filename, int fd, Location);
+  find_archive_export_data (const std::string &filename, int fd, location_t);
 
   // The stream from which to read import data.
   std::unique_ptr<Stream> stream_;

@@ -44,7 +44,7 @@ public:
   Bvariable (tree t, tree orig_type) : t_ (t), orig_type_ (orig_type) {}
 
   // Get the tree for use as an expression.
-  tree get_tree (Location) const;
+  tree get_tree (location_t) const;
 
   // Get the actual decl;
   tree get_decl () const { return this->t_; }

@@ -120,14 +120,14 @@ public:
   tree function_type (const typed_identifier &,
 		      const std::vector<typed_identifier> &,
 		      const std::vector<typed_identifier> &, tree,
-		      const Location);
+		      const location_t);
 
   tree function_type_varadic (const typed_identifier &,
 			      const std::vector<typed_identifier> &,
 			      const std::vector<typed_identifier> &, tree,
-			      const Location);
+			      const location_t);
 
-  tree function_ptr_type (tree, const std::vector<tree> &, Location);
+  tree function_ptr_type (tree, const std::vector<tree> &, location_t);
 
   tree struct_type (const std::vector<typed_identifier> &);
 
@@ -135,7 +135,7 @@ public:
 
   tree array_type (tree, tree);
 
-  tree named_type (const std::string &, tree, Location);
+  tree named_type (const std::string &, tree, location_t);
 
   int64_t type_size (tree);
 
@@ -149,7 +149,7 @@ public:
 
   tree zero_expression (tree);
 
-  tree var_expression (Bvariable *var, Location);
+  tree var_expression (Bvariable *var, location_t);
 
   tree integer_constant_expression (tree type, mpz_t val);
 
@@ -165,73 +165,74 @@ public:
 
   tree boolean_constant_expression (bool val);
 
-  tree real_part_expression (tree bcomplex, Location);
+  tree real_part_expression (tree bcomplex, location_t);
 
-  tree imag_part_expression (tree bcomplex, Location);
+  tree imag_part_expression (tree bcomplex, location_t);
 
-  tree complex_expression (tree breal, tree bimag, Location);
+  tree complex_expression (tree breal, tree bimag, location_t);
 
-  tree convert_expression (tree type, tree expr, Location);
+  tree convert_expression (tree type, tree expr, location_t);
 
-  tree struct_field_expression (tree, size_t, Location);
+  tree struct_field_expression (tree, size_t, location_t);
 
-  tree compound_expression (tree, tree, Location);
+  tree compound_expression (tree, tree, location_t);
 
-  tree conditional_expression (tree, tree, tree, tree, tree, Location);
+  tree conditional_expression (tree, tree, tree, tree, tree, location_t);
 
-  tree negation_expression (NegationOperator op, tree expr, Location);
+  tree negation_expression (NegationOperator op, tree expr, location_t);
 
   tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-					 tree left, tree right, Location);
+					 tree left, tree right, location_t);
 
   tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
 						 tree left, tree right,
 						 Location, Bvariable *receiver);
 
   tree comparison_expression (ComparisonOperator op, tree left, tree right,
-			      Location);
+			      location_t);
 
   tree lazy_boolean_expression (LazyBooleanOperator op, tree left, tree right,
-				Location);
+				location_t);
 
   tree constructor_expression (tree, bool, const std::vector<tree> &, int,
-			       Location);
+			       location_t);
 
   tree array_constructor_expression (tree, const std::vector<unsigned long> &,
-				     const std::vector<tree> &, Location);
+				     const std::vector<tree> &, location_t);
 
-  tree array_initializer (tree, tree, tree, tree, tree, tree *, Location);
+  tree array_initializer (tree, tree, tree, tree, tree, tree *, location_t);
 
-  tree array_index_expression (tree array, tree index, Location);
+  tree array_index_expression (tree array, tree index, location_t);
 
   tree call_expression (tree fn, const std::vector<tree> &args,
-			tree static_chain, Location);
+			tree static_chain, location_t);
 
   // Statements.
 
   tree init_statement (tree, Bvariable *var, tree init);
 
-  tree assignment_statement (tree lhs, tree rhs, Location);
+  tree assignment_statement (tree lhs, tree rhs, location_t);
 
   tree return_statement (tree fndecl, tree val, location_t locus);
 
   tree if_statement (tree, tree condition, tree then_block, tree else_block,
-		     Location);
+		     location_t);
 
   tree compound_statement (tree, tree);
 
   tree statement_list (const std::vector<tree> &);
 
   tree exception_handler_statement (tree bstat, tree except_stmt,
-				    tree finally_stmt, Location);
+				    tree finally_stmt, location_t);
 
-  tree loop_expression (tree body, Location);
+  tree loop_expression (tree body, location_t);
 
-  tree exit_expression (tree condition, Location);
+  tree exit_expression (tree condition, location_t);
 
   // Blocks.
 
-  tree block (tree, tree, const std::vector<Bvariable *> &, Location, Location);
+  tree block (tree, tree, const std::vector<Bvariable *> &, Location,
+	      location_t);
 
   void block_add_statements (tree, const std::vector<tree> &);
 
@@ -247,32 +248,33 @@ public:
   void global_variable_set_init (Bvariable *, tree);
 
   Bvariable *local_variable (tree, const std::string &, tree, Bvariable *,
-			     Location);
+			     location_t);
 
-  Bvariable *parameter_variable (tree, const std::string &, tree, Location);
+  Bvariable *parameter_variable (tree, const std::string &, tree, location_t);
 
-  Bvariable *static_chain_variable (tree, const std::string &, tree, Location);
+  Bvariable *static_chain_variable (tree, const std::string &, tree,
+				    location_t);
 
   Bvariable *temporary_variable (tree, tree, tree, tree, bool, Location,
 				 tree *);
 
   // Labels.
 
-  tree label (tree, const std::string &name, Location);
+  tree label (tree, const std::string &name, location_t);
 
   tree label_definition_statement (tree);
 
-  tree goto_statement (tree, Location);
+  tree goto_statement (tree, location_t);
 
-  tree label_address (tree, Location);
+  tree label_address (tree, location_t);
 
   // Functions.
 
   tree function (tree fntype, const std::string &name,
-		 const std::string &asm_name, unsigned int flags, Location);
+		 const std::string &asm_name, unsigned int flags, location_t);
 
   tree function_defer_statement (tree function, tree undefer, tree defer,
-				 Location);
+				 location_t);
 
   bool function_set_parameters (tree function,
 				const std::vector<Bvariable *> &);
@@ -291,7 +293,7 @@ private:
 
   tree non_zero_size_type (tree);
 
-  tree convert_tree (tree, tree, Location);
+  tree convert_tree (tree, tree, location_t);
 };
 
 // A helper function to create a GCC identifier from a C++ string.
@@ -683,7 +685,7 @@ tree
 Gcc_backend::function_type (const typed_identifier &receiver,
 			    const std::vector<typed_identifier> &parameters,
 			    const std::vector<typed_identifier> &results,
-			    tree result_struct, Location)
+			    tree result_struct, location_t)
 {
   tree args = NULL_TREE;
   tree *pp = &args;
@@ -734,7 +736,7 @@ tree
 Gcc_backend::function_type_varadic (
   const typed_identifier &receiver,
   const std::vector<typed_identifier> &parameters,
-  const std::vector<typed_identifier> &results, tree result_struct, Location)
+  const std::vector<typed_identifier> &results, tree result_struct, location_t)
 {
   size_t n = parameters.size () + (receiver.type != NULL_TREE ? 1 : 0);
   tree *args = XALLOCAVEC (tree, n);
@@ -2082,7 +2084,7 @@ Gcc_backend::statement_list (const std::vector<tree> &statements)
 tree
 Gcc_backend::block (tree fndecl, tree enclosing,
 		    const std::vector<Bvariable *> &vars,
-		    Location start_location, Location)
+		    Location start_location, location_t)
 {
   tree block_tree = make_node (BLOCK);
   if (enclosing == NULL)

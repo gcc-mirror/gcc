@@ -145,7 +145,7 @@ public:
   // created via placeholder_pointer_type, placeholder_struct_type, or
   // placeholder_array_type..  (It may be called for a pointer,
   // struct, or array type in a case like "type P *byte; type Q P".)
-  virtual tree named_type (const std::string &name, tree, Location) = 0;
+  virtual tree named_type (const std::string &name, tree, location_t) = 0;
 
   // Return the size of a type.
   virtual int64_t type_size (tree) = 0;
@@ -170,7 +170,7 @@ public:
   virtual tree zero_expression (tree) = 0;
 
   // Create a reference to a variable.
-  virtual tree var_expression (Bvariable *var, Location) = 0;
+  virtual tree var_expression (Bvariable *var, location_t) = 0;
 
   // Return an expression for the multi-precision integer VAL in BTYPE.
   virtual tree integer_constant_expression (tree btype, mpz_t val) = 0;
@@ -194,35 +194,35 @@ public:
   virtual tree boolean_constant_expression (bool val) = 0;
 
   // Return an expression for the real part of BCOMPLEX.
-  virtual tree real_part_expression (tree bcomplex, Location) = 0;
+  virtual tree real_part_expression (tree bcomplex, location_t) = 0;
 
   // Return an expression for the imaginary part of BCOMPLEX.
-  virtual tree imag_part_expression (tree bcomplex, Location) = 0;
+  virtual tree imag_part_expression (tree bcomplex, location_t) = 0;
 
   // Return an expression for the complex number (BREAL, BIMAG).
-  virtual tree complex_expression (tree breal, tree bimag, Location) = 0;
+  virtual tree complex_expression (tree breal, tree bimag, location_t) = 0;
 
   // Return an expression that converts EXPR to TYPE.
-  virtual tree convert_expression (tree type, tree expr, Location) = 0;
+  virtual tree convert_expression (tree type, tree expr, location_t) = 0;
 
   // Return an expression for the field at INDEX in BSTRUCT.
-  virtual tree struct_field_expression (tree bstruct, size_t index, Location)
+  virtual tree struct_field_expression (tree bstruct, size_t index, location_t)
     = 0;
 
   // Create an expression that executes BSTAT before BEXPR.
-  virtual tree compound_expression (tree bstat, tree bexpr, Location) = 0;
+  virtual tree compound_expression (tree bstat, tree bexpr, location_t) = 0;
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
   // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
   virtual tree conditional_expression (tree function, tree btype,
 				       tree condition, tree then_expr,
-				       tree else_expr, Location)
+				       tree else_expr, location_t)
     = 0;
 
   // Return an expression for the negation operation OP EXPR.
   // Supported values of OP are enumerated in NegationOperator.
-  virtual tree negation_expression (NegationOperator op, tree expr, Location)
+  virtual tree negation_expression (NegationOperator op, tree expr, location_t)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
@@ -252,7 +252,7 @@ public:
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in LazyBooleanOperator.
   virtual tree lazy_boolean_expression (LazyBooleanOperator op, tree left,
-					tree right, Location)
+					tree right, location_t)
     = 0;
 
   // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
@@ -260,7 +260,7 @@ public:
   // corresponding fields in BTYPE.
   virtual tree constructor_expression (tree btype, bool is_variant,
 				       const std::vector<tree> &vals, int,
-				       Location)
+				       location_t)
     = 0;
 
   // Return an expression that constructs an array of BTYPE with INDEXES and
@@ -269,21 +269,21 @@ public:
   virtual tree
   array_constructor_expression (tree btype,
 				const std::vector<unsigned long> &indexes,
-				const std::vector<tree> &vals, Location)
+				const std::vector<tree> &vals, location_t)
     = 0;
 
   virtual tree array_initializer (tree, tree, tree, tree, tree, tree *,
-				  Location)
+				  location_t)
     = 0;
 
   // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
   // fixed-length array, not a slice.
-  virtual tree array_index_expression (tree array, tree index, Location) = 0;
+  virtual tree array_index_expression (tree array, tree index, location_t) = 0;
 
   // Create an expression for a call to FN with ARGS, taking place within
   // caller CALLER.
   virtual tree call_expression (tree fn, const std::vector<tree> &args,
-				tree static_chain, Location)
+				tree static_chain, location_t)
     = 0;
 
   // Statements.
@@ -294,22 +294,22 @@ public:
   virtual tree init_statement (tree, Bvariable *var, tree init) = 0;
 
   // Create an assignment statement within the specified function.
-  virtual tree assignment_statement (tree lhs, tree rhs, Location) = 0;
+  virtual tree assignment_statement (tree lhs, tree rhs, location_t) = 0;
 
   // Create return statement for an decl for a value (can be NULL_TREE) at a
   // location
-  virtual tree return_statement (tree fndecl, tree val, Location) = 0;
+  virtual tree return_statement (tree fndecl, tree val, location_t) = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
   virtual tree if_statement (tree, tree condition, tree then_block,
-			     tree else_block, Location)
+			     tree else_block, location_t)
     = 0;
 
   // infinite loop expressions
-  virtual tree loop_expression (tree body, Location) = 0;
+  virtual tree loop_expression (tree body, location_t) = 0;
 
   // exit expressions
-  virtual tree exit_expression (tree condition, Location) = 0;
+  virtual tree exit_expression (tree condition, location_t) = 0;
 
   // Create a single statement from two statements.
   virtual tree compound_statement (tree, tree) = 0;
@@ -323,7 +323,7 @@ public:
   // in Go functions.  In C++, the resulting code is of this form:
   //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
   virtual tree exception_handler_statement (tree bstat, tree except_stmt,
-					    tree finally_stmt, Location)
+					    tree finally_stmt, location_t)
     = 0;
 
   // Blocks.
@@ -431,7 +431,7 @@ public:
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.
-  virtual tree label (tree, const std::string &name, Location) = 0;
+  virtual tree label (tree, const std::string &name, location_t) = 0;
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
@@ -439,12 +439,12 @@ public:
   virtual tree label_definition_statement (tree) = 0;
 
   // Create a goto statement to a label.
-  virtual tree goto_statement (tree, Location) = 0;
+  virtual tree goto_statement (tree, location_t) = 0;
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
   // recover.
-  virtual tree label_address (tree, Location) = 0;
+  virtual tree label_address (tree, location_t) = 0;
 
   // Functions.
 
@@ -473,7 +473,7 @@ public:
   // bit flags described above.
   virtual tree function (tree fntype, const std::string &name,
 			 const std::string &asm_name, unsigned int flags,
-			 Location)
+			 location_t)
     = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
@@ -481,7 +481,7 @@ public:
   //   finish:
   //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
   virtual tree function_defer_statement (tree function, tree undefer,
-					 tree check_defer, Location)
+					 tree check_defer, location_t)
     = 0;
 
   // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
