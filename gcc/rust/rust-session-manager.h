@@ -359,7 +359,7 @@ public:
     return extra_files.back ().c_str ();
   }
 
-  NodeId load_extern_crate (const std::string &crate_name, Location locus);
+  NodeId load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:
   void compile_crate (const char *filename);

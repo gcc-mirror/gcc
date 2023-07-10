@@ -51,10 +51,10 @@ class BindingTypeInfo
 {
   Mutability mut;
   bool is_ref;
-  Location locus;
+  location_t locus;
 
 public:
-  BindingTypeInfo (Mutability mut, bool is_ref, Location locus)
+  BindingTypeInfo (Mutability mut, bool is_ref, location_t locus)
     : mut (mut), is_ref (is_ref), locus (locus)
   {}
 

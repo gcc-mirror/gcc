@@ -110,7 +110,7 @@ public:
   void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb);
 
   bool have_loop_context () const;
-  void push_new_loop_context (HirId id, Location locus);
+  void push_new_loop_context (HirId id, location_t locus);
   void push_new_while_loop_context (HirId id);
   TyTy::BaseType *peek_loop_context ();
   TyTy::BaseType *pop_loop_context ();

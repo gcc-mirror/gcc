@@ -368,7 +368,7 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 }
 
 bool
-BaseType::bounds_compatible (const BaseType &other, Location locus,
+BaseType::bounds_compatible (const BaseType &other, location_t locus,
 			     bool emit_error) const
 {
   std::vector<std::reference_wrapper<const TypeBoundPredicate>>
@@ -954,14 +954,14 @@ BaseType::needs_generic_substitutions () const
 // InferType
 
 InferType::InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint,
-		      Location locus, std::set<HirId> refs)
+		      location_t locus, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::INFER,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
     infer_kind (infer_kind), default_hint (hint)
 {}
 
 InferType::InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
-		      TypeHint hint, Location locus, std::set<HirId> refs)
+		      TypeHint hint, location_t locus, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::INFER,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
     infer_kind (infer_kind), default_hint (hint)
@@ -1315,7 +1315,7 @@ ErrorType::clone () const
 // Struct Field type
 
 StructFieldType::StructFieldType (HirId ref, std::string name, BaseType *ty,
-				  Location locus)
+				  location_t locus)
   : ref (ref), name (name), ty (ty), locus (locus)
 {}
 
@@ -1805,14 +1805,14 @@ ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 
 // TupleType
 
-TupleType::TupleType (HirId ref, Location locus, std::vector<TyVar> fields,
+TupleType::TupleType (HirId ref, location_t locus, std::vector<TyVar> fields,
 		      std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::TUPLE,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
     fields (fields)
 {}
 
-TupleType::TupleType (HirId ref, HirId ty_ref, Location locus,
+TupleType::TupleType (HirId ref, HirId ty_ref, location_t locus,
 		      std::vector<TyVar> fields, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::TUPLE,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
@@ -3249,7 +3249,7 @@ PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 
 // PARAM Type
 
-ParamType::ParamType (std::string symbol, Location locus, HirId ref,
+ParamType::ParamType (std::string symbol, location_t locus, HirId ref,
 		      HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
@@ -3260,7 +3260,7 @@ ParamType::ParamType (std::string symbol, Location locus, HirId ref,
     is_trait_self (false), symbol (symbol), param (param)
 {}
 
-ParamType::ParamType (bool is_trait_self, std::string symbol, Location locus,
+ParamType::ParamType (bool is_trait_self, std::string symbol, location_t locus,
 		      HirId ref, HirId ty_ref, HIR::GenericParam &param,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)

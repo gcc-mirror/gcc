@@ -75,7 +75,7 @@ TypeCheckItem::ResolveImplBlockSelf (HIR::ImplBlock &impl_block)
 
 TyTy::BaseType *
 TypeCheckItem::ResolveImplBlockSelfWithInference (
-  HIR::ImplBlock &impl, Location locus,
+  HIR::ImplBlock &impl, location_t locus,
   TyTy::SubstitutionArgumentMappings *infer_arguments)
 {
   TypeCheckItem resolver;

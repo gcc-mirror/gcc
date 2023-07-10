@@ -792,7 +792,7 @@ Mappings::lookup_hir_to_node (HirId id, NodeId *ref)
 }
 
 void
-Mappings::insert_location (HirId id, Location locus)
+Mappings::insert_location (HirId id, location_t locus)
 {
   locations[id] = locus;
 }

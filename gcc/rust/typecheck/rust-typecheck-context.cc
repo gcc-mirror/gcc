@@ -187,7 +187,7 @@ TypeCheckContext::have_loop_context () const
 }
 
 void
-TypeCheckContext::push_new_loop_context (HirId id, Location locus)
+TypeCheckContext::push_new_loop_context (HirId id, location_t locus)
 {
   TyTy::BaseType *infer_var
     = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,

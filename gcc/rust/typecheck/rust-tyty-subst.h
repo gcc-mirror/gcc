@@ -40,7 +40,7 @@ public:
   std::string as_string () const;
 
   bool fill_param_ty (SubstitutionArgumentMappings &subst_mappings,
-		      Location locus);
+		      location_t locus);
 
   SubstitutionParamMapping clone () const;
 
@@ -110,7 +110,7 @@ class SubstitutionArgumentMappings
 public:
   SubstitutionArgumentMappings (std::vector<SubstitutionArg> mappings,
 				std::map<std::string, BaseType *> binding_args,
-				Location locus,
+				location_t locus,
 				ParamSubstCb param_subst_cb = nullptr,
 				bool trait_item_flag = false,
 				bool error_flag = false);
@@ -163,7 +163,7 @@ public:
 private:
   std::vector<SubstitutionArg> mappings;
   std::map<std::string, BaseType *> binding_args;
-  Location locus;
+  location_t locus;
   ParamSubstCb param_subst_cb;
   bool trait_item_flag;
   bool error_flag;
@@ -303,7 +303,7 @@ public:
   //
   // This function will inject implicit inference variables for the type
   // parameters X and Y
-  BaseType *infer_substitions (Location locus);
+  BaseType *infer_substitions (location_t locus);
 
   // this clears any possible projections from higher ranked trait bounds which
   // could be hanging around from a previous resolution

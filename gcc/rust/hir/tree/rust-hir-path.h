@@ -58,7 +58,7 @@ class GenericArgsBinding
   Identifier identifier;
   std::unique_ptr<Type> type;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether binding is in an error state.
@@ -76,7 +76,7 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      Location locus = UNDEF_LOCATION)
+		      location_t locus = UNDEF_LOCATION)
     : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
   {}
 
@@ -119,7 +119,7 @@ class ConstGenericArg
   // at name-resolution, hence no need for ambiguities here
 
 public:
-  ConstGenericArg (std::unique_ptr<Expr> expression, Location locus)
+  ConstGenericArg (std::unique_ptr<Expr> expression, location_t locus)
     : expression (std::move (expression)), locus (locus)
   {}
 
@@ -140,7 +140,7 @@ public:
 
 private:
   std::unique_ptr<Expr> expression;
-  Location locus;
+  location_t locus;
 };
 
 class GenericArgs
@@ -149,7 +149,7 @@ class GenericArgs
   std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
   std::vector<ConstGenericArg> const_args;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns true if there are any generic arguments
@@ -162,7 +162,7 @@ public:
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
 	       std::vector<GenericArgsBinding> binding_args,
-	       std::vector<ConstGenericArg> const_args, Location locus)
+	       std::vector<ConstGenericArg> const_args, location_t locus)
     : lifetime_args (std::move (lifetime_args)),
       type_args (std::move (type_args)),
       binding_args (std::move (binding_args)),
@@ -204,7 +204,7 @@ public:
   GenericArgs &operator= (GenericArgs &&other) = default;
 
   // Creates an empty GenericArgs (no arguments)
-  static GenericArgs create_empty (Location locus = UNDEF_LOCATION)
+  static GenericArgs create_empty (location_t locus = UNDEF_LOCATION)
   {
     return GenericArgs ({}, {}, {}, {}, locus);
   }
@@ -236,11 +236,11 @@ private:
   Analysis::NodeMapping mappings;
   PathIdentSegment segment_name;
   GenericArgs generic_args;
-  Location locus;
+  location_t locus;
 
 public:
   PathExprSegment (Analysis::NodeMapping mappings,
-		   PathIdentSegment segment_name, Location locus,
+		   PathIdentSegment segment_name, location_t locus,
 		   GenericArgs generic_args)
     : mappings (std::move (mappings)), segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus)
@@ -334,7 +334,7 @@ public:
 class PathInExpression : public PathPattern, public PathExpr
 {
   bool has_opening_scope_resolution;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -342,7 +342,7 @@ public:
   // Constructor
   PathInExpression (Analysis::NodeMapping mappings,
 		    std::vector<PathExprSegment> path_segments,
-		    Location locus = UNDEF_LOCATION,
+		    location_t locus = UNDEF_LOCATION,
 		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
 		    = std::vector<AST::Attribute> ())
@@ -426,7 +426,7 @@ public:
 private:
   Analysis::NodeMapping mappings;
   PathIdentSegment ident_segment;
-  Location locus;
+  location_t locus;
 
 protected:
   bool has_separating_scope_resolution;
@@ -452,7 +452,7 @@ public:
 
   TypePathSegment (Analysis::NodeMapping mappings,
 		   PathIdentSegment ident_segment,
-		   bool has_separating_scope_resolution, Location locus)
+		   bool has_separating_scope_resolution, location_t locus)
     : mappings (std::move (mappings)),
       ident_segment (std::move (ident_segment)), locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
@@ -460,7 +460,7 @@ public:
   {}
 
   TypePathSegment (Analysis::NodeMapping mappings, std::string segment_name,
-		   bool has_separating_scope_resolution, Location locus)
+		   bool has_separating_scope_resolution, location_t locus)
     : mappings (std::move (mappings)),
       ident_segment (PathIdentSegment (std::move (segment_name))),
       locus (locus),
@@ -507,7 +507,7 @@ public:
   TypePathSegmentGeneric (Analysis::NodeMapping mappings,
 			  PathIdentSegment ident_segment,
 			  bool has_separating_scope_resolution,
-			  GenericArgs generic_args, Location locus)
+			  GenericArgs generic_args, location_t locus)
     : TypePathSegment (std::move (mappings), std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       generic_args (std::move (generic_args))
@@ -521,7 +521,7 @@ public:
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
 			  std::vector<ConstGenericArg> const_args,
-			  Location locus)
+			  location_t locus)
     : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       generic_args (
@@ -620,7 +620,7 @@ public:
   TypePathSegmentFunction (Analysis::NodeMapping mappings,
 			   PathIdentSegment ident_segment,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, Location locus)
+			   TypePathFunction function_path, location_t locus)
     : TypePathSegment (std::move (mappings), std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
@@ -630,7 +630,7 @@ public:
   TypePathSegmentFunction (Analysis::NodeMapping mappings,
 			   std::string segment_name,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, Location locus)
+			   TypePathFunction function_path, location_t locus)
     : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
@@ -694,7 +694,7 @@ public:
   // Constructor
   TypePath (Analysis::NodeMapping mappings,
 	    std::vector<std::unique_ptr<TypePathSegment> > segments,
-	    Location locus, bool has_opening_scope_resolution = false)
+	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (mappings, locus),
       has_opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (segments))
@@ -757,13 +757,13 @@ class QualifiedPathType
 {
   std::unique_ptr<Type> type;
   std::unique_ptr<TypePath> trait;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
   QualifiedPathType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-		     std::unique_ptr<TypePath> trait, Location locus)
+		     std::unique_ptr<TypePath> trait, location_t locus)
     : type (std::move (type)), trait (std::move (trait)), locus (locus),
       mappings (mappings)
   {}
@@ -838,7 +838,7 @@ public:
 class QualifiedPathInExpression : public PathPattern, public PathExpr
 {
   QualifiedPathType path_type;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -846,7 +846,7 @@ public:
   QualifiedPathInExpression (Analysis::NodeMapping mappings,
 			     QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
-			     Location locus = UNDEF_LOCATION,
+			     location_t locus = UNDEF_LOCATION,
 			     std::vector<AST::Attribute> outer_attrs
 			     = std::vector<AST::Attribute> ())
     : PathPattern (std::move (path_segments)),
@@ -913,7 +913,7 @@ public:
     Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
-    Location locus = UNDEF_LOCATION)
+    location_t locus = UNDEF_LOCATION)
     : TypeNoBounds (mappings, locus), path_type (std::move (qual_path_type)),
       associated_segment (std::move (associated_segment)),
       segments (std::move (path_segments))
@@ -984,11 +984,11 @@ class SimplePath
 {
   std::vector<SimplePathSegment> segments;
   Analysis::NodeMapping mappings;
-  Location locus;
+  location_t locus;
 
 public:
   SimplePath (std::vector<SimplePathSegment> segments,
-	      Analysis::NodeMapping mappings, Location locus)
+	      Analysis::NodeMapping mappings, location_t locus)
     : segments (std::move (segments)), mappings (mappings), locus (locus)
   {}
 

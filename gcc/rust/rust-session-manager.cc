@@ -955,7 +955,7 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
 // imports
 
 NodeId
-Session::load_extern_crate (const std::string &crate_name, Location locus)
+Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
   CrateNum found_crate_num = UNKNOWN_CREATENUM;

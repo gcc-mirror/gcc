@@ -87,7 +87,7 @@ TypeCheckBase::check_for_unconstrained (
       bool used = constrained_symbols.find (sym) != constrained_symbols.end ();
       if (!used)
 	{
-	  Location locus = symbol_to_location.at (sym);
+	  location_t locus = symbol_to_location.at (sym);
 	  rust_error_at (locus, "unconstrained type parameter");
 	  unconstrained = true;
 	}
@@ -101,7 +101,7 @@ TypeCheckBase::check_for_unconstrained (
 
 TyTy::BaseType *
 TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
-				HIR::Literal &literal, Location locus)
+				HIR::Literal &literal, location_t locus)
 {
   TyTy::BaseType *infered = nullptr;
   switch (literal.get_lit_type ())
@@ -282,7 +282,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 }
 
 TyTy::ADTType::ReprOptions
-TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
+TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 {
   TyTy::ADTType::ReprOptions repr;
   repr.pack = 0;

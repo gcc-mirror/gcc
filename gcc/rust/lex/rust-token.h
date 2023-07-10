@@ -243,7 +243,7 @@ private:
   // Token kind.
   TokenId token_id;
   // Token location.
-  Location locus;
+  location_t locus;
   // Associated text (if any) of token.
   std::unique_ptr<std::string> str;
   // TODO: maybe remove issues and just store std::string as value?
@@ -300,21 +300,21 @@ public:
    * private constructor */
 
   // Makes and returns a new TokenPtr (with null string).
-  static TokenPtr make (TokenId token_id, Location locus)
+  static TokenPtr make (TokenId token_id, location_t locus)
   {
     // return std::make_shared<Token> (token_id, locus);
     return TokenPtr (new Token (token_id, locus));
   }
 
   // Makes and returns a new TokenPtr of type IDENTIFIER.
-  static TokenPtr make_identifier (Location locus, std::string &&str)
+  static TokenPtr make_identifier (location_t locus, std::string &&str)
   {
     // return std::make_shared<Token> (IDENTIFIER, locus, str);
     return TokenPtr (new Token (IDENTIFIER, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
-  static TokenPtr make_int (Location locus, std::string &&str,
+  static TokenPtr make_int (location_t locus, std::string &&str,
 			    PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
     // return std::make_shared<Token> (INT_LITERAL, locus, str, type_hint);
@@ -323,7 +323,7 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
-  static TokenPtr make_float (Location locus, std::string &&str,
+  static TokenPtr make_float (location_t locus, std::string &&str,
 			      PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
     // return std::make_shared<Token> (FLOAT_LITERAL, locus, str, type_hint);
@@ -332,7 +332,7 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type STRING_LITERAL.
-  static TokenPtr make_string (Location locus, std::string &&str)
+  static TokenPtr make_string (location_t locus, std::string &&str)
   {
     // return std::make_shared<Token> (STRING_LITERAL, locus, str,
     // CORETYPE_STR);
@@ -341,40 +341,40 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type CHAR_LITERAL.
-  static TokenPtr make_char (Location locus, Codepoint char_lit)
+  static TokenPtr make_char (location_t locus, Codepoint char_lit)
   {
     // return std::make_shared<Token> (CHAR_LITERAL, locus, char_lit);
     return TokenPtr (new Token (CHAR_LITERAL, locus, char_lit));
   }
 
   // Makes and returns a new TokenPtr of type BYTE_CHAR_LITERAL.
-  static TokenPtr make_byte_char (Location locus, char byte_char)
+  static TokenPtr make_byte_char (location_t locus, char byte_char)
   {
     // return std::make_shared<Token> (BYTE_CHAR_LITERAL, locus, byte_char);
     return TokenPtr (new Token (BYTE_CHAR_LITERAL, locus, byte_char));
   }
 
   // Makes and returns a new TokenPtr of type BYTE_STRING_LITERAL (fix).
-  static TokenPtr make_byte_string (Location locus, std::string &&str)
+  static TokenPtr make_byte_string (location_t locus, std::string &&str)
   {
     // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str);
     return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type INNER_DOC_COMMENT.
-  static TokenPtr make_inner_doc_comment (Location locus, std::string &&str)
+  static TokenPtr make_inner_doc_comment (location_t locus, std::string &&str)
   {
     return TokenPtr (new Token (INNER_DOC_COMMENT, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type OUTER_DOC_COMMENT.
-  static TokenPtr make_outer_doc_comment (Location locus, std::string &&str)
+  static TokenPtr make_outer_doc_comment (location_t locus, std::string &&str)
   {
     return TokenPtr (new Token (OUTER_DOC_COMMENT, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type LIFETIME.
-  static TokenPtr make_lifetime (Location locus, std::string &&str)
+  static TokenPtr make_lifetime (location_t locus, std::string &&str)
   {
     // return std::make_shared<Token> (LIFETIME, locus, str);
     return TokenPtr (new Token (LIFETIME, locus, std::move (str)));
@@ -387,7 +387,7 @@ public:
   Location get_locus () const { return locus; }
 
   // Set location of the token.
-  void set_locus (Location locus) { this->locus = locus; }
+  void set_locus (location_t locus) { this->locus = locus; }
 
   // Gets string description of the token.
   const std::string &

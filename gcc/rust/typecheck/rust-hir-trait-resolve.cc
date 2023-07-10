@@ -38,7 +38,7 @@ void
 ResolveTraitItemToRef::visit (HIR::TraitItemType &type)
 {
   // create trait-item-ref
-  Location locus = type.get_locus ();
+  location_t locus = type.get_locus ();
   bool is_optional = false;
   std::string identifier = type.get_name ().as_string ();
 
@@ -51,7 +51,7 @@ void
 ResolveTraitItemToRef::visit (HIR::TraitItemConst &cst)
 {
   // create trait-item-ref
-  Location locus = cst.get_locus ();
+  location_t locus = cst.get_locus ();
   bool is_optional = cst.has_expr ();
   std::string identifier = cst.get_name ().as_string ();
 
@@ -64,7 +64,7 @@ void
 ResolveTraitItemToRef::visit (HIR::TraitItemFunc &fn)
 {
   // create trait-item-ref
-  Location locus = fn.get_locus ();
+  location_t locus = fn.get_locus ();
   bool is_optional = fn.has_block_defined ();
   std::string identifier = fn.get_decl ().get_function_name ().as_string ();
 
@@ -491,7 +491,7 @@ AssociatedImplTrait::setup_associated_types (
 
   // generate inference variables for these bound arguments so we can compute
   // their values
-  Location locus = UNKNOWN_LOCATION;
+  location_t locus = UNKNOWN_LOCATION;
   std::vector<TyTy::SubstitutionArg> subst_args;
   for (auto &p : substitutions)
     {

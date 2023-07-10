@@ -426,7 +426,7 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 TyTy::BaseType *
 TypeCheckPattern::typecheck_range_pattern_bound (
   std::unique_ptr<Rust::HIR::RangePatternBound> &bound,
-  Analysis::NodeMapping mappings, Location locus)
+  Analysis::NodeMapping mappings, location_t locus)
 {
   TyTy::BaseType *resolved_bound = nullptr;
   switch (bound->get_bound_type ())

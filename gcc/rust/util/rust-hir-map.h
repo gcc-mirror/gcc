@@ -171,7 +171,7 @@ public:
   bool lookup_node_to_hir (NodeId id, HirId *ref);
   bool lookup_hir_to_node (HirId id, NodeId *ref);
 
-  void insert_location (HirId id, Location locus);
+  void insert_location (HirId id, location_t locus);
   Location lookup_location (HirId id);
 
   bool resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt);

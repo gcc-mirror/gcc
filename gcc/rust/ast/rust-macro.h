@@ -167,10 +167,11 @@ class MacroMatchFragment : public MacroMatch
 {
   Identifier ident;
   MacroFragSpec frag_spec;
-  Location locus;
+  location_t locus;
 
 public:
-  MacroMatchFragment (Identifier ident, MacroFragSpec frag_spec, Location locus)
+  MacroMatchFragment (Identifier ident, MacroFragSpec frag_spec,
+		      location_t locus)
     : ident (std::move (ident)), frag_spec (frag_spec), locus (locus)
   {}
 
@@ -181,7 +182,7 @@ public:
   }
 
   // Creates an error state macro match fragment.
-  static MacroMatchFragment create_error (Location locus)
+  static MacroMatchFragment create_error (location_t locus)
   {
     return MacroMatchFragment (std::string (""),
 			       MacroFragSpec (MacroFragSpec::Kind::INVALID),
@@ -230,7 +231,7 @@ private:
   typedef Token MacroRepSep;
   // any token except delimiters and repetition operators
   std::unique_ptr<MacroRepSep> sep;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether macro match repetition has separator token.
@@ -238,7 +239,7 @@ public:
 
   MacroMatchRepetition (std::vector<std::unique_ptr<MacroMatch>> matches,
 			MacroRepOp op, std::unique_ptr<MacroRepSep> sep,
-			Location locus)
+			location_t locus)
     : matches (std::move (matches)), op (op), sep (std::move (sep)),
       locus (locus)
   {}
@@ -311,7 +312,7 @@ class MacroMatcher : public MacroMatch
 {
   DelimType delim_type;
   std::vector<std::unique_ptr<MacroMatch>> matches;
-  Location locus;
+  location_t locus;
 
   // TODO: think of way to mark invalid that doesn't take up more space
   bool is_invalid;
@@ -319,7 +320,7 @@ class MacroMatcher : public MacroMatch
 public:
   MacroMatcher (DelimType delim_type,
 		std::vector<std::unique_ptr<MacroMatch>> matches,
-		Location locus)
+		location_t locus)
     : delim_type (delim_type), matches (std::move (matches)), locus (locus),
       is_invalid (false)
   {}
@@ -351,7 +352,7 @@ public:
   MacroMatcher &operator= (MacroMatcher &&other) = default;
 
   // Creates an error state macro matcher.
-  static MacroMatcher create_error (Location locus)
+  static MacroMatcher create_error (location_t locus)
   {
     return MacroMatcher (true, locus);
   }
@@ -385,7 +386,7 @@ protected:
   }
 
   // constructor only used to create error matcher
-  MacroMatcher (bool is_invalid, Location locus)
+  MacroMatcher (bool is_invalid, location_t locus)
     : delim_type (PARENS), locus (locus), is_invalid (is_invalid)
   {}
 };
@@ -395,10 +396,10 @@ struct MacroTranscriber
 {
 private:
   DelimTokenTree token_tree;
-  Location locus;
+  location_t locus;
 
 public:
-  MacroTranscriber (DelimTokenTree token_tree, Location locus)
+  MacroTranscriber (DelimTokenTree token_tree, location_t locus)
     : token_tree (std::move (token_tree)), locus (locus)
   {}
 
@@ -416,10 +417,11 @@ struct MacroRule
 private:
   MacroMatcher matcher;
   MacroTranscriber transcriber;
-  Location locus;
+  location_t locus;
 
 public:
-  MacroRule (MacroMatcher matcher, MacroTranscriber transcriber, Location locus)
+  MacroRule (MacroMatcher matcher, MacroTranscriber transcriber,
+	     location_t locus)
     : matcher (std::move (matcher)), transcriber (std::move (transcriber)),
       locus (locus)
   {}
@@ -428,7 +430,7 @@ public:
   bool is_error () const { return matcher.is_error (); }
 
   // Creates an error state macro rule.
-  static MacroRule create_error (Location locus)
+  static MacroRule create_error (location_t locus)
   {
     return MacroRule (MacroMatcher::create_error (locus),
 		      MacroTranscriber (DelimTokenTree::create_empty (),
@@ -464,7 +466,7 @@ private:
   DelimType delim_type;
   // MacroRules rules;
   std::vector<MacroRule> rules; // inlined form
-  Location locus;
+  location_t locus;
 
   std::function<Fragment (Location, MacroInvocData &)> associated_transcriber;
   // Since we can't compare std::functions, we need to use an extra boolean
@@ -491,7 +493,7 @@ private:
    * is "extremely self-referential and non-intuitive". */
   MacroRulesDefinition (Identifier rule_name, DelimType delim_type,
 			std::vector<MacroRule> rules,
-			std::vector<Attribute> outer_attrs, Location locus,
+			std::vector<Attribute> outer_attrs, location_t locus,
 			MacroKind kind, Visibility vis)
     : VisItem (std::move (vis), outer_attrs),
       outer_attrs (std::move (outer_attrs)), rule_name (std::move (rule_name)),
@@ -516,7 +518,7 @@ public:
 
   static std::unique_ptr<MacroRulesDefinition>
   mbe (Identifier rule_name, DelimType delim_type, std::vector<MacroRule> rules,
-       std::vector<Attribute> outer_attrs, Location locus)
+       std::vector<Attribute> outer_attrs, location_t locus)
   {
     return Rust::make_unique<MacroRulesDefinition> (
       MacroRulesDefinition (rule_name, delim_type, rules, outer_attrs, locus,
@@ -526,7 +528,7 @@ public:
 
   static std::unique_ptr<MacroRulesDefinition>
   decl_macro (Identifier rule_name, std::vector<MacroRule> rules,
-	      std::vector<Attribute> outer_attrs, Location locus,
+	      std::vector<Attribute> outer_attrs, location_t locus,
 	      Visibility vis)
   {
     return Rust::make_unique<MacroRulesDefinition> (MacroRulesDefinition (
@@ -619,7 +621,7 @@ public:
    */
   static std::unique_ptr<MacroInvocation>
   Regular (MacroInvocData invoc_data, std::vector<Attribute> outer_attrs,
-	   Location locus, bool is_semi_coloned = false)
+	   location_t locus, bool is_semi_coloned = false)
   {
     return std::unique_ptr<MacroInvocation> (
       new MacroInvocation (InvocKind::Regular, tl::nullopt, invoc_data,
@@ -633,7 +635,7 @@ public:
    */
   static std::unique_ptr<MacroInvocation> Builtin (
     BuiltinMacro kind, MacroInvocData invoc_data,
-    std::vector<Attribute> outer_attrs, Location locus,
+    std::vector<Attribute> outer_attrs, location_t locus,
     std::vector<std::unique_ptr<MacroInvocation>> &&pending_eager_invocations
     = {},
     bool is_semi_coloned = false)
@@ -711,7 +713,7 @@ private:
   MacroInvocation (
     InvocKind kind, tl::optional<BuiltinMacro> builtin_kind,
     MacroInvocData invoc_data, std::vector<Attribute> outer_attrs,
-    Location locus, bool is_semi_coloned,
+    location_t locus, bool is_semi_coloned,
     std::vector<std::unique_ptr<MacroInvocation>> &&pending_eager_invocs)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ()),
@@ -733,7 +735,7 @@ private:
   }
 
   std::vector<Attribute> outer_attrs;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
   /* The data given to the macro invocation */

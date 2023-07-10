@@ -47,10 +47,10 @@ protected:
     const TyTy::BaseType *reference);
 
   TyTy::BaseType *resolve_literal (const Analysis::NodeMapping &mappings,
-				   HIR::Literal &literal, Location locus);
+				   HIR::Literal &literal, location_t locus);
 
   TyTy::ADTType::ReprOptions parse_repr_options (const AST::AttrVec &attrs,
-						 Location locus);
+						 location_t locus);
 
   void resolve_generic_params (
     const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,

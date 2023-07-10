@@ -44,7 +44,7 @@ private:
   /**
    * Check that only const functions are called in const contexts
    */
-  void check_function_call (HirId fn_id, Location locus);
+  void check_function_call (HirId fn_id, location_t locus);
 
   /* All possible const contexts */
   enum class ConstGenericCtx

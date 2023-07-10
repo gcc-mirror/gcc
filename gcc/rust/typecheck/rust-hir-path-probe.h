@@ -64,7 +64,7 @@ struct PathProbeCandidate
 
   CandidateType type;
   TyTy::BaseType *ty;
-  Location locus;
+  location_t locus;
   union Candidate
   {
     EnumItemCandidate enum_field;
@@ -76,13 +76,13 @@ struct PathProbeCandidate
     Candidate (TraitItemCandidate trait);
   } item;
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      EnumItemCandidate enum_field);
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      ImplItemCandidate impl);
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      TraitItemCandidate trait);
 
   std::string as_string () const;

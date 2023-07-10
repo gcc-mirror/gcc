@@ -178,7 +178,7 @@ public:
 				param.get_type_representation ().as_string ());
     resolver->get_type_scope ().insert (
       seg, param.get_node_id (), param.get_locus (), false, Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rust_error_at (param.get_locus (),
 		       "generic param redefined multiple times");
 	rust_error_at (locus, "was defined here");

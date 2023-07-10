@@ -146,45 +146,45 @@ struct Error
   };
 
   Kind kind;
-  Location locus;
+  location_t locus;
   std::string message;
   // TODO: store more stuff? e.g. node id?
 
-  Error (Kind kind, Location locus, std::string message)
+  Error (Kind kind, location_t locus, std::string message)
     : kind (kind), locus (locus), message (std::move (message))
   {
     message.shrink_to_fit ();
   }
 
-  Error (Location locus, std::string message)
+  Error (location_t locus, std::string message)
   {
     Error (Kind::Err, locus, std::move (message));
   }
 
-  static Error Hint (Location locus, std::string message)
+  static Error Hint (location_t locus, std::string message)
   {
     return Error (Kind::Hint, locus, std::move (message));
   }
 
-  static Error Fatal (Location locus, std::string message)
+  static Error Fatal (location_t locus, std::string message)
   {
     return Error (Kind::FatalErr, locus, std::move (message));
   }
 
   // TODO: the attribute part might be incorrect
-  Error (Location locus, const char *fmt,
+  Error (location_t locus, const char *fmt,
 	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 
   /**
    * printf-like overload of Error::Hint
    */
-  static Error Hint (Location locus, const char *fmt, ...)
+  static Error Hint (location_t locus, const char *fmt, ...)
     RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
   /**
    * printf-like overload of Error::Fatal
    */
-  static Error Fatal (Location locus, const char *fmt, ...)
+  static Error Fatal (location_t locus, const char *fmt, ...)
     RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
   void emit () const

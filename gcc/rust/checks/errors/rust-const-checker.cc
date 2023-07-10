@@ -301,7 +301,7 @@ ConstChecker::visit (StructExprStructBase &)
 {}
 
 void
-ConstChecker::check_function_call (HirId fn_id, Location locus)
+ConstChecker::check_function_call (HirId fn_id, location_t locus)
 {
   if (!const_context.is_in_context ())
     return;

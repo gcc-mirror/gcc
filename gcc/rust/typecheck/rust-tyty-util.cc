@@ -42,7 +42,7 @@ TyVar::get_tyty () const
 }
 
 TyVar
-TyVar::get_implicit_infer_var (Location locus)
+TyVar::get_implicit_infer_var (location_t locus)
 {
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
@@ -103,7 +103,7 @@ TyVar::monomorphized_clone () const
   return TyVar (c->get_ref ());
 }
 
-TyWithLocation::TyWithLocation (BaseType *ty, Location locus)
+TyWithLocation::TyWithLocation (BaseType *ty, location_t locus)
   : ty (ty), locus (locus)
 {}
 

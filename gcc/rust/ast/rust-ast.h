@@ -182,7 +182,7 @@ class Token : public TokenTree, public MacroMatch
   // Token kind.
   TokenId token_id;
   // Token location.
-  Location locus;
+  location_t locus;
   // Associated text (if any) of token.
   std::string str;
   // Token type hint (if any).
@@ -205,7 +205,7 @@ public:
 #if 0
   /* constructor from general text - avoid using if lexer const_TokenPtr is
    * available */
-  Token (TokenId token_id, Location locus, std::string str,
+  Token (TokenId token_id, location_t locus, std::string str,
 	 PrimitiveCoreType type_hint)
     : token_id (token_id), locus (locus), str (std::move (str)),
       type_hint (type_hint)
@@ -370,13 +370,13 @@ public:
 class SimplePathSegment : public PathSegment
 {
   std::string segment_name;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
   // only allow identifiers, "super", "self", "crate", or "$crate"
 public:
   // TODO: put checks in constructor to enforce this rule?
-  SimplePathSegment (std::string segment_name, Location locus)
+  SimplePathSegment (std::string segment_name, location_t locus)
     : segment_name (std::move (segment_name)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -413,14 +413,14 @@ class SimplePath
 {
   bool opening_scope_resolution;
   std::vector<SimplePathSegment> segments;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
 public:
   // Constructor
   SimplePath (std::vector<SimplePathSegment> path_segments,
 	      bool has_opening_scope_resolution = false,
-	      Location locus = UNDEF_LOCATION)
+	      location_t locus = UNDEF_LOCATION)
     : opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (path_segments)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
@@ -458,7 +458,7 @@ public:
    * ensure that this is a valid identifier in path, so be careful. Also, this
    * will have no location data.
    * TODO have checks? */
-  static SimplePath from_str (std::string str, Location locus)
+  static SimplePath from_str (std::string str, location_t locus)
   {
     std::vector<AST::SimplePathSegment> single_segments
       = {AST::SimplePathSegment (std::move (str), locus)};
@@ -498,7 +498,7 @@ private:
   // bool has_attr_input;
   std::unique_ptr<AttrInput> attr_input;
 
-  Location locus;
+  location_t locus;
 
   bool inner_attribute;
 
@@ -510,7 +510,7 @@ public:
 
   // Constructor has pointer AttrInput for polymorphism reasons
   Attribute (SimplePath path, std::unique_ptr<AttrInput> input,
-	     Location locus = UNDEF_LOCATION, bool inner_attribute = false)
+	     location_t locus = UNDEF_LOCATION, bool inner_attribute = false)
     : path (std::move (path)), attr_input (std::move (input)), locus (locus),
       inner_attribute (inner_attribute)
   {}
@@ -794,7 +794,7 @@ class DelimTokenTree : public TokenTree, public AttrInput
 {
   DelimType delim_type;
   std::vector<std::unique_ptr<TokenTree>> token_trees;
-  Location locus;
+  location_t locus;
 
 protected:
   DelimTokenTree *clone_delim_tok_tree_impl () const
@@ -820,7 +820,7 @@ public:
   DelimTokenTree (DelimType delim_type,
 		  std::vector<std::unique_ptr<TokenTree>> token_trees
 		  = std::vector<std::unique_ptr<TokenTree>> (),
-		  Location locus = UNDEF_LOCATION)
+		  location_t locus = UNDEF_LOCATION)
     : delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
   {}
@@ -1091,11 +1091,11 @@ class IdentifierExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   Identifier ident;
-  Location locus;
+  location_t locus;
 
 public:
   IdentifierExpr (Identifier ident, std::vector<Attribute> outer_attrs,
-		  Location locus)
+		  location_t locus)
     : outer_attrs (std::move (outer_attrs)), ident (std::move (ident)),
       locus (locus)
   {}
@@ -1277,19 +1277,19 @@ public:
 private:
   LifetimeType lifetime_type;
   std::string lifetime_name;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
 public:
   // Constructor
   Lifetime (LifetimeType type, std::string name = std::string (),
-	    Location locus = UNDEF_LOCATION)
+	    location_t locus = UNDEF_LOCATION)
     : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
       lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
   {}
 
   Lifetime (NodeId id, LifetimeType type, std::string name = std::string (),
-	    Location locus = UNDEF_LOCATION)
+	    location_t locus = UNDEF_LOCATION)
     : TypeParamBound (id), lifetime_type (type),
       lifetime_name (std::move (name)), locus (locus)
   {}
@@ -1366,7 +1366,7 @@ class LifetimeParam : public GenericParam
   Lifetime lifetime;
   std::vector<Lifetime> lifetime_bounds;
   Attribute outer_attr;
-  Location locus;
+  location_t locus;
 
 public:
   Lifetime get_lifetime () const { return lifetime; }
@@ -1391,7 +1391,7 @@ public:
 
   // Constructor
   LifetimeParam (Lifetime lifetime, std::vector<Lifetime> lifetime_bounds,
-		 Attribute outer_attr, Location locus)
+		 Attribute outer_attr, location_t locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
       outer_attr (std::move (outer_attr)), locus (locus)
@@ -1418,7 +1418,7 @@ protected:
 class TraitItem : public Visitable
 {
 protected:
-  TraitItem (Location locus)
+  TraitItem (location_t locus)
     : node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
@@ -1426,7 +1426,7 @@ protected:
   virtual TraitItem *clone_trait_item_impl () const = 0;
 
   NodeId node_id;
-  Location locus;
+  location_t locus;
 
 public:
   virtual ~TraitItem () {}

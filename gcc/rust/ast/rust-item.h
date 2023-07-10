@@ -63,7 +63,7 @@ class TypeParam : public GenericParam
   // bool has_type;
   std::unique_ptr<Type> type;
 
-  Location locus;
+  location_t locus;
 
 public:
   Identifier get_type_representation () const { return type_representation; }
@@ -77,7 +77,7 @@ public:
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
-  TypeParam (Identifier type_representation, Location locus = UNDEF_LOCATION,
+  TypeParam (Identifier type_representation, location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
@@ -191,13 +191,13 @@ class LifetimeWhereClauseItem : public WhereClauseItem
 {
   Lifetime lifetime;
   std::vector<Lifetime> lifetime_bounds;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
 public:
   LifetimeWhereClauseItem (Lifetime lifetime,
 			   std::vector<Lifetime> lifetime_bounds,
-			   Location locus)
+			   location_t locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)), locus (locus),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
@@ -230,7 +230,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
   std::unique_ptr<Type> bound_type;
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   NodeId node_id;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the item has ForLifetimes
@@ -244,7 +244,7 @@ public:
   TypeBoundWhereClauseItem (
     std::vector<LifetimeParam> for_lifetimes, std::unique_ptr<Type> bound_type,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-    Location locus)
+    location_t locus)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds)),
@@ -387,7 +387,7 @@ class SelfParam
 
   NodeId node_id;
 
-  Location locus;
+  location_t locus;
 
   // Unrestricted constructor used for error state
   SelfParam (Lifetime lifetime, bool has_ref, bool is_mut, Type *type)
@@ -420,14 +420,14 @@ public:
   }
 
   // Type-based self parameter (not ref, no lifetime)
-  SelfParam (std::unique_ptr<Type> type, bool is_mut, Location locus)
+  SelfParam (std::unique_ptr<Type> type, bool is_mut, location_t locus)
     : has_ref (false), is_mut (is_mut), lifetime (Lifetime::error ()),
       type (std::move (type)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Lifetime-based self parameter (is ref, no type)
-  SelfParam (Lifetime lifetime, bool is_mut, Location locus)
+  SelfParam (Lifetime lifetime, bool is_mut, location_t locus)
     : has_ref (true), is_mut (is_mut), lifetime (std::move (lifetime)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
@@ -490,10 +490,10 @@ class FunctionQualifiers
   bool has_unsafe;
   bool has_extern;
   std::string extern_abi;
-  Location locus;
+  location_t locus;
 
 public:
-  FunctionQualifiers (Location locus, AsyncConstStatus const_status,
+  FunctionQualifiers (location_t locus, AsyncConstStatus const_status,
 		      bool has_unsafe, bool has_extern = false,
 		      std::string extern_abi = std::string ())
     : const_status (const_status), has_unsafe (has_unsafe),
@@ -522,14 +522,14 @@ public:
 class FunctionParam
 {
   std::vector<Attribute> outer_attrs;
-  Location locus;
+  location_t locus;
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
 
 public:
   FunctionParam (std::unique_ptr<Pattern> param_name,
 		 std::unique_ptr<Type> param_type,
-		 std::vector<Attribute> outer_attrs, Location locus)
+		 std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)), locus (locus),
       param_name (std::move (param_name)), type (std::move (param_type)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
@@ -623,13 +623,13 @@ private:
   VisType vis_type;
   // Only assigned if vis_type is IN_PATH
   SimplePath in_path;
-  Location locus;
+  location_t locus;
 
   // should this store location info?
 
 public:
   // Creates a Visibility - TODO make constructor protected or private?
-  Visibility (VisType vis_type, SimplePath in_path, Location locus)
+  Visibility (VisType vis_type, SimplePath in_path, location_t locus)
     : vis_type (vis_type), in_path (std::move (in_path)), locus (locus)
   {}
 
@@ -738,7 +738,7 @@ class Method : public InherentImplItem, public TraitImplItem
   std::unique_ptr<Type> return_type;
   WhereClause where_clause;
   std::unique_ptr<BlockExpr> function_body;
-  Location locus;
+  location_t locus;
   NodeId node_id;
   bool is_default;
 
@@ -781,7 +781,7 @@ public:
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	  std::vector<Attribute> outer_attrs, Location locus,
+	  std::vector<Attribute> outer_attrs, location_t locus,
 	  bool is_default = false)
     : outer_attrs (std::move (outer_attrs)), vis (std::move (vis)),
       qualifiers (std::move (qualifiers)),
@@ -1008,7 +1008,7 @@ public:
 
 private:
   Identifier module_name;
-  Location locus;
+  location_t locus;
   ModuleKind kind;
 
   // Name of the file including the module
@@ -1040,7 +1040,7 @@ public:
 
   // Unloaded module constructor
   Module (Identifier module_name, Visibility visibility,
-	  std::vector<Attribute> outer_attrs, Location locus,
+	  std::vector<Attribute> outer_attrs, location_t locus,
 	  std::string outer_filename, std::vector<std::string> module_scope)
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       module_name (module_name), locus (locus), kind (ModuleKind::UNLOADED),
@@ -1050,7 +1050,7 @@ public:
   {}
 
   // Loaded module constructor, with items
-  Module (Identifier name, Location locus,
+  Module (Identifier name, location_t locus,
 	  std::vector<std::unique_ptr<Item>> items,
 	  Visibility visibility = Visibility::create_error (),
 	  std::vector<Attribute> inner_attrs = std::vector<Attribute> (),
@@ -1156,7 +1156,7 @@ class ExternCrate : public VisItem
   // this is either an identifier or "_", with _ parsed to string
   std::string as_clause_name;
 
-  Location locus;
+  location_t locus;
 
   /* e.g.
       "extern crate foo as _"
@@ -1174,7 +1174,7 @@ public:
 
   // Constructor
   ExternCrate (std::string referenced_crate, Visibility visibility,
-	       std::vector<Attribute> outer_attrs, Location locus,
+	       std::vector<Attribute> outer_attrs, location_t locus,
 	       std::string as_clause_name = std::string ())
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       referenced_crate (std::move (referenced_crate)),
@@ -1213,7 +1213,7 @@ protected:
 // The path-ish thing referred to in a use declaration - abstract base class
 class UseTree
 {
-  Location locus;
+  location_t locus;
 
 public:
   enum Kind
@@ -1256,7 +1256,7 @@ protected:
   // Clone function implementation as pure virtual method
   virtual UseTree *clone_use_tree_impl () const = 0;
 
-  UseTree (Location locus) : locus (locus) {}
+  UseTree (location_t locus) : locus (locus) {}
 };
 
 // Use tree with a glob (wildcard) operator
@@ -1275,7 +1275,7 @@ private:
   SimplePath path;
 
 public:
-  UseTreeGlob (PathType glob_type, SimplePath path, Location locus)
+  UseTreeGlob (PathType glob_type, SimplePath path, location_t locus)
     : UseTree (locus), glob_type (glob_type), path (std::move (path))
   {
     if (this->glob_type != PATH_PREFIXED)
@@ -1336,7 +1336,7 @@ private:
 
 public:
   UseTreeList (PathType path_type, SimplePath path,
-	       std::vector<std::unique_ptr<UseTree>> trees, Location locus)
+	       std::vector<std::unique_ptr<UseTree>> trees, location_t locus)
     : UseTree (locus), path_type (path_type), path (std::move (path)),
       trees (std::move (trees))
   {
@@ -1432,7 +1432,7 @@ private:
   Identifier identifier; // only if NewBindType is IDENTIFIER
 
 public:
-  UseTreeRebind (NewBindType bind_type, SimplePath path, Location locus,
+  UseTreeRebind (NewBindType bind_type, SimplePath path, location_t locus,
 		 Identifier identifier = std::string ())
     : UseTree (locus), path (std::move (path)), bind_type (bind_type),
       identifier (std::move (identifier))
@@ -1479,13 +1479,13 @@ protected:
 class UseDeclaration : public VisItem
 {
   std::unique_ptr<UseTree> use_tree;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
 
   UseDeclaration (std::unique_ptr<UseTree> use_tree, Visibility visibility,
-		  std::vector<Attribute> outer_attrs, Location locus)
+		  std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       use_tree (std::move (use_tree)), locus (locus)
   {}
@@ -1553,7 +1553,7 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
   std::unique_ptr<Type> return_type;
   WhereClause where_clause;
   std::unique_ptr<BlockExpr> function_body;
-  Location locus;
+  location_t locus;
   bool is_default;
 
 public:
@@ -1577,7 +1577,7 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    std::vector<Attribute> outer_attrs, Location locus,
+	    std::vector<Attribute> outer_attrs, location_t locus,
 	    bool is_default = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       qualifiers (std::move (qualifiers)),
@@ -1730,7 +1730,7 @@ class TypeAlias : public VisItem, public TraitImplItem
 
   std::unique_ptr<Type> existing_type;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -1745,7 +1745,8 @@ public:
   TypeAlias (Identifier new_type_name,
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
-	     Visibility vis, std::vector<Attribute> outer_attrs, Location locus)
+	     Visibility vis, std::vector<Attribute> outer_attrs,
+	     location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       new_type_name (std::move (new_type_name)),
       generic_params (std::move (generic_params)),
@@ -1854,7 +1855,7 @@ protected:
   WhereClause where_clause;
 
 private:
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether struct has generic parameters.
@@ -1888,7 +1889,7 @@ public:
 protected:
   Struct (Identifier struct_name,
 	  std::vector<std::unique_ptr<GenericParam>> generic_params,
-	  WhereClause where_clause, Visibility vis, Location locus,
+	  WhereClause where_clause, Visibility vis, location_t locus,
 	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : VisItem (std::move (vis), std::move (outer_attrs)),
       struct_name (std::move (struct_name)),
@@ -1940,7 +1941,7 @@ class StructField
 
   NodeId node_id;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether struct field has any outer attributes.
@@ -1950,7 +1951,7 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   StructField (Identifier field_name, std::unique_ptr<Type> field_type,
-	       Visibility vis, Location locus,
+	       Visibility vis, location_t locus,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_name (std::move (field_name)), field_type (std::move (field_type)),
@@ -2041,7 +2042,7 @@ public:
   StructStruct (std::vector<StructField> fields, Identifier struct_name,
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, bool is_unit, Visibility vis,
-		std::vector<Attribute> outer_attrs, Location locus)
+		std::vector<Attribute> outer_attrs, location_t locus)
     : Struct (std::move (struct_name), std::move (generic_params),
 	      std::move (where_clause), std::move (vis), locus,
 	      std::move (outer_attrs)),
@@ -2052,7 +2053,7 @@ public:
   StructStruct (Identifier struct_name,
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, Visibility vis,
-		std::vector<Attribute> outer_attrs, Location locus)
+		std::vector<Attribute> outer_attrs, location_t locus)
     : Struct (std::move (struct_name), std::move (generic_params),
 	      std::move (where_clause), std::move (vis), locus,
 	      std::move (outer_attrs)),
@@ -2092,7 +2093,7 @@ class TupleField
 
   NodeId node_id;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether tuple field has outer attributes.
@@ -2103,7 +2104,8 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   // Complete constructor
-  TupleField (std::unique_ptr<Type> field_type, Visibility vis, Location locus,
+  TupleField (std::unique_ptr<Type> field_type, Visibility vis,
+	      location_t locus,
 	      std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_type (std::move (field_type)),
@@ -2185,7 +2187,7 @@ public:
   TupleStruct (std::vector<TupleField> fields, Identifier struct_name,
 	       std::vector<std::unique_ptr<GenericParam>> generic_params,
 	       WhereClause where_clause, Visibility vis,
-	       std::vector<Attribute> outer_attrs, Location locus)
+	       std::vector<Attribute> outer_attrs, location_t locus)
     : Struct (std::move (struct_name), std::move (generic_params),
 	      std::move (where_clause), std::move (vis), locus,
 	      std::move (outer_attrs)),
@@ -2214,13 +2216,13 @@ class EnumItem : public VisItem
 {
   Identifier variant_name;
 
-  Location locus;
+  location_t locus;
 
 public:
   virtual ~EnumItem () {}
 
   EnumItem (Identifier variant_name, Visibility vis,
-	    std::vector<Attribute> outer_attrs, Location locus)
+	    std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       variant_name (std::move (variant_name)), locus (locus)
   {}
@@ -2260,7 +2262,7 @@ public:
 
   EnumItemTuple (Identifier variant_name, Visibility vis,
 		 std::vector<TupleField> tuple_fields,
-		 std::vector<Attribute> outer_attrs, Location locus)
+		 std::vector<Attribute> outer_attrs, location_t locus)
     : EnumItem (std::move (variant_name), std::move (vis),
 		std::move (outer_attrs), locus),
       tuple_fields (std::move (tuple_fields))
@@ -2297,7 +2299,7 @@ public:
 
   EnumItemStruct (Identifier variant_name, Visibility vis,
 		  std::vector<StructField> struct_fields,
-		  std::vector<Attribute> outer_attrs, Location locus)
+		  std::vector<Attribute> outer_attrs, location_t locus)
     : EnumItem (std::move (variant_name), std::move (vis),
 		std::move (outer_attrs), locus),
       struct_fields (std::move (struct_fields))
@@ -2330,7 +2332,7 @@ class EnumItemDiscriminant : public EnumItem
 public:
   EnumItemDiscriminant (Identifier variant_name, Visibility vis,
 			std::unique_ptr<Expr> expr,
-			std::vector<Attribute> outer_attrs, Location locus)
+			std::vector<Attribute> outer_attrs, location_t locus)
     : EnumItem (std::move (variant_name), std::move (vis),
 		std::move (outer_attrs), locus),
       expression (std::move (expr))
@@ -2389,7 +2391,7 @@ class Enum : public VisItem
 
   std::vector<std::unique_ptr<EnumItem>> items;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -2408,7 +2410,7 @@ public:
   Enum (Identifier enum_name, Visibility vis,
 	std::vector<std::unique_ptr<GenericParam>> generic_params,
 	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
-	std::vector<Attribute> outer_attrs, Location locus)
+	std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       enum_name (std::move (enum_name)),
       generic_params (std::move (generic_params)),
@@ -2504,7 +2506,7 @@ class Union : public VisItem
 
   std::vector<StructField> variants;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -2518,7 +2520,7 @@ public:
   Union (Identifier union_name, Visibility vis,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
-	 std::vector<Attribute> outer_attrs, Location locus)
+	 std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       union_name (std::move (union_name)),
       generic_params (std::move (generic_params)),
@@ -2603,14 +2605,14 @@ class ConstantItem : public VisItem,
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> const_expr;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
 
   ConstantItem (std::string ident, Visibility vis, std::unique_ptr<Type> type,
 		std::unique_ptr<Expr> const_expr,
-		std::vector<Attribute> outer_attrs, Location locus)
+		std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       identifier (std::move (ident)), type (std::move (type)),
       const_expr (std::move (const_expr)), locus (locus)
@@ -2718,14 +2720,14 @@ class StaticItem : public VisItem
   Identifier name;
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> expr;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
 
   StaticItem (Identifier name, bool is_mut, std::unique_ptr<Type> type,
 	      std::unique_ptr<Expr> expr, Visibility vis,
-	      std::vector<Attribute> outer_attrs, Location locus)
+	      std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)), has_mut (is_mut),
       name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
       locus (locus)
@@ -2948,7 +2950,7 @@ public:
   bool has_definition () const { return block_expr != nullptr; }
 
   TraitItemFunc (TraitFunctionDecl decl, std::unique_ptr<BlockExpr> block_expr,
-		 std::vector<Attribute> outer_attrs, Location locus)
+		 std::vector<Attribute> outer_attrs, location_t locus)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr))
   {}
@@ -3164,7 +3166,7 @@ public:
   bool has_definition () const { return block_expr != nullptr; }
 
   TraitItemMethod (TraitMethodDecl decl, std::unique_ptr<BlockExpr> block_expr,
-		   std::vector<Attribute> outer_attrs, Location locus)
+		   std::vector<Attribute> outer_attrs, location_t locus)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr))
   {}
@@ -3252,7 +3254,7 @@ public:
 
   TraitItemConst (Identifier name, std::unique_ptr<Type> type,
 		  std::unique_ptr<Expr> expr,
-		  std::vector<Attribute> outer_attrs, Location locus)
+		  std::vector<Attribute> outer_attrs, location_t locus)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)), type (std::move (type)), expr (std::move (expr))
   {}
@@ -3359,7 +3361,7 @@ public:
 
   TraitItemType (Identifier name,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 std::vector<Attribute> outer_attrs, Location locus)
+		 std::vector<Attribute> outer_attrs, location_t locus)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)), type_param_bounds (std::move (type_param_bounds))
   {}
@@ -3439,7 +3441,7 @@ class Trait : public VisItem
   WhereClause where_clause;
   std::vector<Attribute> inner_attrs;
   std::vector<std::unique_ptr<TraitItem>> trait_items;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -3471,7 +3473,7 @@ public:
 	 WhereClause where_clause,
 	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
 	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
-	 Location locus)
+	 location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), has_auto (is_auto), name (std::move (name)),
       generic_params (std::move (generic_params)),
@@ -3611,7 +3613,7 @@ protected:
 
 private:
   // doesn't really need to be protected as write access probably not needed
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether impl has generic parameters.
@@ -3657,7 +3659,7 @@ protected:
   Impl (std::vector<std::unique_ptr<GenericParam>> generic_params,
 	std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	Visibility vis, std::vector<Attribute> inner_attrs,
-	std::vector<Attribute> outer_attrs, Location locus)
+	std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       generic_params (std::move (generic_params)),
       trait_type (std::move (trait_type)),
@@ -3722,7 +3724,7 @@ public:
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		std::unique_ptr<Type> trait_type, WhereClause where_clause,
 		Visibility vis, std::vector<Attribute> inner_attrs,
-		std::vector<Attribute> outer_attrs, Location locus)
+		std::vector<Attribute> outer_attrs, location_t locus)
     : Impl (std::move (generic_params), std::move (trait_type),
 	    std::move (where_clause), std::move (vis), std::move (inner_attrs),
 	    std::move (outer_attrs), locus),
@@ -3796,7 +3798,7 @@ public:
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	     Visibility vis, std::vector<Attribute> inner_attrs,
-	     std::vector<Attribute> outer_attrs, Location locus)
+	     std::vector<Attribute> outer_attrs, location_t locus)
     : Impl (std::move (generic_params), std::move (trait_type),
 	    std::move (where_clause), std::move (vis), std::move (inner_attrs),
 	    std::move (outer_attrs), locus),
@@ -3872,7 +3874,7 @@ class ExternalItem
   Visibility visibility;
 
   Identifier item_name;
-  Location locus;
+  location_t locus;
 
 public:
   virtual ~ExternalItem () {}
@@ -3906,7 +3908,7 @@ public:
 
 protected:
   ExternalItem (Identifier item_name, Visibility vis,
-		std::vector<Attribute> outer_attrs, Location locus)
+		std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       item_name (std::move (item_name)), locus (locus)
   {}
@@ -3948,13 +3950,13 @@ class ExternalTypeItem : public ExternalItem
 
   Visibility visibility;
   Identifier item_name;
-  Location locus;
+  location_t locus;
 
   bool marked_for_strip;
 
 public:
   ExternalTypeItem (Identifier item_name, Visibility vis,
-		    std::vector<Attribute> outer_attrs, Location locus)
+		    std::vector<Attribute> outer_attrs, location_t locus)
     : ExternalItem (), outer_attrs (std::move (outer_attrs)), visibility (vis),
       item_name (std::move (item_name)), locus (locus), marked_for_strip (false)
   {}
@@ -4026,7 +4028,7 @@ class ExternalStaticItem : public ExternalItem
   Visibility visibility;
 
   Identifier item_name;
-  Location locus;
+  location_t locus;
 
   bool has_mut;
   std::unique_ptr<Type> item_type;
@@ -4034,7 +4036,7 @@ class ExternalStaticItem : public ExternalItem
 public:
   ExternalStaticItem (Identifier item_name, std::unique_ptr<Type> item_type,
 		      bool is_mut, Visibility vis,
-		      std::vector<Attribute> outer_attrs, Location locus)
+		      std::vector<Attribute> outer_attrs, location_t locus)
     : ExternalItem (), outer_attrs (std::move (outer_attrs)),
       visibility (std::move (vis)), item_name (std::move (item_name)),
       locus (locus), has_mut (is_mut), item_type (std::move (item_type))
@@ -4130,7 +4132,7 @@ class NamedFunctionParam
   std::vector<Attribute> outer_attrs;
 
   NodeId node_id;
-  Location locus;
+  location_t locus;
 
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
@@ -4157,7 +4159,7 @@ public:
   }
 
   NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type,
-		      std::vector<Attribute> outer_attrs, Location locus)
+		      std::vector<Attribute> outer_attrs, location_t locus)
     : name (std::move (name)), param_type (std::move (param_type)),
       outer_attrs (std::move (outer_attrs)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
@@ -4226,7 +4228,7 @@ class ExternalFunctionItem : public ExternalItem
   Visibility visibility;
 
   Identifier item_name;
-  Location locus;
+  location_t locus;
 
   // bool has_generics;
   // Generics generic_params;
@@ -4279,7 +4281,7 @@ public:
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
     std::vector<Attribute> variadic_outer_attrs, Visibility vis,
-    std::vector<Attribute> outer_attrs, Location locus)
+    std::vector<Attribute> outer_attrs, location_t locus)
     : ExternalItem (), outer_attrs (std::move (outer_attrs)),
       visibility (std::move (vis)), item_name (std::move (item_name)),
       locus (locus), generic_params (std::move (generic_params)),
@@ -4405,7 +4407,7 @@ class ExternBlock : public VisItem
   // bool has_extern_items;
   std::vector<std::unique_ptr<ExternalItem>> extern_items;
 
-  Location locus;
+  location_t locus;
 
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
@@ -4427,7 +4429,7 @@ public:
   ExternBlock (std::string abi,
 	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, std::vector<Attribute> inner_attrs,
-	       std::vector<Attribute> outer_attrs, Location locus)
+	       std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)), abi (std::move (abi)),
       inner_attrs (std::move (inner_attrs)),
       extern_items (std::move (extern_items)), locus (locus)

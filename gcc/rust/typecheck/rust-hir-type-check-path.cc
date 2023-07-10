@@ -478,7 +478,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	}
       else if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
 	{
-	  Location locus = seg.get_locus ();
+	  location_t locus = seg.get_locus ();
 	  tyseg = SubstMapper::InferSubst (tyseg, locus);
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
@@ -488,7 +488,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
   if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
     {
-      Location locus = segments.back ().get_locus ();
+      location_t locus = segments.back ().get_locus ();
       tyseg = SubstMapper::InferSubst (tyseg, locus);
       if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	return;

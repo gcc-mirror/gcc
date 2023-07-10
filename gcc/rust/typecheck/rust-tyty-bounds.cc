@@ -290,7 +290,7 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 namespace TyTy {
 
 TypeBoundPredicate::TypeBoundPredicate (
-  const Resolver::TraitReference &trait_reference, Location locus)
+  const Resolver::TraitReference &trait_reference, location_t locus)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
     error_flag (false)
@@ -305,7 +305,8 @@ TypeBoundPredicate::TypeBoundPredicate (
 }
 
 TypeBoundPredicate::TypeBoundPredicate (
-  DefId reference, std::vector<SubstitutionParamMapping> subst, Location locus)
+  DefId reference, std::vector<SubstitutionParamMapping> subst,
+  location_t locus)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (reference), locus (locus), error_flag (false)
 {
@@ -431,7 +432,7 @@ TypeBoundPredicate::get_name () const
 }
 
 bool
-TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
+TypeBoundPredicate::is_object_safe (bool emit_error, location_t locus) const
 {
   const Resolver::TraitReference *trait = get ();
   rust_assert (trait != nullptr);

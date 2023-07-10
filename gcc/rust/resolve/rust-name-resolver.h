@@ -55,7 +55,7 @@ public:
 
   // this takes the relative paths of items within a compilation unit for lookup
   void insert_name (
-    const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+    const CanonicalPath &path, NodeId id, location_t locus, bool shadow,
     ItemType type,
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
@@ -89,11 +89,11 @@ public:
   Scope (CrateNum crate_num);
 
   void
-  insert (const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+  insert (const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
 	  Rib::ItemType type,
 	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
 
-  void insert (const CanonicalPath &ident, NodeId id, Location locus,
+  void insert (const CanonicalPath &ident, NodeId id, location_t locus,
 	       Rib::ItemType type = Rib::ItemType::Unknown);
   bool lookup (const CanonicalPath &ident, NodeId *id);
   bool lookup_decl_type (NodeId id, Rib::ItemType *type);

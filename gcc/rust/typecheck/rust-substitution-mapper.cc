@@ -22,12 +22,13 @@
 namespace Rust {
 namespace Resolver {
 
-SubstMapper::SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus)
+SubstMapper::SubstMapper (HirId ref, HIR::GenericArgs *generics,
+			  location_t locus)
   : resolved (new TyTy::ErrorType (ref)), generics (generics), locus (locus)
 {}
 
 TyTy::BaseType *
-SubstMapper::Resolve (TyTy::BaseType *base, Location locus,
+SubstMapper::Resolve (TyTy::BaseType *base, location_t locus,
 		      HIR::GenericArgs *generics)
 {
   SubstMapper mapper (base->get_ref (), generics, locus);
@@ -37,7 +38,7 @@ SubstMapper::Resolve (TyTy::BaseType *base, Location locus,
 }
 
 TyTy::BaseType *
-SubstMapper::InferSubst (TyTy::BaseType *base, Location locus)
+SubstMapper::InferSubst (TyTy::BaseType *base, location_t locus)
 {
   return SubstMapper::Resolve (base, locus, nullptr);
 }

@@ -28,7 +28,7 @@ namespace AST {
 // Just a semi-colon, which apparently is a statement.
 class EmptyStmt : public Stmt
 {
-  Location locus;
+  location_t locus;
 
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
@@ -36,7 +36,7 @@ class EmptyStmt : public Stmt
 public:
   std::string as_string () const override { return std::string (1, ';'); }
 
-  EmptyStmt (Location locus) : locus (locus) {}
+  EmptyStmt (location_t locus) : locus (locus) {}
 
   Location get_locus () const override final { return locus; }
 
@@ -71,7 +71,7 @@ class LetStmt : public Stmt
   // bool has_init_expr;
   std::unique_ptr<Expr> init_expr;
 
-  Location locus;
+  location_t locus;
 
 public:
   Type *inferedType;
@@ -89,7 +89,7 @@ public:
 
   LetStmt (std::unique_ptr<Pattern> variables_pattern,
 	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
-	   std::vector<Attribute> outer_attrs, Location locus)
+	   std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)),
       variables_pattern (std::move (variables_pattern)),
       type (std::move (type)), init_expr (std::move (init_expr)), locus (locus)
@@ -186,7 +186,7 @@ protected:
 class ExprStmt : public Stmt
 {
   std::unique_ptr<Expr> expr;
-  Location locus;
+  location_t locus;
   bool semicolon_followed;
 
 public:
@@ -206,7 +206,7 @@ public:
 
   std::vector<LetStmt *> locals;
 
-  ExprStmt (std::unique_ptr<Expr> &&expr, Location locus,
+  ExprStmt (std::unique_ptr<Expr> &&expr, location_t locus,
 	    bool semicolon_followed)
     : expr (std::move (expr)), locus (locus),
       semicolon_followed (semicolon_followed)

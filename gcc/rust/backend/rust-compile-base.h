@@ -45,14 +45,16 @@ protected:
 		       Location rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
-			     const TyTy::DynamicObjectType *ty, Location locus);
+			     const TyTy::DynamicObjectType *ty,
+			     location_t locus);
 
   tree compute_address_for_trait_item (
     const Resolver::TraitItemReference *ref,
     const TyTy::TypeBoundPredicate *predicate,
     std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
       &receiver_bounds,
-    const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus);
+    const TyTy::BaseType *receiver, const TyTy::BaseType *root,
+    location_t locus);
 
   bool verify_array_capacities (tree ltype, tree rtype, Location ltype_locus,
 				Location rtype_locus);
@@ -63,22 +65,22 @@ protected:
 		      Location expr_locus, bool is_qualified_path);
 
   tree resolve_adjustements (std::vector<Resolver::Adjustment> &adjustments,
-			     tree expression, Location locus);
+			     tree expression, location_t locus);
 
   tree resolve_deref_adjustment (Resolver::Adjustment &adjustment,
-				 tree expression, Location locus);
+				 tree expression, location_t locus);
 
   tree resolve_indirection_adjustment (Resolver::Adjustment &adjustment,
-				       tree expression, Location locus);
+				       tree expression, location_t locus);
 
   tree resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
-				   tree expression, Location locus);
+				   tree expression, location_t locus);
 
   tree resolve_unsized_slice_adjustment (Resolver::Adjustment &adjustment,
-					 tree expression, Location locus);
+					 tree expression, location_t locus);
 
   tree resolve_unsized_dyn_adjustment (Resolver::Adjustment &adjustment,
-				       tree expression, Location locus);
+				       tree expression, location_t locus);
 
   tree resolve_method_address (TyTy::FnType *fntype, TyTy::BaseType *receiver,
 			       Location expr_locus);
@@ -88,17 +90,17 @@ protected:
 
   tree compile_constant_item (TyTy::BaseType *resolved_type,
 			      const Resolver::CanonicalPath *canonical_path,
-			      HIR::Expr *const_value_expr, Location locus);
+			      HIR::Expr *const_value_expr, location_t locus);
 
   tree compile_function (const std::string &fn_name, HIR::SelfParam &self_param,
 			 std::vector<HIR::FunctionParam> &function_params,
 			 const HIR::FunctionQualifiers &qualifiers,
 			 HIR::Visibility &visibility, AST::AttrVec &outer_attrs,
-			 Location locus, HIR::BlockExpr *function_body,
+			 location_t locus, HIR::BlockExpr *function_body,
 			 const Resolver::CanonicalPath *canonical_path,
 			 TyTy::FnType *fntype);
 
-  static tree unit_expression (Context *ctx, Location locus);
+  static tree unit_expression (Context *ctx, location_t locus);
 
   static void setup_fndecl (tree fndecl, bool is_main_entry_point,
 			    bool is_generic_fn, HIR::Visibility &visibility,
@@ -126,9 +128,9 @@ protected:
 
   static void setup_abi_options (tree fndecl, ABI abi);
 
-  static tree address_expression (tree expr, Location locus);
+  static tree address_expression (tree expr, location_t locus);
 
-  static tree indirect_expression (tree expr, Location locus);
+  static tree indirect_expression (tree expr, location_t locus);
 
   static bool mark_addressable (tree, Location);
 

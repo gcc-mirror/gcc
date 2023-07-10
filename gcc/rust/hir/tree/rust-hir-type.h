@@ -36,7 +36,7 @@ class TraitBound : public TypeParamBound
   bool opening_question_mark;
   std::vector<LifetimeParam> for_lifetimes;
   TypePath type_path;
-  Location locus;
+  location_t locus;
 
   Analysis::NodeMapping mappings;
 
@@ -44,8 +44,9 @@ public:
   // Returns whether trait bound has "for" lifetimes
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
-  TraitBound (Analysis::NodeMapping mapping, TypePath type_path, Location locus,
-	      bool in_parens = false, bool opening_question_mark = false,
+  TraitBound (Analysis::NodeMapping mapping, TypePath type_path,
+	      location_t locus, bool in_parens = false,
+	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
     : in_parens (in_parens), opening_question_mark (opening_question_mark),
@@ -104,7 +105,7 @@ protected:
 public:
   ImplTraitType (Analysis::NodeMapping mappings,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 Location locus)
+		 location_t locus)
     : Type (mappings, locus), type_param_bounds (std::move (type_param_bounds))
   {}
 
@@ -161,7 +162,7 @@ public:
   TraitObjectType (
     Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-    Location locus, bool is_dyn_dispatch)
+    location_t locus, bool is_dyn_dispatch)
     : Type (mappings, locus), has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds))
   {}
@@ -232,7 +233,7 @@ protected:
 public:
   // Constructor uses Type pointer for polymorphism
   ParenthesisedType (Analysis::NodeMapping mappings,
-		     std::unique_ptr<Type> type_inside_parens, Location locus)
+		     std::unique_ptr<Type> type_inside_parens, location_t locus)
     : TypeNoBounds (mappings, locus),
       type_in_parens (std::move (type_inside_parens))
   {}
@@ -297,7 +298,7 @@ protected:
 
 public:
   ImplTraitTypeOneBound (Analysis::NodeMapping mappings, TraitBound trait_bound,
-			 Location locus)
+			 location_t locus)
     : TypeNoBounds (mappings, locus), trait_bound (std::move (trait_bound))
   {}
 
@@ -320,7 +321,7 @@ public:
   bool is_unit_type () const { return elems.empty (); }
 
   TupleType (Analysis::NodeMapping mappings,
-	     std::vector<std::unique_ptr<Type>> elems, Location locus)
+	     std::vector<std::unique_ptr<Type>> elems, location_t locus)
     : TypeNoBounds (mappings, locus), elems (std::move (elems))
   {}
 
@@ -389,7 +390,7 @@ protected:
   }
 
 public:
-  NeverType (Analysis::NodeMapping mappings, Location locus)
+  NeverType (Analysis::NodeMapping mappings, location_t locus)
     : TypeNoBounds (mappings, locus)
   {}
 
@@ -409,7 +410,7 @@ private:
 public:
   // Constructor requires pointer for polymorphism reasons
   RawPointerType (Analysis::NodeMapping mappings, Mutability mut,
-		  std::unique_ptr<Type> type, Location locus)
+		  std::unique_ptr<Type> type, location_t locus)
     : TypeNoBounds (mappings, locus), mut (mut), type (std::move (type))
   {}
 
@@ -482,7 +483,7 @@ public:
 
   // Constructor
   ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
-		 std::unique_ptr<Type> type_no_bounds, Location locus,
+		 std::unique_ptr<Type> type_no_bounds, location_t locus,
 		 Lifetime lifetime)
     : TypeNoBounds (mappings, locus), lifetime (std::move (lifetime)),
       mut (mut), type (std::move (type_no_bounds))
@@ -546,7 +547,7 @@ class ArrayType : public TypeNoBounds
 public:
   // Constructor requires pointers for polymorphism
   ArrayType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     std::unique_ptr<Expr> array_size, Location locus)
+	     std::unique_ptr<Expr> array_size, location_t locus)
     : TypeNoBounds (mappings, locus), elem_type (std::move (type)),
       size (std::move (array_size))
   {}
@@ -603,7 +604,7 @@ class SliceType : public TypeNoBounds
 public:
   // Constructor requires pointer for polymorphism
   SliceType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     Location locus)
+	     location_t locus)
     : TypeNoBounds (mappings, locus), elem_type (std::move (type))
   {}
 
@@ -668,7 +669,7 @@ protected:
   }
 
 public:
-  InferredType (Analysis::NodeMapping mappings, Location locus)
+  InferredType (Analysis::NodeMapping mappings, location_t locus)
     : TypeNoBounds (mappings, locus)
   {}
 
@@ -697,11 +698,11 @@ private:
   ParamKind param_kind;
   Identifier name; // technically, can be an identifier or '_'
 
-  Location locus;
+  location_t locus;
 
 public:
   MaybeNamedParam (Identifier name, ParamKind param_kind,
-		   std::unique_ptr<Type> param_type, Location locus)
+		   std::unique_ptr<Type> param_type, location_t locus)
     : param_type (std::move (param_type)), param_kind (param_kind),
       name (std::move (name)), locus (locus)
   {}
@@ -774,7 +775,7 @@ public:
 		    std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
-		    std::unique_ptr<Type> type, Location locus)
+		    std::unique_ptr<Type> type, location_t locus)
     : TypeNoBounds (mappings, locus),
       for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),

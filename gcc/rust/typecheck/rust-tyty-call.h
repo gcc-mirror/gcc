@@ -88,7 +88,7 @@ class Argument
 {
 public:
   Argument (Analysis::NodeMapping mapping, BaseType *argument_type,
-	    Location locus)
+	    location_t locus)
     : mapping (mapping), argument_type (argument_type), locus (locus)
   {}
 
@@ -101,7 +101,7 @@ public:
 private:
   Analysis::NodeMapping mapping;
   BaseType *argument_type;
-  Location locus;
+  location_t locus;
 };
 
 class TypeCheckMethodCallExpr

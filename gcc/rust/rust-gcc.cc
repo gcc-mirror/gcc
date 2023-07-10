@@ -213,7 +213,7 @@ public:
 
   tree assignment_statement (tree lhs, tree rhs, Location);
 
-  tree return_statement (tree fndecl, tree val, Location locus);
+  tree return_statement (tree fndecl, tree val, location_t locus);
 
   tree if_statement (tree, tree condition, tree then_block, tree else_block,
 		     Location);
@@ -1734,7 +1734,7 @@ Gcc_backend::array_constructor_expression (
 tree
 Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
 				tree length, tree value, tree *tmp,
-				Location locus)
+				location_t locus)
 {
   std::vector<tree> stmts;
 
@@ -2021,13 +2021,13 @@ Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
 // Loops
 
 tree
-Gcc_backend::loop_expression (tree body, Location locus)
+Gcc_backend::loop_expression (tree body, location_t locus)
 {
   return fold_build1_loc (locus, LOOP_EXPR, void_type_node, body);
 }
 
 tree
-Gcc_backend::exit_expression (tree cond_tree, Location locus)
+Gcc_backend::exit_expression (tree cond_tree, location_t locus)
 {
   return fold_build1_loc (locus, EXIT_EXPR, void_type_node, cond_tree);
 }

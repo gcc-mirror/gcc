@@ -28,8 +28,9 @@ namespace Resolver {
 class TypeCastRules
 {
 public:
-  static TypeCoercionRules::CoercionResult
-  resolve (Location locus, TyTy::TyWithLocation from, TyTy::TyWithLocation to);
+  static TypeCoercionRules::CoercionResult resolve (location_t locus,
+						    TyTy::TyWithLocation from,
+						    TyTy::TyWithLocation to);
 
 protected:
   TypeCoercionRules::CoercionResult check ();
@@ -39,10 +40,10 @@ protected:
   void emit_cast_error () const;
 
 protected:
-  TypeCastRules (Location locus, TyTy::TyWithLocation from,
+  TypeCastRules (location_t locus, TyTy::TyWithLocation from,
 		 TyTy::TyWithLocation to);
 
-  Location locus;
+  location_t locus;
   TyTy::TyWithLocation from;
   TyTy::TyWithLocation to;
 };

@@ -204,7 +204,7 @@ private:
   AST::GenericArg parse_generic_arg ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
-  AST::TypePathFunction parse_type_path_function (Location locus);
+  AST::TypePathFunction parse_type_path_function (location_t locus);
   AST::PathExprSegment parse_path_expr_segment ();
   AST::QualifiedPathInExpression
   // When given a pratt_parsed_loc, use it as the location of the
@@ -630,7 +630,7 @@ private:
   std::unique_ptr<AST::TypeNoBounds> parse_slice_or_array_type ();
   std::unique_ptr<AST::RawPointerType> parse_raw_pointer_type ();
   std::unique_ptr<AST::ReferenceType>
-  parse_reference_type_inner (Location locus);
+  parse_reference_type_inner (location_t locus);
   std::unique_ptr<AST::ReferenceType> parse_reference_type ();
   std::unique_ptr<AST::BareFunctionType>
   parse_bare_function_type (std::vector<AST::LifetimeParam> for_lifetimes);

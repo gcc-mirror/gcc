@@ -167,7 +167,7 @@ make_token (const TokenPtr tok)
 }
 
 std::unique_ptr<AST::Expr>
-make_string (Location locus, std::string value)
+make_string (location_t locus, std::string value)
 {
   return std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (value, AST::Literal::STRING,
@@ -177,7 +177,7 @@ make_string (Location locus, std::string value)
 // TODO: Is this correct?
 static AST::Fragment
 make_eager_builtin_invocation (
-  BuiltinMacro kind, Location locus, AST::DelimTokenTree arguments,
+  BuiltinMacro kind, location_t locus, AST::DelimTokenTree arguments,
   std::vector<std::unique_ptr<AST::MacroInvocation>> &&pending_invocations)
 {
   auto path_str = make_macro_path_str (kind);
@@ -352,7 +352,7 @@ parse_single_string_literal (BuiltinMacro kind,
    compiled, and return the absolute path for it.  */
 
 std::string
-source_relative_path (std::string path, Location locus)
+source_relative_path (std::string path, location_t locus)
 {
   std::string compile_fname = LOCATION_FILE (locus);
 

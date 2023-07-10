@@ -52,8 +52,8 @@ is_basic_integer_type (TyTy::BaseType *type)
 }
 
 static bool
-check_for_basic_integer_type (const std::string &intrinsic_str, Location locus,
-			      TyTy::BaseType *type)
+check_for_basic_integer_type (const std::string &intrinsic_str,
+			      location_t locus, TyTy::BaseType *type)
 {
   auto is_basic_integer = is_basic_integer_type (type);
   if (!is_basic_integer)
@@ -227,7 +227,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
   if (it != generic_intrinsics.end ())
     return it->second (ctx, fntype);
 
-  Location locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
+  location_t locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
   rust_error_at (locus, ErrorCode ("E0093"),
 		 "unrecognized intrinsic function: %<%s%>",
 		 fntype->get_identifier ().c_str ());
@@ -791,7 +791,7 @@ prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind)
 }
 
 static std::string
-build_atomic_builtin_name (const std::string &prefix, Location locus,
+build_atomic_builtin_name (const std::string &prefix, location_t locus,
 			   TyTy::BaseType *operand_type)
 {
   static const std::map<std::string, std::string> allowed_types = {

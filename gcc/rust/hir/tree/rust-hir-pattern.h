@@ -29,19 +29,19 @@ namespace HIR {
 class LiteralPattern : public Pattern
 {
   Literal lit;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
-  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, Location locus)
+  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, location_t locus)
     : lit (std::move (lit)), locus (locus), mappings (mappings)
   {}
 
   LiteralPattern (Analysis::NodeMapping mappings, std::string val,
-		  Literal::LitType type, Location locus)
+		  Literal::LitType type, location_t locus)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
       locus (locus), mappings (mappings)
   {}
@@ -80,7 +80,7 @@ class IdentifierPattern : public Pattern
   bool is_ref;
   Mutability mut;
   std::unique_ptr<Pattern> to_bind;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -91,7 +91,7 @@ public:
 
   // Constructor
   IdentifierPattern (Analysis::NodeMapping mappings, Identifier ident,
-		     Location locus, bool is_ref = false,
+		     location_t locus, bool is_ref = false,
 		     Mutability mut = Mutability::Imm,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
     : variable_ident (std::move (ident)), is_ref (is_ref), mut (mut),
@@ -161,13 +161,13 @@ protected:
 // HIR node for using the '_' wildcard "match any value" pattern
 class WildcardPattern : public Pattern
 {
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override { return std::string (1, '_'); }
 
-  WildcardPattern (Analysis::NodeMapping mappings, Location locus)
+  WildcardPattern (Analysis::NodeMapping mappings, location_t locus)
     : locus (locus), mappings (mappings)
   {}
 
@@ -236,11 +236,11 @@ class RangePatternBoundLiteral : public RangePatternBound
   // Minus prefixed to literal (if integer or floating-point)
   bool has_minus;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Constructor
-  RangePatternBoundLiteral (Literal literal, Location locus,
+  RangePatternBoundLiteral (Literal literal, location_t locus,
 			    bool has_minus = false)
     : literal (literal), has_minus (has_minus), locus (locus)
   {}
@@ -348,7 +348,7 @@ class RangePattern : public Pattern
 
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -357,7 +357,7 @@ public:
   // Constructor
   RangePattern (Analysis::NodeMapping mappings,
 		std::unique_ptr<RangePatternBound> lower,
-		std::unique_ptr<RangePatternBound> upper, Location locus,
+		std::unique_ptr<RangePatternBound> upper, location_t locus,
 		bool has_ellipsis_syntax = false)
     : lower (std::move (lower)), upper (std::move (upper)),
       has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
@@ -423,7 +423,7 @@ class ReferencePattern : public Pattern
 {
   Mutability mut;
   std::unique_ptr<Pattern> pattern;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -431,7 +431,7 @@ public:
 
   ReferencePattern (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
-		    Location locus)
+		    location_t locus)
     : mut (reference_mut), pattern (std::move (pattern)), locus (locus),
       mappings (mappings)
   {}
@@ -491,7 +491,7 @@ protected:
 class StructPatternField
 {
   AST::AttrVec outer_attrs;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -521,7 +521,7 @@ public:
 
 protected:
   StructPatternField (Analysis::NodeMapping mappings,
-		      AST::AttrVec outer_attribs, Location locus)
+		      AST::AttrVec outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), locus (locus),
       mappings (mappings)
   {}
@@ -539,7 +539,7 @@ class StructPatternFieldTuplePat : public StructPatternField
 public:
   StructPatternFieldTuplePat (Analysis::NodeMapping mappings, TupleIndex index,
 			      std::unique_ptr<Pattern> tuple_pattern,
-			      AST::AttrVec outer_attribs, Location locus)
+			      AST::AttrVec outer_attribs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attribs), locus),
       index (index), tuple_pattern (std::move (tuple_pattern))
   {}
@@ -594,7 +594,7 @@ class StructPatternFieldIdentPat : public StructPatternField
 public:
   StructPatternFieldIdentPat (Analysis::NodeMapping mappings, Identifier ident,
 			      std::unique_ptr<Pattern> ident_pattern,
-			      AST::AttrVec outer_attrs, Location locus)
+			      AST::AttrVec outer_attrs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attrs), locus),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
@@ -651,7 +651,7 @@ class StructPatternFieldIdent : public StructPatternField
 public:
   StructPatternFieldIdent (Analysis::NodeMapping mappings, Identifier ident,
 			   bool is_ref, Mutability mut,
-			   AST::AttrVec outer_attrs, Location locus)
+			   AST::AttrVec outer_attrs, location_t locus)
     : StructPatternField (mappings, std::move (outer_attrs), locus),
       has_ref (is_ref), mut (mut), ident (std::move (ident))
   {}
@@ -1184,7 +1184,7 @@ protected:
 class TuplePattern : public Pattern
 {
   std::unique_ptr<TuplePatternItems> items;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
@@ -1194,7 +1194,7 @@ public:
   bool has_tuple_pattern_items () const { return items != nullptr; }
 
   TuplePattern (Analysis::NodeMapping mappings,
-		std::unique_ptr<TuplePatternItems> items, Location locus)
+		std::unique_ptr<TuplePatternItems> items, location_t locus)
     : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
@@ -1245,14 +1245,14 @@ protected:
 class SlicePattern : public Pattern
 {
   std::vector<std::unique_ptr<Pattern>> items;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   SlicePattern (Analysis::NodeMapping mappings,
-		std::vector<std::unique_ptr<Pattern>> items, Location locus)
+		std::vector<std::unique_ptr<Pattern>> items, location_t locus)
     : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
@@ -1317,14 +1317,14 @@ protected:
 class AltPattern : public Pattern
 {
   std::vector<std::unique_ptr<Pattern>> alts;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   AltPattern (Analysis::NodeMapping mappings,
-	      std::vector<std::unique_ptr<Pattern>> alts, Location locus)
+	      std::vector<std::unique_ptr<Pattern>> alts, location_t locus)
     : alts (std::move (alts)), locus (locus), mappings (mappings)
   {}
 

@@ -2301,7 +2301,7 @@ CompileExpr::array_copied_expr (Location expr_locus,
 tree
 HIRCompileBase::resolve_adjustements (
   std::vector<Resolver::Adjustment> &adjustments, tree expression,
-  Location locus)
+  location_t locus)
 {
   tree e = expression;
   for (auto &adjustment : adjustments)
@@ -2340,7 +2340,7 @@ HIRCompileBase::resolve_adjustements (
 
 tree
 HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
-					  tree expression, Location locus)
+					  tree expression, location_t locus)
 {
   rust_assert (adjustment.is_deref_adjustment ()
 	       || adjustment.is_deref_mut_adjustment ());
@@ -2366,14 +2366,14 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 
 tree
 HIRCompileBase::resolve_indirection_adjustment (
-  Resolver::Adjustment &adjustment, tree expression, Location locus)
+  Resolver::Adjustment &adjustment, tree expression, location_t locus)
 {
   return indirect_expression (expression, locus);
 }
 
 tree
 HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
-					    tree expression, Location locus)
+					    tree expression, location_t locus)
 {
   bool expect_slice
     = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::SLICE;
@@ -2394,7 +2394,7 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 
 tree
 HIRCompileBase::resolve_unsized_slice_adjustment (
-  Resolver::Adjustment &adjustment, tree expression, Location locus)
+  Resolver::Adjustment &adjustment, tree expression, location_t locus)
 {
   // assumes this is an array
   tree expr_type = TREE_TYPE (expression);
@@ -2426,7 +2426,7 @@ HIRCompileBase::resolve_unsized_slice_adjustment (
 
 tree
 HIRCompileBase::resolve_unsized_dyn_adjustment (
-  Resolver::Adjustment &adjustment, tree expression, Location locus)
+  Resolver::Adjustment &adjustment, tree expression, location_t locus)
 {
   tree rvalue = expression;
   Location rvalue_locus = locus;
