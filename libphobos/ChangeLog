@@ -1,3 +1,8 @@
+2023-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 28a3b24c2e.
+	* src/MERGE: Merge upstream phobos 8ab95ded5.
+
 2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* libdruntime/config/aarch64/switchcontext.S: Exclude ELF-

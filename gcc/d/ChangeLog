@@ -1,3 +1,20 @@
+2023-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 28a3b24c2e.
+	* dmd/VERSION: Bump version to v2.104.0-beta.1.
+	* d-codegen.cc (build_bounds_slice_condition): Update for new
+	front-end interface.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_handle_option): Likewise.
+	(d_post_options): Initialize global.compileEnv.
+	* expr.cc (ExprVisitor::visit (CatExp *)): Replace code generation
+	with new front-end lowering.
+	(ExprVisitor::visit (LoweredAssignExp *)): New method.
+	(ExprVisitor::visit (StructLiteralExp *)): Don't generate static
+	initializer symbols for structs defined in C sources.
+	* runtime.def (ARRAYCATT): Remove.
+	(ARRAYCATNTX): Remove.
+
 2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/108842

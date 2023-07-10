@@ -1,3 +1,11 @@
+2023-07-09  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.cc (check_bb_profile): Dump counts with relative frequency.
+	(dump_edge_info): Likewise.
+	(dump_bb_info): Likewise.
+	* profile-count.cc (profile_count::dump): Add comma between quality and
+	freq.
+
 2023-07-08  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/110600
