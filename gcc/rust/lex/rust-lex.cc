@@ -2523,7 +2523,7 @@ void
 Lexer::start_line (int current_line, int current_column)
 {
   if (line_map)
-    line_map->start_line (current_line, current_column);
+    linemap_line_start (line_table, current_line, current_column);
 }
 
 } // namespace Rust

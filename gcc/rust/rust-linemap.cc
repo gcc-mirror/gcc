@@ -67,14 +67,6 @@ Linemap::stop ()
   this->in_file_ = false;
 }
 
-// Start a new line.
-
-void
-Linemap::start_line (unsigned lineno, unsigned linesize)
-{
-  linemap_line_start (line_table, lineno, linesize);
-}
-
 // Return the Linemap to use for the gcc backend.
 
 Linemap *
