@@ -30,7 +30,7 @@
 namespace Rust {
 
 AST::Fragment
-MacroExpander::expand_decl_macro (Location invoc_locus,
+MacroExpander::expand_decl_macro (location_t invoc_locus,
 				  AST::MacroInvocData &invoc,
 				  AST::MacroRulesDefinition &rules_def,
 				  bool semicolon)

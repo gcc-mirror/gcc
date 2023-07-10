@@ -128,7 +128,7 @@ get_front_ptr (const std::vector<std::unique_ptr<T>> &values)
 static bool
 peculiar_fragment_match_compatible_fragment (
   const AST::MacroFragSpec &last_spec, const AST::MacroFragSpec &spec,
-  Location match_locus)
+  location_t match_locus)
 {
   static std::unordered_map<AST::MacroFragSpec::Kind,
 			    std::vector<AST::MacroFragSpec::Kind>>
@@ -231,7 +231,7 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	 WHILE,
 	 YIELD}}};
 
-  Location error_locus = match.get_match_locus ();
+  location_t error_locus = match.get_match_locus ();
   std::string kind_str = "fragment";
   auto &allowed_toks = follow_set[last_match.get_frag_spec ().get_kind ()];
 
