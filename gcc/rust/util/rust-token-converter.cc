@@ -60,7 +60,7 @@ convert (Location location)
 static Location
 convert (ProcMacro::Span span)
 {
-  return Location (span.start);
+  return span.start;
 }
 
 static void

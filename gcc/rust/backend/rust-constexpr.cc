@@ -1913,7 +1913,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
   if (++ctx->global->constexpr_ops_count >= constexpr_ops_limit)
     {
       rust_error_at (
-	Location (loc),
+	loc,
 	"%<constexpr%> evaluation operation count exceeds limit of "
 	"%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 	constexpr_ops_limit);
@@ -4523,7 +4523,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    // error ("invalid type for parameter %d of %<constexpr%> "
 	    //        "function %q+#D",
 	    //        DECL_PARM_INDEX (parm), fun);
-	    Location locus = Location (DECL_SOURCE_LOCATION (fun));
+	    Location locus = DECL_SOURCE_LOCATION (fun);
 	    rust_error_at (
 	      locus, "invalid type for parameter %d of %<constexpr%> function",
 	      DECL_PARM_INDEX (parm));

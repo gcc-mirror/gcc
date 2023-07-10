@@ -232,7 +232,7 @@ public:
   //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
   //  now.
   // Maybe we will figure out when we really need the location in the future.
-  Location get_locus () const override { return Location (UNKNOWN_LOCATION); }
+  Location get_locus () const override { return UNKNOWN_LOCATION; }
 
   void accept_vis (ASTVisitor &vis) override;
 
