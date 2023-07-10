@@ -209,7 +209,7 @@ public:
   bool is_error () const { return kind == Kind::Error; }
 
   Kind get_kind () const { return kind; }
-  const Location &get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   void accept_vis (AST::ASTVisitor &visitor)
   {

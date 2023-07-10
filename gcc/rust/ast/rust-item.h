@@ -667,14 +667,14 @@ public:
 
   // Creates a public visibility with no further features/arguments.
   // empty?
-  static Visibility create_public (Location pub_vis_location)
+  static Visibility create_public (location_t pub_vis_location)
   {
     return Visibility (PUB, SimplePath::create_empty (), pub_vis_location);
   }
 
   // Creates a public visibility with crate-relative paths
-  static Visibility create_crate (Location crate_tok_location,
-				  Location crate_vis_location)
+  static Visibility create_crate (location_t crate_tok_location,
+				  location_t crate_vis_location)
   {
     return Visibility (PUB_CRATE,
 		       SimplePath::from_str ("crate", crate_tok_location),
@@ -682,8 +682,8 @@ public:
   }
 
   // Creates a public visibility with self-relative paths
-  static Visibility create_self (Location self_tok_location,
-				 Location self_vis_location)
+  static Visibility create_self (location_t self_tok_location,
+				 location_t self_vis_location)
   {
     return Visibility (PUB_SELF,
 		       SimplePath::from_str ("self", self_tok_location),
@@ -691,8 +691,8 @@ public:
   }
 
   // Creates a public visibility with parent module-relative paths
-  static Visibility create_super (Location super_tok_location,
-				  Location super_vis_location)
+  static Visibility create_super (location_t super_tok_location,
+				  location_t super_vis_location)
   {
     return Visibility (PUB_SUPER,
 		       SimplePath::from_str ("super", super_tok_location),
@@ -707,7 +707,7 @@ public:
 
   // Creates a public visibility with a given path or whatever.
   static Visibility create_in_path (SimplePath in_path,
-				    Location in_path_vis_location)
+				    location_t in_path_vis_location)
   {
     return Visibility (PUB_IN_PATH, std::move (in_path), in_path_vis_location);
   }
