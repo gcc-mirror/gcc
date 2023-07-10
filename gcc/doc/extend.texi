@@ -11533,6 +11533,16 @@ The list below describes the supported modifiers and their effects for LoongArch
 @item @code{z} @tab Print the operand in its unmodified form, followed by a comma.
 @end multitable
 
+@anchor{riscvOperandmodifiers}
+@subsubsection RISC-V Operand Modifiers
+
+The list below describes the supported modifiers and their effects for RISC-V.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{z} @tab Print ''@code{zero}'' instead of 0 if the operand is an immediate with a value of zero.
+@item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
+@end multitable
 
 @lowersections
 @include md.texi
