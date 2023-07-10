@@ -679,7 +679,7 @@ struct_field_name_exists (std::vector<HIR::StructField> &fields,
 	    new_field.get_field_name ().as_string ())
 	  == 0)
 	{
-	  RichLocation r (line_table, new_field.get_locus ());
+	  rich_location r (line_table, new_field.get_locus ());
 	  r.add_range (field.get_locus ());
 	  rust_error_at (r, ErrorCode ("E0124"),
 			 "field %qs is already declared",

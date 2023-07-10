@@ -402,7 +402,7 @@ TraitReference::is_object_safe (bool emit_error, Location locus) const
     = non_object_super_traits.empty () && non_object_safe_items.empty ();
   if (emit_error && !is_safe)
     {
-      RichLocation r (line_table, locus);
+      rich_location r (line_table, locus);
       for (auto &item : non_object_super_traits)
 	r.add_range (item->get_locus ());
       for (auto &item : non_object_safe_items)

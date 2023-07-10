@@ -85,10 +85,10 @@ rust_inform (const Location, const char *fmt, ...)
 
 // rich locations
 extern void
-rust_error_at (const RichLocation &, const char *fmt, ...)
+rust_error_at (const rich_location &, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
-rust_error_at (const RichLocation &, const ErrorCode, const char *fmt, ...)
+rust_error_at (const rich_location &, const ErrorCode, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 // clang-format on
 
@@ -116,9 +116,9 @@ extern void
 rust_be_error_at (const Location, const ErrorCode,
 		  const std::string &errmsg);
 extern void
-rust_be_error_at (const RichLocation &, const std::string &errmsg);
+rust_be_error_at (const rich_location &, const std::string &errmsg);
 extern void
-rust_be_error_at (const RichLocation &, const ErrorCode,
+rust_be_error_at (const rich_location &, const ErrorCode,
 		  const std::string &errmsg);
 extern void
 rust_be_warning_at (const Location, int opt, const std::string &warningmsg);

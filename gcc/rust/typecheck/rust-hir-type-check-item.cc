@@ -648,7 +648,7 @@ TypeCheckItem::validate_trait_impl_block (
       if (missing_trait_items.size () > 0)
 	{
 	  std::string missing_items_buf;
-	  RichLocation r (line_table, impl_block.get_locus ());
+	  rich_location r (line_table, impl_block.get_locus ());
 	  for (size_t i = 0; i < missing_trait_items.size (); i++)
 	    {
 	      bool has_more = (i + 1) < missing_trait_items.size ();

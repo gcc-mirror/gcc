@@ -464,7 +464,7 @@ TypeCoercionRules::mismatched_mutability_error (Location expr_locus,
   if (!emit_errors)
     return;
 
-  RichLocation r (line_table, expr_locus);
+  rich_location r (line_table, expr_locus);
   r.add_range (lhs);
   r.add_range (rhs);
   rust_error_at (r, "mismatched mutability");
@@ -477,7 +477,7 @@ TypeCoercionRules::object_unsafe_error (Location expr_locus, Location lhs,
   if (!emit_errors)
     return;
 
-  RichLocation r (line_table, expr_locus);
+  rich_location r (line_table, expr_locus);
   r.add_range (lhs);
   r.add_range (rhs);
   rust_error_at (r, "unsafe unsize coercion");

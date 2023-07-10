@@ -392,7 +392,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
   // unknown trait item
   if (!found || raw_trait_item->is_error ())
     {
-      RichLocation r (line_table, constant.get_locus ());
+      rich_location r (line_table, constant.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "constant %<%s%> is not a member of trait %<%s%>",
 		     constant.get_identifier ().as_string ().c_str (),
@@ -415,7 +415,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 			 TyTy::TyWithLocation (lookup), constant.get_locus (),
 			 true /*emit_errors*/))
     {
-      RichLocation r (line_table, constant.get_locus ());
+      rich_location r (line_table, constant.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
       rust_error_at (
@@ -443,7 +443,7 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
   // unknown trait item
   if (!found || raw_trait_item->is_error ())
     {
-      RichLocation r (line_table, type.get_locus ());
+      rich_location r (line_table, type.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "type alias %<%s%> is not a member of trait %<%s%>",
 		     type.get_new_type_name ().as_string ().c_str (),
@@ -466,7 +466,7 @@ TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 			 TyTy::TyWithLocation (lookup), type.get_locus (),
 			 true /*emit_errors*/))
     {
-      RichLocation r (line_table, type.get_locus ());
+      rich_location r (line_table, type.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
       rust_error_at (
@@ -503,7 +503,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
   // unknown trait item
   if (!found || raw_trait_item->is_error ())
     {
-      RichLocation r (line_table, function.get_locus ());
+      rich_location r (line_table, function.get_locus ());
       r.add_range (trait_reference.get_locus ());
       rust_error_at (r, "method %<%s%> is not a member of trait %<%s%>",
 		     function.get_function_name ().as_string ().c_str (),
@@ -526,7 +526,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
 			 TyTy::TyWithLocation (lookup), function.get_locus (),
 			 true /*emit_errors*/))
     {
-      RichLocation r (line_table, function.get_locus ());
+      rich_location r (line_table, function.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
       rust_error_at (r, ErrorCode ("E0053"),
