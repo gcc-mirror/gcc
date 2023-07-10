@@ -213,6 +213,28 @@ private:
 };
 
 void
+rust_be_error_at (const Location location, const ErrorCode code,
+		  const std::string &errmsg)
+{
+  rich_location gcc_loc (line_table, location);
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (&gcc_loc, m, "%s", errmsg.c_str ());
+}
+
+void
+rust_error_at (const Location location, const ErrorCode code, const char *fmt,
+	       ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (location, code, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
 rust_be_error_at (const RichLocation &location, const ErrorCode code,
 		  const std::string &errmsg)
 {

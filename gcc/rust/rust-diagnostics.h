@@ -70,6 +70,9 @@ extern void
 rust_error_at (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
+rust_error_at (const Location, const ErrorCode, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+extern void
 rust_warning_at (const Location, int opt, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 extern void
@@ -109,6 +112,9 @@ rust_be_internal_error_at (const Location, const std::string &errmsg)
   RUST_ATTRIBUTE_NORETURN;
 extern void
 rust_be_error_at (const Location, const std::string &errmsg);
+extern void
+rust_be_error_at (const Location, const ErrorCode,
+		  const std::string &errmsg);
 extern void
 rust_be_error_at (const RichLocation &, const std::string &errmsg);
 extern void
