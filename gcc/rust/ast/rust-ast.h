@@ -58,7 +58,7 @@ public:
   Identifier &operator= (Identifier &&) = default;
 
   NodeId get_node_id () const { return node_id; }
-  Location get_locus () const { return loc; }
+  location_t get_locus () const { return loc; }
   const std::string &as_string () const { return ident; }
 
   bool empty () const { return ident.empty (); }
@@ -274,7 +274,7 @@ public:
   TokenId get_id () const { return tok_ref->get_id (); }
   const std::string &get_str () const { return tok_ref->get_str (); }
 
-  Location get_locus () const { return tok_ref->get_locus (); }
+  location_t get_locus () const { return tok_ref->get_locus (); }
 
   PrimitiveCoreType get_type_hint () const { return tok_ref->get_type_hint (); }
 
@@ -393,7 +393,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
   const std::string &get_segment_name () const { return segment_name; }
   bool is_super_path_seg () const
@@ -442,7 +442,7 @@ public:
     return opening_scope_resolution;
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
 
   // does this need visitor if not polymorphic? probably not
@@ -543,7 +543,7 @@ public:
   // Returns whether the attribute is considered an "empty" attribute.
   bool is_empty () const { return attr_input == nullptr && path.is_empty (); }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   AttrInput &get_attr_input () const { return *attr_input; }
 
@@ -689,7 +689,7 @@ public:
 
   virtual ~MetaItemInner ();
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual std::string as_string () const = 0;
 
@@ -945,7 +945,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
@@ -1027,7 +1027,7 @@ public:
 
   virtual ~Expr () {}
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual bool is_literal () const { return false; }
 
@@ -1102,7 +1102,7 @@ public:
 
   std::string as_string () const override { return ident.as_string (); }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   Identifier get_ident () const { return ident; }
 
@@ -1161,7 +1161,7 @@ public:
   virtual void mark_for_strip () {}
   virtual bool is_marked_for_strip () const { return false; }
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
   virtual NodeId get_pattern_node_id () const = 0;
 
 protected:
@@ -1197,7 +1197,7 @@ public:
   virtual void mark_for_strip () {}
   virtual bool is_marked_for_strip () const { return false; }
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   NodeId get_node_id () const { return node_id; }
 
@@ -1252,7 +1252,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1309,7 +1309,7 @@ public:
 
   LifetimeType get_lifetime_type () { return lifetime_type; }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   std::string get_lifetime_name () const { return lifetime_name; }
 
@@ -1344,7 +1344,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 
   virtual Kind get_kind () const = 0;
 
@@ -1401,7 +1401,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   Kind get_kind () const override final { return Kind::Lifetime; }
 
@@ -1443,7 +1443,7 @@ public:
   virtual bool is_marked_for_strip () const = 0;
 
   NodeId get_node_id () const { return node_id; }
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl
@@ -1468,7 +1468,7 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
-  virtual Location get_locus () const = 0;
+  virtual location_t get_locus () const = 0;
 };
 
 // Abstract base class for items used in a trait impl

@@ -153,7 +153,7 @@ public:
   const BaseType *destructure () const;
 
   const RustIdent &get_ident () const;
-  Location get_locus () const;
+  location_t get_locus () const;
 
   bool has_subsititions_defined () const;
   bool needs_generic_substitutions () const;
@@ -329,7 +329,7 @@ public:
   StructFieldType *monomorphized_clone () const;
 
   void debug () const;
-  Location get_locus () const;
+  location_t get_locus () const;
   std::string as_string () const;
 
 private:
@@ -401,7 +401,7 @@ public:
 
   const Resolver::TraitReference *get () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   std::string get_name () const;
 

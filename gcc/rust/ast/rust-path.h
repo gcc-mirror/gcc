@@ -50,7 +50,7 @@ public:
 
   std::string as_string () const { return segment_name; }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   bool is_super_segment () const { return as_string ().compare ("super") == 0; }
   bool is_crate_segment () const { return as_string ().compare ("crate") == 0; }
@@ -126,7 +126,7 @@ public:
     return type;
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   Identifier get_identifier () const { return identifier; }
 };
@@ -375,7 +375,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   Kind get_kind () const override final { return Kind::Const; }
 
@@ -462,7 +462,7 @@ public:
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
 
-  Location get_locus () { return locus; }
+  location_t get_locus () { return locus; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -511,7 +511,7 @@ public:
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
   GenericArgs &get_generic_args ()
@@ -621,7 +621,7 @@ public:
     return convert_to_simple_path (has_opening_scope_resolution);
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -752,7 +752,7 @@ public:
    * function). Overridden in derived classes with other segments. */
   virtual bool is_ident_only () const { return true; }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   // not pure virtual as class not abstract
   virtual void accept_vis (ASTVisitor &vis);
@@ -952,7 +952,7 @@ public:
     return return_type;
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 // Segment used in type path with a function argument
@@ -1080,7 +1080,7 @@ public:
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1162,7 +1162,7 @@ public:
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
   std::unique_ptr<Type> &get_type ()
@@ -1216,7 +1216,7 @@ public:
 				      {}, UNDEF_LOCATION);
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1366,7 +1366,7 @@ public:
     return segments;
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 };
 } // namespace AST
 } // namespace Rust

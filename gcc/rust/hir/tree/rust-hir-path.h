@@ -110,7 +110,7 @@ public:
   std::unique_ptr<Type> &get_type () { return type; }
   const std::unique_ptr<Type> &get_type () const { return type; }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 class ConstGenericArg
@@ -225,7 +225,7 @@ public:
 
   std::vector<ConstGenericArg> &get_const_args () { return const_args; }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -267,7 +267,7 @@ public:
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   PathIdentSegment &get_segment () { return segment_name; }
   const PathIdentSegment &get_segment () const { return segment_name; }
@@ -373,7 +373,7 @@ public:
     return convert_to_simple_path (has_opening_scope_resolution);
   }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
@@ -478,7 +478,7 @@ public:
    * function). Overriden in derived classes with other segments. */
   virtual bool is_ident_only () const { return true; }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   // not pure virtual as class not abstract
   virtual void accept_vis (HIRFullVisitor &vis);
@@ -803,7 +803,7 @@ public:
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -854,7 +854,7 @@ public:
       path_type (std::move (qual_path_type)), locus (locus)
   {}
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
@@ -862,7 +862,7 @@ public:
 
   QualifiedPathType &get_path_type () { return path_type; }
 
-  Location get_locus () { return locus; }
+  location_t get_locus () { return locus; }
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {

@@ -44,7 +44,7 @@ public:
   {}
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
   const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
 
 private:

@@ -52,7 +52,7 @@ public:
 
   const TypeBoundPredicate *get_parent () const;
 
-  Location get_locus () const;
+  location_t get_locus () const;
 
 private:
   const TypeBoundPredicate *parent;

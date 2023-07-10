@@ -88,7 +88,7 @@ public:
 
   HIR::TraitItem *get_hir_trait_item () const;
 
-  Location get_locus () const;
+  location_t get_locus () const;
 
   const Analysis::NodeMapping get_mappings () const;
 
@@ -167,7 +167,7 @@ public:
     return trait_error_node;
   }
 
-  Location get_locus () const;
+  location_t get_locus () const;
 
   std::string get_name () const;
 
