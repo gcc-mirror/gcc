@@ -7315,18 +7315,11 @@ package body Sem_Ch6 is
             --  already, so the Assert_False is for the assertions off case.
 
             if not Raise_Exception_Call and then not Assert_False then
-
-               --  In GNATprove mode, it is an error to have a missing return
-
-               Error_Msg_Warn := SPARK_Mode /= On;
-
-               --  Issue error message or warning
-
                Error_Msg_N
-                 ("RETURN statement missing following this statement<<!",
+                 ("RETURN statement missing following this statement??!",
                   Last_Stm);
                Error_Msg_N
-                 ("\Program_Error [<<!", Last_Stm);
+                 ("\Program_Error [??!", Last_Stm);
             end if;
 
             --  Note: we set Err even though we have not issued a warning
