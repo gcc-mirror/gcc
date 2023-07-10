@@ -6388,7 +6388,8 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	 DECL_CONTEXT of the template for which they are a parameter.  */
       if (TREE_CODE (parm) == TEMPLATE_DECL)
 	{
-	  gcc_assert (DECL_CONTEXT (parm) == NULL_TREE);
+	  gcc_checking_assert (DECL_CONTEXT (parm) == NULL_TREE
+			       || DECL_CONTEXT (parm) == tmpl);
 	  DECL_CONTEXT (parm) = tmpl;
 	}
     }
