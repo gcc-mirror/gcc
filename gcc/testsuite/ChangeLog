@@ -1,3 +1,270 @@
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110585
+	* gfortran.dg/findloc_9.f90: New test.
+
+2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108842
+	* gdc.dg/pr98277.d: Add more tests.
+	* gdc.dg/pr108842.d: New test.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110556
+	* gcc.dg/torture/pr110556.c: New testcase.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110515
+	* g++.dg/opt/pr110515.C: New testcase.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: New testcase.
+
+2023-07-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2023-06-23   Michael Meissner  <meissner@linux.ibm.com>
+		    Aaron Sawdey   <acsawdey@linux.ibm.com>
+
+	PR target/105325
+	* g++.target/powerpc/pr105325.C: New test.
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update insn counts.
+
+2023-07-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110228
+	* gcc.dg/torture/pr110228.c: New testcase.
+	* gcc.dg/uninit-pr101912.c: Un-XFAIL.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20230630-1.c: New test.
+	* gcc.c-torture/execute/20230630-2.c: Likewise.
+	* gcc.c-torture/execute/20230630-3.c: Likewise
+	* gcc.c-torture/execute/20230630-4.c: Likewise
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch2.d: Fix failed tests.
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108962
+	* gdc.dg/pr108962.d: New test.
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110516
+	* gdc.dg/torture/pr110516a.d: New test.
+	* gdc.dg/torture/pr110516b.d: New test.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110514
+	* gdc.dg/pr110514a.d: New test.
+	* gdc.dg/pr110514b.d: New test.
+	* gdc.dg/pr110514c.d: New test.
+	* gdc.dg/pr110514d.d: New test.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110471
+	* gdc.dg/pr110471a.d: New test.
+	* gdc.dg/pr110471b.d: New test.
+	* gdc.dg/pr110471c.d: New test.
+
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110468
+	* g++.dg/cpp0x/noexcept79.C: New test.
+
+2023-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110463
+	* g++.dg/cpp0x/constexpr-mutable6.C: New test.
+
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/plugin/crash-test-ice-sarif.c: Use -fno-report-bug.  Adjust
+	scan-sarif-file.
+	* gcc.dg/plugin/crash-test-ice-stderr.c: Use -fno-report-bug.
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Use
+	-fno-report-bug.  Adjust scan-sarif-file.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: Use
+	-fno-report-bug.
+
+2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-06-29  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.target/i386/pr104610.c: Use -fno-stack-protector.
+	* gcc.target/i386/pr69482-1.c: Likewise.
+
+2023-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-06-13  Harald Anlauf  <anlauf@gmx.de>
+		    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/86277
+	* gfortran.dg/zero_sized_14.f90: New test.
+	* gfortran.dg/zero_sized_15.f90: New test.
+
+2023-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-04-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR testsuite/83904
+	PR fortran/100297
+	* gfortran.dg/allocatable_function_1.f90: Use "__builtin_free "
+	instead of the naive "free".
+	* gfortran.dg/reshape_8.f90: Extend pattern from a simple "data".
+
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110309.c: New test.
+
+2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2023-06-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/mvc17.c: New test.
+
+2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106977
+	PR target/110406
+	* gdc.dg/torture/pr110406.d: New test.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-29.c: New testcase.
+	* gcc.target/i386/avx-vzeroupper-12.c: Adjust testcase.
+	* gcc.target/i386/avx-vzeroupper-7.c: Ditto.
+	* gcc.target/i386/avx-vzeroupper-9.c: Ditto.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/bf16_short_warn.c: New test.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gcc.c-torture/compile/asmgoto-6.c: New test.
+
+2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110276
+	* gcc.dg/ipa/pr110276.c: New test.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110359
+	* gdc.dg/pr110359.d: New test.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110113
+	* gdc.test/compilable/test23978.d: New test.
+
+2023-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110102
+	* g++.dg/cpp0x/initlist-opt1.C: New test.
+
+2023-06-23  Jason Merrill  <jason@redhat.com>
+
+	DR 2735
+	PR c++/109247
+	* g++.dg/cpp0x/initlist-explicit3.C: New test.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* gcc.dg/torture/pr110298.c: New testcase.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* g++.dg/debug/pr110295.C: New testcase.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110055
+	* g++.dg/warn/Wdangling-pointer-pr110055.C: New testcase.
+
 2023-06-20  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

@@ -37,7 +37,7 @@ void test09()
   (is>>std::ws) >> c;
   (is>>std::ws) >> f2;
   VERIFY( f1 == 2456 );
-  VERIFY( f2 == 0.00567 );
+  VERIFY( f2 == (double) 0.00567 ); // N.B. cast removes excess precision
   VERIFY( c == '-' );
 }
 

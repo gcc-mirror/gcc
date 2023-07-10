@@ -73,13 +73,12 @@ if { $lang_test_file_found } {
 
     set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
     if { [file exists $flags_file] } {
-	set libstdcxx_includes [exec sh $flags_file --build-includes]
-    } else {
-	set libstdcxx_includes ""
+	set lang_source_re {^.*\.[cC]$}
+	set lang_include_flags [exec sh $flags_file --build-includes]
     }
 
     # Main loop.
-    dg-runtest $tests "" "$libstdcxx_includes $DEFAULT_CFLAGS"
+    dg-runtest $tests "" $DEFAULT_CFLAGS
 }
 
 # See above.

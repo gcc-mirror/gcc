@@ -3088,6 +3088,8 @@ cp_fold (tree x, fold_flags_t flags)
 	    x = build_constructor (TREE_TYPE (x), nelts);
 	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (x)
 	      = CONSTRUCTOR_PLACEHOLDER_BOUNDARY (org_x);
+	    CONSTRUCTOR_MUTABLE_POISON (x)
+	      = CONSTRUCTOR_MUTABLE_POISON (org_x);
 	  }
 	if (VECTOR_TYPE_P (TREE_TYPE (x)))
 	  x = fold (x);

@@ -4271,6 +4271,13 @@ maybe_init_list_as_array (tree elttype, tree init)
   if (has_non_trivial_temporaries (first))
     return NULL_TREE;
 
+  /* We can't do this if copying from the initializer_list would be
+     ill-formed.  */
+  tree copy_argtypes = build_tree_list
+    (NULL_TREE, cp_build_qualified_type (elttype, TYPE_QUAL_CONST));
+  if (!is_xible (INIT_EXPR, elttype, copy_argtypes))
+    return NULL_TREE;
+
   init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
   tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
   return finish_compound_literal (arr, init, tf_none);
@@ -12608,6 +12615,17 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
   return compparms (parms1, parms2);
 }
 
+/* True iff FN is a copy or move constructor or assignment operator.  */
+
+static bool
+sfk_copy_or_move (tree fn)
+{
+  if (TREE_CODE (fn) != FUNCTION_DECL)
+    return false;
+  special_function_kind sfk = special_function_p (fn);
+  return sfk >= sfk_copy_constructor && sfk <= sfk_move_assignment;
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -12906,6 +12924,26 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       if (winner)
 	return winner;
     }
+
+  /* CWG2735 (PR109247): A copy/move ctor/op= for which its operand uses an
+     explicit conversion (due to list-initialization) is worse.  */
+  {
+    z_candidate *sp = nullptr;
+    if (sfk_copy_or_move (cand1->fn))
+      sp = cand1;
+    if (sfk_copy_or_move (cand2->fn))
+      sp = sp ? nullptr : cand2;
+    if (sp)
+      {
+	conversion *conv = sp->convs[!DECL_CONSTRUCTOR_P (sp->fn)];
+	if (conv->user_conv_p)
+	  for (; conv; conv = next_conversion (conv))
+	    if (conv->kind == ck_user
+		&& DECL_P (conv->cand->fn)
+		&& DECL_NONCONVERTING_P (conv->cand->fn))
+	      return (sp == cand1) ? -1 : 1;
+      }
+  }
 
   /* or, if not that,
      F1 is a non-template function and F2 is a template function

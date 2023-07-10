@@ -7823,12 +7823,11 @@ get_base_constructor (tree base, poly_int64_pod *bit_offset,
     }
 }
 
-/* CTOR is CONSTRUCTOR of an array type.  Fold a reference of SIZE bits
-   to the memory at bit OFFSET.     When non-null, TYPE is the expected
-   type of the reference; otherwise the type of the referenced element
-   is used instead. When SIZE is zero, attempt to fold a reference to
-   the entire element which OFFSET refers to.  Increment *SUBOFF by
-   the bit offset of the accessed element.  */
+/* CTOR is a CONSTRUCTOR of an array or vector type.  Fold a reference of SIZE
+   bits to the memory at bit OFFSET.  If non-null, TYPE is the expected type of
+   the reference; otherwise the type of the referenced element is used instead.
+   When SIZE is zero, attempt to fold a reference to the entire element OFFSET
+   refers to.  Increment *SUBOFF by the bit offset of the accessed element.  */
 
 static tree
 fold_array_ctor_reference (tree type, tree ctor,
@@ -7993,13 +7992,11 @@ fold_array_ctor_reference (tree type, tree ctor,
   return type ? build_zero_cst (type) : NULL_TREE;
 }
 
-/* CTOR is CONSTRUCTOR of an aggregate or vector.  Fold a reference
-   of SIZE bits to the memory at bit OFFSET.   When non-null, TYPE
-   is the expected type of the reference; otherwise the type of
-   the referenced member is used instead.  When SIZE is zero,
-   attempt to fold a reference to the entire member which OFFSET
-   refers to; in this case.  Increment *SUBOFF by the bit offset
-   of the accessed member.  */
+/* CTOR is a CONSTRUCTOR of a record or union type.  Fold a reference of SIZE
+   bits to the memory at bit OFFSET.  If non-null, TYPE is the expected type of
+   the reference; otherwise the type of the referenced member is used instead.
+   When SIZE is zero, attempt to fold a reference to the entire member OFFSET
+   refers to.  Increment *SUBOFF by the bit offset of the accessed member.  */
 
 static tree
 fold_nonarray_ctor_reference (tree type, tree ctor,
@@ -8011,8 +8008,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
 
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield,
-			    cval)
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
     {
       tree byte_offset = DECL_FIELD_OFFSET (cfield);
       tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
@@ -8084,6 +8080,19 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 	    return NULL_TREE;
 
 	  offset_int inner_offset = offset_int (offset) - bitoffset;
+
+	  /* Integral bit-fields are left-justified on big-endian targets, so
+	     we must arrange for native_encode_int to start at their MSB.  */
+	  if (DECL_BIT_FIELD (cfield) && INTEGRAL_TYPE_P (TREE_TYPE (cfield)))
+	    {
+	      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+		return NULL_TREE;
+	      const unsigned int encoding_size
+		= GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (cfield)));
+	      if (BYTES_BIG_ENDIAN)
+		inner_offset += encoding_size - wi::to_offset (field_size);
+	    }
+
 	  return fold_ctor_reference (type, cval,
 				      inner_offset.to_uhwi (), size,
 				      from_decl, suboff);
@@ -8096,7 +8105,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
   return build_zero_cst (type);
 }
 
-/* CTOR is value initializing memory.  Fold a reference of TYPE and
+/* CTOR is a value initializing memory.  Fold a reference of TYPE and
    bit size POLY_SIZE to the memory at bit POLY_OFFSET.  When POLY_SIZE
    is zero, attempt to fold a reference to the entire subobject
    which OFFSET refers to.  This is used when folding accesses to
@@ -8137,7 +8146,8 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
 	}
       return ret;
     }
-  /* For constants and byte-aligned/sized reads try to go through
+
+  /* For constants and byte-aligned/sized reads, try to go through
      native_encode/interpret.  */
   if (CONSTANT_CLASS_P (ctor)
       && BITS_PER_UNIT == 8
@@ -8153,7 +8163,12 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
       if (len > 0)
 	return native_interpret_expr (type, buf, len);
     }
-  if (TREE_CODE (ctor) == CONSTRUCTOR)
+
+  /* For constructors, try first a recursive local processing, but in any case
+     this requires the native storage order.  */
+  if (TREE_CODE (ctor) == CONSTRUCTOR
+      && !(AGGREGATE_TYPE_P (TREE_TYPE (ctor))
+	   && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (ctor))))
     {
       unsigned HOST_WIDE_INT dummy = 0;
       if (!suboff)
@@ -8168,9 +8183,9 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
 	ret = fold_nonarray_ctor_reference (type, ctor, offset, size,
 					    from_decl, suboff);
 
-      /* Fall back to native_encode_initializer.  Needs to be done
-	 only in the outermost fold_ctor_reference call (because it itself
-	 recurses into CONSTRUCTORs) and doesn't update suboff.  */
+      /* Otherwise fall back to native_encode_initializer.  This may be done
+	 only from the outermost fold_ctor_reference call (because it itself
+	 recurses into CONSTRUCTORs and doesn't update suboff).  */
       if (ret == NULL_TREE
 	  && suboff == &dummy
 	  && BITS_PER_UNIT == 8

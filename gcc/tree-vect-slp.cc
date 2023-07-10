@@ -4670,13 +4670,27 @@ vect_optimize_slp_pass::start_choosing_layouts ()
   m_partition_layout_costs.safe_grow_cleared (m_partitions.length ()
 					      * m_perms.length ());
 
-  /* We have to mark outgoing permutations facing non-reduction graph
-     entries that are not represented as to be materialized.  */
+  /* We have to mark outgoing permutations facing non-associating-reduction
+     graph entries that are not represented as to be materialized.
+     slp_inst_kind_bb_reduc currently only covers associatable reductions.  */
   for (slp_instance instance : m_vinfo->slp_instances)
     if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
       {
 	unsigned int node_i = SLP_INSTANCE_TREE (instance)->vertex;
 	m_partitions[m_vertices[node_i].partition].layout = 0;
+      }
+    else if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_reduc_chain)
+      {
+	stmt_vec_info stmt_info
+	  = SLP_TREE_REPRESENTATIVE (SLP_INSTANCE_TREE (instance));
+	stmt_vec_info reduc_info = info_for_reduction (m_vinfo, stmt_info);
+	if (needs_fold_left_reduction_p (TREE_TYPE
+					   (gimple_get_lhs (stmt_info->stmt)),
+					 STMT_VINFO_REDUC_CODE (reduc_info)))
+	  {
+	    unsigned int node_i = SLP_INSTANCE_TREE (instance)->vertex;
+	    m_partitions[m_vertices[node_i].partition].layout = 0;
+	  }
       }
 
   /* Check which layouts each node and partition can handle.  Calculate the

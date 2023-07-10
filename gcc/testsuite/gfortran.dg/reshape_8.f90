@@ -11,4 +11,4 @@ program test
   a = reshape([1,2,3,4], [2,0])
   print *, a
 end
-! { dg-final { scan-tree-dump-times "data" 4 "original" } }
+! { dg-final { scan-tree-dump-not "data..0. =" "original" } }

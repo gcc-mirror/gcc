@@ -12158,6 +12158,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (!needsArrayLowering)
         {
+            // https://issues.dlang.org/show_bug.cgi?id=23783
+            if (exp.e1.checkSharedAccess(sc) || exp.e2.checkSharedAccess(sc))
+                return setError();
             if (auto e = typeCombine(exp, sc))
             {
                 result = e;
@@ -13372,6 +13375,12 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 
         bool visitVar(VarExp e)
         {
+            // https://issues.dlang.org/show_bug.cgi?id=20908
+            // direct access to init symbols is ok as they
+            // cannot be modified.
+            if (e.var.isSymbolDeclaration())
+                return false;
+
             // https://issues.dlang.org/show_bug.cgi?id=22626
             // Synchronized functions don't need to use core.atomic
             // when accessing `this`.
@@ -13409,9 +13418,16 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
             //printf("dotvarexp = %s\n", e.toChars());
             if (e.type.isShared())
             {
-                // / https://issues.dlang.org/show_bug.cgi?id=22626
-                if (e.e1.isThisExp() && sc.func && sc.func.isSynchronized())
-                    return false;
+                if (e.e1.isThisExp())
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=22626
+                    if (sc.func && sc.func.isSynchronized())
+                        return false;
+
+                    // https://issues.dlang.org/show_bug.cgi?id=23790
+                    if (e.e1.type.isTypeStruct())
+                        return false;
+                }
 
                 auto fd = e.var.isFuncDeclaration();
                 const sharedFunc = fd && fd.type.isShared;

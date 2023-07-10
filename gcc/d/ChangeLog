@@ -1,3 +1,82 @@
+2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108842
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Only emit scalar
+	manifest constants.
+	(get_symbol_decl): Don't generate CONST_DECL for non-scalar manifest
+	constants.
+	* imports.cc (ImportVisitor::visit (VarDeclaration *)): New method.
+
+2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110516
+	* intrinsics.cc (expand_volatile_load): Set TREE_SIDE_EFFECTS on the
+	expanded expression.
+	(expand_volatile_store): Likewise.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110514
+	* decl.cc (get_symbol_decl): Set TREE_READONLY on certain kinds of
+	const and immutable variables.
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Set TREE_READONLY
+	on immutable dynamic array literals.
+
+2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-07-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110471
+	* d-builtins.cc (d_init_versions): Predefine D_ModuleInfo,
+	D_Exceptions, and D_TypeInfo only if feature is enabled.
+	* lang.opt: Add -fexceptions.
+
+2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106977
+	PR target/110406
+	* types.cc (finish_aggregate_mode): New function.
+	(finish_incomplete_fields): Call finish_aggregate_mode.
+	(finish_aggregate_type): Replace call to compute_record_mode with
+	finish_aggregate_mode.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110359
+	* d-convert.cc (convert_for_rvalue): Only apply the @safe boolean
+	conversion to boolean fields of a union.
+	(convert_for_condition): Call convert_for_rvalue in the default case.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110113
+	* dmd/escape.d (checkMutableArguments): Always allocate new buffer for
+	computing escapeBy.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a45f4e9f43.
+	* dmd/VERSION: Bump version to v2.103.1.
+
 2023-06-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

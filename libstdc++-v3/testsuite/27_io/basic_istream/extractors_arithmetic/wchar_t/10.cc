@@ -93,7 +93,7 @@ void test10()
   VERIFY( f == 450.0 );
   is_04.ignore();
   is_04 >> f;
-  VERIFY( f == 0.005 );
+  VERIFY( f == (double) 0.005 ); // N.B. cast removes excess precision
   is_04 >> f;
   VERIFY( f == 6 );
   VERIFY( is_03.rdstate() == std::ios_base::eofbit );

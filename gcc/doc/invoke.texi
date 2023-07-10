@@ -4836,10 +4836,12 @@ and Objective-C++ programs:
 Use @var{class-name} as the name of the class to instantiate for each
 literal string specified with the syntax @code{@@"@dots{}"}.  The default
 class name is @code{NXConstantString} if the GNU runtime is being used, and
-@code{NSConstantString} if the NeXT runtime is being used (see below).  The
-@option{-fconstant-cfstrings} option, if also present, overrides the
-@option{-fconstant-string-class} setting and cause @code{@@"@dots{}"} literals
-to be laid out as constant CoreFoundation strings.
+@code{NSConstantString} if the NeXT runtime is being used (see below).  On
+Darwin (macOS, MacOS X) platforms, the @option{-fconstant-cfstrings} option, if
+also present, overrides the @option{-fconstant-string-class} setting and cause
+@code{@@"@dots{}"} literals to be laid out as constant CoreFoundation strings.
+Note that @option{-fconstant-cfstrings} is an alias for the target-specific
+@option{-mconstant-cfstrings} equivalent.
 
 @opindex fgnu-runtime
 @item -fgnu-runtime
@@ -7015,7 +7017,7 @@ This warning is enabled by @option{-Wall}.
 @opindex Wmissing-include-dirs
 @opindex Wno-missing-include-dirs
 @item -Wmissing-include-dirs @r{(C, C++, Objective-C, Objective-C++ and Fortran only)}
-Warn if a user-supplied include directory does not exist. This opions is disabled
+Warn if a user-supplied include directory does not exist. This option is disabled
 by default for C, C++, Objective-C and Objective-C++. For Fortran, it is partially
 enabled by default by warning for -I and -J, only.
 
@@ -24019,10 +24021,21 @@ This is by default ON@.
 @item -gfull
 Emit debugging information for all symbols and types.
 
+@opindex fconstant-cfstrings
+@item -fconstant-cfstrings
+The @option{-fconstant-cfstrings} is an alias for @option{-mconstant-cfstrings}.
+
+@opindex mconstant-cfstrings
+@item -mconstant-cfstrings
+When the NeXT runtime is being used (the default on these systems), override
+any @option{-fconstant-string-class} setting and cause @code{@@"@dots{}"}
+literals to be laid out as constant CoreFoundation strings.
+
+@opindex mmacosx-version-min
 @item -mmacosx-version-min=@var{version}
-The earliest version of MacOS X that this executable will run on
-is @var{version}.  Typical values of @var{version} include @code{10.1},
-@code{10.2}, and @code{10.3.9}.
+The earliest version of MacOS X that this executable will run on is
+@var{version}.  Typical values supported for @var{version} include @code{12},
+@code{10.12}, and @code{10.5.8}.
 
 If the compiler was built to use the system's headers by default,
 then the default for this option is the system version on which the
@@ -32447,7 +32460,8 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
 XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
 MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
 PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set support.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD and UINTR instruction set
+support.
 
 @item grandridge
 Intel Grand Ridge CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
@@ -32455,8 +32469,8 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
 XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
 MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
 PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD and RAOINT instruction set
-support.
+AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, ENQCMD, UINTR and RAOINT
+instruction set support.
 
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,

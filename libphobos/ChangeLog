@@ -1,3 +1,30 @@
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libdruntime/config/aarch64/switchcontext.S: Exclude ELF-
+	specific constructs for Darwin.
+	* libdruntime/config/arm/switchcontext.S: Likewise.
+	* libdruntime/core/thread/fiber.d: Disable switching fibres
+	between threads.
+
+2023-07-03  Iain Sandoe  <iainsandoe@Apollo-3-VM-Lion-0-187.local>
+
+	Backported from master:
+	2023-07-01  Iain Sandoe  <iainsandoe@Apollo-3-VM-Lion-0-187.local>
+
+	PR d/103944
+	* testsuite/libphobos.gc/forkgc2.d: Skip for Darwin.
+
+2023-06-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2023-06-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime a45f4e9f43.
+	* src/MERGE: Merge upstream phobos 106038f2e.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.

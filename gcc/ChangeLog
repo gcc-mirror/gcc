@@ -1,3 +1,242 @@
+2023-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/110595
+	* doc/invoke.texi (Warning Options): Fix typo.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110556
+	* tree-ssa-tail-merge.cc (gimple_equal_p): Check
+	assign code and all operands of non-stores.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110515
+	* tree-ssa-pre.cc (compute_avail): Make code dealing
+	with hoisting loads with different alias-sets more
+	robust.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110392
+	* gimple-predicate-analysis.cc (uninit_analysis::is_use_guarded):
+	Do early exits on true/false predicate only after normalization.
+
+2023-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* tree-vect-slp.cc (vect_optimize_slp_pass::start_choosing_layouts):
+	Materialize permutes before fold-left reductions.
+
+2023-07-07  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/110560
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn): Fix bug.
+
+2023-07-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2023-06-23   Michael Meissner  <meissner@linux.ibm.com>
+		    Aaron Sawdey   <acsawdey@linux.ibm.com>
+
+	PR target/105325
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10_one): Fix problems that
+	allowed prefixed lwa to be generated.
+	* config/rs6000/fusion.md: Regenerate.
+	* config/rs6000/predicates.md (ds_form_mem_operand): Delete.
+	* config/rs6000/rs6000.md (prefixed attribute): Add support for load
+	plus compare immediate fused insns.
+	(maybe_prefixed): Likewise.
+
+2023-07-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2023-06-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10_one): New, rewritten and
+	split out from...
+	(gen_ld_cmpi_p10): ... this.
+
+2023-07-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110228
+	* tree-ssa-ifcombine.cc (pass_tree_ifcombine::execute):
+	Mark SSA may-undefs.
+	(bb_no_side_effects_p): Check stmt uses for undefs.
+
+2023-07-04  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/i386.h: Add PTA_ENQCMD and PTA_UINTR to PTA_SIERRAFOREST.
+	* doc/invoke.texi: Update new isa to march=sierraforest and grandridge.
+
+2023-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.cc (fold_array_ctor_reference): Fix head comment.
+	(fold_nonarray_ctor_reference): Likewise.  Specifically deal
+	with integral bit-fields.
+	(fold_ctor_reference): Make sure that the constructor uses the
+	native storage order.
+
+2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/108743
+	* config/darwin.opt: Add fconstant-cfstrings alias to
+	mconstant-cfstrings.
+	* doc/invoke.texi: Amend invocation descriptions to reflect
+	that the fconstant-cfstrings is a target-option alias and to
+	add the missing mconstant-cfstrings option description to the
+	Darwin section.
+
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/110237
+	* config/i386/sse.md (<avx512>_store<mode>_mask): Refine with
+	UNSPEC_MASKMOV.
+	(maskstore<mode><avx512fmaskmodelower): Ditto.
+	(*<avx512>_store<mode>_mask): New define_insn, it's renamed
+	from original <avx512>_store<mode>_mask.
+
+2023-06-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110309
+	* config/i386/sse.md (maskload<mode><avx512fmaskmodelower>):
+	Refine pattern with UNSPEC_MASKLOAD.
+	(maskload<mode><avx512fmaskmodelower>): Ditto.
+	(*<avx512>_load<mode>_mask): Extend mode iterator to
+	VI12HFBF_AVX512VL.
+	(*<avx512>_load<mode>): Ditto.
+
+2023-06-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2023-06-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_tree):
+	Override tune_string with arch_string if tune_string is not
+	explicitly specified.
+
+2023-06-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2023-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/66005
+	* doc/install.texi: Document (optional) Perl usage for parallel
+	testing of libgomp.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc (pass_insert_vzeroupper:gate):
+	Move flag_expensive_optimizations && !optimize_size to ..
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	.. this, it makes -mvzeroupper independent of optimization
+	level, but still keeps the behavior of architecture
+	tuning(emit_vzeroupper) unchanged.
+
+2023-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_invalid_conversion): New function.
+	(TARGET_INVALID_CONVERSION): Define as
+	ix86_invalid_conversion.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/110420
+	PR middle-end/103979
+	PR middle-end/98619
+	* gimplify.cc (gimplify_asm_expr): Mark asm with labels as volatile.
+
+2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2023-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110276
+	* ipa-sra.cc (struct caller_issues): New field there_is_one.
+	(check_for_caller_issues): Set it.
+	(check_all_callers_for_issues): Check it.
+
+2023-06-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-06-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110264
+	* config/riscv/riscv-vsetvl.cc (insert_vsetvl): Fix bug.
+
+2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/extend.texi (__builtin_alloca_with_align_and_max): Fix
+	defbuiltin usage.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110298
+	* tree-ssa-loop-ivcanon.cc (tree_unroll_loops_completely):
+	Clear number of iterations info before cleaning up the CFG.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110295
+	* dwarf2out.cc (process_scope_var): Continue processing
+	the decl after setting a parent in case the existing DIE
+	was in limbo.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110055
+	* gimplify.cc (gimplify_target_expr): Do not emit
+	CLOBBERs for variables which have static storage duration
+	after gimplifying their initializers.
+
+2023-06-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109983
+	PR tree-optimization/109143
+	* tree-ssa-structalias.cc (struct topo_info): Remove.
+	(init_topo_info): Likewise.
+	(free_topo_info): Likewise.
+	(compute_topo_order): Simplify API, put the component
+	with ESCAPED last so it's processed first.
+	(topo_visit): Adjust.
+	(solve_graph): Likewise.
+
 2023-06-20  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

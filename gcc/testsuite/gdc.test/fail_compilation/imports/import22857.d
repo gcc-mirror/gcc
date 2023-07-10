@@ -1,0 +1,4 @@
+template unaryFun()
+{
+    static if
+}

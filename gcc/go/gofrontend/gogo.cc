@@ -3296,6 +3296,9 @@ class Create_function_descriptors : public Traverse
   int
   expression(Expression**);
 
+  static bool
+  skip_descriptor(Gogo* gogo, const Named_object*);
+
  private:
   Gogo* gogo_;
 };
@@ -3306,6 +3309,9 @@ class Create_function_descriptors : public Traverse
 int
 Create_function_descriptors::function(Named_object* no)
 {
+  if (Create_function_descriptors::skip_descriptor(this->gogo_, no))
+    return TRAVERSE_CONTINUE;
+
   if (no->is_function()
       && no->func_value()->enclosing() == NULL
       && !no->func_value()->is_method()
@@ -3393,6 +3399,28 @@ Create_function_descriptors::expression(Expression** pexpr)
   return TRAVERSE_CONTINUE;
 }
 
+// The gc compiler has some special cases that it always compiles as
+// intrinsics.  For those we don't want to generate a function
+// descriptor, as there will be no code for it to refer to.
+
+bool
+Create_function_descriptors::skip_descriptor(Gogo* gogo,
+					     const Named_object* no)
+{
+  const std::string& pkgpath(no->package() == NULL
+			     ? gogo->pkgpath()
+			     : no->package()->pkgpath());
+
+  // internal/abi is the standard library package,
+  // bootstrap/internal/abi is the name used when bootstrapping the gc
+  // compiler.
+
+  return ((pkgpath == "internal/abi"
+	   || pkgpath == "bootstrap/internal/abi")
+	  && (no->name() == "FuncPCABI0"
+	      || no->name() == "FuncPCABIInternal"));
+}
+
 // Create function descriptors as needed.  We need a function
 // descriptor for all exported functions and for all functions that
 // are referenced without being called.
@@ -3414,7 +3442,8 @@ Gogo::create_function_descriptors()
       if (no->is_function_declaration()
 	  && !no->func_declaration_value()->type()->is_method()
 	  && !Linemap::is_predeclared_location(no->location())
-	  && !Gogo::is_hidden_name(no->name()))
+	  && !Gogo::is_hidden_name(no->name())
+	  && !Create_function_descriptors::skip_descriptor(this, no))
 	fndecls.push_back(no);
     }
   for (std::vector<Named_object*>::const_iterator p = fndecls.begin();

@@ -1,3 +1,23 @@
+2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110585
+	* arith.cc (gfc_compare_expr): Handle equality comparison of constant
+	complex gfc_expr arguments.
+
+2023-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-06-13  Harald Anlauf  <anlauf@gmx.de>
+		    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/86277
+	* trans-array.cc (gfc_trans_allocate_array_storage): When passing a
+	zero-sized array with fixed (= non-dynamic) size, allocate temporary
+	by the caller, not by the callee.
+
 2023-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -33,8 +33,8 @@ test01()
   std::discrete_distribution<> u(wt.begin(), wt.end());
   std::vector<double> probablility = u.probabilities();
   VERIFY( probablility.size() == 5 );
-  VERIFY( probablility[0] == 0.5 / 6.0 );
-  VERIFY( probablility[2] == 2.5 / 6.0 );
+  VERIFY( probablility[0] == double(0.5 / 6.0) );
+  VERIFY( probablility[2] == double(2.5 / 6.0) );
 }
 
 int main()
