@@ -346,7 +346,8 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 		{
 		  if (emit_error)
 		    {
-		      RichLocation r (mappings->lookup_location (get_ref ()));
+		      RichLocation r (line_table,
+				      mappings->lookup_location (get_ref ()));
 		      r.add_range (predicate.get_locus ());
 		      r.add_range (mappings->lookup_location (i.get_hirid ()));
 
@@ -381,7 +382,7 @@ BaseType::bounds_compatible (const BaseType &other, Location locus,
   // lets emit a single error for this
   if (unsatisfied_bounds.size () > 0)
     {
-      RichLocation r (locus);
+      RichLocation r (line_table, locus);
       std::string missing_preds;
       for (size_t i = 0; i < unsatisfied_bounds.size (); i++)
 	{

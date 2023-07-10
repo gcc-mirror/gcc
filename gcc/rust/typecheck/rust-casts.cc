@@ -301,7 +301,7 @@ void
 TypeCastRules::emit_cast_error () const
 {
   // error[E0604]
-  RichLocation r (locus);
+  RichLocation r (line_table, locus);
   r.add_range (from.get_locus ());
   r.add_range (to.get_locus ());
   rust_error_at (r, ErrorCode ("E0054"), "invalid cast %<%s%> to %<%s%>",

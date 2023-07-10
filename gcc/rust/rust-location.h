@@ -30,26 +30,6 @@
 
 typedef location_t Location;
 
-class RichLocation
-{
-public:
-  RichLocation (Location root);
-  ~RichLocation ();
-
-  void add_range (Location loc);
-
-  void add_fixit_insert_before (const std::string &new_parent);
-
-  void add_fixit_insert_before (Location where, const std::string &new_parent);
-
-  void add_fixit_insert_after (const std::string &new_parent);
-
-  void add_fixit_insert_after (Location where, const std::string &new_parent);
-
-  const rich_location &get () const { return gcc_rich_loc; }
-
-private:
-  rich_location gcc_rich_loc;
-};
+typedef rich_location RichLocation;
 
 #endif // !defined(RUST_LOCATION_H)

@@ -882,7 +882,7 @@ Session::expansion (AST::Crate &crate)
 
       rust_assert (last_def && last_invoc);
 
-      RichLocation range (last_invoc->get_locus ());
+      RichLocation range (line_table, last_invoc->get_locus ());
       range.add_range (last_def->get_locus ());
 
       rust_error_at (range, "reached recursion limit");
