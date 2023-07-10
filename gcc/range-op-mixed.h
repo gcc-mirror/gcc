@@ -574,7 +574,7 @@ public:
 					tree type,
 					const irange &op1_range,
 					const irange &op2_range,
-					relation_kind rel) const;
+					relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 private:

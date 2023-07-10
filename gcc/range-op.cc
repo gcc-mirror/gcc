@@ -2394,22 +2394,21 @@ class operator_lshift : public cross_product_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
 public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
+  virtual bool op1_range (irange &r, tree type, const irange &lhs,
+			  const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
+  virtual bool fold_range (irange &r, tree type, const irange &op1,
+			   const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
 
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res,
 				tree type,
 				const wide_int &,
-				const wide_int &) const;
+				const wide_int &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
@@ -2421,27 +2420,24 @@ class operator_rshift : public cross_product_operator
   using range_operator::op1_range;
   using range_operator::lhs_op1_relation;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type, const irange &op1,
+			   const irange &op2, relation_trio rel = TRIO_VARYING)
+   const final override;
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb,
 			const wide_int &lh_ub,
 			const wide_int &rh_lb,
-			const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res,
 				tree type,
 				const wide_int &w0,
-				const wide_int &w1) const;
-  virtual bool op1_range (irange &, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
+				const wide_int &w1) const final override;
+  virtual bool op1_range (irange &, tree type, const irange &lhs,
+			  const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
+  virtual relation_kind lhs_op1_relation (const irange &lhs, const irange &op1,
+					  const irange &op2, relation_kind rel)
+    const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }

@@ -137,7 +137,6 @@ private:
   void exit_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
   bool edge_range (vrange &r, edge e, tree name, enum rfd_mode);
 
-  phi_analyzer *m_estimate;
   vec<basic_block> m_workback;
   class update_list *m_update;
 };
