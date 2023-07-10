@@ -417,7 +417,7 @@ HIRCompileBase::mark_addressable (tree exp, location_t locus)
 }
 
 tree
-HIRCompileBase::address_expression (tree expr, Location location)
+HIRCompileBase::address_expression (tree expr, location_t location)
 {
   if (expr == error_mark_node)
     return error_mark_node;
@@ -748,7 +748,7 @@ HIRCompileBase::compile_constant_item (
 tree
 HIRCompileBase::named_constant_expression (tree type_tree,
 					   const std::string &name,
-					   tree const_val, Location location)
+					   tree const_val, location_t location)
 {
   if (type_tree == error_mark_node || const_val == error_mark_node)
     return error_mark_node;

@@ -103,7 +103,7 @@ Import::is_archive_magic (const char *bytes)
 class Archive_file
 {
 public:
-  Archive_file (const std::string &filename, int fd, Location location)
+  Archive_file (const std::string &filename, int fd, location_t location)
     : filename_ (filename), fd_ (fd), filesize_ (-1), first_member_offset_ (0),
       extended_names_ (), is_thin_archive_ (false), is_big_archive_ (false),
       location_ (location), nested_archives_ ()
@@ -128,7 +128,7 @@ public:
   bool is_big_archive () const { return this->is_big_archive_; }
 
   // Return the location of the import statement.
-  Location location () const { return this->location_; }
+  location_t location () const { return this->location_; }
 
   // Read bytes.
   bool read (off_t offset, off_t size, char *);
@@ -188,7 +188,7 @@ private:
   // Whether this is a big archive.
   bool is_big_archive_;
   // The location of the import statements.
-  Location location_;
+  location_t location_;
   // Table of nested archives.
   Nested_archive_table nested_archives_;
 };
@@ -838,7 +838,7 @@ Stream_concatenate::do_advance (size_t skip)
 
 std::unique_ptr<Import::Stream>
 Import::find_archive_export_data (const std::string &filename, int fd,
-				  Location location)
+				  location_t location)
 {
   Archive_file afile (filename, fd, location);
   if (!afile.initialize ())

@@ -64,7 +64,7 @@ add_search_path (const std::string &path)
 // later in the search path.
 
 std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
-Import::open_package (const std::string &filename, Location location,
+Import::open_package (const std::string &filename, location_t location,
 		      const std::string &relative_import_path)
 {
   bool is_local;
@@ -138,7 +138,7 @@ Import::open_package (const std::string &filename, Location location,
 
 std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
 Import::try_package_in_directory (const std::string &filename,
-				  Location location)
+				  location_t location)
 {
   std::string found_filename = filename;
   int fd = open (found_filename.c_str (), O_RDONLY | O_BINARY);
@@ -229,7 +229,7 @@ Import::try_suffixes (std::string *pfilename)
 
 std::unique_ptr<Import::Stream>
 Import::find_export_data (const std::string &filename, int fd,
-			  Location location)
+			  location_t location)
 {
   // See if we can read this as an object file.
   std::unique_ptr<Import::Stream> stream
@@ -271,7 +271,7 @@ Import::find_export_data (const std::string &filename, int fd,
 
 std::unique_ptr<Import::Stream>
 Import::find_object_export_data (const std::string &filename, int fd,
-				 off_t offset, Location location)
+				 off_t offset, location_t location)
 {
   char *buf;
   size_t len;
@@ -298,7 +298,7 @@ Import::find_object_export_data (const std::string &filename, int fd,
 // Construct an Import object.  We make the builtin_types_ vector
 // large enough to hold all the builtin types.
 
-Import::Import (std::unique_ptr<Stream> stream, Location location)
+Import::Import (std::unique_ptr<Stream> stream, location_t location)
   : stream_ (std::move (stream)), location_ (location)
 {}
 
@@ -358,7 +358,7 @@ Import::Stream::match_bytes (const char *bytes, size_t length)
 // Require that the next LENGTH bytes from the stream match BYTES.
 
 void
-Import::Stream::require_bytes (Location location, const char *bytes,
+Import::Stream::require_bytes (location_t location, const char *bytes,
 			       size_t length)
 {
   const char *read;

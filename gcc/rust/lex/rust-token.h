@@ -252,32 +252,32 @@ private:
   PrimitiveCoreType type_hint;
 
   // Token constructor from token id and location. Has a null string.
-  Token (TokenId token_id, Location location)
+  Token (TokenId token_id, location_t location)
     : token_id (token_id), locus (location), str (nullptr),
       type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a string.
-  Token (TokenId token_id, Location location, std::string &&paramStr)
+  Token (TokenId token_id, location_t location, std::string &&paramStr)
     : token_id (token_id), locus (location),
       str (new std::string (std::move (paramStr))), type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a char.
-  Token (TokenId token_id, Location location, char paramChar)
+  Token (TokenId token_id, location_t location, char paramChar)
     : token_id (token_id), locus (location),
       str (new std::string (1, paramChar)), type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a "codepoint".
-  Token (TokenId token_id, Location location, Codepoint paramCodepoint)
+  Token (TokenId token_id, location_t location, Codepoint paramCodepoint)
     : token_id (token_id), locus (location),
       str (new std::string (paramCodepoint.as_string ())),
       type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, a string, and type hint.
-  Token (TokenId token_id, Location location, std::string &&paramStr,
+  Token (TokenId token_id, location_t location, std::string &&paramStr,
 	 PrimitiveCoreType parType)
     : token_id (token_id), locus (location),
       str (new std::string (std::move (paramStr))), type_hint (parType)

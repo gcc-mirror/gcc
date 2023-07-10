@@ -139,7 +139,7 @@ protected:
 
   static tree named_constant_expression (tree type_tree,
 					 const std::string &name,
-					 tree const_val, Location location);
+					 tree const_val, location_t location);
 };
 
 } // namespace Compile

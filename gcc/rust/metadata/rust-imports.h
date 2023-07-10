@@ -69,7 +69,7 @@ public:
 
     // Give an error if the next bytes do not match STR.  Advance the
     // read position by the length of STR.
-    void require_c_string (Location location, const char *str)
+    void require_c_string (location_t location, const char *str)
     {
       this->require_bytes (location, str, strlen (str));
     }
@@ -111,7 +111,7 @@ public:
   // exports.  LOCATION is the location of the import statement.
   // RELATIVE_IMPORT_PATH is used as a prefix for a relative import.
   static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
-  open_package (const std::string &filename, Location location,
+  open_package (const std::string &filename, location_t location,
 		const std::string &relative_import_path);
 
   static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
@@ -121,7 +121,7 @@ public:
   Import (std::unique_ptr<Stream>, Location);
 
   // The location of the import statement.
-  Location location () const { return this->location_; }
+  location_t location () const { return this->location_; }
 
   // Return the next character.
   int peek_char () { return this->stream_->peek_char (); }
@@ -175,7 +175,7 @@ private:
   // The stream from which to read import data.
   std::unique_ptr<Stream> stream_;
   // The location of the import statement we are processing.
-  Location location_;
+  location_t location_;
 };
 
 // Read import data from a string.
