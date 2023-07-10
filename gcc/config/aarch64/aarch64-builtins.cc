@@ -2127,6 +2127,37 @@ aarch64_general_builtin_decl (unsigned code, bool)
   return aarch64_builtin_decls[code];
 }
 
+bool
+aarch64_general_check_builtin_call (location_t location, vec<location_t>,
+			    unsigned int code, tree fndecl,
+			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
+{
+  switch (code)
+    {
+    case AARCH64_RSR:
+    case AARCH64_RSRP:
+    case AARCH64_RSR64:
+    case AARCH64_RSRF:
+    case AARCH64_RSRF64:
+    case AARCH64_WSR:
+    case AARCH64_WSRP:
+    case AARCH64_WSR64:
+    case AARCH64_WSRF:
+    case AARCH64_WSRF64:
+      tree addr = STRIP_NOPS (args[0]);
+      if (TREE_CODE (TREE_TYPE (addr)) != POINTER_TYPE
+	  || TREE_CODE (addr) != ADDR_EXPR
+	  || TREE_CODE (TREE_OPERAND (addr, 0)) != STRING_CST)
+	{
+	  error_at (location, "first argument to %qD must be a string literal",
+		    fndecl);
+	  return false;
+	}
+    }
+  /* Default behavior.  */
+  return true;
+}
+
 typedef enum
 {
   SIMD_ARG_COPY_TO_REG,

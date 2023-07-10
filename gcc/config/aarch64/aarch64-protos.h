@@ -1002,6 +1002,10 @@ tree aarch64_general_builtin_rsqrt (unsigned int);
 void handle_arm_acle_h (void);
 void handle_arm_neon_h (void);
 
+bool aarch64_general_check_builtin_call (location_t, vec<location_t>,
+					 unsigned int, tree, unsigned int,
+					 tree *);
+
 namespace aarch64_sve {
   void init_builtins ();
   void handle_arm_sve_h ();

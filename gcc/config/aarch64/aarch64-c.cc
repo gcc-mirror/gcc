@@ -394,8 +394,8 @@ aarch64_check_builtin_call (location_t loc, vec<location_t> arg_loc,
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      return true;
-
+      return aarch64_general_check_builtin_call (loc, arg_loc, subcode,
+						 orig_fndecl, nargs, args);
     case AARCH64_BUILTIN_SVE:
       return aarch64_sve::check_builtin_call (loc, arg_loc, subcode,
 					      orig_fndecl, nargs, args);
