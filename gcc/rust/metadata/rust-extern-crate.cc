@@ -36,7 +36,7 @@ ExternCrate::ok () const
 }
 
 bool
-ExternCrate::load (Location locus)
+ExternCrate::load (location_t locus)
 {
   // match header
   import_stream.require_bytes (locus, Metadata::kMagicHeader,
@@ -155,7 +155,7 @@ ExternCrate::get_metadata () const
 
 // Turn a string into a integer with appropriate error handling.
 bool
-ExternCrate::string_to_int (Location locus, const std::string &s,
+ExternCrate::string_to_int (location_t locus, const std::string &s,
 			    bool is_neg_ok, int *ret)
 {
   char *end;

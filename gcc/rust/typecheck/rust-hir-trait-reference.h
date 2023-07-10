@@ -42,7 +42,7 @@ public:
   TraitItemReference (std::string identifier, bool optional, TraitItemType type,
 		      HIR::TraitItem *hir_trait_item, TyTy::BaseType *self,
 		      std::vector<TyTy::SubstitutionParamMapping> substitutions,
-		      Location locus);
+		      location_t locus);
 
   TraitItemReference (TraitItemReference const &other);
 
@@ -130,7 +130,7 @@ private:
   TraitItemType type;
   HIR::TraitItem *hir_trait_item;
   std::vector<TyTy::SubstitutionParamMapping> inherited_substitutions;
-  Location locus;
+  location_t locus;
 
   TyTy::BaseType
     *self; // this is the implict Self TypeParam required for methods
@@ -219,7 +219,7 @@ public:
 
   const std::vector<const TraitReference *> get_super_traits () const;
 
-  bool is_object_safe (bool emit_error, Location locus) const;
+  bool is_object_safe (bool emit_error, location_t locus) const;
 
   bool trait_has_generics () const;
 

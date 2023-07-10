@@ -412,7 +412,7 @@ ASTLoweringItem::visit (AST::Function &function)
       generic_params = lower_generic_params (function.get_generic_params ());
     }
   Identifier function_name = function.get_function_name ();
-  Location locus = function.get_locus ();
+  location_t locus = function.get_locus ();
 
   std::unique_ptr<HIR::Type> return_type
     = function.has_return_type () ? std::unique_ptr<HIR::Type> (

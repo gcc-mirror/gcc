@@ -31,11 +31,11 @@ namespace AST {
 class PathIdentSegment
 {
   std::string segment_name;
-  Location locus;
+  location_t locus;
 
   // only allow identifiers, "super", "self", "Self", "crate", or "$crate"
 public:
-  PathIdentSegment (std::string segment_name, Location locus)
+  PathIdentSegment (std::string segment_name, location_t locus)
     : segment_name (std::move (segment_name)), locus (locus)
   {}
 
@@ -64,7 +64,7 @@ struct GenericArgsBinding
 private:
   Identifier identifier;
   std::unique_ptr<Type> type;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether binding is in an error state.
@@ -82,7 +82,7 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      Location locus = UNDEF_LOCATION)
+		      location_t locus = UNDEF_LOCATION)
     : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
   {}
 
@@ -175,7 +175,7 @@ public:
     return GenericArg (nullptr, std::move (type), {""}, Kind::Type, locus);
   }
 
-  static GenericArg create_ambiguous (Identifier path, Location locus)
+  static GenericArg create_ambiguous (Identifier path, location_t locus)
   {
     return GenericArg (nullptr, nullptr, std::move (path), Kind::Either, locus);
   }
@@ -280,7 +280,7 @@ public:
 
 private:
   GenericArg (std::unique_ptr<Expr> expression, std::unique_ptr<Type> type,
-	      Identifier path, Kind kind, Location locus)
+	      Identifier path, Kind kind, location_t locus)
     : expression (std::move (expression)), type (std::move (type)),
       path (std::move (path)), kind (kind), locus (locus)
   {}
@@ -308,7 +308,7 @@ private:
   /* Which kind of const generic application are we dealing with */
   Kind kind;
 
-  Location locus;
+  location_t locus;
 };
 
 /**
@@ -328,12 +328,12 @@ class ConstGenericParam : public GenericParam
   GenericArg default_value;
 
   Attribute outer_attr;
-  Location locus;
+  location_t locus;
 
 public:
   ConstGenericParam (Identifier name, std::unique_ptr<AST::Type> type,
 		     GenericArg default_value, Attribute outer_attr,
-		     Location locus)
+		     location_t locus)
     : name (name), type (std::move (type)),
       default_value (std::move (default_value)), outer_attr (outer_attr),
       locus (locus)
@@ -394,7 +394,7 @@ struct GenericArgs
   std::vector<Lifetime> lifetime_args;
   std::vector<GenericArg> generic_args;
   std::vector<GenericArgsBinding> binding_args;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns true if there are any generic arguments
@@ -407,7 +407,7 @@ public:
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<GenericArg> generic_args,
 	       std::vector<GenericArgsBinding> binding_args,
-	       Location locus = UNDEF_LOCATION)
+	       location_t locus = UNDEF_LOCATION)
     : lifetime_args (std::move (lifetime_args)),
       generic_args (std::move (generic_args)),
       binding_args (std::move (binding_args)), locus (locus)
@@ -472,7 +472,7 @@ class PathExprSegment
 private:
   PathIdentSegment segment_name;
   GenericArgs generic_args;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
 public:
@@ -480,7 +480,7 @@ public:
   bool has_generic_args () const { return generic_args.has_generic_args (); }
 
   // Constructor for segment (from IdentSegment and GenericArgs)
-  PathExprSegment (PathIdentSegment segment_name, Location locus,
+  PathExprSegment (PathIdentSegment segment_name, location_t locus,
 		   GenericArgs generic_args = GenericArgs::create_empty ())
     : segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus),
@@ -489,7 +489,7 @@ public:
 
   /* Constructor for segment with generic arguments (from segment name and all
    * args) */
-  PathExprSegment (std::string segment_name, Location locus,
+  PathExprSegment (std::string segment_name, location_t locus,
 		   std::vector<Lifetime> lifetime_args = {},
 		   std::vector<GenericArg> generic_args = {},
 		   std::vector<GenericArgsBinding> binding_args = {})
@@ -583,7 +583,7 @@ class PathInExpression : public PathPattern, public PathExpr
 {
   std::vector<Attribute> outer_attrs;
   bool has_opening_scope_resolution;
-  Location locus;
+  location_t locus;
   NodeId _node_id;
 
 public:
@@ -591,7 +591,7 @@ public:
 
   // Constructor
   PathInExpression (std::vector<PathExprSegment> path_segments,
-		    std::vector<Attribute> outer_attrs, Location locus,
+		    std::vector<Attribute> outer_attrs, location_t locus,
 		    bool has_opening_scope_resolution = false)
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
@@ -681,7 +681,7 @@ public:
 
 private:
   PathIdentSegment ident_segment;
-  Location locus;
+  location_t locus;
 
 protected:
   /* This is protected because it is only really used by derived classes, not
@@ -709,14 +709,14 @@ public:
   }
 
   TypePathSegment (PathIdentSegment ident_segment,
-		   bool has_separating_scope_resolution, Location locus)
+		   bool has_separating_scope_resolution, location_t locus)
     : ident_segment (std::move (ident_segment)), locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   TypePathSegment (std::string segment_name,
-		   bool has_separating_scope_resolution, Location locus)
+		   bool has_separating_scope_resolution, location_t locus)
     : ident_segment (PathIdentSegment (std::move (segment_name), locus)),
       locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
@@ -797,7 +797,7 @@ public:
   // Constructor with PathIdentSegment and GenericArgs
   TypePathSegmentGeneric (PathIdentSegment ident_segment,
 			  bool has_separating_scope_resolution,
-			  GenericArgs generic_args, Location locus)
+			  GenericArgs generic_args, location_t locus)
     : TypePathSegment (std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       generic_args (std::move (generic_args))
@@ -809,7 +809,7 @@ public:
 			  std::vector<Lifetime> lifetime_args,
 			  std::vector<GenericArg> generic_args,
 			  std::vector<GenericArgsBinding> binding_args,
-			  Location locus)
+			  location_t locus)
     : TypePathSegment (std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       generic_args (GenericArgs (std::move (lifetime_args),
@@ -868,11 +868,11 @@ private:
   // FIXME: think of better way to mark as invalid than taking up storage
   bool is_invalid;
 
-  Location locus;
+  location_t locus;
 
 protected:
   // Constructor only used to create invalid type path functions.
-  TypePathFunction (bool is_invalid, Location locus)
+  TypePathFunction (bool is_invalid, location_t locus)
     : is_invalid (is_invalid), locus (locus)
   {}
 
@@ -893,8 +893,8 @@ public:
   }
 
   // Constructor
-  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs, Location locus,
-		    std::unique_ptr<Type> type = nullptr)
+  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
+		    location_t locus, std::unique_ptr<Type> type = nullptr)
     : inputs (std::move (inputs)), return_type (std::move (type)),
       is_invalid (false), locus (locus)
   {}
@@ -966,7 +966,7 @@ public:
   // Constructor with PathIdentSegment and TypePathFn
   TypePathSegmentFunction (PathIdentSegment ident_segment,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, Location locus)
+			   TypePathFunction function_path, location_t locus)
     : TypePathSegment (std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
@@ -975,7 +975,7 @@ public:
   // Constructor with segment name and TypePathFn
   TypePathSegmentFunction (std::string segment_name,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, Location locus)
+			   TypePathFunction function_path, location_t locus)
     : TypePathSegment (std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
@@ -1006,7 +1006,7 @@ class TypePath : public TypeNoBounds
 {
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1036,7 +1036,7 @@ public:
 
   // Constructor
   TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
-	    Location locus, bool has_opening_scope_resolution = false)
+	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (),
       has_opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (segments)), locus (locus)
@@ -1102,13 +1102,13 @@ struct QualifiedPathType
 private:
   std::unique_ptr<Type> type_to_invoke_on;
   TypePath trait_path;
-  Location locus;
+  location_t locus;
   NodeId node_id;
 
 public:
   // Constructor
   QualifiedPathType (std::unique_ptr<Type> invoke_on_type,
-		     Location locus = UNDEF_LOCATION,
+		     location_t locus = UNDEF_LOCATION,
 		     TypePath trait_path = TypePath::create_error ())
     : type_to_invoke_on (std::move (invoke_on_type)),
       trait_path (std::move (trait_path)), locus (locus),
@@ -1187,7 +1187,7 @@ class QualifiedPathInExpression : public PathPattern, public PathExpr
 {
   std::vector<Attribute> outer_attrs;
   QualifiedPathType path_type;
-  Location locus;
+  location_t locus;
   NodeId _node_id;
 
 public:
@@ -1195,7 +1195,8 @@ public:
 
   QualifiedPathInExpression (QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
-			     std::vector<Attribute> outer_attrs, Location locus)
+			     std::vector<Attribute> outer_attrs,
+			     location_t locus)
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus),
@@ -1275,7 +1276,7 @@ class QualifiedPathInType : public TypeNoBounds
   QualifiedPathType path_type;
   std::unique_ptr<TypePathSegment> associated_segment;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1290,7 +1291,7 @@ public:
     QualifiedPathType qual_path_type,
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
-    Location locus)
+    location_t locus)
     : path_type (std::move (qual_path_type)),
       associated_segment (std::move (associated_segment)),
       segments (std::move (path_segments)), locus (locus)

@@ -24,7 +24,7 @@ namespace Resolver {
 
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
-			   Location locus, bool allow_autoderef,
+			   location_t locus, bool allow_autoderef,
 			   bool is_cast_site)
 {
   TypeCoercionRules resolver (expected, locus, true, allow_autoderef, false,
@@ -35,7 +35,7 @@ TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
 
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
-			      TyTy::BaseType *expected, Location locus,
+			      TyTy::BaseType *expected, location_t locus,
 			      bool allow_autoderef, bool is_cast_site)
 {
   TypeCoercionRules resolver (expected, locus, false, allow_autoderef, true,
@@ -44,9 +44,10 @@ TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
-TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected, Location locus,
-				      bool emit_errors, bool allow_autoderef,
-				      bool try_flag, bool is_cast_site)
+TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected,
+				      location_t locus, bool emit_errors,
+				      bool allow_autoderef, bool try_flag,
+				      bool is_cast_site)
   : AutoderefCycle (!allow_autoderef), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
     try_result (CoercionResult::get_error ()), emit_errors (emit_errors),
@@ -73,7 +74,7 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
       // here, we would coerce from `!` to `?T`.
       if (expected->has_subsititions_defined () && !expected->is_concrete ())
 	{
-	  Location locus = mappings->lookup_location (receiver->get_ref ());
+	  location_t locus = mappings->lookup_location (receiver->get_ref ());
 	  TyTy::TyVar implicit_var
 	    = TyTy::TyVar::get_implicit_infer_var (locus);
 	  try_result = CoercionResult{{}, implicit_var.get_tyty ()};

@@ -3643,7 +3643,7 @@ AttributeParser::parse_path_meta_item ()
       case EQUAL: {
 	skip_token ();
 
-	Location locus = peek_token ()->get_locus ();
+	location_t locus = peek_token ()->get_locus ();
 	Literal lit = parse_literal ();
 	if (lit.is_error ())
 	  {
@@ -3848,7 +3848,7 @@ AttributeParser::parse_simple_path_segment ()
 std::unique_ptr<MetaItemLitExpr>
 AttributeParser::parse_meta_item_lit ()
 {
-  Location locus = peek_token ()->get_locus ();
+  location_t locus = peek_token ()->get_locus ();
   LiteralExpr lit_expr (parse_literal (), {}, locus);
   return std::unique_ptr<MetaItemLitExpr> (
     new MetaItemLitExpr (std::move (lit_expr)));

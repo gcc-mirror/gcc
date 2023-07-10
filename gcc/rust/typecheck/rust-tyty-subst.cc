@@ -107,7 +107,7 @@ SubstitutionParamMapping::need_substitution () const
 
 bool
 SubstitutionParamMapping::fill_param_ty (
-  SubstitutionArgumentMappings &subst_mappings, Location locus)
+  SubstitutionArgumentMappings &subst_mappings, location_t locus)
 {
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = subst_mappings.get_argument_for_symbol (get_param_ty (), &arg);
@@ -247,7 +247,7 @@ SubstitutionArg::as_string () const
 
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   std::vector<SubstitutionArg> mappings,
-  std::map<std::string, BaseType *> binding_args, Location locus,
+  std::map<std::string, BaseType *> binding_args, location_t locus,
   ParamSubstCb param_subst_cb, bool trait_item_flag, bool error_flag)
   : mappings (mappings), binding_args (binding_args), locus (locus),
     param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag),
@@ -692,7 +692,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 }
 
 BaseType *
-SubstitutionRef::infer_substitions (Location locus)
+SubstitutionRef::infer_substitions (location_t locus)
 {
   std::vector<SubstitutionArg> args;
   std::map<std::string, BaseType *> argument_mappings;

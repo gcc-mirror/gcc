@@ -22,7 +22,7 @@ namespace Rust {
 namespace Resolver {
 
 UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-			Location locus, bool commit_flag, bool emit_error,
+			location_t locus, bool commit_flag, bool emit_error,
 			bool infer, std::vector<CommitSite> &commits,
 			std::vector<InferenceSite> &infers)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
@@ -33,7 +33,7 @@ UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		     Location locus, bool commit_flag, bool emit_error,
+		     location_t locus, bool commit_flag, bool emit_error,
 		     bool infer, std::vector<CommitSite> &commits,
 		     std::vector<InferenceSite> &infers)
 {

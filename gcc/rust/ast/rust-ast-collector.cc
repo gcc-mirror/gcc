@@ -788,7 +788,7 @@ TokenCollector::visit (QualifiedPathInType &path)
 }
 
 void
-TokenCollector::visit (Literal &lit, Location locus)
+TokenCollector::visit (Literal &lit, location_t locus)
 {
   auto value = lit.as_string ();
   switch (lit.get_lit_type ())

@@ -57,7 +57,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, type.get_node_id (), type.get_locus (), false, Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, type.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -73,7 +73,7 @@ public:
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
       Rib::ItemType::Const,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -90,7 +90,7 @@ public:
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
       Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -106,7 +106,7 @@ public:
     resolver->get_name_scope ().insert (
       path, method.get_node_id (), method.get_locus (), false,
       Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, method.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -146,7 +146,7 @@ public:
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
       Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -166,7 +166,7 @@ public:
     resolver->get_name_scope ().insert (
       path, method.get_node_id (), method.get_locus (), false,
       Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, method.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -186,7 +186,7 @@ public:
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
       Rib::ItemType::Const,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -204,7 +204,7 @@ public:
 
     resolver->get_type_scope ().insert (
       path, type.get_node_id (), type.get_locus (), false, Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, type.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -244,7 +244,7 @@ public:
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
       Rib::ItemType::Function,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
@@ -263,7 +263,7 @@ public:
     resolver->get_name_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
       Rib::ItemType::Static,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");

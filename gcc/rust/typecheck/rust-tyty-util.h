@@ -40,7 +40,7 @@ public:
 
   TyVar monomorphized_clone () const;
 
-  static TyVar get_implicit_infer_var (Location locus);
+  static TyVar get_implicit_infer_var (location_t locus);
 
   static TyVar subst_covariant_var (TyTy::BaseType *orig,
 				    TyTy::BaseType *subst);
@@ -52,7 +52,7 @@ private:
 class TyWithLocation
 {
 public:
-  explicit TyWithLocation (BaseType *ty, Location locus);
+  explicit TyWithLocation (BaseType *ty, location_t locus);
   explicit TyWithLocation (BaseType *ty);
 
   BaseType *get_ty () const { return ty; }
@@ -60,7 +60,7 @@ public:
 
 private:
   BaseType *ty;
-  Location locus;
+  location_t locus;
 };
 
 } // namespace TyTy

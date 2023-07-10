@@ -39,18 +39,19 @@ PathProbeCandidate::Candidate::Candidate (TraitItemCandidate trait)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus,
+					location_t locus,
 					EnumItemCandidate enum_field)
   : type (type), ty (ty), locus (locus), item (enum_field)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus, ImplItemCandidate impl)
+					location_t locus,
+					ImplItemCandidate impl)
   : type (type), ty (ty), locus (locus), item (impl)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus,
+					location_t locus,
 					TraitItemCandidate trait)
   : type (type), ty (ty), locus (locus), item (trait)
 {}

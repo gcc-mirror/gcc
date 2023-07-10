@@ -36,7 +36,7 @@ public:
   static TyTy::BaseType *ResolveImplBlockSelf (HIR::ImplBlock &impl_block);
 
   static TyTy::BaseType *ResolveImplBlockSelfWithInference (
-    HIR::ImplBlock &impl, Location locus,
+    HIR::ImplBlock &impl, location_t locus,
     TyTy::SubstitutionArgumentMappings *infer_arguments);
 
   void visit (HIR::Module &module) override;

@@ -467,7 +467,7 @@ public:
   virtual Location get_locus () const { return locus; }
 
 protected:
-  Type (Analysis::NodeMapping mappings, Location locus)
+  Type (Analysis::NodeMapping mappings, location_t locus)
     : mappings (mappings), locus (locus)
   {}
 
@@ -475,7 +475,7 @@ protected:
   virtual Type *clone_type_impl () const = 0;
 
   Analysis::NodeMapping mappings;
-  Location locus;
+  location_t locus;
 };
 
 // A type without parentheses? - abstract
@@ -489,7 +489,7 @@ public:
   }
 
 protected:
-  TypeNoBounds (Analysis::NodeMapping mappings, Location locus)
+  TypeNoBounds (Analysis::NodeMapping mappings, location_t locus)
     : Type (mappings, locus)
   {}
 
@@ -544,13 +544,13 @@ class Lifetime : public TypeParamBound
 private:
   AST::Lifetime::LifetimeType lifetime_type;
   std::string lifetime_name;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
   Lifetime (Analysis::NodeMapping mapping, AST::Lifetime::LifetimeType type,
-	    std::string name, Location locus)
+	    std::string name, location_t locus)
     : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
       mappings (mapping)
   {}
@@ -654,7 +654,7 @@ class LifetimeParam : public GenericParam
   // std::unique_ptr<Attribute> outer_attr;
   AST::Attribute outer_attr;
 
-  Location locus;
+  location_t locus;
 
 public:
   Lifetime get_lifetime () { return lifetime; }
@@ -670,7 +670,7 @@ public:
 
   // Constructor
   LifetimeParam (Analysis::NodeMapping mappings, Lifetime lifetime,
-		 Location locus = UNDEF_LOCATION,
+		 location_t locus = UNDEF_LOCATION,
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
 		 AST::Attribute outer_attr = AST::Attribute::create_empty ())
@@ -725,7 +725,7 @@ class ConstGenericParam : public GenericParam
 public:
   ConstGenericParam (std::string name, std::unique_ptr<Type> type,
 		     std::unique_ptr<Expr> default_expression,
-		     Analysis::NodeMapping mapping, Location locus)
+		     Analysis::NodeMapping mapping, location_t locus)
     : GenericParam (mapping, GenericKind::CONST), name (std::move (name)),
       type (std::move (type)),
       default_expression (std::move (default_expression)), locus (locus)
@@ -772,7 +772,7 @@ private:
   /* Optional - can be a null pointer if there is no default expression */
   std::unique_ptr<Expr> default_expression;
 
-  Location locus;
+  location_t locus;
 };
 
 // Item used in trait declarations - abstract base class

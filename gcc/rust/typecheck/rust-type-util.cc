@@ -198,7 +198,7 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	       Location locus)
+	       location_t locus)
 {
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
@@ -233,7 +233,7 @@ coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 try_coercion (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	      Location locus)
+	      location_t locus)
 {
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();

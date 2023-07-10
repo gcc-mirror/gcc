@@ -43,7 +43,7 @@ public:
   };
 
   static TyTy::BaseType *Resolve (TyTy::TyWithLocation lhs,
-				  TyTy::TyWithLocation rhs, Location locus,
+				  TyTy::TyWithLocation rhs, location_t locus,
 				  bool commit_flag, bool emit_error, bool infer,
 				  std::vector<CommitSite> &commits,
 				  std::vector<InferenceSite> &infers);
@@ -85,7 +85,7 @@ protected:
 
 private:
   UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	      Location locus, bool commit_flag, bool emit_error, bool infer,
+	      location_t locus, bool commit_flag, bool emit_error, bool infer,
 	      std::vector<CommitSite> &commits,
 	      std::vector<InferenceSite> &infers);
 
@@ -100,7 +100,7 @@ private:
 
   TyTy::TyWithLocation lhs;
   TyTy::TyWithLocation rhs;
-  Location locus;
+  location_t locus;
   bool commit_flag;
   bool emit_error;
   bool infer_flag;

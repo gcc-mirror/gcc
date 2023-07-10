@@ -39,7 +39,7 @@ UnsafeChecker::go (HIR::Crate &crate)
 }
 
 static void
-check_static_mut (HIR::Item *maybe_static, Location locus)
+check_static_mut (HIR::Item *maybe_static, location_t locus)
 {
   if (maybe_static->get_hir_kind () == Node::BaseKind::VIS_ITEM)
     {
@@ -55,7 +55,7 @@ check_static_mut (HIR::Item *maybe_static, Location locus)
 }
 
 static void
-check_extern_static (HIR::ExternalItem *maybe_static, Location locus)
+check_extern_static (HIR::ExternalItem *maybe_static, location_t locus)
 {
   if (maybe_static->get_extern_kind () == ExternalItem::ExternKind::Static)
     rust_error_at (locus,
@@ -63,7 +63,7 @@ check_extern_static (HIR::ExternalItem *maybe_static, Location locus)
 }
 
 void
-UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
+UnsafeChecker::check_use_of_static (HirId node_id, location_t locus)
 {
   if (unsafe_context.is_in_context ())
     return;
@@ -83,7 +83,7 @@ UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
 }
 
 static void
-check_unsafe_call (HIR::Function *fn, Location locus, const std::string &kind)
+check_unsafe_call (HIR::Function *fn, location_t locus, const std::string &kind)
 {
   if (fn->get_qualifiers ().is_unsafe ())
     rust_error_at (locus, ErrorCode ("E0133"),
@@ -137,7 +137,7 @@ is_safe_intrinsic (const std::string &fn_name)
 
 static void
 check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
-		   Location locus)
+		   location_t locus)
 {
   // We have multiple operations to perform here
   //     1. Is the item an actual function we're calling
@@ -161,7 +161,7 @@ check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
 }
 
 void
-UnsafeChecker::check_function_call (HirId node_id, Location locus)
+UnsafeChecker::check_function_call (HirId node_id, location_t locus)
 {
   if (unsafe_context.is_in_context ())
     return;
@@ -181,7 +181,7 @@ UnsafeChecker::check_function_call (HirId node_id, Location locus)
 }
 
 static void
-check_target_attr (HIR::Function *fn, Location locus)
+check_target_attr (HIR::Function *fn, location_t locus)
 {
   if (std::any_of (fn->get_outer_attrs ().begin (),
 		   fn->get_outer_attrs ().end (),
@@ -194,7 +194,7 @@ check_target_attr (HIR::Function *fn, Location locus)
 }
 
 void
-UnsafeChecker::check_function_attr (HirId node_id, Location locus)
+UnsafeChecker::check_function_attr (HirId node_id, location_t locus)
 {
   if (unsafe_context.is_in_context ())
     return;

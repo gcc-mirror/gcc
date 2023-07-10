@@ -181,7 +181,7 @@ tree
 HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      const TyTy::BaseType *actual,
 				      const TyTy::DynamicObjectType *ty,
-				      Location locus)
+				      location_t locus)
 {
   // DST's get wrapped in a pseudo reference that doesnt exist...
   const TyTy::ReferenceType r (ctx->get_mappings ()->get_next_hir_id (),
@@ -232,7 +232,7 @@ HIRCompileBase::compute_address_for_trait_item (
   const TyTy::TypeBoundPredicate *predicate,
   std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
     &receiver_bounds,
-  const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus)
+  const TyTy::BaseType *receiver, const TyTy::BaseType *root, location_t locus)
 {
   // There are two cases here one where its an item which has an implementation
   // within a trait-impl-block. Then there is the case where there is a default

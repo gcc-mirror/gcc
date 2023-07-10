@@ -40,7 +40,7 @@ class TraitBound : public TypeParamBound
 
   TypePath type_path;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether trait bound has "for" lifetimes
@@ -48,7 +48,7 @@ public:
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
 
-  TraitBound (TypePath type_path, Location locus, bool in_parens = false,
+  TraitBound (TypePath type_path, location_t locus, bool in_parens = false,
 	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
@@ -58,7 +58,7 @@ public:
       type_path (std::move (type_path)), locus (locus)
   {}
 
-  TraitBound (NodeId id, TypePath type_path, Location locus,
+  TraitBound (NodeId id, TypePath type_path, location_t locus,
 	      bool in_parens = false, bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
@@ -101,7 +101,7 @@ class ImplTraitType : public Type
   // inlined form
   std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
 
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -114,7 +114,7 @@ protected:
 public:
   ImplTraitType (
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    Location locus)
+    location_t locus)
     : type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
 
@@ -165,7 +165,7 @@ class TraitObjectType : public Type
 {
   bool has_dyn;
   std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -178,7 +178,7 @@ protected:
 public:
   TraitObjectType (
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    Location locus, bool is_dyn_dispatch)
+    location_t locus, bool is_dyn_dispatch)
     : has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
@@ -232,7 +232,7 @@ public:
 class ParenthesisedType : public TypeNoBounds
 {
   std::unique_ptr<Type> type_in_parens;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -244,7 +244,7 @@ protected:
 
 public:
   // Constructor uses Type pointer for polymorphism
-  ParenthesisedType (std::unique_ptr<Type> type_inside_parens, Location locus)
+  ParenthesisedType (std::unique_ptr<Type> type_inside_parens, location_t locus)
     : type_in_parens (std::move (type_inside_parens)), locus (locus)
   {}
 
@@ -296,7 +296,7 @@ public:
 class ImplTraitTypeOneBound : public TypeNoBounds
 {
   TraitBound trait_bound;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -307,7 +307,7 @@ protected:
   }
 
 public:
-  ImplTraitTypeOneBound (TraitBound trait_bound, Location locus)
+  ImplTraitTypeOneBound (TraitBound trait_bound, location_t locus)
     : trait_bound (std::move (trait_bound)), locus (locus)
   {}
 
@@ -331,7 +331,7 @@ class TraitObjectTypeOneBound : public TypeNoBounds
 {
   bool has_dyn;
   TraitBound trait_bound;
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -342,7 +342,7 @@ protected:
   }
 
 public:
-  TraitObjectTypeOneBound (TraitBound trait_bound, Location locus,
+  TraitObjectTypeOneBound (TraitBound trait_bound, location_t locus,
 			   bool is_dyn_dispatch = false)
     : has_dyn (is_dyn_dispatch), trait_bound (std::move (trait_bound)),
       locus (locus)
@@ -379,13 +379,13 @@ class TypePath; // definition moved to "rust-path.h"
 class TupleType : public TypeNoBounds
 {
   std::vector<std::unique_ptr<Type> > elems;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the tuple type is the unit type, i.e. has no elements.
   bool is_unit_type () const { return elems.empty (); }
 
-  TupleType (std::vector<std::unique_ptr<Type> > elems, Location locus)
+  TupleType (std::vector<std::unique_ptr<Type> > elems, location_t locus)
     : elems (std::move (elems)), locus (locus)
   {}
 
@@ -440,7 +440,7 @@ protected:
  * Represented as "!". */
 class NeverType : public TypeNoBounds
 {
-  Location locus;
+  location_t locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -451,7 +451,7 @@ protected:
   }
 
 public:
-  NeverType (Location locus) : locus (locus) {}
+  NeverType (location_t locus) : locus (locus) {}
 
   std::string as_string () const override { return "! (never type)"; }
 
@@ -473,7 +473,7 @@ public:
 private:
   PointerType pointer_type;
   std::unique_ptr<TypeNoBounds> type;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the pointer is mutable or constant.
@@ -481,7 +481,8 @@ public:
 
   // Constructor requires pointer for polymorphism reasons
   RawPointerType (PointerType pointer_type,
-		  std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus)
+		  std::unique_ptr<TypeNoBounds> type_no_bounds,
+		  location_t locus)
     : pointer_type (pointer_type), type (std::move (type_no_bounds)),
       locus (locus)
   {}
@@ -535,7 +536,7 @@ class ReferenceType : public TypeNoBounds
 
   bool has_mut;
   std::unique_ptr<TypeNoBounds> type;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the reference is mutable or immutable.
@@ -546,7 +547,7 @@ public:
 
   // Constructor
   ReferenceType (bool is_mut, std::unique_ptr<TypeNoBounds> type_no_bounds,
-		 Location locus, Lifetime lifetime = Lifetime::error ())
+		 location_t locus, Lifetime lifetime = Lifetime::error ())
     : lifetime (std::move (lifetime)), has_mut (is_mut),
       type (std::move (type_no_bounds)), locus (locus)
   {}
@@ -605,12 +606,12 @@ class ArrayType : public TypeNoBounds
 {
   std::unique_ptr<Type> elem_type;
   std::unique_ptr<Expr> size;
-  Location locus;
+  location_t locus;
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayType (std::unique_ptr<Type> type, std::unique_ptr<Expr> array_size,
-	     Location locus)
+	     location_t locus)
     : elem_type (std::move (type)), size (std::move (array_size)), locus (locus)
   {}
 
@@ -667,11 +668,11 @@ protected:
 class SliceType : public TypeNoBounds
 {
   std::unique_ptr<Type> elem_type;
-  Location locus;
+  location_t locus;
 
 public:
   // Constructor requires pointer for polymorphism
-  SliceType (std::unique_ptr<Type> type, Location locus)
+  SliceType (std::unique_ptr<Type> type, location_t locus)
     : elem_type (std::move (type)), locus (locus)
   {}
 
@@ -719,7 +720,7 @@ protected:
  * pattern) */
 class InferredType : public TypeNoBounds
 {
-  Location locus;
+  location_t locus;
 
   // e.g. Vec<_> = whatever
 protected:
@@ -731,7 +732,7 @@ protected:
   }
 
 public:
-  InferredType (Location locus) : locus (locus) {}
+  InferredType (location_t locus) : locus (locus) {}
 
   std::string as_string () const override;
 
@@ -761,12 +762,12 @@ private:
   ParamKind param_kind;
   Identifier name; // technically, can be an identifier or '_'
 
-  Location locus;
+  location_t locus;
 
 public:
   MaybeNamedParam (Identifier name, ParamKind param_kind,
 		   std::unique_ptr<Type> param_type,
-		   std::vector<Attribute> outer_attrs, Location locus)
+		   std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)),
       param_type (std::move (param_type)), param_kind (param_kind),
       name (std::move (name)), locus (locus)
@@ -851,7 +852,7 @@ class BareFunctionType : public TypeNoBounds
   // BareFunctionReturnType return_type;
   std::unique_ptr<TypeNoBounds> return_type; // inlined version
 
-  Location locus;
+  location_t locus;
 
 public:
   // Whether a return type is defined with the function.
@@ -874,7 +875,7 @@ public:
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
 		    std::vector<Attribute> variadic_attrs,
-		    std::unique_ptr<TypeNoBounds> type, Location locus)
+		    std::unique_ptr<TypeNoBounds> type, location_t locus)
     : for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), _is_variadic (is_variadic),

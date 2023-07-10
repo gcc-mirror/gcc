@@ -21,13 +21,13 @@
 namespace Rust {
 namespace Resolver {
 
-TypeCastRules::TypeCastRules (Location locus, TyTy::TyWithLocation from,
+TypeCastRules::TypeCastRules (location_t locus, TyTy::TyWithLocation from,
 			      TyTy::TyWithLocation to)
   : locus (locus), from (from), to (to)
 {}
 
 TypeCoercionRules::CoercionResult
-TypeCastRules::resolve (Location locus, TyTy::TyWithLocation from,
+TypeCastRules::resolve (location_t locus, TyTy::TyWithLocation from,
 			TyTy::TyWithLocation to)
 {
   TypeCastRules cast_rules (locus, from, to);

@@ -25,14 +25,14 @@ namespace Rust {
 namespace Compile {
 
 CompileFnParam::CompileFnParam (Context *ctx, tree fndecl, tree decl_type,
-				Location locus)
+				location_t locus)
   : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type), locus (locus),
     compiled_param (ctx->get_backend ()->error_variable ())
 {}
 
 Bvariable *
 CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
-			 tree decl_type, Location locus)
+			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
   param->get_param_name ()->accept_vis (compiler);
@@ -41,7 +41,7 @@ CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
 
 Bvariable *
 CompileFnParam::compile (Context *ctx, tree fndecl, HIR::Pattern *param,
-			 tree decl_type, Location locus)
+			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
   param->accept_vis (compiler);
@@ -90,7 +90,7 @@ CompileFnParam::visit (HIR::ReferencePattern &pattern)
 
 Bvariable *
 CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
-			   tree decl_type, Location locus)
+			   tree decl_type, location_t locus)
 {
   bool is_immutable
     = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM

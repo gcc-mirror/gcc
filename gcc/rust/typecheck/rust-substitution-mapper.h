@@ -28,10 +28,10 @@ namespace Resolver {
 class SubstMapper : public TyTy::TyVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (TyTy::BaseType *base, Location locus,
+  static TyTy::BaseType *Resolve (TyTy::BaseType *base, location_t locus,
 				  HIR::GenericArgs *generics = nullptr);
 
-  static TyTy::BaseType *InferSubst (TyTy::BaseType *base, Location locus);
+  static TyTy::BaseType *InferSubst (TyTy::BaseType *base, location_t locus);
 
   bool have_generic_args () const;
 
@@ -63,11 +63,11 @@ public:
   void visit (TyTy::ClosureType &) override { rust_unreachable (); }
 
 private:
-  SubstMapper (HirId ref, HIR::GenericArgs *generics, Location locus);
+  SubstMapper (HirId ref, HIR::GenericArgs *generics, location_t locus);
 
   TyTy::BaseType *resolved;
   HIR::GenericArgs *generics;
-  Location locus;
+  location_t locus;
 };
 
 class SubstMapperInternal : public TyTy::TyVisitor

@@ -28,7 +28,7 @@ Rib::Rib (CrateNum crateNum, NodeId node_id)
 
 void
 Rib::insert_name (
-  const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+  const CanonicalPath &path, NodeId id, location_t locus, bool shadow,
   ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
@@ -139,7 +139,7 @@ Scope::Scope (CrateNum crate_num) : crate_num (crate_num) {}
 
 void
 Scope::insert (
-  const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+  const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
   Rib::ItemType type,
   std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
 {
@@ -147,7 +147,7 @@ Scope::insert (
 }
 
 void
-Scope::insert (const CanonicalPath &ident, NodeId id, Location locus,
+Scope::insert (const CanonicalPath &ident, NodeId id, location_t locus,
 	       Rib::ItemType type)
 {
   peek ()->insert_name (ident, id, locus, true, type,

@@ -116,7 +116,7 @@ public:
 
   bool satisfies_bound (const TypeBoundPredicate &predicate,
 			bool emit_error) const;
-  bool bounds_compatible (const BaseType &other, Location locus,
+  bool bounds_compatible (const BaseType &other, location_t locus,
 			  bool emit_error) const;
   void inherit_bounds (const BaseType &other);
   void inherit_bounds (
@@ -218,11 +218,11 @@ public:
     }
   };
 
-  InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint, Location locus,
-	     std::set<HirId> refs = std::set<HirId> ());
+  InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint,
+	     location_t locus, std::set<HirId> refs = std::set<HirId> ());
 
   InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind, TypeHint hint,
-	     Location locus, std::set<HirId> refs = std::set<HirId> ());
+	     location_t locus, std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -269,13 +269,13 @@ public:
 class ParamType : public BaseType
 {
 public:
-  ParamType (std::string symbol, Location locus, HirId ref,
+  ParamType (std::string symbol, location_t locus, HirId ref,
 	     HIR::GenericParam &param,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  ParamType (bool is_trait_self, std::string symbol, Location locus, HirId ref,
-	     HirId ty_ref, HIR::GenericParam &param,
+  ParamType (bool is_trait_self, std::string symbol, location_t locus,
+	     HirId ref, HirId ty_ref, HIR::GenericParam &param,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
@@ -314,7 +314,7 @@ private:
 class StructFieldType
 {
 public:
-  StructFieldType (HirId ref, std::string name, BaseType *ty, Location locus);
+  StructFieldType (HirId ref, std::string name, BaseType *ty, location_t locus);
 
   HirId get_ref () const;
 
@@ -336,17 +336,17 @@ private:
   HirId ref;
   std::string name;
   BaseType *ty;
-  Location locus;
+  location_t locus;
 };
 
 class TupleType : public BaseType
 {
 public:
-  TupleType (HirId ref, Location locus,
+  TupleType (HirId ref, location_t locus,
 	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  TupleType (HirId ref, HirId ty_ref, Location locus,
+  TupleType (HirId ref, HirId ty_ref, location_t locus,
 	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ());
 
@@ -381,11 +381,11 @@ class TypeBoundPredicate : public SubstitutionRef
 {
 public:
   TypeBoundPredicate (const Resolver::TraitReference &trait_reference,
-		      Location locus);
+		      location_t locus);
 
   TypeBoundPredicate (DefId reference,
 		      std::vector<SubstitutionParamMapping> substitutions,
-		      Location locus);
+		      location_t locus);
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
@@ -407,7 +407,7 @@ public:
 
   // check that this predicate is object-safe see:
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
-  bool is_object_safe (bool emit_error, Location locus) const;
+  bool is_object_safe (bool emit_error, location_t locus) const;
 
   void apply_generic_arguments (HIR::GenericArgs *generic_args,
 				bool has_associated_self);
@@ -443,7 +443,7 @@ public:
 
 private:
   DefId reference;
-  Location locus;
+  location_t locus;
   bool error_flag;
 };
 
@@ -761,14 +761,14 @@ private:
 class FnPtr : public BaseType
 {
 public:
-  FnPtr (HirId ref, Location locus, std::vector<TyVar> params,
+  FnPtr (HirId ref, location_t locus, std::vector<TyVar> params,
 	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNPTR,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
       params (std::move (params)), result_type (result_type)
   {}
 
-  FnPtr (HirId ref, HirId ty_ref, Location locus, std::vector<TyVar> params,
+  FnPtr (HirId ref, HirId ty_ref, location_t locus, std::vector<TyVar> params,
 	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNPTR,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
@@ -876,15 +876,16 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, Location locus, HIR::Expr &capacity_expr, TyVar base,
+  ArrayType (HirId ref, location_t locus, HIR::Expr &capacity_expr, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
       element_type (base), capacity_expr (capacity_expr)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, Location locus, HIR::Expr &capacity_expr,
-	     TyVar base, std::set<HirId> refs = std::set<HirId> ())
+  ArrayType (HirId ref, HirId ty_ref, location_t locus,
+	     HIR::Expr &capacity_expr, TyVar base,
+	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
       element_type (base), capacity_expr (capacity_expr)
@@ -918,14 +919,14 @@ private:
 class SliceType : public BaseType
 {
 public:
-  SliceType (HirId ref, Location locus, TyVar base,
+  SliceType (HirId ref, location_t locus, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::SLICE,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
       element_type (base)
   {}
 
-  SliceType (HirId ref, HirId ty_ref, Location locus, TyVar base,
+  SliceType (HirId ref, HirId ty_ref, location_t locus, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::SLICE,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),

@@ -524,7 +524,7 @@ TypeCheckType::resolve_segments (
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
   if (tyseg->needs_generic_substitutions ())
     {
-      // Location locus = segments.back ()->get_locus ();
+      // location_t locus = segments.back ()->get_locus ();
       if (!prev_segment->needs_generic_substitutions ())
 	{
 	  auto used_args_in_prev_segment

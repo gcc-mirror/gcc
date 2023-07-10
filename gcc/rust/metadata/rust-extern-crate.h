@@ -33,13 +33,13 @@ public:
 
   bool ok () const;
 
-  bool load (Location locus);
+  bool load (location_t locus);
 
   const std::string &get_crate_name () const;
 
   const std::string &get_metadata () const;
 
-  static bool string_to_int (Location locus, const std::string &s,
+  static bool string_to_int (location_t locus, const std::string &s,
 			     bool is_neg_ok, int *ret);
 
 private:

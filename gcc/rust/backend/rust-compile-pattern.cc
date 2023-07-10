@@ -106,7 +106,7 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
 
 static tree
 compile_range_pattern_bound (HIR::RangePatternBound *bound,
-			     Analysis::NodeMapping mappings, Location locus,
+			     Analysis::NodeMapping mappings, location_t locus,
 			     Context *ctx)
 {
   tree result = NULL_TREE;

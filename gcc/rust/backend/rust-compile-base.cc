@@ -358,7 +358,7 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
 // it is fine to use ARRAY_REFs for vector subscripts on vector
 // register variables.
 bool
-HIRCompileBase::mark_addressable (tree exp, Location locus)
+HIRCompileBase::mark_addressable (tree exp, location_t locus)
 {
   tree x = exp;
 
@@ -429,7 +429,7 @@ HIRCompileBase::address_expression (tree expr, Location location)
 }
 
 tree
-HIRCompileBase::indirect_expression (tree expr, Location locus)
+HIRCompileBase::indirect_expression (tree expr, location_t locus)
 {
   if (expr == error_mark_node)
     return error_mark_node;
@@ -483,7 +483,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
 
   if (function_body.has_expr ())
     {
-      Location locus = function_body.get_final_expr ()->get_locus ();
+      location_t locus = function_body.get_final_expr ()->get_locus ();
       tree return_value = CompileExpr::Compile (function_body.expr.get (), ctx);
 
       // we can only return this if non unit value return type
@@ -523,7 +523,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
     {
       // we can only do this if the function is of unit type otherwise other
       // errors should have occurred
-      Location locus = function_body.get_locus ();
+      location_t locus = function_body.get_locus ();
       tree return_value = unit_expression (ctx, locus);
       tree return_stmt
 	= ctx->get_backend ()->return_statement (fndecl, return_value, locus);
@@ -536,7 +536,7 @@ HIRCompileBase::compile_function (
   const std::string &fn_name, HIR::SelfParam &self_param,
   std::vector<HIR::FunctionParam> &function_params,
   const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
-  AST::AttrVec &outer_attrs, Location locus, HIR::BlockExpr *function_body,
+  AST::AttrVec &outer_attrs, location_t locus, HIR::BlockExpr *function_body,
   const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype)
 {
   tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
@@ -660,7 +660,7 @@ HIRCompileBase::compile_function (
 tree
 HIRCompileBase::compile_constant_item (
   TyTy::BaseType *resolved_type, const Resolver::CanonicalPath *canonical_path,
-  HIR::Expr *const_value_expr, Location locus)
+  HIR::Expr *const_value_expr, location_t locus)
 {
   const std::string &ident = canonical_path->get ();
 
@@ -885,7 +885,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 }
 
 tree
-HIRCompileBase::unit_expression (Context *ctx, Location locus)
+HIRCompileBase::unit_expression (Context *ctx, location_t locus)
 {
   tree unit_type = TyTyResolveCompile::get_unit_type (ctx);
   return ctx->get_backend ()->constructor_expression (unit_type, false, {}, -1,

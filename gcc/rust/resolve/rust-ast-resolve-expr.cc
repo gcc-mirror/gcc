@@ -424,7 +424,7 @@ ResolveExpr::visit (AST::LoopExpr &expr)
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (expr.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
-	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
@@ -498,7 +498,7 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
-	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
@@ -527,7 +527,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
       resolver->get_label_scope ().insert (
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
-	[&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	  rust_error_at (label.get_locus (), "label redefined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});

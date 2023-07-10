@@ -27,9 +27,9 @@ namespace Rust {
 struct RustIdent
 {
   Resolver::CanonicalPath path;
-  Location locus;
+  location_t locus;
 
-  RustIdent (const Resolver::CanonicalPath &path, Location locus)
+  RustIdent (const Resolver::CanonicalPath &path, location_t locus)
     : path (path), locus (locus)
   {}
 

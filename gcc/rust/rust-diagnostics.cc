@@ -360,11 +360,12 @@ namespace Rust {
  * This function takes ownership of `args` and calls `va_end` on it
  */
 static Error
-va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
-  RUST_ATTRIBUTE_GCC_DIAG (3, 0);
+va_constructor (Error::Kind kind, location_t locus, const char *fmt,
+		va_list args) RUST_ATTRIBUTE_GCC_DIAG (3, 0);
 
 static Error
-va_constructor (Error::Kind kind, Location locus, const char *fmt, va_list args)
+va_constructor (Error::Kind kind, location_t locus, const char *fmt,
+		va_list args)
 {
   std::string message = expand_message (fmt, args);
   message.shrink_to_fit ();

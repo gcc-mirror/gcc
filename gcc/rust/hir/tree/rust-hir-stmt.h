@@ -28,12 +28,12 @@ namespace HIR {
 // Just a semi-colon, which apparently is a statement.
 class EmptyStmt : public Stmt
 {
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override { return std::string (1, ';'); }
 
-  EmptyStmt (Analysis::NodeMapping mappings, Location locus)
+  EmptyStmt (Analysis::NodeMapping mappings, location_t locus)
     : Stmt (std::move (mappings)), locus (locus)
   {}
 
@@ -65,7 +65,7 @@ class LetStmt : public Stmt
   // bool has_init_expr;
   std::unique_ptr<Expr> init_expr;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether let statement has outer attributes.
@@ -82,7 +82,7 @@ public:
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
 	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
-	   AST::AttrVec outer_attrs, Location locus)
+	   AST::AttrVec outer_attrs, location_t locus)
     : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attrs)),
       variables_pattern (std::move (variables_pattern)),
       type (std::move (type)), init_expr (std::move (init_expr)), locus (locus)
@@ -162,18 +162,18 @@ protected:
 class ExprStmt : public Stmt
 {
   std::unique_ptr<Expr> expr;
-  Location locus;
+  location_t locus;
   bool must_be_unit;
 
 public:
   ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
-	    Location locus, bool must_be_unit)
+	    location_t locus, bool must_be_unit)
     : Stmt (std::move (mappings)), expr (std::move (expr)), locus (locus),
       must_be_unit (must_be_unit)
   {}
 
   ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
-	    Location locus)
+	    location_t locus)
     : ExprStmt (std::move (mappings), std::move (expr), locus, false)
   {}
 

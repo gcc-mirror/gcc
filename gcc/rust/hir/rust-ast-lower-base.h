@@ -49,7 +49,7 @@ public:
 
 private:
   const Analysis::NodeMapping &mappings;
-  Location locus;
+  location_t locus;
   const AST::AttrVec &outer_attrs;
 };
 

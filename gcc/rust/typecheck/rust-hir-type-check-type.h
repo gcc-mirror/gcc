@@ -36,7 +36,7 @@ public:
   void visit (HIR::TypePathSegmentGeneric &generic);
 
 private:
-  TypeCheckResolveGenericArguments (Location locus)
+  TypeCheckResolveGenericArguments (location_t locus)
     : TypeCheckBase (), args (HIR::GenericArgs::create_empty (locus))
   {}
 

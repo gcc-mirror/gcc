@@ -319,7 +319,7 @@ struct MacroExpander
   void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
 
   // Expands a single declarative macro.
-  AST::Fragment expand_decl_macro (Location locus, AST::MacroInvocData &invoc,
+  AST::Fragment expand_decl_macro (location_t locus, AST::MacroInvocData &invoc,
 				   AST::MacroRulesDefinition &rules_def,
 				   bool semicolon);
 
