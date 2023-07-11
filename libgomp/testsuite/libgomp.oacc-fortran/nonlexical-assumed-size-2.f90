@@ -30,6 +30,7 @@ integer :: arr(*)
 ! overwritten.
 
 !$acc serial
+! { dg-warning {using .vector_length \(32\)., ignoring 1} "" { target openacc_nvidia_accel_selected } .-1 }
 ! This access is then done via the on-target pointer.
 arr(5) = 5
 !$acc end serial

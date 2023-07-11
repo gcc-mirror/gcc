@@ -1,3 +1,15 @@
+2023-07-12  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/implicit-mapping-1.c: Add
+	expected warning.
+	* testsuite/libgomp.oacc-fortran/declare-create-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-create-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-create-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-2.f90:
+	Likewise.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.c/array-shaping-1.c: New test.
