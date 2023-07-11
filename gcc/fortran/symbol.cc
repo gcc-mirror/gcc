@@ -4719,6 +4719,13 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
       formal_arg->sym->attr.flavor = FL_VARIABLE;
       formal_arg->sym->attr.dummy = 1;
 
+      /* Do not treat an actual deferred-length character argument wrongly
+	 as template for the formal argument.  */
+      if (formal_arg->sym->ts.type == BT_CHARACTER
+	  && !(formal_arg->sym->attr.allocatable
+	       || formal_arg->sym->attr.pointer))
+	formal_arg->sym->ts.deferred = false;
+
       if (formal_arg->sym->ts.type == BT_CHARACTER)
 	formal_arg->sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
