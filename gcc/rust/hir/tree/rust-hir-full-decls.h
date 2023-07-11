@@ -37,7 +37,7 @@ class LifetimeParam;
 
 class TraitItem;
 class ImplItem;
-struct Crate;
+class Crate;
 class PathExpr;
 
 // rust-path.h
@@ -156,9 +156,9 @@ class UseDeclaration;
 class Function;
 class TypeAlias;
 class Struct;
-struct StructField;
+class StructField;
 class StructStruct;
-struct TupleField;
+class TupleField;
 class TupleStruct;
 class EnumItem;
 class EnumItemTuple;
@@ -168,7 +168,7 @@ class Enum;
 class Union;
 class ConstantItem;
 class StaticItem;
-struct TraitFunctionDecl;
+class TraitFunctionDecl;
 class TraitItemFunc;
 class TraitItemConst;
 class TraitItemType;
