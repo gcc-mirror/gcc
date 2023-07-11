@@ -13,6 +13,7 @@ allocate(mint(1:20))
 mint = 0
 
 !$acc serial
+! { dg-warning {using .vector_length \(32\)., ignoring 1} "" { target openacc_nvidia_accel_selected } .-1 }
 mint = 5
 !$acc end serial
 
