@@ -84,7 +84,7 @@ TEST()
   if (
       !test1() || !test1r()
       || !test2() || !test2r()
-      || !test3() || !test4r()
+      || !test3() || !test3r()
       || !test4() || !test4r()
       ) __builtin_abort();
 }
