@@ -65,9 +65,10 @@ public:
   static bool coerceable_mutability (Mutability from_mutbl,
 				     Mutability to_mutbl);
 
-  void mismatched_mutability_error (Location expr_locus, Location lhs,
-				    Location rhs);
-  void object_unsafe_error (Location expr_locus, Location lhs, Location rhs);
+  void mismatched_mutability_error (location_t expr_locus, location_t lhs,
+				    location_t rhs);
+  void object_unsafe_error (location_t expr_locus, location_t lhs,
+			    location_t rhs);
 
 protected:
   TypeCoercionRules (TyTy::BaseType *expected, location_t locus,

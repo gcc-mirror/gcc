@@ -24,7 +24,7 @@ namespace Rust {
 namespace TyTy {
 
 void
-emit_unexpected_argument_error (Location loc,
+emit_unexpected_argument_error (location_t loc,
 				unsigned long unexpected_arg_count,
 				unsigned long expected_arg_count)
 {
@@ -78,7 +78,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       StructFieldType *field = variant.get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
-      Location arg_locus = argument->get_locus ();
+      location_t arg_locus = argument->get_locus ();
 
       BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (arg->get_kind () == TyTy::TypeKind::ERROR)
@@ -138,7 +138,7 @@ TypeCheckCallExpr::visit (FnType &type)
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      Location arg_locus = argument->get_locus ();
+      location_t arg_locus = argument->get_locus ();
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
       if (argument_expr_tyty->get_kind () == TyTy::TypeKind::ERROR)
@@ -155,7 +155,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	  auto fnparam = type.param_at (i);
 	  HIR::Pattern *fn_param_pattern = fnparam.first;
 	  BaseType *param_ty = fnparam.second;
-	  Location param_locus
+	  location_t param_locus
 	    = fn_param_pattern == nullptr
 		? mappings->lookup_location (param_ty->get_ref ())
 		: fn_param_pattern->get_locus ();
@@ -255,7 +255,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      Location arg_locus = argument->get_locus ();
+      location_t arg_locus = argument->get_locus ();
       BaseType *fnparam = type.param_at (i);
       auto argument_expr_tyty
 	= Resolver::TypeCheckExpr::Resolve (argument.get ());
@@ -292,8 +292,8 @@ TypeCheckCallExpr::visit (FnPtr &type)
 
 TypeCheckMethodCallExpr::TypeCheckMethodCallExpr (
   Analysis::NodeMapping call_mappings, std::vector<Argument> &args,
-  Location call_locus, Location receiver_locus, TyTy::BaseType *adjusted_self,
-  Resolver::TypeCheckContext *context)
+  location_t call_locus, location_t receiver_locus,
+  TyTy::BaseType *adjusted_self, Resolver::TypeCheckContext *context)
   : call_mappings (call_mappings), arguments (args), call_locus (call_locus),
     receiver_locus (receiver_locus), adjusted_self (adjusted_self),
     context (context), mappings (Analysis::Mappings::get ())
@@ -329,8 +329,8 @@ TypeCheckMethodCallExpr::go (FnType *ref, HIR::MethodCallExpr &call,
 
 BaseType *
 TypeCheckMethodCallExpr::go (FnType *ref, Analysis::NodeMapping call_mappings,
-			     std::vector<Argument> &args, Location call_locus,
-			     Location receiver_locus,
+			     std::vector<Argument> &args, location_t call_locus,
+			     location_t receiver_locus,
 			     TyTy::BaseType *adjusted_self,
 			     Resolver::TypeCheckContext *context)
 {
@@ -360,12 +360,12 @@ TypeCheckMethodCallExpr::check (FnType &type)
   size_t i = 1;
   for (auto &argument : arguments)
     {
-      Location arg_locus = argument.get_locus ();
+      location_t arg_locus = argument.get_locus ();
 
       auto fnparam = type.param_at (i);
       HIR::Pattern *fn_param_pattern = fnparam.first;
       BaseType *param_ty = fnparam.second;
-      Location param_locus
+      location_t param_locus
 	= fn_param_pattern == nullptr
 	    ? mappings->lookup_location (param_ty->get_ref ())
 	    : fn_param_pattern->get_locus ();

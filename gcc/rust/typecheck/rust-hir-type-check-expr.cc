@@ -151,8 +151,9 @@ void
 TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 {
   auto fn_return_tyty = context->peek_return_type ();
-  Location expr_locus = expr.has_return_expr () ? expr.get_expr ()->get_locus ()
-						: expr.get_locus ();
+  location_t expr_locus = expr.has_return_expr ()
+			    ? expr.get_expr ()->get_locus ()
+			    : expr.get_locus ();
   TyTy::BaseType *expr_ty
     = expr.has_return_expr ()
 	? TypeCheckExpr::Resolve (expr.get_expr ().get ())
@@ -1503,9 +1504,9 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 			   parameter_types);
   context->insert_implicit_type (closure_args);
 
-  Location result_type_locus = expr.has_return_type ()
-				 ? expr.get_return_type ()->get_locus ()
-				 : expr.get_locus ();
+  location_t result_type_locus = expr.has_return_type ()
+				   ? expr.get_return_type ()->get_locus ()
+				   : expr.get_locus ();
   TyTy::TyVar result_type
     = expr.has_return_type ()
 	? TyTy::TyVar (
@@ -1513,7 +1514,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 	: TyTy::TyVar::get_implicit_infer_var (expr.get_locus ());
 
   // resolve the block
-  Location closure_expr_locus = expr.get_expr ()->get_locus ();
+  location_t closure_expr_locus = expr.get_expr ()->get_locus ();
   TyTy::BaseType *closure_expr_ty
     = TypeCheckExpr::Resolve (expr.get_expr ().get ());
   coercion_site (expr.get_mappings ().get_hirid (),

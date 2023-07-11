@@ -30,28 +30,28 @@ query_type (HirId reference, TyTy::BaseType **result);
 
 bool
 types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		  Location unify_locus, bool emit_errors);
+		  location_t unify_locus, bool emit_errors);
 
 TyTy::BaseType *
 unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	    Location unify_locus);
+	    location_t unify_locus);
 
 TyTy::BaseType *
 unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		Location unify_locus, bool emit_errors, bool commit_if_ok,
+		location_t unify_locus, bool emit_errors, bool commit_if_ok,
 		bool implicit_infer_vars, bool cleanup);
 
 TyTy::BaseType *
 coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	       Location coercion_locus);
+	       location_t coercion_locus);
 
 TyTy::BaseType *
 try_coercion (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	      Location coercion_locus);
+	      location_t coercion_locus);
 
 TyTy::BaseType *
 cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
-	   Location cast_locus);
+	   location_t cast_locus);
 
 AssociatedImplTrait *
 lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,

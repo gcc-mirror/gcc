@@ -44,7 +44,7 @@ TypeCheckBase::check_for_unconstrained (
     return check_result;
 
   std::set<HirId> symbols_to_constrain;
-  std::map<HirId, Location> symbol_to_location;
+  std::map<HirId, location_t> symbol_to_location;
   for (const auto &p : params_to_constrain)
     {
       HirId ref = p.get_param_ty ()->get_ref ();

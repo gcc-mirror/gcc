@@ -116,8 +116,8 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
     }
   else if (unsafe_error)
     {
-      // Location lhs = mappings->lookup_location (receiver->get_ref ());
-      // Location rhs = mappings->lookup_location (expected->get_ref ());
+      // location_t lhs = mappings->lookup_location (receiver->get_ref ());
+      // location_t rhs = mappings->lookup_location (expected->get_ref ());
       // object_unsafe_error (locus, lhs, rhs);
       return false;
     }
@@ -215,8 +215,8 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
 
   if (!coerceable_mutability (from_mutbl, to_mutbl))
     {
-      Location lhs = mappings->lookup_location (receiver->get_ref ());
-      Location rhs = mappings->lookup_location (expected->get_ref ());
+      location_t lhs = mappings->lookup_location (receiver->get_ref ());
+      location_t rhs = mappings->lookup_location (expected->get_ref ());
       mismatched_mutability_error (locus, lhs, rhs);
       return TypeCoercionRules::CoercionResult::get_error ();
     }
@@ -294,8 +294,8 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 
   if (!coerceable_mutability (from_mutbl, to_mutbl))
     {
-      Location lhs = mappings->lookup_location (receiver->get_ref ());
-      Location rhs = mappings->lookup_location (expected->get_ref ());
+      location_t lhs = mappings->lookup_location (receiver->get_ref ());
+      location_t rhs = mappings->lookup_location (expected->get_ref ());
       mismatched_mutability_error (locus, lhs, rhs);
       return TypeCoercionRules::CoercionResult::get_error ();
     }
@@ -339,8 +339,8 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       if (!coerceable_mutability (from_mutbl, to_mutbl))
 	{
 	  unsafe_error = true;
-	  Location lhs = mappings->lookup_location (source->get_ref ());
-	  Location rhs = mappings->lookup_location (target->get_ref ());
+	  location_t lhs = mappings->lookup_location (source->get_ref ());
+	  location_t rhs = mappings->lookup_location (target->get_ref ());
 	  mismatched_mutability_error (locus, lhs, rhs);
 	  return TypeCoercionRules::CoercionResult::get_error ();
 	}
@@ -364,8 +364,8 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       if (!coerceable_mutability (from_mutbl, to_mutbl))
 	{
 	  unsafe_error = true;
-	  Location lhs = mappings->lookup_location (source->get_ref ());
-	  Location rhs = mappings->lookup_location (target->get_ref ());
+	  location_t lhs = mappings->lookup_location (source->get_ref ());
+	  location_t rhs = mappings->lookup_location (target->get_ref ());
 	  mismatched_mutability_error (locus, lhs, rhs);
 	  return TypeCoercionRules::CoercionResult::get_error ();
 	}
@@ -459,8 +459,8 @@ TypeCoercionRules::coerceable_mutability (Mutability from_mutbl,
 }
 
 void
-TypeCoercionRules::mismatched_mutability_error (Location expr_locus,
-						Location lhs, Location rhs)
+TypeCoercionRules::mismatched_mutability_error (location_t expr_locus,
+						location_t lhs, location_t rhs)
 {
   if (!emit_errors)
     return;
@@ -472,8 +472,8 @@ TypeCoercionRules::mismatched_mutability_error (Location expr_locus,
 }
 
 void
-TypeCoercionRules::object_unsafe_error (Location expr_locus, Location lhs,
-					Location rhs)
+TypeCoercionRules::object_unsafe_error (location_t expr_locus, location_t lhs,
+					location_t rhs)
 {
   if (!emit_errors)
     return;

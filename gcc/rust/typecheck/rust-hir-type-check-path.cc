@@ -320,7 +320,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 				 std::vector<HIR::PathExprSegment> &segments,
 				 size_t offset, TyTy::BaseType *tyseg,
 				 const Analysis::NodeMapping &expr_mappings,
-				 Location expr_locus)
+				 location_t expr_locus)
 {
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;

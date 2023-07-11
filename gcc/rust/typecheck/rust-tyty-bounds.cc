@@ -236,7 +236,7 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 	  Analysis::RustLangItem::ItemType::FN_ONCE_OUTPUT);
 
 	std::vector<HIR::GenericArgsBinding> bindings;
-	Location output_locus = fn.get_return_type ()->get_locus ();
+	location_t output_locus = fn.get_return_type ()->get_locus ();
 	HIR::GenericArgsBinding binding (Identifier (
 					   trait_item->trait_identifier ()),
 					 fn.get_return_type ()->clone_type (),
@@ -732,7 +732,7 @@ TypeBoundPredicateItem::needs_implementation () const
   return !get_raw_item ()->is_optional ();
 }
 
-Location
+location_t
 TypeBoundPredicateItem::get_locus () const
 {
   return get_raw_item ()->get_locus ();

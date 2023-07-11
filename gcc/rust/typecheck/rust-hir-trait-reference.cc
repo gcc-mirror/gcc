@@ -57,7 +57,7 @@ TraitItemReference::get_hir_trait_item () const
   return hir_trait_item;
 }
 
-Location
+location_t
 TraitItemReference::get_locus () const
 {
   return locus;
@@ -148,7 +148,7 @@ TraitReference::is_error () const
   return hir_trait_ref == nullptr;
 }
 
-Location
+location_t
 TraitReference::get_locus () const
 {
   return hir_trait_ref->get_locus ();

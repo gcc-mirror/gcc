@@ -265,7 +265,7 @@ BaseType::get_ident () const
   return ident;
 }
 
-Location
+location_t
 BaseType::get_locus () const
 {
   return ident.locus;
@@ -1349,7 +1349,7 @@ StructFieldType::debug () const
   rust_debug ("%s", as_string ().c_str ());
 }
 
-Location
+location_t
 StructFieldType::get_locus () const
 {
   return locus;

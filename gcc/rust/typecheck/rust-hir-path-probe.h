@@ -158,7 +158,8 @@ class ReportMultipleCandidateError : private TypeCheckBase
 {
 public:
   static void Report (std::set<PathProbeCandidate> &candidates,
-		      const HIR::PathIdentSegment &query, Location query_locus)
+		      const HIR::PathIdentSegment &query,
+		      location_t query_locus)
   {
     rich_location r (line_table, query_locus);
     for (auto &c : candidates)

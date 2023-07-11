@@ -317,9 +317,9 @@ TypeCheckImplItem::visit (HIR::Function &function)
   auto block_expr_ty
     = TypeCheckExpr::Resolve (function.get_definition ().get ());
 
-  Location fn_return_locus = function.has_function_return_type ()
-			       ? function.get_return_type ()->get_locus ()
-			       : function.get_locus ();
+  location_t fn_return_locus = function.has_function_return_type ()
+				 ? function.get_return_type ()->get_locus ()
+				 : function.get_locus ();
 
   coercion_site (function.get_definition ()->get_mappings ().get_hirid (),
 		 TyTy::TyWithLocation (expected_ret_tyty, fn_return_locus),

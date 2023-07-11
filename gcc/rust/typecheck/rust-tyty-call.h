@@ -112,23 +112,23 @@ public:
 		       Resolver::TypeCheckContext *context);
 
   static BaseType *go (FnType *ref, Analysis::NodeMapping call_mappings,
-		       std::vector<Argument> &args, Location call_locus,
-		       Location receiver_locus, TyTy::BaseType *adjusted_self,
+		       std::vector<Argument> &args, location_t call_locus,
+		       location_t receiver_locus, TyTy::BaseType *adjusted_self,
 		       Resolver::TypeCheckContext *context);
 
 protected:
   BaseType *check (FnType &type);
 
   TypeCheckMethodCallExpr (Analysis::NodeMapping call_mappings,
-			   std::vector<Argument> &args, Location call_locus,
-			   Location receiver_locus,
+			   std::vector<Argument> &args, location_t call_locus,
+			   location_t receiver_locus,
 			   TyTy::BaseType *adjusted_self,
 			   Resolver::TypeCheckContext *context);
 
   Analysis::NodeMapping call_mappings;
   std::vector<Argument> &arguments;
-  Location call_locus;
-  Location receiver_locus;
+  location_t call_locus;
+  location_t receiver_locus;
   TyTy::BaseType *adjusted_self;
   Resolver::TypeCheckContext *context;
   Analysis::Mappings *mappings;

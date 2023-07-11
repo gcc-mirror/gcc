@@ -349,7 +349,7 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 
   auto block_expr_ty = TypeCheckExpr::Resolve (func.get_block_expr ().get ());
 
-  Location fn_return_locus
+  location_t fn_return_locus
     = func.get_decl ().has_return_type ()
 	? func.get_decl ().get_return_type ()->get_locus ()
 	: func.get_locus ();

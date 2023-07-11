@@ -76,7 +76,7 @@ SubstitutionParamMapping::needs_substitution () const
   return !(get_param_ty ()->is_concrete ());
 }
 
-Location
+location_t
 SubstitutionParamMapping::get_param_locus () const
 {
   return generic.get_locus ();
@@ -333,7 +333,7 @@ SubstitutionArgumentMappings::is_concrete () const
   return true;
 }
 
-Location
+location_t
 SubstitutionArgumentMappings::get_locus () const
 {
   return locus;
