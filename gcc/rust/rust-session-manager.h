@@ -42,7 +42,7 @@ struct Crate;
 }
 // crate forward decl
 namespace HIR {
-struct Crate;
+class Crate;
 }
 
 /* Data related to target, most useful for conditional compilation and
