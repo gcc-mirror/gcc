@@ -10345,7 +10345,9 @@ lookup_template_variable (tree templ, tree arglist, tsubst_flags_t complain)
   if (flag_concepts && variable_concept_p (templ))
     return build_concept_check (templ, arglist, tf_none);
 
-  tree parms = DECL_INNERMOST_TEMPLATE_PARMS (templ);
+  tree gen_templ = most_general_template (templ);
+  tree parms = DECL_INNERMOST_TEMPLATE_PARMS (gen_templ);
+  arglist = add_outermost_template_args (templ, arglist);
   arglist = coerce_template_parms (parms, arglist, templ, complain);
   if (arglist == error_mark_node)
     return error_mark_node;
