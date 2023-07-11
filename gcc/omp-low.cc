@@ -14444,11 +14444,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 		tree bias = size_zero_node;
 		tree volume = size_one_node;
+		tree enclosure = size_one_node;
 		for (i = dims - 1; i >= 0; i--)
 		  {
 		    tree dim = (*vdim)[i].value;
 		    tree index = (*vindex)[i].value;
 		    tree stride = (*vstride)[i].value;
+		    tree len = (*vlen)[i].value;
 
 		    /* For the bias we want, e.g.:
 
@@ -14463,6 +14465,20 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				       size_binop (MULT_EXPR, volume,
 						   index_stride));
 		    volume = size_binop (MULT_EXPR, volume, dim);
+
+		    if (i == 0)
+		      {
+			tree elems_covered = size_binop (MINUS_EXPR, len,
+							 size_one_node);
+			elems_covered = size_binop (MULT_EXPR, elems_covered,
+						    stride);
+			elems_covered = size_binop (PLUS_EXPR, elems_covered,
+						    size_one_node);
+			enclosure = size_binop (MULT_EXPR, enclosure,
+						elems_covered);
+		      }
+		    else
+		      enclosure = volume;
 		  }
 
 		/* If we don't have a separate span size, use the element size
@@ -14470,10 +14486,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (!span)
 		  span = fold_convert (sizetype, elsize);
 
-		/* The size of the whole array -- to make sure we find any
-		   part of the array via splay-tree lookup that might be
-		   mapped on the target at runtime.  */
-		OMP_CLAUSE_SIZE (oc) = size_binop (MULT_EXPR, arrsize, span);
+		/* The size of a volume enclosing the elements to be
+		   transferred.  */
+		OMP_CLAUSE_SIZE (oc) = size_binop (MULT_EXPR, enclosure, span);
 		/* And the bias of the first element we will update.  */
 		OMP_CLAUSE_SIZE (dn) = size_binop (MULT_EXPR, bias, span);
 
