@@ -306,7 +306,7 @@ package body Exp_Aggr is
    --  N is the N_Aggregate node to be expanded.
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean;
-   --  For two-dimensional packed aggregates with constant bounds and constant
+   --  For 2D packed array aggregates with constant bounds and constant scalar
    --  components, it is preferable to pack the inner aggregates because the
    --  whole matrix can then be presented to the back-end as a one-dimensional
    --  list of literals. This is much more efficient than expanding into single
@@ -8563,9 +8563,11 @@ package body Exp_Aggr is
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean is
       C : constant Uint := Component_Size (Typ);
+
    begin
       return Number_Dimensions (Typ) = 2
         and then Is_Bit_Packed_Array (Typ)
+        and then Is_Scalar_Type (Component_Type (Typ))
         and then C in Uint_1 | Uint_2 | Uint_4; -- False if No_Uint
    end Is_Two_Dim_Packed_Array;
 
