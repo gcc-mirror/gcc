@@ -1610,13 +1610,13 @@ BEGIN
    THEN
       InternalError ('trying to declare the NulSym')
    END ;
-   IF IsConstructor(sym) AND (NOT GccKnowsAbout(sym))
+   IF IsConstructor (sym) AND (NOT GccKnowsAbout (sym))
    THEN
-      WalkConstructor(sym, TraverseDependants) ;
-      DeclareTypesConstantsProceduresInRange(quad, quad) ;
-      Assert(IsConstructorDependants(sym, IsFullyDeclared)) ;
-      PushValue(sym) ;
-      DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
+      WalkConstructor (sym, TraverseDependants) ;
+      DeclareTypesConstantsProceduresInRange (GetScope (sym), quad, quad) ;
+      Assert (IsConstructorDependants (sym, IsFullyDeclared)) ;
+      PushValue (sym) ;
+      DeclareConstantFromTree (sym, PopConstructorTree (tokenno))
    END
 END DeclareConstructor ;
 
@@ -2539,24 +2539,24 @@ END FoldConstants ;
    DeclareTypesConstantsProceduresInRange -
 *)
 
-PROCEDURE DeclareTypesConstantsProceduresInRange (start, end: CARDINAL) ;
+PROCEDURE DeclareTypesConstantsProceduresInRange (scope, start, end: CARDINAL) ;
 VAR
    n, m: CARDINAL ;
 BEGIN
    IF DisplayQuadruples
    THEN
-      DisplayQuadRange(start, end)
+      DisplayQuadRange (scope, start, end)
    END ;
    REPEAT
       n := NoOfElementsInSet(ToDoList) ;
-      WHILE ResolveConstantExpressions(DeclareConstFully, start, end) DO
+      WHILE ResolveConstantExpressions (DeclareConstFully, start, end) DO
       END ;
       (* we need to evaluate some constant expressions to resolve these types *)
       IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
       m := NoOfElementsInSet(ToDoList)
-   UNTIL (NOT ResolveConstantExpressions(DeclareConstFully, start, end)) AND
+   UNTIL (NOT ResolveConstantExpressions (DeclareConstFully, start, end)) AND
          (n=m)
 END DeclareTypesConstantsProceduresInRange ;
 
@@ -2620,16 +2620,16 @@ VAR
    s, t: CARDINAL ;
    sb  : ScopeBlock ;
 BEGIN
-   sb := InitScopeBlock(scope) ;
-   PushBinding(scope) ;
+   sb := InitScopeBlock (scope) ;
+   PushBinding (scope) ;
    REPEAT
-      s := NoOfElementsInSet(ToDoList) ;
+      s := NoOfElementsInSet (ToDoList) ;
       (* ForeachLocalSymDo(scope, DeclareTypeInfo) ; *)
-      ForeachScopeBlockDo(sb, DeclareTypesConstantsProceduresInRange) ;
-      t := NoOfElementsInSet(ToDoList) ;
+      ForeachScopeBlockDo (sb, DeclareTypesConstantsProceduresInRange) ;
+      t := NoOfElementsInSet (ToDoList) ;
    UNTIL s=t ;
-   PopBinding(scope) ;
-   KillScopeBlock(sb)
+   PopBinding (scope) ;
+   KillScopeBlock (sb)
 END DeclareTypesConstantsProcedures ;
 
 
@@ -2691,7 +2691,7 @@ BEGIN
    WalkTypesInProcedure(scope) ;
    DeclareProcedure(scope) ;
    ForeachInnerModuleDo(scope, WalkTypesInModule) ;
-   DeclareTypesConstantsProcedures(scope) ;
+   DeclareTypesConstantsProcedures (scope) ;
    ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
    DeclareLocalVariables(scope) ;
    ForeachInnerModuleDo(scope, DeclareModuleVariables) ;

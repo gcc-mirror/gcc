@@ -103,6 +103,7 @@ EXTERN void _M2_dtoa_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_ldtoa_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2Check_init (int argc, char *argv[], char *envp[]);
 EXTERN void _M2_M2SSA_init (int argc, char *argv[], char *envp[]);
+EXTERN void _M2_M2SymInit_init (int argc, char *argv[], char *envp[]);
 EXTERN void exit (int);
 EXTERN void M2Comp_compile (const char *filename);
 EXTERN void RTExceptions_DefaultErrorCatch (void);
@@ -195,6 +196,7 @@ init_PerCompilationInit (const char *filename)
   _M2_PCBuild_init (0, NULL, NULL);
   _M2_Sets_init (0, NULL, NULL);
   _M2_M2SSA_init (0, NULL, NULL);
+  _M2_M2SymInit_init (0, NULL, NULL);
   _M2_M2Check_init (0, NULL, NULL);
   M2Comp_compile (filename);
 }

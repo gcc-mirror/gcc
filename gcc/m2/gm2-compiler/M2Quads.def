@@ -106,6 +106,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsBackReference,
                  IsUnConditional,
                  IsConditional, IsBackReferenceConditional,
+                 IsGoto,
                  IsCall,
                  IsReturn,
                  IsProcedureScope,
@@ -250,6 +251,13 @@ PROCEDURE IsBackReferenceConditional (q: CARDINAL) : BOOLEAN ;
 
 
 (*
+   IsGoto - returns true if QuadNo is a goto operation.
+*)
+
+PROCEDURE IsGoto (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
    IsCall - returns true if QuadNo is a call operation.
 *)
 
@@ -382,7 +390,7 @@ PROCEDURE DisplayQuadList ;
    DisplayQuadRange - displays all quads in list range, start..end.
 *)
 
-PROCEDURE DisplayQuadRange (start, end: CARDINAL) ;
+PROCEDURE DisplayQuadRange (scope: CARDINAL; start, end: CARDINAL) ;
 
 
 (*
@@ -2591,7 +2599,7 @@ PROCEDURE BuildStmtNote (offset: INTEGER) ;
    LoopAnalysis - checks whether an infinite loop exists.
 *)
 
-PROCEDURE LoopAnalysis (Current, End: CARDINAL) ;
+PROCEDURE LoopAnalysis (Scope: CARDINAL; Current, End: CARDINAL) ;
 
 
 (*

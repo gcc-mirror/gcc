@@ -525,6 +525,8 @@ TYPE
                IsWritten     : BOOLEAN ;      (* Is variable written to?     *)
                IsSSA         : BOOLEAN ;      (* Is variable a SSA?          *)
                IsConst       : BOOLEAN ;      (* Is variable read/only?      *)
+               ArrayRef      : BOOLEAN ;      (* Is variable used to point   *)
+                                              (* to an array?                *)
                InitState     : LRInitDesc ;   (* Initialization state.       *)
                At            : Where ;        (* Where was sym declared/used *)
                ReadUsageList,                 (* list of var read quads      *)
@@ -4260,6 +4262,7 @@ BEGIN
             IsWritten := FALSE ;
             IsSSA := FALSE ;
             IsConst := FALSE ;
+            ArrayRef := FALSE ;
             InitWhereDeclaredTok(tok, At) ;
             InitWhereFirstUsedTok(tok, At) ;   (* Where symbol first used.  *)
             InitList(ReadUsageList[RightValue]) ;
@@ -6902,6 +6905,48 @@ BEGIN
       END
    END
 END PutConst ;
+
+
+(*
+   PutVarArrayRef - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarArrayRef (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym: Var.ArrayRef := value
+
+      ELSE
+         InternalError ('expecting VarSym')
+      END
+   END
+END PutVarArrayRef ;
+
+
+(*
+   IsVarArrayRef - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarArrayRef (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym: RETURN (Var.ArrayRef)
+
+      ELSE
+         InternalError ('expecting VarSym')
+      END
+   END
+END IsVarArrayRef ;
 
 
 (*

@@ -45,7 +45,7 @@ FROM M2Quads IMPORT CountQuads, GetFirstQuad, DisplayQuadList, DisplayQuadRange,
                     BackPatchSubrangesAndOptParam,
                     LoopAnalysis, ForLoopAnalysis, GetQuad, QuadOperator ;
 
-FROM M2SymInit IMPORT VariableAnalysis ;
+FROM M2SymInit IMPORT ScopeBlockVariableAnalysis ;
 
 FROM M2Pass IMPORT SetPassToNoPass, SetPassToCodeGeneration ;
 
@@ -293,16 +293,16 @@ END Code ;
    InitialDeclareAndCodeBlock - declares all objects within scope,
 *)
 
-PROCEDURE InitialDeclareAndOptimize (start, end: CARDINAL) ;
+PROCEDURE InitialDeclareAndOptimize (scope: CARDINAL; start, end: CARDINAL) ;
 BEGIN
-   Count := CountQuads() ;
-   FreeBasicBlocks(InitBasicBlocksFromRange(start, end)) ;
-   BasicB := Count - CountQuads() ;
-   Count := CountQuads() ;
+   Count := CountQuads () ;
+   FreeBasicBlocks (InitBasicBlocksFromRange (scope, start, end)) ;
+   BasicB := Count - CountQuads () ;
+   Count := CountQuads () ;
 
-   FoldBranches(start, end) ;
-   Jump := Count - CountQuads() ;
-   Count := CountQuads()
+   FoldBranches (start, end) ;
+   Jump := Count - CountQuads () ;
+   Count := CountQuads ()
 END InitialDeclareAndOptimize ;
 
 
@@ -310,24 +310,25 @@ END InitialDeclareAndOptimize ;
    DeclareAndCodeBlock - declares all objects within scope,
 *)
 
-PROCEDURE SecondDeclareAndOptimize (start, end: CARDINAL) ;
+PROCEDURE SecondDeclareAndOptimize (scope: CARDINAL;
+                                    start, end: CARDINAL) ;
 BEGIN
    REPEAT
       FoldConstants(start, end) ;
       DeltaConst := Count - CountQuads () ;
       Count := CountQuads () ;
 
-      FreeBasicBlocks(InitBasicBlocksFromRange (start, end)) ;
+      FreeBasicBlocks(InitBasicBlocksFromRange (scope, start, end)) ;
 
       DeltaBasicB := Count - CountQuads () ;
       Count := CountQuads () ;
 
-      FreeBasicBlocks (InitBasicBlocksFromRange (start, end)) ;
+      FreeBasicBlocks (InitBasicBlocksFromRange (scope, start, end)) ;
       FoldBranches(start, end) ;
       DeltaJump := Count - CountQuads () ;
       Count := CountQuads () ;
 
-      FreeBasicBlocks(InitBasicBlocksFromRange (start, end)) ;
+      FreeBasicBlocks(InitBasicBlocksFromRange (scope, start, end)) ;
       INC (DeltaBasicB, Count - CountQuads ()) ;
       Count := CountQuads () ;
 
@@ -375,20 +376,6 @@ END Init ;
 
 
 (*
-   BasicBlockVariableAnalysis -
-*)
-
-PROCEDURE BasicBlockVariableAnalysis (start, end: CARDINAL) ;
-VAR
-   bb: BasicBlock ;
-BEGIN
-   bb := InitBasicBlocksFromRange(start, end) ;
-   ForeachBasicBlockDo (bb, VariableAnalysis) ;
-   KillBasicBlocks (bb)
-END BasicBlockVariableAnalysis ;
-
-
-(*
    DisplayQuadsInScope -
 *)
 
@@ -416,7 +403,7 @@ BEGIN
    OptimTimes := 1 ;
    Current := CountQuads () ;
    ForeachScopeBlockDo (sb, InitialDeclareAndOptimize) ;
-   ForeachScopeBlockDo (sb, BasicBlockVariableAnalysis) ;
+   ForeachScopeBlockDo (sb, ScopeBlockVariableAnalysis) ;
    REPEAT
       ForeachScopeBlockDo (sb, SecondDeclareAndOptimize) ;
       Previous := Current ;

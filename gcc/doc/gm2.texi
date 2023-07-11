@@ -664,6 +664,17 @@ issue a warning if a variable is used before it is initialized.
 The checking only occurs in the first basic block in each procedure.
 It does not check parameters, array types or set types.
 
+@item -Wuninit-variable-checking=all,known,cond
+issue a warning if a variable is used before it is initialized.
+The checking will only occur in the first basic block in each
+procedure if @samp{known} is specified.  If @samp{cond} or @samp{all}
+is specified then checking continues into conditional branches of the
+flow graph.  All checking will stop when a procedure call is invoked
+or the top of a loop is encountered.
+The option @samp{-Wall} will turn on this flag with
+@samp{-Wuninit-variable-checking=known}.
+The @samp{-Wuninit-variable-checking=all} will increase compile time.
+
 @c the following warning options are complete but need to be
 @c regression tested against all other front ends
 @c to ensure the options do not conflict.
