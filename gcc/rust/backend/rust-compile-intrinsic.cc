@@ -371,7 +371,7 @@ offset_handler (Context *ctx, TyTy::FnType *fntype)
   tree pointer_offset_expr
     = pointer_offset_expression (dst, size, BUILTINS_LOCATION);
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {pointer_offset_expr},
+    = ctx->get_backend ()->return_statement (fndecl, pointer_offset_expr,
 					     UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN offset FN BODY END
@@ -406,8 +406,7 @@ sizeof_handler (Context *ctx, TyTy::FnType *fntype)
   // BUILTIN size_of FN BODY BEGIN
   tree size_expr = TYPE_SIZE_UNIT (template_parameter_type);
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {size_expr},
-					     UNDEF_LOCATION);
+    = ctx->get_backend ()->return_statement (fndecl, size_expr, UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN size_of FN BODY END
 
@@ -480,7 +479,7 @@ transmute_handler (Context *ctx, TyTy::FnType *fntype)
   tree result_expr = build_fold_indirect_ref_loc (UNKNOWN_LOCATION, t);
 
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {result_expr},
+    = ctx->get_backend ()->return_statement (fndecl, result_expr,
 					     UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN transmute FN BODY END
@@ -520,7 +519,7 @@ rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
   tree rotate_expr
     = fold_build2_loc (BUILTINS_LOCATION, op, TREE_TYPE (x), x, y);
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {rotate_expr},
+    = ctx->get_backend ()->return_statement (fndecl, rotate_expr,
 					     UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN rotate FN BODY END
@@ -568,8 +567,7 @@ wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
   auto wrap_expr = build2 (op, TREE_TYPE (lhs), lhs, rhs);
 
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {wrap_expr},
-					     UNDEF_LOCATION);
+    = ctx->get_backend ()->return_statement (fndecl, wrap_expr, UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN wrapping_<op> FN BODY END
 
@@ -657,7 +655,7 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 						   UNDEF_LOCATION);
 
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {result_expr},
+    = ctx->get_backend ()->return_statement (fndecl, result_expr,
 					     UNDEF_LOCATION);
   ctx->add_statement (return_statement);
 
@@ -940,8 +938,7 @@ atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering)
     = ctx->get_backend ()->call_expression (atomic_load, {src, memorder},
 					    nullptr, UNDEF_LOCATION);
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {load_call},
-					     UNDEF_LOCATION);
+    = ctx->get_backend ()->return_statement (fndecl, load_call, UNDEF_LOCATION);
 
   TREE_READONLY (load_call) = 0;
   TREE_SIDE_EFFECTS (load_call) = 1;
@@ -986,7 +983,7 @@ unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
   auto expr = build2 (op, TREE_TYPE (x), x, y);
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {expr}, UNDEF_LOCATION);
+    = ctx->get_backend ()->return_statement (fndecl, expr, UNDEF_LOCATION);
 
   ctx->add_statement (return_statement);
 
@@ -1040,7 +1037,7 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
   ctx->add_statement (memset_call);
 
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, {DECL_RESULT (fndecl)},
+    = ctx->get_backend ()->return_statement (fndecl, DECL_RESULT (fndecl),
 					     UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN size_of FN BODY END
