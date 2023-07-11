@@ -1,3 +1,41 @@
+2023-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110523
+	* g++.dg/template/ttp37.C: New test.
+
+2023-07-10  Christophe Lyon   <christophe.lyon@linaro.org>
+
+	PR target/110268
+	* gcc.target/arm/pr110268-1.c: New test.
+	* gcc.target/arm/pr110268-2.c: New test.
+
+2023-07-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (arm_*FUNC_link): New effective-targets.
+
+2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/110557
+	* g++.dg/vect/pr110557.cc: New test.
+
+2023-07-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/insvdi_lowpart-1.c: New test case.
+	* gcc.target/i386/insvti_lowpart-1.c: Likewise.
+
+2023-07-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/avx512vl-stv-rotatedi-1.c: New test case.
+
+2023-07-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm4.d: Update test.
+
+2023-07-10  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr110170.C: New test.
+	* gcc.target/i386/pr110170.c: New test.
+
 2023-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/rtti1.d: Move array concat testcase to ...

@@ -1,3 +1,24 @@
+2023-07-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime a88e1335f7.
+	* src/MERGE: Merge upstream phobos 1921d29df.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (libphobos-checking): Add valgrind flag.
+	(DRUNTIME_LIBRARIES_VALGRIND): Call.
+	* libdruntime/Makefile.am (DRUNTIME_CSOURCES): Add
+	etc/valgrind/valgrind_.c.
+	(DRUNTIME_DSOURCES): Add etc/valgrind/valgrind.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/input.d,
+	core/sys/linux/input_event_codes.d, core/sys/linux/uinput.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_VALGRIND): Define.
+
+2023-07-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 17ccd12af3.
+	* src/MERGE: Merge upstream phobos 8d3800bee.
+
 2023-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 28a3b24c2e.

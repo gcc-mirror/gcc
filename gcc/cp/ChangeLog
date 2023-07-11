@@ -1,3 +1,9 @@
+2023-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110523
+	* pt.cc (redeclare_class_template): Relax the ttp DECL_CONTEXT
+	assert, and downgrade it to a checking assert.
+
 2023-06-30  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (TEMPLATE_PARM_DESCENDANTS): Harden.

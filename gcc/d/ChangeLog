@@ -1,3 +1,33 @@
+2023-07-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a88e1335f7.
+	* dmd/VERSION: Bump version to v2.104.1.
+
+2023-07-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 17ccd12af3.
+	* dmd/VERSION: Bump version to v2.104.0.
+	* Make-lang.in (D_FRONTEND_OBJS): Rename d/apply.o to
+	d/postordervisitor.o.
+	* d-codegen.cc (make_location_t): Update for new front-end interface.
+	(build_filename_from_loc): Likewise.
+	(build_assert_call): Likewise.
+	(build_array_bounds_call): Likewise.
+	(build_bounds_index_condition): Likewise.
+	(build_bounds_slice_condition): Likewise.
+	(build_frame_type): Likewise.
+	(get_frameinfo): Likewise.
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Likewise.
+	* decl.cc (build_decl_tree): Likewise.
+	(start_function): Likewise.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Replace code generation of
+	`new pointer' with front-end lowering.
+	* runtime.def (NEWITEMT): Remove.
+	(NEWITEMIT): Remove.
+	* toir.cc (IRVisitor::visit (LabelStatement *)): Update for new
+	front-end interface.
+	* typeinfo.cc (check_typeinfo_type): Likewise.
+
 2023-07-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 28a3b24c2e.

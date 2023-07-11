@@ -1,3 +1,96 @@
+2023-07-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (quad_memory_operand): Remove redundant
+	MEM_P usage.
+	(vsx_quad_dform_memory_operand): Likewise.
+
+2023-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reorg.cc (stop_search_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(resource_conflicts_p): Ditto.
+	(insn_references_resource_p): Change return type from int to bool.
+	(insn_sets_resource_p): Ditto.
+	(redirect_with_delay_slots_safe_p): Ditto.
+	(condition_dominates_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(redirect_with_delay_list_safe_p): Ditto.
+	(check_annul_list_true_false): Ditto.  Change "annul_true_p"
+	function argument to bool.
+	(steal_delay_list_from_target): Change "pannul_p" function
+	argument to bool pointer.  Change "must_annul" and "used_annul"
+	variables from int to bool.
+	(steal_delay_list_from_fallthrough): Ditto.
+	(own_thread_p): Change return type from int to bool and adjust
+	function body accordingly.  Change "allow_fallthrough" function
+	argument to bool.
+	(reorg_redirect_jump): Change return type from int to bool.
+	(fill_simple_delay_slots): Change "non_jumps_p" function
+	argument from int to bool.  Change "maybe_never" varible to bool.
+	(fill_slots_from_thread): Change "likely", "thread_if_true" and
+	"own_thread" function arguments to bool.  Change "lose" and
+	"must_annul" variables to bool.
+	(delete_from_delay_slot): Change "had_barrier" variable to bool.
+	(try_merge_delay_insns): Change "annul_p" variable to bool.
+	(fill_eager_delay_slots): Change "own_target" and "own_fallthrouhg"
+	variables to bool.
+	(rest_of_handle_delay_slots): Change return type from int to void
+	and adjust function body accordingly.
+
+2023-07-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/extend.texi (RISC-V Operand Modifiers): New.
+
+2023-07-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (add_label_notes): Remove it.
+	(insert_insn_end_basic_block): Ditto.
+	(pass_vsetvl::commit_vsetvls): Adapt for new helper function.
+	* gcse.cc (insert_insn_end_basic_block):  Export as global function.
+	* gcse.h (insert_insn_end_basic_block): Ditto.
+
+2023-07-10  Christophe Lyon   <christophe.lyon@linaro.org>
+
+	PR target/110268
+	* config/arm/arm-builtins.cc (arm_init_mve_builtins): Handle LTO.
+	(arm_builtin_decl): Hahndle MVE builtins.
+	* config/arm/arm-mve-builtins.cc (builtin_decl): New function.
+	(add_unique_function): Fix handling of
+	__ARM_MVE_PRESERVE_USER_NAMESPACE.
+	(add_overloaded_function): Likewise.
+	* config/arm/arm-protos.h (builtin_decl): New declaration.
+
+2023-07-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_v8_1m_main_cde_mve_fp): Document.
+
+2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/110557
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern):
+	Ensure the output sign-extended if necessary.
+
+2023-07-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (peephole2): Transform xchg insn with a
+	REG_UNUSED note to a (simple) move.
+	(*insvti_lowpart_1): New define_insn_and_split.
+	(*insvdi_lowpart_1): Likewise.
+
+2023-07-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain): Tweak
+	gains/costs for ROTATE/ROTATERT by integer constant on AVX512VL.
+	(general_scalar_chain::convert_rotate): On TARGET_AVX512F generate
+	avx512vl_rolv2di or avx412vl_rolv4si when appropriate.
+
+2023-07-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110170
+	* config/i386/i386.md (*ieee_max<mode>3_1): New pre_reload
+	splitter to detect fp max pattern.
+	(*ieee_min<mode>3_1): Ditto, but for fp min pattern.
+
 2023-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.cc (check_bb_profile): Dump counts with relative frequency.

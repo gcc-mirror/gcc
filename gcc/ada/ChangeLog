@@ -1,3 +1,52 @@
+2023-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c [_WIN32]: Undefine 'abort' macro.
+
+2023-07-10  Tom Tromey  <tromey@adacore.com>
+
+	* snames.h-tmpl (Name_Id, Attribute_Id, Convention_Id)
+	(Pragma_Id): New typedefs.
+	(Get_Attribute_Id, Get_Pragma_Id): Use typedef.
+
+2023-07-10  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Powers_Of_2_Commutation): Rewrite
+	assertion.
+
+2023-07-10  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst
+	(Local Declarations Without Block): Document the feature very
+	briefly, and refer the reader to the RFC for details and examples.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-07-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst (Control Flow
+	Hardening): Document -fhardcfr-skip-leaf.
+	* gnat_rm.texi: Regenerate.
+
+2023-07-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst (Control Flow
+	Redundancy): Add -fhardcfr-check-noreturn-calls=no-xthrow.
+	* gnat_rm.texi: Regenerate.
+
+2023-07-10  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Div_Mult): New simple lemma.
+	(Lemma_Powers_Of_2_Commutation): State post in else branch.
+	(Lemma_Div_Pow2): Introduce local lemma and use it.
+	(Scaled_Divide): Use cut operations in assertions, lemmas, new
+	assertions. Introduce local lemma and use it.
+
+2023-07-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst (Register
+	Scrubbing): Document leafy mode.
+	* gnat_rm.texi: Regenerate.
+
 2023-07-06  Claire Dross  <dross@adacore.com>
 
 	* gcc-interface/Make-lang.in: Add object files of specification
