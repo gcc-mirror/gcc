@@ -1,3 +1,11 @@
+2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/110557
+	* g++.dg/vect/pr110557.cc: New test.
+
 2023-07-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
