@@ -6829,10 +6829,11 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	     same alignment, instead it depends on the SLP group size.  */
 	  if (loop_vinfo
 	      && STMT_SLP_TYPE (stmt_info)
-	      && !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-			      * (DR_GROUP_SIZE
-				 (DR_GROUP_FIRST_ELEMENT (stmt_info))),
-			      TYPE_VECTOR_SUBPARTS (vectype)))
+	      && (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		  || !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+				  * (DR_GROUP_SIZE
+				       (DR_GROUP_FIRST_ELEMENT (stmt_info))),
+				  TYPE_VECTOR_SUBPARTS (vectype))))
 	    ;
 	  else if (!loop_vinfo
 		   || (nested_in_vect_loop
