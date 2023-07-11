@@ -89,7 +89,7 @@ register_callback (void *handle, Symbol, std::string symbol_name,
   void *addr = dlsym (handle, symbol_name.c_str ());
   if (addr == nullptr)
     {
-      rust_error_at (Location (),
+      rust_error_at (UNDEF_LOCATION,
 		     "Callback registration symbol (%s) missing from "
 		     "proc macro, wrong version?",
 		     symbol_name.c_str ());

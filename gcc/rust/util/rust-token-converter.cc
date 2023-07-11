@@ -57,7 +57,7 @@ convert (location_t location)
   return ProcMacro::Span::make_span (location, 0);
 }
 
-static Location
+static location_t
 convert (ProcMacro::Span span)
 {
   return span.start;

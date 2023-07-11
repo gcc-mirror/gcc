@@ -112,7 +112,7 @@ is_child_module (Analysis::Mappings &mappings, NodeId parent,
 // FIXME: This function needs a lot of refactoring
 void
 PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
-					      const Location &locus)
+					      const location_t locus)
 {
   NodeId ref_node_id = UNKNOWN_NODEID;
 
@@ -172,7 +172,7 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 void
 PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 					  const TyTy::BaseType *ty,
-					  const Location &locus)
+					  const location_t locus)
 {
   // Avoids repeating commong argument such as `use_id` or `locus` since we're
   // doing a lot of recursive calls here

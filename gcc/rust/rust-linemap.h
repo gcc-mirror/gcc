@@ -63,7 +63,7 @@ public:
   // Produce a human-readable description of a Location, e.g.
   // "foo.rust:10". Returns an empty string for predeclared, builtin or
   // unknown locations.
-  static std::string location_to_string (Location loc);
+  static std::string location_to_string (location_t loc);
 
 private:
   // Whether we are currently reading a file.

@@ -56,7 +56,7 @@ public:
     {}
 
     typed_identifier (const std::string &a_name, tree a_type,
-		      Location a_location)
+		      location_t a_location)
       : name (a_name), type (a_type), location (a_location)
     {}
   };
@@ -229,7 +229,7 @@ public:
   // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
   virtual tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
 						 tree left, tree right,
-						 Location loc)
+						 location_t loc)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
@@ -239,14 +239,14 @@ public:
   // variable which will contain the result of that operation.
   virtual tree
   arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
-					    tree left, tree right, Location loc,
-					    Bvariable *receiver)
+					    tree left, tree right,
+					    location_t loc, Bvariable *receiver)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ComparisonOperator.
   virtual tree comparison_expression (ComparisonOperator op, tree left,
-				      tree right, Location loc)
+				      tree right, location_t loc)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
@@ -340,7 +340,7 @@ public:
   // The statements will be added after the block is created.
   virtual tree block (tree function, tree enclosing,
 		      const std::vector<Bvariable *> &vars,
-		      Location start_location, Location end_location)
+		      location_t start_location, location_t end_location)
     = 0;
 
   // Add the statements to a block.  The block is created first.  Then

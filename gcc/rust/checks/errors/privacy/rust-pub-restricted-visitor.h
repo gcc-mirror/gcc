@@ -87,7 +87,7 @@ public:
    *
    * @return true if the visibility restriction is valid, false otherwise.
    */
-  bool is_restriction_valid (NodeId item_id, const Location &locus);
+  bool is_restriction_valid (NodeId item_id, const location_t locus);
 
   virtual void visit (HIR::Module &mod);
   virtual void visit (HIR::ExternCrate &crate);

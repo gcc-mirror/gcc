@@ -186,7 +186,8 @@ public:
 
   tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
 						 tree left, tree right,
-						 Location, Bvariable *receiver);
+						 location_t,
+						 Bvariable *receiver);
 
   tree comparison_expression (ComparisonOperator op, tree left, tree right,
 			      location_t);
@@ -231,7 +232,7 @@ public:
 
   // Blocks.
 
-  tree block (tree, tree, const std::vector<Bvariable *> &, Location,
+  tree block (tree, tree, const std::vector<Bvariable *> &, location_t,
 	      location_t);
 
   void block_add_statements (tree, const std::vector<tree> &);
@@ -255,7 +256,7 @@ public:
   Bvariable *static_chain_variable (tree, const std::string &, tree,
 				    location_t);
 
-  Bvariable *temporary_variable (tree, tree, tree, tree, bool, Location,
+  Bvariable *temporary_variable (tree, tree, tree, tree, bool, location_t,
 				 tree *);
 
   // Labels.
@@ -783,7 +784,7 @@ Gcc_backend::function_type_varadic (
 tree
 Gcc_backend::function_ptr_type (tree result_type,
 				const std::vector<tree> &parameters,
-				Location /* locus */)
+				location_t /* locus */)
 {
   tree args = NULL_TREE;
   tree *pp = &args;
@@ -2084,7 +2085,7 @@ Gcc_backend::statement_list (const std::vector<tree> &statements)
 tree
 Gcc_backend::block (tree fndecl, tree enclosing,
 		    const std::vector<Bvariable *> &vars,
-		    Location start_location, location_t)
+		    location_t start_location, location_t)
 {
   tree block_tree = make_node (BLOCK);
   if (enclosing == NULL)

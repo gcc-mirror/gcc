@@ -797,7 +797,7 @@ Mappings::insert_location (HirId id, location_t locus)
   locations[id] = locus;
 }
 
-Location
+location_t
 Mappings::lookup_location (HirId id)
 {
   auto it = locations.find (id);

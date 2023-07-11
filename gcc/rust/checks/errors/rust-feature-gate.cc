@@ -65,7 +65,7 @@ FeatureGate::check (AST::Crate &crate)
 }
 
 void
-FeatureGate::gate (Feature::Name name, Location loc,
+FeatureGate::gate (Feature::Name name, location_t loc,
 		   const std::string &error_msg)
 {
   if (!valid_features.count (name))

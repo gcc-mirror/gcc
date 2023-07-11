@@ -76,7 +76,7 @@ public:
 
     // Given an error if the next LENGTH bytes do not match BYTES.
     // Advance the read position by LENGTH.
-    void require_bytes (Location, const char *bytes, size_t length);
+    void require_bytes (location_t, const char *bytes, size_t length);
 
     // Advance the read position by SKIP bytes.
     void advance (size_t skip)
@@ -115,7 +115,7 @@ public:
 		const std::string &relative_import_path);
 
   static std::pair<std::unique_ptr<Stream>, std::vector<ProcMacro::Procmacro>>
-  try_package_in_directory (const std::string &, Location);
+  try_package_in_directory (const std::string &, location_t);
 
   // Constructor.
   Import (std::unique_ptr<Stream>, location_t);

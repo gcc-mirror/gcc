@@ -71,14 +71,14 @@ public:
 
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
-  std::map<NodeId, Location> &get_declarations () { return decls_within_rib; }
+  std::map<NodeId, location_t> &get_declarations () { return decls_within_rib; }
 
 private:
   CrateNum crate_num;
   NodeId node_id;
   std::map<CanonicalPath, NodeId> path_mappings;
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
-  std::map<NodeId, Location> decls_within_rib;
+  std::map<NodeId, location_t> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
   std::map<NodeId, ItemType> decl_type_mappings;
 };

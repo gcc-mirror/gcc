@@ -172,7 +172,7 @@ public:
   bool lookup_hir_to_node (HirId id, NodeId *ref);
 
   void insert_location (HirId id, location_t locus);
-  Location lookup_location (HirId id);
+  location_t lookup_location (HirId id);
 
   bool resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt);
 
@@ -383,7 +383,7 @@ private:
   std::map<HirId, HIR::Pattern *> hirPatternMappings;
   std::map<RustLangItem::ItemType, DefId> lang_item_mappings;
   std::map<NodeId, const Resolver::CanonicalPath> paths;
-  std::map<NodeId, Location> locations;
+  std::map<NodeId, location_t> locations;
   std::map<NodeId, HirId> nodeIdToHirMappings;
   std::map<HirId, NodeId> hirIdToNodeMappings;
 

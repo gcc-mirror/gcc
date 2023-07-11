@@ -160,7 +160,7 @@ public:
   void visit (Visitable &v);
   void visit (LoopLabel &label);
 
-  void visit (Literal &lit, Location locus = UNDEF_LOCATION);
+  void visit (Literal &lit, location_t locus = UNDEF_LOCATION);
 
   void visit (FunctionParam &param);
   void visit (Attribute &attrib);

@@ -56,7 +56,7 @@ private:
    * @param locus Location of said expression/statement
    */
   void check_for_privacy_violation (const NodeId &use_id,
-				    const Location &locus);
+				    const location_t locus);
 
   /**
    * Internal function used by `check_type_privacy` when dealing with complex
@@ -65,7 +65,7 @@ types
    */
   void check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 				const TyTy::BaseType *ty,
-				const Location &locus);
+				const location_t locus);
 
   /**
    * Check the privacy of an explicit type.

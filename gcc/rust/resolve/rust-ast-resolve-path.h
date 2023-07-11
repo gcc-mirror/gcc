@@ -43,7 +43,7 @@ private:
   void
   resolve_simple_path_segments (CanonicalPath prefix, size_t offs,
 				const std::vector<AST::SimplePathSegment> &segs,
-				NodeId expr_node_id, Location expr_locus);
+				NodeId expr_node_id, location_t expr_locus);
 };
 
 } // namespace Resolver

@@ -25,7 +25,7 @@ namespace Privacy {
 
 bool
 PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
-					    const Location &locus)
+					    const location_t locus)
 {
   ModuleVisibility visibility;
 
