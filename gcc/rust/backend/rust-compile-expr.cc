@@ -118,10 +118,10 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
   if (expr.has_return_expr ())
     {
       HirId id = expr.get_mappings ().get_hirid ();
-      Location rvalue_locus = expr.return_expr->get_locus ();
+      location_t rvalue_locus = expr.return_expr->get_locus ();
 
       TyTy::BaseType *expected = fncontext.retty;
-      Location lvalue_locus
+      location_t lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ref ());
 
       TyTy::BaseType *actual = nullptr;
@@ -675,8 +675,8 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
     }
 
   std::vector<Bvariable *> locals;
-  Location start_location = expr.get_loop_block ()->get_locus ();
-  Location end_location = expr.get_loop_block ()->get_locus (); // FIXME
+  location_t start_location = expr.get_loop_block ()->get_locus ();
+  location_t end_location = expr.get_loop_block ()->get_locus (); // FIXME
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree loop_block
@@ -1453,7 +1453,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
   // setup the end label so the cases can exit properly
   tree fndecl = fnctx.fndecl;
-  Location end_label_locus = expr.get_locus (); // FIXME
+  location_t end_label_locus = expr.get_locus (); // FIXME
   tree end_label
     = ctx->get_backend ()->label (fndecl,
 				  "" /* empty creates an artificial label */,
@@ -1462,8 +1462,8 @@ CompileExpr::visit (HIR::MatchExpr &expr)
     = ctx->get_backend ()->label_definition_statement (end_label);
 
   // setup the switch-body-block
-  Location start_location = UNKNOWN_LOCATION; // FIXME
-  Location end_location = UNKNOWN_LOCATION;   // FIXME
+  location_t start_location = UNKNOWN_LOCATION; // FIXME
+  location_t end_location = UNKNOWN_LOCATION;	// FIXME
   tree switch_body_block
     = ctx->get_backend ()->block (fndecl, enclosing_scope, {}, start_location,
 				  end_location);
@@ -1476,7 +1476,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       rust_assert (kase_arm.get_patterns ().size () > 0);
 
       // generate implicit label
-      Location arm_locus = kase_arm.get_locus ();
+      location_t arm_locus = kase_arm.get_locus ();
       tree case_label = ctx->get_backend ()->label (
 	fndecl, "" /* empty creates an artificial label */, arm_locus);
 
@@ -1577,9 +1577,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  rust_assert (ok);
 
 	  // coerce it if required
-	  Location lvalue_locus
+	  location_t lvalue_locus
 	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
-	  Location rvalue_locus = argument->get_locus ();
+	  location_t rvalue_locus = argument->get_locus ();
 	  rvalue
 	    = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
 			     actual, expected, lvalue_locus, rvalue_locus);
@@ -1684,9 +1684,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
       rust_assert (ok);
 
       // coerce it if required
-      Location lvalue_locus
+      location_t lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
-      Location rvalue_locus = argument->get_locus ();
+      location_t rvalue_locus = argument->get_locus ();
       rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
 			      actual, expected, lvalue_locus, rvalue_locus);
 
@@ -1782,9 +1782,9 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       rust_assert (ok);
 
       // coerce it if required
-      Location lvalue_locus
+      location_t lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
-      Location rvalue_locus = argument->get_locus ();
+      location_t rvalue_locus = argument->get_locus ();
       rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
 			      actual, expected, lvalue_locus, rvalue_locus);
 
@@ -1800,7 +1800,7 @@ tree
 CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
 				   TyTy::BaseType *receiver,
 				   TyTy::FnType *fntype, tree receiver_ref,
-				   Location expr_locus)
+				   location_t expr_locus)
 {
   size_t offs = 0;
   const Resolver::TraitItemReference *ref = nullptr;
@@ -1843,7 +1843,7 @@ tree
 CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 				    TyTy::BaseType *receiver,
 				    TyTy::FnType *fntype, tree receiver_ref,
-				    Location expr_locus)
+				    location_t expr_locus)
 {
   // access the offs + 1 for the fnptr and offs=0 for the reciever obj
   return ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
@@ -2187,7 +2187,7 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
 }
 
 tree
-CompileExpr::array_value_expr (Location expr_locus,
+CompileExpr::array_value_expr (location_t expr_locus,
 			       const TyTy::ArrayType &array_tyty,
 			       tree array_type, HIR::ArrayElemsValues &elems)
 {
@@ -2207,7 +2207,7 @@ CompileExpr::array_value_expr (Location expr_locus,
 }
 
 tree
-CompileExpr::array_copied_expr (Location expr_locus,
+CompileExpr::array_copied_expr (location_t expr_locus,
 				const TyTy::ArrayType &array_tyty,
 				tree array_type, HIR::ArrayElemsCopied &elems)
 {
@@ -2429,7 +2429,7 @@ HIRCompileBase::resolve_unsized_dyn_adjustment (
   Resolver::Adjustment &adjustment, tree expression, location_t locus)
 {
   tree rvalue = expression;
-  Location rvalue_locus = locus;
+  location_t rvalue_locus = locus;
 
   const TyTy::BaseType *actual = adjustment.get_actual ();
   const TyTy::BaseType *expected = adjustment.get_expected ();
@@ -2765,8 +2765,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     }
 
   tree enclosing_scope = NULL_TREE;
-  Location start_location = function_body->get_locus ();
-  Location end_location = function_body->get_locus ();
+  location_t start_location = function_body->get_locus ();
+  location_t end_location = function_body->get_locus ();
   if (is_block_expr)
     {
       HIR::BlockExpr *body = static_cast<HIR::BlockExpr *> (function_body);

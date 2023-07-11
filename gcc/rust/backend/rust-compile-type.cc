@@ -185,7 +185,7 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
   if (!should_be_void)
     {
       auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
-      Location return_type_locus
+      location_t return_type_locus
 	= ctx->get_mappings ()->lookup_location (hir_type->get_ref ());
       results.push_back (
 	Backend::typed_identifier ("_", ret, return_type_locus));

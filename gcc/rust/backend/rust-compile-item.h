@@ -32,7 +32,7 @@ public:
   static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
-		       Location ref_locus = UNDEF_LOCATION)
+		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -72,14 +72,14 @@ public:
   void visit (HIR::ExprStmt &) override {}
 
 protected:
-  CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+  CompileItem (Context *ctx, TyTy::BaseType *concrete, location_t ref_locus)
     : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
       ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *concrete;
   tree reference;
-  Location ref_locus;
+  location_t ref_locus;
 };
 
 } // namespace Compile

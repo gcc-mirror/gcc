@@ -46,7 +46,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 tree
 ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
-			 Location expr_locus, bool is_qualified_path)
+			 location_t expr_locus, bool is_qualified_path)
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
@@ -174,7 +174,7 @@ tree
 HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const HIR::PathIdentSegment &final_segment,
 			       const Analysis::NodeMapping &mappings,
-			       Location expr_locus, bool is_qualified_path)
+			       location_t expr_locus, bool is_qualified_path)
 {
   HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
   HirId parent_block;

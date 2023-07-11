@@ -71,8 +71,8 @@ CompileStmt::visit (HIR::LetStmt &stmt)
     stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
   rust_assert (ok);
 
-  Location lvalue_locus = stmt.get_pattern ()->get_locus ();
-  Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
+  location_t lvalue_locus = stmt.get_pattern ()->get_locus ();
+  location_t rvalue_locus = stmt.get_init_expr ()->get_locus ();
   TyTy::BaseType *expected = ty;
   init = coercion_site (stmt.get_mappings ().get_hirid (), init, actual,
 			expected, lvalue_locus, rvalue_locus);
