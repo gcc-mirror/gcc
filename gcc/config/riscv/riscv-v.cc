@@ -1040,6 +1040,24 @@ emit_vlmax_decompress_insn (rtx target, rtx op0, rtx op1, rtx mask)
   emit_vlmax_masked_gather_mu_insn (target, op1, sel, mask);
 }
 
+/* Emit compress instruction.  */
+static void
+emit_vlmax_compress_insn (unsigned icode, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_COMPRESS_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit merge instruction.  */
 
 static machine_mode
@@ -2573,6 +2591,142 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize the patterns that we can use compress operation to shuffle the
+   vectors. The perm selector of compress pattern is divided into 2 part:
+   The first part is the random index number < NUNITS.
+   The second part is consecutive last N index number >= NUNITS.
+
+   E.g.
+   v = VEC_PERM_EXPR (v0, v1, selector),
+   selector = { 0, 2, 6, 7 }
+
+   We can transform such pattern into:
+
+   op1 = vcompress (op0, mask)
+   mask = { 1, 0, 1, 0 }
+   v = op1.  */
+
+static bool
+shuffle_compress_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+
+  /* It's not worthwhile the compress pattern has elemenets < 4
+     and we can't modulo indices for compress pattern.  */
+  if (known_ge (d->perm[vlen - 1], vlen * 2) || vlen < 4)
+    return false;
+
+  /* Compress pattern doesn't work for one vector.  */
+  if (d->one_vector_p)
+    return false;
+
+  /* Compress point is the point that all elements value with index i >=
+     compress point of the selector are all consecutive series increasing and
+     each selector value >= NUNTIS. In this case, we could compress all elements
+     of i < compress point into the op1.  */
+  int compress_point = -1;
+  for (int i = 0; i < vlen; i++)
+    {
+      if (compress_point < 0 && known_ge (d->perm[i], vec_len))
+	{
+	  compress_point = i;
+	  break;
+	}
+    }
+
+  /* We don't apply compress approach if we can't find the compress point.  */
+  if (compress_point < 0)
+    return false;
+
+  /* It must be series increasing from compress point.  */
+  if (!d->perm.series_p (compress_point, 1, d->perm[compress_point], 1))
+    return false;
+
+  /* We can only apply compress approach when all index values from 0 to
+     compress point are increasing.  */
+  for (int i = 1; i < compress_point; i++)
+    if (known_le (d->perm[i], d->perm[i - 1]))
+      return false;
+
+  /* Check whether we need to slideup op1 to apply compress approach.
+
+       E.g. For index = { 0, 2, 6, 7}, since d->perm[i - 1] = 7 which
+	    is 2 * NUNITS - 1, so we don't need to slide up.
+
+	    For index = { 0, 2, 5, 6}, we need to slide op1 up before
+	    we apply compress approach.  */
+  bool need_slideup_p = maybe_ne (d->perm[vlen - 1], 2 * vec_len - 1);
+
+  /* If we leave it directly be handled by general gather,
+     the code sequence will be:
+	VECTOR LOAD  selector
+	GEU          mask, selector, NUNITS
+	GATHER       dest, op0, selector
+	SUB          selector, selector, NUNITS
+	GATHER       dest, op1, selector, mask
+     Each ALU operation is considered as COST = 1 and VECTOR LOAD is considered
+     as COST = 4. So, we consider the general gather handling COST = 9.
+     TODO: This cost is not accurate, we can adjust it by tune info.  */
+  int general_cost = 9;
+
+  /* If we can use compress approach, the code squence will be:
+	MASK LOAD    mask
+	COMPRESS     op1, op0, mask
+     If it needs slide up, it will be:
+	MASK LOAD    mask
+	SLIDEUP      op1
+	COMPRESS     op1, op0, mask
+     By default, mask load COST = 2.
+     TODO: This cost is not accurate, we can adjust it by tune info.  */
+  int compress_cost = 4;
+
+  if (general_cost <= compress_cost)
+    return false;
+
+  /* Build a mask that is true when selector element is true.  */
+  machine_mode mask_mode = get_mask_mode (vmode).require ();
+  rvv_builder builder (mask_mode, vlen, 1);
+  for (int i = 0; i < vlen; i++)
+    {
+      bool is_compress_index = false;
+      for (int j = 0; j < compress_point; j++)
+	{
+	  if (known_eq (d->perm[j], i))
+	    {
+	      is_compress_index = true;
+	      break;
+	    }
+	}
+      if (is_compress_index)
+	builder.quick_push (CONST1_RTX (BImode));
+      else
+	builder.quick_push (CONST0_RTX (BImode));
+    }
+  rtx mask = force_reg (mask_mode, builder.build ());
+
+  rtx merge = d->op1;
+  if (need_slideup_p)
+    {
+      int slideup_cnt = vlen - (d->perm[vlen - 1].to_constant () % vlen) - 1;
+      rtx ops[] = {d->target, RVV_VUNDEF (vmode), d->op1,
+		   gen_int_mode (slideup_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_slide_insn (icode, ops);
+      merge = d->target;
+    }
+
+  insn_code icode = code_for_pred_compress (vmode);
+  rtx ops[] = {d->target, merge, d->op0, mask};
+  emit_vlmax_compress_insn (icode, ops);
+  return true;
+}
+
 /* Recognize decompress patterns:
 
    1. VEC_PERM_EXPR op0 and op1
@@ -2695,6 +2849,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       if (d->vmode == d->op_mode)
 	{
 	  if (shuffle_merge_patterns (d))
+	    return true;
+	  if (shuffle_compress_patterns (d))
 	    return true;
 	  if (shuffle_decompress_patterns (d))
 	    return true;

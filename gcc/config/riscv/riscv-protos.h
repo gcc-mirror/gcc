@@ -148,6 +148,7 @@ enum insn_type
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
   RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
+  RVV_COMPRESS_OP = 4,
 };
 enum vlmul_type
 {
