@@ -22,6 +22,7 @@
 
 #include "tokenstream.h"
 #include "tokentree.h"
+#include "registration.h"
 
 #include <cstring>
 
@@ -43,6 +44,12 @@ TokenStream::make_tokenstream (std::uint64_t capacity)
 {
   auto *data = new TokenTree[capacity];
   return {data, 0, capacity};
+}
+
+TokenStream
+TokenStream::make_tokenstream (std::string &source, bool &has_error)
+{
+  return __gccrs_pm_callback_from_str_fn (source, has_error);
 }
 
 void
@@ -99,8 +106,11 @@ extern "C" bool
 TokenStream__from_string (unsigned char *str, std::uint64_t len,
 			  TokenStream *ts)
 {
-  // FIXME: Implement using parser ?
-  return false;
+  bool result;
+  auto source = std::string (reinterpret_cast<const char *> (str), len);
+
+  *ts = TokenStream::make_tokenstream (source, result);
+  return result;
 }
 
 extern "C" TokenStream

@@ -16,6 +16,8 @@
 
 #include "rust-diagnostics.h"
 #include "rust-proc-macro.h"
+#include "rust-lex.h"
+#include "rust-token-converter.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -23,6 +25,60 @@
 namespace Rust {
 
 const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
+
+ProcMacro::TokenStream
+tokenstream_from_string (std::string &data, bool &lex_error)
+{
+  // FIXME: Insert location pointing to call site in tokens
+  Lexer lex (data);
+
+  std::vector<const_TokenPtr> tokens;
+  TokenPtr ptr;
+  for (ptr = lex.build_token ();
+       ptr != nullptr && ptr->get_id () != END_OF_FILE;
+       ptr = lex.build_token ())
+    {
+      tokens.emplace_back (ptr);
+    }
+
+  if (ptr == nullptr)
+    {
+      lex_error = true;
+      return ProcMacro::TokenStream::make_tokenstream ();
+    }
+
+  lex_error = false;
+  return convert (tokens);
+}
+
+static_assert (
+  std::is_same<decltype (tokenstream_from_string) *,
+	       ProcMacro::from_str_function_t>::value,
+  "Registration callback signature not synced, check proc macro internals.");
+
+template <typename Symbol, typename Callback>
+bool
+register_callback (void *handle, Symbol, std::string symbol_name,
+		   Callback callback)
+{
+  void *addr = dlsym (handle, symbol_name.c_str ());
+  if (addr == nullptr)
+    {
+      rust_error_at (Location (),
+		     "Callback registration symbol (%s) missing from "
+		     "proc macro, wrong version?",
+		     symbol_name.c_str ());
+      return false;
+    }
+
+  auto storage = reinterpret_cast<Symbol *> (addr);
+  *storage = callback;
+
+  return true;
+}
+
+#define REGISTER_CALLBACK(HANDLE, SYMBOL, CALLBACK)                            \
+  register_callback (HANDLE, SYMBOL, #SYMBOL, CALLBACK)
 
 const ProcMacro::ProcmacroArray *
 load_macros_array (std::string path)
@@ -36,6 +92,10 @@ load_macros_array (std::string path)
       return nullptr;
     }
 
+  if (!REGISTER_CALLBACK (handle, __gccrs_pm_callback_from_str_fn,
+			  tokenstream_from_string))
+    return nullptr;
+
   // FIXME: Add CrateStableId handling, right now all versions may be loaded,
   // even incompatible ones.
   return *reinterpret_cast<const ProcMacro::ProcmacroArray **> (
@@ -46,6 +106,8 @@ load_macros_array (std::string path)
   rust_unreachable ();
 #endif
 }
+
+#undef REGISTER_CALLBACK
 
 const std::vector<ProcMacro::Procmacro>
 load_macros (std::string path)
