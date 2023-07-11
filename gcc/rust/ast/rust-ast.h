@@ -90,6 +90,7 @@ enum class Kind
 class Visitable
 {
 public:
+  virtual ~Visitable () = default;
   virtual void accept_vis (ASTVisitor &vis) = 0;
 };
 
