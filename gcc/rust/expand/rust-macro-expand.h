@@ -90,6 +90,8 @@ public:
     Repetition,
   };
 
+  virtual ~MatchedFragmentContainer () = default;
+
   virtual Kind get_kind () const = 0;
 
   virtual std::string as_string () const = 0;
