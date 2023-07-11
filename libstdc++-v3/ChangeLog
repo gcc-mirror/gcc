@@ -1,3 +1,26 @@
+2023-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* include/bits/fs_path.h (path::_Codecvt): New class template
+	that selects the kind of code conversion done.
+	(path::_Codecvt<wchar_t>): Select based on sizeof(wchar_t).
+	(_GLIBCXX_CONV_FROM_UTF8): New macro to allow the same code to
+	be used for Windows and POSIX.
+	(path::_S_convert(const EcharT*, const EcharT*)): Simplify by
+	using _Codecvt and _GLIBCXX_CONV_FROM_UTF8 abstractions.
+	(path::_S_str_convert(basic_string_view<value_type>, const A&)):
+	Simplify nested conditions.
+	* include/experimental/bits/fs_path.h (path::_Cvt): Define
+	nested typedef controlling type of code conversion done.
+	(path::_Cvt::_S_wconvert): Use new typedef.
+	(path::string(const A&)): Likewise.
+	* testsuite/27_io/filesystem/path/construct/95048.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/95048.cc: New
+	test.
+
 2023-06-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
