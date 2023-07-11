@@ -192,7 +192,7 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @var{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab complete but no non-host devices provides @code{unified_shared_memory}
+      @tab complete but no non-host device provides @code{unified_shared_memory}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Full support for C/C++, partial for Fortran
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -4634,6 +4634,17 @@ smaller number.  On non-host devices, the value of the
 @node Memory allocation with libmemkind
 @section Memory allocation with libmemkind
 
+For the memory spaces, the following applies:
+@itemize
+@item @code{omp_default_mem_space} is supported
+@item @code{omp_const_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_low_lat_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_large_cap_mem_space} maps to @code{omp_default_mem_space},
+      unless the memkind library is available
+@item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},
+      unless the memkind library is available
+@end itemize
+
 On Linux systems, where the @uref{https://github.com/memkind/memkind, memkind
 library} (@code{libmemkind.so.0}) is available at runtime, it is used when
 creating memory allocators requesting
@@ -4641,9 +4652,24 @@ creating memory allocators requesting
 @itemize
 @item the memory space @code{omp_high_bw_mem_space}
 @item the memory space @code{omp_large_cap_mem_space}
-@item the partition trait @code{omp_atv_interleaved}
+@item the partition trait @code{omp_atv_interleaved}; note that for
+      @code{omp_large_cap_mem_space} the allocation will not be interleaved
 @end itemize
 
+Additional notes:
+@itemize
+@item The @code{pinned} trait is unsupported.
+@item For the @code{partition} trait, the partition part size will be the same
+      as the requested size (i.e. @code{interleaved} or @code{blocked} has no
+      effect), except for @code{interleaved} when the memkind library is
+      available.  Furthermore, for @code{nearest} the memory might not be
+      on the same NUMA node as thread that allocated the memory; on Linux,
+      this is in particular the case when the memory placement policy is
+      set to preferred.
+@item The @code{access} trait has no effect such that memory is always
+      accessible by all threads.
+@item The @code{sync_hint} trait has no effect.
+@end itemize
 
 @c ---------------------------------------------------------------------
 @c Offload-Target Specifics

@@ -301,7 +301,7 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 	  break;
 	}
 #endif
-      return omp_null_allocator;
+      break;
     case omp_large_cap_mem_space:
 #ifdef LIBGOMP_USE_MEMKIND
       memkind_data = gomp_get_memkind ();
