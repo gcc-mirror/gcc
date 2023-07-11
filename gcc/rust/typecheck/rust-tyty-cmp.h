@@ -62,8 +62,8 @@ public:
 
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -78,8 +78,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -94,8 +94,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -110,8 +110,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -126,8 +126,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -142,8 +142,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -158,8 +158,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -174,8 +174,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -190,8 +190,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -206,8 +206,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -222,8 +222,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -238,8 +238,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -254,8 +254,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -270,8 +270,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -286,8 +286,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -302,8 +302,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -318,8 +318,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -334,8 +334,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -350,8 +350,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -366,8 +366,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -388,8 +388,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -404,8 +404,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -420,8 +420,8 @@ public:
     ok = false;
     if (emit_error_flag)
       {
-	Location ref_locus = mappings->lookup_location (type.get_ref ());
-	Location base_locus
+	location_t ref_locus = mappings->lookup_location (type.get_ref ());
+	location_t base_locus
 	  = mappings->lookup_location (get_base ()->get_ref ());
 	rich_location r (line_table, ref_locus);
 	r.add_range (base_locus);
@@ -1561,7 +1561,7 @@ public:
 	return;
       }
 
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    location_t ref_locus = mappings->lookup_location (type.get_ref ());
     ok = base->bounds_compatible (type, ref_locus, false);
   }
 

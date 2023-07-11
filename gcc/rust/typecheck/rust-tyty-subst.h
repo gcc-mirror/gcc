@@ -56,7 +56,7 @@ public:
 
   bool needs_substitution () const;
 
-  Location get_param_locus () const;
+  location_t get_param_locus () const;
 
   bool param_has_default_ty () const;
 

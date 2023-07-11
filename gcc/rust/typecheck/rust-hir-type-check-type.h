@@ -88,7 +88,7 @@ private:
     NodeId root_resolved_node_id, HirId expr_id,
     std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
     TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
-    Location expr_locus);
+    location_t expr_locus);
 
   TyTy::BaseType *translated;
 };

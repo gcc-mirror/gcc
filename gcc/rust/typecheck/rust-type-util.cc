@@ -115,7 +115,7 @@ query_type (HirId reference, TyTy::BaseType **result)
     }
 
   // more?
-  Location possible_locus = mappings->lookup_location (reference);
+  location_t possible_locus = mappings->lookup_location (reference);
   rust_debug_loc (possible_locus, "query system failed to resolve: [%u]",
 		  reference);
   context->query_completed (reference);
@@ -125,7 +125,7 @@ query_type (HirId reference, TyTy::BaseType **result)
 
 bool
 types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		  Location unify_locus, bool emit_errors)
+		  location_t unify_locus, bool emit_errors)
 {
   TyTy::BaseType *result
     = unify_site_and (UNKNOWN_HIRID, lhs, rhs, unify_locus, emit_errors,
@@ -135,7 +135,7 @@ types_compatable (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-	    Location unify_locus)
+	    location_t unify_locus)
 {
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
@@ -152,7 +152,7 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		Location unify_locus, bool emit_errors, bool commit_if_ok,
+		location_t unify_locus, bool emit_errors, bool commit_if_ok,
 		bool implicit_infer_vars, bool cleanup)
 {
   TypeCheckContext &context = *TypeCheckContext::get ();
@@ -251,7 +251,7 @@ try_coercion (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 TyTy::BaseType *
 cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
-	   Location cast_locus)
+	   location_t cast_locus)
 {
   rust_debug ("cast_site id={%u} from={%s} to={%s}", id,
 	      from.get_ty ()->debug_str ().c_str (),

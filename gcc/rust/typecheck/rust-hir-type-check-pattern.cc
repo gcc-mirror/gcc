@@ -140,7 +140,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 }
 
 void
-emit_invalid_field_error (Location loc, Rust::TyTy::VariantDef *variant,
+emit_invalid_field_error (location_t loc, Rust::TyTy::VariantDef *variant,
 			  const std::string &name)
 {
   rust_error_at (loc, ErrorCode::E0026,

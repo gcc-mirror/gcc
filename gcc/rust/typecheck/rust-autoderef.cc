@@ -296,7 +296,7 @@ resolve_operator_overload_fn (
 	  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 	  fn = static_cast<TyTy::FnType *> (lookup);
 
-	  Location unify_locus = mappings->lookup_location (lhs->get_ref ());
+	  location_t unify_locus = mappings->lookup_location (lhs->get_ref ());
 	  unify_site (lhs->get_ref (),
 		      TyTy::TyWithLocation (fn->get_self_type ()),
 		      TyTy::TyWithLocation (adjusted_self), unify_locus);
