@@ -108,7 +108,7 @@ class CompilePatternLet : public HIRCompileBase, public HIR::HIRPatternVisitor
 {
 public:
   static void Compile (HIR::Pattern *pattern, tree init_expr,
-		       TyTy::BaseType *ty, Location rval_locus, Context *ctx)
+		       TyTy::BaseType *ty, location_t rval_locus, Context *ctx)
   {
     CompilePatternLet compiler (ctx, init_expr, ty, rval_locus);
     pattern->accept_vis (compiler);
@@ -176,14 +176,14 @@ public:
 
 protected:
   CompilePatternLet (Context *ctx, tree init_expr, TyTy::BaseType *ty,
-		     Location rval_locus)
+		     location_t rval_locus)
     : HIRCompileBase (ctx), init_expr (init_expr), ty (ty),
       rval_locus (rval_locus)
   {}
 
   tree init_expr;
   TyTy::BaseType *ty;
-  Location rval_locus;
+  location_t rval_locus;
 };
 
 } // namespace Compile

@@ -40,8 +40,8 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;
-  Location start_location = expr.get_locus ();
-  Location end_location = expr.get_end_locus ();
+  location_t start_location = expr.get_locus ();
+  location_t end_location = expr.get_end_locus ();
   auto body_mappings = expr.get_mappings ();
 
   Resolver::Rib *rib = nullptr;
@@ -130,8 +130,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
 
   // else block
   std::vector<Bvariable *> locals;
-  Location start_location = expr.get_else_block ()->get_locus ();
-  Location end_location = expr.get_else_block ()->get_locus (); // FIXME
+  location_t start_location = expr.get_else_block ()->get_locus ();
+  location_t end_location = expr.get_else_block ()->get_locus (); // FIXME
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 						start_location, end_location);

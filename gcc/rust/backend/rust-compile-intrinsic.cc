@@ -282,7 +282,7 @@ compile_fn_params (Context *ctx, TyTy::FnType *fntype, tree fndecl,
       auto &param_tyty = parm.second;
       auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
 
-      Location param_locus = referenced_param->get_locus ();
+      location_t param_locus = referenced_param->get_locus ();
       Bvariable *compiled_param_var
 	= CompileFnParam::compile (ctx, fndecl, referenced_param,
 				   compiled_param_type, param_locus);
@@ -323,8 +323,8 @@ static void
 enter_intrinsic_block (Context *ctx, tree fndecl)
 {
   tree enclosing_scope = NULL_TREE;
-  Location start_location = UNDEF_LOCATION;
-  Location end_location = UNDEF_LOCATION;
+  location_t start_location = UNDEF_LOCATION;
+  location_t end_location = UNDEF_LOCATION;
 
   auto block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
 					   start_location, end_location);

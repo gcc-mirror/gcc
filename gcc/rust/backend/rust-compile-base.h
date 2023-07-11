@@ -38,11 +38,11 @@ protected:
   Context *get_context () { return ctx; }
 
   tree coercion_site (HirId id, tree rvalue, TyTy::BaseType *actual,
-		      TyTy::BaseType *expected, Location lvalue_locus,
-		      Location rvalue_locus);
+		      TyTy::BaseType *expected, location_t lvalue_locus,
+		      location_t rvalue_locus);
   tree coercion_site1 (tree rvalue, TyTy::BaseType *actual,
-		       TyTy::BaseType *expected, Location lvalue_locus,
-		       Location rvalue_locus);
+		       TyTy::BaseType *expected, location_t lvalue_locus,
+		       location_t rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
 			     const TyTy::DynamicObjectType *ty,
@@ -56,13 +56,13 @@ protected:
     const TyTy::BaseType *receiver, const TyTy::BaseType *root,
     location_t locus);
 
-  bool verify_array_capacities (tree ltype, tree rtype, Location ltype_locus,
-				Location rtype_locus);
+  bool verify_array_capacities (tree ltype, tree rtype, location_t ltype_locus,
+				location_t rtype_locus);
 
   tree query_compile (HirId ref, TyTy::BaseType *lookup,
 		      const HIR::PathIdentSegment &final_segment,
 		      const Analysis::NodeMapping &mappings,
-		      Location expr_locus, bool is_qualified_path);
+		      location_t expr_locus, bool is_qualified_path);
 
   tree resolve_adjustements (std::vector<Resolver::Adjustment> &adjustments,
 			     tree expression, location_t locus);
@@ -83,7 +83,7 @@ protected:
 				       tree expression, location_t locus);
 
   tree resolve_method_address (TyTy::FnType *fntype, TyTy::BaseType *receiver,
-			       Location expr_locus);
+			       location_t expr_locus);
 
   void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
 			      TyTy::BaseType *fn_return_ty);

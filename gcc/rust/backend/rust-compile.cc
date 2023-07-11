@@ -51,8 +51,8 @@ CompileCrate::go ()
 
 tree
 HIRCompileBase::coercion_site (HirId id, tree rvalue, TyTy::BaseType *rval,
-			       TyTy::BaseType *lval, Location lvalue_locus,
-			       Location rvalue_locus)
+			       TyTy::BaseType *lval, location_t lvalue_locus,
+			       location_t rvalue_locus)
 {
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (id, &adjustments);
@@ -66,8 +66,8 @@ HIRCompileBase::coercion_site (HirId id, tree rvalue, TyTy::BaseType *rval,
 
 tree
 HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
-				TyTy::BaseType *lval, Location lvalue_locus,
-				Location rvalue_locus)
+				TyTy::BaseType *lval, location_t lvalue_locus,
+				location_t rvalue_locus)
 {
   if (rvalue == error_mark_node)
     return error_mark_node;
@@ -361,8 +361,8 @@ HIRCompileBase::compute_address_for_trait_item (
 
 bool
 HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
-					 Location lvalue_locus,
-					 Location rvalue_locus)
+					 location_t lvalue_locus,
+					 location_t rvalue_locus)
 {
   rust_assert (ltype != NULL_TREE);
   rust_assert (rtype != NULL_TREE);

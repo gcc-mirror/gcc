@@ -490,8 +490,8 @@ HIRCompileBase::compile_function_body (tree fndecl,
       if (!fn_return_ty->is_unit ())
 	{
 	  HirId id = function_body.get_mappings ().get_hirid ();
-	  Location lvalue_locus = function_body.get_locus ();
-	  Location rvalue_locus = locus;
+	  location_t lvalue_locus = function_body.get_locus ();
+	  location_t rvalue_locus = locus;
 
 	  TyTy::BaseType *expected = fn_return_ty;
 	  TyTy::BaseType *actual = nullptr;
@@ -594,7 +594,7 @@ HIRCompileBase::compile_function (
       auto param_tyty = tyty_param.second;
       auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
 
-      Location param_locus = referenced_param.get_locus ();
+      location_t param_locus = referenced_param.get_locus ();
       Bvariable *compiled_param_var
 	= CompileFnParam::compile (ctx, fndecl, &referenced_param,
 				   compiled_param_type, param_locus);
@@ -620,8 +620,8 @@ HIRCompileBase::compile_function (
     = compile_locals_for_block (ctx, *rib, fndecl);
 
   tree enclosing_scope = NULL_TREE;
-  Location start_location = function_body->get_locus ();
-  Location end_location = function_body->get_end_locus ();
+  location_t start_location = function_body->get_locus ();
+  location_t end_location = function_body->get_end_locus ();
 
   tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 						start_location, end_location);
@@ -683,8 +683,8 @@ HIRCompileBase::compile_constant_item (
 
   std::vector<Bvariable *> locals;
   tree enclosing_scope = NULL_TREE;
-  Location start_location = const_value_expr->get_locus ();
-  Location end_location = const_value_expr->get_locus ();
+  location_t start_location = const_value_expr->get_locus ();
+  location_t end_location = const_value_expr->get_locus ();
   if (is_block_expr)
     {
       HIR::BlockExpr *function_body
@@ -766,7 +766,7 @@ HIRCompileBase::named_constant_expression (tree type_tree,
 tree
 HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 					TyTy::BaseType *receiver,
-					Location expr_locus)
+					location_t expr_locus)
 {
   rust_debug_loc (expr_locus, "resolve_method_address for %s and receiver %s",
 		  fntype->debug_str ().c_str (),
