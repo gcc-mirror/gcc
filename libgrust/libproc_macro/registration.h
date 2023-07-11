@@ -20,54 +20,18 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef TOKENSTREAM_H
-#define TOKENSTREAM_H
+#ifndef REGISTRATION_H
+#define REGISTRATION_H
 
-#include <cstdint>
-#include <vector>
 #include <string>
+#include "tokenstream.h"
 
 namespace ProcMacro {
-struct TokenTree;
 
-struct TokenStream
-{
-  TokenTree *data;
-  std::uint64_t size;
-  std::uint64_t capacity;
-
-public:
-  void grow (std::uint64_t delta);
-  void push (TokenTree tree);
-
-  TokenStream clone () const;
-
-  static TokenStream make_tokenstream (std::vector<TokenTree> vec);
-  static TokenStream make_tokenstream (std::uint64_t capacity = 1);
-  static TokenStream make_tokenstream (std::string &str, bool &has_error);
-
-  static void drop (TokenStream *stream);
-};
-
-extern "C" TokenStream
-TokenStream__new ();
-
-extern "C" TokenStream
-TokenStream__with_capacity (std::uint64_t capacity);
-
-extern "C" void
-TokenSream__push (TokenStream *stream, TokenTree tree);
-
-extern "C" bool
-TokenStream__from_string (unsigned char *str, std::uint64_t len,
-			  TokenStream *ts);
-
-extern "C" TokenStream
-TokenStream__clone (const TokenStream *ts);
-
-extern "C" void
-TokenStream__drop (TokenStream *stream);
+using from_str_function_t = ProcMacro::TokenStream (*) (std::string &, bool &);
 
 } // namespace ProcMacro
 
-#endif /* ! TOKENSTREAM_H */
+extern "C" ProcMacro::from_str_function_t __gccrs_pm_callback_from_str_fn;
+
+#endif /* !REGISTRATION_H */

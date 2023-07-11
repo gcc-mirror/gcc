@@ -30,6 +30,7 @@
 #include "group.h"
 #include "punct.h"
 #include "ident.h"
+#include "registration.h"
 
 namespace ProcMacro {
 
@@ -61,6 +62,9 @@ struct Bang
   const char *name;
   BangMacro macro;
 };
+
+void
+proc_macro_register_from_str (ProcMacro::from_str_function_t fn);
 }
 
 enum ProcmacroTag
