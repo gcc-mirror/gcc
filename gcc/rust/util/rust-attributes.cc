@@ -122,7 +122,7 @@ is_builtin (const AST::Attribute &attribute, BuiltinAttrDefinition &builtin)
  * characters.
  */
 static void
-check_doc_alias (const std::string &alias_input, const Location &locus)
+check_doc_alias (const std::string &alias_input, const location_t locus)
 {
   // FIXME: The locus here is for the whole attribute. Can we get the locus
   // of the alias input instead?

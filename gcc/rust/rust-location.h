@@ -28,6 +28,4 @@
 // Used to replace Location default constructor
 #define UNDEF_LOCATION UNKNOWN_LOCATION
 
-typedef location_t Location;
-
 #endif // !defined(RUST_LOCATION_H)

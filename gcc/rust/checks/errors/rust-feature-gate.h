@@ -186,7 +186,7 @@ public:
   void visit (AST::BareFunctionType &type) override {}
 
 private:
-  void gate (Feature::Name name, Location loc, const std::string &error_msg);
+  void gate (Feature::Name name, location_t loc, const std::string &error_msg);
   void check_rustc_attri (const std::vector<AST::Attribute> &attributes);
   std::set<Feature::Name> valid_features;
 };
