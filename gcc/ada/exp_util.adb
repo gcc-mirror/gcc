@@ -6291,8 +6291,9 @@ package body Exp_Util is
 
       Typ := Underlying_Type (Typ);
 
-      --  We cannot find the operation if there is no full view available.
-      if Typ = Empty then
+      --  We cannot find the operation if there is no full view available
+
+      if No (Typ) then
          return Empty;
       end if;
 
