@@ -1,7 +1,9 @@
 // { dg-additional-options "-mavx" { target { avx_runtime } } }
 
-static inline long
-min (long a, long b)
+typedef long long i64;
+
+static inline i64
+min (i64 a, i64 b)
 {
   return a < b ? a : b;
 }
@@ -9,16 +11,16 @@ min (long a, long b)
 struct Item
 {
   int x : 8;
-  long y : 55;
+  i64 y : 55;
   bool z : 1;
 };
 
-__attribute__ ((noipa)) long
+__attribute__ ((noipa)) i64
 test (Item *a, int cnt)
 {
-  long size = 0;
+  i64 size = 0;
   for (int i = 0; i < cnt; i++)
-    size = min ((long)a[i].y, size);
+    size = min (a[i].y, size);
   return size;
 }
 
