@@ -102,7 +102,7 @@ DEBUG_FUNCTION void
 verify_flow_info (void)
 {
   size_t *edge_checksum;
-  int err = 0;
+  bool err = false;
   basic_block bb, last_bb_seen;
   basic_block *last_visited;
 
@@ -118,14 +118,14 @@ verify_flow_info (void)
 	  && bb != BASIC_BLOCK_FOR_FN (cfun, bb->index))
 	{
 	  error ("bb %d on wrong place", bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       if (bb->prev_bb != last_bb_seen)
 	{
 	  error ("prev_bb of %d should be %d, not %d",
 		 bb->index, last_bb_seen->index, bb->prev_bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       last_bb_seen = bb;
@@ -142,18 +142,18 @@ verify_flow_info (void)
 	{
 	  error ("verify_flow_info: Block %i has loop_father, but there are no loops",
 		 bb->index);
-	  err = 1;
+	  err = true;
 	}
       if (bb->loop_father == NULL && current_loops != NULL)
 	{
 	  error ("verify_flow_info: Block %i lacks loop_father", bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       if (!bb->count.verify ())
 	{
 	  error ("verify_flow_info: Wrong count of block %i", bb->index);
-	  err = 1;
+	  err = true;
 	}
       /* FIXME: Graphite and SLJL and target code still tends to produce
 	 edges with no probability.  */
@@ -161,13 +161,13 @@ verify_flow_info (void)
           && !bb->count.initialized_p () && !flag_graphite && 0)
 	{
 	  error ("verify_flow_info: Missing count of block %i", bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       if (bb->flags & ~cfun->cfg->bb_flags_allocated)
 	{
 	  error ("verify_flow_info: unallocated flag set on BB %d", bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -176,7 +176,7 @@ verify_flow_info (void)
 	    {
 	      error ("verify_flow_info: Duplicate edge %i->%i",
 		     e->src->index, e->dest->index);
-	      err = 1;
+	      err = true;
 	    }
 	  /* FIXME: Graphite and SLJL and target code still tends to produce
 	     edges with no probability.  */
@@ -185,13 +185,13 @@ verify_flow_info (void)
 	    {
 	      error ("Uninitialized probability of edge %i->%i", e->src->index,
 		     e->dest->index);
-	      err = 1;
+	      err = true;
 	    }
 	  if (!e->probability.verify ())
 	    {
 	      error ("verify_flow_info: Wrong probability of edge %i->%i",
 		     e->src->index, e->dest->index);
-	      err = 1;
+	      err = true;
 	    }
 
 	  last_visited [e->dest->index] = bb;
@@ -208,14 +208,14 @@ verify_flow_info (void)
 	      fprintf (stderr, "\nSuccessor: ");
 	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fprintf (stderr, "\n");
-	      err = 1;
+	      err = true;
 	    }
 
 	  if (e->flags & ~cfun->cfg->edge_flags_allocated)
 	    {
 	      error ("verify_flow_info: unallocated edge flag set on %d -> %d",
 		     e->src->index, e->dest->index);
-	      err = 1;
+	      err = true;
 	    }
 
 	  edge_checksum[e->dest->index] += (size_t) e;
@@ -223,7 +223,7 @@ verify_flow_info (void)
       if (n_fallthru > 1)
 	{
 	  error ("wrong amount of branch edges after unconditional jump %i", bb->index);
-	  err = 1;
+	  err = true;
 	}
 
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -236,7 +236,7 @@ verify_flow_info (void)
 	      fputs ("\nSuccessor: ", stderr);
 	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fputc ('\n', stderr);
-	      err = 1;
+	      err = true;
 	    }
 
 	  if (ei.index != e->dest_idx)
@@ -249,7 +249,7 @@ verify_flow_info (void)
 	      fputs ("\nSuccessor: ", stderr);
 	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fputc ('\n', stderr);
-	      err = 1;
+	      err = true;
 	    }
 
 	  edge_checksum[e->dest->index] -= (size_t) e;
@@ -272,7 +272,7 @@ verify_flow_info (void)
     if (edge_checksum[bb->index])
       {
 	error ("basic block %i edge lists are corrupted", bb->index);
-	err = 1;
+	err = true;
       }
 
   /* Clean up.  */
@@ -280,7 +280,9 @@ verify_flow_info (void)
   free (edge_checksum);
 
   if (cfg_hooks->verify_flow_info)
-    err |= cfg_hooks->verify_flow_info ();
+    if (cfg_hooks->verify_flow_info ())
+      err = true;
+
   if (err)
     internal_error ("verify_flow_info failed");
   timevar_pop (TV_CFG_VERIFY);
