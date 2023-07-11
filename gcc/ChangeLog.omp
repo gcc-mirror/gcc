@@ -1,3 +1,9 @@
+2023-07-12  Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Calculate volume enclosing
+	transferred elements instead of using whole array size for
+	noncontiguous 'target update' operations.
+
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (gimplify_adjust_omp_clauses): Don't gimplify
