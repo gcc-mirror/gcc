@@ -184,6 +184,7 @@ enum insn_type
   RVV_UNOP = 2,
   RVV_BINOP = 3,
   RVV_BINOP_MU = RVV_BINOP + 2,
+  RVV_BINOP_TU = RVV_BINOP + 2,
   RVV_MERGE_OP = 4,
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
@@ -276,6 +277,7 @@ bool neg_simm5_p (rtx);
 bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
+void expand_cond_len_binop (rtx_code, rtx *);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));

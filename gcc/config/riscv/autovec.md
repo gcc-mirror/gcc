@@ -1208,3 +1208,70 @@
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Conditional binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vadd.vv/vsub.vv/...
+;; - vadd.vi/vsub.vi/...
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_int_binop_no_shift:VI
+     (match_operand:VI 2 "<binop_rhs1_predicate>")
+     (match_operand:VI 3 "<binop_rhs2_predicate>"))
+   (match_operand:VI 4 "register_operand")
+   (match_operand 5 "autovec_length_operand")
+   (match_operand 6 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Conditional binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfadd.vv/vfsub.vv/...
+;; - vfadd.vf/vfsub.vf/...
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_binop:VF
+     (match_operand:VF 2 "register_operand")
+     (match_operand:VF 3 "register_operand"))
+   (match_operand:VF 4 "register_operand")
+   (match_operand 5 "autovec_length_operand")
+   (match_operand 6 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfmin.vv/vfmax.vv
+;; - vfmin.vf/vfmax.vf
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_binop_nofrm:VF
+     (match_operand:VF 2 "register_operand")
+     (match_operand:VF 3 "register_operand"))
+   (match_operand:VF 4 "register_operand")
+   (match_operand 5 "autovec_length_operand")
+   (match_operand 6 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  DONE;
+})

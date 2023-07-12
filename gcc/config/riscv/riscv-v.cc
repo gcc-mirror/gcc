@@ -919,6 +919,45 @@ emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a TU instruction.  */
+static void
+emit_nonvlmax_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a TU instruction.  */
+static void
+emit_nonvlmax_fp_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit vmv.s.x instruction.  */
 
 void
@@ -2966,6 +3005,46 @@ expand_load_store (rtx *ops, bool is_load)
 	emit_insn (gen_pred_store (mode, ops[0], mask, ops[1], len,
 				   get_avl_type_rtx (NONVLMAX)));
     }
+}
+
+/* Return true if the operation is the floating-point operation need FRM.  */
+static bool
+needs_fp_rounding (rtx_code code, machine_mode mode)
+{
+  if (!FLOAT_MODE_P (mode))
+    return false;
+  return code != SMIN && code != SMAX;
+}
+
+/* Expand COND_LEN_*.  */
+void
+expand_cond_len_binop (rtx_code code, rtx *ops)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  rtx src1 = ops[2];
+  rtx src2 = ops[3];
+  rtx merge = ops[4];
+  rtx len = ops[5];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+
+  poly_uint64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      rtx ops[] = {dest, mask, merge, src1, src2};
+      insn_code icode = code_for_pred (code, mode);
+      if (needs_fp_rounding (code, mode))
+	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_MU, ops, len);
+      else
+	emit_nonvlmax_tu_insn (icode, RVV_BINOP_MU, ops, len);
+    }
+  else
+    /* FIXME: Enable this case when we support it in the middle-end.  */
+    gcc_unreachable ();
 }
 
 } // namespace riscv_vector
