@@ -7701,17 +7701,24 @@ riscv_mode_needed (int entity, rtx_insn *insn)
     }
 }
 
-/* Return true if the VXRM/FRM status of the INSN is unknown.  */
-static bool
-global_state_unknown_p (rtx_insn *insn, unsigned int regno)
-{
-  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-  df_ref ref;
+/* Return TRUE that an insn is asm.  */
 
+static bool
+asm_insn_p (rtx_insn *insn)
+{
+  extract_insn (insn);
+
+  return recog_data.is_asm;
+}
+
+/* Return TRUE that an insn is unknown for VXRM.  */
+
+static bool
+vxrm_unknown_p (rtx_insn *insn)
+{
   /* Return true if there is a definition of VXRM.  */
-  for (ref = DF_INSN_INFO_DEFS (insn_info); ref; ref = DF_REF_NEXT_LOC (ref))
-    if (DF_REF_REGNO (ref) == regno)
-      return true;
+  if (reg_set_p (gen_rtx_REG (SImode, VXRM_REGNUM), insn))
+    return true;
 
   /* A CALL function may contain an instruction that modifies the VXRM,
      return true in this situation.  */
@@ -7720,25 +7727,61 @@ global_state_unknown_p (rtx_insn *insn, unsigned int regno)
 
   /* Return true for all assembly since users may hardcode a assembly
      like this: asm volatile ("csrwi vxrm, 0").  */
-  extract_insn (insn);
-  if (recog_data.is_asm)
+  if (asm_insn_p (insn))
     return true;
+
   return false;
 }
 
-static int
-riscv_entity_mode_after (int regnum, rtx_insn *insn, int mode,
-			 int (*get_attr_mode) (rtx_insn *), int default_mode)
+/* Return TRUE that an insn is unknown dynamic for FRM.  */
+
+static bool
+frm_unknown_dynamic_p (rtx_insn *insn)
 {
-  if (global_state_unknown_p (insn, regnum))
-    return default_mode;
-  else if (recog_memoized (insn) < 0)
+  /* Return true if there is a definition of FRM.  */
+  if (reg_set_p (gen_rtx_REG (SImode, FRM_REGNUM), insn))
+    return true;
+
+  /* A CALL function may contain an instruction that modifies the FRM,
+     return true in this situation.  */
+  if (CALL_P (insn))
+    return true;
+
+  return false;
+}
+
+/* Return the mode that an insn results in for VXRM.  */
+
+static int
+riscv_vxrm_mode_after (rtx_insn *insn, int mode)
+{
+  if (vxrm_unknown_p (insn))
+    return VXRM_MODE_NONE;
+
+  if (recog_memoized (insn) < 0)
     return mode;
 
-  rtx reg = gen_rtx_REG (SImode, regnum);
-  bool mentioned_p = reg_mentioned_p (reg, PATTERN (insn));
+  if (reg_mentioned_p (gen_rtx_REG (SImode, VXRM_REGNUM), PATTERN (insn)))
+    return get_attr_vxrm_mode (insn);
+  else
+    return mode;
+}
 
-  return mentioned_p ? get_attr_mode (insn): mode;
+/* Return the mode that an insn results in for FRM.  */
+
+static int
+riscv_frm_mode_after (rtx_insn *insn, int mode)
+{
+  if (frm_unknown_dynamic_p (insn))
+    return FRM_MODE_DYN;
+
+  if (recog_memoized (insn) < 0)
+    return mode;
+
+  if (reg_mentioned_p (gen_rtx_REG (SImode, FRM_REGNUM), PATTERN (insn)))
+    return get_attr_frm_mode (insn);
+  else
+    return mode;
 }
 
 /* Return the mode that an insn results in.  */
@@ -7749,13 +7792,9 @@ riscv_mode_after (int entity, int mode, rtx_insn *insn)
   switch (entity)
     {
     case RISCV_VXRM:
-      return riscv_entity_mode_after (VXRM_REGNUM, insn, mode,
-				      (int (*)(rtx_insn *)) get_attr_vxrm_mode,
-				      VXRM_MODE_NONE);
+      return riscv_vxrm_mode_after (insn, mode);
     case RISCV_FRM:
-      return riscv_entity_mode_after (FRM_REGNUM, insn, mode,
-				      (int (*)(rtx_insn *)) get_attr_frm_mode,
-				      FRM_MODE_DYN);
+      return riscv_frm_mode_after (insn, mode);
     default:
       gcc_unreachable ();
     }
