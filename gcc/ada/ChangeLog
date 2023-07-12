@@ -1,3 +1,7 @@
+2023-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c [_WIN32]: Undefine 'abort' macro.
+
 2023-07-07  Viljar Indus  <indus@adacore.com>
 
 	* exp_aggr.adb (Expand_N_Aggregate): Ensure that container
