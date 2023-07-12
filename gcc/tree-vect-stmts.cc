@@ -6711,7 +6711,9 @@ vectorizable_operation (vec_info *vinfo,
 
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
+  vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
+  internal_fn cond_len_fn = get_conditional_len_internal_fn (code);
 
   /* If operating on inactive elements could generate spurious traps,
      we need to restrict the operation to active lanes.  Note that this
@@ -6730,9 +6732,17 @@ vectorizable_operation (vec_info *vinfo,
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
 	  && mask_out_inactive)
 	{
-	  if (cond_fn == IFN_LAST
-	      || !direct_internal_fn_supported_p (cond_fn, vectype,
-						  OPTIMIZE_FOR_SPEED))
+	  if (cond_fn != IFN_LAST
+	      && direct_internal_fn_supported_p (cond_fn, vectype,
+						 OPTIMIZE_FOR_SPEED))
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+				   vectype, NULL);
+	  else if (cond_len_fn != IFN_LAST
+		   && direct_internal_fn_supported_p (cond_len_fn, vectype,
+						      OPTIMIZE_FOR_SPEED))
+	    vect_record_loop_len (loop_vinfo, lens, ncopies * vec_num, vectype,
+				  1);
+	  else
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6740,9 +6750,6 @@ vectorizable_operation (vec_info *vinfo,
 				 " conditional operation is available.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
-	  else
-	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-				   vectype, NULL);
 	}
 
       /* Put types on constant and invariant SLP children.  */
@@ -6805,6 +6812,7 @@ vectorizable_operation (vec_info *vinfo,
                      "transform binary/unary operation.\n");
 
   bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  bool len_loop_p = loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo);
 
   /* POINTER_DIFF_EXPR has pointer arguments which are vectorized as
      vectors with unsigned elements, but the result is signed.  So, we
@@ -6971,11 +6979,16 @@ vectorizable_operation (vec_info *vinfo,
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	}
-      else if (masked_loop_p && mask_out_inactive)
+      else if ((masked_loop_p || len_loop_p) && mask_out_inactive)
 	{
-	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-					  vec_num * ncopies, vectype, i);
-	  auto_vec<tree> vops (5);
+	  tree mask;
+	  if (masked_loop_p)
+	    mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+				       vec_num * ncopies, vectype, i);
+	  else
+	    /* Dummy mask.  */
+	    mask = build_minus_one_cst (truth_type_for (vectype));
+	  auto_vec<tree> vops (6);
 	  vops.quick_push (mask);
 	  vops.quick_push (vop0);
 	  if (vop1)
@@ -6995,7 +7008,20 @@ vectorizable_operation (vec_info *vinfo,
 		(cond_fn, vectype, vops.length () - 1, &vops[1]);
 	      vops.quick_push (else_value);
 	    }
-	  gcall *call = gimple_build_call_internal_vec (cond_fn, vops);
+	  if (len_loop_p)
+	    {
+	      tree len = vect_get_loop_len (loop_vinfo, gsi, lens,
+					    vec_num * ncopies, vectype, i, 1);
+	      signed char biasval
+		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+	      tree bias = build_int_cst (intQI_type_node, biasval);
+	      vops.quick_push (len);
+	      vops.quick_push (bias);
+	    }
+	  gcall *call
+	    = gimple_build_call_internal_vec (masked_loop_p ? cond_fn
+							    : cond_len_fn,
+					      vops);
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);

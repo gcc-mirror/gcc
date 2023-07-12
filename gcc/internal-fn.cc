@@ -4276,23 +4276,24 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   0
 };
 
-/* Invoke T(CODE, IFN) for each conditional function IFN that maps to a
-   tree code CODE.  */
+/* Invoke T(CODE, SUFFIX) for each conditional function IFN_COND_##SUFFIX
+   that maps to a tree code CODE.  There is also an IFN_COND_LEN_##SUFFIX
+   for each such IFN_COND_##SUFFIX.  */
 #define FOR_EACH_CODE_MAPPING(T) \
-  T (PLUS_EXPR, IFN_COND_ADD) \
-  T (MINUS_EXPR, IFN_COND_SUB) \
-  T (MULT_EXPR, IFN_COND_MUL) \
-  T (TRUNC_DIV_EXPR, IFN_COND_DIV) \
-  T (TRUNC_MOD_EXPR, IFN_COND_MOD) \
-  T (RDIV_EXPR, IFN_COND_RDIV) \
-  T (MIN_EXPR, IFN_COND_MIN) \
-  T (MAX_EXPR, IFN_COND_MAX) \
-  T (BIT_AND_EXPR, IFN_COND_AND) \
-  T (BIT_IOR_EXPR, IFN_COND_IOR) \
-  T (BIT_XOR_EXPR, IFN_COND_XOR) \
-  T (LSHIFT_EXPR, IFN_COND_SHL) \
-  T (RSHIFT_EXPR, IFN_COND_SHR) \
-  T (NEGATE_EXPR, IFN_COND_NEG)
+  T (PLUS_EXPR, ADD) \
+  T (MINUS_EXPR, SUB) \
+  T (MULT_EXPR, MUL) \
+  T (TRUNC_DIV_EXPR, DIV) \
+  T (TRUNC_MOD_EXPR, MOD) \
+  T (RDIV_EXPR, RDIV) \
+  T (MIN_EXPR, MIN) \
+  T (MAX_EXPR, MAX) \
+  T (BIT_AND_EXPR, AND) \
+  T (BIT_IOR_EXPR, IOR) \
+  T (BIT_XOR_EXPR, XOR) \
+  T (LSHIFT_EXPR, SHL) \
+  T (RSHIFT_EXPR, SHR) \
+  T (NEGATE_EXPR, NEG)
 
 /* Return a function that only performs CODE when a certain condition is met
    and that uses a given fallback value otherwise.  For example, if CODE is
@@ -4313,7 +4314,7 @@ get_conditional_internal_fn (tree_code code)
 {
   switch (code)
     {
-#define CASE(CODE, IFN) case CODE: return IFN;
+#define CASE(CODE, IFN) case CODE: return IFN_COND_##IFN;
       FOR_EACH_CODE_MAPPING(CASE)
 #undef CASE
     default:
@@ -4329,11 +4330,45 @@ conditional_internal_fn_code (internal_fn ifn)
 {
   switch (ifn)
     {
-#define CASE(CODE, IFN) case IFN: return CODE;
+#define CASE(CODE, IFN) case IFN_COND_##IFN: return CODE;
       FOR_EACH_CODE_MAPPING(CASE)
 #undef CASE
     default:
       return ERROR_MARK;
+    }
+}
+
+/* Like get_conditional_internal_fn, but return a function that
+   additionally restricts the operation to the leading elements
+   of a vector.  The number of elements to process is given by a length
+   and bias pair, as for IFN_LOAD_LEN.  The values of the remaining
+   elements are taken from the fallback ("else") argument.
+
+   For example, if CODE is a binary operation associated with FN:
+
+     LHS = FN (COND, A, B, ELSE, LEN, BIAS)
+
+   is equivalent to the C code:
+
+     for (int i = 0; i < NUNITS; i++)
+      {
+	if (i < LEN + BIAS && COND[i])
+	  LHS[i] = A[i] CODE B[i];
+	else
+	  LHS[i] = ELSE[i];
+      }
+*/
+
+internal_fn
+get_conditional_len_internal_fn (tree_code code)
+{
+  switch (code)
+    {
+#define CASE(CODE, IFN) case CODE: return IFN_COND_LEN_##IFN;
+      FOR_EACH_CODE_MAPPING(CASE)
+#undef CASE
+    default:
+      return IFN_LAST;
     }
 }
 
