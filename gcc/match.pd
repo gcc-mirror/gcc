@@ -6429,10 +6429,41 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
   { constant_boolean_node (false, type); }))
 
-/* x != (typeof x)(x == 0) is always true.  */
-(simplify
- (ne:c @0 (convert (eq @0 integer_zerop)))
- { constant_boolean_node (true, type); })
+/* x != (typeof x)(x == CST) -> CST == 0 ? 1 : (CST == 1 ? (x!=0&&x!=1) : x != 0) */
+/* x != (typeof x)(x != CST) -> CST == 1 ? 1 : (CST == 0 ? (x!=0&&x!=1) : x != 1) */
+/* x == (typeof x)(x == CST) -> CST == 0 ? 0 : (CST == 1 ? (x==0||x==1) : x != 0) */
+/* x == (typeof x)(x != CST) -> CST == 1 ? 0 : (CST == 0 ? (x==0||x==1) : x != 1) */
+(for outer (ne eq)
+ (for inner (ne eq)
+  (simplify
+   (outer:c @0 (convert (inner @0 INTEGER_CST@1)))
+   (with {
+     bool cst1 = integer_onep (@1);
+     bool cst0 = integer_zerop (@1);
+     bool innereq = inner == EQ_EXPR;
+     bool outereq = outer == EQ_EXPR;
+    }
+   (switch
+    (if (innereq ? cst0 : cst1)
+     { constant_boolean_node (!outereq, type); })
+    (if (innereq ? cst1 : cst0)
+     (with {
+       tree utype = unsigned_type_for (TREE_TYPE (@0));
+       tree ucst1 = build_one_cst (utype);
+      }
+      (if (!outereq)
+       (gt (convert:utype @0) { ucst1; })
+       (le (convert:utype @0) { ucst1; })
+      )
+     )
+    )
+    (if (innereq)
+     (ne @0 { build_zero_cst (TREE_TYPE (@0)); }))
+    (ne @0 { build_one_cst (TREE_TYPE (@0)); }))
+   )
+  )
+ )
+)
 
 (for cmp (unordered ordered unlt unle ungt unge uneq ltgt)
  /* If the second operand is NaN, the result is constant.  */
