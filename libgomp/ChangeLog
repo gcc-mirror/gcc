@@ -1,3 +1,12 @@
+2023-07-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c (omp_init_allocator): Use malloc for
+	omp_high_bw_mem_space when the memkind lib is unavailable
+	instead of returning omp_null_allocator.
+	* libgomp.texi (OpenMP 5.0): Fix typo.
+	(Memory allocation with libmemkind): Document implementation
+	in more detail.
+
 2023-06-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi: Use @var for ICV vars.

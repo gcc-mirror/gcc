@@ -1,3 +1,11 @@
+2023-07-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110288
+	* symbol.cc (gfc_copy_formal_args_intr): When deriving the formal
+	argument attributes from the actual ones for intrinsic procedure
+	calls, take special care of CHARACTER arguments that we do not
+	wrongly treat them formally as deferred-length.
+
 2023-07-08  Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
 	PR fortran/99139

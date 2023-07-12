@@ -1,3 +1,9 @@
+2023-07-11  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/110179
+	* unwind-dw2-fde-dip.c (find_fde_tail): Add cast to avoid
+	implicit conversion of pointer value to integer.
+
 2023-07-06  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/sfp-machine.h (FP_INIT_ROUNDMODE): Check zfinx.

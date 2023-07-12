@@ -1,3 +1,14 @@
+2023-07-11  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Avoid transforming to
+	a renaming in case of constrained array that comes from source.
+
+2023-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_References_Generic.Visible_Component):
+	In the case of private discriminated types, return a discriminant
+	only if it is listed in the discriminant part of the declaration.
+
 2023-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* adaint.c [_WIN32]: Undefine 'abort' macro.

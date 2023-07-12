@@ -1,3 +1,10 @@
+2023-07-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110580
+	* pt.cc (lookup_template_variable): Pass all levels of arguments
+	to coerce_template_parms, and use the parameters from the most
+	general template.
+
 2023-07-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110523

@@ -1,3 +1,85 @@
+2023-07-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum insn_type): Add vcompress optimization.
+	* config/riscv/riscv-v.cc (emit_vlmax_compress_insn): Ditto.
+	(shuffle_compress_patterns): Ditto.
+	(expand_vec_perm_const_1): Ditto.
+
+2023-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* cfghooks.cc (verify_flow_info): Change "err" variable to bool.
+	* cfghooks.h (struct cfg_hooks): Change return type of
+	verify_flow_info from integer to bool.
+	* cfgrtl.cc (can_delete_note_p): Change return type from int to bool.
+	(can_delete_label_p): Ditto.
+	(rtl_verify_flow_info): Change return type from int to bool
+	and adjust function body accordingly.  Change "err" variable to bool.
+	(rtl_verify_flow_info_1): Ditto.
+	(free_bb_for_insn): Change return type to void.
+	(rtl_merge_blocks): Change "b_empty" variable to bool.
+	(try_redirect_by_replacing_jump): Change "fallthru" variable to bool.
+	(verify_hot_cold_block_grouping): Change return type from int to bool.
+	Change "err" variable to bool.
+	(rtl_verify_edges): Ditto.
+	(rtl_verify_bb_insns): Ditto.
+	(rtl_verify_bb_pointers): Ditto.
+	(rtl_verify_bb_insn_chain): Ditto.
+	(rtl_verify_fallthru): Ditto.
+	(rtl_verify_bb_layout): Ditto.
+	(purge_all_dead_edges): Change "purged" variable to bool.
+	* cfgrtl.h (free_bb_for_insn): Change return type from int to void.
+	* postreload-gcse.cc (expr_hasher::equal): Change "equiv_p" to bool.
+	(load_killed_in_block_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(oprs_unchanged_p): Return true/false.
+	(rest_of_handle_gcse2): Change return type to void.
+	* tree-cfg.cc (gimple_verify_flow_info): Change return type from
+	int to bool.  Change "err" variable to bool.
+
+2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (-Wuninit-variable-checking=) New item.
+
+2023-07-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add COND_LEN_* operations for loop control with length.
+	* internal-fn.cc (cond_len_unary_direct): Ditto.
+	(cond_len_binary_direct): Ditto.
+	(cond_len_ternary_direct): Ditto.
+	(expand_cond_len_unary_optab_fn): Ditto.
+	(expand_cond_len_binary_optab_fn): Ditto.
+	(expand_cond_len_ternary_optab_fn): Ditto.
+	(direct_cond_len_unary_optab_supported_p): Ditto.
+	(direct_cond_len_binary_optab_supported_p): Ditto.
+	(direct_cond_len_ternary_optab_supported_p): Ditto.
+	* internal-fn.def (COND_LEN_ADD): Ditto.
+	(COND_LEN_SUB): Ditto.
+	(COND_LEN_MUL): Ditto.
+	(COND_LEN_DIV): Ditto.
+	(COND_LEN_MOD): Ditto.
+	(COND_LEN_RDIV): Ditto.
+	(COND_LEN_MIN): Ditto.
+	(COND_LEN_MAX): Ditto.
+	(COND_LEN_FMIN): Ditto.
+	(COND_LEN_FMAX): Ditto.
+	(COND_LEN_AND): Ditto.
+	(COND_LEN_IOR): Ditto.
+	(COND_LEN_XOR): Ditto.
+	(COND_LEN_SHL): Ditto.
+	(COND_LEN_SHR): Ditto.
+	(COND_LEN_FMA): Ditto.
+	(COND_LEN_FMS): Ditto.
+	(COND_LEN_FNMA): Ditto.
+	(COND_LEN_FNMS): Ditto.
+	(COND_LEN_NEG): Ditto.
+	* optabs.def (OPTAB_D): Ditto.
+
+2023-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110614
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment):
+	SLP splats are not suitable for re-align ops.
+
 2023-07-10  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (quad_memory_operand): Remove redundant

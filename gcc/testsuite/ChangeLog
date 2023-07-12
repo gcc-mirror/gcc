@@ -1,3 +1,84 @@
+2023-07-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-6.c: New test.
+
+2023-07-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/analyzer/out-of-bounds-diagram-4.c: Skip on AIX.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-ascii.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-unicode.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-7.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-13.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-15.c: Same.
+
+2023-07-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110288
+	* gfortran.dg/findloc_10.f90: New test.
+
+2023-07-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6-func-1op.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-1op-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-1op.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2lop.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2lop-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2lop.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2op.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2op-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-2op.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-3op.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-3op-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-3op.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp-all.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp-all-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp-all.c: New test
+	file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp.h: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp-run.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-func-cmp.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6.h: Remove test file.
+	* gcc.target/powerpc/vsx-vector-6.p7.c: Remove test file.
+	* gcc.target/powerpc/vsx-vector-6.p8.c: Remove test file.
+	* gcc.target/powerpc/vsx-vector-6.p9.c: Remove test file.
+
+2023-07-11  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/vect/pr97428.c: Limit to `vect_double' targets.
+
+2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/cascade/fail/cascadedif.mod: New test.
+	* gm2/switches/uninit-variable-checking/cascade/fail/switches-uninit-variable-checking-cascade-fail.exp:
+	New test.
+
+2023-07-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110580
+	* g++.dg/cpp1y/var-templ83.C: New test.
+
+2023-07-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110170
+	* g++.target/i386/pr110170.C: Fix typo.
+
+2023-07-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.dg/vect/pr110557.cc: Use long long instead of long for
+	64-bit type.
+	(test): Remove an unnecessary cast.
+
 2023-07-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110523
