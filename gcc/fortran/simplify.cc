@@ -4566,19 +4566,50 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
       return range_check (result, "LEN");
     }
   else if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
-	   && e->symtree->n.sym
-	   && e->symtree->n.sym->ts.type != BT_DERIVED
-	   && e->symtree->n.sym->assoc && e->symtree->n.sym->assoc->target
-	   && e->symtree->n.sym->assoc->target->ts.type == BT_DERIVED
-	   && e->symtree->n.sym->assoc->target->symtree->n.sym
-	   && UNLIMITED_POLY (e->symtree->n.sym->assoc->target->symtree->n.sym))
-
-    /* The expression in assoc->target points to a ref to the _data component
-       of the unlimited polymorphic entity.  To get the _len component the last
-       _data ref needs to be stripped and a ref to the _len component added.  */
-    return gfc_get_len_component (e->symtree->n.sym->assoc->target, k);
-  else
-    return NULL;
+	   && e->symtree->n.sym)
+    {
+      if (e->symtree->n.sym->ts.type != BT_DERIVED
+	  && e->symtree->n.sym->assoc && e->symtree->n.sym->assoc->target
+	  && e->symtree->n.sym->assoc->target->ts.type == BT_DERIVED
+	  && e->symtree->n.sym->assoc->target->symtree->n.sym
+	  && UNLIMITED_POLY (e->symtree->n.sym->assoc->target->symtree->n.sym))
+	/* The expression in assoc->target points to a ref to the _data
+	   component of the unlimited polymorphic entity.  To get the _len
+	   component the last _data ref needs to be stripped and a ref to the
+	   _len component added.  */
+	return gfc_get_len_component (e->symtree->n.sym->assoc->target, k);
+      else if (e->symtree->n.sym->ts.type == BT_DERIVED
+	       && e->ref && e->ref->type == REF_COMPONENT
+	       && e->ref->u.c.component->attr.pdt_string
+	       && e->ref->u.c.component->ts.type == BT_CHARACTER
+	       && e->ref->u.c.component->ts.u.cl->length)
+	{
+	  if (gfc_init_expr_flag)
+	    {
+	      gfc_expr* tmp;
+	      tmp = gfc_pdt_find_component_copy_initializer (e->symtree->n.sym,
+							     e->ref->u.c
+							     .component->ts.u.cl
+							     ->length->symtree
+							     ->name);
+	      if (tmp)
+		return tmp;
+	    }
+	  else
+	    {
+	      gfc_expr *len_expr = gfc_copy_expr (e);
+	      gfc_free_ref_list (len_expr->ref);
+	      len_expr->ref = NULL;
+	      gfc_find_component (len_expr->symtree->n.sym->ts.u.derived, e->ref
+				  ->u.c.component->ts.u.cl->length->symtree
+				  ->name,
+				  false, true, &len_expr->ref);
+	      len_expr->ts = len_expr->ref->u.c.component->ts;
+	      return len_expr;
+	    }
+	}
+    }
+  return NULL;
 }
 
 
