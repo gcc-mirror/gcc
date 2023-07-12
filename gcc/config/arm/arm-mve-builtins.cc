@@ -680,6 +680,10 @@ function_instance::has_inactive_argument () const
     return false;
 
   if (mode_suffix_id == MODE_r
+      || base == functions::vcmlaq
+      || base == functions::vcmlaq_rot90
+      || base == functions::vcmlaq_rot180
+      || base == functions::vcmlaq_rot270
       || base == functions::vcmpeqq
       || base == functions::vcmpneq
       || base == functions::vcmpgeq
