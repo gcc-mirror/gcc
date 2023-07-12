@@ -542,19 +542,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 #endif
 
-  template<typename>
-    struct __is_pointer_helper
+  /// is_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
+  template<typename _Tp>
+    struct is_pointer
+    : public __bool_constant<__is_pointer(_Tp)>
+    { };
+#else
+  template<typename _Tp>
+    struct is_pointer
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_pointer_helper<_Tp*>
+    struct is_pointer<_Tp*>
     : public true_type { };
 
-  /// is_pointer
   template<typename _Tp>
-    struct is_pointer
-    : public __is_pointer_helper<__remove_cv_t<_Tp>>::type
-    { };
+    struct is_pointer<_Tp* const>
+    : public true_type { };
+
+  template<typename _Tp>
+    struct is_pointer<_Tp* volatile>
+    : public true_type { };
+
+  template<typename _Tp>
+    struct is_pointer<_Tp* const volatile>
+    : public true_type { };
+#endif
 
   /// is_lvalue_reference
   template<typename>
@@ -3306,8 +3320,22 @@ template <typename _Tp, size_t _Num>
   inline constexpr bool is_array_v<_Tp[_Num]> = true;
 #endif
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
 template <typename _Tp>
-  inline constexpr bool is_pointer_v = is_pointer<_Tp>::value;
+  inline constexpr bool is_pointer_v = __is_pointer(_Tp);
+#else
+template <typename _Tp>
+  inline constexpr bool is_pointer_v = false;
+template <typename _Tp>
+  inline constexpr bool is_pointer_v<_Tp*> = true;
+template <typename _Tp>
+  inline constexpr bool is_pointer_v<_Tp* const> = true;
+template <typename _Tp>
+  inline constexpr bool is_pointer_v<_Tp* volatile> = true;
+template <typename _Tp>
+  inline constexpr bool is_pointer_v<_Tp* const volatile> = true;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_lvalue_reference_v = false;
 template <typename _Tp>
