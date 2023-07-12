@@ -366,9 +366,8 @@ Resolver::insert_builtin_types (Rib *r)
       CanonicalPath builtin_path
 	= CanonicalPath::new_seg (builtin->get_node_id (),
 				  builtin->as_string ());
-      r->insert_name (builtin_path, builtin->get_node_id (),
-		      Linemap::predeclared_location (), false,
-		      Rib::ItemType::Type,
+      r->insert_name (builtin_path, builtin->get_node_id (), BUILTINS_LOCATION,
+		      false, Rib::ItemType::Type,
 		      [] (const CanonicalPath &, NodeId, Location) -> void {});
     }
 }
@@ -436,7 +435,7 @@ Resolver::generate_builtins ()
     = TyTy::TupleType::get_unit_type (mappings->get_next_hir_id ());
   std::vector<std::unique_ptr<AST::Type> > elems;
   AST::TupleType *unit_type
-    = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());
+    = new AST::TupleType (std::move (elems), BUILTINS_LOCATION);
   builtins.push_back (unit_type);
   tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
 			 unit_tyty);
@@ -446,15 +445,13 @@ Resolver::generate_builtins ()
 void
 Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
 {
-  AST::PathIdentSegment seg (name, Linemap::predeclared_location ());
+  AST::PathIdentSegment seg (name, BUILTINS_LOCATION);
   auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment (::std::move (seg), false,
-			      Linemap::predeclared_location ()));
+    new AST::TypePathSegment (::std::move (seg), false, BUILTINS_LOCATION));
   ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;
   segs.push_back (::std::move (typePath));
   auto builtin_type
-    = new AST::TypePath (::std::move (segs), Linemap::predeclared_location (),
-			 false);
+    = new AST::TypePath (::std::move (segs), BUILTINS_LOCATION, false);
   builtins.push_back (builtin_type);
   tyctx->insert_builtin (tyty->get_ref (), builtin_type->get_node_id (), tyty);
   mappings->insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());

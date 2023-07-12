@@ -81,7 +81,7 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
     {
       enum_node = ctx->get_backend ()->named_type (
 	"enumeral", ctx->get_backend ()->integer_type (false, 64),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
     }
   return enum_node;
 }
@@ -93,9 +93,8 @@ TyTyResolveCompile::get_unit_type (Context *ctx)
   if (unit_type == nullptr)
     {
       auto unit_type_node = ctx->get_backend ()->struct_type ({});
-      unit_type
-	= ctx->get_backend ()->named_type ("()", unit_type_node,
-					   Linemap::predeclared_location ());
+      unit_type = ctx->get_backend ()->named_type ("()", unit_type_node,
+						   BUILTINS_LOCATION);
     }
   return unit_type;
 }
@@ -444,7 +443,7 @@ TyTyResolveCompile::visit (const TyTy::BoolType &)
   translated
     = ctx->get_backend ()->named_type ("bool",
 				       ctx->get_backend ()->bool_type (),
-				       Linemap::predeclared_location ());
+				       BUILTINS_LOCATION);
 }
 
 void
@@ -454,32 +453,31 @@ TyTyResolveCompile::visit (const TyTy::IntType &type)
     {
     case TyTy::IntType::I8:
       translated = ctx->get_backend ()->named_type (
-	"i8", ctx->get_backend ()->integer_type (false, 8),
-	Linemap::predeclared_location ());
+	"i8", ctx->get_backend ()->integer_type (false, 8), BUILTINS_LOCATION);
       return;
 
     case TyTy::IntType::I16:
       translated = ctx->get_backend ()->named_type (
 	"i16", ctx->get_backend ()->integer_type (false, 16),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
       return;
 
     case TyTy::IntType::I32:
       translated = ctx->get_backend ()->named_type (
 	"i32", ctx->get_backend ()->integer_type (false, 32),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
       return;
 
     case TyTy::IntType::I64:
       translated = ctx->get_backend ()->named_type (
 	"i64", ctx->get_backend ()->integer_type (false, 64),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
       return;
 
     case TyTy::IntType::I128:
       translated = ctx->get_backend ()->named_type (
 	"i128", ctx->get_backend ()->integer_type (false, 128),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
       return;
     }
 }
@@ -491,32 +489,28 @@ TyTyResolveCompile::visit (const TyTy::UintType &type)
     {
     case TyTy::UintType::U8:
       translated = ctx->get_backend ()->named_type (
-	"u8", ctx->get_backend ()->integer_type (true, 8),
-	Linemap::predeclared_location ());
+	"u8", ctx->get_backend ()->integer_type (true, 8), BUILTINS_LOCATION);
       return;
 
     case TyTy::UintType::U16:
       translated = ctx->get_backend ()->named_type (
-	"u16", ctx->get_backend ()->integer_type (true, 16),
-	Linemap::predeclared_location ());
+	"u16", ctx->get_backend ()->integer_type (true, 16), BUILTINS_LOCATION);
       return;
 
     case TyTy::UintType::U32:
       translated = ctx->get_backend ()->named_type (
-	"u32", ctx->get_backend ()->integer_type (true, 32),
-	Linemap::predeclared_location ());
+	"u32", ctx->get_backend ()->integer_type (true, 32), BUILTINS_LOCATION);
       return;
 
     case TyTy::UintType::U64:
       translated = ctx->get_backend ()->named_type (
-	"u64", ctx->get_backend ()->integer_type (true, 64),
-	Linemap::predeclared_location ());
+	"u64", ctx->get_backend ()->integer_type (true, 64), BUILTINS_LOCATION);
       return;
 
     case TyTy::UintType::U128:
       translated = ctx->get_backend ()->named_type (
 	"u128", ctx->get_backend ()->integer_type (true, 128),
-	Linemap::predeclared_location ());
+	BUILTINS_LOCATION);
       return;
     }
 }
@@ -530,14 +524,14 @@ TyTyResolveCompile::visit (const TyTy::FloatType &type)
       translated
 	= ctx->get_backend ()->named_type ("f32",
 					   ctx->get_backend ()->float_type (32),
-					   Linemap::predeclared_location ());
+					   BUILTINS_LOCATION);
       return;
 
     case TyTy::FloatType::F64:
       translated
 	= ctx->get_backend ()->named_type ("f64",
 					   ctx->get_backend ()->float_type (64),
-					   Linemap::predeclared_location ());
+					   BUILTINS_LOCATION);
       return;
     }
 }
@@ -549,7 +543,7 @@ TyTyResolveCompile::visit (const TyTy::USizeType &)
     "usize",
     ctx->get_backend ()->integer_type (
       true, ctx->get_backend ()->get_pointer_size ()),
-    Linemap::predeclared_location ());
+    BUILTINS_LOCATION);
 }
 
 void
@@ -559,7 +553,7 @@ TyTyResolveCompile::visit (const TyTy::ISizeType &)
     "isize",
     ctx->get_backend ()->integer_type (
       false, ctx->get_backend ()->get_pointer_size ()),
-    Linemap::predeclared_location ());
+    BUILTINS_LOCATION);
 }
 
 void
@@ -568,7 +562,7 @@ TyTyResolveCompile::visit (const TyTy::CharType &)
   translated
     = ctx->get_backend ()->named_type ("char",
 				       ctx->get_backend ()->wchar_type (),
-				       Linemap::predeclared_location ());
+				       BUILTINS_LOCATION);
 }
 
 void
@@ -691,8 +685,7 @@ TyTyResolveCompile::visit (const TyTy::StrType &type)
 {
   tree raw_str = create_str_type_record (type);
   translated
-    = ctx->get_backend ()->named_type ("str", raw_str,
-				       Linemap::predeclared_location ());
+    = ctx->get_backend ()->named_type ("str", raw_str, BUILTINS_LOCATION);
 }
 
 void

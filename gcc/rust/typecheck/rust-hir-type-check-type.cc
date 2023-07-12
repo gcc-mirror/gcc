@@ -730,8 +730,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 				      implicit_id,
 				      param.get_mappings ().get_local_defid ());
       implicit_self_bound
-	= new HIR::TypePath (mappings, {}, Linemap::predeclared_location (),
-			     false);
+	= new HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false);
     }
 
   // resolve the bounds

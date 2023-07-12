@@ -1822,7 +1822,7 @@ TupleType::TupleType (HirId ref, HirId ty_ref, Location locus,
 TupleType *
 TupleType::get_unit_type (HirId ref)
 {
-  return new TupleType (ref, Linemap::predeclared_location ());
+  return new TupleType (ref, BUILTINS_LOCATION);
 }
 
 size_t
@@ -2481,15 +2481,13 @@ SliceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 
 BoolType::BoolType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::BOOL,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 BoolType::BoolType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::BOOL,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -2534,16 +2532,14 @@ BoolType::clone () const
 
 IntType::IntType (HirId ref, IntKind kind, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::INT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     int_kind (kind)
 {}
 
 IntType::IntType (HirId ref, HirId ty_ref, IntKind kind, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::INT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     int_kind (kind)
 {}
@@ -2620,8 +2616,7 @@ IntType::is_equal (const BaseType &other) const
 
 UintType::UintType (HirId ref, UintKind kind, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::UINT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     uint_kind (kind)
 {}
@@ -2629,8 +2624,7 @@ UintType::UintType (HirId ref, UintKind kind, std::set<HirId> refs)
 UintType::UintType (HirId ref, HirId ty_ref, UintKind kind,
 		    std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::UINT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     uint_kind (kind)
 {}
@@ -2707,8 +2701,7 @@ UintType::is_equal (const BaseType &other) const
 
 FloatType::FloatType (HirId ref, FloatKind kind, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::FLOAT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     float_kind (kind)
 {}
@@ -2716,8 +2709,7 @@ FloatType::FloatType (HirId ref, FloatKind kind, std::set<HirId> refs)
 FloatType::FloatType (HirId ref, HirId ty_ref, FloatKind kind,
 		      std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::FLOAT,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     float_kind (kind)
 {}
@@ -2788,15 +2780,13 @@ FloatType::is_equal (const BaseType &other) const
 
 USizeType::USizeType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::USIZE,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 USizeType::USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::USIZE,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -2841,15 +2831,13 @@ USizeType::clone () const
 
 ISizeType::ISizeType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::ISIZE,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 ISizeType::ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::ISIZE,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -2894,15 +2882,13 @@ ISizeType::clone () const
 
 CharType::CharType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::CHAR,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 CharType::CharType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::CHAR,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -2948,8 +2934,7 @@ CharType::clone () const
 ReferenceType::ReferenceType (HirId ref, TyVar base, Mutability mut,
 			      std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::REF,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     base (base), mut (mut)
 {}
@@ -2957,8 +2942,7 @@ ReferenceType::ReferenceType (HirId ref, TyVar base, Mutability mut,
 ReferenceType::ReferenceType (HirId ref, HirId ty_ref, TyVar base,
 			      Mutability mut, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::REF,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     base (base), mut (mut)
 {}
@@ -3106,8 +3090,7 @@ ReferenceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 PointerType::PointerType (HirId ref, TyVar base, Mutability mut,
 			  std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::POINTER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     base (base), mut (mut)
 {}
@@ -3115,8 +3098,7 @@ PointerType::PointerType (HirId ref, TyVar base, Mutability mut,
 PointerType::PointerType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 			  std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::POINTER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     base (base), mut (mut)
 {}
@@ -3446,15 +3428,13 @@ ParamType::is_implicit_self_trait () const
 
 StrType::StrType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::STR,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 StrType::StrType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::STR,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -3505,15 +3485,13 @@ StrType::is_equal (const BaseType &other) const
 
 NeverType::NeverType (HirId ref, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::NEVER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
 NeverType::NeverType (HirId ref, HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::NEVER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs)
 {}
 
@@ -3559,8 +3537,7 @@ NeverType::clone () const
 PlaceholderType::PlaceholderType (std::string symbol, HirId ref,
 				  std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::PLACEHOLDER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     symbol (symbol)
 {}
@@ -3568,8 +3545,7 @@ PlaceholderType::PlaceholderType (std::string symbol, HirId ref,
 PlaceholderType::PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
 				  std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     symbol (symbol)
 {}
@@ -3674,8 +3650,7 @@ ProjectionType::ProjectionType (
   std::vector<SubstitutionParamMapping> subst_refs,
   SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::PROJECTION,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
     base (base), trait (trait), item (item)
@@ -3687,8 +3662,7 @@ ProjectionType::ProjectionType (
   std::vector<SubstitutionParamMapping> subst_refs,
   SubstitutionArgumentMappings generic_arguments, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::PROJECTION,
-	      {Resolver::CanonicalPath::create_empty (),
-	       Linemap::predeclared_location ()},
+	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
     SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
     base (base), trait (trait), item (item)

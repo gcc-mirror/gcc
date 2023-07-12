@@ -60,9 +60,6 @@ public:
   // access some virtual functions without explicitly passing around
   // an instance of Linemap.
 
-  // Return the special Location used for predeclared identifiers.
-  static Location predeclared_location () { return BUILTINS_LOCATION; }
-
   // Produce a human-readable description of a Location, e.g.
   // "foo.rust:10". Returns an empty string for predeclared, builtin or
   // unknown locations.
