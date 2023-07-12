@@ -97,13 +97,42 @@ static_loop_exit (class loop *l, gimple_ranger *ranger)
   return r == desired_static_range ? ret_e : NULL;
 }
 
+/* Return true if OP is invariant.  */
+
+static bool
+loop_invariant_op_p (class loop *loop,
+		     tree op)
+{
+  if (is_gimple_min_invariant (op))
+    return true;
+  if (SSA_NAME_IS_DEFAULT_DEF (op)
+      || !flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (op))))
+    return true;
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 2;
+}
+
+/* Return true if OP looks like it is derived from IV.  */
+
+static bool
+loop_iv_derived_p (class loop *loop,
+		    tree op)
+{
+  /* Always check for invariant first.  */
+  gcc_checking_assert (!is_gimple_min_invariant (op)
+		       && !SSA_NAME_IS_DEFAULT_DEF (op)
+		       && flow_bb_inside_loop_p (loop,
+			       gimple_bb (SSA_NAME_DEF_STMT (op))));
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 1;
+}
+
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
    instructions should be duplicated, limit is decreased by the actual
    amount.  */
 
 static bool
 should_duplicate_loop_header_p (basic_block header, class loop *loop,
-				int *limit)
+				int *limit,
+				hash_set <edge> *invariant_exits)
 {
   gimple_stmt_iterator bsi;
 
@@ -152,15 +181,20 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 
   for (gphi_iterator psi = gsi_start_phis (header); !gsi_end_p (psi);
        gsi_next (&psi))
-    {
-      gphi *phi = psi.phi ();
-      tree res = gimple_phi_result (phi);
-      if (INTEGRAL_TYPE_P (TREE_TYPE (res))
-	  || POINTER_TYPE_P (TREE_TYPE (res)))
-	gimple_set_uid (phi, 1 /* IV */);
-      else
-	gimple_set_uid (phi, 0);
-    }
+    /* If this is actual loop header PHIs indicate that the SSA_NAME
+       may be IV.  Otherwise just give up.  */
+    if (header == loop->header)
+      {
+	gphi *phi = psi.phi ();
+	tree res = gimple_phi_result (phi);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (res))
+	    || POINTER_TYPE_P (TREE_TYPE (res)))
+	  gimple_set_uid (phi, 1 /* IV */);
+	else
+	  gimple_set_uid (phi, 0);
+      }
+    else
+      gimple_set_uid (psi.phi (), 0);
 
   /* Count number of instructions and punt on calls.
      Populate stmts INV/IV flag to later apply heuristics to the
@@ -201,21 +235,26 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       /* Classify the stmt based on whether its computation is based
          on a IV or whether it is invariant in the loop.  */
       gimple_set_uid (last, 0);
-      if (!gimple_vuse (last))
+      if (!gimple_vuse (last)
+	  && gimple_code (last) != GIMPLE_ASM
+	  && (gimple_code (last) != GIMPLE_CALL
+	      || gimple_call_flags (last) & ECF_CONST))
 	{
 	  bool inv = true;
-	  bool iv = false;
+	  bool iv = true;
 	  ssa_op_iter i;
 	  tree op;
 	  FOR_EACH_SSA_TREE_OPERAND (op, last, i, SSA_OP_USE)
-	    if (!SSA_NAME_IS_DEFAULT_DEF (op)
-		&& flow_bb_inside_loop_p (loop,
-					  gimple_bb (SSA_NAME_DEF_STMT (op))))
+	    if (!loop_invariant_op_p (loop, op))
 	      {
-		if (!(gimple_uid (SSA_NAME_DEF_STMT (op)) & 2 /* INV */))
+		if (!loop_iv_derived_p (loop, op))
+		  {
+		    inv = false;
+		    iv = false;
+		    break;
+		  }
+		else
 		  inv = false;
-		if (gimple_uid (SSA_NAME_DEF_STMT (op)) & 1 /* IV */)
-		  iv = true;
 	      }
 	  gimple_set_uid (last, (iv ? 1 : 0) | (inv ? 2 : 0));
 	}
@@ -225,16 +264,32 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
      the loop further.  Unless this is the original loop header.  */
   tree lhs = gimple_cond_lhs (last);
   tree rhs = gimple_cond_rhs (last);
+  bool lhs_invariant = loop_invariant_op_p (loop, lhs);
+  bool rhs_invariant = loop_invariant_op_p (loop, rhs);
+  if (lhs_invariant && rhs_invariant)
+    {
+      if (invariant_exits)
+	{
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, header->succs)
+	    if (loop_exit_edge_p (loop, e))
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file,
+			   "    Will elliminate invariant exit %i->%i\n",
+			   e->src->index, e->dest->index);
+		invariant_exits->add (e);
+	      }
+	}
+      return true;
+    }
+  /* TODO: This is heuristics that claims that IV based ocnditionals will
+     likely be optimized out in duplicated header.  We could use ranger
+     query instead to tell this more precisely.  */
   if (header != loop->header
-      && ((TREE_CODE (lhs) == SSA_NAME
-	   && !SSA_NAME_IS_DEFAULT_DEF (lhs)
-	   && flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (lhs)))
-	   && gimple_uid (SSA_NAME_DEF_STMT (lhs)) == 0)
-	  || (TREE_CODE (rhs) == SSA_NAME
-	      && !SSA_NAME_IS_DEFAULT_DEF (rhs)
-	      && flow_bb_inside_loop_p (loop,
-					gimple_bb (SSA_NAME_DEF_STMT (rhs)))
-	      && gimple_uid (SSA_NAME_DEF_STMT (rhs)) == 0)))
+      && ((!lhs_invariant && !loop_iv_derived_p (loop, lhs))
+	  || (!rhs_invariant && !loop_iv_derived_p (loop, rhs))))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -452,7 +507,7 @@ ch_base::copy_headers (function *fun)
 	  continue;
 	}
 
-      if (should_duplicate_loop_header_p (header, loop, &remaining_limit))
+      if (should_duplicate_loop_header_p (header, loop, &remaining_limit, NULL))
 	candidates.safe_push ({loop, static_exit});
     }
   /* Do not use ranger after we change the IL and not have updated SSA.  */
@@ -482,10 +537,12 @@ ch_base::copy_headers (function *fun)
       profile_count entry_count = profile_count::zero ();
       edge e;
       edge_iterator ei;
+      hash_set <edge> invariant_exits;
       FOR_EACH_EDGE (e, ei, loop->header->preds)
 	if (e->src != loop->latch)
 	  entry_count += e->count ();
-      while (should_duplicate_loop_header_p (header, loop, &remaining_limit))
+      while (should_duplicate_loop_header_p (header, loop, &remaining_limit,
+					     &invariant_exits))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "    Will duplicate bb %i\n", header->index);
@@ -537,7 +594,8 @@ ch_base::copy_headers (function *fun)
 
       propagate_threaded_block_debug_into (exit->dest, entry->dest);
       if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs,
-					 true, candidate.static_exit))
+					 true, candidate.static_exit,
+					 &invariant_exits))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Duplication failed.\n");

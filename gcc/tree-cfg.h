@@ -70,7 +70,8 @@ extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
 extern basic_block split_edge_bb_loc (edge);
 extern bool gimple_duplicate_sese_region (edge, edge, basic_block *, unsigned,
-					basic_block *, bool, edge);
+					basic_block *, bool, edge,
+				       	hash_set <edge> *);
 extern bool gimple_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
 				      basic_block *);
 extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,

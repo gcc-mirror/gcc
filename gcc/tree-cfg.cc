@@ -6663,14 +6663,16 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
    true otherwise.
 
    ELIMINATED_EDGE is an edge that is known to be removed in the dupicated
-   region.  */
+   region.  ORIG_ELIMINATED_EDGES, if non-NULL is set of edges known to be
+   removed from the original region.  */
 
 bool
 gimple_duplicate_sese_region (edge entry, edge exit,
 			      basic_block *region, unsigned n_region,
 			      basic_block *region_copy,
 			      bool update_dominance,
-			      edge eliminated_edge)
+			      edge eliminated_edge,
+			      hash_set <edge> *orig_eliminated_edges)
 {
   unsigned i;
   bool free_region_copy = false, copying_header = false;
@@ -6749,7 +6751,8 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 	    split_edge_bb_loc (entry), update_dominance);
   if (total_count.initialized_p () && entry_count.initialized_p ())
     {
-      if (!eliminated_edge)
+      if (!eliminated_edge
+	  && (!orig_eliminated_edges || orig_eliminated_edges->is_empty ()))
 	{
 	  scale_bbs_frequencies_profile_count (region, n_region,
 					       total_count - entry_count,
@@ -6767,7 +6770,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 		 if (cond1)         <- this condition will become false
 				       and we update probabilities
 		   goto loop_exit;
-		 if (cond2)
+		 if (cond2)         <- this condition is loop invariant
 		   goto loop_exit;
 		 goto loop_header   <- this will be redirected to loop.
 	       // region_copy_end
@@ -6778,6 +6781,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 		       if (cond1)   <- we need to update probabbility here
 			 goto loop_exit;
 		       if (cond2)   <- and determine scaling factor here.
+				       moreover cond2 is now always true
 			 goto loop_exit;
 		       else
 			 goto loop;
@@ -6787,53 +6791,84 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 	     but only consumer so far is tree-ssa-loop-ch and it uses only this
 	     to handle the common case of peeling headers which have
 	     conditionals known to be always true upon entry.  */
-	  gcc_assert (eliminated_edge->src == region[0]
-		      && EDGE_COUNT (region[0]->succs) == 2
-		      && copying_header);
-
-	  edge e, e_copy, eliminated_edge_copy;
-	  if (EDGE_SUCC (region[0], 0) == eliminated_edge)
+	  gcc_checking_assert (copying_header);
+	  for (unsigned int i = 0; i < n_region; i++)
 	    {
-	      e = EDGE_SUCC (region[0], 1);
-	      e_copy = EDGE_SUCC (region_copy[0], 1);
-	      eliminated_edge_copy = EDGE_SUCC (region_copy[0], 0);
-	    }
-	  else
-	    {
-	      e = EDGE_SUCC (region[0], 0);
-	      e_copy = EDGE_SUCC (region_copy[0], 0);
-	      eliminated_edge_copy = EDGE_SUCC (region_copy[0], 1);
-	    }
-	  gcc_checking_assert (e != e_copy
-			       && eliminated_edge_copy != eliminated_edge
-			       && eliminated_edge_copy->dest
-				  == eliminated_edge->dest);
+	      edge exit_e, exit_e_copy, e, e_copy;
+	      if (EDGE_COUNT (region[i]->succs) == 1)
+		{
+		  region_copy[i]->count = entry_count;
+		  region[i]->count -= entry_count;
+		  continue;
+		}
 
-
-	  /* Handle first basic block in duplicated region as in the
-	     non-eliminating case.  */
-	  scale_bbs_frequencies_profile_count (region_copy, n_region,
-					       entry_count, total_count);
-	  /* Now update redirecting eliminated edge to the other edge.
-	     Actual CFG update is done by caller.  */
-	  e_copy->probability = profile_probability::always ();
-	  eliminated_edge_copy->probability = profile_probability::never ();
-	  /* Header copying is a special case of jump threading, so use
-	     common code to update loop body exit condition.  */
-	  update_bb_profile_for_threading (region[0], e_copy->count (), e);
-	  /* If we duplicated more conditionals first scale the profile of
-	     rest of the preheader.  Then work out the probability of
-	     entering the loop and scale rest of the loop.  */
-	  if (n_region > 1)
-	    {
-	      scale_bbs_frequencies_profile_count (region_copy + 1,
-						   n_region - 1,
-						   e_copy->count (),
-						   region_copy[1]->count);
-	      scale_bbs_frequencies_profile_count (region + 1, n_region - 1,
-						   e->count (),
-						   region[1]->count);
+	      gcc_checking_assert (EDGE_COUNT (region[i]->succs) == 2);
+	      if (loop_exit_edge_p (region[0]->loop_father,
+				    EDGE_SUCC (region[i], 0)))
+		{
+		  exit_e = EDGE_SUCC (region[i], 0);
+		  exit_e_copy = EDGE_SUCC (region_copy[i], 0);
+		  e = EDGE_SUCC (region[i], 1);
+		  e_copy = EDGE_SUCC (region_copy[i], 1);
+		}
+	      else
+		{
+		  exit_e = EDGE_SUCC (region[i], 1);
+		  exit_e_copy = EDGE_SUCC (region_copy[i], 1);
+		  e = EDGE_SUCC (region[i], 0);
+		  e_copy = EDGE_SUCC (region_copy[i], 0);
+		}
+	      gcc_assert (i == n_region - 1
+			  || (e->dest == region[i + 1]
+			      && e_copy->dest == region_copy[i + 1]));
+	      region_copy[i]->count = entry_count;
+	      profile_count exit_e_count = exit_e->count ();
+	      if (eliminated_edge == exit_e)
+		{
+		  /* Update profile and the conditional.
+		     CFG update is done by caller.  */
+		  e_copy->probability = profile_probability::always ();
+		  exit_e_copy->probability = profile_probability::never ();
+		  gcond *cond_stmt
+			  = as_a <gcond *>(*gsi_last_bb (region_copy[i]));
+		  if (e_copy->flags & EDGE_TRUE_VALUE)
+		    gimple_cond_make_true (cond_stmt);
+		  else
+		    gimple_cond_make_false (cond_stmt);
+		  update_stmt (cond_stmt);
+		  /* Header copying is a special case of jump threading, so use
+		     common code to update loop body exit condition.  */
+		  update_bb_profile_for_threading (region[i], entry_count, e);
+		  eliminated_edge = NULL;
+		}
+	      else
+		region[i]->count -= region_copy[i]->count;
+	      if (orig_eliminated_edges->contains (exit_e))
+		{
+		  orig_eliminated_edges->remove (exit_e);
+		  /* All exits will happen in exit_e_copy which is out of the
+		     loop, so increase probability accordingly.
+		     If the edge is eliminated_edge we already corrected
+		     profile above.  */
+		  if (entry_count.nonzero_p () && eliminated_edge != exit_e)
+		    set_edge_probability_and_rescale_others
+			    (exit_e_copy, exit_e_count.probability_in
+								(entry_count));
+		  /* Eliminate in-loop conditional.  */
+		  e->probability = profile_probability::always ();
+		  exit_e->probability = profile_probability::never ();
+		  gcond *cond_stmt = as_a <gcond *>(*gsi_last_bb (region[i]));
+		  if (e->flags & EDGE_TRUE_VALUE)
+		    gimple_cond_make_true (cond_stmt);
+		  else
+		    gimple_cond_make_false (cond_stmt);
+		  update_stmt (cond_stmt);
+		}
+	      entry_count = e_copy->count ();
 	    }
+	  /* Be sure that we seen all edges we are supposed to update.  */
+	  gcc_checking_assert (!eliminated_edge
+			       && orig_eliminated_edges->is_empty ());
 	}
     }
 
