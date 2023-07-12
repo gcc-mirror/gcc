@@ -2987,9 +2987,26 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
   cmpmode = SELECT_CC_MODE (code, op0, op1);
   flags = gen_rtx_REG (cmpmode, FLAGS_REG);
 
+  /* Attempt to use PTEST, if available, when testing vector modes for
+     equality/inequality against zero.  */
+  if (op1 == const0_rtx
+      && SUBREG_P (op0)
+      && cmpmode == CCZmode
+      && SUBREG_BYTE (op0) == 0
+      && REG_P (SUBREG_REG (op0))
+      && VECTOR_MODE_P (GET_MODE (SUBREG_REG (op0)))
+      && TARGET_SSE4_1
+      && GET_MODE (op0) == TImode
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))) == 16)
+    {
+      tmp = SUBREG_REG (op0);
+      tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, tmp, tmp), UNSPEC_PTEST);
+    }
+  else
+    tmp = gen_rtx_COMPARE (cmpmode, op0, op1);
+
   /* This is very simple, but making the interface the same as in the
      FP case makes the rest of the code easier.  */
-  tmp = gen_rtx_COMPARE (cmpmode, op0, op1);
   emit_insn (gen_rtx_SET (flags, tmp));
 
   /* Return the test that should be put into the flags user, i.e.
