@@ -9,6 +9,8 @@
   }
 
 #define TEST_ALL()                                                             \
+  TEST (_Float16, int64_t)                                                     \
+  TEST (_Float16, uint64_t)                                                    \
   TEST (_Float16, int32_t)                                                     \
   TEST (_Float16, uint32_t)                                                    \
   TEST (float, int64_t)							       \
