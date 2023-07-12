@@ -911,6 +911,10 @@
 		     VCMULQ_M_F VCMULQ_ROT90_M_F VCMULQ_ROT180_M_F VCMULQ_ROT270_M_F
 		     ])
 
+(define_int_iterator MVE_VCMLAQ_M [
+		     VCMLAQ_M_F VCMLAQ_ROT90_M_F VCMLAQ_ROT180_M_F VCMLAQ_ROT270_M_F
+		     ])
+
 (define_int_attr mve_insn [
 		 (UNSPEC_VCADD90 "vcadd") (UNSPEC_VCADD270 "vcadd")
 		 (UNSPEC_VCMUL "vcmul") (UNSPEC_VCMUL90 "vcmul") (UNSPEC_VCMUL180 "vcmul") (UNSPEC_VCMUL270 "vcmul")
@@ -942,6 +946,7 @@
 		 (VCLSQ_M_S "vcls")
 		 (VCLSQ_S "vcls")
 		 (VCLZQ_M_S "vclz") (VCLZQ_M_U "vclz")
+		 (VCMLAQ_M_F "vcmla") (VCMLAQ_ROT90_M_F "vcmla") (VCMLAQ_ROT180_M_F "vcmla") (VCMLAQ_ROT270_M_F "vcmla")
 		 (VCMULQ_M_F "vcmul") (VCMULQ_ROT90_M_F "vcmul") (VCMULQ_ROT180_M_F "vcmul") (VCMULQ_ROT270_M_F "vcmul")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
 		 (VDUPQ_M_N_S "vdup") (VDUPQ_M_N_U "vdup") (VDUPQ_M_N_F "vdup")
@@ -1204,6 +1209,7 @@
 		 (VSUBQ_M_N_S "vsub") (VSUBQ_M_N_U "vsub") (VSUBQ_M_N_F "vsub")
 		 (VSUBQ_M_S "vsub") (VSUBQ_M_U "vsub") (VSUBQ_M_F "vsub")
 		 (VSUBQ_N_S "vsub") (VSUBQ_N_U "vsub") (VSUBQ_N_F "vsub")
+		 (UNSPEC_VCMLA "vcmla") (UNSPEC_VCMLA90 "vcmla") (UNSPEC_VCMLA180 "vcmla") (UNSPEC_VCMLA270 "vcmla")
 		 ])
 
 (define_int_attr isu    [
@@ -2198,7 +2204,12 @@
 		      (VCMULQ_M_F "0")
 		      (VCMULQ_ROT90_M_F "90")
 		      (VCMULQ_ROT180_M_F "180")
-		      (VCMULQ_ROT270_M_F "270")])
+		      (VCMULQ_ROT270_M_F "270")
+		      (VCMLAQ_M_F "0")
+		      (VCMLAQ_ROT90_M_F "90")
+		      (VCMLAQ_ROT180_M_F "180")
+		      (VCMLAQ_ROT270_M_F "270")
+		      ])
 
 ;; The complex operations when performed on a real complex number require two
 ;; instructions to perform the operation. e.g. complex multiplication requires
@@ -2250,7 +2261,11 @@
 			  (VCMULQ_M_F "")
 			  (VCMULQ_ROT90_M_F "_rot90")
 			  (VCMULQ_ROT180_M_F "_rot180")
-			  (VCMULQ_ROT270_M_F "_rot270")])
+			  (VCMULQ_ROT270_M_F "_rot270")
+			  (VCMLAQ_M_F "")
+			  (VCMLAQ_ROT90_M_F "_rot90")
+			  (VCMLAQ_ROT180_M_F "_rot180")
+			  (VCMLAQ_ROT270_M_F "_rot270")])
 
 (define_int_attr fcmac1 [(UNSPEC_VCMLA "a") (UNSPEC_VCMLA_CONJ "a")
 			 (UNSPEC_VCMLA180 "s") (UNSPEC_VCMLA180_CONJ "s")])
