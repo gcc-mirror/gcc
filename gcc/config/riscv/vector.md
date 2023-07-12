@@ -818,7 +818,7 @@
 ;; This pattern only handles duplicates of non-constant inputs.
 ;; Constant vectors go through the movm pattern instead.
 ;; So "direct_broadcast_operand" can only be mem or reg, no CONSTANT.
-(define_expand "vec_duplicate<mode>"
+(define_expand "@vec_duplicate<mode>"
   [(set (match_operand:V 0 "register_operand")
 	(vec_duplicate:V
 	  (match_operand:<VEL> 1 "direct_broadcast_operand")))]
@@ -1357,8 +1357,16 @@
 	}
     }
   else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)
-           && immediate_operand (operands[3], Pmode))
-    operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode, force_reg (Pmode, operands[3]));
+           && (immediate_operand (operands[3], Pmode)
+	       || (CONST_POLY_INT_P (operands[3])
+	           && known_ge (rtx_to_poly_int64 (operands[3]), 0U)
+		   && known_le (rtx_to_poly_int64 (operands[3]), GET_MODE_SIZE (<MODE>mode)))))
+    {
+      rtx tmp = gen_reg_rtx (Pmode);
+      poly_int64 value = rtx_to_poly_int64 (operands[3]);
+      emit_move_insn (tmp, gen_int_mode (value, Pmode));
+      operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode, tmp);
+    }
   else
     operands[3] = force_reg (<VEL>mode, operands[3]);
 })
@@ -1387,7 +1395,8 @@
    vlse<sew>.v\t%0,%3,zero
    vmv.s.x\t%0,%3
    vmv.s.x\t%0,%3"
-  "register_operand (operands[3], <VEL>mode)
+  "(register_operand (operands[3], <VEL>mode)
+  || CONST_POLY_INT_P (operands[3]))
   && GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)"
   [(set (match_dup 0)
 	(if_then_else:VI (unspec:<VM> [(match_dup 1) (match_dup 4)
@@ -1397,6 +1406,12 @@
 	  (match_dup 2)))]
   {
     gcc_assert (can_create_pseudo_p ());
+    if (CONST_POLY_INT_P (operands[3]))
+      {
+	rtx tmp = gen_reg_rtx (<VEL>mode);
+	emit_move_insn (tmp, operands[3]);
+	operands[3] = tmp;
+      }
     rtx m = assign_stack_local (<VEL>mode, GET_MODE_SIZE (<VEL>mode),
 				GET_MODE_ALIGNMENT (<VEL>mode));
     m = validize_mem (m);
@@ -1483,6 +1498,7 @@
 	     (match_operand 5 "vector_length_operand"    "   rK,    rK,    rK")
 	     (match_operand 6 "const_int_operand"        "    i,     i,     i")
 	     (match_operand 7 "const_int_operand"        "    i,     i,     i")
+	     (match_operand 8 "const_int_operand"        "    i,     i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:V
@@ -1738,7 +1754,7 @@
   [(set_attr "type" "vst<order>x")
    (set_attr "mode" "<VNX8_QHSD:MODE>")])
 
-(define_insn "@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSDI:mode>"
+(define_insn "@pred_indexed_<order>store<VNX16_QHSD:mode><VNX16_QHSDI:mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -1749,11 +1765,11 @@
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
 	   (match_operand:VNX16_QHSDI 2 "register_operand" "  vr")
-	   (match_operand:VNX16_QHS 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:VNX16_QHSD 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
   "vs<order>xei<VNX16_QHSDI:sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<VNX16_QHS:MODE>")])
+   (set_attr "mode" "<VNX16_QHSD:MODE>")])
 
 (define_insn "@pred_indexed_<order>store<VNX32_QHS:mode><VNX32_QHSI:mode>"
   [(set (mem:BLK (scratch))

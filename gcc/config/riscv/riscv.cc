@@ -2037,7 +2037,14 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
      (m, n) = base * magn + constant.
      This calculation doesn't need div operation.  */
 
-  emit_move_insn (tmp, gen_int_mode (BYTES_PER_RISCV_VECTOR, mode));
+  if (known_le (GET_MODE_SIZE (mode), GET_MODE_SIZE (Pmode)))
+    emit_move_insn (tmp, gen_int_mode (BYTES_PER_RISCV_VECTOR, mode));
+  else
+    {
+      emit_move_insn (gen_highpart (Pmode, tmp), CONST0_RTX (Pmode));
+      emit_move_insn (gen_lowpart (Pmode, tmp),
+		      gen_int_mode (BYTES_PER_RISCV_VECTOR, Pmode));
+    }
 
   if (BYTES_PER_RISCV_VECTOR.is_constant ())
     {
@@ -2144,7 +2151,7 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	  return false;
 	}
 
-      if (satisfies_constraint_vp (src))
+      if (satisfies_constraint_vp (src) && GET_MODE (src) == Pmode)
 	return false;
 
       if (GET_MODE_SIZE (mode).to_constant () < GET_MODE_SIZE (Pmode))

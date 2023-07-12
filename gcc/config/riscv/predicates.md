@@ -61,6 +61,10 @@
   (and (match_code "const_int,const_wide_int,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
+(define_predicate "const_1_operand"
+  (and (match_code "const_int,const_wide_int,const_vector")
+       (match_test "op == CONST1_RTX (GET_MODE (op))")))
+
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "register_operand")))
@@ -341,6 +345,33 @@
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
 
+(define_predicate "vector_gs_scale_operand_16"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2")))
+
+(define_predicate "vector_gs_scale_operand_32"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
+(define_predicate "vector_gs_scale_operand_64"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || (INTVAL (op) == 8 && Pmode == DImode)")))
+
+(define_predicate "vector_gs_extension_operand"
+  (ior (match_operand 0 "const_1_operand")
+       (and (match_operand 0 "const_0_operand")
+            (match_test "Pmode == SImode"))))
+
+(define_predicate "vector_gs_scale_operand_16_rv32"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1
+		    || (INTVAL (op) == 2 && Pmode == SImode)")))
+
+(define_predicate "vector_gs_scale_operand_32_rv32"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1
+		    || (INTVAL (op) == 4 && Pmode == SImode)")))
+
 (define_predicate "ltge_operator"
   (match_code "lt,ltu,ge,geu"))
 
@@ -376,7 +407,7 @@
 		|| rtx_equal_p (op, CONST0_RTX (GET_MODE (op))))
 		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
     (ior (match_test "rtx_equal_p (op, CONST0_RTX (GET_MODE (op)))")
-         (ior (match_operand 0 "const_int_operand")
+         (ior (match_code "const_int,const_poly_int")
               (ior (match_operand 0 "register_operand")
                    (match_test "satisfies_constraint_Wdm (op)"))))))
 

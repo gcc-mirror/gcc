@@ -556,16 +556,23 @@ const_vec_all_in_range_p (rtx vec, poly_int64 minval, poly_int64 maxval)
   return true;
 }
 
-/* Return a const_int vector of VAL.
-
-   This function also exists in aarch64, we may unify it in middle-end in the
-   future.  */
+/* Return a const vector of VAL. The VAL can be either const_int or
+   const_poly_int.  */
 
 static rtx
 gen_const_vector_dup (machine_mode mode, poly_int64 val)
 {
-  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
-  return gen_const_vec_duplicate (mode, c);
+  scalar_mode smode = GET_MODE_INNER (mode);
+  rtx c = gen_int_mode (val, smode);
+  if (!val.is_constant () && GET_MODE_SIZE (smode) > GET_MODE_SIZE (Pmode))
+    {
+      /* When VAL is const_poly_int value, we need to explicitly broadcast
+	 it into a vector using RVV broadcast instruction.  */
+      rtx dup = gen_reg_rtx (mode);
+      emit_insn (gen_vec_duplicate (mode, dup, c));
+      return dup;
+    }
+   return gen_const_vec_duplicate (mode, c);
 }
 
 /* Emit a vlmax vsetvl instruction.  This should only be used when
@@ -901,6 +908,39 @@ emit_nonvlmax_masked_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a VLMAX masked store instruction.  */
+static void
+emit_vlmax_masked_store_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ false,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a non-VLMAX masked store instruction.  */
+static void
+emit_nonvlmax_masked_store_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ false,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a masked instruction.  */
 void
 emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
@@ -1194,7 +1234,6 @@ static void
 expand_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (target);
-  scalar_mode elt_mode = GET_MODE_INNER (mode);
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
     {
       rtx elt;
@@ -1219,7 +1258,6 @@ expand_const_vector (rtx target, rtx src)
 	}
       else
 	{
-	  elt = force_reg (elt_mode, elt);
 	  rtx ops[] = {tmp, elt};
 	  emit_vlmax_insn (code_for_pred_broadcast (mode), RVV_UNOP, ops);
 	}
@@ -2488,6 +2526,25 @@ expand_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1,
   return false;
 }
 
+/* Modulo all SEL indices to ensure they are all in range if [0, MAX_SEL].  */
+static rtx
+modulo_sel_indices (rtx sel, poly_uint64 max_sel)
+{
+  rtx sel_mod;
+  machine_mode sel_mode = GET_MODE (sel);
+  poly_uint64 nunits = GET_MODE_NUNITS (sel_mode);
+  /* If SEL is variable-length CONST_VECTOR, we don't need to modulo it.  */
+  if (!nunits.is_constant () && CONST_VECTOR_P (sel))
+    sel_mod = sel;
+  else
+    {
+      rtx mod = gen_const_vector_dup (sel_mode, max_sel);
+      sel_mod
+	= expand_simple_binop (sel_mode, AND, sel, mod, NULL, 0, OPTAB_DIRECT);
+    }
+  return sel_mod;
+}
+
 /* Implement vec_perm<mode>.  */
 
 void
@@ -2501,41 +2558,44 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
      index is in range of [0, nunits - 1]. A single vrgather instructions is
      enough. Since we will use vrgatherei16.vv for variable-length vector,
      it is never out of range and we don't need to modulo the index.  */
-  if (!nunits.is_constant () || const_vec_all_in_range_p (sel, 0, nunits - 1))
+  if (nunits.is_constant () && const_vec_all_in_range_p (sel, 0, nunits - 1))
     {
       emit_vlmax_gather_insn (target, op0, sel);
       return;
     }
 
-  /* Check if the two values vectors are the same.  */
-  if (rtx_equal_p (op0, op1) || const_vec_duplicate_p (sel))
+  /* Check if all the indices are same.  */
+  rtx elt;
+  if (const_vec_duplicate_p (sel, &elt))
     {
-      /* Note: vec_perm indices are supposed to wrap when they go beyond the
-	 size of the two value vectors, i.e. the upper bits of the indices
-	 are effectively ignored.  RVV vrgather instead produces 0 for any
-	 out-of-range indices, so we need to modulo all the vec_perm indices
-	 to ensure they are all in range of [0, nunits - 1].  */
-      rtx max_sel = gen_const_vector_dup (sel_mode, nunits - 1);
-      rtx sel_mod = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0,
-					 OPTAB_DIRECT);
-      emit_vlmax_gather_insn (target, op1, sel_mod);
+      poly_uint64 value = rtx_to_poly_int64 (elt);
+      rtx op = op0;
+      if (maybe_gt (value, nunits - 1))
+	{
+	  sel = gen_const_vector_dup (sel_mode, value - nunits);
+	  op = op1;
+	}
+      emit_vlmax_gather_insn (target, op, sel);
+    }
+
+  /* Note: vec_perm indices are supposed to wrap when they go beyond the
+     size of the two value vectors, i.e. the upper bits of the indices
+     are effectively ignored.  RVV vrgather instead produces 0 for any
+     out-of-range indices, so we need to modulo all the vec_perm indices
+     to ensure they are all in range of [0, nunits - 1] when op0 == op1
+     or all in range of [0, 2 * nunits - 1] when op0 != op1.  */
+  rtx sel_mod
+    = modulo_sel_indices (sel,
+			  rtx_equal_p (op0, op1) ? nunits - 1 : 2 * nunits - 1);
+
+  /* Check if the two values vectors are the same.  */
+  if (rtx_equal_p (op0, op1))
+    {
+      emit_vlmax_gather_insn (target, op0, sel_mod);
       return;
     }
 
-  rtx sel_mod = sel;
   rtx max_sel = gen_const_vector_dup (sel_mode, 2 * nunits - 1);
-  /* We don't need to modulo indices for VLA vector.
-     Since we should gurantee they aren't out of range before.  */
-  if (nunits.is_constant ())
-    {
-      /* Note: vec_perm indices are supposed to wrap when they go beyond the
-	 size of the two value vectors, i.e. the upper bits of the indices
-	 are effectively ignored.  RVV vrgather instead produces 0 for any
-	 out-of-range indices, so we need to modulo all the vec_perm indices
-	 to ensure they are all in range of [0, 2 * nunits - 1].  */
-      sel_mod = expand_simple_binop (sel_mode, AND, sel, max_sel, NULL, 0,
-				     OPTAB_DIRECT);
-    }
 
   /* This following sequence is handling the case that:
      __builtin_shufflevector (vec1, vec2, index...), the index can be any
@@ -3007,6 +3067,7 @@ expand_load_store (rtx *ops, bool is_load)
     }
 }
 
+
 /* Return true if the operation is the floating-point operation need FRM.  */
 static bool
 needs_fp_rounding (rtx_code code, machine_mode mode)
@@ -3045,6 +3106,165 @@ expand_cond_len_binop (rtx_code code, rtx *ops)
   else
     /* FIXME: Enable this case when we support it in the middle-end.  */
     gcc_unreachable ();
+}
+
+/* Prepare insn_code for gather_load/scatter_store according to
+   the vector mode and index mode.  */
+static insn_code
+prepare_gather_scatter (machine_mode vec_mode, machine_mode idx_mode,
+			bool is_load)
+{
+  if (!is_load)
+    return code_for_pred_indexed_store (UNSPEC_UNORDERED, vec_mode, idx_mode);
+  else
+    {
+      unsigned src_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (idx_mode));
+      unsigned dst_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
+      if (dst_eew_bitsize == src_eew_bitsize)
+	return code_for_pred_indexed_load_same_eew (UNSPEC_UNORDERED, vec_mode);
+      else if (dst_eew_bitsize > src_eew_bitsize)
+	{
+	  unsigned factor = dst_eew_bitsize / src_eew_bitsize;
+	  switch (factor)
+	    {
+	    case 2:
+	      return code_for_pred_indexed_load_x2_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 4:
+	      return code_for_pred_indexed_load_x4_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 8:
+	      return code_for_pred_indexed_load_x8_greater_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  unsigned factor = src_eew_bitsize / dst_eew_bitsize;
+	  switch (factor)
+	    {
+	    case 2:
+	      return code_for_pred_indexed_load_x2_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 4:
+	      return code_for_pred_indexed_load_x4_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    case 8:
+	      return code_for_pred_indexed_load_x8_smaller_eew (
+		UNSPEC_UNORDERED, vec_mode);
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+}
+
+/* Expand LEN_MASK_{GATHER_LOAD,SCATTER_STORE}.  */
+void
+expand_gather_scatter (rtx *ops, bool is_load)
+{
+  rtx ptr, vec_offset, vec_reg, len, mask;
+  bool zero_extend_p;
+  int scale_log2;
+  if (is_load)
+    {
+      vec_reg = ops[0];
+      ptr = ops[1];
+      vec_offset = ops[2];
+      zero_extend_p = INTVAL (ops[3]);
+      scale_log2 = exact_log2 (INTVAL (ops[4]));
+      len = ops[5];
+      mask = ops[7];
+    }
+  else
+    {
+      vec_reg = ops[4];
+      ptr = ops[0];
+      vec_offset = ops[1];
+      zero_extend_p = INTVAL (ops[2]);
+      scale_log2 = exact_log2 (INTVAL (ops[3]));
+      len = ops[5];
+      mask = ops[7];
+    }
+
+  machine_mode vec_mode = GET_MODE (vec_reg);
+  machine_mode idx_mode = GET_MODE (vec_offset);
+  scalar_mode inner_vec_mode = GET_MODE_INNER (vec_mode);
+  scalar_mode inner_idx_mode = GET_MODE_INNER (idx_mode);
+  unsigned inner_vsize = GET_MODE_BITSIZE (inner_vec_mode);
+  unsigned inner_offsize = GET_MODE_BITSIZE (inner_idx_mode);
+  poly_int64 nunits = GET_MODE_NUNITS (vec_mode);
+  poly_int64 value;
+  bool is_vlmax = poly_int_rtx_p (len, &value) && known_eq (value, nunits);
+
+  if (inner_offsize < inner_vsize)
+    {
+      /* 7.2. Vector Load/Store Addressing Modes.
+	 If the vector offset elements are narrower than XLEN, they are
+	 zero-extended to XLEN before adding to the ptr effective address. If
+	 the vector offset elements are wider than XLEN, the least-significant
+	 XLEN bits are used in the address calculation. An implementation must
+	 raise an illegal instruction exception if the EEW is not supported for
+	 offset elements.
+
+	 RVV spec only refers to the scale_log == 0 case.  */
+      if (!zero_extend_p || (zero_extend_p && scale_log2 != 0))
+	{
+	  if (zero_extend_p)
+	    inner_idx_mode
+	      = int_mode_for_size (inner_offsize * 2, 0).require ();
+	  else
+	    inner_idx_mode = int_mode_for_size (BITS_PER_WORD, 0).require ();
+	  machine_mode new_idx_mode
+	    = get_vector_mode (inner_idx_mode, nunits).require ();
+	  rtx tmp = gen_reg_rtx (new_idx_mode);
+	  emit_insn (gen_extend_insn (tmp, vec_offset, new_idx_mode, idx_mode,
+				      zero_extend_p ? true : false));
+	  vec_offset = tmp;
+	  idx_mode = new_idx_mode;
+	}
+    }
+
+  if (scale_log2 != 0)
+    {
+      rtx tmp = expand_binop (idx_mode, ashl_optab, vec_offset,
+			      gen_int_mode (scale_log2, Pmode), NULL_RTX, 0,
+			      OPTAB_DIRECT);
+      vec_offset = tmp;
+    }
+
+  insn_code icode = prepare_gather_scatter (vec_mode, idx_mode, is_load);
+  if (is_vlmax)
+    {
+      if (is_load)
+	{
+	  rtx load_ops[]
+	    = {vec_reg, mask, RVV_VUNDEF (vec_mode), ptr, vec_offset};
+	  emit_vlmax_masked_insn (icode, RVV_GATHER_M_OP, load_ops);
+	}
+      else
+	{
+	  rtx store_ops[] = {mask, ptr, vec_offset, vec_reg};
+	  emit_vlmax_masked_store_insn (icode, RVV_SCATTER_M_OP, store_ops);
+	}
+    }
+  else
+    {
+      if (is_load)
+	{
+	  rtx load_ops[]
+	    = {vec_reg, mask, RVV_VUNDEF (vec_mode), ptr, vec_offset};
+	  emit_nonvlmax_masked_insn (icode, RVV_GATHER_M_OP, load_ops, len);
+	}
+      else
+	{
+	  rtx store_ops[] = {mask, ptr, vec_offset, vec_reg};
+	  emit_nonvlmax_masked_store_insn (icode, RVV_SCATTER_M_OP, store_ops,
+					   len);
+	}
+    }
 }
 
 } // namespace riscv_vector

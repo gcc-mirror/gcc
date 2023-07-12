@@ -195,6 +195,8 @@ enum insn_type
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
   RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
   RVV_COMPRESS_OP = 4,
+  RVV_GATHER_M_OP = 5,
+  RVV_SCATTER_M_OP = 4,
 };
 enum vlmul_type
 {
@@ -303,6 +305,7 @@ void expand_vec_init (rtx, rtx);
 void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);
+void expand_gather_scatter (rtx *, bool);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

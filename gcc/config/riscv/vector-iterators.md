@@ -115,6 +115,9 @@
 
 (define_mode_iterator VEEWEXT2 [
   (VNx1HI "TARGET_MIN_VLEN < 128") VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32") (VNx64HI "TARGET_MIN_VLEN >= 128")
+  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128") (VNx2HF "TARGET_VECTOR_ELEN_FP_16") (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx8HF "TARGET_VECTOR_ELEN_FP_16") (VNx16HF "TARGET_VECTOR_ELEN_FP_16") (VNx32HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
+  (VNx64HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
   (VNx1SI "TARGET_MIN_VLEN < 128") VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32") (VNx32SI "TARGET_MIN_VLEN >= 128")
   (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128") (VNx2DI "TARGET_VECTOR_ELEN_64")
   (VNx4DI "TARGET_VECTOR_ELEN_64") (VNx8DI "TARGET_VECTOR_ELEN_64") (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
@@ -161,6 +164,8 @@
 (define_mode_iterator VEEWTRUNC2 [
   (VNx1QI "TARGET_MIN_VLEN < 128") VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI (VNx64QI "TARGET_MIN_VLEN >= 128")
   (VNx1HI "TARGET_MIN_VLEN < 128") VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN >= 128")
+  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128") (VNx2HF "TARGET_VECTOR_ELEN_FP_16") (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx8HF "TARGET_VECTOR_ELEN_FP_16") (VNx16HF "TARGET_VECTOR_ELEN_FP_16") (VNx32HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
   (VNx1SI "TARGET_MIN_VLEN < 128") VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN >= 128")
   (VNx1SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN < 128")
   (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
@@ -172,6 +177,8 @@
 (define_mode_iterator VEEWTRUNC4 [
   (VNx1QI "TARGET_MIN_VLEN < 128") VNx2QI VNx4QI VNx8QI VNx16QI (VNx32QI "TARGET_MIN_VLEN >= 128")
   (VNx1HI "TARGET_MIN_VLEN < 128") VNx2HI VNx4HI VNx8HI (VNx16HI "TARGET_MIN_VLEN >= 128")
+  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128") (VNx2HF "TARGET_VECTOR_ELEN_FP_16") (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
+  (VNx8HF "TARGET_VECTOR_ELEN_FP_16") (VNx16HF "TARGET_VECTOR_ELEN_FP_16")
 ])
 
 (define_mode_iterator VEEWTRUNC8 [
@@ -362,46 +369,67 @@
 ])
 
 (define_mode_iterator VNX1_QHSD [
-  (VNx1QI "TARGET_MIN_VLEN < 128") (VNx1HI "TARGET_MIN_VLEN < 128") (VNx1SI "TARGET_MIN_VLEN < 128")
+  (VNx1QI "TARGET_MIN_VLEN < 128")
+  (VNx1HI "TARGET_MIN_VLEN < 128")
+  (VNx1SI "TARGET_MIN_VLEN < 128")
   (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128")
+  (VNx1HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN < 128")
   (VNx1SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN < 128")
   (VNx1DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN < 128")
 ])
 
 (define_mode_iterator VNX2_QHSD [
-  VNx2QI VNx2HI VNx2SI
+  VNx2QI
+  VNx2HI
+  VNx2SI
   (VNx2DI "TARGET_VECTOR_ELEN_64")
+  (VNx2HF "TARGET_VECTOR_ELEN_FP_16")
   (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
   (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
 ])
 
 (define_mode_iterator VNX4_QHSD [
-  VNx4QI VNx4HI VNx4SI
+  VNx4QI
+  VNx4HI
+  VNx4SI
   (VNx4DI "TARGET_VECTOR_ELEN_64")
+  (VNx4HF "TARGET_VECTOR_ELEN_FP_16")
   (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
   (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
 ])
 
 (define_mode_iterator VNX8_QHSD [
-  VNx8QI VNx8HI VNx8SI
+  VNx8QI
+  VNx8HI
+  VNx8SI
   (VNx8DI "TARGET_VECTOR_ELEN_64")
+  (VNx8HF "TARGET_VECTOR_ELEN_FP_16")
   (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
   (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
 ])
 
-(define_mode_iterator VNX16_QHS [
-  VNx16QI VNx16HI (VNx16SI "TARGET_MIN_VLEN > 32")
+(define_mode_iterator VNX16_QHSD [
+  VNx16QI
+  VNx16HI
+  (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
+  (VNx16HF "TARGET_VECTOR_ELEN_FP_16")
   (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
-  (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128") (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
+  (VNx16DF "TARGET_VECTOR_ELEN_FP_64 && TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VNX32_QHS [
-  VNx32QI (VNx32HI "TARGET_MIN_VLEN > 32") (VNx32SI "TARGET_MIN_VLEN >= 128") (VNx32SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 128")
+  VNx32QI
+  (VNx32HI "TARGET_MIN_VLEN > 32")
+  (VNx32SI "TARGET_MIN_VLEN >= 128")
+  (VNx32HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN > 32")
+  (VNx32SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VNX64_QH [
   (VNx64QI "TARGET_MIN_VLEN > 32")
   (VNx64HI "TARGET_MIN_VLEN >= 128")
+  (VNx64HF "TARGET_VECTOR_ELEN_FP_16 && TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VNX128_Q [
@@ -409,35 +437,49 @@
 ])
 
 (define_mode_iterator VNX1_QHSDI [
-  (VNx1QI "TARGET_MIN_VLEN < 128") (VNx1HI "TARGET_MIN_VLEN < 128") (VNx1SI "TARGET_MIN_VLEN < 128")
-  (VNx1DI "TARGET_64BIT && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128")
+  (VNx1QI "TARGET_MIN_VLEN < 128")
+  (VNx1HI "TARGET_MIN_VLEN < 128")
+  (VNx1SI "TARGET_MIN_VLEN < 128")
+  (VNx1DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN < 128 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VNX2_QHSDI [
-  VNx2QI VNx2HI VNx2SI
-  (VNx2DI "TARGET_64BIT && TARGET_VECTOR_ELEN_64")
+  VNx2QI
+  VNx2HI
+  VNx2SI
+  (VNx2DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VNX4_QHSDI [
-  VNx4QI VNx4HI VNx4SI
-  (VNx4DI "TARGET_64BIT && TARGET_VECTOR_ELEN_64")
+  VNx4QI
+  VNx4HI
+  VNx4SI
+  (VNx4DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VNX8_QHSDI [
-  VNx8QI VNx8HI VNx8SI
-  (VNx8DI "TARGET_64BIT && TARGET_VECTOR_ELEN_64")
+  VNx8QI
+  VNx8HI
+  VNx8SI
+  (VNx8DI "TARGET_VECTOR_ELEN_64 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VNX16_QHSDI [
-  VNx16QI VNx16HI (VNx16SI "TARGET_MIN_VLEN > 32") (VNx16DI "TARGET_64BIT && TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128")
+  VNx16QI
+  VNx16HI
+  (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx16DI "TARGET_VECTOR_ELEN_64 && TARGET_MIN_VLEN >= 128 && TARGET_64BIT")
 ])
 
 (define_mode_iterator VNX32_QHSI [
-  VNx32QI (VNx32HI "TARGET_MIN_VLEN > 32") (VNx32SI "TARGET_MIN_VLEN >= 128")
+  VNx32QI
+  (VNx32HI "TARGET_MIN_VLEN > 32")
+  (VNx32SI "TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator VNX64_QHI [
-  VNx64QI (VNx64HI "TARGET_MIN_VLEN >= 128")
+  (VNx64QI "TARGET_MIN_VLEN > 32")
+  (VNx64HI "TARGET_MIN_VLEN >= 128")
 ])
 
 (define_mode_iterator V_WHOLE [
@@ -1393,6 +1435,8 @@
 (define_mode_attr VINDEX_DOUBLE_TRUNC [
   (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")
   (VNx16HI "VNx16QI") (VNx32HI "VNx32QI") (VNx64HI "VNx64QI")
+  (VNx1HF "VNx1QI") (VNx2HF "VNx2QI")  (VNx4HF "VNx4QI")  (VNx8HF "VNx8QI")
+  (VNx16HF "VNx16QI") (VNx32HF "VNx32QI") (VNx64HF "VNx64QI")
   (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI")
   (VNx16SI "VNx16HI") (VNx32SI "VNx32HI")
   (VNx1SF "VNx1HI") (VNx2SF "VNx2HI") (VNx4SF "VNx4HI") (VNx8SF "VNx8HI")
@@ -1420,6 +1464,7 @@
 (define_mode_attr VINDEX_DOUBLE_EXT [
   (VNx1QI "VNx1HI") (VNx2QI "VNx2HI") (VNx4QI "VNx4HI") (VNx8QI "VNx8HI") (VNx16QI "VNx16HI") (VNx32QI "VNx32HI") (VNx64QI "VNx64HI")
   (VNx1HI "VNx1SI") (VNx2HI "VNx2SI") (VNx4HI "VNx4SI") (VNx8HI "VNx8SI") (VNx16HI "VNx16SI") (VNx32HI "VNx32SI")
+  (VNx1HF "VNx1SI") (VNx2HF "VNx2SI") (VNx4HF "VNx4SI") (VNx8HF "VNx8SI") (VNx16HF "VNx16SI") (VNx32HF "VNx32SI")
   (VNx1SI "VNx1DI") (VNx2SI "VNx2DI") (VNx4SI "VNx4DI") (VNx8SI "VNx8DI") (VNx16SI "VNx16DI")
   (VNx1SF "VNx1DI") (VNx2SF "VNx2DI") (VNx4SF "VNx4DI") (VNx8SF "VNx8DI") (VNx16SF "VNx16DI")
 ])
@@ -1427,6 +1472,7 @@
 (define_mode_attr VINDEX_QUAD_EXT [
   (VNx1QI "VNx1SI") (VNx2QI "VNx2SI") (VNx4QI "VNx4SI") (VNx8QI "VNx8SI") (VNx16QI "VNx16SI") (VNx32QI "VNx32SI")
   (VNx1HI "VNx1DI") (VNx2HI "VNx2DI") (VNx4HI "VNx4DI") (VNx8HI "VNx8DI") (VNx16HI "VNx16DI")
+  (VNx1HF "VNx1DI") (VNx2HF "VNx2DI") (VNx4HF "VNx4DI") (VNx8HF "VNx8DI") (VNx16HF "VNx16DI")
 ])
 
 (define_mode_attr VINDEX_OCT_EXT [
@@ -1469,6 +1515,40 @@
 (define_mode_attr VMDEMOTE [
   (VNx1DI "VNx2BI") (VNx2DI "VNx4BI")
   (VNx4DI "VNx8BI") (VNx8DI "VNx16BI") (VNx16DI "VNx32BI")
+])
+
+(define_mode_attr gs_extension [
+  (VNx1QI "immediate_operand") (VNx2QI "immediate_operand") (VNx4QI "immediate_operand") (VNx8QI "immediate_operand") (VNx16QI "immediate_operand")
+  (VNx32QI "vector_gs_extension_operand") (VNx64QI "const_1_operand")
+  (VNx1HI "immediate_operand") (VNx2HI "immediate_operand") (VNx4HI "immediate_operand") (VNx8HI "immediate_operand") (VNx16HI "immediate_operand")
+  (VNx32HI "vector_gs_extension_operand") (VNx64HI "const_1_operand")
+  (VNx1SI "immediate_operand") (VNx2SI "immediate_operand") (VNx4SI "immediate_operand") (VNx8SI "immediate_operand") (VNx16SI "immediate_operand")
+  (VNx32SI "vector_gs_extension_operand")
+  (VNx1DI "immediate_operand") (VNx2DI "immediate_operand") (VNx4DI "immediate_operand") (VNx8DI "immediate_operand") (VNx16DI "immediate_operand")
+
+  (VNx1HF "immediate_operand") (VNx2HF "immediate_operand") (VNx4HF "immediate_operand") (VNx8HF "immediate_operand") (VNx16HF "immediate_operand")
+  (VNx32HF "vector_gs_extension_operand") (VNx64HF "const_1_operand")
+  (VNx1SF "immediate_operand") (VNx2SF "immediate_operand") (VNx4SF "immediate_operand") (VNx8SF "immediate_operand") (VNx16SF "immediate_operand")
+  (VNx32SF "vector_gs_extension_operand")
+  (VNx1DF "immediate_operand") (VNx2DF "immediate_operand") (VNx4DF "immediate_operand") (VNx8DF "immediate_operand") (VNx16DF "immediate_operand")
+])
+
+(define_mode_attr gs_scale [
+  (VNx1QI "const_1_operand") (VNx2QI "const_1_operand") (VNx4QI "const_1_operand") (VNx8QI "const_1_operand")
+  (VNx16QI "const_1_operand") (VNx32QI "const_1_operand") (VNx64QI "const_1_operand")
+  (VNx1HI "vector_gs_scale_operand_16") (VNx2HI "vector_gs_scale_operand_16") (VNx4HI "vector_gs_scale_operand_16") (VNx8HI "vector_gs_scale_operand_16")
+  (VNx16HI "vector_gs_scale_operand_16") (VNx32HI "vector_gs_scale_operand_16_rv32") (VNx64HI "const_1_operand")
+  (VNx1SI "vector_gs_scale_operand_32") (VNx2SI "vector_gs_scale_operand_32") (VNx4SI "vector_gs_scale_operand_32") (VNx8SI "vector_gs_scale_operand_32")
+  (VNx16SI "vector_gs_scale_operand_32") (VNx32SI "vector_gs_scale_operand_32_rv32")
+  (VNx1DI "vector_gs_scale_operand_64") (VNx2DI "vector_gs_scale_operand_64") (VNx4DI "vector_gs_scale_operand_64") (VNx8DI "vector_gs_scale_operand_64")
+  (VNx16DI "vector_gs_scale_operand_64")
+
+  (VNx1HF "vector_gs_scale_operand_16") (VNx2HF "vector_gs_scale_operand_16") (VNx4HF "vector_gs_scale_operand_16") (VNx8HF "vector_gs_scale_operand_16")
+  (VNx16HF "vector_gs_scale_operand_16") (VNx32HF "vector_gs_scale_operand_16_rv32") (VNx64HF "const_1_operand")
+  (VNx1SF "vector_gs_scale_operand_32") (VNx2SF "vector_gs_scale_operand_32") (VNx4SF "vector_gs_scale_operand_32") (VNx8SF "vector_gs_scale_operand_32")
+  (VNx16SF "vector_gs_scale_operand_32") (VNx32SF "vector_gs_scale_operand_32_rv32")
+  (VNx1DF "vector_gs_scale_operand_64") (VNx2DF "vector_gs_scale_operand_64") (VNx4DF "vector_gs_scale_operand_64") (VNx8DF "vector_gs_scale_operand_64")
+  (VNx16DF "vector_gs_scale_operand_64")
 ])
 
 (define_int_iterator WREDUC [UNSPEC_WREDUC_SUM UNSPEC_WREDUC_USUM])
