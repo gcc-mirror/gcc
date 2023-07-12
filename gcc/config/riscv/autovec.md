@@ -1178,3 +1178,33 @@
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Highpart multiplication
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vmulh.vv
+;; - vmulhu.vv
+;; -------------------------------------------------------------------------
+
+(define_expand "smul<mode>3_highpart"
+  [(match_operand:VFULLI 0 "register_operand")
+   (match_operand:VFULLI 1 "register_operand")
+   (match_operand:VFULLI 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mulh (UNSPEC_VMULHS, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
+
+(define_expand "umul<mode>3_highpart"
+  [(match_operand:VFULLI 0 "register_operand")
+   (match_operand:VFULLI 1 "register_operand")
+   (match_operand:VFULLI 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mulh (UNSPEC_VMULHU, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
