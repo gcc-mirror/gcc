@@ -8432,7 +8432,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 static void
 vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 			  slp_tree node, tree first_def, tree second_def,
-			  tree mask_vec)
+			  tree mask_vec, poly_uint64 identity_offset)
 {
   tree vectype = SLP_TREE_VECTYPE (node);
 
@@ -8470,14 +8470,17 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   else if (!types_compatible_p (TREE_TYPE (first_def), vectype))
     {
       /* For identity permutes we still need to handle the case
-	 of lowpart extracts or concats.  */
+	 of offsetted extracts or concats.  */
       unsigned HOST_WIDE_INT c;
       auto first_def_nunits
 	= TYPE_VECTOR_SUBPARTS (TREE_TYPE (first_def));
       if (known_le (TYPE_VECTOR_SUBPARTS (vectype), first_def_nunits))
 	{
+	  unsigned HOST_WIDE_INT elsz
+	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (first_def))));
 	  tree lowpart = build3 (BIT_FIELD_REF, vectype, first_def,
-				 TYPE_SIZE (vectype), bitsize_zero_node);
+				 TYPE_SIZE (vectype),
+				 bitsize_int (identity_offset * elsz));
 	  perm_stmt = gimple_build_assign (perm_dest, lowpart);
 	}
       else if (constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype),
@@ -8709,7 +8712,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	{
 	  indices.new_vector (mask, second_vec.first == -1U ? 1 : 2,
 			      TYPE_VECTOR_SUBPARTS (op_vectype));
-	  bool identity_p = indices.series_p (0, 1, 0, 1);
+	  bool identity_p = (indices.series_p (0, 1, mask[0], 1)
+			     && constant_multiple_p (mask[0], nunits));
 	  machine_mode vmode = TYPE_MODE (vectype);
 	  machine_mode op_vmode = TYPE_MODE (op_vectype);
 	  unsigned HOST_WIDE_INT c;
@@ -8762,7 +8766,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		    = vect_get_slp_vect_def (second_node,
 					     second_vec.second + vi);
 		  vect_add_slp_permutation (vinfo, gsi, node, first_def,
-					    second_def, mask_vec);
+					    second_def, mask_vec, mask[0]);
 		}
 	    }
 
