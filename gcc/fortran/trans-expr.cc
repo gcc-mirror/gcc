@@ -6725,9 +6725,32 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			    {
 			      tree efield;
 
-			      /* Evaluate arguments just once.  */
-			      if (e->expr_type != EXPR_VARIABLE)
-				parmse.expr = save_expr (parmse.expr);
+			      /* Evaluate arguments just once, when they have
+				 side effects.  */
+			      if (TREE_SIDE_EFFECTS (parmse.expr))
+				{
+				  tree cldata, zero;
+
+				  parmse.expr = gfc_evaluate_now (parmse.expr,
+								  &parmse.pre);
+
+				  /* Prevent memory leak, when old component
+				     was allocated already.  */
+				  cldata = gfc_class_data_get (parmse.expr);
+				  zero = build_int_cst (TREE_TYPE (cldata),
+							0);
+				  tmp = fold_build2_loc (input_location, NE_EXPR,
+							 logical_type_node,
+							 cldata, zero);
+				  tmp = build3_v (COND_EXPR, tmp,
+						  gfc_call_free (cldata),
+						  build_empty_stmt (
+						    input_location));
+				  gfc_add_expr_to_block (&parmse.finalblock,
+							 tmp);
+				  gfc_add_modify (&parmse.finalblock,
+						  cldata, zero);
+				}
 
 			      /* Set the _data field.  */
 			      tmp = gfc_class_data_get (var);
