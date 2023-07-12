@@ -901,8 +901,19 @@
 		     VPSELQ_F
 		     ])
 
+(define_int_iterator MVE_VCADDQ_VCMULQ [
+		     UNSPEC_VCADD90 UNSPEC_VCADD270
+		     UNSPEC_VCMUL UNSPEC_VCMUL90 UNSPEC_VCMUL180 UNSPEC_VCMUL270
+		     ])
+
+(define_int_iterator MVE_VCADDQ_VCMULQ_M [
+		     VCADDQ_ROT90_M_F VCADDQ_ROT270_M_F
+		     VCMULQ_M_F VCMULQ_ROT90_M_F VCMULQ_ROT180_M_F VCMULQ_ROT270_M_F
+		     ])
+
 (define_int_attr mve_insn [
 		 (UNSPEC_VCADD90 "vcadd") (UNSPEC_VCADD270 "vcadd")
+		 (UNSPEC_VCMUL "vcmul") (UNSPEC_VCMUL90 "vcmul") (UNSPEC_VCMUL180 "vcmul") (UNSPEC_VCMUL270 "vcmul")
 		 (VABAVQ_P_S "vabav") (VABAVQ_P_U "vabav")
 		 (VABAVQ_S "vabav") (VABAVQ_U "vabav")
 		 (VABDQ_M_S "vabd") (VABDQ_M_U "vabd") (VABDQ_M_F "vabd")
@@ -931,6 +942,7 @@
 		 (VCLSQ_M_S "vcls")
 		 (VCLSQ_S "vcls")
 		 (VCLZQ_M_S "vclz") (VCLZQ_M_U "vclz")
+		 (VCMULQ_M_F "vcmul") (VCMULQ_ROT90_M_F "vcmul") (VCMULQ_ROT180_M_F "vcmul") (VCMULQ_ROT270_M_F "vcmul")
 		 (VCREATEQ_S "vcreate") (VCREATEQ_U "vcreate") (VCREATEQ_F "vcreate")
 		 (VDUPQ_M_N_S "vdup") (VDUPQ_M_N_U "vdup") (VDUPQ_M_N_F "vdup")
 		 (VDUPQ_N_S "vdup") (VDUPQ_N_U "vdup") (VDUPQ_N_F "vdup")
@@ -2182,7 +2194,11 @@
 		      (UNSPEC_VCMLA "0")
 		      (UNSPEC_VCMLA90 "90")
 		      (UNSPEC_VCMLA180 "180")
-		      (UNSPEC_VCMLA270 "270")])
+		      (UNSPEC_VCMLA270 "270")
+		      (VCMULQ_M_F "0")
+		      (VCMULQ_ROT90_M_F "90")
+		      (VCMULQ_ROT180_M_F "180")
+		      (VCMULQ_ROT270_M_F "270")])
 
 ;; The complex operations when performed on a real complex number require two
 ;; instructions to perform the operation. e.g. complex multiplication requires
@@ -2230,10 +2246,11 @@
 			  (UNSPEC_VCMUL "")
 			  (UNSPEC_VCMUL90 "_rot90")
 			  (UNSPEC_VCMUL180 "_rot180")
-			  (UNSPEC_VCMUL270 "_rot270")])
-
-(define_int_iterator VCMUL [UNSPEC_VCMUL UNSPEC_VCMUL90
-			    UNSPEC_VCMUL180 UNSPEC_VCMUL270])
+			  (UNSPEC_VCMUL270 "_rot270")
+			  (VCMULQ_M_F "")
+			  (VCMULQ_ROT90_M_F "_rot90")
+			  (VCMULQ_ROT180_M_F "_rot180")
+			  (VCMULQ_ROT270_M_F "_rot270")])
 
 (define_int_attr fcmac1 [(UNSPEC_VCMLA "a") (UNSPEC_VCMLA_CONJ "a")
 			 (UNSPEC_VCMLA180 "s") (UNSPEC_VCMLA180_CONJ "s")])
