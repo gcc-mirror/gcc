@@ -742,11 +742,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (param_type != nullptr);
-    return param_type;
-  }
+  std::unique_ptr<Type> &get_type () { return param_type; }
 
   ParamKind get_param_kind () const { return param_kind; }
 
@@ -829,11 +825,7 @@ public:
   }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
