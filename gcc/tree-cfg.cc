@@ -6662,25 +6662,19 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
    The function returns false if it is unable to copy the region,
    true otherwise.
 
-   ELIMINATED_EDGE is an edge that is known to be removed in the dupicated
-   region.  ORIG_ELIMINATED_EDGES, if non-NULL is set of edges known to be
-   removed from the original region.  */
+   It is callers responsibility to update profile.  */
 
 bool
-gimple_duplicate_sese_region (edge entry, edge exit,
+gimple_duplicate_seme_region (edge entry, edge exit,
 			      basic_block *region, unsigned n_region,
 			      basic_block *region_copy,
-			      bool update_dominance,
-			      edge eliminated_edge,
-			      hash_set <edge> *orig_eliminated_edges)
+			      bool update_dominance)
 {
   unsigned i;
   bool free_region_copy = false, copying_header = false;
   class loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
-  profile_count total_count = profile_count::uninitialized ();
-  profile_count entry_count = profile_count::uninitialized ();
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -6733,144 +6727,10 @@ gimple_duplicate_sese_region (edge entry, edge exit,
      inside.  */
   auto_vec<basic_block> doms;
   if (update_dominance)
-    {
-      doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
-    }
-
-  if (entry->dest->count.initialized_p ())
-    {
-      total_count = entry->dest->count;
-      entry_count = entry->count ();
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (entry_count > total_count)
-	entry_count = total_count;
-    }
+    doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), update_dominance);
-  if (total_count.initialized_p () && entry_count.initialized_p ())
-    {
-      if (!eliminated_edge
-	  && (!orig_eliminated_edges || orig_eliminated_edges->is_empty ()))
-	{
-	  scale_bbs_frequencies_profile_count (region, n_region,
-					       total_count - entry_count,
-					       total_count);
-	  scale_bbs_frequencies_profile_count (region_copy, n_region,
-					       entry_count, total_count);
-	}
-      else
-	{
-	  /* We only support only case where eliminated_edge is one and it
-	     exists first BB.  We also assume that the duplicated region is
-	     acyclic.  So we expect the following:
-
-	       // region_copy_start entry will be scaled to entry_count
-		 if (cond1)         <- this condition will become false
-				       and we update probabilities
-		   goto loop_exit;
-		 if (cond2)         <- this condition is loop invariant
-		   goto loop_exit;
-		 goto loop_header   <- this will be redirected to loop.
-	       // region_copy_end
-	     loop:
-		       <body>
-	       // region start
-	     loop_header:
-		       if (cond1)   <- we need to update probabbility here
-			 goto loop_exit;
-		       if (cond2)   <- and determine scaling factor here.
-				       moreover cond2 is now always true
-			 goto loop_exit;
-		       else
-			 goto loop;
-	       // region end
-
-	     Adding support for more exits can be done similarly,
-	     but only consumer so far is tree-ssa-loop-ch and it uses only this
-	     to handle the common case of peeling headers which have
-	     conditionals known to be always true upon entry.  */
-	  gcc_checking_assert (copying_header);
-	  for (unsigned int i = 0; i < n_region; i++)
-	    {
-	      edge exit_e, exit_e_copy, e, e_copy;
-	      if (EDGE_COUNT (region[i]->succs) == 1)
-		{
-		  region_copy[i]->count = entry_count;
-		  region[i]->count -= entry_count;
-		  continue;
-		}
-
-	      gcc_checking_assert (EDGE_COUNT (region[i]->succs) == 2);
-	      if (loop_exit_edge_p (region[0]->loop_father,
-				    EDGE_SUCC (region[i], 0)))
-		{
-		  exit_e = EDGE_SUCC (region[i], 0);
-		  exit_e_copy = EDGE_SUCC (region_copy[i], 0);
-		  e = EDGE_SUCC (region[i], 1);
-		  e_copy = EDGE_SUCC (region_copy[i], 1);
-		}
-	      else
-		{
-		  exit_e = EDGE_SUCC (region[i], 1);
-		  exit_e_copy = EDGE_SUCC (region_copy[i], 1);
-		  e = EDGE_SUCC (region[i], 0);
-		  e_copy = EDGE_SUCC (region_copy[i], 0);
-		}
-	      gcc_assert (i == n_region - 1
-			  || (e->dest == region[i + 1]
-			      && e_copy->dest == region_copy[i + 1]));
-	      region_copy[i]->count = entry_count;
-	      profile_count exit_e_count = exit_e->count ();
-	      if (eliminated_edge == exit_e)
-		{
-		  /* Update profile and the conditional.
-		     CFG update is done by caller.  */
-		  e_copy->probability = profile_probability::always ();
-		  exit_e_copy->probability = profile_probability::never ();
-		  gcond *cond_stmt
-			  = as_a <gcond *>(*gsi_last_bb (region_copy[i]));
-		  if (e_copy->flags & EDGE_TRUE_VALUE)
-		    gimple_cond_make_true (cond_stmt);
-		  else
-		    gimple_cond_make_false (cond_stmt);
-		  update_stmt (cond_stmt);
-		  /* Header copying is a special case of jump threading, so use
-		     common code to update loop body exit condition.  */
-		  update_bb_profile_for_threading (region[i], entry_count, e);
-		  eliminated_edge = NULL;
-		}
-	      else
-		region[i]->count -= region_copy[i]->count;
-	      if (orig_eliminated_edges->contains (exit_e))
-		{
-		  orig_eliminated_edges->remove (exit_e);
-		  /* All exits will happen in exit_e_copy which is out of the
-		     loop, so increase probability accordingly.
-		     If the edge is eliminated_edge we already corrected
-		     profile above.  */
-		  if (entry_count.nonzero_p () && eliminated_edge != exit_e)
-		    set_edge_probability_and_rescale_others
-			    (exit_e_copy, exit_e_count.probability_in
-								(entry_count));
-		  /* Eliminate in-loop conditional.  */
-		  e->probability = profile_probability::always ();
-		  exit_e->probability = profile_probability::never ();
-		  gcond *cond_stmt = as_a <gcond *>(*gsi_last_bb (region[i]));
-		  if (e->flags & EDGE_TRUE_VALUE)
-		    gimple_cond_make_true (cond_stmt);
-		  else
-		    gimple_cond_make_false (cond_stmt);
-		  update_stmt (cond_stmt);
-		}
-	      entry_count = e_copy->count ();
-	    }
-	  /* Be sure that we seen all edges we are supposed to update.  */
-	  gcc_checking_assert (!eliminated_edge
-			       && orig_eliminated_edges->is_empty ());
-	}
-    }
 
   if (copying_header)
     {

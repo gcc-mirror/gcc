@@ -347,6 +347,128 @@ do_while_loop_p (class loop *loop)
   return true;
 }
 
+/* Update profile after header copying of LOOP.
+   REGION is the original (in loop) sequence, REGION_COPY is the
+   duplicated header (now outside of loop). N_REGION is number of
+   bbs duplicated.
+   ELIMINATED_EDGE is edge to be removed from duplicated sequence.
+   INVARIANT_EXITS are edges in the loop body to be elimianted
+   since they are loop invariants
+
+   So We expect the following:
+
+      // region_copy_start entry will be scaled to entry_count
+	 if (cond1)         <- this condition will become false
+			       and we update probabilities
+	   goto loop_exit;
+	 if (cond2)         <- this condition is loop invariant
+	   goto loop_exit;
+	 goto loop_header   <- this will be redirected to loop.
+       // region_copy_end
+     loop:
+	       <body>
+       // region start
+     loop_header:
+	       if (cond1)   <- we need to update probabbility here
+		 goto loop_exit;
+	       if (cond2)   <- and determine scaling factor here.
+			       moreover cond2 is now always true
+		 goto loop_exit;
+	       else
+		 goto loop;
+       // region end
+
+     Adding support for more exits can be done similarly,
+     but only consumer so far is tree-ssa-loop-ch and it uses only this
+     to handle the common case of peeling headers which have
+     conditionals known to be always true upon entry.  */
+
+static void
+update_profile_after_ch (class loop *loop,
+			 basic_block *region, basic_block *region_copy,
+			 unsigned n_region, edge eliminated_edge,
+			 hash_set <edge> *invariant_exits,
+			 profile_count entry_count)
+{
+  for (unsigned int i = 0; i < n_region; i++)
+    {
+      edge exit_e, exit_e_copy, e, e_copy;
+      if (EDGE_COUNT (region[i]->succs) == 1)
+	{
+	  region_copy[i]->count = entry_count;
+	  region[i]->count -= entry_count;
+	  continue;
+	}
+
+      gcc_checking_assert (EDGE_COUNT (region[i]->succs) == 2);
+      if (loop_exit_edge_p (loop,
+			    EDGE_SUCC (region[i], 0)))
+	{
+	  exit_e = EDGE_SUCC (region[i], 0);
+	  exit_e_copy = EDGE_SUCC (region_copy[i], 0);
+	  e = EDGE_SUCC (region[i], 1);
+	  e_copy = EDGE_SUCC (region_copy[i], 1);
+	}
+      else
+	{
+	  exit_e = EDGE_SUCC (region[i], 1);
+	  exit_e_copy = EDGE_SUCC (region_copy[i], 1);
+	  e = EDGE_SUCC (region[i], 0);
+	  e_copy = EDGE_SUCC (region_copy[i], 0);
+	}
+      gcc_assert (i == n_region - 1
+		  || (e->dest == region[i + 1]
+		      && e_copy->dest == region_copy[i + 1]));
+      region_copy[i]->count = entry_count;
+      profile_count exit_e_count = exit_e->count ();
+      if (eliminated_edge == exit_e)
+	{
+	  /* Update profile and the conditional.
+	     CFG update is done by caller.  */
+	  e_copy->probability = profile_probability::always ();
+	  exit_e_copy->probability = profile_probability::never ();
+	  gcond *cond_stmt
+		  = as_a <gcond *>(*gsi_last_bb (region_copy[i]));
+	  if (e_copy->flags & EDGE_TRUE_VALUE)
+	    gimple_cond_make_true (cond_stmt);
+	  else
+	    gimple_cond_make_false (cond_stmt);
+	  update_stmt (cond_stmt);
+	  /* Header copying is a special case of jump threading, so use
+	     common code to update loop body exit condition.  */
+	  update_bb_profile_for_threading (region[i], entry_count, e);
+	  eliminated_edge = NULL;
+	}
+      else
+	region[i]->count -= region_copy[i]->count;
+      if (invariant_exits->contains (exit_e))
+	{
+	  invariant_exits->remove (exit_e);
+	  /* All exits will happen in exit_e_copy which is out of the
+	     loop, so increase probability accordingly.
+	     If the edge is eliminated_edge we already corrected
+	     profile above.  */
+	  if (entry_count.nonzero_p () && eliminated_edge != exit_e)
+	    set_edge_probability_and_rescale_others
+		    (exit_e_copy, exit_e_count.probability_in
+							(entry_count));
+	  /* Eliminate in-loop conditional.  */
+	  e->probability = profile_probability::always ();
+	  exit_e->probability = profile_probability::never ();
+	  gcond *cond_stmt = as_a <gcond *>(*gsi_last_bb (region[i]));
+	  if (e->flags & EDGE_TRUE_VALUE)
+	    gimple_cond_make_true (cond_stmt);
+	  else
+	    gimple_cond_make_false (cond_stmt);
+	  update_stmt (cond_stmt);
+	}
+      entry_count = e_copy->count ();
+    }
+  /* Be sure that we seen all edges we are supposed to update.  */
+  gcc_checking_assert (!eliminated_edge
+		       && invariant_exits->is_empty ());
+}
+
 namespace {
 
 /* Common superclass for both header-copying phases.  */
@@ -593,14 +715,17 @@ ch_base::copy_headers (function *fun)
       entry = loop_preheader_edge (loop);
 
       propagate_threaded_block_debug_into (exit->dest, entry->dest);
-      if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs,
-					 true, candidate.static_exit,
-					 &invariant_exits))
+      if (!gimple_duplicate_seme_region (entry, exit, bbs, n_bbs, copied_bbs,
+					 true))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Duplication failed.\n");
 	  continue;
 	}
+      if (loop->header->count.initialized_p ())
+	update_profile_after_ch (loop, bbs, copied_bbs, n_bbs,
+				 candidate.static_exit, &invariant_exits,
+				 entry_count);
       copied.safe_push (std::make_pair (entry, loop));
 
       /* If the loop has the form "for (i = j; i < j + 10; i++)" then
