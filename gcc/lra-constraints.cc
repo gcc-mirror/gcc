@@ -329,20 +329,20 @@ in_mem_p (int regno)
   return get_reg_class (regno) == NO_REGS;
 }
 
-/* Return 1 if ADDR is a valid memory address for mode MODE in address
+/* Return true if ADDR is a valid memory address for mode MODE in address
    space AS, and check that each pseudo has the proper kind of hard
    reg.	 */
-static int
+static bool
 valid_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 		 rtx addr, addr_space_t as)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   lra_assert (ADDR_SPACE_GENERIC_P (as));
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
-  return 0;
+  return false;
 
  win:
-  return 1;
+  return true;
 #else
   return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
 #endif
@@ -1624,7 +1624,7 @@ insert_move_for_subreg (rtx_insn **before, rtx_insn **after, rtx origreg,
     }
 }
 
-static int valid_address_p (machine_mode mode, rtx addr, addr_space_t as);
+static bool valid_address_p (machine_mode mode, rtx addr, addr_space_t as);
 static bool process_address (int, bool, rtx_insn **, rtx_insn **);
 
 /* Make reloads for subreg in operand NOP with internal subreg mode
