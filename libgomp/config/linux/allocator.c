@@ -31,6 +31,7 @@
 #include "libgomp.h"
 #if defined(PLUGIN_SUPPORT) && defined(LIBGOMP_USE_PTHREADS)
 #define LIBGOMP_USE_MEMKIND
+#define LIBGOMP_USE_LIBNUMA
 #endif
 
 #include "../../allocator.c"

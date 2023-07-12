@@ -2061,7 +2061,7 @@ Special values are output using @code{%} followed by an optional size
 specification and then either the single-character field type or its long
 name enclosed in curly braces; using @code{%%} will display a literal percent.
 The size specification consists of an optional @code{0.} or @code{.} followed
-by a positive integer, specifing the minimal width of the output.  With
+by a positive integer, specifying the minimal width of the output.  With
 @code{0.} and numerical values, the output is padded with zeros on the left;
 with @code{.}, the output is padded by spaces on the left; otherwise, the
 output is padded by spaces on the right.  If unset, the value is
@@ -2079,8 +2079,8 @@ Supported field types are:
       @tab value returned by
            @code{omp_get_ancestor_thread_num(omp_get_level()-1)}
 @item H @tab host @tab name of the host that executes the thread
-@item P @tab process_id @tab process identiﬁer
-@item i @tab native_thread_id @tab native thread identiﬁer
+@item P @tab process_id @tab process identifier
+@item i @tab native_thread_id @tab native thread identifier
 @item A @tab thread_affinity
       @tab comma separated list of integer values or ranges, representing the
            processors on which a process might execute, subject to affinity
@@ -4584,7 +4584,7 @@ offloading devices (it's not clear if they should be):
 @menu
 * Implementation-defined ICV Initialization::
 * OpenMP Context Selectors::
-* Memory allocation with libmemkind::
+* Memory allocation::
 @end menu
 
 @node Implementation-defined ICV Initialization
@@ -4631,8 +4631,8 @@ smaller number.  On non-host devices, the value of the
       @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
 
-@node Memory allocation with libmemkind
-@section Memory allocation with libmemkind
+@node Memory allocation
+@section Memory allocation
 
 For the memory spaces, the following applies:
 @itemize
@@ -4652,9 +4652,29 @@ creating memory allocators requesting
 @itemize
 @item the memory space @code{omp_high_bw_mem_space}
 @item the memory space @code{omp_large_cap_mem_space}
-@item the partition trait @code{omp_atv_interleaved}; note that for
+@item the @code{partition} trait @code{interleaved}; note that for
       @code{omp_large_cap_mem_space} the allocation will not be interleaved
 @end itemize
+
+On Linux systems, where the @uref{https://github.com/numactl/numactl, numa
+library} (@code{libnuma.so.1}) is available at runtime, it used when creating
+memory allocators requesting
+
+@itemize
+@item the @code{partition} trait @code{nearest}, except when both the
+libmemkind library is available and the memory space is either
+@code{omp_large_cap_mem_space} or @code{omp_high_bw_mem_space}
+@end itemize
+
+Note that the numa library will round up the allocation size to a multiple of
+the system page size; therefore, consider using it only with large data or
+by sharing allocations via the @code{pool_size} trait.  Furthermore, the Linux
+kernel does not guarantee that an allocation will always be on the nearest NUMA
+node nor that after reallocation the same node will be used.  Note additionally
+that, on Linux, the default setting of the memory placement policy is to use the
+current node; therefore, unless the memory placement policy has been overridden,
+the @code{partition} trait @code{environment} (the default) will be effectively
+a @code{nearest} allocation.
 
 Additional notes:
 @itemize
@@ -4662,10 +4682,10 @@ Additional notes:
 @item For the @code{partition} trait, the partition part size will be the same
       as the requested size (i.e. @code{interleaved} or @code{blocked} has no
       effect), except for @code{interleaved} when the memkind library is
-      available.  Furthermore, for @code{nearest} the memory might not be
-      on the same NUMA node as thread that allocated the memory; on Linux,
-      this is in particular the case when the memory placement policy is
-      set to preferred.
+      available.  Furthermore, for @code{nearest} and unless the numa library
+      is available, the memory might not be on the same NUMA node as thread
+      that allocated the memory; on Linux, this is in particular the case when
+      the memory placement policy is set to preferred.
 @item The @code{access} trait has no effect such that memory is always
       accessible by all threads.
 @item The @code{sync_hint} trait has no effect.
