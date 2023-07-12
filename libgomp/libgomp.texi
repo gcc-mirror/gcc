@@ -221,7 +221,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{mutexinoutset} @emph{dependence-type} for @code{depend} clause
       @tab Y @tab
 @item Predefined memory spaces, memory allocators, allocator traits
-      @tab Y @tab Some are only stubs
+      @tab Y @tab See also @ref{Memory allocation}
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
 @item @code{allocate} clause @tab P @tab Initial support
@@ -486,8 +486,6 @@ Technical Report (TR) 11 is the first preview for OpenMP 6.0.
 @item Relaxed Fortran restrictions to the @code{aligned} clause @tab N @tab
 @item Mapping lambda captures @tab N @tab
 @item For Fortran, atomic compare with storing the comparison result
-      @tab N @tab
-@item @code{aligned} clause changes for @code{simd} and @code{declare simd}
       @tab N @tab
 @end multitable
 
