@@ -8006,6 +8006,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      wi::to_wide (@ipos) + isize))
     (BIT_FIELD_REF @0 @rsize @rpos)))))
 
+/* Simplify vector inserts of other vector extracts to a permute.  */
+(simplify
+ (bit_insert @0 (BIT_FIELD_REF@2 @1 @rsize @rpos) @ipos)
+ (if (VECTOR_TYPE_P (type)
+      && types_match (@0, @1)
+      && types_match (TREE_TYPE (TREE_TYPE (@0)), TREE_TYPE (@2))
+      && TYPE_VECTOR_SUBPARTS (type).is_constant ())
+  (with
+   {
+     unsigned HOST_WIDE_INT elsz
+       = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (@1))));
+     poly_uint64 relt = exact_div (tree_to_poly_uint64 (@rpos), elsz);
+     poly_uint64 ielt = exact_div (tree_to_poly_uint64 (@ipos), elsz);
+     unsigned nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+     vec_perm_builder builder;
+     builder.new_vector (nunits, nunits, 1);
+     for (unsigned i = 0; i < nunits; ++i)
+       builder.quick_push (known_eq (ielt, i) ? nunits + relt : i);
+     vec_perm_indices sel (builder, 2, nunits);
+   }
+   (if (!VECTOR_MODE_P (TYPE_MODE (type))
+	|| can_vec_perm_const_p (TYPE_MODE (type), TYPE_MODE (type), sel, false))
+    (vec_perm @0 @1 { vec_perm_indices_to_tree
+                        (build_vector_type (ssizetype, nunits), sel); })))))
+
 (if (canonicalize_math_after_vectorization_p ())
  (for fmas (FMA)
   (simplify
