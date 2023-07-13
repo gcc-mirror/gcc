@@ -36,20 +36,14 @@ class Identifier
 {
 public:
   // Create dummy identifier
-  Identifier ()
-    : ident (""), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      loc (UNDEF_LOCATION)
-  {}
+  Identifier () : ident (""), loc (UNDEF_LOCATION) {}
   // Create identifier with dummy location
   Identifier (std::string ident, location_t loc = UNDEF_LOCATION)
-    : ident (ident), node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      loc (loc)
+    : ident (ident), loc (loc)
   {}
   // Create identifier from token
   Identifier (const_TokenPtr token)
-    : ident (token->get_str ()),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      loc (token->get_locus ())
+    : ident (token->get_str ()), loc (token->get_locus ())
   {}
 
   Identifier (const Identifier &) = default;
@@ -57,7 +51,6 @@ public:
   Identifier &operator= (const Identifier &) = default;
   Identifier &operator= (Identifier &&) = default;
 
-  NodeId get_node_id () const { return node_id; }
   location_t get_locus () const { return loc; }
   const std::string &as_string () const { return ident; }
 
@@ -65,7 +58,6 @@ public:
 
 private:
   std::string ident;
-  NodeId node_id;
   location_t loc;
 };
 
