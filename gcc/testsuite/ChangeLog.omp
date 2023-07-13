@@ -1,3 +1,7 @@
+2023-07-14  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/declare-mapper-3.c: Enable for C.
+
 2023-07-06  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/gomp/declare-mapper-15.c: New test.
