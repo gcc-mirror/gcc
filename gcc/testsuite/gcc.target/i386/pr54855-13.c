@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512fp16" } */
-/* { dg-final { scan-assembler-times "vmaxsh\[ \\t\]" 1 } } */
+/* { dg-final { scan-assembler-times "vm\[ai\]\[nx\]sh\[ \\t\]" 1 } } */
 /* { dg-final { scan-assembler-not "vcomish\[ \\t\]" } } */
 /* { dg-final { scan-assembler-not "vmovsh\[ \\t\]" { target { ! ia32 } } } } */
 

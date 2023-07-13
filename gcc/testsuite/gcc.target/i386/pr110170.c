@@ -1,10 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options " -O2 -msse4.1 -mfpmath=sse" } */
-/* { dg-final { scan-assembler-times {(?n)mins[sd]} 2 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times {(?n)maxs[sd]} 2 { target { ! ia32 } } } } */
-/* Ideally cond_swap_df is also optimized to minsd/maxsd.  */
-/* { dg-final { scan-assembler-times {(?n)mins[sd]} 1 { target ia32 } } } */
-/* { dg-final { scan-assembler-times {(?n)maxs[sd]} 1 { target ia32 } } } */
+/* { dg-final { scan-assembler-times {(?n)mins[sd]} 2 } } */
+/* { dg-final { scan-assembler-times {(?n)maxs[sd]} 2 } } */
 
 void __cond_swap_df(double* __x, double* __y) {
   _Bool __r = (*__x < *__y);

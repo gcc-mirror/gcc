@@ -16,4 +16,6 @@ foo(double *d1, double *d2, double *d3, int num, double *ip)
   return dmax[0] + dmax[1] + dmax[2];
 }
 
-/* { dg-final { scan-tree-dump "appears to be optimized to a join point for if-convertable half-diamond" "split-paths" } } */
+/* Split-paths shouldn't do anything here, if there's a diamond it would
+   be if-convertible.  */
+/* { dg-final { scan-tree-dump-not "Duplicating join block" "split-paths" } } */

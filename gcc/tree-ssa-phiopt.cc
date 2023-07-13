@@ -1625,10 +1625,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
 
   tree type = TREE_TYPE (PHI_RESULT (phi));
 
-  /* The optimization may be unsafe due to NaNs.  */
-  if (HONOR_NANS (type) || HONOR_SIGNED_ZEROS (type))
-    return false;
-
   gcond *cond = as_a <gcond *> (*gsi_last_bb (cond_bb));
   enum tree_code cmp = gimple_cond_code (cond);
   tree rhs = gimple_cond_rhs (cond);
@@ -1815,6 +1811,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
       else
 	return false;
     }
+  else if (HONOR_NANS (type) || HONOR_SIGNED_ZEROS (type))
+    /* The optimization may be unsafe due to NaNs.  */
+    return false;
   else if (middle_bb != alt_middle_bb && threeway_p)
     {
       /* Recognize the following case:
@@ -2148,7 +2147,19 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
   /* Emit the statement to compute min/max.  */
   gimple_seq stmts = NULL;
   tree phi_result = PHI_RESULT (phi);
-  result = gimple_build (&stmts, minmax, TREE_TYPE (phi_result), arg0, arg1);
+
+  /* When we can't use a MIN/MAX_EXPR still make sure the expression
+     stays in a form to be recognized by ISA that map to IEEE x > y ? x : y
+     semantics (that's not IEEE max semantics).  */
+  if (HONOR_NANS (type) || HONOR_SIGNED_ZEROS (type))
+    {
+      result = gimple_build (&stmts, cmp, boolean_type_node,
+			     gimple_cond_lhs (cond), rhs);
+      result = gimple_build (&stmts, COND_EXPR, TREE_TYPE (phi_result),
+			     result, arg_true, arg_false);
+    }
+  else
+    result = gimple_build (&stmts, minmax, TREE_TYPE (phi_result), arg0, arg1);
 
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
