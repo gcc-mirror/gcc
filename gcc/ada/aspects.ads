@@ -1156,10 +1156,18 @@ package Aspects is
 
    function Find_Aspect (Id            : Entity_Id;
                          A             : Aspect_Id;
-                         Class_Present : Boolean := False) return Node_Id;
+                         Class_Present : Boolean := False;
+                         Or_Rep_Item   : Boolean := False) return Node_Id;
    --  Find the aspect specification of aspect A (or A'Class if Class_Present)
    --  associated with entity I.
-   --  Return Empty if Id does not have the requested aspect.
+   --  If found, then return the aspect specification.
+   --  If not found and Or_Rep_Item is true, then look for a representation
+   --  item (as opposed to an N_Aspect_Specification node) which specifies
+   --  the given aspect; if found, then return the representation item.
+   --  [Currently only N_Attribute_Definition_Clause representation items
+   --  are checked for, but support for detecting N_Pragma representation
+   --  items could easily be added in the future if there is a need.]
+   --  Otherwise, return Empty.
 
    function Find_Value_Of_Aspect
      (Id            : Entity_Id;

@@ -815,7 +815,7 @@ package body Exp_Put_Image is
 
    begin
       if Ada_Version < Ada_2022
-        or else not Enable_Put_Image (Btyp)
+        or else not Put_Image_Enabled (Btyp)
       then
          --  generate a very simple Put_Image implementation
 
@@ -845,6 +845,26 @@ package body Exp_Put_Image is
              Parameter_Associations => New_List
                (Make_Identifier (Loc, Name_S),
                 Make_String_Literal (Loc, "(NULL RECORD)"))));
+
+      elsif Is_Derived_Type (Btyp)
+         and then (not Is_Tagged_Type (Btyp) or else Is_Null_Extension (Btyp))
+      then
+         declare
+            Parent_Type : constant Entity_Id := Base_Type (Etype (Btyp));
+         begin
+            Append_To (Stms,
+              Make_Attribute_Reference (Loc,
+              Prefix         => New_Occurrence_Of (Parent_Type, Loc),
+              Attribute_Name => Name_Put_Image,
+              Expressions    => New_List (
+                                  Make_Identifier (Loc, Name_S),
+                                  Make_Type_Conversion (Loc,
+                                    Subtype_Mark => New_Occurrence_Of
+                                                      (Parent_Type, Loc),
+                                    Expression => Make_Identifier
+                                                    (Loc, Name_V)))));
+         end;
+
       else
          Append_To (Stms,
            Make_Procedure_Call_Statement (Loc,
@@ -951,11 +971,11 @@ package body Exp_Put_Image is
                 Entity (Prefix (N)), Append_NUL => False))));
    end Build_Unknown_Put_Image_Call;
 
-   ----------------------
-   -- Enable_Put_Image --
-   ----------------------
+   -----------------------
+   -- Put_Image_Enabled --
+   -----------------------
 
-   function Enable_Put_Image (Typ : Entity_Id) return Boolean is
+   function Put_Image_Enabled (Typ : Entity_Id) return Boolean is
    begin
       --  If this function returns False for a non-scalar type Typ, then
       --    a) calls to Typ'Image will result in calls to
@@ -969,13 +989,13 @@ package body Exp_Put_Image is
       --  The name "Sink" here is a short nickname for
       --  "Ada.Strings.Text_Buffers.Root_Buffer_Type".
       --
+
       --  Put_Image does not work for Remote_Types. We check the containing
       --  package, rather than the type itself, because we want to include
       --  types in the private part of a Remote_Types package.
 
       if Is_Remote_Types (Scope (Typ))
         or else Is_Remote_Call_Interface (Typ)
-        or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
       then
          return False;
       end if;
@@ -992,6 +1012,20 @@ package body Exp_Put_Image is
 
       if No_Run_Time_Mode or else not RTE_Available (RE_Root_Buffer_Type) then
          return False;
+      end if;
+
+      if Is_Tagged_Type (Typ) then
+         if Is_Class_Wide_Type (Typ) then
+            return Put_Image_Enabled (Find_Specific_Type (Base_Type (Typ)));
+         elsif Present (Find_Aspect (Typ, Aspect_Put_Image,
+                                     Or_Rep_Item => True))
+         then
+            null;
+         elsif Is_Derived_Type (Typ) then
+            return Put_Image_Enabled (Etype (Base_Type (Typ)));
+         elsif In_Predefined_Unit (Typ) then
+            return False;
+         end if;
       end if;
 
       --  ???Disable Put_Image on type Root_Buffer_Type declared in
@@ -1030,7 +1064,7 @@ package body Exp_Put_Image is
       end if;
 
       return True;
-   end Enable_Put_Image;
+   end Put_Image_Enabled;
 
    -------------------------
    -- Make_Put_Image_Name --

@@ -39,7 +39,7 @@ package Exp_Put_Image is
    --  are calls to T'Put_Image in different units, there will be duplicates;
    --  each unit will get a copy of the T'Put_Image procedure.
 
-   function Enable_Put_Image (Typ : Entity_Id) return Boolean;
+   function Put_Image_Enabled (Typ : Entity_Id) return Boolean;
    --  True if the predefined Put_Image should be enabled for type T. Put_Image
    --  is always enabled if there is a user-specified one.
 
