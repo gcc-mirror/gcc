@@ -256,6 +256,20 @@ namespace std
   using ::__gnu_cxx::strtold;
 } // namespace std
 
+#else  // ! _GLIBCXX_USE_C99_STDLIB
+
+// We also check for strtof and strtold separately from _GLIBCXX_USE_C99_STDLIB
+
+#if _GLIBCXX_HAVE_STRTOF
+#undef strtof
+namespace std { using ::strtof; }
+#endif
+
+#if _GLIBCXX_HAVE_STRTOLD
+#undef strtold
+namespace std { using ::strtold; }
+#endif
+
 #endif // _GLIBCXX_USE_C99_STDLIB
 
 } // extern "C++"
