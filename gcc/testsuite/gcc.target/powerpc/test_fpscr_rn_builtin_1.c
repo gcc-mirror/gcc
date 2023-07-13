@@ -1,5 +1,11 @@
-/* { dg-do run { target { powerpc*-*-* } } } */
-/* { dg-options "-O2 -std=c99" } */
+/* { dg-do run { target powerpc_fprs } } */
+/* { dg-options "-O2" } */
+
+/* Originally __builtin_set_fpscr_rn was defined to return void.  It was
+   later extended to return a double with the various FPSCR bits.  The
+   extended built-in is intended to be a drop in replacement for the original
+   version.  This test is for the original version of the built-in and should
+   work exactly as before.  */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -26,7 +32,7 @@ int main ()
   unsigned long long ll_value;
   register double  f14;
 
-  /* __builtin_set_fpscr_rn() builtin can take a const or a variable
+  /* __builtin_set_fpscr_rn() built-in can take a const or a variable
      value between 0 and 3 as the argument.
      __builtin_mtfsb0 and __builtin_mtfsb1 argument must be a constant 
      30 or 31.

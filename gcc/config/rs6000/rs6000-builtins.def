@@ -237,7 +237,7 @@
   const __ibm128 __builtin_pack_ibm128 (double, double);
     PACK_IF packif {ibm128}
 
-  void __builtin_set_fpscr_rn (const int[0,3]);
+  double __builtin_set_fpscr_rn (const int[0,3]);
     SET_FPSCR_RN rs6000_set_fpscr_rn {nosoft}
 
   const double __builtin_unpack_ibm128 (__ibm128, const int<1>);

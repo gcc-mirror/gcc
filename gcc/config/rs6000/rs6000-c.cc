@@ -604,6 +604,11 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
   /* Tell the user -mrop-protect is in play.  */
   if (rs6000_rop_protect)
     rs6000_define_or_undefine_macro (define_p, "__ROP_PROTECT__");
+  /* Tell the user __builtin_set_fpscr_rn now returns the FPSCR fields
+     in a double.  Originally the built-in returned void.  */
+  if ((flags & OPTION_MASK_SOFT_FLOAT) == 0)
+    rs6000_define_or_undefine_macro (define_p,
+				     "__SET_FPSCR_RN_RETURNS_FPSCR__");
 }
 
 void

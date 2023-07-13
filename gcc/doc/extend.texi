@@ -18392,7 +18392,7 @@ double __builtin_mffs (void);
 void __builtin_mtfsf (const int, double);
 void __builtin_mtfsb0 (const int);
 void __builtin_mtfsb1 (const int);
-void __builtin_set_fpscr_rn (int);
+double __builtin_set_fpscr_rn (int);
 @end smallexample
 
 The @code{__builtin_ppc_get_timebase} and @code{__builtin_ppc_mftb}
@@ -18413,13 +18413,20 @@ values to selected fields of the FPSCR.  The
 as an argument.  The valid bit range is between 0 and 31.  The builtins map to
 the @code{mtfsb0} and @code{mtfsb1} instructions which take the argument and
 add 32.  Hence these instructions only modify the FPSCR[32:63] bits by
-changing the specified bit to a zero or one respectively.  The
-@code{__builtin_set_fpscr_rn} builtin allows changing both of the floating
-point rounding mode bits.  The argument is a 2-bit value.  The argument can
-either be a @code{const int} or stored in a variable. The builtin uses
-the ISA 3.0
-instruction @code{mffscrn} if available, otherwise it reads the FPSCR, masks
-the current rounding mode bits out and OR's in the new value.
+changing the specified bit to a zero or one respectively.
+
+The @code{__builtin_set_fpscr_rn} built-in allows changing both of the floating
+point rounding mode bits and returning the various FPSCR fields before the RN
+field is updated.  The built-in returns a double consisting of the initial
+value of the FPSCR fields DRN, VE, OE, UE, ZE, XE, NI, and RN bit positions
+with all other bits set to zero.  The built-in argument is a 2-bit value for the
+new RN field value.  The argument can either be an @code{const int} or stored
+in a variable.  Earlier versions of @code{__builtin_set_fpscr_rn} returned
+void.  A @code{__SET_FPSCR_RN_RETURNS_FPSCR__} macro has been added.  If
+defined, then the @code{__builtin_set_fpscr_rn} built-in returns the FPSCR
+fields.  If not defined, the @code{__builtin_set_fpscr_rn} does not return a
+value.  If the @option{-msoft-float} option is used, the
+@code{__builtin_set_fpscr_rn} built-in will not return a value.
 
 @node Basic PowerPC Built-in Functions Available on ISA 2.05
 @subsubsection Basic PowerPC Built-in Functions Available on ISA 2.05
