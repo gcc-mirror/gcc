@@ -1150,8 +1150,7 @@ vect_model_load_cost (vec_info *vinfo,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
-  gcc_assert (memory_access_type == VMAT_CONTIGUOUS
-	      || memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
+  gcc_assert (memory_access_type == VMAT_CONTIGUOUS);
 
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -1191,26 +1190,6 @@ vect_model_load_cost (vec_info *vinfo,
      the cost of the statement itself.  For SLP we only get called
      once per group anyhow.  */
   bool first_stmt_p = (first_stmt_info == stmt_info);
-
-  /* We assume that the cost of a single load-lanes instruction is
-     equivalent to the cost of DR_GROUP_SIZE separate loads.  If a grouped
-     access is instead being provided by a load-and-permute operation,
-     include the cost of the permutes.  */
-  if (first_stmt_p
-      && memory_access_type == VMAT_CONTIGUOUS_PERMUTE)
-    {
-      /* Uses an even and odd extract operations or shuffle operations
-	 for each needed permute.  */
-      int group_size = DR_GROUP_SIZE (first_stmt_info);
-      int nstmts = ncopies * ceil_log2 (group_size) * group_size;
-      inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
-				       stmt_info, 0, vect_body);
-
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_model_load_cost: strided group_size = %d .\n",
-                         group_size);
-    }
 
   vect_get_load_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
 		      misalignment, first_stmt_p, &inside_cost, &prologue_cost,
@@ -10971,11 +10950,22 @@ vectorizable_load (vec_info *vinfo,
 		 alignment support schemes.  */
 	      if (costing_p)
 		{
-		  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+		  /* For VMAT_CONTIGUOUS_PERMUTE if it's grouped load, we
+		     only need to take care of the first stmt, whose
+		     stmt_info is first_stmt_info, vec_num iterating on it
+		     will cover the cost for the remaining, it's consistent
+		     with transforming.  For the prologue cost for realign,
+		     we only need to count it once for the whole group.  */
+		  bool first_stmt_info_p = first_stmt_info == stmt_info;
+		  bool add_realign_cost = first_stmt_info_p && i == 0;
+		  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE
+		      || (memory_access_type == VMAT_CONTIGUOUS_PERMUTE
+			  && (!grouped_load || first_stmt_info_p)))
 		    vect_get_load_cost (vinfo, stmt_info, 1,
 					alignment_support_scheme, misalignment,
-					false, &inside_cost, &prologue_cost,
-					cost_vec, cost_vec, true);
+					add_realign_cost, &inside_cost,
+					&prologue_cost, cost_vec, cost_vec,
+					true);
 		}
 	      else
 		{
@@ -11093,8 +11083,7 @@ vectorizable_load (vec_info *vinfo,
 	     ???  This is a hack to prevent compile-time issues as seen
 	     in PR101120 and friends.  */
 	  if (costing_p
-	      && memory_access_type != VMAT_CONTIGUOUS
-	      && memory_access_type != VMAT_CONTIGUOUS_PERMUTE)
+	      && memory_access_type != VMAT_CONTIGUOUS)
 	    {
 	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
 					    true, &n_perms, nullptr);
@@ -11109,20 +11098,44 @@ vectorizable_load (vec_info *vinfo,
 	      gcc_assert (ok);
 	    }
 	}
-      else if (!costing_p)
+      else
         {
           if (grouped_load)
   	    {
 	      if (memory_access_type != VMAT_LOAD_STORE_LANES)
-		vect_transform_grouped_load (vinfo, stmt_info, dr_chain,
-					     group_size, gsi);
-	      *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
+		{
+		  gcc_assert (memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
+		  /* We assume that the cost of a single load-lanes instruction
+		     is equivalent to the cost of DR_GROUP_SIZE separate loads.
+		     If a grouped access is instead being provided by a
+		     load-and-permute operation, include the cost of the
+		     permutes.  */
+		  if (costing_p && first_stmt_info == stmt_info)
+		    {
+		      /* Uses an even and odd extract operations or shuffle
+			 operations for each needed permute.  */
+		      int group_size = DR_GROUP_SIZE (first_stmt_info);
+		      int nstmts = ceil_log2 (group_size) * group_size;
+		      inside_cost
+			+= record_stmt_cost (cost_vec, nstmts, vec_perm,
+					     stmt_info, 0, vect_body);
+
+		      if (dump_enabled_p ())
+			dump_printf_loc (
+			  MSG_NOTE, vect_location,
+			  "vect_model_load_cost: strided group_size = %d .\n",
+			  group_size);
+		    }
+		  else if (!costing_p)
+		    vect_transform_grouped_load (vinfo, stmt_info, dr_chain,
+						 group_size, gsi);
+		}
+	      if (!costing_p)
+		*vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 	    }
-          else
-	    {
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
-	    }
-        }
+	  else if (!costing_p)
+	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	}
       dr_chain.release ();
     }
   if (!slp && !costing_p)
@@ -11133,8 +11146,7 @@ vectorizable_load (vec_info *vinfo,
       gcc_assert (memory_access_type != VMAT_INVARIANT
 		  && memory_access_type != VMAT_ELEMENTWISE
 		  && memory_access_type != VMAT_STRIDED_SLP);
-      if (memory_access_type != VMAT_CONTIGUOUS
-	  && memory_access_type != VMAT_CONTIGUOUS_PERMUTE)
+      if (memory_access_type != VMAT_CONTIGUOUS)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
