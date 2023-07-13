@@ -5795,7 +5795,7 @@ ira (FILE *f)
        there is setjmp call because a variable not modified between
        setjmp and longjmp the compiler is required to preserve its
        value and sharing slots does not guarantee it.  */
-    flag_ira_share_spill_slots = FALSE;
+    flag_ira_share_spill_slots = false;
 
   ira_color ();
 

@@ -948,7 +948,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
     }
   best_hard_regno = -1;
   best_cost = INT_MAX;
-  best_static_p = TRUE;
+  best_static_p = true;
   best_insn_pseudos_num = INT_MAX;
   smallest_bad_spills_num = INT_MAX;
   rclass_size = ira_class_hard_regs_num[rclass];

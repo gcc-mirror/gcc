@@ -1723,7 +1723,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	    = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 	  if (get_reload_reg (curr_static_id->operand[nop].type, innermode,
 			      reg, rclass, NULL,
-			      TRUE, "slow/invalid mem", &new_reg))
+			      true, "slow/invalid mem", &new_reg))
 	    {
 	      bool insert_before, insert_after;
 	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1743,7 +1743,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	    = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 	  if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
 			      rclass, NULL,
-			      TRUE, "slow/invalid mem", &new_reg))
+			      true, "slow/invalid mem", &new_reg))
 	    {
 	      bool insert_before, insert_after;
 	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1828,7 +1828,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
 			  rclass, NULL,
-			  TRUE, "subreg reg", &new_reg))
+			  true, "subreg reg", &new_reg))
 	{
 	  bool insert_before, insert_after;
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
@@ -1902,7 +1902,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 
       if (get_reload_reg (curr_static_id->operand[nop].type, mode, reg,
                           rclass, NULL,
-			  TRUE, "paradoxical subreg", &new_reg))
+			  true, "paradoxical subreg", &new_reg))
         {
 	  rtx subreg;
 	  bool insert_before, insert_after;
@@ -4578,7 +4578,7 @@ curr_insn_transform (bool check_only_p)
 		     lra-lives.cc.  */
 		  match_reload (i, goal_alt_matched[i], outputs, goal_alt[i],
 				&goal_alt_exclude_start_hard_regs[i], &before,
-				&after, TRUE);
+				&after, true);
 		}
 	      continue;
 	    }
@@ -4623,7 +4623,7 @@ curr_insn_transform (bool check_only_p)
 				/* This value does not matter for MODIFY.  */
 				GET_MODE_SIZE (GET_MODE (op)));
 	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass,
-				   NULL, FALSE,
+				   NULL, false,
 				   "offsetable address", &new_reg))
 	    {
 	      rtx addr = *loc;
@@ -6188,7 +6188,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     {
       lra_assert (next_usage_insns == NULL);
       usage_insn = to;
-      after_p = TRUE;
+      after_p = true;
     }
   else
     {
@@ -6299,7 +6299,7 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
 	}
       if (insn != NEXT_INSN (to))
 	continue;
-      if (split_reg (TRUE, hard_regno, from, NULL, to))
+      if (split_reg (true, hard_regno, from, NULL, to))
 	return true;
     }
   return false;

@@ -6624,7 +6624,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   advance = 0;
 
   gcc_assert (scheduled_insns.length () == 0);
-  sort_p = TRUE;
+  sort_p = true;
   must_backtrack = false;
   modulo_insns_scheduled = 0;
 
@@ -6844,7 +6844,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
               break;
 	    }
 
-	  sort_p = TRUE;
+	  sort_p = true;
 
 	  if (current_sched_info->can_schedule_ready_p
 	      && ! (*current_sched_info->can_schedule_ready_p) (insn))
