@@ -1653,7 +1653,7 @@ m2/gm2-compiler-boot/gm2.a: m2/boot-bin/mc$(exeext)
 
 m2/boot-bin/mklink$(exeext): $(srcdir)/m2/tools-src/mklink.c
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CFLAGS) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) $< -o $@
+	$(CXX) $(CFLAGS) $(LDFLAGS) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) $< -o $@
 
 m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler-boot/%.def $(MCDEPS)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
