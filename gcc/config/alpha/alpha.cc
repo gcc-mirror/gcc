@@ -2070,6 +2070,8 @@ static rtx
 alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
 {
   HOST_WIDE_INT d1, d2, d3, d4;
+  machine_mode mode = GET_MODE (target);
+  rtx orig_target = target;
 
   /* Decompose the entire word */
 
@@ -2081,6 +2083,9 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
   c1 -= d3;
   d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
   gcc_assert (c1 == d4);
+
+  if (mode != DImode)
+    target = gen_lowpart (DImode, target);
 
   /* Construct the high word */
   if (d4)
@@ -2101,7 +2106,7 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
   if (d1)
     emit_move_insn (target, gen_rtx_PLUS (DImode, target, GEN_INT (d1)));
 
-  return target;
+  return orig_target;
 }
 
 /* Given an integral CONST_INT or CONST_VECTOR, return the low 64 bits.  */
