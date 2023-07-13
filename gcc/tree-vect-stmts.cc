@@ -1133,75 +1133,6 @@ vect_get_store_cost (vec_info *, stmt_vec_info stmt_info, int ncopies,
     }
 }
 
-
-/* Function vect_model_load_cost
-
-   Models cost for loads.  In the case of grouped accesses, one access has
-   the overhead of the grouped access attributed to it.  Since unaligned
-   accesses are supported for loads, we also account for the costs of the
-   access scheme chosen.  */
-
-static void
-vect_model_load_cost (vec_info *vinfo,
-		      stmt_vec_info stmt_info, unsigned ncopies, poly_uint64 vf,
-		      vect_memory_access_type memory_access_type,
-		      dr_alignment_support alignment_support_scheme,
-		      int misalignment,
-		      slp_tree slp_node,
-		      stmt_vector_for_cost *cost_vec)
-{
-  gcc_assert (memory_access_type == VMAT_CONTIGUOUS);
-
-  unsigned int inside_cost = 0, prologue_cost = 0;
-  bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
-
-  gcc_assert (cost_vec);
-
-  /* ???  Somehow we need to fix this at the callers.  */
-  if (slp_node)
-    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-
-  if (slp_node && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
-    {
-      /* If the load is permuted then the alignment is determined by
-	 the first group element not by the first scalar stmt DR.  */
-      stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      if (!first_stmt_info)
-	first_stmt_info = stmt_info;
-      /* Record the cost for the permutation.  */
-      unsigned n_perms, n_loads;
-      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-				    vf, true, &n_perms, &n_loads);
-      inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
-				       first_stmt_info, 0, vect_body);
-
-      /* And adjust the number of loads performed.  This handles
-	 redundancies as well as loads that are later dead.  */
-      ncopies = n_loads;
-    }
-
-  /* Grouped loads read all elements in the group at once,
-     so we want the DR for the first statement.  */
-  stmt_vec_info first_stmt_info = stmt_info;
-  if (!slp_node && grouped_access_p)
-    first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-
-  /* True if we should include any once-per-group costs as well as
-     the cost of the statement itself.  For SLP we only get called
-     once per group anyhow.  */
-  bool first_stmt_p = (first_stmt_info == stmt_info);
-
-  vect_get_load_cost (vinfo, stmt_info, ncopies, alignment_support_scheme,
-		      misalignment, first_stmt_p, &inside_cost, &prologue_cost,
-		      cost_vec, cost_vec, true);
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_model_load_cost: inside_cost = %d, "
-                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
-}
-
-
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, int ncopies,
@@ -10958,7 +10889,8 @@ vectorizable_load (vec_info *vinfo,
 		     we only need to count it once for the whole group.  */
 		  bool first_stmt_info_p = first_stmt_info == stmt_info;
 		  bool add_realign_cost = first_stmt_info_p && i == 0;
-		  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE
+		  if (memory_access_type == VMAT_CONTIGUOUS
+		      || memory_access_type == VMAT_CONTIGUOUS_REVERSE
 		      || (memory_access_type == VMAT_CONTIGUOUS_PERMUTE
 			  && (!grouped_load || first_stmt_info_p)))
 		    vect_get_load_cost (vinfo, stmt_info, 1,
@@ -11082,15 +11014,14 @@ vectorizable_load (vec_info *vinfo,
 	     direct vect_transform_slp_perm_load to DCE the unused parts.
 	     ???  This is a hack to prevent compile-time issues as seen
 	     in PR101120 and friends.  */
-	  if (costing_p
-	      && memory_access_type != VMAT_CONTIGUOUS)
+	  if (costing_p)
 	    {
 	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
 					    true, &n_perms, nullptr);
 	      inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
 					      stmt_info, 0, vect_body);
 	    }
-	  else if (!costing_p)
+	  else
 	    {
 	      bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
 						      gsi, vf, false, &n_perms,
@@ -11146,18 +11077,11 @@ vectorizable_load (vec_info *vinfo,
       gcc_assert (memory_access_type != VMAT_INVARIANT
 		  && memory_access_type != VMAT_ELEMENTWISE
 		  && memory_access_type != VMAT_STRIDED_SLP);
-      if (memory_access_type != VMAT_CONTIGUOUS)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "vect_model_load_cost: inside_cost = %u, "
-			     "prologue_cost = %u .\n",
-			     inside_cost, prologue_cost);
-	}
-      else
-	vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
-			      alignment_support_scheme, misalignment, slp_node,
-			      cost_vec);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_load_cost: inside_cost = %u, "
+			 "prologue_cost = %u .\n",
+			 inside_cost, prologue_cost);
     }
 
   return true;
