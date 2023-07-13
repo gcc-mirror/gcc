@@ -1153,7 +1153,8 @@ vect_model_load_cost (vec_info *vinfo,
   gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
 	      && memory_access_type != VMAT_INVARIANT
 	      && memory_access_type != VMAT_ELEMENTWISE
-	      && memory_access_type != VMAT_STRIDED_SLP);
+	      && memory_access_type != VMAT_STRIDED_SLP
+	      && memory_access_type != VMAT_LOAD_STORE_LANES);
 
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -1193,31 +1194,6 @@ vect_model_load_cost (vec_info *vinfo,
      the cost of the statement itself.  For SLP we only get called
      once per group anyhow.  */
   bool first_stmt_p = (first_stmt_info == stmt_info);
-
-  /* An IFN_LOAD_LANES will load all its vector results, regardless of which
-     ones we actually need.  Account for the cost of unused results.  */
-  if (first_stmt_p && !slp_node && memory_access_type == VMAT_LOAD_STORE_LANES)
-    {
-      unsigned int gaps = DR_GROUP_SIZE (first_stmt_info);
-      stmt_vec_info next_stmt_info = first_stmt_info;
-      do
-	{
-	  gaps -= 1;
-	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
-	}
-      while (next_stmt_info);
-      if (gaps)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "vect_model_load_cost: %d unused vectors.\n",
-			     gaps);
-	  vect_get_load_cost (vinfo, stmt_info, ncopies * gaps,
-			      alignment_support_scheme, misalignment, false,
-			      &inside_cost, &prologue_cost,
-			      cost_vec, cost_vec, true);
-	}
-    }
 
   /* We assume that the cost of a single load-lanes instruction is
      equivalent to the cost of DR_GROUP_SIZE separate loads.  If a grouped
@@ -10358,7 +10334,7 @@ vectorizable_load (vec_info *vinfo,
     }
   tree vec_mask = NULL_TREE;
   poly_uint64 group_elt = 0;
-  unsigned int inside_cost = 0;
+  unsigned int inside_cost = 0, prologue_cost = 0;
   for (j = 0; j < ncopies; j++)
     {
       /* 1. Create the vector or array pointer update chain.  */
@@ -10438,8 +10414,42 @@ vectorizable_load (vec_info *vinfo,
 	dr_chain.create (vec_num);
 
       gimple *new_stmt = NULL;
-      if (memory_access_type == VMAT_LOAD_STORE_LANES && !costing_p)
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
 	{
+	  if (costing_p)
+	    {
+	      /* An IFN_LOAD_LANES will load all its vector results,
+		 regardless of which ones we actually need.  Account
+		 for the cost of unused results.  */
+	      if (grouped_load && first_stmt_info == stmt_info)
+		{
+		  unsigned int gaps = DR_GROUP_SIZE (first_stmt_info);
+		  stmt_vec_info next_stmt_info = first_stmt_info;
+		  do
+		    {
+		      gaps -= 1;
+		      next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+		    }
+		  while (next_stmt_info);
+		  if (gaps)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "vect_model_load_cost: %d "
+					 "unused vectors.\n",
+					 gaps);
+		      vect_get_load_cost (vinfo, stmt_info, gaps,
+					  alignment_support_scheme,
+					  misalignment, false, &inside_cost,
+					  &prologue_cost, cost_vec, cost_vec,
+					  true);
+		    }
+		}
+	      vect_get_load_cost (vinfo, stmt_info, 1, alignment_support_scheme,
+				  misalignment, false, &inside_cost,
+				  &prologue_cost, cost_vec, cost_vec, true);
+	      continue;
+	    }
 	  tree vec_array;
 
 	  vec_array = create_vector_array (vectype, vec_num);
@@ -11090,13 +11100,14 @@ vec_num_loop_costing_end:
 
   if (costing_p)
     {
-      if (memory_access_type == VMAT_GATHER_SCATTER)
+      if (memory_access_type == VMAT_GATHER_SCATTER
+	  || memory_access_type == VMAT_LOAD_STORE_LANES)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "vect_model_load_cost: inside_cost = %u, "
-			     "prologue_cost = 0 .\n",
-			     inside_cost);
+			     "prologue_cost = %u .\n",
+			     inside_cost, prologue_cost);
 	}
       else
 	vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
