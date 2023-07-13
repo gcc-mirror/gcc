@@ -209,6 +209,9 @@ public:
      debug insn.  LRA_NON_CLOBBERED_ALT means ignoring any earlier
      clobbers for the insn.  */
   int used_insn_alternative;
+  /* Defined for asm insn and it is how many times we already generated reloads
+     for the asm insn.  */
+  int asm_reloads_num;
   /* SP offset before the insn relative to one at the func start.  */
   poly_int64 sp_offset;
   /* The insn itself.  */
@@ -307,6 +310,7 @@ extern void lra_delete_dead_insn (rtx_insn *);
 extern void lra_emit_add (rtx, rtx, rtx);
 extern void lra_emit_move (rtx, rtx);
 extern void lra_update_dups (lra_insn_recog_data_t, signed char *);
+extern void lra_asm_insn_error (rtx_insn *insn);
 
 extern void lra_process_new_insns (rtx_insn *, rtx_insn *, rtx_insn *,
 				   const char *);

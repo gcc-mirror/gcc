@@ -4813,6 +4813,10 @@ curr_insn_transform (bool check_only_p)
       lra_update_operator_dups (curr_id);
       /* Something changes -- process the insn.	 */
       lra_update_insn_regno_info (curr_insn);
+      if (asm_noperands (PATTERN (curr_insn)) >= 0
+	  && ++curr_id->asm_reloads_num >= FIRST_PSEUDO_REGISTER)
+	/* Most probably there are no enough registers to satisfy asm insn: */
+	lra_asm_insn_error (curr_insn);
     }
   lra_process_new_insns (curr_insn, before, after, "Inserting insn reload");
   return change_p;

@@ -1851,20 +1851,8 @@ lra_split_hard_reg_for (void)
       insn = lra_insn_recog_data[u]->insn;
       if (asm_noperands (PATTERN (insn)) >= 0)
 	{
-	  lra_asm_error_p = asm_p = true;
-	  error_for_asm (insn,
-			 "%<asm%> operand has impossible constraints");
-	  /* Avoid further trouble with this insn.  */
-	  if (JUMP_P (insn))
-	    {
-	      ira_nullify_asm_goto (insn);
-	      lra_update_insn_regno_info (insn);
-	    }
-	  else
-	    {
-	      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-	      lra_set_insn_deleted (insn);
-	    }
+	  asm_p = true;
+	  lra_asm_insn_error (insn);
 	}
       else if (!asm_p)
 	{

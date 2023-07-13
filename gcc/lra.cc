@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "rtl-error.h"
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
@@ -534,6 +535,27 @@ lra_update_dups (lra_insn_recog_data_t id, signed char *nops)
     for (j = 0; (nop = nops[j]) >= 0; j++)
       if (static_id->dup_num[i] == nop)
 	*id->dup_loc[i] = *id->operand_loc[nop];
+}
+
+/* Report asm insn error and modify the asm insn.  */
+void
+lra_asm_insn_error (rtx_insn *insn)
+{
+  lra_asm_error_p = true;
+  error_for_asm (insn,
+		 "%<asm%> operand has impossible constraints"
+		 " or there are not enough registers");
+  /* Avoid further trouble with this insn.  */
+  if (JUMP_P (insn))
+    {
+      ira_nullify_asm_goto (insn);
+      lra_update_insn_regno_info (insn);
+    }
+  else
+    {
+      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+      lra_set_insn_deleted (insn);
+    }
 }
 
 
@@ -973,6 +995,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   lra_insn_recog_data[uid] = data;
   data->insn = insn;
   data->used_insn_alternative = LRA_UNKNOWN_ALT;
+  data->asm_reloads_num = 0;
   data->icode = icode;
   data->regs = NULL;
   if (DEBUG_INSN_P (insn))
