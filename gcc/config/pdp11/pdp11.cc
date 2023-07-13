@@ -393,7 +393,7 @@ pdp11_expand_epilogue (void)
   rtx x, reg, via_ac = NULL;
 
   /* Deallocate the local variables.  */
-  if (fsize)
+  if (fsize || cfun->calls_alloca)
     {
       if (frame_pointer_needed)
 	{
