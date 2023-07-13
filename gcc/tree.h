@@ -6467,7 +6467,9 @@ namespace wi
 
   wide_int min_value (const_tree);
   wide_int max_value (const_tree);
+#ifndef GENERATOR_FILE
   wide_int from_mpz (const_tree, mpz_t, bool);
+#endif
 }
 
 template <typename T>
