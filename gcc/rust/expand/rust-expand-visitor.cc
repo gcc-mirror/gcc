@@ -87,8 +87,15 @@ get_traits_to_derive (AST::Attribute &attr)
 		      break;
 		      case AST::MetaItem::ItemKind::Word: {
 			auto word = static_cast<AST::MetaWord *> (meta_item);
+			// Convert current word to path
+			current
+			  = make_unique<AST::MetaItemPath> (AST::MetaItemPath (
+			    AST::SimplePath (word->get_ident ())));
+			auto path
+			  = static_cast<AST::MetaItemPath *> (current.get ());
+
 			result.push_back (
-			  Rust::make_unique<Identifier> (word->get_ident ()));
+			  make_unique<AST::SimplePath> (path->get_path ()));
 		      }
 		      break;
 		    case AST::MetaItem::ItemKind::ListPaths:

@@ -427,6 +427,13 @@ public:
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
+  SimplePath (Identifier ident)
+    : opening_scope_resolution (false),
+      segments ({SimplePathSegment (ident.as_string (), ident.get_locus ())}),
+      locus (ident.get_locus ()),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
   // Creates an empty SimplePath.
   static SimplePath create_empty ()
   {
