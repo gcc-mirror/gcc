@@ -206,6 +206,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zihintntl", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zicboz",ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1266,6 +1268,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zksed",  &gcc_options::x_riscv_zk_subext, MASK_ZKSED},
   {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
   {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
+
+  {"zihintntl", &gcc_options::x_riscv_zi_subext, MASK_ZIHINTNTL},
 
   {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
