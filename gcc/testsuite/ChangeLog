@@ -1,3 +1,94 @@
+2023-07-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Adapt testcase.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv-nofm.c: New test.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107043
+	* gcc.dg/tree-ssa/pr107043.c: New test.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107053
+	* gcc.dg/tree-ssa/pr107053.c: New test.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr83073.c: Adjust testcase.
+
+2023-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-ch-profile-1.c: Remove xfail.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadcondmov-indirect-rv32.c: Moved to...
+	* gcc.target/riscv/xtheadcondmov-indirect.c: ...here.
+	* gcc.target/riscv/xtheadcondmov-indirect-rv64.c: Removed.
+
+2023-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110598
+	* gcc.target/i386/pr110598.c: New test case.
+
+2023-07-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/pdt_33.f03: New test.
+
+2023-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110630
+	* gcc.dg/vect/bb-slp-pr95839.c: Make stricter.
+	* gcc.dg/vect/bb-slp-pr95839-3.c: New variant testcase.
+
+2023-07-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/mulh-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/mulh-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/mulh_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/mulh_run-2.c: New test.
+
+2023-07-12  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx2-dupv4sf.c: New test.
+	* gcc.target/i386/avx2-dupv4si.c: Likewise.
+	* gcc.target/i386/avx512f-dupv4sf.c: Likewise.
+	* gcc.target/i386/avx512f-dupv4si.c: Likewise.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-ext-1.c: New test.
+	* gcc.target/riscv/xtheadbb-extu-1.c: New test.
+
+2023-07-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110438.c: New test.
+	* gcc.target/i386/pr100711-6.c: Adjust testcase.
+
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* g++.target/i386/mv16.C: Add graniterapids-d.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2023-07-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512vl-vaes-1.c: New test.
+
 2023-07-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-1.c: New test.

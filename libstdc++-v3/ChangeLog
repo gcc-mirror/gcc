@@ -1,3 +1,43 @@
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95048
+	* testsuite/27_io/filesystem/path/construct/95048.cc: Check
+	conversions to wide strings.
+	* testsuite/experimental/filesystem/path/construct/95048.cc:
+	Likewise.
+
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/io/basic_file_stdio.cc: Define LFS macros.
+	(__basic_file<char>::open): Use fopen unconditionally.
+	(get_file_offset): Use lseek unconditionally.
+	(__basic_file<char>::seekoff): Likewise.
+	(__basic_file<char>::showmanyc): Use fstat unconditionally.
+
+2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110574
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check for fseeko and ftello
+	and define _GLIBCXX_USE_FSEEKO_FTELLO.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* config/io/basic_file_stdio.cc (xwrite) [_GLIBCXX_USE_STDIO_PURE]:
+	Check for fwrite error correctly.
+	(__basic_file<char>::xsgetn) [_GLIBCXX_USE_STDIO_PURE]: Check for
+	fread error correctly.
+	(get_file_offset): New function.
+	(__basic_file<char>::seekoff) [_GLIBCXX_USE_STDIO_PURE]: Use
+	fseeko if available. Use get_file_offset instead of return value
+	of fseek.
+	(__basic_file<char>::showmanyc): Use get_file_offset.
+
+2023-07-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (__make_unsigned_selector): Use
+	__is_enum built-in trait.
+	(__make_signed_selector): Likewise.
+	(__underlying_type_impl): Likewise.
+
 2023-07-06  Tianqiang Shuai  <1101282468@qq.com>
 
 	* config/io/basic_file_stdio.cc (xwrite) [USE_STDIO_PURE]: Fix

@@ -1,3 +1,26 @@
+2023-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Replace '... stub' by @ref to
+	'Memory allocation' section which contains the full status.
+	(TR11): Remove differently worded duplicated entry.
+
+2023-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c: Add ifdef for LIBGOMP_USE_LIBNUMA.
+	(enum gomp_numa_memkind_kind): Renamed from gomp_memkind_kind;
+	add GOMP_MEMKIND_LIBNUMA.
+	(struct gomp_libnuma_data, gomp_init_libnuma, gomp_get_libnuma): New.
+	(omp_init_allocator): Handle partition=nearest with libnuma if avail.
+	(omp_aligned_alloc, omp_free, omp_aligned_calloc, omp_realloc): Add
+	numa_alloc_local (+ memset), numa_free, and numa_realloc calls as
+	needed.
+	* config/linux/allocator.c (LIBGOMP_USE_LIBNUMA): Define
+	* libgomp.texi: Fix a typo; use 'fi' instead of its ligature char.
+	(Memory allocation): Renamed from 'Memory allocation with libmemkind';
+	updated for libnuma usage.
+	* testsuite/libgomp.c-c++-common/alloc-11.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-12.c: New test.
+
 2023-07-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* allocator.c (omp_init_allocator): Use malloc for

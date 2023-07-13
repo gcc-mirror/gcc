@@ -1,3 +1,281 @@
+2023-07-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (cond_len_<optab><mode>): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_cond_len_binop): New function.
+	* config/riscv/riscv-v.cc (emit_nonvlmax_tu_insn): Ditto.
+	(emit_nonvlmax_fp_tu_insn): Ditto.
+	(need_fp_rounding_p): Ditto.
+	(expand_cond_len_binop): Ditto.
+	* config/riscv/riscv.cc (riscv_preferred_else_value): Ditto.
+	(TARGET_PREFERRED_ELSE_VALUE): New target hook.
+
+2023-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.cc (gimple_duplicate_sese_region): Rename to ...
+	(gimple_duplicate_seme_region): ... this; break out profile updating
+	code to ...
+	* tree-ssa-loop-ch.cc (update_profile_after_ch): ... here.
+	(ch_base::copy_headers): Update.
+	* tree-cfg.h (gimple_duplicate_sese_region): Rename to ...
+	(gimple_duplicate_seme_region): ... this.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107043
+	* range-op.cc (operator_bitwise_and::op1_range): Update bitmask.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/107053
+	* gimple-range-op.cc (cfn_popcount): Use known set bits.
+
+2023-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ira.cc (equiv_init_varies_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(equiv_init_movable_p): Ditto.
+	(memref_used_between_p): Ditto.
+	* lra-constraints.cc (valid_address_p): Ditto.
+
+2023-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (irange_to_masked_value): Remove.
+	(update_known_bitmask): Update irange value/mask pair instead of
+	only updating nonzero bits.
+
+2023-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.cc (gimple_duplicate_sese_region): Add ORIG_ELIMINATED_EDGES
+	parameter and rewrite profile updating code to handle edges elimination.
+	* tree-cfg.h (gimple_duplicate_sese_region): Update prototpe.
+	* tree-ssa-loop-ch.cc (loop_invariant_op_p): New function.
+	(loop_iv_derived_p): New function.
+	(should_duplicate_loop_header_p): Track invariant exit edges; fix handling
+	of PHIs and propagation of IV derived variables.
+	(ch_base::copy_headers): Pass around the invariant edges hash set.
+
+2023-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ifcvt.cc (cond_exec_changed_p): Change variable to bool.
+	(last_active_insn): Change "skip_use_p" function argument to bool.
+	(noce_operand_ok): Change return type from int to bool.
+	(find_cond_trap): Ditto.
+	(block_jumps_and_fallthru_p): Change "fallthru_p" and
+	"jump_p" variables to bool.
+	(noce_find_if_block): Change return type from int to bool.
+	(cond_exec_find_if_block): Ditto.
+	(find_if_case_1): Ditto.
+	(find_if_case_2): Ditto.
+	(dead_or_predicable): Ditto. Change "reversep" function arg to bool.
+	(block_jumps_and_fallthru): Rename from block_jumps_and_fallthru_p.
+	(cond_exec_process_insns): Change return type from int to bool.
+	Change "mod_ok" function arg to bool.
+	(cond_exec_process_if_block): Change return type from int to bool.
+	Change "do_multiple_p" function arg to bool.  Change "then_mod_ok"
+	variable to bool.
+	(noce_emit_store_flag): Change return type from int to bool.
+	Change "reversep" function arg to bool.  Change "cond_complex"
+	variable to bool.
+	(noce_try_move): Change return type from int to bool.
+	(noce_try_ifelse_collapse): Ditto.
+	(noce_try_store_flag): Ditto. Change "reversep" variable to bool.
+	(noce_try_addcc): Change return type from int to bool.  Change
+	"subtract" variable to bool.
+	(noce_try_store_flag_constants): Change return type from int to bool.
+	(noce_try_store_flag_mask): Ditto.  Change "reversep" variable to bool.
+	(noce_try_cmove): Change return type from int to bool.
+	(noce_try_cmove_arith): Ditto. Change "is_mem" variable to bool.
+	(noce_try_minmax): Change return type from int to bool.  Change
+	"unsignedp" variable to bool.
+	(noce_try_abs): Change return type from int to bool.  Change
+	"negate" variable to bool.
+	(noce_try_sign_mask): Change return type from int to bool.
+	(noce_try_move): Ditto.
+	(noce_try_store_flag_constants): Ditto.
+	(noce_try_cmove): Ditto.
+	(noce_try_cmove_arith): Ditto.
+	(noce_try_minmax): Ditto.  Change "unsignedp" variable to bool.
+	(noce_try_bitop): Change return type from int to bool.
+	(noce_operand_ok): Ditto.
+	(noce_convert_multiple_sets): Ditto.
+	(noce_convert_multiple_sets_1): Ditto.
+	(noce_process_if_block): Ditto.
+	(check_cond_move_block): Ditto.
+	(cond_move_process_if_block): Ditto. Change "success_p"
+	variable to bool.
+	(rest_of_handle_if_conversion): Change return type to void.
+
+2023-07-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (FOR_EACH_CODE_MAPPING): Adapt for COND_LEN_* support.
+	(CASE): Ditto.
+	(get_conditional_len_internal_fn): New function.
+	* internal-fn.h (get_conditional_len_internal_fn): Ditto.
+	* tree-vect-stmts.cc (vectorizable_operation): Adapt for COND_LEN_*
+	support.
+
+2023-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/91681
+	* config/i386/i386.md (*add<dwi>3_doubleword_concat_zext): Typo.
+
+2023-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/91681
+	* config/i386/i386.md (*add<dwi>3_doubleword_concat_zext): New
+	define_insn_and_split derived from *add<dwi>3_doubleword_concat
+	and *add<dwi>3_doubleword_zext.
+
+2023-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110598
+	* config/i386/i386.md (peephole2): Check !reg_mentioned_p when
+	optimizing rega = 0; rega op= regb for op in [XOR,IOR,PLUS].
+	(peephole2): Simplify rega = 0; rega op= rega cases.
+
+2023-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_int_compare): If
+	testing a TImode SUBREG of a 128-bit vector register against
+	zero, use a PTEST instruction instead of first moving it to
+	a pair of scalar registers.
+
+2023-07-12  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* genopinit.cc (main): Adjust maximal number of optabs and
+	machine modes.
+	* gensupport.cc (find_optab): Shift optab by 20 and mode by
+	10 bits.
+	* optabs-query.h (optab_handler): Ditto.
+	(convert_optab_handler): Ditto.
+
+2023-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110630
+	* tree-vect-slp.cc (vect_add_slp_permutation): New
+	offset parameter, honor that for the extract code generation.
+	(vectorizable_slp_permutation_1): Handle offsetted identities.
+
+2023-07-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (smul<mode>3_highpart): New pattern.
+	(umul<mode>3_highpart): Ditto.
+
+2023-07-12  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (extendbfsf2_1): Add new AVX512F
+	alternative. Adjust original last alternative's "prefix"
+	attribute to maybe_evex.
+
+2023-07-12  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vec_dupv4sf): Make first alternative use
+	vbroadcastss for AVX2. New AVX512F alternative.
+	(*vec_dupv4si): New AVX2 and AVX512F alternatives using
+	vpbroadcastd. Replace sselog1 by sseshuf1 in "type" attribute.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/peephole.md: Remove XThead* peephole passes.
+	* config/riscv/thead.md: Include thead-peephole.md.
+	* config/riscv/thead-peephole.md: New file.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (riscv_regno_ok_for_index_p):
+	New prototype.
+	(riscv_index_reg_class): Likewise.
+	* config/riscv/riscv.cc (riscv_regno_ok_for_index_p): New function.
+	(riscv_index_reg_class): New function.
+	* config/riscv/riscv.h (INDEX_REG_CLASS): Call new function
+	riscv_index_reg_class().
+	(REGNO_OK_FOR_INDEX_P): Call new function
+	riscv_regno_ok_for_index_p().
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (enum riscv_address_type):
+	New location of type definition.
+	(struct riscv_address_info): Likewise.
+	* config/riscv/riscv.cc (enum riscv_address_type):
+	Old location of type definition.
+	(struct riscv_address_info): Likewise.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.h (Xmode): New macro.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_print_operand_address): Use
+	output_addr_const rather than riscv_print_operand.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.md: Adjust constraints of th_addsl.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.cc (th_mempair_operands_p):
+	Fix documentation of th_mempair_order_operands().
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/thead.cc (th_mempair_save_regs):
+	Emit REG_FRAME_RELATED_EXPR notes in prologue.
+
+2023-07-12  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md: No base-ISA extension splitter for XThead*.
+	* config/riscv/thead.md (*extend<SHORT:mode><SUPERQI:mode>2_th_ext):
+	New XThead extension INSN.
+	(*zero_extendsidi2_th_extu): New XThead extension INSN.
+	(*zero_extendhi<GPR:mode>2_th_extu): New XThead extension INSN.
+
+2023-07-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110438
+	PR target/110202
+	* config/i386/predicates.md
+	(int_float_vector_all_ones_operand): New predicate.
+	* config/i386/sse.md (*vmov<mode>_constm1_pternlog_false_dep): New
+	define_insn.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>_pternlog_false_dep):
+	Ditto.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>_pternlog_false_dep):
+	Ditto.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>): Adjust to
+	define_insn_and_split to avoid false dependence.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>): Ditto.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): Adjust constraint
+	of operands 1 to '0' to avoid false dependence.
+	(*andnot<mode>3): Ditto.
+	(iornot<mode>3): Ditto.
+	(*<nlogic><mode>3): Ditto.
+
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Granite Rapids D.
+	* common/config/i386/i386-common.cc:
+	(processor_alias_table): Add graniterapids-d.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_subtypes): Add INTEL_COREI7_GRANITERAPIDS_D.
+	* config.gcc: Add -march=graniterapids-d.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle graniterapids-d.
+	* config/i386/i386.h: (PTA_GRANITERAPIDS_D): New.
+	* doc/extend.texi: Add graniterapids-d.
+	* doc/invoke.texi: Ditto.
+
+2023-07-12  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtins.cc (ix86_init_mmx_sse_builtins):
+	Add OPTION_MASK_ISA_AVX512VL.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
+	Ditto.
+
 2023-07-11  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-protos.h (enum insn_type): Add vcompress optimization.

@@ -1,3 +1,11 @@
+2023-07-12  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* MAINTAINERS: Add Hao Liu to write after approval
+
+2023-07-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* MAINTAINERS: Add Ken Matsui to write after approval
+
 2023-07-07  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Makefile.in: Collect both kernel and user events for autofdo
