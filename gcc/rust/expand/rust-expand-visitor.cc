@@ -57,10 +57,10 @@ ExpandVisitor::go (AST::Crate &crate)
  *
  * @param attrs The attributes on the item to derive
  */
-static std::vector<std::unique_ptr<ProcMacroInvocable>>
+static std::vector<AST::SimplePath>
 get_traits_to_derive (AST::Attribute &attr)
 {
-  std::vector<std::unique_ptr<ProcMacroInvocable>> result;
+  std::vector<AST::SimplePath> result;
   auto &input = attr.get_attr_input ();
   switch (input.get_attr_input_type ())
     {
@@ -81,8 +81,7 @@ get_traits_to_derive (AST::Attribute &attr)
 		      case AST::MetaItem::ItemKind::Path: {
 			auto path
 			  = static_cast<AST::MetaItemPath *> (meta_item);
-			result.push_back (Rust::make_unique<AST::SimplePath> (
-			  path->get_path ()));
+			result.push_back (path->get_path ());
 		      }
 		      break;
 		      case AST::MetaItem::ItemKind::Word: {
@@ -94,8 +93,7 @@ get_traits_to_derive (AST::Attribute &attr)
 			auto path
 			  = static_cast<AST::MetaItemPath *> (current.get ());
 
-			result.push_back (
-			  make_unique<AST::SimplePath> (path->get_path ()));
+			result.push_back (path->get_path ());
 		      }
 		      break;
 		    case AST::MetaItem::ItemKind::ListPaths:
@@ -134,7 +132,7 @@ builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-derive_item (AST::Item &item, ProcMacroInvocable &to_derive,
+derive_item (AST::Item &item, AST::SimplePath &to_derive,
 	     MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
@@ -157,7 +155,7 @@ derive_item (AST::Item &item, ProcMacroInvocable &to_derive,
 }
 
 static std::vector<std::unique_ptr<AST::Item>>
-expand_item_attribute (AST::Item &item, ProcMacroInvocable &name,
+expand_item_attribute (AST::Item &item, AST::SimplePath &name,
 		       MacroExpander &expander)
 {
   std::vector<std::unique_ptr<AST::Item>> result;
@@ -269,7 +267,7 @@ ExpandVisitor::expand_inner_items (
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
-			to_derive->as_string ());
+			to_derive.as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
@@ -282,7 +280,7 @@ ExpandVisitor::expand_inner_items (
 		      else
 			{
 			  auto new_items
-			    = derive_item (*item, *to_derive, expander);
+			    = derive_item (*item, to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (items, it));
 			}
@@ -355,7 +353,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
-			to_derive->as_string ());
+			to_derive.as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
@@ -368,7 +366,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		      else
 			{
 			  auto new_items
-			    = derive_item (item, *to_derive, expander);
+			    = derive_item (item, to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (stmts, it));
 			}

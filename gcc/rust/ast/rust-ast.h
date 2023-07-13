@@ -25,7 +25,6 @@
 #include "rust-token.h"
 #include "rust-location.h"
 #include "rust-diagnostics.h"
-#include "rust-proc-macro-invocation.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
@@ -33,7 +32,7 @@ typedef int TupleIndex;
 struct Session;
 struct MacroExpander;
 
-class Identifier : public ProcMacroInvocable
+class Identifier
 {
 public:
   // Create dummy identifier
@@ -60,7 +59,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
   location_t get_locus () const { return loc; }
-  const std::string as_string () const { return ident; }
+  const std::string &as_string () const { return ident; }
 
   bool empty () const { return ident.empty (); }
 
@@ -410,7 +409,7 @@ public:
 };
 
 // A simple path without generic or type arguments
-class SimplePath : public ProcMacroInvocable
+class SimplePath
 {
   bool opening_scope_resolution;
   std::vector<SimplePathSegment> segments;
@@ -443,15 +442,15 @@ public:
   // Returns whether the SimplePath is empty, i.e. has path segments.
   bool is_empty () const { return segments.empty (); }
 
-  const std::string as_string () const override;
+  const std::string as_string () const;
 
   bool has_opening_scope_resolution () const
   {
     return opening_scope_resolution;
   }
 
-  location_t get_locus () const override { return locus; }
-  NodeId get_node_id () const override { return node_id; }
+  location_t get_locus () const { return locus; }
+  NodeId get_node_id () const { return node_id; }
 
   // does this need visitor if not polymorphic? probably not
 
