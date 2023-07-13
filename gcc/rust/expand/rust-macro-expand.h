@@ -407,7 +407,7 @@ struct MacroExpander
   void import_proc_macros (std::string extern_crate);
 
   template <typename T>
-  AST::Fragment expand_derive_proc_macro (T &item, ProcMacroInvocable &path)
+  AST::Fragment expand_derive_proc_macro (T &item, AST::SimplePath &path)
   {
     ProcMacro::CustomDerive macro;
     if (!mappings->lookup_derive_proc_macro_invocation (path, macro))
@@ -448,7 +448,7 @@ struct MacroExpander
   }
 
   template <typename T>
-  AST::Fragment expand_attribute_proc_macro (T &item, ProcMacroInvocable &path)
+  AST::Fragment expand_attribute_proc_macro (T &item, AST::SimplePath &path)
   {
     ProcMacro::Attribute macro;
     if (!mappings->lookup_attribute_proc_macro_invocation (path, macro))

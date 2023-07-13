@@ -28,7 +28,6 @@
 #include "rust-hir-full-decls.h"
 #include "rust-lang-item.h"
 #include "rust-privacy-common.h"
-#include "rust-proc-macro-invocation.h"
 #include "libproc_macro/proc_macro.h"
 
 namespace Rust {
@@ -306,18 +305,18 @@ public:
   bool lookup_bang_proc_macro_def (NodeId id, ProcMacro::Bang &macro);
   bool lookup_attribute_proc_macro_def (NodeId id, ProcMacro::Attribute &macro);
 
-  void insert_derive_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+  void insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
 					    ProcMacro::CustomDerive def);
 
-  bool lookup_derive_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+  bool lookup_derive_proc_macro_invocation (AST::SimplePath &invoc,
 					    ProcMacro::CustomDerive &def);
   void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
 					  ProcMacro::Bang def);
   bool lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id,
 					  ProcMacro::Bang &def);
-  void insert_attribute_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+  void insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
 					       ProcMacro::Attribute def);
-  bool lookup_attribute_proc_macro_invocation (Rust::ProcMacroInvocable &invoc,
+  bool lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc,
 					       ProcMacro::Attribute &def);
 
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
