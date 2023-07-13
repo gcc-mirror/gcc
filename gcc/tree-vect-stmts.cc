@@ -1151,7 +1151,8 @@ vect_model_load_cost (vec_info *vinfo,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
-  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER || !gs_info->decl);
+  gcc_assert ((memory_access_type != VMAT_GATHER_SCATTER || !gs_info->decl)
+	      && memory_access_type != VMAT_INVARIANT);
 
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -1255,16 +1256,6 @@ vect_model_load_cost (vec_info *vinfo,
       inside_cost += record_stmt_cost (cost_vec,
 				       ncopies * assumed_nunits,
 				       scalar_load, stmt_info, 0, vect_body);
-    }
-  else if (memory_access_type == VMAT_INVARIANT)
-    {
-      /* Invariant loads will ideally be hoisted and splat to a vector.  */
-      prologue_cost += record_stmt_cost (cost_vec, 1,
-					 scalar_load, stmt_info, 0,
-					 vect_prologue);
-      prologue_cost += record_stmt_cost (cost_vec, 1,
-					 scalar_to_vec, stmt_info, 0,
-					 vect_prologue);
     }
   else
     vect_get_load_cost (vinfo, stmt_info, ncopies,
@@ -9371,10 +9362,11 @@ permute_vec_elements (vec_info *vinfo,
 /* Hoist the definitions of all SSA uses on STMT_INFO out of the loop LOOP,
    inserting them on the loops preheader edge.  Returns true if we
    were successful in doing so (and thus STMT_INFO can be moved then),
-   otherwise returns false.  */
+   otherwise returns false.  HOIST_P indicates if we want to hoist the
+   definitions of all SSA uses, it would be false when we are costing.  */
 
 static bool
-hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop)
+hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
 {
   ssa_op_iter i;
   tree op;
@@ -9406,6 +9398,9 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop)
     }
 
   if (!any)
+    return true;
+
+  if (!hoist_p)
     return true;
 
   FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
@@ -9760,22 +9755,34 @@ vectorizable_load (vec_info *vinfo,
 
   if (memory_access_type == VMAT_INVARIANT)
     {
-      if (costing_p)
-	{
-	  vect_model_load_cost (vinfo, stmt_info, ncopies, vf,
-				memory_access_type, alignment_support_scheme,
-				misalignment, &gs_info, slp_node, cost_vec);
-	  return true;
-	}
-
       gcc_assert (!grouped_load && !mask && !bb_vinfo);
       /* If we have versioned for aliasing or the loop doesn't
 	 have any data dependencies that would preclude this,
 	 then we are sure this is a loop invariant load and
-	 thus we can insert it on the preheader edge.  */
+	 thus we can insert it on the preheader edge.
+	 TODO: hoist_defs_of_uses should ideally be computed
+	 once at analysis time, remembered and used in the
+	 transform time.  */
       bool hoist_p = (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
 		      && !nested_in_vect_loop
-		      && hoist_defs_of_uses (stmt_info, loop));
+		      && hoist_defs_of_uses (stmt_info, loop, !costing_p));
+      if (costing_p)
+	{
+	  enum vect_cost_model_location cost_loc
+	    = hoist_p ? vect_prologue : vect_body;
+	  unsigned int cost = record_stmt_cost (cost_vec, 1, scalar_load,
+						stmt_info, 0, cost_loc);
+	  cost += record_stmt_cost (cost_vec, 1, scalar_to_vec, stmt_info, 0,
+				    cost_loc);
+	  unsigned int prologue_cost = hoist_p ? cost : 0;
+	  unsigned int inside_cost = hoist_p ? 0 : cost;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vect_model_load_cost: inside_cost = %d, "
+			     "prologue_cost = %d .\n",
+			     inside_cost, prologue_cost);
+	  return true;
+	}
       if (hoist_p)
 	{
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
