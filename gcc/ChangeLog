@@ -1,3 +1,18 @@
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Granite Rapids D.
+	* common/config/i386/i386-common.cc:
+	(processor_alias_table): Add graniterapids-d.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_subtypes): Add INTEL_COREI7_GRANITERAPIDS_D.
+	* config.gcc: Add -march=graniterapids-d.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle graniterapids-d.
+	* config/i386/i386.h: (PTA_GRANITERAPIDS_D): New.
+	* doc/extend.texi: Add graniterapids-d.
+	* doc/invoke.texi: Ditto.
+
 2023-07-10  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:

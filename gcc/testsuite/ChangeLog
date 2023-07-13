@@ -1,3 +1,8 @@
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* g++.target/i386/mv16.C: Add graniterapids-d.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
 2023-07-11  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
