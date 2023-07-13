@@ -3661,7 +3661,7 @@ gfc_restore_last_undo_checkpoint (void)
   gfc_symbol *p;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
+  FOR_EACH_VEC_ELT_REVERSE (latest_undo_chgset->syms, i, p)
     {
       /* Symbol in a common block was new. Or was old and just put in common */
       if (p->common_block
