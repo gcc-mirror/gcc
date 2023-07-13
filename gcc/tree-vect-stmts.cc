@@ -5190,31 +5190,66 @@ vectorizable_conversion (vec_info *vinfo,
 	break;
       }
 
-      /* For conversions between float and smaller integer types try whether we
-	 can use intermediate signed integer types to support the
+      /* For conversions between float and integer types try whether
+	 we can use intermediate signed integer types to support the
 	 conversion.  */
-      if ((code == FLOAT_EXPR
-	   && GET_MODE_SIZE (lhs_mode) > GET_MODE_SIZE (rhs_mode))
-	  || (code == FIX_TRUNC_EXPR
-	      && GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode)
-	      && !flag_trapping_math))
+      if (GET_MODE_SIZE (lhs_mode) != GET_MODE_SIZE (rhs_mode)
+	  && (code == FLOAT_EXPR ||
+	      (code == FIX_TRUNC_EXPR && !flag_trapping_math)))
 	{
+	  bool demotion = GET_MODE_SIZE (rhs_mode) > GET_MODE_SIZE (lhs_mode);
 	  bool float_expr_p = code == FLOAT_EXPR;
-	  scalar_mode imode = float_expr_p ? rhs_mode : lhs_mode;
-	  fltsz = GET_MODE_SIZE (float_expr_p ? lhs_mode : rhs_mode);
+	  unsigned short target_size;
+	  scalar_mode intermediate_mode;
+	  if (demotion)
+	    {
+	      intermediate_mode = lhs_mode;
+	      target_size = GET_MODE_SIZE (rhs_mode);
+	    }
+	  else
+	    {
+	      target_size = GET_MODE_SIZE (lhs_mode);
+	      if (!int_mode_for_size
+		  (GET_MODE_BITSIZE (rhs_mode), 0).exists (&intermediate_mode))
+		goto unsupported;
+	    }
 	  code1 = float_expr_p ? code : NOP_EXPR;
 	  codecvt1 = float_expr_p ? NOP_EXPR : code;
-	  FOR_EACH_2XWIDER_MODE (rhs_mode_iter, imode)
+	  opt_scalar_mode mode_iter;
+	  FOR_EACH_2XWIDER_MODE (mode_iter, intermediate_mode)
 	    {
-	      imode = rhs_mode_iter.require ();
-	      if (GET_MODE_SIZE (imode) > fltsz)
+	      intermediate_mode = mode_iter.require ();
+
+	      if (GET_MODE_SIZE (intermediate_mode) > target_size)
 		break;
 
-	      cvt_type
-		= build_nonstandard_integer_type (GET_MODE_BITSIZE (imode),
-						  0);
-	      cvt_type = get_vectype_for_scalar_type (vinfo, cvt_type,
-						      slp_node);
+	      scalar_mode cvt_mode;
+	      if (!int_mode_for_size
+		  (GET_MODE_BITSIZE (intermediate_mode), 0).exists (&cvt_mode))
+		break;
+
+	      cvt_type = build_nonstandard_integer_type
+		(GET_MODE_BITSIZE (cvt_mode), 0);
+
+	      /* Check if the intermediate type can hold OP0's range.
+		 When converting from float to integer this is not necessary
+		 because values that do not fit the (smaller) target type are
+		 unspecified anyway.  */
+	      if (demotion && float_expr_p)
+		{
+		  wide_int op_min_value, op_max_value;
+		  if (!vect_get_range_info (op0, &op_min_value, &op_max_value))
+		    break;
+
+		  if (cvt_type == NULL_TREE
+		      || (wi::min_precision (op_max_value, SIGNED)
+			  > TYPE_PRECISION (cvt_type))
+		      || (wi::min_precision (op_min_value, SIGNED)
+			  > TYPE_PRECISION (cvt_type)))
+		    continue;
+		}
+
+	      cvt_type = get_vectype_for_scalar_type (vinfo, cvt_type, slp_node);
 	      /* This should only happened for SLP as long as loop vectorizer
 		 only supports same-sized vector.  */
 	      if (cvt_type == NULL_TREE
