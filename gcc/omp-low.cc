@@ -13844,7 +13844,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      dims++;
 		    }
 
-		int tdim = tdims.length () - 1;
+		unsigned tdim = 0;
 
 		vec<constructor_elt, va_gc> *vdim;
 		vec<constructor_elt, va_gc> *vindex;
@@ -13919,7 +13919,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			    nc = nc2;
 			  }
 
-			if (tdim >= 0)
+			if (tdim < tdims.length ())
 			  {
 			    /* We have an array shape -- use that to find the
 			       total size of the data on the target to look up
@@ -13957,7 +13957,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					"for array");
 			    dim = index = len = stride = error_mark_node;
 			  }
-			tdim--;
+			tdim++;
 
 			c = nc;
 		      }

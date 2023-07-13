@@ -1,3 +1,8 @@
+2023-07-14  Julian Brown  <julian@codesourcery.com>
+
+	* omp-low.cc (lower_omp_target): Reverse iteration over array
+	dimensions.
+
 2023-07-12  Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.cc (lower_omp_target): Calculate volume enclosing
