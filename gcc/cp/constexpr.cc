@@ -7085,7 +7085,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case PARM_DECL:
       if (lval && !TYPE_REF_P (TREE_TYPE (t)))
 	/* glvalue use.  */;
-      else if (tree v = ctx->global->get_value (r))
+      else if (tree v = ctx->global->get_value (t))
 	r = v;
       else if (lval)
 	/* Defer in case this is only used for its type.  */;
