@@ -1150,11 +1150,8 @@ vect_model_load_cost (vec_info *vinfo,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
-  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
-	      && memory_access_type != VMAT_INVARIANT
-	      && memory_access_type != VMAT_ELEMENTWISE
-	      && memory_access_type != VMAT_STRIDED_SLP
-	      && memory_access_type != VMAT_LOAD_STORE_LANES);
+  gcc_assert (memory_access_type == VMAT_CONTIGUOUS
+	      || memory_access_type == VMAT_CONTIGUOUS_PERMUTE);
 
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -10543,7 +10540,7 @@ vectorizable_load (vec_info *vinfo,
 			      = record_stmt_cost (cost_vec, cnunits,
 						  scalar_load, stmt_info, 0,
 						  vect_body);
-			    goto vec_num_loop_costing_end;
+			    break;
 			  }
 			if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 			  vec_offset = vec_offsets[vec_num * j + i];
@@ -10613,7 +10610,7 @@ vectorizable_load (vec_info *vinfo,
 			    inside_cost
 			      = record_stmt_cost (cost_vec, 1, vec_construct,
 						  stmt_info, 0, vect_body);
-			    goto vec_num_loop_costing_end;
+			    break;
 			  }
 			unsigned HOST_WIDE_INT const_offset_nunits
 			  = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype)
@@ -10668,7 +10665,7 @@ vectorizable_load (vec_info *vinfo,
 		      }
 
 		    if (costing_p)
-		      goto vec_num_loop_costing_end;
+		      break;
 
 		    align =
 		      known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
@@ -10882,7 +10879,7 @@ vectorizable_load (vec_info *vinfo,
 		case dr_explicit_realign:
 		  {
 		    if (costing_p)
-		      goto vec_num_loop_costing_end;
+		      break;
 		    tree ptr, bump;
 
 		    tree vs = size_int (TYPE_VECTOR_SUBPARTS (vectype));
@@ -10946,7 +10943,7 @@ vectorizable_load (vec_info *vinfo,
 		case dr_explicit_realign_optimized:
 		  {
 		    if (costing_p)
-		      goto vec_num_loop_costing_end;
+		      break;
 		    if (TREE_CODE (dataref_ptr) == SSA_NAME)
 		      new_temp = copy_ssa_name (dataref_ptr);
 		    else
@@ -10969,22 +10966,37 @@ vectorizable_load (vec_info *vinfo,
 		default:
 		  gcc_unreachable ();
 		}
-	      vec_dest = vect_create_destination_var (scalar_dest, vectype);
-	      /* DATA_REF is null if we've already built the statement.  */
-	      if (data_ref)
+
+	      /* One common place to cost the above vect load for different
+		 alignment support schemes.  */
+	      if (costing_p)
 		{
-		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
-		  new_stmt = gimple_build_assign (vec_dest, data_ref);
+		  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+		    vect_get_load_cost (vinfo, stmt_info, 1,
+					alignment_support_scheme, misalignment,
+					false, &inside_cost, &prologue_cost,
+					cost_vec, cost_vec, true);
 		}
-	      new_temp = make_ssa_name (vec_dest, new_stmt);
-	      gimple_set_lhs (new_stmt, new_temp);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      else
+		{
+		  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+		  /* DATA_REF is null if we've already built the statement.  */
+		  if (data_ref)
+		    {
+		      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+		      new_stmt = gimple_build_assign (vec_dest, data_ref);
+		    }
+		  new_temp = make_ssa_name (vec_dest, new_stmt);
+		  gimple_set_lhs (new_stmt, new_temp);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		}
 
 	      /* 3. Handle explicit realignment if necessary/supported.
 		 Create in loop:
 		   vec_dest = realign_load (msq, lsq, realignment_token)  */
-	      if (alignment_support_scheme == dr_explicit_realign_optimized
-		  || alignment_support_scheme == dr_explicit_realign)
+	      if (!costing_p
+		  && (alignment_support_scheme == dr_explicit_realign_optimized
+		      || alignment_support_scheme == dr_explicit_realign))
 		{
 		  lsq = gimple_assign_lhs (new_stmt);
 		  if (!realignment_token)
@@ -11009,26 +11021,34 @@ vectorizable_load (vec_info *vinfo,
 
 	      if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 		{
-		  tree perm_mask = perm_mask_for_reverse (vectype);
-		  new_temp = permute_vec_elements (vinfo, new_temp, new_temp,
-						   perm_mask, stmt_info, gsi);
-		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  if (costing_p)
+		    inside_cost = record_stmt_cost (cost_vec, 1, vec_perm,
+						    stmt_info, 0, vect_body);
+		  else
+		    {
+		      tree perm_mask = perm_mask_for_reverse (vectype);
+		      new_temp
+			= permute_vec_elements (vinfo, new_temp, new_temp,
+						perm_mask, stmt_info, gsi);
+		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		    }
 		}
 
 	      /* Collect vector loads and later create their permutation in
 		 vect_transform_grouped_load ().  */
-	      if (grouped_load || slp_perm)
+	      if (!costing_p && (grouped_load || slp_perm))
 		dr_chain.quick_push (new_temp);
 
 	      /* Store vector loads in the corresponding SLP_NODE.  */
-	      if (slp && !slp_perm)
+	      if (!costing_p && slp && !slp_perm)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 
 	      /* With SLP permutation we load the gaps as well, without
 	         we need to skip the gaps after we manage to fully load
 		 all elements.  group_gap_adj is DR_GROUP_SIZE here.  */
 	      group_elt += nunits;
-	      if (maybe_ne (group_gap_adj, 0U)
+	      if (!costing_p
+		  && maybe_ne (group_gap_adj, 0U)
 		  && !slp_perm
 		  && known_eq (group_elt, group_size - group_gap_adj))
 		{
@@ -11043,8 +11063,6 @@ vectorizable_load (vec_info *vinfo,
 						 gsi, stmt_info, bump);
 		  group_elt = 0;
 		}
-vec_num_loop_costing_end:
-	      ;
 	    }
 	  /* Bump the vector pointer to account for a gap or for excess
 	     elements loaded for a permuted SLP load.  */
@@ -11067,18 +11085,30 @@ vec_num_loop_costing_end:
       if (slp && !slp_perm)
 	continue;
 
-      if (slp_perm && !costing_p)
-        {
+      if (slp_perm)
+	{
 	  unsigned n_perms;
 	  /* For SLP we know we've seen all possible uses of dr_chain so
 	     direct vect_transform_slp_perm_load to DCE the unused parts.
 	     ???  This is a hack to prevent compile-time issues as seen
 	     in PR101120 and friends.  */
-	  bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
-						  gsi, vf, false, &n_perms,
-						  nullptr, true);
-	  gcc_assert (ok);
-        }
+	  if (costing_p
+	      && memory_access_type != VMAT_CONTIGUOUS
+	      && memory_access_type != VMAT_CONTIGUOUS_PERMUTE)
+	    {
+	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
+					    true, &n_perms, nullptr);
+	      inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
+					      stmt_info, 0, vect_body);
+	    }
+	  else if (!costing_p)
+	    {
+	      bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
+						      gsi, vf, false, &n_perms,
+						      nullptr, true);
+	      gcc_assert (ok);
+	    }
+	}
       else if (!costing_p)
         {
           if (grouped_load)
@@ -11100,8 +11130,11 @@ vec_num_loop_costing_end:
 
   if (costing_p)
     {
-      if (memory_access_type == VMAT_GATHER_SCATTER
-	  || memory_access_type == VMAT_LOAD_STORE_LANES)
+      gcc_assert (memory_access_type != VMAT_INVARIANT
+		  && memory_access_type != VMAT_ELEMENTWISE
+		  && memory_access_type != VMAT_STRIDED_SLP);
+      if (memory_access_type != VMAT_CONTIGUOUS
+	  && memory_access_type != VMAT_CONTIGUOUS_PERMUTE)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
