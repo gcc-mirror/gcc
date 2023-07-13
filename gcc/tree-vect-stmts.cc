@@ -1152,7 +1152,9 @@ vect_model_load_cost (vec_info *vinfo,
 		      stmt_vector_for_cost *cost_vec)
 {
   gcc_assert ((memory_access_type != VMAT_GATHER_SCATTER || !gs_info->decl)
-	      && memory_access_type != VMAT_INVARIANT);
+	      && memory_access_type != VMAT_INVARIANT
+	      && memory_access_type != VMAT_ELEMENTWISE
+	      && memory_access_type != VMAT_STRIDED_SLP);
 
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
@@ -1239,8 +1241,7 @@ vect_model_load_cost (vec_info *vinfo,
     }
 
   /* The loads themselves.  */
-  if (memory_access_type == VMAT_ELEMENTWISE
-      || memory_access_type == VMAT_GATHER_SCATTER)
+  if (memory_access_type == VMAT_GATHER_SCATTER)
     {
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
@@ -1262,10 +1263,10 @@ vect_model_load_cost (vec_info *vinfo,
 			alignment_support_scheme, misalignment, first_stmt_p,
 			&inside_cost, &prologue_cost, 
 			cost_vec, cost_vec, true);
-  if (memory_access_type == VMAT_ELEMENTWISE
-      || memory_access_type == VMAT_STRIDED_SLP
-      || (memory_access_type == VMAT_GATHER_SCATTER
-	  && gs_info->ifn == IFN_LAST && !gs_info->decl))
+
+  if (memory_access_type == VMAT_GATHER_SCATTER
+      && gs_info->ifn == IFN_LAST
+      && !gs_info->decl)
     inside_cost += record_stmt_cost (cost_vec, ncopies, vec_construct,
 				     stmt_info, 0, vect_body);
 
@@ -9830,14 +9831,6 @@ vectorizable_load (vec_info *vinfo,
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
     {
-      if (costing_p)
-	{
-	  vect_model_load_cost (vinfo, stmt_info, ncopies, vf,
-				memory_access_type, alignment_support_scheme,
-				misalignment, &gs_info, slp_node, cost_vec);
-	  return true;
-	}
-
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
       tree offvar;
@@ -9849,6 +9842,7 @@ vectorizable_load (vec_info *vinfo,
       unsigned int const_nunits = nunits.to_constant ();
       unsigned HOST_WIDE_INT cst_offset = 0;
       tree dr_offset;
+      unsigned int inside_cost = 0;
 
       gcc_assert (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
@@ -9863,6 +9857,7 @@ vectorizable_load (vec_info *vinfo,
 	  first_stmt_info = stmt_info;
 	  first_dr_info = dr_info;
 	}
+
       if (slp && grouped_load)
 	{
 	  group_size = DR_GROUP_SIZE (first_stmt_info);
@@ -9879,43 +9874,44 @@ vectorizable_load (vec_info *vinfo,
 	  ref_type = reference_alias_ptr_type (DR_REF (dr_info->dr));
 	}
 
-      dr_offset = get_dr_vinfo_offset (vinfo, first_dr_info);
-      stride_base
-	= fold_build_pointer_plus
-	    (DR_BASE_ADDRESS (first_dr_info->dr),
-	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (dr_offset),
-			 convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
-      stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
+      if (!costing_p)
+	{
+	  dr_offset = get_dr_vinfo_offset (vinfo, first_dr_info);
+	  stride_base = fold_build_pointer_plus (
+	    DR_BASE_ADDRESS (first_dr_info->dr),
+	    size_binop (PLUS_EXPR, convert_to_ptrofftype (dr_offset),
+			convert_to_ptrofftype (DR_INIT (first_dr_info->dr))));
+	  stride_step = fold_convert (sizetype, DR_STEP (first_dr_info->dr));
 
-      /* For a load with loop-invariant (but other than power-of-2)
-         stride (i.e. not a grouped access) like so:
+	  /* For a load with loop-invariant (but other than power-of-2)
+	     stride (i.e. not a grouped access) like so:
 
-	   for (i = 0; i < n; i += stride)
-	     ... = array[i];
+	       for (i = 0; i < n; i += stride)
+		 ... = array[i];
 
-	 we generate a new induction variable and new accesses to
-	 form a new vector (or vectors, depending on ncopies):
+	     we generate a new induction variable and new accesses to
+	     form a new vector (or vectors, depending on ncopies):
 
-	   for (j = 0; ; j += VF*stride)
-	     tmp1 = array[j];
-	     tmp2 = array[j + stride];
-	     ...
-	     vectemp = {tmp1, tmp2, ...}
-         */
+	       for (j = 0; ; j += VF*stride)
+		 tmp1 = array[j];
+		 tmp2 = array[j + stride];
+		 ...
+		 vectemp = {tmp1, tmp2, ...}
+	     */
 
-      ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (stride_step), stride_step,
-			    build_int_cst (TREE_TYPE (stride_step), vf));
+	  ivstep = fold_build2 (MULT_EXPR, TREE_TYPE (stride_step), stride_step,
+				build_int_cst (TREE_TYPE (stride_step), vf));
 
-      standard_iv_increment_position (loop, &incr_gsi, &insert_after);
+	  standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
-      ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
-      create_iv (stride_base, PLUS_EXPR, ivstep, NULL,
-		 loop, &incr_gsi, insert_after,
-		 &offvar, NULL);
+	  stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
+	  ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
+	  create_iv (stride_base, PLUS_EXPR, ivstep, NULL,
+		     loop, &incr_gsi, insert_after,
+		     &offvar, NULL);
 
-      stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
+	  stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
+	}
 
       running_off = offvar;
       alias_off = build_int_cst (ref_type, 0);
@@ -9982,11 +9978,23 @@ vectorizable_load (vec_info *vinfo,
       unsigned int n_groups = 0;
       for (j = 0; j < ncopies; j++)
 	{
-	  if (nloads > 1)
+	  if (nloads > 1 && !costing_p)
 	    vec_alloc (v, nloads);
 	  gimple *new_stmt = NULL;
 	  for (i = 0; i < nloads; i++)
 	    {
+	      if (costing_p)
+		{
+		  if (VECTOR_TYPE_P (ltype))
+		    vect_get_load_cost (vinfo, stmt_info, 1,
+					alignment_support_scheme, misalignment,
+					false, &inside_cost, nullptr, cost_vec,
+					cost_vec, true);
+		  else
+		    inside_cost += record_stmt_cost (cost_vec, 1, scalar_load,
+						     stmt_info, 0, vect_body);
+		  continue;
+		}
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
 					     group_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
@@ -10017,42 +10025,70 @@ vectorizable_load (vec_info *vinfo,
 		  group_el = 0;
 		}
 	    }
+
 	  if (nloads > 1)
 	    {
-	      tree vec_inv = build_constructor (lvectype, v);
-	      new_temp = vect_init_vector (vinfo, stmt_info,
-					   vec_inv, lvectype, gsi);
-	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	      if (lvectype != vectype)
+	      if (costing_p)
+		inside_cost += record_stmt_cost (cost_vec, 1, vec_construct,
+						 stmt_info, 0, vect_body);
+	      else
 		{
-		  new_stmt = gimple_build_assign (make_ssa_name (vectype),
-						  VIEW_CONVERT_EXPR,
-						  build1 (VIEW_CONVERT_EXPR,
-							  vectype, new_temp));
-		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  tree vec_inv = build_constructor (lvectype, v);
+		  new_temp = vect_init_vector (vinfo, stmt_info, vec_inv,
+					       lvectype, gsi);
+		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  if (lvectype != vectype)
+		    {
+		      new_stmt
+			= gimple_build_assign (make_ssa_name (vectype),
+					       VIEW_CONVERT_EXPR,
+					       build1 (VIEW_CONVERT_EXPR,
+						       vectype, new_temp));
+		      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
+						   gsi);
+		    }
 		}
 	    }
 
-	  if (slp)
+	  if (!costing_p)
 	    {
-	      if (slp_perm)
-		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
+	      if (slp)
+		{
+		  if (slp_perm)
+		    dr_chain.quick_push (gimple_assign_lhs (new_stmt));
+		  else
+		    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		}
 	      else
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-	    }
-	  else
-	    {
-	      if (j == 0)
-		*vec_stmt = new_stmt;
-	      STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+		{
+		  if (j == 0)
+		    *vec_stmt = new_stmt;
+		  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+		}
 	    }
 	}
       if (slp_perm)
 	{
 	  unsigned n_perms;
-	  vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-					false, &n_perms);
+	  if (costing_p)
+	    {
+	      unsigned n_loads;
+	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
+					    true, &n_perms, &n_loads);
+	      inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
+					       first_stmt_info, 0, vect_body);
+	    }
+	  else
+	    vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
+					  false, &n_perms);
 	}
+
+      if (costing_p && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_load_cost: inside_cost = %u, "
+			 "prologue_cost = 0 .\n",
+			 inside_cost);
+
       return true;
     }
 
