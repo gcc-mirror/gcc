@@ -1151,6 +1151,8 @@ vect_model_load_cost (vec_info *vinfo,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
+  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER || !gs_info->decl);
+
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
@@ -2873,7 +2875,8 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
 			      gimple_stmt_iterator *gsi,
 			      gimple **vec_stmt,
 			      gather_scatter_info *gs_info,
-			      tree mask)
+			      tree mask,
+			      stmt_vector_for_cost *cost_vec)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2884,6 +2887,23 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
   enum { NARROW, NONE, WIDEN } modifier;
   poly_uint64 gather_off_nunits
     = TYPE_VECTOR_SUBPARTS (gs_info->offset_vectype);
+
+  /* FIXME: Keep the previous costing way in vect_model_load_cost by costing
+     N scalar loads, but it should be tweaked to use target specific costs
+     on related gather load calls.  */
+  if (cost_vec)
+    {
+      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
+      unsigned int inside_cost;
+      inside_cost = record_stmt_cost (cost_vec, ncopies * assumed_nunits,
+				      scalar_load, stmt_info, 0, vect_body);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_model_load_cost: inside_cost = %d, "
+			 "prologue_cost = 0 .\n",
+			 inside_cost);
+      return;
+    }
 
   tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info->decl));
   tree rettype = TREE_TYPE (TREE_TYPE (gs_info->decl));
@@ -9733,13 +9753,8 @@ vectorizable_load (vec_info *vinfo,
 
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
-      if (costing_p)
-	vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
-			      alignment_support_scheme, misalignment, &gs_info,
-			      slp_node, cost_vec);
-      else
-	vect_build_gather_load_calls (vinfo, stmt_info, gsi, vec_stmt, &gs_info,
-				      mask);
+      vect_build_gather_load_calls (vinfo, stmt_info, gsi, vec_stmt, &gs_info,
+				    mask, cost_vec);
       return true;
     }
 
