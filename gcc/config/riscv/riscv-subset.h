@@ -41,6 +41,11 @@ struct riscv_subset_t
 /* Subset list.  */
 class riscv_subset_list
 {
+public:
+  /* Because the parse method is called in several places, to prevent repeated
+     errors, use this flag to prevent it from repeating parse. */
+  static bool parse_failed;
+
 private:
   /* Original arch string.  */
   const char *m_arch;

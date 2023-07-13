@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32isabc_xbar -mabi=ilp32" } */
+/* { dg-options "-march=rv32isvinval_xtheadba -mabi=ilp32" } */
 int foo()
 {
 }
