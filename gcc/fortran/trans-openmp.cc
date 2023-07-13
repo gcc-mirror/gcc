@@ -4271,7 +4271,7 @@ gfc_trans_omp_arrayshape_type (tree type, vec<tree> *dims)
 {
   gcc_assert (dims->length () > 0);
 
-  for (int i = dims->length () - 1; i >= 0; i--)
+  for (unsigned i = 0; i < dims->length (); i++)
     {
       tree dim = fold_convert (sizetype, (*dims)[i]);
       /* We need the index of the last element, not the array size.  */

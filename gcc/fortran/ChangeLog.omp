@@ -1,3 +1,8 @@
+2023-07-14  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_arrayshape_type): Reverse dimension
+	ordering for created array type.
+
 2023-07-06  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (omp_split_map_op, omp_join_map_op,

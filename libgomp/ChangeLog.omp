@@ -1,3 +1,7 @@
+2023-07-14  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/array-shaping-14.c: New test.
+
 2023-07-12  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/implicit-mapping-1.c: Add
