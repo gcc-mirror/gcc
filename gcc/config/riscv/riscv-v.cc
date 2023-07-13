@@ -748,6 +748,28 @@ emit_vlmax_fp_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a {NONVLMAX, TAIL_UNDISTURBED, MASK_ANY} vsetvli followed
+ * by the ternary operation which always has a real merge operand.  */
+static void
+emit_nonvlmax_fp_ternary_tu_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false,
+					  /*DEST_MODE*/ dest_mode,
+					  /*MASK_MODE*/ mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (vl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a {NONVLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
  * actual operation.  */
 void
@@ -3265,6 +3287,33 @@ expand_gather_scatter (rtx *ops, bool is_load)
 					   len);
 	}
     }
+}
+
+/* Expand COND_LEN_*.  */
+void
+expand_cond_len_ternop (unsigned icode, rtx *ops)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  rtx len = ops[6];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+
+  poly_uint64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      if (FLOAT_MODE_P (mode))
+	emit_nonvlmax_fp_ternary_tu_insn (icode, RVV_TERNOP_TU, ops, len);
+      else
+	/* FIXME: Enable this case when we support it in the middle-end.  */
+	gcc_unreachable ();
+    }
+  else
+    /* FIXME: Enable this case when we support it in the middle-end.  */
+    gcc_unreachable ();
 }
 
 } // namespace riscv_vector

@@ -1531,3 +1531,26 @@
   riscv_vector::expand_cond_len_binop (<CODE>, operands);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Conditional ternary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfmacc/...
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_len_fma<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mul (PLUS, <MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})

@@ -191,6 +191,7 @@ enum insn_type
   RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_UNOP_M = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_TERNOP = 5,
+  RVV_TERNOP_TU = RVV_TERNOP + 1,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
   RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
@@ -306,6 +307,7 @@ void expand_vec_perm (rtx, rtx, rtx, rtx);
 void expand_select_vl (rtx *);
 void expand_load_store (rtx *, bool);
 void expand_gather_scatter (rtx *, bool);
+void expand_cond_len_ternop (unsigned, rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode
