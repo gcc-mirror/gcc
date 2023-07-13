@@ -229,7 +229,7 @@ extern tree_code conditional_internal_fn_code (internal_fn);
 extern internal_fn get_unconditional_internal_fn (internal_fn);
 extern bool can_interpret_as_conditional_op_p (gimple *, tree *,
 					       tree_code *, tree (&)[3],
-					       tree *);
+					       tree *, tree *, tree *);
 
 extern bool internal_load_fn_p (internal_fn);
 extern bool internal_store_fn_p (internal_fn);

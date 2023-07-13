@@ -3099,10 +3099,11 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 	  negate_p = true;
 	}
 
-      tree cond, else_value, ops[3];
+      tree cond, else_value, ops[3], len, bias;
       tree_code code;
       if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code,
-					      ops, &else_value))
+					      ops, &else_value,
+					      &len, &bias))
 	gcc_unreachable ();
       addop = ops[0] == result ? ops[1] : ops[0];
 
@@ -3122,7 +3123,11 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       if (seq)
 	gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
-      if (cond)
+      if (len)
+	fma_stmt
+	  = gimple_build_call_internal (IFN_COND_LEN_FMA, 7, cond, mulop1, op2,
+					addop, else_value, len, bias);
+      else if (cond)
 	fma_stmt = gimple_build_call_internal (IFN_COND_FMA, 5, cond, mulop1,
 					       op2, addop, else_value);
       else
@@ -3307,7 +3312,8 @@ last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
 
 static bool
 convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
-		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
+		     fma_deferring_state *state, tree mul_cond = NULL_TREE,
+		     tree mul_len = NULL_TREE, tree mul_bias = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   /* If there isn't a LHS then this can't be an FMA.  There can be no LHS
@@ -3420,10 +3426,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  negate_p = seen_negate_p = true;
 	}
 
-      tree cond, else_value, ops[3];
+      tree cond, else_value, ops[3], len, bias;
       tree_code code;
       if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code, ops,
-					      &else_value))
+					      &else_value, &len, &bias))
 	return false;
 
       switch (code)
@@ -3439,15 +3445,49 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  return false;
 	}
 
-      if (mul_cond && cond != mul_cond)
-	return false;
-
-      if (cond)
+      if (len)
 	{
-	  if (cond == result || else_value == result)
+	  /* For COND_LEN_* operations, we may have dummpy mask which is
+	     the all true mask.  Such TREE type may be mul_cond != cond
+	     but we still consider they are equal.  */
+	  if (mul_cond && cond != mul_cond
+	      && !(integer_truep (mul_cond) && integer_truep (cond)))
 	    return false;
-	  if (!direct_internal_fn_supported_p (IFN_COND_FMA, type, opt_type))
+
+	  if (else_value == result)
 	    return false;
+
+	  if (!direct_internal_fn_supported_p (IFN_COND_LEN_FMA, type,
+					       opt_type))
+	    return false;
+
+	  if (mul_len)
+	    {
+	      poly_int64 mul_value, value;
+	      if (poly_int_tree_p (mul_len, &mul_value)
+		  && poly_int_tree_p (len, &value)
+		  && maybe_ne (mul_value, value))
+		return false;
+	      else if (mul_len != len)
+		return false;
+
+	      if (wi::to_widest (mul_bias) != wi::to_widest (bias))
+		return false;
+	    }
+	}
+      else
+	{
+	  if (mul_cond && cond != mul_cond)
+	    return false;
+
+	  if (cond)
+	    {
+	      if (cond == result || else_value == result)
+		return false;
+	      if (!direct_internal_fn_supported_p (IFN_COND_FMA, type,
+						   opt_type))
+		return false;
+	    }
 	}
 
       /* If the subtrahend (OPS[1]) is computed by a MULT_EXPR that
@@ -5624,6 +5664,22 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 				       gimple_call_arg (stmt, 2),
 				       &fma_state,
 				       gimple_call_arg (stmt, 0)))
+
+		{
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	      break;
+
+	    case CFN_COND_LEN_MUL:
+	      if (convert_mult_to_fma (stmt,
+				       gimple_call_arg (stmt, 1),
+				       gimple_call_arg (stmt, 2),
+				       &fma_state,
+				       gimple_call_arg (stmt, 0),
+				       gimple_call_arg (stmt, 4),
+				       gimple_call_arg (stmt, 5)))
 
 		{
 		  gsi_remove (&gsi, true);

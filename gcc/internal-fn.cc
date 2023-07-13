@@ -4191,6 +4191,19 @@ first_commutative_argument (internal_fn fn)
     case IFN_COND_FMS:
     case IFN_COND_FNMA:
     case IFN_COND_FNMS:
+    case IFN_COND_LEN_ADD:
+    case IFN_COND_LEN_MUL:
+    case IFN_COND_LEN_MIN:
+    case IFN_COND_LEN_MAX:
+    case IFN_COND_LEN_FMIN:
+    case IFN_COND_LEN_FMAX:
+    case IFN_COND_LEN_AND:
+    case IFN_COND_LEN_IOR:
+    case IFN_COND_LEN_XOR:
+    case IFN_COND_LEN_FMA:
+    case IFN_COND_LEN_FMS:
+    case IFN_COND_LEN_FNMA:
+    case IFN_COND_LEN_FNMS:
       return 1;
 
     default:
@@ -4330,11 +4343,14 @@ conditional_internal_fn_code (internal_fn ifn)
 {
   switch (ifn)
     {
-#define CASE(CODE, IFN) case IFN_COND_##IFN: return CODE;
-      FOR_EACH_CODE_MAPPING(CASE)
+#define CASE(CODE, IFN)                                                        \
+  case IFN_COND_##IFN:                                                         \
+  case IFN_COND_LEN_##IFN:                                                     \
+    return CODE;
+      FOR_EACH_CODE_MAPPING (CASE)
 #undef CASE
-    default:
-      return ERROR_MARK;
+      default:
+	return ERROR_MARK;
     }
 }
 
@@ -4433,6 +4449,18 @@ get_unconditional_internal_fn (internal_fn ifn)
    operating elementwise if the operands are vectors.  This includes
    the case of an all-true COND, so that the operation always happens.
 
+   There is an alternative approach to interpret the STMT when the operands
+   are vectors which is the operation predicated by both conditional mask
+   and loop control length, the equivalent C code:
+
+     for (int i = 0; i < NUNTIS; i++)
+      {
+	if (i < LEN + BIAS && COND[i])
+	  LHS[i] = A[i] CODE B[i];
+	else
+	  LHS[i] = ELSE[i];
+      }
+
    When returning true, set:
 
    - *COND_OUT to the condition COND, or to NULL_TREE if the condition
@@ -4440,13 +4468,18 @@ get_unconditional_internal_fn (internal_fn ifn)
    - *CODE_OUT to the tree code
    - OPS[I] to operand I of *CODE_OUT
    - *ELSE_OUT to the fallback value ELSE, or to NULL_TREE if the
-     condition is known to be all true.  */
+     condition is known to be all true.
+   - *LEN to the len argument if it COND_LEN_* operations or to NULL_TREE.
+   - *BIAS to the bias argument if it COND_LEN_* operations or to NULL_TREE.  */
 
 bool
 can_interpret_as_conditional_op_p (gimple *stmt, tree *cond_out,
 				   tree_code *code_out,
-				   tree (&ops)[3], tree *else_out)
+				   tree (&ops)[3], tree *else_out,
+				   tree *len, tree *bias)
 {
+  *len = NULL_TREE;
+  *bias = NULL_TREE;
   if (gassign *assign = dyn_cast <gassign *> (stmt))
     {
       *cond_out = NULL_TREE;
@@ -4462,18 +4495,28 @@ can_interpret_as_conditional_op_p (gimple *stmt, tree *cond_out,
       {
 	internal_fn ifn = gimple_call_internal_fn (call);
 	tree_code code = conditional_internal_fn_code (ifn);
+	int len_index = internal_fn_len_index (ifn);
+	int cond_nargs = len_index >= 0 ? 4 : 2;
 	if (code != ERROR_MARK)
 	  {
 	    *cond_out = gimple_call_arg (call, 0);
 	    *code_out = code;
-	    unsigned int nops = gimple_call_num_args (call) - 2;
+	    unsigned int nops = gimple_call_num_args (call) - cond_nargs;
 	    for (unsigned int i = 0; i < 3; ++i)
 	      ops[i] = i < nops ? gimple_call_arg (call, i + 1) : NULL_TREE;
 	    *else_out = gimple_call_arg (call, nops + 1);
-	    if (integer_truep (*cond_out))
+	    if (len_index < 0)
 	      {
-		*cond_out = NULL_TREE;
-		*else_out = NULL_TREE;
+		if (integer_truep (*cond_out))
+		  {
+		    *cond_out = NULL_TREE;
+		    *else_out = NULL_TREE;
+		  }
+	      }
+	    else
+	      {
+		*len = gimple_call_arg (call, len_index);
+		*bias = gimple_call_arg (call, len_index + 1);
 	      }
 	    return true;
 	  }
@@ -4561,7 +4604,31 @@ internal_fn_len_index (internal_fn fn)
 
     case IFN_LEN_MASK_GATHER_LOAD:
     case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_COND_LEN_FMA:
+    case IFN_COND_LEN_FMS:
+    case IFN_COND_LEN_FNMA:
+    case IFN_COND_LEN_FNMS:
       return 5;
+
+    case IFN_COND_LEN_ADD:
+    case IFN_COND_LEN_SUB:
+    case IFN_COND_LEN_MUL:
+    case IFN_COND_LEN_DIV:
+    case IFN_COND_LEN_MOD:
+    case IFN_COND_LEN_RDIV:
+    case IFN_COND_LEN_MIN:
+    case IFN_COND_LEN_MAX:
+    case IFN_COND_LEN_FMIN:
+    case IFN_COND_LEN_FMAX:
+    case IFN_COND_LEN_AND:
+    case IFN_COND_LEN_IOR:
+    case IFN_COND_LEN_XOR:
+    case IFN_COND_LEN_SHL:
+    case IFN_COND_LEN_SHR:
+      return 4;
+
+    case IFN_COND_LEN_NEG:
+      return 3;
 
     default:
       return -1;
