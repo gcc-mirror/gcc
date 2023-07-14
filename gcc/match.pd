@@ -6431,8 +6431,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* x != (typeof x)(x == CST) -> CST == 0 ? 1 : (CST == 1 ? (x!=0&&x!=1) : x != 0) */
 /* x != (typeof x)(x != CST) -> CST == 1 ? 1 : (CST == 0 ? (x!=0&&x!=1) : x != 1) */
-/* x == (typeof x)(x == CST) -> CST == 0 ? 0 : (CST == 1 ? (x==0||x==1) : x != 0) */
-/* x == (typeof x)(x != CST) -> CST == 1 ? 0 : (CST == 0 ? (x==0||x==1) : x != 1) */
+/* x == (typeof x)(x == CST) -> CST == 0 ? 0 : (CST == 1 ? (x==0||x==1) : x == 0) */
+/* x == (typeof x)(x != CST) -> CST == 1 ? 0 : (CST == 0 ? (x==0||x==1) : x == 1) */
 (for outer (ne eq)
  (for inner (ne eq)
   (simplify
@@ -6443,23 +6443,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      bool innereq = inner == EQ_EXPR;
      bool outereq = outer == EQ_EXPR;
     }
-   (switch
-    (if (innereq ? cst0 : cst1)
-     { constant_boolean_node (!outereq, type); })
-    (if (innereq ? cst1 : cst0)
+    (switch
+     (if (innereq ? cst0 : cst1)
+      { constant_boolean_node (!outereq, type); })
+     (if (innereq ? cst1 : cst0)
+      (with {
+        tree utype = unsigned_type_for (TREE_TYPE (@0));
+        tree ucst1 = build_one_cst (utype);
+       }
+       (if (!outereq)
+        (gt (convert:utype @0) { ucst1; })
+        (le (convert:utype @0) { ucst1; })
+       )
+      )
+     )
      (with {
-       tree utype = unsigned_type_for (TREE_TYPE (@0));
-       tree ucst1 = build_one_cst (utype);
+       tree value = build_int_cst (TREE_TYPE (@0), !innereq);
       }
-      (if (!outereq)
-       (gt (convert:utype @0) { ucst1; })
-       (le (convert:utype @0) { ucst1; })
+      (if (outereq)
+       (eq @0 { value; })
+       (ne @0 { value; })
       )
      )
     )
-    (if (innereq)
-     (ne @0 { build_zero_cst (TREE_TYPE (@0)); }))
-    (ne @0 { build_one_cst (TREE_TYPE (@0)); }))
    )
   )
  )
