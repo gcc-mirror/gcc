@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
+#include "rtlanal.h"
 #include "df.h"
 #include "rtl-ssa.h"
 
@@ -351,21 +352,6 @@ static bool
 reg_single_def_p (rtx x)
 {
   return REG_P (x) && crtl->ssa->single_dominating_def (REGNO (x));
-}
-
-/* Return true if X contains a paradoxical subreg.  */
-
-static bool
-contains_paradoxical_subreg_p (rtx x)
-{
-  subrtx_var_iterator::array_type array;
-  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
-    {
-      x = *iter;
-      if (SUBREG_P (x) && paradoxical_subreg_p (x))
-	return true;
-    }
-  return false;
 }
 
 /* Try to substitute (set DEST SRC), which defines DEF, into note NOTE of
