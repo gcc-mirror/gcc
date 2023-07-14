@@ -42,6 +42,7 @@
 #include "rust-early-name-resolver.h"
 #include "rust-cfg-strip.h"
 #include "rust-expand-visitor.h"
+#include "rust-unicode.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -107,30 +108,39 @@ infer_crate_name (const std::string &filename)
   return crate;
 }
 
-/* Validate the crate name using the ASCII rules
-   TODO: Support Unicode version of the rules */
+/* Validate the crate name using the ASCII rules */
 
 static bool
 validate_crate_name (const std::string &crate_name, Error &error)
 {
-  if (crate_name.empty ())
+  Utf8String utf8_name = {crate_name};
+  tl::optional<std::vector<Codepoint>> uchars_opt = utf8_name.get_chars ();
+
+  if (!uchars_opt.has_value ())
+    {
+      error = Error (UNDEF_LOCATION, "crate name is not a valid UTF-8 string");
+      return false;
+    }
+
+  std::vector<Codepoint> uchars = uchars_opt.value ();
+  if (uchars.empty ())
     {
       error = Error (UNDEF_LOCATION, "crate name cannot be empty");
       return false;
     }
-  if (crate_name.length () > kMaxNameLength)
+  if (uchars.size () > kMaxNameLength)
     {
       error = Error (UNDEF_LOCATION, "crate name cannot exceed %lu characters",
 		     (unsigned long) kMaxNameLength);
       return false;
     }
-  for (auto &c : crate_name)
+  for (Codepoint &c : uchars)
     {
-      if (!(ISALNUM (c) || c == '_'))
+      if (!(is_alphabetic (c.value) || is_numeric (c.value) || c.value == '_'))
 	{
 	  error = Error (UNDEF_LOCATION,
-			 "invalid character %<%c%> in crate name: %<%s%>", c,
-			 crate_name.c_str ());
+			 "invalid character %<%s%> in crate name: %<%s%>",
+			 c.as_string ().c_str (), crate_name.c_str ());
 	  return false;
 	}
     }
@@ -1273,13 +1283,17 @@ rust_crate_name_validation_test (void)
   ASSERT_TRUE (Rust::validate_crate_name ("example", error));
   ASSERT_TRUE (Rust::validate_crate_name ("abcdefg_1234", error));
   ASSERT_TRUE (Rust::validate_crate_name ("1", error));
-  // FIXME: The next test does not pass as of current implementation
-  // ASSERT_TRUE (Rust::CompileOptions::validate_crate_name ("惊吓"));
+  ASSERT_TRUE (Rust::validate_crate_name ("クレート", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("Sōkrátēs", error));
+  ASSERT_TRUE (Rust::validate_crate_name ("惊吓", error));
+
   // NOTE: - is not allowed in the crate name ...
 
   ASSERT_FALSE (Rust::validate_crate_name ("abcdefg-1234", error));
   ASSERT_FALSE (Rust::validate_crate_name ("a+b", error));
   ASSERT_FALSE (Rust::validate_crate_name ("/a+b/", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("😸++", error));
+  ASSERT_FALSE (Rust::validate_crate_name ("∀", error));
 
   /* Tests for crate name inference */
   ASSERT_EQ (Rust::infer_crate_name ("c.rs"), "c");
