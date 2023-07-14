@@ -1,3 +1,11 @@
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/106966
+	* gcc.target/alpha/pr106966.c: New test.
+
 2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
 
 	* g++.target/i386/mv16.C: Add graniterapids-d.
