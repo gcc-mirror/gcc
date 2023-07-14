@@ -20,6 +20,17 @@
 (include "predicates.md")
 (include "constraints.md")
 
+;;;; Instruction Scheduler FSM
+
+;; This is just to get INSN_SCHEDULING defined, so that combine does
+;; not make paradoxical subregs of memory.  These subregs seems to
+;; confuse LRA that ends generating wrong instructions.
+
+(define_automaton "frob")
+(define_cpu_unit "frob_unit" "frob")
+(define_insn_reservation "frobnicator" 814
+  (const_int 0) "frob_unit")
+
 ;;;; Unspecs
 
 (define_c_enum "unspec" [
