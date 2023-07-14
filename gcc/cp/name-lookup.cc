@@ -6731,6 +6731,8 @@ get_cxx_dialect_name (enum cxx_dialect dialect)
       return "C++20";
     case cxx23:
       return "C++23";
+    case cxx26:
+      return "C++26";
     }
 }
 
