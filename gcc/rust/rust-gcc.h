@@ -22,6 +22,9 @@
 // This has to be included outside of extern "C", so we have to
 // include it here before tree.h includes it later.
 
+#ifndef RUST_GCC
+#define RUST_GCC
+
 #include "rust-location.h"
 
 // Bvariable is a bit more complicated, because of zero-sized types.
@@ -50,3 +53,5 @@ private:
   tree t_;
   tree orig_type_;
 };
+
+#endif // RUST_GCC
