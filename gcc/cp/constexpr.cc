@@ -1440,6 +1440,8 @@ enum value_cat {
 
 static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
 					  value_cat, bool *, bool *, tree * = NULL);
+static tree cxx_eval_bare_aggregate (const constexpr_ctx *, tree,
+				     value_cat, bool *, bool *);
 static tree cxx_fold_indirect_ref (const constexpr_ctx *, location_t, tree, tree,
 				   bool * = NULL);
 static tree find_heap_var_refs (tree *, int *, void *);
@@ -4803,6 +4805,13 @@ cxx_eval_bit_cast (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
 	{
 	  clear_type_padding_in_mask (TREE_TYPE (t), mask);
 	  clear_uchar_or_std_byte_in_mask (loc, r, mask);
+	  if (CHECKING_P)
+	    {
+	      tree e = cxx_eval_bare_aggregate (ctx, r, vc_prvalue,
+						non_constant_p, overflow_p);
+	      gcc_checking_assert (e == r);
+	      r = e;
+	    }
 	}
     }
 
