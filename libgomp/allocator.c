@@ -377,8 +377,9 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
 #ifdef LIBGOMP_USE_LIBNUMA
   if (data.memkind == GOMP_MEMKIND_NONE && data.partition == omp_atv_nearest)
     {
-      data.memkind = GOMP_MEMKIND_LIBNUMA;
       libnuma_data = gomp_get_libnuma ();
+      if (libnuma_data->numa_alloc_local != NULL)
+	data.memkind = GOMP_MEMKIND_LIBNUMA;
     }
 #endif
 
