@@ -1953,9 +1953,6 @@ void
 irange_bitmask::verify_mask () const
 {
   gcc_assert (m_value.get_precision () == m_mask.get_precision ());
-  // Unknown bits must have their corresponding value bits cleared as
-  // it simplifies union and intersect.
-  gcc_assert (wi::bit_and (m_mask, m_value) == 0);
 }
 
 void

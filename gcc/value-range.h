@@ -211,8 +211,12 @@ irange_bitmask::operator== (const irange_bitmask &src) const
 }
 
 inline bool
-irange_bitmask::union_ (const irange_bitmask &src)
+irange_bitmask::union_ (const irange_bitmask &orig_src)
 {
+  // Normalize mask.
+  irange_bitmask src (orig_src.m_value & ~orig_src.m_mask, orig_src.m_mask);
+  m_value &= ~m_mask;
+
   irange_bitmask save (*this);
   m_mask = (m_mask | src.m_mask) | (m_value ^ src.m_value);
   m_value = m_value & src.m_value;
@@ -222,8 +226,12 @@ irange_bitmask::union_ (const irange_bitmask &src)
 }
 
 inline bool
-irange_bitmask::intersect (const irange_bitmask &src)
+irange_bitmask::intersect (const irange_bitmask &orig_src)
 {
+  // Normalize mask.
+  irange_bitmask src (orig_src.m_value & ~orig_src.m_mask, orig_src.m_mask);
+  m_value &= ~m_mask;
+
   irange_bitmask save (*this);
   // If we have two known bits that are incompatible, the resulting
   // bit is undefined.  It is unclear whether we should set the entire
