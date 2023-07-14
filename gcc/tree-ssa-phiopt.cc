@@ -708,6 +708,45 @@ move_stmt (gimple *stmt, gimple_stmt_iterator *gsi, auto_bitmap &inserted_exprs)
   reset_flow_sensitive_info (name);
 }
 
+/* RAII style class to temporarily remove flow sensitive
+   from ssa names defined by a gimple statement.  */
+class auto_flow_sensitive
+{
+public:
+  auto_flow_sensitive (gimple *s);
+  ~auto_flow_sensitive ();
+private:
+  auto_vec<std::pair<tree, flow_sensitive_info_storage>, 2> stack;
+};
+
+/* Constructor for auto_flow_sensitive. Saves
+   off the ssa names' flow sensitive information
+   that was defined by gimple statement S and
+   resets it to be non-flow based ones. */
+
+auto_flow_sensitive::auto_flow_sensitive (gimple *s)
+{
+  if (!s)
+    return;
+  ssa_op_iter it;
+  tree def;
+  FOR_EACH_SSA_TREE_OPERAND (def, s, it, SSA_OP_DEF)
+    {
+      flow_sensitive_info_storage storage;
+      storage.save_and_clear (def);
+      stack.safe_push (std::make_pair (def, storage));
+    }
+}
+
+/* Deconstructor, restores the flow sensitive information
+   for the SSA names that had been saved off.  */
+
+auto_flow_sensitive::~auto_flow_sensitive ()
+{
+  for (auto p : stack)
+    p.second.restore (p.first);
+}
+
 /*  The function match_simplify_replacement does the main work of doing the
     replacement using match and simplify.  Return true if the replacement is done.
     Otherwise return false.
@@ -793,9 +832,15 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   tree type = TREE_TYPE (gimple_phi_result (phi));
-  result = gimple_simplify_phiopt (early_p, type, stmt,
-				   arg_true, arg_false,
-				   &seq);
+  {
+    auto_flow_sensitive s1(stmt_to_move);
+    auto_flow_sensitive s_alt(stmt_to_move_alt);
+
+    result = gimple_simplify_phiopt (early_p, type, stmt,
+				     arg_true, arg_false,
+				    &seq);
+  }
+
   if (!result)
     return false;
 
