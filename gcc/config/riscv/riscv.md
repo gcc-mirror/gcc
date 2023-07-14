@@ -1491,11 +1491,6 @@
 	  DONE;
 	}
     }
-  else
-    {
-      emit_move_insn (operands[0], gen_rtx_AND (<MODE>mode, operands[1], operands[2]));
-      DONE;
-    }
 })
 
 (define_insn "*and<mode>3"
