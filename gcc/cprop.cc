@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
+#include "rtlanal.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "insn-config.h"
@@ -795,7 +796,8 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
       /* If we've failed perform the replacement, have a single SET to
 	 a REG destination and don't yet have a note, add a REG_EQUAL note
 	 to not lose information.  */
-      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set)))
+      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set))
+	  && !contains_paradoxical_subreg_p (SET_SRC (set)))
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 
