@@ -181,6 +181,7 @@ GRS_OBJS = \
     rust/rust-feature.o \
     rust/rust-feature-gate.o \
     rust/rust-dir-owner.o \
+    rust/rust-unicode.o \
     $(END)
 # removed object files from here
 

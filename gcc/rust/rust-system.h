@@ -43,6 +43,7 @@
 #include <memory>
 #include <utility>
 #include <fstream>
+#include <array>
 
 // Rust frontend requires C++11 minimum, so will have unordered_map and set
 #include <unordered_map>
