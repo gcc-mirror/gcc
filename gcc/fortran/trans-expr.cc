@@ -1266,6 +1266,10 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 
       slen = build_zero_cst (size_type_node);
     }
+  else if (parmse->class_container != NULL_TREE)
+    /* Don't redundantly evaluate the expression if the required information
+       is already available.  */
+    tmp = parmse->class_container;
   else
     {
       /* Remove everything after the last class reference, convert the
@@ -3078,6 +3082,11 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  return;
 	}
 
+      if (sym->ts.type == BT_CLASS
+	  && sym->attr.class_ok
+	  && sym->ts.u.derived->attr.is_class)
+	se->class_container = se->expr;
+
       /* Dereference the expression, where needed.  */
       se->expr = gfc_maybe_dereference_var (sym, se->expr, se->descriptor_only,
 					    is_classarray);
@@ -3135,6 +3144,15 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	    conv_parent_component_references (se, ref);
 
 	  gfc_conv_component_ref (se, ref);
+
+	  if (ref->u.c.component->ts.type == BT_CLASS
+	      && ref->u.c.component->attr.class_ok
+	      && ref->u.c.component->ts.u.derived->attr.is_class)
+	    se->class_container = se->expr;
+	  else if (!(ref->u.c.sym->attr.flavor == FL_DERIVED
+		     && ref->u.c.sym->attr.is_class))
+	    se->class_container = NULL_TREE;
+
 	  if (!ref->next && ref->u.c.sym->attr.codimension
 	      && se->want_pointer && se->descriptor_only)
 	    return;
@@ -6663,6 +6681,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      tree ptr;
 
 		      defer_to_dealloc_blk = true;
+
+		      parmse.expr = gfc_evaluate_data_ref_now (parmse.expr,
+							       &parmse.pre);
+
+		      if (parmse.class_container != NULL_TREE)
+			parmse.class_container
+			    = gfc_evaluate_data_ref_now (parmse.class_container,
+							 &parmse.pre);
 
 		      gfc_init_block  (&block);
 		      ptr = parmse.expr;

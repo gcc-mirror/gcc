@@ -174,6 +174,34 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
   return gfc_evaluate_now_loc (input_location, expr, pblock);
 }
 
+
+/* Returns a fresh pointer variable pointing to the same data as EXPR, adding
+   in BLOCK the initialization code that makes it point to EXPR.  */
+
+tree
+gfc_evaluate_data_ref_now (tree expr, stmtblock_t *block)
+{
+  tree t = expr;
+
+  STRIP_NOPS (t);
+
+  /* If EXPR can be used as lhs of an assignment, we have to take the address
+     of EXPR.  Otherwise, reassigning the pointer would retarget it to some
+     other data without EXPR being retargetted as well.  */
+  bool lvalue_p = DECL_P (t) || REFERENCE_CLASS_P (t) || INDIRECT_REF_P (t);
+
+  tree value;
+  if (lvalue_p)
+    {
+      value = gfc_build_addr_expr (NULL_TREE, expr);
+      value = gfc_evaluate_now (value, block);
+      return build_fold_indirect_ref_loc (input_location, value);
+    }
+  else
+    return gfc_evaluate_now (expr, block);
+}
+
+
 /* Like gfc_evaluate_now, but add the created variable to the
    function scope.  */
 

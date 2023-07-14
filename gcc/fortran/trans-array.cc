@@ -3271,6 +3271,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   gfc_add_block_to_block (block, &se.pre);
   info->descriptor = se.expr;
   ss_info->string_length = se.string_length;
+  ss_info->class_container = se.class_container;
 
   if (base)
     {
@@ -7686,6 +7687,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	     hidden string length component.  */
 	  else if (deferred_array_component)
 	    se->string_length = ss_info->string_length;
+
+	  se->class_container = ss_info->class_container;
 
 	  gfc_free_ss_chain (ss);
 	  return;

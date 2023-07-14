@@ -57,6 +57,10 @@ typedef struct gfc_se
      here.  */
   tree class_vptr;
 
+  /* When expr is a reference to a direct subobject of a class, store
+     the reference to the class object here.  */
+  tree class_container;
+
   /* Whether expr is a reference to an unlimited polymorphic object.  */
   unsigned unlimited_polymorphic:1;
 
@@ -263,6 +267,7 @@ typedef struct gfc_ss_info
   gfc_ss_type type;
   gfc_expr *expr;
   tree string_length;
+  tree class_container;
 
   union
   {
@@ -525,6 +530,7 @@ void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
 tree gfc_evaluate_now_loc (location_t, tree, stmtblock_t *);
 tree gfc_evaluate_now (tree, stmtblock_t *);
+tree gfc_evaluate_data_ref_now (tree, stmtblock_t *);
 tree gfc_evaluate_now_function_scope (tree, stmtblock_t *);
 
 /* Find the appropriate variant of a math intrinsic.  */
