@@ -2005,7 +2005,7 @@ the @code{omp_set_default_allocator} API routine can be used to change
 value.
 
 @multitable @columnfractions .45 .45
-@headitem Predefined allocators @tab Predefined memory spaces
+@headitem Predefined allocators @tab Associated predefined memory spaces
 @item omp_default_mem_alloc     @tab omp_default_mem_space
 @item omp_large_cap_mem_alloc   @tab omp_large_cap_mem_space
 @item omp_const_mem_alloc       @tab omp_const_mem_space
@@ -2016,21 +2016,39 @@ value.
 @item omp_thread_mem_alloc      @tab --
 @end multitable
 
-@multitable @columnfractions .30 .60
-@headitem Trait @tab Allowed values
+The predefined allocators use the default values for the traits,
+as listed below.  Except that the last three allocators have the
+@code{access} trait set to @code{cgroup}, @code{pteam}, and
+@code{thread}, respectively.
+
+@multitable @columnfractions .25 .40 .25
+@headitem Trait @tab Allowed values @tab Default value
 @item @code{sync_hint} @tab @code{contended}, @code{uncontended},
                             @code{serialized}, @code{private}
+                       @tab @code{contended}
 @item @code{alignment} @tab Positive integer being a power of two
+                       @tab 1 byte
 @item @code{access}    @tab @code{all}, @code{cgroup},
                             @code{pteam}, @code{thread}
+                       @tab @code{all}
 @item @code{pool_size} @tab Positive integer
+                       @tab See @ref{Memory allocation}
 @item @code{fallback}  @tab @code{default_mem_fb}, @code{null_fb},
                             @code{abort_fb}, @code{allocator_fb}
+                       @tab See below
 @item @code{fb_data}   @tab @emph{unsupported as it needs an allocator handle}
+                       @tab (none)
 @item @code{pinned}    @tab @code{true}, @code{false}
+                       @tab @code{false}
 @item @code{partition} @tab @code{environment}, @code{nearest},
                             @code{blocked}, @code{interleaved}
+                       @tab @code{environment}
 @end multitable
+
+For the @code{fallback} trait, the default value is @code{null_fb} for the
+@code{omp_default_mem_alloc} allocator and any allocator that is associated
+with device memory; for all other other allocators, it is @code{default_mem_fb}
+by default.
 
 Examples:
 @smallexample
@@ -2039,7 +2057,8 @@ OMP_ALLOCATOR=omp_large_cap_mem_space
 OMP_ALLOCATR=omp_low_lat_mem_space:pinned=true,partition=nearest
 @end smallexample
 
-@c @item @emph{See also}:
+@item @emph{See also}:
+@ref{Memory allocation}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
@@ -4632,6 +4651,11 @@ smaller number.  On non-host devices, the value of the
 @node Memory allocation
 @section Memory allocation
 
+For the available predefined allocators and, as applicable, their associated
+predefined memory spaces and for the available traits and their default values,
+see @ref{OMP_ALLOCATOR}.  Predefined allocators without an associated memory
+space use the @code{omp_default_mem_space} memory space.
+
 For the memory spaces, the following applies:
 @itemize
 @item @code{omp_default_mem_space} is supported
@@ -4674,9 +4698,12 @@ current node; therefore, unless the memory placement policy has been overridden,
 the @code{partition} trait @code{environment} (the default) will be effectively
 a @code{nearest} allocation.
 
-Additional notes:
+Additional notes regarding the traits:
 @itemize
 @item The @code{pinned} trait is unsupported.
+@item The default for the @code{pool_size} trait is no pool and for every
+      (re)allocation the associated library routine is called, which might
+      internally use a memory pool.
 @item For the @code{partition} trait, the partition part size will be the same
       as the requested size (i.e. @code{interleaved} or @code{blocked} has no
       effect), except for @code{interleaved} when the memkind library is
