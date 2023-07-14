@@ -385,6 +385,7 @@ OPTAB_D (reduc_ior_scal_optab,  "reduc_ior_scal_$a")
 OPTAB_D (reduc_xor_scal_optab,  "reduc_xor_scal_$a")
 OPTAB_D (fold_left_plus_optab, "fold_left_plus_$a")
 OPTAB_D (mask_fold_left_plus_optab, "mask_fold_left_plus_$a")
+OPTAB_D (mask_len_fold_left_plus_optab, "mask_len_fold_left_plus_$a")
 
 OPTAB_D (extract_last_optab, "extract_last_$a")
 OPTAB_D (fold_extract_last_optab, "fold_extract_last_$a")

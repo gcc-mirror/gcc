@@ -319,6 +319,9 @@ DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (MASK_FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       mask_fold_left_plus, mask_fold_left)
 
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
+		       mask_len_fold_left_plus, mask_len_fold_left)
+
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
 DEF_INTERNAL_FLT_FN (ACOSH, ECF_CONST, acosh, unary)

@@ -5615,6 +5615,19 @@ no reassociation.
 Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 (operand 3) that specifies which elements of the source vector should be added.
 
+@cindex @code{mask_len_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_len_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3), len operand (operand 4) and bias operand (operand 5) that
+performs following operations strictly in-order (no reassociation):
+
+@smallexample
+operand0 = operand1;
+for (i = 0; i < LEN + BIAS; i++)
+  if (operand3[i])
+    operand0 += operand2[i];
+@end smallexample
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 
