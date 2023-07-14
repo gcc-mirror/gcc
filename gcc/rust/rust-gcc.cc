@@ -88,13 +88,10 @@ class Gcc_backend : public Backend
 public:
   Gcc_backend ();
 
-  void debug (tree t) { debug_tree (t); };
-  void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
+  void debug (tree t);
+  void debug (Bvariable *t);
 
-  tree get_identifier_node (const std::string &str)
-  {
-    return get_identifier_with_length (str.data (), str.length ());
-  }
+  tree get_identifier_node (const std::string &str);
 
   // Types.
 
@@ -102,12 +99,7 @@ public:
 
   tree char_type () { return char_type_node; }
 
-  tree wchar_type ()
-  {
-    tree wchar = make_unsigned_type (32);
-    TYPE_STRING_FLAG (wchar) = 1;
-    return wchar;
-  }
+  tree wchar_type ();
 
   int get_pointer_size ();
 
@@ -532,6 +524,32 @@ Gcc_backend::Gcc_backend ()
   // this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1",
   // NULL,
   //       		t, 0);
+}
+
+void
+Gcc_backend::debug (tree t)
+{
+  debug_tree (t);
+};
+
+void
+Gcc_backend::debug (Bvariable *t)
+{
+  debug_tree (t->get_decl ());
+};
+
+tree
+Gcc_backend::get_identifier_node (const std::string &str)
+{
+  return get_identifier_with_length (str.data (), str.length ());
+}
+
+tree
+Gcc_backend::wchar_type ()
+{
+  tree wchar = make_unsigned_type (32);
+  TYPE_STRING_FLAG (wchar) = 1;
+  return wchar;
 }
 
 // Get an unnamed integer type.
