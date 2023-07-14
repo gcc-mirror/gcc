@@ -6969,3 +6969,18 @@ vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
     }
   return false;
 }
+
+/* Return true if X contains a paradoxical subreg.  */
+
+bool
+contains_paradoxical_subreg_p (rtx x)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      x = *iter;
+      if (SUBREG_P (x) && paradoxical_subreg_p (x))
+	return true;
+    }
+  return false;
+}
