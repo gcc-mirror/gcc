@@ -334,6 +334,14 @@ public:
 	  return c;
 	}
     }
+
+    tl::optional<std::vector<Codepoint>> get_chars ()
+    {
+      if (is_valid ())
+	return {chars};
+      else
+	return tl::nullopt;
+    }
   };
 
   class FileInputSource : public InputSource

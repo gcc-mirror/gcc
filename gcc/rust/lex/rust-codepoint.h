@@ -22,6 +22,8 @@
 #include "rust-system.h"
 
 namespace Rust {
+
+// FIXME: move this to rust-unicode.h?
 struct Codepoint
 {
   uint32_t value;

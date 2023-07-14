@@ -19,9 +19,28 @@
 #ifndef RUST_UNICODE_H
 #define RUST_UNICODE_H
 
+#include "optional.h"
 #include "rust-system.h"
+#include "rust-lex.h"
 
 namespace Rust {
+
+class Utf8String
+{
+private:
+  tl::optional<std::vector<Codepoint>> chars;
+
+public:
+  Utf8String (const std::string &maybe_utf8)
+  {
+    Lexer::BufferInputSource input_source = {maybe_utf8, 0};
+    chars = input_source.get_chars ();
+  }
+
+  // Returns UTF codepoints when string is valid as UTF-8, returns nullopt
+  // otherwise.
+  tl::optional<std::vector<Codepoint>> get_chars () const { return chars; }
+};
 
 // TODO: add function nfc_normalize
 

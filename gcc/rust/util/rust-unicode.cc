@@ -12,6 +12,7 @@ typedef std::vector<codepoint_t> string_t;
 template <std::size_t SIZE>
 int64_t
 binary_search_ranges (
+  // FIXME: use binray search function from <algorithm>
   const std::array<std::pair<uint32_t, uint32_t>, SIZE> &ranges,
   uint32_t target_cp)
 {
@@ -49,6 +50,7 @@ int64_t
 binary_search_sorted_array (const std::array<std::uint32_t, SIZE> &array,
 			    uint32_t target)
 {
+  // FIXME: use binray search function from <algorithm>
   if (SIZE == 0)
     return -1;
 
@@ -104,9 +106,7 @@ recursive_decomp_cano (codepoint_t c, string_t &buf)
     {
       string_t decomped = it->second;
       for (codepoint_t cp : decomped)
-	{
-	  recursive_decomp_cano (cp, buf);
-	}
+	recursive_decomp_cano (cp, buf);
     }
   else
     buf.push_back (c);
@@ -152,8 +152,7 @@ recomp (string_t s)
   if (s.size () > 0)
     {
       int last_class = -1;
-      // int starter_pos = 0; // Assume the first character is Starter. Correct?
-      // int target_pos = 1;
+      // Assume the first character is Starter.
       codepoint_t starter_ch = s[0];
       for (unsigned int src_pos = 1; src_pos < s.size (); src_pos++)
 	{
@@ -188,20 +187,6 @@ recomp (string_t s)
     }
   return buf;
 }
-
-// TODO: remove
-/*
-void
-dump_string (std::vector<uint32_t> s)
-{
-  std::cout << "dump=";
-  for (auto c : s)
-    {
-      std::cout << std::hex << c << ", ";
-    }
-  std::cout << std::endl;
-}
-*/
 
 string_t
 nfc_normalize (string_t s)
