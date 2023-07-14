@@ -6500,6 +6500,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      else
 		{
+		  bool defer_to_dealloc_blk = false;
 		  if (e->ts.type == BT_CLASS && fsym
 		      && fsym->ts.type == BT_CLASS
 		      && (!CLASS_DATA (fsym)->as
@@ -6661,6 +6662,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      stmtblock_t block;
 		      tree ptr;
 
+		      defer_to_dealloc_blk = true;
+
 		      gfc_init_block  (&block);
 		      ptr = parmse.expr;
 		      if (e->ts.type == BT_CLASS)
@@ -6717,7 +6720,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			&& ((CLASS_DATA (fsym)->as
 			     && CLASS_DATA (fsym)->as->type == AS_ASSUMED_RANK)
 			    || CLASS_DATA (e)->attr.dimension))
-		    gfc_conv_class_to_class (&parmse, e, fsym->ts, false,
+		    {
+		      gfc_se class_se = parmse;
+		      gfc_init_block (&class_se.pre);
+		      gfc_init_block (&class_se.post);
+
+		      gfc_conv_class_to_class (&class_se, e, fsym->ts, false,
 				     fsym->attr.intent != INTENT_IN
 				     && (CLASS_DATA (fsym)->attr.class_pointer
 					 || CLASS_DATA (fsym)->attr.allocatable),
@@ -6726,6 +6734,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     && e->symtree->n.sym->attr.optional,
 				     CLASS_DATA (fsym)->attr.class_pointer
 				     || CLASS_DATA (fsym)->attr.allocatable);
+
+		      parmse.expr = class_se.expr;
+		      stmtblock_t *class_pre_block = defer_to_dealloc_blk
+						     ? &dealloc_blk
+						     : &parmse.pre;
+		      gfc_add_block_to_block (class_pre_block, &class_se.pre);
+		      gfc_add_block_to_block (&parmse.post, &class_se.post);
+		    }
 
 		  if (fsym && (fsym->ts.type == BT_DERIVED
 			       || fsym->ts.type == BT_ASSUMED)
