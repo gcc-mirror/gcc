@@ -51,6 +51,16 @@ base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+inline enum reg_class
+index_reg_class (rtx_insn *insn ATTRIBUTE_UNUSED = NULL)
+{
+#ifdef INSN_INDEX_REG_CLASS
+  return INSN_INDEX_REG_CLASS (insn);
+#else
+  return INDEX_REG_CLASS;
+#endif
+}
+
 /* Wrapper function to unify target macros REGNO_MODE_CODE_OK_FOR_BASE_P,
    REGNO_MODE_OK_FOR_REG_BASE_P, REGNO_MODE_OK_FOR_BASE_P and
    REGNO_OK_FOR_BASE_P.

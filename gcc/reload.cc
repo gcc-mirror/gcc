@@ -5114,7 +5114,7 @@ find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
 	  /* Reload the displacement into an index reg.
 	     We assume the frame pointer or arg pointer is a base reg.  */
 	  find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
-				     INDEX_REG_CLASS, GET_MODE (ad), opnum,
+				     index_reg_class (insn), GET_MODE (ad), opnum,
 				     type, ind_levels);
 	  return 0;
 	}
@@ -5514,7 +5514,7 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
   bool reloaded_inner_of_autoinc = false;
 
   if (context == 1)
-    context_reg_class = INDEX_REG_CLASS;
+    context_reg_class = index_reg_class (insn);
   else
     context_reg_class = base_reg_class (mode, as, outer_code, index_code,
 					insn);

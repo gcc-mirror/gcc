@@ -2166,6 +2166,14 @@ address where its value is either multiplied by a scale factor or
 added to another register (as well as added to a displacement).
 @end defmac
 
+@defmac INSN_INDEX_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+index register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of index register
+compared with other insns. If you defined this macro, the compiler
+will use it instead of @code{INDEX_REG_CLASS}.
+@end defmac
+
 @defmac REGNO_OK_FOR_BASE_P (@var{num})
 A C expression which is nonzero if register number @var{num} is
 suitable for use as a base register in operand addresses.
