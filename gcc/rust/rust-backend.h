@@ -28,6 +28,7 @@
 #include "rust-diagnostics.h"
 #include "util/rust-operators.h"
 #include "tree.h"
+#include "rust-gcc.h"
 
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
@@ -506,6 +507,220 @@ public:
   // Write SIZE bytes of export data from BYTES to the proper
   // section in the output object file.
   virtual void write_export_data (const char *bytes, unsigned int size) = 0;
+};
+
+class Gcc_backend : public Backend
+{
+public:
+  Gcc_backend ();
+
+  void debug (tree t);
+  void debug (Bvariable *t);
+
+  tree get_identifier_node (const std::string &str);
+
+  // Types.
+
+  tree bool_type () { return boolean_type_node; }
+
+  tree char_type () { return char_type_node; }
+
+  tree wchar_type ();
+
+  int get_pointer_size ();
+
+  tree raw_str_type ();
+
+  tree integer_type (bool, int);
+
+  tree float_type (int);
+
+  tree complex_type (int);
+
+  tree pointer_type (tree);
+
+  tree reference_type (tree);
+
+  tree immutable_type (tree);
+
+  tree function_type (const typed_identifier &,
+		      const std::vector<typed_identifier> &,
+		      const std::vector<typed_identifier> &, tree,
+		      const location_t);
+
+  tree function_type_varadic (const typed_identifier &,
+			      const std::vector<typed_identifier> &,
+			      const std::vector<typed_identifier> &, tree,
+			      const location_t);
+
+  tree function_ptr_type (tree, const std::vector<tree> &, location_t);
+
+  tree struct_type (const std::vector<typed_identifier> &);
+
+  tree union_type (const std::vector<typed_identifier> &);
+
+  tree array_type (tree, tree);
+
+  tree named_type (const std::string &, tree, location_t);
+
+  int64_t type_size (tree);
+
+  int64_t type_alignment (tree);
+
+  int64_t type_field_alignment (tree);
+
+  int64_t type_field_offset (tree, size_t index);
+
+  // Expressions.
+
+  tree zero_expression (tree);
+
+  tree var_expression (Bvariable *var, location_t);
+
+  tree integer_constant_expression (tree type, mpz_t val);
+
+  tree float_constant_expression (tree type, mpfr_t val);
+
+  tree complex_constant_expression (tree type, mpc_t val);
+
+  tree string_constant_expression (const std::string &val);
+
+  tree wchar_constant_expression (wchar_t c);
+
+  tree char_constant_expression (char c);
+
+  tree boolean_constant_expression (bool val);
+
+  tree real_part_expression (tree bcomplex, location_t);
+
+  tree imag_part_expression (tree bcomplex, location_t);
+
+  tree complex_expression (tree breal, tree bimag, location_t);
+
+  tree convert_expression (tree type, tree expr, location_t);
+
+  tree struct_field_expression (tree, size_t, location_t);
+
+  tree compound_expression (tree, tree, location_t);
+
+  tree conditional_expression (tree, tree, tree, tree, tree, location_t);
+
+  tree negation_expression (NegationOperator op, tree expr, location_t);
+
+  tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+					 tree left, tree right, location_t);
+
+  tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
+						 tree left, tree right,
+						 location_t,
+						 Bvariable *receiver);
+
+  tree comparison_expression (ComparisonOperator op, tree left, tree right,
+			      location_t);
+
+  tree lazy_boolean_expression (LazyBooleanOperator op, tree left, tree right,
+				location_t);
+
+  tree constructor_expression (tree, bool, const std::vector<tree> &, int,
+			       location_t);
+
+  tree array_constructor_expression (tree, const std::vector<unsigned long> &,
+				     const std::vector<tree> &, location_t);
+
+  tree array_initializer (tree, tree, tree, tree, tree, tree *, location_t);
+
+  tree array_index_expression (tree array, tree index, location_t);
+
+  tree call_expression (tree fn, const std::vector<tree> &args,
+			tree static_chain, location_t);
+
+  // Statements.
+
+  tree init_statement (tree, Bvariable *var, tree init);
+
+  tree assignment_statement (tree lhs, tree rhs, location_t);
+
+  tree return_statement (tree fndecl, tree val, location_t locus);
+
+  tree if_statement (tree, tree condition, tree then_block, tree else_block,
+		     location_t);
+
+  tree compound_statement (tree, tree);
+
+  tree statement_list (const std::vector<tree> &);
+
+  tree exception_handler_statement (tree bstat, tree except_stmt,
+				    tree finally_stmt, location_t);
+
+  tree loop_expression (tree body, location_t);
+
+  tree exit_expression (tree condition, location_t);
+
+  // Blocks.
+
+  tree block (tree, tree, const std::vector<Bvariable *> &, location_t,
+	      location_t);
+
+  void block_add_statements (tree, const std::vector<tree> &);
+
+  // Variables.
+
+  Bvariable *error_variable () { return new Bvariable (error_mark_node); }
+
+  Bvariable *global_variable (const std::string &var_name,
+			      const std::string &asm_name, tree type,
+			      bool is_external, bool is_hidden,
+			      bool in_unique_section, location_t location);
+
+  void global_variable_set_init (Bvariable *, tree);
+
+  Bvariable *local_variable (tree, const std::string &, tree, Bvariable *,
+			     location_t);
+
+  Bvariable *parameter_variable (tree, const std::string &, tree, location_t);
+
+  Bvariable *static_chain_variable (tree, const std::string &, tree,
+				    location_t);
+
+  Bvariable *temporary_variable (tree, tree, tree, tree, bool, location_t,
+				 tree *);
+
+  // Labels.
+
+  tree label (tree, const std::string &name, location_t);
+
+  tree label_definition_statement (tree);
+
+  tree goto_statement (tree, location_t);
+
+  tree label_address (tree, location_t);
+
+  // Functions.
+
+  tree function (tree fntype, const std::string &name,
+		 const std::string &asm_name, unsigned int flags, location_t);
+
+  tree function_defer_statement (tree function, tree undefer, tree defer,
+				 location_t);
+
+  bool function_set_parameters (tree function,
+				const std::vector<Bvariable *> &);
+
+  void write_global_definitions (const std::vector<tree> &,
+				 const std::vector<tree> &,
+				 const std::vector<tree> &,
+				 const std::vector<Bvariable *> &);
+
+  void write_export_data (const char *bytes, unsigned int size);
+
+private:
+  tree fill_in_fields (tree, const std::vector<typed_identifier> &);
+
+  tree fill_in_array (tree, tree, tree);
+
+  tree non_zero_size_type (tree);
+
+  tree convert_tree (tree, tree, location_t);
 };
 
 #endif // RUST_BACKEND_H
