@@ -1,3 +1,7 @@
+2023-07-13  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* mklog.py: Add --append option.
+
 2023-07-07  Richard Biener  <rguenther@suse.de>
 
 	* gcc-changelog/git_update_version.py: Remove GCC 10 from

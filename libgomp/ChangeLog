@@ -1,3 +1,9 @@
+2023-07-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/libgomp.c++/target-map-class-2.C: Require LTO.
+	* testsuite/libgomp.c-c++-common/requires-4.c: Require LTO.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: Require LTO.
+
 2023-07-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Replace '... stub' by @ref to

@@ -1,3 +1,202 @@
+2023-07-13  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/107841
+	* config/pdp11/pdp11.cc (pdp11_expand_epilogue): Also
+	deallocate alloca-only frame.
+
+2023-07-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110624
+	* config/darwin.h (DARWIN_PLATFORM_ID): New.
+	(LINK_COMMAND_A): Use DARWIN_PLATFORM_ID to pass OS, OS version
+	and SDK data to the static linker.
+
+2023-07-13  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_set_fpscr_rn): Update
+	built-in definition return type.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Add check,
+	define __SET_FPSCR_RN_RETURNS_FPSCR__ macro.
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_rn): Add return
+	argument to return FPSCR fields.
+	* doc/extend.texi (__builtin_set_fpscr_rn): Update description for
+	the return value.  Add description for
+	__SET_FPSCR_RN_RETURNS_FPSCR__ macro.
+
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/106966
+	* config/alpha/alpha.cc (alpha_emit_set_long_const):
+	Always use DImode when constructing long const.
+
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* haifa-sched.cc: Change TRUE/FALSE to true/false.
+	* ira.cc: Ditto.
+	* lra-assigns.cc: Ditto.
+	* lra-constraints.cc: Ditto.
+	* sel-sched.cc: Ditto.
+
+2023-07-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110293
+	PR tree-optimization/110539
+	* match.pd: Expand the `x != (typeof x)(x == 0)`
+	pattern to handle where the inner and outer comparsions
+	are either `!=` or `==` and handle other constants
+	than 0.
+
+2023-07-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/109520
+	* lra-int.h (lra_insn_recog_data): Add member asm_reloads_num.
+	(lra_asm_insn_error): New prototype.
+	* lra.cc: Include rtl_error.h.
+	(lra_set_insn_recog_data): Initialize asm_reloads_num.
+	(lra_asm_insn_error): New func whose code is taken from ...
+	* lra-assigns.cc (lra_split_hard_reg_for): ... here.  Use lra_asm_insn_error.
+	* lra-constraints.cc (curr_insn_transform): Check reloads nummber for asm.
+
+2023-07-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* genmatch.cc (commutative_op): Add COND_LEN_*
+	* internal-fn.cc (first_commutative_argument): Ditto.
+	(CASE): Ditto.
+	(get_unconditional_internal_fn): Ditto.
+	(can_interpret_as_conditional_op_p): Ditto.
+	(internal_fn_len_index): Ditto.
+	* internal-fn.h (can_interpret_as_conditional_op_p): Ditt.
+	* tree-ssa-math-opts.cc (convert_mult_to_fma_1): Ditto.
+	(convert_mult_to_fma): Ditto.
+	(math_opts_dom_walker::after_dom_children): Ditto.
+
+2023-07-13  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (vxrm_rtx): New static var.
+	(frm_rtx): Ditto.
+	(global_state_unknown_p): Removed.
+	(riscv_entity_mode_after): Removed.
+	(asm_insn_p): New function.
+	(vxrm_unknown_p): New function for fixed-point.
+	(riscv_vxrm_mode_after): Ditto.
+	(frm_unknown_dynamic_p): New function for floating-point.
+	(riscv_frm_mode_after): Ditto.
+	(riscv_mode_after): Leverage new functions.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_load_cost): Remove.
+	(vectorizable_load): Adjust the cost handling on VMAT_CONTIGUOUS without
+	calling vect_model_load_cost.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_load_cost): Assert this function only
+	handle memory_access_type VMAT_CONTIGUOUS, remove some
+	VMAT_CONTIGUOUS_PERMUTE related handlings.
+	(vectorizable_load): Adjust the cost handling on VMAT_CONTIGUOUS_PERMUTE
+	without calling vect_model_load_cost.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_model_load_cost): Assert it won't get
+	VMAT_CONTIGUOUS_REVERSE any more.
+	(vectorizable_load): Adjust the costing handling on
+	VMAT_CONTIGUOUS_REVERSE without calling vect_model_load_cost.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Adjust the cost handling on
+	VMAT_LOAD_STORE_LANES without calling vect_model_load_cost.
+	(vectorizable_load): Remove VMAT_LOAD_STORE_LANES related handling and
+	assert it will never get VMAT_LOAD_STORE_LANES.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Adjust the cost handling on
+	VMAT_GATHER_SCATTER without calling vect_model_load_cost.
+	(vect_model_load_cost): Adjut the assertion on VMAT_GATHER_SCATTER,
+	remove VMAT_GATHER_SCATTER related handlings and the related parameter
+	gs_info.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Adjust the cost handling
+	on VMAT_ELEMENTWISE and VMAT_STRIDED_SLP without calling
+	vect_model_load_cost.
+	(vect_model_load_cost): Assert it won't get VMAT_ELEMENTWISE and
+	VMAT_STRIDED_SLP any more, and remove their related handlings.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (hoist_defs_of_uses): Add one argument HOIST_P.
+	(vectorizable_load): Adjust the handling on VMAT_INVARIANT to respect
+	hoisting decision and without calling vect_model_load_cost.
+	(vect_model_load_cost): Assert it won't get VMAT_INVARIANT any more
+	and remove VMAT_INVARIANT related handlings.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_build_gather_load_calls): Add the handlings
+	on costing with one extra argument cost_vec.
+	(vectorizable_load): Adjust the call to vect_build_gather_load_calls.
+	(vect_model_load_cost): Assert it won't get VMAT_GATHER_SCATTER with
+	gs_info.decl set any more.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Move and duplicate the call
+	to vect_model_load_cost down to some different transform paths
+	according to the handlings of different vect_memory_access_types.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree.h (wi::from_mpz): Hide from GENERATOR_FILE.
+
+2023-07-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md
+	(len_mask_gather_load<VNX1_QHSD:mode><VNX1_QHSDI:mode>): New pattern.
+	(len_mask_gather_load<VNX2_QHSD:mode><VNX2_QHSDI:mode>): Ditto.
+	(len_mask_gather_load<VNX4_QHSD:mode><VNX4_QHSDI:mode>): Ditto.
+	(len_mask_gather_load<VNX8_QHSD:mode><VNX8_QHSDI:mode>): Ditto.
+	(len_mask_gather_load<VNX16_QHSD:mode><VNX16_QHSDI:mode>): Ditto.
+	(len_mask_gather_load<VNX32_QHS:mode><VNX32_QHSI:mode>): Ditto.
+	(len_mask_gather_load<VNX64_QH:mode><VNX64_QHI:mode>): Ditto.
+	(len_mask_gather_load<mode><mode>): Ditto.
+	(len_mask_scatter_store<VNX1_QHSD:mode><VNX1_QHSDI:mode>): Ditto.
+	(len_mask_scatter_store<VNX2_QHSD:mode><VNX2_QHSDI:mode>): Ditto.
+	(len_mask_scatter_store<VNX4_QHSD:mode><VNX4_QHSDI:mode>): Ditto.
+	(len_mask_scatter_store<VNX8_QHSD:mode><VNX8_QHSDI:mode>): Ditto.
+	(len_mask_scatter_store<VNX16_QHSD:mode><VNX16_QHSDI:mode>): Ditto.
+	(len_mask_scatter_store<VNX32_QHS:mode><VNX32_QHSI:mode>): Ditto.
+	(len_mask_scatter_store<VNX64_QH:mode><VNX64_QHI:mode>): Ditto.
+	(len_mask_scatter_store<mode><mode>): Ditto.
+	* config/riscv/predicates.md (const_1_operand): New predicate.
+	(vector_gs_scale_operand_16): Ditto.
+	(vector_gs_scale_operand_32): Ditto.
+	(vector_gs_scale_operand_64): Ditto.
+	(vector_gs_extension_operand): Ditto.
+	(vector_gs_scale_operand_16_rv32): Ditto.
+	(vector_gs_scale_operand_32_rv32): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): Add gather/scatter.
+	(expand_gather_scatter): New function.
+	* config/riscv/riscv-v.cc (gen_const_vector_dup): Add gather/scatter.
+	(emit_vlmax_masked_store_insn): New function.
+	(emit_nonvlmax_masked_store_insn): Ditto.
+	(modulo_sel_indices): Ditto.
+	(expand_vec_perm): Fix SLP for gather/scatter.
+	(prepare_gather_scatter): New function.
+	(expand_gather_scatter): Ditto.
+	* config/riscv/riscv.cc (riscv_legitimize_move): Fix bug of
+	(subreg:SI (DI CONST_POLY_INT)).
+	* config/riscv/vector-iterators.md: Add gather/scatter.
+	* config/riscv/vector.md (vec_duplicate<mode>): Use "@" instead.
+	(@vec_duplicate<mode>): Ditto.
+	(@pred_indexed_<order>store<VNX16_QHS:mode><VNX16_QHSDI:mode>):
+	Fix name.
+	(@pred_indexed_<order>store<VNX16_QHSD:mode><VNX16_QHSDI:mode>): Ditto.
+
 2023-07-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec.md (cond_len_<optab><mode>): New pattern.

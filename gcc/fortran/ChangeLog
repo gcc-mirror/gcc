@@ -1,3 +1,9 @@
+2023-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106050
+	* symbol.cc (gfc_restore_last_undo_checkpoint): Release symbols
+	in reverse order.
+
 2023-07-12  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/102003

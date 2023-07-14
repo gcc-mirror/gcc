@@ -1,3 +1,245 @@
+2023-07-13  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/107841
+	* gcc.target/pdp11/pr107841.c: New test.
+
+2023-07-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/106050
+	* gfortran.dg/pdt_33.f90: New test.
+
+2023-07-13  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: Rename to
+	test_fpscr_rn_builtin_1.c.  Add comment.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_2.c: New test for the
+	return value of __builtin_set_fpscr_rn builtin.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_1.c: New file.
+
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/106966
+	* gcc.target/alpha/pr106966.c: New test.
+
+2023-07-13  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr110293-1.c: New test.
+	* gcc.dg/tree-ssa/pr110539-1.c: New test.
+	* gcc.dg/tree-ssa/pr110539-2.c: New test.
+	* gcc.dg/tree-ssa/pr110539-3.c: New test.
+	* gcc.dg/tree-ssa/pr110539-4.c: New test.
+
+2023-07-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/109520
+	* gcc.target/i386/pr109520.c: New test.
+
+2023-07-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-10.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-8.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-9.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-2.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-3.c: New test.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/i386/pr70021.c: Adjust with -fno-vect-cost-model.
+
+2023-07-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-reversed.c: New test.
+
+2023-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-pr82255.c: New test.
+
+2023-07-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add gather/scatter tests.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-11.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-12.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-11.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-12.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-11.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-11.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_run-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-10.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-8.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-9.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store_run-2.c:
+	New test.
+
 2023-07-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Adapt testcase.

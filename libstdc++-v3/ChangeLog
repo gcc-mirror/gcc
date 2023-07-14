@@ -1,3 +1,13 @@
+2023-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h (stoi, stol, stoul, stod): Do not
+	depend on _GLIBCXX_USE_C99_STDLIB.
+	[__LONG_WIDTH__ == __LONG_LONG_WIDTH__] (stoll, stoull): Define
+	in terms of stol and stoul respectively.
+	[__DBL_MANT_DIG__ == __LDBL_MANT_DIG__] (stold): Define in terms
+	of stod.
+
 2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95048

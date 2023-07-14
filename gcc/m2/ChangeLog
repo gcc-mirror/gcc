@@ -1,3 +1,7 @@
+2023-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (m2/boot-bin/mklink$(exeext)): Add $(LDFLAGS).
+
 2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2BasicBlock.def (InitBasicBlocksFromRange): New
