@@ -5853,10 +5853,9 @@ ipcp_update_bits (struct cgraph_node *node, ipcp_transformation *ts)
 	{
 	  unsigned prec = TYPE_PRECISION (TREE_TYPE (ddef));
 	  signop sgn = TYPE_SIGN (TREE_TYPE (ddef));
-
-	  wide_int nonzero_bits = wide_int::from (bits[i]->mask, prec, UNSIGNED)
-				  | wide_int::from (bits[i]->value, prec, sgn);
-	  set_nonzero_bits (ddef, nonzero_bits);
+	  wide_int mask = wide_int::from (bits[i]->mask, prec, UNSIGNED);
+	  wide_int value = wide_int::from (bits[i]->value, prec, sgn);
+	  set_bitmask (ddef, value, mask);
 	}
       else
 	{
