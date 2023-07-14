@@ -931,3 +931,75 @@ make_pass_release_ssa_names (gcc::context *ctxt)
 {
   return new pass_release_ssa_names (ctxt);
 }
+
+/* Save and restore of flow sensitive information. */
+
+/* Save off the flow sensitive info from NAME. */
+
+void
+flow_sensitive_info_storage::save (tree name)
+{
+  gcc_assert (state == 0);
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      range_info = SSA_NAME_RANGE_INFO (name);
+      state = 1;
+      return;
+    }
+  state = -1;
+  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  if (ptr_info)
+    {
+      align = ptr_info->align;
+      misalign = ptr_info->misalign;
+      null = SSA_NAME_PTR_INFO (name)->pt.null;
+    }
+  else
+    {
+      align = 0;
+      misalign = 0;
+      null = true;
+    }
+}
+
+/* Restore the flow sensitive info from NAME. */
+
+void
+flow_sensitive_info_storage::restore (tree name)
+{
+  gcc_assert (state != 0);
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      gcc_assert (state == 1);
+      SSA_NAME_RANGE_INFO (name) = range_info;
+      return;
+    }
+  gcc_assert (state == -1);
+  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  /* If there was no flow sensitive info on the pointer
+     just return, there is nothing to restore to.  */
+  if (!ptr_info)
+    return;
+  if (align != 0)
+    set_ptr_info_alignment (ptr_info, align, misalign);
+  else
+    mark_ptr_info_alignment_unknown (ptr_info);
+  SSA_NAME_PTR_INFO (name)->pt.null = null;
+}
+
+/* Save off the flow sensitive info from NAME.
+   And reset the flow sensitive info of NAME. */
+
+void
+flow_sensitive_info_storage::save_and_clear (tree name)
+{
+  save (name);
+  reset_flow_sensitive_info (name);
+}
+
+/* Clear the storage. */
+void
+flow_sensitive_info_storage::clear_storage (void)
+{
+  state = 0;
+}

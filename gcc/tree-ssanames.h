@@ -137,5 +137,26 @@ make_temp_ssa_name (tree type, gimple *stmt, const char *name)
   return ssa_name;
 }
 
+/* A class which is used to save/restore the flow sensitive information.  */
+class flow_sensitive_info_storage
+{
+public:
+  void save (tree);
+  void save_and_clear (tree);
+  void restore (tree);
+  void clear_storage ();
+private:
+  /* 0 means there is nothing saved.
+     1 means non pointer is saved.
+     -1 means a pointer type is saved.
+     -2 means a pointer type is saved but no information was saved. */
+  int state = 0;
+  /* The range info for non pointers */
+  vrange_storage *range_info = nullptr;
+  /* Flow sensitive pointer information. */
+  unsigned int align = 0;
+  unsigned int misalign = 0;
+  bool null = true;
+};
 
 #endif /* GCC_TREE_SSANAMES_H */
