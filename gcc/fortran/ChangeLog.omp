@@ -1,3 +1,22 @@
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.h (toc_directive): Move here.
+	(gfc_omp_instantiate_mappers, gfc_get_location): Add prototypes.
+	* openmp.cc (omp_split_map_op, omp_join_map_op, omp_map_decayed_kind,
+	omp_basic_map_kind_name, gfc_subst_replace, gfc_subst_prepend_ref,
+	gfc_subst_in_expr_1, gfc_subst_in_expr, gfc_subst_mapper_var): Move
+	here.
+	(gfc_omp_instantiate_mapper, gfc_omp_instantiate_mappers): Move here
+	and rename.
+	* trans-openmp.cc (toc_directive, omp_split_map_op, omp_join_map_op,
+	omp_map_decayed_kind, gfc_subst_replace, gfc_subst_prepend_ref,
+	gfc_subst_in_expr_1, gfc_subst_in_expr, gfc_subst_mapper_var,
+	gfc_trans_omp_instantiate_mapper, gfc_trans_omp_instantiate_mappers):
+	Remove from here.
+	(gfc_trans_omp_target, gfc_trans_omp_target_data,
+	gfc_trans_omp_target_enter_data, gfc_trans_omp_target_exit_data):
+	Rename calls to gfc_omp_instantiate_mappers.
+
 2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (gfc_omp_clauses): Rename target_first_st_is_teams

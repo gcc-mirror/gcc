@@ -12584,6 +12584,441 @@ gfc_resolve_omp_udrs (gfc_symtree *st)
     gfc_resolve_omp_udr (omp_udr);
 }
 
+static enum gfc_omp_map_op
+omp_split_map_op (enum gfc_omp_map_op op, bool *force_p, bool *always_p,
+		  bool *present_p)
+{
+  *force_p = *always_p = *present_p = false;
+
+  switch (op)
+    {
+    case OMP_MAP_FORCE_ALLOC:
+    case OMP_MAP_FORCE_TO:
+    case OMP_MAP_FORCE_FROM:
+    case OMP_MAP_FORCE_TOFROM:
+    case OMP_MAP_FORCE_PRESENT:
+      *force_p = true;
+      break;
+    case OMP_MAP_ALWAYS_TO:
+    case OMP_MAP_ALWAYS_FROM:
+    case OMP_MAP_ALWAYS_TOFROM:
+      *always_p = true;
+      break;
+    case OMP_MAP_ALWAYS_PRESENT_TO:
+    case OMP_MAP_ALWAYS_PRESENT_FROM:
+    case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+      *always_p = true;
+      /* Fallthrough.  */
+    case OMP_MAP_PRESENT_ALLOC:
+    case OMP_MAP_PRESENT_TO:
+    case OMP_MAP_PRESENT_FROM:
+    case OMP_MAP_PRESENT_TOFROM:
+      *present_p = true;
+      break;
+    default:
+      ;
+    }
+
+  switch (op)
+    {
+    case OMP_MAP_ALLOC:
+    case OMP_MAP_FORCE_ALLOC:
+    case OMP_MAP_PRESENT_ALLOC:
+      return OMP_MAP_ALLOC;
+    case OMP_MAP_TO:
+    case OMP_MAP_FORCE_TO:
+    case OMP_MAP_ALWAYS_TO:
+    case OMP_MAP_PRESENT_TO:
+    case OMP_MAP_ALWAYS_PRESENT_TO:
+      return OMP_MAP_TO;
+    case OMP_MAP_FROM:
+    case OMP_MAP_FORCE_FROM:
+    case OMP_MAP_ALWAYS_FROM:
+    case OMP_MAP_PRESENT_FROM:
+    case OMP_MAP_ALWAYS_PRESENT_FROM:
+      return OMP_MAP_FROM;
+    case OMP_MAP_TOFROM:
+    case OMP_MAP_FORCE_TOFROM:
+    case OMP_MAP_ALWAYS_TOFROM:
+    case OMP_MAP_PRESENT_TOFROM:
+    case OMP_MAP_ALWAYS_PRESENT_TOFROM:
+      return OMP_MAP_TOFROM;
+    default:
+      ;
+    }
+  return op;
+}
+
+static enum gfc_omp_map_op
+omp_join_map_op (enum gfc_omp_map_op op, bool force_p, bool always_p,
+		 bool present_p)
+{
+  gcc_assert (!force_p || !(always_p || present_p));
+
+  switch (op)
+    {
+    case OMP_MAP_ALLOC:
+      if (force_p)
+	return OMP_MAP_FORCE_ALLOC;
+      else if (present_p)
+	return OMP_MAP_PRESENT_ALLOC;
+      break;
+
+    case OMP_MAP_TO:
+      if (force_p)
+	return OMP_MAP_FORCE_TO;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_TO;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_TO;
+      else if (present_p)
+	return OMP_MAP_PRESENT_TO;
+      break;
+
+    case OMP_MAP_FROM:
+      if (force_p)
+	return OMP_MAP_FORCE_FROM;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_FROM;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_FROM;
+      else if (present_p)
+	return OMP_MAP_PRESENT_FROM;
+      break;
+
+    case OMP_MAP_TOFROM:
+      if (force_p)
+	return OMP_MAP_FORCE_TOFROM;
+      else if (always_p && present_p)
+	return OMP_MAP_ALWAYS_PRESENT_TOFROM;
+      else if (always_p)
+	return OMP_MAP_ALWAYS_TOFROM;
+      else if (present_p)
+	return OMP_MAP_PRESENT_TOFROM;
+      break;
+
+    default:
+      ;
+    }
+
+  return op;
+}
+
+/* Map kind decay (OpenMP 5.2, 5.8.8 "declare mapper Directive").  Return the
+   map kind to use given MAPPER_KIND specified in the mapper and INVOKED_AS
+   specified on the clause that invokes the mapper.  See also
+   c-family/c-omp.cc:omp_map_decayed_kind.  */
+
+static enum gfc_omp_map_op
+omp_map_decayed_kind (enum gfc_omp_map_op mapper_kind,
+		      enum gfc_omp_map_op invoked_as, bool exit_p)
+{
+  if (invoked_as == OMP_MAP_RELEASE || invoked_as == OMP_MAP_DELETE)
+    return invoked_as;
+
+  bool force_p, always_p, present_p;
+
+  invoked_as = omp_split_map_op (invoked_as, &force_p, &always_p, &present_p);
+  gfc_omp_map_op decay_to;
+
+  switch (mapper_kind)
+    {
+    case OMP_MAP_ALLOC:
+      if (exit_p && invoked_as == OMP_MAP_FROM)
+	decay_to = OMP_MAP_RELEASE;
+      else
+	decay_to = OMP_MAP_ALLOC;
+      break;
+
+    case OMP_MAP_TO:
+      if (invoked_as == OMP_MAP_FROM)
+	decay_to = exit_p ? OMP_MAP_RELEASE : OMP_MAP_ALLOC;
+      else if (invoked_as == OMP_MAP_ALLOC)
+	decay_to = OMP_MAP_ALLOC;
+      else
+	decay_to = OMP_MAP_TO;
+      break;
+
+    case OMP_MAP_FROM:
+      if (invoked_as == OMP_MAP_ALLOC || invoked_as == OMP_MAP_TO)
+	decay_to = OMP_MAP_ALLOC;
+      else
+	decay_to = OMP_MAP_FROM;
+      break;
+
+    case OMP_MAP_TOFROM:
+    case OMP_MAP_UNSET:
+      decay_to = invoked_as;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return omp_join_map_op (decay_to, force_p, always_p, present_p);
+}
+
+static const char *
+omp_basic_map_kind_name (enum gfc_omp_map_op op)
+{
+  switch (op)
+    {
+    case OMP_MAP_ALLOC:
+      return "ALLOC";
+    case OMP_MAP_TO:
+      return "TO";
+    case OMP_MAP_FROM:
+      return "FROM";
+    case OMP_MAP_TOFROM:
+      return "TOFROM";
+    case OMP_MAP_RELEASE:
+      return "RELEASE";
+    case OMP_MAP_DELETE:
+      return "DELETE";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static gfc_symtree *gfc_subst_replace;
+static gfc_ref *gfc_subst_prepend_ref;
+
+static bool
+gfc_subst_in_expr_1 (gfc_expr *expr, gfc_symbol *search, int *)
+{
+  /* The base-object for component accesses may be stored in expr->symtree.
+     If it's the symbol for our "declare mapper" placeholder variable,
+     substitute it.  */
+  if (expr->symtree && expr->symtree->n.sym == search)
+    {
+      gfc_ref **lastptr = NULL;
+      expr->symtree = gfc_subst_replace;
+
+      if (!gfc_subst_prepend_ref)
+	return false;
+
+      gfc_ref *prepend_ref = gfc_copy_ref (gfc_subst_prepend_ref);
+
+      for (gfc_ref *walk = prepend_ref; walk; walk = walk->next)
+	lastptr = &walk->next;
+
+      *lastptr = expr->ref;
+      expr->ref = prepend_ref;
+    }
+
+  return false;
+}
+
+static void
+gfc_subst_in_expr (gfc_expr *expr, gfc_symbol *search, gfc_symtree *replace,
+		   gfc_ref *prepend_ref)
+{
+  gfc_subst_replace = replace;
+  gfc_subst_prepend_ref = prepend_ref;
+  gfc_traverse_expr (expr, search, gfc_subst_in_expr_1, 0);
+}
+
+static void
+gfc_subst_mapper_var (gfc_symbol **out_sym, gfc_expr **out_expr,
+		      gfc_symbol *orig_sym, gfc_expr *orig_expr,
+		      gfc_symbol *dummy_var,
+		      gfc_symbol *templ_sym, gfc_expr *templ_expr)
+{
+  gfc_ref *orig_ref = orig_expr ? orig_expr->ref : NULL;
+  gfc_symtree *orig_st = gfc_find_symtree (orig_sym->ns->sym_root,
+					   orig_sym->name);
+
+  if (dummy_var == templ_sym)
+    *out_sym = orig_sym;
+  else
+    *out_sym = templ_sym;
+
+  if (templ_expr)
+    {
+      *out_expr = gfc_copy_expr (templ_expr);
+      gfc_subst_in_expr (*out_expr, dummy_var, orig_st, orig_ref);
+    }
+  else if (orig_expr)
+    *out_expr = gfc_copy_expr (orig_expr);
+  else
+    *out_expr = NULL;
+}
+
+static gfc_omp_namelist **
+gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
+			    gfc_omp_namelist *clause,
+			    gfc_omp_map_op outer_map_op, gfc_omp_udm *udm,
+			    toc_directive cd, int list)
+{
+  /* Here "sym" and "expr" describe the clause as written, to be substituted
+     for the dummy variable in the mapper definition.  */
+  struct gfc_symbol *sym = clause->sym;
+  struct gfc_expr *expr = clause->expr;
+  gfc_omp_namelist *mapper_clause = udm->clauses->lists[OMP_LIST_MAP];
+  bool pointer_needed_p = false;
+
+  if (expr)
+    {
+      gfc_ref *lastref = expr->ref, *lastcomp = NULL;
+
+      for (; lastref->next; lastref = lastref->next)
+	if (lastref->type == REF_COMPONENT)
+	  lastcomp = lastref;
+
+      if (lastref
+	  && lastref->type == REF_ARRAY
+	  && (lastref->u.ar.type == AR_SECTION
+	      || lastref->u.ar.type == AR_FULL))
+	{
+	  mpz_t elems;
+	  bool multiple_elems_p = false;
+
+	  if (gfc_array_size (expr, &elems))
+	    {
+	      HOST_WIDE_INT nelems = gfc_mpz_get_hwi (elems);
+	      if (nelems > 1)
+		multiple_elems_p = true;
+	    }
+	  else
+	    multiple_elems_p = true;
+
+	  if (multiple_elems_p && clause->u2.udm)
+	    {
+	      clause->u2.udm->multiple_elems_p = true;
+	      *outlistp = clause;
+	      return &(*outlistp)->next;
+	    }
+	}
+
+      if (lastcomp
+	  && lastcomp->type == REF_COMPONENT
+	  && (lastcomp->u.c.component->attr.pointer
+	      || lastcomp->u.c.component->attr.allocatable))
+	pointer_needed_p = true;
+    }
+
+  if (pointer_needed_p)
+    {
+      /* If we're instantiating a mapper via a pointer, we need to map that
+	 pointer as well as mapping the entities explicitly listed in the
+	 mapper definition.  Create a node for that.  */
+      gfc_omp_namelist *new_clause = gfc_get_omp_namelist ();
+      new_clause->sym = sym;
+      new_clause->expr = gfc_copy_expr (expr);
+      /* We want the pointer itself: cut off any further accessors after the
+	 last component reference (e.g. array indices).  */
+      gfc_ref *lastcomp = NULL;
+      for (gfc_ref *lastref = new_clause->expr->ref;
+	   lastref;
+	   lastref = lastref->next)
+	if (lastref->type == REF_COMPONENT)
+	  lastcomp = lastref;
+      gcc_assert (lastcomp != NULL);
+      lastcomp->next = NULL;
+      new_clause->u.map_op = OMP_MAP_POINTER_ONLY;
+      *outlistp = new_clause;
+      outlistp = &new_clause->next;
+    }
+
+  for (; mapper_clause; mapper_clause = mapper_clause->next)
+    {
+      gfc_omp_namelist *new_clause = gfc_get_omp_namelist ();
+
+      gfc_subst_mapper_var (&new_clause->sym, &new_clause->expr,
+			    sym, expr, udm->var_sym, mapper_clause->sym,
+			    mapper_clause->expr);
+
+      enum gfc_omp_map_op map_clause_op = mapper_clause->u.map_op;
+      enum gfc_omp_map_op new_kind
+	= omp_map_decayed_kind (map_clause_op, outer_map_op,
+				(cd == TOC_OPENMP_EXIT_DATA
+				 || list == OMP_LIST_FROM));
+      if (list == OMP_LIST_FROM || list == OMP_LIST_TO)
+	{
+	  switch (new_kind)
+	    {
+	    case OMP_MAP_PRESENT_FROM:
+	    case OMP_MAP_PRESENT_TO:
+	      new_clause->u.present_modifier = true;
+	      /* Fallthrough.  */
+	    case OMP_MAP_FROM:
+	    case OMP_MAP_TO:
+	      break;
+	    default:
+	      {
+		bool present_p, force_p, always_p;
+		gfc_omp_map_op basic_kind
+		  = omp_split_map_op (map_clause_op, &force_p, &always_p,
+				      &present_p);
+		free (new_clause);
+		gfc_warning (0, "Dropping incompatible %qs mapper clause at %C",
+			     omp_basic_map_kind_name (basic_kind));
+		inform (gfc_get_location (&mapper_clause->where),
+			"Defined here");
+		continue;
+	      }
+	    }
+	}
+      else
+	new_clause->u.map_op = new_kind;
+
+      new_clause->where = clause->where;
+
+      if (mapper_clause->u2.udm
+	  && mapper_clause->u2.udm->udm != udm)
+	{
+	  gfc_omp_udm *inner_udm = mapper_clause->u2.udm->udm;
+	  outlistp = gfc_omp_instantiate_mapper (outlistp, new_clause,
+						 outer_map_op, inner_udm, cd,
+						 list);
+	}
+      else
+	{
+	  *outlistp = new_clause;
+	  outlistp = &new_clause->next;
+	}
+    }
+
+  return outlistp;
+}
+
+void
+gfc_omp_instantiate_mappers (gfc_code *code, gfc_omp_clauses *clauses,
+			     toc_directive cd, int list)
+{
+  gfc_omp_namelist *clause = clauses->lists[list];
+  gfc_omp_namelist **clausep = &clauses->lists[list];
+
+  for (; clause; clause = *clausep)
+    {
+      if (clause->u2.udm)
+	{
+	  gfc_omp_map_op outer_map_op;
+
+	  switch (list)
+	    {
+	    case OMP_LIST_TO:
+	      outer_map_op = clause->u.present_modifier ? OMP_MAP_PRESENT_TO
+							: OMP_MAP_TO;
+	      break;
+	    case OMP_LIST_FROM:
+	      outer_map_op = clause->u.present_modifier ? OMP_MAP_PRESENT_FROM
+							: OMP_MAP_FROM;
+	      break;
+	    case OMP_LIST_MAP:
+	      outer_map_op = clause->u.map_op;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  clausep = gfc_omp_instantiate_mapper (clausep, clause, outer_map_op,
+						clause->u2.udm->udm, cd, list);
+	  *clausep = clause->next;
+	}
+      else
+	clausep = &clause->next;
+    }
+}
 
 /* The following functions implement automatic recognition and annotation of
    DO loops in OpenACC kernels regions.  Inside a kernels region, a nest of
