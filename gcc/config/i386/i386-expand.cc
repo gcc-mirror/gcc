@@ -542,22 +542,39 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	}
     }
 
-  /* Use *insvti_highpart_1 to set highpart of TImode register.  */
+  /* Special case inserting 64-bit values into a TImode register.  */
   if (TARGET_64BIT
-      && mode == DImode
+      && (mode == DImode || mode == DFmode)
       && SUBREG_P (op0)
-      && SUBREG_BYTE (op0) == 8
       && GET_MODE (SUBREG_REG (op0)) == TImode
       && REG_P (SUBREG_REG (op0))
       && REG_P (op1))
     {
-      wide_int mask = wi::mask (64, false, 128);
-      rtx tmp = immed_wide_int_const (mask, TImode);
-      op0 = SUBREG_REG (op0);
-      tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
-      op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
-      op1 = gen_rtx_ASHIFT (TImode, op1, GEN_INT (64));
-      op1 = gen_rtx_IOR (TImode, tmp, op1);
+      /* Use *insvti_lowpart_1 to set lowpart.  */
+      if (SUBREG_BYTE (op0) == 0)
+	{
+	  wide_int mask = wi::mask (64, true, 128);
+	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  op0 = SUBREG_REG (op0);
+	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
+	  if (mode == DFmode)
+	    op1 = force_reg (DImode, gen_lowpart (DImode, op1));
+	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
+	  op1 = gen_rtx_IOR (TImode, tmp, op1);
+	}
+      /* Use *insvti_highpart_1 to set highpart.  */
+      else if (SUBREG_BYTE (op0) == 8)
+	{
+	  wide_int mask = wi::mask (64, false, 128);
+	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  op0 = SUBREG_REG (op0);
+	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
+	  if (mode == DFmode)
+	    op1 = force_reg (DImode, gen_lowpart (DImode, op1));
+	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
+	  op1 = gen_rtx_ASHIFT (TImode, op1, GEN_INT (64));
+	  op1 = gen_rtx_IOR (TImode, tmp, op1);
+	}
     }
 
   emit_insn (gen_rtx_SET (op0, op1));
