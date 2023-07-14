@@ -2075,9 +2075,6 @@ execute_function_todo (function *fn, void *data)
   if (flags & TODO_remove_unused_locals)
     remove_unused_locals ();
 
-  if (flags & TODO_rebuild_frequencies)
-    rebuild_frequencies ();
-
   if (flags & TODO_rebuild_cgraph_edges)
     cgraph_edge::rebuild_edges ();
 

@@ -89,7 +89,7 @@ static void predict_paths_leading_to_edge (edge, enum br_predictor,
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
 static void determine_unlikely_bbs ();
-static void estimate_bb_frequencies (bool force);
+static void estimate_bb_frequencies ();
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -3169,8 +3169,9 @@ tree_estimate_probability (bool dry_run)
   delete bb_predictions;
   bb_predictions = NULL;
 
-  if (!dry_run)
-    estimate_bb_frequencies (false);
+  if (!dry_run
+      && profile_status_for_fn (cfun) != PROFILE_READ)
+    estimate_bb_frequencies ();
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
 }
@@ -3923,103 +3924,97 @@ determine_unlikely_bbs ()
 }
 
 /* Estimate and propagate basic block frequencies using the given branch
-   probabilities.  If FORCE is true, the frequencies are used to estimate
-   the counts even when there are already non-zero profile counts.  */
+   probabilities.  */
 
 static void
-estimate_bb_frequencies (bool force)
+estimate_bb_frequencies ()
 {
   basic_block bb;
   sreal freq_max;
 
   determine_unlikely_bbs ();
 
-  if (force || profile_status_for_fn (cfun) != PROFILE_READ
-      || !update_max_bb_count ())
+  mark_dfs_back_edges ();
+
+  single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->probability =
+     profile_probability::always ();
+
+  /* Set up block info for each basic block.  */
+  alloc_aux_for_blocks (sizeof (block_info));
+  alloc_aux_for_edges (sizeof (edge_prob_info));
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
+      edge e;
+      edge_iterator ei;
 
-      mark_dfs_back_edges ();
-
-      single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->probability =
-	 profile_probability::always ();
-
-      /* Set up block info for each basic block.  */
-      alloc_aux_for_blocks (sizeof (block_info));
-      alloc_aux_for_edges (sizeof (edge_prob_info));
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  edge e;
-	  edge_iterator ei;
-
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      /* FIXME: Graphite is producing edges with no profile. Once
-		 this is fixed, drop this.  */
-	      if (e->probability.initialized_p ())
-	        EDGE_INFO (e)->back_edge_prob
-		   = e->probability.to_sreal ();
-	      else
-		/* back_edge_prob = 0.5 */
-		EDGE_INFO (e)->back_edge_prob = sreal (1, -1);
-	    }
+	  /* FIXME: Graphite is producing edges with no profile. Once
+	     this is fixed, drop this.  */
+	  if (e->probability.initialized_p ())
+	    EDGE_INFO (e)->back_edge_prob
+	       = e->probability.to_sreal ();
+	  else
+	    /* back_edge_prob = 0.5 */
+	    EDGE_INFO (e)->back_edge_prob = sreal (1, -1);
 	}
-
-      /* First compute frequencies locally for each loop from innermost
-         to outermost to examine frequencies for back edges.  */
-      estimate_loops ();
-
-      freq_max = 0;
-      FOR_EACH_BB_FN (bb, cfun)
-	if (freq_max < BLOCK_INFO (bb)->frequency)
-	  freq_max = BLOCK_INFO (bb)->frequency;
-
-      /* Scaling frequencies up to maximal profile count may result in
-	 frequent overflows especially when inlining loops.
-	 Small scalling results in unnecesary precision loss.  Stay in
-	 the half of the (exponential) range.  */
-      freq_max = (sreal (1) << (profile_count::n_bits / 2)) / freq_max;
-      if (freq_max < 16)
-	freq_max = 16;
-      profile_count ipa_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ();
-      cfun->cfg->count_max = profile_count::uninitialized ();
-      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-	{
-	  sreal tmp = BLOCK_INFO (bb)->frequency;
-	  if (tmp >= 1)
-	    {
-	      gimple_stmt_iterator gsi;
-	      tree decl;
-
-	      /* Self recursive calls can not have frequency greater than 1
-		 or program will never terminate.  This will result in an
-		 inconsistent bb profile but it is better than greatly confusing
-		 IPA cost metrics.  */
-	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		if (is_gimple_call (gsi_stmt (gsi))
-		    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
-		    && recursive_call_p (current_function_decl, decl))
-		  {
-		    if (dump_file)
-		      fprintf (dump_file, "Dropping frequency of recursive call"
-			       " in bb %i from %f\n", bb->index,
-			       tmp.to_double ());
-		    tmp = (sreal)9 / (sreal)10;
-		    break;
-		  }
-	    }
-	  tmp = tmp * freq_max + sreal (1, -1);
-	  profile_count count = profile_count::from_gcov_type (tmp.to_int ());	
-
-	  /* If we have profile feedback in which this function was never
-	     executed, then preserve this info.  */
-	  if (!(bb->count == profile_count::zero ()))
-	    bb->count = count.guessed_local ().combine_with_ipa_count (ipa_count);
-          cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
-	}
-
-      free_aux_for_blocks ();
-      free_aux_for_edges ();
     }
+
+  /* First compute frequencies locally for each loop from innermost
+     to outermost to examine frequencies for back edges.  */
+  estimate_loops ();
+
+  freq_max = 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    if (freq_max < BLOCK_INFO (bb)->frequency)
+      freq_max = BLOCK_INFO (bb)->frequency;
+
+  /* Scaling frequencies up to maximal profile count may result in
+     frequent overflows especially when inlining loops.
+     Small scalling results in unnecesary precision loss.  Stay in
+     the half of the (exponential) range.  */
+  freq_max = (sreal (1) << (profile_count::n_bits / 2)) / freq_max;
+  if (freq_max < 16)
+    freq_max = 16;
+  profile_count ipa_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ();
+  cfun->cfg->count_max = profile_count::uninitialized ();
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
+    {
+      sreal tmp = BLOCK_INFO (bb)->frequency;
+      if (tmp >= 1)
+	{
+	  gimple_stmt_iterator gsi;
+	  tree decl;
+
+	  /* Self recursive calls can not have frequency greater than 1
+	     or program will never terminate.  This will result in an
+	     inconsistent bb profile but it is better than greatly confusing
+	     IPA cost metrics.  */
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    if (is_gimple_call (gsi_stmt (gsi))
+		&& (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
+		&& recursive_call_p (current_function_decl, decl))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Dropping frequency of recursive call"
+			   " in bb %i from %f\n", bb->index,
+			   tmp.to_double ());
+		tmp = (sreal)9 / (sreal)10;
+		break;
+	      }
+	}
+      tmp = tmp * freq_max + sreal (1, -1);
+      profile_count count = profile_count::from_gcov_type (tmp.to_int ());
+
+      /* If we have profile feedback in which this function was never
+	 executed, then preserve this info.  */
+      if (!(bb->count == profile_count::zero ()))
+	bb->count = count.guessed_local ().combine_with_ipa_count (ipa_count);
+      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+    }
+
+  free_aux_for_blocks ();
+  free_aux_for_edges ();
   compute_function_frequency ();
 }
 
@@ -4307,38 +4302,162 @@ make_pass_strip_predict_hints (gcc::context *ctxt)
 void
 rebuild_frequencies (void)
 {
-  timevar_push (TV_REBUILD_FREQUENCIES);
+  /* If we have no profile, do nothing.  Note that after inlining
+     profile_status_for_fn may not represent the actual presence/absence of
+     profile.  */
+  if (profile_status_for_fn (cfun) == PROFILE_ABSENT
+      && !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
+    return;
 
-  /* When the max bb count in the function is small, there is a higher
-     chance that there were truncation errors in the integer scaling
-     of counts by inlining and other optimizations. This could lead
-     to incorrect classification of code as being cold when it isn't.
-     In that case, force the estimation of bb counts/frequencies from the
-     branch probabilities, rather than computing frequencies from counts,
-     which may also lead to frequencies incorrectly reduced to 0. There
-     is less precision in the probabilities, so we only do this for small
-     max counts.  */
-  cfun->cfg->count_max = profile_count::uninitialized ();
+
+  /* See if everything is OK and update count_max.  */
   basic_block bb;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+  bool inconsistency_found = false;
+  bool uninitialized_probablity_found = false;
+  bool uninitialized_count_found = false;
 
-  if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
+  cfun->cfg->count_max = profile_count::uninitialized ();
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
-      loop_optimizer_init (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
-      connect_infinite_loops_to_exit ();
-      estimate_bb_frequencies (true);
-      remove_fake_exit_edges ();
-      loop_optimizer_finalize ();
+      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+      /* Uninitialized count may be result of inlining or an omision in an
+         optimization pass.  */
+      if (!bb->count.initialized_p ())
+	{
+	  uninitialized_count_found = true;
+	  if (dump_file)
+	    fprintf (dump_file, "BB %i has uninitialized count\n",
+		     bb->index);
+	}
+      if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  && (!uninitialized_probablity_found || !inconsistency_found))
+        {
+	  profile_count sum = profile_count::zero ();
+	  edge e;
+	  edge_iterator ei;
+
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      sum += e->count ();
+	      /* Uninitialized probability may be result of inlining or an
+	         omision in an optimization pass.  */
+	      if (!e->probability.initialized_p ())
+	        {
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Edge %i->%i has uninitialized probability\n",
+			     e->src->index, e->dest->index);
+	        }
+	    }
+	  if (sum.differs_from_p (bb->count))
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "BB %i has invalid sum of incomming counts\n",
+			 bb->index);
+	      inconsistency_found = true;
+	    }
+	}
     }
-  else if (profile_status_for_fn (cfun) == PROFILE_READ)
-    update_max_bb_count ();
-  else if (profile_status_for_fn (cfun) == PROFILE_ABSENT
-	   && !flag_guess_branch_prob)
-    ;
-  else
-    gcc_unreachable ();
-  timevar_pop (TV_REBUILD_FREQUENCIES);
+
+  /* If everything is OK, do not re-propagate frequencies.  */
+  if (!inconsistency_found
+      && (!uninitialized_count_found || uninitialized_probablity_found)
+      && !cfun->cfg->count_max.very_large_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "Profile is consistent\n");
+      return;
+    }
+  /* Do not re-propagate if we have profile feedback.  Even if the profile is
+     inconsistent from previous transofrmations, it is probably more realistic
+     for hot part of the program than result of repropagating.
+
+     Consider example where we previously has
+
+     if (test)
+       then [large probability for true]
+
+     and we later proved that test is always 0.  In this case, if profile was
+     read correctly, we must have duplicated the conditional (for example by
+     inlining) in to a context where test is false.  From profile feedback
+     we know that most executions if the conditionals were true, so the
+     important copy is not the one we look on.
+
+     Propagating from probabilities would make profile look consistent, but
+     because probablities after code duplication may not be representative
+     for a given run, we would only propagate the error further.  */
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().nonzero_p ()
+      && !uninitialized_count_found)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+	    "Profile is inconsistent but read from profile feedback;"
+	    " not rebuilding\n");
+      return;
+    }
+
+  loop_optimizer_init (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
+  connect_infinite_loops_to_exit ();
+  estimate_bb_frequencies ();
+  remove_fake_exit_edges ();
+  loop_optimizer_finalize ();
+  if (dump_file)
+    fprintf (dump_file, "Rebuilt basic block counts\n");
+
+  return;
+}
+
+namespace {
+
+const pass_data pass_data_rebuild_frequencies =
+{
+  GIMPLE_PASS, /* type */
+  "rebuild_frequencies", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_REBUILD_FREQUENCIES, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_rebuild_frequencies : public gimple_opt_pass
+{
+public:
+  pass_rebuild_frequencies (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_rebuild_frequencies, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () final override
+  {
+    return new pass_rebuild_frequencies (m_ctxt);
+  }
+  void set_pass_param (unsigned int n, bool param) final override
+    {
+      gcc_assert (n == 0);
+      early_p = param;
+    }
+
+  unsigned int execute (function *) final override
+  {
+    rebuild_frequencies ();
+    return 0;
+  }
+
+private:
+  bool early_p;
+
+}; // class pass_rebuild_frequencies
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_rebuild_frequencies (gcc::context *ctxt)
+{
+  return new pass_rebuild_frequencies (ctxt);
 }
 
 /* Perform a dry run of the branch prediction pass and report comparsion of

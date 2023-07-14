@@ -239,7 +239,6 @@ protected:
 #define TODO_verify_il			(1 << 6)
 #define TODO_dump_symtab		(1 << 7)
 #define TODO_remove_functions		(1 << 8)
-#define TODO_rebuild_frequencies	(1 << 9)
 
 /* To-do flags for calls to update_ssa.  */
 
@@ -418,6 +417,7 @@ extern gimple_opt_pass *make_pass_pre (gcc::context *ctxt);
 extern unsigned int tail_merge_optimize (bool);
 extern gimple_opt_pass *make_pass_profile (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strip_predict_hints (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_rebuild_frequencies (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_complex_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_complex (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_switch (gcc::context *ctxt);

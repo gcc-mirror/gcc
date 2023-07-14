@@ -1276,6 +1276,16 @@ public:
       return ret;
     }
 
+  /* Return true if profile count is very large, so we risk overflows
+     with loop transformations.  */
+  bool
+  very_large_p ()
+  {
+    if (!initialized_p ())
+      return false;
+    return m_val > max_count / 65536;
+  }
+
   int to_frequency (struct function *fun) const;
   int to_cgraph_frequency (profile_count entry_bb_count) const;
   sreal to_sreal_scale (profile_count in, bool *known = NULL) const;

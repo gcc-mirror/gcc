@@ -206,6 +206,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_post_ipa_warn);
       /* Must run before loop unrolling.  */
       NEXT_PASS (pass_warn_access, /*early=*/true);
+      /* Profile count may overflow as a result of inlinining very large
+         loop nests.  This pass should run before any late pass that makes
+	 use of profile.  */
+      NEXT_PASS (pass_rebuild_frequencies);
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
@@ -395,6 +399,10 @@ along with GCC; see the file COPYING3.  If not see
          to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_dce);
+      /* Profile count may overflow as a result of inlinining very large
+         loop nests.  This pass should run before any late pass that makes
+	 use of profile.  */
+      NEXT_PASS (pass_rebuild_frequencies);
       NEXT_PASS (pass_sancov);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
