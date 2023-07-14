@@ -81,8 +81,10 @@
   UNSPEC_VCOMPRESS
   UNSPEC_VLEFF
   UNSPEC_MODIFY_VL
+])
 
-  UNSPEC_FSRM
+(define_c_enum "unspecv" [
+  UNSPECV_FRM_RESTORE_EXIT
 ])
 
 (define_mode_iterator V [

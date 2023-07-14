@@ -24,4 +24,6 @@ test_float_point_frm_static (float *out, vfloat32m1_t op1, vfloat32m1_t op2,
 }
 
 /* { dg-final { scan-assembler-times {vfadd\.v[vf]\s+v[0-9]+,\s*v[0-9]+,\s*[fav]+[0-9]+} 1 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[ax][0-9]+,\s*[ax][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 1 } } */

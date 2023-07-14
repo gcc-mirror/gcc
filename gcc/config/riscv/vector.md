@@ -475,7 +475,7 @@
 )
 
 ;; Defines rounding mode of an floating-point operation.
-(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,none"
+(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,dyn_exit,none"
   (cond
     [
       (eq_attr "type" "vfalu")
@@ -583,24 +583,51 @@
    (set_attr "mode" "SI")])
 
 ;; Set FRM
-(define_insn "fsrm"
-  [
-    (set
-      (reg:SI FRM_REGNUM)
-      (unspec:SI
-	[
-	  (match_operand:SI 0 "register_operand" "=&r")
-	  (match_operand:SI 1 "register_operand" "r")
-	] UNSPEC_FSRM
-      )
-    )
-  ]
+(define_insn "fsrmsi_backup"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(reg:SI FRM_REGNUM))
+   (set (reg:SI FRM_REGNUM)
+	(match_operand:SI 1 "reg_or_int_operand" "r,i"))]
+   "TARGET_VECTOR"
+  "@
+   fsrm\t%0,%1
+   fsrmi\t%0,%1"
+  [(set_attr "type" "wrfrm,wrfrm")
+   (set_attr "mode" "SI")]
+)
+
+(define_insn "fsrmsi_restore"
+  [(set (reg:SI FRM_REGNUM)
+	(match_operand:SI 0 "reg_or_int_operand" "r,i"))]
   "TARGET_VECTOR"
-  "fsrm\t%0,%1"
-  [
-    (set_attr "type" "wrfrm")
-    (set_attr "mode" "SI")
-  ]
+  "@
+   fsrm\t%0
+   fsrmi\t%0"
+  [(set_attr "type" "wrfrm,wrfrm")
+   (set_attr "mode" "SI")]
+ )
+
+;; The volatile fsrmsi restore is used for the exit point for the
+;; dynamic mode switching. It will generate one volatile fsrm a5
+;; which won't be eliminated.
+(define_insn "fsrmsi_restore_exit"
+  [(set (reg:SI FRM_REGNUM)
+	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+			    UNSPECV_FRM_RESTORE_EXIT))]
+  "TARGET_VECTOR"
+  "fsrm\t%0"
+  [(set_attr "type" "wrfrm")
+   (set_attr "mode" "SI")]
+)
+
+;; Read FRM
+(define_insn "frrmsi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(reg:SI FRM_REGNUM))]
+  "TARGET_VECTOR"
+  "frrm\t%0"
+  [(set_attr "type" "rdfrm")
+   (set_attr "mode" "SI")]
 )
 
 ;; -----------------------------------------------------------------

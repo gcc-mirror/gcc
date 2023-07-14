@@ -11,4 +11,6 @@ test_float_point_frm_insert (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl) {
 }
 
 /* { dg-final { scan-assembler-times {vfadd\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v+[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[ax][0-9]+,\s*[ax][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 1 } } */

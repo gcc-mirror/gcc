@@ -44,16 +44,14 @@ assert_equal (int a, int b, char *message)
 vfloat32m1_t __attribute__ ((noinline))
 test_float_point_frm_run (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
 {
-  set_frm (0);
-
   vfloat32m1_t result = {};
 
   result = __riscv_vfadd_vv_f32m1_rm (op1, result, 4, vl);
 
-  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
-  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
-
   assert_equal (4, get_frm (), "The value of frm register should be 4.");
+
+  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
+  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
 
   return result;
 }
@@ -65,7 +63,10 @@ main ()
   vfloat32m1_t op1 = {};
   vfloat32m1_t op2 = {};
 
+  set_frm (0);
   test_float_point_frm_run (op1, op2, vl);
+
+  assert_equal (0, get_frm (), "The value of frm register should be 0.");
 
   return 0;
 }
