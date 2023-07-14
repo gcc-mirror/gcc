@@ -37,6 +37,13 @@ gimple_phi_arg_imm_use_ptr (gimple *gs, int i)
   return &gimple_phi_arg (gs, i)->imm_use;
 }
 
+inline use_operand_p
+gimple_phi_arg_imm_use_ptr_from_edge (gimple *gs, const_edge e)
+{
+  gcc_checking_assert (e->dest == gimple_bb (gs));
+  return &gimple_phi_arg (gs, e->dest_idx)->imm_use;
+}
+
 /* Return the phi argument which contains the specified use.  */
 
 inline int
