@@ -1577,6 +1577,7 @@ typedef struct gfc_omp_clauses
   struct gfc_omp_assumptions *assume;
   struct gfc_expr_list *tile_sizes;
   const char *critical_name;
+  gfc_namespace *ns;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
   enum gfc_omp_defaultmap defaultmap[OMP_DEFAULTMAP_CAT_NUM];

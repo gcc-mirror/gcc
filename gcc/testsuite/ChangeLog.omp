@@ -1,3 +1,8 @@
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-mapper-26.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-29.f90: New test.
+
 2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
