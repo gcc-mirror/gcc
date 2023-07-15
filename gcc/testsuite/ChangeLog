@@ -1,3 +1,19 @@
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* gcc.target/i386/pr110206.c: New test.
+
+2023-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110288
+	* gfortran.dg/findloc_10.f90: New test.
+
 2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
