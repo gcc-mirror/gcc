@@ -78,24 +78,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp integral_constant<_Tp, __v>::value;
 #endif
 
-  /// The type used as a compile-time boolean with true value.
-  using true_type =  integral_constant<bool, true>;
-
-  /// The type used as a compile-time boolean with false value.
-  using false_type = integral_constant<bool, false>;
-
   /// @cond undocumented
   /// bool_constant for C++11
   template<bool __v>
     using __bool_constant = integral_constant<bool, __v>;
   /// @endcond
 
+  /// The type used as a compile-time boolean with true value.
+  using true_type =  __bool_constant<true>;
+
+  /// The type used as a compile-time boolean with false value.
+  using false_type = __bool_constant<false>;
+
 #if __cplusplus >= 201703L
 # define __cpp_lib_bool_constant 201505L
   /// Alias template for compile-time boolean constant types.
   /// @since C++17
   template<bool __v>
-    using bool_constant = integral_constant<bool, __v>;
+    using bool_constant = __bool_constant<__v>;
 #endif
 
   // Metaprogramming helper types.
