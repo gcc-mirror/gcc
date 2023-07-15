@@ -809,7 +809,8 @@ Marek Polacek for his work on the C front end, the sanitizers and general
 bug fixing.
 
 @item
-Andrew Pinski for processing bug reports by the dozen.
+Andrew Pinski for processing bug reports by the dozen, maintenance of the
+Objective-C runtime libraries, and many scalar optimizations.
 
 @item
 Ovidiu Predescu for his work on the Objective-C front end and runtime
