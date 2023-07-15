@@ -1,5 +1,19 @@
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
+	* gfortran.h (gfc_omp_clauses): Add NS field.
+	* openmp.cc (verify_omp_clauses_symbol_dups,
+	omp_verify_map_motion_clauses): New functions, broken out of...
+	(resolve_omp_clauses): Here.  Record namespace containing clauses.
+	Call above functions.
+	(resolve_omp_mapper_clauses): New function, using helper functions
+	broken out above.
+	(gfc_resolve_omp_directive): Add NS parameter to resolve_omp_clauses
+	calls.
+	(gfc_omp_instantiate_mappers): Call resolve_omp_mapper_clauses if we
+	instantiate any mappers.
+
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
 	* gfortran.h (toc_directive): Move here.
 	(gfc_omp_instantiate_mappers, gfc_get_location): Add prototypes.
 	* openmp.cc (omp_split_map_op, omp_join_map_op, omp_map_decayed_kind,
