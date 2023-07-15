@@ -1,3 +1,17 @@
+2023-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OMP_ALLOCATOR): Document the default values for
+	the traits. Add crossref to 'Memory allocation'.
+	(Memory allocation): Refer to OMP_ALLOCATOR for the available
+	traits and allocators/mem spaces; document the default value
+	for the pool_size trait.
+
+2023-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c (omp_init_allocator): Check whether symbol from
+	dlopened libnuma is available before using libnuma for
+	allocations.
+
 2023-07-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/libgomp.c++/target-map-class-2.C: Require LTO.

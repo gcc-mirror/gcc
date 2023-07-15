@@ -1,3 +1,489 @@
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vcmlaq, vcmlaq_rot90)
+	(vcmlaq_rot180, vcmlaq_rot270): New.
+	* config/arm/arm-mve-builtins-base.def (vcmlaq, vcmlaq_rot90)
+	(vcmlaq_rot180, vcmlaq_rot270): New.
+	* config/arm/arm-mve-builtins-base.h: (vcmlaq, vcmlaq_rot90)
+	(vcmlaq_rot180, vcmlaq_rot270): New.
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::has_inactive_argument): Handle vcmlaq,
+	vcmlaq_rot90, vcmlaq_rot180, vcmlaq_rot270.
+	* config/arm/arm_mve.h (vcmlaq): Delete.
+	(vcmlaq_rot180): Delete.
+	(vcmlaq_rot270): Delete.
+	(vcmlaq_rot90): Delete.
+	(vcmlaq_m): Delete.
+	(vcmlaq_rot180_m): Delete.
+	(vcmlaq_rot270_m): Delete.
+	(vcmlaq_rot90_m): Delete.
+	(vcmlaq_f16): Delete.
+	(vcmlaq_rot180_f16): Delete.
+	(vcmlaq_rot270_f16): Delete.
+	(vcmlaq_rot90_f16): Delete.
+	(vcmlaq_f32): Delete.
+	(vcmlaq_rot180_f32): Delete.
+	(vcmlaq_rot270_f32): Delete.
+	(vcmlaq_rot90_f32): Delete.
+	(vcmlaq_m_f32): Delete.
+	(vcmlaq_m_f16): Delete.
+	(vcmlaq_rot180_m_f32): Delete.
+	(vcmlaq_rot180_m_f16): Delete.
+	(vcmlaq_rot270_m_f32): Delete.
+	(vcmlaq_rot270_m_f16): Delete.
+	(vcmlaq_rot90_m_f32): Delete.
+	(vcmlaq_rot90_m_f16): Delete.
+	(__arm_vcmlaq_f16): Delete.
+	(__arm_vcmlaq_rot180_f16): Delete.
+	(__arm_vcmlaq_rot270_f16): Delete.
+	(__arm_vcmlaq_rot90_f16): Delete.
+	(__arm_vcmlaq_f32): Delete.
+	(__arm_vcmlaq_rot180_f32): Delete.
+	(__arm_vcmlaq_rot270_f32): Delete.
+	(__arm_vcmlaq_rot90_f32): Delete.
+	(__arm_vcmlaq_m_f32): Delete.
+	(__arm_vcmlaq_m_f16): Delete.
+	(__arm_vcmlaq_rot180_m_f32): Delete.
+	(__arm_vcmlaq_rot180_m_f16): Delete.
+	(__arm_vcmlaq_rot270_m_f32): Delete.
+	(__arm_vcmlaq_rot270_m_f16): Delete.
+	(__arm_vcmlaq_rot90_m_f32): Delete.
+	(__arm_vcmlaq_rot90_m_f16): Delete.
+	(__arm_vcmlaq): Delete.
+	(__arm_vcmlaq_rot180): Delete.
+	(__arm_vcmlaq_rot270): Delete.
+	(__arm_vcmlaq_rot90): Delete.
+	(__arm_vcmlaq_m): Delete.
+	(__arm_vcmlaq_rot180_m): Delete.
+	(__arm_vcmlaq_rot270_m): Delete.
+	(__arm_vcmlaq_rot90_m): Delete.
+
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve_builtins.def (vcmlaq_rot90_f)
+	(vcmlaq_rot270_f, vcmlaq_rot180_f, vcmlaq_f): Add "_f" suffix.
+	* config/arm/iterators.md (MVE_VCMLAQ_M): New.
+	(mve_insn): Add vcmla.
+	(rot): Add VCMLAQ_M_F, VCMLAQ_ROT90_M_F, VCMLAQ_ROT180_M_F,
+	VCMLAQ_ROT270_M_F.
+	(mve_rot): Add VCMLAQ_M_F, VCMLAQ_ROT90_M_F, VCMLAQ_ROT180_M_F,
+	VCMLAQ_ROT270_M_F.
+	* config/arm/mve.md (mve_vcmlaq<mve_rot><mode>): Rename into ...
+	(@mve_<mve_insn>q<mve_rot>_f<mode>): ... this.
+	(mve_vcmlaq_m_f<mode>, mve_vcmlaq_rot180_m_f<mode>)
+	(mve_vcmlaq_rot270_m_f<mode>, mve_vcmlaq_rot90_m_f<mode>): Merge
+	into ...
+	(@mve_<mve_insn>q<mve_rot>_m_f<mode>): ... this.
+
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vcmulq, vcmulq_rot90)
+	(vcmulq_rot180, vcmulq_rot270): New.
+	* config/arm/arm-mve-builtins-base.def (vcmulq, vcmulq_rot90)
+	(vcmulq_rot180, vcmulq_rot270): New.
+	* config/arm/arm-mve-builtins-base.h: (vcmulq, vcmulq_rot90)
+	(vcmulq_rot180, vcmulq_rot270): New.
+	* config/arm/arm_mve.h (vcmulq_rot90): Delete.
+	(vcmulq_rot270): Delete.
+	(vcmulq_rot180): Delete.
+	(vcmulq): Delete.
+	(vcmulq_m): Delete.
+	(vcmulq_rot180_m): Delete.
+	(vcmulq_rot270_m): Delete.
+	(vcmulq_rot90_m): Delete.
+	(vcmulq_x): Delete.
+	(vcmulq_rot90_x): Delete.
+	(vcmulq_rot180_x): Delete.
+	(vcmulq_rot270_x): Delete.
+	(vcmulq_rot90_f16): Delete.
+	(vcmulq_rot270_f16): Delete.
+	(vcmulq_rot180_f16): Delete.
+	(vcmulq_f16): Delete.
+	(vcmulq_rot90_f32): Delete.
+	(vcmulq_rot270_f32): Delete.
+	(vcmulq_rot180_f32): Delete.
+	(vcmulq_f32): Delete.
+	(vcmulq_m_f32): Delete.
+	(vcmulq_m_f16): Delete.
+	(vcmulq_rot180_m_f32): Delete.
+	(vcmulq_rot180_m_f16): Delete.
+	(vcmulq_rot270_m_f32): Delete.
+	(vcmulq_rot270_m_f16): Delete.
+	(vcmulq_rot90_m_f32): Delete.
+	(vcmulq_rot90_m_f16): Delete.
+	(vcmulq_x_f16): Delete.
+	(vcmulq_x_f32): Delete.
+	(vcmulq_rot90_x_f16): Delete.
+	(vcmulq_rot90_x_f32): Delete.
+	(vcmulq_rot180_x_f16): Delete.
+	(vcmulq_rot180_x_f32): Delete.
+	(vcmulq_rot270_x_f16): Delete.
+	(vcmulq_rot270_x_f32): Delete.
+	(__arm_vcmulq_rot90_f16): Delete.
+	(__arm_vcmulq_rot270_f16): Delete.
+	(__arm_vcmulq_rot180_f16): Delete.
+	(__arm_vcmulq_f16): Delete.
+	(__arm_vcmulq_rot90_f32): Delete.
+	(__arm_vcmulq_rot270_f32): Delete.
+	(__arm_vcmulq_rot180_f32): Delete.
+	(__arm_vcmulq_f32): Delete.
+	(__arm_vcmulq_m_f32): Delete.
+	(__arm_vcmulq_m_f16): Delete.
+	(__arm_vcmulq_rot180_m_f32): Delete.
+	(__arm_vcmulq_rot180_m_f16): Delete.
+	(__arm_vcmulq_rot270_m_f32): Delete.
+	(__arm_vcmulq_rot270_m_f16): Delete.
+	(__arm_vcmulq_rot90_m_f32): Delete.
+	(__arm_vcmulq_rot90_m_f16): Delete.
+	(__arm_vcmulq_x_f16): Delete.
+	(__arm_vcmulq_x_f32): Delete.
+	(__arm_vcmulq_rot90_x_f16): Delete.
+	(__arm_vcmulq_rot90_x_f32): Delete.
+	(__arm_vcmulq_rot180_x_f16): Delete.
+	(__arm_vcmulq_rot180_x_f32): Delete.
+	(__arm_vcmulq_rot270_x_f16): Delete.
+	(__arm_vcmulq_rot270_x_f32): Delete.
+	(__arm_vcmulq_rot90): Delete.
+	(__arm_vcmulq_rot270): Delete.
+	(__arm_vcmulq_rot180): Delete.
+	(__arm_vcmulq): Delete.
+	(__arm_vcmulq_m): Delete.
+	(__arm_vcmulq_rot180_m): Delete.
+	(__arm_vcmulq_rot270_m): Delete.
+	(__arm_vcmulq_rot90_m): Delete.
+	(__arm_vcmulq_x): Delete.
+	(__arm_vcmulq_rot90_x): Delete.
+	(__arm_vcmulq_rot180_x): Delete.
+	(__arm_vcmulq_rot270_x): Delete.
+
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve_builtins.def (vcmulq_rot90_f)
+	(vcmulq_rot270_f, vcmulq_rot180_f, vcmulq_f): Add "_f" suffix.
+	* config/arm/iterators.md (MVE_VCADDQ_VCMULQ)
+	(MVE_VCADDQ_VCMULQ_M): New.
+	(mve_insn): Add vcmul.
+	(rot): Add VCMULQ_M_F, VCMULQ_ROT90_M_F, VCMULQ_ROT180_M_F,
+	VCMULQ_ROT270_M_F.
+	(VCMUL): Delete.
+	(mve_rot): Add VCMULQ_M_F, VCMULQ_ROT90_M_F, VCMULQ_ROT180_M_F,
+	VCMULQ_ROT270_M_F.
+	* config/arm/mve.md (mve_vcmulq<mve_rot><mode>): Merge into
+	@mve_<mve_insn>q<mve_rot>_f<mode>.
+	(mve_vcmulq_m_f<mode>, mve_vcmulq_rot180_m_f<mode>)
+	(mve_vcmulq_rot270_m_f<mode>, mve_vcmulq_rot90_m_f<mode>): Merge
+	into @mve_<mve_insn>q<mve_rot>_m_f<mode>.
+
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vcaddq_rot90)
+	(vcaddq_rot270, vhcaddq_rot90, vhcaddq_rot270): New.
+	* config/arm/arm-mve-builtins-base.def (vcaddq_rot90)
+	(vcaddq_rot270, vhcaddq_rot90, vhcaddq_rot270): New.
+	* config/arm/arm-mve-builtins-base.h: (vcaddq_rot90)
+	(vcaddq_rot270, vhcaddq_rot90, vhcaddq_rot270): New.
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_mve_function_exact_insn_rot): New.
+	* config/arm/arm_mve.h (vcaddq_rot90): Delete.
+	(vcaddq_rot270): Delete.
+	(vhcaddq_rot90): Delete.
+	(vhcaddq_rot270): Delete.
+	(vcaddq_rot270_m): Delete.
+	(vcaddq_rot90_m): Delete.
+	(vhcaddq_rot270_m): Delete.
+	(vhcaddq_rot90_m): Delete.
+	(vcaddq_rot90_x): Delete.
+	(vcaddq_rot270_x): Delete.
+	(vhcaddq_rot90_x): Delete.
+	(vhcaddq_rot270_x): Delete.
+	(vcaddq_rot90_u8): Delete.
+	(vcaddq_rot270_u8): Delete.
+	(vhcaddq_rot90_s8): Delete.
+	(vhcaddq_rot270_s8): Delete.
+	(vcaddq_rot90_s8): Delete.
+	(vcaddq_rot270_s8): Delete.
+	(vcaddq_rot90_u16): Delete.
+	(vcaddq_rot270_u16): Delete.
+	(vhcaddq_rot90_s16): Delete.
+	(vhcaddq_rot270_s16): Delete.
+	(vcaddq_rot90_s16): Delete.
+	(vcaddq_rot270_s16): Delete.
+	(vcaddq_rot90_u32): Delete.
+	(vcaddq_rot270_u32): Delete.
+	(vhcaddq_rot90_s32): Delete.
+	(vhcaddq_rot270_s32): Delete.
+	(vcaddq_rot90_s32): Delete.
+	(vcaddq_rot270_s32): Delete.
+	(vcaddq_rot90_f16): Delete.
+	(vcaddq_rot270_f16): Delete.
+	(vcaddq_rot90_f32): Delete.
+	(vcaddq_rot270_f32): Delete.
+	(vcaddq_rot270_m_s8): Delete.
+	(vcaddq_rot270_m_s32): Delete.
+	(vcaddq_rot270_m_s16): Delete.
+	(vcaddq_rot270_m_u8): Delete.
+	(vcaddq_rot270_m_u32): Delete.
+	(vcaddq_rot270_m_u16): Delete.
+	(vcaddq_rot90_m_s8): Delete.
+	(vcaddq_rot90_m_s32): Delete.
+	(vcaddq_rot90_m_s16): Delete.
+	(vcaddq_rot90_m_u8): Delete.
+	(vcaddq_rot90_m_u32): Delete.
+	(vcaddq_rot90_m_u16): Delete.
+	(vhcaddq_rot270_m_s8): Delete.
+	(vhcaddq_rot270_m_s32): Delete.
+	(vhcaddq_rot270_m_s16): Delete.
+	(vhcaddq_rot90_m_s8): Delete.
+	(vhcaddq_rot90_m_s32): Delete.
+	(vhcaddq_rot90_m_s16): Delete.
+	(vcaddq_rot270_m_f32): Delete.
+	(vcaddq_rot270_m_f16): Delete.
+	(vcaddq_rot90_m_f32): Delete.
+	(vcaddq_rot90_m_f16): Delete.
+	(vcaddq_rot90_x_s8): Delete.
+	(vcaddq_rot90_x_s16): Delete.
+	(vcaddq_rot90_x_s32): Delete.
+	(vcaddq_rot90_x_u8): Delete.
+	(vcaddq_rot90_x_u16): Delete.
+	(vcaddq_rot90_x_u32): Delete.
+	(vcaddq_rot270_x_s8): Delete.
+	(vcaddq_rot270_x_s16): Delete.
+	(vcaddq_rot270_x_s32): Delete.
+	(vcaddq_rot270_x_u8): Delete.
+	(vcaddq_rot270_x_u16): Delete.
+	(vcaddq_rot270_x_u32): Delete.
+	(vhcaddq_rot90_x_s8): Delete.
+	(vhcaddq_rot90_x_s16): Delete.
+	(vhcaddq_rot90_x_s32): Delete.
+	(vhcaddq_rot270_x_s8): Delete.
+	(vhcaddq_rot270_x_s16): Delete.
+	(vhcaddq_rot270_x_s32): Delete.
+	(vcaddq_rot90_x_f16): Delete.
+	(vcaddq_rot90_x_f32): Delete.
+	(vcaddq_rot270_x_f16): Delete.
+	(vcaddq_rot270_x_f32): Delete.
+	(__arm_vcaddq_rot90_u8): Delete.
+	(__arm_vcaddq_rot270_u8): Delete.
+	(__arm_vhcaddq_rot90_s8): Delete.
+	(__arm_vhcaddq_rot270_s8): Delete.
+	(__arm_vcaddq_rot90_s8): Delete.
+	(__arm_vcaddq_rot270_s8): Delete.
+	(__arm_vcaddq_rot90_u16): Delete.
+	(__arm_vcaddq_rot270_u16): Delete.
+	(__arm_vhcaddq_rot90_s16): Delete.
+	(__arm_vhcaddq_rot270_s16): Delete.
+	(__arm_vcaddq_rot90_s16): Delete.
+	(__arm_vcaddq_rot270_s16): Delete.
+	(__arm_vcaddq_rot90_u32): Delete.
+	(__arm_vcaddq_rot270_u32): Delete.
+	(__arm_vhcaddq_rot90_s32): Delete.
+	(__arm_vhcaddq_rot270_s32): Delete.
+	(__arm_vcaddq_rot90_s32): Delete.
+	(__arm_vcaddq_rot270_s32): Delete.
+	(__arm_vcaddq_rot270_m_s8): Delete.
+	(__arm_vcaddq_rot270_m_s32): Delete.
+	(__arm_vcaddq_rot270_m_s16): Delete.
+	(__arm_vcaddq_rot270_m_u8): Delete.
+	(__arm_vcaddq_rot270_m_u32): Delete.
+	(__arm_vcaddq_rot270_m_u16): Delete.
+	(__arm_vcaddq_rot90_m_s8): Delete.
+	(__arm_vcaddq_rot90_m_s32): Delete.
+	(__arm_vcaddq_rot90_m_s16): Delete.
+	(__arm_vcaddq_rot90_m_u8): Delete.
+	(__arm_vcaddq_rot90_m_u32): Delete.
+	(__arm_vcaddq_rot90_m_u16): Delete.
+	(__arm_vhcaddq_rot270_m_s8): Delete.
+	(__arm_vhcaddq_rot270_m_s32): Delete.
+	(__arm_vhcaddq_rot270_m_s16): Delete.
+	(__arm_vhcaddq_rot90_m_s8): Delete.
+	(__arm_vhcaddq_rot90_m_s32): Delete.
+	(__arm_vhcaddq_rot90_m_s16): Delete.
+	(__arm_vcaddq_rot90_x_s8): Delete.
+	(__arm_vcaddq_rot90_x_s16): Delete.
+	(__arm_vcaddq_rot90_x_s32): Delete.
+	(__arm_vcaddq_rot90_x_u8): Delete.
+	(__arm_vcaddq_rot90_x_u16): Delete.
+	(__arm_vcaddq_rot90_x_u32): Delete.
+	(__arm_vcaddq_rot270_x_s8): Delete.
+	(__arm_vcaddq_rot270_x_s16): Delete.
+	(__arm_vcaddq_rot270_x_s32): Delete.
+	(__arm_vcaddq_rot270_x_u8): Delete.
+	(__arm_vcaddq_rot270_x_u16): Delete.
+	(__arm_vcaddq_rot270_x_u32): Delete.
+	(__arm_vhcaddq_rot90_x_s8): Delete.
+	(__arm_vhcaddq_rot90_x_s16): Delete.
+	(__arm_vhcaddq_rot90_x_s32): Delete.
+	(__arm_vhcaddq_rot270_x_s8): Delete.
+	(__arm_vhcaddq_rot270_x_s16): Delete.
+	(__arm_vhcaddq_rot270_x_s32): Delete.
+	(__arm_vcaddq_rot90_f16): Delete.
+	(__arm_vcaddq_rot270_f16): Delete.
+	(__arm_vcaddq_rot90_f32): Delete.
+	(__arm_vcaddq_rot270_f32): Delete.
+	(__arm_vcaddq_rot270_m_f32): Delete.
+	(__arm_vcaddq_rot270_m_f16): Delete.
+	(__arm_vcaddq_rot90_m_f32): Delete.
+	(__arm_vcaddq_rot90_m_f16): Delete.
+	(__arm_vcaddq_rot90_x_f16): Delete.
+	(__arm_vcaddq_rot90_x_f32): Delete.
+	(__arm_vcaddq_rot270_x_f16): Delete.
+	(__arm_vcaddq_rot270_x_f32): Delete.
+	(__arm_vcaddq_rot90): Delete.
+	(__arm_vcaddq_rot270): Delete.
+	(__arm_vhcaddq_rot90): Delete.
+	(__arm_vhcaddq_rot270): Delete.
+	(__arm_vcaddq_rot270_m): Delete.
+	(__arm_vcaddq_rot90_m): Delete.
+	(__arm_vhcaddq_rot270_m): Delete.
+	(__arm_vhcaddq_rot90_m): Delete.
+	(__arm_vcaddq_rot90_x): Delete.
+	(__arm_vcaddq_rot270_x): Delete.
+	(__arm_vhcaddq_rot90_x): Delete.
+	(__arm_vhcaddq_rot270_x): Delete.
+
+2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve_builtins.def (vcaddq_rot90_, vcaddq_rot270_)
+	(vcaddq_rot90_f, vcaddq_rot90_f): Add "_" or "_f" suffix.
+	* config/arm/iterators.md (mve_insn): Add vcadd, vhcadd.
+	(isu): Add UNSPEC_VCADD90, UNSPEC_VCADD270, VCADDQ_ROT270_M_U,
+	VCADDQ_ROT270_M_S, VCADDQ_ROT90_M_U, VCADDQ_ROT90_M_S,
+	VHCADDQ_ROT90_M_S, VHCADDQ_ROT270_M_S, VHCADDQ_ROT90_S,
+	VHCADDQ_ROT270_S.
+	(rot): Add VCADDQ_ROT90_M_F, VCADDQ_ROT90_M_S, VCADDQ_ROT90_M_U,
+	VCADDQ_ROT270_M_F, VCADDQ_ROT270_M_S, VCADDQ_ROT270_M_U,
+	VHCADDQ_ROT90_S, VHCADDQ_ROT270_S, VHCADDQ_ROT90_M_S,
+	VHCADDQ_ROT270_M_S.
+	(mve_rot): Add VCADDQ_ROT90_M_F, VCADDQ_ROT90_M_S,
+	VCADDQ_ROT90_M_U, VCADDQ_ROT270_M_F, VCADDQ_ROT270_M_S,
+	VCADDQ_ROT270_M_U, VHCADDQ_ROT90_S, VHCADDQ_ROT270_S,
+	VHCADDQ_ROT90_M_S, VHCADDQ_ROT270_M_S.
+	(supf): Add VHCADDQ_ROT90_M_S, VHCADDQ_ROT270_M_S,
+	VHCADDQ_ROT90_S, VHCADDQ_ROT270_S, UNSPEC_VCADD90,
+	UNSPEC_VCADD270.
+	(VCADDQ_ROT270_M): Delete.
+	(VCADDQ_M_F VxCADDQ VxCADDQ_M): New.
+	(VCADDQ_ROT90_M): Delete.
+	* config/arm/mve.md (mve_vcaddq<mve_rot><mode>)
+	(mve_vhcaddq_rot270_s<mode>, mve_vhcaddq_rot90_s<mode>): Merge
+	into ...
+	(@mve_<mve_insn>q<mve_rot>_<supf><mode>): ... this.
+	(mve_vcaddq<mve_rot><mode>): Rename into ...
+	(@mve_<mve_insn>q<mve_rot>_f<mode>): ... this
+	(mve_vcaddq_rot270_m_<supf><mode>)
+	(mve_vcaddq_rot90_m_<supf><mode>, mve_vhcaddq_rot270_m_s<mode>)
+	(mve_vhcaddq_rot90_m_s<mode>): Merge into ...
+	(@mve_<mve_insn>q<mve_rot>_m_<supf><mode>): ... this.
+	(mve_vcaddq_rot270_m_f<mode>, mve_vcaddq_rot90_m_f<mode>): Merge
+	into ...
+	(@mve_<mve_insn>q<mve_rot>_m_f<mode>): ... this.
+
+2023-07-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110588
+	* config/i386/i386.md (*bt<mode>_setcqi): Prefer string form
+	preparation statement over braces for a single statement.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setncqi_2): New define_insn_and_split.
+
+2023-07-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move): Generalize special
+	case inserting of 64-bit values into a TImode register, to handle
+	both DImode and DFmode using either *insvti_lowpart_1
+	or *isnvti_highpart_1.
+
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* fwprop.cc (contains_paradoxical_subreg_p): Move to ...
+	* rtlanal.cc (contains_paradoxical_subreg_p): ... here.
+	* rtlanal.h (contains_paradoxical_subreg_p): Add prototype.
+	* cprop.cc (try_replace_reg): Do not set REG_EQUAL note
+	when the original source contains a paradoxical subreg.
+
+2023-07-14  Jan Hubicka  <jh@suse.cz>
+
+	* passes.cc (execute_function_todo): Remove
+	TODO_rebuild_frequencies
+	* passes.def: Add rebuild_frequencies pass.
+	* predict.cc (estimate_bb_frequencies): Drop
+	force parameter.
+	(tree_estimate_probability): Update call of
+	estimate_bb_frequencies.
+	(rebuild_frequencies): Turn into a pass; verify CFG profile consistency
+	first and do not rebuild if not necessary.
+	(class pass_rebuild_frequencies): New.
+	(make_pass_rebuild_frequencies): New.
+	* profile-count.h: Add profile_count::very_large_p.
+	* tree-inline.cc (optimize_inline_calls): Do not return
+	TODO_rebuild_frequencies
+	* tree-pass.h (TODO_rebuild_frequencies): Remove.
+	(make_pass_rebuild_frequencies): Declare.
+
+2023-07-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (cond_len_fma<mode>): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_cond_len_ternop): New function.
+	* config/riscv/riscv-v.cc (emit_nonvlmax_fp_ternary_tu_insn): Ditto.
+	(expand_cond_len_ternop): Ditto.
+
+2023-07-14  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/110657
+	* config/bpf/bpf.md: Enable instruction scheduling.
+
+2023-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (INCLUDE_ALGORITHM): Include.
+	(struct bb_predicate): Add no_predicate_stmts.
+	(set_bb_predicate): Increase predicate count.
+	(set_bb_predicate_gimplified_stmts): Conditionally initialize
+	no_predicate_stmts.
+	(get_bb_num_predicate_stmts): New.
+	(init_bb_predicate): Initialzie no_predicate_stmts.
+	(release_bb_predicate): Cleanup no_predicate_stmts.
+	(insert_gimplified_predicates): Preserve no_predicate_stmts.
+
+2023-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (gen_simplified_condition,
+	gen_phi_nest_statement): New.
+	(gen_phi_arg_condition, predicate_scalar_phi): Use it.
+
+2023-07-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_phi_arg): New const overload.
+	(gimple_phi_arg_def): Make gimple arg const.
+	(gimple_phi_arg_def_from_edge): New inline function.
+	* tree-phinodes.h (gimple_phi_arg_imm_use_ptr_from_edge):
+	Likewise.
+	* tree-ssa-operands.h (PHI_ARG_DEF_FROM_EDGE): Direct to
+	new inline function.
+	(PHI_ARG_DEF_PTR_FROM_EDGE): Likewise.
+
+2023-07-14  Monk Chiang  <monk.chiang@sifive.com>
+
+	* common/config/riscv/riscv-common.cc:
+	(riscv_implied_info): Add zihintntl item.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZIHINTNTL): New macro.
+	(TARGET_ZIHINTNTL): Ditto.
+
+2023-07-14  Die Li  <lidie@eswincomputing.com>
+
+	* config/riscv/riscv.md: Remove redundant portion in and<mode>3.
+
+2023-07-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101469
+	* config/sh/sh.md (peephole2): Handle case where eliminated reg is also
+	used by the address of the following memory operand.
+
 2023-07-13  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/107841

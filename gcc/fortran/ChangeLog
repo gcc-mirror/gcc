@@ -1,3 +1,43 @@
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* trans.h (gfc_reset_vptr): Add class_container argument.
+	* trans-expr.cc (gfc_reset_vptr): Ditto.  If a valid vptr can
+	be obtained through class_container argument, bypass evaluation
+	of e.
+	(gfc_conv_procedure_call):  Wrap the argument evaluation code
+	in a conditional if the associated dummy is optional.  Evaluate
+	the data reference to a pointer now, and replace later
+	references with usage of the pointer.
+
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* trans.h (struct gfc_se): New field class_container.
+	(struct gfc_ss_info): Ditto.
+	(gfc_evaluate_data_ref_now): New prototype.
+	* trans.cc (gfc_evaluate_data_ref_now):  Implement it.
+	* trans-array.cc (gfc_conv_ss_descriptor): Copy class_container
+	field from gfc_se struct to gfc_ss_info struct.
+	(gfc_conv_expr_descriptor): Copy class_container field from
+	gfc_ss_info struct to gfc_se struct.
+	* trans-expr.cc (gfc_conv_class_to_class): Use class container
+	set in class_container field if available.
+	(gfc_conv_variable): Set class_container field on encountering
+	class variables or components, clear it on encountering
+	non-class components.
+	(gfc_conv_procedure_call): Evaluate data ref to a pointer now,
+	and replace later references by usage of the pointer.
+
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* trans-expr.cc (gfc_conv_procedure_call): Use a separate gfc_se
+	struct, initalized from parmse, to generate the class wrapper.
+	After the class wrapper code has been generated, copy it back
+	depending on whether parameter deallocation code has been
+	generated.
+
 2023-07-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/106050

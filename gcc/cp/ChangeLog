@@ -1,3 +1,23 @@
+2023-07-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): Pass t to get_value.
+
+2023-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110344
+	* constexpr.cc (cxx_eval_constant_expression): Move P2738 handling
+	after heap handling.
+	* name-lookup.cc (get_cxx_dialect_name): Add C++26.
+
+2023-07-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/109876
+	* decl.cc (cp_finish_decl): Set TREE_CONSTANT when initializing
+	an object of empty class type.
+	* pt.cc (value_dependent_expression_p) <case VAR_DECL>: Treat a
+	constexpr-declared non-constant variable as value-dependent.
+
 2023-07-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110580

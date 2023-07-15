@@ -1,3 +1,68 @@
+2023-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/110344
+	* g++.dg/cpp0x/constexpr-cast2.C: Adjust for P2738.
+	* g++.dg/ipa/devirt-45.C: Handle -fimplicit-constexpr.
+
+2023-07-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110588
+	* gcc.target/i386/pr110588.c: New test case.
+
+2023-07-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/109876
+	* g++.dg/cpp0x/constexpr-template12.C: New test.
+	* g++.dg/cpp1z/constexpr-template1.C: New test.
+	* g++.dg/cpp1z/constexpr-template2.C: New test.
+
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* gcc.target/i386/pr110206.c: New test.
+
+2023-07-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-7.c:
+	Adapt testcase for link fail.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/ternop/ternop_nofm_run-3.c: New test.
+
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* gfortran.dg/intent_out_21.f90: New test.
+
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* gfortran.dg/intent_out_20.f90: New test.
+
+2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/92178
+	* gfortran.dg/intent_out_19.f90: New test.
+
+2023-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.dg/vect/vect-ifcvt-20.c: New test.
+
+2023-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/109154
+	* gcc.dg/vect/vect-ifcvt-19.c: New test.
+
+2023-07-14  Monk Chiang  <monk.chiang@sifive.com>
+
+	* gcc.target/riscv/arch-22.c: New test.
+	* gcc.target/riscv/predef-28.c: New test.
+
 2023-07-13  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR target/107841
