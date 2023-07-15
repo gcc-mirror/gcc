@@ -1,5 +1,5 @@
 ! { dg-do compile { target powerpc*-*-* } }
-! { dg-options "-O2 -mabi=ibmlongdouble" }
+! { dg-options "-O2 -mlong-double-128 -mabi=ibmlongdouble" }
 
 ! Test to ensure that it reports an "Cannot simplify expression" error
 ! instead of throwing an ICE when the memory represent of the HOLLERITH
