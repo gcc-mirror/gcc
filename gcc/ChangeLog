@@ -1,3 +1,21 @@
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* fwprop.cc (contains_paradoxical_subreg_p): Move to ...
+	* rtlanal.cc (contains_paradoxical_subreg_p): ... here.
+	* rtlanal.h (contains_paradoxical_subreg_p): Add prototype.
+	* cprop.cc (try_replace_reg): Do not set REG_EQUAL note
+	when the original source contains a paradoxical subreg.
+
+2023-07-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101469
+	* config/sh/sh.md (peephole2): Handle case where eliminated reg
+	is also	used by the address of the following memory operand.
+
 2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
