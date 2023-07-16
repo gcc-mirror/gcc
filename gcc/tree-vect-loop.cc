@@ -11680,6 +11680,7 @@ optimize_mask_stores (class loop *loop)
       efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
       /* Put STORE_BB to likely part.  */
       efalse->probability = profile_probability::unlikely ();
+      e->probability = efalse->probability.invert ();
       store_bb->count = efalse->count ();
       make_single_succ_edge (store_bb, join_bb, EDGE_FALLTHRU);
       if (dom_info_available_p (CDI_DOMINATORS))
