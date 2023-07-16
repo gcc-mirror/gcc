@@ -7428,7 +7428,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     (and other intrinsics?) and dummy functions.  In the case of SPREAD,
 	     we take the character length of the first argument for the result.
 	     For dummies, we have to look through the formal argument list for
-	     this function and use the character length found there.*/
+	     this function and use the character length found there.
+	     Likewise, we handle the case of deferred-length character dummy
+	     arguments to intrinsics that determine the characteristics of
+	     the result, which cannot be deferred-length.  */
+	  if (expr->value.function.isym)
+	    ts.deferred = false;
 	  if (ts.deferred)
 	    cl.backend_decl = gfc_create_var (gfc_charlen_type_node, "slen");
 	  else if (!sym->attr.dummy)
