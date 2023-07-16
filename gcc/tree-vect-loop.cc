@@ -10842,31 +10842,30 @@ vect_get_loop_len (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
 static void
 scale_profile_for_vect_loop (class loop *loop, unsigned vf)
 {
-  edge preheader = loop_preheader_edge (loop);
-  /* Reduce loop iterations by the vectorization factor.  */
-  gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
-  profile_count freq_h = loop->header->count, freq_e = preheader->count ();
-
-  if (freq_h.nonzero_p ())
-    {
-      profile_probability p;
-
-      /* Avoid dropping loop body profile counter to 0 because of zero count
-	 in loop's preheader.  */
-      if (!(freq_e == profile_count::zero ()))
-        freq_e = freq_e.force_nonzero ();
-      p = (freq_e * (new_est_niter + 1)).probability_in (freq_h);
-      scale_loop_frequencies (loop, p);
-    }
-
+  /* Loop body executes VF fewer times and exit increases VF times.  */
   edge exit_e = single_exit (loop);
-  exit_e->probability = profile_probability::always () / (new_est_niter + 1);
+  profile_count entry_count = loop_preheader_edge (loop)->count ();
 
-  edge exit_l = single_pred_edge (loop->latch);
-  profile_probability prob = exit_l->probability;
-  exit_l->probability = exit_e->probability.invert ();
-  if (prob.initialized_p () && exit_l->probability.initialized_p ())
-    scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
+  /* If we have unreliable loop profile avoid dropping entry
+     count bellow header count.  This can happen since loops
+     has unrealistically low trip counts.  */
+  while (vf > 1
+	 && loop->header->count > entry_count
+	 && loop->header->count < entry_count * vf)
+    vf /= 2;
+
+  if (entry_count.nonzero_p ())
+    set_edge_probability_and_rescale_others
+	    (exit_e,
+	     entry_count.probability_in (loop->header->count / vf));
+  /* Avoid producing very large exit probability when we do not have
+     sensible profile.  */
+  else if (exit_e->probability < profile_probability::always () / (vf * 2))
+    set_edge_probability_and_rescale_others (exit_e, exit_e->probability * vf);
+  loop->latch->count = single_pred_edge (loop->latch)->count ();
+
+  scale_loop_profile (loop, profile_probability::always () / vf,
+		      get_likely_max_loop_iterations_int (loop));
 }
 
 /* For a vectorized stmt DEF_STMT_INFO adjust all vectorized PHI
@@ -11476,7 +11475,6 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			   niters_vector_mult_vf, !niters_no_overflow);
 
   unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
-  scale_profile_for_vect_loop (loop, assumed_vf);
 
   /* True if the final iteration might not handle a full vector's
      worth of scalar iterations.  */
@@ -11547,6 +11545,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			  assumed_vf) - 1
 	 : wi::udiv_floor (loop->nb_iterations_estimate + bias_for_assumed,
 			   assumed_vf) - 1);
+  scale_profile_for_vect_loop (loop, assumed_vf);
 
   if (dump_enabled_p ())
     {
