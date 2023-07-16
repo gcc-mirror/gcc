@@ -1,3 +1,15 @@
+2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110441
+	* call.cc (keep_unused_object_arg): Use cp_build_compound_expr
+	instead of building a COMPOUND_EXPR directly.
+
+2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110524
+	* mangle.cc (write_expression): Handle TEMPLATE_ID_EXPR
+	whose template is already an IDENTIFIER_NODE.
+
 2023-07-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* constexpr.cc (cxx_eval_constant_expression): Pass t to get_value.

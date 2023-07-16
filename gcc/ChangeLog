@@ -1,3 +1,23 @@
+2023-07-15  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/contrib.texi: Update my entry.
+
+2023-07-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Define constants R1_REGNUM, R19_REGNUM and
+	R27_REGNUM.
+	(tgd_load): Restrict to !TARGET_64BIT. Use register constants.
+	(tld_load): Likewise.
+	(tgd_load_pic): Change to expander.
+	(tld_load_pic, tld_offset_load, tp_load): Likewise.
+	(tie_load_pic, tle_load): Likewise.
+	(tgd_load_picsi, tgd_load_picdi): New.
+	(tld_load_picsi, tld_load_picdi): New.
+	(tld_offset_load<P:mode>): New.
+	(tp_load<P:mode>): New.
+	(tie_load_picsi, tie_load_picdi): New.
+	(tle_load<P:mode>): New.
+
 2023-07-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm-mve-builtins-base.cc (vcmlaq, vcmlaq_rot90)

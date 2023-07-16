@@ -1,3 +1,17 @@
+2023-07-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/pr103628.f90: Add -mlong-double-128 option.
+
+2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110441
+	* g++.dg/cpp1z/elide8.C: New test.
+
+2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110524
+	* g++.dg/cpp2a/fn-template26.C: New test.
+
 2023-07-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/110344
