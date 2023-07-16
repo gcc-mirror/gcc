@@ -37,28 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 // Proper usage of the correct query in passes will enable other
 // valuation mechanisms to produce more precise results.
 
-class value_query
-{
-public:
-  value_query () { }
-  // Return the singleton expression for EXPR at a gimple statement,
-  // or NULL if none found.
-  virtual tree value_of_expr (tree expr, gimple * = NULL) = 0;
-  // Return the singleton expression for EXPR at an edge, or NULL if
-  // none found.
-  virtual tree value_on_edge (edge, tree expr);
-  // Return the singleton expression for the LHS of a gimple
-  // statement, assuming an (optional) initial value of NAME.  Returns
-  // NULL if none found.
-  //
-  // Note that this method calculates the range the LHS would have
-  // *after* the statement has executed.
-  virtual tree value_of_stmt (gimple *, tree name = NULL);
-
-private:
-  DISABLE_COPY_AND_ASSIGN (value_query);
-};
-
 // The range_query class is used by optimization passes which are
 // range aware.
 //
@@ -73,15 +51,15 @@ private:
 // The get_value_range method is currently provided for compatibility
 // with vr-values.  It will be deprecated when possible.
 
-class range_query : public value_query
+class range_query
 {
 public:
   range_query ();
   virtual ~range_query ();
 
-  virtual tree value_of_expr (tree expr, gimple * = NULL) override;
-  virtual tree value_on_edge (edge, tree expr) override;
-  virtual tree value_of_stmt (gimple *, tree name = NULL) override;
+  virtual tree value_of_expr (tree expr, gimple * = NULL);
+  virtual tree value_on_edge (edge, tree expr);
+  virtual tree value_of_stmt (gimple *, tree name = NULL);
 
   // These are the range equivalents of the value_* methods.  Instead
   // of returning a singleton, they calculate a range and return it in
