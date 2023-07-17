@@ -54,7 +54,26 @@ struct TargetOptions
   std::unordered_map<std::string, std::unordered_set<tl::optional<std::string>>>
     features;
 
+  enum class CrateType
+  {
+    BIN = 0,
+    LIB,
+    RLIB,
+    DYLIB,
+    CDYLIB,
+    STATICLIB,
+    PROC_MACRO
+  } crate_type
+    = CrateType::BIN;
+
 public:
+  void set_crate_type (int raw_type)
+  {
+    crate_type = static_cast<CrateType> (raw_type);
+  }
+
+  const CrateType &get_crate_type () const { return crate_type; }
+
   // Returns whether a key is defined in the feature set.
   bool has_key (std::string key) const
   {
@@ -214,7 +233,6 @@ struct CompileOptions
   bool crate_name_set_manually = false;
   bool enable_test = false;
   bool debug_assertions = false;
-  bool proc_macro = false;
   std::string metadata_output_path;
 
   enum class Edition
@@ -280,6 +298,14 @@ struct CompileOptions
   }
 
   const Edition &get_edition () const { return edition; }
+
+  void set_crate_type (int raw_type) { target_data.set_crate_type (raw_type); }
+
+  bool is_proc_macro () const
+  {
+    return target_data.get_crate_type ()
+	   == TargetOptions::CrateType::PROC_MACRO;
+  }
 
   void set_compile_step (int raw_step)
   {
