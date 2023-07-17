@@ -1124,6 +1124,82 @@ get_elem_size (gfc_se *se, gfc_typespec *ts, gfc_expr *class_size)
 }
 
 
+/* Generate the data reference (array) descriptor corresponding to the
+   expression passed as argument in VAR.  Use type in TS to pilot code
+   generation.  */
+
+static void
+get_var_descr (gfc_se *se, gfc_typespec *ts, gfc_expr *var)
+{
+  gfc_se tmp_se;
+  symbol_attribute attr;
+
+  gcc_assert (var);
+
+  gfc_init_se (&tmp_se, NULL);
+
+  if (ts->type == BT_DERIVED)
+    {
+      tmp_se.want_pointer = 1;
+      if (var->rank)
+	{
+	  tmp_se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&tmp_se, var);
+	}
+      else
+	{
+	  gfc_conv_expr (&tmp_se, var);
+
+	  /* No copy back needed, hence set attr's allocatable/pointer
+	     to zero.  */
+	  gfc_clear_attr (&attr);
+	  tmp_se.expr = gfc_conv_scalar_to_descriptor (&tmp_se, tmp_se.expr,
+						       attr);
+	  gcc_assert (tmp_se.post.head == NULL_TREE);
+	}
+    }
+  else
+    {
+      gfc_expr *array_expr;
+
+      array_expr = gfc_copy_expr (var);
+
+      tmp_se.want_pointer = 1;
+      if (array_expr->rank)
+	{
+	  gfc_add_class_array_ref (array_expr);
+	  tmp_se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&tmp_se, array_expr);
+	}
+      else
+	{
+	  gfc_add_data_component (array_expr);
+	  gfc_conv_expr (&tmp_se, array_expr);
+	  gcc_assert (tmp_se.post.head == NULL_TREE);
+
+	  if (!gfc_is_coarray (array_expr))
+	    {
+	      /* No copy back needed, hence set attr's allocatable/pointer
+		 to zero.  */
+	      gfc_clear_attr (&attr);
+	      tmp_se.expr = gfc_conv_scalar_to_descriptor (&tmp_se, tmp_se.expr,
+							   attr);
+	    }
+	  gcc_assert (tmp_se.post.head == NULL_TREE);
+	}
+      gfc_free_expr (array_expr);
+    }
+
+  if (!POINTER_TYPE_P (TREE_TYPE (tmp_se.expr)))
+    tmp_se.expr = gfc_build_addr_expr (NULL, tmp_se.expr);
+
+  gfc_add_block_to_block (&se->pre, &tmp_se.pre);
+  gfc_add_block_to_block (&se->post, &tmp_se.post);
+  se->expr = tmp_se.expr;
+}
+
+
+
 /* Build a call to a FINAL procedure, which finalizes "var".  */
 
 static tree
@@ -1131,10 +1207,8 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 		      bool fini_coarray, gfc_expr *class_size)
 {
   stmtblock_t block;
-  gfc_se final_se, size_se;
-  gfc_se se;
+  gfc_se final_se, size_se, desc_se;
   tree final_fndecl, array, size, tmp;
-  symbol_attribute attr;
 
   gcc_assert (var);
 
@@ -1150,73 +1224,16 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   gfc_add_block_to_block (&block, &size_se.pre);
   size = size_se.expr;
 
-  if (ts.type == BT_DERIVED)
-    {
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      if (var->rank)
-	{
-	  se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&se, var);
-	  array = se.expr;
-	}
-      else
-	{
-	  gfc_conv_expr (&se, var);
-	  array = se.expr;
+  gfc_init_se (&desc_se, NULL);
+  get_var_descr (&desc_se, &ts, var);
+  gfc_add_block_to_block (&block, &desc_se.pre);
+  array = desc_se.expr;
 
-	  /* No copy back needed, hence set attr's allocatable/pointer
-	     to zero.  */
-	  gfc_clear_attr (&attr);
-	  gfc_init_se (&se, NULL);
-	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
-	  gcc_assert (se.post.head == NULL_TREE);
-	}
-    }
-  else
-    {
-      gfc_expr *array_expr;
-
-      array_expr = gfc_copy_expr (var);
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      if (array_expr->rank)
-	{
-	  gfc_add_class_array_ref (array_expr);
-	  se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&se, array_expr);
-	  array = se.expr;
-	}
-      else
-	{
-	  gfc_add_data_component (array_expr);
-	  gfc_conv_expr (&se, array_expr);
-	  gfc_add_block_to_block (&block, &se.pre);
-	  gcc_assert (se.post.head == NULL_TREE);
-	  array = se.expr;
-
-	  if (!gfc_is_coarray (array_expr))
-	    {
-	      /* No copy back needed, hence set attr's allocatable/pointer
-		 to zero.  */
-	      gfc_clear_attr (&attr);
-	      gfc_init_se (&se, NULL);
-	      array = gfc_conv_scalar_to_descriptor (&se, array, attr);
-	    }
-	  gcc_assert (se.post.head == NULL_TREE);
-	}
-      gfc_free_expr (array_expr);
-    }
-
-  if (!POINTER_TYPE_P (TREE_TYPE (array)))
-    array = gfc_build_addr_expr (NULL, array);
-
-  gfc_add_block_to_block (&block, &se.pre);
   tmp = build_call_expr_loc (input_location,
 			     final_fndecl, 3, array,
 			     size, fini_coarray ? boolean_true_node
 						: boolean_false_node);
-  gfc_add_block_to_block (&block, &se.post);
+  gfc_add_block_to_block (&block, &desc_se.post);
   gfc_add_expr_to_block (&block, tmp);
   return gfc_finish_block (&block);
 }
