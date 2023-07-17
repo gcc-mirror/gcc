@@ -1126,7 +1126,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
       else
 	{
 	  gfc_conv_expr (&se, var);
-//	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
 	  array = se.expr;
 
 	  /* No copy back needed, hence set attr's allocatable/pointer
