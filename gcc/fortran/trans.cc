@@ -1390,8 +1390,12 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 			     desc_se.expr, size_se.expr,
 			     boolean_false_node);
 
-  gfc_add_block_to_block (&tmp_block, &desc_se.post);
   gfc_add_expr_to_block (&tmp_block, tmp);
+
+  gfc_add_block_to_block (&tmp_block, &desc_se.post);
+  gfc_add_block_to_block (&tmp_block, &size_se.post);
+  gfc_add_block_to_block (&tmp_block, &final_se.post);
+
   tmp = gfc_finish_block (&tmp_block);
 
   if (expr->ts.type == BT_CLASS && !has_finalizer)
