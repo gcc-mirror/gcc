@@ -9297,7 +9297,8 @@ vectorizable_load (vec_info *vinfo,
   class loop *containing_loop = gimple_bb (stmt_info->stmt)->loop_father;
   bool nested_in_vect_loop = false;
   tree elem_type;
-  tree new_temp;
+  /* Avoid false positive uninitialized warning, see PR110652.  */
+  tree new_temp = NULL_TREE;
   machine_mode mode;
   tree dummy;
   tree dataref_ptr = NULL_TREE;
