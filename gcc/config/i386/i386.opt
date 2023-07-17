@@ -1298,3 +1298,8 @@ msha512
 Target Mask(ISA2_SHA512) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
 SHA512 built-in functions and code generation.
+
+msm4
+Target Mask(ISA2_SM4) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
+SM4 built-in functions and code generation.

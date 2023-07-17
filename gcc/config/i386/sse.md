@@ -223,6 +223,10 @@
   UNSPEC_SHA512MSG2
   UNSPEC_SHA512RNDS2
 
+  ;; For SM4 support
+  UNSPEC_SM4KEY4
+  UNSPEC_SM4RNDS4
+
 ])
 
 (define_c_enum "unspecv" [
@@ -28679,6 +28683,28 @@
   "vsha512rnds2\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sselog1")
    (set_attr "mode" "OI")])
+
+(define_insn "vsm4key4_<mode>"
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
+        (unspec:VI4_AVX
+          [(match_operand:VI4_AVX 1 "register_operand" "x")
+           (match_operand:VI4_AVX 2 "vector_operand" "xBm")]
+          UNSPEC_SM4KEY4))]
+  "TARGET_SM4"
+  "vsm4key4\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "other")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vsm4rnds4_<mode>"
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
+        (unspec:VI4_AVX
+          [(match_operand:VI4_AVX 1 "register_operand" "x")
+           (match_operand:VI4_AVX 2 "vector_operand" "xBm")]
+          UNSPEC_SM4RNDS4))]
+  "TARGET_SM4"
+  "vsm4rnds4\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "other")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")

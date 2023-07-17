@@ -881,6 +881,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_SM3);
 	  if (eax & bit_SHA512)
 	    set_feature (FEATURE_SHA512);
+	  if (eax & bit_SM4)
+	    set_feature (FEATURE_SM4);
 	}
       if (avx512_usable)
 	{

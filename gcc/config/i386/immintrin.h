@@ -112,6 +112,8 @@
 
 #include <sha512intrin.h>
 
+#include <sm4intrin.h>
+
 #include <fmaintrin.h>
 
 #include <f16cintrin.h>

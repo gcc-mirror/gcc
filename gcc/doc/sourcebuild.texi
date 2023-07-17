@@ -2595,6 +2595,9 @@ Target supports the execution of @code{sha512} instructions.
 @item sm3
 Target supports the execution of @code{sm3} instructions.
 
+@item sm4
+Target supports the execution of @code{sm4} instructions.
+
 @item sqrt_insn
 Target has a square root instruction that the compiler can generate.
 

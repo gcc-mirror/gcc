@@ -122,6 +122,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVXVNNIINT16_SET OPTION_MASK_ISA2_AVXVNNIINT16
 #define OPTION_MASK_ISA2_SM3_SET OPTION_MASK_ISA2_SM3
 #define OPTION_MASK_ISA2_SHA512_SET OPTION_MASK_ISA2_SHA512
+#define OPTION_MASK_ISA2_SM4_SET OPTION_MASK_ISA2_SM4
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -307,6 +308,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVXVNNIINT16_UNSET OPTION_MASK_ISA2_AVXVNNIINT16
 #define OPTION_MASK_ISA2_SM3_UNSET OPTION_MASK_ISA2_SM3
 #define OPTION_MASK_ISA2_SHA512_UNSET OPTION_MASK_ISA2_SHA512
+#define OPTION_MASK_ISA2_SM4_UNSET OPTION_MASK_ISA2_SM4
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -356,7 +358,8 @@ along with GCC; see the file COPYING3.  If not see
   OPTION_MASK_ISA2_SSE_UNSET
 #define OPTION_MASK_ISA2_AVX_UNSET \
   (OPTION_MASK_ISA2_AVX2_UNSET | OPTION_MASK_ISA2_VAES_UNSET \
-   | OPTION_MASK_ISA2_SM3_UNSET | OPTION_MASK_ISA2_SHA512_UNSET)
+   | OPTION_MASK_ISA2_SM3_UNSET | OPTION_MASK_ISA2_SHA512_UNSET \
+   | OPTION_MASK_ISA2_SM4_UNSET)
 #define OPTION_MASK_ISA2_SSE4_2_UNSET OPTION_MASK_ISA2_AVX_UNSET
 #define OPTION_MASK_ISA2_SSE4_1_UNSET OPTION_MASK_ISA2_SSE4_2_UNSET
 #define OPTION_MASK_ISA2_SSE4_UNSET OPTION_MASK_ISA2_SSE4_1_UNSET
@@ -1320,6 +1323,21 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SHA512_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SHA512_UNSET;
+	}
+      return true;
+
+    case OPT_msm4:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_SM4_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SM4_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SM4_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SM4_UNSET;
 	}
       return true;
 

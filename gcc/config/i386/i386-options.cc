@@ -242,7 +242,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mamx-complex",	OPTION_MASK_ISA2_AMX_COMPLEX },
   { "-mavxvnniint16",	OPTION_MASK_ISA2_AVXVNNIINT16 },
   { "-msm3",		OPTION_MASK_ISA2_SM3 },
-  { "-msha512",		OPTION_MASK_ISA2_SHA512 }
+  { "-msha512",		OPTION_MASK_ISA2_SHA512 },
+  { "-msm4",            OPTION_MASK_ISA2_SM4 }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1097,6 +1098,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avxvnniint16", OPT_mavxvnniint16),
     IX86_ATTR_ISA ("sm3", OPT_msm3),
     IX86_ATTR_ISA ("sha512", OPT_msha512),
+    IX86_ATTR_ISA ("sm4", OPT_msm4),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

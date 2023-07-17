@@ -134,6 +134,7 @@
 /* %eax */
 #define bit_SHA512	(1 << 0)
 #define bit_SM3		(1 << 1)
+#define bit_SM4		(1 << 2)
 #define bit_RAOINT      (1 << 3)
 #define bit_AVXVNNI     (1 << 4)
 #define bit_AVX512BF16  (1 << 5)

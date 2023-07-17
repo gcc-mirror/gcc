@@ -9897,6 +9897,20 @@ proc check_effective_target_sha512 { } {
     } "-msha512" ]
 }
 
+# Return 1 if sm4 instructions can be compiled.
+proc check_effective_target_sm4 { } {
+    return [check_no_compiler_messages sm4 object {
+        typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+        typedef int __v4si __attribute__ ((__vector_size__ (16)));
+        __m128i
+        _mm_sm4key4_epi32 (__m128i __A, __m128i __B)
+        {
+          return (__m128i) __builtin_ia32_vsm4key4128 ((__v4si) __A,
+						       (__v4si) __B);
+        }
+    } "-msm4" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

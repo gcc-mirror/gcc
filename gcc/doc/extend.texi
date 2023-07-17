@@ -7178,6 +7178,11 @@ Enable/disable the generation of the SM3 instructions.
 @itemx no-sha512
 Enable/disable the generation of the SHA512 instructions.
 
+@cindex @code{target("sm4")} function attribute, x86
+@item sm4
+@itemx no-sm4
+Enable/disable the generation of the SM4 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
