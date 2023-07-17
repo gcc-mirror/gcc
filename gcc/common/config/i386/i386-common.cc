@@ -119,6 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_RAOINT_SET OPTION_MASK_ISA2_RAOINT
 #define OPTION_MASK_ISA2_AMX_COMPLEX_SET \
   (OPTION_MASK_ISA2_AMX_TILE | OPTION_MASK_ISA2_AMX_COMPLEX)
+#define OPTION_MASK_ISA2_AVXVNNIINT16_SET OPTION_MASK_ISA2_AVXVNNIINT16
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -228,7 +229,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX2_UNSET \
   (OPTION_MASK_ISA2_AVXIFMA_UNSET | OPTION_MASK_ISA2_AVXVNNI_UNSET \
    | OPTION_MASK_ISA2_AVXVNNIINT8_UNSET | OPTION_MASK_ISA2_AVXNECONVERT_UNSET \
-   | OPTION_MASK_ISA2_AVX512F_UNSET)
+   | OPTION_MASK_ISA2_AVXVNNIINT16_UNSET | OPTION_MASK_ISA2_AVX512F_UNSET)
 #define OPTION_MASK_ISA_AVX512F_UNSET \
   (OPTION_MASK_ISA_AVX512F | OPTION_MASK_ISA_AVX512CD_UNSET \
    | OPTION_MASK_ISA_AVX512PF_UNSET | OPTION_MASK_ISA_AVX512ER_UNSET \
@@ -301,6 +302,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_PREFETCHI_UNSET OPTION_MASK_ISA2_PREFETCHI
 #define OPTION_MASK_ISA2_RAOINT_UNSET OPTION_MASK_ISA2_RAOINT
 #define OPTION_MASK_ISA2_AMX_COMPLEX_UNSET OPTION_MASK_ISA2_AMX_COMPLEX
+#define OPTION_MASK_ISA2_AVXVNNIINT16_UNSET OPTION_MASK_ISA2_AVXVNNIINT16
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1265,6 +1267,24 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AMX_COMPLEX_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AMX_COMPLEX_UNSET;
+	}
+      return true;
+
+    case OPT_mavxvnniint16:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVXVNNIINT16_SET;
+	  opts->x_ix86_isa_flags2_explicit |=
+	    OPTION_MASK_ISA2_AVXVNNIINT16_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &=
+	    ~OPTION_MASK_ISA2_AVXVNNIINT16_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |=
+	    OPTION_MASK_ISA2_AVXVNNIINT16_UNSET;
 	}
       return true;
 

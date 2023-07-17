@@ -144,6 +144,7 @@
 /* %edx */
 #define bit_AVXVNNIINT8 (1 << 4)
 #define bit_AVXNECONVERT	(1 << 5)
+#define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */

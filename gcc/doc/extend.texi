@@ -7163,6 +7163,11 @@ Enable/disable the generation of the RAOINT instructions.
 @itemx no-amx-complex
 Enable/disable the generation of the AMX-COMPLEX instructions.
 
+@cindex @code{target("avxvnniint16")} function attribute, x86
+@item avxvnniint16
+@itemx no-avxvnniint16
+Enable/disable the generation of the AVXVNNIINT16 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

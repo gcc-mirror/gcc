@@ -2511,6 +2511,9 @@ Target supports the execution of @code{avxneconvert} instructions.
 @item avxvnniint8
 Target supports the execution of @code{avxvnniint8} instructions.
 
+@item avxvnniint16
+Target supports the execution of @code{avxvnniint16} instructions.
+
 @item amx_tile
 Target supports the execution of @code{amx-tile} instructions.
 

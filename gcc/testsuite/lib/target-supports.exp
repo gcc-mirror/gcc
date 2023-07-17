@@ -9856,6 +9856,18 @@ proc check_effective_target_amx_complex { } {
     } "-mamx-complex" ]
 }
 
+# Return 1 if avxvnniint16 instructions can be compiled.
+proc check_effective_target_avxvnniint16 { } {
+    return [check_no_compiler_messages avxvnniint16 object {
+	typedef int __v8si __attribute__ ((__vector_size__ (32)));
+	__v8si
+	_mm256_dpwsud_avx_epi32  (__v8si __A, __v8si __B, __v8si __C)
+        {
+	   return __builtin_ia32_vpdpwsud256 (__A, __B, __C);
+	}
+    } "-O0 -mavxvnniint16" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

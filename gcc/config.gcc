@@ -435,7 +435,7 @@ i[34567]86-*-* | x86_64-*-*)
 		       mwaitintrin.h avx512fp16intrin.h avx512fp16vlintrin.h
 		       avxifmaintrin.h avxvnniint8intrin.h avxneconvertintrin.h
 		       cmpccxaddintrin.h amxfp16intrin.h prfchiintrin.h
-		       raointintrin.h amxcomplexintrin.h"
+		       raointintrin.h amxcomplexintrin.h avxvnniint16intrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

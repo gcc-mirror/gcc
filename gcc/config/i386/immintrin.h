@@ -48,6 +48,8 @@
 
 #include <avxvnniint8intrin.h>
 
+#include <avxvnniint16intrin.h>
+
 #include <avx2intrin.h>
 
 #include <avx512fintrin.h>

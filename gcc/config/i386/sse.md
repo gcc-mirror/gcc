@@ -204,6 +204,14 @@
   UNSPEC_VPDPBSUDS
   UNSPEC_VPDPBUUD
   UNSPEC_VPDPBUUDS
+
+  ;; For AVX-VNNI-INT16 support
+  UNSPEC_VPDPWUSD
+  UNSPEC_VPDPWUSDS
+  UNSPEC_VPDPWSUD
+  UNSPEC_VPDPWSUDS
+  UNSPEC_VPDPWUUD
+  UNSPEC_VPDPWUUDS
 ])
 
 (define_c_enum "unspecv" [
@@ -30209,3 +30217,27 @@
   "vcvtneo<bf16_ph>2ps\t{%1, %0|%0, %1}"
   [(set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_int_iterator VPDPWPROD
+  [UNSPEC_VPDPWUSD
+   UNSPEC_VPDPWUSDS
+   UNSPEC_VPDPWSUD
+   UNSPEC_VPDPWSUDS
+   UNSPEC_VPDPWUUD
+   UNSPEC_VPDPWUUDS])
+
+(define_int_attr vpdpwprodtype
+  [(UNSPEC_VPDPWUSD "wusd") (UNSPEC_VPDPWUSDS "wusds")
+   (UNSPEC_VPDPWSUD "wsud") (UNSPEC_VPDPWSUDS "wsuds")
+   (UNSPEC_VPDPWUUD "wuud") (UNSPEC_VPDPWUUDS "wuuds")])
+
+(define_insn "vpdp<vpdpwprodtype>_<mode>"
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
+	(unspec:VI4_AVX
+	  [(match_operand:VI4_AVX 1 "register_operand" "0")
+	   (match_operand:VI4_AVX 2 "register_operand" "x")
+	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "xm")]
+	  VPDPWPROD))]
+  "TARGET_AVXVNNIINT16"
+  "vpdp<vpdpwprodtype>\t{%3, %2, %0|%0, %2, %3}"
+   [(set_attr "prefix" "vex")])
