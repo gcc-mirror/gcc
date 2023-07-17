@@ -1213,6 +1213,23 @@ get_var_descr (gfc_se *se, gfc_expr *var)
 }
 
 
+static void
+get_vptr (gfc_se *se, gfc_expr *expr)
+{
+  gfc_expr *vptr_expr = gfc_copy_expr (expr);
+  gfc_add_vptr_component (vptr_expr);
+
+  gfc_se tmp_se;
+  gfc_init_se (&tmp_se, NULL);
+  tmp_se.want_pointer = 1;
+  gfc_conv_expr (&tmp_se, vptr_expr);
+  gfc_free_expr (vptr_expr);
+
+  gfc_add_block_to_block (&se->pre, &tmp_se.pre);
+  gfc_add_block_to_block (&se->post, &tmp_se.post);
+  se->expr = tmp_se.expr;
+}
+
 
 bool
 gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
@@ -1397,7 +1414,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       && !gfc_is_finalizable (expr->ts.u.derived, NULL))
     {
       tree cond;
-      gfc_se se;
 
       tree ptr = gfc_build_addr_expr (NULL_TREE, final_se.expr);
 
@@ -1409,19 +1425,14 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       if (UNLIMITED_POLY (expr))
 	{
 	  tree cond2;
-	  gfc_expr *vptr_expr;
+	  gfc_se vptr_se;
 
-	  vptr_expr = gfc_copy_expr (expr);
-	  gfc_add_vptr_component (vptr_expr);
-
-	  gfc_init_se (&se, NULL);
-	  se.want_pointer = 1;
-	  gfc_conv_expr (&se, vptr_expr);
-	  gfc_free_expr (vptr_expr);
+	  gfc_init_se (&vptr_se, NULL);
+	  get_vptr (&vptr_se, expr);
 
 	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-				   se.expr,
-				   build_int_cst (TREE_TYPE (se.expr), 0));
+				   vptr_se.expr,
+				   build_int_cst (TREE_TYPE (vptr_se.expr), 0));
 	  cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 				  logical_type_node, cond2, cond);
 	}
