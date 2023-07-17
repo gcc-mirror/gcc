@@ -1374,7 +1374,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
   gfc_se final_se;
   gfc_init_se (&final_se, NULL);
   get_final_proc_ref (&final_se, final_expr);
-  gfc_add_block_to_block (&tmp_block, &final_se.pre);
+  gfc_add_block_to_block (block, &final_se.pre);
 
   gfc_se size_se;
   gfc_init_se (&size_se, NULL);
@@ -1394,7 +1394,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
   gfc_add_block_to_block (&tmp_block, &desc_se.post);
   gfc_add_block_to_block (&tmp_block, &size_se.post);
-  gfc_add_block_to_block (&tmp_block, &final_se.post);
 
   tmp = gfc_finish_block (&tmp_block);
 
@@ -1403,11 +1402,10 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       tree cond;
       gfc_se se;
 
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      gfc_conv_expr (&se, final_expr);
+      tree ptr = gfc_build_addr_expr (NULL_TREE, final_se.expr);
+
       cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			      se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
+			      ptr, build_int_cst (TREE_TYPE (ptr), 0));
 
       /* For CLASS(*) not only sym->_vtab->_final can be NULL
 	 but already sym->_vtab itself.  */
@@ -1436,6 +1434,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
     }
 
   gfc_add_expr_to_block (block, tmp);
+  gfc_add_block_to_block (block, &final_se.post);
 
   return true;
 }
