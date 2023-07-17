@@ -17243,10 +17243,6 @@
        || <ssescalarmode>mode == SImode
        || <ssescalarmode>mode == DImode)"
 {
-  if (!<mask_applied> && which_alternative
-      && optimize_insn_for_speed_p ())
-    return "#";
-
   if (TARGET_AVX512VL)
     return "vpternlog<ternlogsuffix>\t{$0x55, %1, %0, %0<mask_operand3>|%0<mask_operand3>, %0, %1, 0x55}";
   else
