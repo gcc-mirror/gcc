@@ -1433,7 +1433,7 @@ See RS/6000 and PowerPC Options.
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
--mprefetchi -mraoint -mamx-complex -mavxvnniint16
+-mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -33555,6 +33555,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @opindex mavxvnniint16
 @itemx -mavxvnniint16
+@need 200
+@opindex msm3
+@itemx -msm3
 These switches enable the use of instructions in the MMX, SSE,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
 AES, PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
@@ -33565,7 +33568,7 @@ GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
 UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16,
 AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT,
-AMX-COMPLEX, AVXVNNIINT16 or CLDEMOTE extended instruction sets. Each has a
+AMX-COMPLEX, AVXVNNIINT16, SM3 or CLDEMOTE extended instruction sets. Each has a
 corresponding @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see

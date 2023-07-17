@@ -11219,6 +11219,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_V4SF_V4SI_INT:
     case V8SF_FTYPE_V8SF_V8SF_V8SI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       nargs_constant = 1;
       break;

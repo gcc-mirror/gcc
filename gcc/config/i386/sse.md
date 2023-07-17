@@ -196,6 +196,11 @@
   UNSPEC_COMPLEX_FMUL
   UNSPEC_COMPLEX_FCMUL
   UNSPEC_COMPLEX_MASK
+ 
+  ;; For SM3 support
+  UNSPEC_SM3MSG1
+  UNSPEC_SM3MSG2
+  UNSPEC_SM3RNDS2
 
   ;; For AVX-VNNI-INT8 support
   UNSPEC_VPDPBSSD
@@ -28596,6 +28601,44 @@
   [(set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
+
+(define_insn "vsm3msg1"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "register_operand" "x")
+	   (match_operand:V4SI 3 "vector_operand" "xBm")]
+	  UNSPEC_SM3MSG1))]
+  "TARGET_SM3"
+  "vsm3msg1\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "other")
+   (set_attr "mode" "TI")])
+
+(define_insn "vsm3msg2"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "register_operand" "x")
+	   (match_operand:V4SI 3 "vector_operand" "xBm")]
+	  UNSPEC_SM3MSG2))]
+  "TARGET_SM3"
+  "vsm3msg2\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "other")
+   (set_attr "mode" "TI")])
+
+(define_insn "vsm3rnds2"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "register_operand" "x")
+	   (match_operand:V4SI 3 "vector_operand" "xBm")
+	   (match_operand:SI 4 "const_0_to_255_operand" "n")]
+	  UNSPEC_SM3RNDS2))]
+  "TARGET_SM3"
+  "vsm3rnds2\t{%4, %3, %2, %0|%0, %2, %3, %4}"
+  [(set_attr "type" "other")
+   (set_attr "mode" "TI")
+   (set_attr "length_immediate" "1")])
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")

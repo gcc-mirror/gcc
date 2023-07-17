@@ -1283,3 +1283,8 @@ mavxvnniint16
 Target Mask(ISA2_AVXVNNIINT16) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and
 AVXVNNIINT16 built-in functions and code generation.
+
+msm3
+Target Mask(ISA2_SM3) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
+SM3 built-in functions and code generation.

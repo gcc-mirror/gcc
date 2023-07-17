@@ -7168,6 +7168,11 @@ Enable/disable the generation of the AMX-COMPLEX instructions.
 @itemx no-avxvnniint16
 Enable/disable the generation of the AVXVNNIINT16 instructions.
 
+@cindex @code{target("sm3")} function attribute, x86
+@item sm3
+@itemx no-sm3
+Enable/disable the generation of the SM3 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

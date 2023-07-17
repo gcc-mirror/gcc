@@ -132,6 +132,7 @@
 
 /* Extended Features Sub-leaf (%eax == 7, %ecx == 1) */
 /* %eax */
+#define bit_SM3		(1 << 1)
 #define bit_RAOINT      (1 << 3)
 #define bit_AVXVNNI     (1 << 4)
 #define bit_AVX512BF16  (1 << 5)

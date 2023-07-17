@@ -877,6 +877,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVXNECONVERT);
 	  if (edx & bit_AVXVNNIINT16)
 	    set_feature (FEATURE_AVXVNNIINT16);
+	  if (eax & bit_SM3)
+	    set_feature (FEATURE_SM3);
 	}
       if (avx512_usable)
 	{

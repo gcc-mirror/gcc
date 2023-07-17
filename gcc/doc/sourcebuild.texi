@@ -2589,6 +2589,9 @@ Target supports the execution of @code{raoint} instructions.
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
 
+@item sm3
+Target supports the execution of @code{sm3} instructions.
+
 @item sqrt_insn
 Target has a square root instruction that the compiler can generate.
 

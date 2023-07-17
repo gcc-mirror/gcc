@@ -89,6 +89,7 @@ extern void test_prefetchi (void)               __attribute__((__target__("prefe
 extern void test_raoint (void)                  __attribute__((__target__("raoint")));
 extern void test_amx_complex (void)		__attribute__((__target__("amx-complex")));
 extern void test_avxvnniint16 (void)		__attribute__((__target__("avxvnniint16")));
+extern void test_sm3 (void)			__attribute__((__target__("sm3")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -179,6 +180,7 @@ extern void test_no_prefetchi (void)            __attribute__((__target__("no-pr
 extern void test_no_raoint (void)               __attribute__((__target__("no-raoint")));
 extern void test_no_amx_complex (void)		__attribute__((__target__("no-amx-complex")));
 extern void test_no_avxvnniint16 (void)		__attribute__((__target__("no-avxvnniint16")));
+extern void test_no_sm3 (void)			__attribute__((__target__("no-sm3")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));

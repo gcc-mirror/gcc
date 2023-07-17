@@ -839,6 +839,9 @@
 #define __builtin_ia32_cmpccxadd(A, B, C, D) __builtin_ia32_cmpccxadd(A, B, C, 1)
 #define __builtin_ia32_cmpccxadd64(A, B, C, D) __builtin_ia32_cmpccxadd64(A, B, C, 1)
 
+/* sm3intrin.h */
+#define __builtin_ia32_vsm3rnds2(A, B, C, D) __builtin_ia32_vsm3rnds2 (A, B, C, 1)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>
