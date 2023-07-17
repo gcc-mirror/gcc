@@ -1100,24 +1100,26 @@ get_final_proc_ref (gfc_se *se, gfc_expr *final_wrapper)
 }
 
 
-/* Generate the code to obtain the value of the element size whose expression
-   is passed as argument in CLASS_SIZE.  */
+/* Generate the code to obtain the value of the element size of the expression
+   passed as argument in EXPR.  */
 
 static void
-get_elem_size (gfc_se *se, gfc_typespec *ts, gfc_expr *class_size)
+get_elem_size (gfc_se *se, gfc_expr *expr)
 {
-  gcc_assert (ts->type == BT_DERIVED || ts->type == BT_CLASS);
+  gcc_assert (expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS);
 
-  if (ts->type == BT_DERIVED)
+  if (expr->ts.type == BT_DERIVED)
     {
-      gcc_assert (!class_size);
-      se->expr = gfc_typenode_for_spec (ts);
+      se->expr = gfc_typenode_for_spec (&expr->ts);
       se->expr = TYPE_SIZE_UNIT (se->expr);
       se->expr = fold_convert (gfc_array_index_type, se->expr);
     }
   else
     {
-      gcc_assert (class_size);
+      gfc_expr *class_size = gfc_copy_expr (expr);
+      gfc_add_vptr_component (class_size);
+      gfc_add_size_component (class_size);
+
       gfc_conv_expr (se, class_size);
       gcc_assert (se->post.head == NULL_TREE);
     }
@@ -1306,7 +1308,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
   gfc_ref *ref;
   gfc_expr *expr;
   gfc_expr *final_expr = NULL;
-  gfc_expr *elem_size = NULL;
   bool has_finalizer = false;
 
   if (!expr2 || (expr2->ts.type != BT_DERIVED && expr2->ts.type != BT_CLASS))
@@ -1360,10 +1361,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       final_expr = gfc_copy_expr (expr);
       gfc_add_vptr_component (final_expr);
       gfc_add_final_component (final_expr);
-
-      elem_size = gfc_copy_expr (expr);
-      gfc_add_vptr_component (elem_size);
-      gfc_add_size_component (elem_size);
     }
 
   gcc_assert (final_expr->expr_type == EXPR_VARIABLE);
@@ -1378,7 +1375,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
   gfc_se size_se;
   gfc_init_se (&size_se, NULL);
-  get_elem_size (&size_se, &expr->ts, elem_size);
+  get_elem_size (&size_se, expr);
   gfc_add_block_to_block (&tmp_block, &size_se.pre);
 
   gfc_se desc_se;
