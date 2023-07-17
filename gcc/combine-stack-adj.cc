@@ -65,7 +65,7 @@ struct csa_reflist
   struct csa_reflist *next;
 };
 
-static int stack_memref_p (rtx);
+static bool stack_memref_p (rtx);
 static rtx single_set_for_csa (rtx_insn *);
 static void free_csa_reflist (struct csa_reflist *);
 static struct csa_reflist *record_one_stack_ref (rtx_insn *, rtx *,
@@ -92,21 +92,21 @@ combine_stack_adjustments (void)
 
 /* Recognize a MEM of the form (sp) or (plus sp const).  */
 
-static int
+static bool
 stack_memref_p (rtx x)
 {
   if (!MEM_P (x))
-    return 0;
+    return false;
   x = XEXP (x, 0);
 
   if (x == stack_pointer_rtx)
-    return 1;
+    return true;
   if (GET_CODE (x) == PLUS
       && XEXP (x, 0) == stack_pointer_rtx
       && CONST_INT_P (XEXP (x, 1)))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Recognize either normal single_set or the hack in i386.md for
@@ -791,13 +791,12 @@ combine_stack_adjustments_for_block (basic_block bb, bitmap live)
     BITMAP_FREE (copy);
 }
 
-static unsigned int
+static void
 rest_of_handle_stack_adjustments (void)
 {
   df_note_add_problem ();
   df_analyze ();
   combine_stack_adjustments ();
-  return 0;
 }
 
 namespace {
@@ -826,7 +825,8 @@ public:
   bool gate (function *) final override;
   unsigned int execute (function *) final override
     {
-      return rest_of_handle_stack_adjustments ();
+      rest_of_handle_stack_adjustments ();
+      return 0;
     }
 
 }; // class pass_stack_adjustments
