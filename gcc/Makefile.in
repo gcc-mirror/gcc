@@ -976,7 +976,7 @@ READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def
 INTERNAL_FN_DEF = internal-fn.def
-INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
+INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF) insn-opinit.h
 TREE_CORE_H = tree-core.h $(CORETYPES_H) all-tree.def tree.def \
 	c-family/c-common.def $(lang_tree_files) \
 	$(BUILTINS_DEF) $(INPUT_H) statistics.h \
