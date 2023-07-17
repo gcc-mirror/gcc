@@ -59,7 +59,7 @@ TypeCheckCallExpr::visit (ADTType &type)
   if (variant.get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       rust_error_at (
-	call.get_locus (),
+	call.get_locus (), ErrorCode ("E0423"),
 	"expected function, tuple struct or tuple variant, found struct %<%s%>",
 	type.get_name ().c_str ());
       return;
