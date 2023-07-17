@@ -673,6 +673,9 @@ combine_modes (machine_mode mode1, machine_mode mode2)
   if (mode2 == E_BLKmode)
     return mode1;
 
+  if (!ordered_p (GET_MODE_SIZE (mode1), GET_MODE_SIZE (mode2)))
+    return BLKmode;
+
   return wider_subreg_mode (mode1, mode2);
 }
 
