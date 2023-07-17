@@ -586,6 +586,24 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("grandridge");
       cpu_model->__cpu_type = INTEL_GRANDRIDGE;
       break;
+    case 0xc5:
+      /* Arrow Lake.  */
+      cpu = "arrowlake";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("arrowlake");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE;
+      break;
+    case 0xc6:
+      /* Arrow Lake S.  */
+    case 0xbd:
+      /* Lunar Lake.  */
+      cpu = "arrowlake-s";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("arrowlake-s");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE_S;
+      break;
     case 0x17:
     case 0x1d:
       /* Penryn.  */

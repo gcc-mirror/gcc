@@ -22269,6 +22269,12 @@ Intel Atom Sierra Forest CPU.
 @item grandridge
 Intel Atom Grand Ridge CPU.
 
+@item arrowlake
+Intel Core i7 Arrow Lake CPU.
+
+@item arrowlake-s
+Intel Core i7 Arrow Lake S CPU.
+
 @item knl
 Intel Knights Landing CPU.
 
