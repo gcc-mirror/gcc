@@ -1089,14 +1089,20 @@ gfc_call_free (tree var)
    with the expression passed as argument in EXPR.  */
 
 static void
-get_final_proc_ref (gfc_se *se, gfc_expr *expr)
+get_final_proc_ref (gfc_se *se, gfc_expr *expr, tree class_container)
 {
   gfc_expr *final_wrapper = NULL;
 
   gcc_assert (expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS);
 
+  bool using_class_container = false;
   if (expr->ts.type == BT_DERIVED)
     gfc_is_finalizable (expr->ts.u.derived, &final_wrapper);
+  else if (class_container)
+    {
+      using_class_container = true;
+      se->expr = gfc_class_vtab_final_get (class_container);
+    }
   else
     {
       final_wrapper = gfc_copy_expr (expr);
@@ -1104,9 +1110,12 @@ get_final_proc_ref (gfc_se *se, gfc_expr *expr)
       gfc_add_final_component (final_wrapper);
     }
 
-  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
+  if (!using_class_container)
+    {
+      gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
 
-  gfc_conv_expr (se, final_wrapper);
+      gfc_conv_expr (se, final_wrapper);
+    }
 
   if (POINTER_TYPE_P (TREE_TYPE (se->expr)))
     se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
@@ -1117,7 +1126,7 @@ get_final_proc_ref (gfc_se *se, gfc_expr *expr)
    passed as argument in EXPR.  */
 
 static void
-get_elem_size (gfc_se *se, gfc_expr *expr)
+get_elem_size (gfc_se *se, gfc_expr *expr, tree class_container)
 {
   gcc_assert (expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS);
 
@@ -1127,6 +1136,8 @@ get_elem_size (gfc_se *se, gfc_expr *expr)
       se->expr = TYPE_SIZE_UNIT (se->expr);
       se->expr = fold_convert (gfc_array_index_type, se->expr);
     }
+  else if (class_container)
+    se->expr = gfc_class_vtab_size_get (class_container);
   else
     {
       gfc_expr *class_size = gfc_copy_expr (expr);
@@ -1143,7 +1154,7 @@ get_elem_size (gfc_se *se, gfc_expr *expr)
    expression passed as argument in VAR.  */
 
 static void
-get_var_descr (gfc_se *se, gfc_expr *var)
+get_var_descr (gfc_se *se, gfc_expr *var, tree class_container)
 {
   gfc_se tmp_se;
 
@@ -1162,6 +1173,8 @@ get_var_descr (gfc_se *se, gfc_expr *var)
       else
 	gfc_conv_expr (&tmp_se, var);
     }
+  else if (class_container)
+    tmp_se.expr = gfc_class_data_get (class_container);
   else
     {
       gfc_expr *array_expr;
@@ -1209,20 +1222,25 @@ get_var_descr (gfc_se *se, gfc_expr *var)
 
 
 static void
-get_vptr (gfc_se *se, gfc_expr *expr)
+get_vptr (gfc_se *se, gfc_expr *expr, tree class_container)
 {
-  gfc_expr *vptr_expr = gfc_copy_expr (expr);
-  gfc_add_vptr_component (vptr_expr);
+  if (class_container)
+    se->expr = gfc_class_vptr_get (class_container);
+  else
+    {
+      gfc_expr *vptr_expr = gfc_copy_expr (expr);
+      gfc_add_vptr_component (vptr_expr);
 
-  gfc_se tmp_se;
-  gfc_init_se (&tmp_se, NULL);
-  tmp_se.want_pointer = 1;
-  gfc_conv_expr (&tmp_se, vptr_expr);
-  gfc_free_expr (vptr_expr);
+      gfc_se tmp_se;
+      gfc_init_se (&tmp_se, NULL);
+      tmp_se.want_pointer = 1;
+      gfc_conv_expr (&tmp_se, vptr_expr);
+      gfc_free_expr (vptr_expr);
 
-  gfc_add_block_to_block (&se->pre, &tmp_se.pre);
-  gfc_add_block_to_block (&se->post, &tmp_se.post);
-  se->expr = tmp_se.expr;
+      gfc_add_block_to_block (&se->pre, &tmp_se.pre);
+      gfc_add_block_to_block (&se->post, &tmp_se.post);
+      se->expr = tmp_se.expr;
+    }
 }
 
 
@@ -1326,7 +1344,8 @@ gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
    true when a finalizer call has been inserted.  */
 
 bool
-gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
+gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
+			tree class_container)
 {
   tree tmp;
   gfc_ref *ref;
@@ -1381,17 +1400,17 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
   gfc_se final_se;
   gfc_init_se (&final_se, NULL);
-  get_final_proc_ref (&final_se, expr);
+  get_final_proc_ref (&final_se, expr, class_container);
   gfc_add_block_to_block (block, &final_se.pre);
 
   gfc_se size_se;
   gfc_init_se (&size_se, NULL);
-  get_elem_size (&size_se, expr);
+  get_elem_size (&size_se, expr, class_container);
   gfc_add_block_to_block (&tmp_block, &size_se.pre);
 
   gfc_se desc_se;
   gfc_init_se (&desc_se, NULL);
-  get_var_descr (&desc_se, expr);
+  get_var_descr (&desc_se, expr, class_container);
   gfc_add_block_to_block (&tmp_block, &desc_se.pre);
 
   tmp = build_call_expr_loc (input_location, final_se.expr, 3,
@@ -1423,7 +1442,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 	  gfc_se vptr_se;
 
 	  gfc_init_se (&vptr_se, NULL);
-	  get_vptr (&vptr_se, expr);
+	  get_vptr (&vptr_se, expr, class_container);
 
 	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   vptr_se.expr,

@@ -457,7 +457,7 @@ tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
-bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
+bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *, tree = NULL_TREE);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 void gfc_finalize_tree_expr (gfc_se *, gfc_symbol *, symbol_attribute, int);
 bool gfc_assignment_finalizer_call (gfc_se *, gfc_expr *, bool);
