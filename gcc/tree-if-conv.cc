@@ -2204,7 +2204,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
     }
 
   /* Sort elements based on rankings ARGS.  */
-  std::sort(argsKV.begin(), argsKV.end(), [](ArgEntry &left, ArgEntry &right) {
+  std::sort(argsKV.begin(), argsKV.end(), [](const ArgEntry &left,
+					     const ArgEntry &right) {
     return left.second < right.second;
   });
 
