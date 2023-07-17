@@ -6672,6 +6672,14 @@ riscv_option_override (void)
       riscv_stack_protector_guard_offset = offs;
     }
 
+  /* FIXME: We don't allow TARGET_MIN_VLEN > 4096 since the datatypes of
+     both GET_MODE_SIZE and GET_MODE_BITSIZE are poly_uint16.
+
+     We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
+  if (TARGET_MIN_VLEN > 4096)
+    sorry (
+      "Current RISC-V GCC can not support VLEN > 4096bit for 'V' Extension");
+
   /* Convert -march to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_bits ();
 }
