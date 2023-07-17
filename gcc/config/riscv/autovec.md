@@ -1554,3 +1554,141 @@
   riscv_vector::expand_cond_len_ternop (icode, operands);
   DONE;
 })
+
+;; =========================================================================
+;; == Reductions
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Tree reductions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vredsum.vs
+;; - vredmaxu.vs
+;; - vredmax.vs
+;; - vredminu.vs
+;; - vredmin.vs
+;; - vredand.vs
+;; - vredor.vs
+;; - vredxor.vs
+;; -------------------------------------------------------------------------
+
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (PLUS, operands, CONST0_RTX (<VEL>mode));
+  DONE;
+})
+
+(define_expand "reduc_smax_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  int prec = GET_MODE_PRECISION (<VEL>mode);
+  rtx min = immed_wide_int_const (wi::min_value (prec, SIGNED), <VEL>mode);
+  riscv_vector::expand_reduction (SMAX, operands, min);
+  DONE;
+})
+
+(define_expand "reduc_umax_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (UMAX, operands, CONST0_RTX (<VEL>mode));
+  DONE;
+})
+
+(define_expand "reduc_smin_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  int prec = GET_MODE_PRECISION (<VEL>mode);
+  rtx max = immed_wide_int_const (wi::max_value (prec, SIGNED), <VEL>mode);
+  riscv_vector::expand_reduction (SMIN, operands, max);
+  DONE;
+})
+
+(define_expand "reduc_umin_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  int prec = GET_MODE_PRECISION (<VEL>mode);
+  rtx max = immed_wide_int_const (wi::max_value (prec, UNSIGNED), <VEL>mode);
+  riscv_vector::expand_reduction (UMIN, operands, max);
+  DONE;
+})
+
+(define_expand "reduc_and_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (AND, operands, CONSTM1_RTX (<VEL>mode));
+  DONE;
+})
+
+(define_expand "reduc_ior_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (IOR, operands, CONST0_RTX (<VEL>mode));
+  DONE;
+})
+
+(define_expand "reduc_xor_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VI 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (XOR, operands, CONST0_RTX (<VEL>mode));
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Tree reductions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfredusum.vs
+;; - vfredmax.vs
+;; - vfredmin.vs
+;; -------------------------------------------------------------------------
+
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VF 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (PLUS, operands, CONST0_RTX (<VEL>mode));
+  DONE;
+})
+
+(define_expand "reduc_smax_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VF 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  REAL_VALUE_TYPE rv;
+  real_inf (&rv, true);
+  rtx f = const_double_from_real_value (rv, <VEL>mode);
+  riscv_vector::expand_reduction (SMAX, operands, f);
+  DONE;
+})
+
+(define_expand "reduc_smin_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:VF 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  REAL_VALUE_TYPE rv;
+  real_inf (&rv, false);
+  rtx f = const_double_from_real_value (rv, <VEL>mode);
+  riscv_vector::expand_reduction (SMIN, operands, f);
+  DONE;
+})

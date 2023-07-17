@@ -646,7 +646,8 @@ gen_vsetvl_pat (enum vsetvl_type insn_type, const vl_vtype_info &info, rtx vl)
 }
 
 static rtx
-gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info)
+gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info,
+		rtx vl = NULL_RTX)
 {
   rtx new_pat;
   vl_vtype_info new_info = info;
@@ -654,15 +655,17 @@ gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info)
       && fault_first_load_p (info.get_insn ()->rtl ()))
     new_info.set_avl_info (
       avl_info (get_avl (info.get_insn ()->rtl ()), nullptr));
-  if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
-    {
-      rtx dest = get_vl (rinsn);
-      new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, dest);
-    }
-  else if (INSN_CODE (rinsn) == CODE_FOR_vsetvl_vtype_change_only)
-    new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, new_info, NULL_RTX);
+  if (vl)
+    new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, vl);
   else
-    new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, new_info, NULL_RTX);
+    {
+      if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
+	new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, get_vl (rinsn));
+      else if (INSN_CODE (rinsn) == CODE_FOR_vsetvl_vtype_change_only)
+	new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, new_info, NULL_RTX);
+      else
+	new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, new_info, NULL_RTX);
+    }
   return new_pat;
 }
 
@@ -805,6 +808,14 @@ get_vl_vtype_info (const insn_info *insn)
   return info;
 }
 
+/* Change insn and Assert the change always happens.  */
+static void
+validate_change_or_fail (rtx object, rtx *loc, rtx new_rtx, bool in_group)
+{
+  bool change_p = validate_change (object, loc, new_rtx, in_group);
+  gcc_assert (change_p);
+}
+
 static void
 change_insn (rtx_insn *rinsn, rtx new_pat)
 {
@@ -818,7 +829,7 @@ change_insn (rtx_insn *rinsn, rtx new_pat)
       print_rtl_single (dump_file, PATTERN (rinsn));
     }
 
-  validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
+  validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat, false);
 
   if (dump_file)
     {
@@ -874,7 +885,7 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
     }
 
   insn_change_watermark watermark;
-  validate_change (rinsn, &PATTERN (rinsn), new_pat, true);
+  validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat, true);
 
   /* These routines report failures themselves.  */
   if (!recog (attempt, change) || !change_is_worthwhile (change, false))
@@ -931,7 +942,8 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
 }
 
 static void
-change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info)
+change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info,
+		    rtx vl = NULL_RTX)
 {
   rtx_insn *rinsn;
   if (vector_config_insn_p (insn->rtl ()))
@@ -945,7 +957,7 @@ change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info)
       rinsn = PREV_INSN (insn->rtl ());
       gcc_assert (vector_config_insn_p (rinsn));
     }
-  rtx new_pat = gen_vsetvl_pat (rinsn, info);
+  rtx new_pat = gen_vsetvl_pat (rinsn, info, vl);
   change_insn (rinsn, new_pat);
 }
 
@@ -3377,7 +3389,20 @@ pass_vsetvl::backward_demand_fusion (void)
 				       new_info))
 		continue;
 
-	      change_vsetvl_insn (new_info.get_insn (), new_info);
+	      rtx vl = NULL_RTX;
+	      /* Backward VLMAX VL:
+		   bb 3:
+		     vsetivli zero, 1 ... -> vsetvli t1, zero
+		     vmv.s.x
+		   bb 5:
+		     vsetvli t1, zero ... -> to be elided.
+		     vlse16.v
+
+		   We should forward "t1".  */
+	      if (!block_info.reaching_out.has_avl_reg ()
+		  && vlmax_avl_p (new_info.get_avl ()))
+		vl = get_vl (prop.get_insn ()->rtl ());
+	      change_vsetvl_insn (new_info.get_insn (), new_info, vl);
 	      if (block_info.local_dem == block_info.reaching_out)
 		block_info.local_dem = new_info;
 	      block_info.reaching_out = new_info;
@@ -4524,13 +4549,15 @@ pass_vsetvl::df_post_optimization (void) const
 		    {
 		      rtx new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY,
 						    info, NULL_RTX);
-		      validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
+		      validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat,
+					       false);
 		    }
 		  else if (!vlmax_avl_p (info.get_avl ()))
 		    {
 		      rtx new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, info,
 						    NULL_RTX);
-		      validate_change (rinsn, &PATTERN (rinsn), new_pat, false);
+		      validate_change_or_fail (rinsn, &PATTERN (rinsn), new_pat,
+					       false);
 		    }
 		}
 	    }

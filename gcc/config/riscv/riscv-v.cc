@@ -1159,6 +1159,43 @@ emit_vlmax_compress_insn (unsigned icode, rtx *ops)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* Emit reduction instruction.  */
+static void
+emit_vlmax_reduction_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1])).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit reduction instruction.  */
+static void
+emit_vlmax_fp_reduction_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1])).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ false,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit merge instruction.  */
 
 static machine_mode
@@ -1649,6 +1686,17 @@ opt_machine_mode
 get_mask_mode (machine_mode mode)
 {
   return get_vector_mode (BImode, GET_MODE_NUNITS (mode));
+}
+
+/* Return the appropriate M1 mode for MODE.  */
+
+static opt_machine_mode
+get_m1_mode (machine_mode mode)
+{
+  scalar_mode smode = GET_MODE_INNER (mode);
+  unsigned int bytes = GET_MODE_SIZE (smode);
+  poly_uint64 m1_nunits = exact_div (BYTES_PER_RISCV_VECTOR, bytes);
+  return get_vector_mode (smode, m1_nunits);
 }
 
 /* Return the RVV vector mode that has NUNITS elements of mode INNER_MODE.
@@ -3121,9 +3169,9 @@ expand_cond_len_binop (rtx_code code, rtx *ops)
       rtx ops[] = {dest, mask, merge, src1, src2};
       insn_code icode = code_for_pred (code, mode);
       if (needs_fp_rounding (code, mode))
-	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_MU, ops, len);
+	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_TU, ops, len);
       else
-	emit_nonvlmax_tu_insn (icode, RVV_BINOP_MU, ops, len);
+	emit_nonvlmax_tu_insn (icode, RVV_BINOP_TU, ops, len);
     }
   else
     /* FIXME: Enable this case when we support it in the middle-end.  */
@@ -3314,6 +3362,38 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   else
     /* FIXME: Enable this case when we support it in the middle-end.  */
     gcc_unreachable ();
+}
+
+/* Expand reduction operations.  */
+void
+expand_reduction (rtx_code code, rtx *ops, rtx init)
+{
+  machine_mode vmode = GET_MODE (ops[1]);
+  machine_mode m1_mode = get_m1_mode (vmode).require ();
+  machine_mode m1_mmode = get_mask_mode (m1_mode).require ();
+
+  rtx m1_tmp = gen_reg_rtx (m1_mode);
+  rtx m1_mask = gen_scalar_move_mask (m1_mmode);
+  rtx m1_undef = RVV_VUNDEF (m1_mode);
+  rtx scalar_move_ops[] = {m1_tmp, m1_mask, m1_undef, init};
+  emit_scalar_move_insn (code_for_pred_broadcast (m1_mode), scalar_move_ops);
+
+  rtx m1_tmp2 = gen_reg_rtx (m1_mode);
+  rtx reduc_ops[] = {m1_tmp2, ops[1], m1_tmp};
+
+  if (FLOAT_MODE_P (vmode) && code == PLUS)
+    {
+      insn_code icode
+	= code_for_pred_reduc_plus (UNSPEC_UNORDERED, vmode, m1_mode);
+      emit_vlmax_fp_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
+    }
+  else
+    {
+      insn_code icode = code_for_pred_reduc (code, vmode, m1_mode);
+      emit_vlmax_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
+    }
+
+  emit_insn (gen_pred_extract_first (m1_mode, ops[0], m1_tmp2));
 }
 
 } // namespace riscv_vector

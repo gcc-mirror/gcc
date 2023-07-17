@@ -198,6 +198,7 @@ enum insn_type
   RVV_COMPRESS_OP = 4,
   RVV_GATHER_M_OP = 5,
   RVV_SCATTER_M_OP = 4,
+  RVV_REDUCTION_OP = 3,
 };
 enum vlmul_type
 {
@@ -281,6 +282,7 @@ bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_binop (rtx_code, rtx *);
+void expand_reduction (rtx_code, rtx *, rtx);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));
