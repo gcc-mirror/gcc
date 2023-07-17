@@ -1167,7 +1167,6 @@ try_peel_loop (class loop *loop,
 	       loop->num, (int) npeel);
     }
   adjust_loop_info_after_peeling (loop, npeel, true);
-  profile_count entry_count = profile_count::zero ();
 
   bitmap_set_bit (peeled_loops, loop->num);
   return true;
