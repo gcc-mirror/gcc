@@ -10750,6 +10750,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_UINT:
     case V4SF_FTYPE_V4SF_DI:
     case V4SF_FTYPE_V4SF_SI:
+    case V4DI_FTYPE_V4DI_V2DI:
     case V2DI_FTYPE_V2DI_V2DI:
     case V2DI_FTYPE_V16QI_V16QI:
     case V2DI_FTYPE_V4SI_V4SI:
@@ -11047,6 +11048,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8DI_V8HI_UQI:
     case V8SI_FTYPE_V8DI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI:
+    case V4DI_FTYPE_V4DI_V4DI_V2DI:
     case V16SI_FTYPE_V16SI_V16SI_V16SI:
     case V8DI_FTYPE_V8DI_V8DI_V8DI:
     case V32HI_FTYPE_V32HI_V32HI_V32HI:

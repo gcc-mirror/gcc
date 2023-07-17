@@ -7173,6 +7173,11 @@ Enable/disable the generation of the AVXVNNIINT16 instructions.
 @itemx no-sm3
 Enable/disable the generation of the SM3 instructions.
 
+@cindex @code{target("sha512")} function attribute, x86
+@item sha512
+@itemx no-sha512
+Enable/disable the generation of the SHA512 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

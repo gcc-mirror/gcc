@@ -2589,6 +2589,9 @@ Target supports the execution of @code{raoint} instructions.
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
 
+@item sha512
+Target supports the execution of @code{sha512} instructions.
+
 @item sm3
 Target supports the execution of @code{sm3} instructions.
 

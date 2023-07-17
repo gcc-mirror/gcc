@@ -217,6 +217,12 @@
   UNSPEC_VPDPWSUDS
   UNSPEC_VPDPWUUD
   UNSPEC_VPDPWUUDS
+
+  ;; For SHA512 support
+  UNSPEC_SHA512MSG1
+  UNSPEC_SHA512MSG2
+  UNSPEC_SHA512RNDS2
+
 ])
 
 (define_c_enum "unspecv" [
@@ -28639,6 +28645,40 @@
   [(set_attr "type" "other")
    (set_attr "mode" "TI")
    (set_attr "length_immediate" "1")])
+
+(define_insn "vsha512msg1"
+  [(set (match_operand:V4DI 0 "register_operand" "=x")
+	(unspec:V4DI
+	  [(match_operand:V4DI 1 "register_operand" "0")
+	   (match_operand:V2DI 2 "register_operand" "x")]
+	  UNSPEC_SHA512MSG1))]
+  "TARGET_SHA512"
+  "vsha512msg1\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "OI")])
+
+(define_insn "vsha512msg2"
+  [(set (match_operand:V4DI 0 "register_operand" "=x")
+	(unspec:V4DI
+	  [(match_operand:V4DI 1 "register_operand" "0")
+	   (match_operand:V4DI 2 "register_operand" "x")]
+	  UNSPEC_SHA512MSG2))]
+  "TARGET_SHA512"
+  "vsha512msg2\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "OI")])
+
+(define_insn "vsha512rnds2"
+  [(set (match_operand:V4DI 0 "register_operand" "=x")
+	(unspec:V4DI
+	  [(match_operand:V4DI 1 "register_operand" "0")
+	   (match_operand:V4DI 2 "register_operand" "x")
+	   (match_operand:V2DI 3 "register_operand" "x")]
+	  UNSPEC_SHA512RNDS2))]
+  "TARGET_SHA512"
+  "vsha512rnds2\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "OI")])
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")

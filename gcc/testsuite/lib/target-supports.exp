@@ -9883,6 +9883,20 @@ proc check_effective_target_sm3 { } {
     } "-msm3" ]
 }
 
+# Return 1 if sha512 instructions can be compiled.
+proc check_effective_target_sha512 { } {
+    return [check_no_compiler_messages sha512 object {
+	typedef long long __m256i __attribute__ ((__vector_size__ (32)));
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__m256i
+	_mm256_sha512msg2_epi64 (__m256i __A, __m256i __B)
+        {
+	   return (__m256i) __builtin_ia32_vsha512msg2 ((__v4di) __A,
+							(__v4di) __B);
+	}
+    } "-msha512" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

@@ -110,6 +110,8 @@
 
 #include <sm3intrin.h>
 
+#include <sha512intrin.h>
+
 #include <fmaintrin.h>
 
 #include <f16cintrin.h>
