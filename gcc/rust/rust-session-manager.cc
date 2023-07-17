@@ -234,7 +234,9 @@ Session::handle_option (
 	ret = handle_cfg_option (string_arg);
 	break;
       }
-
+    case OPT_frust_crate_type_:
+      options.set_crate_type (flag_rust_crate_type);
+      break;
     case OPT_frust_edition_:
       options.set_edition (flag_rust_edition);
       break;

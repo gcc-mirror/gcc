@@ -82,6 +82,34 @@ frust-max-recursion-depth=
 Rust RejectNegative Type(int) Var(rust_max_recursion_depth) Init(64)
 -frust-max-recursion-depth=<integer>
 
+frust-crate-type=
+Rust Joined RejectNegative Enum(frust_crate_type) Var(flag_rust_crate_type)
+-frust-crate-type=[bin|lib|rlib|dylib|cdylib|staticlib|proc-macro]     Crate type to emit
+
+Enum
+Name(frust_crate_type) Type(int) UnknownError(unknown crate type: '%qs')
+
+EnumValue
+Enum(frust_crate_type) String(bin) Value(0)
+
+EnumValue
+Enum(frust_crate_type) String(lib) Value(1)
+
+EnumValue
+Enum(frust_crate_type) String(rlib) Value(2)
+
+EnumValue
+Enum(frust_crate_type) String(dylib) Value(3)
+
+EnumValue
+Enum(frust_crate_type) String(cdylib) Value(4)
+
+EnumValue
+Enum(frust_crate_type) String(staticlib) Value(5)
+
+EnumValue
+Enum(frust_crate_type) String(proc-macro) Value(6)
+
 frust-mangling=
 Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
 -frust-mangling=[legacy|v0]     Version to use for name mangling
