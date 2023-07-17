@@ -1,3 +1,21 @@
+2023-07-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110649
+	* tree-vect-loop.cc (scale_profile_for_vect_loop): Rewrite.
+	(vect_transform_loop): Move scale_profile_for_vect_loop after
+	upper bound updates.
+
+2023-07-16  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/110649
+	* tree-vect-loop.cc (optimize_mask_stores): Set correctly
+	probability of the if-then-else construct.
+
+2023-07-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110649
+	* tree-ssa-loop-ivcanon.cc (try_peel_loop): Avoid double profile update.
+
 2023-07-15  Andrew Pinski  <apinski@marvell.com>
 
 	* doc/contrib.texi: Update my entry.
