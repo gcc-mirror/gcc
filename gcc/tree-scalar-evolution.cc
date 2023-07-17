@@ -3678,6 +3678,7 @@ analyze_and_compute_bitop_with_inv_effect (class loop* loop, tree phidef,
   if (TREE_CODE (match_op[1]) != SSA_NAME
       || !expr_invariant_in_loop_p (loop, match_op[0])
       || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[1])))
+      || gimple_bb (header_phi) != loop->header
       || gimple_phi_num_args (header_phi) != 2)
     return NULL_TREE;
 
