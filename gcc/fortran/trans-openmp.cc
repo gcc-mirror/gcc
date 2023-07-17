@@ -3923,6 +3923,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 	    }
 	  break;
+	case OMP_LIST_USES_ALLOCATORS:
+	  /* Ignore pre-defined allocators as no special treatment is needed. */
+	  for (; n != NULL; n = n->next)
+	    if (n->sym->attr.flavor == FL_VARIABLE)
+	      break;
+	  if (n != NULL)
+	    sorry_at (input_location, "%<uses_allocators%> clause with traits "
+				      "and memory spaces");
+	  break;
 	default:
 	  break;
 	}
@@ -6581,6 +6590,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->device;
 	  clausesa[GFC_OMP_SPLIT_TARGET].thread_limit
 	    = code->ext.omp_clauses->thread_limit;
+	  clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_USES_ALLOCATORS]
+	    = code->ext.omp_clauses->lists[OMP_LIST_USES_ALLOCATORS];
 	  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
 	    clausesa[GFC_OMP_SPLIT_TARGET].defaultmap[i]
 	      = code->ext.omp_clauses->defaultmap[i];

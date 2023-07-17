@@ -188,7 +188,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   for (i = 0; i < OMP_LIST_NUM; i++)
     gfc_free_omp_namelist (c->lists[i],
 			   i == OMP_LIST_AFFINITY || i == OMP_LIST_DEPEND,
-			   i == OMP_LIST_ALLOCATE);
+			   i == OMP_LIST_ALLOCATE,
+			   i == OMP_LIST_USES_ALLOCATORS);
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
   free (CONST_CAST (char *, c->critical_name));
@@ -553,7 +554,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false);
+  gfc_free_omp_namelist (head, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -643,7 +644,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false);
+  gfc_free_omp_namelist (head, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -752,7 +753,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP SINK dependence-type list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head, false, false);
+  gfc_free_omp_namelist (head, false, false, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -1091,6 +1092,7 @@ enum omp_mask2
   OMP_CLAUSE_ENTER, /* OpenMP 5.2 */
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
+  OMP_CLAUSE_USES_ALLOCATORS, /* OpenMP 5.0  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1502,7 +1504,7 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
       *head = NULL;
       gfc_error_now ("!$OMP DECLARE REDUCTION %s not found at %L",
 		     buffer, &old_loc);
-      gfc_free_omp_namelist (n, false, false);
+      gfc_free_omp_namelist (n, false, false, false);
     }
   else
     for (n = *head; n; n = n->next)
@@ -1697,6 +1699,106 @@ omp_verify_merge_absent_contains (gfc_statement st, gfc_omp_assumptions *check,
   return MATCH_YES;
 }
 
+/* OpenMP 5.0
+   uses_allocators ( allocator-list )
+
+   allocator:
+     predefined-allocator
+     variable ( traits-array )
+
+   OpenMP 5.2:
+   uses_allocators ( [modifier-list :] allocator-list )
+
+   allocator:
+     variable or predefined-allocator
+   modifier:
+     traits ( traits-array )
+     memspace ( mem-space-handle )  */
+
+static match
+gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
+{
+  gfc_symbol *memspace_sym = NULL;
+  gfc_symbol *traits_sym = NULL;
+  gfc_omp_namelist *head = NULL;
+  gfc_omp_namelist *p, *tail, **list;
+  int ntraits, nmemspace;
+  bool has_modifiers;
+  locus old_loc, cur_loc;
+
+  gfc_gobble_whitespace ();
+  old_loc = gfc_current_locus;
+  ntraits = nmemspace = 0;
+  do
+    {
+      cur_loc = gfc_current_locus;
+      if (gfc_match ("traits ( %S ) ", &traits_sym) == MATCH_YES)
+	ntraits++;
+      else if (gfc_match ("memspace ( %S ) ", &memspace_sym) == MATCH_YES)
+	nmemspace++;
+      if (ntraits > 1 || nmemspace > 1)
+	{
+	  gfc_error ("Duplicate %s modifier at %L in USES_ALLOCATORS clause",
+		     ntraits > 1 ? "TRAITS" : "MEMSPACE", &cur_loc);
+	  return MATCH_ERROR;
+	}
+      if (gfc_match (", ") == MATCH_YES)
+	continue;
+      if (gfc_match (": ") != MATCH_YES)
+	{
+	  /* Assume no modifier. */
+	  memspace_sym = traits_sym = NULL;
+	  gfc_current_locus = old_loc;
+	  break;
+	}
+      break;
+    } while (true);
+
+  has_modifiers = traits_sym != NULL || memspace_sym != NULL;
+  do
+    {
+      p = gfc_get_omp_namelist ();
+      p->where = gfc_current_locus;
+      if (head == NULL)
+	head = tail = p;
+      else
+	{
+	  tail->next = p;
+	  tail = tail->next;
+	}
+      if (gfc_match ("%S ", &p->sym) != MATCH_YES)
+	goto error;
+      if (!has_modifiers)
+	gfc_match ("( %S ) ", &p->u2.traits_sym);
+      else if (gfc_peek_ascii_char () == '(')
+	{
+	  gfc_error ("Unexpected %<(%> at %C");
+	  goto error;
+	}
+      else
+	{
+	  p->u.memspace_sym = memspace_sym;
+	  p->u2.traits_sym = traits_sym;
+	}
+      if (gfc_match (", ") == MATCH_YES)
+	continue;
+      if (gfc_match (") ") == MATCH_YES)
+	break;
+      goto error;
+    } while (true);
+
+  list = &c->lists[OMP_LIST_USES_ALLOCATORS];
+  while (*list)
+    list = &(*list)->next;
+  *list = head;
+
+  return MATCH_YES;
+
+error:
+  gfc_free_omp_namelist (head, false, false, true);
+  return MATCH_ERROR;
+}
+
 
 /* Match with duplicate check. Matches 'name'. If expr != NULL, it
    then matches '(expr)', otherwise, if open_parens is true,
@@ -1820,7 +1922,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      if (end_colon && gfc_match (" %e )", &alignment) != MATCH_YES)
 		{
-		  gfc_free_omp_namelist (*head, false, false);
+		  gfc_free_omp_namelist (*head, false, false, false);
 		  gfc_current_locus = old_loc;
 		  *head = NULL;
 		  break;
@@ -2763,7 +2865,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    end_colon = true;
 		  else if (gfc_match (" )") != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      break;
@@ -2774,7 +2876,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  if (gfc_match (" %e )", &step) != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      goto error;
@@ -2871,7 +2973,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    }
 		  if (has_error)
 		    {
-		      gfc_free_omp_namelist (*head, false, false);
+		      gfc_free_omp_namelist (*head, false, false, false);
 		      *head = NULL;
 		      goto error;
 		    }
@@ -3561,6 +3663,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		   ("use_device_addr (", &c->lists[OMP_LIST_USE_DEVICE_ADDR],
 		    false, NULL, NULL, true) == MATCH_YES)
 	    continue;
+	  if ((mask & OMP_CLAUSE_USES_ALLOCATORS)
+	      && (gfc_match ("uses_allocators ( ") == MATCH_YES))
+	    {
+	      if (gfc_match_omp_clause_uses_allocators (c) != MATCH_YES)
+		goto error;
+	      continue;
+	    }
 	  break;
 	case 'v':
 	  /* VECTOR_LENGTH must be matched before VECTOR, because the latter
@@ -4290,7 +4399,7 @@ cleanup:
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
-   | OMP_CLAUSE_HAS_DEVICE_ADDR)
+   | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -4410,7 +4519,7 @@ gfc_match_omp_allocate (void)
 	  gfc_error ("Unexpected expression as list item at %L in ALLOCATE "
 		     "directive", &n->expr->where);
 
-	gfc_free_omp_namelist (vars, false, true);
+	gfc_free_omp_namelist (vars, false, true, false);
 	goto error;
       }
 
@@ -4814,14 +4923,14 @@ gfc_match_omp_flush (void)
     {
       gfc_error ("List specified together with memory order clause in FLUSH "
 		 "directive at %C");
-      gfc_free_omp_namelist (list, false, false);
+      gfc_free_omp_namelist (list, false, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
-      gfc_free_omp_namelist (list, false, false);
+      gfc_free_omp_namelist (list, false, false, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
@@ -7229,7 +7338,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER" };
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER",
+	"USES_ALLOCATORS" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
@@ -7495,7 +7605,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			 " cannot be and need not be mapped", n->sym->name,
 			 &n->where);
 	  }
-	else
+	else if (list != OMP_LIST_USES_ALLOCATORS)
 	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
 		     &n->where);
       }
@@ -7721,7 +7831,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		{
 		  prev->next = n->next;
 		  n->next = NULL;
-		  gfc_free_omp_namelist (n, false, true);
+		  gfc_free_omp_namelist (n, false, true, false);
 		  n = prev->next;
 		}
 	      continue;
@@ -8291,6 +8401,58 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		n = n->next;
 	      }
 	    break;
+	  case OMP_LIST_USES_ALLOCATORS:
+	    {
+	      if (n != NULL
+		  && n->u.memspace_sym
+		  && (n->u.memspace_sym->attr.flavor != FL_PARAMETER
+		      || n->u.memspace_sym->ts.type != BT_INTEGER
+		      || n->u.memspace_sym->ts.kind != gfc_c_intptr_kind
+		      || n->u.memspace_sym->attr.dimension
+		      || (!startswith (n->u.memspace_sym->name, "omp_")
+			  && !startswith (n->u.memspace_sym->name, "ompx_"))
+		      || !endswith (n->u.memspace_sym->name, "_mem_space")))
+		gfc_error ("Memspace %qs at %L in USES_ALLOCATORS must be "
+			   "a predefined memory space",
+			   n->u.memspace_sym->name, &n->where);
+	      for (; n != NULL; n = n->next)
+		{
+		  if (n->sym->ts.type != BT_INTEGER
+		      || n->sym->ts.kind != gfc_c_intptr_kind
+		      || n->sym->attr.dimension)
+		    gfc_error ("Allocator %qs at %L in USES_ALLOCATORS must "
+			       "be a scalar integer of kind "
+			       "%<omp_allocator_handle_kind%>", n->sym->name,
+			       &n->where);
+		  else if (n->sym->attr.flavor != FL_VARIABLE
+			   && ((!startswith (n->sym->name, "omp_")
+				&& !startswith (n->sym->name, "ompx_"))
+			       || !endswith (n->sym->name, "_mem_alloc")))
+		    gfc_error ("Allocator %qs at %L in USES_ALLOCATORS must "
+			       "either a variable or a predefined allocator",
+			       n->sym->name, &n->where);
+		  else if ((n->u.memspace_sym || n->u2.traits_sym)
+			   && n->sym->attr.flavor != FL_VARIABLE)
+		    gfc_error ("A memory space or traits array may not be "
+			       "specified for predefined allocator %qs at %L",
+			       n->sym->name, &n->where);
+		  if (n->u2.traits_sym
+		      && (n->u2.traits_sym->attr.flavor != FL_PARAMETER
+			  || !n->u2.traits_sym->attr.dimension
+			  || n->u2.traits_sym->as->rank != 1
+			  || n->u2.traits_sym->ts.type != BT_DERIVED
+			  || strcmp (n->u2.traits_sym->ts.u.derived->name,
+				     "omp_alloctrait") != 0))
+		    {
+		      gfc_error ("Traits array %qs in USES_ALLOCATORS %L must "
+				 "be a one-dimensional named constant array of "
+				 "type %<omp_alloctrait%>",
+				 n->u2.traits_sym->name, &n->where);
+		      break;
+		    }
+		}
+	      break;
+	    }
 	  default:
 	    for (; n != NULL; n = n->next)
 	      {
