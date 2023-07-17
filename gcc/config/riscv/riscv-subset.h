@@ -67,7 +67,8 @@ private:
   const char *parse_multiletter_ext (const char *, const char *,
 				     const char *);
 
-  void handle_implied_ext (riscv_subset_t *);
+  void handle_implied_ext (const char *);
+  bool check_implied_ext ();
   void handle_combine_ext ();
 
 public:

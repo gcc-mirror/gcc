@@ -949,14 +949,14 @@ riscv_subset_list::parse_std_ext (const char *p)
 
 /* Check any implied extensions for EXT.  */
 void
-riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
+riscv_subset_list::handle_implied_ext (const char *ext)
 {
   const riscv_implied_info_t *implied_info;
   for (implied_info = &riscv_implied_info[0];
        implied_info->ext;
        ++implied_info)
     {
-      if (strcmp (ext->name.c_str (), implied_info->ext) != 0)
+      if (strcmp (ext, implied_info->ext) != 0)
 	continue;
 
       /* Skip if implied extension already present.  */
@@ -966,6 +966,9 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
       /* Version of implied extension will get from current ISA spec
 	 version.  */
       add (implied_info->implied_ext, true);
+
+      /* Recursively add implied extension by implied_info->implied_ext.  */
+      handle_implied_ext (implied_info->implied_ext);
     }
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifence is
@@ -978,6 +981,27 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
       if (lookup ("zifencei") == NULL)
 	add ("zifencei", true);
     }
+}
+
+/* Check that all implied extensions are included.  */
+bool
+riscv_subset_list::check_implied_ext ()
+{
+  riscv_subset_t *itr;
+  for (itr = m_head; itr != NULL; itr = itr->next)
+    {
+      const riscv_implied_info_t *implied_info;
+      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
+	   ++implied_info)
+	{
+	  if (strcmp (itr->name.c_str(), implied_info->ext) != 0)
+	    continue;
+
+	  if (!lookup (implied_info->implied_ext))
+	    return false;
+	}
+    }
+  return true;
 }
 
 /* Check any combine extensions for EXT.  */
@@ -1194,8 +1218,11 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 
   for (itr = subset_list->m_head; itr != NULL; itr = itr->next)
     {
-      subset_list->handle_implied_ext (itr);
+      subset_list->handle_implied_ext (itr->name.c_str ());
     }
+
+  /* Make sure all implied extensions are included. */
+  gcc_assert (subset_list->check_implied_ext ());
 
   subset_list->handle_combine_ext ();
 
