@@ -1259,6 +1259,9 @@ setup_reg_class_relations (void)
 	  for (cl3 = 0; cl3 < N_REG_CLASSES; cl3++)
 	    {
 	      temp_hard_regset = reg_class_contents[cl3] & ~no_unit_alloc_regs;
+	      if (hard_reg_set_empty_p (temp_hard_regset))
+	        continue;
+
 	      if (hard_reg_set_subset_p (temp_hard_regset, intersection_set))
 		{
 		  /* CL3 allocatable hard register set is inside of
