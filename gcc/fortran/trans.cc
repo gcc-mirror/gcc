@@ -1146,7 +1146,6 @@ static void
 get_var_descr (gfc_se *se, gfc_expr *var)
 {
   gfc_se tmp_se;
-  symbol_attribute attr;
 
   gcc_assert (var);
 
@@ -1161,16 +1160,7 @@ get_var_descr (gfc_se *se, gfc_expr *var)
 	  gfc_conv_expr_descriptor (&tmp_se, var);
 	}
       else
-	{
-	  gfc_conv_expr (&tmp_se, var);
-
-	  /* No copy back needed, hence set attr's allocatable/pointer
-	     to zero.  */
-	  gfc_clear_attr (&attr);
-	  tmp_se.expr = gfc_conv_scalar_to_descriptor (&tmp_se, tmp_se.expr,
-						       attr);
-	  gcc_assert (tmp_se.post.head == NULL_TREE);
-	}
+	gfc_conv_expr (&tmp_se, var);
     }
   else
     {
@@ -1190,18 +1180,23 @@ get_var_descr (gfc_se *se, gfc_expr *var)
 	  gfc_add_data_component (array_expr);
 	  gfc_conv_expr (&tmp_se, array_expr);
 	  gcc_assert (tmp_se.post.head == NULL_TREE);
-
-	  if (!gfc_is_coarray (array_expr))
-	    {
-	      /* No copy back needed, hence set attr's allocatable/pointer
-		 to zero.  */
-	      gfc_clear_attr (&attr);
-	      tmp_se.expr = gfc_conv_scalar_to_descriptor (&tmp_se, tmp_se.expr,
-							   attr);
-	    }
-	  gcc_assert (tmp_se.post.head == NULL_TREE);
 	}
       gfc_free_expr (array_expr);
+    }
+
+  if (var->rank == 0)
+    {
+      if (var->ts.type == BT_DERIVED
+	  || !gfc_is_coarray (var))
+	{
+	  /* No copy back needed, hence set attr's allocatable/pointer
+	     to zero.  */
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  tmp_se.expr = gfc_conv_scalar_to_descriptor (&tmp_se, tmp_se.expr,
+						       attr);
+	}
+      gcc_assert (tmp_se.post.head == NULL_TREE);
     }
 
   if (!POINTER_TYPE_P (TREE_TYPE (tmp_se.expr)))
