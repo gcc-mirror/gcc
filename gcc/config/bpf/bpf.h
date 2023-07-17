@@ -22,7 +22,8 @@
 
 /**** Controlling the Compilation Driver.  */
 
-#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf}"
+#define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf} " \
+  "%{masm=pseudoc:-mdialect=pseudoc}"
 #define LINK_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
 #define LIB_SPEC ""
 #define STARTFILE_SPEC ""
@@ -502,5 +503,7 @@ enum reg_class
   do { } while (0)
 #define DO_GLOBAL_DTORS_BODY			\
   do { } while (0)
+
+#define ASSEMBLER_DIALECT ((int) asm_dialect)
 
 #endif /* ! GCC_BPF_H */

@@ -60,4 +60,10 @@ enum bpf_isa_version
   ISA_V3,
 };
 
+enum bpf_asm_dialect
+{
+  ASM_NORMAL,
+  ASM_PSEUDOC
+};
+
 #endif /* ! BPF_OPTS_H */

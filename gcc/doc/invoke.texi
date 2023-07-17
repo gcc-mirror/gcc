@@ -946,8 +946,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re
--mjmpext -mjmp32 -malu32 -mcpu=@var{version}}
+-mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
+-mjmp32 -malu32 -mcpu=@var{version} -masm=@var{dialect}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -24748,6 +24748,23 @@ the restrictions imposed by the BPF architecture:
 @item Save and restore callee-saved registers at function entry and
 exit, respectively.
 @end itemize
+
+@opindex masm=@var{dialect}
+@item -masm=@var{dialect}
+Outputs assembly instructions using eBPF selected @var{dialect}.  The default
+is @samp{normal}.
+
+Supported values for @var{dialect} are:
+
+@table @samp
+@item normal
+Outputs normal assembly dialect.
+
+@item pseudoc
+Outputs pseudo-c assembly dialect.
+
+@end table
+
 @end table
 
 @node FR30 Options

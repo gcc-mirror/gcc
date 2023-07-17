@@ -88,6 +88,8 @@
 
 (define_mode_attr mop [(QI "b") (HI "h") (SI "w") (DI "dw")
                        (SF "w") (DF "dw")])
+(define_mode_attr smop [(QI "u8") (HI "u16") (SI "u32") (DI "u64")
+                       (SF "u32") (DF "u64")])
 (define_mode_attr mtype [(SI "alu32") (DI "alu")])
 (define_mode_attr msuffix [(SI "32") (DI "")])
 
@@ -121,7 +123,7 @@
         (plus:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   "1"
-  "add<msuffix>\t%0,%2"
+  "{add<msuffix>\t%0,%2|%w0 += %w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Subtraction
@@ -134,15 +136,15 @@
         (minus:AM (match_operand:AM 1 "register_operand" " 0")
                   (match_operand:AM 2 "register_operand" " r")))]
   ""
-  "sub<msuffix>\t%0,%2"
+  "{sub<msuffix>\t%0,%2|%w0 -= %w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Negation
 (define_insn "neg<AM:mode>2"
-  [(set (match_operand:AM         0 "register_operand" "=r,r")
-        (neg:AM (match_operand:AM 1 "register_operand" " r,I")))]
+  [(set (match_operand:AM         0 "register_operand"   "=r,r")
+        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " r,I")))]
   ""
-  "neg<msuffix>\t%0,%1"
+  "{neg<msuffix>\t%0,%1|%w0 = -%w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Multiplication
@@ -151,7 +153,7 @@
         (mult:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "mul<msuffix>\t%0,%2"
+  "{mul<msuffix>\t%0,%2|%w0 *= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "*mulsidi3_zeroextend"
@@ -160,7 +162,7 @@
          (mult:SI (match_operand:SI 1 "register_operand" "0,0")
                   (match_operand:SI 2 "reg_or_imm_operand" "r,I"))))]
   ""
-  "mul32\t%0,%2"
+  "{mul32\t%0,%2|%w0 *= %w2}"
   [(set_attr "type" "alu32")])
 
 ;;; Division
@@ -173,7 +175,7 @@
         (udiv:AM (match_operand:AM 1 "register_operand" " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "div<msuffix>\t%0,%2"
+  "{div<msuffix>\t%0,%2|%w0 /= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;; However, xBPF does provide a signed division operator, sdiv.
@@ -183,7 +185,7 @@
         (div:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   "TARGET_XBPF"
-  "sdiv<msuffix>\t%0,%2"
+  "{sdiv<msuffix>\t%0,%2|%w0 s/= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Modulus
@@ -196,7 +198,7 @@
         (umod:AM (match_operand:AM 1 "register_operand" " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "mod<msuffix>\t%0,%2"
+  "{mod<msuffix>\t%0,%2|%w0 %%= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;; Again, xBPF provides a signed version, smod.
@@ -206,7 +208,7 @@
         (mod:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   "TARGET_XBPF"
-  "smod<msuffix>\t%0,%2"
+  "{smod<msuffix>\t%0,%2|%w0 s%%= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical AND
@@ -215,7 +217,7 @@
         (and:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "and<msuffix>\t%0,%2"
+  "{and<msuffix>\t%0,%2|%w0 &= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical inclusive-OR
@@ -224,7 +226,7 @@
         (ior:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "or<msuffix>\t%0,%2"
+  "{or<msuffix>\t%0,%2|%w0 %|= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical exclusive-OR
@@ -233,7 +235,7 @@
         (xor:AM (match_operand:AM 1 "register_operand" " 0,0")
                 (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
-  "xor<msuffix>\t%0,%2"
+  "{xor<msuffix>\t%0,%2|%w0 ^= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;;; Conversions
@@ -256,9 +258,9 @@
 	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
-   and\t%0,0xffff
-   mov\t%0,%1\;and\t%0,0xffff
-   ldxh\t%0,%1"
+   {and\t%0,0xffff|%0 &= 0xffff}
+   {mov\t%0,%1\;and\t%0,0xffff|%0 = %1;%0 &= 0xffff}
+   {ldxh\t%0,%1|%0 = *(u16 *) %1}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendqidi2"
@@ -266,9 +268,9 @@
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
-   and\t%0,0xff
-   mov\t%0,%1\;and\t%0,0xff
-   ldxb\t%0,%1"
+   {and\t%0,0xff|%0 &= 0xff}
+   {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
+   {ldxh\t%0,%1|%0 = *(u8 *) %1}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
@@ -277,8 +279,8 @@
 	  (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   ""
   "@
-   * return bpf_has_alu32 ? \"mov32\t%0,%1\" : \"mov\t%0,%1\;and\t%0,0xffffffff\";
-   ldxw\t%0,%1"
+   * return bpf_has_alu32 ? \"{mov32\t%0,%1|%0 = %1}\" : \"{mov\t%0,%1\;and\t%0,0xffffffff|%0 = %1;%0 &= 0xffffffff}\";
+   {ldxw\t%0,%1|%0 = *(u32 *) %1}"
   [(set_attr "type" "alu,ldx")])
 
 ;;; Sign-extension
@@ -317,11 +319,11 @@
         (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
   ""
   "@
-   ldx<mop>\t%0,%1
-   mov\t%0,%1
-   lddw\t%0,%1
-   stx<mop>\t%0,%1
-   st<mop>\t%0,%1"
+   {ldx<mop>\t%0,%1|%0 = *(<smop> *) %1}
+   {mov\t%0,%1|%0 = %1}
+   {lddw\t%0,%1|%0 = %1 ll}
+   {stx<mop>\t%0,%1|*(<smop> *) %0 = %1}
+   {st<mop>\t%0,%1|*(<smop> *) %0 = %1}"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
 
 ;;;; Shifts
@@ -333,7 +335,7 @@
         (ashiftrt:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                       (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "arsh<msuffix>\t%0,%2"
+  "{arsh<msuffix>\t%0,%2|%w0 s>>= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "ashl<SIM:mode>3"
@@ -341,7 +343,7 @@
         (ashift:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                     (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "lsh<msuffix>\t%0,%2"
+  "{lsh<msuffix>\t%0,%2|%w0 <<= %w2}"
   [(set_attr "type" "<mtype>")])
 
 (define_insn "lshr<SIM:mode>3"
@@ -349,7 +351,7 @@
         (lshiftrt:SIM (match_operand:SIM 1 "register_operand"   " 0,0")
                       (match_operand:SIM 2 "reg_or_imm_operand" " r,I")))]
   ""
-  "rsh<msuffix>\t%0,%2"
+  "{rsh<msuffix>\t%0,%2|%w0 >>= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;;; Endianness conversion
@@ -363,9 +365,9 @@
   ""
 {
   if (TARGET_BIG_ENDIAN)
-    return "endle\t%0, <endmode>";
+    return "{endle\t%0, <endmode>|%0 = le<endmode> %0}";
   else
-    return "endbe\t%0, <endmode>";
+    return "{endbe\t%0, <endmode>|%0 = be<endmode> %0}";
 }
   [(set_attr "type" "end")])
 
@@ -404,16 +406,16 @@
 
   switch (code)
   {
-  case EQ: return "jeq<msuffix>\t%0,%1,%2"; break;
-  case NE: return "jne<msuffix>\t%0,%1,%2"; break;
-  case LT: return "jslt<msuffix>\t%0,%1,%2"; break;
-  case LE: return "jsle<msuffix>\t%0,%1,%2"; break;
-  case GT: return "jsgt<msuffix>\t%0,%1,%2"; break;
-  case GE: return "jsge<msuffix>\t%0,%1,%2"; break;
-  case LTU: return "jlt<msuffix>\t%0,%1,%2"; break;
-  case LEU: return "jle<msuffix>\t%0,%1,%2"; break;
-  case GTU: return "jgt<msuffix>\t%0,%1,%2"; break;
-  case GEU: return "jge<msuffix>\t%0,%1,%2"; break;
+  case EQ: return  "{jeq<msuffix>\t%0,%1,%2|if %w0 == %w1 goto %2}"; break;
+  case NE: return  "{jne<msuffix>\t%0,%1,%2|if %w0 != %w1 goto %2}"; break;
+  case LT: return  "{jslt<msuffix>\t%0,%1,%2|if %w0 s< %w1 goto %2}"; break;
+  case LE: return  "{jsle<msuffix>\t%0,%1,%2|if %w0 s<= %w1 goto %2}"; break;
+  case GT: return  "{jsgt<msuffix>\t%0,%1,%2|if %w0 s> %w1 goto %2}"; break;
+  case GE: return  "{jsge<msuffix>\t%0,%1,%2|if %w0 s>= %w1 goto %2}"; break;
+  case LTU: return "{jlt<msuffix>\t%0,%1,%2|if %w0 < %w1 goto %2}"; break;
+  case LEU: return "{jle<msuffix>\t%0,%1,%2|if %w0 <= %w1 goto %2}"; break;
+  case GTU: return "{jgt<msuffix>\t%0,%1,%2|if %w0 > %w1 goto %2}"; break;
+  case GEU: return "{jge<msuffix>\t%0,%1,%2|if %w0 >= %w1 goto %2}"; break;
   default:
     gcc_unreachable ();
     return "";
@@ -427,7 +429,7 @@
   [(set (pc)
         (label_ref (match_operand 0 "" "")))]
   ""
-  "ja\t%0"
+  "{ja\t%0|goto %0}"
 [(set_attr "type" "jmp")])
 
 ;;;; Function prologue/epilogue
@@ -506,13 +508,14 @@
   ;; operands[2] is next_arg_register
   ;; operands[3] is struct_value_size_rtx.
   ""
-  "ja\t%0"
+  "{ja\t%0|goto %0}"
   [(set_attr "type" "jmp")])
 
 ;;;; Non-generic load instructions
 
 (define_mode_iterator LDM [QI HI SI DI])
 (define_mode_attr ldop [(QI "b") (HI "h") (SI "w") (DI "dw")])
+(define_mode_attr pldop [(QI "u8") (HI "u16") (SI "u32") (DI "u64")])
 
 (define_insn "ldind<ldop>"
   [(set (reg:LDM R0_REGNUM)
@@ -524,7 +527,7 @@
    (clobber (reg:DI R3_REGNUM))
    (clobber (reg:DI R4_REGNUM))]
   ""
-  "ldind<ldop>\t%0,%1"
+  "{ldind<ldop>\t%0,%1|r0 = *(<pldop> *) skb[%0 + %1]}"
   [(set_attr "type" "ld")])
 
 (define_insn "ldabs<ldop>"
@@ -537,7 +540,7 @@
    (clobber (reg:DI R3_REGNUM))
    (clobber (reg:DI R4_REGNUM))]
   ""
-  "ldabs<ldop>\t%0"
+  "{ldabs<ldop>\t%0|r0 = *(<pldop> *) skb[%0]}"
   [(set_attr "type" "ld")])
 
 ;;;; Atomic increments
@@ -552,5 +555,5 @@
           (match_operand:SI 2 "const_int_operand")] ;; Memory model.
          UNSPEC_XADD))]
   ""
-  "xadd<mop>\t%0,%1"
+  "{xadd<mop>\t%0,%1|*(<smop> *) %0 += %1}"
   [(set_attr "type" "xadd")])

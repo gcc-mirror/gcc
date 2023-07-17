@@ -160,3 +160,17 @@ Enum(bpf_isa) String(v2) Value(ISA_V2)
 
 EnumValue
 Enum(bpf_isa) String(v3) Value(ISA_V3)
+
+masm=
+Target RejectNegative Joined Var(asm_dialect) Enum(asm_dialect) Init(ASM_NORMAL)
+Use given assembler dialect.
+
+Enum
+Name(asm_dialect) Type(enum bpf_asm_dialect)
+Known assembler dialects (for use with the -masm= option)
+
+EnumValue
+Enum(asm_dialect) String(normal) Value(ASM_NORMAL)
+
+EnumValue
+Enum(asm_dialect) String(pseudoc) Value(ASM_PSEUDOC)

@@ -873,16 +873,47 @@ bpf_output_call (rtx target)
   return "";
 }
 
+/* Print register name according to assembly dialect.
+   In normal syntax registers are printed like %rN where N is the
+   register number.
+   In pseudoc syntax, the register names do not feature a '%' prefix.
+   Additionally, the code 'w' denotes that the register should be printed
+   as wN instead of rN, where N is the register number, but only when the
+   value stored in the operand OP is 32-bit wide.  */
+static void
+bpf_print_register (FILE *file, rtx op, int code)
+{
+  if(asm_dialect == ASM_NORMAL)
+    fprintf (file, "%s", reg_names[REGNO (op)]);
+  else
+    {
+      if (code == 'w' && GET_MODE (op) == SImode)
+	{
+	  if (REGNO (op) == BPF_FP)
+	    fprintf (file, "w10");
+	  else
+	    fprintf (file, "w%s", reg_names[REGNO (op)]+2);
+	}
+      else
+	{
+	  if (REGNO (op) == BPF_FP)
+	    fprintf (file, "r10");
+	  else
+	    fprintf (file, "%s", reg_names[REGNO (op)]+1);
+	}
+    }
+}
+
 /* Print an instruction operand.  This function is called in the macro
    PRINT_OPERAND defined in bpf.h */
 
 void
-bpf_print_operand (FILE *file, rtx op, int code ATTRIBUTE_UNUSED)
+bpf_print_operand (FILE *file, rtx op, int code)
 {
   switch (GET_CODE (op))
     {
     case REG:
-      fprintf (file, "%s", reg_names[REGNO (op)]);
+      bpf_print_register (file, op, code);
       break;
     case MEM:
       output_address (GET_MODE (op), XEXP (op, 0));
@@ -936,7 +967,9 @@ bpf_print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      fprintf (file, "[%s+0]", reg_names[REGNO (addr)]);
+      fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+      bpf_print_register (file, addr, 0);
+      fprintf (file, asm_dialect == ASM_NORMAL ? "+0]" : "+0)");
       break;
     case PLUS:
       {
@@ -945,9 +978,11 @@ bpf_print_operand_address (FILE *file, rtx addr)
 
 	if (GET_CODE (op0) == REG && GET_CODE (op1) == CONST_INT)
 	  {
-	    fprintf (file, "[%s+", reg_names[REGNO (op0)]);
+	    fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+	    bpf_print_register (file, op0, 0);
+	    fprintf (file, "+");
 	    output_addr_const (file, op1);
-	    fputs ("]", file);
+	    fprintf (file, asm_dialect == ASM_NORMAL ? "]" : ")");
 	  }
 	else
 	  fatal_insn ("invalid address in operand", addr);
@@ -1815,7 +1850,6 @@ handle_attr_preserve (function *fn)
 	}
     }
 }
-
 
 /* This pass finds accesses to structures marked with the BPF target attribute
    __attribute__((preserve_access_index)). For every such access, a CO-RE
