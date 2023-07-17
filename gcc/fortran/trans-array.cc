@@ -9472,7 +9472,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 
 	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, NULL_TREE,
 						NULL_TREE, NULL_TREE, true,
-						NULL, caf_dereg_mode,
+						NULL, caf_dereg_mode, NULL_TREE,
 						add_when_allocated, caf_token);
 
 	      gfc_add_expr_to_block (&tmpblock, tmp);

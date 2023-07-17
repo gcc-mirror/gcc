@@ -7462,7 +7462,8 @@ gfc_trans_deallocate (gfc_code *code)
 	{
 	  tmp = gfc_deallocate_scalar_with_status (se.expr, pstat, label_finish,
 						   false, al->expr,
-						   al->expr->ts, is_coarray);
+						   al->expr->ts, NULL_TREE,
+						   is_coarray);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  /* Set to zero after deallocation.  */

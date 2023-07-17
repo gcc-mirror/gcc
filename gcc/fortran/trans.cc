@@ -1774,8 +1774,8 @@ tree
 gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 			    tree errlen, tree label_finish,
 			    bool can_fail, gfc_expr* expr,
-			    int coarray_dealloc_mode, tree add_when_allocated,
-			    tree caf_token)
+			    int coarray_dealloc_mode, tree class_container,
+			    tree add_when_allocated, tree caf_token)
 {
   stmtblock_t null, non_null;
   tree cond, tmp, error;
@@ -1869,7 +1869,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   gfc_start_block (&non_null);
   if (add_when_allocated)
     gfc_add_expr_to_block (&non_null, add_when_allocated);
-  gfc_add_finalizer_call (&non_null, expr);
+  gfc_add_finalizer_call (&non_null, expr, class_container);
   if (coarray_dealloc_mode == GFC_CAF_COARRAY_NOCOARRAY
       || flag_coarray != GFC_FCOARRAY_LIB)
     {
@@ -1974,7 +1974,8 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 tree
 gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
 				   bool can_fail, gfc_expr* expr,
-				   gfc_typespec ts, bool coarray)
+				   gfc_typespec ts, tree class_container,
+				   bool coarray)
 {
   stmtblock_t null, non_null;
   tree cond, tmp, error;
@@ -2027,7 +2028,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
   gfc_start_block (&non_null);
 
   /* Free allocatable components.  */
-  finalizable = gfc_add_finalizer_call (&non_null, expr);
+  finalizable = gfc_add_finalizer_call (&non_null, expr, class_container);
   if (!finalizable && ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
     {
       int caf_mode = coarray

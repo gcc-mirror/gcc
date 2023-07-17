@@ -6706,9 +6706,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      if (e->ts.type == BT_CLASS)
 			ptr = gfc_class_data_get (ptr);
 
+		      tree cls = parmse.class_container;
 		      tmp = gfc_deallocate_scalar_with_status (ptr, NULL_TREE,
 							       NULL_TREE, true,
-							       e, e->ts);
+							       e, e->ts, cls);
 		      gfc_add_expr_to_block (&block, tmp);
 		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 					     void_type_node, ptr,
@@ -6900,10 +6901,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  ptr = parmse.expr;
 		  ptr = gfc_class_data_get (ptr);
 
+		  tree cls = parmse.class_container;
 		  tmp = gfc_deallocate_with_status (ptr, NULL_TREE,
 						    NULL_TREE, NULL_TREE,
 						    NULL_TREE, true, e,
-						    GFC_CAF_COARRAY_NOCOARRAY);
+						    GFC_CAF_COARRAY_NOCOARRAY,
+						    cls);
 		  gfc_add_expr_to_block (&block, tmp);
 		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 					 void_type_node, ptr,
