@@ -1100,6 +1100,30 @@ get_final_proc_ref (gfc_se *se, gfc_expr *final_wrapper)
 }
 
 
+/* Generate the code to obtain the value of the element size whose expression
+   is passed as argument in CLASS_SIZE.  */
+
+static void
+get_elem_size (gfc_se *se, gfc_typespec *ts, gfc_expr *class_size)
+{
+  gcc_assert (ts->type == BT_DERIVED || ts->type == BT_CLASS);
+
+  if (ts->type == BT_DERIVED)
+    {
+      gcc_assert (!class_size);
+      se->expr = gfc_typenode_for_spec (ts);
+      se->expr = TYPE_SIZE_UNIT (se->expr);
+      se->expr = fold_convert (gfc_array_index_type, se->expr);
+    }
+  else
+    {
+      gcc_assert (class_size);
+      gfc_conv_expr (se, class_size);
+      gcc_assert (se->post.head == NULL_TREE);
+    }
+}
+
+
 /* Build a call to a FINAL procedure, which finalizes "var".  */
 
 static tree
@@ -1107,7 +1131,7 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 		      bool fini_coarray, gfc_expr *class_size)
 {
   stmtblock_t block;
-  gfc_se final_se;
+  gfc_se final_se, size_se;
   gfc_se se;
   tree final_fndecl, array, size, tmp;
   symbol_attribute attr;
@@ -1121,15 +1145,13 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   gfc_add_block_to_block (&block, &final_se.pre);
   final_fndecl = final_se.expr;
 
+  gfc_init_se (&size_se, NULL);
+  get_elem_size (&size_se, &ts, class_size);
+  gfc_add_block_to_block (&block, &size_se.pre);
+  size = size_se.expr;
+
   if (ts.type == BT_DERIVED)
     {
-      tree elem_size;
-
-      gcc_assert (!class_size);
-      elem_size = gfc_typenode_for_spec (&ts);
-      elem_size = TYPE_SIZE_UNIT (elem_size);
-      size = fold_convert (gfc_array_index_type, elem_size);
-
       gfc_init_se (&se, NULL);
       se.want_pointer = 1;
       if (var->rank)
@@ -1154,12 +1176,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   else
     {
       gfc_expr *array_expr;
-      gcc_assert (class_size);
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, class_size);
-      gfc_add_block_to_block (&block, &se.pre);
-      gcc_assert (se.post.head == NULL_TREE);
-      size = se.expr;
 
       array_expr = gfc_copy_expr (var);
       gfc_init_se (&se, NULL);
