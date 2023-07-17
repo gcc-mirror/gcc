@@ -1320,7 +1320,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
   tree tmp;
   gfc_ref *ref;
   gfc_expr *expr;
-  bool has_finalizer = false;
 
   if (!expr2 || (expr2->ts.type != BT_DERIVED && expr2->ts.type != BT_CLASS))
     return false;
@@ -1360,13 +1359,11 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
          ref->next = NULL;
        }
 
-  if (expr->ts.type == BT_CLASS)
-    {
-      has_finalizer = gfc_is_finalizable (expr->ts.u.derived, NULL);
-
-      if (!expr2->rank && !expr2->ref && CLASS_DATA (expr2->symtree->n.sym)->as)
-	expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
-    }
+  if (expr->ts.type == BT_CLASS
+      && !expr2->rank
+      && !expr2->ref
+      && CLASS_DATA (expr2->symtree->n.sym)->as)
+    expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
 
   stmtblock_t tmp_block;
   gfc_start_block (&tmp_block);
@@ -1397,7 +1394,8 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
   tmp = gfc_finish_block (&tmp_block);
 
-  if (expr->ts.type == BT_CLASS && !has_finalizer)
+  if (expr->ts.type == BT_CLASS
+      && !gfc_is_finalizable (expr->ts.u.derived, NULL))
     {
       tree cond;
       gfc_se se;
