@@ -1085,6 +1085,21 @@ gfc_call_free (tree var)
 }
 
 
+/* Generate the data reference to the finalization procedure pointer passed as
+   argument in FINAL_WRAPPER.  */
+
+static void
+get_final_proc_ref (gfc_se *se, gfc_expr *final_wrapper)
+{
+  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
+
+  gfc_conv_expr (se, final_wrapper);
+
+  if (POINTER_TYPE_P (TREE_TYPE (se->expr)))
+    se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+}
+
+
 /* Build a call to a FINAL procedure, which finalizes "var".  */
 
 static tree
@@ -1092,19 +1107,19 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 		      bool fini_coarray, gfc_expr *class_size)
 {
   stmtblock_t block;
+  gfc_se final_se;
   gfc_se se;
   tree final_fndecl, array, size, tmp;
   symbol_attribute attr;
 
-  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
   gcc_assert (var);
 
   gfc_start_block (&block);
-  gfc_init_se (&se, NULL);
-  gfc_conv_expr (&se, final_wrapper);
-  final_fndecl = se.expr;
-  if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
-    final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
+
+  gfc_init_se (&final_se, NULL);
+  get_final_proc_ref (&final_se, final_wrapper);
+  gfc_add_block_to_block (&block, &final_se.pre);
+  final_fndecl = final_se.expr;
 
   if (ts.type == BT_DERIVED)
     {
