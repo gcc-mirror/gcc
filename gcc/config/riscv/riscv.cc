@@ -861,7 +861,7 @@ riscv_index_reg_class ()
    but extensions might support that.  */
 
 int
-riscv_regno_ok_for_index_p (int regno)
+riscv_regno_ok_for_index_p (int)
 {
   return 0;
 }
