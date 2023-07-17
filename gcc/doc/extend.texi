@@ -843,6 +843,7 @@ Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
 @end itemize
 
+@cindex @code{__auto_type} in GNU C
 In GNU C, but not GNU C++, you may also declare the type of a variable
 as @code{__auto_type}.  In that case, the declaration must declare
 only one variable, whose declarator must just be an identifier, the
