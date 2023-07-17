@@ -1085,12 +1085,25 @@ gfc_call_free (tree var)
 }
 
 
-/* Generate the data reference to the finalization procedure pointer passed as
-   argument in FINAL_WRAPPER.  */
+/* Generate the data reference to the finalization procedure pointer associated
+   with the expression passed as argument in EXPR.  */
 
 static void
-get_final_proc_ref (gfc_se *se, gfc_expr *final_wrapper)
+get_final_proc_ref (gfc_se *se, gfc_expr *expr)
 {
+  gfc_expr *final_wrapper = NULL;
+
+  gcc_assert (expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS);
+
+  if (expr->ts.type == BT_DERIVED)
+    gfc_is_finalizable (expr->ts.u.derived, &final_wrapper);
+  else
+    {
+      final_wrapper = gfc_copy_expr (expr);
+      gfc_add_vptr_component (final_wrapper);
+      gfc_add_final_component (final_wrapper);
+    }
+
   gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
 
   gfc_conv_expr (se, final_wrapper);
@@ -1307,7 +1320,6 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
   tree tmp;
   gfc_ref *ref;
   gfc_expr *expr;
-  gfc_expr *final_expr = NULL;
   bool has_finalizer = false;
 
   if (!expr2 || (expr2->ts.type != BT_DERIVED && expr2->ts.type != BT_CLASS))
@@ -1321,12 +1333,9 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       && expr2->ts.u.derived->attr.defined_assign_comp)
     return false;
 
-  if (expr2->ts.type == BT_DERIVED)
-    {
-      gfc_is_finalizable (expr2->ts.u.derived, &final_expr);
-      if (!final_expr)
-        return false;
-    }
+  if (expr2->ts.type == BT_DERIVED
+      && !gfc_is_finalizable (expr2->ts.u.derived, NULL))
+    return false;
 
   /* If we have a class array, we need go back to the class
      container.  */
@@ -1357,20 +1366,14 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
       if (!expr2->rank && !expr2->ref && CLASS_DATA (expr2->symtree->n.sym)->as)
 	expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
-
-      final_expr = gfc_copy_expr (expr);
-      gfc_add_vptr_component (final_expr);
-      gfc_add_final_component (final_expr);
     }
-
-  gcc_assert (final_expr->expr_type == EXPR_VARIABLE);
 
   stmtblock_t tmp_block;
   gfc_start_block (&tmp_block);
 
   gfc_se final_se;
   gfc_init_se (&final_se, NULL);
-  get_final_proc_ref (&final_se, final_expr);
+  get_final_proc_ref (&final_se, expr);
   gfc_add_block_to_block (block, &final_se.pre);
 
   gfc_se size_se;
