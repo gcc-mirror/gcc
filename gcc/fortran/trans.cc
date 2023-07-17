@@ -1200,45 +1200,6 @@ get_var_descr (gfc_se *se, gfc_typespec *ts, gfc_expr *var)
 
 
 
-/* Build a call to a FINAL procedure, which finalizes "var".  */
-
-static tree
-gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
-		      bool fini_coarray, gfc_expr *class_size)
-{
-  stmtblock_t block;
-  gfc_se final_se, size_se, desc_se;
-  tree final_fndecl, array, size, tmp;
-
-  gcc_assert (var);
-
-  gfc_start_block (&block);
-
-  gfc_init_se (&final_se, NULL);
-  get_final_proc_ref (&final_se, final_wrapper);
-  gfc_add_block_to_block (&block, &final_se.pre);
-  final_fndecl = final_se.expr;
-
-  gfc_init_se (&size_se, NULL);
-  get_elem_size (&size_se, &ts, class_size);
-  gfc_add_block_to_block (&block, &size_se.pre);
-  size = size_se.expr;
-
-  gfc_init_se (&desc_se, NULL);
-  get_var_descr (&desc_se, &ts, var);
-  gfc_add_block_to_block (&block, &desc_se.pre);
-  array = desc_se.expr;
-
-  tmp = build_call_expr_loc (input_location,
-			     final_fndecl, 3, array,
-			     size, fini_coarray ? boolean_true_node
-						: boolean_false_node);
-  gfc_add_block_to_block (&block, &desc_se.post);
-  gfc_add_expr_to_block (&block, tmp);
-  return gfc_finish_block (&block);
-}
-
-
 bool
 gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
 			     bool fini_coarray)
@@ -1407,8 +1368,31 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 
   gcc_assert (final_expr->expr_type == EXPR_VARIABLE);
 
-  tmp = gfc_build_final_call (expr->ts, final_expr, expr,
-			      false, elem_size);
+  stmtblock_t tmp_block;
+  gfc_start_block (&tmp_block);
+
+  gfc_se final_se;
+  gfc_init_se (&final_se, NULL);
+  get_final_proc_ref (&final_se, final_expr);
+  gfc_add_block_to_block (&tmp_block, &final_se.pre);
+
+  gfc_se size_se;
+  gfc_init_se (&size_se, NULL);
+  get_elem_size (&size_se, &expr->ts, elem_size);
+  gfc_add_block_to_block (&tmp_block, &size_se.pre);
+
+  gfc_se desc_se;
+  gfc_init_se (&desc_se, NULL);
+  get_var_descr (&desc_se, &expr->ts, expr);
+  gfc_add_block_to_block (&tmp_block, &desc_se.pre);
+
+  tmp = build_call_expr_loc (input_location, final_se.expr, 3,
+			     desc_se.expr, size_se.expr,
+			     boolean_false_node);
+
+  gfc_add_block_to_block (&tmp_block, &desc_se.post);
+  gfc_add_expr_to_block (&tmp_block, tmp);
+  tmp = gfc_finish_block (&tmp_block);
 
   if (expr->ts.type == BT_CLASS && !has_finalizer)
     {
