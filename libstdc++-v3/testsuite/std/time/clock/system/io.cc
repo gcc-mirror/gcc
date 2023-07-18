@@ -47,22 +47,30 @@ test_format()
 			      " | %H | %I | %j | %m | %M | %p | %r | %R"
 			      " | %S | %T | %u | %U | %V | %w | %W | %x"
 			      " | %X | %y | %Y | %z | %Z}", t);
-  VERIFY( s == "Mon | Monday | Dec | December | Mon Dec 19 17:26:25.708 2022"
+  VERIFY( s == "Mon | Monday | Dec | December | Mon Dec 19 17:26:25 2022"
 	       " | 20 | 19 | 12/19/22 | 19 | 2022-12-19 | 22 | 2022 | Dec"
-	       " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25.708 PM | 17:26"
+	       " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25 PM | 17:26"
 	       " | 25.708 | 17:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
-	       " | 17:26:25.708 | 22 | 2022 | +0000 | UTC" );
+	       " | 17:26:25 | 22 | 2022 | +0000 | UTC" );
 
   std::wstring ws = std::format(L"{:%a | %A | %b | %B | %c"
 				 " | %C | %d | %D | %e | %F | %g | %G | %h"
 				 " | %H | %I | %j | %m | %M | %p | %r | %R"
 				 " | %S | %T | %u | %U | %V | %w | %W | %x"
 				 " | %X | %y | %Y | %z | %Z}", t);
-  VERIFY( ws == L"Mon | Monday | Dec | December | Mon Dec 19 17:26:25.708 2022"
+  VERIFY( ws == L"Mon | Monday | Dec | December | Mon Dec 19 17:26:25 2022"
 		 " | 20 | 19 | 12/19/22 | 19 | 2022-12-19 | 22 | 2022 | Dec"
-		 " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25.708 PM | 17:26"
+		 " | 17 | 05 | 353 | 12 | 26 | PM | 05:26:25 PM | 17:26"
 		 " | 25.708 | 17:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
-		 " | 17:26:25.708 | 22 | 2022 | +0000 | UTC" );
+		 " | 17:26:25 | 22 | 2022 | +0000 | UTC" );
+
+  auto loc = std::locale::classic();
+  auto smod = std::format(loc, "{:%Ec %EC %Od %Oe %OH %OI %Om %OM %OS %Ou %OU"
+			       " %Ow %OW %Ex %EX %Oy %Ey %EY %Ez %Oz}", t);
+  s = std::format("{:%c %C %d %e %H %I %m %M %S %u %U"
+		  " %w %W %x %X %y %y %Y +00:00 +00:00}",
+		  std::chrono::time_point_cast<std::chrono::seconds>(t));
+  VERIFY( smod == s );
 }
 
 int main()
