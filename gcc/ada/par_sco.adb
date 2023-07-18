@@ -829,8 +829,15 @@ package body Par_SCO is
 
             when N_Quantified_Expression =>
                declare
-                  Cond : constant Node_Id := Condition (N);
+                  Cond   : constant Node_Id := Condition (N);
+                  I_Spec : Node_Id := Empty;
                begin
+                  if Present (Iterator_Specification (N)) then
+                     I_Spec := Iterator_Specification (N);
+                  else
+                     I_Spec := Loop_Parameter_Specification (N);
+                  end if;
+                  Process_Decisions (I_Spec, 'X', Pragma_Sloc);
                   Process_Decisions (Cond, 'W', Pragma_Sloc);
                   return Skip;
                end;
