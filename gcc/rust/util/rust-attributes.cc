@@ -561,6 +561,11 @@ AttributeChecker::visit (AST::Function &fun)
 
       if (result.name == "proc_macro_derive")
 	{
+	  if (!attribute.has_attr_input ())
+	    {
+	      rust_error_at (attribute.get_locus (),
+			     "malformed %<%s%> attribute input", name);
+	    }
 	  check_crate_type (name, attribute);
 	}
       else if (result.name == "proc_macro"
