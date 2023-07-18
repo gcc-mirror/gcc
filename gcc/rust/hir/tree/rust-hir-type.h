@@ -33,7 +33,7 @@ class Lifetime;
 class TraitBound : public TypeParamBound
 {
   bool in_parens;
-  bool opening_question_mark;
+  BoundPolarity polarity;
   std::vector<LifetimeParam> for_lifetimes;
   TypePath type_path;
   location_t locus;
@@ -46,10 +46,10 @@ public:
 
   TraitBound (Analysis::NodeMapping mapping, TypePath type_path,
 	      location_t locus, bool in_parens = false,
-	      bool opening_question_mark = false,
+	      BoundPolarity polarity = BoundPolarity::RegularBound,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
-    : in_parens (in_parens), opening_question_mark (opening_question_mark),
+    : in_parens (in_parens), polarity (polarity),
       for_lifetimes (std::move (for_lifetimes)),
       type_path (std::move (type_path)), locus (locus), mappings (mapping)
   {}
@@ -67,7 +67,7 @@ public:
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
   bool get_in_parens () { return in_parens; }
-  bool get_opening_question_mark () { return opening_question_mark; }
+  BoundPolarity get_polarity () { return polarity; }
 
   BoundType get_bound_type () const final override { return TRAITBOUND; }
 

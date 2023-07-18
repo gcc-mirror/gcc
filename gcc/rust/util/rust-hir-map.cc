@@ -100,7 +100,7 @@ Mappings::Mappings ()
   Analysis::NodeMapping node (0, 0, 0, 0);
   builtinMarker
     = new HIR::ImplBlock (node, {}, {}, nullptr, nullptr, HIR::WhereClause ({}),
-			  Positive,
+			  BoundPolarity::RegularBound,
 			  HIR::Visibility (HIR::Visibility::VisType::PUBLIC),
 			  {}, {}, UNDEF_LOCATION);
 }

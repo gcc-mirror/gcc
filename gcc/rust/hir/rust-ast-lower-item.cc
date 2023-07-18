@@ -535,7 +535,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
     }
 
-  Polarity polarity = Positive;
+  BoundPolarity polarity = BoundPolarity::RegularBound;
   HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type), nullptr, where_clause, polarity,
@@ -683,7 +683,9 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
     }
 
-  Polarity polarity = impl_block.is_exclam () ? Positive : Negative;
+  BoundPolarity polarity = impl_block.is_exclam ()
+			     ? BoundPolarity::RegularBound
+			     : BoundPolarity::NegativeBound;
   HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type),
