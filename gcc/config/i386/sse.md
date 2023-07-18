@@ -26609,6 +26609,24 @@
    (set_attr "prefix" "vex,evex,evex")
    (set_attr "mode" "OI")])
 
+;; optimize vlddqu + vinserti128 to vbroadcasti128, the former will use
+;; extra shuffle port in addition to load port than the latter.
+;; For latency perspective,vbroadcasti is no worse.
+(define_insn_and_split "avx2_lddqu_inserti_to_bcasti"
+  [(set (match_operand:V4DI 0 "register_operand" "=x,v,v")
+	(vec_concat:V4DI
+	  (subreg:V2DI
+	    (unspec:V16QI [(match_operand:V16QI 1 "memory_operand")]
+			  UNSPEC_LDDQU) 0)
+	  (subreg:V2DI (unspec:V16QI [(match_dup 1)]
+			  UNSPEC_LDDQU) 0)))]
+  "TARGET_AVX2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V4DI (match_dup 1) (match_dup 1)))]
+  "operands[1] = adjust_address_nv (operands[1], V2DImode, 0);")
+
 ;; Modes handled by AVX vec_dup patterns.
 (define_mode_iterator AVX_VEC_DUP_MODE
   [V8SI V8SF V4DI V4DF])
