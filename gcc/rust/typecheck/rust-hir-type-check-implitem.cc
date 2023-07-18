@@ -389,12 +389,14 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 				       TraitItemReference::TraitItemType::CONST,
 				       &raw_trait_item);
 
-  // unknown trait item
+  // unknown trait item - https://doc.rust-lang.org/error_codes/E0323.html
   if (!found || raw_trait_item->is_error ())
     {
       rich_location r (line_table, constant.get_locus ());
       r.add_range (trait_reference.get_locus ());
-      rust_error_at (r, "constant %<%s%> is not a member of trait %<%s%>",
+      rust_error_at (r, ErrorCode ("E0323"),
+		     "item %qs is an associated const, which does not match "
+		     "its trait %qs",
 		     constant.get_identifier ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());
       return;
