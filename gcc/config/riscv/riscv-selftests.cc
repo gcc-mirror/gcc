@@ -232,6 +232,16 @@ run_poly_int_selftests (void)
 			 worklist);
   run_poly_int_selftest ("rv32imafd_zve32x1p0", ABI_ILP32D, POLY_TEST_DIMODE,
 			 worklist);
+  simple_poly_selftest ("rv64imafdv_zvl256b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl512b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl1024b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl2048b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
+  simple_poly_selftest ("rv64imafdv_zvl4096b", ABI_LP64D,
+			{QImode, HImode, SImode, DImode});
 }
 
 static void

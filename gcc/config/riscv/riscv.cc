@@ -2055,18 +2055,21 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
       riscv_emit_move (dest, GEN_INT (value.to_constant ()));
       return;
     }
-  else if ((factor % vlenb) == 0)
-    div_factor = 1;
-  else if ((factor % (vlenb / 2)) == 0)
-    div_factor = 2;
-  else if ((factor % (vlenb / 4)) == 0)
-    div_factor = 4;
-  else if ((factor % (vlenb / 8)) == 0)
-    div_factor = 8;
-  else if ((factor % (vlenb / 16)) == 0)
-    div_factor = 16;
   else
-    gcc_unreachable ();
+    {
+      /* FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096.  */
+      int max_power = exact_log2 (4096 / 128);
+      for (int i = 0; i < max_power; i++)
+	{
+	  int possible_div_factor = 1 << i;
+	  if (factor % (vlenb / possible_div_factor) == 0)
+	    {
+	      div_factor = possible_div_factor;
+	      break;
+	    }
+	}
+      gcc_assert (div_factor != 0);
+    }
 
   if (div_factor != 1)
     riscv_expand_op (LSHIFTRT, mode, tmp, tmp,
@@ -6479,6 +6482,7 @@ riscv_init_machine_status (void)
 static poly_uint16
 riscv_convert_vector_bits (void)
 {
+  int chunk_num = 1;
   if (TARGET_MIN_VLEN >= 128)
     {
       /* We have Full 'V' extension for application processors. It's specified
@@ -6486,6 +6490,15 @@ riscv_convert_vector_bits (void)
 	 and Zve64d extensions. Thus the number of bytes in a vector is 16 + 16
 	 * x1 which is riscv_vector_chunks * 16 = poly_int (16, 16).  */
       riscv_bytes_per_vector_chunk = 16;
+      /* Adjust BYTES_PER_RISCV_VECTOR according to TARGET_MIN_VLEN:
+	   - TARGET_MIN_VLEN = 128bit: [16,16]
+	   - TARGET_MIN_VLEN = 256bit: [32,32]
+	   - TARGET_MIN_VLEN = 512bit: [64,64]
+	   - TARGET_MIN_VLEN = 1024bit: [128,128]
+	   - TARGET_MIN_VLEN = 2048bit: [256,256]
+	   - TARGET_MIN_VLEN = 4096bit: [512,512]
+	   FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096bit.  */
+      chunk_num = TARGET_MIN_VLEN / 128;
     }
   else if (TARGET_MIN_VLEN > 32)
     {
@@ -6518,7 +6531,7 @@ riscv_convert_vector_bits (void)
       if (riscv_autovec_preference == RVV_FIXED_VLMAX)
 	return (int) TARGET_MIN_VLEN / (riscv_bytes_per_vector_chunk * 8);
       else
-	return poly_uint16 (1, 1);
+	return poly_uint16 (chunk_num, chunk_num);
     }
   else
     return 1;
