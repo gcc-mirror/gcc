@@ -1,3 +1,9 @@
+2023-07-17  Tobias Burnus  <tobias@codesoucery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.fortran/uses_allocators_1.f90: New test.
+	* testsuite/libgomp.fortran/uses_allocators_2.f90: New test.
+
 2023-07-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OMP_ALLOCATOR): Document the default values for

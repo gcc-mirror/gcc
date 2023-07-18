@@ -1,3 +1,143 @@
+2023-07-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95947
+	PR fortran/110658
+	* trans-expr.cc (gfc_conv_procedure_call): For intrinsic procedures
+	whose result characteristics depends on the first argument and which
+	can be of type character, the character length will not be deferred.
+
+2023-07-17  Tobias Burnus  <tobias@codesoucery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist, show_omp_clauses): Dump
+	uses_allocators clause.
+	* gfortran.h (gfc_free_omp_namelist): Add memspace_sym to u union
+	and traits_sym to u2 union.
+	(OMP_LIST_USES_ALLOCATORS): New enum value.
+	(gfc_free_omp_namelist): Add 'bool free_mem_traits_space' arg.
+	* match.cc (gfc_free_omp_namelist): Likewise.
+	* openmp.cc (gfc_free_omp_clauses, gfc_match_omp_variable_list,
+	gfc_match_omp_to_link, gfc_match_omp_doacross_sink,
+	gfc_match_omp_clause_reduction, gfc_match_omp_allocate,
+	gfc_match_omp_flush): Update call.
+	(gfc_match_omp_clauses): Likewise. Parse uses_allocators clause.
+	(gfc_match_omp_clause_uses_allocators): New.
+	(enum omp_mask2): Add new OMP_CLAUSE_USES_ALLOCATORS.
+	(OMP_TARGET_CLAUSES): Accept it.
+	(resolve_omp_clauses): Resolve uses_allocators clause
+	* st.cc (gfc_free_statement): Update gfc_free_omp_namelist call.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle
+	OMP_LIST_USES_ALLOCATORS; fail with sorry unless predefined allocator.
+	(gfc_split_omp_clauses): Handle uses_allocators.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110618
+	* trans.h (gfc_deallocate_with_status): Add class container
+	argument.
+	(gfc_deallocate_scalar_with_status): Ditto.
+	* trans.cc (gfc_deallocate_with_status): Add class container
+	argument and pass it down to gfc_add_finalize_call.
+	(gfc_deallocate_scalar_with_status): Same.
+	* trans-array.cc (structure_alloc_comps): Update caller.
+	* trans-stmt.cc (gfc_trans_deallocate): Ditto.
+	* trans-expr.cc (gfc_conv_procedure_call): Ditto.  Pass
+	pre-evaluated class container argument if it's available.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110618
+	* trans.h (gfc_add_finalizer_call): Add class container argument.
+	* trans.cc (gfc_add_finalizer_call): Ditto.  Pass down new
+	argument to get_final_proc_ref, get_elem_size, get_var_desc,
+	and get_vptr.
+	(get_elem_size): Add class container argument.
+	Use provided class container if it's available.
+	(get_var_descr): Same.
+	(get_vptr): Same.
+	(get_final_proc_ref): Same.  Add boolean telling the class
+	container argument is used.  Set it.  Don't try to use
+	final_wrapper if class container argument was used.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_var_descr): Factor scalar descriptor generation.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_vptr): New function.
+	(gfc_add_finalizer_call): Move virtual table pointer evaluation
+	to get_vptr.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_var_descr): Remove argument ts.  Use var->ts
+	instead.
+	(gfc_add_finalizer_call): Update caller.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_add_finalizer_call): Inline definition of
+	variable has_finalizer.  Merge nested conditions.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_add_finalizer_call): Remove local variable
+	final_expr.  Pass down expr to get_final_proc_ref and move
+	final procedure expression generation down to its one usage
+	in get_final_proc_ref.
+	(get_final_proc_ref): Add argument expr.  Remove argument
+	final_wrapper.  Recreate final_wrapper from expr.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_add_finalizer_call): Remove local variable
+	elem_size.  Pass expression to get_elem_size and move the
+	element size expression generation close to its usage there.
+	(get_elem_size): Add argument expr, remove class_size argument
+	and rebuild it from expr.  Remove ts argument and use the
+	type of expr instead.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_add_finalizer_call): Move pre and post code for
+	the final procedure pointer expression to the outer block.
+	Reuse the previously evaluated final procedure pointer
+	expression.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_add_finalizer_call): Add post code for desc_se
+	after the finalizer call.  Add post code for final_se and
+	size_se as well.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_build_final_call): Inline...
+	(gfc_add_finalizer_call): ... to its one caller.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_var_descr): New function.
+	(gfc_build_final_call): Outline the data reference descriptor
+	evaluation code to get_var_descr.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_elem_size): New function.
+	(gfc_build_final_call): Outline the element size evaluation
+	to get_elem_size.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (get_final_proc_ref): New function.
+	(gfc_build_final_call): Outline the pointer evaluation code
+	to get_final_proc_ref.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_build_final_call): Remove commented assertion.
+
 2023-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/92178

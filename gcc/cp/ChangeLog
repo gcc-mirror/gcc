@@ -1,3 +1,11 @@
+2023-07-17  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_call_expression): Only cache
+	reduced_constant_expression_p results.
+	(reduced_constant_expression_p): Handle CONSTRUCTOR of scalar type.
+	(cxx_eval_constant_expression): Fold vectors here.
+	(cxx_eval_bare_aggregate): Not here.
+
 2023-07-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110441

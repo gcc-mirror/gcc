@@ -1,3 +1,329 @@
+2023-07-17  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/extend.texi: Add @cindex on __auto_type.
+
+2023-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* combine-stack-adj.cc (stack_memref_p): Change return type from
+	int to bool and adjust function body accordingly.
+	(rest_of_handle_stack_adjustments): Change return type to void.
+
+2023-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* combine.cc (struct reg_stat_type): Change last_set_invalid to bool.
+	(cant_combine_insn_p): Change return type from int to bool and adjust
+	function body accordingly.
+	(can_combine_p): Ditto.
+	(combinable_i3pat): Ditto.  Change "i1_not_in_src" and "i0_not_in_src"
+	function arguments from int to bool.
+	(contains_muldiv): Change return type from int to bool and adjust
+	function body accordingly.
+	(try_combine): Ditto. Change "new_direct_jump" pointer function
+	argument from int to bool.  Change "substed_i2", "substed_i1",
+	"substed_i0", "added_sets_0", "added_sets_1", "added_sets_2",
+	"i2dest_in_i2src", "i1dest_in_i1src", "i2dest_in_i1src",
+	"i0dest_in_i0src", "i1dest_in_i0src", "i2dest_in_i0src",
+	"i2dest_killed", "i1dest_killed", "i0dest_killed", "i1_feeds_i2_n",
+	"i0_feeds_i2_n", "i0_feeds_i1_n", "i3_subst_into_i2", "have_mult",
+	"swap_i2i3", "split_i2i3" and "changed_i3_dest" variables
+	from int to bool.
+	(subst): Change "in_dest", "in_cond" and "unique_copy" function
+	arguments from int to bool.
+	(combine_simplify_rtx): Change "in_dest" and "in_cond" function
+	arguments from int to bool.
+	(make_extraction): Change "unsignedp", "in_dest" and "in_compare"
+	function argument from int to bool.
+	(force_int_to_mode): Change "just_select" function argument
+	from int to bool.  Change "next_select" variable to bool.
+	(rtx_equal_for_field_assignment_p): Change return type from
+	int to bool and adjust function body accordingly.
+	(merge_outer_ops): Ditto.  Change "pcomp_p" pointer function
+	argument from int to bool.
+	(get_last_value_validate): Change return type from int to bool
+	and adjust function body accordingly.
+	(reg_dead_at_p): Ditto.
+	(reg_bitfield_target_p): Ditto.
+	(combine_instructions): Ditto.  Change "new_direct_jump"
+	variable to bool.
+	(can_combine_p): Change return type from int to bool
+	and adjust function body accordingly.
+	(likely_spilled_retval_p): Ditto.
+	(can_change_dest_mode): Change "added_sets" function argument
+	from int to bool.
+	(find_split_point): Change "unsignedp" variable to bool.
+	(simplify_if_then_else): Change "comparison_p" and "swapped"
+	variables to bool.
+	(simplify_set): Change "other_changed" variable to bool.
+	(expand_compound_operation): Change "unsignedp" variable to bool.
+	(force_to_mode): Change "just_select" function argument
+	from int to bool.  Change "next_select" variable to bool.
+	(extended_count): Change "unsignedp" function argument to bool.
+	(simplify_shift_const_1): Change "complement_p" variable to bool.
+	(simplify_comparison): Change "changed" variable to bool.
+	(rest_of_handle_combine): Change return type to void.
+
+2023-07-17  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR plugins/110610
+	* Makefile.in (INTERNAL_FN_H): Add insn-opinit.h.
+
+2023-07-17  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* ira.cc (setup_reg_class_relations): Continue
+	if regclass cl3 is hard_reg_set_empty_p.
+
+2023-07-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_option_override): Add sorry check.
+
+2023-07-17  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-loop-ivcanon.cc (try_peel_loop): Remove unused variable
+	entry_count.
+
+2023-07-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-ccp.cc (ccp_finalize): Export value/mask known bits.
+
+2023-07-17  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110696
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::handle_implied_ext):
+	recur add all implied extensions.
+	(riscv_subset_list::check_implied_ext): Add new method.
+	(riscv_subset_list::parse): Call checker check_implied_ext.
+	* config/riscv/riscv-subset.h: Add new method.
+
+2023-07-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (reduc_plus_scal_<mode>): New pattern.
+	(reduc_smax_scal_<mode>): Ditto.
+	(reduc_umax_scal_<mode>): Ditto.
+	(reduc_smin_scal_<mode>): Ditto.
+	(reduc_umin_scal_<mode>): Ditto.
+	(reduc_and_scal_<mode>): Ditto.
+	(reduc_ior_scal_<mode>): Ditto.
+	(reduc_xor_scal_<mode>): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): Add reduction.
+	(expand_reduction): New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_reduction_insn): Ditto.
+	(emit_vlmax_fp_reduction_insn): Ditto.
+	(get_m1_mode): Ditto.
+	(expand_cond_len_binop): Fix name.
+	(expand_reduction): New function
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): Fix VSETVL BUG.
+	(validate_change_or_fail): New function.
+	(change_insn): Fix VSETVL BUG.
+	(change_vsetvl_insn): Ditto.
+	(pass_vsetvl::backward_demand_fusion): Ditto.
+	(pass_vsetvl::df_post_optimization): Ditto.
+
+2023-07-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (ipcp_update_bits): Export value/mask known bits.
+
+2023-07-17  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_regno_ok_for_index_p):
+	Remove parameter name from declaration of unused parameter.
+
+2023-07-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/110652
+	* tree-vect-stmts.cc (vectorizable_load): Initialize new_temp as
+	NULL_TREE.
+
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* tree-scalar-evolution.cc (analyze_and_compute_bitop_with_inv_effect):
+	Check we matched a header PHI.
+
+2023-07-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.cc (set_bitmask): New.
+	* tree-ssanames.h (set_bitmask): New.
+
+2023-07-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange_bitmask::verify_mask): Mask need not be
+	normalized.
+	* value-range.h (irange_bitmask::union_): Normalize beforehand.
+	(irange_bitmask::intersect): Same.
+
+2023-07-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/95923
+	* match.pd ((a|b)&(a==b),a|(a==b),(a&b)|(a==b)): New transformation.
+
+2023-07-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-if-conv.cc (predicate_scalar_phi): Make the arguments
+	to the std::sort comparison lambda function const.
+
+2023-07-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110666
+	* match.pd (A NEEQ (A NEEQ CST)): Fix Outer EQ case.
+
+2023-07-17  Mo, Zewei  <zewei.mo@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Handle Lunar Lake,
+	Arrow Lake and Arrow Lake S.
+	* common/config/i386/i386-common.cc:
+	(processor_name): Add arrowlake.
+	(processor_alias_table): Add arrow lake, arrow lake s and lunar
+	lake.
+	* common/config/i386/i386-cpuinfo.h (enum processor_subtypes):
+	Add INTEL_COREI7_ARROWLAKE and INTEL_COREI7_ARROWLAKE_S.
+	* config.gcc: Add -march=arrowlake and -march=arrowlake-s.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Handle
+	arrowlake-s.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add
+	arrowlake.
+	* config/i386/i386-options.cc (m_ARROWLAKE): New.
+	(processor_cost_table): Add arrowlake.
+	* config/i386/i386.h (enum processor_type):
+	Add PROCESSOR_ARROWLAKE.
+	* config/i386/x86-tune.def: Add m_ARROWLAKE.
+	* doc/extend.texi: Add arrowlake and arrowlake-s.
+	* doc/invoke.texi: Ditto.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/sse.md (VI2_AVX2): Delete V32HI since we actually
+	have the same iterator. Also renaming all the occurence to
+	VI2_AVX2_AVX512BW.
+	(usdot_prod<mode>): New define_expand.
+	(udot_prod<mode>): Ditto.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detech SM4.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_SM4_SET,
+	OPTION_MASK_ISA2_SM4_UNSET): New.
+	(OPTION_MASK_ISA2_AVX_UNSET): Add SM4.
+	(ix86_handle_option): Handle -msm4.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_SM4.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	sm4.
+	* config.gcc: Add sm4intrin.h.
+	* config/i386/cpuid.h (bit_SM4): New.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__SM4__.
+	* config/i386/i386-isa.def (SM4): Add DEF_PTA(SM4).
+	* config/i386/i386-options.cc (isa2_opts): Add -msm4.
+	(ix86_valid_target_attribute_inner_p): Handle sm4.
+	* config/i386/i386.opt: Add option -msm4.
+	* config/i386/immintrin.h: Include sm4intrin.h
+	* config/i386/sse.md (vsm4key4_<mode>): New define insn.
+	(vsm4rnds4_<mode>): Ditto.
+	* doc/extend.texi: Document sm4.
+	* doc/invoke.texi: Document -msm4.
+	* doc/sourcebuild.texi: Document target sm4.
+	* config/i386/sm4intrin.h: New file.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect SHA512.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_SHA512_SET,
+	OPTION_MASK_ISA2_SHA512_UNSET): New.
+	(OPTION_MASK_ISA2_AVX_UNSET): Add SHA512.
+	(ix86_handle_option): Handle -msha512.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_SHA512.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	sha512.
+	* config.gcc: Add sha512intrin.h.
+	* config/i386/cpuid.h (bit_SHA512): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V4DI, V4DI, V4DI, V2DI).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__SHA512__.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V4DI_FTYPE_V4DI_V4DI_V2DI and V4DI_FTYPE_V4DI_V2DI.
+	* config/i386/i386-isa.def (SHA512): Add DEF_PTA(SHA512).
+	* config/i386/i386-options.cc (isa2_opts): Add -msha512.
+	(ix86_valid_target_attribute_inner_p): Handle sha512.
+	* config/i386/i386.opt: Add option -msha512.
+	* config/i386/immintrin.h: Include sha512intrin.h.
+	* config/i386/sse.md (vsha512msg1): New define insn.
+	(vsha512msg2): Ditto.
+	(vsha512rnds2): Ditto.
+	* doc/extend.texi: Document sha512.
+	* doc/invoke.texi: Document -msha512.
+	* doc/sourcebuild.texi: Document target sha512.
+	* config/i386/sha512intrin.h: New file.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect SM3.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_SM3_SET,
+	OPTION_MASK_ISA2_SM3_UNSET): New.
+	(OPTION_MASK_ISA2_AVX_UNSET): Add SM3.
+	(ix86_handle_option): Handle -msm3.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_SM3.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	SM3.
+	* config.gcc: Add sm3intrin.h
+	* config/i386/cpuid.h (bit_SM3): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V4SI, V4SI, V4SI, V4SI, INT).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__SM3__.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V4SI_FTYPE_V4SI_V4SI_V4SI_INT.
+	* config/i386/i386-isa.def (SM3): Add DEF_PTA(SM3).
+	* config/i386/i386-options.cc (isa2_opts): Add -msm3.
+	(ix86_valid_target_attribute_inner_p): Handle sm3.
+	* config/i386/i386.opt: Add option -msm3.
+	* config/i386/immintrin.h: Include sm3intrin.h.
+	* config/i386/sse.md (vsm3msg1): New define insn.
+	(vsm3msg2): Ditto.
+	(vsm3rnds2): Ditto.
+	* doc/extend.texi: Document sm3.
+	* doc/invoke.texi: Document -msm3.
+	* doc/sourcebuild.texi: Document target sm3.
+	* config/i386/sm3intrin.h: New file.
+
+2023-07-17  Kong Lingling  <lingling.kong@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect
+	avxvnniint16.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVXVNNIINT16_SET): New.
+	(OPTION_MASK_ISA2_AVXVNNIINT16_UNSET): Ditto.
+	(ix86_handle_option): Handle -mavxvnniint16.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVXVNNIINT16.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	avxvnniint16.
+	* config.gcc: Add avxvnniint16.h.
+	* config/i386/avxvnniint16intrin.h: New file.
+	* config/i386/cpuid.h (bit_AVXVNNIINT16): New.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AVXVNNIINT16__.
+	* config/i386/i386-options.cc (isa2_opts): Add -mavxvnniint16.
+	(ix86_valid_target_attribute_inner_p): Handle avxvnniint16intrin.h.
+	* config/i386/i386-isa.def: Add DEF_PTA(AVXVNNIINT16).
+	* config/i386/i386.opt: Add option -mavxvnniint16.
+	* config/i386/immintrin.h: Include avxvnniint16.h.
+	* config/i386/sse.md
+	(vpdp<vpdpwprodtype>_<mode>): New define_insn.
+	* doc/extend.texi: Document avxvnniint16.
+	* doc/invoke.texi: Document -mavxvnniint16.
+	* doc/sourcebuild.texi: Document target avxvnniint16.
+
 2023-07-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/110649

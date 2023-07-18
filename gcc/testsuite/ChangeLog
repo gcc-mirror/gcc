@@ -1,3 +1,140 @@
+2023-07-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95947
+	PR fortran/110658
+	* gfortran.dg/deferred_character_37.f90: New test.
+
+2023-07-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/zvl-unimplemented-1.c: New test.
+	* gcc.target/riscv/rvv/base/zvl-unimplemented-2.c: New test.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110618
+	* gfortran.dg/intent_out_22.f90: New test.
+
+2023-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/finalize_53.f90: New test.
+
+2023-07-17  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110696
+	* gcc.target/riscv/attribute-20.c: New test.
+	* gcc.target/riscv/pr110696.c: New test.
+
+2023-07-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add reduction tests.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-4.c: New test.
+
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* gcc.dg/torture/pr110669.c: New testcase.
+
+2023-07-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/95923
+	* gcc.dg/tree-ssa/bitops-2.c: New test.
+	* gcc.dg/tree-ssa/bool-checks-1.c: New test.
+
+2023-07-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110666
+	* gcc.c-torture/execute/pr110666-1.c: New test.
+
+2023-07-17  Mo, Zewei  <zewei.mo@intel.com>
+
+	* g++.target/i386/mv16.C: Add arrowlake and arrowlake-s.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/vnniint16-auto-vectorize-1.c: New test.
+	* gcc.target/i386/vnniint16-auto-vectorize-2.c: Ditto.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -msm4.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -msm4.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add sm4.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_sm4): New.
+	* gcc.target/i386/sm4-1.c: New test.
+	* gcc.target/i386/sm4-check.h: Ditto.
+	* gcc.target/i386/sm4key4-2.c: Ditto.
+	* gcc.target/i386/sm4rnds4-2.c: Ditto.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -msha512.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -msha512.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add sha512.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_sha512): New.
+	* gcc.target/i386/sha512-1.c: New test.
+	* gcc.target/i386/sha512-check.h: Ditto.
+	* gcc.target/i386/sha512msg1-2.c: Ditto.
+	* gcc.target/i386/sha512msg2-2.c: Ditto.
+	* gcc.target/i386/sha512rnds2-2.c: Ditto.
+
+2023-07-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -msm3.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-1.c: Add new define for immediate.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -msm3.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add sm3.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_sm3): New.
+	* gcc.target/i386/sm3-1.c: New test.
+	* gcc.target/i386/sm3-check.h: Ditto.
+	* gcc.target/i386/sm3msg1-2.c: Ditto.
+	* gcc.target/i386/sm3msg2-2.c: Ditto.
+	* gcc.target/i386/sm3rnds2-2.c: Ditto.
+
+2023-07-17  Kong Lingling  <lingling.kong@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mavxvnniint16.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-check.h: Add avxvnniint16 check.
+	* gcc.target/i386/sse-12.c: Add -mavxvnniint16.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* lib/target-supports.exp
+	(check_effective_target_avxvnniint16): New.
+	* gcc.target/i386/avxvnniint16-1.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avxvnniint16-vpdpwuuds-2.c: Ditto.
+
 2023-07-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/pr103628.f90: Add -mlong-double-128 option.
