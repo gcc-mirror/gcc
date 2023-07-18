@@ -2823,6 +2823,10 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
     if (known_le (d->perm[i], d->perm[i - 1]))
       return false;
 
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
   /* Check whether we need to slideup op1 to apply compress approach.
 
        E.g. For index = { 0, 2, 6, 7}, since d->perm[i - 1] = 7 which

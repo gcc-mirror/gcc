@@ -372,6 +372,31 @@
   }
 )
 
+;; Slide an RVV vector left and insert a scalar into element 0.
+(define_expand "vec_shl_insert_<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:VI 1 "register_operand")
+   (match_operand:<VEL> 2 "reg_or_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_slide (UNSPEC_VSLIDE1UP, <MODE>mode);
+  rtx ops[] = {operands[0], RVV_VUNDEF (<MODE>mode), operands[1], operands[2]};
+  riscv_vector::emit_vlmax_slide_insn (icode, ops);
+  DONE;
+})
+
+(define_expand "vec_shl_insert_<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:VF 1 "register_operand")
+   (match_operand:<VEL> 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_slide (UNSPEC_VFSLIDE1UP, <MODE>mode);
+  rtx ops[] = {operands[0], RVV_VUNDEF (<MODE>mode), operands[1], operands[2]};
+  riscv_vector::emit_vlmax_slide_insn (icode, ops);
+  DONE;
+})
+
 ;; ========================================================================
 ;; == Vector operations
 ;; =========================================================================
