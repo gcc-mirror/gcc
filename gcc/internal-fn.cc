@@ -3020,8 +3020,21 @@ expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   icode = convert_optab_handler (optab, mode, cmp_op_mode);
   rtx comparison
     = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp, icode, 4);
-  rtx rtx_op1 = expand_normal (op1);
-  rtx rtx_op2 = expand_normal (op2);
+  /* vector_compare_rtx legitimizes operands, preserve equality when
+     expanding op1/op2.  */
+  rtx rtx_op1, rtx_op2;
+  if (operand_equal_p (op1, op0a))
+    rtx_op1 = XEXP (comparison, 0);
+  else if (operand_equal_p (op1, op0b))
+    rtx_op1 = XEXP (comparison, 1);
+  else
+    rtx_op1 = expand_normal (op1);
+  if (operand_equal_p (op2, op0a))
+    rtx_op2 = XEXP (comparison, 0);
+  else if (operand_equal_p (op2, op0b))
+    rtx_op2 = XEXP (comparison, 1);
+  else
+    rtx_op2 = expand_normal (op2);
 
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   create_output_operand (&ops[0], target, mode);

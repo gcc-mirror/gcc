@@ -5119,13 +5119,41 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 	  last = get_last_insn ();
 	  do_pending_stack_adjust ();
 	  machine_mode cmpmode = comp.mode;
+	  rtx orig_op0 = XEXP (comparison, 0);
+	  rtx orig_op1 = XEXP (comparison, 1);
+	  rtx op2p = op2;
+	  rtx op3p = op3;
+	  /* If we are optimizing, force expensive constants into a register
+	     but preserve an eventual equality with op2/op3.  */
+	  if (CONSTANT_P (orig_op0) && optimize
+	      && (rtx_cost (orig_op0, mode, COMPARE, 0,
+			    optimize_insn_for_speed_p ())
+		  > COSTS_N_INSNS (1))
+	      && can_create_pseudo_p ())
+	    {
+	      if (rtx_equal_p (orig_op0, op2))
+		op2p = XEXP (comparison, 0) = force_reg (cmpmode, orig_op0);
+	      else if (rtx_equal_p (orig_op0, op3))
+		op3p = XEXP (comparison, 0) = force_reg (cmpmode, orig_op0);
+	    }
+	  if (CONSTANT_P (orig_op1) && optimize
+	      && (rtx_cost (orig_op1, mode, COMPARE, 0,
+			    optimize_insn_for_speed_p ())
+		  > COSTS_N_INSNS (1))
+	      && can_create_pseudo_p ())
+	    {
+	      if (rtx_equal_p (orig_op1, op2))
+		op2p = XEXP (comparison, 1) = force_reg (cmpmode, orig_op1);
+	      else if (rtx_equal_p (orig_op1, op3))
+		op3p = XEXP (comparison, 1) = force_reg (cmpmode, orig_op1);
+	    }
 	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 			    GET_CODE (comparison), NULL_RTX, unsignedp,
 			    OPTAB_WIDEN, &comparison, &cmpmode);
 	  if (comparison)
 	    {
 	       rtx res = emit_conditional_move_1 (target, comparison,
-						  op2, op3, mode);
+						  op2p, op3p, mode);
 	       if (res != NULL_RTX)
 		 return res;
 	    }
