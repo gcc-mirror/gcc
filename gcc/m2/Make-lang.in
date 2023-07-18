@@ -462,7 +462,8 @@ GM2_G=-g -fm2-g
 GM2_CPP=
 # GM2_DEBUG_STRMEM=-fcpp
 GM2_DEBUG_STRMEM=
-GM2_FLAGS=-Wunused-variable -Wuninit-variable-checking -fsoft-check-all \
+GM2_FLAGS=-Wunused-variable -Wuninit-variable-checking \
+ -fsoft-check-all \
  -fno-return -Wreturn-type \
  $(GM2_G) $(GM2_O) \
  -funbounded-by-reference -fpim -fextended-opaque \

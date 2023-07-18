@@ -25,7 +25,7 @@ FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
 FROM libc IMPORT printf ;
-FROM NameKey IMPORT Name, NulName, KeyToCharStar ;
+FROM NameKey IMPORT Name, NulName, KeyToCharStar, MakeKey ;
 
 FROM M2Options IMPORT UninitVariableChecking, UninitVariableConditionalChecking,
                       CompilerDebugging ;
@@ -41,6 +41,7 @@ FROM M2BasicBlock IMPORT BasicBlock,
                          ForeachBasicBlockDo ;
 
 IMPORT Indexing ;
+FROM Indexing IMPORT Index ;
 
 FROM Lists IMPORT List, InitList, GetItemFromList, PutItemIntoList,
                   IsItemInList, IncludeItemIntoList, NoOfItemsInList,
@@ -52,15 +53,19 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         VarCheckReadInit, VarInitState, PutVarInitialized,
                         PutVarFieldInitialized, GetVarFieldInitialized,
                         IsConst, IsConstString, NoOfParam, IsVarParam,
-                        ForeachLocalSymDo, IsTemporary, ModeOfAddr,
+                        ForeachLocalSymDo, ForeachParamSymDo,
+                        IsTemporary, ModeOfAddr,
                         IsReallyPointer, IsUnbounded,
                         IsVarient, IsFieldVarient, GetVarient,
-                        IsVarArrayRef ;
+                        IsVarArrayRef, GetSymName,
+                        IsType, IsPointer,
+                        GetParameterShadowVar, IsParameter, GetLType ;
 
 FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad,
                     IsNewLocalVar, IsReturn, IsKillLocalVar, IsConditional,
                     IsUnConditional, IsBackReference, IsCall, IsGoto,
-                    GetM2OperatorDesc, Opposite, DisplayQuadRange ;
+                    GetM2OperatorDesc, Opposite, DisplayQuadRange,
+                    GetQuadTrash ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
 FROM M2GCCDeclare IMPORT PrintSym ;
@@ -104,21 +109,24 @@ TYPE
                            (* Does it end with a conditional?  *)
                            endCond,
                            (* Does it form part of a loop?  *)
-                           topOfLoop: BOOLEAN ;
+                           topOfLoop : BOOLEAN ;
+                           trashQuad,
                            indexBB,
                            nextQuad,
                            condQuad,
                            nextBB,
-                           condBB   : CARDINAL ;
-                           next     : bbEntry ;
+                           condBB    : CARDINAL ;
+                           next      : bbEntry ;
                         END ;
 
 VAR
-   aliasArray: Indexing.Index ;
-   freeList  : symAlias ;
-   bbArray   : Indexing.Index ;
-   bbFreeList: bbEntry ;
-   errorList : List ;   (* Ensure that we only generate one set of warnings per token.  *)
+   IndirectArray,
+   LArray       : Indexing.Index ;
+   freeList     : symAlias ;
+   bbArray      : Indexing.Index ;
+   bbFreeList   : bbEntry ;
+   ignoreList,
+   errorList    : List ;   (* Ensure that we only generate one set of warnings per token.  *)
 
 
 (*
@@ -418,10 +426,10 @@ END IsLocalVar ;
    RecordFieldContainsVarient -
 *)
 
-PROCEDURE RecordFieldContainsVarient (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE RecordFieldContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
 BEGIN
    Assert (IsRecordField (sym)) ;
-   IF ContainsVariant (GetSType (sym))
+   IF doContainsVariant (GetSType (sym), visited)
    THEN
       RETURN TRUE
    END ;
@@ -430,37 +438,125 @@ END RecordFieldContainsVarient ;
 
 
 (*
-   ContainsVariant - returns TRUE if type sym contains a variant record.
+   RecordContainsVarient -
 *)
 
-PROCEDURE ContainsVariant (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE RecordContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
 VAR
    i,
    fieldsym,
    fieldtype: CARDINAL ;
 BEGIN
-   IF IsRecord (sym)
-   THEN
-      i := 1 ;
-      REPEAT
-         fieldsym := GetNth (sym, i) ;
-         IF fieldsym # NulSym
+   Assert (IsRecord (sym)) ;
+   i := 1 ;
+   REPEAT
+      fieldsym := GetNth (sym, i) ;
+      IF fieldsym # NulSym
+      THEN
+         IF IsRecordField (fieldsym)
          THEN
-            IF IsRecordField (fieldsym)
-            THEN
-               IF RecordFieldContainsVarient (fieldsym)
-               THEN
-                  RETURN TRUE
-               END
-            ELSIF IsVarient (fieldsym)
+            IF RecordFieldContainsVarient (fieldsym, visited)
             THEN
                RETURN TRUE
-            END ;
-            INC (i)
-         END
-      UNTIL fieldsym = NulSym
+            END
+         ELSIF IsVarient (fieldsym)
+         THEN
+            RETURN TRUE
+         END ;
+         INC (i)
+      END
+   UNTIL fieldsym = NulSym ;
+   RETURN FALSE
+END RecordContainsVarient ;
+
+
+(*
+   VarContainsVarient -
+*)
+
+PROCEDURE VarContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsVar (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END VarContainsVarient ;
+
+
+(*
+   TypeContainsVarient -
+*)
+
+PROCEDURE TypeContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsType (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END TypeContainsVarient ;
+
+
+(*
+   ArrayContainsVarient -
+*)
+
+PROCEDURE ArrayContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsArray (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END ArrayContainsVarient ;
+
+
+(*
+   PointerContainsVarient -
+*)
+
+PROCEDURE PointerContainsVarient (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   Assert (IsPointer (sym)) ;
+   RETURN doContainsVariant (GetSType (sym), visited)
+END PointerContainsVarient ;
+
+
+(*
+   doContainsVariant -
+*)
+
+PROCEDURE doContainsVariant (sym: CARDINAL; visited: List) : BOOLEAN ;
+BEGIN
+   IF (sym # NulSym) AND (NOT IsItemInList (visited, sym))
+   THEN
+      IncludeItemIntoList (visited, sym) ;
+      IF IsVar (sym)
+      THEN
+         RETURN VarContainsVarient (sym, visited)
+      ELSIF IsRecord (sym)
+      THEN
+         RETURN RecordContainsVarient (sym, visited)
+      ELSIF IsPointer (sym)
+      THEN
+         RETURN PointerContainsVarient (sym, visited)
+      ELSIF IsArray (sym)
+      THEN
+         RETURN ArrayContainsVarient (sym, visited)
+      ELSIF IsType (sym)
+      THEN
+         RETURN TypeContainsVarient (sym, visited)
+      END
    END ;
    RETURN FALSE
+END doContainsVariant ;
+
+
+(*
+   ContainsVariant - returns TRUE if type sym contains a variant record.
+*)
+
+PROCEDURE ContainsVariant (sym: CARDINAL) : BOOLEAN ;
+VAR
+   visited: List ;
+   result : BOOLEAN ;
+BEGIN
+   InitList (visited) ;
+   result := doContainsVariant (sym, visited) ;
+   KillList (visited) ;
+   RETURN result
 END ContainsVariant ;
 
 
@@ -656,9 +752,12 @@ END CheckDeferredRecordAccess ;
 
 PROCEDURE SetVarUninitialized (sym: CARDINAL) ;
 BEGIN
-   IF IsVar (sym) AND (NOT IsUnbounded (GetSType (sym))) AND (NOT IsVarAParam (sym))
+   IF IsVar (sym)
    THEN
-      VarInitState (sym)
+      IF NOT IsUnbounded (GetSType (sym))
+      THEN
+         VarInitState (sym)
+      END
    END
 END SetVarUninitialized ;
 
@@ -667,19 +766,21 @@ END SetVarUninitialized ;
    ComponentFindVar -
 *)
 
-PROCEDURE ComponentFindVar (sym: CARDINAL) : CARDINAL ;
+PROCEDURE ComponentFindVar (sym: CARDINAL; VAR lvalue: BOOLEAN) : CARDINAL ;
 VAR
    nsym,
    i   : CARDINAL ;
 BEGIN
    i := 1 ;
    REPEAT
-      nsym := getAlias (GetNth (sym, i)) ;
+      nsym := GetNth (sym, i) ;
+      lvalue := GetMode (nsym) = LeftValue ;
+      nsym := getLAlias (nsym) ;
       IF (nsym # NulSym) AND IsVar (nsym)
       THEN
          IF (nsym # sym) AND IsComponent (nsym)
          THEN
-            RETURN ComponentFindVar (nsym)
+            RETURN ComponentFindVar (nsym, lvalue)
          ELSE
             RETURN nsym
          END
@@ -742,17 +843,34 @@ END ComponentBuildFieldList ;
 
 
 (*
+   deRefComponent -
+*)
+
+PROCEDURE deRefComponent (component: CARDINAL; lvalue: BOOLEAN) : CARDINAL ;
+BEGIN
+   IF lvalue
+   THEN
+      RETURN getContent (component)
+   ELSE
+      RETURN component
+   END
+END deRefComponent ;
+
+
+(*
    SetVarComponentInitialized -
 *)
 
 PROCEDURE SetVarComponentInitialized (sym: CARDINAL) ;
 VAR
+   lvalue: BOOLEAN ;
    i, n,
    fsym,
-   vsym: CARDINAL ;
-   lst : List ;
+   vsym  : CARDINAL ;
+   lst   : List ;
 BEGIN
-   vsym := ComponentFindVar (sym) ;
+   vsym := ComponentFindVar (sym, lvalue) ;
+   vsym := deRefComponent (vsym, lvalue) ;
    IF vsym # NulSym
    THEN
       IF Debugging
@@ -795,26 +913,34 @@ END SetVarComponentInitialized ;
 
 PROCEDURE GetVarComponentInitialized (sym: CARDINAL) : BOOLEAN ;
 VAR
-   init: BOOLEAN ;
-   vsym: CARDINAL ;
-   lst : List ;
+   lvalue,
+   init     : BOOLEAN ;
+   component,
+   vsym     : CARDINAL ;
+   lst      : List ;
 BEGIN
-   init := FALSE ;
-   vsym := ComponentFindVar (sym) ;
-   IF vsym # NulSym
+   component := ComponentFindVar (sym, lvalue) ;
+   IF IsItemInList (ignoreList, component) OR IsExempt (component)
    THEN
-      IF IsExempt (vsym)
+      RETURN TRUE
+   ELSE
+      init := FALSE ;
+      vsym := deRefComponent (component, lvalue) ;
+      IF vsym # NulSym
       THEN
-         init := TRUE
-      ELSE
-         (* Create list representing how the field is accessed.  *)
-         lst := ComponentCreateFieldList (sym) ;
-         (* Now obtain the mark indicating whether this field was initialized.  *)
-         init := GetVarFieldInitialized (vsym, RightValue, lst) ;
-         KillList (lst)
-      END
-   END ;
-   RETURN init
+         IF IsExempt (vsym)
+         THEN
+            init := TRUE
+         ELSE
+            (* Create list representing how the field is accessed.  *)
+            lst := ComponentCreateFieldList (sym) ;
+            (* Now obtain the mark indicating whether this field was initialized.  *)
+            init := GetVarFieldInitialized (vsym, RightValue, lst) ;
+            KillList (lst)
+         END
+      END ;
+      RETURN init
+   END
 END GetVarComponentInitialized ;
 
 
@@ -841,6 +967,7 @@ PROCEDURE SetVarInitialized (sym: CARDINAL; canDereference: BOOLEAN) ;
 BEGIN
    IF IsVar (sym)
    THEN
+      RemoveItemFromList (ignoreList, sym) ;
       IF IsComponent (sym)
       THEN
          Trace ("SetVarInitialized sym %d is a component and calling SetVarComponentInitialized", sym);
@@ -913,10 +1040,12 @@ END GetVarInitialized ;
 PROCEDURE IsExempt (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN (sym # NulSym) AND IsVar (sym) AND
-          (IsGlobalVar (sym) OR IsVarAParam (sym) OR
-           ContainsVariant (GetSType (sym)) OR
+          (IsGlobalVar (sym) OR
+           (IsVarAParam (sym) AND (GetMode (sym) = LeftValue)) OR
+           ContainsVariant (sym) OR
            IsArray (GetSType (sym)) OR IsSet (GetSType (sym)) OR
-           IsUnbounded (GetSType (sym)) OR IsVarArrayRef (sym))
+           IsUnbounded (GetSType (sym)) OR IsVarArrayRef (sym) OR
+           IsItemInList (ignoreList, sym))
 END IsExempt ;
 
 
@@ -964,8 +1093,8 @@ BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, bblst, i) ;
    CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE, warning, bblst, i) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
-   vsym := getAlias (lhs) ;
-   IF (vsym # lhs) AND (GetSType (vsym) = type)
+   vsym := getContent (getLAlias (lhs)) ;
+   IF (vsym # NulSym) AND (vsym # lhs) AND (GetSType (vsym) = type)
    THEN
       IF IsRecord (type)
       THEN
@@ -990,10 +1119,20 @@ END CheckXIndr ;
 PROCEDURE CheckIndrX (procSym, lhstok, lhs, type, rhstok, rhs: CARDINAL;
                       warning: BOOLEAN;
                       lst: List; i: CARDINAL) ;
+VAR
+   content: CARDINAL ;
 BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
-   CheckDeferredRecordAccess (procSym, rhstok, rhs, TRUE, warning, lst, i) ;
-   SetVarInitialized (lhs, IsVarAParam (rhs))
+   content := getContent (getLAlias (rhs)) ;
+   IF content = NulSym
+   THEN
+      IncludeItemIntoList (ignoreList, lhs)
+   ELSE
+      CheckDeferredRecordAccess (procSym, rhstok, content, TRUE, warning, lst, i) ;
+      (* SetVarInitialized (lhs, IsVarAParam (rhs))  -- was --  *)
+      (* SetVarInitialized (lhs, FALSE) -- was -- *)
+      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue))
+   END
 END CheckIndrX ;
 
 
@@ -1014,22 +1153,27 @@ END CheckRecordField ;
 PROCEDURE CheckBecomes (procSym, destok, des, exprtok, expr: CARDINAL;
                         warning: BOOLEAN; bblst: List; i: CARDINAL) ;
 VAR
-   lst : List ;
-   vsym: CARDINAL ;
+   lvalue: BOOLEAN ;
+   lst   : List ;
+   vsym  : CARDINAL ;
 BEGIN
    CheckDeferredRecordAccess (procSym, exprtok, expr, FALSE, warning, bblst, i) ;
-   SetupAlias (des, expr) ;
+   SetupLAlias (des, expr) ;
    SetVarInitialized (des, FALSE) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
    IF IsComponent (des)
    THEN
-      vsym := ComponentFindVar (des) ;
-      (* Set only the field assigned in vsym as initialized.  *)
-      lst := ComponentCreateFieldList (des) ;
-      IF PutVarFieldInitialized (vsym, RightValue, lst)
+      vsym := ComponentFindVar (des, lvalue) ;
+      vsym := deRefComponent (vsym, lvalue) ;
+      IF vsym # NulSym
       THEN
-      END ;
-      KillList (lst)
+         (* Set only the field assigned in vsym as initialized.  *)
+         lst := ComponentCreateFieldList (des) ;
+         IF PutVarFieldInitialized (vsym, RightValue, lst)
+         THEN
+         END ;
+         KillList (lst)
+      END
    END
 END CheckBecomes ;
 
@@ -1050,10 +1194,10 @@ END CheckComparison ;
    CheckAddr -
 *)
 
-PROCEDURE CheckAddr (procSym, op1tok, op1, op3tok, op3: CARDINAL) ;
+PROCEDURE CheckAddr (procSym, ptrtok, ptr, contenttok, content: CARDINAL) ;
 BEGIN
-   SetVarInitialized (op1, GetVarInitialized (op3)) ;
-   SetupAlias (op1, op3)
+   SetVarInitialized (ptr, GetVarInitialized (content)) ;
+   SetupIndr (ptr, content)
 END CheckAddr ;
 
 
@@ -1367,6 +1511,64 @@ END DumpBBSequence ;
 
 
 (*
+   trashParam -
+*)
+
+PROCEDURE trashParam (trashQuad: CARDINAL) ;
+VAR
+   op           : QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+   heapSym, ptr : CARDINAL ;
+BEGIN
+   IF trashQuad # 0
+   THEN
+      GetQuad (trashQuad, op, op1, op2, op3) ;
+      heapSym := GetQuadTrash (trashQuad) ;
+      IF Debugging
+      THEN
+         printf1 ("heapSym = %d\n", heapSym)
+      END ;
+      IF heapSym # NulSym
+      THEN
+         SetVarInitialized (op3, FALSE) ;
+         ptr := getContent (getLAlias (op3)) ;
+         IF ptr # NulSym
+         THEN
+            SetupIndr (ptr, heapSym) ;
+            SetVarInitialized (ptr, FALSE)
+         END
+(*
+         vsym := getLAlias (op3) ;
+         VarInitState (vsym) ;
+         VarInitState (heapSym) ;
+         PutVarInitialized (vsym, GetMode (vsym)) ;
+         PutVarInitialized (heapSym, LeftValue) ;
+         SetupLAlias (vsym, heapSym)
+*)
+      END
+   END ;
+   DumpAliases
+END trashParam ;
+
+
+(*
+   SetVarLRInitialized -
+*)
+
+PROCEDURE SetVarLRInitialized (param: CARDINAL) ;
+VAR
+   sym: CARDINAL ;
+BEGIN
+   Assert (IsParameter (param)) ;
+   sym := GetParameterShadowVar (param) ;
+   IF sym # NulSym
+   THEN
+      IncludeItemIntoList (ignoreList, sym)
+   END
+END SetVarLRInitialized ;
+
+
+(*
    TestBBSequence -
 *)
 
@@ -1381,20 +1583,26 @@ BEGIN
    THEN
       DumpBBSequence (procSym, lst)
    END ;
-   ForeachLocalSymDo (procSym, SetVarUninitialized) ;
    initBlock ;
+   ForeachLocalSymDo (procSym, SetVarUninitialized) ;
+   ForeachParamSymDo (procSym, SetVarLRInitialized) ;
    n := NoOfItemsInList (lst) ;
    i := 1 ;
    warning := TRUE ;
    WHILE i <= n DO
       bbi := GetItemFromList (lst, i) ;
       bbPtr := Indexing.GetIndice (bbArray, bbi) ;
-      CheckReadBeforeInitFirstBasicBlock (procSym, bbPtr^.start, bbPtr^.end, warning, lst, i) ;
+      CheckReadBeforeInitFirstBasicBlock (procSym,
+                                          bbPtr^.start, bbPtr^.end,
+                                          warning, lst, i) ;
       IF bbPtr^.endCond
       THEN
          (* Check to see if we are moving into an conditional block in which case
             we will issue a note.  *)
          warning := FALSE
+      ELSIF bbPtr^.endCall AND (bbPtr^.trashQuad # 0)
+      THEN
+         trashParam (bbPtr^.trashQuad)
       END ;
       INC (i)
    END ;
@@ -1422,7 +1630,7 @@ BEGIN
       ELSE
          duplst := DuplicateList (lst) ;
          IncludeItemIntoList (duplst, i) ;
-         IF iPtr^.endCall
+         IF iPtr^.endCall AND (iPtr^.trashQuad = 0)
          THEN
             TestBBSequence (procSym, duplst)
          ELSIF iPtr^.endGoto
@@ -1571,6 +1779,45 @@ END NewEntry ;
 
 
 (*
+   IsAllocate - return TRUE is sym is ALLOCATE.
+*)
+
+PROCEDURE IsAllocate (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedure (sym) AND (GetSymName (sym) = MakeKey('ALLOCATE'))
+END IsAllocate ;
+
+
+(*
+   DetectTrash -
+*)
+
+PROCEDURE DetectTrash (bbPtr: bbEntry) ;
+VAR
+   i            : CARDINAL ;
+   op           : QuadOperator ;
+   op1, op2, op3: CARDINAL ;
+BEGIN
+   IF bbPtr^.endCall
+   THEN
+      i := bbPtr^.start ;
+      LOOP
+         GetQuad (i, op, op1, op2, op3) ;
+         IF (op = ParamOp) AND (op1 = 1) AND IsAllocate (op2)
+         THEN
+            bbPtr^.trashQuad := i
+         END ;
+         IF i = bbPtr^.end
+         THEN
+            RETURN
+         END ;
+         i := GetNextQuad (i)
+      END
+   END
+END DetectTrash ;
+
+
+(*
    AppendEntry -
 *)
 
@@ -1589,6 +1836,7 @@ BEGIN
       endGoto := IsGoto (End) ;
       endCond := IsConditional (End) ;
       topOfLoop := IsBackReference (Start) ;
+      trashQuad := 0 ;
       indexBB := high + 1 ;
       nextQuad := 0 ;
       condQuad := 0 ;
@@ -1596,6 +1844,7 @@ BEGIN
       condBB := 0 ;
       next := NIL
    END ;
+   DetectTrash (bbPtr) ;
    Indexing.PutIndice (bbArray, high + 1, bbPtr)
 END AppendEntry ;
 
@@ -1604,13 +1853,30 @@ END AppendEntry ;
    DumpAlias -
 *)
 
-PROCEDURE DumpAlias (aliasIndex: CARDINAL) ;
+PROCEDURE DumpAlias (array: Index; aliasIndex: CARDINAL) ;
 VAR
    sa: symAlias ;
 BEGIN
-   sa := Indexing.GetIndice (aliasArray, aliasIndex) ;
-   printf2 ("keySym = %d: alias = %d\n", sa^.keySym, sa^.alias) ;
+   sa := Indexing.GetIndice (array, aliasIndex) ;
+   printf2 ("keySym = %d: alias = %d\n", sa^.keySym, sa^.alias)
 END DumpAlias ;
+
+
+(*
+   doDumpAliases -
+*)
+
+PROCEDURE doDumpAliases (array: Index) ;
+VAR
+   i, n: CARDINAL ;
+BEGIN
+   i := 1 ;
+   n := Indexing.HighIndice (array) ;
+   WHILE i <= n DO
+      DumpAlias (array, i) ;
+      INC (i)
+   END
+END doDumpAliases ;
 
 
 (*
@@ -1618,17 +1884,13 @@ END DumpAlias ;
 *)
 
 PROCEDURE DumpAliases ;
-VAR
-   i, n: CARDINAL ;
 BEGIN
    IF Debugging
    THEN
-      i := 1 ;
-      n := Indexing.HighIndice (aliasArray) ;
-      WHILE i <= n DO
-         DumpAlias (i) ;
-         INC (i)
-      END
+      printf0 ("LArray\n") ;
+      doDumpAliases (LArray) ;
+      printf0 ("IndirectArray\n") ;
+      doDumpAliases (IndirectArray)
    END
 END DumpAliases ;
 
@@ -1687,7 +1949,9 @@ END killAlias ;
 
 PROCEDURE initBlock ;
 BEGIN
-   aliasArray := Indexing.InitIndex (1) ;
+   LArray := Indexing.InitIndex (1) ;
+   IndirectArray := Indexing.InitIndex (1) ;
+   InitList (ignoreList)
 END initBlock ;
 
 
@@ -1696,32 +1960,40 @@ END initBlock ;
 *)
 
 PROCEDURE killBlock ;
+BEGIN
+   doKillBlock (LArray) ;
+   doKillBlock (IndirectArray) ;
+   KillList (ignoreList)
+END killBlock ;
+
+
+PROCEDURE doKillBlock (VAR array: Index) ;
 VAR
    i, n: CARDINAL ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      killAlias (Indexing.GetIndice (aliasArray, i)) ;
+      killAlias (Indexing.GetIndice (array, i)) ;
       INC (i)
    END ;
-   aliasArray := Indexing.KillIndex (aliasArray)
-END killBlock ;
+   array := Indexing.KillIndex (array)
+END doKillBlock ;
 
 
 (*
    addAlias -
 *)
 
-PROCEDURE addAlias (sym: CARDINAL; aliased: CARDINAL) ;
+PROCEDURE addAlias (array: Index; sym: CARDINAL; aliased: CARDINAL) ;
 VAR
    i, n: CARDINAL ;
    sa  : symAlias ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      sa := Indexing.GetIndice (aliasArray, i) ;
+      sa := Indexing.GetIndice (array, i) ;
       IF sa^.keySym = sym
       THEN
          sa^.alias := aliased ;
@@ -1730,7 +2002,7 @@ BEGIN
       INC (i)
    END ;
    sa := initAlias (sym) ;
-   Indexing.IncludeIndiceIntoIndex (aliasArray, sa) ;
+   Indexing.IncludeIndiceIntoIndex (array, sa) ;
    sa^.alias := aliased
 END addAlias ;
 
@@ -1739,15 +2011,15 @@ END addAlias ;
    lookupAlias -
 *)
 
-PROCEDURE lookupAlias (sym: CARDINAL) : symAlias ;
+PROCEDURE lookupAlias (array: Index; sym: CARDINAL) : symAlias ;
 VAR
    i, n: CARDINAL ;
    sa  : symAlias ;
 BEGIN
    i := 1 ;
-   n := Indexing.HighIndice (aliasArray) ;
+   n := Indexing.HighIndice (array) ;
    WHILE i <= n DO
-      sa := Indexing.GetIndice (aliasArray, i) ;
+      sa := Indexing.GetIndice (array, i) ;
       IF sa^.keySym = sym
       THEN
          RETURN sa
@@ -1762,11 +2034,11 @@ END lookupAlias ;
    doGetAlias -
 *)
 
-PROCEDURE doGetAlias (sym: CARDINAL) : CARDINAL ;
+PROCEDURE doGetAlias (array: Index; sym: CARDINAL) : CARDINAL ;
 VAR
    sa: symAlias ;
 BEGIN
-   sa := lookupAlias (sym) ;
+   sa := lookupAlias (array, sym) ;
    IF (sa # NIL) AND (sa^.alias # NulSym)
    THEN
       RETURN sa^.alias
@@ -1776,10 +2048,10 @@ END doGetAlias ;
 
 
 (*
-   getAlias - attempts to looks up an alias which is not a temporary variable.
+   getLAlias - attempts to looks up an alias which is not a temporary variable.
 *)
 
-PROCEDURE getAlias (sym: CARDINAL) : CARDINAL ;
+PROCEDURE getLAlias (sym: CARDINAL) : CARDINAL ;
 VAR
    type,
    nsym: CARDINAL ;
@@ -1791,28 +2063,48 @@ BEGIN
       IF (IsTemporary (sym) AND (GetMode (sym) = LeftValue)) OR
          ((type # NulSym) AND IsReallyPointer (type))
       THEN
-         nsym := doGetAlias (sym)
+         nsym := doGetAlias (LArray, sym)
       ELSE
          RETURN sym
       END
    UNTIL nsym = NulSym ;
    RETURN sym
-END getAlias ;
+END getLAlias ;
 
 
 (*
-   SetupAlias -
+   SetupLAlias -
 *)
 
-PROCEDURE SetupAlias (des, exp: CARDINAL) ;
+PROCEDURE SetupLAlias (des, exp: CARDINAL) ;
 BEGIN
    IF IsVar (exp) AND
       ((GetMode (des) = LeftValue) OR IsReallyPointer (GetSType (des)))
    THEN
-      addAlias (des, exp) ;
+      addAlias (LArray, des, exp) ;
       DumpAliases
    END
-END SetupAlias ;
+END SetupLAlias ;
+
+
+(*
+   SetupIndr -
+*)
+
+PROCEDURE SetupIndr (ptr, content: CARDINAL) ;
+BEGIN
+   addAlias (IndirectArray, ptr, content) ;
+END SetupIndr ;
+
+
+(*
+   getContent -
+*)
+
+PROCEDURE getContent (ptr: CARDINAL) : CARDINAL ;
+BEGIN
+   RETURN doGetAlias (IndirectArray, ptr)
+END getContent ;
 
 
 (*

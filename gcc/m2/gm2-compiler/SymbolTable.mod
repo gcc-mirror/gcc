@@ -527,6 +527,7 @@ TYPE
                IsConst       : BOOLEAN ;      (* Is variable read/only?      *)
                ArrayRef      : BOOLEAN ;      (* Is variable used to point   *)
                                               (* to an array?                *)
+               Heap          : BOOLEAN ;      (* Is var on the heap?         *)
                InitState     : LRInitDesc ;   (* Initialization state.       *)
                At            : Where ;        (* Where was sym declared/used *)
                ReadUsageList,                 (* list of var read quads      *)
@@ -4263,6 +4264,7 @@ BEGIN
             IsSSA := FALSE ;
             IsConst := FALSE ;
             ArrayRef := FALSE ;
+            Heap := FALSE ;
             InitWhereDeclaredTok(tok, At) ;
             InitWhereFirstUsedTok(tok, At) ;   (* Where symbol first used.  *)
             InitList(ReadUsageList[RightValue]) ;
@@ -6950,6 +6952,48 @@ END IsVarArrayRef ;
 
 
 (*
+   PutVarHeap - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarHeap (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym: Var.Heap := value
+
+      ELSE
+         InternalError ('expecting VarSym')
+      END
+   END
+END PutVarHeap ;
+
+
+(*
+   IsVarHeap - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarHeap (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym: RETURN (Var.Heap)
+
+      ELSE
+         InternalError ('expecting VarSym')
+      END
+   END
+END IsVarHeap ;
+
+
+(*
    PutFieldRecord - places a field, FieldName and FieldType into a record, Sym.
                     VarSym is a optional varient symbol which can be returned
                     by a call to GetVarient(fieldsymbol).  The created field
@@ -9044,6 +9088,31 @@ END ForeachLocalSymDo ;
 
 
 (*
+   ForeachParamSymDo - foreach parameter symbol in procedure, Sym,
+                       perform the procedure, P.  Each symbol
+                       looked up will be VarParam or Param
+                       (not the shadow variable).
+*)
+
+PROCEDURE ForeachParamSymDo (Sym: CARDINAL; P: PerformOperation) ;
+VAR
+   param: CARDINAL ;
+   p, i : CARDINAL ;
+BEGIN
+   IF IsProcedure (Sym)
+   THEN
+      p := NoOfParam (Sym) ;
+      i := p ;
+      WHILE i>0 DO
+         param := GetNthParam (Sym, i) ;
+         P (param) ;
+         DEC(i)
+      END
+   END
+END ForeachParamSymDo ;
+
+
+(*
    CheckForUnknownInModule - checks for any unknown symbols in the
                              current module.
                              If any unknown symbols are found then
@@ -10116,31 +10185,31 @@ VAR
    pSym       : PtrToSymbol ;
    VariableSym: CARDINAL ;
 BEGIN
-   VariableSym := MakeVar(tok, ParamName) ;
-   pSym := GetPsym(VariableSym) ;
+   VariableSym := MakeVar (tok, ParamName) ;
+   pSym := GetPsym (VariableSym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
       ErrorSym: RETURN( NulSym ) |
-      VarSym  : Var.IsParam := TRUE     (* Variable is really a parameter *)
+      VarSym  : Var.IsParam := TRUE     (* Variable is really a parameter.  *)
 
       ELSE
          InternalError ('expecting a Var symbol')
       END
    END ;
-   (* Note that the parameter is now treated as a local variable *)
-   PutVar(VariableSym, GetType(GetNthParam(ProcSym, no))) ;
-   PutDeclared(tok, VariableSym) ;
+   (* Note that the parameter is now treated as a local variable.  *)
+   PutVar (VariableSym, GetType(GetNthParam(ProcSym, no))) ;
+   PutDeclared (tok, VariableSym) ;
    (*
       Normal VAR parameters have LeftValue,
       however Unbounded VAR parameters have RightValue.
       Non VAR parameters always have RightValue.
    *)
-   IF IsVarParam(ProcSym, no) AND (NOT IsUnboundedParam(ProcSym, no))
+   IF IsVarParam (ProcSym, no) AND (NOT IsUnboundedParam (ProcSym, no))
    THEN
-      PutMode(VariableSym, LeftValue)
+      PutMode (VariableSym, LeftValue)
    ELSE
-      PutMode(VariableSym, RightValue)
+      PutMode (VariableSym, RightValue)
    END ;
    RETURN( VariableSym )
 END MakeVariableForParam ;

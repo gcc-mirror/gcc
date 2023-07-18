@@ -92,6 +92,8 @@ EXPORT QUALIFIED NulSym,
                  ForeachModuleDo,
                  ForeachInnerModuleDo,
                  ForeachLocalSymDo,
+                 ForeachParamSymDo,
+
                  ForeachFieldEnumerationDo,
                  GetModule,
                  GetCurrentModule,
@@ -204,6 +206,7 @@ EXPORT QUALIFIED NulSym,
                  PutVariableSSA, IsVariableSSA,
                  PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
                  PutMonoName, IsMonoName,
+                 PutVarHeap, IsVarHeap,
 
                  IsDefImp,
                  IsModule,
@@ -692,6 +695,20 @@ PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
 *)
 
 PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL; external: BOOLEAN) ;
+
+
+(*
+   PutVarHeap - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarHeap (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarHeap - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarHeap (sym: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -2396,6 +2413,14 @@ PROCEDURE SanityCheckConstants ;
 *)
 
 PROCEDURE ForeachLocalSymDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   ForeachParamSymDo - foreach parameter symbol in procedure, Sym,
+                       perform the procedure, P.
+*)
+
+PROCEDURE ForeachParamSymDo (Sym: CARDINAL; P: PerformOperation) ;
 
 
 (*
