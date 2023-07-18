@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 macro_rules! forward_ref_binop {
     (impl $imp:ident, $method:ident for $t:ty, $u:ty) => {
         forward_ref_binop!(impl $imp, $method for $t, $u,

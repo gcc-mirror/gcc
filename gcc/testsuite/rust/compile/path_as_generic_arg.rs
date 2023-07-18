@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub enum Result<T, E> {
     Ok(T),
     Err(E),

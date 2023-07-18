@@ -161,7 +161,7 @@ public:
 	 tl::optional<std::ofstream &> dump_lex_opt = tl::nullopt);
 
   // Lex the contents of a string instead of a file
-  Lexer (const std::string &input);
+  Lexer (const std::string &input, Linemap *linemap);
 
   // dtor
   ~Lexer ();

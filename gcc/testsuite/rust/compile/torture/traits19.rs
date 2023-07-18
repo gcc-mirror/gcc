@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Get {
     type Value;
     fn get(&self) -> &<Self as Get>::Value;

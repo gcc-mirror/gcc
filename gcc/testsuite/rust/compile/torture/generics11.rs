@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo<T>(T, u32);
 
 type TypeAlias = Foo<i32>;

@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Bidule<const N: i32 = 15> {}
 enum Bidoule<const N: i32 = 15> {}
 

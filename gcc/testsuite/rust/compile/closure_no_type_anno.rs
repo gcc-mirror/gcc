@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "fn_once"]
 trait FnOnce<Args> {
   type Output;

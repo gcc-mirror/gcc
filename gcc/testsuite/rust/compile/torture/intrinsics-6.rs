@@ -1,5 +1,8 @@
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "rust-intrinsic" {
     pub fn unchecked_add<T>(x: T, y: T) -> T;
     pub fn unchecked_sub<T>(x: T, y: T) -> T;

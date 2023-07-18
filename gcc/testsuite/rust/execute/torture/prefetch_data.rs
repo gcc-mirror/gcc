@@ -1,5 +1,8 @@
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "rust-intrinsic" {
     fn prefetch_read_data<T>(addr: *const T, locality: i32);
     fn prefetch_write_data<T>(addr: *const T, locality: i32);

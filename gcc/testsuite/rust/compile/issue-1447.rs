@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 struct PhantomData<T>;
 
 struct Hasher<S> {

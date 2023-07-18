@@ -345,7 +345,6 @@ void
 TypeCheckContext::insert_autoderef_mappings (
   HirId id, std::vector<Adjustment> &&adjustments)
 {
-  rust_assert (autoderef_mappings.find (id) == autoderef_mappings.end ());
   autoderef_mappings.emplace (id, std::move (adjustments));
 }
 
@@ -365,8 +364,6 @@ void
 TypeCheckContext::insert_cast_autoderef_mappings (
   HirId id, std::vector<Adjustment> &&adjustments)
 {
-  rust_assert (cast_autoderef_mappings.find (id)
-	       == cast_autoderef_mappings.end ());
   cast_autoderef_mappings.emplace (id, std::move (adjustments));
 }
 

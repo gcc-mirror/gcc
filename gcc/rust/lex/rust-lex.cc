@@ -136,9 +136,9 @@ is_identifier_continue (uint32_t codepoint)
   return check_xid_property (codepoint) & XID_CONTINUE;
 }
 
-Lexer::Lexer (const std::string &input)
+Lexer::Lexer (const std::string &input, Linemap *linemap)
   : input (RAIIFile::create_error ()), current_line (1), current_column (1),
-    line_map (nullptr), dump_lex_out ({}),
+    line_map (linemap), dump_lex_out ({}),
     raw_input_source (new BufferInputSource (input, 0)),
     input_queue{*raw_input_source}, token_queue (TokenSource (this))
 {}

@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 mod core {
     mod ops {
         #[lang = "add"]

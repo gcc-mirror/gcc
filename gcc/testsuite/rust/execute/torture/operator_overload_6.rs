@@ -3,6 +3,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "add_assign"]
 pub trait AddAssign<Rhs = Self> {
     fn add_assign(&mut self, rhs: Rhs);

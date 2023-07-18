@@ -4,6 +4,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "bitand"]
 pub trait BitAnd<Rhs = Self> {
     type Output;

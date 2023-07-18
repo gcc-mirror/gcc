@@ -1266,16 +1266,23 @@ Mappings::lookup_builtin_marker ()
   return builtinMarker;
 }
 
-HIR::TraitItem *
-Mappings::lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item)
+DefId
+Mappings::get_lang_item (RustLangItem::ItemType item_type, location_t locus)
 {
-  DefId trait_item_id = UNKNOWN_DEFID;
-  bool trait_item_lang_item_defined = lookup_lang_item (item, &trait_item_id);
+  DefId item = UNKNOWN_DEFID;
+  bool ok = lookup_lang_item (item_type, &item);
+  if (!ok)
+    rust_fatal_error (locus, "failed to find lang item %s",
+		      RustLangItem::ToString (item_type).c_str ());
 
-  // FIXME
-  // make this an error? what does rustc do when a lang item is not defined?
-  rust_assert (trait_item_lang_item_defined);
+  return item;
+}
 
+HIR::TraitItem *
+Mappings::lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item,
+				       location_t locus)
+{
+  DefId trait_item_id = get_lang_item (item, locus);
   return lookup_trait_item_defid (trait_item_id);
 }
 

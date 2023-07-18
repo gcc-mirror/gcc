@@ -1,4 +1,8 @@
 // { dg-additional-options "-w" }
+
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

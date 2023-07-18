@@ -1,4 +1,7 @@
 // { dg-error "expected .i32. got .i8." "" { target *-*-* } 0 }
+#[lang = "sized"]
+pub trait Sized {}
+
 struct GenericStruct<T>(T, usize);
 
 fn main() {

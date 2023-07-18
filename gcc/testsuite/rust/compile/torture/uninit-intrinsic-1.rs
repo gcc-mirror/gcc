@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 mod intrinsics {
     extern "rust-intrinsic" {
         pub fn uninit<T>() -> T;

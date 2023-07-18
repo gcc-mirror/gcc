@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 struct FatPtr<T> {
     data: *const T,
     len: usize,

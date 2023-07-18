@@ -271,6 +271,9 @@ public:
     return true;
   }
 
+  // This will fatal_error when this lang item does not exist
+  DefId get_lang_item (RustLangItem::ItemType item_type, location_t locus);
+
   void insert_macro_def (AST::MacroRulesDefinition *macro);
 
   bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
@@ -342,7 +345,8 @@ public:
   HIR::ImplBlock *lookup_builtin_marker ();
 
   HIR::TraitItem *
-  lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item);
+  lookup_trait_item_lang_item (Analysis::RustLangItem::ItemType item,
+			       location_t locus);
 
 private:
   Mappings ();

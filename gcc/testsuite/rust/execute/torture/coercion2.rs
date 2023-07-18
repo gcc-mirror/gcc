@@ -3,6 +3,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo(i32);
 trait Bar {
     fn baz(&self);

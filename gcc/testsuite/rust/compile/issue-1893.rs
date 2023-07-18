@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub enum Option<T> {
     None,
     Some(T),

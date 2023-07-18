@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 mod orange {
     mod green {
         fn bean<T>(value: T) -> T {

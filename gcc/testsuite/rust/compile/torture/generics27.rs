@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 // github issue #415
 fn test<A>(a: &A) -> &A {
     a

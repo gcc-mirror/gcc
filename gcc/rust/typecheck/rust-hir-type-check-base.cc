@@ -19,6 +19,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
 
 namespace Rust {
@@ -397,6 +398,22 @@ TypeCheckBase::resolve_generic_params (
 	  break;
 	}
     }
+}
+
+TyTy::TypeBoundPredicate
+TypeCheckBase::get_marker_predicate (Analysis::RustLangItem::ItemType item_type,
+				     location_t locus)
+{
+  DefId item_id = mappings->get_lang_item (item_type, locus);
+  HIR::Item *item = mappings->lookup_defid (item_id);
+  rust_assert (item != nullptr);
+  rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
+
+  HIR::Trait &trait = *static_cast<HIR::Trait *> (item);
+  TraitReference *ref = TraitResolver::Resolve (trait);
+  rust_assert (ref != nullptr);
+
+  return TyTy::TypeBoundPredicate (*ref, BoundPolarity::RegularBound, locus);
 }
 
 } // namespace Resolver

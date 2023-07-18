@@ -1,6 +1,9 @@
 // { dg-additional-options "-w" }
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 mod intrinsics {
     extern "rust-intrinsic" {
         pub fn offset<T>(ptr: *const T, count: isize) -> *const T;
