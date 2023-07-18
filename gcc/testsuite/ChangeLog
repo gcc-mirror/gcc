@@ -1,3 +1,16 @@
+2023-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110524
+	* g++.dg/cpp2a/fn-template26.C: New test.
+
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* gcc.dg/torture/pr110669.c: New testcase.
+
 2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

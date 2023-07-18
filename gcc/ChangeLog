@@ -1,3 +1,9 @@
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* tree-scalar-evolution.cc (analyze_and_compute_bitop_with_inv_effect):
+	Check we matched a header PHI.
+
 2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
