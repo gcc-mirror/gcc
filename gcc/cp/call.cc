@@ -2588,6 +2588,14 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
   if (*candidates && (*candidates)->fn == totype)
     return NULL;
 
+  if (!constraints_satisfied_p (fn))
+    {
+      reason = constraint_failure ();
+      viable = 0;
+      return add_candidate (candidates, fn, obj, arglist, len, convs,
+			    access_path, conversion_path, viable, reason, flags);
+    }
+
   for (i = 0; i < len; ++i)
     {
       tree arg, argtype, convert_type = NULL_TREE;
