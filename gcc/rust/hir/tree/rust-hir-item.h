@@ -2733,7 +2733,7 @@ class ImplBlock : public VisItem, public WithInnerAttrs
   std::unique_ptr<Type> impl_type;
   std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
-  Polarity polarity;
+  BoundPolarity polarity;
   location_t locus;
   std::vector<std::unique_ptr<ImplItem>> impl_items;
 
@@ -2743,7 +2743,7 @@ public:
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
-	     Polarity polarity, Visibility vis, AST::AttrVec inner_attrs,
+	     BoundPolarity polarity, Visibility vis, AST::AttrVec inner_attrs,
 	     AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       WithInnerAttrs (std::move (inner_attrs)),
@@ -2817,7 +2817,7 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   // Returns the polarity of the impl.
-  Polarity get_polarity () const { return polarity; }
+  BoundPolarity get_polarity () const { return polarity; }
 
   location_t get_locus () const override final { return locus; }
 

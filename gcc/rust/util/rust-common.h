@@ -37,10 +37,11 @@ enum Unsafety
   Normal
 };
 
-enum Polarity
+enum BoundPolarity
 {
-  Positive,
-  Negative
+  RegularBound,
+  NegativeBound,
+  AntiBound,
 };
 
 enum AsyncConstStatus

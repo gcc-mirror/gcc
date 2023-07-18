@@ -52,6 +52,21 @@ std::string Dump::delims[2][2] = {
   {std::string ("["), std::string ("]")},
 };
 
+static std::string
+BoundPolarityString (BoundPolarity polarity)
+{
+  switch (polarity)
+    {
+    case RegularBound:
+      return "regular";
+    case NegativeBound:
+      return "negative";
+    case AntiBound:
+      return "anti";
+    }
+  return "unknown";
+}
+
 void
 Dump::go (HIR::Crate &e)
 {
@@ -2276,8 +2291,7 @@ Dump::visit (TraitBound &e)
   begin ("TraitBound");
   do_mappings (e.get_mappings ());
   put_field ("in_parens", std::to_string (e.get_in_parens ()));
-  put_field ("opening_question_mark",
-	     std::to_string (e.get_opening_question_mark ()));
+  put_field ("polarity", BoundPolarityString (e.get_polarity ()));
 
   visit_collection ("for_lifetime", e.get_for_lifetimes ());
   visit_field ("type_path", e.get_path ());

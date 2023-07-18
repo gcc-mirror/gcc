@@ -525,9 +525,11 @@ ASTLoweringTypeBounds::visit (AST::TraitBound &bound)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
+  BoundPolarity polarity = bound.has_opening_question_mark ()
+			     ? BoundPolarity::AntiBound
+			     : BoundPolarity::RegularBound;
   translated = new HIR::TraitBound (mapping, *trait_path, bound.get_locus (),
-				    bound.is_in_parens (),
-				    bound.has_opening_question_mark ());
+				    bound.is_in_parens (), polarity);
 }
 
 void

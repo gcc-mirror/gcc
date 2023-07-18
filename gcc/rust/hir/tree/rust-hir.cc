@@ -1986,14 +1986,16 @@ TraitBound::as_string () const
 {
   std::string str ("TraitBound:");
 
-  str += "\n Has opening question mark: ";
-  if (opening_question_mark)
+  switch (polarity)
     {
-      str += "true";
-    }
-  else
-    {
-      str += "false";
+    case RegularBound:
+      break;
+    case NegativeBound:
+      str += "!";
+      break;
+    case AntiBound:
+      str += "?";
+      break;
     }
 
   str += "\n For lifetimes: ";
