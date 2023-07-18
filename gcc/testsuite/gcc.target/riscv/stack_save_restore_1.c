@@ -1,13 +1,13 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32imafc -mabi=ilp32f -msave-restore -O2 -fno-schedule-insns -fno-schedule-insns2 -fno-unroll-loops -fno-peel-loops -fno-lto" } */
+/* { dg-options "-march=rv64imafc -mabi=lp64f -msave-restore -O2 -fno-schedule-insns -fno-schedule-insns2 -fno-unroll-loops -fno-peel-loops -fno-lto" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 char my_getchar();
 float getf();
 
 /*
-**bar:
-**	call	t0,__riscv_save_4
+** bar:
+**	call	t0,__riscv_save_(3|4)
 **	addi	sp,sp,-2032
 **	...
 **	li	t0,-12288
@@ -17,7 +17,7 @@ float getf();
 **	add	sp,sp,t0
 **	...
 **	addi	sp,sp,2032
-**	tail	__riscv_restore_4
+**	tail	__riscv_restore_(3|4)
 */
 int bar()
 {
