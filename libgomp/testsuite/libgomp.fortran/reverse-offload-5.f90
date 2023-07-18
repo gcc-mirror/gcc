@@ -1,5 +1,9 @@
 ! { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } }
 ! { dg-xfail-run-if "Copying on-device allocated memory fails with cuMemcpyDtoHAsync error: invalid argument" { offload_device_nvptx } }
+! ..., and upon process termination, we then deadlock during device shutdown,
+! as the device kernel is still running, waiting for the reverse offload to
+! complete.  Until that's addressed properly:
+! { dg-timeout 10 { target offload_device_nvptx } } ... to make sure that happens quickly.
 
 ! Because of the nvptx fail, a non-device alloc version has been
 ! created: reverse-offload-5a.f90
