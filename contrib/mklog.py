@@ -374,7 +374,8 @@ if __name__ == '__main__':
                                     args.fill_up_bug_titles, args.pr_numbers)
         if args.append:
             if (not args.input):
-                raise Exception("`-a or --append` option not support standard input")
+                raise Exception("`-a or --append` option not support standard "
+                                "input")
             lines = []
             with open(args.input, 'r', newline='\n') as f:
                 # 1 -> not find the possible start of diff log
@@ -384,13 +385,14 @@ if __name__ == '__main__':
                 for line in f:
                     if maybe_diff_log == 1 and line == "---\n":
                         maybe_diff_log = 2
-                    elif maybe_diff_log == 2 and \
-                         re.match("\s[^\s]+\s+\|\s\d+\s[+\-]+\n", line):
+                    elif (maybe_diff_log == 2 and
+                          re.match(r"\s[^\s]+\s+\|\s+\d+\s[+\-]+\n", line)):
                         lines += [output, "---\n", line]
                         maybe_diff_log = 3
                     else:
                         # the possible start is not the true start.
                         if maybe_diff_log == 2:
+                            lines.append("---\n")
                             maybe_diff_log = 1
                         lines.append(line)
             with open(args.input, "w") as f:
