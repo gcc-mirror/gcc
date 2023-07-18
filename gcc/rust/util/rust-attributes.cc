@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-system.h"
+#include "rust-session-manager.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
 #include "rust-ast-full.h"
@@ -44,6 +45,9 @@ static const BuiltinAttrDefinition __definitions[]
      {"path", EXPANSION},
      {"macro_use", NAME_RESOLUTION},
      {"macro_export", NAME_RESOLUTION},
+     {"proc_macro", EXPANSION},
+     {"proc_macro_derive", EXPANSION},
+     {"proc_macro_attribute", EXPANSION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
      {"target_feature", CODE_GENERATION},
@@ -537,8 +541,35 @@ AttributeChecker::visit (AST::UseDeclaration &)
 {}
 
 void
-AttributeChecker::visit (AST::Function &)
-{}
+AttributeChecker::visit (AST::Function &fun)
+{
+  auto check_crate_type = [] (const char *name, AST::Attribute &attribute) {
+    if (!Session::get_instance ().options.is_proc_macro ())
+      rust_error_at (attribute.get_locus (),
+		     "the %<#[%s]%> attribute is only usable with crates of "
+		     "the %<proc-macro%> crate type",
+		     name);
+  };
+
+  BuiltinAttrDefinition result;
+  for (auto &attribute : fun.get_outer_attrs ())
+    {
+      if (!is_builtin (attribute, result))
+	return;
+
+      auto name = result.name.c_str ();
+
+      if (result.name == "proc_macro_derive")
+	{
+	  check_crate_type (name, attribute);
+	}
+      else if (result.name == "proc_macro"
+	       || result.name == "proc_macro_attribute")
+	{
+	  check_crate_type (name, attribute);
+	}
+    }
+}
 
 void
 AttributeChecker::visit (AST::TypeAlias &)
