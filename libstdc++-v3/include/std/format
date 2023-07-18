@@ -610,6 +610,7 @@ namespace __format
     {
       const size_t __buflen = 0x20;
       _CharT __padding_chars[__buflen];
+      __padding_chars[0] = _CharT();
       basic_string_view<_CharT> __padding{__padding_chars, __buflen};
 
       auto __pad = [&__padding] (size_t __n, _Out& __o) {
