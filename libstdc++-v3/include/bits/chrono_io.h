@@ -426,6 +426,11 @@ namespace __format
 		  break;
 		case 'O':
 		case 'E':
+		  if (__mod) [[unlikely]]
+		    {
+		      __allowed_mods = _Mod_none;
+		      break;
+		    }
 		  __mod = __c;
 		  continue;
 		default:
