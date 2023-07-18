@@ -404,6 +404,10 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
 #include "riscv-cores.def"
 };
 
+/* Global variable to distinguish whether we should save and restore s0/fp for
+   function.  */
+static bool riscv_save_frame_pointer;
+
 void riscv_frame_info::reset(void)
 {
   total_size = 0;
@@ -5079,7 +5083,11 @@ riscv_save_reg_p (unsigned int regno)
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
-  if (regno == RETURN_ADDR_REGNUM && crtl->calls_eh_return)
+  /* Need not to use ra for leaf when frame pointer is turned off by option
+     whatever the omit-leaf-frame's value.  */
+  bool keep_leaf_ra = frame_pointer_needed && crtl->is_leaf
+    && !TARGET_OMIT_LEAF_FRAME_POINTER;
+  if (regno == RETURN_ADDR_REGNUM && (crtl->calls_eh_return || keep_leaf_ra))
     return true;
 
   /* If this is an interrupt handler, then must save extra registers.  */
@@ -6714,6 +6722,21 @@ riscv_option_override (void)
   if (flag_pic)
     riscv_cmodel = CM_PIC;
 
+  /* We need to save the fp with ra for non-leaf functions with no fp and ra
+     for leaf functions while no-omit-frame-pointer with
+     omit-leaf-frame-pointer.  The x_flag_omit_frame_pointer has the first
+     priority to determine whether the frame pointer is needed.  If we do not
+     override it, the fp and ra will be stored for leaf functions, which is not
+     our wanted.  */
+  riscv_save_frame_pointer = false;
+  if (TARGET_OMIT_LEAF_FRAME_POINTER_P (global_options.x_target_flags))
+    {
+      if (!global_options.x_flag_omit_frame_pointer)
+	riscv_save_frame_pointer = true;
+
+      global_options.x_flag_omit_frame_pointer = 1;
+    }
+
   /* We get better code with explicit relocs for CM_MEDLOW, but
      worse code for the others (for now).  Pick the best default.  */
   if ((target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
@@ -8163,6 +8186,12 @@ riscv_preferred_else_value (unsigned, tree, unsigned int nops, tree *ops)
   return nops == 3 ? ops[2] : ops[0];
 }
 
+static bool
+riscv_frame_pointer_required (void)
+{
+  return riscv_save_frame_pointer && !crtl->is_leaf;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -8466,6 +8495,9 @@ riscv_preferred_else_value (unsigned, tree, unsigned int nops, tree *ops)
 
 #undef TARGET_PREFERRED_ELSE_VALUE
 #define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
+
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED riscv_frame_pointer_required
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

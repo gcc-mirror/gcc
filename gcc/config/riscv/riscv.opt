@@ -138,6 +138,10 @@ Enable the CSR checking for the ISA-dependent CRS and the read-only CSR.
 The ISA-dependent CSR are only valid when the specific ISA is set.  The
 read-only CSR can not be written by the CSR instructions.
 
+momit-leaf-frame-pointer
+Target Mask(OMIT_LEAF_FRAME_POINTER) Save
+Omit the frame pointer in leaf functions.
+
 Mask(64BIT)
 
 Mask(MUL)
