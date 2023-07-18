@@ -1229,7 +1229,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (a | b) & (a == b)  -->  a & b (boolean version of the above).  */
 (simplify
  (bit_and:c (bit_ior @0 @1) (nop_convert? (eq:c @0 @1)))
- (bit_and @0 @1))
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (TREE_TYPE (@0)) == 1)
+  (bit_and @0 @1)))
 
 /* a | ~(a ^ b)  -->  a | ~b  */
 (simplify
@@ -1239,7 +1241,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* a | (a == b)  -->  a | (b^1) (boolean version of the above). */
 (simplify
  (bit_ior:c @0 (nop_convert? (eq:c @0 @1)))
- (bit_ior @0 (bit_xor @1 { build_one_cst (type); })))
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (TREE_TYPE (@0)) == 1)
+  (bit_ior @0 (bit_xor @1 { build_one_cst (type); }))))
 
 /* (a | b) | (a &^ b)  -->  a | b  */
 (for op (bit_and bit_xor)
@@ -1255,7 +1259,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (a & b) | (a == b)  -->  a == b  */
 (simplify
  (bit_ior:c (bit_and:c @0 @1) (nop_convert?@2 (eq @0 @1)))
- @2)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (TREE_TYPE (@0)) == 1)
+  @2))
 
 /* ~(~a & b)  -->  a | ~b  */
 (simplify
