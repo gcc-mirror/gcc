@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-privacy-reporter.h"
+#include "rust-session-manager.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
@@ -35,7 +36,44 @@ void
 PrivacyReporter::go (HIR::Crate &crate)
 {
   for (auto &item : crate.get_items ())
-    item->accept_vis (*this);
+    {
+      if (Session::get_instance ().options.is_proc_macro ())
+	{
+	  if (item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM)
+	    {
+	      auto &outer_attrs = item->get_outer_attrs ();
+	      // Find a proc_macro, proc_macro_derive or proc_macro_attribute
+	      // attribute
+	      tl::optional<std::string> proc_macro_attribute;
+	      for (auto &a : outer_attrs)
+		{
+		  auto &segments = a.get_path ().get_segments ();
+		  if (segments.size () != 1)
+		    break;
+		  auto name = segments.at (0).get_segment_name ();
+		  if (name == "proc_macro" || name == "proc_macro_attribute"
+		      || name == "proc_macro_derive")
+		    proc_macro_attribute = {name};
+		}
+
+	      auto vis_item = static_cast<HIR::VisItem *> (item.get ());
+	      if (vis_item->get_visibility ().is_public ()
+		  && !proc_macro_attribute.has_value ())
+		rust_error_at (
+		  item->get_locus (),
+		  "%<proc-macro%> crate types currently cannot export any "
+		  "items other than functions tagged with %<#[proc_macro]%>, "
+		  "%<#[proc_macro_derive]%> or %<#[proc_macro_attribute]%>");
+	      else if (!vis_item->get_visibility ().is_public ()
+		       && proc_macro_attribute.has_value ())
+		rust_error_at (
+		  item->get_locus (),
+		  "functions tagged with %<#[%s]%> must be %<pub%>",
+		  proc_macro_attribute.value ().c_str ());
+	    }
+	}
+      item->accept_vis (*this);
+    }
 }
 
 static bool
