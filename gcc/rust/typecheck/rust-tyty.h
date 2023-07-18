@@ -381,11 +381,11 @@ class TypeBoundPredicate : public SubstitutionRef
 {
 public:
   TypeBoundPredicate (const Resolver::TraitReference &trait_reference,
-		      location_t locus);
+		      BoundPolarity polarity, location_t locus);
 
   TypeBoundPredicate (DefId reference,
 		      std::vector<SubstitutionParamMapping> substitutions,
-		      location_t locus);
+		      BoundPolarity polarity, location_t locus);
 
   TypeBoundPredicate (const TypeBoundPredicate &other);
 
@@ -432,6 +432,8 @@ public:
 
   DefId get_id () const { return reference; }
 
+  BoundPolarity get_polarity () const { return polarity; }
+
   std::vector<TypeBoundPredicateItem> get_associated_type_items ();
 
   size_t get_num_associated_bindings () const override final;
@@ -445,6 +447,7 @@ private:
   DefId reference;
   location_t locus;
   bool error_flag;
+  BoundPolarity polarity;
 };
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html

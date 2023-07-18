@@ -1558,7 +1558,8 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   TraitReference *trait = TraitResolver::Resolve (*trait_item);
   rust_assert (!trait->is_error ());
 
-  TyTy::TypeBoundPredicate predicate (*trait, expr.get_locus ());
+  TyTy::TypeBoundPredicate predicate (*trait, BoundPolarity::RegularBound,
+				      expr.get_locus ());
 
   // resolve the trait bound where the <(Args)> are the parameter tuple type
   HIR::GenericArgs args = HIR::GenericArgs::create_empty (expr.get_locus ());

@@ -184,7 +184,8 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
   if (trait->is_error ())
     return TyTy::TypeBoundPredicate::error ();
 
-  TyTy::TypeBoundPredicate predicate (*trait, type_path.get_locus ());
+  TyTy::TypeBoundPredicate predicate (*trait, BoundPolarity::RegularBound,
+				      type_path.get_locus ());
   HIR::GenericArgs args
     = HIR::GenericArgs::create_empty (type_path.get_locus ());
 
@@ -290,10 +291,11 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 namespace TyTy {
 
 TypeBoundPredicate::TypeBoundPredicate (
-  const Resolver::TraitReference &trait_reference, location_t locus)
+  const Resolver::TraitReference &trait_reference, BoundPolarity polarity,
+  location_t locus)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
-    error_flag (false)
+    error_flag (false), polarity (polarity)
 {
   substitutions.clear ();
   for (const auto &p : trait_reference.get_trait_substs ())
@@ -306,9 +308,10 @@ TypeBoundPredicate::TypeBoundPredicate (
 
 TypeBoundPredicate::TypeBoundPredicate (
   DefId reference, std::vector<SubstitutionParamMapping> subst,
-  location_t locus)
+  BoundPolarity polarity, location_t locus)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
-    reference (reference), locus (locus), error_flag (false)
+    reference (reference), locus (locus), error_flag (false),
+    polarity (polarity)
 {
   substitutions.clear ();
   for (const auto &p : subst)
@@ -322,7 +325,7 @@ TypeBoundPredicate::TypeBoundPredicate (
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (other.reference), locus (other.locus),
-    error_flag (other.error_flag)
+    error_flag (other.error_flag), polarity (other.polarity)
 {
   substitutions.clear ();
   for (const auto &p : other.get_substs ())
@@ -358,6 +361,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
   reference = other.reference;
   locus = other.locus;
   error_flag = other.error_flag;
+  polarity = other.polarity;
   used_arguments = SubstitutionArgumentMappings::empty ();
 
   substitutions.clear ();
@@ -396,7 +400,8 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
 TypeBoundPredicate
 TypeBoundPredicate::error ()
 {
-  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, UNDEF_LOCATION);
+  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, BoundPolarity::RegularBound,
+			       UNDEF_LOCATION);
   p.error_flag = true;
   return p;
 }
