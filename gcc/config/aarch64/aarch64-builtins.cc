@@ -2098,6 +2098,106 @@ aarch64_general_builtin_decl (unsigned code, bool)
   return aarch64_builtin_decls[code];
 }
 
+/* True if we've already complained about attempts to use functions
+   when the required extension is disabled.  */
+static bool reported_missing_extension_p;
+
+/* True if we've already complained about attempts to use functions
+   which require registers that are missing.  */
+static bool reported_missing_registers_p;
+
+/* Report an error against LOCATION that the user has tried to use
+   function FNDECL when extension EXTENSION is disabled.  */
+static void
+aarch64_report_missing_extension (location_t location, tree fndecl,
+				  const char *extension)
+{
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_missing_extension_p)
+    return;
+
+  error_at (location, "ACLE function %qD requires ISA extension %qs",
+	    fndecl, extension);
+  inform (location, "you can enable %qs using the command-line"
+	  " option %<-march%>, or by using the %<target%>"
+	  " attribute or pragma", extension);
+  reported_missing_extension_p = true;
+}
+
+/* Report an error against LOCATION that the user has tried to use
+   function FNDECL when non-general registers are disabled.  */
+static void
+aarch64_report_missing_registers (location_t location, tree fndecl)
+{
+  /* Avoid reporting a slew of messages for a single oversight.  */
+  if (reported_missing_registers_p)
+    return;
+
+  error_at (location,
+	    "ACLE function %qD is incompatible with the use of %qs",
+	    fndecl, "-mgeneral-regs-only");
+  reported_missing_registers_p = true;
+}
+
+/* Check whether all the AARCH64_FL_* values in REQUIRED_EXTENSIONS are
+   enabled, given that those extensions are required for function FNDECL.
+   Report an error against LOCATION if not.  */
+bool
+aarch64_check_required_extensions (location_t location, tree fndecl,
+				   aarch64_feature_flags required_extensions)
+{
+  if ((required_extensions & ~aarch64_isa_flags) == 0)
+    return true;
+
+  auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
+
+  if (missing_extensions == 0)
+    {
+      /* All required extensions are enabled in aarch64_asm_isa_flags, so the
+	 error must be the use of general-regs-only.  */
+      aarch64_report_missing_registers (location, fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_SM_OFF)
+    {
+      error_at (location, "ACLE function %qD cannot be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_SM_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called when"
+		" SME streaming mode is enabled", fndecl);
+      return false;
+    }
+
+  if (missing_extensions & AARCH64_FL_ZA_ON)
+    {
+      error_at (location, "ACLE function %qD can only be called from"
+		" a function that has %qs state", fndecl, "za");
+      return false;
+    }
+
+  static const struct {
+    aarch64_feature_flags flag;
+    const char *name;
+  } extensions[] = {
+#define AARCH64_OPT_EXTENSION(EXT_NAME, IDENT, C, D, E, F) \
+    { AARCH64_FL_##IDENT, EXT_NAME },
+#include "aarch64-option-extensions.def"
+  };
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (extensions); ++i)
+    if (missing_extensions & extensions[i].flag)
+      {
+	aarch64_report_missing_extension (location, fndecl, extensions[i].name);
+	return false;
+      }
+  gcc_unreachable ();
+}
+
 bool
 aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 			    unsigned int code, tree fndecl,
