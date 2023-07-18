@@ -565,6 +565,10 @@ AttributeChecker::visit (AST::Function &fun)
 	    {
 	      rust_error_at (attribute.get_locus (),
 			     "malformed %<%s%> attribute input", name);
+	      rust_inform (
+		attribute.get_locus (),
+		"must be of the form: %<#[proc_macro_derive(TraitName, "
+		"/*opt*/ attributes(name1, name2, ...))]%>");
 	    }
 	  check_crate_type (name, attribute);
 	}
