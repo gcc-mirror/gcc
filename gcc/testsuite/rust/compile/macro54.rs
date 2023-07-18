@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 macro_rules! foo {
     () => {"foo"};
     (number) => { 12 };

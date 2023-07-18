@@ -673,9 +673,9 @@ TypeCheckType::visit (HIR::NeverType &type)
 }
 
 TyTy::ParamType *
-TypeResolveGenericParam::Resolve (HIR::GenericParam *param)
+TypeResolveGenericParam::Resolve (HIR::GenericParam *param, bool apply_sized)
 {
-  TypeResolveGenericParam resolver;
+  TypeResolveGenericParam resolver (apply_sized);
   switch (param->get_kind ())
     {
     case HIR::GenericParam::GenericKind::TYPE:
@@ -733,8 +733,26 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 	= new HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false);
     }
 
+  std::map<DefId, std::vector<TyTy::TypeBoundPredicate>> predicates;
+
+  // https://doc.rust-lang.org/std/marker/trait.Sized.html
+  // All type parameters have an implicit bound of Sized. The special syntax
+  // ?Sized can be used to remove this bound if it’s not appropriate.
+  //
+  // We can only do this when we are not resolving the implicit Self for Sized
+  // itself
+  rust_debug_loc (param.get_locus (), "apply_sized: %s",
+		  apply_sized ? "true" : "false");
+  if (apply_sized)
+    {
+      TyTy::TypeBoundPredicate sized_predicate
+	= get_marker_predicate (Analysis::RustLangItem::ItemType::SIZED,
+				param.get_locus ());
+
+      predicates[sized_predicate.get_id ()] = {sized_predicate};
+    }
+
   // resolve the bounds
-  std::vector<TyTy::TypeBoundPredicate> specified_bounds;
   if (param.has_type_param_bounds ())
     {
       for (auto &bound : param.get_type_param_bounds ())
@@ -747,15 +765,56 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 
 		TyTy::TypeBoundPredicate predicate
 		  = get_predicate_from_bound (b->get_path (),
-					      implicit_self_bound);
+					      implicit_self_bound,
+					      b->get_polarity ());
 		if (!predicate.is_error ())
-		  specified_bounds.push_back (std::move (predicate));
+		  {
+		    switch (predicate.get_polarity ())
+		      {
+			case BoundPolarity::AntiBound: {
+			  bool found = predicates.find (predicate.get_id ())
+				       != predicates.end ();
+			  if (found)
+			    predicates.erase (predicate.get_id ());
+			  else
+			    {
+			      // emit error message
+			      rich_location r (line_table, b->get_locus ());
+			      r.add_range (predicate.get ()->get_locus ());
+			      rust_error_at (
+				r, "antibound for %s is not applied here",
+				predicate.get ()->get_name ().c_str ());
+			    }
+			}
+			break;
+
+			default: {
+			  if (predicates.find (predicate.get_id ())
+			      == predicates.end ())
+			    {
+			      predicates[predicate.get_id ()] = {};
+			    }
+			  predicates[predicate.get_id ()].push_back (predicate);
+			}
+			break;
+		      }
+		  }
 	      }
 	      break;
 
 	    default:
 	      break;
 	    }
+	}
+    }
+
+  // now to flat map the specified_bounds into the raw specified predicates
+  std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+  for (auto it = predicates.begin (); it != predicates.end (); it++)
+    {
+      for (const auto &predicate : it->second)
+	{
+	  specified_bounds.push_back (predicate);
 	}
     }
 

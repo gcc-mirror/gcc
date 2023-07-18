@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Foo {
     fn bar(&mut self, other: &mut Foo);
 }

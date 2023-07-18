@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Bar;
 
 trait Foo {

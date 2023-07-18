@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo<A, B>(A, B);
 
 impl<T> Foo<T, f32> {

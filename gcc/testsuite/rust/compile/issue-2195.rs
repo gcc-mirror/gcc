@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct A<T> {
     // { dg-warning "struct is never constructed" "" { target *-*-* } .-1 }
     f: *const T,

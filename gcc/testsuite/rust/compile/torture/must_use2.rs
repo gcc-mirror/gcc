@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait A {
     #[must_use]
     fn test() -> i32;

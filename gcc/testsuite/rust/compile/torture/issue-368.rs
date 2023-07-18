@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct S;
 
 fn foo<S>(s: S) -> S {

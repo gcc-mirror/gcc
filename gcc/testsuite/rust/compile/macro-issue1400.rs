@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 macro_rules! foo {
     ( ( $( $Trait: ident ),+ ) for $Ty: ident ) => {
         $(

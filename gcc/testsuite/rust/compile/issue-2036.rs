@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Hash<H> {
     fn hash2(&self, hasher: &H) -> u64;
 }

@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo<A = (isize, char)> {
     a: A,
 }

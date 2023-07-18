@@ -1,5 +1,8 @@
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 extern "rust-intrinsic" {
     pub fn rotate_left<T>(l: T, r: T) -> T;
 }

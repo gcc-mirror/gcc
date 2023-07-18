@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 fn main() {
     struct Foo;
 

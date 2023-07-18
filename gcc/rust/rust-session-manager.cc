@@ -1021,7 +1021,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   mappings->set_current_crate (crate_num);
 
   // then lets parse this as a 2nd crate
-  Lexer lex (extern_crate.get_metadata ());
+  Lexer lex (extern_crate.get_metadata (), linemap);
   Parser<Lexer> parser (lex);
   std::unique_ptr<AST::Crate> metadata_crate = parser.parse_crate ();
 

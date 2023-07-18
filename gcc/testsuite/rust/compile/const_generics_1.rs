@@ -3,6 +3,9 @@
 // There are errors about unused generic parameters, but we can't handle that yet.
 // Still, this code is invalid Rust.
 
+#[lang = "sized"]
+pub trait Sized {}
+
 mod sain {
     struct Foo<const N: usize>;
     struct Bar<T, const N: usize>;

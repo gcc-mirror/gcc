@@ -1,4 +1,7 @@
 // { dg-output "123\n" }
+#[lang = "sized"]
+pub trait Sized {}
+
 trait A {
     fn get_int(&self) -> i32;
 }

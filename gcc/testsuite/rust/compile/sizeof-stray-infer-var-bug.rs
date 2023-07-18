@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 mod mem {
     extern "rust-intrinsic" {
         pub fn size_of<T>() -> usize;

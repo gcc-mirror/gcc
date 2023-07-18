@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo(u32);
 // { dg-warning "struct is never constructed" "" { target *-*-* } .-1 }
 

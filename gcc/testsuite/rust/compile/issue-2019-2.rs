@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "add"]
 pub trait Add<RHS = Self> {
     type Output;

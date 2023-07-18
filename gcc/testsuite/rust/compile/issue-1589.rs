@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub trait A: B {}
 // { dg-error "trait cycle detected" "" { target *-*-* } .-1 }
 

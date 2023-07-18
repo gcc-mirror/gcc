@@ -1,6 +1,9 @@
 // { dg-additional-options "-w" }
 #![feature(intrinsics)]
 
+#[lang = "sized"]
+pub trait Sized {}
+
 mod mem {
     extern "rust-intrinsic" {
         fn size_of<T>() -> usize;

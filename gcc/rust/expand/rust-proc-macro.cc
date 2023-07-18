@@ -31,7 +31,7 @@ namespace {
 ProcMacro::Literal
 literal_from_string (const std::string &data, bool &error)
 {
-  Lexer lex (data);
+  Lexer lex (data, nullptr);
   const_TokenPtr output = lex.build_token ();
   if (output == nullptr || !output->is_literal ())
     {
@@ -48,7 +48,7 @@ ProcMacro::TokenStream
 tokenstream_from_string (std::string &data, bool &lex_error)
 {
   // FIXME: Insert location pointing to call site in tokens
-  Lexer lex (data);
+  Lexer lex (data, nullptr);
 
   std::vector<const_TokenPtr> tokens;
   TokenPtr ptr;

@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo<A> {
     a: A,
     // { dg-warning "field is never read" "" { target *-*-* } .-1 }

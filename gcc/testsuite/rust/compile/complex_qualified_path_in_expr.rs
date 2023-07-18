@@ -1,4 +1,7 @@
-struct S; // { dg-warning "struct is never constructed" "" { target *-*-* } .-1 }
+#[lang = "sized"]
+pub trait Sized {}
+
+struct S; // { dg-warning "struct is never constructed" }
 impl S {
   fn f() -> i32 { return 0; }
   // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }

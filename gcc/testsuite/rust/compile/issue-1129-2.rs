@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 pub trait Hasher {
     fn finish(&self) -> u64;
     fn write(&mut self, bytes: &[u8]);

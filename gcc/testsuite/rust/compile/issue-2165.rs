@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub trait Alpha<T = Self> {
     type Beta;
 }

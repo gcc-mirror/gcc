@@ -4,6 +4,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "deref"]
 pub trait Deref {
     type Target;

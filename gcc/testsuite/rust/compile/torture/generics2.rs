@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo(f32, bool);
 
 struct GenericStruct<T>(T, usize);

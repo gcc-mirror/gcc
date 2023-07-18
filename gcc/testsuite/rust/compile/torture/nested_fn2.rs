@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 pub fn main() {
     fn test<T>(x: T) -> T {
         x

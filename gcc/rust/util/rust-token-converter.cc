@@ -279,7 +279,7 @@ from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
   if (ident.is_raw)
     value = "r#" + value;
 
-  Lexer lexer (value);
+  Lexer lexer (value, nullptr);
   auto token = lexer.build_token ();
   token->set_locus (convert (ident.span));
   result.push_back (token);
@@ -349,7 +349,7 @@ from_punct (const ProcMacro::Punct &punct, std::vector<std::uint32_t> &acc,
     {
       // TODO: UTF-8 string
       std::string whole (acc.begin (), acc.end ());
-      auto lexer = Lexer (whole);
+      auto lexer = Lexer (whole, nullptr);
       auto token = lexer.build_token ();
       token->set_locus (convert (punct.span));
       result.push_back (token);

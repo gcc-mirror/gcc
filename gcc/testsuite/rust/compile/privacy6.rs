@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Adt;
 enum EAdt {
     V0,

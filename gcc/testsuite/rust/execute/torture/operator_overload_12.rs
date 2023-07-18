@@ -4,6 +4,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "bitand_assign"]
 pub trait BitAndAssign<Rhs = Self> {
     fn bitand_assign(&mut self, rhs: Rhs);

@@ -164,8 +164,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   TyTy::BaseType *self = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
-  // FIXME
-  // this should use the resolve_generic_params like everywhere else
+  // this needs to be special cased for the sized trait to not auto implemented
+  // Sized on Self
   for (auto &generic_param : trait_reference->get_generic_params ())
     {
       switch (generic_param.get ()->get_kind ())
@@ -177,16 +177,22 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	  break;
 
 	  case HIR::GenericParam::GenericKind::TYPE: {
-	    auto param_type
-	      = TypeResolveGenericParam::Resolve (generic_param.get ());
-	    context->insert_type (generic_param->get_mappings (), param_type);
-
 	    auto &typaram = static_cast<HIR::TypeParam &> (*generic_param);
+	    bool is_self
+	      = typaram.get_type_representation ().as_string ().compare ("Self")
+		== 0;
+
+	    // https://doc.rust-lang.org/std/marker/trait.Sized.html
+	    // The one exception is the implicit Self type of a trait
+	    bool apply_sized = !is_self;
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get (),
+						  apply_sized);
+	    context->insert_type (generic_param->get_mappings (), param_type);
 	    substitutions.push_back (
 	      TyTy::SubstitutionParamMapping (typaram, param_type));
 
-	    if (typaram.get_type_representation ().as_string ().compare ("Self")
-		== 0)
+	    if (is_self)
 	      {
 		rust_assert (param_type->get_kind () == TyTy::TypeKind::PARAM);
 		TyTy::ParamType *p

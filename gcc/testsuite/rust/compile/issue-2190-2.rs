@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "deref"]
 trait Deref {
     type Target;

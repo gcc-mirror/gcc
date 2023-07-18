@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#[lang = "sized"]
+pub trait Sized {}
+
 #[lang = "RangeFull"]
 pub struct RangeFull;
 
