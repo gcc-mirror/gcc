@@ -336,47 +336,6 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 
 
 
-/* Iterate all gimple statements and try to expand
-   VEC_COND_EXPR assignments.  */
-
-static unsigned int
-gimple_expand_vec_exprs (struct function *fun)
-{
-  gimple_stmt_iterator gsi;
-  basic_block bb;
-  hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
-  auto_bitmap dce_ssa_names;
-  bool cfg_changed = false;
-
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple *g = gimple_expand_vec_cond_expr (fun, &gsi,
-						   &vec_cond_ssa_name_uses);
-	  if (g != NULL)
-	    {
-	      tree lhs = gimple_assign_lhs (gsi_stmt (gsi));
-	      gimple_set_lhs (g, lhs);
-	      gsi_replace (&gsi, g, false);
-	    }
-
-	  cfg_changed |= gimple_expand_vec_set_extract_expr (fun, &gsi);
-
-	  if (gsi_end_p (gsi))
-	    break;
-	}
-    }
-
-  for (hash_map<tree, unsigned int>::iterator it = vec_cond_ssa_name_uses.begin ();
-       it != vec_cond_ssa_name_uses.end (); ++it)
-    bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION ((*it).first));
-
-  simple_dce_from_worklist (dce_ssa_names);
-
-  return cfg_changed ? TODO_cleanup_cfg : 0;
-}
-
 namespace {
 
 const pass_data pass_data_gimple_isel =
@@ -405,12 +364,92 @@ public:
       return true;
     }
 
-  unsigned int execute (function *fun) final override
+  unsigned int execute (function *fun) final override;
+}; // class pass_gimple_isel
+
+
+/* Iterate all gimple statements and perform pre RTL expansion
+   GIMPLE massaging to improve instruction selection.  */
+
+unsigned int
+pass_gimple_isel::execute (struct function *fun)
+{
+  gimple_stmt_iterator gsi;
+  basic_block bb;
+  hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
+  auto_bitmap dce_ssa_names;
+  bool cfg_changed = false;
+
+  FOR_EACH_BB_FN (bb, fun)
     {
-      return gimple_expand_vec_exprs (fun);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  /* Pre-expand VEC_COND_EXPRs to .VCOND* internal function
+	     calls mapping to supported optabs.  */
+	  gimple *g = gimple_expand_vec_cond_expr (fun, &gsi,
+						   &vec_cond_ssa_name_uses);
+	  if (g != NULL)
+	    {
+	      tree lhs = gimple_assign_lhs (gsi_stmt (gsi));
+	      gimple_set_lhs (g, lhs);
+	      gsi_replace (&gsi, g, false);
+	    }
+
+	  /* Recognize .VEC_SET and .VEC_EXTRACT patterns.  */
+	  cfg_changed |= gimple_expand_vec_set_extract_expr (fun, &gsi);
+	  if (gsi_end_p (gsi))
+	    break;
+
+	  gassign *stmt = dyn_cast <gassign *> (*gsi);
+	  if (!stmt)
+	    continue;
+
+	  tree_code code = gimple_assign_rhs_code (stmt);
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison
+	      && !has_single_use (lhs))
+	    {
+	      /* Duplicate COND_EXPR condition defs when they are
+		 comparisons so RTL expansion with the help of TER
+		 can perform better if conversion.  */
+	      imm_use_iterator imm_iter;
+	      use_operand_p use_p;
+	      auto_vec<gassign *, 4> cond_exprs;
+	      unsigned cnt = 0;
+	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+		{
+		  if (is_gimple_debug (USE_STMT (use_p)))
+		    continue;
+		  cnt++;
+		  if (gimple_bb (USE_STMT (use_p)) == bb
+		      && is_gimple_assign (USE_STMT (use_p))
+		      && gimple_assign_rhs1_ptr (USE_STMT (use_p)) == use_p->use
+		      && gimple_assign_rhs_code (USE_STMT (use_p)) == COND_EXPR)
+		    cond_exprs.safe_push (as_a <gassign *> (USE_STMT (use_p)));
+		}
+	      for (unsigned i = cond_exprs.length () == cnt ? 1 : 0;
+		   i < cond_exprs.length (); ++i)
+		{
+		  gassign *copy = as_a <gassign *> (gimple_copy (stmt));
+		  tree new_def = duplicate_ssa_name (lhs, copy);
+		  gimple_assign_set_lhs (copy, new_def);
+		  auto gsi2 = gsi_for_stmt (cond_exprs[i]);
+		  gsi_insert_before (&gsi2, copy, GSI_SAME_STMT);
+		  gimple_assign_set_rhs1 (cond_exprs[i], new_def);
+		  update_stmt (cond_exprs[i]);
+		}
+	    }
+	}
     }
 
-}; // class pass_gimple_isel
+  for (auto it = vec_cond_ssa_name_uses.begin ();
+       it != vec_cond_ssa_name_uses.end (); ++it)
+    bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION ((*it).first));
+
+  simple_dce_from_worklist (dce_ssa_names);
+
+  return cfg_changed ? TODO_cleanup_cfg : 0;
+}
 
 } // anon namespace
 
