@@ -1850,27 +1850,27 @@ aarch64_init_memtag_builtins (void)
 
 #define AARCH64_INIT_MEMTAG_BUILTINS_DECL(F, N, I, T) \
   aarch64_builtin_decls[AARCH64_MEMTAG_BUILTIN_##F] \
-    = aarch64_general_add_builtin ("__builtin_aarch64_memtag_"#N, \
-				   T, AARCH64_MEMTAG_BUILTIN_##F); \
+    = aarch64_general_simulate_builtin ("__arm_mte_"#N, T, \
+					AARCH64_MEMTAG_BUILTIN_##F); \
   aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_##F - \
 			      AARCH64_MEMTAG_BUILTIN_START - 1] = \
 				{T, CODE_FOR_##I};
 
   fntype = build_function_type_list (ptr_type_node, ptr_type_node,
 				     uint64_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (IRG, irg, irg, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (IRG, create_random_tag, irg, fntype);
 
   fntype = build_function_type_list (uint64_type_node, ptr_type_node,
 				     uint64_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GMI, gmi, gmi, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (GMI, exclude_tag, gmi, fntype);
 
   fntype = build_function_type_list (ptrdiff_type_node, ptr_type_node,
 				     ptr_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SUBP, subp, subp, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (SUBP, ptrdiff, subp, fntype);
 
   fntype = build_function_type_list (ptr_type_node, ptr_type_node,
 				     unsigned_type_node, NULL);
-  AARCH64_INIT_MEMTAG_BUILTINS_DECL (INC_TAG, inc_tag, addg, fntype);
+  AARCH64_INIT_MEMTAG_BUILTINS_DECL (INC_TAG, increment_tag, addg, fntype);
 
   fntype = build_function_type_list (void_type_node, ptr_type_node, NULL);
   AARCH64_INIT_MEMTAG_BUILTINS_DECL (SET_TAG, set_tag, stg, fntype);
@@ -1983,6 +1983,7 @@ handle_arm_acle_h (void)
   if (TARGET_LS64)
     aarch64_init_ls64_builtins ();
   aarch64_init_tme_builtins ();
+  aarch64_init_memtag_builtins ();
 }
 
 /* Initialize fpsr fpcr getters and setters.  */
@@ -2074,9 +2075,6 @@ aarch64_general_init_builtins (void)
      register them.  */
   if (!TARGET_ILP32)
     aarch64_init_pauth_hint_builtins ();
-
-  if (TARGET_MEMTAG)
-    aarch64_init_memtag_builtins ();
 
   if (in_lto_p)
     handle_arm_acle_h ();
@@ -2234,7 +2232,12 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
     default:
       break;
     }
-  /* Default behavior.  */
+
+  if (code >= AARCH64_MEMTAG_BUILTIN_START
+      && code <= AARCH64_MEMTAG_BUILTIN_END)
+    return aarch64_check_required_extensions (location, decl,
+					      AARCH64_FL_MEMTAG);
+
   return true;
 }
 
