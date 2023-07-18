@@ -306,6 +306,7 @@ register allocation	Peter Bergner		<bergner@linux.ibm.com>
 register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
 register allocation	Seongbae Park		<seongbae.park@gmail.com>
 riscv port		Robin Dapp		<rdapp.gcc@gmail.com>
+riscv port		Juzhe Zhong		<juzhe.zhong@rivai.ai>
 RTL optimizers		Steven Bosscher		<steven@gcc.gnu.org>
 selective scheduling	Andrey Belevantsev	<abel@ispras.ru>
 selective scheduling	Alexander Monakov	<amonakov@ispras.ru>
@@ -721,7 +722,6 @@ Dennis Zhang					<dennis.zhang@arm.com>
 Yufeng Zhang					<yufeng.zhang@arm.com>
 Qing Zhao					<qing.zhao@oracle.com>
 Shujing Zhao					<pearly.zhao@oracle.com>
-Juzhe Zhong					<juzhe.zhong@rivai.ai>
 Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
 Josef Zlomek					<josef.zlomek@email.cz>
