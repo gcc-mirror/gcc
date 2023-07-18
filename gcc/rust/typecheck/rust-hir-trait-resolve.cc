@@ -214,6 +214,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   auto self_hrtb
     = TyTy::TypeBoundPredicate (trait_reference->get_mappings ().get_defid (),
 				std::move (self_subst_copy),
+				BoundPolarity::RegularBound,
 				trait_reference->get_locus ());
   specified_bounds.push_back (self_hrtb);
 

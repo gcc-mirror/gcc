@@ -528,7 +528,8 @@ TypeCheckItem::visit (HIR::Trait &trait)
   RustIdent ident{CanonicalPath::create_empty (), trait.get_locus ()};
   infered = new TyTy::DynamicObjectType (
     trait.get_mappings ().get_hirid (), ident,
-    {TyTy::TypeBoundPredicate (*trait_ref, trait.get_locus ())});
+    {TyTy::TypeBoundPredicate (*trait_ref, BoundPolarity::RegularBound,
+			       trait.get_locus ())});
 }
 
 void
