@@ -3709,12 +3709,6 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 			     tree return_type, tree access_path,
 			     tree conversion_path, tsubst_flags_t complain)
 {
-  /* Making this work broke PR 71117 and 85118, so until the committee resolves
-     core issue 2189, let's disable this candidate if there are any call
-     operators.  */
-  if (*candidates)
-    return NULL;
-
   return
     add_template_candidate_real (candidates, tmpl, NULL_TREE, NULL_TREE,
 				 NULL_TREE, arglist, return_type, access_path,
@@ -5290,6 +5284,8 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 		      LOOKUP_NORMAL, &candidates, complain);
     }
 
+  bool any_call_ops = candidates != nullptr;
+
   convs = lookup_conversions (type);
 
   for (; convs; convs = TREE_CHAIN (convs))
@@ -5306,10 +5302,18 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	      continue;
 
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
-	      add_template_conv_candidate
-		(&candidates, fn, obj, *args, totype,
-		 /*access_path=*/NULL_TREE,
-		 /*conversion_path=*/NULL_TREE, complain);
+	      {
+		/* Making this work broke PR 71117 and 85118, so until the
+		   committee resolves core issue 2189, let's disable this
+		   candidate if there are any call operators.  */
+		if (any_call_ops)
+		  continue;
+
+		add_template_conv_candidate
+		  (&candidates, fn, obj, *args, totype,
+		   /*access_path=*/NULL_TREE,
+		   /*conversion_path=*/NULL_TREE, complain);
+	      }
 	    else
 	      add_conv_candidate (&candidates, fn, obj,
 				  *args, /*conversion_path=*/NULL_TREE,
