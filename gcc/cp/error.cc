@@ -1177,6 +1177,8 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     }
   else if (DECL_DECOMPOSITION_P (t))
     pp_string (pp, M_("<structured bindings>"));
+  else if (TREE_CODE (t) == FIELD_DECL && DECL_FIELD_IS_BASE (t))
+    dump_type (pp, TREE_TYPE (t), flags);
   else
     pp_string (pp, M_("<anonymous>"));
 
