@@ -1,3 +1,18 @@
+2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107424
+	* libgomp.texi (Impl. Status 5.0): Add link to new PR110735.
+	* testsuite/libgomp.fortran/non-rectangular-loop-1.f90: Enable
+	commented tests.
+	* testsuite/libgomp.fortran/non-rectangular-loop-1a.f90: Remove
+	test file; tests are in non-rectangular-loop-1.f90.
+	* testsuite/libgomp.fortran/non-rectangular-loop-5.f90: Change
+	testcase to use a non-constant step to retain the 'sorry' test.
+	* testsuite/libgomp.fortran/non-rectangular-loop-6.f90: New test.
+
 2023-07-14  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/array-shaping-14.c: New test.

@@ -7976,10 +7976,10 @@ gfc_nonrect_loop_expr (stmtblock_t *pblock, gfc_se *sep, int loop_n,
 
   if (!simple)
     {
-      /* FIXME: Handle non-unit iter steps, cf. PR fortran/107424.  */
+      /* FIXME: Handle non-const iter steps, cf. PR fortran/110735.  */
       sorry_at (gfc_get_location (&curr_loop_var->where),
-		"non-rectangular loop nest with step other than constant 1 "
-		"or -1 for %qs", curr_loop_var->symtree->n.sym->name);
+		"non-rectangular loop nest with non-constant step for %qs",
+		curr_loop_var->symtree->n.sym->name);
       return false;
     }
 
@@ -7996,10 +7996,10 @@ gfc_nonrect_loop_expr (stmtblock_t *pblock, gfc_se *sep, int loop_n,
 	  }
 	else
 	  {
-	    /* FIXME: Handle non-unit iter steps, cf. PR fortran/107424.  */
+	    /* FIXME: Handle non-const iter steps, cf. PR fortran/110735.  */
 	    sorry_at (gfc_get_location (&code->loc),
-		      "non-rectangular loop nest with step other than constant "
-		      "1 or -1 for %qs", var->name);
+		      "non-rectangular loop nest with non-constant step "
+		      "for %qs", var->name);
 	    inform (gfc_get_location (&expr->where), "Used here");
 	    return false;
 	  }
@@ -8250,10 +8250,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       gfc_add_block_to_block (pblock, &se.pre);
       step = gfc_evaluate_now (se.expr, pblock);
 
-      if (integer_onep (step))
-	simple = 1;
-      else if (tree_int_cst_equal (step, integer_minus_one_node))
-	simple = -1;
+      if (TREE_CODE (step) == INTEGER_CST)
+	simple = tree_int_cst_sgn (step);
 
       gfc_init_se (&se, NULL);
       if (!clauses->non_rectangular
