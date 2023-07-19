@@ -1277,7 +1277,8 @@ TypeCheckExpr::visit (HIR::BreakExpr &expr)
 {
   if (!context->have_loop_context ())
     {
-      rust_error_at (expr.get_locus (), "cannot %<break%> outside of a loop");
+      rust_error_at (expr.get_locus (), ErrorCode ("E0268"),
+		     "%<break%> outside of a loop or labeled block");
       return;
     }
 
@@ -1311,8 +1312,8 @@ TypeCheckExpr::visit (HIR::ContinueExpr &expr)
 {
   if (!context->have_loop_context ())
     {
-      rust_error_at (expr.get_locus (),
-		     "cannot %<continue%> outside of a loop");
+      rust_error_at (expr.get_locus (), ErrorCode ("E0268"),
+		     "%<continue%> outside of a loop");
       return;
     }
 
