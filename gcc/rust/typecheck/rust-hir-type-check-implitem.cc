@@ -138,7 +138,15 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 
   uint8_t flags = TyTy::FnType::FNTYPE_IS_EXTERN_FLAG;
   if (function.is_variadic ())
-    flags |= TyTy::FnType::FNTYPE_IS_VARADIC_FLAG;
+    {
+      flags |= TyTy::FnType::FNTYPE_IS_VARADIC_FLAG;
+      if (parent.get_abi () != Rust::ABI::C)
+	{
+	  rust_error_at (
+	    function.get_locus (), ErrorCode ("E0045"),
+	    "C-variadic function must have C or cdecl calling convention");
+	}
+    }
 
   RustIdent ident{
     CanonicalPath::new_seg (function.get_mappings ().get_nodeid (),
