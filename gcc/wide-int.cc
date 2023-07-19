@@ -1888,9 +1888,9 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     }
 
   wi_unpack (b_dividend, dividend.get_val (), dividend.get_len (),
-	     dividend_blocks_needed, dividend_prec, sgn);
+	     dividend_blocks_needed, dividend_prec, UNSIGNED);
   wi_unpack (b_divisor, divisor.get_val (), divisor.get_len (),
-	     divisor_blocks_needed, divisor_prec, sgn);
+	     divisor_blocks_needed, divisor_prec, UNSIGNED);
 
   m = dividend_blocks_needed;
   b_dividend[m] = 0;
