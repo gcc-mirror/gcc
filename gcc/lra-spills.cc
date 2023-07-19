@@ -453,7 +453,10 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	return true;
       if ((hard_reg = spill_hard_reg[i]) != NULL_RTX)
 	*loc = copy_rtx (hard_reg);
-      else
+      else if (pseudo_slots[i].mem != NULL_RTX)
+	/* There might be no memory slot or hard reg for a pseudo when we spill
+	   the frame pointer after elimination of frame pointer to stack
+	   pointer became impossible.  */
 	{
 	  rtx x = lra_eliminate_regs_1 (insn, pseudo_slots[i].mem,
 					GET_MODE (pseudo_slots[i].mem),
@@ -629,6 +632,7 @@ lra_spill (void)
   for (i = 0; i < n; i++)
     if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
       assign_mem_slot (pseudo_regnos[i]);
+  lra_update_fp2sp_elimination ();
   if (n > 0 && crtl->stack_alignment_needed)
     /* If we have a stack frame, we must align it now.  The stack size
        may be a part of the offset computation for register

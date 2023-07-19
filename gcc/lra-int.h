@@ -414,6 +414,7 @@ extern int lra_get_elimination_hard_regno (int);
 extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
 				 bool, bool, poly_int64, bool);
 extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, poly_int64);
+extern void lra_update_fp2sp_elimination (void);
 extern void lra_eliminate (bool, bool);
 
 extern poly_int64 lra_update_sp_offset (rtx, poly_int64);
