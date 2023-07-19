@@ -303,7 +303,7 @@ public:
 /* A GIMPLE switch statement can be expanded to a short sequence of bit-wise
 comparisons.  "switch(x)" is converted into "if ((1 << (x-MINVAL)) & CST)"
 where CST and MINVAL are integer constants.  This is better than a series
-of compare-and-banch insns in some cases,  e.g. we can implement:
+of compare-and-branch insns in some cases,  e.g. we can implement:
 
 	if ((x==4) || (x==6) || (x==9) || (x==11))
 
