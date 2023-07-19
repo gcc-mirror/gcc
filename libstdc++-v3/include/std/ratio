@@ -289,9 +289,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  template<typename _Tp>
+    struct __is_ratio
+    : std::false_type
+    { };
+
+  template<intmax_t _Num, intmax_t _Den>
+    struct __is_ratio<ratio<_Num, _Den>>
+    : std::true_type
+    { };
+
+#if __cpp_variable_templates
+  template<typename _Tp>
+    constexpr bool __is_ratio_v = false;
+  template<intmax_t _Num, intmax_t _Den>
+    constexpr bool __is_ratio_v<ratio<_Num, _Den>> = true;
+#endif
+
+  template<typename _R1, typename _R2>
+    constexpr bool
+    __are_both_ratios() noexcept
+    {
+#if __cpp_variable_templates && __cpp_if_constexpr
+      if constexpr (__is_ratio_v<_R1>)
+	if constexpr (__is_ratio_v<_R2>)
+	  return true;
+      return false;
+#else
+      return __and_<__is_ratio<_R1>, __is_ratio<_R2>>::value;
+#endif
+    }
+
   template<typename _R1, typename _R2>
     struct __ratio_multiply
     {
+      static_assert(std::__are_both_ratios<_R1, _R2>(),
+		    "both template arguments must be a std::ratio");
+
     private:
       static const intmax_t __gcd1 =
         __static_gcd<_R1::num, _R2::den>::value;
@@ -356,7 +390,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _R1, typename _R2>
     struct ratio_equal
     : integral_constant<bool, _R1::num == _R2::num && _R1::den == _R2::den>
-    { };
+    {
+      static_assert(std::__are_both_ratios<_R1, _R2>(),
+		    "both template arguments must be a std::ratio");
+    };
 
   /// ratio_not_equal
   template<typename _R1, typename _R2>
@@ -402,7 +439,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _R1, typename _R2>
     struct ratio_less
     : __ratio_less_impl<_R1, _R2>::type
-    { };
+    {
+      static_assert(std::__are_both_ratios<_R1, _R2>(),
+		    "both template arguments must be a std::ratio");
+    };
 
   /// ratio_less_equal
   template<typename _R1, typename _R2>
@@ -430,13 +470,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _R1, typename _R2>
     inline constexpr bool ratio_less_v = ratio_less<_R1, _R2>::value;
   template <typename _R1, typename _R2>
-    inline constexpr bool ratio_less_equal_v =
-      ratio_less_equal<_R1, _R2>::value;
+    inline constexpr bool ratio_less_equal_v
+      = ratio_less_equal<_R1, _R2>::value;
   template <typename _R1, typename _R2>
     inline constexpr bool ratio_greater_v = ratio_greater<_R1, _R2>::value;
   template <typename _R1, typename _R2>
     inline constexpr bool ratio_greater_equal_v
-    = ratio_greater_equal<_R1, _R2>::value;
+      = ratio_greater_equal<_R1, _R2>::value;
 #endif // C++17
 
   /// @cond undocumented
@@ -513,6 +553,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _R1, typename _R2>
     struct __ratio_add
     {
+      static_assert(std::__are_both_ratios<_R1, _R2>(),
+		    "both template arguments must be a std::ratio");
+
       typedef typename __ratio_add_impl<_R1, _R2>::type type;
       static constexpr intmax_t num = type::num;
       static constexpr intmax_t den = type::den;
