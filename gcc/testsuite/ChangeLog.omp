@@ -1,5 +1,9 @@
 2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/gomp/affinity-clause-1.f90: Fix scan-tree-dump.
+
+2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
