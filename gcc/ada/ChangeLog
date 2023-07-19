@@ -1,3 +1,242 @@
+2023-07-18  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (check_ok_for_atomic_type): Use Pragma_Id.
+	* gcc-interface/trans.cc (lvalue_required_p, Pragma_to_gnu): Use
+	Pragma_Id.
+	(get_type_length, Attribute_to_gnu, get_atomic_access): Use
+	Attribute_Id.
+
+2023-07-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_imgv.adb (Rewrite_Object_Image): fix type of formal. Found
+	reading sources.
+	(Expand_Wide_Image_Attribute): ditto.
+	(Expand_Wide_Wide_Image_Attribute): ditto.
+	(Rewrite_Object_Image): ditto.
+	* exp_put_image.adb (Build_Image_Call): For class-wide interface
+	type prefix generate code to displace the pointer to the object to
+	reference the base of the underlying object.
+
+2023-07-18  Viljar Indus  <indus@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): Add temporary scope
+	when analyzing the Iterator Specification. Use preanalysis instead
+	of Analysis to avoid polluting the tree.
+
+2023-07-18  Viljar Indus  <indus@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): Use the element
+	type for the iterator in a container aggregate with an iterator
+	specification.
+
+2023-07-18  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Use the positional
+	addition method only when dealing with a container aggregate
+	without an Iterator Specification e.g. with a loop parameter
+	specification
+
+2023-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Wrong_Type): Add Multiple parameter defaulting to
+	False and document it.
+	* sem_util.adb (Wrong_Type): Do not return early if an error has
+	already been posted on Expr and Multiple is True.
+	* sem_ch4.adb (Analyze_One_Call): Pass All_Errors_Mode as the
+	actual parameter for Multiple to Wrong_Type.
+
+2023-07-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Has_Dispatching_Constructor_Call): Removed.
+	(Expand_Interface_Conversion): Reverse patch.
+
+2023-07-18  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Set_Task_Affinity, Create_Task): Tweak
+	handling of CPU affinities.
+
+2023-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.ads (Is_Ancestor): Remove mention of tagged type.
+	* exp_aggr.adb: Add with and use clauses for Sem_Type.
+	(Build_Record_Aggr_Code.Replace_Type): Call Is_Ancestor to spot
+	self-references to the type of the aggregate.
+	* sem_aggr.adb (Resolve_Record_Aggregate.Add_Discriminant_Values):
+	Likewise.
+
+2023-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_References_Generic.Visible_Component):
+	In the case of private discriminated types, explicitly check that we
+	have a private declaration before examining its discriminant part.
+
+2023-07-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgnat/a-except.ads (Raise_Exception): Mark expected_throw.
+	(Reraise_Occurrence): Likewise.
+	(Raise_Exception_Always): Likewise.
+	(Raise_From_Controlled_Operation): Likewise.
+	(Reraise_Occurrence_Always): Likewise.
+	(Reraise_Occurrence_No_Defer): Likewise.
+	* libgnat/a-except.adb
+	(Exception_Propagation.Propagate_Exception): Likewise.
+	(Complete_And_Propagate_Occurrence): Likewise.
+	(Raise_Exception_No_Defer): Likewise.
+	(Raise_From_Signal_Handler): Likewise.
+	(Raise_With_Msg): Likewise.
+	(Raise_With_Location_And_Msg): Likewise.
+	(Raise_Constraint_Error): Likewise.
+	(Raise_Constraint_Error_Msg): Likewise.
+	(Raise_Program_Error): Likewise.
+	(Raise_Program_Error_Msg): Likewise.
+	(Raise_Storage_Error): Likewise.
+	(Raise_Storage_Error_Msg): Likewise.
+	(Reraise, Rcheck_*): Likewise.
+	* doc/gnat_rm/security_hardening_features.rst (Control Flow
+	Hardening): Note the influence of expected_throw.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+	* gcc-interface/utils.cc (handle_expected_throw_attribute): New.
+	(gnat_internal_attribute_table): Add expected_throw.
+
+2023-07-18  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* libgnat/s-pack03.adb: Update copyright year; refactor return statements.
+	* libgnat/s-pack05.adb: Likewise.
+	* libgnat/s-pack06.adb: Likewise.
+	* libgnat/s-pack07.adb: Likewise.
+	* libgnat/s-pack09.adb: Likewise.
+	* libgnat/s-pack10.adb: Likewise.
+	* libgnat/s-pack100.adb: Likewise.
+	* libgnat/s-pack101.adb: Likewise.
+	* libgnat/s-pack102.adb: Likewise.
+	* libgnat/s-pack103.adb: Likewise.
+	* libgnat/s-pack104.adb: Likewise.
+	* libgnat/s-pack105.adb: Likewise.
+	* libgnat/s-pack106.adb: Likewise.
+	* libgnat/s-pack107.adb: Likewise.
+	* libgnat/s-pack108.adb: Likewise.
+	* libgnat/s-pack109.adb: Likewise.
+	* libgnat/s-pack11.adb: Likewise.
+	* libgnat/s-pack110.adb: Likewise.
+	* libgnat/s-pack111.adb: Likewise.
+	* libgnat/s-pack112.adb: Likewise.
+	* libgnat/s-pack113.adb: Likewise.
+	* libgnat/s-pack114.adb: Likewise.
+	* libgnat/s-pack115.adb: Likewise.
+	* libgnat/s-pack116.adb: Likewise.
+	* libgnat/s-pack117.adb: Likewise.
+	* libgnat/s-pack118.adb: Likewise.
+	* libgnat/s-pack119.adb: Likewise.
+	* libgnat/s-pack12.adb: Likewise.
+	* libgnat/s-pack120.adb: Likewise.
+	* libgnat/s-pack121.adb: Likewise.
+	* libgnat/s-pack122.adb: Likewise.
+	* libgnat/s-pack123.adb: Likewise.
+	* libgnat/s-pack124.adb: Likewise.
+	* libgnat/s-pack125.adb: Likewise.
+	* libgnat/s-pack126.adb: Likewise.
+	* libgnat/s-pack127.adb: Likewise.
+	* libgnat/s-pack13.adb: Likewise.
+	* libgnat/s-pack14.adb: Likewise.
+	* libgnat/s-pack15.adb: Likewise.
+	* libgnat/s-pack17.adb: Likewise.
+	* libgnat/s-pack18.adb: Likewise.
+	* libgnat/s-pack19.adb: Likewise.
+	* libgnat/s-pack20.adb: Likewise.
+	* libgnat/s-pack21.adb: Likewise.
+	* libgnat/s-pack22.adb: Likewise.
+	* libgnat/s-pack23.adb: Likewise.
+	* libgnat/s-pack24.adb: Likewise.
+	* libgnat/s-pack25.adb: Likewise.
+	* libgnat/s-pack26.adb: Likewise.
+	* libgnat/s-pack27.adb: Likewise.
+	* libgnat/s-pack28.adb: Likewise.
+	* libgnat/s-pack29.adb: Likewise.
+	* libgnat/s-pack30.adb: Likewise.
+	* libgnat/s-pack31.adb: Likewise.
+	* libgnat/s-pack33.adb: Likewise.
+	* libgnat/s-pack34.adb: Likewise.
+	* libgnat/s-pack35.adb: Likewise.
+	* libgnat/s-pack36.adb: Likewise.
+	* libgnat/s-pack37.adb: Likewise.
+	* libgnat/s-pack38.adb: Likewise.
+	* libgnat/s-pack39.adb: Likewise.
+	* libgnat/s-pack40.adb: Likewise.
+	* libgnat/s-pack41.adb: Likewise.
+	* libgnat/s-pack42.adb: Likewise.
+	* libgnat/s-pack43.adb: Likewise.
+	* libgnat/s-pack44.adb: Likewise.
+	* libgnat/s-pack45.adb: Likewise.
+	* libgnat/s-pack46.adb: Likewise.
+	* libgnat/s-pack47.adb: Likewise.
+	* libgnat/s-pack48.adb: Likewise.
+	* libgnat/s-pack49.adb: Likewise.
+	* libgnat/s-pack50.adb: Likewise.
+	* libgnat/s-pack51.adb: Likewise.
+	* libgnat/s-pack52.adb: Likewise.
+	* libgnat/s-pack53.adb: Likewise.
+	* libgnat/s-pack54.adb: Likewise.
+	* libgnat/s-pack55.adb: Likewise.
+	* libgnat/s-pack56.adb: Likewise.
+	* libgnat/s-pack57.adb: Likewise.
+	* libgnat/s-pack58.adb: Likewise.
+	* libgnat/s-pack59.adb: Likewise.
+	* libgnat/s-pack60.adb: Likewise.
+	* libgnat/s-pack61.adb: Likewise.
+	* libgnat/s-pack62.adb: Likewise.
+	* libgnat/s-pack63.adb: Likewise.
+	* libgnat/s-pack65.adb: Likewise.
+	* libgnat/s-pack66.adb: Likewise.
+	* libgnat/s-pack67.adb: Likewise.
+	* libgnat/s-pack68.adb: Likewise.
+	* libgnat/s-pack69.adb: Likewise.
+	* libgnat/s-pack70.adb: Likewise.
+	* libgnat/s-pack71.adb: Likewise.
+	* libgnat/s-pack72.adb: Likewise.
+	* libgnat/s-pack73.adb: Likewise.
+	* libgnat/s-pack74.adb: Likewise.
+	* libgnat/s-pack75.adb: Likewise.
+	* libgnat/s-pack76.adb: Likewise.
+	* libgnat/s-pack77.adb: Likewise.
+	* libgnat/s-pack78.adb: Likewise.
+	* libgnat/s-pack79.adb: Likewise.
+	* libgnat/s-pack80.adb: Likewise.
+	* libgnat/s-pack81.adb: Likewise.
+	* libgnat/s-pack82.adb: Likewise.
+	* libgnat/s-pack83.adb: Likewise.
+	* libgnat/s-pack84.adb: Likewise.
+	* libgnat/s-pack85.adb: Likewise.
+	* libgnat/s-pack86.adb: Likewise.
+	* libgnat/s-pack87.adb: Likewise.
+	* libgnat/s-pack88.adb: Likewise.
+	* libgnat/s-pack89.adb: Likewise.
+	* libgnat/s-pack90.adb: Likewise.
+	* libgnat/s-pack91.adb: Likewise.
+	* libgnat/s-pack92.adb: Likewise.
+	* libgnat/s-pack93.adb: Likewise.
+	* libgnat/s-pack94.adb: Likewise.
+	* libgnat/s-pack95.adb: Likewise.
+	* libgnat/s-pack96.adb: Likewise.
+	* libgnat/s-pack97.adb: Likewise.
+	* libgnat/s-pack98.adb: Likewise.
+	* libgnat/s-pack99.adb: Likewise.
+
+2023-07-18  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Remove call to
+	Prescan_Message on the special continuation for the explain code
+	command, as this does not play well with the setting of global
+	variables for the message (like its status as a warning or not).
+	Instead, set directly the global variables regarding content of
+	the message in terms of special characters.
+
+2023-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Validated_View): Document enhanced behavior.
+	* sem_util.adb (Validated_View): Return the nonlimited view, if any,
+	of types coming from a limited with.
+
 2023-07-11  Bob Duff  <duff@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Avoid transforming to

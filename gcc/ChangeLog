@@ -1,3 +1,116 @@
+2023-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* dwarf2asm.cc: Change FALSE to false.
+	* dwarf2cfi.cc (execute_dwarf2_frame): Change return type to void.
+	* dwarf2out.cc (matches_main_base): Change return type from
+	int to bool.  Change "last_match" variable to bool.
+	(dump_struct_debug): Change return type from int to bool.
+	Change "matches" and "result" function arguments to bool.
+	(is_pseudo_reg): Change return type from int to bool.
+	(is_tagged_type): Ditto.
+	(same_loc_p): Ditto.
+	(same_dw_val_p): Change return type from int to bool and adjust
+	function body accordingly.
+	(same_attr_p): Ditto.
+	(same_die_p): Ditto.
+	(is_type_die): Ditto.
+	(is_declaration_die): Ditto.
+	(should_move_die_to_comdat): Ditto.
+	(is_base_type): Ditto.
+	(is_based_loc): Ditto.
+	(local_scope_p): Ditto.
+	(class_scope_p): Ditto.
+	(class_or_namespace_scope_p): Ditto.
+	(is_tagged_type): Ditto.
+	(is_rust): Use void argument.
+	(is_nested_in_subprogram): Change return type from int to bool.
+	(contains_subprogram_definition): Ditto.
+	(gen_struct_or_union_type_die): Change "nested", "complete"
+	and "ns_decl" variables to bool.
+	(is_naming_typedef_decl): Change FALSE to false.
+
+2023-07-18  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ch.cc (edge_range_query): Take loop argument; be ready
+	for queries not in headers.
+	(static_loop_exit): Add basic blck parameter; update use of
+	edge_range_query
+	(should_duplicate_loop_header_p): Add ranger and static_exits
+	parameter.  Do not account statements that will be optimized
+	out after duplicaiton in overall size. Add ranger query to
+	find static exits.
+	(update_profile_after_ch):  Take static_exits has set instead of
+	single eliminated_edge.
+	(ch_base::copy_headers): Do all analysis in the first pass;
+	remember invariant_exits and static_exits.
+
+2023-07-18  Jason Merrill  <jason@redhat.com>
+
+	* fold-const.cc (native_interpret_aggregate): Skip empty fields.
+
+2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Semantic checking): Change example testwithptr
+	to testnew6.
+
+2023-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105715
+	* gimple-isel.cc (gimple_expand_vec_exprs): Merge into...
+	(pass_gimple_isel::execute): ... this.  Duplicate
+	comparison defs of COND_EXPRs.
+
+2023-07-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-selftests.cc (run_poly_int_selftests): Add more selftests.
+	* config/riscv/riscv.cc (riscv_legitimize_poly_move): Dynamic adjust size of VLA vectors.
+	(riscv_convert_vector_bits): Ditto.
+
+2023-07-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vec_shl_insert_<mode>): New patterns.
+	* config/riscv/riscv-v.cc (shuffle_compress_patterns): Fix bugs.
+
+2023-07-18  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vx-builtins.md: New vsel pattern.
+
+2023-07-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110438
+	* config/i386/sse.md (<mask_codefor>one_cmpl<mode>2<mask_name>):
+	Remove # from assemble output.
+
+2023-07-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110591
+	* config/i386/sync.md (cmpccxadd_<mode>): Adjust the pattern
+	to explicitly set FLAGS_REG like *cmp<mode>_1, also add extra
+	3 define_peephole2 after the pattern.
+
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* rtl-ssa/internals.inl: Fix when mode1 and mode2 are not ordred.
+
+2023-07-18  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (struct machine_function): Add new field.
+	(riscv_static_frm_mode_p): New function.
+	(riscv_emit_frm_mode_set): New function for emit FRM.
+	(riscv_emit_mode_set): Extract function for FRM.
+	(riscv_mode_needed): Fix the TODO.
+	(riscv_mode_entry): Initial dynamic frm RTL.
+	(riscv_mode_exit): Return DYN_EXIT.
+	* config/riscv/riscv.md: Add rdfrm.
+	* config/riscv/vector-iterators.md (unspecv): Add DYN_EXIT unspecv.
+	* config/riscv/vector.md (frm_modee): Add new mode dyn_exit.
+	(fsrm): Removed.
+	(fsrmsi_backup): New pattern for swap.
+	(fsrmsi_restore): New pattern for restore.
+	(fsrmsi_restore_exit): New pattern for restore exit.
+	(frrmsi): New pattern for backup.
+
 2023-07-17  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/extend.texi: Add @cindex on __auto_type.

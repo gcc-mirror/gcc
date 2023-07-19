@@ -1,3 +1,35 @@
+2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in: Minor formatting change.
+	* gm2-compiler/M2GCCDeclare.mod
+	(DeclareUnboundedProcedureParameters): Rename local variables.
+	(WalkUnboundedProcedureParameters): Rename local variables.
+	(DoVariableDeclaration): Avoid declaration of a variable if
+	it is on the heap (used by static analysis only).
+	* gm2-compiler/M2GenGCC.mod: Formatting.
+	* gm2-compiler/M2Quads.def (GetQuadTrash): New procedure function.
+	* gm2-compiler/M2Quads.mod (GetQuadTrash): New procedure function.
+	(QuadFrame): Add Trash field.
+	(BuildRealFuncProcCall): Detect ALLOCATE and DEALLOCATE and create
+	a heap variable for parameter 1 saving it as the trashed variable
+	for static analysis.
+	(GenQuadOTrash): New procedure.
+	(DisplayQuadRange): Bugfix.  Write the scope number.
+	* gm2-compiler/M2SymInit.mod: Rewritten to separate LValue
+	equivalence from LValue to RValue pairings.  Comprehensive
+	detection of variant record implemented.  Allow dereferencing
+	of pointers through LValue/RValue chains.
+	* gm2-compiler/SymbolTable.def (PutVarHeap): New procedure.
+	(IsVarHeap): New procedure function.
+	(ForeachParamSymDo): New procedure.
+	* gm2-compiler/SymbolTable.mod (PutVarHeap): New procedure.
+	(IsVarHeap): New procedure function.
+	(ForeachParamSymDo): New procedure.
+	(MakeVariableForParam): Reformatted.
+	(CheckForUnknownInModule): Reformatted.
+	(SymVar): Add field Heap.
+	(MakeVar): Assign Heap to FALSE.
+
 2023-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (m2/boot-bin/mklink$(exeext)): Add $(LDFLAGS).

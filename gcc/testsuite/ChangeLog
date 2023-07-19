@@ -1,3 +1,159 @@
+2023-07-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110340
+	* g++.dg/cpp/string-4.C: New test.
+	* g++.dg/cpp/ucn-2.C: New test.
+
+2023-07-18  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/debug/dwarf2/utf-1.C: Use -gdwarf-4.  Adjust expected
+	output.
+
+2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/pass/assignparam.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/tiny.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/switches-uninit-variable-checking-procedures-fail.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testptrptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/assignparam2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/switches-uninit-variable-checking-procedures-pass.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamlvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamrvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testproc.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testptrptr.mod: New test.
+
+2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/overload/conv-op5.C: New test.
+
+2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110535
+	* g++.dg/cpp2a/concepts-surrogate1.C: New test.
+	* g++.dg/cpp2a/concepts-surrogate2.C: New test.
+
+2023-07-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl1024b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl2048b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl256b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl4096b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl512b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl1024b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl2048b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl256b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl4096b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl512b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl1024b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl2048b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl256b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl4096b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl512b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl1024b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl2048b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl256b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl4096b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl512b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl1024b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl2048b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl256b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl4096b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl512b-1.c: New test.
+
+2023-07-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_run-9.c: New test.
+
+2023-07-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/attribute-20.c: Removed.
+
+2023-07-18  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-cmpge.c: New test.
+
+2023-07-18  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/riscv/_Float16-zhinx-1.c: Tighten regexps.
+
+2023-07-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110591.c: New test.
+	* gcc.target/i386/pr110591-2.c: New test.
+
+2023-07-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: Fix run failure.
+
+2023-07-18  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-1.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-10.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-11.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-12.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-13.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-14.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-15.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-16.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-17.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-18.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-19.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-2.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-20.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-21.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-22.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-23.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-24.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-25.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-26.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-27.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-28.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-29.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-3.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-31.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-32.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-4.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-5.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-6.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-7.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-8.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-9.c: New test.
+
 2023-07-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95947

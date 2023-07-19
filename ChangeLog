@@ -1,3 +1,11 @@
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
+2023-07-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Add myself as a reviewer for the riscv port.
+
 2023-07-12  Hao Liu  <hliu@os.amperecomputing.com>
 
 	* MAINTAINERS: Add Hao Liu to write after approval

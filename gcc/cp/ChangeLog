@@ -1,3 +1,20 @@
+2023-07-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_bit_cast): Check that the result of
+	native_interpret_aggregate doesn't need more evaluation.
+
+2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	* call.cc (add_template_conv_candidate): Don't check for
+	non-empty 'candidates' here.
+	(build_op_call): Check it here, before we've considered any
+	conversion functions.
+
+2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110535
+	* call.cc (add_conv_candidate): Check constraints.
+
 2023-07-17  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (cxx_eval_call_expression): Only cache
