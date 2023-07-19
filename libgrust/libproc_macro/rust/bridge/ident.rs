@@ -1,11 +1,10 @@
+use bridge::ffistring::FFIString;
 use bridge::span::Span;
-use std::convert::TryInto;
-use std::ffi::c_uchar;
 use std::fmt;
 
 extern "C" {
-    fn Ident__new(string: *const c_uchar, len: u64, span: Span) -> Ident;
-    fn Ident__new_raw(string: *const c_uchar, len: u64, span: Span) -> Ident;
+    fn Ident__new(str: FFIString, span: Span) -> Ident;
+    fn Ident__new_raw(str: FFIString, span: Span) -> Ident;
     fn Ident__drop(ident: *mut Ident);
     fn Ident__clone(ident: *const Ident) -> Ident;
 }
@@ -14,18 +13,17 @@ extern "C" {
 #[derive(Debug)]
 pub struct Ident {
     pub(crate) is_raw: bool,
-    pub(crate) val: *const c_uchar,
-    len: u64,
+    value: FFIString,
     span: Span,
 }
 
 impl Ident {
     pub fn new(string: &str, span: Span) -> Self {
-        unsafe { Ident__new(string.as_ptr(), string.len().try_into().unwrap(), span) }
+        unsafe { Ident__new(string.into(), span) }
     }
 
     pub fn new_raw(string: &str, span: Span) -> Self {
-        unsafe { Ident__new_raw(string.as_ptr(), string.len().try_into().unwrap(), span) }
+        unsafe { Ident__new_raw(string.into(), span) }
     }
 
     pub fn span(&self) -> Span {
@@ -49,16 +47,7 @@ impl fmt::Display for Ident {
         if self.is_raw {
             f.write_str("r#")?;
         }
-        fmt::Display::fmt(
-            unsafe {
-                std::str::from_utf8(std::slice::from_raw_parts(
-                    self.val,
-                    self.len.try_into().unwrap(),
-                ))
-                .unwrap()
-            },
-            f,
-        )
+        self.value.fmt(f)
     }
 }
 
