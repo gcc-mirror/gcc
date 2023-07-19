@@ -1,5 +1,10 @@
 2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/map-subarray-5.f90: Only expect
+	libgomp dg-output for offload_device_nonshared_as.
+
+2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
