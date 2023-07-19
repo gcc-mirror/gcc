@@ -516,7 +516,8 @@ GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
                     $(GM2-BOOT-O)
 
-m2_OBJS = $(GM2_C_OBJS)
+m2_OBJS = $(GM2_C_OBJS) m2/gm2-gcc/rtegraph.o \
+	m2/gm2-compiler-boot/m2flex.o
 
 cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
@@ -584,10 +585,6 @@ m2/gm2-gcc/rtegraph.o: $(srcdir)/m2/gm2-gcc/rtegraph.cc $(GCC_HEADER_DEPENDENCIE
                        gt-m2-rtegraph.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(COMPILER) -c -g $(GM2GCC) $(ALL_COMPILERFLAGS) \
-            $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-c-family/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
-	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 m2/gm2-gcc/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-gcc/%.def $(MCDEPS)

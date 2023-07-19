@@ -150,6 +150,10 @@ m2/gm2-ppg-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 m2/gm2-auto:
 	-test -d $@ || $(mkinstalldirs) $@
 
+c-family/m2pp.o : $(srcdir)/m2/m2pp.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
+	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) \
+            $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
 # m2/pg$(exext) is the 2nd generation parser generator built from ebnf
 # without error recovery
 
