@@ -1550,37 +1550,20 @@ legitimize_move (rtx dest, rtx src)
 /* VTYPE information for machine_mode.  */
 struct mode_vtype_group
 {
-  enum vlmul_type vlmul_for_min_vlen32[NUM_MACHINE_MODES];
-  uint8_t ratio_for_min_vlen32[NUM_MACHINE_MODES];
-  enum vlmul_type vlmul_for_min_vlen64[NUM_MACHINE_MODES];
-  uint8_t ratio_for_min_vlen64[NUM_MACHINE_MODES];
-  enum vlmul_type vlmul_for_for_vlen128[NUM_MACHINE_MODES];
-  uint8_t ratio_for_for_vlen128[NUM_MACHINE_MODES];
+  enum vlmul_type vlmul[NUM_MACHINE_MODES];
+  uint8_t ratio[NUM_MACHINE_MODES];
   machine_mode subpart_mode[NUM_MACHINE_MODES];
   uint8_t nf[NUM_MACHINE_MODES];
   mode_vtype_group ()
   {
-#define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
-	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64,                      \
-	      VLMUL_FOR_MIN_VLEN128, RATIO_FOR_MIN_VLEN128)                    \
-  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
-  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
-  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
-  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
-  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
-  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
-#define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL_FOR_MIN_VLEN32, \
-		    RATIO_FOR_MIN_VLEN32, VLMUL_FOR_MIN_VLEN64,                \
-		    RATIO_FOR_MIN_VLEN64, VLMUL_FOR_MIN_VLEN128,               \
-		    RATIO_FOR_MIN_VLEN128)                                     \
+#define ENTRY(MODE, REQUIREMENT, VLMUL, RATIO)                                 \
+  vlmul[MODE##mode] = VLMUL;                                                   \
+  ratio[MODE##mode] = RATIO;
+#define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL, RATIO)         \
   subpart_mode[MODE##mode] = SUBPART_MODE##mode;                               \
   nf[MODE##mode] = NF;                                                         \
-  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
-  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
-  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
-  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
-  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
-  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
+  vlmul[MODE##mode] = VLMUL;                                                   \
+  ratio[MODE##mode] = RATIO;
 #include "riscv-vector-switch.def"
 #undef ENTRY
 #undef TUPLE_ENTRY
@@ -1593,12 +1576,7 @@ static mode_vtype_group mode_vtype_infos;
 enum vlmul_type
 get_vlmul (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN >= 128)
-    return mode_vtype_infos.vlmul_for_for_vlen128[mode];
-  else if (TARGET_MIN_VLEN == 32)
-    return mode_vtype_infos.vlmul_for_min_vlen32[mode];
-  else
-    return mode_vtype_infos.vlmul_for_min_vlen64[mode];
+  return mode_vtype_infos.vlmul[mode];
 }
 
 /* Return the NF value of the corresponding mode.  */
@@ -1610,8 +1588,8 @@ get_nf (machine_mode mode)
   return mode_vtype_infos.nf[mode];
 }
 
-/* Return the subpart mode of the tuple mode. For VNx2x1SImode,
-   the subpart mode is VNx1SImode. This will help to build
+/* Return the subpart mode of the tuple mode. For RVVM2x2SImode,
+   the subpart mode is RVVM2SImode. This will help to build
    array/struct type in builtins.  */
 machine_mode
 get_subpart_mode (machine_mode mode)
@@ -1625,12 +1603,7 @@ get_subpart_mode (machine_mode mode)
 unsigned int
 get_ratio (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN >= 128)
-    return mode_vtype_infos.ratio_for_for_vlen128[mode];
-  else if (TARGET_MIN_VLEN == 32)
-    return mode_vtype_infos.ratio_for_min_vlen32[mode];
-  else
-    return mode_vtype_infos.ratio_for_min_vlen64[mode];
+  return mode_vtype_infos.ratio[mode];
 }
 
 /* Get ta according to operand[tail_op_idx].  */
@@ -2171,12 +2144,12 @@ preferred_simd_mode (scalar_mode mode)
   /* We will disable auto-vectorization when TARGET_MIN_VLEN < 128 &&
      riscv_autovec_lmul < RVV_M2. Since GCC loop vectorizer report ICE when we
      enable -march=rv64gc_zve32* and -march=rv32gc_zve64*. in the
-     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since we have
-     VNx1SImode in -march=*zve32* and VNx1DImode in -march=*zve64*, they are
-     enabled in targetm. vector_mode_supported_p and SLP vectorizer will try to
-     use them. Currently, we can support auto-vectorization in
-     -march=rv32_zve32x_zvl128b. Wheras, -march=rv32_zve32x_zvl32b or
-     -march=rv32_zve32x_zvl64b are disabled.  */
+     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since both
+     RVVM1SImode in -march=*zve32*_zvl32b and RVVM1DImode in
+     -march=*zve64*_zvl64b are NUNITS = poly (1, 1), they will cause ICE in loop
+     vectorizer when we enable them in this target hook. Currently, we can
+     support auto-vectorization in -march=rv32_zve32x_zvl128b. Wheras,
+     -march=rv32_zve32x_zvl32b or -march=rv32_zve32x_zvl64b are disabled.  */
   if (autovec_use_vlmax_p ())
     {
       if (TARGET_MIN_VLEN < 128 && riscv_autovec_lmul < RVV_M2)
@@ -2371,9 +2344,9 @@ autovectorize_vector_modes (vector_modes *modes, bool)
       poly_uint64 full_size
 	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
 
-      /* Start with a VNxYYQImode where YY is the number of units that
+      /* Start with a RVV<LMUL>QImode where LMUL is the number of units that
 	 fit a whole vector.
-	 Then try YY = nunits / 2, nunits / 4 and nunits / 8 which
+	 Then try LMUL = nunits / 2, nunits / 4 and nunits / 8 which
 	 is guided by the extensions we have available (vf2, vf4 and vf8).
 
 	 - full_size: Try using full vectors for all element types.

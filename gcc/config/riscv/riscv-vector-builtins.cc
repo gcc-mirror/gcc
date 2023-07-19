@@ -109,10 +109,8 @@ const char *const operand_suffixes[NUM_OP_TYPES] = {
 
 /* Static information about type suffix for each RVV type.  */
 const rvv_builtin_suffixes type_suffixes[NUM_VECTOR_TYPES + 1] = {
-#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE,                      \
-		     VECTOR_MODE_MIN_VLEN_128, VECTOR_MODE_MIN_VLEN_64,        \
-		     VECTOR_MODE_MIN_VLEN_32, VECTOR_SUFFIX, SCALAR_SUFFIX,    \
-		     VSETVL_SUFFIX)                                            \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
+		     VECTOR_SUFFIX, SCALAR_SUFFIX, VSETVL_SUFFIX)              \
   {#VECTOR_SUFFIX, #SCALAR_SUFFIX, #VSETVL_SUFFIX},
 #define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
 			   NF, VECTOR_SUFFIX)                                  \
@@ -2802,12 +2800,9 @@ register_builtin_types ()
   tree int64_type_node = get_typenode_from_name (INT64_TYPE);
 
   machine_mode mode;
-#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE,                      \
-		     VECTOR_MODE_MIN_VLEN_128, VECTOR_MODE_MIN_VLEN_64,        \
-		     VECTOR_MODE_MIN_VLEN_32, ARGS...)                         \
-  mode = TARGET_MIN_VLEN >= 128	 ? VECTOR_MODE_MIN_VLEN_128##mode              \
-	 : TARGET_MIN_VLEN >= 64 ? VECTOR_MODE_MIN_VLEN_64##mode               \
-				 : VECTOR_MODE_MIN_VLEN_32##mode;              \
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
+		     ARGS...)                                                  \
+  mode = VECTOR_MODE##mode;                                                    \
   register_builtin_type (VECTOR_TYPE_##NAME, SCALAR_TYPE##_type_node, mode);
 #define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
 			   NF, VECTOR_SUFFIX)                                  \

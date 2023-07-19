@@ -1,5 +1,10 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d  -fdump-tree-vect-details" } */
+/* For some reason we exceed
+   the default code model's +-2 GiB limits.  We should investigate why and
+   add a proper description here.  For now just make sure the test case
+   compiles properly.  */
+/* { dg-additional-options "-mcmodel=medany" } */
 
 #include <stdint-gcc.h>
 

@@ -972,8 +972,8 @@ riscv_valid_lo_sum_p (enum riscv_symbol_type sym_type, machine_mode mode,
 }
 
 /* Return true if mode is the RVV enabled mode.
-   For example: 'VNx1DI' mode is disabled if MIN_VLEN == 32.
-   'VNx1SI' mode is enabled if MIN_VLEN == 32.  */
+   For example: 'RVVMF2SI' mode is disabled,
+   wheras 'RVVM1SI' mode is enabled if MIN_VLEN == 32.  */
 
 bool
 riscv_v_ext_vector_mode_p (machine_mode mode)
@@ -1023,9 +1023,34 @@ riscv_v_ext_mode_p (machine_mode mode)
 poly_int64
 riscv_v_adjust_nunits (machine_mode mode, int scale)
 {
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
   if (riscv_v_ext_mode_p (mode))
-    return riscv_vector_chunks * scale;
+    {
+      if (TARGET_MIN_VLEN == 32)
+	scale = scale / 2;
+      return riscv_vector_chunks * scale;
+    }
   return scale;
+}
+
+/* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
+   NUNITS size for corresponding machine_mode.  */
+
+poly_int64
+riscv_v_adjust_nunits (machine_mode mode, bool fractional_p, int lmul, int nf)
+{
+  if (riscv_v_ext_mode_p (mode))
+    {
+      scalar_mode smode = GET_MODE_INNER (mode);
+      int size = GET_MODE_SIZE (smode);
+      int nunits_per_chunk = riscv_bytes_per_vector_chunk / size;
+      if (fractional_p)
+	return nunits_per_chunk / lmul * riscv_vector_chunks * nf;
+      else
+	return nunits_per_chunk * lmul * riscv_vector_chunks * nf;
+    }
+  /* Set the disabled RVV modes size as 1 by default.  */
+  return 1;
 }
 
 /* Call from ADJUST_BYTESIZE in riscv-modes.def.  Return the correct
@@ -1035,17 +1060,20 @@ poly_int64
 riscv_v_adjust_bytesize (machine_mode mode, int scale)
 {
   if (riscv_v_ext_vector_mode_p (mode))
-  {
-    poly_uint16 mode_size = GET_MODE_SIZE (mode);
+    {
+      poly_int64 nunits = GET_MODE_NUNITS (mode);
+      poly_int64 mode_size = GET_MODE_SIZE (mode);
 
-    if (maybe_eq (mode_size, (uint16_t)-1))
-      mode_size = riscv_vector_chunks * scale;
+      if (maybe_eq (mode_size, (uint16_t) -1))
+	mode_size = riscv_vector_chunks * scale;
 
-    if (known_gt (mode_size, BYTES_PER_RISCV_VECTOR))
-      mode_size = BYTES_PER_RISCV_VECTOR;
-
-    return mode_size;
-  }
+      if (nunits.coeffs[0] > 8)
+	return exact_div (nunits, 8);
+      else if (nunits.is_constant ())
+	return 1;
+      else
+	return poly_int64 (1, 1);
+    }
 
   return scale;
 }
@@ -1056,10 +1084,7 @@ riscv_v_adjust_bytesize (machine_mode mode, int scale)
 poly_int64
 riscv_v_adjust_precision (machine_mode mode, int scale)
 {
-  if (riscv_v_ext_vector_mode_p (mode))
-    return riscv_vector_chunks * scale;
-
-  return scale;
+  return riscv_v_adjust_nunits (mode, scale);
 }
 
 /* Return true if X is a valid address for machine mode MODE.  If it is,
@@ -6482,25 +6507,8 @@ riscv_init_machine_status (void)
 static poly_uint16
 riscv_convert_vector_bits (void)
 {
-  int chunk_num = 1;
-  if (TARGET_MIN_VLEN >= 128)
-    {
-      /* We have Full 'V' extension for application processors. It's specified
-	 by -march=rv64gcv/rv32gcv, The 'V' extension depends upon the Zvl128b
-	 and Zve64d extensions. Thus the number of bytes in a vector is 16 + 16
-	 * x1 which is riscv_vector_chunks * 16 = poly_int (16, 16).  */
-      riscv_bytes_per_vector_chunk = 16;
-      /* Adjust BYTES_PER_RISCV_VECTOR according to TARGET_MIN_VLEN:
-	   - TARGET_MIN_VLEN = 128bit: [16,16]
-	   - TARGET_MIN_VLEN = 256bit: [32,32]
-	   - TARGET_MIN_VLEN = 512bit: [64,64]
-	   - TARGET_MIN_VLEN = 1024bit: [128,128]
-	   - TARGET_MIN_VLEN = 2048bit: [256,256]
-	   - TARGET_MIN_VLEN = 4096bit: [512,512]
-	   FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096bit.  */
-      chunk_num = TARGET_MIN_VLEN / 128;
-    }
-  else if (TARGET_MIN_VLEN > 32)
+  int chunk_num;
+  if (TARGET_MIN_VLEN > 32)
     {
       /* When targetting minimum VLEN > 32, we should use 64-bit chunk size.
 	 Otherwise we can not include SEW = 64bits.
@@ -6509,6 +6517,16 @@ riscv_convert_vector_bits (void)
 	 Thus the number of bytes in a vector is 8 + 8 * x1 which is
 	 riscv_vector_chunks * 8 = poly_int (8, 8).  */
       riscv_bytes_per_vector_chunk = 8;
+      /* Adjust BYTES_PER_RISCV_VECTOR according to TARGET_MIN_VLEN:
+	   - TARGET_MIN_VLEN = 64bit: [8,8]
+	   - TARGET_MIN_VLEN = 128bit: [16,16]
+	   - TARGET_MIN_VLEN = 256bit: [32,32]
+	   - TARGET_MIN_VLEN = 512bit: [64,64]
+	   - TARGET_MIN_VLEN = 1024bit: [128,128]
+	   - TARGET_MIN_VLEN = 2048bit: [256,256]
+	   - TARGET_MIN_VLEN = 4096bit: [512,512]
+	   FIXME: We currently DON'T support TARGET_MIN_VLEN > 4096bit.  */
+      chunk_num = TARGET_MIN_VLEN / 64;
     }
   else
     {
@@ -6518,6 +6536,7 @@ riscv_convert_vector_bits (void)
 	 Thus the number of bytes in a vector is 4 + 4 * x1 which is
 	 riscv_vector_chunks * 4 = poly_int (4, 4).  */
       riscv_bytes_per_vector_chunk = 4;
+      chunk_num = 1;
     }
 
   /* Set riscv_vector_chunks as poly (1, 1) run-time constant if TARGET_VECTOR
