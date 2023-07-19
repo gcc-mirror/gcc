@@ -1344,6 +1344,12 @@ taint_state_machine::check_for_tainted_divisor (sm_context *sm_ctxt,
     return;
 
   tree divisor_expr = gimple_assign_rhs2 (assign);;
+
+  /* Until we track conditions on floating point values, we can't check to
+     see if they've been checked against zero.  */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (divisor_expr)))
+    return;
+
   const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, NULL);
 
   state_t state = sm_ctxt->get_state (assign, divisor_sval);

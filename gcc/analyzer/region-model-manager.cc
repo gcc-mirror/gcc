@@ -234,6 +234,7 @@ region_model_manager::get_or_create_int_cst (tree type,
 					     const poly_wide_int_ref &cst)
 {
   gcc_assert (type);
+  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
   tree tree_cst = wide_int_to_tree (type, cst);
   return get_or_create_constant_svalue (tree_cst);
 }
