@@ -486,11 +486,6 @@ namespace __format
 	_M_format(const _Tp& __t, _FormatContext& __fc,
 		  bool __is_neg = false) const
 	{
-	  if constexpr (__is_specialization_of<_Tp, chrono::hh_mm_ss>)
-	    __is_neg = __t.is_negative();
-	  else if constexpr (!chrono::__is_duration_v<_Tp>)
-	    __is_neg = false;
-
 	  auto __first = _M_spec._M_chrono_specs.begin();
 	  const auto __last = _M_spec._M_chrono_specs.end();
 	  if (__first == __last)
@@ -513,12 +508,19 @@ namespace __format
 	  else
 	    __out = __sink.out();
 
+	  // formatter<duration> passes the correct value of __is_neg
+	  // for durations but for hh_mm_ss we decide it here.
+	  if constexpr (__is_specialization_of<_Tp, chrono::hh_mm_ss>)
+	    __is_neg = __t.is_negative();
+
 	  auto __print_sign = [&__is_neg, &__out] {
-	    if (__is_neg)
-	      {
-		*__out++ = _S_plus_minus[1];
-		__is_neg = false;
-	      }
+	    if constexpr (chrono::__is_duration_v<_Tp>
+			    || __is_specialization_of<_Tp, chrono::hh_mm_ss>)
+	      if (__is_neg)
+		{
+		  *__out++ = _S_plus_minus[1];
+		  __is_neg = false;
+		}
 	    return std::move(__out);
 	  };
 
@@ -708,8 +710,9 @@ namespace __format
 		__os << __t._M_date << ' ' << __t._M_time;
 	      else
 		{
-		  if (__is_neg) [[unlikely]]
-		    __os << _S_plus_minus[1];
+		  if constexpr (chrono::__is_duration_v<_Tp>)
+		    if (__is_neg) [[unlikely]]
+		      __os << _S_plus_minus[1];
 		  __os << __t;
 		}
 
