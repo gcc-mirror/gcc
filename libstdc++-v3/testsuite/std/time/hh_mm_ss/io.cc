@@ -47,9 +47,13 @@ test_format()
 
   auto s = std::format("{}", hh_mm_ss{1h + 23min + 45s});
   VERIFY( s == "01:23:45" );
+  s = std::format("{}", hh_mm_ss{-42min});
+  VERIFY( s == "-00:42:00" );
 
   auto ws = std::format(L"{}", hh_mm_ss{1h + 23min + 45s});
   VERIFY( ws == L"01:23:45" );
+  ws = std::format(L"{}", hh_mm_ss{-42min});
+  VERIFY( ws == L"-00:42:00" );
 
   // Locale-specific formats:
   auto loc = std::locale::classic();
