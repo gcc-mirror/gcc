@@ -74,8 +74,7 @@ const BiMap<std::string, BuiltinMacro> MacroBuiltin::builtins = {{
 
 }};
 
-std::unordered_map<
-  std::string, std::function<AST::Fragment (location_t, AST::MacroInvocData &)>>
+std::unordered_map<std::string, AST::MacroTranscriberFunc>
   MacroBuiltin::builtin_transcribers = {
     {"assert", MacroBuiltin::assert_handler},
     {"file", MacroBuiltin::file_handler},
@@ -398,7 +397,7 @@ load_file_bytes (location_t invoc_locus, const char *filename)
 }
 } // namespace
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::assert_handler (location_t invoc_locus,
 			      AST::MacroInvocData &invoc)
 {
@@ -407,7 +406,7 @@ MacroBuiltin::assert_handler (location_t invoc_locus,
   return AST::Fragment::create_error ();
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &)
 {
   auto current_file = LOCATION_FILE (invoc_locus);
@@ -418,7 +417,7 @@ MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &)
   return AST::Fragment ({file_str}, std::move (str_token));
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &)
 {
   auto current_column = LOCATION_COLUMN (invoc_locus);
@@ -436,7 +435,7 @@ MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &)
    of the given file as reference to a byte array. Yields an expression of type
    &'static [u8; N].  */
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::include_bytes_handler (location_t invoc_locus,
 				     AST::MacroInvocData &invoc)
 {
@@ -496,7 +495,7 @@ MacroBuiltin::include_bytes_handler (location_t invoc_locus,
    of the given file as a string. The file must be UTF-8 encoded. Yields an
    expression of type &'static str.  */
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::include_str_handler (location_t invoc_locus,
 				   AST::MacroInvocData &invoc)
 {
@@ -581,7 +580,7 @@ MacroBuiltin::include_str_handler (location_t invoc_locus,
 
 /* Expand builtin macro compile_error!("error"), which forces a compile error
    during the compile time. */
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::compile_error_handler (location_t invoc_locus,
 				     AST::MacroInvocData &invoc)
 {
@@ -642,7 +641,7 @@ MacroBuiltin::compile_error_handler (location_t invoc_locus,
 // invocation?
 // Do we split the two passes of parsing the token tree and then expanding it?
 // Can we do that easily?
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::concat_handler (location_t invoc_locus,
 			      AST::MacroInvocData &invoc)
 {
@@ -707,7 +706,7 @@ MacroBuiltin::concat_handler (location_t invoc_locus,
 
 /* Expand builtin macro env!(), which inspects an environment variable at
    compile time. */
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
@@ -781,7 +780,7 @@ MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
   return AST::Fragment ({node}, std::move (tok));
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
 {
   // only parse if not already parsed
@@ -823,7 +822,7 @@ MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
 /* Expand builtin macro include!(), which includes a source file at the current
  scope compile time. */
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::include_handler (location_t invoc_locus,
 			       AST::MacroInvocData &invoc)
 {
@@ -893,7 +892,7 @@ MacroBuiltin::include_handler (location_t invoc_locus,
   return AST::Fragment (nodes, std::vector<std::unique_ptr<AST::Token>> ());
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &)
 {
   auto current_line = LOCATION_LINE (invoc_locus);
@@ -908,7 +907,7 @@ MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &)
   return AST::Fragment ({line_no}, std::move (tok));
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::stringify_handler (location_t invoc_locus,
 				 AST::MacroInvocData &invoc)
 {
@@ -938,7 +937,7 @@ MacroBuiltin::stringify_handler (location_t invoc_locus,
   return AST::Fragment ({node}, std::move (token));
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::sorry (location_t invoc_locus, AST::MacroInvocData &invoc)
 {
   rust_sorry_at (invoc_locus, "unimplemented builtin macro: %qs",
@@ -947,7 +946,7 @@ MacroBuiltin::sorry (location_t invoc_locus, AST::MacroInvocData &invoc)
   return AST::Fragment::create_error ();
 }
 
-AST::Fragment
+tl::optional<AST::Fragment>
 MacroBuiltin::proc_macro_builtin (location_t invoc_locus,
 				  AST::MacroInvocData &invoc)
 {

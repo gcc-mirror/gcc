@@ -468,7 +468,8 @@ private:
   std::vector<MacroRule> rules; // inlined form
   location_t locus;
 
-  std::function<Fragment (location_t, MacroInvocData &)> associated_transcriber;
+  MacroTranscriberFunc associated_transcriber;
+
   // Since we can't compare std::functions, we need to use an extra boolean
   bool is_builtin_rule;
   MacroKind kind;
@@ -503,8 +504,7 @@ private:
   {}
 
   MacroRulesDefinition (Identifier builtin_name, DelimType delim_type,
-			std::function<Fragment (location_t, MacroInvocData &)>
-			  associated_transcriber,
+			MacroTranscriberFunc associated_transcriber,
 			MacroKind kind, Visibility vis)
     : VisItem (std::move (vis), std::vector<Attribute> ()),
       outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
@@ -560,14 +560,12 @@ public:
   const std::vector<MacroRule> &get_rules () const { return rules; }
 
   bool is_builtin () const { return is_builtin_rule; }
-  const std::function<Fragment (location_t, MacroInvocData &)> &
-  get_builtin_transcriber () const
+  const MacroTranscriberFunc &get_builtin_transcriber () const
   {
     rust_assert (is_builtin ());
     return associated_transcriber;
   }
-  void set_builtin_transcriber (
-    std::function<Fragment (location_t, MacroInvocData &)> transcriber)
+  void set_builtin_transcriber (MacroTranscriberFunc transcriber)
   {
     associated_transcriber = transcriber;
     is_builtin_rule = true;
