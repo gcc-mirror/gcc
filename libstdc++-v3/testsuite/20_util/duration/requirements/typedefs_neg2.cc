@@ -30,7 +30,7 @@ void test01()
   test_type d;			// { dg-error "required from here" }
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 0 }
+// { dg-error "must be a specialization of std::ratio" "" { target *-*-* } 0 }
 // { dg-prune-output "'num' is not a member of 'int'" }
 // { dg-prune-output "'den' is not a member of 'int'" }
 // { dg-prune-output "'int' is not a class, struct, or union type" }
