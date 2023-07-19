@@ -23367,7 +23367,7 @@ type_unification_real (tree tparms,
 	    {
 	      tree arg;
 
-	      if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
+	      if (TREE_CODE (tparm) == PARM_DECL)
 		{
 		  arg = make_node (NONTYPE_ARGUMENT_PACK);
 		  TREE_CONSTANT (arg) = 1;
@@ -30398,7 +30398,7 @@ type_targs_deducible_from (tree tmpl, tree type)
 	if (template_parameter_pack_p (tparm))
 	  {
 	    tree arg;
-	    if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
+	    if (TREE_CODE (tparm) == PARM_DECL)
 	      {
 		arg = make_node (NONTYPE_ARGUMENT_PACK);
 		TREE_CONSTANT (arg) = 1;
