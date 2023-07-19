@@ -1100,7 +1100,7 @@ package body Repinfo is
                      goto Continue;
                   end if;
 
-                  UI_Image (Spos);
+                  UI_Image (Spos, Format => Decimal);
                else
                   --  If the record is not packed, then we know that all fields
                   --  whose position is not specified have starting normalized
@@ -1176,7 +1176,7 @@ package body Repinfo is
                Spos := Spos + 1;
             end if;
 
-            UI_Image (Spos);
+            UI_Image (Spos, Format => Decimal);
             Spaces (Max_Spos_Length - UI_Image_Length);
             Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
 
