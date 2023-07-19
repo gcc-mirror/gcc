@@ -1,3 +1,10 @@
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): Add vl parameter.
+	(change_vsetvl_insn): Ditto.
+	(change_insn): Add validate change as well as assert.
+	(pass_vsetvl::backward_demand_fusion): Allow forward.
+
 2023-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/110669

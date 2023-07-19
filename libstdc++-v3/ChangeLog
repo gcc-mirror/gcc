@@ -1,3 +1,99 @@
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110542
+	* include/bits/stl_uninitialized.h (__uninitialized_default_n):
+	Do not use std::fill_n during constant evaluation.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (projected): Replace class
+	template with alias template denoting an ADL-proofed helper.
+	(incremental_traits<projected<Iter, Proj>>): Remove.
+	* testsuite/24_iterators/indirect_callable/projected-adl.cc:
+	New test.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110574
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check for fseeko and ftello
+	and define _GLIBCXX_USE_FSEEKO_FTELLO.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* config/io/basic_file_stdio.cc (xwrite) [_GLIBCXX_USE_STDIO_PURE]:
+	Check for fwrite error correctly.
+	(__basic_file<char>::xsgetn) [_GLIBCXX_USE_STDIO_PURE]: Check for
+	fread error correctly.
+	(get_file_offset): New function.
+	(__basic_file<char>::seekoff) [_GLIBCXX_USE_STDIO_PURE]: Use
+	fseeko if available. Use get_file_offset instead of return value
+	of fseek.
+	(__basic_file<char>::showmanyc): Use get_file_offset.
+
+2023-07-18  Tianqiang Shuai  <1101282468@qq.com>
+
+	Backported from master:
+	2023-07-06  Tianqiang Shuai  <1101282468@qq.com>
+
+	* config/io/basic_file_stdio.cc (xwrite) [USE_STDIO_PURE]: Fix
+	first argument.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/debug/iterator1_neg.cc:
+	Skip as UNSUPPORTED for C++98 mode.
+	* testsuite/23_containers/forward_list/debug/iterator3_neg.cc:
+	Likewise.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Make wsyncbuf and
+	wosyncstream depend on _GLIBCXX_USE_CXX11_ABI.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (USE_ATOMIC_SHARED_PTR): Define consistently
+	with USE_ATOMIC_LIST_HEAD.
+	(list_mutex): Replace global object with function. Use local
+	static object when std::mutex constructor isn't constexpr.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (_Destroy): Qualify call.
+	* include/bits/stl_construct.h (_Destroy, _Destroy_n): Likewise.
+	* testsuite/23_containers/vector/cons/destroy-adl.cc: New test.
+
+2023-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/helper_functions.h (__get_distance)
+	(__check_singular, __valid_range_aux, __valid_range): Qualify
+	calls to disable ADL.
+	(__check_singular_aux(const _Safe_iterator_base*)): Declare
+	overload that was previously found via ADL.
+
 2023-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
