@@ -865,7 +865,7 @@
         (const_string "none")))
 
 ;; Defines rounding mode of an floating-point operation.
-(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,dyn_exit,none"
+(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,dyn_exit,dyn_call,none"
   (cond [(eq_attr "type" "vfalu")
          (cond
 	   [(match_test "INTVAL (operands[9]) == riscv_vector::FRM_RNE")
@@ -992,7 +992,7 @@
 ;; The volatile fsrmsi restore is used for the exit point for the
 ;; dynamic mode switching. It will generate one volatile fsrm a5
 ;; which won't be eliminated.
-(define_insn "fsrmsi_restore_exit"
+(define_insn "fsrmsi_restore_volatile"
   [(set (reg:SI FRM_REGNUM)
 	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
 			    UNSPECV_FRM_RESTORE_EXIT))]

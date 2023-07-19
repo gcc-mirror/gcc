@@ -12,17 +12,16 @@ normalize_vl (size_t vl)
   return ((vl / 4) + 1) * 4;
 }
 
-void
-test_float_point_frm_static (float *out, vfloat32m1_t op1, vfloat32m1_t op2,
-			     size_t vl)
+vfloat32m1_t
+test_float_point_dynamic_frm (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
 {
-  vfloat32m1_t result = __riscv_vfadd_vv_f32m1_rm (op1, op2, 2, vl);
+  vfloat32m1_t result = op1;
 
+  result = __riscv_vfadd_vv_f32m1_rm (result, op2, 4, vl);
   vl = normalize_vl (vl);
+  result = __riscv_vfadd_vv_f32m1_rm (op1, result, 2, vl);
 
-  result = __riscv_vfadd_vv_f32m1_rm (op1, result, 3, vl);
-
-  *(vfloat32m1_t *)out = result;
+  return result;
 }
 
 /* { dg-final { scan-assembler-times {vfadd\.v[vf]\s+v[0-9]+,\s*v[0-9]+,\s*[fav]+[0-9]+} 2 } } */

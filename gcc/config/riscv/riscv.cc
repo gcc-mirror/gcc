@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-expr.h"
 #include "tree-vectorizer.h"
+#include "gcse.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -89,6 +90,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* True if bit BIT is set in VALUE.  */
 #define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
+
+/* Extract the backup dynamic frm rtl.  */
+#define DYNAMIC_FRM_RTL(c) ((c)->machine->mode_sw_info.dynamic_frm)
+
+/* True the mode switching has static frm, or false.  */
+#define STATIC_FRM_P(c) ((c)->machine->mode_sw_info.static_frm_p)
 
 /* Information about a function's frame layout.  */
 struct GTY(())  riscv_frame_info {
@@ -125,6 +132,22 @@ enum riscv_privilege_levels {
   UNKNOWN_MODE, USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
 };
 
+struct GTY(()) mode_switching_info {
+  /* The RTL variable which stores the dynamic FRM value.  We always use this
+     RTX to restore dynamic FRM rounding mode in mode switching.  */
+  rtx dynamic_frm;
+
+  /* The boolean variables indicates there is at least one static rounding
+     mode instruction in the function or not.  */
+  bool static_frm_p;
+
+  mode_switching_info ()
+    {
+      dynamic_frm = NULL_RTX;
+      static_frm_p = false;
+    }
+};
+
 struct GTY(())  machine_function {
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the frame.  */
@@ -148,9 +171,8 @@ struct GTY(())  machine_function {
      not be considered by the prologue and epilogue.  */
   bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
 
-  /* The RTL variable which stores the dynamic FRM value.  We always use this
-     RTX to restore dynamic FRM rounding mode in mode switching.  */
-  rtx dynamic_frm;
+  /* The mode swithching information for the FRM rounding modes.  */
+  struct mode_switching_info mode_sw_info;
 };
 
 /* Information about a single argument.  */
@@ -7753,9 +7775,13 @@ riscv_static_frm_mode_p (int mode)
 static void
 riscv_emit_frm_mode_set (int mode, int prev_mode)
 {
+  rtx backup_reg = DYNAMIC_FRM_RTL (cfun);
+
+  if (prev_mode == FRM_MODE_DYN_CALL)
+    emit_insn (gen_frrmsi (backup_reg)); /* Backup frm when DYN_CALL.  */
+
   if (mode != prev_mode)
     {
-      rtx backup_reg = cfun->machine->dynamic_frm;
       /* TODO: By design, FRM_MODE_xxx used by mode switch which is
 	 different from the FRM value like FRM_RTZ defined in
 	 riscv-protos.h.  When mode switching we actually need a conversion
@@ -7765,10 +7791,14 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
 	 and then we leverage this assumption when emit.  */
       rtx frm = gen_int_mode (mode, SImode);
 
-      if (mode == FRM_MODE_DYN_EXIT && prev_mode != FRM_MODE_DYN)
+      if (mode == FRM_MODE_DYN_CALL && prev_mode != FRM_MODE_DYN)
 	/* No need to emit when prev mode is DYN already.  */
-	emit_insn (gen_fsrmsi_restore_exit (backup_reg));
-      else if (mode == FRM_MODE_DYN)
+	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
+      else if (mode == FRM_MODE_DYN_EXIT && STATIC_FRM_P (cfun)
+	&& prev_mode != FRM_MODE_DYN && prev_mode != FRM_MODE_DYN_CALL)
+	/* No need to emit when prev mode is DYN or DYN_CALL already.  */
+	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
+      else if (mode == FRM_MODE_DYN && prev_mode != FRM_MODE_DYN_CALL)
 	/* Restore frm value from backup when switch to DYN mode.  */
 	emit_insn (gen_fsrmsi_restore (backup_reg));
       else if (riscv_static_frm_mode_p (mode))
@@ -7797,6 +7827,88 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
     }
 }
 
+/* Adjust the FRM_MODE_NONE insn after a call to FRM_MODE_DYN for the
+   underlying emit.  */
+
+static int
+riscv_frm_adjust_mode_after_call (rtx_insn *cur_insn, int mode)
+{
+  rtx_insn *insn = prev_nonnote_nondebug_insn_bb (cur_insn);
+
+  if (insn && CALL_P (insn))
+    return FRM_MODE_DYN;
+
+  return mode;
+}
+
+/* Insert the backup frm insn to the end of the bb if and only if the call
+   is the last insn of this bb.  */
+
+static void
+riscv_frm_emit_after_bb_end (rtx_insn *cur_insn)
+{
+  edge eg;
+  edge_iterator eg_iterator;
+  basic_block bb = BLOCK_FOR_INSN (cur_insn);
+
+  FOR_EACH_EDGE (eg, eg_iterator, bb->succs)
+    {
+      start_sequence ();
+      emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
+      rtx_insn *backup_insn = get_insns ();
+      end_sequence ();
+
+      if (eg->flags & EDGE_ABNORMAL)
+	insert_insn_end_basic_block (backup_insn, bb);
+      else
+	insert_insn_on_edge (backup_insn, eg);
+    }
+
+  commit_edge_insertions ();
+}
+
+/* Return mode that frm must be switched into
+   prior to the execution of insn.  */
+
+static int
+riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
+{
+  if (!DYNAMIC_FRM_RTL(cfun))
+    {
+      /* The dynamic frm will be initialized only onece during cfun.  */
+      DYNAMIC_FRM_RTL (cfun) = gen_reg_rtx (SImode);
+      emit_insn_at_entry (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
+    }
+
+  if (CALL_P (cur_insn))
+    {
+      rtx_insn *insn = next_nonnote_nondebug_insn_bb (cur_insn);
+
+      if (!insn)
+	riscv_frm_emit_after_bb_end (cur_insn);
+
+      return FRM_MODE_DYN_CALL;
+    }
+
+  int mode = code >= 0 ? get_attr_frm_mode (cur_insn) : FRM_MODE_NONE;
+
+  if (mode == FRM_MODE_NONE)
+      /* After meet a call, we need to backup the frm because it may be
+	 updated during the call. Here, for each insn, we will check if
+	 the previous insn is a call or not. When previous insn is call,
+	 there will be 2 cases for the emit mode set.
+
+	 1. Current insn is not MODE_NONE, then the mode switch framework
+	    will do the mode switch from MODE_CALL to MODE_NONE natively.
+	 2. Current insn is MODE_NONE, we need to adjust the MODE_NONE to
+	    the MODE_DYN, and leave the mode switch itself to perform
+	    the emit mode set.
+       */
+    mode = riscv_frm_adjust_mode_after_call (cur_insn, mode);
+
+  return mode;
+}
+
 /* Return mode that entity must be switched into
    prior to the execution of insn.  */
 
@@ -7810,7 +7922,7 @@ riscv_mode_needed (int entity, rtx_insn *insn)
     case RISCV_VXRM:
       return code >= 0 ? get_attr_vxrm_mode (insn) : VXRM_MODE_NONE;
     case RISCV_FRM:
-      return code >= 0 ? get_attr_frm_mode (insn) : FRM_MODE_NONE;
+      return riscv_frm_mode_needed (insn, code);
     default:
       gcc_unreachable ();
     }
@@ -7857,11 +7969,6 @@ frm_unknown_dynamic_p (rtx_insn *insn)
   if (reg_set_p (gen_rtx_REG (SImode, FRM_REGNUM), insn))
     return true;
 
-  /* A CALL function may contain an instruction that modifies the FRM,
-     return true in this situation.  */
-  if (CALL_P (insn))
-    return true;
-
   return false;
 }
 
@@ -7887,6 +7994,11 @@ riscv_vxrm_mode_after (rtx_insn *insn, int mode)
 static int
 riscv_frm_mode_after (rtx_insn *insn, int mode)
 {
+  STATIC_FRM_P (cfun) = STATIC_FRM_P (cfun) || riscv_static_frm_mode_p (mode);
+
+  if (CALL_P (insn))
+    return mode;
+
   if (frm_unknown_dynamic_p (insn))
     return FRM_MODE_DYN;
 
@@ -7927,12 +8039,6 @@ riscv_mode_entry (int entity)
       return VXRM_MODE_NONE;
     case RISCV_FRM:
       {
-	if (!cfun->machine->dynamic_frm)
-	  {
-	    cfun->machine->dynamic_frm = gen_reg_rtx (SImode);
-	    emit_insn_at_entry (gen_frrmsi (cfun->machine->dynamic_frm));
-	  }
-
 	  /* According to RVV 1.0 spec, all vector floating-point operations use
 	     the dynamic rounding mode in the frm register.  Likewise in other
 	     similar places.  */

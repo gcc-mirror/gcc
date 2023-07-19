@@ -7,6 +7,20 @@
 
 #include "float-point-frm-run.h"
 
+#define ORIGINAL_FRM 1
+
+vfloat32m1_t __attribute__ ((noinline))
+other_function (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
+{
+  vfloat32m1_t result = op2;
+
+  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
+
+  assert_equal (ORIGINAL_FRM, get_frm (), "The value of frm should be equal");
+
+  return result;
+}
+
 vfloat32m1_t __attribute__ ((noinline))
 test_float_point_frm_run (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
 {
@@ -16,10 +30,7 @@ test_float_point_frm_run (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
 
   assert_equal (4, get_frm (), "The value of frm should be equal");
 
-  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
-  result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
-
-  return result;
+  return other_function (result, op2, vl);
 }
 
 int
@@ -29,10 +40,8 @@ main ()
   vfloat32m1_t op1 = {};
   vfloat32m1_t op2 = {};
 
-  set_frm (0);
+  set_frm (ORIGINAL_FRM);
   test_float_point_frm_run (op1, op2, vl);
-
-  assert_equal (0, get_frm (), "The value of frm should be equal");
 
   return 0;
 }
