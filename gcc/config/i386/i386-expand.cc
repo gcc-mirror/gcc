@@ -15476,8 +15476,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	    {
 	      tmp1 = force_reg (GET_MODE_INNER (mode), val);
 	      tmp2 = gen_reg_rtx (mode);
-	      emit_insn (maybe_gen_vec_set_0 (mode, tmp2,
-					      CONST0_RTX (mode), tmp1));
+	      emit_insn (gen_vec_set_0 (mode, tmp2, CONST0_RTX (mode), tmp1));
 	      tmp1 = gen_lowpart (mode, tmp2);
 	    }
 	  else
@@ -17439,9 +17438,9 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 		 ? gen_reg_rtx (V16HFmode)
 		 : gen_reg_rtx (V16BFmode));
 	  if (elt < 16)
-	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 15);
 	  return;
 	}
@@ -17455,9 +17454,9 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 		 ? gen_reg_rtx (V8HFmode)
 		 : gen_reg_rtx (V8BFmode));
 	  if (elt < 8)
-	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
+	    emit_insn (gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 7);
 	  return;
 	}
@@ -22521,18 +22520,18 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       if (d->testing_p)
 	return true;
 
-      rtx (*maybe_gen) (machine_mode, int, rtx, rtx, rtx);
+      rtx (*gen_interleave) (machine_mode, int, rtx, rtx, rtx);
       if (elt >= nelt2)
 	{
-	  maybe_gen = maybe_gen_vec_interleave_high;
+	  gen_interleave = gen_vec_interleave_high;
 	  elt -= nelt2;
 	}
       else
-	maybe_gen = maybe_gen_vec_interleave_low;
+	gen_interleave = gen_vec_interleave_low;
       nelt2 /= 2;
 
       dest = gen_reg_rtx (vmode);
-      emit_insn (maybe_gen (vmode, 1, dest, op0, op0));
+      emit_insn (gen_interleave (vmode, 1, dest, op0, op0));
 
       vmode = V4SImode;
       op0 = gen_lowpart (vmode, dest);
