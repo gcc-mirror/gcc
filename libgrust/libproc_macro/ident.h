@@ -27,23 +27,20 @@
 #include <string>
 
 #include "span.h"
+#include "ffistring.h"
 
 namespace ProcMacro {
 
 struct Ident
 {
   bool is_raw;
-  // TODO: Adapt this to UTF-8
-  unsigned char *val;
-  // Length in bytes
-  std::uint64_t len;
+  FFIString value;
   Span span;
 
 public:
   Ident clone () const;
   static Ident make_ident (std::string str, Span span, bool raw = false);
-  static Ident make_ident (const unsigned char *str, std::uint64_t len,
-			   Span span, bool raw = false);
+  static Ident make_ident (FFIString str, Span span, bool raw = false);
 
   static void drop (Ident *ident);
 };
@@ -51,10 +48,10 @@ public:
 extern "C" {
 
 Ident
-Ident__new (unsigned char *str, std::uint64_t len, Span span);
+Ident__new (FFIString str, Span span);
 
 Ident
-Ident__new_raw (unsigned char *str, std::uint64_t len, Span span);
+Ident__new_raw (FFIString str, Span span);
 
 void
 Ident__drop (Ident *ident);

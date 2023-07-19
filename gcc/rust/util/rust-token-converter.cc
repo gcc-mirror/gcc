@@ -269,7 +269,7 @@ from_tokenstream (const ProcMacro::TokenStream &ts,
 static void
 from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
 {
-  std::string value (reinterpret_cast<const char *> (ident.val), ident.len);
+  std::string value (ident.value.to_string ());
   if (ident.is_raw)
     value = "r#" + value;
 

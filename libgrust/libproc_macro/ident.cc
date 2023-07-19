@@ -28,15 +28,15 @@ namespace ProcMacro {
 extern "C" {
 
 Ident
-Ident__new (unsigned char *str, std::uint64_t len, Span span)
+Ident__new (FFIString str, Span span)
 {
-  return Ident::make_ident (str, len, span);
+  return Ident::make_ident (str, span);
 }
 
 Ident
-Ident__new_raw (unsigned char *str, std::uint64_t len, Span span)
+Ident__new_raw (FFIString str, Span span)
 {
-  return Ident::make_ident (str, len, span, true);
+  return Ident::make_ident (str, span, true);
 }
 
 void
@@ -55,35 +55,25 @@ Ident__clone (const Ident *ident)
 Ident
 Ident::clone () const
 {
-  unsigned char *val = new unsigned char[this->len];
-  // FIXME: UTF-8 Update this with sizeof codepoint instead
-  std::memcpy (val, this->val, this->len * sizeof (char));
-  return {this->is_raw, val, this->len};
+  return {this->is_raw, value.clone (), this->span};
 }
 
 Ident
 Ident::make_ident (std::string str, Span span, bool raw)
 {
-  return Ident::make_ident (reinterpret_cast<const unsigned char *> (
-			      str.c_str ()),
-			    str.length (), span, raw);
+  return Ident::make_ident (FFIString::make_ffistring (str), span, raw);
 }
 
 Ident
-Ident::make_ident (const unsigned char *str, std::uint64_t len, Span span,
-		   bool raw)
+Ident::make_ident (FFIString str, Span span, bool raw)
 {
-  unsigned char *val = new unsigned char[len];
-  // FIXME: UTF-8 Update this with sizeof codepoint instead
-  std::memcpy (val, str, len * sizeof (char));
-  return {raw, val, len};
+  return {raw, str, span};
 }
 
 void
 Ident::drop (Ident *ident)
 {
-  delete[] ident->val;
-  ident->len = 0;
+  FFIString::drop (&ident->value);
 }
 
 } // namespace ProcMacro
