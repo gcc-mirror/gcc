@@ -2059,15 +2059,18 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
   complain &= ~tf_error;
 
   /* Call reshape_init early to remove redundant braces.  */
-  if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr)
-      && CLASS_TYPE_P (to)
-      && COMPLETE_TYPE_P (complete_type (to))
-      && !CLASSTYPE_NON_AGGREGATE (to))
+  if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr) && CLASS_TYPE_P (to))
     {
-      expr = reshape_init (to, expr, complain);
-      if (expr == error_mark_node)
-	return NULL;
-      from = TREE_TYPE (expr);
+      to = complete_type (to);
+      if (!COMPLETE_TYPE_P (to))
+	return nullptr;
+      if (!CLASSTYPE_NON_AGGREGATE (to))
+	{
+	  expr = reshape_init (to, expr, complain);
+	  if (expr == error_mark_node)
+	    return nullptr;
+	  from = TREE_TYPE (expr);
+	}
     }
 
   if (TYPE_REF_P (to))
