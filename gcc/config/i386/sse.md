@@ -13784,18 +13784,27 @@
    (set_attr "mode" "DF,DF,V1DF,V1DF,V1DF,V2DF,V1DF,V1DF,V1DF")])
 
 (define_insn "vec_dupv2df<mask_name>"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,v")
 	(vec_duplicate:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,xm,vm")))]
-  "TARGET_SSE2 && <mask_avx512vl_condition>"
+	  (match_operand:DF 1 "nonimmediate_operand" "0,xm,vm,vm")))]
+  "TARGET_SSE2"
   "@
    unpcklpd\t%0, %0
    %vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
-   vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "isa" "noavx,sse3,avx512vl")
-   (set_attr "type" "sselog1")
-   (set_attr "prefix" "orig,maybe_vex,evex")
-   (set_attr "mode" "V2DF,DF,DF")])
+   vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
+   vbroadcastsd\t{%1, }%g0<mask_operand2>{|, %1}"
+  [(set_attr "isa" "noavx,sse3,avx512vl,*")
+   (set_attr "type" "sselog1,ssemov,ssemov,ssemov")
+   (set_attr "prefix" "orig,maybe_vex,evex,evex")
+   (set_attr "mode" "V2DF,DF,DF,V8DF")
+   (set (attr "enabled")
+	(cond [(eq_attr "alternative" "3")
+		 (symbol_ref "TARGET_AVX512F && !TARGET_AVX512VL
+			      && !TARGET_PREFER_AVX256")
+	       (match_test "<mask_avx512vl_condition>")
+	         (const_string "*")
+	      ]
+	      (symbol_ref "false")))])
 
 (define_insn "vec_concatv2df"
   [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,x, v,x,x")
