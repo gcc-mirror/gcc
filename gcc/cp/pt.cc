@@ -204,7 +204,7 @@ static bool invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static bool dependent_template_arg_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
-static tree tsubst_decl (tree, tree, tsubst_flags_t);
+static tree tsubst_decl (tree, tree, tsubst_flags_t, bool = true);
 static tree tsubst_scope (tree, tree, tsubst_flags_t, tree);
 static void perform_instantiation_time_access_checks (tree, tree);
 static tree listify (tree);
@@ -14304,7 +14304,7 @@ maybe_rebuild_function_decl_type (tree decl)
 
 static tree
 tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
-		      tree lambda_fntype)
+		      tree lambda_fntype, bool use_spec_table = true)
 {
   tree gen_tmpl = NULL_TREE, argvec = NULL_TREE;
   hashval_t hash = 0;
@@ -14345,22 +14345,27 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 
       /* Calculate the complete set of arguments used to
 	 specialize R.  */
-      argvec = tsubst_template_args (DECL_TI_ARGS
-				     (DECL_TEMPLATE_RESULT
-				      (DECL_TI_TEMPLATE (t))),
-				     args, complain, in_decl);
-      if (argvec == error_mark_node)
-	return error_mark_node;
-
-      /* Check to see if we already have this specialization.  */
-      if (!lambda_fntype)
+      if (use_spec_table)
 	{
-	  hash = spec_hasher::hash (gen_tmpl, argvec);
-	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-	    /* The spec for these args might be a partial instantiation of the
-	       template, but here what we want is the FUNCTION_DECL.  */
-	    return STRIP_TEMPLATE (spec);
+	  argvec = tsubst_template_args (DECL_TI_ARGS
+					 (DECL_TEMPLATE_RESULT
+					  (DECL_TI_TEMPLATE (t))),
+					 args, complain, in_decl);
+	  if (argvec == error_mark_node)
+	    return error_mark_node;
+
+	  /* Check to see if we already have this specialization.  */
+	  if (!lambda_fntype)
+	    {
+	      hash = spec_hasher::hash (gen_tmpl, argvec);
+	      if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
+		/* The spec for these args might be a partial instantiation of the
+		   template, but here what we want is the FUNCTION_DECL.  */
+		return STRIP_TEMPLATE (spec);
+	    }
 	}
+      else
+	argvec = args;
     }
   else
     {
@@ -14527,12 +14532,15 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	= build_template_info (gen_tmpl, argvec);
       SET_DECL_IMPLICIT_INSTANTIATION (r);
 
-      tree new_r
-	= register_specialization (r, gen_tmpl, argvec, false, hash);
-      if (new_r != r)
-	/* We instantiated this while substituting into
-	   the type earlier (template/friend54.C).  */
-	return new_r;
+      if (use_spec_table)
+	{
+	  tree new_r
+	    = register_specialization (r, gen_tmpl, argvec, false, hash);
+	  if (new_r != r)
+	    /* We instantiated this while substituting into
+	       the type earlier (template/friend54.C).  */
+	    return new_r;
+	}
 
       /* We're not supposed to instantiate default arguments
 	 until they are called, for a template.  But, for a
@@ -14855,16 +14863,23 @@ enclosing_instantiation_of (tree tctx)
 
 /* Substitute the ARGS into the T, which is a _DECL.  Return the
    result of the substitution.  Issue error and warning messages under
-   control of COMPLAIN.  */
+   control of COMPLAIN.  The flag USE_SPEC_TABLE controls if we look up
+   and insert into the specializations table or if we can assume it's
+   the caller's responsibility; this is used by instantiate_template
+   to avoid doing some redundant work.  */
 
 static tree
-tsubst_decl (tree t, tree args, tsubst_flags_t complain)
+tsubst_decl (tree t, tree args, tsubst_flags_t complain,
+	     bool use_spec_table /* = true */)
 {
 #define RETURN(EXP) do { r = (EXP); goto out; } while(0)
   location_t saved_loc;
   tree r = NULL_TREE;
   tree in_decl = t;
   hashval_t hash = 0;
+
+  if (t == error_mark_node)
+    return error_mark_node;
 
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_loc = input_location;
@@ -14879,7 +14894,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       break;
 
     case FUNCTION_DECL:
-      r = tsubst_function_decl (t, args, complain, /*lambda*/NULL_TREE);
+      r = tsubst_function_decl (t, args, complain, /*lambda*/NULL_TREE,
+				use_spec_table);
       break;
 
     case PARM_DECL:
@@ -15228,21 +15244,17 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (!spec)
 	      {
 		tmpl = DECL_TI_TEMPLATE (t);
-		gen_tmpl = most_general_template (tmpl);
-		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
-		if (argvec != error_mark_node
-		    && PRIMARY_TEMPLATE_P (gen_tmpl)
-		    && TMPL_ARGS_DEPTH (args) >= TMPL_ARGS_DEPTH (argvec))
-		  /* We're fully specializing a template declaration, so
-		     we need to coerce the innermost arguments corresponding to
-		     the template.  */
-		  argvec = (coerce_template_parms
-			    (DECL_TEMPLATE_PARMS (gen_tmpl),
-			     argvec, tmpl, complain));
-		if (argvec == error_mark_node)
-		  RETURN (error_mark_node);
-		hash = spec_hasher::hash (gen_tmpl, argvec);
-		spec = retrieve_specialization (gen_tmpl, argvec, hash);
+		if (use_spec_table)
+		  {
+		    argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
+		    if (argvec == error_mark_node)
+		      RETURN (error_mark_node);
+		    gen_tmpl = most_general_template (tmpl);
+		    hash = spec_hasher::hash (gen_tmpl, argvec);
+		    spec = retrieve_specialization (gen_tmpl, argvec, hash);
+		  }
+		else
+		  argvec = args;
 	      }
 	  }
 	else
@@ -15287,20 +15299,20 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    type = tsubst (type, args, tcomplain, in_decl);
 	    /* Substituting the type might have recursively instantiated this
 	       same alias (c++/86171).  */
-	    if (gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
+	    if (use_spec_table && gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
 		&& (spec = retrieve_specialization (gen_tmpl, argvec, hash)))
 	      {
 		r = spec;
 		break;
 	      }
 	  }
+	if (type == error_mark_node && !(complain & tf_error))
+	  RETURN (error_mark_node);
 	r = copy_decl (t);
 	if (VAR_P (r))
 	  {
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
-	    if (type == error_mark_node)
-	      RETURN (error_mark_node);
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
 		/* It may seem that this case cannot occur, since:
@@ -15404,7 +15416,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
-	    if (!error_operand_p (r) || (complain & tf_error))
+	    if (use_spec_table)
 	      register_specialization (r, gen_tmpl, argvec, false, hash);
 	  }
 	else
@@ -21991,7 +22003,6 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
   tree targ_ptr = orig_args;
   tree fndecl;
   tree gen_tmpl;
-  tree spec;
   bool access_ok = true;
 
   if (tmpl == error_mark_node)
@@ -22038,9 +22049,8 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 		(DECL_TI_ARGS (DECL_TEMPLATE_RESULT (tmpl)),
 		 targ_ptr));
 
-  /* It would be nice to avoid hashing here and then again in tsubst_decl,
-     but it doesn't seem to be on the hot path.  */
-  spec = retrieve_specialization (gen_tmpl, targ_ptr, 0);
+  hashval_t hash = spec_hasher::hash (gen_tmpl, targ_ptr);
+  tree spec = retrieve_specialization (gen_tmpl, targ_ptr, hash);
 
   gcc_checking_assert (tmpl == gen_tmpl
 		       || ((fndecl
@@ -22108,13 +22118,14 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	  tree partial_tmpl = TI_TEMPLATE (partial_ti);
 	  tree partial_args = TI_ARGS (partial_ti);
 	  tree partial_pat = DECL_TEMPLATE_RESULT (partial_tmpl);
-	  fndecl = tsubst (partial_pat, partial_args, complain, gen_tmpl);
+	  fndecl = tsubst_decl (partial_pat, partial_args, complain,
+				/*use_spec_table=*/false);
 	}
     }
 
   /* Substitute template parameters to obtain the specialization.  */
   if (fndecl == NULL_TREE)
-    fndecl = tsubst (pattern, targ_ptr, complain, gen_tmpl);
+    fndecl = tsubst_decl (pattern, targ_ptr, complain, /*use_spec_table=*/false);
   if (DECL_CLASS_SCOPE_P (gen_tmpl))
     pop_nested_class ();
   pop_from_top_level ();
@@ -22133,6 +22144,10 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
     /* Now that we we've formed this variable template specialization,
        remember the result of most_specialized_partial_spec for it.  */
     TI_PARTIAL_INFO (DECL_TEMPLATE_INFO (fndecl)) = partial_ti;
+
+  fndecl = register_specialization (fndecl, gen_tmpl, targ_ptr, false, hash);
+  if (fndecl == error_mark_node)
+    return error_mark_node;
 
   set_instantiating_module (fndecl);
 
