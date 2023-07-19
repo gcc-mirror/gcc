@@ -5573,11 +5573,14 @@ bool
 gfc_is_alloc_class_scalar_function (gfc_expr *expr)
 {
   if (expr->expr_type == EXPR_FUNCTION
-      && expr->value.function.esym
-      && expr->value.function.esym->result
-      && expr->value.function.esym->result->ts.type == BT_CLASS
-      && !CLASS_DATA (expr->value.function.esym->result)->attr.dimension
-      && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+      && ((expr->value.function.esym
+	   && expr->value.function.esym->result
+	   && expr->value.function.esym->result->ts.type == BT_CLASS
+	   && !CLASS_DATA (expr->value.function.esym->result)->attr.dimension
+	   && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+	  || (expr->ts.type == BT_CLASS
+	      && CLASS_DATA (expr)->attr.allocatable
+	      && !CLASS_DATA (expr)->attr.dimension)))
     return true;
 
   return false;

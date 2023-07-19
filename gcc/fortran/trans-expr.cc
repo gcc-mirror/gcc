@@ -8301,7 +8301,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 
 	  /* Finalize the result, if necessary.  */
-	  attr = CLASS_DATA (expr->value.function.esym->result)->attr;
+	  attr = expr->value.function.esym
+		 ? CLASS_DATA (expr->value.function.esym->result)->attr
+		 : CLASS_DATA (expr)->attr;
 	  if (!((gfc_is_class_array_function (expr)
 		 || gfc_is_alloc_class_scalar_function (expr))
 		&& attr.pointer))
@@ -10085,27 +10087,26 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
   if (re->expr_type != EXPR_VARIABLE && re->expr_type != EXPR_NULL
       && rse->expr != NULL_TREE)
     {
-      if (re->ts.type == BT_CLASS && !GFC_CLASS_TYPE_P (TREE_TYPE (rse->expr)))
-	class_expr = gfc_get_class_from_expr (rse->expr);
+      if (!DECL_P (rse->expr))
+	{
+	  if (re->ts.type == BT_CLASS && !GFC_CLASS_TYPE_P (TREE_TYPE (rse->expr)))
+	    class_expr = gfc_get_class_from_expr (rse->expr);
 
-      if (rse->loop)
-	pre = &rse->loop->pre;
+	  if (rse->loop)
+	    pre = &rse->loop->pre;
+	  else
+	    pre = &rse->pre;
+
+	  if (class_expr != NULL_TREE && UNLIMITED_POLY (re))
+	      tmp = gfc_evaluate_now (TREE_OPERAND (rse->expr, 0), &rse->pre);
+	  else
+	      tmp = gfc_evaluate_now (rse->expr, &rse->pre);
+
+	  rse->expr = tmp;
+	}
       else
 	pre = &rse->pre;
 
-      if (class_expr != NULL_TREE && UNLIMITED_POLY (re))
-	{
-	  tmp = TREE_OPERAND (rse->expr, 0);
-	  tmp = gfc_create_var (TREE_TYPE (tmp), "rhs");
-	  gfc_add_modify (&rse->pre, tmp, TREE_OPERAND (rse->expr, 0));
-	}
-      else
-	{
-	  tmp = gfc_create_var (TREE_TYPE (rse->expr), "rhs");
-	  gfc_add_modify (&rse->pre, tmp, rse->expr);
-	}
-
-      rse->expr = tmp;
       temp_rhs = true;
     }
 
