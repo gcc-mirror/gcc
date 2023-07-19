@@ -55,6 +55,12 @@ Fragment::create_error ()
   return Fragment (FragmentKind::Error, {}, {});
 }
 
+Fragment
+Fragment::create_empty ()
+{
+  return Fragment (FragmentKind::Complete, {}, {});
+}
+
 Fragment::Fragment (std::vector<AST::SingleASTNode> nodes,
 		    std::vector<std::unique_ptr<AST::Token>> tokens)
   : kind (FragmentKind::Complete), nodes (std::move (nodes)),

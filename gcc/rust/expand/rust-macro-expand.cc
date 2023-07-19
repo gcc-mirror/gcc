@@ -286,7 +286,8 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
 
   if (rules_def->is_builtin ())
     fragment
-      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
+      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data)
+	  .value_or (AST::Fragment::create_empty ());
   else
     fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def,
 				  has_semicolon);
