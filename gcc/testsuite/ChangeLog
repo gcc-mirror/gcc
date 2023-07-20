@@ -1,3 +1,10 @@
+2023-07-19  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2023-07-11  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/vect/pr97428.c: Limit to `vect_double' targets.
+
 2023-07-14  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
