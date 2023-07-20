@@ -21160,24 +21160,10 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case UNSPEC:
       if (XINT (x, 1) == UNSPEC_TP)
 	*total = 0;
-      else if (XINT (x, 1) == UNSPEC_VTERNLOG)
+      else if (XINT(x, 1) == UNSPEC_VTERNLOG)
 	{
 	  *total = cost->sse_op;
 	  return true;
-	}
-      else if (XINT (x, 1) == UNSPEC_PTEST)
-	{
-	  *total = cost->sse_op;
-	  if (XVECLEN (x, 0) == 2
-	      && GET_CODE (XVECEXP (x, 0, 0)) == AND)
-	    {
-	      rtx andop = XVECEXP (x, 0, 0);
-	      *total += rtx_cost (XEXP (andop, 0), GET_MODE (andop),
-				  AND, opno, speed)
-			+ rtx_cost (XEXP (andop, 1), GET_MODE (andop),
-				    AND, opno, speed);
-	      return true;
-	    }
 	}
       return false;
 
