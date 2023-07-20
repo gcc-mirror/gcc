@@ -572,6 +572,9 @@ general_scalar_chain::compute_convert_gain ()
 	      {
 		if (INTVAL (XEXP (src, 1)) >= 32)
 		  igain += ix86_cost->add;
+		/* Gain for extend highpart case.  */
+		else if (GET_CODE (XEXP (src, 0)) == ASHIFT)
+		  igain += ix86_cost->shift_const - ix86_cost->sse_op;
 		else
 		  igain += ix86_cost->shift_const;
 	      }
@@ -951,7 +954,8 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 {
   *op = copy_rtx_if_shared (*op);
 
-  if (GET_CODE (*op) == NOT)
+  if (GET_CODE (*op) == NOT
+      || GET_CODE (*op) == ASHIFT)
     {
       convert_op (&XEXP (*op, 0), insn);
       PUT_MODE (*op, vmode);
@@ -2120,7 +2124,7 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
   switch (GET_CODE (src))
     {
     case ASHIFTRT:
-      if (!TARGET_AVX512VL)
+      if (mode == DImode && !TARGET_AVX512VL)
 	return false;
       /* FALLTHRU */
 
@@ -2131,6 +2135,14 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
       if (!CONST_INT_P (XEXP (src, 1))
 	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, GET_MODE_BITSIZE (mode)-1))
 	return false;
+
+      /* Check for extend highpart case.  */
+      if (mode != DImode
+	  || GET_CODE (src) != ASHIFTRT
+	  || GET_CODE (XEXP (src, 0)) != ASHIFT)
+	break;
+
+      src = XEXP (src, 0);
       break;
 
     case SMAX:
