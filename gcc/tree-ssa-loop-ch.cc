@@ -312,8 +312,8 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	     _3 = _1 & _2    <- combined static and iv statement.  */
 	  tree_code code;
 	  if (gimple_code (last) == GIMPLE_ASSIGN
-	      && ((code = gimple_assign_rhs_code (last)) == TRUTH_AND_EXPR
-		  || code == TRUTH_OR_EXPR || code == TRUTH_XOR_EXPR))
+	      && ((code = gimple_assign_rhs_code (last)) == BIT_AND_EXPR
+		  || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR))
 	    {
 	      tree op1 = gimple_assign_rhs1 (last);
 	      tree op2 = gimple_assign_rhs2 (last);
