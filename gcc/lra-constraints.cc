@@ -1797,6 +1797,16 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
     }
+  auto fp_subreg_can_be_simplified_after_reload_p = [] (machine_mode innermode,
+							poly_uint64 offset,
+							machine_mode mode) {
+    reload_completed = 1;
+    bool res = simplify_subreg_regno (FRAME_POINTER_REGNUM,
+				      innermode,
+				      offset, mode) >= 0;
+    reload_completed = 0;
+    return res;
+  };
   /* Force a reload of the SUBREG_REG if this is a constant or PLUS or
      if there may be a problem accessing OPERAND in the outer
      mode.  */
@@ -1809,6 +1819,12 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	   >= hard_regno_nregs (hard_regno, mode))
        && simplify_subreg_regno (hard_regno, innermode,
 				 SUBREG_BYTE (operand), mode) < 0
+       /* Exclude reloading of frame pointer in subreg if frame pointer can not
+	  be simplified here only because the reload is not finished yet.  */
+       && (hard_regno != FRAME_POINTER_REGNUM
+	   || !fp_subreg_can_be_simplified_after_reload_p (innermode,
+							   SUBREG_BYTE (operand),
+							   mode))
        /* Don't reload subreg for matching reload.  It is actually
 	  valid subreg in LRA.  */
        && ! LRA_SUBREG_P (operand))
