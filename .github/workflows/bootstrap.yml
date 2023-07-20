@@ -1,9 +1,8 @@
 name: GCC Bootstrap Build
 
 on:
-  push:
-    branches: [ master ]
-  merge_group:
+  schedule:
+  - cron: '0 0 * * *'
 
 jobs:
   build:
