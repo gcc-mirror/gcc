@@ -21,7 +21,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-name-resolution-context.h"
-#include "rust-ast-resolve-base.h"
+#include "rust-default-resolver.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -31,10 +31,9 @@ namespace Resolver2_0 {
  * crate, and inserting them into the proper namespaces. These definitions can
  * then be accessed by subsequent resolvers, such as `Early` or `Late`.
  */
-// TODO: Merge Resolver namespaces and use `public ResolverBase`
-class TopLevel : public ::Rust::Resolver::ResolverBase
+class TopLevel : public DefaultResolver
 {
-  using ::Rust::Resolver::ResolverBase::visit;
+  using DefaultResolver::visit;
 
 public:
   TopLevel (NameResolutionContext &resolver);
@@ -42,9 +41,15 @@ public:
   void go (AST::Crate &crate);
 
 private:
-  NameResolutionContext &ctx;
-
-  // FIXME: Documentation
+  /**
+   * Insert a new definition or error out if a definition with the same name was
+   * already present in the same namespace in the same scope.
+   *
+   * @param identifier The identifier of the definition to add.
+   * @param node A reference to the node, so we can get its `NodeId` and
+   * location.
+   * @param ns The namespace in which to add the definition.
+   */
   template <typename T>
   void insert_or_error_out (const Identifier &identifier, const T &node,
 			    Namespace ns);
