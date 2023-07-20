@@ -32,46 +32,59 @@ PrivacyReporter::PrivacyReporter (
     current_module (tl::nullopt)
 {}
 
+// Find a proc_macro, proc_macro_derive or proc_macro_attribute
+// attribute in a vector of attribute
+static tl::optional<std::string>
+find_proc_macro_attribute (const AST::AttrVec &outer_attrs)
+{
+  tl::optional<std::string> result;
+
+  for (auto &a : outer_attrs)
+    {
+      auto &segments = a.get_path ().get_segments ();
+      if (segments.size () != 1)
+	continue;
+      auto name = segments.at (0).get_segment_name ();
+      if (name == "proc_macro" || name == "proc_macro_attribute"
+	  || name == "proc_macro_derive")
+	result = {name};
+    }
+
+  return result;
+}
+
+// Common check on crate items when dealing with 'proc-macro' crate type.
+static void
+proc_macro_privacy_check (std::unique_ptr<HIR::Item> &item)
+{
+  if (item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM)
+    {
+      auto attribute = find_proc_macro_attribute (item->get_outer_attrs ());
+
+      bool pub_item = static_cast<HIR::VisItem *> (item.get ())
+			->get_visibility ()
+			.is_public ();
+
+      if (pub_item && !attribute.has_value ()) // Public non proc-macro
+	rust_error_at (
+	  item->get_locus (),
+	  "%<proc-macro%> crate types currently cannot export any "
+	  "items other than functions tagged with %<#[proc_macro]%>, "
+	  "%<#[proc_macro_derive]%> or %<#[proc_macro_attribute]%>");
+      else if (!pub_item && attribute.has_value ()) // Private proc-macro
+	rust_error_at (item->get_locus (),
+		       "functions tagged with %<#[%s]%> must be %<pub%>",
+		       attribute.value ().c_str ());
+    }
+}
+
 void
 PrivacyReporter::go (HIR::Crate &crate)
 {
   for (auto &item : crate.get_items ())
     {
       if (Session::get_instance ().options.is_proc_macro ())
-	{
-	  if (item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM)
-	    {
-	      auto &outer_attrs = item->get_outer_attrs ();
-	      // Find a proc_macro, proc_macro_derive or proc_macro_attribute
-	      // attribute
-	      tl::optional<std::string> proc_macro_attribute;
-	      for (auto &a : outer_attrs)
-		{
-		  auto &segments = a.get_path ().get_segments ();
-		  if (segments.size () != 1)
-		    break;
-		  auto name = segments.at (0).get_segment_name ();
-		  if (name == "proc_macro" || name == "proc_macro_attribute"
-		      || name == "proc_macro_derive")
-		    proc_macro_attribute = {name};
-		}
-
-	      auto vis_item = static_cast<HIR::VisItem *> (item.get ());
-	      if (vis_item->get_visibility ().is_public ()
-		  && !proc_macro_attribute.has_value ())
-		rust_error_at (
-		  item->get_locus (),
-		  "%<proc-macro%> crate types currently cannot export any "
-		  "items other than functions tagged with %<#[proc_macro]%>, "
-		  "%<#[proc_macro_derive]%> or %<#[proc_macro_attribute]%>");
-	      else if (!vis_item->get_visibility ().is_public ()
-		       && proc_macro_attribute.has_value ())
-		rust_error_at (
-		  item->get_locus (),
-		  "functions tagged with %<#[%s]%> must be %<pub%>",
-		  proc_macro_attribute.value ().c_str ());
-	    }
-	}
+	proc_macro_privacy_check (item);
       item->accept_vis (*this);
     }
 }
