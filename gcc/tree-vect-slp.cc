@@ -5198,7 +5198,9 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
     return result;
 
   if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
-      || SLP_TREE_DEF_TYPE (node) == vect_external_def)
+      || (SLP_TREE_DEF_TYPE (node) == vect_external_def
+	  /* We can't permute vector defs in place.  */
+	  && SLP_TREE_VEC_DEFS (node).is_empty ()))
     {
       /* If the vector is uniform or unchanged, there's nothing to do.  */
       if (to_layout_i == 0 || vect_slp_tree_uniform_p (node))
@@ -5944,7 +5946,8 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
      calculated by the recursive call).  Otherwise it is the number of
      scalar elements in one scalar iteration (DR_GROUP_SIZE) multiplied by
      VF divided by the number of elements in a vector.  */
-  if (!STMT_VINFO_DATA_REF (stmt_info)
+  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+      && !STMT_VINFO_DATA_REF (stmt_info)
       && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       for (unsigned i = 0; i < SLP_TREE_CHILDREN (node).length (); ++i)
