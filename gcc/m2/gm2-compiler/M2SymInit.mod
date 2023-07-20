@@ -60,7 +60,8 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         IsVarient, IsFieldVarient, GetVarient,
                         IsVarArrayRef, GetSymName,
                         IsType, IsPointer,
-                        GetParameterShadowVar, IsParameter, GetLType ;
+                        GetParameterShadowVar, IsParameter, GetLType,
+                        GetParameterHeapVar ;
 
 FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad,
                     IsNewLocalVar, IsReturn, IsKillLocalVar, IsConditional,
@@ -1052,7 +1053,7 @@ PROCEDURE IsExempt (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN (sym # NulSym) AND IsVar (sym) AND
           (IsGlobalVar (sym) OR
-           (IsVarAParam (sym) AND (GetMode (sym) = LeftValue)) OR
+           (* (IsVarAParam (sym) AND (GetMode (sym) = LeftValue)) OR *)
            ContainsVariant (sym) OR
            IsArray (GetSType (sym)) OR IsSet (GetSType (sym)) OR
            IsUnbounded (GetSType (sym)) OR IsVarArrayRef (sym) OR
@@ -1098,23 +1099,27 @@ PROCEDURE CheckXIndr (procSym, lhstok, lhs, type,
                       rhstok, rhs: CARDINAL; warning: BOOLEAN;
                       bblst: List; i: CARDINAL) ;
 VAR
-   lst : List ;
-   vsym: CARDINAL ;
+   lst    : List ;
+   content: CARDINAL ;
 BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, bblst, i) ;
    CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE, warning, bblst, i) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
-   vsym := getContent (getLAlias (lhs), lhs, lhstok) ;
-   IF (vsym # NulSym) AND (vsym # lhs) AND (GetSType (vsym) = type)
+   content := getContent (getLAlias (lhs), lhs, lhstok) ;
+   IF (content # NulSym) AND (content # lhs) AND (GetSType (content) = type)
    THEN
+      IF IsReallyPointer (rhs)
+      THEN
+         SetupLAlias (content, rhs)
+      END ;
       IF IsRecord (type)
       THEN
-         (* Set all fields of vsym as initialized.  *)
-         SetVarInitialized (vsym, FALSE, lhstok)
+         (* Set all fields of content as initialized.  *)
+         SetVarInitialized (content, FALSE, lhstok)
       ELSE
          (* Set only the field assigned in vsym as initialized.  *)
          lst := ComponentCreateFieldList (rhs) ;
-         IF PutVarFieldInitialized (vsym, RightValue, lst)
+         IF PutVarFieldInitialized (content, RightValue, lst)
          THEN
          END ;
          KillList (lst)
@@ -1140,9 +1145,11 @@ BEGIN
       IncludeItemIntoList (ignoreList, lhs)
    ELSE
       CheckDeferredRecordAccess (procSym, rhstok, content, TRUE, warning, lst, i) ;
-      (* SetVarInitialized (lhs, IsVarAParam (rhs))  -- was --  *)
-      (* SetVarInitialized (lhs, FALSE) -- was -- *)
-      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue), lhstok)
+      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue), lhstok) ;
+      IF IsReallyPointer (content)
+      THEN
+         SetupLAlias (lhs, content)
+      END
    END
 END CheckIndrX ;
 
@@ -1527,34 +1534,36 @@ END DumpBBSequence ;
 
 PROCEDURE trashParam (trashQuad: CARDINAL) ;
 VAR
-   op                          : QuadOperator ;
-   op1, op2, op3               : CARDINAL ;
-   op1tok, op2tok, op3tok, qtok: CARDINAL ;
-   overflowChecking            : BOOLEAN ;
-   heapSym, ptr                : CARDINAL ;
+   op                            : QuadOperator ;
+   op1, proc, param, paramValue  : CARDINAL ;
+   op1tok, op2tok, paramtok, qtok: CARDINAL ;
+   overflowChecking              : BOOLEAN ;
+   heapValue, ptrToHeap          : CARDINAL ;
 BEGIN
    IF trashQuad # 0
    THEN
-      GetQuadOtok (trashQuad, qtok, op, op1, op2, op3, overflowChecking,
-                   op1tok, op2tok, op3tok) ;
-      heapSym := GetQuadTrash (trashQuad) ;
+      GetQuadOtok (trashQuad, qtok, op, op1, proc, param, overflowChecking,
+                   op1tok, op2tok, paramtok) ;
+      heapValue := GetQuadTrash (trashQuad) ;
       IF Debugging
       THEN
-         printf1 ("heapSym = %d\n", heapSym)
+         printf1 ("heapValue = %d\n", heapValue)
       END ;
-      IF heapSym # NulSym
+      IF heapValue # NulSym
       THEN
-         SetVarInitialized (op3, FALSE, op3tok) ;
-         ptr := getContent (getLAlias (op3), op3, op3tok) ;
-         IF ptr # NulSym
+         SetVarInitialized (param, FALSE, paramtok) ;
+         paramValue := getLAlias (param) ;
+         ptrToHeap := getContent (paramValue, param, paramtok) ;
+         IF ptrToHeap # NulSym
          THEN
-            IF IsDeallocate (op2)
+            IF IsDeallocate (proc)
             THEN
-               SetupLAlias (ptr, Nil)
+               SetupLAlias (ptrToHeap, Nil) ;
+               SetVarInitialized (ptrToHeap, FALSE, paramtok)
             ELSE
-               SetupIndr (ptr, heapSym)
-            END ;
-            SetVarInitialized (ptr, FALSE, op3tok)
+               SetupIndr (ptrToHeap, heapValue) ;
+               SetVarInitialized (ptrToHeap, TRUE, paramtok)
+            END
          END
       END
    END ;
@@ -1563,18 +1572,33 @@ END trashParam ;
 
 
 (*
-   SetVarLRInitialized -
+   SetVarLRInitialized - this sets up an alias between the parameter
+                         value and the pointer for the case:
+
+                         procedure foo (var shadow: PtrToType) ;
+
+                         which allows shadow to be statically analyzed
+                         once it is re-assigned.
 *)
 
 PROCEDURE SetVarLRInitialized (param: CARDINAL) ;
 VAR
-   sym: CARDINAL ;
+   heap,
+   shadow: CARDINAL ;
 BEGIN
    Assert (IsParameter (param)) ;
-   sym := GetParameterShadowVar (param) ;
-   IF sym # NulSym
+   shadow := GetParameterShadowVar (param) ;
+   IF shadow # NulSym
    THEN
-      IncludeItemIntoList (ignoreList, sym)
+      IncludeItemIntoList (ignoreList, shadow)
+   END ;
+   heap := GetParameterHeapVar (param) ;
+   IF (shadow # NulSym) AND (heap # NulSym)
+   THEN
+      PutVarInitialized (shadow, GetMode (shadow)) ;
+      PutVarInitialized (heap, GetMode (heap)) ;
+      SetupIndr (shadow, heap) ;
+      IncludeItemIntoList (ignoreList, heap)
    END
 END SetVarLRInitialized ;
 
