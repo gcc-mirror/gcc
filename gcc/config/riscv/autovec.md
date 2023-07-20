@@ -1687,3 +1687,42 @@
   riscv_vector::expand_reduction (SMIN, operands, f);
   DONE;
 })
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Left-to-right reductions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfredosum.vs
+;; -------------------------------------------------------------------------
+
+;; Unpredicated in-order FP reductions.
+(define_expand "fold_left_plus_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:VF 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_reduction (PLUS, operands,
+				  operands[1],
+				  riscv_vector::reduction_type::FOLD_LEFT);
+  DONE;
+})
+
+;; Predicated in-order FP reductions.
+(define_expand "mask_len_fold_left_plus_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:<VM> 3 "vector_mask_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  if (rtx_equal_p (operands[4], const0_rtx))
+    emit_move_insn (operands[0], operands[1]);
+  else
+    riscv_vector::expand_reduction (PLUS, operands,
+				    operands[1],
+				    riscv_vector::reduction_type::MASK_LEN_FOLD_LEFT);
+  DONE;
+})

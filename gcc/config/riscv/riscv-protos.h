@@ -199,6 +199,7 @@ enum insn_type
   RVV_GATHER_M_OP = 5,
   RVV_SCATTER_M_OP = 4,
   RVV_REDUCTION_OP = 3,
+  RVV_REDUCTION_TU_OP = RVV_REDUCTION_OP + 2,
 };
 enum vlmul_type
 {
@@ -247,7 +248,7 @@ void emit_vlmax_merge_insn (unsigned, int, rtx *);
 void emit_vlmax_cmp_insn (unsigned, rtx *);
 void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
 void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
-void emit_scalar_move_insn (unsigned, rtx *);
+void emit_scalar_move_insn (unsigned, rtx *, rtx = 0);
 void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
@@ -270,6 +271,13 @@ enum mask_policy
   MASK_AGNOSTIC = 1,
   MASK_ANY = 2,
 };
+
+enum class reduction_type
+{
+  UNORDERED,
+  FOLD_LEFT,
+  MASK_LEN_FOLD_LEFT,
+};
 enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
@@ -282,7 +290,8 @@ bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void expand_cond_len_binop (rtx_code, rtx *);
-void expand_reduction (rtx_code, rtx *, rtx);
+void expand_reduction (rtx_code, rtx *, rtx,
+		       reduction_type = reduction_type::UNORDERED);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx));

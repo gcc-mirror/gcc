@@ -1023,11 +1023,11 @@ emit_nonvlmax_fp_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 /* Emit vmv.s.x instruction.  */
 
 void
-emit_scalar_move_insn (unsigned icode, rtx *ops)
+emit_scalar_move_insn (unsigned icode, rtx *ops, rtx len)
 {
   machine_mode dest_mode = GET_MODE (ops[0]);
   machine_mode mask_mode = get_mask_mode (dest_mode).require ();
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (riscv_vector::RVV_SCALAR_MOV_OP,
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SCALAR_MOV_OP,
 					  /* HAS_DEST_P */ true,
 					  /* FULLY_UNMASKED_P */ false,
 					  /* USE_REAL_MERGE_P */ true,
@@ -1038,7 +1038,7 @@ emit_scalar_move_insn (unsigned icode, rtx *ops)
 
   e.set_policy (TAIL_ANY);
   e.set_policy (MASK_ANY);
-  e.set_vl (CONST1_RTX (Pmode));
+  e.set_vl (len ? len : CONST1_RTX (Pmode));
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
@@ -1193,6 +1193,26 @@ emit_vlmax_fp_reduction_insn (unsigned icode, int op_num, rtx *ops)
 
   e.set_policy (TAIL_ANY);
   e.set_rounding_mode (FRM_DYN);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit reduction instruction.  */
+static void
+emit_nonvlmax_fp_reduction_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (GET_MODE (ops[1])).require ();
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (op_num,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ false, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (vl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
@@ -3341,9 +3361,10 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
 
 /* Expand reduction operations.  */
 void
-expand_reduction (rtx_code code, rtx *ops, rtx init)
+expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
 {
-  machine_mode vmode = GET_MODE (ops[1]);
+  rtx vector = type == reduction_type::UNORDERED ? ops[1] : ops[2];
+  machine_mode vmode = GET_MODE (vector);
   machine_mode m1_mode = get_m1_mode (vmode).require ();
   machine_mode m1_mmode = get_mask_mode (m1_mode).require ();
 
@@ -3351,16 +3372,30 @@ expand_reduction (rtx_code code, rtx *ops, rtx init)
   rtx m1_mask = gen_scalar_move_mask (m1_mmode);
   rtx m1_undef = RVV_VUNDEF (m1_mode);
   rtx scalar_move_ops[] = {m1_tmp, m1_mask, m1_undef, init};
-  emit_scalar_move_insn (code_for_pred_broadcast (m1_mode), scalar_move_ops);
+  rtx len = type == reduction_type::MASK_LEN_FOLD_LEFT ? ops[4] : NULL_RTX;
+  emit_scalar_move_insn (code_for_pred_broadcast (m1_mode), scalar_move_ops,
+			 len);
 
   rtx m1_tmp2 = gen_reg_rtx (m1_mode);
-  rtx reduc_ops[] = {m1_tmp2, ops[1], m1_tmp};
+  rtx reduc_ops[] = {m1_tmp2, vector, m1_tmp};
 
   if (FLOAT_MODE_P (vmode) && code == PLUS)
     {
       insn_code icode
-	= code_for_pred_reduc_plus (UNSPEC_UNORDERED, vmode, m1_mode);
-      emit_vlmax_fp_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
+	= code_for_pred_reduc_plus (type == reduction_type::UNORDERED
+				      ? UNSPEC_UNORDERED
+				      : UNSPEC_ORDERED,
+				    vmode, m1_mode);
+      if (type == reduction_type::MASK_LEN_FOLD_LEFT)
+	{
+	  rtx mask = ops[3];
+	  rtx mask_len_reduc_ops[]
+	    = {m1_tmp2, mask, RVV_VUNDEF (m1_mode), vector, m1_tmp};
+	  emit_nonvlmax_fp_reduction_insn (icode, RVV_REDUCTION_TU_OP,
+					   mask_len_reduc_ops, len);
+	}
+      else
+	emit_vlmax_fp_reduction_insn (icode, RVV_REDUCTION_OP, reduc_ops);
     }
   else
     {
