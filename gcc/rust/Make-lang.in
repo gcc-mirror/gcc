@@ -111,6 +111,7 @@ GRS_OBJS = \
 	rust/rust-ast-lower-stmt.o \
 	rust/rust-rib.o \
 	rust/rust-name-resolution-context.o \
+    rust/rust-toplevel-name-resolver-2.0.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
