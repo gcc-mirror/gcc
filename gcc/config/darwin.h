@@ -270,6 +270,12 @@ extern GTY(()) int darwin_ms_struct;
   "%<y*",								\
   "%<Mach "
 
+#if LD64_HAS_DEMANGLE
+#define DARWIN_LD_DEMANGLE " -demangle "
+#else
+#define DARWIN_LD_DEMANGLE ""
+#endif
+
 #if LD64_HAS_EXPORT_DYNAMIC
 #define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
 #else
@@ -356,6 +362,7 @@ extern GTY(()) int darwin_ms_struct;
 #define LINK_COMMAND_SPEC_A \
    "%{!c:%{!E:%{!S:%{!M:%{!MM:%{!fsyntax-only:%{!fdump=*: \
     %(linker)" \
+    DARWIN_LD_DEMANGLE \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
      %{flto} %{fno-lto} %{flto=*} \

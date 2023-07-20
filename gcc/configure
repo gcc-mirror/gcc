@@ -30478,6 +30478,7 @@ if test x"$ld64_flag" = x"yes"; then
   # Set defaults for possibly untestable items.
   gcc_cv_ld64_export_dynamic=0
   gcc_cv_ld64_platform_version=0
+  gcc_cv_ld64_demangle=0
 
   if test "$build" = "$host"; then
     darwin_try_test=1
@@ -30501,6 +30502,9 @@ $as_echo_n "checking ld64 specified version... " >&6; }
     gcc_cv_ld64_major=`echo "$gcc_cv_ld64_version" | sed -e 's/\..*//'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_major" >&5
 $as_echo "$gcc_cv_ld64_major" >&6; }
+    if test "$gcc_cv_ld64_major" -ge 97; then
+      gcc_cv_ld64_demangle=1
+    fi
     if test "$gcc_cv_ld64_major" -ge 236; then
       gcc_cv_ld64_export_dynamic=1
     fi
@@ -30516,6 +30520,15 @@ $as_echo_n "checking linker version... " >&6; }
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_version" >&5
 $as_echo "$gcc_cv_ld64_version" >&6; }
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -demangle support" >&5
+$as_echo_n "checking linker for -demangle support... " >&6; }
+    gcc_cv_ld64_demangle=1
+    if $gcc_cv_ld -demangle < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_demangle=0
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_demangle" >&5
+$as_echo "$gcc_cv_ld64_demangle" >&6; }
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -export_dynamic support" >&5
 $as_echo_n "checking linker for -export_dynamic support... " >&6; }
@@ -30543,6 +30556,12 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD64_HAS_DEMANGLE $gcc_cv_ld64_demangle
+_ACEOF
+
 
 
 cat >>confdefs.h <<_ACEOF
