@@ -1,3 +1,22 @@
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110535
+	* call.cc (add_conv_candidate): Check constraints.
+
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* pt.cc (lookup_template_class): Extend shortcut for looking up the
+	current class scope to consider outer class scopes too, and use
+	current_nonlambda_class_type instead of current_class_type.  Only
+	call coerce_template_parms when specializing a primary template.
+
 2023-07-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
