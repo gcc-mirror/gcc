@@ -18,7 +18,7 @@ d2ll (double d)
 /* { dg-final { scan-assembler "th.fmv.hw.x" } } */
 /* { dg-final { scan-assembler "fmv.x.w" } } */
 /* { dg-final { scan-assembler "th.fmv.x.hw" } } */
-/* { dg-final { scan-assembler-not "sw" } } */
-/* { dg-final { scan-assembler-not "fld" } } */
-/* { dg-final { scan-assembler-not "fsd" } } */
-/* { dg-final { scan-assembler-not "lw" } } */
+/* { dg-final { scan-assembler-not "\tsw\t" } } */
+/* { dg-final { scan-assembler-not "\tfld\t" } } */
+/* { dg-final { scan-assembler-not "\tfsd\t" } } */
+/* { dg-final { scan-assembler-not "\tlw\t" } } */

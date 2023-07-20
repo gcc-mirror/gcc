@@ -58,7 +58,7 @@
        (match_test "INTVAL (op) + 1 != 0")))
 
 (define_predicate "const_0_operand"
-  (and (match_code "const_int,const_wide_int,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
 (define_predicate "const_1_operand"
