@@ -23,7 +23,9 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-TopLevel::TopLevel (NameResolutionContext &resolver) : ctx (resolver) {}
+TopLevel::TopLevel (NameResolutionContext &resolver)
+  : DefaultResolver (resolver)
+{}
 
 template <typename T>
 void
