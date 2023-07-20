@@ -38,34 +38,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range.h"
 #include "gimple-range.h"
 #include "gimple-range-path.h"
+#include "gimple-pretty-print.h"
 #include "cfganal.h"
 
-/* Duplicates headers of loops if they are small enough, so that the statements
-   in the loop body are always executed when the loop is entered.  This
-   increases effectiveness of code motion optimizations, and reduces the need
-   for loop preconditioning.  */
+/* Return path query insteance for testing ranges of statements
+   in headers of LOOP contained in basic block BB.
+   Use RANGER instance.  */
 
-/* Given a path through edge E, whose last statement is COND, return
-   the range of the solved conditional in R.  */
-
-static void
-edge_range_query (irange &r, class loop *loop, gcond *cond, gimple_ranger &ranger)
+static path_range_query *
+get_range_query (class loop *loop,
+		 basic_block bb,
+		 gimple_ranger &ranger)
 {
   auto_vec<basic_block, 8> path;
-  for (basic_block bb = gimple_bb (cond); bb != loop->header; bb = single_pred_edge (bb)->src)
+  for (; bb != loop->header; bb = single_pred_edge (bb)->src)
     path.safe_push (bb);
   path.safe_push (loop->header);
   path.safe_push (loop_preheader_edge (loop)->src);
-  path_range_query query (ranger, path);
-  if (!query.range_of_stmt (r, cond))
-    r.set_varying (boolean_type_node);
+  return new path_range_query (ranger, path);
 }
 
 /* Return edge that is true in the first iteration of the loop
-   and NULL otherwise.  */
+   and NULL otherwise.
+   Formulate corrent ranger query to RANGER.  */
 
 static edge
-static_loop_exit (class loop *l, basic_block bb, gimple_ranger *ranger)
+static_loop_exit (class loop *l, basic_block bb, gimple_ranger &ranger,
+		  path_range_query *&query)
 {
   gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
   edge ret_e;
@@ -83,19 +82,46 @@ static_loop_exit (class loop *l, basic_block bb, gimple_ranger *ranger)
 
   int_range<1> desired_static_range;
   if (loop_exit_edge_p (l, true_e))
-   {
+    {
       desired_static_range = range_false ();
       ret_e = true_e;
-   }
+    }
   else
-  {
-    desired_static_range = range_true ();
-    ret_e = false_e;
-  }
+   {
+      desired_static_range = range_true ();
+      ret_e = false_e;
+   }
+
+  if (!query)
+    query = get_range_query (l, gimple_bb (last), ranger);
 
   int_range<2> r;
-  edge_range_query (r, l, last, *ranger);
+  if (!query->range_of_stmt (r, last))
+    return NULL;
   return r == desired_static_range ? ret_e : NULL;
+}
+
+/* Return true if STMT is static in LOOP.  This means that its value
+   is constant in the first iteration.
+   Use RANGER and formulate query cached in QUERY.  */
+
+static bool
+loop_static_stmt_p (class loop *loop,
+		    gimple_ranger &ranger,
+		    path_range_query *&query,
+		    gimple *stmt)
+{
+  tree type = gimple_range_type (stmt);
+  if (!type || !Value_Range::supports_type_p (type))
+    return false;
+
+  if (!query)
+    query = get_range_query (loop, gimple_bb (stmt), ranger);
+
+  Value_Range r (gimple_range_type (stmt));
+  if (!query->range_of_stmt (r, stmt))
+    return false;
+  return r.singleton_p ();
 }
 
 /* Return true if OP is invariant.  */
@@ -109,21 +135,37 @@ loop_invariant_op_p (class loop *loop,
   if (SSA_NAME_IS_DEFAULT_DEF (op)
       || !flow_bb_inside_loop_p (loop, gimple_bb (SSA_NAME_DEF_STMT (op))))
     return true;
-  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 2;
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 1;
 }
 
-/* Return true if OP looks like it is derived from IV.  */
+/* Return true if OP combines outcome of static and
+   loop invariant conditional.  */
 
 static bool
-loop_iv_derived_p (class loop *loop,
-		    tree op)
+loop_static_op_p (class loop *loop, tree op)
 {
   /* Always check for invariant first.  */
   gcc_checking_assert (!is_gimple_min_invariant (op)
 		       && !SSA_NAME_IS_DEFAULT_DEF (op)
 		       && flow_bb_inside_loop_p (loop,
 			       gimple_bb (SSA_NAME_DEF_STMT (op))));
-  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 1;
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 2;
+}
+
+
+/* Return true if OP combines outcome of static and
+   loop invariant conditional.  */
+
+static bool
+loop_combined_static_and_iv_p (class loop *loop,
+			       tree op)
+{
+  /* Always check for invariant first.  */
+  gcc_checking_assert (!is_gimple_min_invariant (op)
+		       && !SSA_NAME_IS_DEFAULT_DEF (op)
+		       && flow_bb_inside_loop_p (loop,
+			       gimple_bb (SSA_NAME_DEF_STMT (op))));
+  return gimple_uid (SSA_NAME_DEF_STMT (op)) & 4;
 }
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
@@ -182,25 +224,18 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       return false;
     }
 
+  path_range_query *query = NULL;
   for (gphi_iterator psi = gsi_start_phis (header); !gsi_end_p (psi);
        gsi_next (&psi))
-    /* If this is actual loop header PHIs indicate that the SSA_NAME
-       may be IV.  Otherwise just give up.  */
-    if (header == loop->header)
+    if (!virtual_operand_p (gimple_phi_result (psi.phi ())))
       {
-	gphi *phi = psi.phi ();
-	tree res = gimple_phi_result (phi);
-	if (INTEGRAL_TYPE_P (TREE_TYPE (res))
-	    || POINTER_TYPE_P (TREE_TYPE (res)))
-	  gimple_set_uid (phi, 1 /* IV */);
-	else
-	  gimple_set_uid (phi, 0);
+	bool static_p = loop_static_stmt_p (loop, *ranger,
+					    query, psi.phi ());
+	gimple_set_uid (psi.phi (), static_p ? 2 : 0);
       }
-    else
-      gimple_set_uid (psi.phi (), 0);
 
   /* Count number of instructions and punt on calls.
-     Populate stmts INV/IV flag to later apply heuristics to the
+     Populate stmts INV flag to later apply heuristics to the
      kind of conditions we want to copy.  */
   for (bsi = gsi_start_bb (header); !gsi_end_p (bsi); gsi_next (&bsi))
     {
@@ -215,6 +250,12 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       if (gimple_code (last) == GIMPLE_COND)
 	break;
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  Analyzing: ");
+	  print_gimple_stmt (dump_file, last, 0, TDF_SLIM);
+	}
+
       if (gimple_code (last) == GIMPLE_CALL
 	  && (!gimple_inexpensive_call_p (as_a <gcall *> (last))
 	      /* IFN_LOOP_DIST_ALIAS means that inner loop is distributed
@@ -225,53 +266,149 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	    fprintf (dump_file,
 		     "  Not duplicating bb %i: it contains call.\n",
 		     header->index);
+	  if (query)
+	    delete query;
 	  return false;
 	}
 
-      /* Classify the stmt based on whether its computation is based
-         on a IV or whether it is invariant in the loop.  */
+      /* Classify the stmt is invariant in the loop.  */
       gimple_set_uid (last, 0);
       if (!gimple_vuse (last)
 	  && gimple_code (last) != GIMPLE_ASM
 	  && (gimple_code (last) != GIMPLE_CALL
 	      || gimple_call_flags (last) & ECF_CONST))
 	{
-	  bool inv = true;
-	  bool iv = true;
+	  bool inv = true, static_p = false;
 	  ssa_op_iter i;
 	  tree op;
 	  FOR_EACH_SSA_TREE_OPERAND (op, last, i, SSA_OP_USE)
 	    if (!loop_invariant_op_p (loop, op))
-	      {
-		if (!loop_iv_derived_p (loop, op))
-		  {
-		    inv = false;
-		    iv = false;
-		    break;
-		  }
-		else
-		  inv = false;
-	      }
-	  gimple_set_uid (last, (iv ? 1 : 0) | (inv ? 2 : 0));
+	      inv = false;
+	  /* Assume that code is reasonably optimized and invariant
+	     constants are already identified.  */
+	  if (!inv)
+	    static_p = loop_static_stmt_p (loop, *ranger, query, last);
+	  gimple_set_uid (last, (inv ? 1 : 0) | (static_p ? 2 : 0));
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      if (inv)
+		fprintf (dump_file, "    Stmt is loop invariant\n");
+	      if (static_p)
+		fprintf (dump_file, "    Stmt is static "
+			 "(constant in the first iteration)\n");
+	    }
 	  /* Loop invariants will be optimized out in loop body after
 	     duplication; do not account invariant computation in code
-	     size costs.  */
-	  if (inv)
+	     size costs.
+
+	     Similarly static computations will be optimized out in the
+	     duplicatd header.  */
+	  if (inv || static_p)
 	    continue;
+
+	  /* Match the following:
+	     _1 = i_1 < 10   <- static condtion
+	     _2 = n != 0     <- loop invariant condition
+	     _3 = _1 & _2    <- combined static and iv statement.  */
+	  tree_code code;
+	  if (gimple_code (last) == GIMPLE_ASSIGN
+	      && ((code = gimple_assign_rhs_code (last)) == TRUTH_AND_EXPR
+		  || code == TRUTH_OR_EXPR || code == TRUTH_XOR_EXPR))
+	    {
+	      tree op1 = gimple_assign_rhs1 (last);
+	      tree op2 = gimple_assign_rhs2 (last);
+
+	      if ((loop_invariant_op_p (loop, op1)
+		   || loop_combined_static_and_iv_p (loop, op1)
+		   || loop_static_op_p (loop, op1))
+		  && (loop_invariant_op_p (loop, op2)
+		      || loop_combined_static_and_iv_p (loop, op2)
+		      || loop_static_op_p (loop, op2)))
+		{
+		  /* Duplicating loop header with combned conditional will
+		     remove this statement in each copy.  But we account for
+		     that later when seeing that condition.
+		     
+		     Note that this may be overly optimistic for bit operations
+		     where the static parameter may still result in non-trivial
+		     bit operation.  */
+		  gimple_set_uid (last, 4);
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "    Stmt combines static and invariant op\n");
+		  continue;
+		}
+	    }
 	}
 
-      *limit -= estimate_num_insns (last, &eni_size_weights);
+      int insns = estimate_num_insns (last, &eni_size_weights);
+      *limit -= insns;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "    Acconting stmt as %i insns\n", insns);
       if (*limit < 0)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "  Not duplicating bb %i contains too many insns.\n",
 		     header->index);
+	  if (query)
+	    delete query;
 	  return false;
 	}
     }
 
-  edge static_exit = static_loop_exit (loop, header, ranger);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Analyzing: ");
+      print_gimple_stmt (dump_file, last, 0, TDF_SLIM);
+    }
+
+  /* If the condition tests a non-IV loop variant we do not want to rotate
+     the loop further.  Unless this is the original loop header.  */
+  tree lhs = gimple_cond_lhs (last);
+  tree rhs = gimple_cond_rhs (last);
+  bool lhs_invariant = loop_invariant_op_p (loop, lhs);
+  bool rhs_invariant = loop_invariant_op_p (loop, rhs);
+
+  /* Combined conditional is a result of if combining:
+
+     _1 = i_1 < 10   <- static condtion
+     _2 = n != 0     <- loop invariant condition
+     _3 = _1 & _2    <- combined static and iv statement
+     if (_3 != 0)    <- combined conditional
+
+     Combined conditionals will not be optimized out in either copy.
+     However duplicaed header simplifies to:
+
+     if (n < 10)
+
+     while loop body to
+
+     if (i_1 < 10)
+
+     So effectively the resulting code sequence will be of same length as
+     the original code.
+
+     Combined conditionals are never static or invariant, so save some work
+     below.  */
+  if (lhs_invariant != rhs_invariant
+      && (lhs_invariant
+	  || loop_combined_static_and_iv_p (loop, lhs))
+      && (rhs_invariant
+	  || loop_combined_static_and_iv_p (loop, rhs)))
+   {
+     if (query)
+       delete query;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Conditional combines static and invariant op.\n");
+     return true;
+   }
+
+  edge static_exit = static_loop_exit (loop, header, *ranger, query);
+  if (query)
+    delete query;
 
   if (static_exit && static_exits)
     {
@@ -282,13 +419,6 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		 static_exit->src->index);
       /* Still look for invariant exits; exit may be both.  */
     }
-
-  /* If the condition tests a non-IV loop variant we do not want to rotate
-     the loop further.  Unless this is the original loop header.  */
-  tree lhs = gimple_cond_lhs (last);
-  tree rhs = gimple_cond_rhs (last);
-  bool lhs_invariant = loop_invariant_op_p (loop, lhs);
-  bool rhs_invariant = loop_invariant_op_p (loop, rhs);
   if (lhs_invariant && rhs_invariant)
     {
       if (invariant_exits)
@@ -312,7 +442,11 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
     return true;
 
   /* We was not able to prove that conditional will be eliminated.  */
-  *limit -= estimate_num_insns (last, &eni_size_weights);
+  int insns = estimate_num_insns (last, &eni_size_weights);
+  *limit -= insns;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "    Acconting stmt as %i insns\n", insns);
   if (*limit < 0)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -322,12 +456,6 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       return false;
     }
 
-  /* TODO: This is heuristics that claims that IV based ocnditionals will
-     likely be optimized out in duplicated header.  We could use ranger
-     query instead to tell this more precisely.  */
-  if ((lhs_invariant || loop_iv_derived_p (loop, lhs))
-      && (rhs_invariant || loop_iv_derived_p (loop, rhs)))
-    return true;
   if (header != loop->header)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -550,7 +678,7 @@ public:
 
   /* opt_pass methods: */
   bool gate (function *) final override { return flag_tree_ch != 0; }
-  
+
   /* Initialize and finalize loop structures, copying headers inbetween.  */
   unsigned int execute (function *) final override;
 
@@ -590,7 +718,7 @@ public:
     return flag_tree_ch != 0
 	   && (flag_tree_loop_vectorize != 0 || fun->has_force_vectorize_loops);
   }
-  
+
   /* Just copy headers, no initialization/finalization of loop structures.  */
   unsigned int execute (function *) final override;
 
@@ -973,7 +1101,7 @@ pass_ch::execute (function *fun)
 /* Assume an earlier phase has already initialized all the loop structures that
    we need here (and perhaps others too), and that these will be finalized by
    a later phase.  */
-   
+
 unsigned int
 pass_ch_vect::execute (function *fun)
 {

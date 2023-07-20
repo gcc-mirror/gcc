@@ -15,7 +15,7 @@ int foo(int n, int m)
      _err; 
    }); 
 
-   if (err == 0) return 17;
+   if (err == 0) return 17;	/* { dg-warning "uninitialized" "warning" } */
  }
 
  return 18;
