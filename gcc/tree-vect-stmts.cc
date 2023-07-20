@@ -1605,6 +1605,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
     nvectors = vect_get_num_copies (loop_vinfo, vectype);
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+  vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
   machine_mode vecmode = TYPE_MODE (vectype);
   bool is_load = (vls_type == VLS_LOAD);
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
@@ -1631,33 +1632,29 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       internal_fn ifn = (is_load
 			 ? IFN_MASK_GATHER_LOAD
 			 : IFN_MASK_SCATTER_STORE);
-      if (!internal_gather_scatter_fn_supported_p (ifn, vectype,
-						   gs_info->memory_type,
-						   gs_info->offset_vectype,
-						   gs_info->scale))
+      internal_fn len_ifn = (is_load
+			     ? IFN_LEN_MASK_GATHER_LOAD
+			     : IFN_LEN_MASK_SCATTER_STORE);
+      if (internal_gather_scatter_fn_supported_p (ifn, vectype,
+						  gs_info->memory_type,
+						  gs_info->offset_vectype,
+						  gs_info->scale))
+	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
+			       scalar_mask);
+      else if (internal_gather_scatter_fn_supported_p (len_ifn, vectype,
+						       gs_info->memory_type,
+						       gs_info->offset_vectype,
+						       gs_info->scale))
+	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
+      else
 	{
-	  ifn = (is_load
-		 ? IFN_LEN_MASK_GATHER_LOAD
-		 : IFN_LEN_MASK_SCATTER_STORE);
-	  if (internal_gather_scatter_fn_supported_p (ifn, vectype,
-						      gs_info->memory_type,
-						      gs_info->offset_vectype,
-						      gs_info->scale))
-	    {
-	      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
-	      vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
-	      return;
-	    }
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't operate on partial vectors because"
 			     " the target doesn't have an appropriate"
 			     " gather load or scatter store instruction.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	  return;
 	}
-      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
-			     scalar_mask);
       return;
     }
 
@@ -1703,7 +1700,6 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   if (get_len_load_store_mode (vecmode, is_load).exists (&vmode))
     {
       nvectors = group_memory_nvectors (group_size * vf, nunits);
-      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
       unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
       vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, factor);
       using_partial_vectors_p = true;
