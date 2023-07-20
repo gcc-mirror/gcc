@@ -16,6 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "expected.h"
+#include "rust-ast.h"
+#include "rust-diagnostics.h"
 #include "rust-forever-stack.h"
 #include "rust-rib.h"
 #include "optional.h"
@@ -47,7 +50,6 @@ ForeverStack<N>::Node::insert_child (Link link, Node child)
   // That's kinda the point, isn't it. So this method always succeeds, right?
 }
 
-// FIXME: Add correct implementation
 template <Namespace N>
 void
 ForeverStack<N>::push (Rib rib, NodeId id, tl::optional<Identifier> path)
@@ -97,6 +99,12 @@ ForeverStack<N>::pop ()
   update_cursor (cursor ().parent.value ());
 }
 
+static tl::expected<NodeId, DuplicateNameError>
+insert_inner (Rib &rib, std::string name, NodeId node, bool can_shadow)
+{
+  return rib.insert (name, node, can_shadow);
+}
+
 template <Namespace N>
 tl::expected<NodeId, DuplicateNameError>
 ForeverStack<N>::insert (Identifier name, NodeId node)
@@ -107,7 +115,34 @@ ForeverStack<N>::insert (Identifier name, NodeId node)
   // pass, we might end up in a situation where it is okay to re-add new names.
   // Do we just ignore that here? Do we keep track of if the Rib is new or not?
   // should our cursor have info on the current node like "is it newly pushed"?
-  return innermost_rib.insert (name.as_string (), node);
+  return insert_inner (innermost_rib, name.as_string (), node, false);
+}
+
+template <Namespace N>
+tl::expected<NodeId, DuplicateNameError>
+ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
+{
+  auto &root_rib = root.rib;
+
+  // inserting in the root of the crate is never a shadowing operation, even for
+  // macros
+  return insert_inner (root_rib, name.as_string (), node, false);
+}
+
+// Specialization for Macros and Labels - where we are allowed to shadow
+// existing definitions
+template <>
+inline tl::expected<NodeId, DuplicateNameError>
+ForeverStack<Namespace::Macros>::insert (Identifier name, NodeId node)
+{
+  return insert_inner (peek (), name.as_string (), node, true);
+}
+
+template <>
+inline tl::expected<NodeId, DuplicateNameError>
+ForeverStack<Namespace::Labels>::insert (Identifier name, NodeId node)
+{
+  return insert_inner (peek (), name.as_string (), node, true);
 }
 
 template <Namespace N>
@@ -126,20 +161,28 @@ ForeverStack<N>::peek () const
 
 template <Namespace N>
 void
-ForeverStack<N>::reverse_iter (std::function<KeepGoing (Rib &)> lambda)
+ForeverStack<N>::reverse_iter (std::function<KeepGoing (Node &)> lambda)
 {
-  auto &tmp = cursor ();
+  return reverse_iter (cursor (), lambda);
+}
+
+template <Namespace N>
+void
+ForeverStack<N>::reverse_iter (Node &start,
+			       std::function<KeepGoing (Node &)> lambda)
+{
+  auto *tmp = &start;
 
   while (true)
     {
-      auto keep_going = lambda (tmp);
+      auto keep_going = lambda (*tmp);
       if (keep_going == KeepGoing::No)
 	return;
 
-      if (tmp.is_root ())
+      if (tmp->is_root ())
 	return;
 
-      tmp = tmp.parent.value ();
+      tmp = &tmp->parent.value ();
     }
 }
 
@@ -168,16 +211,216 @@ template <Namespace N>
 tl::optional<NodeId>
 ForeverStack<N>::get (const Identifier &name)
 {
-  return {};
+  return tl::nullopt;
 }
 
-// TODO: Are there different fetching behavior for different namespaces?
-// inline template <>
-// tl::optional<NodeId>
-// ForeverStack<Namespace::Values>::get (const Identifier &name)
-// {
-//   return {};
-// }
+template <>
+inline tl::optional<NodeId>
+ForeverStack<Namespace::Macros>::get (const Identifier &name)
+{
+  tl::optional<NodeId> resolved_node = tl::nullopt;
+
+  // TODO: Can we improve the API? have `reverse_iter` return an optional?
+  reverse_iter ([&resolved_node, &name] (Node &current) {
+    auto candidate = current.rib.get (name.as_string ());
+
+    return candidate.map_or (
+      [&resolved_node] (NodeId found) {
+	// macro resolving does not need to care about various ribs - they are
+	// available from all contexts if defined in the current scope, or an
+	// outermore one. so if we do have a candidate, we can return it
+	// directly and stop iterating
+	resolved_node = found;
+
+	return KeepGoing::No;
+      },
+      // if there was no candidate, we keep iterating
+      KeepGoing::Yes);
+  });
+
+  return resolved_node;
+}
+
+/* Check if an iterator points to the last element */
+template <typename I, typename C>
+static bool
+is_last (const I &iterator, const C &collection)
+{
+  return iterator + 1 == collection.end ();
+}
+
+/* Check if an iterator points to the start of the collection */
+template <typename I, typename C>
+static bool
+is_start (const I &iterator, const C &collection)
+{
+  return iterator == collection.begin ();
+}
+
+template <Namespace N>
+typename ForeverStack<N>::Node &
+ForeverStack<N>::find_closest_module (Node &starting_point)
+{
+  auto *closest_module = &starting_point;
+
+  reverse_iter (starting_point, [&closest_module] (Node &current) {
+    if (current.rib.kind == Rib::Kind::Module || current.is_root ())
+      {
+	closest_module = &current;
+	return KeepGoing::No;
+      }
+
+    return KeepGoing::Yes;
+  });
+
+  return *closest_module;
+}
+
+/* If a the given condition is met, emit an error about misused leading path
+ * segments */
+static inline bool
+check_leading_kw_at_start (const AST::SimplePathSegment &segment,
+			   bool condition)
+{
+  if (condition)
+    rust_error_at (
+      segment.get_locus (), ErrorCode::E0433,
+      "leading path segment %qs can only be used at the beginning of a path",
+      segment.as_string ().c_str ());
+
+  return condition;
+}
+
+// we first need to handle the "starting" segments - `super`, `self` or
+// `crate`. we don't need to do anything for `self` and can just skip it. for
+// `crate`, we need to go back to the root of the current stack. for each
+// `super` segment, we go back to the cursor's parent until we reach the
+// correct one or the root.
+template <Namespace N>
+tl::optional<std::vector<AST::SimplePathSegment>::const_iterator>
+ForeverStack<N>::find_starting_point (
+  const std::vector<AST::SimplePathSegment> &segments, Node &starting_point)
+{
+  auto iterator = segments.begin ();
+
+  // If we need to do path segment resolution, then we start
+  // at the closest module. In order to resolve something like `foo::bar!()`, we
+  // need to get back to the surrounding module, and look for a child module
+  // named `foo`.
+  if (segments.size () > 1)
+    starting_point = find_closest_module (starting_point);
+
+  for (; !is_last (iterator, segments); iterator++)
+    {
+      auto seg = *iterator;
+      auto is_self_or_crate = seg.is_crate_path_seg () || seg.is_lower_self ();
+
+      // if we're after the first path segment and meet `self` or `crate`, it's
+      // an error - we should only be seeing `super` keywords at this point
+      if (check_leading_kw_at_start (seg, !is_start (iterator, segments)
+					    && is_self_or_crate))
+	return tl::nullopt;
+
+      if (seg.is_crate_path_seg ())
+	{
+	  starting_point = root;
+	  iterator++;
+	  break;
+	}
+      if (seg.is_lower_self ())
+	{
+	  // do nothing and exit
+	  iterator++;
+	  break;
+	}
+      if (seg.is_super_path_seg ())
+	{
+	  if (starting_point.is_root ())
+	    {
+	      rust_error_at (seg.get_locus (), ErrorCode::E0433,
+			     "too many leading %<super%> keywords");
+	      return tl::nullopt;
+	    }
+
+	  starting_point = find_closest_module (starting_point.parent.value ());
+	  continue;
+	}
+
+      // now we've gone through the allowed `crate`, `self` or leading `super`
+      // segments. we can start resolving each segment itself.
+      // if we do see another leading segment, then we can error out.
+      break;
+    }
+
+  return iterator;
+}
+
+template <Namespace N>
+tl::optional<typename ForeverStack<N>::Node &>
+ForeverStack<N>::resolve_segments (
+  Node &starting_point, const std::vector<AST::SimplePathSegment> &segments,
+  std::vector<AST::SimplePathSegment>::const_iterator iterator)
+{
+  auto *current_node = &starting_point;
+  for (; !is_last (iterator, segments); iterator++)
+    {
+      auto &seg = *iterator;
+      auto str = seg.as_string ();
+      rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
+
+      // check that we don't encounter *any* leading keywords afterwards
+      if (check_leading_kw_at_start (seg, seg.is_crate_path_seg ()
+					    || seg.is_super_path_seg ()
+					    || seg.is_lower_self ()))
+	return tl::nullopt;
+
+      tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
+
+      for (auto &kv : current_node->children)
+	{
+	  auto &link = kv.first;
+
+	  if (link.path.map_or (
+		[&str] (Identifier path) {
+		  auto &path_str = path.as_string ();
+		  return str == path_str;
+		},
+		false))
+	    {
+	      child = kv.second;
+	      break;
+	    }
+	}
+
+      if (!child.has_value ())
+	{
+	  rust_error_at (seg.get_locus (), ErrorCode::E0433,
+			 "failed to resolve path segment %qs", str.c_str ());
+	  return tl::nullopt;
+	}
+
+      current_node = &child.value ();
+    }
+
+  return *current_node;
+}
+
+template <Namespace N>
+tl::optional<NodeId>
+ForeverStack<N>::resolve_path (const AST::SimplePath &path)
+{
+  auto starting_point = cursor ();
+  auto &segments = path.get_segments ();
+
+  return find_starting_point (segments, starting_point)
+    .and_then ([this, &segments, &starting_point] (
+		 std::vector<AST::SimplePathSegment>::const_iterator iterator) {
+      return resolve_segments (starting_point, segments, iterator);
+    })
+    .and_then ([&path] (Node final_node) {
+      return final_node.rib.get (path.get_final_segment ().as_string ());
+    });
+}
 
 template <Namespace N>
 void
