@@ -1,3 +1,11 @@
+2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107424
+	* trans-openmp.cc (gfc_nonrect_loop_expr): Accept all
+	constant loop steps.
+	(gfc_trans_omp_do): Likewise; use sign to determine
+	loop direction.
+
 2023-07-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95947

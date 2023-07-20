@@ -1,3 +1,38 @@
+2023-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110745
+	* error.cc (dump_simple_decl): Print base class name.
+
+2023-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110064
+	* typeck2.cc (process_init_constructor_record): Don't emit
+	-Wmissing-field-initializers for empty classes.
+
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (type_unification_real): Test for PARM_DECL instead
+	of TEMPLATE_PARM_INDEX to distinguish a type vs non-type
+	template parameter pack.
+	(type_targs_deducible_from): Likewise.
+
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst_function_decl): Add defaulted 'use_spec_table'
+	flag parameter.  Don't look up or insert into the specializations
+	table if 'use_spec_table' is false.
+	(tsubst_decl): Add defaulted 'use_spec_table' flag parameter.
+	Check for error_mark_node.
+	<case FUNCTION_DECL>: Pass 'use_spec_table' to
+	tsubst_function_decl.
+	<case TYPE/VAR_DECL>: Don't call coerce_template_parms.
+	Don't look up or insert into the specializations table if
+	'use_spec_table' is false.  Exit earlier if the substituted
+	type is erroneous and we're not complaining, and do so for
+	alias specializations as well.
+	(instantiate_template): Pass false as 'use_spec_table'
+	to tsubst_decl.  Call register_specialization afterwards.
+
 2023-07-18  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (cxx_eval_bit_cast): Check that the result of

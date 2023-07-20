@@ -1,3 +1,24 @@
+2023-07-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/103902
+	* lex.cc (identifier_diagnostics_on_lex): New function refactoring
+	some common code.
+	(lex_identifier_intern): Use the new function.
+	(lex_identifier): Don't run identifier diagnostics here, rather let
+	the call site do it when needed.
+	(_cpp_lex_direct): Adjust the call sites of lex_identifier ()
+	acccordingly.
+	(struct scan_id_result): New struct.
+	(scan_cur_identifier): New function.
+	(create_literal2): New function.
+	(lit_accum::create_literal2): New function.
+	(is_macro): Folded into new function...
+	(maybe_ignore_udl_macro_suffix): ...here.
+	(is_macro_not_literal_suffix): Folded likewise.
+	(lex_raw_string): Handle UTF-8 in UDL suffix via
+	scan_cur_identifier ().
+	(lex_string): Likewise.
+
 2023-07-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* include/symtab.h (struct ht_identifier): Document different

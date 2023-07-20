@@ -1,3 +1,8 @@
+2023-07-19  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/t-softfp: Add -msse2 to libbid HFtype related
+	files.
+
 2023-07-11  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/110179

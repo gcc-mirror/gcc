@@ -1,3 +1,113 @@
+2023-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110745
+	* g++.dg/diagnostic/base.C: New test.
+
+2023-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110700
+	* gcc.dg/analyzer/taint-divisor-2.c: New test.
+
+2023-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110064
+	* g++.dg/warn/Wmissing-field-initializers-3.C: New test.
+
+2023-07-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/lra-elim.c: New test.
+
+2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/errors/fail/badabs.mod: New test.
+	* gm2/errors/fail/badenum.mod: New test.
+
+2023-07-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/feature-bf16-backport.c: New test.
+	* gcc.target/aarch64/feature-dotprod-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-scalar-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16fml-backport.c: New test.
+	* gcc.target/aarch64/feature-i8mm-backport.c: New test.
+	* gcc.target/aarch64/feature-memtag-backport.c: New test.
+	* gcc.target/aarch64/feature-sha3-backport.c: New test.
+	* gcc.target/aarch64/feature-sm4-backport.c: New test.
+
+2023-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110252
+	* gcc.dg/tree-ssa/phi-opt-25b.c: Updated as
+	__builtin_parity loses the nonzerobits info.
+	* gcc.c-torture/execute/pr110252-1.c: New test.
+	* gcc.c-torture/execute/pr110252-2.c: New test.
+	* gcc.c-torture/execute/pr110252-3.c: New test.
+	* gcc.c-torture/execute/pr110252-4.c: New test.
+
+2023-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110726
+	* gcc.c-torture/execute/bitops-1.c: New test.
+
+2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnil.mod: New test.
+
+2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* gcc.dg/pr110731.c: New test.
+
+2023-07-19  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/vect/bb-slp-pr95839-v8.c: New test.
+
+2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/107424
+	* gfortran.dg/gomp/linear-2.f90: Update dump to remove
+	the additional count variable.
+
+2023-07-19  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/arch-2.c: Update -march.
+	* gcc.target/riscv/arch-3.c: Ditto.
+	* gcc.target/riscv/arch-5.c: Ditto.
+	* gcc.target/riscv/arch-8.c: Ditto.
+	* gcc.target/riscv/attribute-10.c: Ditto.
+	* gcc.target/riscv/attribute-18.c: Ditto.
+	* gcc.target/riscv/attribute-19.c: Ditto.
+	* gcc.target/riscv/attribute-8.c: Ditto.
+	* gcc.target/riscv/attribute-9.c: Ditto.
+	* gcc.target/riscv/pr102957.c: Ditto.
+	* gcc.target/riscv/arch-22.cc: New test.
+	* gcc.target/riscv/arch-23.c: New file.
+
+2023-07-19  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/stack_save_restore.c: Moved to...
+	* gcc.target/riscv/stack_save_restore_2.c: ...here.
+	* gcc.target/riscv/stack_save_restore_1.c: New test.
+
+2023-07-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/103902
+	* g++.dg/cpp0x/udlit-extended-id-1.C: New test.
+	* g++.dg/cpp0x/udlit-extended-id-2.C: New test.
+	* g++.dg/cpp0x/udlit-extended-id-3.C: New test.
+	* g++.dg/cpp0x/udlit-extended-id-4.C: New test.
+
+2023-07-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr109504.c: New test.
+	* gcc.target/i386/sse2-bfloat16-1.c: Adjust error info.
+	* gcc.target/i386/sse2-float16-1.c: Ditto.
+	* gcc.target/i386/sse2-float16-4.c: New test.
+	* gcc.target/i386/sse2-float16-5.c: New test.
+	* g++.target/i386/float16-1.C: Adjust error info.
+
 2023-07-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110340

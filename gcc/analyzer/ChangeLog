@@ -1,3 +1,12 @@
+2023-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110700
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_int_cst): Assert that we have
+	an integral or pointer type.
+	* sm-taint.cc (taint_state_machine::check_for_tainted_divisor):
+	Don't check non-integral types.
+
 2023-06-29  benjamin priour  <priour.be@gmail.com>
 
 	PR analyzer/110198

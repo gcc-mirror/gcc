@@ -1,3 +1,63 @@
+2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110284
+	* Make-lang.in (m2_OBJS): Add m2/gm2-gcc/rtegraph.o and
+	m2/gm2-compiler-boot/m2flex.o.
+	(c-family/m2pp.o): Remove.
+	* Make-maintainer.in (c-family/m2pp.o): Add.
+
+2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (BuildDifAdrFunction): Removed
+	unnecessary in error message.  Use vartok for location.
+	(BuildOddFunction): Use optok for location.
+	(BuildAbsFunction): Use vartok for location.  Bugfix set vartok.
+	(BuildCapFunction): Use optok for location.
+	(BuildOrdFunction): Use optok for location and correct format
+	specifier.
+	(BuildShiftFunction): Use vartok for location.
+	(BuildRotateFunction): Use vartok for location.
+	(BuildTruncFunction): Use vartok for location.
+	(BuildFloatFunction): Use vartok for location.
+	(BuildReFunction): Use vartok for location.
+	(BuildImFunction): Use vartok for location.
+	* gm2-compiler/M2SymInit.mod (trashParam): Remove commented code.
+
+2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (BuildRealFuncProcCall): Set the trash
+	parameter value to NIL if DEALLOCATE is detected.
+	* gm2-compiler/M2SymInit.mod (CheckDeferredRecordAccess): Pass
+	tok to SetVarInitialized.  Pass tok to GetVarComponentInitialized.
+	(ComponentFindVar): Add tok parameter.  Check aliased pointer
+	against Nil and generate warning if necessary.
+	(deRefComponent): Add tok and sym parameters and pass them to
+	getContent.
+	(SetVarComponentInitialized): Add tok parameter.  Pass tok to
+	ComponentFindVar.  Pass tok and sym to deRefComponent.
+	(GetVarComponentInitialized): Add tok parameter.  Pass tok to
+	ComponentFindVar.  Pass tok to deRefComponent.
+	(SetVarInitialized): Add tok parameter.  Pass tok to
+	SetVarComponentInitialized.
+	(doGetVarInitialized): Add tok parameter.  Pass tok to
+	GetVarComponentInitialized.
+	(CheckXIndr): Pass lhs and lhstok to getContent.
+	(CheckIndrX): Pass rhs and rhstok to getContent.
+	(CheckBecomes): Pass destok to ComponentFindVar.  Pass des and
+	destok to deRefComponent.
+	(CheckAddr): Pass contenttok to GetVarInitialized.  Pass ptrtok
+	to SetVarInitialized.
+	(CheckReadBeforeInitQuad): Pass op1tok to SetVarInitialized for
+	op1 cases and op3tok for op3 cases.
+	(trashParam): Get operand tokens.  Pass op3tok to
+	SetVarInitialized.  Pass op3 and op3tok to getContent.
+	Alias ptr to NIL if procedure is DEALLOCATE.  Pass op3tok to
+	SetVarInitialized.
+	(IsDeallocate): New procedure function.
+	(DetectTrash): Use IsDeallocate.
+	(SetupLAlias): Allow exp to be Nil.
+	(getContent): Generate warning message if ptr is Nil.
+
 2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in: Minor formatting change.

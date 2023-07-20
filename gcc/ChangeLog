@@ -1,3 +1,127 @@
+2023-07-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-int.h (lra_update_fp2sp_elimination): New prototype.
+	(lra_asm_insn_error): New prototype.
+	* lra-spills.cc (remove_pseudos): Add check for pseudo slot memory
+	existence.
+	(lra_spill): Call lra_update_fp2sp_elimination.
+	* lra-eliminations.cc: Remove trailing spaces.
+	(elimination_fp2sp_occured_p): New static flag.
+	(lra_eliminate_regs_1): Set the flag up.
+	(update_reg_eliminate): Modify the assert for stack to frame
+	pointer elimination.
+	(lra_update_fp2sp_elimination): New function.
+	(lra_eliminate): Clear flag elimination_fp2sp_occured_p.
+
+2023-07-19  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_MEMTAG): Remove armv8.5
+	dependency.
+	* config/aarch64/arm_acle.h: Remove unnecessary armv8.x
+	dependencies from target pragmas.
+	* config/aarch64/arm_fp16.h (target): Likewise.
+	* config/aarch64/arm_neon.h (target): Likewise.
+
+2023-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110252
+	* tree-ssa-phiopt.cc (class auto_flow_sensitive): New class.
+	(auto_flow_sensitive::auto_flow_sensitive): New constructor.
+	(auto_flow_sensitive::~auto_flow_sensitive): New deconstructor.
+	(match_simplify_replacement): Temporarily
+	remove the flow sensitive info on the two statements that might
+	be moved.
+
+2023-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	* gimple-fold.cc (fosa_unwind): Replace `vrange_storage *`
+	with flow_sensitive_info_storage.
+	(follow_outer_ssa_edges): Update how to save off the flow
+	sensitive info.
+	(maybe_fold_comparisons_from_match_pd): Update restoring
+	of flow sensitive info.
+	* tree-ssanames.cc (flow_sensitive_info_storage::save): New method.
+	(flow_sensitive_info_storage::restore): New method.
+	(flow_sensitive_info_storage::save_and_clear): New method.
+	(flow_sensitive_info_storage::clear_storage): New method.
+	* tree-ssanames.h (class flow_sensitive_info_storage): New class.
+
+2023-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110726
+	* match.pd ((a|b)&(a==b),a|(a==b),(a&b)|(a==b)):
+	Add checks to make sure the type was one bit precision
+	intergal type.
+
+2023-07-19  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add mask_len_fold_left_plus.
+	* internal-fn.cc (mask_len_fold_left_direct): Ditto.
+	(expand_mask_len_fold_left_optab_fn): Ditto.
+	(direct_mask_len_fold_left_optab_supported_p): Ditto.
+	* internal-fn.def (MASK_LEN_FOLD_LEFT_PLUS): Ditto.
+	* optabs.def (OPTAB_D): Ditto.
+
+2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-switch-conversion.h (class bit_test_cluster): Fix comment typo.
+
+2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* wide-int.cc (wi::divmod_internal): Always unpack dividend and
+	divisor as UNSIGNED regardless of sgn.
+
+2023-07-19  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* common/config/riscv/riscv-common.cc (riscv_supported_std_ext): Init.
+	(standard_extensions_p): Add check.
+	(riscv_subset_list::add): Just return NULL if it failed before.
+	(riscv_subset_list::parse_std_ext): Continue parse when find a error
+	(riscv_subset_list::parse): Just return NULL if it failed before.
+	* config/riscv/riscv-subset.h (class riscv_subset_list): Add field.
+
+2023-07-19  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_duplicate):
+	Use gen_vec_set_0.
+	(ix86_expand_vector_extract): Use gen_vec_extract_lo /
+	gen_vec_extract_hi.
+	(expand_vec_perm_broadcast_1): Use gen_vec_interleave_high /
+	gen_vec_interleave_low. Rename local variable.
+
+2023-07-19  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vec_dupv2df<mask_name>): Add new AVX512F
+	alternative. Move AVX512VL part of condition to new "enabled"
+	attribute.
+
+2023-07-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/109504
+	* config/i386/i386-builtins.cc
+	(ix86_register_float16_builtin_type): Remove TARGET_SSE2.
+	(ix86_register_bf16_builtin_type): Ditto.
+	* config/i386/i386-c.cc (ix86_target_macros): When TARGET_SSE2
+	isn't available, undef the macros which are used to check the
+	backend support of the _Float16/__bf16 types when building
+	libstdc++ and libgcc.
+	* config/i386/i386.cc (construct_container): Issue errors for
+	HFmode/BFmode when TARGET_SSE2 is not available.
+	(function_value_32): Ditto.
+	(ix86_scalar_mode_supported_p): Remove TARGET_SSE2 for HFmode/BFmode.
+	(ix86_libgcc_floating_mode_supported_p): Ditto.
+	(ix86_emit_support_tinfos): Adjust codes.
+	(ix86_invalid_conversion): Return diagnostic message string
+	when there's conversion from/to BF/HFmode w/o TARGET_SSE2.
+	(ix86_invalid_unary_op): New function.
+	(ix86_invalid_binary_op): Ditto.
+	(TARGET_INVALID_UNARY_OP): Define.
+	(TARGET_INVALID_BINARY_OP): Define.
+	* config/i386/immintrin.h [__SSE2__]: Remove for fp16/bf16
+	related instrinsics header files.
+	* config/i386/i386.h (VALID_SSE2_TYPE_MODE): New macro.
+
 2023-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* dwarf2asm.cc: Change FALSE to false.
