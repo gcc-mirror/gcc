@@ -434,6 +434,21 @@ public:
    */
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id);
 
+  /**
+   * Insert a new definition at the root of this stack
+   *
+   * @param name The name of the definition
+   * @param id Its NodeId
+   *
+   * @return `DuplicateNameError` if that node was already present in the Rib,
+   * the node's `NodeId` otherwise.
+   *
+   * @aborts if there are no `Rib`s inserted in the current map, this function
+   *         aborts the program.
+   */
+  tl::expected<NodeId, DuplicateNameError> insert_at_root (Identifier name,
+							   NodeId id);
+
   /* Access the innermost `Rib` in this map */
   Rib &peek ();
   const Rib &peek () const;
@@ -450,10 +465,16 @@ public:
    * @return a valid option with the NodeId if the identifier is present in the
    *         current map, an empty one otherwise.
    */
-  inline tl::optional<NodeId> get (const Identifier &name);
+  tl::optional<NodeId> get (const Identifier &name);
 
-  // TODO: Should we dump to a file instead, like the other dumps? Or just print
-  // the string to a file in the SessionManager?
+  /**
+   * Resolve a path to its definition in the current `ForeverStack`
+   *
+   * @return a valid option with the NodeId if the path is present in the
+   *         current map, an empty one otherwise.
+   */
+  tl::optional<NodeId> resolve_path (const AST::SimplePath &path);
+
   std::string as_debug_string ();
 
 private:
@@ -509,8 +530,11 @@ private:
   /* Add a new Rib to the stack. This is an internal method */
   void push_inner (Rib rib, Link link);
 
-  /* Reverse iterate on all Ribs from the current one, in an outwards fashion */
-  void reverse_iter (std::function<KeepGoing (Rib &)> lambda);
+  /* Reverse iterate on `Node`s from the cursor, in an outwards fashion */
+  void reverse_iter (std::function<KeepGoing (Node &)> lambda);
+
+  /* Reverse iterate on `Node`s from a specified one, in an outwards fashion */
+  void reverse_iter (Node &start, std::function<KeepGoing (Node &)> lambda);
 
   Node &cursor ();
   const Node &cursor () const;
@@ -523,6 +547,21 @@ private:
 		   const std::string &next, const std::string &next_next);
   void stream_node (std::stringstream &stream, unsigned indentation,
 		    const Node &node);
+
+  /* Helper types and functions for `resolve_path` */
+
+  using SegIterator = std::vector<AST::SimplePathSegment>::const_iterator;
+
+  Node &find_closest_module (Node &starting_point);
+
+  tl::optional<SegIterator>
+  find_starting_point (const std::vector<AST::SimplePathSegment> &segments,
+		       Node &starting_point);
+
+  tl::optional<Node &>
+  resolve_segments (Node &starting_point,
+		    const std::vector<AST::SimplePathSegment> &segments,
+		    SegIterator iterator);
 };
 
 } // namespace Resolver2_0
