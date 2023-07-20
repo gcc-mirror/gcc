@@ -40,6 +40,6 @@
 
 TEST_ALL (TEST_LOOP)
 
-/* { dg-final { scan-tree-dump-times " \.LEN_MASK_SCATTER_STORE" 66 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_SCATTER_STORE" 66 "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.SCATTER_STORE" "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_SCATTER_STORE" "optimized" } } */

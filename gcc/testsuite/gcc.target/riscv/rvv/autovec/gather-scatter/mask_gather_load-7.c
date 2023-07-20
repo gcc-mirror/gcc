@@ -31,6 +31,6 @@
 TEST_ALL (TEST_LOOP)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 11 "vect" } } */
-/* { dg-final { scan-tree-dump " \.LEN_MASK_GATHER_LOAD" "vect" } } */
+/* { dg-final { scan-tree-dump " \.MASK_LEN_GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "vect" } } */

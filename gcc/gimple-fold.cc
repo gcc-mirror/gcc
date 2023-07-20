@@ -5370,7 +5370,7 @@ arith_overflowed_p (enum tree_code code, const_tree type,
   return wi::min_precision (wres, sign) > TYPE_PRECISION (type);
 }
 
-/* If IFN_{MASK,LEN,LEN_MASK}_LOAD/STORE call CALL is unconditional,
+/* If IFN_{MASK,LEN,MASK_LEN}_LOAD/STORE call CALL is unconditional,
    return a MEM_REF for the memory it references, otherwise return null.
    VECTYPE is the type of the memory vector.  MASK_P indicates it's for
    MASK if true, otherwise it's for LEN.  */
@@ -5398,15 +5398,15 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
 	return NULL_TREE;
       tree bias = gimple_call_arg (call, len_index + 1);
       gcc_assert (TREE_CODE (bias) == INTEGER_CST);
-      /* For LEN_LOAD/LEN_STORE/LEN_MASK_LOAD/LEN_MASK_STORE,
+      /* For LEN_LOAD/LEN_STORE/MASK_LEN_LOAD/MASK_LEN_STORE,
 	 we don't fold when (bias + len) != VF.  */
       if (maybe_ne (wi::to_poly_widest (basic_len) + wi::to_widest (bias),
 		    GET_MODE_NUNITS (TYPE_MODE (vectype))))
 	return NULL_TREE;
 
-      /* For LEN_MASK_{LOAD,STORE}, we should also check whether
+      /* For MASK_LEN_{LOAD,STORE}, we should also check whether
 	  the mask is all ones mask.  */
-      if (ifn == IFN_LEN_MASK_LOAD || ifn == IFN_LEN_MASK_STORE)
+      if (ifn == IFN_MASK_LEN_LOAD || ifn == IFN_MASK_LEN_STORE)
 	{
 	  tree mask = gimple_call_arg (call, internal_fn_mask_index (ifn));
 	  if (!integer_all_onesp (mask))
@@ -5689,11 +5689,11 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  changed |= gimple_fold_partial_store (gsi, stmt, true);
 	  break;
 	case IFN_LEN_LOAD:
-	case IFN_LEN_MASK_LOAD:
+	case IFN_MASK_LEN_LOAD:
 	  changed |= gimple_fold_partial_load (gsi, stmt, false);
 	  break;
 	case IFN_LEN_STORE:
-	case IFN_LEN_MASK_STORE:
+	case IFN_MASK_LEN_STORE:
 	  changed |= gimple_fold_partial_store (gsi, stmt, false);
 	  break;
 	default:

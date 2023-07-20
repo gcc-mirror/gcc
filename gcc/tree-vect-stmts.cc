@@ -1633,8 +1633,8 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 			 ? IFN_MASK_GATHER_LOAD
 			 : IFN_MASK_SCATTER_STORE);
       internal_fn len_ifn = (is_load
-			     ? IFN_LEN_MASK_GATHER_LOAD
-			     : IFN_LEN_MASK_SCATTER_STORE);
+			     ? IFN_MASK_LEN_GATHER_LOAD
+			     : IFN_MASK_LEN_SCATTER_STORE);
       if (internal_gather_scatter_fn_supported_p (ifn, vectype,
 						  gs_info->memory_type,
 						  gs_info->offset_vectype,
@@ -3034,7 +3034,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
     {
       /* _31 = .SELECT_VL (ivtmp_29, POLY_INT_CST [4, 4]);
 	 ivtmp_8 = _31 * 16 (step in bytes);
-	 .LEN_MASK_SCATTER_STORE (vectp_a.9_7, ... );
+	 .MASK_LEN_SCATTER_STORE (vectp_a.9_7, ... );
 	 vectp_a.9_26 = vectp_a.9_7 + ivtmp_8;  */
       tree loop_len
 	= vect_get_loop_len (loop_vinfo, gsi, loop_lens, 1, vectype, 0, 0);
@@ -8872,7 +8872,7 @@ vectorizable_store (vec_info *vinfo,
 		    vec_offset = vec_offsets[vec_num * j + i];
 		  tree scale = size_int (gs_info.scale);
 
-		  if (gs_info.ifn == IFN_LEN_MASK_SCATTER_STORE)
+		  if (gs_info.ifn == IFN_MASK_LEN_SCATTER_STORE)
 		    {
 		      if (loop_lens)
 			final_len
@@ -8896,7 +8896,7 @@ vectorizable_store (vec_info *vinfo,
 		  gcall *call;
 		  if (final_len && final_mask)
 		    call
-		      = gimple_build_call_internal (IFN_LEN_MASK_SCATTER_STORE,
+		      = gimple_build_call_internal (IFN_MASK_LEN_SCATTER_STORE,
 						    7, dataref_ptr, vec_offset,
 						    scale, vec_oprnd, final_mask,
 						    final_len, bias);
@@ -9036,12 +9036,12 @@ vectorizable_store (vec_info *vinfo,
 		    gcc_unreachable ();
 		}
 
-	      if (partial_ifn == IFN_LEN_MASK_STORE)
+	      if (partial_ifn == IFN_MASK_LEN_STORE)
 		{
 		  if (!final_len)
 		    {
 		      /* Pass VF value to 'len' argument of
-		         LEN_MASK_STORE if LOOP_LENS is invalid.  */
+		         MASK_LEN_STORE if LOOP_LENS is invalid.  */
 		      tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
 		      final_len
 			= build_int_cst (iv_type,
@@ -9050,7 +9050,7 @@ vectorizable_store (vec_info *vinfo,
 		  if (!final_mask)
 		    {
 		      /* Pass all ones value to 'mask' argument of
-			 LEN_MASK_STORE if final_mask is invalid.  */
+			 MASK_LEN_STORE if final_mask is invalid.  */
 		      mask_vectype = truth_type_for (vectype);
 		      final_mask = build_minus_one_cst (mask_vectype);
 		    }
@@ -9086,8 +9086,8 @@ vectorizable_store (vec_info *vinfo,
 		      vec_oprnd = var;
 		    }
 
-		  if (partial_ifn == IFN_LEN_MASK_STORE)
-		    call = gimple_build_call_internal (IFN_LEN_MASK_STORE, 6,
+		  if (partial_ifn == IFN_MASK_LEN_STORE)
+		    call = gimple_build_call_internal (IFN_MASK_LEN_STORE, 6,
 						       dataref_ptr, ptr,
 						       final_len, bias,
 						       final_mask, vec_oprnd);
@@ -10456,7 +10456,7 @@ vectorizable_load (vec_info *vinfo,
 			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 
-			if (gs_info.ifn == IFN_LEN_MASK_GATHER_LOAD)
+			if (gs_info.ifn == IFN_MASK_LEN_GATHER_LOAD)
 			  {
 			    if (loop_lens)
 			      final_len
@@ -10480,7 +10480,7 @@ vectorizable_load (vec_info *vinfo,
 			gcall *call;
 			if (final_len && final_mask)
 			  call = gimple_build_call_internal (
-			    IFN_LEN_MASK_GATHER_LOAD, 7, dataref_ptr,
+			    IFN_MASK_LEN_GATHER_LOAD, 7, dataref_ptr,
 			    vec_offset, scale, zero, final_mask, final_len,
 			    bias);
 			else if (final_mask)
@@ -10620,12 +10620,12 @@ vectorizable_load (vec_info *vinfo,
 			  gcc_unreachable ();
 		      }
 
-		    if (partial_ifn == IFN_LEN_MASK_LOAD)
+		    if (partial_ifn == IFN_MASK_LEN_LOAD)
 		      {
 			if (!final_len)
 			  {
 			    /* Pass VF value to 'len' argument of
-			       LEN_MASK_LOAD if LOOP_LENS is invalid.  */
+			       MASK_LEN_LOAD if LOOP_LENS is invalid.  */
 			    tree iv_type
 			      = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
 			    final_len
@@ -10635,7 +10635,7 @@ vectorizable_load (vec_info *vinfo,
 			if (!final_mask)
 			  {
 			    /* Pass all ones value to 'mask' argument of
-			       LEN_MASK_LOAD if final_mask is invalid.  */
+			       MASK_LEN_LOAD if final_mask is invalid.  */
 			    mask_vectype = truth_type_for (vectype);
 			    final_mask = build_minus_one_cst (mask_vectype);
 			  }
@@ -10653,8 +10653,8 @@ vectorizable_load (vec_info *vinfo,
 			tree ptr
 			  = build_int_cst (ref_type, align * BITS_PER_UNIT);
 			gcall *call;
-			if (partial_ifn == IFN_LEN_MASK_LOAD)
-			  call = gimple_build_call_internal (IFN_LEN_MASK_LOAD,
+			if (partial_ifn == IFN_MASK_LEN_LOAD)
+			  call = gimple_build_call_internal (IFN_MASK_LEN_LOAD,
 							     5, dataref_ptr,
 							     ptr, final_len,
 							     bias, final_mask);

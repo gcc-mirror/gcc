@@ -165,7 +165,7 @@ init_internal_fns ()
 #define mask_load_lanes_direct { -1, -1, false }
 #define gather_load_direct { 3, 1, false }
 #define len_load_direct { -1, -1, false }
-#define len_maskload_direct { -1, 4, false }
+#define mask_len_load_direct { -1, 4, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
@@ -173,7 +173,7 @@ init_internal_fns ()
 #define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
-#define len_maskstore_direct { 4, 5, false }
+#define mask_len_store_direct { 4, 5, false }
 #define vec_set_direct { 3, 3, false }
 #define vec_extract_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
@@ -2912,7 +2912,7 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
   return fold_build2 (MEM_REF, type, addr, build_int_cst (alias_ptr_type, 0));
 }
 
-/* Expand MASK_LOAD{,_LANES}, LEN_MASK_LOAD or LEN_LOAD call STMT using optab
+/* Expand MASK_LOAD{,_LANES}, MASK_LEN_LOAD or LEN_LOAD call STMT using optab
  * OPTAB.  */
 
 static void
@@ -2954,9 +2954,9 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
 #define expand_mask_load_optab_fn expand_partial_load_optab_fn
 #define expand_mask_load_lanes_optab_fn expand_mask_load_optab_fn
 #define expand_len_load_optab_fn expand_partial_load_optab_fn
-#define expand_len_maskload_optab_fn expand_partial_load_optab_fn
+#define expand_mask_len_load_optab_fn expand_partial_load_optab_fn
 
-/* Expand MASK_STORE{,_LANES}, LEN_MASK_STORE or LEN_STORE call STMT using optab
+/* Expand MASK_STORE{,_LANES}, MASK_LEN_STORE or LEN_STORE call STMT using optab
  * OPTAB.  */
 
 static void
@@ -2993,7 +2993,7 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
 #define expand_mask_store_optab_fn expand_partial_store_optab_fn
 #define expand_mask_store_lanes_optab_fn expand_mask_store_optab_fn
 #define expand_len_store_optab_fn expand_partial_store_optab_fn
-#define expand_len_maskstore_optab_fn expand_partial_store_optab_fn
+#define expand_mask_len_store_optab_fn expand_partial_store_optab_fn
 
 /* Expand VCOND, VCONDU and VCONDEQ optab internal functions.
    The expansion of STMT happens based on OPTAB table associated.  */
@@ -4001,7 +4001,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_len_load_optab_supported_p direct_optab_supported_p
-#define direct_len_maskload_optab_supported_p convert_optab_supported_p
+#define direct_mask_len_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -4009,7 +4009,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
-#define direct_len_maskstore_optab_supported_p convert_optab_supported_p
+#define direct_mask_len_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
@@ -4554,9 +4554,9 @@ internal_load_fn_p (internal_fn fn)
     case IFN_MASK_LOAD_LANES:
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
-    case IFN_LEN_MASK_GATHER_LOAD:
+    case IFN_MASK_LEN_GATHER_LOAD:
     case IFN_LEN_LOAD:
-    case IFN_LEN_MASK_LOAD:
+    case IFN_MASK_LEN_LOAD:
       return true;
 
     default:
@@ -4576,9 +4576,9 @@ internal_store_fn_p (internal_fn fn)
     case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
-    case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
     case IFN_LEN_STORE:
-    case IFN_LEN_MASK_STORE:
+    case IFN_MASK_LEN_STORE:
       return true;
 
     default:
@@ -4595,10 +4595,10 @@ internal_gather_scatter_fn_p (internal_fn fn)
     {
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
-    case IFN_LEN_MASK_GATHER_LOAD:
+    case IFN_MASK_LEN_GATHER_LOAD:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
-    case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
       return true;
 
     default:
@@ -4616,12 +4616,12 @@ internal_fn_len_index (internal_fn fn)
     {
     case IFN_LEN_LOAD:
     case IFN_LEN_STORE:
-    case IFN_LEN_MASK_LOAD:
-    case IFN_LEN_MASK_STORE:
+    case IFN_MASK_LEN_LOAD:
+    case IFN_MASK_LEN_STORE:
       return 2;
 
-    case IFN_LEN_MASK_GATHER_LOAD:
-    case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_GATHER_LOAD:
+    case IFN_MASK_LEN_SCATTER_STORE:
     case IFN_COND_LEN_FMA:
     case IFN_COND_LEN_FMS:
     case IFN_COND_LEN_FNMA:
@@ -4669,10 +4669,10 @@ internal_fn_mask_index (internal_fn fn)
 
     case IFN_MASK_GATHER_LOAD:
     case IFN_MASK_SCATTER_STORE:
-    case IFN_LEN_MASK_LOAD:
-    case IFN_LEN_MASK_STORE:
-    case IFN_LEN_MASK_GATHER_LOAD:
-    case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_LOAD:
+    case IFN_MASK_LEN_STORE:
+    case IFN_MASK_LEN_GATHER_LOAD:
+    case IFN_MASK_LEN_SCATTER_STORE:
       return 4;
 
     default:
@@ -4693,13 +4693,13 @@ internal_fn_stored_value_index (internal_fn fn)
     case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
-    case IFN_LEN_MASK_SCATTER_STORE:
+    case IFN_MASK_LEN_SCATTER_STORE:
       return 3;
 
     case IFN_LEN_STORE:
       return 4;
 
-    case IFN_LEN_MASK_STORE:
+    case IFN_MASK_LEN_STORE:
       return 5;
 
     default:
@@ -4774,13 +4774,13 @@ internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
 	return VECT_PARTIAL_BIAS_UNSUPPORTED;
       if (ifn == IFN_LEN_LOAD)
 	{
-	  /* Try LEN_MASK_LOAD.  */
-	  optab = direct_internal_fn_optab (IFN_LEN_MASK_LOAD);
+	  /* Try MASK_LEN_LOAD.  */
+	  optab = direct_internal_fn_optab (IFN_MASK_LEN_LOAD);
 	}
       else
 	{
-	  /* Try LEN_MASK_STORE.  */
-	  optab = direct_internal_fn_optab (IFN_LEN_MASK_STORE);
+	  /* Try MASK_LEN_STORE.  */
+	  optab = direct_internal_fn_optab (IFN_MASK_LEN_STORE);
 	}
       icode = convert_optab_handler (optab, mode, mask_mode);
     }

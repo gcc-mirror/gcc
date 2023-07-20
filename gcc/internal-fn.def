@@ -48,16 +48,16 @@ along with GCC; see the file COPYING3.  If not see
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
-   - gather_load: used for {mask_,len_mask,}gather_load
+   - gather_load: used for {mask_,mask_len_,}gather_load
    - len_load: currently just len_load
-   - len_maskload: currently just len_maskload
+   - mask_len_load: currently just mask_len_load
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
-   - scatter_store: used for {mask_,len_mask,}scatter_store
+   - scatter_store: used for {mask_,mask_len_,}scatter_store
    - len_store: currently just len_store
-   - len_maskstore: currently just len_maskstore
+   - mask_len_store: currently just mask_len_store
 
    - unary: a normal unary optab, such as vec_reverse_<mode>
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
@@ -161,17 +161,17 @@ DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
 		       mask_gather_load, gather_load)
-DEF_INTERNAL_OPTAB_FN (LEN_MASK_GATHER_LOAD, ECF_PURE,
-		       len_mask_gather_load, gather_load)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_GATHER_LOAD, ECF_PURE,
+		       mask_len_gather_load, gather_load)
 
 DEF_INTERNAL_OPTAB_FN (LEN_LOAD, ECF_PURE, len_load, len_load)
-DEF_INTERNAL_OPTAB_FN (LEN_MASK_LOAD, ECF_PURE, len_maskload, len_maskload)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD, ECF_PURE, mask_len_load, mask_len_load)
 
 DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
 		       mask_scatter_store, scatter_store)
-DEF_INTERNAL_OPTAB_FN (LEN_MASK_SCATTER_STORE, 0,
-		       len_mask_scatter_store, scatter_store)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_SCATTER_STORE, 0,
+		       mask_len_scatter_store, scatter_store)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
@@ -187,7 +187,7 @@ DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
 DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, 0, vec_extract, vec_extract)
 
 DEF_INTERNAL_OPTAB_FN (LEN_STORE, 0, len_store, len_store)
-DEF_INTERNAL_OPTAB_FN (LEN_MASK_STORE, 0, len_maskstore, len_maskstore)
+DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE, 0, mask_len_store, mask_len_store)
 
 DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
 DEF_INTERNAL_OPTAB_FN (SELECT_VL, ECF_CONST | ECF_NOTHROW, select_vl, binary)

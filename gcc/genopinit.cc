@@ -376,7 +376,7 @@ main (int argc, const char **argv)
   fprintf (s_file,
 	   "/* Returns TRUE if the target supports any of the partial vector\n"
 	   "   optabs: while_ult_optab, len_load_optab, len_store_optab,\n"
-	   "   len_maskload_optab or len_maskstore_optab,\n"
+	   "   mask_len_load_optab or mask_len_store_optab,\n"
 	   "   for any mode.  */\n"
 	   "bool\npartial_vectors_supported_p (void)\n{\n");
   bool any_match = false;
@@ -386,8 +386,8 @@ main (int argc, const char **argv)
     {
 #define CMP_NAME(N) !strncmp (p->name, (N), strlen ((N)))
       if (CMP_NAME("while_ult") || CMP_NAME ("len_load")
-	  || CMP_NAME ("len_store")|| CMP_NAME ("len_maskload")
-	  || CMP_NAME ("len_maskstore"))
+	  || CMP_NAME ("len_store")|| CMP_NAME ("mask_len_load")
+	  || CMP_NAME ("mask_len_store"))
 	{
 	  if (first)
 	    fprintf (s_file, " HAVE_%s", p->name);

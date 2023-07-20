@@ -3878,19 +3878,19 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
     {
       ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
       alt_ifn = IFN_MASK_GATHER_LOAD;
-      /* When target supports LEN_MASK_GATHER_LOAD, we always
-	 use LEN_MASK_GATHER_LOAD regardless whether len and
+      /* When target supports MASK_LEN_GATHER_LOAD, we always
+	 use MASK_LEN_GATHER_LOAD regardless whether len and
 	 mask are valid or not.  */
-      alt_ifn2 = IFN_LEN_MASK_GATHER_LOAD;
+      alt_ifn2 = IFN_MASK_LEN_GATHER_LOAD;
     }
   else
     {
       ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
       alt_ifn = IFN_MASK_SCATTER_STORE;
-      /* When target supports LEN_MASK_SCATTER_STORE, we always
-	 use LEN_MASK_SCATTER_STORE regardless whether len and
+      /* When target supports MASK_LEN_SCATTER_STORE, we always
+	 use MASK_LEN_SCATTER_STORE regardless whether len and
 	 mask are valid or not.  */
-      alt_ifn2 = IFN_LEN_MASK_SCATTER_STORE;
+      alt_ifn2 = IFN_MASK_LEN_SCATTER_STORE;
     }
 
   for (;;)
