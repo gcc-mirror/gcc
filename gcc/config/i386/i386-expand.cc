@@ -558,7 +558,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
-	    op1 = force_reg (DImode, gen_lowpart (DImode, op1));
+	    op1 = gen_lowpart (DImode, op1);
 	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
 	  op1 = gen_rtx_IOR (TImode, tmp, op1);
 	}
@@ -570,7 +570,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
-	    op1 = force_reg (DImode, gen_lowpart (DImode, op1));
+	    op1 = gen_lowpart (DImode, op1);
 	  op1 = gen_rtx_ZERO_EXTEND (TImode, op1);
 	  op1 = gen_rtx_ASHIFT (TImode, op1, GEN_INT (64));
 	  op1 = gen_rtx_IOR (TImode, tmp, op1);
