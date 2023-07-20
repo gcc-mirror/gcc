@@ -1,6 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-Wno-error=normalized" }
 #include <cstring>
+#include <cstddef>
 using namespace std;
 
 constexpr unsigned long long operator "" _π (unsigned long long x)
@@ -21,22 +22,22 @@ char x2[2_Π2];
 static_assert (sizeof x1 == 3, "test1");
 static_assert (sizeof x2 == 8, "test2");
 
-const char * operator "" _1σ (const char *s, unsigned long)
+const char * operator "" _1σ (const char *s, size_t)
 {
   return s + 1;
 }
 
-const char * operator ""_Σ2 (const char *s, unsigned long)
+const char * operator ""_Σ2 (const char *s, size_t)
 {
   return s + 2;
 }
 
-const char * operator "" _\U000000e61 (const char *s, unsigned long)
+const char * operator "" _\U000000e61 (const char *s, size_t)
 {
   return "ae";
 }
 
-const char* operator ""_\u01532 (const char *s, unsigned long)
+const char* operator ""_\u01532 (const char *s, size_t)
 {
   return "oe";
 }
