@@ -7915,7 +7915,7 @@
 	(unspec:VSF_LMUL1
 	  [(unspec:VSF_LMUL1
 	    [(unspec:<VHF:VM>
-	      [(match_operand:<VHF:VM> 1 "vector_merge_operand"  "vmWc1,vmWc1")
+	      [(match_operand:<VHF:VM> 1 "vector_mask_operand"   "vmWc1,vmWc1")
 	       (match_operand          5 "vector_length_operand" "   rK,   rK")
 	       (match_operand          6 "const_int_operand"     "    i,    i")
 	       (match_operand          7 "const_int_operand"     "    i,    i")
@@ -7937,7 +7937,7 @@
 	(unspec:VDF_LMUL1
 	  [(unspec:VDF_LMUL1
 	    [(unspec:<VSF:VM>
-	      [(match_operand:<VSF:VM>  1 "vector_merge_operand"  "vmWc1,vmWc1")
+	      [(match_operand:<VSF:VM>  1 "vector_mask_operand"   "vmWc1,vmWc1")
 	       (match_operand           5 "vector_length_operand" "   rK,   rK")
 	       (match_operand           6 "const_int_operand"     "    i,    i")
 	       (match_operand           7 "const_int_operand"     "    i,    i")
