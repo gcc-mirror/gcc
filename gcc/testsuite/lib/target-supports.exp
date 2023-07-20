@@ -3487,6 +3487,9 @@ proc add_options_for_float16 { flags } {
     if { [istarget arm*-*-*] } {
 	return "$flags -mfp16-format=ieee"
     }
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	return "$flags -msse2"
+    }
     return "$flags"
 }
 
