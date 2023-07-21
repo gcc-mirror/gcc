@@ -1,3 +1,12 @@
+2023-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95947
+	PR fortran/110658
+	* gfortran.dg/deferred_character_37.f90: New test.
+
 2023-07-19  Maciej W. Rozycki  <macro@embecosm.com>
 
 	Backported from master:
