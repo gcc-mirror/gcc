@@ -3299,11 +3299,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    return (void *)-1;
 	  break;
 	case IFN_LEN_STORE:
-	  len = gimple_call_arg (call, 2);
-	  bias = gimple_call_arg (call, 4);
-	  if (!tree_fits_uhwi_p (len) || !tree_fits_shwi_p (bias))
-	    return (void *)-1;
-	  break;
+	  {
+	    int len_index = internal_fn_len_index (fn);
+	    len = gimple_call_arg (call, len_index);
+	    bias = gimple_call_arg (call, len_index + 1);
+	    if (!tree_fits_uhwi_p (len) || !tree_fits_shwi_p (bias))
+	      return (void *) -1;
+	    break;
+	  }
 	default:
 	  return (void *)-1;
 	}
