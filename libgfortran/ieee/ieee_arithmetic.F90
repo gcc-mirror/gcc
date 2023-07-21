@@ -535,13 +535,13 @@ UNORDERED_MACRO(4,4)
   end interface
 
 #ifdef HAVE_GFC_REAL_16
-#  define EXPAND_INTER_MACRO_16(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_16
+#  define EXPAND_INTER_MACRO_16(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_16 ,
 #else
 #  define EXPAND_INTER_MACRO_16(TYPE,OP)
 #endif
 
 #ifdef HAVE_GFC_REAL_10
-#  define EXPAND_INTER_MACRO_10(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_10
+#  define EXPAND_INTER_MACRO_10(TYPE,OP) _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_10 ,
 #else
 #  define EXPAND_INTER_MACRO_10(TYPE,OP)
 #endif
@@ -549,8 +549,8 @@ UNORDERED_MACRO(4,4)
 #define COMP_INTERFACE(TYPE,OP) \
   interface IEEE_/**/TYPE/**/_/**/OP ; \
     procedure \
-      EXPAND_INTER_MACRO_16(TYPE,OP) , \
-      EXPAND_INTER_MACRO_10(TYPE,OP) , \
+      EXPAND_INTER_MACRO_16(TYPE,OP) \
+      EXPAND_INTER_MACRO_10(TYPE,OP) \
       _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_8 , \
       _gfortran_ieee_/**/TYPE/**/_/**/OP/**/_4 ; \
   end interface ; \
