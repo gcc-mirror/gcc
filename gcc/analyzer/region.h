@@ -1107,7 +1107,7 @@ public:
     key_t (const region *original_region, tree type)
     : m_original_region (original_region), m_type (type)
     {
-      gcc_assert (type);
+      gcc_assert (original_region);
     }
 
     hashval_t hash () const
@@ -1124,10 +1124,16 @@ public:
 	      && m_type == other.m_type);
     }
 
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    void mark_deleted ()
+    {
+      m_original_region = reinterpret_cast<const region *> (1);
+    }
+    void mark_empty () { m_original_region = nullptr; }
+    bool is_deleted () const
+    {
+      return m_original_region == reinterpret_cast<const region *> (1);
+    }
+    bool is_empty () const { return m_original_region == nullptr; }
 
     const region *m_original_region;
     tree m_type;
