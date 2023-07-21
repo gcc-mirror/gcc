@@ -1,3 +1,136 @@
+2023-07-20  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_MEMTAG): Remove armv8.5
+	dependency.
+	* config/aarch64/arm_acle.h: Remove unnecessary armv8.x
+	dependencies from target pragmas.
+	* config/aarch64/arm_fp16.h (target): Likewise.
+	* config/aarch64/arm_neon.h (target): Likewise.
+
+2023-07-20  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Create new pseudos only when/if needed.  Add support for TEST,
+	i.e. (COMPARE (AND x y) (const_int 0)), using UNSPEC_PTEST.
+	When broadcasting V2DImode and V4SImode use new pseudo register.
+	(timode_scalar_chain::convert_op): Do nothing if operand is
+	already V1TImode.  Avoid generating useless SUBREG conversions,
+	i.e. (SUBREG:V1TImode (REG:V1TImode) 0).  Handle CONST_WIDE_INT
+	in addition to CONST_INT by using CONST_SCALAR_INT_P.
+	(convertible_comparison_p): Use CONST_SCALAR_INT_P to match both
+	CONST_WIDE_INT and CONST_INT.  Recognize new *testti_doubleword
+	pattern as an STV candidate.
+	(timode_scalar_to_vector_candidate_p): Allow CONST_SCALAR_INT_P
+	operands in binary logic operations.
+	* config/i386/i386.cc (ix86_rtx_costs) <case UNSPEC>: Add costs
+	for UNSPEC_PTEST; a PTEST that performs an AND has the same cost
+	as regular PTEST, i.e. cost->sse_op.
+	* config/i386/i386.md (*testti_doubleword): New pre-reload
+	define_insn_and_split that recognizes comparison of TI mode AND
+	against zero.
+	* config/i386/sse.md (*ptest<mode>_and): New pre-reload
+	define_insn_and_split that recognizes UNSPEC_PTEST of identical
+	AND operands.
+
+2023-07-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/invoke.texi: Remove AVX512VP2INTERSECT in
+	Granite Rapids{, D} from documentation.
+
+2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* wide-int.cc (wi::divmod_internal): Always unpack dividend and
+	divisor as UNSIGNED regardless of sgn.
+
+2023-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/110624
+	* config/darwin.h (DARWIN_PLATFORM_ID): New.
+	(LINK_COMMAND_A): Use DARWIN_PLATFORM_ID to pass OS, OS version
+	and SDK data to the static linker.
+
+2023-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h: Avoid duplicate multiply_defined specs on
+	earlier Darwin versions with shared libgcc.
+
+2023-07-18  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): Add vl parameter.
+	(change_vsetvl_insn): Ditto.
+	(change_insn): Add validate change as well as assert.
+	(pass_vsetvl::backward_demand_fusion): Allow forward.
+
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* tree-scalar-evolution.cc (analyze_and_compute_bitop_with_inv_effect):
+	Check we matched a header PHI.
+
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* fwprop.cc (contains_paradoxical_subreg_p): Move to ...
+	* rtlanal.cc (contains_paradoxical_subreg_p): ... here.
+	* rtlanal.h (contains_paradoxical_subreg_p): Add prototype.
+	* cprop.cc (try_replace_reg): Do not set REG_EQUAL note
+	when the original source contains a paradoxical subreg.
+
+2023-07-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/101469
+	* config/sh/sh.md (peephole2): Handle case where eliminated reg
+	is also	used by the address of the following memory operand.
+
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/106966
+	* config/alpha/alpha.cc (alpha_emit_set_long_const):
+	Always use DImode when constructing long const.
+
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Granite Rapids D.
+	* common/config/i386/i386-common.cc:
+	(processor_alias_table): Add graniterapids-d.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_subtypes): Add INTEL_COREI7_GRANITERAPIDS_D.
+	* config.gcc: Add -march=graniterapids-d.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Handle graniterapids-d.
+	* config/i386/i386.h: (PTA_GRANITERAPIDS_D): New.
+	* doc/extend.texi: Add graniterapids-d.
+	* doc/invoke.texi: Ditto.
+
+2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/110557
+	* tree-vect-patterns.cc (vect_recog_bitfield_ref_pattern):
+	Ensure the output sign-extended if necessary.
+
 2023-07-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/110595

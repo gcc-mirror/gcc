@@ -403,8 +403,8 @@ find_fde_tail (_Unwind_Ptr pc,
 	 BFD ld generates.  */
       signed value __attribute__ ((mode (SI)));
       memcpy (&value, p, sizeof (value));
+      eh_frame = (_Unwind_Ptr) (p + value);
       p += sizeof (value);
-      dbase = value;		/* No adjustment because pcrel has base 0.  */
     }
   else
     p = read_encoded_value_with_base (hdr->eh_frame_ptr_enc,

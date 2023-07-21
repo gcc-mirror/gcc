@@ -21987,6 +21987,9 @@ Intel Core i7 Rocketlake CPU.
 @item graniterapids
 Intel Core i7 graniterapids CPU.
 
+@item graniterapids-d
+Intel Core i7 graniterapids D CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 

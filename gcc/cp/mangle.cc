@@ -3312,7 +3312,8 @@ write_expression (tree expr)
   else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
     {
       tree fn = TREE_OPERAND (expr, 0);
-      fn = OVL_NAME (fn);
+      if (!identifier_p (fn))
+	fn = OVL_NAME (fn);
       if (IDENTIFIER_ANY_OP_P (fn))
 	write_string ("on");
       write_unqualified_id (fn);

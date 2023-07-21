@@ -497,6 +497,22 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS, 1, [Define if LFS support is available.])
   fi
+
+  AC_CACHE_CHECK([for fseeko and ftello], glibcxx_cv_posix_lfs, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <stdio.h>
+      ],
+      [FILE* fp;
+       fseeko(fp, 0, SEEK_CUR);
+       ftello(fp);
+      ],
+      [glibcxx_cv_posix_lfs=yes],
+      [glibcxx_cv_posix_lfs=no])
+  ])
+  if test $glibcxx_cv_posix_lfs = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FSEEKO_FTELLO, 1, [Define if fseeko and ftello are available.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -5270,6 +5286,33 @@ AC_DEFUN([GLIBCXX_CHECK_ALIGNAS_CACHELINE], [
        std::hardware_destructive_interference_size.])
   fi
   AC_MSG_RESULT($ac_alignas_cacheline)
+
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether iostream initialization should be done in the library,
+dnl using the init_priority attribute.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE if GCC supports the init_priority
+dnl    attribute for the target.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_INIT_PRIORITY], [
+AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether init_priority attribute is supported])
+  AC_TRY_COMPILE(, [
+  #if ! __has_attribute(init_priority)
+  #error init_priority not supported
+  #endif
+		 ], [ac_init_priority=yes], [ac_init_priority=no])
+  if test "$ac_init_priority" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE, 1,
+      [Define if init_priority should be used for iostream initialization.])
+  fi
+  AC_MSG_RESULT($ac_init_priority)
 
   AC_LANG_RESTORE
 ])

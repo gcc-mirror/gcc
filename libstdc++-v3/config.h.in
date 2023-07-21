@@ -949,11 +949,17 @@
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
 
+/* Define if fseeko and ftello are available. */
+#undef _GLIBCXX_USE_FSEEKO_FTELLO
+
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY
 
 /* Define if get_nprocs is available in <sys/sysinfo.h>. */
 #undef _GLIBCXX_USE_GET_NPROCS
+
+/* Define if init_priority should be used for iostream initialization. */
+#undef _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE
 
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS

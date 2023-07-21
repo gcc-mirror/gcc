@@ -217,8 +217,7 @@ extern GTY(()) int darwin_ms_struct;
   "%{image_base*:-Xlinker -image_base -Xlinker %*} %<image_base*",	\
   "%{init*:-Xlinker -init -Xlinker %*} %<init*",			\
   "%{multi_module:-Xlinker -multi_module} %<multi_module",		\
-  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} \
-     %<multiply_defined* ",						\
+  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} ",	\
   "%{multiplydefinedunused*:\
      -Xlinker -multiply_defined_unused -Xlinker %*} \
      %<multiplydefinedunused* ",					\
@@ -277,6 +276,14 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
+#if LD64_HAS_PLATFORM_VERSION
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+#else
+#define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*:-macosx_version_min %*} "
+#endif
+
 /* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
    these combinations; we also ensure that the no_pie option is passed to
    ld64 on system versions that default to PIE when mdynamic-no-pic is given.
@@ -294,7 +301,7 @@ extern GTY(()) int darwin_ms_struct;
    %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
-  "%<dynamic %<dynamiclib %<force_cpusubtype_ALL "
+  "%<dynamic %<dynamiclib %<force_cpusubtype_ALL %<multiply_defined* "
 
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\
@@ -352,7 +359,9 @@ extern GTY(()) int darwin_ms_struct;
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
      %{flto} %{fno-lto} %{flto=*} \
-    %l " LINK_COMPRESS_DEBUG_SPEC \
+    %l " \
+    DARWIN_PLATFORM_ID \
+    LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
@@ -455,8 +464,7 @@ extern GTY(()) int darwin_ms_struct;
   %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
    %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
    LINK_SYSROOT_SPEC \
-  "%{mmacosx-version-min=*:-macosx_version_min %*} \
-   %{!multiply_defined*:%{shared-libgcc: \
+   "%{!multiply_defined*:%{shared-libgcc: \
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress) }} \
    %{sectalign*} %{sectcreate*} %{sectobjectsymbols*}  %{sectorder*} \

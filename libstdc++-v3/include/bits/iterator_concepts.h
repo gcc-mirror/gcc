@@ -771,19 +771,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       && invocable<_Fn, iter_reference_t<_Is>...>
     using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Is>...>;
 
+  namespace __detail
+  {
+    template<typename _Iter, typename _Proj>
+      struct __projected
+      {
+	struct __type
+	{
+	  using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
+	  indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
+	};
+      };
+
+    template<weakly_incrementable _Iter, typename _Proj>
+      struct __projected<_Iter, _Proj>
+      {
+	struct __type
+	{
+	  using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
+	  using difference_type = iter_difference_t<_Iter>;
+	  indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
+	};
+      };
+  } // namespace __detail
+
   /// [projected], projected
   template<indirectly_readable _Iter,
 	   indirectly_regular_unary_invocable<_Iter> _Proj>
-    struct projected
-    {
-      using value_type = remove_cvref_t<indirect_result_t<_Proj&, _Iter>>;
-
-      indirect_result_t<_Proj&, _Iter> operator*() const; // not defined
-    };
-
-  template<weakly_incrementable _Iter, typename _Proj>
-    struct incrementable_traits<projected<_Iter, _Proj>>
-    { using difference_type = iter_difference_t<_Iter>; };
+    using projected = typename __detail::__projected<_Iter, _Proj>::__type;
 
   // [alg.req], common algorithm requirements
 

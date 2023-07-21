@@ -682,7 +682,7 @@ silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
 nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
-sierraforest graniterapids grandridge native"
+sierraforest graniterapids graniterapids-d grandridge native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.

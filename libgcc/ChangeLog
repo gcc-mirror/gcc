@@ -1,3 +1,21 @@
+2023-07-18  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2023-07-11  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/110179
+	* unwind-dw2-fde-dip.c (find_fde_tail): Add cast to avoid
+	implicit conversion of pointer value to integer.
+
+2023-07-18  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2023-06-07  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/109712
+	* unwind-dw2-fde-dip.c (find_fde_tail): Correct fast path for
+	parsing eh_frame.
+
 2023-06-03  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	PR libgcc/109670

@@ -979,7 +979,8 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 rtx
 scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
-  rtx src, tmp;
+  rtx tmp = gen_reg_rtx (vmode);
+  rtx src;
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
@@ -988,7 +989,6 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
       /* If both operands are MEMs, explicitly load the OP1 into TMP.  */
       if (MEM_P (op1) && MEM_P (op2))
 	{
-	  tmp = gen_reg_rtx (vmode);
 	  emit_insn_before (gen_rtx_SET (tmp, op1), insn);
 	  src = tmp;
 	}
@@ -1003,56 +1003,34 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
       rtx op12 = XEXP (op1, 1);
       convert_op (&op11, insn);
       convert_op (&op12, insn);
-      if (!REG_P (op11))
+      if (MEM_P (op11))
 	{
-	  tmp = gen_reg_rtx (vmode);
 	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
 	  op11 = tmp;
 	}
       src = gen_rtx_AND (vmode, gen_rtx_NOT (vmode, op11), op12);
-    }
-  else if (GET_CODE (op1) == AND)
-    {
-      rtx op11 = XEXP (op1, 0);
-      rtx op12 = XEXP (op1, 1);
-      convert_op (&op11, insn);
-      convert_op (&op12, insn);
-      if (!REG_P (op11))
-	{
-	  tmp = gen_reg_rtx (vmode);
-	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
-	  op11 = tmp;
-	}
-      return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, op11, op12),
-			     UNSPEC_PTEST);
     }
   else
     {
       convert_op (&op1, insn);
       src = op1;
     }
-
-  if (!REG_P (src))
-    {
-      tmp = gen_reg_rtx (vmode);
-      emit_insn_before (gen_rtx_SET (tmp, src), insn);
-      src = tmp;
-    }
+  emit_insn_before (gen_rtx_SET (tmp, src), insn);
 
   if (vmode == V2DImode)
-    {
-      tmp = gen_reg_rtx (vmode);
-      emit_insn_before (gen_vec_interleave_lowv2di (tmp, src, src), insn);
-      src = tmp;
-    }
+    emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (tmp),
+						  copy_rtx_if_shared (tmp),
+						  copy_rtx_if_shared (tmp)),
+		      insn);
   else if (vmode == V4SImode)
-    {
-      tmp = gen_reg_rtx (vmode);
-      emit_insn_before (gen_sse2_pshufd (tmp, src, const0_rtx), insn);
-      src = tmp;
-    }
+    emit_insn_before (gen_sse2_pshufd (copy_rtx_if_shared (tmp),
+				       copy_rtx_if_shared (tmp),
+				       const0_rtx),
+		      insn);
 
-  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, src, src), UNSPEC_PTEST);
+  return gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (tmp),
+					       copy_rtx_if_shared (tmp)),
+			 UNSPEC_PTEST);
 }
 
 /* Helper function for converting INSN to vector mode.  */
@@ -1539,9 +1517,6 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
 void
 timode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 {
-  if (GET_MODE (*op) == V1TImode)
-    return;
-
   *op = copy_rtx_if_shared (*op);
 
   if (REG_P (*op))
@@ -1549,19 +1524,19 @@ timode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
   else if (MEM_P (*op))
     {
       rtx tmp = gen_reg_rtx (V1TImode);
-      emit_insn_before (gen_rtx_SET (tmp,
+      emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (V1TImode, tmp, 0),
 				     gen_gpr_to_xmm_move_src (V1TImode, *op)),
 			insn);
-      *op = tmp;
+      *op = gen_rtx_SUBREG (V1TImode, tmp, 0);
 
       if (dump_file)
 	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
 		 INSN_UID (insn), REGNO (tmp));
     }
-  else if (CONST_SCALAR_INT_P (*op))
+  else if (CONST_INT_P (*op))
     {
       rtx vec_cst;
-      rtx tmp = gen_reg_rtx (V1TImode);
+      rtx tmp = gen_rtx_SUBREG (V1TImode, gen_reg_rtx (TImode), 0);
 
       /* Prefer all ones vector in case of -1.  */
       if (constm1_operand (*op, TImode))
@@ -1582,7 +1557,7 @@ timode_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	  emit_insn_before (seq, insn);
 	}
 
-      emit_insn_before (gen_move_insn (tmp, vec_cst), insn);
+      emit_insn_before (gen_move_insn (copy_rtx (tmp), vec_cst), insn);
       *op = tmp;
     }
   else
@@ -1879,25 +1854,13 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   rtx op2 = XEXP (src, 1);
 
   /* *cmp<dwi>_doubleword.  */
-  if ((CONST_SCALAR_INT_P (op1)
+  if ((CONST_INT_P (op1)
        || ((REG_P (op1) || MEM_P (op1))
 	   && GET_MODE (op1) == mode))
-      && (CONST_SCALAR_INT_P (op2)
+      && (CONST_INT_P (op2)
 	  || ((REG_P (op2) || MEM_P (op2))
 	      && GET_MODE (op2) == mode)))
     return true;
-
-  /* *testti_doubleword.  */
-  if (op2 == const0_rtx
-      && GET_CODE (op1) == AND
-      && REG_P (XEXP (op1, 0)))
-    {
-      rtx op12 = XEXP (op1, 1);
-      return GET_MODE (XEXP (op1, 0)) == TImode
-	     && (CONST_SCALAR_INT_P (op12)
-		 || ((REG_P (op12) || MEM_P (op12))
-		     && GET_MODE (op12) == TImode));
-    }
 
   /* *test<dwi>_not_doubleword.  */
   if (op2 == const0_rtx
@@ -2100,21 +2063,15 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
       if (!MEM_P (dst)
 	  && GET_CODE (XEXP (src, 0)) == NOT
 	  && REG_P (XEXP (XEXP (src, 0), 0))
-	  && (REG_P (XEXP (src, 1))
-	      || CONST_SCALAR_INT_P (XEXP (src, 1))
-	      || timode_mem_p (XEXP (src, 1))))
+	  && (REG_P (XEXP (src, 1)) || timode_mem_p (XEXP (src, 1))))
 	return true;
       return REG_P (XEXP (src, 0))
-	     && (REG_P (XEXP (src, 1))
-		 || CONST_SCALAR_INT_P (XEXP (src, 1))
-		 || timode_mem_p (XEXP (src, 1)));
+	     && (REG_P (XEXP (src, 1)) || timode_mem_p (XEXP (src, 1)));
 
     case IOR:
     case XOR:
       return REG_P (XEXP (src, 0))
-	     && (REG_P (XEXP (src, 1))
-		 || CONST_SCALAR_INT_P (XEXP (src, 1))
-		 || timode_mem_p (XEXP (src, 1)));
+	     && (REG_P (XEXP (src, 1)) || timode_mem_p (XEXP (src, 1)));
 
     case NOT:
       return REG_P (XEXP (src, 0)) || timode_mem_p (XEXP (src, 0));

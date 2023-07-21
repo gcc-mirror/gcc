@@ -1,3 +1,131 @@
+2023-07-20  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/feature-bf16-backport.c: New test.
+	* gcc.target/aarch64/feature-dotprod-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-scalar-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16fml-backport.c: New test.
+	* gcc.target/aarch64/feature-i8mm-backport.c: New test.
+	* gcc.target/aarch64/feature-memtag-backport.c: New test.
+	* gcc.target/aarch64/feature-sha3-backport.c: New test.
+	* gcc.target/aarch64/feature-sm4-backport.c: New test.
+
+2023-07-20  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-07-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-8.c: New test case.
+
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110535
+	* g++.dg/cpp2a/concepts-surrogate1.C: New test.
+	* g++.dg/cpp2a/concepts-surrogate2.C: New test.
+
+2023-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110122
+	* g++.dg/cpp2a/nontype-class57.C: New test.
+	* g++.dg/cpp2a/nontype-class58.C: New test.
+
+2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110731
+	* gcc.dg/pr110731.c: New test.
+
+2023-07-19  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2023-07-11  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/vect/pr97428.c: Limit to `vect_double' targets.
+
+2023-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/g++.exp: Remove additional flag handled by Darwin specs.
+	* lib/obj-c++.exp: Likewise.
+
+2023-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95947
+	PR fortran/110658
+	* gfortran.dg/deferred_character_37.f90: New test.
+
+2023-07-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110524
+	* g++.dg/cpp2a/fn-template26.C: New test.
+
+2023-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110669
+	* gcc.dg/torture/pr110669.c: New testcase.
+
+2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110206
+	* gcc.target/i386/pr110206.c: New test.
+
+2023-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110288
+	* gfortran.dg/findloc_10.f90: New test.
+
+2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2023-07-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/106966
+	* gcc.target/alpha/pr106966.c: New test.
+
+2023-07-12  Mo, Zewei  <zewei.mo@intel.com>
+
+	* g++.target/i386/mv16.C: Add graniterapids-d.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2023-07-11  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-07-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* g++.dg/vect/pr110557.cc: Use long long instead of long for
+	64-bit type.
+	(test): Remove an unnecessary cast.
+
+2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/110557
+	* g++.dg/vect/pr110557.cc: New test.
+
 2023-07-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

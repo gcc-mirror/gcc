@@ -292,7 +292,7 @@ __rndrrs (uint64_t *__res)
 #pragma GCC pop_options
 
 #pragma GCC push_options
-#pragma GCC target ("arch=armv8.5-a+memtag")
+#pragma GCC target ("+nothing+memtag")
 
 #define __arm_mte_create_random_tag(__ptr, __u64_mask) \
   __builtin_aarch64_memtag_irg(__ptr, __u64_mask)
