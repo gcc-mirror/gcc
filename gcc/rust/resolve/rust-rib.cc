@@ -36,13 +36,15 @@ Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> values)
 {}
 
 tl::expected<NodeId, DuplicateNameError>
-Rib::insert (std::string name, NodeId id)
+Rib::insert (std::string name, NodeId id, bool can_shadow)
 {
   auto res = values.insert ({name, id});
   auto inserted_id = res.first->second;
+  auto existed = !res.second;
 
-  // if we couldn't insert, the element already exists - exit with an error
-  if (!res.second)
+  // if we couldn't insert, the element already exists - exit with an error,
+  // unless shadowing is allowed
+  if (existed && !can_shadow)
     return tl::make_unexpected (DuplicateNameError (name, inserted_id));
 
   // return the NodeId
