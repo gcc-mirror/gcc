@@ -22,7 +22,7 @@
 
 #ifndef __cpp_lib_chrono
 # error "Feature-test macro for constexpr <chrono> missing"
-#elif __cpp_lib_chrono != 201611
+#elif __cpp_lib_chrono < 201611
 # error "Feature-test macro for constexpr <chrono> has wrong value"
 #endif
 

@@ -22,15 +22,15 @@ void
 test_parse()
 {
   using namespace std::chrono;
-  const sys_seconds expected = sys_days(2023y/August/9) + 20h + 44min + 3s;
-  tai_seconds tp;
+  const sys_seconds expected = sys_days(2023y/August/9) + 21h + 44min;
+  local_seconds tp;
 
   minutes offset;
   std::string abbrev;
-  std::istringstream is("8/9/23 214403 +1 BST#");
-  VERIFY( is >> parse("%D %2H%2M%2S %Oz %Z", tp, abbrev, offset) );
+  std::istringstream is("2023-8-9 21:44 +1 BST#"); // Not adjusted for offset.
+  VERIFY( is >> parse("%F %R %Oz %Z", tp, abbrev, offset) );
   VERIFY( ! is.eof() );
-  VERIFY( tp == clock_cast<tai_clock>(expected) );
+  VERIFY( tp == local_seconds(expected.time_since_epoch()) );
   VERIFY( abbrev == "BST" );
   VERIFY( offset == 60min );
 }

@@ -235,8 +235,12 @@ namespace __format
   };
 
   constexpr _ChronoParts
-  operator|(_ChronoParts __x, _ChronoParts __y)
+  operator|(_ChronoParts __x, _ChronoParts __y) noexcept
   { return static_cast<_ChronoParts>((int)__x | (int)__y); }
+
+  constexpr _ChronoParts&
+  operator|=(_ChronoParts& __x, _ChronoParts __y) noexcept
+  { return __x = __x | __y; }
 
   // TODO rename this to chrono::__formatter? or chrono::__detail::__formatter?
   template<typename _CharT>
@@ -2136,18 +2140,150 @@ namespace chrono
 /// @addtogroup chrono
 /// @{
 
-  // TODO: from_stream for duration
-#if 0
+/// @cond undocumented
+namespace __detail
+{
+  template<typename _Duration = seconds>
+    struct _Parser
+    {
+      static_assert(is_same_v<common_type_t<_Duration, seconds>, _Duration>);
+
+      explicit
+      _Parser(__format::_ChronoParts __need) : _M_need(__need) { }
+
+      _Parser(_Parser&&) = delete;
+      void operator=(_Parser&&) = delete;
+
+      _Duration _M_time{}; // since midnight
+      sys_days _M_sys_days{};
+      year_month_day _M_ymd{};
+      weekday _M_wd{};
+      __format::_ChronoParts _M_need;
+
+      template<typename _CharT, typename _Traits, typename _Alloc>
+	basic_istream<_CharT, _Traits>&
+	operator()(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		   basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		   minutes* __offset = nullptr);
+
+    private:
+      // Read an unsigned integer from the stream and return it.
+      // Extract no more than __n digits. Set failbit if an integer isn't read.
+      template<typename _CharT, typename _Traits>
+	static int_least32_t
+	_S_read_unsigned(basic_istream<_CharT, _Traits>& __is,
+			 ios_base::iostate& __err, int __n)
+	{
+	  int_least32_t __val = _S_try_read_digit(__is, __err);
+	  if (__val == -1) [[unlikely]]
+	    __err |= ios_base::failbit;
+	  else
+	    {
+	      int __n1 = (std::min)(__n, 9);
+	      // Cannot overflow __val unless we read more than 9 digits
+	      for (int __i = 1; __i < __n1; ++__i)
+		if (auto __dig = _S_try_read_digit(__is, __err); __dig != -1)
+		  {
+		    __val *= 10;
+		    __val += __dig;
+		  }
+
+	      while (__n1++ < __n) [[unlikely]]
+		if (auto __dig = _S_try_read_digit(__is, __err); __dig != -1)
+		  {
+		    if (__builtin_mul_overflow(__val, 10, &__val)
+			  || __builtin_add_overflow(__val, __dig, &__val))
+		      {
+			__err |= ios_base::failbit;
+			return -1;
+		      }
+		  }
+	    }
+	  return __val;
+	}
+
+      // Read an unsigned integer from the stream and return it.
+      // Extract no more than __n digits. Set failbit if an integer isn't read.
+      template<typename _CharT, typename _Traits>
+	static int_least32_t
+	_S_read_signed(basic_istream<_CharT, _Traits>& __is,
+			 ios_base::iostate& __err, int __n)
+	{
+	  auto __sign = __is.peek();
+	  if (__sign == '-' || __sign == '+')
+	    (void) __is.get();
+	  int_least32_t __val = _S_read_unsigned(__is, __err, __n);
+	  if (__err & ios_base::failbit)
+	    {
+	      if (__sign == '-') [[unlikely]]
+		__val *= -1;
+	    }
+	  return __val;
+	}
+
+      // Read a digit from the stream and return it, or return -1.
+      // If no digit is read eofbit will be set (but not failbit).
+      template<typename _CharT, typename _Traits>
+	static int_least32_t
+	_S_try_read_digit(basic_istream<_CharT, _Traits>& __is,
+			  ios_base::iostate& __err)
+	{
+	  int_least32_t __val = -1;
+	  auto __i = __is.peek();
+	  if (!_Traits::eq_int_type(__i, _Traits::eof())) [[likely]]
+	    {
+	      _CharT __c = _Traits::to_char_type(__i);
+	      if (_CharT('0') <= __c && __c <= _CharT('9')) [[likely]]
+		{
+		  (void) __is.get();
+		  __val = __c - _CharT('0');
+		}
+	    }
+	  else
+	    __err |= ios_base::eofbit;
+	  return __val;
+	}
+
+      // Read the specified character and return true.
+      // If the character is not found, set failbit and return false.
+      template<typename _CharT, typename _Traits>
+	static bool
+	_S_read_chr(basic_istream<_CharT, _Traits>& __is,
+		    ios_base::iostate& __err, _CharT __c)
+	{
+	  auto __i = __is.peek();
+	  if (_Traits::eq_int_type(__i, _Traits::eof()))
+	    __err |= ios_base::eofbit;
+	  else if (_Traits::to_char_type(__i) == __c) [[likely]]
+	    {
+	      (void) __is.get();
+	      return true;
+	    }
+	  __err |= ios_base::failbit;
+	  return false;
+	}
+    };
+
+  template<typename _Duration>
+    using _Parser_t = _Parser<common_type_t<_Duration, seconds>>;
+
+} // namespace __detail
+/// ~endcond
+
   template<typename _CharT, typename _Traits, typename _Rep, typename _Period,
 	   typename _Alloc = allocator<_CharT>>
-    basic_istream<_CharT, _Traits>&
+    inline basic_istream<_CharT, _Traits>&
     from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
 		duration<_Rep, _Period>& __d,
 		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
 		minutes* __offset = nullptr)
     {
+      auto __need = __format::_ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<duration<_Rep, _Period>> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__d = chrono::duration_cast<duration<_Rep, _Period>>(__p._M_time);
+      return __is;
     }
-#endif
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2163,7 +2299,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for day
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		day& __d,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      __detail::_Parser<> __p(__format::_ChronoParts::_Day);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__d = __p._M_ymd.day();
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2182,7 +2330,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for month
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		month& __m,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      __detail::_Parser<> __p(__format::_ChronoParts::_Month);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__m = __p._M_ymd.month();
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2203,7 +2363,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for year
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		year& __y,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      __detail::_Parser<> __p(__format::_ChronoParts::_Year);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__y = __p._M_ymd.year();
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2222,7 +2394,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for weekday
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		weekday& __wd,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      __detail::_Parser<> __p(__format::_ChronoParts::_Weekday);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__wd = __p._M_wd;
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2279,7 +2463,21 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for month_day
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		month_day& __md,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Month | _ChronoParts::_Day;
+      __detail::_Parser<> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__md = month_day(__p._M_ymd.month(), __p._M_ymd.day());
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2351,7 +2549,21 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for year_month
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		year_month& __ym,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month;
+      __detail::_Parser<> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__ym = year_month(__p._M_ymd.year(), __p._M_ymd.month());
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2367,7 +2579,22 @@ namespace chrono
       return __os;
     }
 
-  // TODO from_stream for year_month_day
+  template<typename _CharT, typename _Traits,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		year_month_day& __ymd,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day;
+      __detail::_Parser<> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	__ymd = __p._M_ymd;
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -2498,7 +2725,28 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for sys_time
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		sys_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      minutes __off{};
+      if (!__offset)
+	__offset = &__off;
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day | _ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<_Duration> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	{
+	  auto __st = __p._M_sys_days + __p._M_time - *__offset;
+	  __tp = chrono::time_point_cast<_Duration>(__st);
+	}
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits, typename _Duration>
     inline basic_ostream<_CharT, _Traits>&
@@ -2509,7 +2757,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for utc_time
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		utc_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      sys_time<_Duration> __st;
+      if (chrono::from_stream(__is, __fmt, __st, __abbrev, __offset))
+	__tp = utc_clock::from_sys(__st);
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits, typename _Duration>
     inline basic_ostream<_CharT, _Traits>&
@@ -2520,7 +2780,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for tai_time
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		tai_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      utc_time<_Duration> __ut;
+      if (chrono::from_stream(__is, __fmt, __ut, __abbrev, __offset))
+	__tp = tai_clock::from_utc(__ut);
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits, typename _Duration>
     inline basic_ostream<_CharT, _Traits>&
@@ -2531,8 +2803,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for gps_time
-
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		gps_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      utc_time<_Duration> __ut;
+      if (chrono::from_stream(__is, __fmt, __ut, __abbrev, __offset))
+	__tp = gps_clock::from_utc(__ut);
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits, typename _Duration>
     inline basic_ostream<_CharT, _Traits>&
@@ -2543,7 +2826,19 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for file_time
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    inline basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		file_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      sys_time<_Duration> __st;
+      if (chrono::from_stream(__is, __fmt, __st, __abbrev, __offset))
+	__tp = file_clock::from_sys(__st);
+      return __is;
+    }
 
   template<typename _CharT, typename _Traits, typename _Duration>
     inline basic_ostream<_CharT, _Traits>&
@@ -2554,7 +2849,1365 @@ namespace chrono
       return __os;
     }
 
-  // TODO: from_stream for local_time
+  template<typename _CharT, typename _Traits, typename _Duration,
+	   typename _Alloc = allocator<_CharT>>
+    basic_istream<_CharT, _Traits>&
+    from_stream(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+		local_time<_Duration>& __tp,
+		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+		minutes* __offset = nullptr)
+    {
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day | _ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<_Duration> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	{
+	  days __d = __p._M_sys_days.time_since_epoch();
+	  auto __t = local_days(__d) + __p._M_time; // ignore offset
+	  __tp = chrono::time_point_cast<_Duration>(__t);
+	}
+      return __is;
+    }
+
+  // [time.parse] parsing
+
+namespace __detail
+{
+  template<typename _Parsable, typename _CharT,
+	   typename _Traits = std::char_traits<_CharT>,
+	   typename... _OptArgs>
+    concept __parsable = requires (basic_istream<_CharT, _Traits>& __is,
+				   const _CharT* __fmt, _Parsable& __tp,
+				   _OptArgs*... __args)
+    { from_stream(__is, __fmt, __tp, __args...); };
+
+  template<typename _Parsable, typename _CharT,
+	   typename _Traits = char_traits<_CharT>,
+	   typename _Alloc = allocator<_CharT>>
+    struct _Parse
+    {
+    private:
+      using __string_type = basic_string<_CharT, _Traits, _Alloc>;
+
+    public:
+      _Parse(const _CharT* __fmt, _Parsable& __tp,
+	     basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
+	     minutes* __offset = nullptr)
+      : _M_fmt(__fmt), _M_tp(std::__addressof(__tp)),
+	_M_abbrev(__abbrev), _M_offset(__offset)
+      { }
+
+      _Parse(_Parse&&) = delete;
+      _Parse& operator=(_Parse&&) = delete;
+
+    private:
+      using __stream_type = basic_istream<_CharT, _Traits>;
+
+      const _CharT* const  _M_fmt;
+      _Parsable* const     _M_tp;
+      __string_type* const _M_abbrev;
+      minutes* const       _M_offset;
+
+      friend __stream_type&
+      operator>>(__stream_type& __is, _Parse&& __p)
+      {
+	if (__p._M_offset)
+	  from_stream(__is, __p._M_fmt, *__p._M_tp, __p._M_abbrev,
+		      __p._M_offset);
+	else if (__p._M_abbrev)
+	  from_stream(__is, __p._M_fmt, *__p._M_tp, __p._M_abbrev);
+	else
+	  from_stream(__is, __p._M_fmt, *__p._M_tp);
+	return __is;
+      }
+
+      friend void operator>>(__stream_type&, _Parse&) = delete;
+      friend void operator>>(__stream_type&, const _Parse&) = delete;
+    };
+} // namespace __detail
+
+  template<typename _CharT, __detail::__parsable<_CharT> _Parsable>
+    [[nodiscard, __gnu__::__access__(__read_only__, 1)]]
+    inline auto
+    parse(const _CharT* __fmt, _Parsable& __tp)
+    { return __detail::_Parse<_Parsable, _CharT>(__fmt, __tp); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   __detail::__parsable<_CharT, _Traits> _Parsable>
+    [[nodiscard]]
+    inline auto
+    parse(const basic_string<_CharT, _Traits, _Alloc>& __fmt, _Parsable& __tp)
+    {
+      return __detail::_Parse<_Parsable, _CharT, _Traits>(__fmt.c_str(), __tp);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, _Traits, _Alloc>,
+	   __detail::__parsable<_CharT, _Traits, _StrT> _Parsable>
+    [[nodiscard, __gnu__::__access__(__read_only__, 1)]]
+    inline auto
+    parse(const _CharT* __fmt, _Parsable& __tp,
+	  basic_string<_CharT, _Traits, _Alloc>& __abbrev)
+    {
+      auto __pa = std::__addressof(__abbrev);
+      return __detail::_Parse<_Parsable, _CharT, _Traits, _Alloc>(__fmt, __tp,
+								  __pa);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, _Traits, _Alloc>,
+	   __detail::__parsable<_CharT, _Traits, _StrT> _Parsable>
+    [[nodiscard]]
+    inline auto
+    parse(const basic_string<_CharT, _Traits, _Alloc>& __fmt, _Parsable& __tp,
+	  basic_string<_CharT, _Traits, _Alloc>& __abbrev)
+    {
+      auto __pa = std::__addressof(__abbrev);
+      return __detail::_Parse<_Parsable, _CharT, _Traits, _Alloc>(__fmt.c_str(),
+								  __tp, __pa);
+    }
+
+  template<typename _CharT, typename _Traits = char_traits<_CharT>,
+	   typename _StrT = basic_string<_CharT, _Traits>,
+	   __detail::__parsable<_CharT, _Traits, _StrT, minutes> _Parsable>
+    [[nodiscard, __gnu__::__access__(__read_only__, 1)]]
+    inline auto
+    parse(const _CharT* __fmt, _Parsable& __tp, minutes& __offset)
+    {
+      return __detail::_Parse<_Parsable, _CharT>(__fmt, __tp, nullptr,
+						 &__offset);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, _Traits>,
+	   __detail::__parsable<_CharT, _Traits, _StrT, minutes> _Parsable>
+    [[nodiscard]]
+    inline auto
+    parse(const basic_string<_CharT, _Traits, _Alloc>& __fmt, _Parsable& __tp,
+	  minutes& __offset)
+    {
+      return __detail::_Parse<_Parsable, _CharT, _Traits, _Alloc>(__fmt.c_str(),
+								  __tp, nullptr,
+								  &__offset);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, _Traits, _Alloc>,
+	   __detail::__parsable<_CharT, _Traits, _StrT, minutes> _Parsable>
+    [[nodiscard, __gnu__::__access__(__read_only__, 1)]]
+    inline auto
+    parse(const _CharT* __fmt, _Parsable& __tp,
+	  basic_string<_CharT, _Traits, _Alloc>& __abbrev, minutes& __offset)
+    {
+      auto __pa = std::__addressof(__abbrev);
+      return __detail::_Parse<_Parsable, _CharT, _Traits, _Alloc>(__fmt, __tp,
+								  __pa,
+								  &__offset);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, _Traits, _Alloc>,
+	   __detail::__parsable<_CharT, _Traits, _StrT, minutes> _Parsable>
+    [[nodiscard]]
+    inline auto
+    parse(const basic_string<_CharT, _Traits, _Alloc>& __fmt, _Parsable& __tp,
+	  basic_string<_CharT, _Traits, _Alloc>& __abbrev, minutes& __offset)
+    {
+      auto __pa = std::__addressof(__abbrev);
+      return __detail::_Parse<_Parsable, _CharT, _Traits, _Alloc>(__fmt.c_str(),
+								  __tp, __pa,
+								  &__offset);
+    }
+
+  /// @cond undocumented
+  template<typename _Duration>
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_istream<_CharT, _Traits>&
+    __detail::_Parser<_Duration>::
+    operator()(basic_istream<_CharT, _Traits>& __is, const _CharT* __fmt,
+	       basic_string<_CharT, _Traits, _Alloc>* __abbrev,
+	       minutes* __offset)
+    {
+      using sentry = typename basic_istream<_CharT, _Traits>::sentry;
+      ios_base::iostate __err = ios_base::goodbit;
+      if (sentry __cerb(__is, true); __cerb)
+	{
+	  locale __loc = __is.getloc();
+	  auto& __tmget = std::use_facet<std::time_get<_CharT>>(__loc);
+	  auto& __tmpunct = std::use_facet<std::__timepunct<_CharT>>(__loc);
+
+	  // RAII type to save and restore stream state.
+	  struct _Stream_state
+	  {
+	    explicit
+	    _Stream_state(basic_istream<_CharT, _Traits>& __i)
+	    : _M_is(__i),
+	      _M_flags(__i.flags(ios_base::skipws | ios_base::dec)),
+	      _M_w(__i.width(0))
+	    { }
+
+	    ~_Stream_state()
+	    {
+	      _M_is.flags(_M_flags);
+	      _M_is.width(_M_w);
+	    }
+
+	    _Stream_state(_Stream_state&&) = delete;
+
+	    basic_istream<_CharT, _Traits>& _M_is;
+	    ios_base::fmtflags _M_flags;
+	    streamsize _M_w;
+	  };
+
+	  auto __is_failed = [](ios_base::iostate __e) {
+	    return static_cast<bool>(__e & ios_base::failbit);
+	  };
+
+	  // Read an unsigned integer from the stream and return it.
+	  // Extract no more than __n digits. Set __err on error.
+	  auto __read_unsigned = [&] (int __n) {
+	    return _S_read_unsigned(__is, __err, __n);
+	  };
+
+	  // Read a signed integer from the stream and return it.
+	  // Extract no more than __n digits. Set __err on error.
+	  auto __read_signed = [&] (int __n) {
+	    return _S_read_signed(__is, __err, __n);
+	  };
+
+	  // Read an expected character from the stream.
+	  auto __read_chr = [&__is, &__err] (_CharT __c) {
+	    return _S_read_chr(__is, __err, __c);
+	  };
+
+	  using __format::_ChronoParts;
+	  _ChronoParts __parts{};
+
+	  const year __bad_y = --year::min(); // SHRT_MIN
+	  const month __bad_mon(255);
+	  const day __bad_day(255);
+	  const weekday __bad_wday(255);
+	  const hours __bad_h(-1);
+	  const minutes __bad_min(-9999);
+	  const seconds __bad_sec(-1);
+
+	  year __y = __bad_y, __yy = __bad_y;         // %Y, %yy
+	  year __iso_y = __bad_y, __iso_yy = __bad_y; // %G, %g
+	  month __m = __bad_mon;                      // %m
+	  day __d = __bad_day;                        // %d
+	  weekday __wday = __bad_wday;                // %a %A %u %w
+	  hours __h = __bad_h, __h12 = __bad_h;       // %H, %I
+	  minutes __min = __bad_min;                  // %M
+	  _Duration __s = __bad_sec;                  // %S
+	  int __ampm = 0;                             // %p
+	  int __iso_wk = -1, __sunday_wk = -1, __monday_wk = -1; // %V, %U, %W
+	  int __century = -1;                         // %C
+	  int __dayofyear = -1;                       // %j (for non-duration)
+
+	  minutes __tz_offset = __bad_min;
+	  basic_string<_CharT, _Traits> __tz_abbr;
+
+	  // bool __is_neg = false; // TODO: how is this handled for parsing?
+
+	  _CharT __mod{}; // One of 'E' or 'O' or nul.
+	  unsigned __num = 0; // Non-zero for N modifier.
+	  bool __is_flag = false; // True if we're processing a % flag.
+
+	  // If an out-of-range value is extracted (e.g. 61min for %M),
+	  // do not set failbit immediately because we might not need it
+	  // (e.g. parsing chrono::year doesn't care about invalid %M values).
+	  // Instead set the variable back to its initial 'bad' state,
+	  // and also set related variables corresponding to the same field
+	  // (e.g. a bad %M value for __min should also reset __h and __s).
+	  // If a valid value is needed later the bad value will cause failure.
+
+	  // For some fields we don't know the correct range when parsing and
+	  // we have to be liberal in what we accept, e.g. we allow 366 for
+	  // day-of-year because that's valid in leap years, and we allow 31
+	  // for day-of-month. If those values are needed to determine the
+	  // result then we can do a correct range check at the end when we
+	  // know the how many days the relevant year or month actually has.
+
+	  while (*__fmt)
+	    {
+	      _CharT __c = *__fmt++;
+	      if (!__is_flag)
+		{
+		  if (__c == '%')
+		    __is_flag = true; // This is the start of a flag.
+		  else if (std::isspace(__c, __loc))
+		    std::ws(__is); // Match zero or more whitespace characters.
+		  else if (!__read_chr(__c)) [[unlikely]]
+		    break; // Failed to match the expected character.
+
+		  continue; // Process next character in the format string.
+		}
+
+	      // Now processing a flag.
+	      switch (__c)
+	      {
+		case 'a': // Locale's weekday name
+		case 'A': // (full or abbreviated, matched case-insensitively).
+		  if (__mod || __num) [[unlikely]]
+		    __err = ios_base::failbit;
+		  else
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2, __fmt);
+		      if (!__is_failed(__err))
+			__wday = weekday(__tm.tm_wday);
+		    }
+		  __parts |= _ChronoParts::_Weekday;
+		  break;
+
+		case 'b': // Locale's month name
+		case 'h': // (full or abbreviated, matched case-insensitively).
+		case 'B':
+		  if (__mod || __num) [[unlikely]]
+		    __err = ios_base::failbit;
+		  else
+		    {
+		      // strptime behaves differently for %b and %B,
+		      // but chrono::parse says they're equivalent.
+		      // Luckily libstdc++ std::time_get works as needed.
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2, __fmt);
+		      if (!__is_failed(__err))
+			__m = month(__tm.tm_mon + 1);
+		    }
+		  __parts |= _ChronoParts::_Month;
+		  break;
+
+		case 'c': // Locale's date and time representation.
+		  if (__mod == 'O' || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2 - (__mod == 'E'), __fmt);
+		      if (!__is_failed(__err))
+			{
+			  __y = year(__tm.tm_year + 1900);
+			  __m = month(__tm.tm_mon + 1);
+			  __d = day(__tm.tm_mday);
+			  __h = hours(__tm.tm_hour);
+			  __min = minutes(__tm.tm_min);
+			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			}
+		    }
+		  __parts |= _ChronoParts::_DateTime;
+		  break;
+
+		case 'C': // Century
+		  if (!__mod) [[likely]]
+		    {
+		      auto __v = __read_signed(__num ? __num : 2);
+		      if (!__is_failed(__err))
+			__century = __v * 100;
+		    }
+		  else if (__mod == 'E')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			__century = __tm.tm_year;
+		    }
+		  else [[unlikely]]
+		    __err |= ios_base::failbit;
+		  // N.B. don't set this here: __parts |= _ChronoParts::_Year;
+		  break;
+
+		case 'd': // Day of month (1-31)
+		case 'e':
+		  if (!__mod) [[likely]]
+		    {
+		      auto __v = __read_unsigned(__num ? __num : 2);
+		      if (!__is_failed(__err))
+			__d = day(__v);
+		    }
+		  else if (__mod == 'O')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			__d = day(__tm.tm_mday);
+		    }
+		  else [[unlikely]]
+		    __err |= ios_base::failbit;
+		  __parts |= _ChronoParts::_Day;
+		  break;
+
+		case 'D': // %m/%d/%y
+		  if (__mod || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      auto __month = __read_unsigned(2); // %m
+		      __read_chr('/');
+		      auto __day = __read_unsigned(2); // %d
+		      __read_chr('/');
+		      auto __year = __read_unsigned(2); // %y
+		      if (__is_failed(__err))
+			break;
+		      __y = year(__year + 1900 + 100 * int(__year < 69));
+		      __m = month(__month);
+		      __d = day(__day);
+		      if (!year_month_day(__y, __m, __d).ok())
+			{
+			  __y = __yy = __iso_y = __iso_yy = __bad_y;
+			  __m = __bad_mon;
+			  __d = __bad_day;
+			  break;
+			}
+		    }
+		  __parts |= _ChronoParts::_Date;
+		  break;
+
+		case 'F': // %Y-%m-%d - any N modifier only applies to %Y.
+		  if (__mod) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      auto __year = __read_signed(__num ? __num : 4); // %Y
+		      __read_chr('-');
+		      auto __month = __read_unsigned(2); // %m
+		      __read_chr('-');
+		      auto __day = __read_unsigned(2); // %d
+		      if (__is_failed(__err))
+			break;
+		      __y = year(__year);
+		      __m = month(__month);
+		      __d = day(__day);
+		      if (!year_month_day(__y, __m, __d).ok())
+			{
+			  __y = __yy = __iso_y = __iso_yy = __bad_y;
+			  __m = __bad_mon;
+			  __d = __bad_day;
+			  break;
+			}
+		    }
+		  __parts |= _ChronoParts::_Date;
+		  break;
+
+		case 'g': // Last two digits of ISO week-based year.
+		  if (__mod) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (__val >= 0 && __val <= 99)
+			{
+			  __iso_yy = year(__val);
+			  if (__century == -1) // No %C has been parsed yet.
+			    __century = 2000;
+			}
+		      else
+			__iso_yy = __iso_y = __y = __yy = __bad_y;
+		    }
+		  __parts |= _ChronoParts::_Year;
+		  break;
+
+		case 'G': // ISO week-based year.
+		  if (__mod) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    __iso_y = year(__read_unsigned(__num ? __num : 4));
+		  __parts |= _ChronoParts::_Year;
+		  break;
+
+		case 'H': // 24-hour (00-23)
+		case 'I': // 12-hour (1-12)
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+#if 0
+		      struct tm __tm{};
+		      __tm.tm_ampm = 1;
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			{
+			  if (__c == 'I')
+			    {
+			      __h12 = hours(__tm.tm_hour);
+			      __h = __bad_h;
+			    }
+			  else
+			    __h = hours(__tm.tm_hour);
+			}
+#else
+		      // XXX %OI seems to be unimplementable.
+		      __err |= ios_base::failbit;
+#endif
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (__c == 'I' && __val >= 1 && __val <= 12)
+			{
+			  __h12 = hours(__val);
+			  __h = __bad_h;
+			}
+		      else if (__c == 'H' && __val >= 0 && __val <= 23)
+			__h = hours(__val);
+		    }
+		  __parts |= _ChronoParts::_TimeOfDay;
+		  break;
+
+		case 'j': // For duration, count of days, otherwise day of year
+		  if (__mod) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (_M_need == _ChronoParts::_TimeOfDay) // duration
+		    {
+		      auto __val = __read_signed(__num ? __num : 3);
+		      if (!__is_failed(__err))
+			{
+			  __h = days(__val); // __h will get added to _M_time
+			  __parts |= _ChronoParts::_TimeOfDay;
+			}
+		    }
+		  else
+		    {
+		      __dayofyear = __read_unsigned(__num ? __num : 3);
+		      // N.B. do not alter __parts here, done after loop.
+		      // No need for range checking here either.
+		    }
+		  break;
+
+		case 'm': // Month (1-12)
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2, __fmt);
+		      if (!__is_failed(__err))
+			__m = month(__tm.tm_mon + 1);
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (__val >= 1 && __val <= 12)
+			__m = month(__val);
+		      else
+			__m = __bad_mon;
+		    }
+		  __parts |= _ChronoParts::_Month;
+		  break;
+
+		case 'M': // Minutes
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2, __fmt);
+		      if (!__is_failed(__err))
+			__min = minutes(__tm.tm_min);
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (0 <= __val && __val < 60)
+			__min = minutes(__val);
+		      else
+			{
+			  __h = __bad_h;
+			  __min = __bad_min;
+			  __s = __bad_sec;
+			  break;
+			}
+		    }
+		  __parts |= _ChronoParts::_TimeOfDay;
+		  break;
+
+		case 'p': // Locale's AM/PM designation for 12-hour clock.
+		  if (__mod || __num)
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      // Can't use std::time_get here as it can't parse %p
+		      // in isolation without %I. This might be faster anyway.
+		      const _CharT* __ampms[2];
+		      __tmpunct._M_am_pm(__ampms);
+		      int __n = 0, __which = 3;
+		      while (__which != 0)
+			{
+			  auto __i = __is.peek();
+			  if (_Traits::eq_int_type(__i, _Traits::eof()))
+			    {
+			      __err |= ios_base::eofbit | ios_base::failbit;
+			      break;
+			    }
+			  __i = std::toupper(_Traits::to_char_type(__i), __loc);
+			  if (__which & 1)
+			    {
+			      if (__i != std::toupper(__ampms[0][__n], __loc))
+				__which ^= 1;
+			      else if (__ampms[0][__n + 1] == _CharT())
+				{
+				  __which = 1;
+				  (void) __is.get();
+				  break;
+				}
+			    }
+			  if (__which & 2)
+			    {
+			      if (__i != std::toupper(__ampms[1][__n], __loc))
+				__which ^= 2;
+			      else if (__ampms[1][__n + 1] == _CharT())
+				{
+				  __which = 2;
+				  (void) __is.get();
+				  break;
+				}
+			    }
+			  if (__which)
+			    (void) __is.get();
+			  ++__n;
+			}
+		      if (__which == 0 || __which == 3)
+			__err |= ios_base::failbit;
+		      else
+			__ampm = __which;
+		    }
+		  break;
+
+		case 'r': // Locale's 12-hour time.
+		  if (__mod || __num)
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2, __fmt);
+		      if (!__is_failed(__err))
+			{
+			  __h = hours(__tm.tm_hour);
+			  __min = minutes(__tm.tm_min);
+			  __s = seconds(__tm.tm_sec);
+			}
+		    }
+		  __parts |= _ChronoParts::_TimeOfDay;
+		  break;
+
+		case 'R': // %H:%M
+		case 'T': // %H:%M:%S
+		  if (__mod || __num) [[unlikely]]
+		    {
+		      __err |= ios_base::failbit;
+		      break;
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(2);
+		      if (__val == -1 || __val > 23)
+			{
+			  __h = __bad_h;
+			  __min = __bad_min;
+			  __s = __bad_sec;
+			  break;
+			}
+		      if (!__read_chr(':'))
+			{
+			  __err |= ios_base::failbit;
+			  break;
+			}
+		      __h = hours(__val);
+
+		      __val = __read_unsigned(2);
+		      if (__val == -1 || __val > 60)
+			{
+			  __h = __bad_h;
+			  __min = __bad_min;
+			  __s = __bad_sec;
+			  break;
+			}
+		      __min = minutes(__val);
+
+		      __parts |= _ChronoParts::_TimeOfDay;
+
+		      if (__c != 'T' || !__read_chr(':'))
+			break;
+		    }
+		  [[fallthrough]];
+
+		case 'S': // Seconds
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			__s = seconds(__tm.tm_sec);
+		    }
+		  else if constexpr (ratio_equal_v<typename _Duration::period,
+						   ratio<1>>)
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (0 <= __val && __val <= 59)
+			__s = seconds(__val);
+		      else
+			{
+			  __h = __bad_h;
+			  __min = __bad_min;
+			  __s = __bad_sec;
+			  break;
+			}
+		    }
+		  else
+		    {
+		      basic_stringstream<_CharT> __buf;
+		      auto __digit = _S_try_read_digit(__is, __err);
+		      if (__digit != -1)
+			{
+			  __buf.put(_CharT('0') + __digit);
+			  __digit = _S_try_read_digit(__is, __err);
+			  if (__digit != -1)
+			    __buf.put(_CharT('0') + __digit);
+			}
+
+		      auto __i = __is.peek();
+		      if (_Traits::eq_int_type(__i, _Traits::eof()))
+			__err |= ios_base::eofbit;
+		      else
+			{
+			  auto& __np = use_facet<numpunct<_CharT>>(__loc);
+			  auto __dp = __np.decimal_point();
+			  _CharT __c = _Traits::to_char_type(__i);
+			  if (__c == __dp)
+			    {
+			      (void) __is.get();
+			      __buf.put(__c);
+			      int __prec
+				= hh_mm_ss<_Duration>::fractional_width;
+			      do
+				{
+				  __digit = _S_try_read_digit(__is, __err);
+				  if (__digit != -1)
+				    __buf.put(_CharT('0') + __digit);
+				  else
+				    break;
+				}
+			      while (--__prec);
+			    }
+			}
+
+		      if (!__is_failed(__err))
+			{
+			  auto& __ng = use_facet<num_get<_CharT>>(__loc);
+			  long double __val;
+			  ios_base::iostate __err2{};
+			  __ng.get(__buf, {}, __buf, __err2, __val);
+			  if (__is_failed(__err2)) [[unlikely]]
+			    __err |= __err2;
+			  else
+			    {
+			      duration<long double> __fs(__val);
+			      __s = duration_cast<_Duration>(__fs);
+			    }
+			}
+		    }
+		  __parts |= _ChronoParts::_TimeOfDay;
+		  break;
+
+		case 'u': // ISO weekday (1-7)
+		case 'w': // Weekday (0-6)
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+		      if (__c == 'w')
+			{
+			  struct tm __tm{};
+			  __tmget.get(__is, {}, __is, __err, &__tm,
+				      __fmt - 3, __fmt);
+			  if (!__is_failed(__err))
+			    __wday = weekday(__tm.tm_wday);
+			}
+		      else
+			__err |= ios_base::failbit;
+		    }
+		  else
+		    {
+		      const int __lo = __c == 'u' ? 1 : 0;
+		      const int __hi = __lo + 6;
+		      auto __val = __read_unsigned(__num ? __num : 1);
+		      if (__lo <= __val && __val <= __hi)
+			__wday = weekday(__val);
+		      else
+			{
+			  __wday = __bad_wday;
+			  break;
+			}
+		    }
+		  __parts |= _ChronoParts::_Weekday;
+		  break;
+
+		case 'U': // Week number of the year (from first Sunday).
+		case 'V': // ISO week-based week number.
+		case 'W': // Week number of the year (from first Monday).
+		  if (__mod == 'E') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'O')
+		    {
+		      if (__c == 'V') [[unlikely]]
+			__err |= ios_base::failbit;
+		      else
+			{
+			  // TODO nl_langinfo_l(ALT_DIGITS) ?
+			  // Not implementable using std::time_get.
+			}
+		    }
+		  else
+		    {
+		      const int __lo = __c == 'V' ? 1 : 0;
+		      const int __hi = 53;
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (__lo <= __val && __val <= __hi)
+			{
+			  switch (__c)
+			  {
+			    case 'U':
+			      __sunday_wk = __val;
+			      break;
+			    case 'V':
+			      __iso_wk = __val;
+			      break;
+			    case 'W':
+			      __monday_wk = __val;
+			      break;
+			  }
+			}
+		      else
+			__iso_wk = __sunday_wk = __monday_wk = -1;
+		    }
+		  // N.B. do not alter __parts here, done after loop.
+		  break;
+
+		case 'x': // Locale's date representation.
+		  if (__mod == 'O' || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2 - (__mod == 'E'), __fmt);
+		      if (!__is_failed(__err))
+			{
+			  __y = year(__tm.tm_year + 1900);
+			  __m = month(__tm.tm_mon + 1);
+			  __d = day(__tm.tm_mday);
+			}
+		    }
+		  __parts |= _ChronoParts::_Date;
+		  break;
+
+		case 'X': // Locale's time representation.
+		  if (__mod == 'O' || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 2 - (__mod == 'E'), __fmt);
+		      if (!__is_failed(__err))
+			{
+			  __h = hours(__tm.tm_hour);
+			  __min = minutes(__tm.tm_min);
+			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			}
+		    }
+		  __parts |= _ChronoParts::_TimeOfDay;
+		  break;
+
+		case 'y': // Last two digits of year.
+		  if (__mod) [[unlikely]]
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			{
+			  int __cent = __tm.tm_year < 2000 ? 1900 : 2000;
+			  __yy = year(__tm.tm_year - __cent);
+			  if (__century == -1) // No %C has been parsed yet.
+			    __century = __cent;
+			}
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 2);
+		      if (__val >= 0 && __val <= 99)
+			{
+			  __yy = year(__val);
+			  if (__century == -1) // No %C has been parsed yet.
+			    __century = __val < 69 ? 2000 : 1900;
+			}
+		      else
+			__y = __yy = __iso_yy = __iso_y = __bad_y;
+		    }
+		  __parts |= _ChronoParts::_Year;
+		  break;
+
+		case 'Y': // Year
+		  if (__mod == 'O') [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else if (__mod == 'E')
+		    {
+		      struct tm __tm{};
+		      __tmget.get(__is, {}, __is, __err, &__tm,
+				  __fmt - 3, __fmt);
+		      if (!__is_failed(__err))
+			__y = year(__tm.tm_year);
+		    }
+		  else
+		    {
+		      auto __val = __read_unsigned(__num ? __num : 4);
+		      if (!__is_failed(__err))
+			__y = year(__val);
+		    }
+		  __parts |= _ChronoParts::_Year;
+		  break;
+
+		case 'z':
+		  if (__num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      // For %Ez and %Oz read [+|-][h]h[:mm].
+		      // For %z read [+|-]hh[mm].
+
+		      auto __i = __is.peek();
+		      if (_Traits::eq_int_type(__i, _Traits::eof()))
+			{
+			  __err |= ios_base::eofbit | ios_base::failbit;
+			  break;
+			}
+		      _CharT __ic = _Traits::to_char_type(__i);
+		      const bool __neg = __ic == _CharT('-');
+		      if (__ic == _CharT('-') || __ic == _CharT('+'))
+			(void) __is.get();
+
+		      int_least32_t __hh;
+		      if (__mod)
+			{
+			  // Read h[h]
+			  __hh = __read_unsigned(2);
+			}
+		      else
+			{
+			  // Read hh
+			  __hh = 10 * _S_try_read_digit(__is, __err);
+			  __hh += _S_try_read_digit(__is, __err);
+			}
+
+		      if (__is_failed(__err))
+			break;
+
+		      __i = __is.peek();
+		      if (_Traits::eq_int_type(__i, _Traits::eof()))
+			{
+			  __err |= ios_base::eofbit;
+			  __tz_offset = minutes(__hh * (__neg ? -60 : 60));
+			  break;
+			}
+		      __ic = _Traits::to_char_type(__i);
+
+		      bool __read_mm = false;
+		      if (__mod)
+			{
+			  if (__ic == _GLIBCXX_WIDEN(":")[0])
+			    {
+			      // Read [:mm] part.
+			      (void) __is.get();
+			      __read_mm = true;
+			    }
+			}
+		      else if (_CharT('0') <= __ic && __ic <= _CharT('9'))
+			{
+			  // Read [mm] part.
+			  __read_mm = true;
+			}
+
+		      int_least32_t __mm = 0;
+		      if (__read_mm)
+			{
+			  __mm = 10 * _S_try_read_digit(__is, __err);
+			  __mm += _S_try_read_digit(__is, __err);
+			}
+
+		      if (!__is_failed(__err))
+			{
+			  auto __z = __hh * 60 + __mm;
+			  __tz_offset = minutes(__neg ? -__z : __z);
+			}
+		    }
+		  break;
+
+		case 'Z':
+		  if (__mod || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      basic_string_view<_CharT> __x = _GLIBCXX_WIDEN("_/-+");
+		      __tz_abbr.clear();
+		      while (true)
+			{
+			  auto __i = __is.peek();
+			  if (!_Traits::eq_int_type(__i, _Traits::eof()))
+			    {
+			      _CharT __a = _Traits::to_char_type(__i);
+			      if (std::isalnum(__a, __loc)
+				    || __x.find(__a) != __x.npos)
+				{
+				  __tz_abbr.push_back(__a);
+				  (void) __is.get();
+				  continue;
+				}
+			    }
+			  else
+			    __err |= ios_base::eofbit;
+			  break;
+			}
+		      if (__tz_abbr.empty())
+			__err |= ios_base::failbit;
+		    }
+		  break;
+
+		case 'n': // Exactly one whitespace character.
+		  if (__mod || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      _CharT __i = __is.peek();
+		      if (_Traits::eq_int_type(__i, _Traits::eof()))
+			__err |= ios_base::eofbit | ios_base::failbit;
+		      else if (std::isspace(_Traits::to_char_type(__i), __loc))
+			(void) __is.get();
+		      else
+			__err |= ios_base::failbit;
+		    }
+		  break;
+
+		case 't': // Zero or one whitespace characters.
+		  if (__mod || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    {
+		      _CharT __i = __is.peek();
+		      if (_Traits::eq_int_type(__i, _Traits::eof()))
+			__err |= ios_base::eofbit;
+		      else if (std::isspace(_Traits::to_char_type(__i), __loc))
+			(void) __is.get();
+		    }
+		  break;
+
+		case '%': // A % character.
+		  if (__mod || __num) [[unlikely]]
+		    __err |= ios_base::failbit;
+		  else
+		    __read_chr('%');
+		  break;
+
+		case 'O': // Modifiers
+		case 'E':
+		  if (__mod || __num) [[unlikely]]
+		    {
+		      __err |= ios_base::failbit;
+		      break;
+		    }
+		  __mod = __c;
+		  continue;
+
+		default:
+		  if (_CharT('1') <= __c && __c <= _CharT('9'))
+		    {
+		      if (!__mod) [[likely]]
+			{
+			  // %Nx - extract positive decimal integer N
+			  auto __end = __fmt + _Traits::length(__fmt);
+			  auto [__v, __ptr]
+			    = __format::__parse_integer(__fmt - 1, __end);
+			  if (__ptr) [[likely]]
+			    {
+			      __num = __v;
+			      __fmt = __ptr;
+			      continue;
+			    }
+			}
+		    }
+		  __err |= ios_base::failbit;
+		}
+
+	      if (__is_failed(__err)) [[unlikely]]
+		break;
+
+	      __is_flag = false;
+	      __num = 0;
+	      __mod = _CharT();
+	    }
+
+	  if (__century >= 0)
+	    {
+	      if (__yy != __bad_y && __y == __bad_y)
+		__y = years(__century) + __yy; // Use %y instead of %Y
+	      if (__iso_yy != __bad_y && __iso_y == __bad_y)
+		__iso_y = years(__century) + __iso_yy; // Use %g instead of %G
+	    }
+
+	  bool __can_use_doy = false;
+	  bool __can_use_iso_wk = false;
+	  bool __can_use_sun_wk = false;
+	  bool __can_use_mon_wk = false;
+
+	  // A year + day-of-year can be converted to a full date.
+	  if (__y != __bad_y && __dayofyear >= 0)
+	    {
+	      __can_use_doy = true;
+	      __parts |= _ChronoParts::_Date;
+	    }
+	  else if (__y != __bad_y && __wday != __bad_wday && __sunday_wk >= 0)
+	    {
+	      __can_use_sun_wk = true;
+	      __parts |= _ChronoParts::_Date;
+	    }
+	  else if (__y != __bad_y && __wday != __bad_wday && __monday_wk >= 0)
+	    {
+	      __can_use_mon_wk = true;
+	      __parts |= _ChronoParts::_Date;
+	    }
+	  else if (__iso_y != __bad_y && __wday != __bad_wday && __iso_wk > 0)
+	    {
+	      // An ISO week date can be converted to a full date.
+	      __can_use_iso_wk = true;
+	      __parts |= _ChronoParts::_Date;
+	    }
+
+	  if (__is_failed(__err)) [[unlikely]]
+	    ; // Don't bother doing any more work.
+	  else if (__is_flag) [[unlikely]] // incomplete format flag
+	    __err |= ios_base::failbit;
+	  else if ((_M_need & __parts) == _M_need) [[likely]]
+	    {
+	      // We try to avoid calculating _M_sys_days and _M_ymd unless
+	      // necessary, because converting sys_days to year_month_day
+	      // (or vice versa) requires non-trivial calculations.
+	      // If we have y/m/d values then use them to populate _M_ymd
+	      // and only convert it to _M_sys_days if the caller needs that.
+	      // But if we don't have y/m/d and need to calculate the date
+	      // from the day-of-year or a week+weekday then we set _M_sys_days
+	      // and only convert it to _M_ymd if the caller needs that.
+
+	      // We do more error checking here, but only for the fields that
+	      // we actually need to use. For example, we will not diagnose
+	      // an invalid dayofyear==366 for non-leap years unless actually
+	      // using __dayofyear. This should mean we never produce invalid
+	      // results, but it means not all invalid inputs are diagnosed,
+	      // e.g. "2023-01-01 366" >> "%F %j" ignores the invalid 366.
+	      // We also do not diagnose inconsistent values for the same
+	      // field, e.g. "2021 2022 2023" >> "%C%y %Y %Y" just uses 2023.
+
+	      // Whether the caller wants _M_wd.
+	      // The _Weekday bit is only set for chrono::weekday.
+	      const bool __need_wday = _M_need & _ChronoParts::_Weekday;
+
+	      // Whether the caller wants _M_sys_days and _M_time.
+	      // Only true for time_points.
+	      const bool __need_time = _M_need & _ChronoParts::_TimeOfDay;
+
+	      if (__need_wday && __wday != __bad_wday)
+		_M_wd = __wday; // Caller only wants a weekday and we have one.
+	      else if (_M_need & _ChronoParts::_Date) // subsumes __need_wday
+		{
+		  // Whether the caller wants _M_ymd.
+		  // True for chrono::year etc., false for time_points.
+		  const bool __need_ymd = !__need_wday && !__need_time;
+
+		  if ((_M_need & _ChronoParts::_Year && __y == __bad_y)
+		     || (_M_need & _ChronoParts::_Month && __m == __bad_mon)
+		     || (_M_need & _ChronoParts::_Day && __d == __bad_day))
+		    {
+		      // Missing at least one of y/m/d so calculate sys_days
+		      // from the other data we have available.
+
+		      if (__can_use_doy)
+			{
+			  if ((0 < __dayofyear && __dayofyear <= 365)
+				|| (__dayofyear == 366 && __y.is_leap()))
+			    [[likely]]
+			    {
+			      _M_sys_days = sys_days(__y/January/1)
+					      + days(__dayofyear - 1);
+			      if (__need_ymd)
+				_M_ymd = year_month_day(_M_sys_days);
+			    }
+			  else
+			    __err |= ios_base::failbit;
+			}
+		      else if (__can_use_iso_wk)
+			{
+			  // Calculate y/m/d from ISO week date.
+
+			  if (__iso_wk == 53)
+			    {
+			      // A year has 53 weeks iff Jan 1st is a Thursday
+			      // or Jan 1 is a Wednesday and it's a leap year.
+			      const sys_days __jan4(__iso_y/January/4);
+			      weekday __wd1(__jan4 - days(3));
+			      if (__wd1 != Thursday)
+				if (__wd1 != Wednesday || !__iso_y.is_leap())
+				  __err |= ios_base::failbit;
+			    }
+
+			  if (!__is_failed(__err)) [[likely]]
+			    {
+			      // First Thursday is always in week one:
+			      sys_days __w(Thursday[1]/January/__iso_y);
+			      // First day of week-based year:
+			      __w -= Thursday - Monday;
+			      __w += days(weeks(__iso_wk - 1));
+			      __w += __wday - Monday;
+			      _M_sys_days = __w;
+
+			      if (__need_ymd)
+				_M_ymd = year_month_day(_M_sys_days);
+			    }
+			}
+		      else if (__can_use_sun_wk)
+			{
+			  // Calculate y/m/d from week number + weekday.
+			  sys_days __wk1(__y/January/Sunday[1]);
+			  _M_sys_days = __wk1 + weeks(__sunday_wk - 1)
+					+ days(__wday.c_encoding());
+			  _M_ymd = year_month_day(_M_sys_days);
+			  if (_M_ymd.year() != __y) [[unlikely]]
+			    __err |= ios_base::failbit;
+			}
+		      else if (__can_use_mon_wk)
+			{
+			  // Calculate y/m/d from week number + weekday.
+			  sys_days __wk1(__y/January/Monday[1]);
+			  _M_sys_days = __wk1 + weeks(__monday_wk - 1)
+					+ days(__wday.c_encoding() - 1);
+			  _M_ymd = year_month_day(_M_sys_days);
+			  if (_M_ymd.year() != __y) [[unlikely]]
+			    __err |= ios_base::failbit;
+			}
+		      else // Should not be able to get here.
+			__err |= ios_base::failbit;
+		    }
+		  else
+		    {
+		      // We know that all fields the caller needs are present,
+		      // but check that their values are in range.
+		      // Make unwanted fields valid so that _M_ymd.ok() is true.
+
+		      if (_M_need & _ChronoParts::_Year)
+			{
+			  if (!__y.ok()) [[unlikely]]
+			    __err |= ios_base::failbit;
+			}
+		      else if (__y == __bad_y)
+			__y = 1972y; // Leap year so that Feb 29 is valid.
+
+		      if (_M_need & _ChronoParts::_Month)
+			{
+			  if (!__m.ok()) [[unlikely]]
+			    __err |= ios_base::failbit;
+			}
+		      else if (__m == __bad_mon)
+			__m = January;
+
+		      if (_M_need & _ChronoParts::_Day)
+			{
+			  if (__d < day(1) || __d > (__y/__m/last).day())
+			    __err |= ios_base::failbit;
+			}
+		      else if (__d == __bad_day)
+			__d = 1d;
+
+		      if (year_month_day __ymd(__y, __m, __d); __ymd.ok())
+			{
+			  _M_ymd = __ymd;
+			  if (__need_wday || __need_time)
+			    _M_sys_days = sys_days(_M_ymd);
+			}
+		      else [[unlikely]]
+			__err |= ios_base::failbit;
+		    }
+
+		  if (__need_wday)
+		    _M_wd = weekday(_M_sys_days);
+		}
+
+	      // Need to set _M_time for both durations and time_points.
+	      if (__need_time)
+		{
+		  if (__h == __bad_h && __h12 != __bad_h)
+		    {
+		      if (__ampm == 1)
+			__h = __h12 == hours(12) ? hours(0) : __h12;
+		      else if (__ampm == 2)
+			__h = __h12 == hours(12) ? __h12 : __h12 + hours(12);
+		      else [[unlikely]]
+			__err |= ios_base::failbit;
+		    }
+
+		  auto __t = _M_time.zero();
+		  bool __ok = false;
+
+		  if (__h != __bad_h)
+		    {
+		      __ok = true;
+		      __t += __h;
+		    }
+
+		  if (__min != __bad_min)
+		    {
+		      __ok = true;
+		      __t += __min;
+		    }
+
+		  if (__s != __bad_sec)
+		    {
+		      __ok = true;
+		      __t += __s;
+		    }
+
+		  if (__ok)
+		    _M_time = __t;
+		  else
+		    __err |= ios_base::failbit;
+		}
+
+	      if (!__is_failed(__err)) [[likely]]
+		{
+		  if (__offset && __tz_offset != __bad_min)
+		    *__offset = __tz_offset;
+		  if (__abbrev && !__tz_abbr.empty())
+		    *__abbrev = std::move(__tz_abbr);
+		}
+	    }
+	  else
+	    __err |= ios_base::failbit;
+	}
+      if (__err)
+	__is.setstate(__err);
+      return __is;
+    }
+  /// @endcond
 #undef _GLIBCXX_WIDEN
 
   /// @} group chrono
