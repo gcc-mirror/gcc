@@ -232,7 +232,6 @@ class table_geometry
   }
 
  private:
-  const table &m_table;
   table_cell_sizes &m_cell_sizes;
   canvas::size_t m_canvas_size;
 

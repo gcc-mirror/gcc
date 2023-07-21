@@ -1125,6 +1125,7 @@ private:
 class spatial_item
 {
 public:
+  virtual ~spatial_item () {}
   virtual void add_boundaries (boundaries &out, logger *) const = 0;
 
   virtual table make_table (const bit_to_table_map &btm,

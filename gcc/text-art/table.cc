@@ -507,8 +507,7 @@ table_cell_sizes::get_canvas_size (const table::rect_t &rect) const
 /* class text_art::table_geometry.  */
 
 table_geometry::table_geometry (const table &table, table_cell_sizes &cell_sizes)
-: m_table (table),
-  m_cell_sizes (cell_sizes),
+: m_cell_sizes (cell_sizes),
   m_canvas_size (canvas::size_t (0, 0)),
   m_col_start_x (table.get_size ().w),
   m_row_start_y (table.get_size ().h)
@@ -558,7 +557,7 @@ int
 table_geometry::table_x_to_canvas_x (int table_x) const
 {
   /* Allow one beyond the end, for the right-hand border of the table.  */
-  if (table_x == m_col_start_x.size ())
+  if (table_x == (int)m_col_start_x.size ())
     return m_canvas_size.w - 1;
   return m_col_start_x[table_x];
 }
@@ -570,7 +569,7 @@ int
 table_geometry::table_y_to_canvas_y (int table_y) const
 {
   /* Allow one beyond the end, for the right-hand border of the table.  */
-  if (table_y == m_row_start_y.size ())
+  if (table_y == (int)m_row_start_y.size ())
     return m_canvas_size.h - 1;
   return m_row_start_y[table_y];
 }

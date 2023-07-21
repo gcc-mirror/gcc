@@ -148,7 +148,7 @@ class wrapper_widget : public widget
   {
     return m_child->get_req_size ();
   }
-  void update_child_alloc_rects ()
+  void update_child_alloc_rects () override
   {
     m_child->set_alloc_rect (get_alloc_rect ());
   }
