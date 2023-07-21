@@ -3503,7 +3503,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min max)
  (simplify
   (minmax @0 @0)
-  @0))
+  @0)
+/* max(max(x,y),x) -> max(x,y)  */
+ (simplify
+  (minmax:c (minmax:c@2 @0 @1) @0)
+  @2))
 /* For fmin() and fmax(), skip folding when both are sNaN.  */
 (for minmax (FMIN_ALL FMAX_ALL)
  (simplify
