@@ -10837,11 +10837,25 @@ vect_get_loop_len (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
 }
 
 /* Scale profiling counters by estimation for LOOP which is vectorized
-   by factor VF.  */
+   by factor VF.
+   If FLAT is true, the loop we started with had unrealistically flat
+   profile.  */
 
 static void
-scale_profile_for_vect_loop (class loop *loop, unsigned vf)
+scale_profile_for_vect_loop (class loop *loop, unsigned vf, bool flat)
 {
+  /* For flat profiles do not scale down proportionally by VF and only
+     cap by known iteration count bounds.  */
+  if (flat)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Vectorized loop profile seems flat; not scaling iteration "
+		 "count down by the vectorization factor %i\n", vf);
+      scale_loop_profile (loop, profile_probability::always (),
+			  get_likely_max_loop_iterations_int (loop));
+      return;
+    }
   /* Loop body executes VF fewer times and exit increases VF times.  */
   edge exit_e = single_exit (loop);
   profile_count entry_count = loop_preheader_edge (loop)->count ();
@@ -10852,7 +10866,13 @@ scale_profile_for_vect_loop (class loop *loop, unsigned vf)
   while (vf > 1
 	 && loop->header->count > entry_count
 	 && loop->header->count < entry_count * vf)
-    vf /= 2;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Vectorization factor %i seems too large for profile "
+		 "prevoiusly believed to be consistent; reducing.\n", vf);
+      vf /= 2;
+    }
 
   if (entry_count.nonzero_p ())
     set_edge_probability_and_rescale_others
@@ -11184,6 +11204,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   gimple *stmt;
   bool check_profitability = false;
   unsigned int th;
+  bool flat = maybe_flat_loop_profile (loop);
 
   DUMP_VECT_SCOPE ("vec_transform_loop");
 
@@ -11252,7 +11273,6 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow,
 			      &advance);
-
   if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
       && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
     scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
@@ -11545,7 +11565,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			  assumed_vf) - 1
 	 : wi::udiv_floor (loop->nb_iterations_estimate + bias_for_assumed,
 			   assumed_vf) - 1);
-  scale_profile_for_vect_loop (loop, assumed_vf);
+  scale_profile_for_vect_loop (loop, assumed_vf, flat);
 
   if (dump_enabled_p ())
     {
