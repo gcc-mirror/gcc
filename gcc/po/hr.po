@@ -1802,7 +1802,7 @@ msgstr ""
 #: c-family/c.opt:703
 #, no-c-format
 msgid "Warn about function calls with format strings that write past the end of the destination region.  Same as -Wformat-overflow=1."
-msgstr "Upozori na pozive funkcija s format stingovima koji pišu iza kraja područja odredišta. Isto kao -Wformat-overflow=1."
+msgstr "Upozori na pozive funkcija s format stringovima koji pišu iza kraja područja odredišta. Isto kao -Wformat-overflow=1."
 
 #: c-family/c.opt:708
 #, no-c-format
@@ -12963,7 +12963,7 @@ msgstr "Pokaže ove informacije."
 #: common.opt:299
 #, no-c-format
 msgid "--help=<class>\tDisplay descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params."
-msgstr "--help=<class>\tPokaže opise specične klase opcija. <class> je jedan ili više elemenata iz optimizers, target, warnings, undocumented, params."
+msgstr "--help=<class>\tPokaže opise specifične klase opcija. <class> je jedan ili više elemenata iz optimizers, target, warnings, undocumented, params."
 
 #: common.opt:420
 #, no-c-format
@@ -13183,7 +13183,7 @@ msgstr ""
 #: common.opt:716
 #, no-c-format
 msgid "Warn when one variable shadows another.  Same as -Wshadow=global."
-msgstr "Upozori na jedna varijabla zasijeni neku drugu varijablu. Isko kao -Wshadow=global."
+msgstr "Upozori na jedna varijabla zasijeni neku drugu varijablu. Isto kao -Wshadow=global."
 
 #: common.opt:720
 #, no-c-format
@@ -13403,7 +13403,7 @@ msgstr "poravna početak funkcija"
 #: common.opt:1035
 #, no-c-format
 msgid "Align labels which are only reached by jumping."
-msgstr "oravna one oznake do kojih se može doći samo sa skakanjem"
+msgstr "poravna one oznake do kojih se može doći samo sa skakanjem"
 
 #: common.opt:1042
 #, no-c-format
@@ -18721,7 +18721,7 @@ msgstr ""
 
 #: c-family/c-format.cc:695
 msgid "field width in strfmon format"
-msgstr "širina poljau u strfmon formatu"
+msgstr "širina polja u strfmon formatu"
 
 #: c-family/c-format.cc:696
 msgid "left precision"
@@ -18981,7 +18981,7 @@ msgstr "neprepoznata pretpostavljena konstanta"
 #: config/arm/arm.cc:21053 config/arm/arm.cc:21062
 #, c-format
 msgid "invalid shift operand"
-msgstr "nevaljai operand pomaka (shift)"
+msgstr "nevaljani operand pomaka (shift)"
 
 #: config/arm/arm.cc:23971 config/arm/arm.cc:23989
 #, c-format
@@ -19693,7 +19693,7 @@ msgstr ""
 #: config/msp430/msp430.cc:4376
 #, c-format
 msgid "invalid zero extract"
-msgstr "nevaljani nulo ekstrakt"
+msgstr "nevaljani nula ekstrakt"
 
 #: config/or1k/or1k.cc:1154 config/or1k/or1k.cc:1162
 #, c-format
@@ -27837,7 +27837,7 @@ msgstr ""
 #: lto-streamer-in.cc:1230
 #, gcc-internal-format
 msgid "Reference statement index out of range"
-msgstr "Index referente izjave je izvan granica"
+msgstr "Index referentne izjave je izvan granica"
 
 #: lto-streamer-in.cc:1234
 #, gcc-internal-format
@@ -60571,7 +60571,7 @@ msgstr ""
 #: cp/pt.cc:6373
 #, gcc-internal-format
 msgid "redeclared here"
-msgstr "ponovn deklarirano ovdje"
+msgstr "ponovno deklarirano ovdje"
 
 #: cp/pt.cc:6384
 #, gcc-internal-format
