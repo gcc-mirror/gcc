@@ -198,6 +198,33 @@ check_doc_attribute (const AST::Attribute &attribute)
     }
 }
 
+static bool
+is_proc_macro_type (const AST::Attribute &attribute)
+{
+  BuiltinAttrDefinition result;
+  if (!is_builtin (attribute, result))
+    return false;
+
+  auto name = result.name;
+  return name == "proc_macro" || name == "proc_macro_derive"
+	 || name == "proc_macro_attribute";
+}
+
+// Emit an error when one encountered attribute is either #[proc_macro],
+// #[proc_macro_attribute] or #[proc_macro_derive]
+static void
+check_proc_macro_non_function (const AST::AttrVec &attributes)
+{
+  for (auto &attr : attributes)
+    {
+      if (is_proc_macro_type (attr))
+	rust_error_at (
+	  attr.get_locus (),
+	  "the %<#[%s]%> attribute may only be used on bare functions",
+	  attr.get_path ().get_segments ()[0].as_string ().c_str ());
+    }
+}
+
 void
 AttributeChecker::check_attribute (const AST::Attribute &attribute)
 {
@@ -517,12 +544,16 @@ AttributeChecker::visit (AST::Method &)
 {}
 
 void
-AttributeChecker::visit (AST::Module &)
-{}
+AttributeChecker::visit (AST::Module &module)
+{
+  check_proc_macro_non_function (module.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::ExternCrate &)
-{}
+AttributeChecker::visit (AST::ExternCrate &crate)
+{
+  check_proc_macro_non_function (crate.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::UseTreeGlob &)
@@ -537,8 +568,10 @@ AttributeChecker::visit (AST::UseTreeRebind &)
 {}
 
 void
-AttributeChecker::visit (AST::UseDeclaration &)
-{}
+AttributeChecker::visit (AST::UseDeclaration &declaration)
+{
+  check_proc_macro_non_function (declaration.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::Function &fun)
@@ -581,18 +614,23 @@ AttributeChecker::visit (AST::Function &fun)
 }
 
 void
-AttributeChecker::visit (AST::TypeAlias &)
-{}
+AttributeChecker::visit (AST::TypeAlias &alias)
+{
+  check_proc_macro_non_function (alias.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::StructStruct &struct_item)
 {
   check_attributes (struct_item.get_outer_attrs ());
+  check_proc_macro_non_function (struct_item.get_outer_attrs ());
 }
 
 void
-AttributeChecker::visit (AST::TupleStruct &)
-{}
+AttributeChecker::visit (AST::TupleStruct &tuplestruct)
+{
+  check_proc_macro_non_function (tuplestruct.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::EnumItem &)
@@ -611,20 +649,28 @@ AttributeChecker::visit (AST::EnumItemDiscriminant &)
 {}
 
 void
-AttributeChecker::visit (AST::Enum &)
-{}
+AttributeChecker::visit (AST::Enum &enumeration)
+{
+  check_proc_macro_non_function (enumeration.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::Union &)
-{}
+AttributeChecker::visit (AST::Union &u)
+{
+  check_proc_macro_non_function (u.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::ConstantItem &)
-{}
+AttributeChecker::visit (AST::ConstantItem &item)
+{
+  check_proc_macro_non_function (item.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::StaticItem &)
-{}
+AttributeChecker::visit (AST::StaticItem &item)
+{
+  check_proc_macro_non_function (item.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::TraitItemFunc &)
@@ -643,16 +689,22 @@ AttributeChecker::visit (AST::TraitItemType &)
 {}
 
 void
-AttributeChecker::visit (AST::Trait &)
-{}
+AttributeChecker::visit (AST::Trait &trait)
+{
+  check_proc_macro_non_function (trait.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::InherentImpl &)
-{}
+AttributeChecker::visit (AST::InherentImpl &impl)
+{
+  check_proc_macro_non_function (impl.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::TraitImpl &)
-{}
+AttributeChecker::visit (AST::TraitImpl &impl)
+{
+  check_proc_macro_non_function (impl.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::ExternalTypeItem &)
@@ -667,8 +719,10 @@ AttributeChecker::visit (AST::ExternalFunctionItem &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternBlock &)
-{}
+AttributeChecker::visit (AST::ExternBlock &block)
+{
+  check_proc_macro_non_function (block.get_outer_attrs ());
+}
 
 // rust-macro.h
 void
