@@ -5042,12 +5042,12 @@ of the result should be set to zero.
 
 @cindex @code{mask_len_gather_load@var{m}@var{n}} instruction pattern
 @item @samp{mask_len_gather_load@var{m}@var{n}}
-Like @samp{gather_load@var{m}@var{n}}, but takes an extra length operand (operand 5),
-a bias operand (operand 6) as well as a mask operand (operand 7).  Similar to mask_len_load,
-the instruction loads at most (operand 5 + operand 6) elements from memory.
+Like @samp{gather_load@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  Similar to mask_len_load,
+the instruction loads at most (operand 6 + operand 7) elements from memory.
 Bit @var{i} of the mask is set if element @var{i} of the result should
 be loaded from memory and clear if element @var{i} of the result should be undefined.
-Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
 
 @cindex @code{scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{scatter_store@var{m}@var{n}}
@@ -5080,11 +5080,11 @@ of the result should be stored to memory.
 
 @cindex @code{mask_len_scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{mask_len_scatter_store@var{m}@var{n}}
-Like @samp{scatter_store@var{m}@var{n}}, but takes an extra length operand (operand 5),
-a bias operand (operand 6) as well as a mask operand (operand 7).  The instruction stores
-at most (operand 5 + operand 6) elements of (operand 4) to memory.
+Like @samp{scatter_store@var{m}@var{n}}, but takes an extra mask operand (operand 5),
+a len operand (operand 6) as well as a bias operand (operand 7).  The instruction stores
+at most (operand 6 + operand 7) elements of (operand 4) to memory.
 Bit @var{i} of the mask is set if element @var{i} of (operand 4) should be stored.
-Mask elements @var{i} with @var{i} > (operand 5 + operand 6) are ignored.
+Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
 
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
@@ -5324,15 +5324,15 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{mask_len_load@var{m}@var{n}} instruction pattern
 @item @samp{mask_len_load@var{m}@var{n}}
 Perform a masked load from the memory location pointed to by operand 1
-into register operand 0.  (operand 2 + operand 3) elements are loaded from
+into register operand 0.  (operand 3 + operand 4) elements are loaded from
 memory and other elements in operand 0 are set to undefined values.
 This is a combination of len_load and maskload.
-Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3
 has whichever integer mode the target prefers.  A mask is specified in
-operand 4 which must be of type @var{n}.  The mask has lower precedence than
+operand 2 which must be of type @var{n}.  The mask has lower precedence than
 the length and is itself subject to length masking,
-i.e. only mask indices < (operand 2 + operand 3) are used.
-Operand 3 conceptually has mode @code{QI}.
+i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 4 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
@@ -5351,14 +5351,14 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{mask_len_store@var{m}@var{n}} instruction pattern
 @item @samp{mask_len_store@var{m}@var{n}}
 Perform a masked store from vector register operand 1 into memory operand 0.
-(operand 2 + operand 3) elements are stored to memory
+(operand 3 + operand 4) elements are stored to memory
 and leave the other elements of operand 0 unchanged.
 This is a combination of len_store and maskstore.
-Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 2 has whichever
-integer mode the target prefers.  A mask is specified in operand 4 which must be
+Operands 0 and 1 have mode @var{m}, which must be a vector mode.  Operand 3 has whichever
+integer mode the target prefers.  A mask is specified in operand 2 which must be
 of type @var{n}.  The mask has lower precedence than the length and is itself subject to
-length masking, i.e. only mask indices < (operand 2 + operand 3) are used.
-Operand 3 conceptually has mode @code{QI}.
+length masking, i.e. only mask indices < (operand 3 + operand 4) are used.
+Operand 4 conceptually has mode @code{QI}.
 
 Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on

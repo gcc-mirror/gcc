@@ -3073,13 +3073,13 @@ expand_select_vl (rtx *ops)
   emit_insn (gen_no_side_effects_vsetvl_rtx (rvv_mode, ops[0], ops[1]));
 }
 
-/* Expand LEN_MASK_{LOAD,STORE}.  */
+/* Expand MASK_LEN_{LOAD,STORE}.  */
 void
 expand_load_store (rtx *ops, bool is_load)
 {
   poly_int64 value;
-  rtx len = ops[2];
-  rtx mask = ops[4];
+  rtx mask = ops[2];
+  rtx len = ops[3];
   machine_mode mode = GET_MODE (ops[0]);
 
   if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
@@ -3215,6 +3215,8 @@ expand_gather_scatter (rtx *ops, bool is_load)
   rtx ptr, vec_offset, vec_reg, len, mask;
   bool zero_extend_p;
   int scale_log2;
+  rtx mask = ops[5];
+  rtx len = ops[6];
   if (is_load)
     {
       vec_reg = ops[0];
@@ -3222,8 +3224,6 @@ expand_gather_scatter (rtx *ops, bool is_load)
       vec_offset = ops[2];
       zero_extend_p = INTVAL (ops[3]);
       scale_log2 = exact_log2 (INTVAL (ops[4]));
-      len = ops[5];
-      mask = ops[7];
     }
   else
     {
@@ -3232,8 +3232,6 @@ expand_gather_scatter (rtx *ops, bool is_load)
       vec_offset = ops[1];
       zero_extend_p = INTVAL (ops[2]);
       scale_log2 = exact_log2 (INTVAL (ops[3]));
-      len = ops[5];
-      mask = ops[7];
     }
 
   machine_mode vec_mode = GET_MODE (vec_reg);

@@ -25,9 +25,9 @@
 (define_expand "mask_len_load<mode><vm>"
   [(match_operand:V 0 "register_operand")
    (match_operand:V 1 "memory_operand")
-   (match_operand 2 "autovec_length_operand")
-   (match_operand 3 "const_0_operand")
-   (match_operand:<VM> 4 "vector_mask_operand")]
+   (match_operand:<VM> 2 "vector_mask_operand")
+   (match_operand 3 "autovec_length_operand")
+   (match_operand 4 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_load_store (operands, true);
@@ -37,9 +37,9 @@
 (define_expand "mask_len_store<mode><vm>"
   [(match_operand:V 0 "memory_operand")
    (match_operand:V 1 "register_operand")
-   (match_operand 2 "autovec_length_operand")
-   (match_operand 3 "const_0_operand")
-   (match_operand:<VM> 4 "vector_mask_operand")]
+   (match_operand:<VM> 2 "vector_mask_operand")
+   (match_operand 3 "autovec_length_operand")
+   (match_operand 4 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_load_store (operands, false);
@@ -67,9 +67,9 @@
    (match_operand:RATIO64I 2 "register_operand")
    (match_operand 3 "<RATIO64:gs_extension>")
    (match_operand 4 "<RATIO64:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO64:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -82,9 +82,9 @@
    (match_operand:RATIO32I 2 "register_operand")
    (match_operand 3 "<RATIO32:gs_extension>")
    (match_operand 4 "<RATIO32:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO32:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -97,9 +97,9 @@
    (match_operand:RATIO16I 2 "register_operand")
    (match_operand 3 "<RATIO16:gs_extension>")
    (match_operand 4 "<RATIO16:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO16:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -112,9 +112,9 @@
    (match_operand:RATIO8I 2 "register_operand")
    (match_operand 3 "<RATIO8:gs_extension>")
    (match_operand 4 "<RATIO8:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO8:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -127,9 +127,9 @@
    (match_operand:RATIO4I 2 "register_operand")
    (match_operand 3 "<RATIO4:gs_extension>")
    (match_operand 4 "<RATIO4:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO4:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -142,9 +142,9 @@
    (match_operand:RATIO2I 2 "register_operand")
    (match_operand 3 "<RATIO2:gs_extension>")
    (match_operand 4 "<RATIO2:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO2:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -161,9 +161,9 @@
    (match_operand:RATIO1 2 "register_operand")
    (match_operand 3 "<RATIO1:gs_extension>")
    (match_operand 4 "<RATIO1:gs_scale>")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO1:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO1:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, true);
@@ -180,9 +180,9 @@
    (match_operand 2 "<RATIO64:gs_extension>")
    (match_operand 3 "<RATIO64:gs_scale>")
    (match_operand:RATIO64 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO64:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO64:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -195,9 +195,9 @@
    (match_operand 2 "<RATIO32:gs_extension>")
    (match_operand 3 "<RATIO32:gs_scale>")
    (match_operand:RATIO32 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO32:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO32:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -210,9 +210,9 @@
    (match_operand 2 "<RATIO16:gs_extension>")
    (match_operand 3 "<RATIO16:gs_scale>")
    (match_operand:RATIO16 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO16:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO16:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -225,9 +225,9 @@
    (match_operand 2 "<RATIO8:gs_extension>")
    (match_operand 3 "<RATIO8:gs_scale>")
    (match_operand:RATIO8 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO8:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO8:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -240,9 +240,9 @@
    (match_operand 2 "<RATIO4:gs_extension>")
    (match_operand 3 "<RATIO4:gs_scale>")
    (match_operand:RATIO4 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO4:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO4:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -255,9 +255,9 @@
    (match_operand 2 "<RATIO2:gs_extension>")
    (match_operand 3 "<RATIO2:gs_scale>")
    (match_operand:RATIO2 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO2:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO2:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
@@ -274,9 +274,9 @@
    (match_operand 2 "<RATIO1:gs_extension>")
    (match_operand 3 "<RATIO1:gs_scale>")
    (match_operand:RATIO1 4 "register_operand")
-   (match_operand 5 "autovec_length_operand")
-   (match_operand 6 "const_0_operand")
-   (match_operand:<RATIO1:VM> 7 "vector_mask_operand")]
+   (match_operand:<RATIO1:VM> 5 "vector_mask_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_gather_scatter (operands, false);
