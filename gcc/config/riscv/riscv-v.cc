@@ -3212,7 +3212,7 @@ prepare_gather_scatter (machine_mode vec_mode, machine_mode idx_mode,
 void
 expand_gather_scatter (rtx *ops, bool is_load)
 {
-  rtx ptr, vec_offset, vec_reg, len, mask;
+  rtx ptr, vec_offset, vec_reg;
   bool zero_extend_p;
   int scale_log2;
   rtx mask = ops[5];
