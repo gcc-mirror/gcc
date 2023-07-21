@@ -3338,24 +3338,6 @@ finite_loop_p (class loop *loop)
   widest_int nit;
   int flags;
 
-  flags = flags_from_decl_or_type (current_function_decl);
-  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Found loop %i to be finite: it is within pure or const function.\n",
-		 loop->num);
-      return true;
-    }
-
-  if (loop->any_upper_bound
-      || max_loop_iterations (loop, &nit))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Found loop %i to be finite: upper bound found.\n",
-		 loop->num);
-      return true;
-    }
-
   if (loop->finite_p)
     {
       unsigned i;
@@ -3368,9 +3350,34 @@ finite_loop_p (class loop *loop)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "Assume loop %i to be finite: it has an exit "
-		       "and -ffinite-loops is on.\n", loop->num);
+		       "and -ffinite-loops is on or loop was "
+		       "previously finite.\n",
+		       loop->num);
 	    return true;
 	  }
+    }
+
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Found loop %i to be finite: it is within "
+		 "pure or const function.\n",
+		 loop->num);
+      loop->finite_p = true;
+      return true;
+    }
+
+  if (loop->any_upper_bound
+      /* Loop with no normal exit will not pass max_loop_iterations.  */
+      || (!loop->finite_p && max_loop_iterations (loop, &nit)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Found loop %i to be finite: upper bound found.\n",
+		 loop->num);
+      loop->finite_p = true;
+      return true;
     }
 
   return false;
