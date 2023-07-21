@@ -45,7 +45,8 @@ TopLevel::insert_or_error_out (const Identifier &identifier, const T &node,
       rich_location rich_loc (line_table, loc);
       rich_loc.add_range (node_locations[result.error ().existing]);
 
-      rust_error_at (rich_loc, "already defined");
+      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
+		     identifier.as_string ().c_str ());
     }
 }
 
@@ -70,12 +71,38 @@ TopLevel::visit (AST::Module &module)
 	      module.get_name ());
 }
 
+static bool
+is_macro_export (AST::MacroRulesDefinition &def)
+{
+  for (const auto &attr : def.get_outer_attrs ())
+    if (attr.get_path ().as_string () == "macro_export")
+      return true;
+
+  return false;
+}
+
 void
 TopLevel::visit (AST::MacroRulesDefinition &macro)
 {
-  // FIXME: Do we want to insert macro rules here already? Probably, right?
-  // So that we can easily resolve in `Early`?
-  insert_or_error_out (macro.get_rule_name (), macro, Namespace::Macros);
+  // we do not insert macros in the current rib as that needs to be done in the
+  // textual scope of the Early pass. we only insert them in the root of the
+  // crate if they are marked with #[macro_export]
+
+  if (is_macro_export (macro))
+    {
+      auto res = ctx.macros.insert_at_root (macro.get_rule_name (),
+					    macro.get_node_id ());
+      if (!res)
+	{
+	  // TODO: Factor this
+	  rich_location rich_loc (line_table, macro.get_locus ());
+	  rich_loc.add_range (node_locations[res.error ().existing]);
+
+	  rust_error_at (rich_loc, ErrorCode::E0428,
+			 "macro %qs defined multiple times",
+			 macro.get_rule_name ().as_string ().c_str ());
+	}
+    }
 }
 
 void
