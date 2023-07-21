@@ -1635,17 +1635,17 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       internal_fn len_ifn = (is_load
 			     ? IFN_MASK_LEN_GATHER_LOAD
 			     : IFN_MASK_LEN_SCATTER_STORE);
-      if (internal_gather_scatter_fn_supported_p (ifn, vectype,
+      if (internal_gather_scatter_fn_supported_p (len_ifn, vectype,
 						  gs_info->memory_type,
 						  gs_info->offset_vectype,
 						  gs_info->scale))
-	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
-			       scalar_mask);
-      else if (internal_gather_scatter_fn_supported_p (len_ifn, vectype,
+	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
+      else if (internal_gather_scatter_fn_supported_p (ifn, vectype,
 						       gs_info->memory_type,
 						       gs_info->offset_vectype,
 						       gs_info->scale))
-	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
+	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
+			       scalar_mask);
       else
 	{
 	  if (dump_enabled_p ())
@@ -6598,16 +6598,16 @@ vectorizable_operation (vec_info *vinfo,
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
 	  && mask_out_inactive)
 	{
-	  if (cond_fn != IFN_LAST
-	      && direct_internal_fn_supported_p (cond_fn, vectype,
+	  if (cond_len_fn != IFN_LAST
+	      && direct_internal_fn_supported_p (cond_len_fn, vectype,
 						 OPTIMIZE_FOR_SPEED))
-	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-				   vectype, NULL);
-	  else if (cond_len_fn != IFN_LAST
-		   && direct_internal_fn_supported_p (cond_len_fn, vectype,
-						      OPTIMIZE_FOR_SPEED))
 	    vect_record_loop_len (loop_vinfo, lens, ncopies * vec_num, vectype,
 				  1);
+	  else if (cond_fn != IFN_LAST
+		   && direct_internal_fn_supported_p (cond_fn, vectype,
+						      OPTIMIZE_FOR_SPEED))
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+				   vectype, NULL);
 	  else
 	    {
 	      if (dump_enabled_p ())
