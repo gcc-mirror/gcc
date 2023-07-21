@@ -303,6 +303,67 @@ expected_loop_iterations_by_profile (const class loop *loop, sreal *ret,
   return true;
 }
 
+/* Return true if loop CFG profile may be unrealistically flat.
+   This is a common case, since average loops iterate only about 5 times.
+   In the case we do not have profile feedback or do not know real number of
+   iterations during profile estimation, we are likely going to predict it with
+   similar low iteration count.  For static loop profiles we also artificially
+   cap profile of loops with known large iteration count so they do not appear
+   significantly more hot than other loops with unknown iteration counts.
+
+   For loop optimization heuristics we ignore CFG profile and instead
+   use get_estimated_loop_iterations API which returns estimate
+   only when it is realistic.  For unknown counts some optimizations,
+   like vectorizer or unroller make guess that iteration count will
+   be large.  In this case we need to avoid scaling down the profile
+   after the loop transform.  */
+
+bool
+maybe_flat_loop_profile (const class loop *loop)
+{
+  bool reliable;
+  sreal ret;
+
+  if (!expected_loop_iterations_by_profile (loop, &ret, &reliable))
+    return true;
+
+  /* Reliable CFG estimates ought never be flat.  Sanity check with
+     nb_iterations_estimate.  If those differ, it is a but in profile
+     updating code  */
+  if (reliable)
+    {
+      int64_t intret = ret.to_nearest_int ();
+      if (loop->any_estimate
+	  && (wi::ltu_p (intret * 2, loop->nb_iterations_estimate)
+	      || wi::gtu_p (intret, loop->nb_iterations_estimate * 2)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		    "Loop %i has inconsistent iterations estimates: "
+		    "reliable CFG based iteration estimate is %f "
+		    "while nb_iterations_estimate is %i\n",
+		    loop->num,
+		    ret.to_double (),
+		    (int)loop->nb_iterations_estimate.to_shwi ());
+	  return true;
+	}
+      return false;
+    }
+
+  /* Allow some margin of error and see if we are close to known bounds.
+     sreal (9,-3) is 9/8  */
+  int64_t intret = (ret * sreal (9, -3)).to_nearest_int ();
+  if (loop->any_upper_bound && wi::geu_p (intret, loop->nb_iterations_upper_bound))
+    return false;
+  if (loop->any_likely_upper_bound
+      && wi::geu_p (intret, loop->nb_iterations_likely_upper_bound))
+    return false;
+  if (loop->any_estimate
+      && wi::geu_p (intret, loop->nb_iterations_estimate))
+    return false;
+  return true;
+}
+
 /* Returns expected number of iterations of LOOP, according to
    measured or guessed profile.
 
