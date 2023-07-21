@@ -285,8 +285,7 @@ struct alu_frm_def : public build_base
       {
 	unsigned int frm_num = c.arg_num () - 2;
 
-	return c.require_immediate_range_or (frm_num, FRM_STATIC_MIN,
-					     FRM_STATIC_MAX, FRM_DYN);
+	return c.require_immediate (frm_num, FRM_STATIC_MIN, FRM_STATIC_MAX);
       }
 
     return true;
