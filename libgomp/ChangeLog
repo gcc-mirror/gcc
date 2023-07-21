@@ -1,3 +1,9 @@
+2023-07-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Runtime Library Routines):
+	Split long list by adding sections and moving routines there.
+	(OMP_ALLOCATORS): Fix typo.
+
 2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/107424

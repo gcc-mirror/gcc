@@ -1,3 +1,8 @@
+2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/ieee_arithmetic.F90: Add IEEE_QUIET_* and
+	IEEE_SIGNALING_* functions.
+
 2023-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/109373

@@ -1,3 +1,9 @@
+2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/77928
+	* c-common.cc (check_builtin_function_arguments):
+	Handle BUILT_IN_ISEQSIG.
+
 2023-07-05  Robin Dapp  <rdapp@ventanamicro.com>
 	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 

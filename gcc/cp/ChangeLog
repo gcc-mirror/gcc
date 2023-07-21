@@ -1,3 +1,9 @@
+2023-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110114
+	* call.cc (implicit_conversion_1): Return early if the type isn't
+	complete.
+
 2023-07-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110745

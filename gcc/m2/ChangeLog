@@ -1,3 +1,24 @@
+2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2SymInit.mod (IsExempt): Remove parameter exemption.
+	(CheckIndrX): Call SetupLAlias between lhs and content.
+	(trashParam): Re-write.
+	(SetVarLRInitialized): Indicate shadow and heap are initialized.
+	Call SetupIndr between shadow and heap.
+	* gm2-compiler/P2SymBuild.mod: Import
+	PutProcedureParameterHeapVars.
+	(EndBuildProcedure): Call PutProcedureParameterHeapVars.
+	* gm2-compiler/SymbolTable.def (GetParameterHeapVar): New
+	procedure function.
+	(PutProcedureParameterHeapVars): New procedure function.
+	* gm2-compiler/SymbolTable.mod (MakeParameterHeapVar): New
+	procedure function.
+	(GetParameterHeapVar): New procedure function.
+	(PuttParameterHeapVar): New procedure function.
+	(PutProcedureParameterHeapVars): New procedure.
+	(VarParam): HeapVar new record field.
+	(PutVarParam): HeapVar assigned to NulSym.
+
 2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110284

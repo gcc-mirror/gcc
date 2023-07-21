@@ -1,3 +1,86 @@
+2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose4.mod: New test.
+
+2023-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110717
+	* gcc.target/i386/pr110717.c: New test.
+
+2023-07-20  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/tree-ssa/allocator-opt1.C: Force _GLIBCXX_USE_CXX11_ABI to 1.
+
+2023-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110114
+	* g++.dg/cpp0x/initlist100.C: Adjust expected diagnostic.
+	* g++.dg/cpp2a/desig28.C: New test.
+	* g++.dg/cpp2a/desig29.C: New test.
+
+2023-07-20  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/uninit-pred-loop-1_c.C: Allow warning.
+	* gcc.dg/tree-ssa/copy-headers-7.c: Add tests so exit conditition is
+	static; update template.
+	* gcc.dg/tree-ssa/ivopt_mult_1.c: Add test so exit condition is static.
+	* gcc.dg/tree-ssa/ivopt_mult_2.c: Add test so exit condition is static.
+	* gcc.dg/tree-ssa/copy-headers-8.c: New test.
+
+2023-07-20  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/vect/vect-multi-peel-gaps.c: New test.
+
+2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/comparisons_1.f90: New test.
+	* gfortran.dg/ieee/comparisons_2.f90: New test.
+	* gfortran.dg/ieee/comparisons_3.F90: New test.
+
+2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/77928
+	* gcc.dg/torture/builtin-iseqsig-1.c: New test.
+	* gcc.dg/torture/builtin-iseqsig-2.c: New test.
+	* gcc.dg/torture/builtin-iseqsig-3.c: New test.
+
+2023-07-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr110299-1.c: Adjust tests.
+	* gcc.target/riscv/rvv/base/pr110299-2.c: Ditto.
+
+2023-07-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr88873.c: New test case.
+
+2023-07-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61747
+	* g++.target/i386/pr61747.C: New testcase.
+
+2023-07-20  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/103902
+	* g++.dg/cpp0x/udlit-extended-id-1.C: Change "unsigned long" to
+	"size_t" throughout.
+	* g++.dg/cpp0x/udlit-extended-id-3.C: Likewise.
+
+2023-07-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-7.c:
+	Adapt test.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-8.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-9.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_run-8.c
+	: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_run-8.c:
+	Ditto.
+
 2023-07-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110745
