@@ -860,7 +860,8 @@ region_model::get_gassign_result (const gassign *assign,
 	       or by greater than or equal to the number of bits that exist in
 	       the operand."  */
 	    if (const tree rhs2_cst = rhs2_sval->maybe_get_constant ())
-	      if (TREE_CODE (rhs2_cst) == INTEGER_CST)
+	      if (TREE_CODE (rhs2_cst) == INTEGER_CST
+		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 		{
 		  if (tree_int_cst_sgn (rhs2_cst) < 0)
 		    ctxt->warn
