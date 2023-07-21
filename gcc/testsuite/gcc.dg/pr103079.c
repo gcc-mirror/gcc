@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fdump-tree-vrp2" } */
+/* { dg-options "-Os -fdump-tree-vrp2 -fno-tree-ch" } */
 
 int a, b = -2;
 int main() {

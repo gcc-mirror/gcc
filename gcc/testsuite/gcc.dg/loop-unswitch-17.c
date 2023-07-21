@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized -fno-tree-ch" } */
 
 int foo (int a)
 {

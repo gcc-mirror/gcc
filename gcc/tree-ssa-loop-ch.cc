@@ -168,11 +168,28 @@ loop_combined_static_and_iv_p (class loop *loop,
   return gimple_uid (SSA_NAME_DEF_STMT (op)) & 4;
 }
 
+/* Decision about posibility of copying a given header.  */
+
+enum ch_decision
+{
+  /* We do not want to copy this header.  */
+  ch_impossible,
+  /* We can copy it if it enables wins.  */
+  ch_possible,
+  /* We can "cop" it if it enables wins and doing
+     so will introduce no new code.  */
+  ch_possible_zero_cost,
+  /* We want to copy.  */
+  ch_win,
+  /* We want to copy and we will eliminate loop exit.  */
+  ch_win_invariant_exit
+};
+
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
    instructions should be duplicated, limit is decreased by the actual
    amount.  */
 
-static bool
+static ch_decision
 should_duplicate_loop_header_p (basic_block header, class loop *loop,
 				gimple_ranger *ranger,
 				int *limit,
@@ -190,7 +207,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	fprintf (dump_file,
 		 "  Not duplicating bb %i: it is single succ.\n",
 		 header->index);
-      return false;
+      return ch_impossible;
     }
 
   if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest)
@@ -200,7 +217,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	fprintf (dump_file,
 		 "  Not duplicating bb %i: both successors are in loop.\n",
 		 loop->num);
-      return false;
+      return ch_impossible;
     }
 
   /* If this is not the original loop header, we want it to have just
@@ -211,7 +228,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	fprintf (dump_file,
 		 "  Not duplicating bb %i: it has mutiple predecestors.\n",
 		 header->index);
-      return false;
+      return ch_impossible;
     }
 
   gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (header));
@@ -221,7 +238,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	fprintf (dump_file,
 		 "  Not duplicating bb %i: it does not end by conditional.\n",
 		 header->index);
-      return false;
+      return ch_impossible;
     }
 
   path_range_query *query = NULL;
@@ -233,6 +250,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 					    query, psi.phi ());
 	gimple_set_uid (psi.phi (), static_p ? 2 : 0);
       }
+  bool code_size_cost = false;
 
   /* Count number of instructions and punt on calls.
      Populate stmts INV flag to later apply heuristics to the
@@ -268,7 +286,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		     header->index);
 	  if (query)
 	    delete query;
-	  return false;
+	  return ch_impossible;
 	}
 
       /* Classify the stmt is invariant in the loop.  */
@@ -343,6 +361,8 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 
       int insns = estimate_num_insns (last, &eni_size_weights);
       *limit -= insns;
+      if (insns)
+	code_size_cost = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "    Acconting stmt as %i insns\n", insns);
@@ -354,7 +374,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		     header->index);
 	  if (query)
 	    delete query;
-	  return false;
+	  return ch_impossible;
 	}
     }
 
@@ -403,7 +423,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "  Conditional combines static and invariant op.\n");
-     return true;
+     return ch_win;
    }
 
   edge static_exit = static_loop_exit (loop, header, *ranger, query);
@@ -435,11 +455,16 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		invariant_exits->add (e);
 	      }
 	}
-      return true;
+      return ch_win_invariant_exit;
     }
 
+  /* If the static exit fully optimize out, it is win to "duplicate"
+     it.
+
+     TODO: Even if duplication costs some size we may opt to do so in case
+     exit probability is significant enough (do partial peeling).  */
   if (static_exit)
-    return true;
+    return code_size_cost ? ch_possible_zero_cost : ch_win;
 
   /* We was not able to prove that conditional will be eliminated.  */
   int insns = estimate_num_insns (last, &eni_size_weights);
@@ -453,19 +478,10 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	fprintf (dump_file,
 		 "  Not duplicating bb %i contains too many insns.\n",
 		 header->index);
-      return false;
+      return ch_impossible;
     }
 
-  if (header != loop->header)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "  Not duplicating bb %i: condition based on non-IV loop"
-		 " variant.\n", header->index);
-      return false;
-    }
-
-  return true;
+  return ch_possible;
 }
 
 /* Checks whether LOOP is a do-while style loop.  */
@@ -496,15 +512,28 @@ do_while_loop_p (class loop *loop)
 		 "predecessors.\n", loop->num);
       return false;
     }
+  basic_block pred = single_pred (loop->latch);
 
   /* If the latch predecessor doesn't exit the loop, it is not a
      do-while loop.  */
-  if (!loop_exits_from_bb_p (loop, single_pred (loop->latch)))
+  if (!loop_exits_from_bb_p (loop, pred))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Loop %i is not do-while loop: latch predecessor "
 		 "does not exit loop.\n", loop->num);
+      return false;
+    }
+  gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (pred));
+  if (last
+      && (gimple_cond_lhs (last) == boolean_false_node
+	  || gimple_cond_lhs (last) == boolean_true_node)
+      && gimple_cond_rhs (last) == boolean_false_node)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %i is not do-while loop: latch predecessor "
+		 "contains exit we optimized out.\n", loop->num);
       return false;
     }
 
@@ -634,9 +663,9 @@ update_profile_after_ch (class loop *loop,
 	}
       entry_count = e_copy->count ();
     }
-  /* Be sure that we seen all edges we are supposed to update.  */
-  gcc_checking_assert (static_exits->is_empty ()
-		       && invariant_exits->is_empty ());
+  /* Be sure that we seen all invariant exit edges we are supposed to update.
+     We may have recorded some static exists we decided to not duplicate.  */
+  gcc_checking_assert (invariant_exits->is_empty ());
 }
 
 namespace {
@@ -792,16 +821,43 @@ ch_base::copy_headers (function *fun)
 	 the header to have just a single successor and copying up to
 	 postdominator.  */
       int nheaders = 0;
+      int last_win_nheaders = 0;
+      bool last_win_invariant_exit = false;
+      ch_decision ret;
       hash_set <edge> *invariant_exits = new hash_set <edge>;
       hash_set <edge> *static_exits = new hash_set <edge>;
-      while (should_duplicate_loop_header_p (header, loop, ranger,
-					     &remaining_limit,
-					     invariant_exits,
-					     static_exits))
+      while ((ret = should_duplicate_loop_header_p (header, loop, ranger,
+						    &remaining_limit,
+						    invariant_exits,
+						    static_exits))
+	     != ch_impossible)
 	{
 	  nheaders++;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "    Will duplicate bb %i\n", header->index);
+	  if (ret >= ch_win)
+	    {
+	      last_win_nheaders = nheaders;
+	      last_win_invariant_exit = (ret == ch_win_invariant_exit);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "    Duplicating bb %i is a win\n",
+			 header->index);
+	    }
+	  /* Duplicate BB if has zero cost but be sure it will not
+	     imply duplication of other BBs.  */
+	  else if (ret == ch_possible_zero_cost
+		   && (last_win_nheaders == nheaders - 1
+		       || (last_win_nheaders == nheaders - 2
+			   && last_win_invariant_exit)))
+	    {
+	      last_win_nheaders = nheaders;
+	      last_win_invariant_exit = false;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "    Duplicating bb %i is a win; it has zero cost\n",
+			 header->index);
+	    }
+	  else
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "    May duplicate bb %i\n", header->index);
 
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
@@ -811,8 +867,27 @@ ch_base::copy_headers (function *fun)
 	    header = EDGE_SUCC (header, 1)->dest;
 	}
 
-      if (nheaders)
-	candidates.safe_push ({loop, nheaders, invariant_exits, static_exits});
+      /* Try to turn loop into do-while.  This means ensuring that
+	 last duplicated header will not have loop invariant exit.  */
+      if (last_win_nheaders && last_win_invariant_exit
+	  && nheaders > last_win_nheaders)
+	{
+	  last_win_nheaders++;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "    Duplicating additional BB to obtain do-while loop\n");
+	}
+      else if (!last_win_nheaders && nheaders && !do_while_loop_p (loop))
+	{
+	  last_win_nheaders = 1;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "    Duplicating header BB to obtain do-while loop\n");
+	}
+
+      if (last_win_nheaders)
+	candidates.safe_push ({loop, last_win_nheaders,
+			      invariant_exits, static_exits});
       else
 	{
 	  delete invariant_exits;
@@ -844,6 +919,8 @@ ch_base::copy_headers (function *fun)
 	  entry_count += e->count ();
       while (n_bbs < candidate.nheaders)
 	{
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "    Will duplicate bb %i\n", header->index);
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
 	  if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest))
@@ -1111,9 +1188,9 @@ pass_ch_vect::execute (function *fun)
 /* Apply header copying according to a very simple test of do-while shape.  */
 
 bool
-pass_ch::process_loop_p (class loop *loop)
+pass_ch::process_loop_p (class loop *)
 {
-  return !do_while_loop_p (loop);
+  return true;
 }
 
 /* Apply header-copying to loops where we might enable vectorization.  */
