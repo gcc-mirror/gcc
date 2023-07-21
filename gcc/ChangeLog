@@ -1,3 +1,45 @@
+2023-07-20  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_MEMTAG): Remove armv8.5
+	dependency.
+	* config/aarch64/arm_acle.h: Remove unnecessary armv8.x
+	dependencies from target pragmas.
+	* config/aarch64/arm_fp16.h (target): Likewise.
+	* config/aarch64/arm_neon.h (target): Likewise.
+
+2023-07-20  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Create new pseudos only when/if needed.  Add support for TEST,
+	i.e. (COMPARE (AND x y) (const_int 0)), using UNSPEC_PTEST.
+	When broadcasting V2DImode and V4SImode use new pseudo register.
+	(timode_scalar_chain::convert_op): Do nothing if operand is
+	already V1TImode.  Avoid generating useless SUBREG conversions,
+	i.e. (SUBREG:V1TImode (REG:V1TImode) 0).  Handle CONST_WIDE_INT
+	in addition to CONST_INT by using CONST_SCALAR_INT_P.
+	(convertible_comparison_p): Use CONST_SCALAR_INT_P to match both
+	CONST_WIDE_INT and CONST_INT.  Recognize new *testti_doubleword
+	pattern as an STV candidate.
+	(timode_scalar_to_vector_candidate_p): Allow CONST_SCALAR_INT_P
+	operands in binary logic operations.
+	* config/i386/i386.cc (ix86_rtx_costs) <case UNSPEC>: Add costs
+	for UNSPEC_PTEST; a PTEST that performs an AND has the same cost
+	as regular PTEST, i.e. cost->sse_op.
+	* config/i386/i386.md (*testti_doubleword): New pre-reload
+	define_insn_and_split that recognizes comparison of TI mode AND
+	against zero.
+	* config/i386/sse.md (*ptest<mode>_and): New pre-reload
+	define_insn_and_split that recognizes UNSPEC_PTEST of identical
+	AND operands.
+
+2023-07-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/invoke.texi: Remove AVX512VP2INTERSECT in
+	Granite Rapids{, D} from documentation.
+
 2023-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

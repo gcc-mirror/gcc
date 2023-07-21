@@ -1,3 +1,22 @@
+2023-07-20  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/feature-bf16-backport.c: New test.
+	* gcc.target/aarch64/feature-dotprod-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16-scalar-backport.c: New test.
+	* gcc.target/aarch64/feature-fp16fml-backport.c: New test.
+	* gcc.target/aarch64/feature-i8mm-backport.c: New test.
+	* gcc.target/aarch64/feature-memtag-backport.c: New test.
+	* gcc.target/aarch64/feature-sha3-backport.c: New test.
+	* gcc.target/aarch64/feature-sm4-backport.c: New test.
+
+2023-07-20  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-07-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-8.c: New test case.
+
 2023-07-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
