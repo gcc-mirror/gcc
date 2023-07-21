@@ -135,17 +135,12 @@ flow_loop_dump (const class loop *loop, FILE *file,
       fprintf (file, "\n");
     }
 
-  fprintf (file, ";;  depth %d, outer %ld\n",
+  fprintf (file, ";;  depth %d, outer %ld",
 	   loop_depth (loop), (long) (loop_outer (loop)
 				      ? loop_outer (loop)->num : -1));
+  print_loop_info (file, loop, ";;  ");
 
-  bool reliable;
-  sreal iterations;
-  if (loop->num && expected_loop_iterations_by_profile (loop, &iterations, &reliable))
-    fprintf (file, ";;  profile-based iteration count: %f %s\n",
-	     iterations.to_double (), reliable ? "(reliable)" : "(unreliable)");
-
-  fprintf (file, ";;  nodes:");
+  fprintf (file, "\n;;  nodes:");
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     fprintf (file, " %d", bbs[i]->index);
