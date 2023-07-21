@@ -2012,7 +2012,7 @@ get_estimated_loop_iterations (class loop *loop, widest_int *nit)
       if (expected_loop_iterations_by_profile (loop, &snit, &reliable)
 	  && reliable)
 	{
-	  *nit = (snit + 0.5).to_int ();
+	  *nit = snit.to_nearest_int ();
 	  return true;
 	}
       return false;

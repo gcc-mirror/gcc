@@ -321,7 +321,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
   sreal sreal_expected;
   if (expected_loop_iterations_by_profile
 	  (loop, &sreal_expected, read_profile_p))
-    expected = (sreal_expected + 0.5).to_int ();
+    expected = sreal_expected.to_nearest_int ();
   else
     expected = param_avg_loop_niter;
 

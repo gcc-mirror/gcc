@@ -1553,7 +1553,7 @@ branch_prob (bool thunk)
 	    && expected_loop_iterations_by_profile (loop, &nit, &reliable)
 	    && reliable)
 	  {
-	    widest_int bound = (nit + 0.5).to_int ();
+	    widest_int bound = nit.to_nearest_int ();
 	    loop->any_estimate = false;
 	    record_niter_bound (loop, bound, true, false);
 	  }

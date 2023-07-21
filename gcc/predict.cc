@@ -4003,8 +4003,8 @@ estimate_bb_frequencies ()
 		break;
 	      }
 	}
-      tmp = tmp * freq_max + sreal (1, -1);
-      profile_count count = profile_count::from_gcov_type (tmp.to_int ());
+      tmp = tmp * freq_max;
+      profile_count count = profile_count::from_gcov_type (tmp.to_nearest_int ());
 
       /* If we have profile feedback in which this function was never
 	 executed, then preserve this info.  */

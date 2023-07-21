@@ -4801,7 +4801,7 @@ estimate_numbers_of_iterations (class loop *loop)
       && expected_loop_iterations_by_profile (loop, &nit, &reliable)
       && reliable)
     {
-      bound = (nit + 0.5).to_int ();
+      bound = nit.to_nearest_int ();
       record_niter_bound (loop, bound, true, false);
     }
 
