@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "sreal.h"
 
 
 /* The maximum number of dominator BBs we search for conditions
@@ -4775,6 +4776,9 @@ estimate_numbers_of_iterations (class loop *loop)
 
   loop->estimate_state = EST_AVAILABLE;
 
+  sreal nit;
+  bool reliable;
+
   /* If we have a measured profile, use it to estimate the number of
      iterations.  Normally this is recorded by branch_prob right after
      reading the profile.  In case we however found a new loop, record the
@@ -4787,10 +4791,10 @@ estimate_numbers_of_iterations (class loop *loop)
      recomputing iteration bounds later in the compilation process will just
      introduce random roundoff errors.  */
   if (!loop->any_estimate
-      && loop->header->count.reliable_p ())
+      && expected_loop_iterations_by_profile (loop, &nit, &reliable)
+      && reliable)
     {
-      gcov_type nit = expected_loop_iterations_unbounded (loop);
-      bound = gcov_type_to_wide_int (nit);
+      bound = (nit + 0.5).to_int ();
       record_niter_bound (loop, bound, true, false);
     }
 

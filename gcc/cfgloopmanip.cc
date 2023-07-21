@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "tree-ssa-loop-manip.h"
 #include "dumpfile.h"
+#include "sreal.h"
 
 static void copy_loops_to (class loop **, int,
 			   class loop *);
@@ -527,16 +528,16 @@ scale_loop_profile (class loop *loop, profile_probability p,
   if (iteration_bound == -1)
     return;
 
-  gcov_type iterations = expected_loop_iterations_unbounded (loop, NULL, true);
-  if (iterations == -1)
+  sreal iterations;
+  if (!expected_loop_iterations_by_profile (loop, &iterations))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       ";; guessed iterations of loop %i:%i new upper bound %i:\n",
+	       ";; guessed iterations of loop %i:%f new upper bound %i:\n",
 	       loop->num,
-	       (int)iterations,
+	       iterations.to_double (),
 	       (int)iteration_bound);
     }
 

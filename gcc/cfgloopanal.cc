@@ -233,79 +233,101 @@ average_num_loop_insns (const class loop *loop)
   return ret;
 }
 
+/* Return true if BB profile can be used to determine the expected number of
+   iterations (that is number of executions of latch edge(s) for each
+   entry of the loop.  If this is the case initialize RET with the number
+   of iterations.
+
+   RELIABLE is set if profile indiates that the returned value should be
+   realistic estimate.  (This is the case if we read profile and did not
+   messed it up yet and not the case of guessed profiles.)
+
+   This function uses only CFG profile.  We track more reliable info in
+   loop_info structure and for loop optimization heuristics more relevant
+   is get_estimated_loop_iterations API.  */
+
+bool
+expected_loop_iterations_by_profile (const class loop *loop, sreal *ret,
+				     bool *reliable)
+{
+  profile_count header_count = loop->header->count;
+  if (reliable)
+    *reliable = false;
+
+  /* TODO: For single exit loops we can use loop exit edge probability.
+     It also may be reliable while loop itself was adjusted.  */
+  if (!header_count.initialized_p ()
+      || !header_count.nonzero_p ())
+    return false;
+
+  profile_count count_in = profile_count::zero ();
+  edge e;
+  edge_iterator ei;
+
+  /* For single-latch loops avoid querying dominators.  */
+  if (loop->latch)
+    {
+      bool found = false;
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (e->src != loop->latch)
+	  count_in += e->count ();
+	else
+	  found = true;
+      /* If latch is not found, loop is inconsistent.  */
+      gcc_checking_assert (found);
+    }
+  else
+    FOR_EACH_EDGE (e, ei, loop->header->preds)
+      if (!dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
+	count_in += e->count ();
+
+  bool known;
+  /* Number of iterations is number of executions of latch edge.  */
+  *ret = (header_count - count_in).to_sreal_scale (count_in, &known);
+  if (!known)
+    return false;
+  if (reliable)
+    {
+      /* Header should have at least count_in many executions.
+	 Give up on clearly inconsistent profile.  */
+      if (header_count < count_in && header_count.differs_from_p (count_in))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Inconsistent bb profile of loop %i\n",
+		     loop->num);
+	  *reliable = false;
+	}
+      else
+	*reliable = count_in.reliable_p () && header_count.reliable_p ();
+    }
+  return true;
+}
+
 /* Returns expected number of iterations of LOOP, according to
    measured or guessed profile.
 
    This functions attempts to return "sane" value even if profile
-   information is not good enough to derive osmething.
-   If BY_PROFILE_ONLY is set, this logic is bypassed and function
-   return -1 in those scenarios.  */
+   information is not good enough to derive osmething.  */
 
 gcov_type
 expected_loop_iterations_unbounded (const class loop *loop,
-				    bool *read_profile_p,
-				    bool by_profile_only)
+				    bool *read_profile_p)
 {
-  edge e;
-  edge_iterator ei;
   gcov_type expected = -1;
   
   if (read_profile_p)
     *read_profile_p = false;
 
-  /* If we have no profile at all, use AVG_LOOP_NITER.  */
-  if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
-    {
-      if (by_profile_only)
-	return -1;
-      expected = param_avg_loop_niter;
-    }
-  else if (loop->latch && (loop->latch->count.initialized_p ()
-			   || loop->header->count.initialized_p ()))
-    {
-      profile_count count_in = profile_count::zero (),
-		    count_latch = profile_count::zero ();
-
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src == loop->latch)
-	  count_latch = e->count ();
-	else
-	  count_in += e->count ();
-
-      if (!count_latch.initialized_p ())
-	{
-          if (by_profile_only)
-	    return -1;
-	  expected = param_avg_loop_niter;
-	}
-      else if (!count_in.nonzero_p ())
-	{
-          if (by_profile_only)
-	    return -1;
-	  expected = count_latch.to_gcov_type () * 2;
-	}
-      else
-	{
-	  expected = (count_latch.to_gcov_type () + count_in.to_gcov_type ()
-		      - 1) / count_in.to_gcov_type ();
-	  if (read_profile_p
-	      && count_latch.reliable_p () && count_in.reliable_p ())
-	    *read_profile_p = true;
-	}
-    }
+  sreal sreal_expected;
+  if (expected_loop_iterations_by_profile
+	  (loop, &sreal_expected, read_profile_p))
+    expected = (sreal_expected + 0.5).to_int ();
   else
-    {
-      if (by_profile_only)
-	return -1;
-      expected = param_avg_loop_niter;
-    }
+    expected = param_avg_loop_niter;
 
-  if (!by_profile_only)
-    {
-      HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
-      if (max != -1 && max < expected)
-        return max;
-    }
+  HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
+  if (max != -1 && max < expected)
+    return max;
  
   return expected;
 }
