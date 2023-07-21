@@ -6392,6 +6392,7 @@ if test x"$ld64_flag" = x"yes"; then
   gcc_cv_ld64_platform_version=0
   gcc_cv_ld64_macos_version_min=0
   gcc_cv_ld64_demangle=0
+  gcc_cv_ld64_no_deduplicate=0
 
   if test "$build" = "$host"; then
     darwin_try_test=1
@@ -6418,6 +6419,9 @@ if test x"$ld64_flag" = x"yes"; then
     fi
     if test "$gcc_cv_ld64_major" -ge 236; then
       gcc_cv_ld64_export_dynamic=1
+    fi
+    if test "$gcc_cv_ld64_major" -ge 262; then
+      gcc_cv_ld64_no_deduplicate=1
     fi
     if test "$gcc_cv_ld64_major" -ge 512; then
       gcc_cv_ld64_platform_version=1
@@ -6447,6 +6451,13 @@ if test x"$ld64_flag" = x"yes"; then
     fi
     AC_MSG_RESULT($gcc_cv_ld64_export_dynamic)
 
+    AC_MSG_CHECKING(linker for -no_deduplicate support)
+    gcc_cv_ld64_no_deduplicate=1
+    if $gcc_cv_ld -no_deduplicate < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_no_deduplicate=0
+    fi
+    AC_MSG_RESULT($gcc_cv_ld64_no_deduplicate)
+
     AC_MSG_CHECKING(linker for -platform_version support)
     gcc_cv_ld64_platform_version=1
     if $gcc_cv_ld -platform_version macos 10.5 0.0 < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
@@ -6472,6 +6483,9 @@ if test x"$ld64_flag" = x"yes"; then
 
   AC_DEFINE_UNQUOTED(LD64_HAS_EXPORT_DYNAMIC, $gcc_cv_ld64_export_dynamic,
   [Define to 1 if ld64 supports '-export_dynamic'.])
+
+  AC_DEFINE_UNQUOTED(LD64_HAS_NO_DEDUPLICATE, $gcc_cv_ld64_no_deduplicate,
+  [Define to 1 if ld64 supports '-no_deduplicate'.])
 
   AC_DEFINE_UNQUOTED(LD64_HAS_PLATFORM_VERSION, $gcc_cv_ld64_platform_version,
   [Define to 1 if ld64 supports '-platform_version'.])

@@ -32722,6 +32722,7 @@ if test x"$ld64_flag" = x"yes"; then
   gcc_cv_ld64_platform_version=0
   gcc_cv_ld64_macos_version_min=0
   gcc_cv_ld64_demangle=0
+  gcc_cv_ld64_no_deduplicate=0
 
   if test "$build" = "$host"; then
     darwin_try_test=1
@@ -32750,6 +32751,9 @@ $as_echo "$gcc_cv_ld64_major" >&6; }
     fi
     if test "$gcc_cv_ld64_major" -ge 236; then
       gcc_cv_ld64_export_dynamic=1
+    fi
+    if test "$gcc_cv_ld64_major" -ge 262; then
+      gcc_cv_ld64_no_deduplicate=1
     fi
     if test "$gcc_cv_ld64_major" -ge 512; then
       gcc_cv_ld64_platform_version=1
@@ -32784,6 +32788,15 @@ $as_echo_n "checking linker for -export_dynamic support... " >&6; }
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_export_dynamic" >&5
 $as_echo "$gcc_cv_ld64_export_dynamic" >&6; }
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -no_deduplicate support" >&5
+$as_echo_n "checking linker for -no_deduplicate support... " >&6; }
+    gcc_cv_ld64_no_deduplicate=1
+    if $gcc_cv_ld -no_deduplicate < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_no_deduplicate=0
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_no_deduplicate" >&5
+$as_echo "$gcc_cv_ld64_no_deduplicate" >&6; }
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -platform_version support" >&5
 $as_echo_n "checking linker for -platform_version support... " >&6; }
@@ -32821,6 +32834,12 @@ _ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define LD64_HAS_EXPORT_DYNAMIC $gcc_cv_ld64_export_dynamic
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD64_HAS_NO_DEDUPLICATE $gcc_cv_ld64_no_deduplicate
 _ACEOF
 
 

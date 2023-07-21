@@ -287,6 +287,19 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
+#if LD64_HAS_NO_DEDUPLICATE
+/* What we want is "when the optimization level is debug OR when it is
+   a compile & link job with implied O0 optimization".  */
+#define DARWIN_LD_NO_DEDUPLICATE \
+  "%{O0|O1|O|Og: -no_deduplicate} \
+   %{!O*:\
+     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.S|.i|.ii|.mi|.mii|\
+       .f|.for|.ftn|.fpp|.f90|.f95|.f03|.f08|.f77|.F|.F90|.F95|.F03|.F08|\
+       .d|.mod: -no_deduplicate }} "
+#else
+#define DARWIN_LD_NO_DEDUPLICATE ""
+#endif
+
 #if LD64_HAS_MACOS_VERSION_MIN
 # define DARWIN_PLATFORM_ID \
   "%{mmacosx-version-min=*:-macos_version_min %*} "
@@ -403,10 +416,14 @@ extern GTY(()) int darwin_ms_struct;
     %(linker)" \
     DARWIN_LD_DEMANGLE \
     LINK_PLUGIN_SPEC \
+    DARWIN_LD_NO_DEDUPLICATE \
     "%{flto*:%<fcompare-debug*} \
      %{flto} %{fno-lto} %{flto=*} \
-    %l " \
+     %{static}%{!static:%{!dynamic:-dynamic}} \
+     %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
+     %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
     DARWIN_PLATFORM_ID \
+    " %l " \
     LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
@@ -493,9 +510,8 @@ extern GTY(()) int darwin_ms_struct;
    Note that options taking arguments may appear multiple times on a command
    line with different arguments each time, so put a * after their names so
    all of them get passed.  */
-#define LINK_SPEC  \
-  "%{static}%{!static:%{!dynamic:-dynamic}} \
-   %:remove-outfile(-ldl) \
+#define LINK_SPEC \
+   "%:remove-outfile(-ldl) \
    %:remove-outfile(-lm) \
    %:remove-outfile(-lpthread) \
    %{fgnu-runtime: %{static|static-libgcc: \
@@ -511,9 +527,7 @@ extern GTY(()) int darwin_ms_struct;
    %{static|static-libgm2:%:replace-outfile(-lm2iso libm2iso.a%s)}\
    %{static|static-libgm2:%:replace-outfile(-lm2min libm2min.a%s)}\
    %{static|static-libgm2:%:replace-outfile(-lm2log libm2log.a%s)}\
-   %{static|static-libgm2:%:replace-outfile(-lm2cor libm2cor.a%s)}\
-  %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
-   %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
+   %{static|static-libgm2:%:replace-outfile(-lm2cor libm2cor.a%s)} "\
    LINK_SYSROOT_SPEC \
    "%{!multiply_defined*:%{shared-libgcc: \
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
