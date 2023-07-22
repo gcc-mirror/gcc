@@ -544,6 +544,8 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 
   /* Special case inserting 64-bit values into a TImode register.  */
   if (TARGET_64BIT
+      /* Disable for -O0 (see PR110587) unless naked (PR110533).  */
+      && (optimize || ix86_function_naked (current_function_decl))
       && (mode == DImode || mode == DFmode)
       && SUBREG_P (op0)
       && GET_MODE (SUBREG_REG (op0)) == TImode
