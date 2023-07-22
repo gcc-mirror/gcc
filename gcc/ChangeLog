@@ -1,3 +1,266 @@
+2023-07-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/110699
+	* gimplify.cc (gimplify_compound_lval):  If the array's type
+	is error_mark_node then return GS_ERROR.
+
+2023-07-21  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/110770
+	* config/bpf/bpf.opt: Added option -masm=<dialect>.
+	* config/bpf/bpf-opts.h (enum bpf_asm_dialect): New type.
+	* config/bpf/bpf.cc (bpf_print_register): New function.
+	(bpf_print_register): Support pseudo-c syntax for registers.
+	(bpf_print_operand_address): Likewise.
+	* config/bpf/bpf.h (ASM_SPEC): handle -msasm.
+	(ASSEMBLER_DIALECT): Define.
+	* config/bpf/bpf.md: Added pseudo-c templates.
+	* doc/invoke.texi (-masm=): New eBPF option item.
+
+2023-07-21  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf.md: fixed template for neg instruction.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	PR target/110727
+	* tree-vect-loop.cc (scale_profile_for_vect_loop): Avoid scaling flat
+	profiles by vectorization factor.
+	(vect_transform_loop): Check for flat profiles.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.h (maybe_flat_loop_profile): Declare
+	* cfgloopanal.cc (maybe_flat_loop_profile): New function.
+	* tree-cfg.cc (print_loop_info): Print info about flat profiles.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.cc (get_estimated_loop_iterations): Use sreal::to_nearest_int
+	* cfgloopanal.cc (expected_loop_iterations_unbounded): Likewise.
+	* predict.cc (estimate_bb_frequencies): Likewise.
+	* profile.cc (branch_prob): Likewise.
+	* tree-ssa-loop-niter.cc (estimate_numbers_of_iterations): Likewise
+
+2023-07-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_LD_DEMANGLE): New.
+	(LINK_COMMAND_SPEC_A): Add demangle handling.
+	* configure: Regenerate.
+	* configure.ac: Detect linker support for '-demangle'.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* sreal.cc (sreal::to_nearest_int): New.
+	(sreal_verify_basics): Verify also to_nearest_int.
+	(verify_aritmetics): Likewise.
+	(sreal_verify_conversions): New.
+	(sreal_cc_tests): Call sreal_verify_conversions.
+	* sreal.h: (sreal::to_nearest_int): Declare
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ch.cc (enum ch_decision): New enum.
+	(should_duplicate_loop_header_p): Return info on profitability.
+	(do_while_loop_p): Watch for constant conditionals.
+	(update_profile_after_ch): Do not sanity check that all
+	static exits are taken.
+	(ch_base::copy_headers): Run on all loops.
+	(pass_ch::process_loop_p): Improve heuristics by handling also
+	do_while loop and duplicating shortest sequence containing all
+	winning blocks.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.cc (finite_loop_p): Reorder to do cheap
+	tests first; update finite_p flag.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.cc (flow_loop_dump): Use print_loop_info.
+	* cfgloop.h (print_loop_info): Declare.
+	* tree-cfg.cc (print_loop_info): Break out from ...; add
+	printing of missing fields and profile
+	(print_loop): ... here.
+
+2023-07-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (expand_gather_scatter): Remove redundant variables.
+
+2023-07-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Change condition order.
+	(vectorizable_operation): Ditto.
+
+2023-07-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Align order of mask and len.
+	* config/riscv/riscv-v.cc (expand_load_store): Ditto.
+	(expand_gather_scatter): Ditto.
+	* doc/md.texi: Ditto.
+	* internal-fn.cc (add_len_and_mask_args): Ditto.
+	(add_mask_and_len_args): Ditto.
+	(expand_partial_load_optab_fn): Ditto.
+	(expand_partial_store_optab_fn): Ditto.
+	(expand_scatter_store_optab_fn): Ditto.
+	(expand_gather_load_optab_fn): Ditto.
+	(internal_fn_len_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(internal_len_load_store_bias): Ditto.
+	* tree-vect-stmts.cc (vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+
+2023-07-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (len_maskload<mode><vm>): Change LEN_MASK into MASK_LEN.
+	(mask_len_load<mode><vm>): Ditto.
+	(len_maskstore<mode><vm>): Ditto.
+	(mask_len_store<mode><vm>): Ditto.
+	(len_mask_gather_load<RATIO64:mode><RATIO64I:mode>): Ditto.
+	(mask_len_gather_load<RATIO64:mode><RATIO64I:mode>): Ditto.
+	(len_mask_gather_load<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(mask_len_gather_load<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(len_mask_gather_load<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(mask_len_gather_load<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(len_mask_gather_load<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(mask_len_gather_load<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(len_mask_gather_load<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(mask_len_gather_load<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(len_mask_gather_load<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(mask_len_gather_load<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(len_mask_gather_load<RATIO1:mode><RATIO1:mode>): Ditto.
+	(mask_len_gather_load<RATIO1:mode><RATIO1:mode>): Ditto.
+	(len_mask_scatter_store<RATIO64:mode><RATIO64I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO64:mode><RATIO64I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(mask_len_scatter_store<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(len_mask_scatter_store<RATIO1:mode><RATIO1:mode>): Ditto.
+	(mask_len_scatter_store<RATIO1:mode><RATIO1:mode>): Ditto.
+	* doc/md.texi: Ditto.
+	* genopinit.cc (main): Ditto.
+	(CMP_NAME): Ditto. Ditto.
+	* gimple-fold.cc (arith_overflowed_p): Ditto.
+	(gimple_fold_partial_load_store_mem_ref): Ditto.
+	(gimple_fold_call): Ditto.
+	* internal-fn.cc (len_maskload_direct): Ditto.
+	(mask_len_load_direct): Ditto.
+	(len_maskstore_direct): Ditto.
+	(mask_len_store_direct): Ditto.
+	(expand_call_mem_ref): Ditto.
+	(expand_len_maskload_optab_fn): Ditto.
+	(expand_mask_len_load_optab_fn): Ditto.
+	(expand_len_maskstore_optab_fn): Ditto.
+	(expand_mask_len_store_optab_fn): Ditto.
+	(direct_len_maskload_optab_supported_p): Ditto.
+	(direct_mask_len_load_optab_supported_p): Ditto.
+	(direct_len_maskstore_optab_supported_p): Ditto.
+	(direct_mask_len_store_optab_supported_p): Ditto.
+	(internal_load_fn_p): Ditto.
+	(internal_store_fn_p): Ditto.
+	(internal_gather_scatter_fn_p): Ditto.
+	(internal_fn_len_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(internal_fn_stored_value_index): Ditto.
+	(internal_len_load_store_bias): Ditto.
+	* internal-fn.def (LEN_MASK_GATHER_LOAD): Ditto.
+	(MASK_LEN_GATHER_LOAD): Ditto.
+	(LEN_MASK_LOAD): Ditto.
+	(MASK_LEN_LOAD): Ditto.
+	(LEN_MASK_SCATTER_STORE): Ditto.
+	(MASK_LEN_SCATTER_STORE): Ditto.
+	(LEN_MASK_STORE): Ditto.
+	(MASK_LEN_STORE): Ditto.
+	* optabs-query.cc (supports_vec_gather_load_p): Ditto.
+	(supports_vec_scatter_store_p): Ditto.
+	* optabs-tree.cc (target_supports_mask_load_store_p): Ditto.
+	(target_supports_len_load_store_p): Ditto.
+	* optabs.def (OPTAB_CD): Ditto.
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Ditto.
+	(call_may_clobber_ref_p_1): Ditto.
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Ditto.
+	(dse_optimize_stmt): Ditto.
+	* tree-ssa-loop-ivopts.cc (get_mem_type_for_internal_fn): Ditto.
+	(get_alias_ptr_type_for_ptr_address): Ditto.
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Ditto.
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern): Ditto.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Ditto.
+	(vect_get_strided_load_store_ops): Ditto.
+	(vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+
+2023-07-21  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.opt: Fix a typo.
+
+2023-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88540
+	* tree-ssa-phiopt.cc (minmax_replacement): Do not give up
+	with NaNs but handle the simple case by if-converting to a
+	COND_EXPR.
+
+2023-07-21  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (minmax<minmax<a,b>,a>->minmax<a,b>): New
+	transformation.
+
+2023-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110742
+	* tree-vect-slp.cc (vect_optimize_slp_pass::get_result_with_layout):
+	Do not materialize an edge permutation in an external node with
+	vector defs.
+	(vect_slp_analyze_node_operations_1): Guard purely internal
+	nodes better.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.cc: Include sreal.h.
+	(flow_loop_dump): Dump sreal iteration exsitmate.
+	(get_estimated_loop_iterations): Update.
+	* cfgloop.h (expected_loop_iterations_by_profile): Declare.
+	* cfgloopanal.cc (expected_loop_iterations_by_profile): New function.
+	(expected_loop_iterations_unbounded): Use new API.
+	* cfgloopmanip.cc (scale_loop_profile): Use
+	expected_loop_iterations_by_profile
+	* predict.cc (pass_profile::execute): Likewise.
+	* profile.cc (branch_prob): Likewise.
+	* tree-ssa-loop-niter.cc: Include sreal.h.
+	(estimate_numbers_of_iterations): Likewise
+
+2023-07-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/110744
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Correct the index of bias
+	operand for ifn IFN_LEN_STORE.
+
+2023-07-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/89701
+	* common.opt: (fcf-protection=): Add EnumSet attribute to
+	support combination of params.
+
+2023-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/110612
+	* text-art/table.cc (table_geometry::table_geometry): Drop m_table
+	field.
+	(table_geometry::table_x_to_canvas_x): Add cast to comparison.
+	(table_geometry::table_y_to_canvas_y): Likewise.
+	* text-art/table.h (table_geometry::m_table): Drop unused field.
+	* text-art/widget.h (wrapper_widget::update_child_alloc_rects):
+	Add "override".
+
 2023-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/110717

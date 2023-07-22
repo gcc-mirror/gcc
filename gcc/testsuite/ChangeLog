@@ -1,3 +1,146 @@
+2023-07-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.c-torture/compile/asmgoto-6.c: Require target lra.
+
+2023-07-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/110699
+	* gcc.dg/pr110699.c: New test case.
+
+2023-07-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110106
+	* g++.dg/cpp0x/noexcept80.C: New test.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/copy-headers-9.c: Fix template for tree-ssa-loop-ch.cc changes.
+	* gcc.dg/tree-ssa/dce-1.c: Likewise.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/loop-unswitch-17.c: Disable ch.
+	* gcc.dg/pr103079.c: Disable ch.
+	* gcc.dg/tree-ssa/copy-headers-7.c: Update so ch behaves
+	as expected.
+	* gcc.dg/tree-ssa/copy-headers.c: Update template.
+	* gcc.dg/tree-ssa/copy-headers-9.c: New test.
+
+2023-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/41320
+	* gcc.dg/tree-ssa/forwprop-12.c: Remove.
+
+2023-07-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/dce-1.c: Update for new loop dumps.
+
+2023-07-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/gimple_fold-1.c: Ditto.
+
+2023-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88540
+	* gcc.target/i386/pr88540.c: New testcase.
+	* gcc.target/i386/pr54855-9.c: XFAIL check for redundant moves.
+	* gcc.target/i386/pr54855-12.c: Adjust.
+	* gcc.target/i386/pr54855-13.c: Likewise.
+	* gcc.target/i386/pr110170.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-12.c: Likewise.
+
+2023-07-21  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/reassoc-12.c: Disable all of
+	the passes that enables match-and-simplify.
+	* gcc.dg/tree-ssa/minmax-23.c: New test.
+
+2023-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110742
+	* g++.dg/torture/pr110742.C: New testcase.
+
+2023-07-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/110729
+	* gcc.dg/pr110729.c: New test.
+
+2023-07-21  liuhongt  <hongtao.liu@intel.com>
+
+	* c-c++-common/fcf-protection-10.c: New test.
+	* c-c++-common/fcf-protection-11.c: New test.
+	* c-c++-common/fcf-protection-12.c: New test.
+	* c-c++-common/fcf-protection-8.c: New test.
+	* c-c++-common/fcf-protection-9.c: New test.
+	* gcc.target/i386/pr89701-1.c: New test.
+	* gcc.target/i386/pr89701-2.c: New test.
+	* gcc.target/i386/pr89701-3.c: New test.
+
+2023-07-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr107547.c: Add { dg-add-options float16 }.
+	* gcc.target/i386/float16-7.c: Add -msse2 to dg-options.
+	* lib/target-supports.exp (add_options_for_float16): Add
+	-msse2 for i?86-*-* || x86_64-*-*.
+
+2023-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110455
+	* gcc.dg/analyzer/pr110455.c: New test.
+
+2023-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110387
+	* gcc.dg/analyzer/out-of-bounds-pr110387.c: New test.
+
 2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose3.mod: New test.

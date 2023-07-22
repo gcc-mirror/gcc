@@ -1,3 +1,9 @@
+2023-07-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110106
+	* constexpr.cc (potential_constant_expression_1): Try to complete the
+	type when !processing_template_decl.
+
 2023-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110114

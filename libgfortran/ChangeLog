@@ -1,3 +1,12 @@
+2023-07-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR libfortran/110759
+	* ieee/ieee_arithmetic.F90
+	(COMP_INTERFACE): Remove the comma after EXPAND_INTER_MACRO_16
+	and EXPAND_INTER_MACRO_10.
+	(EXPAND_INTER_MACRO_16): Add comma here if 16 byte fp exist.
+	(EXPAND_INTER_MACRO_10): Likewise.
+
 2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/ieee_arithmetic.F90: Add IEEE_QUIET_* and
