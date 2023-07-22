@@ -1240,8 +1240,9 @@ finish_return_stmt (tree expr)
 {
   tree r;
   bool no_warning;
+  bool dangling;
 
-  expr = check_return_expr (expr, &no_warning);
+  expr = check_return_expr (expr, &no_warning, &dangling);
 
   if (error_operand_p (expr)
       || (flag_openmp && !check_omp_return ()))
@@ -1259,6 +1260,7 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (input_location, RETURN_EXPR, expr);
+  RETURN_EXPR_LOCAL_ADDR_P (r) = dangling;
   if (no_warning)
     suppress_warning (r, OPT_Wreturn_type);
   r = maybe_cleanup_point_expr_void (r);

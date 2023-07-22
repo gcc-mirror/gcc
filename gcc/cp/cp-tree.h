@@ -447,6 +447,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       INIT_EXPR_NRV_P (in INIT_EXPR)
       ATOMIC_CONSTR_MAP_INSTANTIATED_P (in ATOMIC_CONSTR)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
+      RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -4070,6 +4071,11 @@ struct GTY(()) lang_decl {
 #define DECL_SAVED_AUTO_RETURN_TYPE(NODE)		\
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_auto_return_type)
+
+/* In a RETURN_EXPR, whether the expression refers to the address
+   of a local variable.  */
+#define RETURN_EXPR_LOCAL_ADDR_P(NODE) \
+  TREE_LANG_FLAG_0 (RETURN_EXPR_CHECK (NODE))
 
 /* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
@@ -8139,7 +8145,7 @@ extern tree composite_pointer_type		(const op_location_t &,
 						 tsubst_flags_t);
 extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
-extern tree check_return_expr			(tree, bool *);
+extern tree check_return_expr			(tree, bool *, bool *);
 extern tree spaceship_type			(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree genericize_spaceship		(location_t, tree, tree, tree);
 extern tree cp_build_binary_op                  (const op_location_t &,
