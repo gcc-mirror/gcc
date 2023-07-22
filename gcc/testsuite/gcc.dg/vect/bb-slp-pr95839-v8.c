@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect64 } */
 /* { dg-additional-options "-w -Wno-psabi" } */
 
 typedef float __attribute__((vector_size(8))) v2f32;
