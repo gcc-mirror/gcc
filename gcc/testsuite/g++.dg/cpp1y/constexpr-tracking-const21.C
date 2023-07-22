@@ -18,11 +18,11 @@ struct array2 {
 template <typename T>
 struct S {
   using U = array2<T, 4>;
-  const U m;
+  const U m; // { dg-message "originally declared" }
   constexpr S(int) : m{}
   {
     const_cast<int &>(m.a[0]) = 42; // { dg-error "modifying a const object" }
   }
 };
 
-constexpr S<int> p = { 10 }; // { dg-message "originally declared" }
+constexpr S<int> p = { 10 };

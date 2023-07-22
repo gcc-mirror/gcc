@@ -4,7 +4,7 @@ template <long long i>
 struct Fib
 {
     static const long long value // { dg-error "overflow" }
-    = Fib<i-1>::value + Fib<i-2>::value;
+    = Fib<i-1>::value + Fib<i-2>::value; // { dg-error "overflow" }
 };
 
 template <>

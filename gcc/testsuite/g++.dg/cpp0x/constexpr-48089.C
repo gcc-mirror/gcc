@@ -10,11 +10,11 @@
 // R() is well-formed because i is initialized before j.
 
 struct s {
-  constexpr s() : v(v) { }
+  constexpr s() : v(v) { } // { dg-error "accessing uninitialized member" }
   int v;
 };
 
-constexpr s bang;		// { dg-error "|" }
+constexpr s bang;  // { dg-message "in .constexpr. expansion" }
 
 struct R {
   int i,j;
@@ -26,14 +26,14 @@ constexpr R r;			// { dg-bogus "" }
 // Ill-formed (no diagnostic required)
 struct T {
   int i;
-  constexpr int f() { return i; }
+  constexpr int f() { return i; }  // { dg-error "accessing uninitialized member" }
   constexpr T(): i(0) { }
-  constexpr T(const T& t) : i(f()) { } // { dg-message "" }
+  constexpr T(const T& t) : i(f()) { }  // { dg-message "in .constexpr. expansion" }
 };
 
 constexpr T t1;
 // Ill-formed (diagnostic required)
-constexpr T t2(t1);		// { dg-message "" }
+constexpr T t2(t1);		// { dg-message "in .constexpr. expansion" }
 
 // Well-formed
 struct U {

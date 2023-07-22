@@ -25,8 +25,7 @@ struct D : B, A {
 
 constexpr B::B(V* v, A* a)
 {
-  dynamic_cast<B*>(a);
+  dynamic_cast<B*>(a); // { dg-error "accessing uninitialized member" }
 }
 
-constexpr D d; // { dg-error "accessing uninitialized member" }
-// { dg-message "in 'constexpr' expansion of" "" { target *-*-* } .-1 }
+constexpr D d; // { dg-message "in 'constexpr' expansion of" }

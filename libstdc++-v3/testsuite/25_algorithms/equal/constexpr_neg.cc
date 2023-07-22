@@ -32,7 +32,7 @@ test01()
   return outa;
 }
 
-static_assert(test01()); // { dg-error "outside the bounds" }
+static_assert(test01()); // { dg-error "non-constant condition" }
 
 constexpr bool
 test02()
@@ -44,7 +44,8 @@ test02()
   return outa;
 }
 
-static_assert(test02()); // { dg-error "outside the bounds" }
+static_assert(test02()); // { dg-error "non-constant condition" }
 
-// { dg-prune-output "non-constant condition" }
+// Errors occuring within <algorithm> internals:
+// { dg-error "outside the bounds of array" "" { target *-*-* } 0 }
 // { dg-prune-output "in 'constexpr'" }

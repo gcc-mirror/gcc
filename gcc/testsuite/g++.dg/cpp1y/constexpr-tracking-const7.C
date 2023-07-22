@@ -3,7 +3,7 @@
 
 struct D { int n; };
 
-struct C { const D d; };
+struct C { const D d; }; // { dg-message "originally declared" }
 
 struct A {
   C c;
@@ -19,5 +19,4 @@ struct B {
 };
 
 constexpr B b{}; // { dg-message "in .constexpr. expansion of " }
-// { dg-message "originally declared" "" { target *-*-* } .-1 }
 static_assert((b.a.c.d.n, 1), "");

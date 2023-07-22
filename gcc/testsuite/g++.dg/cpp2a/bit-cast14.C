@@ -44,7 +44,7 @@ f5 ()
 {
   T1 t = { 0, 0, 0, 0, 0, 0, 0 };
   S s = __builtin_bit_cast (S, t);
-  unsigned char a = s.a;
+  unsigned char a = s.a;		// { dg-error "accessing uninitialized member" }
   return true;
 }
 
@@ -53,7 +53,7 @@ f6 ()
 {
   T2 t = { 0, 0, 0, 0, 0, 0, 0 };
   S s = __builtin_bit_cast (S, t);
-  unsigned char b = s.b;
+  unsigned char b = s.b;		// { dg-error "accessing uninitialized member" }
   return true;
 }
 
@@ -62,14 +62,14 @@ f7 ()
 {
   T3 t = { 0, 0, 0, 0, 0, 0, 0 };
   S s = __builtin_bit_cast (S, t);
-  unsigned char c = s.c;
+  unsigned char c = s.c;		// { dg-error "accessing uninitialized member" }
   return true;
 }
 
 constexpr bool a = f1 ();
 constexpr bool b = f2 ();
 constexpr bool c = f3 ();
-constexpr bool d = f4 ();
-constexpr bool e = f5 ();	// { dg-error "accessing uninitialized member" }
-constexpr bool f = f6 ();	// { dg-error "accessing uninitialized member" }
-constexpr bool g = f7 ();	// { dg-error "accessing uninitialized member" }
+constexpr bool d = f4 ();	// { dg-message "in .constexpr. expansion" }
+constexpr bool e = f5 ();	// { dg-message "in .constexpr. expansion" }
+constexpr bool f = f6 ();	// { dg-message "in .constexpr. expansion" }
+constexpr bool g = f7 ();	// { dg-message "in .constexpr. expansion" }

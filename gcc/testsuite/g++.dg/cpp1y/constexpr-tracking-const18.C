@@ -13,11 +13,11 @@ struct array
 template <typename T>
 struct S {
   using U = array<T, 4>;
-  const U m;
+  const U m; // { dg-message "originally declared" }
   constexpr S(int) : m{}
   {
     const_cast<int &>(const_cast<const U &>(m)[0]) = 42; // { dg-error "modifying a const object" }
   }
 };
 
-constexpr S<int> p = { 10 }; // { dg-message "originally declared" }
+constexpr S<int> p = { 10 };

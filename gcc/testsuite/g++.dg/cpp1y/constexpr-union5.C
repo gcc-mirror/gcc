@@ -8,8 +8,8 @@ union U {
 };
 
 constexpr int foo(U *up) {
-  up->a++;
+  up->a++; // { dg-error "accessing uninitialized member" }
   return {42};
 }
 
-extern constexpr U u = {}; // { dg-error "accessing uninitialized member" }
+extern constexpr U u = {}; // { dg-message "in .constexpr. expansion" }

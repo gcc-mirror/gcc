@@ -2,7 +2,7 @@
 // { dg-do compile { target c++14 } }
 
 struct A {
-  const int n;
+  const int n; // { dg-message "originally declared" }
   constexpr A() : n(1) { }
 };
 struct B {
@@ -13,5 +13,4 @@ struct B {
   }
 };
 constexpr B b; // { dg-message "in .constexpr. expansion of " }
-// { dg-message "originally declared" "" { target *-*-* } .-1 }
 static_assert((b.a.n, 1), "");

@@ -1,7 +1,7 @@
 // Testcase from P0170R1
 // { dg-do compile { target c++17 } }
 
-auto monoid = [](auto v) { return [=] { return v; }; };
+auto monoid = [](auto v) { return [=] { return v; }; };  // { dg-error "not usable in a constant expression" }
 auto add = [](auto m1) constexpr {
   auto ret = m1();
   return [=](auto m2) mutable {
@@ -22,7 +22,7 @@ int main()
   // member function call operator can not perform an lvalue-to-rvalue conversion
   // on one of its subobjects (that represents its capture) in a constant
   // expression.
-  auto two = monoid(2);
+  auto two = monoid(2);  // { dg-message "not declared .constexpr." }
   if (!(two() == 2)) __builtin_abort(); // OK, not a constant expression.
   static_assert(add(one)(one)() == two()); // { dg-error "|in .constexpr. expansion of " } two() is not a constant expression
   static_assert(add(one)(one)() == monoid(2)()); // OK
