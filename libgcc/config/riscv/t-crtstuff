@@ -1,0 +1,5 @@
+# -fasynchronous-unwind-tables -funwind-tables is on by default for riscv linux
+# We turn it off for crt*.o because it would make __EH_FRAME_BEGIN__ point
+# to .eh_frame data from crtbeginT.o instead of the user-defined object
+# during static linking.
+CRTSTUFF_T_CFLAGS += -fno-asynchronous-unwind-tables -fno-unwind-tables
