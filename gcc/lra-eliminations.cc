@@ -1179,8 +1179,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	  gcc_assert (ep->to_rtx != stack_pointer_rtx
 		      || (ep->from == FRAME_POINTER_REGNUM
 			  && !elimination_fp2sp_occured_p)
-		      || (ep->from != FRAME_POINTER_REGNUM
-			  && ep->from < FIRST_PSEUDO_REGISTER
+		      || (ep->from < FIRST_PSEUDO_REGISTER
 			  && fixed_regs [ep->from]));
 
 	  /* Mark that is not eliminable anymore.  */
@@ -1398,7 +1397,7 @@ lra_update_fp2sp_elimination (void)
 	     "	   Frame pointer can not be eliminated anymore\n");
   frame_pointer_needed = true;
   CLEAR_HARD_REG_SET (set);
-  add_to_hard_reg_set (&set, Pmode, FRAME_POINTER_REGNUM);
+  add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
   spill_pseudos (set);
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
