@@ -1,3 +1,18 @@
+2023-07-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr110748-1.c: New Test.
+	* gcc.target/riscv/xtheadfmv-fmv.c: Add '\t' around test
+	patterns to avoid random string matches.
+
+2023-07-22  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.dg/vect/bb-slp-pr95839-v8.c: Limit to `vect64' targets.
+
+2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110631
+	* gm2/pimlib/run/pass/testfiobinary.mod: New test.
+
 2023-07-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.c-torture/compile/asmgoto-6.c: Require target lra.

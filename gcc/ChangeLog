@@ -1,3 +1,61 @@
+2023-07-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/110748
+	* config/riscv/predicates.md (const_0_operand): Add back
+	const_double.
+
+2023-07-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move): Disable the
+	64-bit insertions into TImode optimizations with -O0, unless
+	the function has the "naked" attribute (for PR target/110533).
+
+2023-07-22  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/110778
+	* rtl.h (extended_count): Change last argument type
+	to bool.
+
+2023-07-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (extv<mode>): Use QImode for offsets.
+	(extzv<mode>): Likewise.
+	(insv<mode>): Likewise.
+	(*testqi_ext_3): Likewise.
+	(*btr<mode>_2): Likewise.
+	(define_split): Likewise.
+	(*btsq_imm): Likewise.
+	(*btrq_imm): Likewise.
+	(*btcq_imm): Likewise.
+	(define_peephole2 x3): Likewise.
+	(*bt<mode>): Likewise
+	(*bt<mode>_mask): New define_insn_and_split.
+	(*jcc_bt<mode>): Use QImode for offsets.
+	(*jcc_bt<mode>_1): Delete obsolete pattern.
+	(*jcc_bt<mode>_mask): Use QImode offsets.
+	(*jcc_bt<mode>_mask_1): Likewise.
+	(define_split): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): New define_insn_and_split.
+	(bmi2_bzhi_<mode>3): Use QImode offsets.
+	(*bmi2_bzhi_<mode>3): Likewise.
+	(*bmi2_bzhi_<mode>3_1): Likewise.
+	(*bmi2_bzhi_<mode>3_1_ccz): Likewise.
+	(@tbm_bextri_<mode>): Likewise.
+
+2023-07-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/bfin/bfin.md (ones): Fix length computation.
+
+2023-07-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-eliminations.cc (update_reg_eliminate): Fix the assert.
+	(lra_update_fp2sp_elimination): Use HARD_FRAME_POINTER_REGNUM
+	instead of FRAME_POINTER_REGNUM to spill pseudos.
+
 2023-07-21  Roger Sayle  <roger@nextmovesoftware.com>
 	    Richard Biener  <rguenther@suse.de>
 

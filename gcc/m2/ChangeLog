@@ -1,3 +1,18 @@
+2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110631
+	* gm2-libs/FIO.def (ReadAny): Correct comment as
+	HIGH (a) + 1 is number of bytes.
+	(WriteAny): Correct comment as HIGH (a) + 1 is number of
+	bytes.
+	* gm2-libs/FIO.mod (ReadAny): Correct comment as
+	HIGH (a) + 1 is number of bytes.  Also pass HIGH (a) + 1
+	to BufferedRead.
+	(WriteAny): Correct comment as HIGH (a) + 1 is number of
+	bytes.	Also pass HIGH (a) + 1 to BufferedWrite.
+	(BufferedWrite): Rename parameter a to src, rename variable
+	t to dest.  Correct parameter order to memcpy.
+
 2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2SymInit.mod (IsExempt): Remove parameter exemption.
