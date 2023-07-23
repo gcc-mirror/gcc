@@ -30,9 +30,11 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
       return values.insert (name, id);
     case Namespace::Types:
       return types.insert (name, id);
-    case Namespace::Labels:
     case Namespace::Macros:
+      return macros.insert (name, id);
+    case Namespace::Labels:
     default:
+      // return labels.insert (name, id);
       rust_unreachable ();
     }
 }
