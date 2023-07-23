@@ -4340,6 +4340,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && ! (final_ptr && inside_prec != inter_prec))
      (ocvt @0))
 
+   /* `(outer:M)(inter:N) a:O`
+      can be converted to `(outer:M) a`
+      if M <= O && N >= O. No matter what signedness of the casts,
+      as the final is either a truncation from the original or just
+      a sign change of the type. */
+   (if (inside_int && inter_int && final_int
+        && final_prec <= inside_prec
+	&& inter_prec >= inside_prec)
+    (convert @0))
+
     /* A truncation to an unsigned type (a zero-extension) should be
        canonicalized as bitwise and of a mask.  */
     (if (GIMPLE /* PR70366: doing this in GENERIC breaks -Wconversion.  */
