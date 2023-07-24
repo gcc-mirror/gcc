@@ -102,3 +102,20 @@ optimize_successive_divisions_p (tree, tree)
 {
   return false;
 }
+
+/* Return true if EXPR1 and EXPR2 have the same value, but not necessarily
+   same type.  The types can differ through nop conversions.  */
+
+static inline bool
+bitwise_equal_p (tree expr1, tree expr2)
+{
+  STRIP_NOPS (expr1);
+  STRIP_NOPS (expr2);
+  if (expr1 == expr2)
+    return true;
+  if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
+    return false;
+  if (TREE_CODE (expr1) == INTEGER_CST && TREE_CODE (expr2) == INTEGER_CST)
+    return wi::to_wide (expr1) == wi::to_wide (expr2);
+  return operand_equal_p (expr1, expr2, 0);
+}

@@ -1648,6 +1648,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (convert (bit_and @1 (bit_not @0)))))
 
+/* (~X | Y) ^ X -> ~(X & Y).  */
+(simplify
+ (bit_xor:c (nop_convert1? (bit_ior:c (nop_convert2? (bit_not @0)) @1)) @2)
+ (if (bitwise_equal_p (@0, @2))
+  (convert (bit_not (bit_and @0 (convert @1))))))
+
 /* Convert ~X ^ ~Y to X ^ Y.  */
 (simplify
  (bit_xor (convert1? (bit_not @0)) (convert2? (bit_not @1)))

@@ -224,3 +224,40 @@ optimize_successive_divisions_p (tree divisor, tree inner_div)
     }
   return true;
 }
+
+/* Return true if EXPR1 and EXPR2 have the same value, but not necessarily
+   same type.  The types can differ through nop conversions.  */
+#define bitwise_equal_p(expr1, expr2) \
+  gimple_bitwise_equal_p (expr1, expr2, valueize)
+
+bool gimple_nop_convert (tree, tree *, tree (*) (tree));
+
+/* Helper function for bitwise_equal_p macro.  */
+
+static inline bool
+gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
+{
+  if (expr1 == expr2)
+    return true;
+  if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
+    return false;
+  if (TREE_CODE (expr1) == INTEGER_CST && TREE_CODE (expr2) == INTEGER_CST)
+    return wi::to_wide (expr1) == wi::to_wide (expr2);
+  if (operand_equal_p (expr1, expr2, 0))
+    return true;
+  tree expr3, expr4;
+  if (!gimple_nop_convert (expr1, &expr3, valueize))
+    expr3 = expr1;
+  if (!gimple_nop_convert (expr2, &expr4, valueize))
+    expr4 = expr2;
+  if (expr1 != expr3)
+    {
+      if (operand_equal_p (expr3, expr2, 0))
+	return true;
+      if (expr2 != expr4 && operand_equal_p (expr3, expr4, 0))
+	return true;
+    }
+  if (expr2 != expr4 && operand_equal_p (expr1, expr4, 0))
+    return true;
+  return false;
+}
