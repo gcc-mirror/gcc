@@ -9,6 +9,15 @@ namespace Rust {
 typedef uint32_t codepoint_t;
 typedef std::vector<codepoint_t> string_t;
 
+// These constants are used to compose and decompose of Hangul syllables.
+// See `Sample Code for Hangul Algorithms` in 3.1.2
+// unicode.org/versions/Unicode15.0.0/ch03.pdf
+const uint32_t S_BASE = 0xAC00;
+const uint32_t L_BASE = 0x1100, V_BASE = 0x1161, T_BASE = 0x11A7;
+const uint32_t L_COUNT = 19, V_COUNT = 21, T_COUNT = 28;
+const uint32_t N_COUNT = V_COUNT * T_COUNT;
+const uint32_t S_COUNT = L_COUNT * N_COUNT;
+
 template <std::size_t SIZE>
 int64_t
 binary_search_ranges (
@@ -115,10 +124,26 @@ recursive_decomp_cano (codepoint_t c, string_t &buf)
 string_t
 decomp_cano (string_t s)
 {
-  // TODO: Algorithmic lookup for Hangul
   string_t buf;
   for (codepoint_t c : s)
-    recursive_decomp_cano (c, buf);
+    {
+      int64_t s_index = c - S_BASE;
+      if (0 <= s_index && s_index < S_COUNT)
+	{
+	  // decompose Hangul argorithmically
+	  uint32_t l = L_BASE + s_index / N_COUNT;
+	  uint32_t v = V_BASE + (s_index % N_COUNT) / T_COUNT;
+	  uint32_t t = T_BASE + s_index % T_COUNT;
+	  buf.push_back (l);
+	  buf.push_back (v);
+	  if (t != T_BASE)
+	    buf.push_back (t);
+	  continue;
+	}
+
+      // Current character is not hangul
+      recursive_decomp_cano (c, buf);
+    }
   return buf;
 }
 
@@ -132,7 +157,7 @@ sort_cano (string_t &s)
     {
       cc_here = lookup_cc (s[i]);
       cc_prev = lookup_cc (s[i - 1]);
-      if (cc_here >= 0 && cc_prev > cc_here)
+      if (cc_here > 0 && cc_prev > 0 && cc_prev > cc_here)
 	{
 	  // swap
 	  int tmp = s[i];
@@ -145,44 +170,99 @@ sort_cano (string_t &s)
 }
 
 string_t
+compose_hangul (string_t s)
+{
+  string_t buf;
+  if (s.size () < 2)
+    return s;
+
+  codepoint_t last = s[0];
+  buf.push_back (last);
+  for (unsigned int src_pos = 1; src_pos < s.size (); src_pos++)
+    {
+      codepoint_t ch = s[src_pos];
+
+      // L V => LV
+      int64_t l_index = last - L_BASE;
+      if (0 <= l_index && l_index < L_COUNT)
+	{
+	  int64_t v_index = ch - V_BASE;
+	  if (0 <= v_index && v_index < V_COUNT)
+	    {
+	      last = S_BASE + (l_index * V_COUNT + v_index) * T_COUNT;
+	      // pop L
+	      buf.pop_back ();
+	      buf.push_back (last);
+	      continue;
+	    }
+	}
+
+      // LV T => LVT
+      int64_t s_index = last - S_BASE;
+      if (0 <= s_index && s_index < S_COUNT && (s_index % T_COUNT) == 0)
+	{
+	  int64_t t_index = ch - T_BASE;
+	  if (0 < t_index && t_index < T_COUNT)
+	    {
+	      last += t_index;
+	      // pop LV
+	      buf.pop_back ();
+	      buf.push_back (last);
+	      continue;
+	    }
+	}
+      last = ch;
+      buf.push_back (last);
+    }
+  return buf;
+}
+
+string_t
 recomp (string_t s)
 {
-  // TODO: Algorithmic lookup for Hangul
+  // compose hangul first
+  s = compose_hangul (s);
+
   string_t buf;
-  if (s.size () > 0)
+  if (s.size () < 2)
+    return s;
+
+  int last_class = -1;
+  // int starter_pos = 0; // Assume the first character is Starter. Correct?
+  // int target_pos = 1;
+  codepoint_t starter_ch = s[0];
+
+  for (unsigned int src_pos = 1; src_pos < s.size (); src_pos++)
     {
-      int last_class = -1;
-      // Assume the first character is Starter.
-      codepoint_t starter_ch = s[0];
-      for (unsigned int src_pos = 1; src_pos < s.size (); src_pos++)
+      // get current character
+      codepoint_t ch = s[src_pos];
+
+      int ch_class = lookup_cc (ch);
+      tl::optional<codepoint_t> composite = lookup_recomp (starter_ch, ch);
+      if (composite.has_value () && last_class < ch_class)
 	{
-	  // get current character
-	  codepoint_t ch = s[src_pos];
-	  int ch_class = lookup_cc (ch);
-	  tl::optional<codepoint_t> composite = lookup_recomp (starter_ch, ch);
-	  if (composite.has_value () && last_class < ch_class)
-	    {
-	      // ch can be composed
-	      buf.push_back (composite.value ());
-	      starter_ch = composite.value ();
-	    }
-	  else if (ch_class == 0)
-	    {
-	      // ch is Starter and cannot be composed.
-	      if (src_pos == 1)
-		// FIXME: buggy?
-		buf.push_back (starter_ch);
-	      // starter_pos = target_pos;
-	      starter_ch = ch;
-	      last_class = -1;
-	      buf.push_back (ch);
-	    }
-	  else
-	    {
-	      // ch is not Starter.
-	      last_class = ch_class;
-	      buf.push_back (ch);
-	    }
+	  // ch can be composed
+	  buf.push_back (composite.value ());
+	  starter_ch = composite.value ();
+	}
+      else if (ch_class == 0)
+	{
+	  // ch is Starter and cannot be composed.
+	  if (src_pos == 1)
+	    // FIXME: buggy?
+	    buf.push_back (starter_ch);
+	  starter_ch = ch;
+	  last_class = -1;
+	  buf.push_back (ch);
+	}
+      else
+	{
+	  if (src_pos == 1)
+	    // FIXME: buggy?
+	    buf.push_back (starter_ch);
+	  // ch is not Starter.
+	  last_class = ch_class;
+	  buf.push_back (ch);
 	}
     }
   return buf;
@@ -255,6 +335,16 @@ rust_utf8_normalize_test ()
   assert_normalize ({0x1e0a, 0x0323}, {0x1e0c, 0x0307});
   assert_normalize ({0x1e0c, 0x0307}, {0x1e0c, 0x0307});
   assert_normalize ({0x0044, 0x0307, 0x0323}, {0x1e0c, 0x0307});
+
+  // testcases for Hangul from Part0
+  assert_normalize ({0x1100, 0xac00, 0x11a8}, {0x1100, 0xac01});
+  assert_normalize ({0x1100, 0xac00, 0x11a8, 0x11a8}, {0x1100, 0xac01, 0x11a8});
+  // testcases for Hangul from Part1
+  assert_normalize ({0x3131}, {0x3131});
+  assert_normalize ({0x3132}, {0x3132});
+  // testcases for Hangul from Part3
+  assert_normalize ({0x1100, 0x0334, 0x1161}, {0x1100, 0x0334, 0x1161});
+  assert_normalize ({0xac54, 0x0334, 0x11ae}, {0xac54, 0x0334, 0x11ae});
 
   // TODO: add more testcases in
   // https://unicode.org/Public/UNIDATA/NormalizationTest.txt
