@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mlittle-endian -mcpu=v3" } */
+/* { dg-options "-mlittle-endian -mcpu=v4" } */
 
 unsigned short in16 = 0x1234U;
 unsigned int   in32 = 0x12345678U;
@@ -18,6 +18,6 @@ int foo (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler "endbe\t%r., 16" } } */
-/* { dg-final { scan-assembler "endbe\t%r., 32" } } */
-/* { dg-final { scan-assembler "endbe\t%r., 64" } } */
+/* { dg-final { scan-assembler "bswap\t%r., 16" } } */
+/* { dg-final { scan-assembler "bswap\t%r., 32" } } */
+/* { dg-final { scan-assembler "bswap\t%r., 64" } } */

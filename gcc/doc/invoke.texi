@@ -24707,10 +24707,14 @@ Enable 32-bit jump instructions. Enabled for CPU v3 and above.
 @item -malu32
 Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
 
+@opindex mbswap
+@item -mbswap
+Enable byte swap instructions.  Enabled for CPU v4 and above.
+
 @opindex mcpu
 @item -mcpu=@var{version}
 This specifies which version of the eBPF ISA to target. Newer versions
-may not be supported by all kernels. The default is @samp{v3}.
+may not be supported by all kernels. The default is @samp{v4}.
 
 Supported values for @var{version} are:
 
@@ -24728,6 +24732,11 @@ All features of v2, plus:
 @item 32-bit ALU operations, as in @option{-malu32}
 @end itemize
 
+@item v4
+All features of v3, plus:
+@itemize @minus
+@item Byte swap instructions, as in @option{-mbswap}
+@end itemize
 @end table
 
 @opindex mco-re

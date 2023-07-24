@@ -146,8 +146,12 @@ mjmp32
 Target Var(bpf_has_jmp32) Init(-1)
 Enable 32-bit jump instructions.
 
+mbswap
+Target Var(bpf_has_bswap) Init(-1)
+Enable byte swap instructions.
+
 mcpu=
-Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V3)
+Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V4)
 
 Enum
 Name(bpf_isa) Type(enum bpf_isa_version)
@@ -160,6 +164,9 @@ Enum(bpf_isa) String(v2) Value(ISA_V2)
 
 EnumValue
 Enum(bpf_isa) String(v3) Value(ISA_V3)
+
+EnumValue
+Enum(bpf_isa) String(v4) Value(ISA_V4)
 
 masm=
 Target RejectNegative Joined Var(asm_dialect) Enum(asm_dialect) Init(ASM_NORMAL)

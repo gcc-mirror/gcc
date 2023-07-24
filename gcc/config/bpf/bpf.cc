@@ -253,6 +253,9 @@ bpf_option_override (void)
   if (bpf_has_jmp32 == -1)
     bpf_has_jmp32 = (bpf_isa >= ISA_V3);
 
+  if (bpf_has_bswap == -1)
+    bpf_has_bswap = (bpf_isa >= ISA_V4);
+
   /* Disable -fstack-protector as it is not supported in BPF.  */
   if (flag_stack_protect)
     {

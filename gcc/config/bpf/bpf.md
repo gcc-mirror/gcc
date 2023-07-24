@@ -60,7 +60,7 @@
 ;; Instruction classes.
 ;; alu		64-bit arithmetic.
 ;; alu32	32-bit arithmetic.
-;; end		endianness conversion instructions.
+;; end		endianness conversion or byte swap instructions.
 ;; ld		load instructions.
 ;; lddx		load 64-bit immediate instruction.
 ;; ldx		generic load instructions.
@@ -354,20 +354,25 @@
   "{rsh<msuffix>\t%0,%2|%w0 >>= %w2}"
   [(set_attr "type" "<mtype>")])
 
-;;;; Endianness conversion
+;;;; Byte swapping
 
 (define_mode_iterator BSM [HI SI DI])
 (define_mode_attr endmode [(HI "16") (SI "32") (DI "64")])
 
 (define_insn "bswap<BSM:mode>2"
   [(set (match_operand:BSM 0 "register_operand"            "=r")
-        (bswap:BSM (match_operand:BSM 1 "register_operand" " r")))]
+        (bswap:BSM (match_operand:BSM 1 "register_operand" " 0")))]
   ""
 {
-  if (TARGET_BIG_ENDIAN)
-    return "{endle\t%0, <endmode>|%0 = le<endmode> %0}";
+  if (bpf_has_bswap)
+    return "{bswap\t%0, <endmode>|%0 = bswap<endmode> %1}";
   else
-    return "{endbe\t%0, <endmode>|%0 = be<endmode> %0}";
+    {
+      if (TARGET_BIG_ENDIAN)
+        return "{endle\t%0, <endmode>|%0 = le<endmode> %1}";
+      else
+        return "{endbe\t%0, <endmode>|%0 = be<endmode> %1}";
+    }
 }
   [(set_attr "type" "end")])
 
