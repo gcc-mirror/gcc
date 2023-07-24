@@ -573,7 +573,7 @@ riscv_subset_list::add (const char *subset, int major_version,
   else if (subset[0] == 'z' && !standard_extensions_p (subset))
     {
       error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with `z` but is "
+		"%<-march=%s%>: extension %qs starts with 'z' but is "
 		"unsupported standard extension",
 		m_arch, subset);
       return;
@@ -581,7 +581,7 @@ riscv_subset_list::add (const char *subset, int major_version,
   else if (subset[0] == 's' && !standard_extensions_p (subset))
     {
       error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with `s` but is "
+		"%<-march=%s%>: extension %qs starts with 's' but is "
 		"unsupported standard supervisor extension",
 		m_arch, subset);
       return;
@@ -589,7 +589,7 @@ riscv_subset_list::add (const char *subset, int major_version,
   else if (subset[0] == 'x' && !standard_extensions_p (subset))
     {
       error_at (m_loc,
-		"%<-march=%s%>: extension %qs starts with `x` but is "
+		"%<-march=%s%>: extension %qs starts with 'x' but is "
 		"unsupported non-standard extension",
 		m_arch, subset);
       return;
