@@ -6608,7 +6608,9 @@ eliminate_dom_walker::eliminate_avail (basic_block, tree op)
 	    if (gimple_assign_rhs_class (ass) == GIMPLE_SINGLE_RHS)
 	      {
 		tree rhs1 = gimple_assign_rhs1 (ass);
-		if (CONSTANT_CLASS_P (rhs1) || TREE_CODE (rhs1) == SSA_NAME)
+		if (CONSTANT_CLASS_P (rhs1)
+		    || (TREE_CODE (rhs1) == SSA_NAME
+			&& !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1)))
 		  av = rhs1;
 	      }
 	  return av;
