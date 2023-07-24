@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
-#include "tree-vectorizer.h"
 #include "omp-general.h"
 #include "diagnostic-core.h"
 #include "stringpool.h"
