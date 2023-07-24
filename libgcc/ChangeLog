@@ -1,3 +1,9 @@
+2023-07-23  Andrew Pinski  <apinski@marvell.com>
+
+	* config.host (riscv*-*-linux*): Add t-crtstuff to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+	* config/riscv/t-crtstuff: New file.
+
 2023-07-19  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/t-softfp: Add -msse2 to libbid HFtype related
