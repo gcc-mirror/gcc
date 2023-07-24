@@ -4148,7 +4148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   stod(const string& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::strtod, "stod", __str.c_str(), __idx); }
 
-#if _GLIBCXX_USE_C99_STDLIB || _GLIBCXX_HAVE_STRTOF
+#if _GLIBCXX_HAVE_STRTOF
   // NB: strtof vs strtod.
   inline float
   stof(const string& __str, size_t* __idx = 0)
@@ -4158,7 +4158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   stof(const string& __str, size_t* __idx = 0)
   {
     double __d = std::stod(__str, __idx);
-    if (__builtin_isfinite(__d))
+    if (__builtin_isfinite(__d) && __d != 0.0)
       {
 	double __abs_d = __builtin_fabs(__d);
 	if (__abs_d < __FLT_MIN__ || __abs_d > __FLT_MAX__)
@@ -4171,7 +4171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 #endif
 
-#if _GLIBCXX_USE_C99_STDLIB || _GLIBCXX_HAVE_STRTOLD
+#if _GLIBCXX_HAVE_STRTOLD && ! _GLIBCXX_HAVE_BROKEN_STRTOLD
   inline long double
   stold(const string& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
