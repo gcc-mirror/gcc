@@ -1588,6 +1588,7 @@ typedef struct gfc_omp_clauses
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   unsigned non_rectangular:1, order_concurrent:1;
+  unsigned contains_teams_construct:1;
   unsigned unroll_full:1, unroll_none:1, unroll_partial:1;
   unsigned unroll_partial_factor;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
