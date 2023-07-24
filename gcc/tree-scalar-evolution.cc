@@ -3519,6 +3519,7 @@ analyze_and_compute_bitwise_induction_effect (class loop* loop,
   if (!gimple_bitwise_induction_p (phidef, &match_op[0], NULL)
       || TREE_CODE (match_op[2]) != SSA_NAME
       || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[2])))
+      || gimple_bb (header_phi) != loop->header
       || gimple_phi_num_args (header_phi) != 2)
     return NULL_TREE;
 
