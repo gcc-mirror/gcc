@@ -10653,6 +10653,41 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 }
 
 
+static void
+resolve_omp_target (gfc_code *code)
+{
+#define GFC_IS_TEAMS_CONSTRUCT(op)			\
+  (op == EXEC_OMP_TEAMS					\
+   || op == EXEC_OMP_TEAMS_DISTRIBUTE			\
+   || op == EXEC_OMP_TEAMS_DISTRIBUTE_SIMD		\
+   || op == EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO	\
+   || op == EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD	\
+   || op == EXEC_OMP_TEAMS_LOOP)
+
+  if (!code->ext.omp_clauses->contains_teams_construct)
+    return;
+  if ((GFC_IS_TEAMS_CONSTRUCT (code->block->next->op)
+       && code->block->next->next == NULL)
+      || (code->block->next->op == EXEC_BLOCK
+	  && code->block->next->next
+	  && GFC_IS_TEAMS_CONSTRUCT (code->block->next->next->op)
+	  && code->block->next->next->next == NULL))
+    return;
+  gfc_code *c = code->block->next;
+  while (c && !GFC_IS_TEAMS_CONSTRUCT (c->op))
+    c = c->next;
+  if (c)
+    gfc_error ("!$OMP TARGET region at %L with a nested TEAMS at %L may not "
+	       "contain any other statement, declaration or directive outside "
+	       "of the single TEAMS construct", &c->loc, &code->loc);
+  else
+    gfc_error ("!$OMP TARGET region at %L with a nested TEAMS may not "
+	       "contain any other statement, declaration or directive outside "
+	       "of the single TEAMS construct", &code->loc);
+#undef GFC_IS_TEAMS_CONSTRUCT
+}
+
+
 /* Resolve OpenMP directive clauses and check various requirements
    of each directive.  */
 
@@ -10703,6 +10738,9 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TEAMS_LOOP:
       resolve_omp_do (code);
       break;
+    case EXEC_OMP_TARGET:
+      resolve_omp_target (code);
+      gcc_fallthrough ();
     case EXEC_OMP_ALLOCATE:
     case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
@@ -10718,7 +10756,6 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_SCOPE:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SINGLE:
-    case EXEC_OMP_TARGET:
     case EXEC_OMP_TARGET_DATA:
     case EXEC_OMP_TARGET_ENTER_DATA:
     case EXEC_OMP_TARGET_EXIT_DATA:
