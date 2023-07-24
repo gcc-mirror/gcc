@@ -6713,7 +6713,7 @@ riscv_option_override (void)
      We can only allow TARGET_MIN_VLEN * 8 (LMUL) < 65535.  */
   if (TARGET_MIN_VLEN > 4096)
     sorry (
-      "Current RISC-V GCC can not support VLEN > 4096bit for 'V' Extension");
+      "Current RISC-V GCC cannot support VLEN greater than 4096bit for 'V' Extension");
 
   /* Convert -march to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_bits ();
