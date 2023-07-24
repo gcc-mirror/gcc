@@ -3237,7 +3237,7 @@ vectorizable_bswap (vec_info *vinfo,
 						   vectype, tem2));
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -3694,7 +3694,7 @@ vectorizable_call (vec_info *vinfo,
 		      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 		      new_stmt = call;
 		    }
-		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		  slp_node->push_vec_def (new_stmt);
 		}
 	      continue;
 	    }
@@ -3823,7 +3823,7 @@ vectorizable_call (vec_info *vinfo,
 		  gimple_call_set_lhs (call, new_temp);
 		  gimple_call_set_nothrow (call, true);
 		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-		  SLP_TREE_VEC_STMTS (slp_node).quick_push (call);
+		  slp_node->push_vec_def (call);
 		}
 	      continue;
 	    }
@@ -4827,7 +4827,7 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 	     vectors in SLP_NODE or in vector info of the scalar statement
 	     (or in STMT_VINFO_RELATED_STMT chain).  */
 	  if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    slp_node->push_vec_def (new_stmt);
 	  else
 	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
@@ -5564,7 +5564,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
 	  if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    slp_node->push_vec_def (new_stmt);
 	  else
 	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
@@ -5620,7 +5620,7 @@ vectorizable_conversion (vec_info *vinfo,
 	    new_stmt = SSA_NAME_DEF_STMT (vop0);
 
 	  if (slp_node)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    slp_node->push_vec_def (new_stmt);
 	  else
 	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
@@ -5666,7 +5666,7 @@ vectorizable_conversion (vec_info *vinfo,
 		 vectors in SLP_NODE or in vector info of the scalar statement
 		 (or in STMT_VINFO_RELATED_STMT chain).  */
 	      if (slp_node)
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		slp_node->push_vec_def (new_stmt);
 	      else
 		STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	    }
@@ -5865,7 +5865,7 @@ vectorizable_assignment (vec_info *vinfo,
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -6323,7 +6323,7 @@ vectorizable_shift (vec_info *vinfo,
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -6985,7 +6985,7 @@ vectorizable_operation (vec_info *vinfo,
 	}
 
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -9708,7 +9708,7 @@ vectorizable_load (vec_info *vinfo,
       gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
       if (slp)
 	for (j = 0; j < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node); ++j)
-	  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	  slp_node->push_vec_def (new_stmt);
       else
 	{
 	  for (j = 0; j < ncopies; ++j)
@@ -9947,7 +9947,7 @@ vectorizable_load (vec_info *vinfo,
 		  if (slp_perm)
 		    dr_chain.quick_push (gimple_assign_lhs (new_stmt));
 		  else
-		    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		    slp_node->push_vec_def (new_stmt);
 		}
 	      else
 		{
@@ -10011,7 +10011,7 @@ vectorizable_load (vec_info *vinfo,
 
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMTS (first_stmt_info).exists ()
-	  /* For SLP we would need to copy over SLP_TREE_VEC_STMTS.
+	  /* For SLP we would need to copy over SLP_TREE_VEC_DEFS.
 	     ???  But we can only do so if there is exactly one
 	     as we have no way to get at the rest.  Leave the CSE
 	     opportunity alone.
@@ -10997,7 +10997,7 @@ vectorizable_load (vec_info *vinfo,
 
 	      /* Store vector loads in the corresponding SLP_NODE.  */
 	      if (!costing_p && slp && !slp_perm)
-		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+		slp_node->push_vec_def (new_stmt);
 
 	      /* With SLP permutation we load the gaps as well, without
 	         we need to skip the gaps after we manage to fully load
@@ -11705,7 +11705,7 @@ vectorizable_condition (vec_info *vinfo,
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	}
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -11942,7 +11942,7 @@ vectorizable_comparison (vec_info *vinfo,
 	    }
 	}
       if (slp_node)
-	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
