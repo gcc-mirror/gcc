@@ -2158,8 +2158,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
      epilogue we can also decide whether the main loop leaves us
      with enough iterations, prefering a smaller vector epilog then
      also possibly used for the case we skip the vector loop.  */
-  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
-      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
     {
       widest_int scalar_niters
 	= wi::to_widest (LOOP_VINFO_NITERSM1 (loop_vinfo)) + 1;
@@ -2182,32 +2181,46 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
 			       % lowest_vf + gap);
 	    }
 	}
-
-      /* Check that the loop processes at least one full vector.  */
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      if (known_lt (scalar_niters, vf))
+      /* Reject vectorizing for a single scalar iteration, even if
+	 we could in principle implement that using partial vectors.  */
+      unsigned peeling_gap = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
+      if (scalar_niters <= peeling_gap + 1)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "loop does not have enough iterations "
-			     "to support vectorization.\n");
+			     "not vectorized: loop only has a single "
+			     "scalar iteration.\n");
 	  return 0;
 	}
 
-      /* If we need to peel an extra epilogue iteration to handle data
-	 accesses with gaps, check that there are enough scalar iterations
-	 available.
-
-	 The check above is redundant with this one when peeling for gaps,
-	 but the distinction is useful for diagnostics.  */
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	  && known_le (scalar_niters, vf))
+      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "loop does not have enough iterations "
-			     "to support peeling for gaps.\n");
-	  return 0;
+	  /* Check that the loop processes at least one full vector.  */
+	  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+	  if (known_lt (scalar_niters, vf))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "loop does not have enough iterations "
+				 "to support vectorization.\n");
+	      return 0;
+	    }
+
+	  /* If we need to peel an extra epilogue iteration to handle data
+	     accesses with gaps, check that there are enough scalar iterations
+	     available.
+
+	     The check above is redundant with this one when peeling for gaps,
+	     but the distinction is useful for diagnostics.  */
+	  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	      && known_le (scalar_niters, vf))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "loop does not have enough iterations "
+				 "to support peeling for gaps.\n");
+	      return 0;
+	    }
 	}
     }
 
