@@ -1,6 +1,6 @@
 /* Verify that sdiv instruction is used for xBPF. */
 /* { dg-do compile } */
-/* { dg-options "-O0 -mxbpf" } */
+/* { dg-options "-O0 -mcpu=v4" } */
 
 void
 foo ()

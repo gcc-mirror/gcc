@@ -256,6 +256,9 @@ bpf_option_override (void)
   if (bpf_has_bswap == -1)
     bpf_has_bswap = (bpf_isa >= ISA_V4);
 
+  if (bpf_has_sdiv == -1)
+    bpf_has_sdiv = (bpf_isa >= ISA_V4);
+
   /* Disable -fstack-protector as it is not supported in BPF.  */
   if (flag_stack_protect)
     {

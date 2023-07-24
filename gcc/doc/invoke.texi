@@ -24711,6 +24711,11 @@ Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
 @item -mbswap
 Enable byte swap instructions.  Enabled for CPU v4 and above.
 
+@opindex msdiv
+@item -msdiv
+Enable signed division and modulus instructions.  Enabled for CPU v4
+and above.
+
 @opindex mcpu
 @item -mcpu=@var{version}
 This specifies which version of the eBPF ISA to target. Newer versions
