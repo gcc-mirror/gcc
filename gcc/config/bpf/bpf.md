@@ -35,7 +35,16 @@
 
 (define_c_enum "unspec" [
   UNSPEC_LDINDABS
-  UNSPEC_XADD
+  UNSPEC_AADD
+  UNSPEC_AAND
+  UNSPEC_AOR
+  UNSPEC_AXOR
+  UNSPEC_AFADD
+  UNSPEC_AFAND
+  UNSPEC_AFOR
+  UNSPEC_AFXOR
+  UNSPEC_AXCHG
+  UNSPEC_ACMP
 ])
 
 ;;;; Constants
@@ -67,11 +76,10 @@
 ;; st		generic store instructions for immediates.
 ;; stx		generic store instructions.
 ;; jmp		jump instructions.
-;; xadd		atomic exchange-and-add instructions.
 ;; multi	multiword sequence (or user asm statements).
 
 (define_attr "type"
-  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,xadd,multi"
+  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,multi,atomic"
   (const_string "unknown"))
 
 ;; Length of instruction in bytes.
@@ -548,17 +556,4 @@
   "{ldabs<ldop>\t%0|r0 = *(<pldop> *) skb[%0]}"
   [(set_attr "type" "ld")])
 
-;;;; Atomic increments
-
-(define_mode_iterator AMO [SI DI])
-
-(define_insn "atomic_add<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(plus:AMO (match_dup 0)
-                    (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_XADD))]
-  ""
-  "{xadd<mop>\t%0,%1|*(<smop> *) %0 += %1}"
-  [(set_attr "type" "xadd")])
+(include "atomic.md")
