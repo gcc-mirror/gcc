@@ -112,6 +112,9 @@ package body System.Bit_Ops is
       RightB : constant Bits := To_Bits (Right);
 
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "early returns for performance");
+
       if Llen /= Rlen then
          return False;
 
@@ -134,6 +137,8 @@ package body System.Bit_Ops is
             end if;
          end;
       end if;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Bit_Eq;
 
    -------------
