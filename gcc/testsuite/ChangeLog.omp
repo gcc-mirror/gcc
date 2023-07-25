@@ -1,3 +1,13 @@
+2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/110725
+	PR middle-end/71065
+	* gfortran.dg/gomp/pr99226.f90: Update dg-error.
+	* gfortran.dg/gomp/teams-5.f90: New test.
+
 2023-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/affinity-clause-1.f90: Fix scan-tree-dump.
