@@ -551,6 +551,8 @@ public:
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
 };
 
 class operator_bitwise_xor : public range_operator

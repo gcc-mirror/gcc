@@ -4027,6 +4027,13 @@ operator_bitwise_not::op1_range (irange &r, tree type,
   return fold_range (r, type, lhs, op2);
 }
 
+void
+operator_bitwise_not::update_bitmask (irange &r, const irange &lh,
+				      const irange &rh) const
+{
+  update_known_bitmask (r, BIT_NOT_EXPR, lh, rh);
+}
+
 
 bool
 operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
