@@ -10734,11 +10734,6 @@ cp_parser_constant_expression (cp_parser* parser,
 			       bool *non_constant_p /* = NULL */,
 			       bool strict_p /* = false */)
 {
-  bool saved_integral_constant_expression_p;
-  bool saved_allow_non_integral_constant_expression_p;
-  bool saved_non_integral_constant_expression_p;
-  cp_expr expression;
-
   /* It might seem that we could simply parse the
      conditional-expression, and then check to see if it were
      TREE_CONSTANT.  However, an expression that is TREE_CONSTANT is
@@ -10757,10 +10752,12 @@ cp_parser_constant_expression (cp_parser* parser,
      will fold this operation to an INTEGER_CST for `3'.  */
 
   /* Save the old settings.  */
-  saved_integral_constant_expression_p = parser->integral_constant_expression_p;
-  saved_allow_non_integral_constant_expression_p
+  bool saved_integral_constant_expression_p
+    = parser->integral_constant_expression_p;
+  bool saved_allow_non_integral_constant_expression_p
     = parser->allow_non_integral_constant_expression_p;
-  saved_non_integral_constant_expression_p = parser->non_integral_constant_expression_p;
+  bool saved_non_integral_constant_expression_p
+    = parser->non_integral_constant_expression_p;
   /* We are now parsing a constant-expression.  */
   parser->integral_constant_expression_p = true;
   parser->allow_non_integral_constant_expression_p
@@ -10780,6 +10777,7 @@ cp_parser_constant_expression (cp_parser* parser,
      For example, cp_parser_initializer_clauses uses this function to
      determine whether a particular assignment-expression is in fact
      constant.  */
+  cp_expr expression;
   if (strict_p)
     expression = cp_parser_conditional_expression (parser);
   else
@@ -10789,7 +10787,8 @@ cp_parser_constant_expression (cp_parser* parser,
     = saved_integral_constant_expression_p;
   parser->allow_non_integral_constant_expression_p
     = saved_allow_non_integral_constant_expression_p;
-  if (cxx_dialect >= cxx11)
+  if (cxx_dialect >= cxx11
+      && (!allow_non_constant_p || non_constant_p))
     {
       /* Require an rvalue constant expression here; that's what our
 	 callers expect.  Reference constant expressions are handled
@@ -10803,7 +10802,7 @@ cp_parser_constant_expression (cp_parser* parser,
       if (!is_const && !allow_non_constant_p)
 	require_rvalue_constant_expression (decay);
     }
-  if (allow_non_constant_p)
+  if (allow_non_constant_p && non_constant_p)
     *non_constant_p = parser->non_integral_constant_expression_p;
   parser->non_integral_constant_expression_p
     = saved_non_integral_constant_expression_p;
@@ -16400,12 +16399,11 @@ cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
    If MEMBER_P, this static_assert is a class member.  */
 
 static void
-cp_parser_static_assert(cp_parser *parser, bool member_p)
+cp_parser_static_assert (cp_parser *parser, bool member_p)
 {
   cp_expr condition;
   location_t token_loc;
   tree message;
-  bool dummy;
 
   /* Peek at the `static_assert' token so we can keep track of exactly
      where the static assertion started.  */
@@ -16430,7 +16428,7 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   condition =
     cp_parser_constant_expression (parser,
                                    /*allow_non_constant_p=*/true,
-                                   /*non_constant_p=*/&dummy);
+				   /*non_constant_p=*/nullptr);
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
