@@ -1574,6 +1574,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gimple_set_location (g, gimple_location (stmt));
       gsi_replace (gsi, g, true);
       return true;
+    /* fold into MIN_EXPR when fast-math is set.  */
+    case RS6000_BIF_XSMINDP:
     /* flavors of vec_min.  */
     case RS6000_BIF_XVMINDP:
     case RS6000_BIF_XVMINSP:
@@ -1600,6 +1602,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gimple_set_location (g, gimple_location (stmt));
       gsi_replace (gsi, g, true);
       return true;
+    /* fold into MAX_EXPR when fast-math is set.  */
+    case RS6000_BIF_XSMAXDP:
     /* flavors of vec_max.  */
     case RS6000_BIF_XVMAXDP:
     case RS6000_BIF_XVMAXSP:

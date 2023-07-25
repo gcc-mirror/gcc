@@ -1614,10 +1614,10 @@
     XSCVSPDP vsx_xscvspdp {}
 
   const double __builtin_vsx_xsmaxdp (double, double);
-    XSMAXDP smaxdf3 {}
+    XSMAXDP fmaxdf3 {}
 
   const double __builtin_vsx_xsmindp (double, double);
-    XSMINDP smindf3 {}
+    XSMINDP fmindf3 {}
 
   const double __builtin_vsx_xsrdpi (double);
     XSRDPI vsx_xsrdpi {}
