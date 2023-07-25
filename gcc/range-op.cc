@@ -4208,6 +4208,12 @@ operator_abs::op1_range (irange &r, tree type,
   return true;
 }
 
+void
+operator_abs::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
+{
+  update_known_bitmask (r, ABS_EXPR, lh, rh);
+}
 
 class operator_absu : public range_operator
 {
