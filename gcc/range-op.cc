@@ -385,15 +385,29 @@ update_known_bitmask (irange &r, tree_code code,
   irange_bitmask lh_bits = lh.get_bitmask ();
   irange_bitmask rh_bits = rh.get_bitmask ();
 
-  bit_value_binop (code, sign, prec, &widest_value, &widest_mask,
-		   TYPE_SIGN (lh.type ()),
-		   TYPE_PRECISION (lh.type ()),
-		   widest_int::from (lh_bits.value (), sign),
-		   widest_int::from (lh_bits.mask (), sign),
-		   TYPE_SIGN (rh.type ()),
-		   TYPE_PRECISION (rh.type ()),
-		   widest_int::from (rh_bits.value (), sign),
-		   widest_int::from (rh_bits.mask (), sign));
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+      bit_value_unop (code, sign, prec, &widest_value, &widest_mask,
+		      TYPE_SIGN (lh.type ()),
+		      TYPE_PRECISION (lh.type ()),
+		      widest_int::from (lh_bits.value (), sign),
+		      widest_int::from (lh_bits.mask (), sign));
+      break;
+    case GIMPLE_BINARY_RHS:
+      bit_value_binop (code, sign, prec, &widest_value, &widest_mask,
+		       TYPE_SIGN (lh.type ()),
+		       TYPE_PRECISION (lh.type ()),
+		       widest_int::from (lh_bits.value (), sign),
+		       widest_int::from (lh_bits.mask (), sign),
+		       TYPE_SIGN (rh.type ()),
+		       TYPE_PRECISION (rh.type ()),
+		       widest_int::from (rh_bits.value (), sign),
+		       widest_int::from (rh_bits.mask (), sign));
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   wide_int mask = wide_int::from (widest_mask, prec, sign);
   wide_int value = wide_int::from (widest_value, prec, sign);
