@@ -16,14 +16,14 @@ t2 (int a, int b)
   return a ^ (~a | (unsigned int) b);
 }
 
-__attribute__((noipa)) char
-t3 (char a, char b)
+__attribute__((noipa)) signed char
+t3 (signed char a, signed char b)
 {
   return (b | ~a) ^ a;
 }
 
 __attribute__((noipa)) unsigned char
-t4 (char a, char b)
+t4 (signed char a, signed char b)
 {
   return ((unsigned char) a) ^ (b | ~a);
 }
@@ -89,20 +89,20 @@ t12 (int a, unsigned int b)
   return t3;
 }
 
-__attribute__((noipa)) char
-t13 (char a, char b)
+__attribute__((noipa)) signed char
+t13 (signed char a, signed char b)
 {
-  char t1 = ~a;
-  char t2 = b | t1;
-  char t3 = t2 ^ a;
+  signed char t1 = ~a;
+  signed char t2 = b | t1;
+  signed char t3 = t2 ^ a;
   return t3;
 }
 
 __attribute__((noipa)) unsigned char
-t14 (unsigned char a, char b)
+t14 (unsigned char a, signed char b)
 {
   unsigned char t1 = ~a;
-  char t2 = b | t1;
+  signed char t2 = b | t1;
   unsigned char t3 = a ^ t2;
   return t3;
 }
