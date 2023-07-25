@@ -260,7 +260,7 @@
   "@
    {and\t%0,0xffff|%0 &= 0xffff}
    {mov\t%0,%1\;and\t%0,0xffff|%0 = %1;%0 &= 0xffff}
-   {ldxh\t%0,%1|%0 = *(u16 *) %1}"
+   {ldxh\t%0,%1|%0 = *(u16 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendqidi2"
@@ -270,7 +270,7 @@
   "@
    {and\t%0,0xff|%0 &= 0xff}
    {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
-   {ldxh\t%0,%1|%0 = *(u8 *) %1}"
+   {ldxh\t%0,%1|%0 = *(u8 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
@@ -280,7 +280,7 @@
   ""
   "@
    * return bpf_has_alu32 ? \"{mov32\t%0,%1|%0 = %1}\" : \"{mov\t%0,%1\;and\t%0,0xffffffff|%0 = %1;%0 &= 0xffffffff}\";
-   {ldxw\t%0,%1|%0 = *(u32 *) %1}"
+   {ldxw\t%0,%1|%0 = *(u32 *) (%1)}"
   [(set_attr "type" "alu,ldx")])
 
 ;;; Sign-extension
@@ -319,11 +319,11 @@
         (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
   ""
   "@
-   {ldx<mop>\t%0,%1|%0 = *(<smop> *) %1}
+   {ldx<mop>\t%0,%1|%0 = *(<smop> *) (%1)}
    {mov\t%0,%1|%0 = %1}
    {lddw\t%0,%1|%0 = %1 ll}
-   {stx<mop>\t%0,%1|*(<smop> *) %0 = %1}
-   {st<mop>\t%0,%1|*(<smop> *) %0 = %1}"
+   {stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}
+   {st<mop>\t%0,%1|*(<smop> *) (%0) = %1}"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
 
 ;;;; Shifts

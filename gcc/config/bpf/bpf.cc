@@ -933,9 +933,10 @@ bpf_print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+      if (asm_dialect == ASM_NORMAL)
+	fprintf (file, "[");
       bpf_print_register (file, addr, 0);
-      fprintf (file, asm_dialect == ASM_NORMAL ? "+0]" : "+0)");
+      fprintf (file, asm_dialect == ASM_NORMAL ? "+0]" : "+0");
       break;
     case PLUS:
       {
@@ -944,11 +945,13 @@ bpf_print_operand_address (FILE *file, rtx addr)
 
 	if (GET_CODE (op0) == REG && GET_CODE (op1) == CONST_INT)
 	  {
-	    fprintf (file, asm_dialect == ASM_NORMAL ? "[" : "(");
+	    if (asm_dialect == ASM_NORMAL)
+	      fprintf (file, "[");
 	    bpf_print_register (file, op0, 0);
 	    fprintf (file, "+");
 	    output_addr_const (file, op1);
-	    fprintf (file, asm_dialect == ASM_NORMAL ? "]" : ")");
+	    if (asm_dialect == ASM_NORMAL)
+	      fprintf (file, "]");
 	  }
 	else
 	  fatal_insn ("invalid address in operand", addr);
