@@ -4221,6 +4221,8 @@ class operator_absu : public range_operator
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
+  virtual void update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const final override;
 } op_absu;
 
 void
@@ -4256,6 +4258,13 @@ operator_absu::wi_fold (irange &r, tree type,
 
   gcc_checking_assert (TYPE_UNSIGNED (type));
   r = int_range<1> (type, new_lb, new_ub);
+}
+
+void
+operator_absu::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
+{
+  update_known_bitmask (r, ABSU_EXPR, lh, rh);
 }
 
 
