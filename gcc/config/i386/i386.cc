@@ -19451,6 +19451,49 @@ avx_vperm2f128_parallel (rtx par, machine_mode mode)
   return mask + 1;
 }
 
+/* Return a mask of VPTERNLOG operands that do not affect output.  */
+
+int
+vpternlog_redundant_operand_mask (rtx *operands)
+{
+  int mask = 0;
+  int imm8 = XINT (operands[4], 0);
+
+  if (((imm8 >> 4) & 0x0F) == (imm8 & 0x0F))
+    mask |= 1;
+  if (((imm8 >> 2) & 0x33) == (imm8 & 0x33))
+    mask |= 2;
+  if (((imm8 >> 1) & 0x55) == (imm8 & 0x55))
+    mask |= 4;
+
+  return mask;
+}
+
+/* Eliminate false dependencies on operands that do not affect output
+   by substituting other operands of a VPTERNLOG.  */
+
+void
+substitute_vpternlog_operands (rtx *operands)
+{
+  int mask = vpternlog_redundant_operand_mask (operands);
+
+  if (mask & 1) /* The first operand is redundant.  */
+    operands[1] = operands[2];
+
+  if (mask & 2) /* The second operand is redundant.  */
+    operands[2] = operands[1];
+
+  if (mask & 4) /* The third operand is redundant.  */
+    operands[3] = operands[1];
+  else if (REG_P (operands[3]))
+    {
+      if (mask & 1)
+	operands[1] = operands[3];
+      if (mask & 2)
+	operands[2] = operands[3];
+    }
+}
+
 /* Return a register priority for hard reg REGNO.  */
 static int
 ix86_register_priority (int hard_regno)

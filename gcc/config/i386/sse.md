@@ -12695,6 +12695,48 @@
 		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
 		      (const_string "*")))])
 
+;; When VPTERNLOG happens to be invariant w.r.t first and second operands,
+;; and the third operand is memory, eliminate false dependencies by loading
+;; memory into the output operand first.
+(define_split
+  [(set (match_operand:V 0 "register_operand")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand")
+	   (match_operand:V 2 "register_operand")
+	   (match_operand:V 3 "memory_operand")
+	   (match_operand:SI 4 "const_0_to_255_operand")]
+	  UNSPEC_VTERNLOG))]
+  "!reload_completed && vpternlog_redundant_operand_mask (operands) == 3"
+  [(set (match_dup 0)
+	(match_dup 3))
+   (set (match_dup 0)
+	(unspec:V
+	  [(match_dup 0)
+	   (match_dup 0)
+	   (match_dup 0)
+	   (match_dup 4)]
+	  UNSPEC_VTERNLOG))])
+
+;; Eliminate false dependencies when VPTERNLOG is invariant w.r.t any
+;; of input operands (except the case handled in the above split).
+(define_split
+  [(set (match_operand:V 0 "register_operand")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand")
+	   (match_operand:V 2 "register_operand")
+	   (match_operand:V 3 "nonimmediate_operand")
+	   (match_operand:SI 4 "const_0_to_255_operand")]
+	  UNSPEC_VTERNLOG))]
+  "!reload_completed && vpternlog_redundant_operand_mask (operands) != 0"
+  [(set (match_dup 0)
+	(unspec:V
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)]
+	  UNSPEC_VTERNLOG))]
+  "substitute_vpternlog_operands (operands);")
+
 ;; There must be lots of other combinations like
 ;;
 ;; (any_logic:V
