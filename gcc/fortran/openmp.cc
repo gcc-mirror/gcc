@@ -12251,12 +12251,13 @@ resolve_omp_target (gfc_code *code)
 
   if (!code->ext.omp_clauses->contains_teams_construct)
     return;
-  if ((GFC_IS_TEAMS_CONSTRUCT (code->block->next->op)
-       && code->block->next->next == NULL)
-      || (code->block->next->op == EXEC_BLOCK
-	  && code->block->next->next
-	  && GFC_IS_TEAMS_CONSTRUCT (code->block->next->next->op)
-	  && code->block->next->next->next == NULL))
+  if (code->ext.omp_clauses->target_first_st_is_teams
+      && ((GFC_IS_TEAMS_CONSTRUCT (code->block->next->op)
+	   && code->block->next->next == NULL)
+	  || (code->block->next->op == EXEC_BLOCK
+	      && code->block->next->next
+	      && GFC_IS_TEAMS_CONSTRUCT (code->block->next->next->op)
+	      && code->block->next->next->next == NULL)))
     return;
   gfc_code *c = code->block->next;
   while (c && !GFC_IS_TEAMS_CONSTRUCT (c->op))

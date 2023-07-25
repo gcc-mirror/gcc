@@ -1,4 +1,13 @@
-2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
+2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/110725
+	PR middle-end/71065
+	* gfortran.dg/gomp/teams-6.f90: New test.
+
+2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
