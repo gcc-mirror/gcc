@@ -1,3 +1,65 @@
+2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/110725
+	PR middle-end/71065
+	* gfortran.dg/gomp/pr99226.f90: Update dg-error.
+	* gfortran.dg/gomp/teams-5.f90: New test.
+
+2023-07-24  Drew Ross  <drross@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/109986
+	* gcc.c-torture/execute/pr109986.c: New test.
+	* gcc.dg/tree-ssa/pr109986.c: New test.
+
+2023-07-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/110783
+	* gcc.target/bpf/xbpf-sdiv-1.c: Renamed to sdiv-1.c
+	* gcc.target/bpf/xbpf-smod-1.c: Renamed to smod-1.c
+	* gcc.target/bpf/sdiv-1.c: Renamed from xbpf-sdiv-1.c, use -mcpu=v4.
+	* gcc.target/bpf/smod-1.c: Renamed from xbpf-smod-1.c, use -mcpu=v4.
+	* gcc.target/bpf/diag-sdiv.c: Use -mcpu=v3.
+	* gcc.target/bpf/diag-smod.c: Likewise.
+
+2023-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/conversions/vec-narrow-int64-float16.c: New test.
+	* gcc.target/riscv/rvv/autovec/conversions/vec-widen-float16-int64.c: New test.
+
+2023-07-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/110786
+	* gcc.target/bpf/bswap-1.c: Pass -mcpu=v3 to build test.
+	* gcc.target/bpf/bswap-2.c: New test.
+
+2023-07-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_strict_run-2.c: New test.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110777
+	* gcc.dg/pr110777.c: New testcase.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110766
+	* gcc.dg/torture/pr110766.c: New testcase.
+
+2023-07-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-error.c: Update cases.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-6.c: Removed.
+
 2023-07-22  Vineet Gupta  <vineetg@rivosinc.com>
 
 	* gcc.target/riscv/pr110748-1.c: New Test.

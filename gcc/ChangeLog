@@ -1,3 +1,180 @@
+2023-07-24  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (nop): Add pseudo-c asm dialect template.
+
+2023-07-24  Drew Ross  <drross@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/109986
+	* generic-match-head.cc (bitwise_equal_p): New macro.
+	* gimple-match-head.cc (bitwise_equal_p): New macro.
+	(gimple_nop_convert): Declare.
+	(gimple_bitwise_equal_p): Helper for bitwise_equal_p.
+	* match.pd ((~X | Y) ^ X -> ~(X & Y)): New simplification.
+
+2023-07-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::add): Use
+	single quote rather than backquote in diagnostic.
+
+2023-07-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/110783
+	* config/bpf/bpf.opt: New command-line option -msdiv.
+	* config/bpf/bpf.md: Conditionalize sdiv/smod on bpf_has_sdiv.
+	* config/bpf/bpf.cc (bpf_option_override): Initialize
+	bpf_has_sdiv.
+	* doc/invoke.texi (eBPF Options): Document -msdiv.
+
+2023-07-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_option_override): Spell out
+	greater than and use cannot in diagnostic string.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_tree::push_vec_def): Add.
+	(_slp_tree::vec_stmts): Remove.
+	(SLP_TREE_VEC_STMTS): Remove.
+	* tree-vect-slp.cc (_slp_tree::push_vec_def): Define.
+	(_slp_tree::_slp_tree): Adjust.
+	(_slp_tree::~_slp_tree): Likewise.
+	(vect_get_slp_vect_def): Simplify.
+	(vect_get_slp_defs): Likewise.
+	(vect_transform_slp_perm_load_1): Adjust.
+	(vect_add_slp_permutation): Likewise.
+	(vect_schedule_slp_node): Likewise.
+	(vectorize_slp_instance_root_stmt): Likewise.
+	(vect_schedule_scc): Likewise.
+	* tree-vect-stmts.cc (vectorizable_bswap): Use push_vec_def.
+	(vectorizable_call): Likewise.
+	(vectorizable_call): Likewise.
+	(vect_create_vectorized_demotion_stmts): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Adjust.
+	(vectorize_fold_left_reduction): Use push_vec_def.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_lc_phi): Likewise.
+	(vectorizable_phi): Likewise.
+	(vectorizable_recurr): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop.cc: Remove unused tree-vectorizer.h include.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-builtins.cc: Remove tree-vectorizer.h include.
+	* config/i386/i386-expand.cc: Likewise.
+	* config/i386/i386-features.cc: Likewise.
+	* config/i386/i386-options.cc: Likewise.
+
+2023-07-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-stmts.cc (vectorizable_conversion): Handle
+	more demotion/promotion for modifier == NONE.
+
+2023-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110787
+	PR target/110790
+	Revert patch.
+	* config/i386/i386.md (extv<mode>): Use QImode for offsets.
+	(extzv<mode>): Likewise.
+	(insv<mode>): Likewise.
+	(*testqi_ext_3): Likewise.
+	(*btr<mode>_2): Likewise.
+	(define_split): Likewise.
+	(*btsq_imm): Likewise.
+	(*btrq_imm): Likewise.
+	(*btcq_imm): Likewise.
+	(define_peephole2 x3): Likewise.
+	(*bt<mode>): Likewise
+	(*bt<mode>_mask): New define_insn_and_split.
+	(*jcc_bt<mode>): Use QImode for offsets.
+	(*jcc_bt<mode>_1): Delete obsolete pattern.
+	(*jcc_bt<mode>_mask): Use QImode offsets.
+	(*jcc_bt<mode>_mask_1): Likewise.
+	(define_split): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): New define_insn_and_split.
+	(bmi2_bzhi_<mode>3): Use QImode offsets.
+	(*bmi2_bzhi_<mode>3): Likewise.
+	(*bmi2_bzhi_<mode>3_1): Likewise.
+	(*bmi2_bzhi_<mode>3_1_ccz): Likewise.
+	(@tbm_bextri_<mode>): Likewise.
+
+2023-07-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf-opts.h (enum bpf_kernel_version): Remove enum.
+	* config/bpf/bpf.opt (mkernel): Remove option.
+	* config/bpf/bpf.cc (bpf_target_macros): Do not define
+	BPF_KERNEL_VERSION_CODE.
+
+2023-07-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/110786
+	* config/bpf/bpf.opt (mcpu): Add ISA_V4 and make it the default.
+	(mbswap): New option.
+	* config/bpf/bpf-opts.h (enum bpf_isa_version): New value ISA_V4.
+	* config/bpf/bpf.cc (bpf_option_override): Set bpf_has_bswap.
+	* config/bpf/bpf.md: Use bswap instructions if available for
+	bswap* insn, and fix constraint.
+	* doc/invoke.texi (eBPF Options): Document -mcpu=v4 and -mbswap.
+
+2023-07-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (fold_left_plus_<mode>): New pattern.
+	(mask_len_fold_left_plus_<mode>): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(enum reduction_type): Ditto.
+	(expand_reduction): Add in-order reduction.
+	* config/riscv/riscv-v.cc (emit_nonvlmax_fp_reduction_insn): New function.
+	(expand_reduction): Add in-order reduction.
+
+2023-07-24  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop.cc (get_masked_reduction_fn): Add mask_len_fold_left_plus.
+	(vectorize_fold_left_reduction): Ditto.
+	(vectorizable_reduction): Ditto.
+	(vect_transform_reduction): Ditto.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110777
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_avail):
+	Avoid propagating abnormals.
+
+2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110766
+	* tree-scalar-evolution.cc
+	(analyze_and_compute_bitwise_induction_effect): Check the PHI
+	is defined in the loop header.
+
+2023-07-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/110740
+	* tree-vect-loop.cc (vect_analyze_loop_costing): Do not vectorize a
+	loop with a single scalar iteration.
+
+2023-07-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(struct alu_frm_def): Take range check.
+
 2023-07-22  Vineet Gupta  <vineetg@rivosinc.com>
 
 	PR target/110748

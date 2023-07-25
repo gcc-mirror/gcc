@@ -1,3 +1,16 @@
+2023-07-24  Deev Patel  <pateldeev@nevada.unr.edu>
+
+	* include/std/format (_Formatting_scanner::_M_on_chars): Add
+	missing constexpr specifier.
+	(_Formatting_scanner::_M_format_arg): Likewise.
+
+2023-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110653
+	* include/bits/basic_string.h [!HAVE_STOF] (stof): Do not
+	throw an exception for zero result.
+	[HAVE_BROKEN_STRTOLD] (stold): Do not use strtold.
+
 2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110077
