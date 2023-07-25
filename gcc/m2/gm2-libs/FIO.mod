@@ -664,9 +664,9 @@ END ReadNBytes ;
                   Useful when performing small reads.
 *)
 
-PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
+PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; dest: ADDRESS) : INTEGER ;
 VAR
-   t     : ADDRESS ;
+   src   : ADDRESS ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;
@@ -674,52 +674,52 @@ VAR
 BEGIN
    IF f#Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       total := 0 ;   (* how many bytes have we read *)
       IF fd#NIL
       THEN
          WITH fd^ DO
             (* extract from the buffer first *)
-            IF buffer#NIL
+            IF buffer # NIL
             THEN
                WITH buffer^ DO
-                  WHILE nBytes>0 DO
-                     IF (left>0) AND valid
+                  WHILE nBytes > 0 DO
+                     IF (left > 0) AND valid
                      THEN
-                        IF nBytes=1
+                        IF nBytes = 1
                         THEN
                            (* too expensive to call memcpy for 1 character *)
-                           p := a ;
+                           p := dest ;
                            p^ := contents^[position] ;
-                           DEC(left) ;         (* remove consumed byte                *)
-                           INC(position) ;     (* move onwards n byte                 *)
-                           INC(total) ;
+                           DEC (left) ;         (* remove consumed byte                *)
+                           INC (position) ;     (* move onwards n byte                 *)
+                           INC (total) ;
                            RETURN( total )
                         ELSE
-                           n := Min(left, nBytes) ;
-                           t := address ;
-                           INC(t, position) ;
-                           p := memcpy(a, t, n) ;
-                           DEC(left, n) ;      (* remove consumed bytes               *)
-                           INC(position, n) ;  (* move onwards n bytes                *)
+                           n := Min (left, nBytes) ;
+                           src := address ;
+                           INC (src, position) ;
+                           p := memcpy (dest, src, n) ;
+                           DEC (left, n) ;      (* remove consumed bytes               *)
+                           INC (position, n) ;  (* move onwards n bytes                *)
                                                (* move onwards ready for direct reads *)
-                           INC(a, n) ;
-                           DEC(nBytes, n) ;    (* reduce the amount for future direct *)
+                           INC (dest, n) ;
+                           DEC (nBytes, n) ;    (* reduce the amount for future direct *)
                                                (* read                                *)
-                           INC(total, n)
+                           INC (total, n)
                         END
                      ELSE
                         (* refill buffer *)
-                        n := read(unixfd, address, size) ;
-                        IF n>=0
+                        n := read (unixfd, address, size) ;
+                        IF n >= 0
                         THEN
                            valid    := TRUE ;
                            position := 0 ;
                            left     := n ;
                            filled   := n ;
                            bufstart := abspos ;
-                           INC(abspos, n) ;
-                           IF n=0
+                           INC (abspos, n) ;
+                           IF n = 0
                            THEN
                               (* eof reached *)
                               state := endoffile ;

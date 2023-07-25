@@ -150,7 +150,7 @@ FROM M2GCCDeclare IMPORT WalkAction,
                          DeclareConstant, TryDeclareConstant,
                          DeclareConstructor, TryDeclareConstructor,
                          StartDeclareScope, EndDeclareScope,
-                         PromoteToString, DeclareLocalVariable,
+                         PromoteToString, PromoteToCString, DeclareLocalVariable,
                          CompletelyResolved,
                          PoisonSymbols, GetTypeMin, GetTypeMax,
                          IsProcedureGccNested, DeclareParameters,
@@ -208,10 +208,11 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildAddAddress,
                    BuildIfInRangeGoto, BuildIfNotInRangeGoto ;
 
-FROM m2tree IMPORT Tree, debug_tree ;
+FROM m2tree IMPORT Tree, debug_tree, skip_const_decl ;
 FROM m2linemap IMPORT location_t ;
 
-FROM m2decl IMPORT BuildStringConstant, DeclareKnownConstant, GetBitsPerBitset,
+FROM m2decl IMPORT BuildStringConstant, BuildCStringConstant,
+                   DeclareKnownConstant, GetBitsPerBitset,
                    BuildIntegerConstant,
                    BuildModuleCtor, DeclareModuleCtor ;
 
@@ -530,7 +531,7 @@ BEGIN
    SavePriorityOp     : CodeSavePriority (op1, op2, op3) |
    RestorePriorityOp  : CodeRestorePriority (op1, op2, op3) |
 
-   InlineOp           : CodeInline (location, CurrentQuadToken, op3) |
+   InlineOp           : CodeInline (q) |
    StatementNoteOp    : CodeStatementNote (op3) |
    CodeOnOp           : |           (* the following make no sense with gcc *)
    CodeOffOp          : |
@@ -702,6 +703,8 @@ END FindType ;
 *)
 
 PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : Tree ;
+CONST
+   DebugTokPos = FALSE ;
 VAR
    tok     : CARDINAL ;
    i       : CARDINAL ;
@@ -717,7 +720,7 @@ BEGIN
       i := 1 ;
       REPEAT
          GetRegInterface (sym, i, tok, name, str, obj) ;
-         IF str#NulSym
+         IF str # NulSym
          THEN
             IF IsConstString (str)
             THEN
@@ -726,11 +729,18 @@ BEGIN
                THEN
                   gccName := NIL
                ELSE
-                  gccName := BuildStringConstant (KeyToCharStar (name), LengthKey (name))
+                  gccName := BuildCStringConstant (KeyToCharStar (name), LengthKey (name))
                END ;
-               tree := ChainOnParamValue (tree, gccName, PromoteToString (tok, str), Mod2Gcc (obj))
+               tree := ChainOnParamValue (tree, gccName, PromoteToCString (tok, str),
+                                          skip_const_decl (Mod2Gcc (obj))) ;
+               IF DebugTokPos
+               THEN
+                  WarnStringAt (InitString ('input expression'), tok)
+               END
             ELSE
-               WriteFormat0 ('a constraint to the GNU ASM statement must be a constant string')
+               MetaErrorT1 (tok,
+                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Ed}',
+                            str)
             END
          END ;
          INC(i)
@@ -745,6 +755,8 @@ END BuildTreeFromInterface ;
 *)
 
 PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : Tree ;
+CONST
+   DebugTokPos = FALSE ;
 VAR
    tok : CARDINAL ;
    i   : CARDINAL ;
@@ -763,9 +775,15 @@ BEGIN
          THEN
             IF IsConstString (str)
             THEN
-               tree := AddStringToTreeList (tree, PromoteToString (tok, str))
+               tree := AddStringToTreeList (tree, PromoteToCString (tok, str)) ;
+               IF DebugTokPos
+               THEN
+                  WarnStringAt (InitString ('trash expression'), tok)
+               END
             ELSE
-               WriteFormat0 ('a constraint to the GNU ASM statement must be a constant string')
+               MetaErrorT1 (tok,
+                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Ed}',
+                            str)
             END
          END ;
 (*
@@ -785,33 +803,34 @@ END BuildTrashTreeFromInterface ;
    CodeInline - InlineOp is a quadruple which has the following format:
 
                 InlineOp   NulSym  NulSym  Sym
-
-                The inline asm statement, Sym, is written to standard output.
 *)
 
-PROCEDURE CodeInline (location: location_t; tokenno: CARDINAL; GnuAsm: CARDINAL) ;
+PROCEDURE CodeInline (quad: CARDINAL) ;
 VAR
-   string  : CARDINAL ;
+   overflowChecking: BOOLEAN ;
+   op              : QuadOperator ;
+   op1, op2, GnuAsm: CARDINAL ;
+   op1pos, op2pos,
+   op3pos, asmpos  : CARDINAL ;
+   string          : CARDINAL ;
    inputs,
    outputs,
    trash,
-   labels  : Tree ;
+   labels          : Tree ;
+   location        : location_t ;
 BEGIN
-   (*
-      no need to explicity flush the outstanding instructions as
-      per M2GenDyn486 and M2GenAPU. The GNU ASM statements in GCC
-      can handle the register dependency providing the user
-      specifies VOLATILE and input/output/trash sets correctly.
-   *)
-   inputs  := BuildTreeFromInterface (GetGnuAsmInput(GnuAsm)) ;
-   outputs := BuildTreeFromInterface (GetGnuAsmOutput(GnuAsm)) ;
-   trash   := BuildTrashTreeFromInterface (GetGnuAsmTrash(GnuAsm)) ;
-   labels  := NIL ;  (* at present it makes no sence for Modula-2 to jump to a label,
+   GetQuadOtok (quad, asmpos, op, op1, op2, GnuAsm, overflowChecking,
+                op1pos, op2pos, op3pos) ;
+   location := TokenToLocation (asmpos) ;
+   inputs  := BuildTreeFromInterface (GetGnuAsmInput (GnuAsm)) ;
+   outputs := BuildTreeFromInterface (GetGnuAsmOutput (GnuAsm)) ;
+   trash   := BuildTrashTreeFromInterface (GetGnuAsmTrash (GnuAsm)) ;
+   labels  := NIL ;  (* At present it makes no sence for Modula-2 to jump to a label,
                         given that labels are not allowed in Modula-2.  *)
    string  := GetGnuAsm (GnuAsm) ;
-   DeclareConstant (tokenno, string) ;
    BuildAsm (location,
-             Mod2Gcc (string), IsGnuAsmVolatile (GnuAsm), IsGnuAsmSimple (GnuAsm),
+             PromoteToCString (GetDeclaredMod (string), string),
+             IsGnuAsmVolatile (GnuAsm), IsGnuAsmSimple (GnuAsm),
              inputs, outputs, trash, labels)
 END CodeInline ;
 
