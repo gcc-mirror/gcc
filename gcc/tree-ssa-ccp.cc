@@ -1297,7 +1297,7 @@ ccp_fold (gimple *stmt)
    represented by the mask pair VAL and MASK with signedness SGN and
    precision PRECISION.  */
 
-void
+static void
 value_mask_to_min_max (widest_int *min, widest_int *max,
 		       const widest_int &val, const widest_int &mask,
 		       signop sgn, int precision)
@@ -1391,7 +1391,7 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 
 /* Determine the mask pair *VAL and *MASK from multiplying the
    argument mask pair RVAL, RMASK by the unsigned constant C.  */
-void
+static void
 bit_value_mult_const (signop sgn, int width,
 		      widest_int *val, widest_int *mask,
 		      const widest_int &rval, const widest_int &rmask,
@@ -1453,7 +1453,7 @@ bit_value_mult_const (signop sgn, int width,
    bits in X (capped at the maximum value MAX).  For example, an X
    value 11, places 1, 2 and 8 in BITS and returns the value 3.  */
 
-unsigned int
+static unsigned int
 get_individual_bits (widest_int *bits, widest_int x, unsigned int max)
 {
   unsigned int count = 0;
