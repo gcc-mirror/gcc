@@ -10396,12 +10396,6 @@ lookup_and_finish_template_variable (tree templ, tree targs,
   tree var = lookup_template_variable (templ, targs, complain);
   if (var == error_mark_node)
     return error_mark_node;
-  /* We may be called while doing a partial substitution, but the
-     type of the variable template may be auto, in which case we
-     will call do_auto_deduction in mark_used (which clears tf_partial)
-     and the auto must be properly reduced at that time for the
-     deduction to work.  */
-  complain &= ~tf_partial;
   var = finish_template_variable (var, complain);
   mark_used (var);
   return var;
@@ -22007,6 +22001,14 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
 
   if (tmpl == error_mark_node)
     return error_mark_node;
+
+  /* The other flags are not relevant anymore here, especially tf_partial
+     shouldn't be set.  For instance, we may be called while doing a partial
+     substitution of a template variable, but the type of the variable
+     template may be auto, in which case we will call do_auto_deduction
+     in mark_used (which clears tf_partial) and the auto must be properly
+     reduced at that time for the deduction to work.  */
+  complain &= tf_warning_or_error;
 
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
 
