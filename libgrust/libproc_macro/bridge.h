@@ -19,22 +19,17 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-
-#ifndef REGISTRATION_H
-#define REGISTRATION_H
-
-#include <string>
-#include "tokenstream.h"
-#include "bridge.h"
+#ifndef BRIDGE_H
+#define BRIDGE_H
 
 namespace ProcMacro {
 
-using from_str_function_t = ProcMacro::TokenStream (*) (std::string &, bool &);
-using is_available_t = ProcMacro::BridgeState;
+enum class BridgeState
+{
+  Available,
+  Unavailable,
+};
 
-} // namespace ProcMacro
+}
 
-extern "C" ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn;
-extern "C" ProcMacro::is_available_t __gccrs_proc_macro_is_available_fn;
-
-#endif /* !REGISTRATION_H */
+#endif /* ! BRIDGE_H */

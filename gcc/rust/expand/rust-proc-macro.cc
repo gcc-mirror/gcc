@@ -56,12 +56,6 @@ static_assert (
 	       ProcMacro::from_str_function_t>::value,
   "Registration callback signature not synced, check proc macro internals.");
 
-static bool
-available ()
-{
-  return true;
-}
-
 template <typename Symbol, typename Callback>
 bool
 register_callback (void *handle, Symbol, std::string symbol_name,
@@ -102,7 +96,7 @@ load_macros_array (std::string path)
 			  tokenstream_from_string))
     return nullptr;
   if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_is_available_fn,
-			  available))
+			  ProcMacro::BridgeState::Available))
     return nullptr;
 
   // FIXME: Add CrateStableId handling, right now all versions may be loaded,

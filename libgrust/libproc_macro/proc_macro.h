@@ -99,9 +99,6 @@ struct ProcmacroArray
   Procmacro *macros;
 };
 
-bool
-not_available ();
-
 extern "C" bool
 bridge_is_available ();
 
