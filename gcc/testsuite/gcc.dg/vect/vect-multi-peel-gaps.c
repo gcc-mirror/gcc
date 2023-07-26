@@ -9,6 +9,7 @@
 /* { dg-require-effective-target mmap } */
 #include <sys/mman.h>
 #include <stdio.h>
+#include "tree-vect.h"
 
 #define MMAP_SIZE 0x20000
 #define ADDRESS 0x1122000000
@@ -24,6 +25,7 @@ void initialise_s(int *s) { }
 int main() {
     void *s_mapping;
     void *end_s;
+    check_vect ();
     s_mapping = mmap ((void *)ADDRESS, MMAP_SIZE, PROT_READ | PROT_WRITE,
 		      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (s_mapping == MAP_FAILED)
