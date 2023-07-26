@@ -153,20 +153,27 @@ subst_defs (tree expr, gimple_seq seq)
   return expr;
 }
 
-/* Return an expression for the number of iterations of the outermost loop of
-   OMP_FOR. */
+/* Return an expression for the number of iterations of the loop at
+   the given LEVEL of OMP_FOR.
+
+   If the expression is a negative constant, this means that the loop
+   is infinite. This can only be recognized for loops with constant
+   initial, final, and step values.  In general, according to the
+   OpenMP specification, the behaviour is unspecified if the number of
+   iterations does not fit the types used for their computation, and
+   hence in particular if the loop is infinite. */
 
 tree
 gomp_for_number_of_iterations (const gomp_for *omp_for, size_t level)
 {
   gcc_assert (!non_rectangular_p (omp_for));
-
   tree init = gimple_omp_for_initial (omp_for, level);
   tree final = gimple_omp_for_final (omp_for, level);
   tree_code cond = gimple_omp_for_cond (omp_for, level);
   tree index = gimple_omp_for_index (omp_for, level);
   tree type = gomp_for_iter_count_type (index, final);
-  tree step = TREE_OPERAND (gimple_omp_for_incr (omp_for, level), 1);
+  tree incr = gimple_omp_for_incr (omp_for, level);
+  tree step = omp_get_for_step_from_incr (gimple_location (omp_for), incr);
 
   init = subst_defs (init, gimple_omp_for_pre_body (omp_for));
   init = fold (init);
@@ -181,34 +188,64 @@ gomp_for_number_of_iterations (const gomp_for *omp_for, size_t level)
       diff_type = ptrdiff_type_node;
     }
 
-  tree diff;
-  if (cond == GT_EXPR)
-    diff = fold_build2 (minus_code, diff_type, init, final);
-  else if (cond == LT_EXPR)
-    diff = fold_build2 (minus_code, diff_type, final, init);
-  else
-    gcc_unreachable ();
 
-  diff = fold_build2 (CEIL_DIV_EXPR, type, diff, step);
-  diff = fold_build1 (ABS_EXPR, type, diff);
+  /* Identify a simple case in which the loop does not iterate. The
+     computation below could not tell this apart from an infinite
+     loop, hence we handle this separately for better diagnostic
+     messages. */
+  gcc_assert (cond == GT_EXPR || cond == LT_EXPR);
+  if (TREE_CONSTANT (init) && TREE_CONSTANT (final)
+      && ((cond == GT_EXPR && tree_int_cst_le (init, final))
+	  || (cond == LT_EXPR && tree_int_cst_le (final, init))))
+    return build_int_cst (diff_type, 0);
 
+  tree diff = fold_build2 (minus_code, diff_type, final, init);
+
+  /* Divide diff by the step.
+
+     We could always use CEIL_DIV_EXPR since only non-negative results
+     correspond to valid number of iterations and the behaviour is
+     unspecified by the spec otherwise. But we try to get the rounding
+     right for constant negative values to identify infinite loops
+     more precisely for better warnings. */
+  tree_code div_expr = CEIL_DIV_EXPR;
+  if (TREE_CONSTANT (diff) && TREE_CONSTANT (step))
+    {
+      bool diff_is_neg = tree_int_cst_lt (diff, size_zero_node);
+      bool step_is_neg = tree_int_cst_lt (step, size_zero_node);
+      if ((diff_is_neg && !step_is_neg)
+	  || (!diff_is_neg && step_is_neg))
+	div_expr = FLOOR_DIV_EXPR;
+    }
+
+  diff = fold_build2 (div_expr, type, diff, step);
   return diff;
 }
 
-/* Return true if the expression representing the number of iterations for
-   OMP_FOR is a constant expression, false otherwise. */
+/* Return true if the expression representing the number of iterations
+   for OMP_FOR is a non-negative constant and set ITERATIONS to the
+   value of that expression. Otherwise, return false.  Set INFINITE to
+   true if the number of iterations was recognized to be infinite. */
 
 bool
 gomp_for_constant_iterations_p (gomp_for *omp_for,
-				unsigned HOST_WIDE_INT *iterations)
+				unsigned HOST_WIDE_INT *iterations,
+				bool *infinite = NULL)
 {
   tree t = gomp_for_number_of_iterations (omp_for, 0);
-  if (!TREE_CONSTANT (t)
-      || !tree_fits_uhwi_p (t))
+  if (!TREE_CONSTANT (t))
     return false;
 
-  *iterations = tree_to_uhwi (t);
-  return true;
+  if (infinite &&
+      tree_int_cst_lt (t, size_zero_node))
+    *infinite = true;
+  else if (tree_fits_uhwi_p (t))
+    {
+      *iterations = tree_to_uhwi (t);
+      return true;
+    }
+
+  return false;
 }
 
 static gimple_seq
@@ -519,10 +556,18 @@ full_unroll (gomp_for *omp_for, location_t loc, walk_ctx *ctx ATTRIBUTE_UNUSED)
 {
   tree init = gimple_omp_for_initial (omp_for, 0);
   unsigned HOST_WIDE_INT niter = 0;
-  if (!gomp_for_constant_iterations_p (omp_for, &niter))
+  bool infinite = false;
+  bool constant = gomp_for_constant_iterations_p (omp_for, &niter, &infinite);
+
+  if (infinite)
+    {
+      warning_at (loc, 0, "Cannot apply full unrolling to infinite loop");
+      return NULL;
+    }
+  if (!constant)
     {
       error_at (loc, "Cannot apply full unrolling to loop with "
-		     "non-constant number of iterations");
+		"non-constant number of iterations");
       return omp_for;
     }
 
@@ -1589,8 +1634,9 @@ process_omp_for (gomp_for *omp_for, gimple_seq *containing_seq, walk_ctx *ctx)
   if (!dump_enabled_p () || !(dump_flags & TDF_DETAILS))
     return;
 
-  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS, transformed,
-		   "Transformed loop: %G\n\n", transformed);
+  if (transformed)
+    dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS, transformed,
+		     "Transformed loop: %G\n\n", transformed);
 }
 
 /* Traverse SEQ in depth-first order and apply the loop transformation
