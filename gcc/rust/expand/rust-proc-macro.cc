@@ -26,7 +26,7 @@ namespace Rust {
 
 const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
 
-ProcMacro::TokenStream
+static ProcMacro::TokenStream
 tokenstream_from_string (std::string &data, bool &lex_error)
 {
   // FIXME: Insert location pointing to call site in tokens
@@ -92,7 +92,7 @@ load_macros_array (std::string path)
       return nullptr;
     }
 
-  if (!REGISTER_CALLBACK (handle, __gccrs_pm_callback_from_str_fn,
+  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_from_str_fn,
 			  tokenstream_from_string))
     return nullptr;
 
