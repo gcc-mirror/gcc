@@ -139,6 +139,13 @@ extern bool GOMP_OFFLOAD_free (int, void *);
 extern bool GOMP_OFFLOAD_dev2host (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_host2dev (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_dev2dev (int, void *, const void *, size_t);
+extern int GOMP_OFFLOAD_memcpy2d (int, int, size_t, size_t,
+				  void*, size_t, size_t, size_t,
+				  const void*, size_t, size_t, size_t);
+extern int GOMP_OFFLOAD_memcpy3d (int, int, size_t, size_t, size_t, void *,
+				  size_t, size_t, size_t, size_t, size_t,
+				  const void *, size_t, size_t, size_t, size_t,
+				  size_t);
 extern bool GOMP_OFFLOAD_can_run (void *);
 extern void GOMP_OFFLOAD_run (int, void *, void *, void **);
 extern void GOMP_OFFLOAD_async_run (int, void *, void *, void **, void *);

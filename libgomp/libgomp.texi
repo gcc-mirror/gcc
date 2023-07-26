@@ -5060,6 +5060,11 @@ The implementation remark:
       list of available devices (``host fallback'').
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items will use the 2D and 3D
+      memory-copy functions of the CUDA library.  Higher dimensions will
+      call those functions in a loop and are therefore supported.
 @end itemize
 
 

@@ -80,12 +80,12 @@ main ()
       src_offsets[2] = 1;
       src_offsets[1] = 0;
       src_offsets[0] = 3;
-      dst_dimensions[2] = 2;
+      dst_dimensions[2] = 3;
       dst_dimensions[1] = 3;
       dst_dimensions[0] = 6;
       src_dimensions[2] = 3;
       src_dimensions[1] = 4;
-      src_dimensions[0] = 6;
+      src_dimensions[0] = 9;
       if (omp_target_memcpy_rect (p, q, sizeof (int), 3, volume,
 				  dst_offsets, src_offsets, dst_dimensions,
 				  src_dimensions, d, id) != 0)
@@ -98,7 +98,7 @@ main ()
 	for (j = 0; j < 6; j++)
 	  for (k = 0; k < 3; k++)
 	    for (l = 0; l < 2; l++)
-	      if (q[j * 6 + k * 2 + l] != 3 * 12 + 4 + 1 + l + k * 3 + j * 12)
+	      if (q[j * 9 + k * 3 + l] != 3 * 12 + 4 + 1 + l + k * 3 + j * 12)
 		err = 1;
       }
 
