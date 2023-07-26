@@ -324,6 +324,24 @@ frange_arithmetic (enum tree_code code, tree type,
   bool inexact = real_arithmetic (&value, code, &op1, &op2);
   real_convert (&result, mode, &value);
 
+  /* When rounding towards negative infinity, x + (-x) and
+     x - x is -0 rather than +0 real_arithmetic computes.
+     So, when we are looking for lower bound (inf is negative),
+     use -0 rather than +0.  */
+  if (flag_rounding_math
+      && (code == PLUS_EXPR || code == MINUS_EXPR)
+      && !inexact
+      && real_iszero (&result)
+      && !real_isneg (&result)
+      && real_isneg (&inf))
+    {
+      REAL_VALUE_TYPE op2a = op2;
+      if (code == PLUS_EXPR)
+	op2a.sign ^= 1;
+      if (real_isneg (&op1) == real_isneg (&op2a) && real_equal (&op1, &op2a))
+	result.sign = 1;
+    }
+
   // Be extra careful if there may be discrepancies between the
   // compile and runtime results.
   bool round = false;
