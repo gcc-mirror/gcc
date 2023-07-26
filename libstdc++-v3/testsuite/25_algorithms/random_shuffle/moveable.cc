@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-add-options using-deprecated }
 
 // Copyright (C) 2009-2022 Free Software Foundation, Inc.

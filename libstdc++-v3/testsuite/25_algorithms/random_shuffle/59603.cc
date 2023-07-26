@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-add-options using-deprecated }
 // { dg-require-debug-mode "" }
 

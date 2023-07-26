@@ -828,10 +828,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     partition(_BIter, _BIter, _Predicate);
 
   template<typename _RAIter>
+    _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")
     void
     random_shuffle(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Generator>
+    _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")
     void
     random_shuffle(_RAIter, _RAIter,
 #if __cplusplus >= 201103L
