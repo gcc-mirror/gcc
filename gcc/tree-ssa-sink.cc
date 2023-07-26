@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-eh.h"
+#include "tree-ssa-live.h"
 
 /* TODO:
    1. Sinking store only using scalar promotion (IE without moving the RHS):
@@ -263,7 +264,8 @@ select_best_block (basic_block early_bb,
 
 static bool
 statement_sink_location (gimple *stmt, basic_block frombb,
-			 gimple_stmt_iterator *togsi, bool *zero_uses_p)
+			 gimple_stmt_iterator *togsi, bool *zero_uses_p,
+			 virtual_operand_live &vop_live)
 {
   gimple *use;
   use_operand_p one_use = NULL_USE_OPERAND_P;
@@ -386,10 +388,7 @@ statement_sink_location (gimple *stmt, basic_block frombb,
       if (commondom == frombb)
 	return false;
 
-      /* If this is a load then do not sink past any stores.
-	 Look for virtual definitions in the path from frombb to the sink
-	 location computed from the real uses and if found, adjust
-	 that it a common dominator.  */
+      /* If this is a load then do not sink past any stores.  */
       if (gimple_vuse (stmt))
 	{
 	  /* Do not sink loads from hard registers.  */
@@ -398,51 +397,14 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	      && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
 	    return false;
 
-	  imm_use_iterator imm_iter;
-	  use_operand_p use_p;
-	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_vuse (stmt))
-	    {
-	      gimple *use_stmt = USE_STMT (use_p);
-	      basic_block bb = gimple_bb (use_stmt);
-	      /* For PHI nodes the block we know sth about is the incoming block
-		 with the use.  */
-	      if (gimple_code (use_stmt) == GIMPLE_PHI)
-		{
-		  /* If the PHI defines the virtual operand, ignore it.  */
-		  if (gimple_phi_result (use_stmt) == gimple_vuse (stmt))
-		    continue;
-		  /* In case the PHI node post-dominates the current insert
-		     location we can disregard it.  But make sure it is not
-		     dominating it as well as can happen in a CFG cycle.  */
-		  if (commondom != bb
-		      && !dominated_by_p (CDI_DOMINATORS, commondom, bb)
-		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb)
-		      /* If the blocks are possibly within the same irreducible
-			 cycle the above check breaks down.  */
-		      && !((bb->flags & commondom->flags & BB_IRREDUCIBLE_LOOP)
-			   && bb->loop_father == commondom->loop_father)
-		      && !((commondom->flags & BB_IRREDUCIBLE_LOOP)
-			   && flow_loop_nested_p (commondom->loop_father,
-						  bb->loop_father))
-		      && !((bb->flags & BB_IRREDUCIBLE_LOOP)
-			   && flow_loop_nested_p (bb->loop_father,
-						  commondom->loop_father)))
-		    continue;
-		  bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
-		}
-	      else if (!gimple_vdef (use_stmt))
-		continue;
-	      /* If the use is not dominated by the path entry it is not on
-		 the path.  */
-	      if (!dominated_by_p (CDI_DOMINATORS, bb, frombb))
-		continue;
-	      /* There is no easy way to disregard defs not on the path from
-		 frombb to commondom so just consider them all.  */
-	      commondom = nearest_common_dominator (CDI_DOMINATORS,
-						    bb, commondom);
-	      if (commondom == frombb)
-		return false;
-	    }
+	  /* When the live virtual operand at the intended sink location is
+	     not the same as the one from the load walk up the dominator tree
+	     for a new candidate location.  */
+	  while (commondom != frombb
+		 && vop_live.get_live_in (commondom) != gimple_vuse (stmt))
+	    commondom = get_immediate_dominator (CDI_DOMINATORS, commondom);
+	  if (commondom == frombb)
+	    return false;
 	}
 
       /* Our common dominator has to be dominated by frombb in order to be a
@@ -681,7 +643,7 @@ sink_common_stores_to_bb (basic_block bb)
 /* Perform code sinking on BB */
 
 static unsigned
-sink_code_in_bb (basic_block bb)
+sink_code_in_bb (basic_block bb, virtual_operand_live &vop_live)
 {
   gimple_stmt_iterator gsi;
   edge_iterator ei;
@@ -708,7 +670,7 @@ sink_code_in_bb (basic_block bb)
       gimple_stmt_iterator togsi;
       bool zero_uses_p;
 
-      if (!statement_sink_location (stmt, bb, &togsi, &zero_uses_p))
+      if (!statement_sink_location (stmt, bb, &togsi, &zero_uses_p, vop_live))
 	{
 	  gimple_stmt_iterator saved = gsi;
 	  if (!gsi_end_p (gsi))
@@ -864,12 +826,14 @@ pass_sink_code::execute (function *fun)
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
+  virtual_operand_live vop_live;
+
   auto_vec<basic_block, 64> worklist;
   worklist.quick_push (EXIT_BLOCK_PTR_FOR_FN (fun));
   do
     {
       basic_block bb = worklist.pop ();
-      todo |= sink_code_in_bb (bb);
+      todo |= sink_code_in_bb (bb, vop_live);
       for (basic_block son = first_dom_son (CDI_POST_DOMINATORS, bb);
 	   son;
 	   son = next_dom_son (CDI_POST_DOMINATORS, son))
