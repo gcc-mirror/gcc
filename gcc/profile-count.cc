@@ -345,7 +345,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
       return 1;
     }
   if (known)
-    *known = true;
+    *known = in.m_val != 0;
   if (*this == in)
     return 1;
   gcc_checking_assert (compatible_p (in));
