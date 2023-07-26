@@ -346,6 +346,8 @@ public:
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
 				  relation_kind) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
 private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool inside_domain_p (const wide_int &min, const wide_int &max,

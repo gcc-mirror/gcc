@@ -2881,22 +2881,15 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 	return true;
     }
 
-  // Update the bitmask.  Truncating casts are problematic unless
-  // the conversion fits in the resulting outer type.
-  irange_bitmask bm = inner.get_bitmask ();
-  if (truncating_cast_p (inner, outer)
-      && wi::rshift (bm.mask (),
-		     wi::uhwi (TYPE_PRECISION (outer.type ()),
-			       TYPE_PRECISION (inner.type ())),
-		     TYPE_SIGN (inner.type ())) != 0)
-    return true;
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (inner.type ());
-  bm = irange_bitmask (wide_int::from (bm.value (), prec, sign),
-		       wide_int::from (bm.mask (), prec, sign));
-  r.update_bitmask (bm);
-
+  update_bitmask (r, inner, outer);
   return true;
+}
+
+void
+operator_cast::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
+{
+  update_known_bitmask (r, CONVERT_EXPR, lh, rh);
 }
 
 bool
