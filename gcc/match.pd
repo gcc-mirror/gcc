@@ -8292,7 +8292,14 @@ and,
 
 (simplify
  (vec_perm vec_same_elem_p@0 @0 @1)
- @0)
+ (if (types_match (type, TREE_TYPE (@0)))
+  @0
+  (with
+   {
+     tree elem = uniform_vector_p (@0);
+   }
+   (if (elem)
+    { build_vector_from_val (type, elem); }))))
 
 /* Push VEC_PERM earlier if that may help FMA perception (PR101895).  */
 (simplify
