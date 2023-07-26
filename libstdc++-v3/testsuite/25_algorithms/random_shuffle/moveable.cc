@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-add-options using-deprecated }
 // { dg-require-effective-target hosted }
 
