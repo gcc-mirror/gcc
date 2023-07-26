@@ -1958,6 +1958,29 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  }
 
 	tree call = find_instance (&unsupported_builtin, &instance,
+				   instance_code, fcode, types, args, nargs);
+	if (call != error_mark_node)
+	  return call;
+	break;
+      }
+    case RS6000_OVLD_VEC_REPLACE_UN:
+      {
+	machine_mode arg2_mode = TYPE_MODE (types[1]);
+
+	if (arg2_mode == SImode)
+	  /* Signed and unsigned are handled the same.  */
+	  instance_code = RS6000_BIF_VREPLACE_UN_USI;
+	else if (arg2_mode == SFmode)
+	  instance_code = RS6000_BIF_VREPLACE_UN_SF;
+	else if (arg2_mode == DImode)
+	  /* Signed and unsigned are handled the same.  */
+	  instance_code = RS6000_BIF_VREPLACE_UN_UDI;
+	else if (arg2_mode == DFmode)
+	  instance_code = RS6000_BIF_VREPLACE_UN_DF;
+	else
+	  break;
+
+	tree call = find_instance (&unsupported_builtin, &instance,
 				   instance_code, fcode, types, args);
 	if (call != error_mark_node)
 	  return call;
