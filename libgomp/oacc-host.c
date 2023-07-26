@@ -291,6 +291,8 @@ static struct gomp_device_descr host_dispatch =
     .free_func = host_free,
     .dev2host_func = host_dev2host,
     .host2dev_func = host_host2dev,
+    .memcpy2d_func = NULL,
+    .memcpy3d_func = NULL,
     .run_func = host_run,
     .evaluate_device_func = host_evaluate_device,
 
