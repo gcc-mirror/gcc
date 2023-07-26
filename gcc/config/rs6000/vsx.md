@@ -6557,7 +6557,7 @@
 		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
 		     UNSPEC_XXEVAL))]
    "TARGET_POWER10"
-   "xxeval %0,%1,%2,%3,%4"
+   "xxeval %x0,%x1,%x2,%x3,%4"
    [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
