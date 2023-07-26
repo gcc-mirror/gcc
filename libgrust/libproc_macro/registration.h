@@ -29,9 +29,12 @@
 namespace ProcMacro {
 
 using from_str_function_t = ProcMacro::TokenStream (*) (std::string &, bool &);
+using is_available_function_t = bool (*) ();
 
 } // namespace ProcMacro
 
 extern "C" ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn;
+extern "C" ProcMacro::is_available_function_t
+  __gccrs_proc_macro_is_available_fn;
 
 #endif /* !REGISTRATION_H */

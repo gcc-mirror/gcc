@@ -49,6 +49,14 @@ Procmacro::make_bang (const char *name, BangMacro macro)
   return {BANG, payload};
 }
 
+bool
+not_available ()
+{
+  return false;
+}
+
 } // namespace ProcMacro
 
 ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn = nullptr;
+ProcMacro::is_available_function_t __gccrs_proc_macro_is_available_fn
+  = ProcMacro::not_available;
