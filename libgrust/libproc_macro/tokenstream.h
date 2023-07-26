@@ -27,6 +27,8 @@
 #include <vector>
 #include <string>
 
+#include "ffistring.h"
+
 namespace ProcMacro {
 struct TokenTree;
 
@@ -59,8 +61,7 @@ extern "C" void
 TokenSream__push (TokenStream *stream, TokenTree tree);
 
 extern "C" bool
-TokenStream__from_string (unsigned char *str, std::uint64_t len,
-			  TokenStream *ts);
+TokenStream__from_string (FFIString str, TokenStream *ts);
 
 extern "C" TokenStream
 TokenStream__clone (const TokenStream *ts);

@@ -28,7 +28,7 @@ namespace ProcMacro {
 
 extern "C" {
 bool
-Literal__from_string (const unsigned char *str, std::uint64_t len, Literal *lit)
+Literal__from_string (FFIString str, Literal *lit)
 {
   // FIXME: implement this function with lexer
   std::abort ();
