@@ -225,6 +225,24 @@ check_proc_macro_non_function (const AST::AttrVec &attributes)
     }
 }
 
+// Emit an error when one attribute is either proc_macro, proc_macro_attribute
+// or proc_macro_derive
+static void
+check_proc_macro_non_root (AST::AttrVec attributes, location_t loc)
+{
+  for (auto &attr : attributes)
+    {
+      if (is_proc_macro_type (attr))
+	{
+	  rust_error_at (
+	    loc,
+	    "functions tagged with %<#[%s]%> must currently "
+	    "reside in the root of the crate",
+	    attr.get_path ().get_segments ().at (0).as_string ().c_str ());
+	}
+    }
+}
+
 void
 AttributeChecker::check_attribute (const AST::Attribute &attribute)
 {
@@ -435,8 +453,20 @@ AttributeChecker::visit (AST::ClosureExprInner &)
 {}
 
 void
-AttributeChecker::visit (AST::BlockExpr &)
-{}
+AttributeChecker::visit (AST::BlockExpr &expr)
+{
+  for (auto &stmt : expr.get_statements ())
+    {
+      if (stmt->get_stmt_kind () == AST::Stmt::Kind::Item)
+	{
+	  // Non owning pointer, let it go out of scope
+	  auto item = static_cast<AST::Item *> (stmt.get ());
+	  check_proc_macro_non_root (item->get_outer_attrs (),
+				     item->get_locus ());
+	}
+      stmt->accept_vis (*this);
+    }
+}
 
 void
 AttributeChecker::visit (AST::ClosureExprInnerTyped &)
@@ -479,8 +509,10 @@ AttributeChecker::visit (AST::ReturnExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::UnsafeBlockExpr &)
-{}
+AttributeChecker::visit (AST::UnsafeBlockExpr &expr)
+{
+  expr.get_block_expr ()->accept_vis (*this);
+}
 
 void
 AttributeChecker::visit (AST::LoopExpr &)
@@ -540,13 +572,20 @@ AttributeChecker::visit (AST::TypeBoundWhereClauseItem &)
 {}
 
 void
-AttributeChecker::visit (AST::Method &)
-{}
+AttributeChecker::visit (AST::Method &method)
+{
+  method.get_definition ()->accept_vis (*this);
+}
 
 void
 AttributeChecker::visit (AST::Module &module)
 {
   check_proc_macro_non_function (module.get_outer_attrs ());
+  for (auto &item : module.get_items ())
+    {
+      check_proc_macro_non_root (item->get_outer_attrs (), item->get_locus ());
+      item->accept_vis (*this);
+    }
 }
 
 void
@@ -611,6 +650,7 @@ AttributeChecker::visit (AST::Function &fun)
 	  check_crate_type (name, attribute);
 	}
     }
+  fun.get_definition ()->accept_vis (*this);
 }
 
 void
@@ -698,12 +738,16 @@ void
 AttributeChecker::visit (AST::InherentImpl &impl)
 {
   check_proc_macro_non_function (impl.get_outer_attrs ());
+  for (auto &item : impl.get_impl_items ())
+    item->accept_vis (*this);
 }
 
 void
 AttributeChecker::visit (AST::TraitImpl &impl)
 {
   check_proc_macro_non_function (impl.get_outer_attrs ());
+  for (auto &item : impl.get_impl_items ())
+    item->accept_vis (*this);
 }
 
 void
