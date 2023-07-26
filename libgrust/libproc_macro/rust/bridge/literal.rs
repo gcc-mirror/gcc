@@ -1,12 +1,10 @@
 use bridge::{ffistring::FFIString, span::Span};
-use std::convert::TryInto;
-use std::ffi::c_uchar;
 use std::fmt;
 use std::str::FromStr;
 use LexError;
 
 extern "C" {
-    fn Literal__from_string(str: *const c_uchar, len: u64, lit: *mut Literal) -> bool;
+    fn Literal__from_string(str: FFIString, lit: *mut Literal) -> bool;
 }
 
 #[repr(C)]
@@ -234,13 +232,7 @@ impl FromStr for Literal {
         };
         // TODO: We might want to pass a LexError by reference to retrieve
         // error information
-        if unsafe {
-            Literal__from_string(
-                string.as_ptr(),
-                string.len().try_into().unwrap(),
-                &mut lit as *mut Literal,
-            )
-        } {
+        if unsafe { Literal__from_string(string.into(), &mut lit as *mut Literal) } {
             Err(LexError)
         } else {
             Ok(lit)
