@@ -21,6 +21,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "proc_macro.h"
+#include "bridge.h"
 
 namespace ProcMacro {
 
@@ -52,17 +53,12 @@ Procmacro::make_bang (const char *name, BangMacro macro)
 extern "C" bool
 bridge_is_available ()
 {
-  return __gccrs_proc_macro_is_available_fn ();
-}
-
-bool
-not_available ()
-{
-  return false;
+  return __gccrs_proc_macro_is_available_fn
+	 == ProcMacro::BridgeState::Available;
 }
 
 } // namespace ProcMacro
 
 ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn = nullptr;
-ProcMacro::is_available_function_t __gccrs_proc_macro_is_available_fn
-  = ProcMacro::not_available;
+ProcMacro::is_available_t __gccrs_proc_macro_is_available_fn
+  = ProcMacro::BridgeState::Unavailable;
