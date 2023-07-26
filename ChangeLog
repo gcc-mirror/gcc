@@ -1,3 +1,7 @@
+2023-07-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: List myself as "nvptx port" maintainer.
+
 2023-07-21  Cupertino Miranda  <cupertino.miranda@oracle.com>
 
 	* MAINTAINERS: Add myself to write after approval

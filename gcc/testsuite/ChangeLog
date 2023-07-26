@@ -1,3 +1,44 @@
+2023-07-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/110803
+	* gcc.dg/tree-ssa/pr109986.c: Change plain char to be
+	`signed char`.
+
+2023-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110382
+	* g++.dg/cpp1y/constexpr-110382.C: New test.
+
+2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/110725
+	PR middle-end/71065
+	* gfortran.dg/gomp/teams-6.f90: New test.
+
+2023-07-25  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gnat.dg/unroll3.adb: Adjust.
+
+2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr99226.f90: Update dg-error.
+
+2023-07-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103605
+	* gcc.target/powerpc/pr103605.h: New.
+	* gcc.target/powerpc/pr103605-1.c: New.
+	* gcc.target/powerpc/pr103605-2.c: New.
+
+2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110174
+	* gm2/pim/pass/program2.mod: Remove import of BuildInline.
+	* gm2/extensions/asm/fail/extensions-asm-fail.exp: New test.
+	* gm2/extensions/asm/fail/stressreturn.mod: New test.
+	* gm2/extensions/asm/pass/extensions-asm-pass.exp: New test.
+	* gm2/extensions/asm/pass/fooasm.mod: New test.
+
 2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/110725

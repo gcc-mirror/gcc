@@ -1,3 +1,34 @@
+2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110174
+	* gm2-compiler/M2GCCDeclare.def (PromoteToCString): New procedure
+	function.
+	* gm2-compiler/M2GCCDeclare.mod (PromoteToCString): New procedure
+	function.
+	* gm2-compiler/M2GenGCC.mod (BuildTreeFromInterface): Call
+	skip_const_decl before chaining the parameter value.
+	Use PromoteToCString to ensure the string is nul terminated.
+	(CodeInline): Remove all parameters and replace with quad.
+	Use GetQuadOtok to get operand token numbers.
+	Remove call to DeclareConstant and replace it with PromoteToCString.
+	* gm2-compiler/M2Quads.def (BuildInline): Rename into ...
+	(BuildAsm): ... this.
+	* gm2-compiler/M2Quads.mod: (BuildInline): Rename into ...
+	(BuildAsm): ... this.
+	(BuildAsmElement): Add debugging.
+	* gm2-compiler/P1Build.bnf: Remove import of BuildInline.
+	* gm2-compiler/P2Build.bnf: Remove import of BuildInline.
+	* gm2-compiler/P3Build.bnf: Remove import of BuildInline and
+	import BuildAsm.
+	* gm2-compiler/PHBuild.bnf: Remove import of BuildInline.
+	* gm2-libs-iso/SysClock.mod (foo): Remove.
+	* gm2-libs/FIO.mod (BufferedRead): Rename parameter a to dest.
+	Rename variable t to src.
+	* m2pp.cc (pf): Correct block comment.
+	(pe): Correct block comment.
+	(m2pp_asm_expr): New function.
+	(m2pp_statement): Call m2pp_asm_expr.
+
 2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110631

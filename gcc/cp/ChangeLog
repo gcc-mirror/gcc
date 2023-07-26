@@ -1,3 +1,18 @@
+2023-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108960
+	* pt.cc (lookup_and_finish_template_variable): Don't clear tf_partial
+	here.
+	(instantiate_template): Reset all complain flags except
+	tf_warning_or_error.
+
+2023-07-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110382
+	* constexpr.cc (cxx_eval_array_reference): Create a new constructor
+	only when we don't already have a matching one.  Clear the object
+	when the type is non-scalar.
+
 2023-07-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/110106

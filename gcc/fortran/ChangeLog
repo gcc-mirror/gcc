@@ -1,3 +1,14 @@
+2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/110725
+	PR middle-end/71065
+	* gfortran.h (gfc_omp_clauses): Add target_first_st_is_teams.
+	* parse.cc (parse_omp_structured_block): Set it if the first
+	statement in the structured block of a TARGET is TEAMS or
+	a combined/composite starting with TEAMS.
+	* openmp.cc (resolve_omp_target): Also show an error for
+	contains_teams_construct without target_first_st_is_teams.
+
 2023-07-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/110725

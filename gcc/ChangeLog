@@ -1,3 +1,32 @@
+2023-07-25  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_print_operand_address): Don't print
+	enclosing parentheses for pseudo-C dialect.
+	* config/bpf/bpf.md (zero_exdendhidi2): Add parentheses around
+	operands of pseudo-C dialect output templates where needed.
+	(zero_extendqidi2): Likewise.
+	(zero_extendsidi2): Likewise.
+	(*mov<MM:mode>): Likewise.
+
+2023-07-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-ccp.cc (value_mask_to_min_max): Make static.
+	(bit_value_mult_const): Same.
+	(get_individual_bits): Same.
+
+2023-07-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103605
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Gimple
+	fold RS6000_BIF_XSMINDP and RS6000_BIF_XSMAXDP when fast-math is set.
+	* config/rs6000/rs6000.md (FMINMAX): New int iterator.
+	(minmax_op): New int attribute.
+	(UNSPEC_FMAX, UNSPEC_FMIN): New unspecs.
+	(f<minmax_op><mode>3): New pattern by UNSPEC_FMAX and UNSPEC_FMIN.
+	* config/rs6000/rs6000-builtins.def (__builtin_vsx_xsmaxdp): Set
+	pattern to fmaxdf3.
+	(__builtin_vsx_xsmindp): Set pattern to fmindf3.
+
 2023-07-24  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.md (nop): Add pseudo-c asm dialect template.
