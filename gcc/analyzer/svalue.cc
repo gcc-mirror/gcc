@@ -1254,10 +1254,12 @@ binop_svalue::implicitly_live_p (const svalue_set *live_svalues,
 
 /* sub_svalue'c ctor.  */
 
-sub_svalue::sub_svalue (tree type, const svalue *parent_svalue,
+sub_svalue::sub_svalue (symbol::id_t id,
+			tree type, const svalue *parent_svalue,
 			const region *subregion)
 : svalue (complexity::from_pair (parent_svalue->get_complexity (),
 				 subregion->get_complexity ()),
+	  id,
 	  type),
   m_parent_svalue (parent_svalue), m_subregion (subregion)
 {
@@ -1311,10 +1313,11 @@ sub_svalue::implicitly_live_p (const svalue_set *live_svalues,
 
 /* repeated_svalue'c ctor.  */
 
-repeated_svalue::repeated_svalue (tree type,
+repeated_svalue::repeated_svalue (symbol::id_t id,
+				  tree type,
 				  const svalue *outer_size,
 				  const svalue *inner_svalue)
-: svalue (complexity::from_pair (outer_size, inner_svalue), type),
+: svalue (complexity::from_pair (outer_size, inner_svalue), id, type),
   m_outer_size (outer_size),
   m_inner_svalue (inner_svalue)
 {
@@ -1438,10 +1441,11 @@ repeated_svalue::maybe_fold_bits_within (tree type,
 
 /* bits_within_svalue'c ctor.  */
 
-bits_within_svalue::bits_within_svalue (tree type,
+bits_within_svalue::bits_within_svalue (symbol::id_t id,
+					tree type,
 					const bit_range &bits,
 					const svalue *inner_svalue)
-: svalue (complexity (inner_svalue), type),
+: svalue (complexity (inner_svalue), id, type),
   m_bits (bits),
   m_inner_svalue (inner_svalue)
 {
@@ -1736,8 +1740,10 @@ unmergeable_svalue::implicitly_live_p (const svalue_set *live_svalues,
 
 /* class compound_svalue : public svalue.  */
 
-compound_svalue::compound_svalue (tree type, const binding_map &map)
-: svalue (calc_complexity (map), type), m_map (map)
+compound_svalue::compound_svalue (symbol::id_t id,
+				  tree type,
+				  const binding_map &map)
+: svalue (calc_complexity (map), id, type), m_map (map)
 {
 #if CHECKING_P
   for (iterator_t iter = begin (); iter != end (); ++iter)

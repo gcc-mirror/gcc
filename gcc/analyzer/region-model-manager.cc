@@ -62,20 +62,20 @@ namespace ana {
 
 region_model_manager::region_model_manager (logger *logger)
 : m_logger (logger),
+  m_next_symbol_id (0),
   m_empty_call_string (),
-  m_next_region_id (0),
-  m_root_region (alloc_region_id ()),
-  m_stack_region (alloc_region_id (), &m_root_region),
-  m_heap_region (alloc_region_id (), &m_root_region),
+  m_root_region (alloc_symbol_id ()),
+  m_stack_region (alloc_symbol_id (), &m_root_region),
+  m_heap_region (alloc_symbol_id (), &m_root_region),
   m_unknown_NULL (NULL),
   m_checking_feasibility (false),
   m_max_complexity (0, 0),
-  m_code_region (alloc_region_id (), &m_root_region),
+  m_code_region (alloc_symbol_id (), &m_root_region),
   m_fndecls_map (), m_labels_map (),
-  m_globals_region (alloc_region_id (), &m_root_region),
+  m_globals_region (alloc_symbol_id (), &m_root_region),
   m_globals_map (),
-  m_thread_local_region (alloc_region_id (), &m_root_region),
-  m_errno_region (alloc_region_id (), &m_thread_local_region),
+  m_thread_local_region (alloc_symbol_id (), &m_root_region),
+  m_errno_region (alloc_symbol_id (), &m_thread_local_region),
   m_store_mgr (this),
   m_range_mgr (new bounded_ranges_manager ()),
   m_known_fn_mgr (logger)
@@ -220,7 +220,8 @@ region_model_manager::get_or_create_constant_svalue (tree cst_expr)
   constant_svalue **slot = m_constants_map.get (cst_expr);
   if (slot)
     return *slot;
-  constant_svalue *cst_sval = new constant_svalue (cst_expr);
+  constant_svalue *cst_sval
+    = new constant_svalue (alloc_symbol_id (), cst_expr);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (cst_sval);
   m_constants_map.put (cst_expr, cst_sval);
   return cst_sval;
@@ -268,14 +269,14 @@ region_model_manager::get_or_create_unknown_svalue (tree type)
   if (type == NULL_TREE)
     {
       if (!m_unknown_NULL)
-	m_unknown_NULL = new unknown_svalue (type);
+	m_unknown_NULL = new unknown_svalue (alloc_symbol_id (), type);
       return m_unknown_NULL;
     }
 
   unknown_svalue **slot = m_unknowns_map.get (type);
   if (slot)
     return *slot;
-  unknown_svalue *sval = new unknown_svalue (type);
+  unknown_svalue *sval = new unknown_svalue (alloc_symbol_id (), type);
   m_unknowns_map.put (type, sval);
   return sval;
 }
@@ -285,7 +286,7 @@ region_model_manager::get_or_create_unknown_svalue (tree type)
 const svalue *
 region_model_manager::create_unique_svalue (tree type)
 {
-  svalue *sval = new placeholder_svalue (type, "unique");
+  svalue *sval = new placeholder_svalue (alloc_symbol_id (), type, "unique");
   m_managed_dynamic_svalues.safe_push (sval);
   return sval;
 }
@@ -315,7 +316,8 @@ region_model_manager::get_or_create_initial_value (const region *reg,
 
   if (initial_svalue **slot = m_initial_values_map.get (reg))
     return *slot;
-  initial_svalue *initial_sval = new initial_svalue (reg->get_type (), reg);
+  initial_svalue *initial_sval
+    = new initial_svalue (alloc_symbol_id (), reg->get_type (), reg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (initial_sval);
   m_initial_values_map.put (reg, initial_sval);
   return initial_sval;
@@ -331,7 +333,7 @@ region_model_manager::get_or_create_setjmp_svalue (const setjmp_record &r,
   setjmp_svalue::key_t key (r, type);
   if (setjmp_svalue **slot = m_setjmp_values_map.get (key))
     return *slot;
-  setjmp_svalue *setjmp_sval = new setjmp_svalue (r, type);
+  setjmp_svalue *setjmp_sval = new setjmp_svalue (r, alloc_symbol_id (), type);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (setjmp_sval);
   m_setjmp_values_map.put (key, setjmp_sval);
   return setjmp_sval;
@@ -347,7 +349,8 @@ region_model_manager::get_or_create_poisoned_svalue (enum poison_kind kind,
   poisoned_svalue::key_t key (kind, type);
   if (poisoned_svalue **slot = m_poisoned_values_map.get (key))
     return *slot;
-  poisoned_svalue *poisoned_sval = new poisoned_svalue (kind, type);
+  poisoned_svalue *poisoned_sval
+    = new poisoned_svalue (kind, alloc_symbol_id (), type);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (poisoned_sval);
   m_poisoned_values_map.put (key, poisoned_sval);
   return poisoned_sval;
@@ -368,7 +371,8 @@ region_model_manager::get_ptr_svalue (tree ptr_type, const region *pointee)
   region_svalue::key_t key (ptr_type, pointee);
   if (region_svalue **slot = m_pointer_values_map.get (key))
     return *slot;
-  region_svalue *sval = new region_svalue (ptr_type, pointee);
+  region_svalue *sval
+    = new region_svalue (alloc_symbol_id (), ptr_type, pointee);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (sval);
   m_pointer_values_map.put (key, sval);
   return sval;
@@ -491,7 +495,8 @@ region_model_manager::get_or_create_unaryop (tree type, enum tree_code op,
   unaryop_svalue::key_t key (type, op, arg);
   if (unaryop_svalue **slot = m_unaryop_values_map.get (key))
     return *slot;
-  unaryop_svalue *unaryop_sval = new unaryop_svalue (type, op, arg);
+  unaryop_svalue *unaryop_sval
+    = new unaryop_svalue (alloc_symbol_id (), type, op, arg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (unaryop_sval);
   m_unaryop_values_map.put (key, unaryop_sval);
   return unaryop_sval;
@@ -797,7 +802,8 @@ region_model_manager::get_or_create_binop (tree type, enum tree_code op,
   binop_svalue::key_t key (type, op, arg0, arg1);
   if (binop_svalue **slot = m_binop_values_map.get (key))
     return *slot;
-  binop_svalue *binop_sval = new binop_svalue (type, op, arg0, arg1);
+  binop_svalue *binop_sval
+    = new binop_svalue (alloc_symbol_id (), type, op, arg0, arg1);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (binop_sval);
   m_binop_values_map.put (key, binop_sval);
   return binop_sval;
@@ -903,7 +909,7 @@ region_model_manager::get_or_create_sub_svalue (tree type,
   if (sub_svalue **slot = m_sub_values_map.get (key))
     return *slot;
   sub_svalue *sub_sval
-    = new sub_svalue (type, parent_svalue, subregion);
+    = new sub_svalue (alloc_symbol_id (), type, parent_svalue, subregion);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (sub_sval);
   m_sub_values_map.put (key, sub_sval);
   return sub_sval;
@@ -964,7 +970,7 @@ region_model_manager::get_or_create_repeated_svalue (tree type,
   if (repeated_svalue **slot = m_repeated_values_map.get (key))
     return *slot;
   repeated_svalue *repeated_sval
-    = new repeated_svalue (type, outer_size, inner_svalue);
+    = new repeated_svalue (alloc_symbol_id (), type, outer_size, inner_svalue);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (repeated_sval);
   m_repeated_values_map.put (key, repeated_sval);
   return repeated_sval;
@@ -1157,7 +1163,7 @@ region_model_manager::get_or_create_bits_within (tree type,
   if (bits_within_svalue **slot = m_bits_within_values_map.get (key))
     return *slot;
   bits_within_svalue *bits_within_sval
-    = new bits_within_svalue (type, bits, inner_svalue);
+    = new bits_within_svalue (alloc_symbol_id (), type, bits, inner_svalue);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (bits_within_sval);
   m_bits_within_values_map.put (key, bits_within_sval);
   return bits_within_sval;
@@ -1174,7 +1180,8 @@ region_model_manager::get_or_create_unmergeable (const svalue *arg)
 
   if (unmergeable_svalue **slot = m_unmergeable_values_map.get (arg))
     return *slot;
-  unmergeable_svalue *unmergeable_sval = new unmergeable_svalue (arg);
+  unmergeable_svalue *unmergeable_sval
+    = new unmergeable_svalue (alloc_symbol_id (), arg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (unmergeable_sval);
   m_unmergeable_values_map.put (arg, unmergeable_sval);
   return unmergeable_sval;
@@ -1196,7 +1203,8 @@ get_or_create_widening_svalue (tree type,
   if (widening_svalue **slot = m_widening_values_map.get (key))
     return *slot;
   widening_svalue *widening_sval
-    = new widening_svalue (type, point, base_sval, iter_sval);
+    = new widening_svalue (alloc_symbol_id (), type, point, base_sval,
+			   iter_sval);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (widening_sval);
   m_widening_values_map.put (key, widening_sval);
   return widening_sval;
@@ -1213,7 +1221,7 @@ region_model_manager::get_or_create_compound_svalue (tree type,
   if (compound_svalue **slot = m_compound_values_map.get (tmp_key))
     return *slot;
   compound_svalue *compound_sval
-    = new compound_svalue (type, map);
+    = new compound_svalue (alloc_symbol_id (), type, map);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (compound_sval);
   /* Use make_key rather than reusing the key, so that we use a
      ptr to compound_sval's binding_map, rather than the MAP param.  */
@@ -1254,7 +1262,7 @@ region_model_manager::get_or_create_conjured_svalue (tree type,
       return sval;
     }
   conjured_svalue *conjured_sval
-    = new conjured_svalue (type, stmt, id_reg);
+    = new conjured_svalue (alloc_symbol_id (), type, stmt, id_reg);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (conjured_sval);
   m_conjured_values_map.put (key, conjured_sval);
   return conjured_sval;
@@ -1299,7 +1307,8 @@ get_or_create_asm_output_svalue (tree type,
   if (asm_output_svalue **slot = m_asm_output_values_map.get (key))
     return *slot;
   asm_output_svalue *asm_output_sval
-    = new asm_output_svalue (type, asm_string, output_idx, noutputs, inputs);
+    = new asm_output_svalue (alloc_symbol_id (), type, asm_string, output_idx,
+			     noutputs, inputs);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (asm_output_sval);
   m_asm_output_values_map.put (key, asm_output_sval);
   return asm_output_sval;
@@ -1327,7 +1336,8 @@ get_or_create_asm_output_svalue (tree type,
   if (asm_output_svalue **slot = m_asm_output_values_map.get (key))
     return *slot;
   asm_output_svalue *asm_output_sval
-    = new asm_output_svalue (type, asm_string, output_idx, num_outputs, inputs);
+    = new asm_output_svalue (alloc_symbol_id (), type, asm_string, output_idx,
+			     num_outputs, inputs);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (asm_output_sval);
   m_asm_output_values_map.put (key, asm_output_sval);
   return asm_output_sval;
@@ -1352,7 +1362,7 @@ get_or_create_const_fn_result_svalue (tree type,
   if (const_fn_result_svalue **slot = m_const_fn_result_values_map.get (key))
     return *slot;
   const_fn_result_svalue *const_fn_result_sval
-    = new const_fn_result_svalue (type, fndecl, inputs);
+    = new const_fn_result_svalue (alloc_symbol_id (), type, fndecl, inputs);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (const_fn_result_sval);
   m_const_fn_result_values_map.put (key, const_fn_result_sval);
   return const_fn_result_sval;
@@ -1399,7 +1409,7 @@ region_model_manager::get_region_for_fndecl (tree fndecl)
   if (slot)
     return *slot;
   function_region *reg
-    = new function_region (alloc_region_id (), &m_code_region, fndecl);
+    = new function_region (alloc_symbol_id (), &m_code_region, fndecl);
   m_fndecls_map.put (fndecl, reg);
   return reg;
 }
@@ -1420,7 +1430,7 @@ region_model_manager::get_region_for_label (tree label)
 
   const function_region *func_reg = get_region_for_fndecl (fndecl);
   label_region *reg
-    = new label_region (alloc_region_id (), func_reg, label);
+    = new label_region (alloc_symbol_id (), func_reg, label);
   m_labels_map.put (label, reg);
   return reg;
 }
@@ -1436,7 +1446,7 @@ region_model_manager::get_region_for_global (tree expr)
   if (slot)
     return *slot;
   decl_region *reg
-    = new decl_region (alloc_region_id (), &m_globals_region, expr);
+    = new decl_region (alloc_symbol_id (), &m_globals_region, expr);
   m_globals_map.put (expr, reg);
   return reg;
 }
@@ -1471,7 +1481,7 @@ region_model_manager::get_field_region (const region *parent, tree field)
     return reg;
 
   field_region *field_reg
-    = new field_region (alloc_region_id (), parent, field);
+    = new field_region (alloc_symbol_id (), parent, field);
   m_field_regions.put (key, field_reg);
   return field_reg;
 }
@@ -1493,7 +1503,7 @@ region_model_manager::get_element_region (const region *parent,
     return reg;
 
   element_region *element_reg
-    = new element_region (alloc_region_id (), parent, element_type, index);
+    = new element_region (alloc_symbol_id (), parent, element_type, index);
   m_element_regions.put (key, element_reg);
   return element_reg;
 }
@@ -1533,7 +1543,7 @@ region_model_manager::get_offset_region (const region *parent,
     return reg;
 
   offset_region *offset_reg
-    = new offset_region (alloc_region_id (), parent, type, byte_offset);
+    = new offset_region (alloc_symbol_id (), parent, type, byte_offset);
   m_offset_regions.put (key, offset_reg);
   return offset_reg;
 }
@@ -1568,7 +1578,7 @@ region_model_manager::get_sized_region (const region *parent,
     return reg;
 
   sized_region *sized_reg
-    = new sized_region (alloc_region_id (), parent, type, byte_size_sval);
+    = new sized_region (alloc_symbol_id (), parent, type, byte_size_sval);
   m_sized_regions.put (key, sized_reg);
   return sized_reg;
 }
@@ -1592,7 +1602,7 @@ region_model_manager::get_cast_region (const region *original_region,
     return reg;
 
   cast_region *cast_reg
-    = new cast_region (alloc_region_id (), original_region, type);
+    = new cast_region (alloc_symbol_id (), original_region, type);
   m_cast_regions.put (key, cast_reg);
   return cast_reg;
 }
@@ -1611,7 +1621,7 @@ region_model_manager::get_frame_region (const frame_region *calling_frame,
     return reg;
 
   frame_region *frame_reg
-    = new frame_region (alloc_region_id (), &m_stack_region, calling_frame,
+    = new frame_region (alloc_symbol_id (), &m_stack_region, calling_frame,
 			 fun, index);
   m_frame_regions.put (key, frame_reg);
   return frame_reg;
@@ -1628,7 +1638,7 @@ region_model_manager::get_symbolic_region (const svalue *sval)
     return reg;
 
   symbolic_region *symbolic_reg
-    = new symbolic_region (alloc_region_id (), &m_root_region, sval);
+    = new symbolic_region (alloc_symbol_id (), &m_root_region, sval);
   m_symbolic_regions.put (key, symbolic_reg);
   return symbolic_reg;
 }
@@ -1645,7 +1655,7 @@ region_model_manager::get_region_for_string (tree string_cst)
   if (slot)
     return *slot;
   string_region *reg
-    = new string_region (alloc_region_id (), &m_root_region, string_cst);
+    = new string_region (alloc_symbol_id (), &m_root_region, string_cst);
   m_string_map.put (string_cst, reg);
   return reg;
 }
@@ -1667,7 +1677,7 @@ region_model_manager::get_bit_range (const region *parent, tree type,
     return reg;
 
   bit_range_region *bit_range_reg
-    = new bit_range_region (alloc_region_id (), parent, type, bits);
+    = new bit_range_region (alloc_symbol_id (), parent, type, bits);
   m_bit_range_regions.put (key, bit_range_reg);
   return bit_range_reg;
 }
@@ -1686,7 +1696,7 @@ region_model_manager::get_var_arg_region (const frame_region *parent_frame,
     return reg;
 
   var_arg_region *var_arg_reg
-    = new var_arg_region (alloc_region_id (), parent_frame, idx);
+    = new var_arg_region (alloc_symbol_id (), parent_frame, idx);
   m_var_arg_regions.put (key, var_arg_reg);
   return var_arg_reg;
 }
@@ -1706,7 +1716,7 @@ get_region_for_unexpected_tree_code (region_model_context *ctxt,
 {
   tree type = TYPE_P (t) ? t : TREE_TYPE (t);
   region *new_reg
-    = new unknown_region (alloc_region_id (), &m_root_region, type);
+    = new unknown_region (alloc_symbol_id (), &m_root_region, type);
   if (ctxt)
     ctxt->on_unexpected_tree_code (t, loc);
   return new_reg;
@@ -1729,7 +1739,7 @@ get_or_create_region_for_heap_alloc (const bitmap &base_regs_in_use)
 
   /* All existing ones (if any) are in use; create a new one.  */
   region *reg
-    = new heap_allocated_region (alloc_region_id (), &m_heap_region);
+    = new heap_allocated_region (alloc_symbol_id (), &m_heap_region);
   m_managed_dynamic_regions.safe_push (reg);
   return reg;
 }
@@ -1740,7 +1750,7 @@ const region *
 region_model_manager::create_region_for_alloca (const frame_region *frame)
 {
   gcc_assert (frame);
-  region *reg = new alloca_region (alloc_region_id (), frame);
+  region *reg = new alloca_region (alloc_symbol_id (), frame);
   m_managed_dynamic_regions.safe_push (reg);
   return reg;
 }
@@ -1832,6 +1842,7 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   LOG_SCOPE (logger);
   logger->log ("call string consolidation");
   m_empty_call_string.recursive_log (logger);
+  logger->log ("next symbol id: %i", m_next_symbol_id);
   logger->log ("svalue consolidation");
   log_uniq_map (logger, show_objs, "constant_svalue", m_constants_map);
   log_uniq_map (logger, show_objs, "unknown_svalue", m_unknowns_map);
@@ -1863,7 +1874,6 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
 	       m_max_complexity.m_max_depth);
 
   logger->log ("region consolidation");
-  logger->log ("  next region id: %i", m_next_region_id);
   log_uniq_map (logger, show_objs, "function_region", m_fndecls_map);
   log_uniq_map (logger, show_objs, "label_region", m_labels_map);
   log_uniq_map (logger, show_objs, "decl_region for globals", m_globals_map);
