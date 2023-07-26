@@ -22,7 +22,7 @@ contains
 
     sum = 0
     !$omp parallel do reduction(+:sum) lastprivate(i)
-    !$omp unroll partial(5) ! { dg-optimized {replaced consecutive 'omp unroll' directives by 'omp unroll auto\(50\)'} }
+    !$omp unroll partial(5) ! { dg-optimized {replaced consecutive 'omp unroll' directives by 'omp unroll partial\(50\)'} }
     !$omp unroll partial(10)
     do i = 1,n,step
        sum = sum + 1
@@ -36,7 +36,7 @@ contains
     sum = 0
     !$omp parallel do reduction(+:sum) lastprivate(i)
     do i = 1,n,step
-       !$omp unroll full ! { dg-optimized {removed useless 'omp unroll auto' directives preceding 'omp unroll full'} }
+       !$omp unroll full ! { dg-optimized {removed useless 'omp unroll partial' directives preceding 'omp unroll full'} }
        !$omp unroll partial(10)
        do j = 1, 1000
           sum = sum + 1

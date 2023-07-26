@@ -4,7 +4,7 @@
 subroutine test1
   implicit none
   integer :: i
-  !$omp unroll full ! { dg-optimized {removed useless 'omp unroll auto' directives preceding 'omp unroll full'} }
+  !$omp unroll full ! { dg-optimized {removed useless 'omp unroll partial' directives preceding 'omp unroll full'} }
   !$omp unroll partial(3)
   !$omp unroll partial(2)
   !$omp unroll partial(1)

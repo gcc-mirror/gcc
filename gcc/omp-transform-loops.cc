@@ -1417,7 +1417,7 @@ print_optimized_unroll_partial_msg (tree c)
   tree unroll_factor = OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c);
   dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, dump_loc,
 		   "replaced consecutive %<omp unroll%> directives by "
-		   "%<omp unroll auto(" HOST_WIDE_INT_PRINT_UNSIGNED
+		   "%<omp unroll partial(" HOST_WIDE_INT_PRINT_UNSIGNED
 		   ")%>\n", tree_to_uhwi (unroll_factor));
 }
 
@@ -1477,7 +1477,7 @@ optimize_transformation_clauses (tree clauses)
 
 		  dump_printf_loc (
 		      MSG_OPTIMIZED_LOCATIONS, dump_loc,
-		      "removed useless %<omp unroll auto%> directives "
+		      "removed useless %<omp unroll partial%> directives "
 		      "preceding 'omp unroll full'\n");
 		}
 	    }

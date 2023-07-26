@@ -5,7 +5,7 @@ subroutine test1
   implicit none
   integer :: i
   !$omp parallel do collapse(1)
-  !$omp unroll partial(4) ! { dg-optimized {replaced consecutive 'omp unroll' directives by 'omp unroll auto\(24\)'} }
+  !$omp unroll partial(4) ! { dg-optimized {replaced consecutive 'omp unroll' directives by 'omp unroll partial\(24\)'} }
   !$omp unroll partial(3)
   !$omp unroll partial(2)
   !$omp unroll partial(1)
