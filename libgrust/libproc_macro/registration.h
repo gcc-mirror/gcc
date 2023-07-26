@@ -32,6 +32,6 @@ using from_str_function_t = ProcMacro::TokenStream (*) (std::string &, bool &);
 
 } // namespace ProcMacro
 
-extern "C" ProcMacro::from_str_function_t __gccrs_pm_callback_from_str_fn;
+extern "C" ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn;
 
 #endif /* !REGISTRATION_H */

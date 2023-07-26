@@ -51,4 +51,4 @@ Procmacro::make_bang (const char *name, BangMacro macro)
 
 } // namespace ProcMacro
 
-ProcMacro::from_str_function_t __gccrs_pm_callback_from_str_fn = nullptr;
+ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn = nullptr;
