@@ -102,6 +102,9 @@ struct ProcmacroArray
 bool
 not_available ();
 
+extern "C" bool
+bridge_is_available ();
+
 } // namespace ProcMacro
 
 #endif /* ! PROC_MACRO_H */

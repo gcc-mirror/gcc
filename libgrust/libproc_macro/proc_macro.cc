@@ -49,6 +49,12 @@ Procmacro::make_bang (const char *name, BangMacro macro)
   return {BANG, payload};
 }
 
+extern "C" bool
+bridge_is_available ()
+{
+  return __gccrs_proc_macro_is_available_fn ();
+}
+
 bool
 not_available ()
 {
