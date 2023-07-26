@@ -103,11 +103,10 @@ TokenSream__push (TokenStream *stream, TokenTree tree)
 }
 
 extern "C" bool
-TokenStream__from_string (unsigned char *str, std::uint64_t len,
-			  TokenStream *ts)
+TokenStream__from_string (FFIString str, TokenStream *ts)
 {
   bool result;
-  auto source = std::string (reinterpret_cast<const char *> (str), len);
+  auto source = str.to_string ();
 
   *ts = TokenStream::make_tokenstream (source, result);
   return result;
