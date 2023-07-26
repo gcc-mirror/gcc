@@ -142,9 +142,9 @@
 ;;; Negation
 (define_insn "neg<AM:mode>2"
   [(set (match_operand:AM         0 "register_operand"   "=r,r")
-        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " r,I")))]
+        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " 0,I")))]
   ""
-  "{neg<msuffix>\t%0,%1|%w0 = -%w1}"
+  "{neg<msuffix>\t%0|%w0 = -%w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Multiplication
