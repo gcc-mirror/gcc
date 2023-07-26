@@ -99,6 +99,9 @@ struct ProcmacroArray
   Procmacro *macros;
 };
 
+bool
+not_available ();
+
 } // namespace ProcMacro
 
 #endif /* ! PROC_MACRO_H */
