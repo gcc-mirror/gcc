@@ -8076,12 +8076,10 @@ coerce_template_template_parms (tree parm_tmpl,
   tree parm, arg;
   int variadic_p = 0;
 
-  tree parm_parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (parm_tmpl));
-  tree arg_parms_full = DECL_TEMPLATE_PARMS (arg_tmpl);
-  tree arg_parms = INNERMOST_TEMPLATE_PARMS (arg_parms_full);
-
-  gcc_assert (TREE_CODE (parm_parms) == TREE_VEC);
-  gcc_assert (TREE_CODE (arg_parms) == TREE_VEC);
+  tree parm_parms = DECL_INNERMOST_TEMPLATE_PARMS (parm_tmpl);
+  tree arg_parms = DECL_INNERMOST_TEMPLATE_PARMS (arg_tmpl);
+  tree gen_arg_tmpl = most_general_template (arg_tmpl);
+  tree gen_arg_parms = DECL_INNERMOST_TEMPLATE_PARMS (gen_arg_tmpl);
 
   nparms = TREE_VEC_LENGTH (parm_parms);
   nargs = TREE_VEC_LENGTH (arg_parms);
@@ -8137,7 +8135,7 @@ coerce_template_template_parms (tree parm_tmpl,
 	scope_args = TI_ARGS (tinfo);
       pargs = add_to_template_args (scope_args, pargs);
 
-      pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none);
+      pargs = coerce_template_parms (gen_arg_parms, pargs, NULL_TREE, tf_none);
       if (pargs != error_mark_node)
 	{
 	  tree targs = make_tree_vec (nargs);
