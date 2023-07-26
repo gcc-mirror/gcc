@@ -3074,7 +3074,7 @@
   "frcsr\t%0")
 
 (define_insn "riscv_fscsr"
-  [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSCSR)]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_FSCSR)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fscsr\t%0")
 
@@ -3087,7 +3087,7 @@
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fsflags\t%0")
+  "fsflags%i0\t%0")
 
 (define_insn "*riscv_fsnvsnan<mode>2"
   [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
