@@ -605,9 +605,7 @@ package body Sem_Ch8 is
       --  declaration, but not language-defined ones. The call to procedure
       --  Analyze_Aspect_Specifications will take care of this error check.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
    end Analyze_Exception_Renaming;
 
    ---------------------------
@@ -753,9 +751,7 @@ package body Sem_Ch8 is
       --  declaration, but not language-defined ones. The call to procedure
       --  Analyze_Aspect_Specifications will take care of this error check.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, New_P);
-      end if;
+      Analyze_Aspect_Specifications (N, New_P);
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -1582,9 +1578,7 @@ package body Sem_Ch8 is
       --  declaration, but not language-defined ones. The call to procedure
       --  Analyze_Aspect_Specifications will take care of this error check.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       --  Deal with dimensions
 
@@ -1765,9 +1759,7 @@ package body Sem_Ch8 is
       --  declaration, but not language-defined ones. The call to procedure
       --  Analyze_Aspect_Specifications will take care of this error check.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, New_P);
-      end if;
+      Analyze_Aspect_Specifications (N, New_P);
    end Analyze_Package_Renaming;
 
    -------------------------------
@@ -4205,9 +4197,7 @@ package body Sem_Ch8 is
       --  declaration, but not language-defined ones. The call to procedure
       --  Analyze_Aspect_Specifications will take care of this error check.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, New_S);
-      end if;
+      Analyze_Aspect_Specifications (N, New_S);
 
       --  AI12-0279
 

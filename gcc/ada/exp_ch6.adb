@@ -10121,6 +10121,7 @@ package body Exp_Ch6 is
                return Skip;
 
             when N_Abstract_Subprogram_Declaration
+               | N_Aspect_Specification
                | N_At_Clause
                | N_Call_Marker
                | N_Empty

@@ -1255,11 +1255,12 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations are ignored. Quantified
-               --  expressions are expanded into explicit loops and the
-               --  original epression must be ignored.
+               --  Aspects, pragmas and component declarations are ignored.
+               --  Quantified expressions are expanded into explicit loops
+               --  and the original epression must be ignored.
 
-               when N_Component_Declaration
+               when N_Aspect_Specification
+                  | N_Component_Declaration
                   | N_Pragma
                   | N_Quantified_Expression
                =>

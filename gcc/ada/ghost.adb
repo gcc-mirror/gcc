@@ -2029,9 +2029,6 @@ package body Ghost is
 
             Rewrite (N, Make_Null_Statement (Sloc (N)));
 
-            --  Eliminate any aspects hanging off the ignored Ghost node
-
-            Remove_Aspects (N);
          end if;
       end Remove_Ignored_Ghost_Node;
 

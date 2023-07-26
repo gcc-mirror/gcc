@@ -8960,6 +8960,10 @@ package body Exp_Ch3 is
              Subtype_Mark        => New_Occurrence_Of (Etype (Def_Id), Loc),
              Name                => Expr_Q));
 
+         --  Keep original aspects
+
+         Move_Aspects (Original_Node (N), N);
+
          --  We do not analyze this renaming declaration, because all its
          --  components have already been analyzed, and if we were to go
          --  ahead and analyze it, we would in effect be trying to generate

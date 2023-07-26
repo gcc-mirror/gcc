@@ -3629,16 +3629,9 @@ package body Inline is
       function Process_Formals_In_Aspects
         (N : Node_Id) return Traverse_Result
       is
-         A : Node_Id;
-
       begin
-         if Has_Aspects (N) then
-            A := First (Aspect_Specifications (N));
-            while Present (A) loop
-               Replace_Formals (Expression (A));
-
-               Next (A);
-            end loop;
+         if Nkind (N) = N_Aspect_Specification then
+            Replace_Formals (Expression (N));
          end if;
          return OK;
       end Process_Formals_In_Aspects;

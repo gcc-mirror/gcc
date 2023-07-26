@@ -1147,28 +1147,12 @@ package Aspects is
    --  implemented internally with a hash table in the body, that provides
    --  access to aspect specifications.
 
-   function Aspect_Specifications (N : Node_Id) return List_Id;
-   --  Given a node N, returns the list of N_Aspect_Specification nodes that
-   --  are attached to this declaration node. If the node is in the class of
-   --  declaration nodes that permit aspect specifications, as defined by the
-   --  predicate above, and if their Has_Aspects flag is set to True, then this
-   --  will always be a non-empty list. If this flag is set to False, then
-   --  No_List is returned. Normally, the only nodes that have Has_Aspects set
-   --  True are the nodes for which Permits_Aspect_Specifications would return
-   --  True (i.e. the declaration nodes defined in the RM as permitting the
-   --  presence of Aspect_Specifications). However, it is possible for the
-   --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
-   --  Replace calls, and this function may be used to retrieve the aspect
-   --  specifications for the original rewritten node in such cases.
-
    function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean;
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
    --  are allowed to appear on a body [stub].
 
-   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id);
-   --  Exchange the aspect specifications of two nodes. If either node lacks an
-   --  aspect specification list, the routine has no effect. It is assumed that
-   --  both nodes can support aspects.
+   procedure Copy_Aspects (From : Node_Id; To : Node_Id);
+   --  Create a copy of Aspect of From and add them to To.
 
    function Find_Aspect (Id            : Entity_Id;
                          A             : Aspect_Id;
@@ -1196,6 +1180,9 @@ package Aspects is
                         A             : Aspect_Id;
                         Class_Present : Boolean := False) return Boolean;
    --  Determine whether entity Id has aspect A (or A'Class, if Class_Present)
+
+   function Has_Aspects (N : Node_Id) return Boolean;
+   --  Returns whether the node has any aspect specifications
 
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. On entry it
@@ -1226,16 +1213,6 @@ package Aspects is
    --  Returns True if A1 and A2 are (essentially) the same aspect. This is not
    --  a simple equality test because e.g. Post and Postcondition are the same.
    --  This is used for detecting duplicate aspects.
-
-   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
-   --  The node N must be in the class of declaration nodes that permit aspect
-   --  specifications and the Has_Aspects flag must be False on entry. L must
-   --  be a non-empty list of N_Aspect_Specification nodes. This procedure sets
-   --  the Has_Aspects flag to True, and makes an entry that can be retrieved
-   --  by a subsequent Aspect_Specifications call. It is an error to call this
-   --  procedure with a node that does not permit aspect specifications, or a
-   --  node that has its Has_Aspects flag set True on entry, or with L being an
-   --  empty list or No_List.
 
    package User_Aspect_Support is
       procedure Register_UAD_Pragma (UAD_Pragma : Node_Id);

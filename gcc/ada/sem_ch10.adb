@@ -1697,9 +1697,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Package_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Nam);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2039,9 +2037,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Protected_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2693,9 +2689,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Task_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Generate_Reference (Nam, Id, 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
