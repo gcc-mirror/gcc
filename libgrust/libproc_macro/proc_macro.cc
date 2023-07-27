@@ -60,5 +60,5 @@ bridge_is_available ()
 } // namespace ProcMacro
 
 ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn = nullptr;
-ProcMacro::is_available_t __gccrs_proc_macro_is_available_fn
+ProcMacro::BridgeState __gccrs_proc_macro_is_available_fn
   = ProcMacro::BridgeState::Unavailable;
