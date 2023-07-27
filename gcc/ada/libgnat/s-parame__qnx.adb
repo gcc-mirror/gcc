@@ -39,13 +39,11 @@ package body System.Parameters is
 
    function Adjust_Storage_Size (Size : Size_Type) return Size_Type is
    begin
-      if Size = Unspecified_Size then
-         return Default_Stack_Size;
-      elsif Size < Minimum_Stack_Size then
-         return Minimum_Stack_Size;
-      else
-         return Size;
-      end if;
+      return
+         (if Size = Unspecified_Size then Default_Stack_Size
+          elsif Size < Minimum_Stack_Size then Minimum_Stack_Size
+          else Size
+         );
    end Adjust_Storage_Size;
 
    ------------------------
@@ -56,14 +54,16 @@ package body System.Parameters is
       Default_Stack_Size : constant Integer;
       pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
    begin
-      if Default_Stack_Size = -1 then
-         --  256K is the default stack size on aarch64 QNX
-         return 256 * 1024;
-      elsif Size_Type (Default_Stack_Size) < Minimum_Stack_Size then
-         return Minimum_Stack_Size;
-      else
-         return Size_Type (Default_Stack_Size);
-      end if;
+      return
+         (if Default_Stack_Size = -1
+          then
+             (256 * 1024) --  256K is the default stack size on aarch64 QNX
+          elsif Size_Type (Default_Stack_Size) < Minimum_Stack_Size
+          then
+             Minimum_Stack_Size
+          else
+             Size_Type (Default_Stack_Size)
+         );
    end Default_Stack_Size;
 
    ------------------------
