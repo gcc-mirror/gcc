@@ -63,16 +63,41 @@ convert (ProcMacro::Span span)
   return span.start;
 }
 
-static void
-handle_suffix (ProcMacro::TokenStream &ts, const const_TokenPtr &token,
-	       ProcMacro::LitKind kind)
+static ProcMacro::Literal
+handle_suffix (const const_TokenPtr &token, ProcMacro::LitKind kind)
 {
   auto str = token->as_string ();
   auto lookup = suffixes.lookup (token->get_type_hint ());
   auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
-  ts.push (ProcMacro::TokenTree::make_tokentree (
-    ProcMacro::Literal::make_literal (kind, convert (token->get_locus ()), str,
-				      suffix)));
+  return ProcMacro::Literal::make_literal (kind, convert (token->get_locus ()),
+					   str, suffix);
+}
+
+ProcMacro::Literal
+convert_literal (const_TokenPtr lit)
+{
+  auto loc = convert (lit->get_locus ());
+  switch (lit->get_id ())
+    {
+    case FLOAT_LITERAL:
+      return handle_suffix (lit, ProcMacro::LitKind::make_float ());
+    case INT_LITERAL:
+      return handle_suffix (lit, ProcMacro::LitKind::make_integer ());
+    case CHAR_LITERAL:
+      return ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_char (),
+					       loc, lit->as_string ());
+    case STRING_LITERAL:
+      return ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_str (),
+					       loc, lit->as_string ());
+    case BYTE_CHAR_LITERAL:
+      return ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_byte (),
+					       loc, lit->as_string ());
+    case BYTE_STRING_LITERAL:
+      return ProcMacro::Literal::make_literal (
+	ProcMacro::LitKind::make_byte_str (), loc, lit->as_string ());
+    default:
+      rust_unreachable ();
+    }
 }
 
 ProcMacro::TokenStream
@@ -87,32 +112,13 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	{
 	// Literals
 	case FLOAT_LITERAL:
-	  handle_suffix (trees.back (), token,
-			 ProcMacro::LitKind::make_float ());
-	  break;
 	case INT_LITERAL:
-	  handle_suffix (trees.back (), token,
-			 ProcMacro::LitKind::make_integer ());
-	  break;
 	case CHAR_LITERAL:
-	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_char (),
-					      loc, token->as_string ())));
-	  break;
 	case STRING_LITERAL:
-	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_str (),
-					      loc, token->as_string ())));
-	  break;
 	case BYTE_CHAR_LITERAL:
-	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_byte (),
-					      loc, token->as_string ())));
-	  break;
 	case BYTE_STRING_LITERAL:
-	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_literal (
-	      ProcMacro::LitKind::make_byte_str (), loc, token->as_string ())));
+	  trees.back ().push (
+	    ProcMacro::TokenTree::make_tokentree (convert_literal (token)));
 	  break;
 	// Ident
 	case IDENTIFIER:
