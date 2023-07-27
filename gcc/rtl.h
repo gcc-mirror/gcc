@@ -45,7 +45,7 @@ class predefined_function_abi;
 /* Register Transfer Language EXPRESSIONS CODES */
 
 #define RTX_CODE	enum rtx_code
-enum rtx_code  {
+enum rtx_code : unsigned {
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   ENUM ,
 #include "rtl.def"		/* rtl expressions are documented here */
