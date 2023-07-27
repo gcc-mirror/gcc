@@ -25,6 +25,7 @@
 ;; - Intrinsics (https://github.com/riscv/rvv-intrinsic-doc)
 ;; - Auto-vectorization (autovec.md)
 ;; - Optimization (autovec-opt.md)
+;; - VLS patterns (autovec-vls.md)
 
 (include "vector-iterators.md")
 
@@ -91,7 +92,8 @@
 			  RVVM1x5QI,RVVMF2x5QI,RVVMF4x5QI,RVVMF8x5QI,\
 			  RVVM2x4QI,RVVM1x4QI,RVVMF2x4QI,RVVMF4x4QI,RVVMF8x4QI,\
 			  RVVM2x3QI,RVVM1x3QI,RVVMF2x3QI,RVVMF4x3QI,RVVMF8x3QI,\
-			  RVVM4x2QI,RVVM2x2QI,RVVM1x2QI,RVVMF2x2QI,RVVMF4x2QI,RVVMF8x2QI")
+			  RVVM4x2QI,RVVM2x2QI,RVVM1x2QI,RVVMF2x2QI,RVVMF4x2QI,RVVMF8x2QI,\
+			  V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI")
 	 (const_int 8)
 	 (eq_attr "mode" "RVVM8HI,RVVM4HI,RVVM2HI,RVVM1HI,RVVMF2HI,RVVMF4HI,\
 			  RVVM1x8HI,RVVMF2x8HI,RVVMF4x8HI,\
@@ -108,7 +110,9 @@
 			  RVVM1x5HF,RVVMF2x5HF,RVVMF4x5HF,\
 			  RVVM2x4HF,RVVM1x4HF,RVVMF2x4HF,RVVMF4x4HF,\
 			  RVVM2x3HF,RVVM1x3HF,RVVMF2x3HF,RVVMF4x3HF,\
-			  RVVM4x2HF,RVVM2x2HF,RVVM1x2HF,RVVMF2x2HF,RVVMF4x2HF")
+			  RVVM4x2HF,RVVM2x2HF,RVVM1x2HF,RVVMF2x2HF,RVVMF4x2HF,\
+			  V1HI,V2HI,V4HI,V8HI,V16HI,V32HI,V64HI,V128HI,V256HI,V512HI,V1024HI,V2048HI,\
+			  V1HF,V2HF,V4HF,V8HF,V16HF,V32HF,V64HF,V128HF,V256HF,V512HF,V1024HF,V2048HF")
 	 (const_int 16)
 	 (eq_attr "mode" "RVVM8SI,RVVM4SI,RVVM2SI,RVVM1SI,RVVMF2SI,\
 			  RVVM8SF,RVVM4SF,RVVM2SF,RVVM1SF,RVVMF2SF,\
@@ -126,7 +130,9 @@
 			  RVVM1x5SF,RVVMF2x5SF,\
 			  RVVM2x4SF,RVVM1x4SF,RVVMF2x4SF,\
 			  RVVM2x3SF,RVVM1x3SF,RVVMF2x3SF,\
-			  RVVM4x2SF,RVVM2x2SF,RVVM1x2SF,RVVMF2x2SF")
+			  RVVM4x2SF,RVVM2x2SF,RVVM1x2SF,RVVMF2x2SF,\
+			  V1SI,V2SI,V4SI,V8SI,V16SI,V32SI,V64SI,V128SI,V256SI,V512SI,V1024SI,\
+			  V1SF,V2SF,V4SF,V8SF,V16SF,V32SF,V64SF,V128SF,V256SF,V512SF,V1024SF")
 	 (const_int 32)
 	 (eq_attr "mode" "RVVM8DI,RVVM4DI,RVVM2DI,RVVM1DI,\
 			  RVVM8DF,RVVM4DF,RVVM2DF,RVVM1DF,\
@@ -137,7 +143,9 @@
 			  RVVM1x8DF,RVVM1x7DF,RVVM1x6DF,RVVM1x5DF,\
 			  RVVM2x4DF,RVVM1x4DF,\
 			  RVVM2x3DF,RVVM1x3DF,\
-			  RVVM4x2DF,RVVM2x2DF,RVVM1x2DF")
+			  RVVM4x2DF,RVVM2x2DF,RVVM1x2DF,\
+			  V1DI,V2DI,V4DI,V8DI,V16DI,V32DI,V64DI,V128DI,V256DI,V512DI,\
+			  V1DF,V2DF,V4DF,V8DF,V16DF,V32DF,V64DF,V128DF,V256DF,V512DF")
 	 (const_int 64)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -319,7 +327,88 @@
 	 (eq_attr "mode" "RVVM1x3DF") (symbol_ref "riscv_vector::LMUL_1")
 	 (eq_attr "mode" "RVVM4x2DF") (symbol_ref "riscv_vector::LMUL_4")
 	 (eq_attr "mode" "RVVM2x2DF") (symbol_ref "riscv_vector::LMUL_2")
-	 (eq_attr "mode" "RVVM1x2DF") (symbol_ref "riscv_vector::LMUL_1")]
+	 (eq_attr "mode" "RVVM1x2DF") (symbol_ref "riscv_vector::LMUL_1")
+
+	 ;; VLS modes.
+	 (eq_attr "mode" "V1QI") (symbol_ref "riscv_vector::get_vlmul(E_V1QImode)")
+	 (eq_attr "mode" "V2QI") (symbol_ref "riscv_vector::get_vlmul(E_V2QImode)")
+	 (eq_attr "mode" "V4QI") (symbol_ref "riscv_vector::get_vlmul(E_V4QImode)")
+	 (eq_attr "mode" "V8QI") (symbol_ref "riscv_vector::get_vlmul(E_V8QImode)")
+	 (eq_attr "mode" "V16QI") (symbol_ref "riscv_vector::get_vlmul(E_V16QImode)")
+	 (eq_attr "mode" "V32QI") (symbol_ref "riscv_vector::get_vlmul(E_V32QImode)")
+	 (eq_attr "mode" "V64QI") (symbol_ref "riscv_vector::get_vlmul(E_V64QImode)")
+	 (eq_attr "mode" "V128QI") (symbol_ref "riscv_vector::get_vlmul(E_V128QImode)")
+	 (eq_attr "mode" "V256QI") (symbol_ref "riscv_vector::get_vlmul(E_V256QImode)")
+	 (eq_attr "mode" "V512QI") (symbol_ref "riscv_vector::get_vlmul(E_V512QImode)")
+	 (eq_attr "mode" "V1024QI") (symbol_ref "riscv_vector::get_vlmul(E_V1024QImode)")
+	 (eq_attr "mode" "V2048QI") (symbol_ref "riscv_vector::get_vlmul(E_V2048QImode)")
+	 (eq_attr "mode" "V4096QI") (symbol_ref "riscv_vector::get_vlmul(E_V4096QImode)")
+	 (eq_attr "mode" "V1HI") (symbol_ref "riscv_vector::get_vlmul(E_V1HImode)")
+	 (eq_attr "mode" "V2HI") (symbol_ref "riscv_vector::get_vlmul(E_V2HImode)")
+	 (eq_attr "mode" "V4HI") (symbol_ref "riscv_vector::get_vlmul(E_V4HImode)")
+	 (eq_attr "mode" "V8HI") (symbol_ref "riscv_vector::get_vlmul(E_V8HImode)")
+	 (eq_attr "mode" "V16HI") (symbol_ref "riscv_vector::get_vlmul(E_V16HImode)")
+	 (eq_attr "mode" "V32HI") (symbol_ref "riscv_vector::get_vlmul(E_V32HImode)")
+	 (eq_attr "mode" "V64HI") (symbol_ref "riscv_vector::get_vlmul(E_V64HImode)")
+	 (eq_attr "mode" "V128HI") (symbol_ref "riscv_vector::get_vlmul(E_V128HImode)")
+	 (eq_attr "mode" "V256HI") (symbol_ref "riscv_vector::get_vlmul(E_V256HImode)")
+	 (eq_attr "mode" "V512HI") (symbol_ref "riscv_vector::get_vlmul(E_V512HImode)")
+	 (eq_attr "mode" "V1024HI") (symbol_ref "riscv_vector::get_vlmul(E_V1024HImode)")
+	 (eq_attr "mode" "V2048HI") (symbol_ref "riscv_vector::get_vlmul(E_V2048HImode)")
+	 (eq_attr "mode" "V1SI") (symbol_ref "riscv_vector::get_vlmul(E_V1SImode)")
+	 (eq_attr "mode" "V2SI") (symbol_ref "riscv_vector::get_vlmul(E_V2SImode)")
+	 (eq_attr "mode" "V4SI") (symbol_ref "riscv_vector::get_vlmul(E_V4SImode)")
+	 (eq_attr "mode" "V8SI") (symbol_ref "riscv_vector::get_vlmul(E_V8SImode)")
+	 (eq_attr "mode" "V16SI") (symbol_ref "riscv_vector::get_vlmul(E_V16SImode)")
+	 (eq_attr "mode" "V32SI") (symbol_ref "riscv_vector::get_vlmul(E_V32SImode)")
+	 (eq_attr "mode" "V64SI") (symbol_ref "riscv_vector::get_vlmul(E_V64SImode)")
+	 (eq_attr "mode" "V128SI") (symbol_ref "riscv_vector::get_vlmul(E_V128SImode)")
+	 (eq_attr "mode" "V256SI") (symbol_ref "riscv_vector::get_vlmul(E_V256SImode)")
+	 (eq_attr "mode" "V512SI") (symbol_ref "riscv_vector::get_vlmul(E_V512SImode)")
+	 (eq_attr "mode" "V1024SI") (symbol_ref "riscv_vector::get_vlmul(E_V1024SImode)")
+	 (eq_attr "mode" "V1DI") (symbol_ref "riscv_vector::get_vlmul(E_V1DImode)")
+	 (eq_attr "mode" "V2DI") (symbol_ref "riscv_vector::get_vlmul(E_V2DImode)")
+	 (eq_attr "mode" "V4DI") (symbol_ref "riscv_vector::get_vlmul(E_V4DImode)")
+	 (eq_attr "mode" "V8DI") (symbol_ref "riscv_vector::get_vlmul(E_V8DImode)")
+	 (eq_attr "mode" "V16DI") (symbol_ref "riscv_vector::get_vlmul(E_V16DImode)")
+	 (eq_attr "mode" "V32DI") (symbol_ref "riscv_vector::get_vlmul(E_V32DImode)")
+	 (eq_attr "mode" "V64DI") (symbol_ref "riscv_vector::get_vlmul(E_V64DImode)")
+	 (eq_attr "mode" "V128DI") (symbol_ref "riscv_vector::get_vlmul(E_V128DImode)")
+	 (eq_attr "mode" "V256DI") (symbol_ref "riscv_vector::get_vlmul(E_V256DImode)")
+	 (eq_attr "mode" "V512DI") (symbol_ref "riscv_vector::get_vlmul(E_V512DImode)")
+	 (eq_attr "mode" "V1HF") (symbol_ref "riscv_vector::get_vlmul(E_V1HFmode)")
+	 (eq_attr "mode" "V2HF") (symbol_ref "riscv_vector::get_vlmul(E_V2HFmode)")
+	 (eq_attr "mode" "V4HF") (symbol_ref "riscv_vector::get_vlmul(E_V4HFmode)")
+	 (eq_attr "mode" "V8HF") (symbol_ref "riscv_vector::get_vlmul(E_V8HFmode)")
+	 (eq_attr "mode" "V16HF") (symbol_ref "riscv_vector::get_vlmul(E_V16HFmode)")
+	 (eq_attr "mode" "V32HF") (symbol_ref "riscv_vector::get_vlmul(E_V32HFmode)")
+	 (eq_attr "mode" "V64HF") (symbol_ref "riscv_vector::get_vlmul(E_V64HFmode)")
+	 (eq_attr "mode" "V128HF") (symbol_ref "riscv_vector::get_vlmul(E_V128HFmode)")
+	 (eq_attr "mode" "V256HF") (symbol_ref "riscv_vector::get_vlmul(E_V256HFmode)")
+	 (eq_attr "mode" "V512HF") (symbol_ref "riscv_vector::get_vlmul(E_V512HFmode)")
+	 (eq_attr "mode" "V1024HF") (symbol_ref "riscv_vector::get_vlmul(E_V1024HFmode)")
+	 (eq_attr "mode" "V2048HF") (symbol_ref "riscv_vector::get_vlmul(E_V2048HFmode)")
+	 (eq_attr "mode" "V1SF") (symbol_ref "riscv_vector::get_vlmul(E_V1SFmode)")
+	 (eq_attr "mode" "V2SF") (symbol_ref "riscv_vector::get_vlmul(E_V2SFmode)")
+	 (eq_attr "mode" "V4SF") (symbol_ref "riscv_vector::get_vlmul(E_V4SFmode)")
+	 (eq_attr "mode" "V8SF") (symbol_ref "riscv_vector::get_vlmul(E_V8SFmode)")
+	 (eq_attr "mode" "V16SF") (symbol_ref "riscv_vector::get_vlmul(E_V16SFmode)")
+	 (eq_attr "mode" "V32SF") (symbol_ref "riscv_vector::get_vlmul(E_V32SFmode)")
+	 (eq_attr "mode" "V64SF") (symbol_ref "riscv_vector::get_vlmul(E_V64SFmode)")
+	 (eq_attr "mode" "V128SF") (symbol_ref "riscv_vector::get_vlmul(E_V128SFmode)")
+	 (eq_attr "mode" "V256SF") (symbol_ref "riscv_vector::get_vlmul(E_V256SFmode)")
+	 (eq_attr "mode" "V512SF") (symbol_ref "riscv_vector::get_vlmul(E_V512SFmode)")
+	 (eq_attr "mode" "V1024SF") (symbol_ref "riscv_vector::get_vlmul(E_V1024SFmode)")
+	 (eq_attr "mode" "V1DF") (symbol_ref "riscv_vector::get_vlmul(E_V1DFmode)")
+	 (eq_attr "mode" "V2DF") (symbol_ref "riscv_vector::get_vlmul(E_V2DFmode)")
+	 (eq_attr "mode" "V4DF") (symbol_ref "riscv_vector::get_vlmul(E_V4DFmode)")
+	 (eq_attr "mode" "V8DF") (symbol_ref "riscv_vector::get_vlmul(E_V8DFmode)")
+	 (eq_attr "mode" "V16DF") (symbol_ref "riscv_vector::get_vlmul(E_V16DFmode)")
+	 (eq_attr "mode" "V32DF") (symbol_ref "riscv_vector::get_vlmul(E_V32DFmode)")
+	 (eq_attr "mode" "V64DF") (symbol_ref "riscv_vector::get_vlmul(E_V64DFmode)")
+	 (eq_attr "mode" "V128DF") (symbol_ref "riscv_vector::get_vlmul(E_V128DFmode)")
+	 (eq_attr "mode" "V256DF") (symbol_ref "riscv_vector::get_vlmul(E_V256DFmode)")
+	 (eq_attr "mode" "V512DF") (symbol_ref "riscv_vector::get_vlmul(E_V512DFmode)")]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; It is valid for instruction that require sew/lmul ratio.
@@ -515,7 +604,88 @@
 	 (eq_attr "mode" "RVVM1x3DF") (const_int 64)
 	 (eq_attr "mode" "RVVM4x2DF") (const_int 16)
 	 (eq_attr "mode" "RVVM2x2DF") (const_int 32)
-	 (eq_attr "mode" "RVVM1x2DF") (const_int 64)]
+	 (eq_attr "mode" "RVVM1x2DF") (const_int 64)
+
+	 ;; VLS modes.
+	 (eq_attr "mode" "V1QI") (symbol_ref "riscv_vector::get_ratio(E_V1QImode)")
+	 (eq_attr "mode" "V2QI") (symbol_ref "riscv_vector::get_ratio(E_V2QImode)")
+	 (eq_attr "mode" "V4QI") (symbol_ref "riscv_vector::get_ratio(E_V4QImode)")
+	 (eq_attr "mode" "V8QI") (symbol_ref "riscv_vector::get_ratio(E_V8QImode)")
+	 (eq_attr "mode" "V16QI") (symbol_ref "riscv_vector::get_ratio(E_V16QImode)")
+	 (eq_attr "mode" "V32QI") (symbol_ref "riscv_vector::get_ratio(E_V32QImode)")
+	 (eq_attr "mode" "V64QI") (symbol_ref "riscv_vector::get_ratio(E_V64QImode)")
+	 (eq_attr "mode" "V128QI") (symbol_ref "riscv_vector::get_ratio(E_V128QImode)")
+	 (eq_attr "mode" "V256QI") (symbol_ref "riscv_vector::get_ratio(E_V256QImode)")
+	 (eq_attr "mode" "V512QI") (symbol_ref "riscv_vector::get_ratio(E_V512QImode)")
+	 (eq_attr "mode" "V1024QI") (symbol_ref "riscv_vector::get_ratio(E_V1024QImode)")
+	 (eq_attr "mode" "V2048QI") (symbol_ref "riscv_vector::get_ratio(E_V2048QImode)")
+	 (eq_attr "mode" "V4096QI") (symbol_ref "riscv_vector::get_ratio(E_V4096QImode)")
+	 (eq_attr "mode" "V1HI") (symbol_ref "riscv_vector::get_ratio(E_V1HImode)")
+	 (eq_attr "mode" "V2HI") (symbol_ref "riscv_vector::get_ratio(E_V2HImode)")
+	 (eq_attr "mode" "V4HI") (symbol_ref "riscv_vector::get_ratio(E_V4HImode)")
+	 (eq_attr "mode" "V8HI") (symbol_ref "riscv_vector::get_ratio(E_V8HImode)")
+	 (eq_attr "mode" "V16HI") (symbol_ref "riscv_vector::get_ratio(E_V16HImode)")
+	 (eq_attr "mode" "V32HI") (symbol_ref "riscv_vector::get_ratio(E_V32HImode)")
+	 (eq_attr "mode" "V64HI") (symbol_ref "riscv_vector::get_ratio(E_V64HImode)")
+	 (eq_attr "mode" "V128HI") (symbol_ref "riscv_vector::get_ratio(E_V128HImode)")
+	 (eq_attr "mode" "V256HI") (symbol_ref "riscv_vector::get_ratio(E_V256HImode)")
+	 (eq_attr "mode" "V512HI") (symbol_ref "riscv_vector::get_ratio(E_V512HImode)")
+	 (eq_attr "mode" "V1024HI") (symbol_ref "riscv_vector::get_ratio(E_V1024HImode)")
+	 (eq_attr "mode" "V2048HI") (symbol_ref "riscv_vector::get_ratio(E_V2048HImode)")
+	 (eq_attr "mode" "V1SI") (symbol_ref "riscv_vector::get_ratio(E_V1SImode)")
+	 (eq_attr "mode" "V2SI") (symbol_ref "riscv_vector::get_ratio(E_V2SImode)")
+	 (eq_attr "mode" "V4SI") (symbol_ref "riscv_vector::get_ratio(E_V4SImode)")
+	 (eq_attr "mode" "V8SI") (symbol_ref "riscv_vector::get_ratio(E_V8SImode)")
+	 (eq_attr "mode" "V16SI") (symbol_ref "riscv_vector::get_ratio(E_V16SImode)")
+	 (eq_attr "mode" "V32SI") (symbol_ref "riscv_vector::get_ratio(E_V32SImode)")
+	 (eq_attr "mode" "V64SI") (symbol_ref "riscv_vector::get_ratio(E_V64SImode)")
+	 (eq_attr "mode" "V128SI") (symbol_ref "riscv_vector::get_ratio(E_V128SImode)")
+	 (eq_attr "mode" "V256SI") (symbol_ref "riscv_vector::get_ratio(E_V256SImode)")
+	 (eq_attr "mode" "V512SI") (symbol_ref "riscv_vector::get_ratio(E_V512SImode)")
+	 (eq_attr "mode" "V1024SI") (symbol_ref "riscv_vector::get_ratio(E_V1024SImode)")
+	 (eq_attr "mode" "V1DI") (symbol_ref "riscv_vector::get_ratio(E_V1DImode)")
+	 (eq_attr "mode" "V2DI") (symbol_ref "riscv_vector::get_ratio(E_V2DImode)")
+	 (eq_attr "mode" "V4DI") (symbol_ref "riscv_vector::get_ratio(E_V4DImode)")
+	 (eq_attr "mode" "V8DI") (symbol_ref "riscv_vector::get_ratio(E_V8DImode)")
+	 (eq_attr "mode" "V16DI") (symbol_ref "riscv_vector::get_ratio(E_V16DImode)")
+	 (eq_attr "mode" "V32DI") (symbol_ref "riscv_vector::get_ratio(E_V32DImode)")
+	 (eq_attr "mode" "V64DI") (symbol_ref "riscv_vector::get_ratio(E_V64DImode)")
+	 (eq_attr "mode" "V128DI") (symbol_ref "riscv_vector::get_ratio(E_V128DImode)")
+	 (eq_attr "mode" "V256DI") (symbol_ref "riscv_vector::get_ratio(E_V256DImode)")
+	 (eq_attr "mode" "V512DI") (symbol_ref "riscv_vector::get_ratio(E_V512DImode)")
+	 (eq_attr "mode" "V1HF") (symbol_ref "riscv_vector::get_ratio(E_V1HFmode)")
+	 (eq_attr "mode" "V2HF") (symbol_ref "riscv_vector::get_ratio(E_V2HFmode)")
+	 (eq_attr "mode" "V4HF") (symbol_ref "riscv_vector::get_ratio(E_V4HFmode)")
+	 (eq_attr "mode" "V8HF") (symbol_ref "riscv_vector::get_ratio(E_V8HFmode)")
+	 (eq_attr "mode" "V16HF") (symbol_ref "riscv_vector::get_ratio(E_V16HFmode)")
+	 (eq_attr "mode" "V32HF") (symbol_ref "riscv_vector::get_ratio(E_V32HFmode)")
+	 (eq_attr "mode" "V64HF") (symbol_ref "riscv_vector::get_ratio(E_V64HFmode)")
+	 (eq_attr "mode" "V128HF") (symbol_ref "riscv_vector::get_ratio(E_V128HFmode)")
+	 (eq_attr "mode" "V256HF") (symbol_ref "riscv_vector::get_ratio(E_V256HFmode)")
+	 (eq_attr "mode" "V512HF") (symbol_ref "riscv_vector::get_ratio(E_V512HFmode)")
+	 (eq_attr "mode" "V1024HF") (symbol_ref "riscv_vector::get_ratio(E_V1024HFmode)")
+	 (eq_attr "mode" "V2048HF") (symbol_ref "riscv_vector::get_ratio(E_V2048HFmode)")
+	 (eq_attr "mode" "V1SF") (symbol_ref "riscv_vector::get_ratio(E_V1SFmode)")
+	 (eq_attr "mode" "V2SF") (symbol_ref "riscv_vector::get_ratio(E_V2SFmode)")
+	 (eq_attr "mode" "V4SF") (symbol_ref "riscv_vector::get_ratio(E_V4SFmode)")
+	 (eq_attr "mode" "V8SF") (symbol_ref "riscv_vector::get_ratio(E_V8SFmode)")
+	 (eq_attr "mode" "V16SF") (symbol_ref "riscv_vector::get_ratio(E_V16SFmode)")
+	 (eq_attr "mode" "V32SF") (symbol_ref "riscv_vector::get_ratio(E_V32SFmode)")
+	 (eq_attr "mode" "V64SF") (symbol_ref "riscv_vector::get_ratio(E_V64SFmode)")
+	 (eq_attr "mode" "V128SF") (symbol_ref "riscv_vector::get_ratio(E_V128SFmode)")
+	 (eq_attr "mode" "V256SF") (symbol_ref "riscv_vector::get_ratio(E_V256SFmode)")
+	 (eq_attr "mode" "V512SF") (symbol_ref "riscv_vector::get_ratio(E_V512SFmode)")
+	 (eq_attr "mode" "V1024SF") (symbol_ref "riscv_vector::get_ratio(E_V1024SFmode)")
+	 (eq_attr "mode" "V1DF") (symbol_ref "riscv_vector::get_ratio(E_V1DFmode)")
+	 (eq_attr "mode" "V2DF") (symbol_ref "riscv_vector::get_ratio(E_V2DFmode)")
+	 (eq_attr "mode" "V4DF") (symbol_ref "riscv_vector::get_ratio(E_V4DFmode)")
+	 (eq_attr "mode" "V8DF") (symbol_ref "riscv_vector::get_ratio(E_V8DFmode)")
+	 (eq_attr "mode" "V16DF") (symbol_ref "riscv_vector::get_ratio(E_V16DFmode)")
+	 (eq_attr "mode" "V32DF") (symbol_ref "riscv_vector::get_ratio(E_V32DFmode)")
+	 (eq_attr "mode" "V64DF") (symbol_ref "riscv_vector::get_ratio(E_V64DFmode)")
+	 (eq_attr "mode" "V128DF") (symbol_ref "riscv_vector::get_ratio(E_V128DFmode)")
+	 (eq_attr "mode" "V256DF") (symbol_ref "riscv_vector::get_ratio(E_V256DFmode)")
+	 (eq_attr "mode" "V512DF") (symbol_ref "riscv_vector::get_ratio(E_V512DFmode)")]
 	(const_int INVALID_ATTRIBUTE)))
 
 ;; The index of operand[] to get the merge op.
@@ -631,7 +801,15 @@
 
 ;; The avl type value.
 (define_attr "avl_type" ""
-  (cond [(eq_attr "type" "vlde,vldff,vste,vimov,vimov,vimov,vfmov,vext,vimerge,\
+  (cond [(eq_attr "mode" "V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI,
+			  V1HI,V2HI,V4HI,V8HI,V16HI,V32HI,V64HI,V128HI,V256HI,V512HI,V1024HI,V2048HI,
+			  V1SI,V2SI,V4SI,V8SI,V16SI,V32SI,V64SI,V128SI,V256SI,V512SI,V1024SI,
+			  V1DI,V2DI,V4DI,V8DI,V16DI,V32DI,V64DI,V128DI,V256DI,V512DI,
+			  V1HF,V2HF,V4HF,V8HF,V16HF,V32HF,V64HF,V128HF,V256HF,V512HF,V1024HF,V2048HF,
+			  V1SF,V2SF,V4SF,V8SF,V16SF,V32SF,V64SF,V128SF,V256SF,V512SF,V1024SF,
+			  V1DF,V2DF,V4DF,V8DF,V16DF,V32DF,V64DF,V128DF,V256DF,V512DF")
+	   (symbol_ref "riscv_vector::NONVLMAX")
+	(eq_attr "type" "vlde,vldff,vste,vimov,vimov,vimov,vfmov,vext,vimerge,\
 			  vfsqrt,vfrecp,vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\
 			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
 			  vfclass,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
@@ -1319,8 +1497,8 @@
 ;;               (nil)))))
 ;; Since both vmv.v.v and vmv.v.i doesn't have mask operand.
 (define_insn_and_split "@pred_mov<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand"      "=vr,    vr,    vd,     m,    vr,    vr,    vr,    vr")
-    (if_then_else:V
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand"  "=vr,    vr,    vd,     m,    vr,    vr,    vr,    vr")
+    (if_then_else:V_VLS
       (unspec:<VM>
         [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm, vmWc1,   Wc1,   Wc1,   Wc1,   Wc1")
          (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK,    rK,    rK,    rK")
@@ -1329,8 +1507,8 @@
          (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i,     i,     i,     i")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (match_operand:V 3 "vector_move_operand"       "    m,     m,     m,    vr,    vr,    vr, viWc0, viWc0")
-      (match_operand:V 2 "vector_merge_operand"      "    0,    vu,    vu,    vu,    vu,     0,    vu,     0")))]
+      (match_operand:V_VLS 3 "vector_move_operand"   "    m,     m,     m,    vr,    vr,    vr, viWc0, viWc0")
+      (match_operand:V_VLS 2 "vector_merge_operand"  "    0,    vu,    vu,    vu,    vu,     0,    vu,     0")))]
   "TARGET_VECTOR && (MEM_P (operands[0]) || MEM_P (operands[3])
    || CONST_VECTOR_P (operands[1]))"
   "@
@@ -1553,8 +1731,8 @@
 ;; To use LICM optimization, we postpone generation of vlse.v to split stage since
 ;; a memory access instruction can not be optimized by LICM (Loop invariant).
 (define_expand "@pred_broadcast<mode>"
-  [(set (match_operand:V 0 "register_operand")
-	(if_then_else:V
+  [(set (match_operand:V_VLS 0 "register_operand")
+	(if_then_else:V_VLS
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand")
 	     (match_operand 4 "vector_length_operand")
@@ -1563,9 +1741,9 @@
 	     (match_operand 7 "const_int_operand")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V
+	  (vec_duplicate:V_VLS
 	    (match_operand:<VEL> 3 "direct_broadcast_operand"))
-	  (match_operand:V 2 "vector_merge_operand")))]
+	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
   /* Handle vmv.s.x instruction which has memory scalar.  */
@@ -1603,8 +1781,8 @@
 })
 
 (define_insn_and_split "*pred_broadcast<mode>"
-  [(set (match_operand:VI 0 "register_operand"                     "=vr, vr, vd, vd, vr, vr, vr, vr")
-	(if_then_else:VI
+  [(set (match_operand:V_VLSI 0 "register_operand"                 "=vr, vr, vd, vd, vr, vr, vr, vr")
+	(if_then_else:V_VLSI
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1, vm, vm,Wc1,Wc1,Wb1,Wb1")
 	     (match_operand 4 "vector_length_operand"              " rK, rK, rK, rK, rK, rK, rK, rK")
@@ -1613,9 +1791,9 @@
 	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:VI
+	  (vec_duplicate:V_VLSI
 	    (match_operand:<VEL> 3 "direct_broadcast_operand"       " r,  r,Wdm,Wdm,Wdm,Wdm,  r,  r"))
-	  (match_operand:VI 2 "vector_merge_operand"                "vu,  0, vu,  0, vu,  0, vu,  0")))]
+	  (match_operand:V_VLSI 2 "vector_merge_operand"            "vu,  0, vu,  0, vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
    vmv.v.x\t%0,%3
@@ -1630,10 +1808,10 @@
   || CONST_POLY_INT_P (operands[3]))
   && GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)"
   [(set (match_dup 0)
-	(if_then_else:VI (unspec:<VM> [(match_dup 1) (match_dup 4)
+	(if_then_else:V_VLSI (unspec:<VM> [(match_dup 1) (match_dup 4)
 	     (match_dup 5) (match_dup 6) (match_dup 7)
 	     (reg:SI VL_REGNUM) (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:VI (match_dup 3))
+	  (vec_duplicate:V_VLSI (match_dup 3))
 	  (match_dup 2)))]
   {
     gcc_assert (can_create_pseudo_p ());
@@ -1664,8 +1842,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_broadcast<mode>"
-  [(set (match_operand:VF_ZVFHMIN 0 "register_operand"             "=vr, vr, vr, vr, vr, vr, vr, vr")
-	(if_then_else:VF_ZVFHMIN
+  [(set (match_operand:V_VLSF_ZVFHMIN 0 "register_operand"         "=vr, vr, vr, vr, vr, vr, vr, vr")
+	(if_then_else:V_VLSF_ZVFHMIN
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1, vm, vm,Wc1,Wc1,Wb1,Wb1")
 	     (match_operand 4 "vector_length_operand"              " rK, rK, rK, rK, rK, rK, rK, rK")
@@ -1674,9 +1852,9 @@
 	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:VF_ZVFHMIN
+	  (vec_duplicate:V_VLSF_ZVFHMIN
 	    (match_operand:<VEL> 3 "direct_broadcast_operand"       " f,  f,Wdm,Wdm,Wdm,Wdm,  f,  f"))
-	  (match_operand:VF_ZVFHMIN 2 "vector_merge_operand"        "vu,  0, vu,  0, vu,  0, vu,  0")))]
+	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"    "vu,  0, vu,  0, vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
    vfmv.v.f\t%0,%3
@@ -1691,8 +1869,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_broadcast<mode>_extended_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"                   "=vr, vr, vr, vr")
-	(if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"               "=vr, vr, vr, vr")
+	(if_then_else:V_VLSI_D
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1,Wb1,Wb1")
 	     (match_operand 4 "vector_length_operand"              " rK, rK, rK, rK")
@@ -1701,10 +1879,10 @@
 	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:VI_D
+	  (vec_duplicate:V_VLSI_D
 	    (sign_extend:<VEL>
 	      (match_operand:<VSUBEL> 3 "register_operand"          " r,  r,  r,  r")))
-	  (match_operand:VI_D 2 "vector_merge_operand"              "vu,  0, vu,  0")))]
+	  (match_operand:V_VLSI_D 2 "vector_merge_operand"          "vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
    vmv.v.x\t%0,%3
@@ -8656,3 +8834,4 @@
 
 (include "autovec.md")
 (include "autovec-opt.md")
+(include "autovec-vls.md")

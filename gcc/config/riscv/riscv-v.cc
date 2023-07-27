@@ -198,7 +198,17 @@ public:
 	rtx len = m_vl_op;
 	if (m_vlmax_p)
 	  {
-	    if (const_vlmax_p (m_dest_mode))
+	    if (riscv_v_ext_vls_mode_p (m_dest_mode))
+	      {
+		/* VLS modes always set VSETVL by
+		   "vsetvl zero, rs1/imm".  */
+		poly_uint64 nunits = GET_MODE_NUNITS (m_dest_mode);
+		len = gen_int_mode (nunits, Pmode);
+		if (!satisfies_constraint_K (len))
+		  len = force_reg (Pmode, len);
+		m_vlmax_p = false; /* It has became NONVLMAX now.  */
+	      }
+	    else if (const_vlmax_p (m_dest_mode))
 	      {
 		/* Optimize VLS-VLMAX code gen, we can use vsetivli instead of
 		   the vsetvli to obtain the value of vlmax.  */
@@ -1517,27 +1527,51 @@ legitimize_move (rtx dest, rtx src)
       return true;
     }
 
-  /* In order to decrease the memory traffic, we don't use whole register
-   * load/store for the LMUL less than 1 and mask mode, so those case will
-   * require one extra general purpose register, but it's not allowed during LRA
-   * process, so we have a special move pattern used for LRA, which will defer
-   * the expansion after LRA.  */
-  if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-       || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-      && lra_in_progress)
+  if (riscv_v_ext_vls_mode_p (mode))
     {
-      emit_insn (gen_mov_lra (mode, Pmode, dest, src));
-      return true;
+      if (GET_MODE_NUNITS (mode).to_constant () <= 31)
+	{
+	  /* For NUNITS <= 31 VLS modes, we don't need extrac
+	     scalar regisers so we apply the naive (set (op0) (op1)) pattern. */
+	  if (can_create_pseudo_p ())
+	    {
+	      /* Need to force register if mem <- !reg.  */
+	      if (MEM_P (dest) && !REG_P (src))
+		src = force_reg (mode, src);
+
+	      return false;
+	    }
+	}
+      else if (GET_MODE_NUNITS (mode).to_constant () > 31 && lra_in_progress)
+	{
+	  emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+	  return true;
+	}
     }
-
-  if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
-      && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+  else
     {
-      /* Need to force register if mem <- !reg.  */
-      if (MEM_P (dest) && !REG_P (src))
-	src = force_reg (mode, src);
+      /* In order to decrease the memory traffic, we don't use whole register
+       * load/store for the LMUL less than 1 and mask mode, so those case will
+       * require one extra general purpose register, but it's not allowed during
+       * LRA process, so we have a special move pattern used for LRA, which will
+       * defer the expansion after LRA.  */
+      if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+	   || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	  && lra_in_progress)
+	{
+	  emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+	  return true;
+	}
 
-      return false;
+      if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+	  && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+	{
+	  /* Need to force register if mem <- !reg.  */
+	  if (MEM_P (dest) && !REG_P (src))
+	    src = force_reg (mode, src);
+
+	  return false;
+	}
     }
 
   if (register_operand (src, mode) && register_operand (dest, mode))
@@ -1596,6 +1630,61 @@ static mode_vtype_group mode_vtype_infos;
 enum vlmul_type
 get_vlmul (machine_mode mode)
 {
+  /* For VLS modes, the vlmul should be dynamically
+     calculated since we need to adjust VLMUL according
+     to TARGET_MIN_VLEN.  */
+  if (riscv_v_ext_vls_mode_p (mode))
+    {
+      int size = GET_MODE_BITSIZE (mode).to_constant ();
+      int inner_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+      if (size < TARGET_MIN_VLEN)
+	{
+	  int factor = TARGET_MIN_VLEN / size;
+	  if (inner_size == 8)
+	    factor = MIN (factor, 8);
+	  else if (inner_size == 16)
+	    factor = MIN (factor, 4);
+	  else if (inner_size == 32)
+	    factor = MIN (factor, 2);
+	  else if (inner_size == 64)
+	    factor = MIN (factor, 1);
+	  else
+	    gcc_unreachable ();
+
+	  switch (factor)
+	    {
+	    case 1:
+	      return LMUL_1;
+	    case 2:
+	      return LMUL_F2;
+	    case 4:
+	      return LMUL_F4;
+	    case 8:
+	      return LMUL_F8;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	{
+	  int factor = size / TARGET_MIN_VLEN;
+	  switch (factor)
+	    {
+	    case 1:
+	      return LMUL_1;
+	    case 2:
+	      return LMUL_2;
+	    case 4:
+	      return LMUL_4;
+	    case 8:
+	      return LMUL_8;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
   return mode_vtype_infos.vlmul[mode];
 }
 
@@ -1623,6 +1712,31 @@ get_subpart_mode (machine_mode mode)
 unsigned int
 get_ratio (machine_mode mode)
 {
+  if (riscv_v_ext_vls_mode_p (mode))
+    {
+      unsigned int sew = get_sew (mode);
+      vlmul_type vlmul = get_vlmul (mode);
+      switch (vlmul)
+	{
+	case LMUL_1:
+	  return sew;
+	case LMUL_2:
+	  return sew / 2;
+	case LMUL_4:
+	  return sew / 4;
+	case LMUL_8:
+	  return sew / 8;
+	case LMUL_F8:
+	  return sew * 8;
+	case LMUL_F4:
+	  return sew * 4;
+	case LMUL_F2:
+	  return sew * 2;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
   return mode_vtype_infos.ratio[mode];
 }
 
@@ -1709,7 +1823,8 @@ get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
   FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (inner_mode == GET_MODE_INNER (mode)
 	&& known_eq (nunits, GET_MODE_NUNITS (mode))
-	&& riscv_v_ext_vector_mode_p (mode))
+	&& (riscv_v_ext_vector_mode_p (mode)
+	    || riscv_v_ext_vls_mode_p (mode)))
       return mode;
   return opt_machine_mode ();
 }

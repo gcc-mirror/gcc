@@ -1009,12 +1009,31 @@ riscv_v_ext_tuple_mode_p (machine_mode mode)
   return false;
 }
 
+/* Return true if mode is the RVV enabled vls mode.  */
+
+bool
+riscv_v_ext_vls_mode_p (machine_mode mode)
+{
+#define VLS_ENTRY(MODE, REQUIREMENT)                                           \
+  case MODE##mode:                                                             \
+    return REQUIREMENT;
+  switch (mode)
+    {
+#include "riscv-vector-switch.def"
+    default:
+      return false;
+    }
+
+  return false;
+}
+
 /* Return true if it is either RVV vector mode or RVV tuple mode.  */
 
 static bool
 riscv_v_ext_mode_p (machine_mode mode)
 {
-  return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode);
+  return riscv_v_ext_vector_mode_p (mode) || riscv_v_ext_tuple_mode_p (mode)
+	 || riscv_v_ext_vls_mode_p (mode);
 }
 
 /* Call from ADJUST_NUNITS in riscv-modes.def. Return the correct
@@ -4554,6 +4573,32 @@ riscv_memmodel_needs_amo_release (enum memmodel model)
     }
 }
 
+/* Get REGNO alignment of vector mode.
+   The alignment = LMUL when the LMUL >= 1.
+   Otherwise, alignment = 1.  */
+static int
+riscv_get_v_regno_alignment (machine_mode mode)
+{
+  /* 3.3.2. LMUL = 2,4,8, register numbers should be multiple of 2,4,8.
+     but for mask vector register, register numbers can be any number. */
+  int lmul = 1;
+  machine_mode rvv_mode = mode;
+  if (riscv_v_ext_vls_mode_p (rvv_mode))
+    {
+      int size = GET_MODE_BITSIZE (rvv_mode).to_constant ();
+      if (size < TARGET_MIN_VLEN)
+	return 1;
+      else
+	return size / TARGET_MIN_VLEN;
+    }
+  if (riscv_v_ext_tuple_mode_p (rvv_mode))
+    rvv_mode = riscv_vector::get_subpart_mode (rvv_mode);
+  poly_int64 size = GET_MODE_SIZE (rvv_mode);
+  if (known_gt (size, UNITS_PER_V_REG))
+    lmul = exact_div (size, UNITS_PER_V_REG).to_constant ();
+  return lmul;
+}
+
 /* Implement TARGET_PRINT_OPERAND.  The RISCV-specific operand codes are:
 
    'h'	Print the high-part relocation associated with OP, after stripping
@@ -4641,15 +4686,10 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	break;
       }
       case 'm': {
-	if (riscv_v_ext_vector_mode_p (mode))
+	if (riscv_v_ext_mode_p (mode))
 	  {
 	    /* Calculate lmul according to mode and print the value.  */
-	    poly_int64 size = GET_MODE_SIZE (mode);
-	    unsigned int lmul;
-	    if (known_lt (size, BYTES_PER_RISCV_VECTOR))
-	      lmul = 1;
-	    else
-	      lmul = exact_div (size, BYTES_PER_RISCV_VECTOR).to_constant ();
+	    int lmul = riscv_get_v_regno_alignment (mode);
 	    asm_fprintf (file, "%d", lmul);
 	  }
 	else if (code == CONST_INT)
@@ -6237,6 +6277,16 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
 	}
     }
 
+  /* For VLS modes, we allocate registers according to TARGET_MIN_VLEN.  */
+  if (riscv_v_ext_vls_mode_p (mode))
+    {
+      int size = GET_MODE_SIZE (mode).to_constant ();
+      if (size < TARGET_MIN_VLEN)
+	return 1;
+      else
+	return size / TARGET_MIN_VLEN;
+    }
+
   /* mode for VL or VTYPE are just a marker, not holding value,
      so it always consume one register.  */
   if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno)
@@ -6296,17 +6346,9 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (!V_REG_P (regno + nregs - 1))
 	return false;
 
-      /* 3.3.2. LMUL = 2,4,8, register numbers should be multiple of 2,4,8.
-	 but for mask vector register, register numbers can be any number. */
-      int lmul = 1;
-      machine_mode rvv_mode = mode;
-      if (riscv_v_ext_tuple_mode_p (rvv_mode))
-	rvv_mode = riscv_vector::get_subpart_mode (rvv_mode);
-      poly_int64 size = GET_MODE_SIZE (rvv_mode);
-      if (known_gt (size, UNITS_PER_V_REG))
-	lmul = exact_div (size, UNITS_PER_V_REG).to_constant ();
-      if (lmul != 1)
-	return ((regno % lmul) == 0);
+      int regno_alignment = riscv_get_v_regno_alignment (mode);
+      if (regno_alignment != 1)
+	return ((regno % regno_alignment) == 0);
     }
   else if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno)
 	   || FRM_REG_P (regno))
@@ -7392,11 +7434,7 @@ riscv_regmode_natural_size (machine_mode mode)
   /* ??? For now, only do this for variable-width RVV registers.
      Doing it for constant-sized registers breaks lower-subreg.c.  */
 
-  /* RVV mask modes always consume a single register.  */
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-    return BYTES_PER_RISCV_VECTOR;
-
-  if (!riscv_vector_chunks.is_constant () && riscv_v_ext_mode_p (mode))
+  if (riscv_v_ext_mode_p (mode))
     {
       if (riscv_v_ext_tuple_mode_p (mode))
 	{
@@ -7405,7 +7443,14 @@ riscv_regmode_natural_size (machine_mode mode)
 	  if (known_lt (size, BYTES_PER_RISCV_VECTOR))
 	    return size;
 	}
-      return BYTES_PER_RISCV_VECTOR;
+      else if (riscv_v_ext_vector_mode_p (mode))
+	{
+	  /* RVV mask modes always consume a single register.  */
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	    return BYTES_PER_RISCV_VECTOR;
+	}
+      if (!GET_MODE_SIZE (mode).is_constant ())
+	return BYTES_PER_RISCV_VECTOR;
     }
   return UNITS_PER_WORD;
 }
@@ -7679,7 +7724,7 @@ riscv_preferred_simd_mode (scalar_mode mode)
 static poly_uint64
 riscv_vectorize_preferred_vector_alignment (const_tree type)
 {
-  if (riscv_v_ext_vector_mode_p (TYPE_MODE (type)))
+  if (riscv_v_ext_mode_p (TYPE_MODE (type)))
     return TYPE_ALIGN (TREE_TYPE (type));
   return TYPE_ALIGN (type);
 }
