@@ -26,14 +26,17 @@
 #include <string>
 #include "tokenstream.h"
 #include "bridge.h"
+#include "literal.h"
 
 namespace ProcMacro {
 
-using from_str_function_t = ProcMacro::TokenStream (*) (std::string &, bool &);
+using ts_from_str_fn_t = ProcMacro::TokenStream (*) (std::string &, bool &);
+using lit_from_str_fn_t = ProcMacro::Literal (*) (const std::string &, bool &);
 
 } // namespace ProcMacro
 
-extern "C" ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn;
-extern "C" ProcMacro::BridgeState __gccrs_proc_macro_is_available_fn;
+extern "C" ProcMacro::ts_from_str_fn_t __gccrs_proc_macro_ts_from_str_;
+extern "C" ProcMacro::lit_from_str_fn_t __gccrs_proc_macro_lit_from_str_;
+extern "C" ProcMacro::BridgeState __gccrs_proc_macro_is_available_;
 
 #endif /* !REGISTRATION_H */
