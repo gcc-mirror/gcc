@@ -228,7 +228,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
     return it->second (ctx, fntype);
 
   location_t locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
-  rust_error_at (locus, ErrorCode ("E0093"),
+  rust_error_at (locus, ErrorCode::E0093,
 		 "unrecognized intrinsic function: %<%s%>",
 		 fntype->get_identifier ().c_str ());
 

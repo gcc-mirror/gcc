@@ -870,7 +870,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   rich_location r (line_table, expr.get_locus ());
   r.add_range (expr.get_array_expr ()->get_locus ());
   r.add_range (expr.get_index_expr ()->get_locus ());
-  rust_error_at (r, ErrorCode ("E0277"),
+  rust_error_at (r, ErrorCode::E0277,
 		 "the type %<%s%> cannot be indexed by %<%s%>",
 		 array_expr_ty->get_name ().c_str (),
 		 index_expr_ty->get_name ().c_str ());
@@ -1277,7 +1277,7 @@ TypeCheckExpr::visit (HIR::BreakExpr &expr)
 {
   if (!context->have_loop_context ())
     {
-      rust_error_at (expr.get_locus (), ErrorCode ("E0268"),
+      rust_error_at (expr.get_locus (), ErrorCode::E0268,
 		     "%<break%> outside of a loop or labeled block");
       return;
     }
@@ -1312,7 +1312,7 @@ TypeCheckExpr::visit (HIR::ContinueExpr &expr)
 {
   if (!context->have_loop_context ())
     {
-      rust_error_at (expr.get_locus (), ErrorCode ("E0268"),
+      rust_error_at (expr.get_locus (), ErrorCode::E0268,
 		     "%<continue%> outside of a loop");
       return;
     }

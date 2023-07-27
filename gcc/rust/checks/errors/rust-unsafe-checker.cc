@@ -86,7 +86,7 @@ static void
 check_unsafe_call (HIR::Function *fn, location_t locus, const std::string &kind)
 {
   if (fn->get_qualifiers ().is_unsafe ())
-    rust_error_at (locus, ErrorCode ("E0133"),
+    rust_error_at (locus, ErrorCode::E0133,
 		   "call to unsafe %s requires unsafe function or block",
 		   kind.c_str ());
 }
