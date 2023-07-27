@@ -29,6 +29,9 @@ convert (const std::vector<const_TokenPtr> &tokens);
 std::vector<const_TokenPtr>
 convert (const ProcMacro::TokenStream &ts);
 
+ProcMacro::Literal
+convert_literal (const_TokenPtr lit);
+
 } // namespace Rust
 
 #endif /* ! RUST_TOKEN_CONVERTER_H */
