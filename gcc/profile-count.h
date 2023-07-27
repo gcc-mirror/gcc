@@ -1129,11 +1129,11 @@ public:
   /* Scale counter according to PROB.  */
   profile_count apply_probability (profile_probability prob) const
     {
-      if (*this == zero ())
+      if (*this == zero () || prob == profile_probability::always ())
 	return *this;
       if (prob == profile_probability::never ())
 	return zero ();
-      if (!initialized_p ())
+      if (!initialized_p () || !prob.initialized_p ())
 	return uninitialized ();
       profile_count ret;
       uint64_t tmp;
