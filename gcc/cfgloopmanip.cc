@@ -499,6 +499,32 @@ scale_loop_frequencies (class loop *loop, profile_probability p)
   free (bbs);
 }
 
+/* Scales the frequencies of all basic blocks in LOOP that are strictly
+   dominated by BB by NUM/DEN.  */
+
+void
+scale_dominated_blocks_in_loop (class loop *loop, basic_block bb,
+				profile_count num, profile_count den)
+{
+  basic_block son;
+
+  if (!den.nonzero_p () && !(num == profile_count::zero ()))
+    return;
+  auto_vec <basic_block, 8> worklist;
+  worklist.safe_push (bb);
+
+  while (!worklist.is_empty ())
+    for (son = first_dom_son (CDI_DOMINATORS, worklist.pop ());
+	 son;
+	 son = next_dom_son (CDI_DOMINATORS, son))
+      {
+	if (!flow_bb_inside_loop_p (loop, son))
+	  continue;
+	son->count = son->count.apply_scale (num, den);
+	worklist.safe_push (son);
+      }
+}
+
 /* Scale profile in LOOP by P.
    If ITERATION_BOUND is not -1, scale even further if loop is predicted
    to iterate too many times.
@@ -649,19 +675,9 @@ scale_loop_profile (class loop *loop, profile_probability p,
       if (other_edge && other_edge->dest == loop->latch)
 	loop->latch->count -= new_exit_count - old_exit_count;
       else
-	{
-	  basic_block *body = get_loop_body (loop);
-	  profile_count new_count = exit_edge->src->count - new_exit_count;
-	  profile_count old_count = exit_edge->src->count - old_exit_count;
-
-	  for (unsigned int i = 0; i < loop->num_nodes; i++)
-	    if (body[i] != exit_edge->src
-		&& dominated_by_p (CDI_DOMINATORS, body[i], exit_edge->src))
-	      body[i]->count = body[i]->count.apply_scale (new_count,
-							   old_count);
-
-	  free (body);
-	}
+	scale_dominated_blocks_in_loop (loop, exit_edge->src,
+					exit_edge->src->count - new_exit_count,
+					exit_edge->src->count - old_exit_count);
     }
   else if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1237,6 +1253,7 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 	     should've managed the flags so all except for original loop
 	     has won't exist set.  */
 	  scale_act = wanted_count.probability_in (count_in);
+
 	  /* Now simulate the duplication adjustments and compute header
 	     frequency of the last copy.  */
 	  for (i = 0; i < ndupl; i++)
@@ -1252,16 +1269,21 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 	  profile_probability prob_pass_main = bitmap_bit_p (wont_exit, 0)
 							? prob_pass_wont_exit
 							: prob_pass_thru;
-	  profile_probability p = prob_pass_main;
-	  profile_count scale_main_den = count_in;
-	  for (i = 0; i < ndupl; i++)
+	  if (!(flags & DLTHE_FLAG_FLAT_PROFILE))
 	    {
-	      scale_main_den += count_in.apply_probability (p);
-	      p = p * scale_step[i];
+	      profile_probability p = prob_pass_main;
+	      profile_count scale_main_den = count_in;
+	      for (i = 0; i < ndupl; i++)
+		{
+		  scale_main_den += count_in.apply_probability (p);
+		  p = p * scale_step[i];
+		}
+	      /* If original loop is executed COUNT_IN times, the unrolled
+		 loop will account SCALE_MAIN_DEN times.  */
+	      scale_main = count_in.probability_in (scale_main_den);
 	    }
-	  /* If original loop is executed COUNT_IN times, the unrolled
-	     loop will account SCALE_MAIN_DEN times.  */
-	  scale_main = count_in.probability_in (scale_main_den);
+	  else
+	    scale_main = profile_probability::always ();
 	  scale_act = scale_main * prob_pass_main;
 	}
       else
