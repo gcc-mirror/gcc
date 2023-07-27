@@ -10,5 +10,5 @@ foo (int a[static 7])
 int
 main ()
 {
-  foo ((int *) 0);	/* { dg-warning "argument 1 to 'int\\\[static 7\\\]' is null where non-null expected" } */
+  foo ((int *) 0);	/* { dg-warning "argument 1 null where non-null expected" } */
 }

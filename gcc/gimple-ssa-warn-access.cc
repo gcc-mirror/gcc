@@ -3491,16 +3491,6 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 				   ptridx + 1, sizidx + 1, sizstr))
 		arg_warned = OPT_Wnonnull;
 	    }
-	  else if (access_size && access.second.static_p)
-	    {
-	      /* Warn about null pointers for [static N] array arguments
-		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
-	      if (warning_at (loc, OPT_Wnonnull,
-			      "argument %i to %<%T[static %E]%> "
-			      "is null where non-null expected",
-			      ptridx + 1, argtype, access_nelts))
-		arg_warned = OPT_Wnonnull;
-	    }
 
 	  if (arg_warned != no_warning)
 	    {
