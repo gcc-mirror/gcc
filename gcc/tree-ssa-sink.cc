@@ -220,6 +220,18 @@ select_best_block (basic_block early_bb,
   if (bb_loop_depth (best_bb) < bb_loop_depth (early_bb))
     return best_bb;
 
+  /* Avoid turning an unconditional read into a conditional one when we
+     still might want to perform vectorization.  */
+  if (best_bb->loop_father == early_bb->loop_father
+      && loop_outer (best_bb->loop_father)
+      && !best_bb->loop_father->inner
+      && gimple_vuse (stmt)
+      && flag_tree_loop_vectorize
+      && !(cfun->curr_properties & PROP_loop_opts_done)
+      && dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, early_bb)
+      && !dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, best_bb))
+    return early_bb;
+
   /* Get the sinking threshold.  If the statement to be moved has memory
      operands, then increase the threshold by 7% as those are even more
      profitable to avoid, clamping at 100%.  */
