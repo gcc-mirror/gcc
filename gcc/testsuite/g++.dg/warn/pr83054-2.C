@@ -10,7 +10,7 @@
 #endif
 
 extern "C" int printf (const char *, ...);
-struct foo
+struct foo // { dg-warning "final would enable devirtualization of 1 call" }
 {
   static int count;
   void print (int i, int j) { printf ("foo[%d][%d] = %d\n", i, j, x); }
@@ -29,19 +29,15 @@ int foo::count;
 
 int main ()
 {
-  {
-    foo array[3][3];
-    for (int i = 0; i < 3; i++)
-      {
-	for (int j = 0; j < 3; j++)
-	  {
-	    printf("&a[%d][%d] = %x\n", i, j, (void *)&array[i][j]);
-	  }
-      }
-      // The count should be nine, if not, fail the test.
-      if (foo::count != 9)
-	return 1;
-  }
+  foo *arr[9];
+  for (int i = 0; i < 9; ++i)
+    arr[i] = new foo();
+  if (foo::count != 9)
+    return 1;
+  for (int i = 0; i < 9; ++i)
+    arr[i]->print(i / 3, i % 3);
+  for (int i = 0; i < 9; ++i)
+    delete arr[i];
   if (foo::count != 0)
     return 1;
   return 0;

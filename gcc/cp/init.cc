@@ -4116,8 +4116,8 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
       if (type_build_dtor_call (type))
 	{
 	  tmp = build_delete (loc, ptype, base, sfk_complete_destructor,
-			      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1,
-			      complain);
+			      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR|LOOKUP_NONVIRTUAL,
+			      1, complain);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	}
@@ -4146,9 +4146,12 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
   if (tmp == error_mark_node)
     return error_mark_node;
   body = build_compound_expr (loc, body, tmp);
+  /* [expr.delete]/3: "In an array delete expression, if the dynamic type of
+     the object to be deleted is not similar to its static type, the behavior
+     is undefined."  So we can set LOOKUP_NONVIRTUAL.  */
   tmp = build_delete (loc, ptype, tbase, sfk_complete_destructor,
-		      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1,
-		      complain);
+		      LOOKUP_NORMAL|LOOKUP_DESTRUCTOR|LOOKUP_NONVIRTUAL,
+		      1, complain);
   if (tmp == error_mark_node)
     return error_mark_node;
   body = build_compound_expr (loc, body, tmp);
