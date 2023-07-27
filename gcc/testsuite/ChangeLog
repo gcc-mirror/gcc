@@ -1,3 +1,7 @@
+2023-07-27  Release Manager
+
+	* GCC 13.2.0 released.
+
 2023-07-20  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* gcc.target/aarch64/feature-bf16-backport.c: New test.

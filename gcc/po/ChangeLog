@@ -1,3 +1,23 @@
+2023-07-27  Release Manager
+
+	* GCC 13.2.0 released.
+
+2023-07-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* uk.po: Update.
+
+2023-07-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2023-07-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* uk.po: Update.
+
+2023-07-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* hr.po: Update.
+
 2023-05-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* hr.po: Update.

@@ -1,3 +1,7 @@
+2023-07-27  Release Manager
+
+	* GCC 13.2.0 released.
+
 2023-07-18  Florian Weimer  <fweimer@redhat.com>
 
 	Backported from master:
