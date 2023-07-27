@@ -1290,8 +1290,9 @@ TypeCheckExpr::visit (HIR::BreakExpr &expr)
       TyTy::BaseType *loop_context = context->peek_loop_context ();
       if (loop_context->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  rust_error_at (expr.get_locus (),
-			 "can only break with a value inside %<loop%>");
+	  rust_error_at (
+	    expr.get_locus (), ErrorCode::E0571,
+	    "can only %<break%> with a value inside a %<loop%> block");
 	  return;
 	}
 
