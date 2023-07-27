@@ -1,5 +1,14 @@
 2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.h (gfc_omp_clauses): Rename target_first_st_is_teams
+	to target_first_st_is_teams_or_meta.
+	* parse.cc (parse_omp_structured_block): Handle metadirectives
+	for target_first_st_is_teams.
+	* openmp.cc (resolve_omp_target): Likewise to fix target+teams
+	diagnostic with metadirectives.
+
+2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 

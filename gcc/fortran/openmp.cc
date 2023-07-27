@@ -12252,13 +12252,34 @@ resolve_omp_target (gfc_code *code)
   if (!code->ext.omp_clauses->contains_teams_construct)
     return;
   gfc_code *c = code->block->next;
-  if (code->ext.omp_clauses->target_first_st_is_teams
-      && ((GFC_IS_TEAMS_CONSTRUCT (c->op) && c->next == NULL)
-	  || (c->op == EXEC_BLOCK
-	      && c->next
-	      && GFC_IS_TEAMS_CONSTRUCT (c->next->op)
-	      && c->next->next == NULL)))
-    return;
+  if (c->op == EXEC_BLOCK)
+    c = c->next;
+  if (code->ext.omp_clauses->target_first_st_is_teams_or_meta)
+    {
+      if (c->op == EXEC_OMP_METADIRECTIVE)
+	{
+	  struct gfc_omp_metadirective_clause *mc
+	    = c->ext.omp_metadirective_clauses;
+	  /* All mc->(next...->)code should be identical with regards
+	     to the diagnostic below.  */
+	  do
+	    {
+	      if (mc->stmt != ST_NONE
+		  && GFC_IS_TEAMS_CONSTRUCT (mc->code->op))
+		{
+		  if (c->next == NULL && mc->code->next == NULL)
+		    return;
+		  c = mc->code;
+		  break;
+		}
+	      mc = mc->next;
+	    }
+	  while (mc);
+	}
+      else if (GFC_IS_TEAMS_CONSTRUCT (c->op) && c->next == NULL)
+	return;
+    }
+
   while (c && !GFC_IS_TEAMS_CONSTRUCT (c->op))
     c = c->next;
   if (c)

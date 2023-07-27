@@ -5833,9 +5833,11 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
       case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
       case ST_OMP_TEAMS_LOOP:
+      case ST_OMP_METADIRECTIVE:
+      case ST_OMP_BEGIN_METADIRECTIVE:
 	{
 	  gfc_state_data *stk = gfc_state_stack->previous;
-	  stk->tail->ext.omp_clauses->target_first_st_is_teams = true;
+	  stk->tail->ext.omp_clauses->target_first_st_is_teams_or_meta = true;
 	  break;
 	}
       default:
