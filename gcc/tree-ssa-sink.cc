@@ -671,7 +671,6 @@ sink_common_stores_to_bb (basic_block bb)
 static unsigned
 sink_code_in_bb (basic_block bb)
 {
-  basic_block son;
   gimple_stmt_iterator gsi;
   edge_iterator ei;
   edge e;
@@ -684,12 +683,12 @@ sink_code_in_bb (basic_block bb)
   /* If this block doesn't dominate anything, there can't be any place to sink
      the statements to.  */
   if (first_dom_son (CDI_DOMINATORS, bb) == NULL)
-    goto earlyout;
+    return todo;
 
   /* We can't move things across abnormal edges, so don't try.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (e->flags & EDGE_ABNORMAL)
-      goto earlyout;
+      return todo;
 
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
     {
@@ -762,13 +761,6 @@ sink_code_in_bb (basic_block bb)
       if (!gsi_end_p (gsi))
 	gsi_prev (&gsi);
 
-    }
- earlyout:
-  for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_POST_DOMINATORS, son))
-    {
-      todo |= sink_code_in_bb (son);
     }
 
   return todo;
@@ -859,7 +851,20 @@ pass_sink_code::execute (function *fun)
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
-  todo |= sink_code_in_bb (EXIT_BLOCK_PTR_FOR_FN (fun));
+
+  auto_vec<basic_block, 64> worklist;
+  worklist.quick_push (EXIT_BLOCK_PTR_FOR_FN (fun));
+  do
+    {
+      basic_block bb = worklist.pop ();
+      todo |= sink_code_in_bb (bb);
+      for (basic_block son = first_dom_son (CDI_POST_DOMINATORS, bb);
+	   son;
+	   son = next_dom_son (CDI_POST_DOMINATORS, son))
+	worklist.safe_push (son);
+    }
+  while (!worklist.is_empty ());
+
   statistics_counter_event (fun, "Sunk statements", sink_stats.sunk);
   statistics_counter_event (fun, "Commoned stores", sink_stats.commoned);
   free_dominance_info (CDI_POST_DOMINATORS);
