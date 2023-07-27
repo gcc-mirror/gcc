@@ -997,6 +997,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
+/* Shifts by precision or greater result in zero.  */
+(for shift (lshift rshift)
+ (simplify
+  (shift @0 uniform_integer_cst_p@1)
+  (if ((GIMPLE || !sanitize_flags_p (SANITIZE_SHIFT_EXPONENT))
+       /* Use a signed compare to leave negative shift counts alone.  */
+       && wi::ges_p (wi::to_wide (uniform_integer_cst_p (@1)),
+		     element_precision (type)))
+   { build_zero_cst (type); })))
+
 /* Shifts by constants distribute over several binary operations,
    hence (X << C) + (Y << C) can be simplified to (X + Y) << C.  */
 (for op (plus minus)

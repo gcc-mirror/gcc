@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "gimple-range.h"
 #include "langhooks.h"
+#include "attribs.h"
+#include "asan.h"
 
 /* Forward declarations of the private auto-generated matchers.
    They expect valueized operands in canonical order and do not
