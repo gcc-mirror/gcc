@@ -37,8 +37,6 @@ PrivacyReporter::PrivacyReporter (
 static tl::optional<std::string>
 find_proc_macro_attribute (const AST::AttrVec &outer_attrs)
 {
-  tl::optional<std::string> result;
-
   for (auto &a : outer_attrs)
     {
       auto &segments = a.get_path ().get_segments ();
@@ -47,10 +45,10 @@ find_proc_macro_attribute (const AST::AttrVec &outer_attrs)
       auto name = segments.at (0).get_segment_name ();
       if (name == "proc_macro" || name == "proc_macro_attribute"
 	  || name == "proc_macro_derive")
-	result = {name};
+	return name;
     }
 
-  return result;
+  return tl::nullopt;
 }
 
 // Common check on crate items when dealing with 'proc-macro' crate type.
