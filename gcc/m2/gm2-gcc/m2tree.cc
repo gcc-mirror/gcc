@@ -120,8 +120,8 @@ bool
 m2tree_IsAConstant (tree t)
 {
   return (TREE_CODE (t) == INTEGER_CST) || (TREE_CODE (t) == REAL_CST)
-         || (TREE_CODE (t) == REAL_CST) || (TREE_CODE (t) == COMPLEX_CST)
-         || (TREE_CODE (t) == STRING_CST);
+    || (TREE_CODE (t) == REAL_CST) || (TREE_CODE (t) == COMPLEX_CST)
+    || (TREE_CODE (t) == STRING_CST) || (TREE_CODE (t) == CONSTRUCTOR);
 }
 
 
