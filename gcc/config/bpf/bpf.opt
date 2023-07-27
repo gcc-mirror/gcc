@@ -71,6 +71,10 @@ msdiv
 Target Var(bpf_has_sdiv) Init(-1)
 Enable signed division and modulus instructions.
 
+msmov
+Target Var(bpf_has_smov) Init(-1)
+Enable signed move and memory load instructions.
+
 mcpu=
 Target RejectNegative Joined Var(bpf_isa) Enum(bpf_isa) Init(ISA_V4)
 

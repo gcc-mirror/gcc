@@ -307,6 +307,56 @@
   DONE;
 })
 
+;; ISA V4 introduces sign-extending move and load operations.
+
+(define_insn "*extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,32|%0 = (s32) %1}
+   {ldxsw\t%0,%1|%0 = *(s32 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,16|%0 = (s16) %1}
+   {ldxsh\t%0,%1|%0 = *(s16 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,8|%0 = (s8) %1}
+   {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendsisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:SI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,32|%w0 = (s32) %w1}"
+  [(set_attr "type" "alu")])
+
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,16|%w0 = (s16) %w1}"
+  [(set_attr "type" "alu")])
+
+(define_insn "extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,8|%w0 = (s8) %w1}"
+  [(set_attr "type" "alu")])
+
 ;;;; Data movement
 
 (define_mode_iterator MM [QI HI SI DI SF DF])

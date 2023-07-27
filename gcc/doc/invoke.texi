@@ -947,7 +947,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
--mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -mcpu=@var{version}
+-mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
 -masm=@var{dialect}}
 
 @emph{FR30 Options}
@@ -24718,6 +24718,12 @@ Enable or disable byte swap instructions.  Enabled for CPU v4 and above.
 Enable or disable signed division and modulus instructions.  Enabled for
 CPU v4 and above.
 
+@opindex msmov
+@item -msmov
+@itemx -mno-smov
+Enable or disable sign-extending move and memory load instructions.
+Enabled for CPU v4 and above.
+
 @opindex mcpu
 @item -mcpu=@var{version}
 This specifies which version of the eBPF ISA to target. Newer versions
@@ -24745,6 +24751,7 @@ All features of v3, plus:
 @itemize @minus
 @item Byte swap instructions, as in @option{-mbswap}
 @item Signed division and modulus instructions, as in @option{-msdiv}
+@item Sign-extending move and memory load instructions, as in @option{-msmov}
 @end itemize
 @end table
 
