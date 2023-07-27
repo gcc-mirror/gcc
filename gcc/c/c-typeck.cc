@@ -7347,6 +7347,34 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		    "request for implicit conversion "
 		    "from %qT to %qT not permitted in C++", rhstype, type);
 
+      /* Warn of new allocations that are not big enough for the target
+	 type.  */
+      tree fndecl;
+      if (warn_alloc_size
+	  && TREE_CODE (rhs) == CALL_EXPR
+	  && (fndecl = get_callee_fndecl (rhs)) != NULL_TREE
+	  && DECL_IS_MALLOC (fndecl))
+	{
+	  tree fntype = TREE_TYPE (fndecl);
+	  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
+	  tree alloc_size = lookup_attribute ("alloc_size", fntypeattrs);
+	  if (alloc_size)
+	    {
+	      tree args = TREE_VALUE (alloc_size);
+	      int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+	      /* For calloc only use the second argument.  */
+	      if (TREE_CHAIN (args))
+		idx = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	      tree arg = CALL_EXPR_ARG (rhs, idx);
+	      if (TREE_CODE (arg) == INTEGER_CST
+		  && INTEGER_CST == TREE_CODE (TYPE_SIZE_UNIT (ttl))
+		  && tree_int_cst_lt (arg, TYPE_SIZE_UNIT (ttl)))
+		 warning_at (location, OPT_Walloc_size, "allocation of "
+			     "insufficient size %qE for type %qT with "
+			     "size %qE", arg, ttl, TYPE_SIZE_UNIT (ttl));
+	    }
+	}
+
       /* See if the pointers point to incompatible address spaces.  */
       asl = TYPE_ADDR_SPACE (ttl);
       asr = TYPE_ADDR_SPACE (ttr);

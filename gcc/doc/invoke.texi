@@ -8138,6 +8138,16 @@ always leads to a call to another @code{cold} function such as wrappers of
 C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
 
+@opindex Wno-alloc-size
+@opindex Walloc-size
+@item -Walloc-size
+Warn about calls to allocation functions decorated with attribute
+@code{alloc_size} that specify insufficient size for the target type of
+the pointer the result is assigned to, including those to the built-in
+forms of the functions @code{aligned_alloc}, @code{alloca},
+@code{calloc},
+@code{malloc}, and @code{realloc}.
+
 @opindex Wno-alloc-zero
 @opindex Walloc-zero
 @item -Walloc-zero
