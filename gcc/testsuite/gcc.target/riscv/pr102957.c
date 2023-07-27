@@ -4,4 +4,4 @@ int foo()
 {
 }
 
-/* { dg-error "extension 'zb' starts with `z` but is unsupported standard extension" "" { target *-*-* } 0 } */
+/* { dg-error "extension 'zb' starts with 'z' but is unsupported standard extension" "" { target *-*-* } 0 } */
