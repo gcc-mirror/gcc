@@ -26778,11 +26778,14 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+;; Use unspec to prevent rtl optimizer to optimize zero_extend + vec_duplicate
+;; to pbroadcastm, there could be an extra kmov after RA.
 (define_insn "avx512cd_maskb_vec_dup<mode>"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(vec_duplicate:VI8_AVX512VL
 	  (zero_extend:DI
-	    (match_operand:QI 1 "register_operand" "k"))))]
+	    (match_operand:QI 1 "register_operand" "k"))))
+   (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512CD"
   "vpbroadcastmb2q\t{%1, %0|%0, %1}"
   [(set_attr "type" "mskmov")
@@ -26793,7 +26796,8 @@
   [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
 	(vec_duplicate:VI4_AVX512VL
 	  (zero_extend:SI
-	    (match_operand:HI 1 "register_operand" "k"))))]
+	    (match_operand:HI 1 "register_operand" "k"))))
+   (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512CD"
   "vpbroadcastmw2d\t{%1, %0|%0, %1}"
   [(set_attr "type" "mskmov")
