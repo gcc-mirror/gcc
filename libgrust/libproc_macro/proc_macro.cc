@@ -53,12 +53,12 @@ Procmacro::make_bang (const char *name, BangMacro macro)
 extern "C" bool
 bridge_is_available ()
 {
-  return __gccrs_proc_macro_is_available_fn
-	 == ProcMacro::BridgeState::Available;
+  return __gccrs_proc_macro_is_available_ == ProcMacro::BridgeState::Available;
 }
 
 } // namespace ProcMacro
 
-ProcMacro::from_str_function_t __gccrs_proc_macro_from_str_fn = nullptr;
-ProcMacro::BridgeState __gccrs_proc_macro_is_available_fn
+ProcMacro::ts_from_str_fn_t __gccrs_proc_macro_ts_from_str_ = nullptr;
+ProcMacro::lit_from_str_fn_t __gccrs_proc_macro_lit_from_str_ = nullptr;
+ProcMacro::BridgeState __gccrs_proc_macro_is_available_
   = ProcMacro::BridgeState::Unavailable;

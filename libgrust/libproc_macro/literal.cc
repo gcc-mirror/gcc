@@ -24,15 +24,19 @@
 #include <cstring>
 #include <cstdlib>
 
+#include "registration.h"
+
 namespace ProcMacro {
 
 extern "C" {
 bool
 Literal__from_string (FFIString str, Literal *lit)
 {
-  // FIXME: implement this function with lexer
-  std::abort ();
-  return false;
+  bool result;
+  auto source = str.to_string ();
+
+  *lit = Literal::make_literal (source, result);
+  return result;
 }
 }
 
@@ -47,6 +51,12 @@ Literal
 Literal::clone () const
 {
   return {this->kind, this->text.clone (), this->suffix.clone (), this->span};
+}
+
+Literal
+Literal::make_literal (const std::string &text, bool &has_error)
+{
+  return __gccrs_proc_macro_lit_from_str_ (text, has_error);
 }
 
 Literal

@@ -77,6 +77,7 @@ public:
   Literal clone () const;
   bool has_suffix () const { return suffix.len != 0; };
 
+  static Literal make_literal (const std::string &text, bool &has_error);
   static Literal make_literal (const LitKind kind, Span span,
 			       const std::string &text,
 			       const std::string &suffix = "");

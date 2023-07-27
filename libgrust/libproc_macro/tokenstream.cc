@@ -49,7 +49,7 @@ TokenStream::make_tokenstream (std::uint64_t capacity)
 TokenStream
 TokenStream::make_tokenstream (std::string &source, bool &has_error)
 {
-  return __gccrs_proc_macro_from_str_fn (source, has_error);
+  return __gccrs_proc_macro_ts_from_str_ (source, has_error);
 }
 
 void

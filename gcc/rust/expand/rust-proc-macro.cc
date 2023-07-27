@@ -28,6 +28,22 @@ const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
 
 namespace {
 
+ProcMacro::Literal
+literal_from_string (const std::string &data, bool &error)
+{
+  Lexer lex (data);
+  const_TokenPtr output = lex.build_token ();
+  if (output == nullptr || !output->is_literal ())
+    {
+      error = true;
+      // We should probably rework this
+      return ProcMacro::Literal::make_usize (0);
+    }
+
+  error = false;
+  return convert_literal (output);
+}
+
 ProcMacro::TokenStream
 tokenstream_from_string (std::string &data, bool &lex_error)
 {
@@ -55,7 +71,12 @@ tokenstream_from_string (std::string &data, bool &lex_error)
 
 static_assert (
   std::is_same<decltype (tokenstream_from_string) *,
-	       ProcMacro::from_str_function_t>::value,
+	       ProcMacro::ts_from_str_fn_t>::value,
+  "Registration callback signature not synced, check proc macro internals.");
+
+static_assert (
+  std::is_same<decltype (literal_from_string) *,
+	       ProcMacro::lit_from_str_fn_t>::value,
   "Registration callback signature not synced, check proc macro internals.");
 
 } // namespace
@@ -96,10 +117,13 @@ load_macros_array (std::string path)
       return nullptr;
     }
 
-  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_from_str_fn,
+  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_ts_from_str_,
 			  tokenstream_from_string))
     return nullptr;
-  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_is_available_fn,
+  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_lit_from_str_,
+			  literal_from_string))
+    return nullptr;
+  if (!REGISTER_CALLBACK (handle, __gccrs_proc_macro_is_available_,
 			  ProcMacro::BridgeState::Available))
     return nullptr;
 
