@@ -9876,7 +9876,10 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      if (costing_p)
 		{
-		  if (VECTOR_TYPE_P (ltype))
+		  /* For VMAT_ELEMENTWISE, just cost it as scalar_load to
+		     avoid ICE, see PR110776.  */
+		  if (VECTOR_TYPE_P (ltype)
+		      && memory_access_type != VMAT_ELEMENTWISE)
 		    vect_get_load_cost (vinfo, stmt_info, 1,
 					alignment_support_scheme, misalignment,
 					false, &inside_cost, nullptr, cost_vec,
