@@ -945,9 +945,10 @@ Objective-C and Objective-C++ Dialects}.
 -mmemory-latency=@var{time}}
 
 @emph{eBPF Options}
-@gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
+@gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
--mjmp32 -malu32 -mv3-atomics -mcpu=@var{version} -masm=@var{dialect}}
+-mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -mcpu=@var{version}
+-masm=@var{dialect}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -24674,18 +24675,6 @@ the value that can be specified should be less than or equal to
 @samp{32767}.  Defaults to whatever limit is imposed by the version of
 the Linux kernel targeted.
 
-@opindex mkernel
-@item -mkernel=@var{version}
-This specifies the minimum version of the kernel that will run the
-compiled program.  GCC uses this version to determine which
-instructions to use, what kernel helpers to allow, etc.  Currently,
-@var{version} can be one of @samp{4.0}, @samp{4.1}, @samp{4.2},
-@samp{4.3}, @samp{4.4}, @samp{4.5}, @samp{4.6}, @samp{4.7},
-@samp{4.8}, @samp{4.9}, @samp{4.10}, @samp{4.11}, @samp{4.12},
-@samp{4.13}, @samp{4.14}, @samp{4.15}, @samp{4.16}, @samp{4.17},
-@samp{4.18}, @samp{4.19}, @samp{4.20}, @samp{5.0}, @samp{5.1},
-@samp{5.2}, @samp{latest} and @samp{native}.
-
 @opindex mbig-endian
 @item -mbig-endian
 Generate code for a big-endian target.
@@ -24696,30 +24685,38 @@ Generate code for a little-endian target.  This is the default.
 
 @opindex mjmpext
 @item -mjmpext
-Enable generation of extra conditional-branch instructions.
+@itemx -mno-jmpext
+Enable or disable generation of extra conditional-branch instructions.
 Enabled for CPU v2 and above.
 
 @opindex mjmp32
 @item -mjmp32
-Enable 32-bit jump instructions. Enabled for CPU v3 and above.
+@itemx -mno-jmp32
+Enable or disable generation of 32-bit jump instructions.
+Enabled for CPU v3 and above.
 
 @opindex malu32
 @item -malu32
-Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
-
-@opindex mbswap
-@item -mbswap
-Enable byte swap instructions.  Enabled for CPU v4 and above.
-
-@opindex msdiv
-@item -msdiv
-Enable signed division and modulus instructions.  Enabled for CPU v4
-and above.
+@itemx -mno-alu32
+Enable or disable generation of 32-bit ALU instructions.
+Enabled for CPU v3 and above.
 
 @opindex mv3-atomics
 @item -mv3-atomics
-Enable instructions for general atomic operations introduced in CPU v3.
-Enabled for CPU v3 and above.
+@itemx -mno-v3-atomics
+Enable or disable instructions for general atomic operations introduced
+in CPU v3.  Enabled for CPU v3 and above.
+
+@opindex mbswap
+@item -mbswap
+@itemx -mno-bswap
+Enable or disable byte swap instructions.  Enabled for CPU v4 and above.
+
+@opindex msdiv
+@item -msdiv
+@itemx -mno-sdiv
+Enable or disable signed division and modulus instructions.  Enabled for
+CPU v4 and above.
 
 @opindex mcpu
 @item -mcpu=@var{version}
@@ -24747,6 +24744,7 @@ All features of v2, plus:
 All features of v3, plus:
 @itemize @minus
 @item Byte swap instructions, as in @option{-mbswap}
+@item Signed division and modulus instructions, as in @option{-msdiv}
 @end itemize
 @end table
 
