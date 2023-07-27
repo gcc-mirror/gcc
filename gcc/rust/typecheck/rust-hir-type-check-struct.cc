@@ -149,7 +149,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	}
       else if (!struct_expr.has_struct_base ())
 	{
-	  rust_error_at (struct_expr.get_locus (), ErrorCode ("E0063"),
+	  rust_error_at (struct_expr.get_locus (), ErrorCode::E0063,
 			 "constructor is missing fields");
 	  return;
 	}

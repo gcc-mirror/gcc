@@ -98,7 +98,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       bool in_middle_of_path = i > 0;
       if (in_middle_of_path && segment->is_lower_self_seg ())
 	{
-	  rust_error_at (segment->get_locus (), ErrorCode ("E0433"),
+	  rust_error_at (segment->get_locus (), ErrorCode::E0433,
 			 "failed to resolve: %<%s%> in paths can only be used "
 			 "in start position",
 			 segment->as_string ().c_str ());

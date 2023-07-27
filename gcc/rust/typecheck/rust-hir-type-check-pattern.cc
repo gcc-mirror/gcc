@@ -112,7 +112,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 	if (items_no_range.get_patterns ().size () != variant->num_fields ())
 	  {
 	    rust_error_at (
-	      pattern.get_locus (), ErrorCode ("E0023"),
+	      pattern.get_locus (), ErrorCode::E0023,
 	      "this pattern has %lu fields but the corresponding "
 	      "tuple variant has %lu field",
 	      (unsigned long) items_no_range.get_patterns ().size (),
@@ -143,7 +143,7 @@ void
 emit_invalid_field_error (Location loc, Rust::TyTy::VariantDef *variant,
 			  const std::string &name)
 {
-  rust_error_at (loc, ErrorCode ("E0026"),
+  rust_error_at (loc, ErrorCode::E0026,
 		 "variant %s does not have a field named %s",
 		 variant->get_identifier ().c_str (), name.c_str ());
 }
@@ -268,7 +268,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	  i++;
 	}
 
-      rust_error_at (pattern.get_locus (), ErrorCode ("E0027"),
+      rust_error_at (pattern.get_locus (), ErrorCode::E0027,
 		     "pattern does not mention fields %s",
 		     missing_fields_str.c_str ());
     }

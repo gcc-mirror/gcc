@@ -35,7 +35,7 @@ public:
     VerifyAsignee checker;
     assignee->accept_vis (checker);
     if (!checker.ok)
-      rust_error_at (assignee->get_locus (), ErrorCode ("E0070"),
+      rust_error_at (assignee->get_locus (), ErrorCode::E0070,
 		     "invalid left-hand side of assignment");
     return checker.ok;
   }

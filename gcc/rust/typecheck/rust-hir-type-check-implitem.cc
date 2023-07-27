@@ -143,7 +143,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
       if (parent.get_abi () != Rust::ABI::C)
 	{
 	  rust_error_at (
-	    function.get_locus (), ErrorCode ("E0045"),
+	    function.get_locus (), ErrorCode::E0045,
 	    "C-variadic function must have C or cdecl calling convention");
 	}
     }
@@ -402,7 +402,7 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
     {
       rich_location r (line_table, constant.get_locus ());
       r.add_range (trait_reference.get_locus ());
-      rust_error_at (r, ErrorCode ("E0323"),
+      rust_error_at (r, ErrorCode::E0323,
 		     "item %qs is an associated const, which does not match "
 		     "its trait %qs",
 		     constant.get_identifier ().as_string ().c_str (),
@@ -539,7 +539,7 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
       rich_location r (line_table, function.get_locus ());
       r.add_range (resolved_trait_item.get_locus ());
 
-      rust_error_at (r, ErrorCode ("E0053"),
+      rust_error_at (r, ErrorCode::E0053,
 		     "method %<%s%> has an incompatible type for trait %<%s%>",
 		     function.get_function_name ().as_string ().c_str (),
 		     trait_reference.get_name ().c_str ());

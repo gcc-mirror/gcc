@@ -199,13 +199,13 @@ public:
 
   char *make_description () const final override
   {
-    return xstrdup (m_code.m_str);
+    return xstrdup (error_code_strings.at (m_code));
   }
 
   char *make_url () const final override
   {
-    return concat ("https://doc.rust-lang.org/error-index.html#", m_code.m_str,
-		   NULL);
+    return concat ("https://doc.rust-lang.org/error-index.html#",
+		   error_code_strings.at (m_code), NULL);
   }
 
 private:
