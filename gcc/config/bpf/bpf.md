@@ -131,7 +131,7 @@
         (plus:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   "1"
-  "{add<msuffix>\t%0,%2|%w0 += %w1}"
+  "{add<msuffix>\t%0,%2|%w0 += %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Subtraction
@@ -144,7 +144,7 @@
         (minus:AM (match_operand:AM 1 "register_operand" " 0")
                   (match_operand:AM 2 "register_operand" " r")))]
   ""
-  "{sub<msuffix>\t%0,%2|%w0 -= %w1}"
+  "{sub<msuffix>\t%0,%2|%w0 -= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Negation
