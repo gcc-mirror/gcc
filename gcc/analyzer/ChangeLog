@@ -1,3 +1,132 @@
+2023-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104940
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Update for
+	generalizing region ids to also cover svalues.
+	(region_model_manager::get_or_create_constant_svalue): Likewise.
+	(region_model_manager::get_or_create_unknown_svalue): Likewise.
+	(region_model_manager::create_unique_svalue): Likewise.
+	(region_model_manager::get_or_create_initial_value): Likewise.
+	(region_model_manager::get_or_create_setjmp_svalue): Likewise.
+	(region_model_manager::get_or_create_poisoned_svalue): Likewise.
+	(region_model_manager::get_ptr_svalue): Likewise.
+	(region_model_manager::get_or_create_unaryop): Likewise.
+	(region_model_manager::get_or_create_binop): Likewise.
+	(region_model_manager::get_or_create_sub_svalue): Likewise.
+	(region_model_manager::get_or_create_repeated_svalue): Likewise.
+	(region_model_manager::get_or_create_bits_within): Likewise.
+	(region_model_manager::get_or_create_unmergeable): Likewise.
+	(region_model_manager::get_or_create_widening_svalue): Likewise.
+	(region_model_manager::get_or_create_compound_svalue): Likewise.
+	(region_model_manager::get_or_create_conjured_svalue): Likewise.
+	(region_model_manager::get_or_create_asm_output_svalue): Likewise.
+	(region_model_manager::get_or_create_const_fn_result_svalue):
+	Likewise.
+	(region_model_manager::get_region_for_fndecl): Likewise.
+	(region_model_manager::get_region_for_label): Likewise.
+	(region_model_manager::get_region_for_global): Likewise.
+	(region_model_manager::get_field_region): Likewise.
+	(region_model_manager::get_element_region): Likewise.
+	(region_model_manager::get_offset_region): Likewise.
+	(region_model_manager::get_sized_region): Likewise.
+	(region_model_manager::get_cast_region): Likewise.
+	(region_model_manager::get_frame_region): Likewise.
+	(region_model_manager::get_symbolic_region): Likewise.
+	(region_model_manager::get_region_for_string): Likewise.
+	(region_model_manager::get_bit_range): Likewise.
+	(region_model_manager::get_var_arg_region): Likewise.
+	(region_model_manager::get_region_for_unexpected_tree_code):
+	Likewise.
+	(region_model_manager::get_or_create_region_for_heap_alloc):
+	Likewise.
+	(region_model_manager::create_region_for_alloca): Likewise.
+	(region_model_manager::log_stats): Likewise.
+	* region-model-manager.h (region_model_manager::get_num_regions):
+	Replace with...
+	(region_model_manager::get_num_symbols): ...this.
+	(region_model_manager::alloc_region_id): Replace with...
+	(region_model_manager::alloc_symbol_id): ...this.
+	(region_model_manager::m_next_region_id): Replace with...
+	(region_model_manager::m_next_symbol_id): ...this.
+	* region-model.cc (selftest::test_get_representative_tree): Update
+	for generalizing region ids to also cover svalues.
+	(selftest::test_binop_svalue_folding): Likewise.
+	(selftest::test_state_merging): Likewise.
+	* region.cc (region::cmp_ids): Delete, in favor of
+	symbol::cmp_ids.
+	(region::region): Update for introduction of symbol base class.
+	(frame_region::get_region_for_local): Likewise.
+	(root_region::root_region): Likewise.
+	(symbolic_region::symbolic_region): Likewise.
+	* region.h: Replace include of "analyzer/complexity.h" with
+	"analyzer/symbol.h".
+	(class region): Make a subclass of symbol.
+	(region::get_id): Delete in favor of symbol::get_id.
+	(region::cmp_ids): Delete in favor of symbol::cmp_ids.
+	(region::get_complexity): Delete in favor of
+	symbol::get_complexity.
+	(region::region): Use symbol::id_t for "id" param.
+	(region::m_complexity): Move field to symbol base class.
+	(region::m_id): Likewise.
+	(space_region::space_region): Use symbol::id_t for "id" param.
+	(frame_region::frame_region): Likewise.
+	(globals_region::globals_region): Likewise.
+	(code_region::code_region): Likewise.
+	(function_region::function_region): Likewise.
+	(label_region::label_region): Likewise.
+	(stack_region::stack_region): Likewise.
+	(heap_region::heap_region): Likewise.
+	(thread_local_region::thread_local_region): Likewise.
+	(root_region::root_region): Likewise.
+	(symbolic_region::symbolic_region): Likewise.
+	(decl_region::decl_region): Likewise.
+	(field_region::field_region): Likewise.
+	(element_region::element_region): Likewise.
+	(offset_region::offset_region): Likewise.
+	(sized_region::sized_region): Likewise.
+	(cast_region::cast_region): Likewise.
+	(heap_allocated_region::heap_allocated_region): Likewise.
+	(alloca_region::alloca_region): Likewise.
+	(string_region::string_region): Likewise.
+	(bit_range_region::bit_range_region): Likewise.
+	(var_arg_region::var_arg_region): Likewise.
+	(errno_region::errno_region): Likewise.
+	(unknown_region::unknown_region): Likewise.
+	* svalue.cc (sub_svalue::sub_svalue): Add symbol::id_t param.
+	(repeated_svalue::repeated_svalue): Likewise.
+	(bits_within_svalue::bits_within_svalue): Likewise.
+	(compound_svalue::compound_svalue): Likewise.
+	* svalue.h: Replace include of "analyzer/complexity.h" with
+	"analyzer/symbol.h".
+	(class svalue): Make a subclass of symbol.
+	(svalue::get_complexity): Delete in favor of
+	symbol::get_complexity.
+	(svalue::svalue): Add symbol::id_t param.  Update for new base
+	class.
+	(svalue::m_complexity): Delete in favor of
+	symbol::m_complexity.
+	(region_svalue::region_svalue): Add symbol::id_t param
+	(constant_svalue::constant_svalue): Likewise.
+	(unknown_svalue::unknown_svalue): Likewise.
+	(poisoned_svalue::poisoned_svalue): Likewise.
+	(setjmp_svalue::setjmp_svalue): Likewise.
+	(initial_svalue::initial_svalue): Likewise.
+	(unaryop_svalue::unaryop_svalue): Likewise.
+	(binop_svalue::binop_svalue): Likewise.
+	(sub_svalue::sub_svalue): Likewise.
+	(repeated_svalue::repeated_svalue): Likewise.
+	(bits_within_svalue::bits_within_svalue): Likewise.
+	(unmergeable_svalue::unmergeable_svalue): Likewise.
+	(placeholder_svalue::placeholder_svalue): Likewise.
+	(widening_svalue::widening_svalue): Likewise.
+	(compound_svalue::compound_svalue): Likewise.
+	(conjured_svalue::conjured_svalue): Likewise.
+	(asm_output_svalue::asm_output_svalue): Likewise.
+	(const_fn_result_svalue::const_fn_result_svalue): Likewise.
+	* symbol.cc: New file.
+	* symbol.h: New file.
+
 2023-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110455

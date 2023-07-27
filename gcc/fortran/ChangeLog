@@ -1,3 +1,10 @@
+2023-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/68569
+	* resolve.cc (check_data_variable): Do not accept strings with
+	deferred length or non-constant length in a DATA statement.
+	Reject also substrings of string variables of non-constant length.
+
 2023-07-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/110725

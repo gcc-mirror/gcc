@@ -1,3 +1,244 @@
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.md: Include zicond.md
+	* config/riscv/zicond.md: New file.
+
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc: New extension.
+	* config/riscv/riscv-opts.h (MASK_ZICOND): New mask.
+	(TARGET_ZICOND): New target.
+
+2023-07-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.cc (find_instance): Add new parameter that
+	specifies the number of built-in arguments to check.
+	(altivec_resolve_overloaded_builtin): Update calls to find_instance
+	to pass the number of built-in arguments to be checked.
+
+2023-07-26  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.opt (mv3-atomics): New option.
+	* config/bpf/bpf.cc (bpf_option_override): Handle it here.
+	* config/bpf/bpf.h (enum_reg_class): Add R0 class.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGNO_REG_CLASS): Handle R0.
+	* config/bpf/bpf.md (UNSPEC_XADD): Rename to UNSPEC_AADD.
+	(UNSPEC_AAND): New unspec.
+	(UNSPEC_AOR): Likewise.
+	(UNSPEC_AXOR): Likewise.
+	(UNSPEC_AFADD): Likewise.
+	(UNSPEC_AFAND): Likewise.
+	(UNSPEC_AFOR): Likewise.
+	(UNSPEC_AFXOR): Likewise.
+	(UNSPEC_AXCHG): Likewise.
+	(UNSPEC_ACMPX): Likewise.
+	(atomic_add<mode>): Use UNSPEC_AADD and atomic type attribute.
+	Move to...
+	* config/bpf/atomic.md: ...Here. New file.
+	* config/bpf/constraints.md (t): New constraint for R0.
+	* doc/invoke.texi (eBPF Options): Document -mv3-atomics.
+
+2023-07-26  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Reformat
+	comment.
+
+2023-07-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def: Rename
+	__builtin_altivec_vreplace_un_uv2di as __builtin_altivec_vreplace_un_udi
+	__builtin_altivec_vreplace_un_uv4si as __builtin_altivec_vreplace_un_usi
+	__builtin_altivec_vreplace_un_v2df as __builtin_altivec_vreplace_un_df
+	__builtin_altivec_vreplace_un_v2di as __builtin_altivec_vreplace_un_di
+	__builtin_altivec_vreplace_un_v4sf as __builtin_altivec_vreplace_un_sf
+	__builtin_altivec_vreplace_un_v4si as __builtin_altivec_vreplace_un_si.
+	Rename VREPLACE_UN_UV2DI as VREPLACE_UN_UDI, VREPLACE_UN_UV4SI as
+	VREPLACE_UN_USI, VREPLACE_UN_V2DF as VREPLACE_UN_DF,
+	VREPLACE_UN_V2DI as VREPLACE_UN_DI, VREPLACE_UN_V4SF as
+	VREPLACE_UN_SF, VREPLACE_UN_V4SI as VREPLACE_UN_SI.
+	Rename vreplace_un_v2di as vreplace_un_di, vreplace_un_v4si as
+	vreplace_un_si, vreplace_un_v2df as vreplace_un_df,
+	vreplace_un_v2di as vreplace_un_di, vreplace_un_v4sf as
+	vreplace_un_sf, vreplace_un_v4si as vreplace_un_si.
+	* config/rs6000/rs6000-c.cc (find_instance): Add case
+	RS6000_OVLD_VEC_REPLACE_UN.
+	* config/rs6000/rs6000-overload.def (__builtin_vec_replace_un):
+	Fix first argument type.  Rename VREPLACE_UN_UV4SI as
+	VREPLACE_UN_USI, VREPLACE_UN_V4SI as VREPLACE_UN_SI,
+	VREPLACE_UN_UV2DI as VREPLACE_UN_UDI, VREPLACE_UN_V2DI as
+	VREPLACE_UN_DI, VREPLACE_UN_V4SF as VREPLACE_UN_SF,
+	VREPLACE_UN_V2DF as VREPLACE_UN_DF.
+	* config/rs6000/vsx.md (REPLACE_ELT): Rename the mode_iterator
+	REPLACE_ELT_V for vector modes.
+	(REPLACE_ELT): New scalar mode iterator.
+	(REPLACE_ELT_char): Add scalar attributes.
+	(vreplace_un_<mode>): Change iterator and mode attribute.
+
+2023-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104940
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/symbol.o.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106081
+	* tree-vect-slp.cc (vect_optimize_slp_pass::start_choosing_layouts):
+	Assign layout -1 to splats.
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h (class operator_cast): Add update_bitmask.
+	* range-op.cc (operator_cast::update_bitmask): New.
+	(operator_cast::fold_range): Call update_bitmask.
+
+2023-07-26  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins.def (vfloat16mf4x2_t): Change
+	scalar type to float16, eliminate warning.
+	(vfloat16mf4x3_t): Ditto.
+	(vfloat16mf4x4_t): Ditto.
+	(vfloat16mf4x5_t): Ditto.
+	(vfloat16mf4x6_t): Ditto.
+	(vfloat16mf4x7_t): Ditto.
+	(vfloat16mf4x8_t): Ditto.
+	(vfloat16mf2x2_t): Ditto.
+	(vfloat16mf2x3_t): Ditto.
+	(vfloat16mf2x4_t): Ditto.
+	(vfloat16mf2x5_t): Ditto.
+	(vfloat16mf2x6_t): Ditto.
+	(vfloat16mf2x7_t): Ditto.
+	(vfloat16mf2x8_t): Ditto.
+	(vfloat16m1x2_t): Ditto.
+	(vfloat16m1x3_t): Ditto.
+	(vfloat16m1x4_t): Ditto.
+	(vfloat16m1x5_t): Ditto.
+	(vfloat16m1x6_t): Ditto.
+	(vfloat16m1x7_t): Ditto.
+	(vfloat16m1x8_t): Ditto.
+	(vfloat16m2x2_t): Ditto.
+	(vfloat16m2x3_t): Ditto.
+	(vfloat16m2x4_t): Ditto.
+	(vfloat16m4x2_t): Ditto.
+	* config/riscv/vector-iterators.md: add RVVM4x2DF in iterator V4T.
+	* config/riscv/vector.md: add tuple mode in attr sew.
+
+2023-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110762
+	* config/i386/i386.md (plusminusmult): New code iterator.
+	* config/i386/mmx.md (mmxdoublevecmode): New mode attribute.
+	(movq_<mode>_to_sse): New expander.
+	(<plusminusmult:insn>v2sf3): Macroize expander from addv2sf3,
+	subv2sf3 and mulv2sf3 using plusminusmult code iterator.  Rewrite
+	as a wrapper around V4SFmode operation.
+	(mmx_addv2sf3): Change operand 1 and operand 2 predicates to
+	nonimmediate_operand.
+	(*mmx_addv2sf3): Remove SSE alternatives.  Change operand 1 and
+	operand 2 predicates to nonimmediate_operand.
+	(mmx_subv2sf3): Change operand 2 predicate to nonimmediate_operand.
+	(mmx_subrv2sf3): Change operand 1 predicate to nonimmediate_operand.
+	(*mmx_subv2sf3): Remove SSE alternatives.  Change operand 1 and
+	operand 2 predicates to nonimmediate_operand.
+	(mmx_mulv2sf3): Change operand 1 and operand 2 predicates to
+	nonimmediate_operand.
+	(*mmx_mulv2sf3): Remove SSE alternatives.  Change operand 1 and
+	operand 2 predicates to nonimmediate_operand.
+	(divv2sf3): Rewrite as a wrapper around V4SFmode operation.
+	(<smaxmin:code>v2sf3): Ditto.
+	(mmx_<smaxmin:code>v2sf3): Change operand 1 and operand 2
+	predicates to nonimmediate_operand.
+	(*mmx_<smaxmin:code>v2sf3): Remove SSE alternatives.  Change
+	operand 1 and operand 2 predicates to nonimmediate_operand.
+	(mmx_ieee_<ieee_maxmin>v2sf3): Ditto.
+	(sqrtv2sf2): Rewrite as a wrapper around V4SFmode operation.
+	(*mmx_haddv2sf3_low): Ditto.
+	(*mmx_hsubv2sf3_low): Ditto.
+	(vec_addsubv2sf3): Ditto.
+	(*mmx_maskcmpv2sf3_comm): Remove.
+	(*mmx_maskcmpv2sf3): Remove.
+	(vec_cmpv2sfv2si): Rewrite as a wrapper around V4SFmode operation.
+	(vcond<V2FI:mode>v2sf): Ditto.
+	(fmav2sf4): Ditto.
+	(fmsv2sf4): Ditto.
+	(fnmav2sf4): Ditto.
+	(fnmsv2sf4): Ditto.
+	(fix_truncv2sfv2si2): Ditto.
+	(fixuns_truncv2sfv2si2): Ditto.
+	(mmx_fix_truncv2sfv2si2): Remove SSE alternatives.
+	Change operand 1 predicate to nonimmediate_operand.
+	(floatv2siv2sf2): Rewrite as a wrapper around V4SFmode operation.
+	(floatunsv2siv2sf2): Ditto.
+	(mmx_floatv2siv2sf2): Remove SSE alternatives.
+	Change operand 1 predicate to nonimmediate_operand.
+	(nearbyintv2sf2): Rewrite as a wrapper around V4SFmode operation.
+	(rintv2sf2): Ditto.
+	(lrintv2sfv2si2): Ditto.
+	(ceilv2sf2): Ditto.
+	(lceilv2sfv2si2): Ditto.
+	(floorv2sf2): Ditto.
+	(lfloorv2sfv2si2): Ditto.
+	(btruncv2sf2): Ditto.
+	(roundv2sf2): Ditto.
+	(lroundv2sfv2si2): Ditto.
+	(*mmx_roundv2sf2): Remove.
+
+2023-07-26  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md: Fix neg{SI,DI}2 insn.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* tree-ssa-pre.cc (compute_avail): More thoroughly match
+	up TBAA behavior of redundant loads.
+
+2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* range-op-float.cc (frange_arithmetic): Change +0 result to -0
+	for PLUS_EXPR or MINUS_EXPR if -frounding-math, inf is negative and
+	it is exact op1 + (-op1) or op1 - op1.
+
+2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* config/rs6000/vsx.md (define_insn xxeval): Correct vsx
+	operands output with "x".
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (class operator_absu): Add update_bitmask.
+	(operator_absu::update_bitmask): New.
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h (class operator_abs): Add update_bitmask.
+	* range-op.cc (operator_abs::update_bitmask): New.
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h (class operator_bitwise_not): Add update_bitmask.
+	* range-op.cc (operator_bitwise_not::update_bitmask): New.
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (update_known_bitmask): Handle unary operators.
+
+2023-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-ccp.cc (bit_value_unop): Initialize val when appropriate.
+
+2023-07-26  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.md: Likewise.
+
+2023-07-26  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.cc (profile_count::to_sreal_scale): Value is not know
+	if we divide by zero.
+
 2023-07-25  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.cc (bpf_print_operand_address): Don't print

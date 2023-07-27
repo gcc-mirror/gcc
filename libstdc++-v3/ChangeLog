@@ -1,3 +1,36 @@
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110807
+	* testsuite/23_containers/vector/bool/110807.cc: Require c++11.
+
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110807
+	* include/bits/stl_bvector.h (vector(const vector&)): Access
+	iterators before allocating.
+	* include/bits/vector.tcc (vector<bool>::_M_insert_range):
+	Likewise.
+	* testsuite/23_containers/vector/bool/110807.cc: New test.
+
+2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h (random_shuffle): Add deprecated
+	attribute.
+	* include/bits/stl_algo.h (random_shuffle): Correct comments.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Disable
+	deprecated warnings.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/deprecated.cc: New
+	test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* testsuite/25_algorithms/equal/constexpr_neg.cc: Update diagnostic
+	locations.
+	* testsuite/26_numerics/gcd/105844.cc: Likewise.
+	* testsuite/26_numerics/lcm/105844.cc: Likewise.
+
 2023-07-24  Deev Patel  <pateldeev@nevada.unr.edu>
 
 	* include/std/format (_Formatting_scanner::_M_on_chars): Add

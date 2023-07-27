@@ -1,3 +1,187 @@
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/cpp1z/class-deduction115.C: New test.
+	* g++.dg/template/ttp39.C: New test.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/template/ttp38.C: New test.
+
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics.c: New test.
+	Co-authored-by: Philipp Tomsich <philipp.tomsich@vrull.eu>
+	Co-authored-by: Raphael Zinsly <rzinsly@ventanamicro.com>
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/attribute-20.c: New test.
+	* gcc.target/riscv/attribute-21.c: New test.
+	Co-authored-by: Philipp Tomsich <philipp.tomsich@vrull.eu>
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* g++.dg/cpp2a/nontype-float3.C: New test.
+
+2023-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/68569
+	* gfortran.dg/data_char_4.f90: Adjust expected diagnostic.
+	* gfortran.dg/data_char_5.f90: Likewise.
+	* gfortran.dg/data_char_6.f90: New test.
+
+2023-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* g++.dg/template/template-keyword4.C: New test.
+
+2023-07-26  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-1.c: New test.
+	* gcc.target/bpf/atomic-cmpxchg-2.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-1.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-2.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-3.c: New test.
+	* gcc.target/bpf/atomic-op-1.c: New test.
+	* gcc.target/bpf/atomic-op-2.c: New test.
+	* gcc.target/bpf/atomic-op-3.c: New test.
+	* gcc.target/bpf/atomic-xchg-1.c: New test.
+	* gcc.target/bpf/atomic-xchg-2.c: New test.
+
+2023-07-26  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/vect/vect-multi-peel-gaps.c: Add `check_vect` call into
+	`main` of this testcase.
+
+2023-07-26  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Renam
+	vec-replace-word-runnable_1.c.
+	* gcc.target/powerpc/vec-replace-word-runnable_1.c
+	(dg-options): add -flax-vector-conversions.
+	(vec_replace_unaligned) Fix first argument type.
+	(vresult_uchar): Fix expected results.
+	(vec_replace_unaligned): Update for loop to check uchar results.
+	Remove extra spaces in if statements. Insert missing spaces in
+	for statements.
+	* gcc.target/powerpc/vec-replace-word-runnable_2.c: New test file.
+
+2023-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/comparisons_3.F90: Use dg-additional-options
+	instead of dg-options.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106081
+	* gcc.dg/vect/pr106081.c: New testcase.
+
+2023-07-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR testsuite/110763
+	* gcc.dg/ubsan/object-size-dyn.c (dyn): New parameter RET.
+	(main): Use it.
+
+2023-07-26  Li Xu  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple-intrinsic.c: New test.
+
+2023-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110762
+	* gcc.target/i386/pr110762.c: New test.
+
+2023-07-26  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/neg-1.c: New test.
+	* gcc.target/bpf/neg-pseudoc-1.c: Likewise.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* gcc.dg/torture/pr110799.c: New testcase.
+
+2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* gcc.dg/pr110755.c: New test.
+
+2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* g++.target/powerpc/pr110741.C: New test.
+
+2023-07-26  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fsflags.c: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96630
+	PR c++/98675
+	PR c++/70331
+	* g++.dg/cpp1y/constexpr-lifetime1.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime2.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime3.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime4.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime5.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime6.C: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110619
+	* g++.dg/cpp1y/constexpr-110619.C: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-48089.C: Update diagnostic locations.
+	* g++.dg/cpp0x/constexpr-70323.C: Likewise.
+	* g++.dg/cpp0x/constexpr-70323a.C: Likewise.
+	* g++.dg/cpp0x/constexpr-delete2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice20.C: Likewise.
+	* g++.dg/cpp0x/constexpr-mutable3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-recursion.C: Likewise.
+	* g++.dg/cpp0x/overflow1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89285.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89481.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const14.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const16.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const18.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const19.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const21.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const22.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const3.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const4.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const7.C: Likewise.
+	* g++.dg/cpp1y/constexpr-union5.C: Likewise.
+	* g++.dg/cpp1y/pr68180.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda6.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda8.C: Likewise.
+	* g++.dg/cpp2a/bit-cast11.C: Likewise.
+	* g++.dg/cpp2a/bit-cast12.C: Likewise.
+	* g++.dg/cpp2a/bit-cast14.C: Likewise.
+	* g++.dg/cpp2a/constexpr-98122.C: Likewise.
+	* g++.dg/cpp2a/constexpr-dynamic17.C: Likewise.
+	* g++.dg/cpp2a/constexpr-init1.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new12.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new3.C: Likewise.
+	* g++.dg/cpp2a/constinit10.C: Likewise.
+	* g++.dg/cpp2a/is-corresponding-member4.C: Likewise.
+	* g++.dg/ext/constexpr-vla2.C: Likewise.
+	* g++.dg/ext/constexpr-vla3.C: Likewise.
+	* g++.dg/ubsan/pr63956.C: Likewise.
+
+2023-07-26  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Check for c++11_only.
+
 2023-07-25  Andrew Pinski  <apinski@marvell.com>
 
 	PR testsuite/110803
