@@ -1885,6 +1885,16 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 				 gfc_conv_descriptor_data_get (desc));
   tmp = gfc_build_array_ref (tmp, offset, NULL);
 
+  if (expr->expr_type == EXPR_FUNCTION && expr->ts.type == BT_DERIVED
+      && expr->ts.u.derived->attr.alloc_comp)
+    {
+      if (!VAR_P (se->expr))
+	se->expr = gfc_evaluate_now (se->expr, &se->pre);
+      gfc_add_expr_to_block (&se->finalblock,
+			     gfc_deallocate_alloc_comp_no_caf (
+			       expr->ts.u.derived, se->expr, expr->rank, true));
+    }
+
   if (expr->ts.type == BT_CHARACTER)
     {
       int i = gfc_validate_kind (BT_CHARACTER, expr->ts.kind, false);
@@ -2147,6 +2157,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
 	      *poffset = fold_build2_loc (input_location, PLUS_EXPR,
 					  gfc_array_index_type,
 					  *poffset, gfc_index_one_node);
+	      if (finalblock)
+		gfc_add_block_to_block (finalblock, &se.finalblock);
 	    }
 	  else
 	    {
@@ -2795,6 +2807,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   tree neg_len;
   char *msg;
   stmtblock_t finalblock;
+  bool finalize_required;
 
   /* Save the old values for nested checking.  */
   old_first_len = first_len;
@@ -2973,8 +2986,11 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   TREE_USED (offsetvar) = 0;
 
   gfc_init_block (&finalblock);
+  finalize_required = expr->must_finalize;
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
+    finalize_required = true;
   gfc_trans_array_constructor_value (&outer_loop->pre,
-				     expr->must_finalize ? &finalblock : NULL,
+				     finalize_required ? &finalblock : NULL,
 				     type, desc, c, &offset, &offsetvar,
 				     dynamic);
 
