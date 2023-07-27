@@ -37,6 +37,16 @@ end block
   i = 5
   !$omp end teams
 !$omp end target
+
+
+!$omp target  ! { dg-error "OMP TARGET region at .1. with a nested TEAMS may not contain any other statement, declaration or directive outside of the single TEAMS construct" }
+block
+  do i = 5, 8
+    !$omp teams
+    block; end block
+  end do
+end block
+
 end
 
 
