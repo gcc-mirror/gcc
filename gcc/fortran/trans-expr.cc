@@ -7521,6 +7521,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  && !(fsym && fsym->ts.type == BT_DERIVED && fsym->ts.u.derived
 	       && fsym->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR
 	       && fsym->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING )
+	  && !(fsym && fsym->ts.type == BT_ASSUMED)
 	  && !(fsym && UNLIMITED_POLY (fsym)))
 	vec_safe_push (stringargs, parmse.string_length);
 
