@@ -10666,15 +10666,14 @@ resolve_omp_target (gfc_code *code)
 
   if (!code->ext.omp_clauses->contains_teams_construct)
     return;
-  if (code->ext.omp_clauses->target_first_st_is_teams
-      && ((GFC_IS_TEAMS_CONSTRUCT (code->block->next->op)
-	   && code->block->next->next == NULL)
-	  || (code->block->next->op == EXEC_BLOCK
-	      && code->block->next->next
-	      && GFC_IS_TEAMS_CONSTRUCT (code->block->next->next->op)
-	      && code->block->next->next->next == NULL)))
-    return;
   gfc_code *c = code->block->next;
+  if (code->ext.omp_clauses->target_first_st_is_teams
+      && ((GFC_IS_TEAMS_CONSTRUCT (c->op) && c->next == NULL)
+	  || (c->op == EXEC_BLOCK
+	      && c->next
+	      && GFC_IS_TEAMS_CONSTRUCT (c->next->op)
+	      && c->next->next == NULL)))
+    return;
   while (c && !GFC_IS_TEAMS_CONSTRUCT (c->op))
     c = c->next;
   if (c)
