@@ -1040,6 +1040,29 @@ determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
   *exit_bound = bound;
 }
 
+/* Updat NEW_EXIT probability after loop has been unrolled.  */
+
+void
+update_exit_probability_after_unrolling (class loop *loop, edge new_exit)
+{
+  /* gimple_duplicate_loop_body_to_header_edge depending on
+     DLTHE_FLAG_UPDATE_FREQ either keeps original frequency of the loop header
+     or scales it down accordingly.
+     However exit edge probability is kept as original.  Fix it if needed
+     and compensate.  */
+  profile_probability new_prob
+	  = loop_preheader_edge
+		  (loop)->count ().probability_in (new_exit->src->count);
+  if (!(new_prob == new_exit->probability))
+    {
+      profile_count old_count = new_exit->src->count - new_exit->count ();
+      set_edge_probability_and_rescale_others (new_exit, new_prob);
+      profile_count new_count = new_exit->src->count - new_exit->count ();
+      scale_dominated_blocks_in_loop (loop, new_exit->src,
+				      new_count, old_count);
+    }
+}
+
 /* Unroll LOOP FACTOR times.  LOOP is known to have a single exit edge
    whose source block dominates the latch.  DESC describes the number of
    iterations of LOOP.
@@ -1266,23 +1289,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
   update_ssa (TODO_update_ssa);
 
   new_exit = single_dom_exit (loop);
-
-  /* gimple_duplicate_loop_body_to_header_edge depending on
-     DLTHE_FLAG_UPDATE_FREQ either keeps original frequency of the loop header
-     or scales it down accordingly.
-     However exit edge probability is kept as original.  Fix it if needed
-     and compensate.  */
-  profile_probability new_prob
-	  = loop_preheader_edge
-		  (loop)->count ().probability_in (new_exit->src->count);
-  if (!(new_prob == new_exit->probability))
-    {
-      profile_count old_count = new_exit->src->count - new_exit->count ();
-      set_edge_probability_and_rescale_others (new_exit, new_prob);
-      profile_count new_count = new_exit->src->count - new_exit->count ();
-      scale_dominated_blocks_in_loop (loop, new_exit->src,
-				      new_count, old_count);
-    }
+  update_exit_probability_after_unrolling (loop, new_exit);
   if (!single_loop_p)
     {
       /* Finally create the new counter for number of iterations and add
