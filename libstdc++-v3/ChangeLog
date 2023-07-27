@@ -1,3 +1,7 @@
+2023-07-27  Release Manager
+
+	* GCC 13.2.0 released.
+
 2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109921

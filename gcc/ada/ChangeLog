@@ -1,3 +1,7 @@
+2023-07-27  Release Manager
+
+	* GCC 13.2.0 released.
+
 2023-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* adaint.c [_WIN32]: Undefine 'abort' macro.
