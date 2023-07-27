@@ -26,7 +26,9 @@ namespace Rust {
 
 const std::string PROC_MACRO_DECL_PREFIX = "__gccrs_proc_macro_decls_";
 
-static ProcMacro::TokenStream
+namespace {
+
+ProcMacro::TokenStream
 tokenstream_from_string (std::string &data, bool &lex_error)
 {
   // FIXME: Insert location pointing to call site in tokens
@@ -55,6 +57,8 @@ static_assert (
   std::is_same<decltype (tokenstream_from_string) *,
 	       ProcMacro::from_str_function_t>::value,
   "Registration callback signature not synced, check proc macro internals.");
+
+} // namespace
 
 template <typename Symbol, typename Callback>
 bool
