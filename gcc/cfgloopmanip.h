@@ -68,6 +68,9 @@ class loop * loop_version (class loop *, void *,
 void adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise);
 void scale_dominated_blocks_in_loop (class loop *loop, basic_block bb,
 				     profile_count num, profile_count den);
+edge update_loop_exit_probability_scale_dom_bbs
+		(class loop *loop, edge exit_edge = NULL,
+		 profile_count desired_count = profile_count::uninitialized ());
 void update_exit_probability_after_unrolling (class loop *loop, edge new_exit);
 
 #endif /* GCC_CFGLOOPMANIP_H */

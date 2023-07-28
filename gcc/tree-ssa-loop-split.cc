@@ -610,7 +610,6 @@ split_loop (class loop *loop1)
   for (i = 0; i < loop1->num_nodes; i++)
     if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv, &guard_code)))
       {
-	profile_count entry_count = loop_preheader_edge (loop1)->count ();
 	/* Handling opposite steps is not implemented yet.  Neither
 	   is handling different step sizes.  */
 	if ((tree_int_cst_sign_bit (iv.step)
@@ -692,48 +691,8 @@ split_loop (class loop *loop1)
 			= loop1_prob.invert ();
 
 	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
-
-	/* Fix loop's exit probability after scaling.  */
-
-	if (entry_count.initialized_p () && entry_count.nonzero_p ())
-	  {
-	    edge exit_to_latch1;
-	    if (EDGE_SUCC (exit1->src, 0) == exit1)
-	      exit_to_latch1 = EDGE_SUCC (exit1->src, 1);
-	    else
-	      exit_to_latch1 = EDGE_SUCC (exit1->src, 0);
-	    if (exit1->src->count.nonzero_p ())
-	      {
-		/* First loop is entered loop1_prob * entry_count times
-		   and it needs to exit the same number of times.  */
-		exit1->probability
-			= entry_count.apply_probability
-				(loop1_prob).probability_in (exit1->src->count);
-		exit_to_latch1->probability = exit1->probability.invert ();
-		scale_dominated_blocks_in_loop (loop1, exit1->src,
-						exit_to_latch1->count (),
-						exit_to_latch1->dest->count);
-	      }
-
-	    edge exit_to_latch2, exit2 = single_exit (loop2);
-	    if (EDGE_SUCC (exit2->src, 0) == exit2)
-	      exit_to_latch2 = EDGE_SUCC (exit2->src, 1);
-	    else
-	      exit_to_latch2 = EDGE_SUCC (exit2->src, 0);
-	    if (exit2->src->count.nonzero_p ())
-	      {
-		/* Second loop is entered very_likely * entry_count times
-		   and it needs to exit the same number of times.  */
-		exit2->probability
-			= entry_count.apply_probability
-				(profile_probability::very_likely ())
-				.probability_in (exit2->src->count);
-		exit_to_latch2->probability = exit2->probability.invert ();
-		scale_dominated_blocks_in_loop (loop2, exit2->src,
-						exit_to_latch2->count (),
-						exit_to_latch2->dest->count);
-	      }
-	  }
+	update_loop_exit_probability_scale_dom_bbs (loop1);
+	update_loop_exit_probability_scale_dom_bbs (loop2);
 
 	edge new_e = connect_loops (loop1, loop2);
 	connect_loop_phis (loop1, loop2, new_e);

@@ -488,6 +488,7 @@ unroll_loop_constant_iterations (class loop *loop)
   struct opt_info *opt_info = NULL;
   bool ok;
   bool flat = maybe_flat_loop_profile (loop);
+  profile_count orig_exit_count = desc->out_edge->count ();
 
   niter = desc->niter;
 
@@ -608,9 +609,10 @@ unroll_loop_constant_iterations (class loop *loop)
     | (flat ? DLTHE_FLAG_FLAT_PROFILE : 0));
   gcc_assert (ok);
 
-  edge new_exit = single_dom_exit (loop);
-  if (new_exit)
-    update_exit_probability_after_unrolling (loop, new_exit);
+  edge exit = update_loop_exit_probability_scale_dom_bbs
+	  (loop, desc->out_edge, orig_exit_count);
+  if (exit)
+    update_br_prob_note (exit->src);
 
   if (opt_info)
     {
