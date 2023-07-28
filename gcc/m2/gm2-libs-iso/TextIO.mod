@@ -30,45 +30,73 @@ IMPLEMENTATION MODULE TextIO ;
 IMPORT IOChan, IOConsts, CharClass, ASCII ;
 FROM SYSTEM IMPORT ADR ;
 FROM FIO IMPORT FlushOutErr ;
+FROM libc IMPORT printf ;
+
+
+CONST
+   DebugState = FALSE ;
+
 
   (* The following procedures do not read past line marks *)
 
-PROCEDURE CanRead (cid: IOChan.ChanId) : BOOLEAN ;
+PROCEDURE CharAvailable (cid: IOChan.ChanId) : BOOLEAN ;
 BEGIN
-   RETURN( (IOChan.ReadResult(cid)=IOConsts.notKnown) OR
-           (IOChan.ReadResult(cid)=IOConsts.allRight) )
-END CanRead ;
+   RETURN( (IOChan.ReadResult (cid) = IOConsts.notKnown) OR
+           (IOChan.ReadResult (cid) = IOConsts.allRight) )
+END CharAvailable ;
 
-PROCEDURE WasGoodChar (cid: IOChan.ChanId) : BOOLEAN ;
+
+PROCEDURE EofOrEoln (cid: IOChan.ChanId) : BOOLEAN ;
 BEGIN
-   RETURN( (IOChan.ReadResult(cid)#IOConsts.endOfLine) AND
-           (IOChan.ReadResult(cid)#IOConsts.endOfInput) )
-END WasGoodChar ;
+   RETURN( (IOChan.ReadResult (cid) = IOConsts.endOfLine) OR
+           (IOChan.ReadResult (cid) = IOConsts.endOfInput) )
+END EofOrEoln ;
 
 
 (*
-   SetResult - assigns the result in cid.
+   DumpState
+*)
+
+PROCEDURE DumpState (cid: IOChan.ChanId) ;
+BEGIN
+   printf ("cid = %d, ", cid) ;
+   CASE IOChan.ReadResult (cid) OF
+
+   IOConsts.notKnown:  printf ('notKnown') |
+   IOConsts.allRight:  printf ('allRight') |
+   IOConsts.outOfRange: printf ('outOfRange') |
+   IOConsts.wrongFormat: printf ('wrongFormat') |
+   IOConsts.endOfLine: printf ('endOfLine') |
+   IOConsts.endOfInput: printf ('endOfInput')
+
+   END ;
+   printf ("\n")
+END DumpState ;
+
+
+(*
+   SetNul - assigns the result in cid.
                If s is empty then leave as endOfInput
                   or endOfLine
                If s is not empty then assign allRight
                If range and i exceeds, h, then assign outOfRange
 *)
 
-PROCEDURE SetResult (cid: IOChan.ChanId; i: CARDINAL;
+PROCEDURE SetNul (cid: IOChan.ChanId; i: CARDINAL;
                      VAR s: ARRAY OF CHAR; range: BOOLEAN) ;
 BEGIN
+   IF DebugState
+   THEN
+      DumpState (cid)
+   END ;
    IF i<=HIGH(s)
    THEN
-      s[i] := ASCII.nul ;
-      IF i>0
-      THEN
-         IOChan.SetReadResult(cid, IOConsts.allRight)
-      END
+      s[i] := ASCII.nul
    ELSIF range
    THEN
-      IOChan.SetReadResult(cid, IOConsts.outOfRange)
+      IOChan.SetReadResult (cid, IOConsts.outOfRange)
    END
-END SetResult ;
+END SetNul ;
 
 
 PROCEDURE ReadChar (cid: IOChan.ChanId; VAR ch: CHAR);
@@ -81,15 +109,16 @@ VAR
    res: IOConsts.ReadResults ;
 BEGIN
    FlushOutErr ;
-   IF CanRead(cid)
+   IF CharAvailable (cid)
    THEN
-      IOChan.Look(cid, ch, res) ;
-      IF res=IOConsts.allRight
+      IOChan.Look (cid, ch, res) ;
+      IF res = IOConsts.allRight
       THEN
-         IOChan.Skip(cid)
+         IOChan.Skip (cid)
       END
    END
 END ReadChar ;
+
 
 PROCEDURE ReadRestLine (cid: IOChan.ChanId; VAR s: ARRAY OF CHAR);
   (* Removes any remaining characters from the input stream
@@ -105,20 +134,21 @@ BEGIN
    h := HIGH(s) ;
    i := 0 ;
    finished := FALSE ;
-   WHILE (i<=h) AND CanRead(cid) AND (NOT finished) DO
-      ReadChar(cid, s[i]) ;
-      IF WasGoodChar(cid)
+   WHILE (i<=h) AND CharAvailable (cid) AND (NOT finished) DO
+      ReadChar (cid, s[i]) ;
+      IF EofOrEoln (cid)
       THEN
-         INC(i)
-      ELSE
          finished := TRUE
+      ELSE
+         INC (i)
       END
    END ;
-   WHILE CanRead(cid) DO
-      IOChan.Skip(cid)
+   WHILE CharAvailable (cid) DO
+      IOChan.Skip (cid)
    END ;
-   SetResult(cid, i, s, TRUE)
+   SetNul (cid, i, s, TRUE)
 END ReadRestLine ;
+
 
 PROCEDURE ReadString (cid: IOChan.ChanId; VAR s: ARRAY OF CHAR);
   (* Removes only those characters from the input stream cid
@@ -130,19 +160,19 @@ VAR
    i, h    : CARDINAL ;
    finished: BOOLEAN ;
 BEGIN
-   h := HIGH(s) ;
+   h := HIGH (s) ;
    i := 0 ;
    finished := FALSE ;
-   WHILE (i<=h) AND CanRead(cid) AND (NOT finished) DO
-      ReadChar(cid, s[i]) ;
-      IF WasGoodChar(cid)
+   WHILE (i<=h) AND CharAvailable (cid) AND (NOT finished) DO
+      ReadChar (cid, s[i]) ;
+      IF EofOrEoln (cid)
       THEN
-         INC(i)
-      ELSE
          finished := TRUE
+      ELSE
+         INC (i)
       END
    END ;
-   SetResult(cid, i, s, FALSE)
+   SetNul (cid, i, s, FALSE)
 END ReadString ;
 
 
@@ -155,16 +185,11 @@ VAR
    ch : CHAR ;
    res: IOConsts.ReadResults ;
 BEGIN
-   WHILE CanRead(cid) DO
+   WHILE CharAvailable (cid) DO
       IOChan.Look(cid, ch, res) ;
-      IF res=IOConsts.allRight
+      IF (res=IOConsts.allRight) AND CharClass.IsWhiteSpace (ch)
       THEN
-         IF CharClass.IsWhiteSpace(ch)
-         THEN
-            IOChan.Skip(cid)
-         ELSE
-            RETURN
-         END
+         IOChan.Skip (cid)
       ELSE
          RETURN
       END
@@ -182,19 +207,19 @@ PROCEDURE ReadToken (cid: IOChan.ChanId; VAR s: ARRAY OF CHAR);
 VAR
    i, h: CARDINAL ;
 BEGIN
-   SkipSpaces(cid) ;
-   h := HIGH(s) ;
+   SkipSpaces (cid) ;
+   h := HIGH (s) ;
    i := 0 ;
-   WHILE (i<=h) AND CanRead(cid) DO
-      ReadChar(cid, s[i]) ;
-      IF (s[i]=ASCII.nul) OR CharClass.IsWhiteSpace(s[i])
+   WHILE (i<=h) AND CharAvailable (cid) DO
+      ReadChar (cid, s[i]) ;
+      IF (s[i]=ASCII.nul) OR CharClass.IsWhiteSpace (s[i])
       THEN
-         SetResult(cid, i, s, TRUE) ;
+         SetNul (cid, i, s, TRUE) ;
          RETURN
       END ;
-      INC(i)
+      INC (i)
    END ;
-   SetResult(cid, i, s, TRUE)
+   SetNul (cid, i, s, TRUE)
 END ReadToken ;
 
   (* The following procedure reads past the next line mark *)
@@ -209,13 +234,14 @@ VAR
    ch : CHAR ;
    res: IOConsts.ReadResults ;
 BEGIN
-   IOChan.Look(cid, ch, res) ;
-   WHILE res=IOConsts.allRight DO
-      IOChan.SkipLook(cid, ch, res)
+   IOChan.Look (cid, ch, res) ;
+   WHILE res = IOConsts.allRight DO
+      IOChan.SkipLook (cid, ch, res)
    END ;
-   IF res=IOConsts.endOfLine
+   IF res = IOConsts.endOfLine
    THEN
-      IOChan.Skip(cid)
+      IOChan.Skip (cid) ;
+      IOChan.SetReadResult (cid, IOConsts.allRight)
    END
 END SkipLine ;
 
@@ -224,19 +250,19 @@ END SkipLine ;
 PROCEDURE WriteChar (cid: IOChan.ChanId; ch: CHAR);
   (* Writes the value of ch to the output stream cid. *)
 BEGIN
-   IOChan.TextWrite(cid, ADR(ch), SIZE(ch))
+   IOChan.TextWrite (cid, ADR (ch), SIZE (ch))
 END WriteChar ;
 
 PROCEDURE WriteLn (cid: IOChan.ChanId);
   (* Writes a line mark to the output stream cid. *)
 BEGIN
-   IOChan.WriteLn(cid)
+   IOChan.WriteLn (cid)
 END WriteLn ;
 
 PROCEDURE WriteString (cid: IOChan.ChanId; s: ARRAY OF CHAR);
   (* Writes the string value in s to the output stream cid. *)
 BEGIN
-   IOChan.TextWrite(cid, ADR(s), LENGTH(s))
+   IOChan.TextWrite (cid, ADR (s), LENGTH (s))
 END WriteString ;
 
 
