@@ -273,6 +273,9 @@ bpf_option_override (void)
 	      "on this architecture");
       flag_stack_protect = 0;
     }
+
+  /* The BPF target does not support tail call optimization.  */
+  flag_optimize_sibling_calls = 0;
 }
 
 #undef TARGET_OPTION_OVERRIDE
