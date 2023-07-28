@@ -354,7 +354,7 @@ vbool64_t var_63 = __riscv_vmseq_vx_u8mf8_b64(var_69, var_70, 2);
 vuint8mf8_t var_19 = __riscv_vsub_vx_u8mf8_tumu(var_20, var_21, var_22, var_73, 2);
 // 225, 96
 
-vuint32mf2_t var_16 = __riscv_vssubu_vx_u32mf2_tumu(var_33, var_34, var_35, var_74, 0, 2);
+vuint32mf2_t var_16 = __riscv_vssubu_vx_u32mf2_tumu(var_33, var_34, var_35, var_74, 2);
 // 3077557042, 4186139873
 
 __riscv_vsetvl_e64m4(2);
