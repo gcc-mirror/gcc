@@ -517,6 +517,8 @@ public:
       inner_attribute (inner_attribute)
   {}
 
+  bool is_derive () const;
+
   // default destructor
   ~Attribute () = default;
 
