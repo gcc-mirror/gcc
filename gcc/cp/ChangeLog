@@ -1,3 +1,19 @@
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* constexpr.cc (cxx_eval_array_reference): Allow synthesizing an
+	empty subobject even if CONSTRUCTOR_NO_CLEARING is set.
+	(cxx_eval_bare_aggregate): Set 'no_slot' to true more generally
+	whenever new_ctx.ctor is set to NULL_TREE by init_subob_ctx,
+	i.e. whenever initializing an subobject of empty type.
+	(cxx_eval_vec_init_1): Define 'no_slot' as above and use it
+	accordingly.
+
+2023-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103497
+	* pt.cc (type_uses_auto): Check inside parameter packs.
+
 2023-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110566

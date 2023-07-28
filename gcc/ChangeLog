@@ -1,3 +1,136 @@
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	PR target/110782
+	PR target/110784
+	* config/bpf/bpf.opt (msmov): New option.
+	* config/bpf/bpf.cc (bpf_option_override): Handle it here.
+	* config/bpf/bpf.md (*extendsidi2): New.
+	(extendhidi2): New.
+	(extendqidi2): New.
+	(extendsisi2): New.
+	(extendhisi2): New.
+	(extendqisi2): New.
+	* doc/invoke.texi (Option Summary): Add -msmov eBPF option.
+	(eBPF Options): Add -m[no-]smov.  Document that -mcpu=v4
+	also enables -msmov.
+
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	* doc/invoke.texi (Option Summary): Remove -mkernel eBPF option.
+	Add -mbswap and -msdiv eBPF options.
+	(eBPF Options): Remove -mkernel.  Add -mno-{jmpext, jmp32,
+	alu32, v3-atomics, bswap, sdiv}.  Document that -mcpu=v4 also
+	enables -msdiv.
+
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (add<AM:mode>3): Use %w2 instead of %w1
+	in pseudo-C dialect output template.
+	(sub<AM:mode>3): Likewise.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vect-loop.cc (optimize_mask_stores): Make store
+	likely.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.h (single_dom_exit): Declare.
+	* cfgloopmanip.h (update_exit_probability_after_unrolling): Declare.
+	* cfgrtl.cc (struct cfg_hooks): Fix comment.
+	* loop-unroll.cc (unroll_loop_constant_iterations): Update exit edge.
+	* tree-ssa-loop-ivopts.h (single_dom_exit): Do not declare it here.
+	* tree-ssa-loop-manip.cc (update_exit_probability_after_unrolling):
+	Break out from ...
+	(tree_transform_and_unroll_loop): ... here;
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopmanip.cc (scale_dominated_blocks_in_loop): Move here from
+	tree-ssa-loop-manip.cc and avoid recursion.
+	(scale_loop_profile): Use scale_dominated_blocks_in_loop.
+	(duplicate_loop_body_to_header_edge): Add DLTHE_FLAG_FLAT_PROFILE
+	flag.
+	* cfgloopmanip.h (DLTHE_FLAG_FLAT_PROFILE): Define.
+	(scale_dominated_blocks_in_loop): Declare.
+	* predict.cc (dump_prediction): Do not ICE on uninitialized probability.
+	(change_edge_frequency): Remove.
+	* predict.h (change_edge_frequency): Remove.
+	* tree-ssa-loop-manip.cc (scale_dominated_blocks_in_loop): Move to
+	cfgloopmanip.cc.
+	(niter_for_unrolled_loop): Remove.
+	(tree_transform_and_unroll_loop): Fix profile update.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-im.cc (execute_sm_if_changed): Turn cap probability
+	to guessed; fix count of new_bb.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.h (profile_count::apply_probability): Fix
+	handling of uninitialized probabilities, optimize scaling
+	by probability 1.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91838
+	* gimple-match-head.cc: Include attribs.h and asan.h.
+	* generic-match-head.cc: Likewise.
+	* match.pd (([rl]shift @0 out-of-bounds) -> zero): New pattern.
+
+2023-07-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-modes.def (VECTOR_BOOL_MODE): Add VLS modes.
+	(ADJUST_ALIGNMENT): Ditto.
+	(ADJUST_PRECISION): Ditto.
+	(VLS_MODES): Ditto.
+	(VECTOR_MODE_WITH_PREFIX): Ditto.
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_VLS): New macro.
+	* config/riscv/riscv-protos.h (riscv_v_ext_vls_mode_p): New function.
+	* config/riscv/riscv-v.cc (INCLUDE_ALGORITHM): Add include.
+	(legitimize_move): Enable basic VLS modes support.
+	(get_vlmul): Ditto.
+	(get_ratio): Ditto.
+	(get_vector_mode): Ditto.
+	* config/riscv/riscv-vector-switch.def (VLS_ENTRY): Add vls modes.
+	* config/riscv/riscv.cc (riscv_v_ext_vls_mode_p): New function.
+	(VLS_ENTRY): New macro.
+	(riscv_v_ext_mode_p): Add vls modes.
+	(riscv_get_v_regno_alignment): New function.
+	(riscv_print_operand): Add vls modes.
+	(riscv_hard_regno_nregs): Ditto.
+	(riscv_hard_regno_mode_ok): Ditto.
+	(riscv_regmode_natural_size): Ditto.
+	(riscv_vectorize_preferred_vector_alignment): Ditto.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+	* config/riscv/autovec-vls.md: New file.
+
+2023-07-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv_vector.h (enum RVV_CSR): Removed.
+	(vread_csr): Ditto.
+	(vwrite_csr): Ditto.
+
+2023-07-27  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/autovec.md: Delete which_alternative use in split
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sink.cc (sink_code_in_bb): Remove recursion, instead
+	use a worklist ...
+	(pass_sink_code::execute): ... in the caller.
+
+2023-07-27  Kewen Lin  <linkw@linux.ibm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110776
+	* tree-vect-stmts.cc (vectorizable_load): Always cost VMAT_ELEMENTWISE
+	as scalar load.
+
 2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
 
 	* config/riscv/riscv.md: Include zicond.md

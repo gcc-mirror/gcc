@@ -1,3 +1,118 @@
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	PR target/110782
+	PR target/110784
+	* gcc.target/bpf/sload-1.c: New test.
+	* gcc.target/bpf/sload-pseudoc-1.c: New test.
+	* gcc.target/bpf/smov-1.c: New test.
+	* gcc.target/bpf/smov-pseudoc-1.c: New test.
+
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/alu-2.c: New test.
+	* gcc.target/bpf/alu-pseudoc-2.c: Likewise.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/peel-1.c: Test for profile mismatches.
+	* gcc.dg/tree-prof/unroll-1.c: Test for profile mismatches.
+	* gcc.dg/tree-ssa/peel1.c: Test for profile mismatches.
+	* gcc.dg/unroll-1.c: Test for profile mismatches.
+	* gcc.dg/unroll-3.c: Test for profile mismatches.
+	* gcc.dg/unroll-4.c: Test for profile mismatches.
+	* gcc.dg/unroll-5.c: Test for profile mismatches.
+	* gcc.dg/unroll-6.c: Test for profile mismatches.
+
+2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/teams-6.f90: Extend.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr102385.c: Check for no profile mismatches.
+	* gcc.dg/pr96931.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-1.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-2.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-3.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-4.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-5.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-7.c: Check for one profile mismatch.
+	* gcc.dg/tree-ssa/predcom-8.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-1.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-10.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-11.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-12.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-2.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-5.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-6.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-7.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-8.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-9.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/update-unroll-1.c: Unxfail.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* g++.dg/cpp0x/constexpr-empty18.C: New test.
+	* g++.dg/cpp0x/constexpr-empty19.C: New test.
+
+2023-07-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Add more checks.
+	* gcc.target/riscv/rvv/rvv.exp: Add VLS modes tests.
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-7.c: New test.
+
+2023-07-27  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: New test.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110829
+	* gcc.dg/pr56837.c: XFAIL part of the testcase.
+
+2023-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103497
+	* g++.dg/cpp1y/decltype-auto-103497.C: New test.
+
+2023-07-27  Kewen Lin  <linkw@linux.ibm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110776
+	* gcc.target/powerpc/pr110776.c: New test.
+
+2023-07-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/arch-23.c: Update expected diagnostic messages.
+	* gcc.target/riscv/pr102957.c: Likewise.
+
 2023-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110566

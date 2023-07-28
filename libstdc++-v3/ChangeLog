@@ -1,3 +1,11 @@
+2023-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108046
+	* include/std/format (__formatter_fp::format): Ensure __expc is
+	always set for all presentation types. Set __z correctly for
+	zero precision.
+	* testsuite/std/format/functions/format.cc: Check problem cases.
+
 2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110807

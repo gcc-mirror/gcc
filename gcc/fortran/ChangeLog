@@ -1,3 +1,9 @@
+2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (resolve_omp_target): Minor cleanup.
+	* parse.cc (decode_omp_directive): Find TARGET statement
+	also higher in the stack.
+
 2023-07-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/68569
