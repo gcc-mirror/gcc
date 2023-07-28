@@ -42,78 +42,6 @@ ExpandVisitor::go (AST::Crate &crate)
   expand_inner_items (crate.items);
 }
 
-/**
- * Returns a list of traits to derive from within a given attribute.
- *
- * @param attrs The attributes on the item to derive
- */
-static std::vector<AST::SimplePath>
-get_traits_to_derive (AST::Attribute &attr)
-{
-  std::vector<AST::SimplePath> result;
-  auto &input = attr.get_attr_input ();
-  switch (input.get_attr_input_type ())
-    {
-      case AST::AttrInput::META_ITEM: {
-	auto meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
-	for (auto &current : meta.get_items ())
-	  {
-	    // HACK: Find a better way to achieve the downcast.
-	    switch (current->get_kind ())
-	      {
-		case AST::MetaItemInner::Kind::MetaItem: {
-		  // Let raw pointer go out of scope without freeing, it doesn't
-		  // own the data anyway
-		  auto meta_item
-		    = static_cast<AST::MetaItem *> (current.get ());
-		  switch (meta_item->get_item_kind ())
-		    {
-		      case AST::MetaItem::ItemKind::Path: {
-			auto path
-			  = static_cast<AST::MetaItemPath *> (meta_item);
-			result.push_back (path->get_path ());
-		      }
-		      break;
-		      case AST::MetaItem::ItemKind::Word: {
-			auto word = static_cast<AST::MetaWord *> (meta_item);
-			// Convert current word to path
-			current
-			  = make_unique<AST::MetaItemPath> (AST::MetaItemPath (
-			    AST::SimplePath (word->get_ident ())));
-			auto path
-			  = static_cast<AST::MetaItemPath *> (current.get ());
-
-			result.push_back (path->get_path ());
-		      }
-		      break;
-		    case AST::MetaItem::ItemKind::ListPaths:
-		    case AST::MetaItem::ItemKind::NameValueStr:
-		    case AST::MetaItem::ItemKind::PathLit:
-		    case AST::MetaItem::ItemKind::Seq:
-		    case AST::MetaItem::ItemKind::ListNameValueStr:
-		    default:
-		      gcc_unreachable ();
-		      break;
-		    }
-		}
-		break;
-	      case AST::MetaItemInner::Kind::LitExpr:
-	      default:
-		gcc_unreachable ();
-		break;
-	      }
-	  }
-      }
-      break;
-    case AST::AttrInput::TOKEN_TREE:
-    case AST::AttrInput::LITERAL:
-    case AST::AttrInput::MACRO:
-      rust_unreachable ();
-      break;
-    }
-  return result;
-}
-
 static std::unique_ptr<AST::Item>
 builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 		     BuiltinMacro to_derive)
@@ -253,7 +181,7 @@ ExpandVisitor::expand_inner_items (
 		  current.parse_attr_to_meta_item ();
 		  attr_it = attrs.erase (attr_it);
 		  // Get traits to derive in the current attribute
-		  auto traits_to_derive = get_traits_to_derive (current);
+		  auto traits_to_derive = current.get_traits_to_derive ();
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
@@ -339,7 +267,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		{
 		  attr_it = attrs.erase (attr_it);
 		  // Get traits to derive in the current attribute
-		  auto traits_to_derive = get_traits_to_derive (current);
+		  auto traits_to_derive = current.get_traits_to_derive ();
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
