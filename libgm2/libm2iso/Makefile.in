@@ -107,15 +107,15 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = libm2iso
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am
@@ -176,8 +176,8 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	Storage.lo StreamFile.lo StringChan.lo \
 @BUILD_ISOLIB_TRUE@	Strings.lo SWholeIO.lo SysClock.lo \
 @BUILD_ISOLIB_TRUE@	SYSTEM.lo TermFile.lo TERMINATION.lo \
-@BUILD_ISOLIB_TRUE@	TextIO.lo WholeConv.lo WholeIO.lo \
-@BUILD_ISOLIB_TRUE@	WholeStr.lo
+@BUILD_ISOLIB_TRUE@	TextIO.lo TextUtil.lo WholeConv.lo \
+@BUILD_ISOLIB_TRUE@	WholeIO.lo WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
 @BUILD_ISOLIB_TRUE@	ErrnoCategory.lo wraptime.lo RTco.lo \
 @BUILD_ISOLIB_TRUE@	libm2iso_la-wrapsock.lo
@@ -512,6 +512,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.def  SysClock.def \
 @BUILD_ISOLIB_TRUE@         SYSTEM.def  TermFile.def \
 @BUILD_ISOLIB_TRUE@         TERMINATION.def  TextIO.def \
+@BUILD_ISOLIB_TRUE@         TextUtil.def \
 @BUILD_ISOLIB_TRUE@         WholeConv.def  WholeIO.def \
 @BUILD_ISOLIB_TRUE@         WholeStr.def  wrapsock.def \
 @BUILD_ISOLIB_TRUE@         wraptime.def
@@ -551,6 +552,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.mod  SysClock.mod \
 @BUILD_ISOLIB_TRUE@         SYSTEM.mod  TermFile.mod \
 @BUILD_ISOLIB_TRUE@         TERMINATION.mod  TextIO.mod \
+@BUILD_ISOLIB_TRUE@         TextUtil.mod \
 @BUILD_ISOLIB_TRUE@         WholeConv.mod  WholeIO.mod \
 @BUILD_ISOLIB_TRUE@         WholeStr.mod
 
