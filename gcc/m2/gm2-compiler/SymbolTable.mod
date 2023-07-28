@@ -76,7 +76,7 @@ FROM M2Base IMPORT MixTypes, InitBase, Char, Integer, LongReal,
                    Cardinal, LongInt, LongCard, ZType, RType ;
 
 FROM M2System IMPORT Address ;
-FROM m2decl IMPORT DetermineSizeOfConstant ;
+FROM m2decl IMPORT ConstantStringExceedsZType ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT BuiltinsLocation ;
 FROM StrLib IMPORT StrEqual ;
@@ -819,7 +819,7 @@ TYPE
                SetSym              : Set              : SymSet |
                ProcedureSym        : Procedure        : SymProcedure |
                ProcTypeSym         : ProcType         : SymProcType |
-               ImportStatementSym        : ImportStatement        : SymImportStatement |
+               ImportStatementSym  : ImportStatement  : SymImportStatement |
                ImportSym           : Import           : SymImport |
                GnuAsmSym           : GnuAsm           : SymGnuAsm |
                InterfaceSym        : Interface        : SymInterface |
@@ -6376,10 +6376,8 @@ END IsHiddenType ;
 PROCEDURE GetConstLitType (tok: CARDINAL; name: Name;
                            VAR overflow: BOOLEAN; issueError: BOOLEAN) : CARDINAL ;
 VAR
-   loc          : location_t ;
-   s            : String ;
-   needsLong,
-   needsUnsigned: BOOLEAN ;
+   loc: location_t ;
+   s  : String ;
 BEGIN
    s := InitStringCharStar (KeyToCharStar (name)) ;
    IF char (s, -1) = 'C'
@@ -6395,27 +6393,14 @@ BEGIN
       loc := TokenToLocation (tok) ;
       CASE char (s, -1) OF
 
-      'H':  overflow := DetermineSizeOfConstant (loc, string (s), 16,
-                                                 needsLong, needsUnsigned, issueError) |
-      'B':  overflow := DetermineSizeOfConstant (loc, string (s), 8,
-                                                 needsLong, needsUnsigned, issueError) |
-      'A':  overflow := DetermineSizeOfConstant (loc, string (s), 2,
-                                                 needsLong, needsUnsigned, issueError)
+      'H':  overflow := ConstantStringExceedsZType (loc, string (s), 16, issueError) |
+      'B':  overflow := ConstantStringExceedsZType (loc, string (s), 8, issueError) |
+      'A':  overflow := ConstantStringExceedsZType (loc, string (s), 2, issueError)
 
       ELSE
-         overflow := DetermineSizeOfConstant (loc, string (s), 10,
-                                              needsLong, needsUnsigned, issueError)
+         overflow := ConstantStringExceedsZType (loc, string (s), 10, issueError)
       END ;
       s := KillString (s) ;
-(*
-      IF needsLong AND needsUnsigned
-      THEN
-         RETURN LongCard
-      ELSIF needsLong AND (NOT needsUnsigned)
-      THEN
-         RETURN LongInt
-      END ;
-*)
       RETURN ZType
    END
 END GetConstLitType ;
