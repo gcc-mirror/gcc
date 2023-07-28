@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimplify-me.h"
 #include "print-tree.h"
+#include "value-query.h"
 
 /* This file implements two kinds of loop splitting.
 
@@ -75,7 +76,8 @@ along with GCC; see the file COPYING3.  If not see
    point in *BORDER and the comparison induction variable in IV.  */
 
 static tree
-split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
+split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
+	       enum tree_code *guard_code)
 {
   gcond *stmt;
   affine_iv iv2;
@@ -86,19 +88,6 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
     return NULL_TREE;
 
   enum tree_code code = gimple_cond_code (stmt);
-
-  /* Only handle relational comparisons, for equality and non-equality
-     we'd have to split the loop into two loops and a middle statement.  */
-  switch (code)
-    {
-      case LT_EXPR:
-      case LE_EXPR:
-      case GT_EXPR:
-      case GE_EXPR:
-	break;
-      default:
-	return NULL_TREE;
-    }
 
   if (loop_exits_from_bb_p (loop, bb))
     return NULL_TREE;
@@ -129,6 +118,56 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
   if (!iv->no_overflow)
     return NULL_TREE;
 
+  /* Only handle relational comparisons, for equality and non-equality
+     we'd have to split the loop into two loops and a middle statement.  */
+  switch (code)
+    {
+      case LT_EXPR:
+      case LE_EXPR:
+      case GT_EXPR:
+      case GE_EXPR:
+	break;
+      case NE_EXPR:
+      case EQ_EXPR:
+	/* If the test check for first iteration, we can handle NE/EQ
+	   with only one split loop.  */
+	if (operand_equal_p (iv->base, iv2.base, 0))
+	  {
+	    if (code == EQ_EXPR)
+	      code = !tree_int_cst_sign_bit (iv->step) ? LE_EXPR : GE_EXPR;
+	    else
+	      code = !tree_int_cst_sign_bit (iv->step) ? GT_EXPR : LT_EXPR;
+	    break;
+	  }
+	/* Similarly when the test checks for minimal or maximal
+	   value range.  */
+	else
+	  {
+	    int_range<2> r;
+	    get_global_range_query ()->range_of_expr (r, op0, stmt);
+	    if (!r.varying_p () && !r.undefined_p ()
+		&& TREE_CODE (op1) == INTEGER_CST)
+	      {
+		wide_int val = wi::to_wide (op1);
+		if (known_eq (val, r.lower_bound ()))
+		  {
+		    code = (code == EQ_EXPR) ? LE_EXPR : GT_EXPR;
+		    break;
+		  }
+		else if (known_eq (val, r.upper_bound ()))
+		  {
+		    code = (code == EQ_EXPR) ? GE_EXPR : LT_EXPR;
+		    break;
+		  }
+	      }
+	  }
+	/* TODO: We can compare with exit condition; it seems that testing for
+	   last iteration is common case.  */
+	return NULL_TREE;
+      default:
+	return NULL_TREE;
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Found potential split point: ");
@@ -143,6 +182,7 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
     }
 
   *border = iv2.base;
+  *guard_code = code;
   return op0;
 }
 
@@ -551,7 +591,7 @@ split_loop (class loop *loop1)
     {
       if (!niter.control.no_overflow)
 	return false;
-      if (tree_int_cst_sign_bit (niter.control.step) > 0)
+      if (tree_int_cst_sign_bit (niter.control.step))
 	niter.cmp = GT_EXPR;
       else
 	niter.cmp = LT_EXPR;
@@ -566,8 +606,9 @@ split_loop (class loop *loop1)
     }
 
   /* Find a splitting opportunity.  */
+  enum tree_code guard_code;
   for (i = 0; i < loop1->num_nodes; i++)
-    if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv)))
+    if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv, &guard_code)))
       {
 	profile_count entry_count = loop_preheader_edge (loop1)->count ();
 	/* Handling opposite steps is not implemented yet.  Neither
@@ -585,7 +626,6 @@ split_loop (class loop *loop1)
 	gcond *guard_stmt = as_a<gcond *> (*gsi_last_bb (bbs[i]));
 	tree guard_init = PHI_ARG_DEF_FROM_EDGE (phi,
 						 loop_preheader_edge (loop1));
-	enum tree_code guard_code = gimple_cond_code (guard_stmt);
 
 	/* Loop splitting is implemented by versioning the loop, placing
 	   the new loop after the old loop, make the first loop iterate
