@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "gimple-fold.h"
 #include "gimplify-me.h"
+#include "print-tree.h"
 
 /* This file implements two kinds of loop splitting.
 
@@ -355,7 +356,7 @@ connect_loops (class loop *loop1, class loop *loop2)
       new_e->flags |= EDGE_TRUE_VALUE;
     }
 
-  new_e->probability = profile_probability::likely ();
+  new_e->probability = profile_probability::very_likely ();
   skip_e->probability = new_e->probability.invert ();
 
   return new_e;
@@ -496,6 +497,8 @@ fix_loop_bb_probability (class loop *loop1, class loop *loop2, edge true_edge,
   unsigned j;
   for (j = 0; j < loop1->num_nodes; j++)
     if (bbs1[j] == loop1->latch
+	/* Watch for case where the true conditional is empty.  */
+	|| !single_pred_p (true_edge->dest)
 	|| !dominated_by_p (CDI_DOMINATORS, bbs1[j], true_edge->dest))
       bbs1[j]->count
 	= bbs1[j]->count.apply_probability (true_edge->probability);
@@ -507,6 +510,8 @@ fix_loop_bb_probability (class loop *loop1, class loop *loop2, edge true_edge,
   bbs2 = get_loop_body (loop2);
   for (j = 0; j < loop2->num_nodes; j++)
     if (bbs2[j] == loop2->latch
+	/* Watch for case where the flase conditional is empty.  */
+	|| !single_pred_p (bbi_copy)
 	|| !dominated_by_p (CDI_DOMINATORS, bbs2[j], bbi_copy))
       bbs2[j]->count
 	= bbs2[j]->count.apply_probability (true_edge->probability.invert ());
@@ -564,6 +569,7 @@ split_loop (class loop *loop1)
   for (i = 0; i < loop1->num_nodes; i++)
     if ((guard_iv = split_at_bb_p (loop1, bbs[i], &border, &iv)))
       {
+	profile_count entry_count = loop_preheader_edge (loop1)->count ();
 	/* Handling opposite steps is not implemented yet.  Neither
 	   is handling different step sizes.  */
 	if ((tree_int_cst_sign_bit (iv.step)
@@ -610,7 +616,8 @@ split_loop (class loop *loop1)
 	if (stmts2)
 	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop1),
 					    stmts2);
-	tree cond = build2 (guard_code, boolean_type_node, guard_init, border);
+	tree cond = fold_build2 (guard_code, boolean_type_node,
+				 guard_init, border);
 	if (!initial_true)
 	  cond = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, cond);
 
@@ -622,13 +629,71 @@ split_loop (class loop *loop1)
 	initialize_original_copy_tables ();
 	basic_block cond_bb;
 
+	profile_probability loop1_prob
+	  = integer_onep (cond) ? profile_probability::always ()
+				: true_edge->probability;
+	/* TODO: It is commonly a case that we know that both loops will be
+	   entered.  very_likely below is the probability that second loop will
+	   be entered given by connect_loops.  We should work out the common
+	   case it is always true.  */
 	class loop *loop2 = loop_version (loop1, cond, &cond_bb,
-					  true_edge->probability,
-					  true_edge->probability.invert (),
+					  loop1_prob,
+					  /* Pass always as we will later
+					     redirect first loop to second
+					     loop.  */
 					  profile_probability::always (),
 					  profile_probability::always (),
+					  profile_probability::very_likely (),
 					  true);
 	gcc_assert (loop2);
+	/* Correct probability of edge  cond_bb->preheader_of_loop2.  */
+	single_pred_edge
+		(loop_preheader_edge (loop2)->src)->probability
+			= loop1_prob.invert ();
+
+	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
+
+	/* Fix loop's exit probability after scaling.  */
+
+	if (entry_count.initialized_p () && entry_count.nonzero_p ())
+	  {
+	    edge exit_to_latch1;
+	    if (EDGE_SUCC (exit1->src, 0) == exit1)
+	      exit_to_latch1 = EDGE_SUCC (exit1->src, 1);
+	    else
+	      exit_to_latch1 = EDGE_SUCC (exit1->src, 0);
+	    if (exit1->src->count.nonzero_p ())
+	      {
+		/* First loop is entered loop1_prob * entry_count times
+		   and it needs to exit the same number of times.  */
+		exit1->probability
+			= entry_count.apply_probability
+				(loop1_prob).probability_in (exit1->src->count);
+		exit_to_latch1->probability = exit1->probability.invert ();
+		scale_dominated_blocks_in_loop (loop1, exit1->src,
+						exit_to_latch1->count (),
+						exit_to_latch1->dest->count);
+	      }
+
+	    edge exit_to_latch2, exit2 = single_exit (loop2);
+	    if (EDGE_SUCC (exit2->src, 0) == exit2)
+	      exit_to_latch2 = EDGE_SUCC (exit2->src, 1);
+	    else
+	      exit_to_latch2 = EDGE_SUCC (exit2->src, 0);
+	    if (exit2->src->count.nonzero_p ())
+	      {
+		/* Second loop is entered very_likely * entry_count times
+		   and it needs to exit the same number of times.  */
+		exit2->probability
+			= entry_count.apply_probability
+				(profile_probability::very_likely ())
+				.probability_in (exit2->src->count);
+		exit_to_latch2->probability = exit2->probability.invert ();
+		scale_dominated_blocks_in_loop (loop2, exit2->src,
+						exit_to_latch2->count (),
+						exit_to_latch2->dest->count);
+	      }
+	  }
 
 	edge new_e = connect_loops (loop1, loop2);
 	connect_loop_phis (loop1, loop2, new_e);
@@ -647,16 +712,7 @@ split_loop (class loop *loop1)
 	tree guard_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop1));
 	patch_loop_exit (loop1, guard_stmt, guard_next, newend, initial_true);
 
-	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
-
-	/* Fix first loop's exit probability after scaling.  */
-	edge exit_to_latch1;
-	if (EDGE_SUCC (exit1->src, 0) == exit1)
-	  exit_to_latch1 = EDGE_SUCC (exit1->src, 1);
-	else
-	  exit_to_latch1 = EDGE_SUCC (exit1->src, 0);
-	exit_to_latch1->probability *= true_edge->probability;
-	exit1->probability = exit_to_latch1->probability.invert ();
+	/* TODO: Update any_esitmate and upper bounds.  */
 
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */
