@@ -1705,7 +1705,7 @@ PROCEDURE BuildProcedureEnd ;
                  |------------|
 *)
 
-PROCEDURE BuildReturn (tokno: CARDINAL) ;
+PROCEDURE BuildReturn (tokreturn: CARDINAL) ;
 
 
 (*
