@@ -197,15 +197,40 @@ class rust_error_code_rule : public diagnostic_metadata::rule
 public:
   rust_error_code_rule (const ErrorCode code) : m_code (code) {}
 
+  void format_error_code (char *buffer) const
+  {
+    static_assert (
+      std::is_same<std::underlying_type<ErrorCode>::type, unsigned int>::value,
+      "invalid format specifier for ErrorCode's underlying type");
+
+    snprintf (buffer, 6, "E%04u",
+	      (std::underlying_type<ErrorCode>::type) m_code);
+  }
+
   char *make_description () const final override
   {
-    return xstrdup (error_code_strings.at (m_code));
+    // 'E' + 4 characters + \0
+    char *buffer = new char[6];
+
+    // is that needed. does C++ suck that much that you
+    // can't zero initialize a new[]'d char array
+    memset (buffer, 0, 6);
+
+    format_error_code (buffer);
+
+    // we can use the `u` format specifier because the `ErrorCode` enum class
+    // "inherits" from `unsigned int` - add a static assertion to make sure
+    // that's the case before we do the formatting
+
+    return buffer;
   }
 
   char *make_url () const final override
   {
-    return concat ("https://doc.rust-lang.org/error-index.html#",
-		   error_code_strings.at (m_code), NULL);
+    char buffer[6] = {0};
+    format_error_code (buffer);
+
+    return concat ("https://doc.rust-lang.org/error-index.html#", buffer, NULL);
   }
 
 private:
