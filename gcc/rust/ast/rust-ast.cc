@@ -81,6 +81,15 @@ Attribute::as_string () const
     return path_str + attr_input->as_string ();
 }
 
+bool
+Attribute::is_derive () const
+{
+  return has_attr_input ()
+	 && get_attr_input ().get_attr_input_type ()
+	      == AST::AttrInput::TOKEN_TREE
+	 && get_path () == "derive";
+}
+
 // Copy constructor must deep copy attr_input as unique pointer
 Attribute::Attribute (Attribute const &other)
   : path (other.path), locus (other.locus)

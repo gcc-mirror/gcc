@@ -26,16 +26,6 @@
 namespace Rust {
 
 bool
-is_derive (AST::Attribute &attr)
-{
-  auto path = attr.get_path ();
-  return attr.has_attr_input ()
-	 && attr.get_attr_input ().get_attr_input_type ()
-	      == AST::AttrInput::TOKEN_TREE
-	 && path == "derive";
-}
-
-bool
 is_builtin (AST::Attribute &attr)
 {
   auto &segments = attr.get_path ().get_segments ();
@@ -258,7 +248,7 @@ ExpandVisitor::expand_inner_items (
 	    {
 	      auto current = *attr_it;
 
-	      if (is_derive (current))
+	      if (current.is_derive ())
 		{
 		  current.parse_attr_to_meta_item ();
 		  attr_it = attrs.erase (attr_it);
@@ -345,7 +335,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 	    {
 	      auto current = *attr_it;
 
-	      if (is_derive (current))
+	      if (current.is_derive ())
 		{
 		  attr_it = attrs.erase (attr_it);
 		  // Get traits to derive in the current attribute
@@ -1683,7 +1673,7 @@ ExpandVisitor::visit_inner_using_attrs (T &item,
     {
       auto current = *it;
 
-      if (!is_builtin (current) && !is_derive (current))
+      if (!is_builtin (current) && !current.is_derive ())
 	{
 	  it = attrs.erase (it);
 	  expand_inner_attribute (item, current.get_path ());
