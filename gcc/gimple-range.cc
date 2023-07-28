@@ -809,10 +809,8 @@ assume_query::calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src)
   if (m_gori.compute_operand_range (op_range, s, lhs, op, src)
       && !op_range.varying_p ())
     {
-      Value_Range range (TREE_TYPE (op));
-      if (global.get_range (range, op))
-	op_range.intersect (range);
-      global.set_range (op, op_range);
+      // Set the global range, merging if there is already a range.
+      global.merge_range (op, op_range);
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       if (def_stmt && gimple_get_lhs (def_stmt) == op)
 	calculate_stmt (def_stmt, op_range, src);
