@@ -97,7 +97,7 @@ static bool Initialized;
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 
 /*
    DeconstructModules - resolve dependencies and then call each
@@ -435,9 +435,9 @@ static void CheckInitialized (void)
                       module constructor in turn.
 */
 
-extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp)
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp)
 {
-  M2Dependent_ConstructModules (applicationmodule, libname, argc, argv, envp);
+  M2Dependent_ConstructModules (applicationmodule, libname, overrideliborder, argc, argv, envp);
 }
 
 

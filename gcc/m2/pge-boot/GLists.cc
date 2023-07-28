@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -117,7 +118,7 @@ extern "C" void Lists_RemoveItemFromList (Lists_List l, unsigned int c);
    IsItemInList - returns true if a WORD, c, was found in list, l.
 */
 
-extern "C" unsigned int Lists_IsItemInList (Lists_List l, unsigned int c);
+extern "C" bool Lists_IsItemInList (Lists_List l, unsigned int c);
 
 /*
    ForeachItemInListDo - calls procedure, P, foreach item in list, l.
@@ -317,11 +318,11 @@ extern "C" void Lists_RemoveItemFromList (Lists_List l, unsigned int c)
 {
   Lists_List p;
   unsigned int i;
-  unsigned int Found;
+  bool Found;
 
   if (l != NULL)
     {
-      Found = FALSE;
+      Found = false;
       p = NULL;
       do {
         i = 1;
@@ -331,7 +332,7 @@ extern "C" void Lists_RemoveItemFromList (Lists_List l, unsigned int c)
           }
         if ((i <= l->NoOfElements) && (l->Elements.array[i-1] == c))
           {
-            Found = TRUE;
+            Found = true;
           }
         else
           {
@@ -351,7 +352,7 @@ extern "C" void Lists_RemoveItemFromList (Lists_List l, unsigned int c)
    IsItemInList - returns true if a WORD, c, was found in list, l.
 */
 
-extern "C" unsigned int Lists_IsItemInList (Lists_List l, unsigned int c)
+extern "C" bool Lists_IsItemInList (Lists_List l, unsigned int c)
 {
   unsigned int i;
 
@@ -361,7 +362,7 @@ extern "C" unsigned int Lists_IsItemInList (Lists_List l, unsigned int c)
       {
         if (l->Elements.array[i-1] == c)
           {
-            return TRUE;
+            return true;
           }
         else
           {
@@ -370,7 +371,7 @@ extern "C" unsigned int Lists_IsItemInList (Lists_List l, unsigned int c)
       }
     l = l->Next;
   } while (! (l == NULL));
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

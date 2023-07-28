@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -56,7 +57,7 @@ typedef enum {dtoa_maxsignificant, dtoa_decimaldigits} dtoa_Mode;
             error to TRUE if the number is too large.
 */
 
-EXTERN double dtoa_strtod (void * s, unsigned int *error);
+EXTERN double dtoa_strtod (void * s, bool *error);
 
 /*
    dtoa - converts a REAL, d, into a string.  The address of the
@@ -67,7 +68,7 @@ EXTERN double dtoa_strtod (void * s, unsigned int *error);
           sign       does the string have a sign?
 */
 
-EXTERN void * dtoa_dtoa (double d, dtoa_Mode mode, int ndigits, int *decpt, unsigned int *sign);
+EXTERN void * dtoa_dtoa (double d, dtoa_Mode mode, int ndigits, int *decpt, bool *sign);
 #   ifdef __cplusplus
 }
 #   endif

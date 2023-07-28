@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -44,7 +45,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GStdIO.h"
 #   include "Glibc.h"
 
-static unsigned int IsATTY;
+static bool IsATTY;
 
 /*
    WriteLn - writes a carriage return and a newline
@@ -85,7 +86,7 @@ static void Echo (char ch);
    AlphaNum- returns true if character, ch, is an alphanumeric character.
 */
 
-static unsigned int AlphaNum (char ch);
+static bool AlphaNum (char ch);
 
 
 /*
@@ -119,7 +120,7 @@ static void Echo (char ch)
    AlphaNum- returns true if character, ch, is an alphanumeric character.
 */
 
-static unsigned int AlphaNum (char ch)
+static bool AlphaNum (char ch)
 {
   return (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z'))) || ((ch >= '0') && (ch <= '9'));
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -269,7 +270,7 @@ extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high)
 extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   /* IsATTY := isatty()  */
-  IsATTY = FALSE;
+  IsATTY = false;
 }
 
 extern "C" void _M2_StrIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])

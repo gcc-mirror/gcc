@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -116,7 +117,7 @@ extern "C" unsigned int NameKey_LengthKey (NameKey_Name Key);
            converting, a, into a String, for speed.
 */
 
-extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high);
+extern "C" bool NameKey_IsKey (const char *a_, unsigned int _a_high);
 
 /*
    KeyToCharStar - returns the C char * string equivalent for, key.
@@ -130,7 +131,7 @@ extern "C" void NameKey_WriteKey (NameKey_Name key);
                          This function deliberately inlines CAP for speed.
 */
 
-extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2);
+extern "C" bool NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2);
 
 /*
    KeyToCharStar - returns the C char * string equivalent for, key.
@@ -439,7 +440,7 @@ extern "C" unsigned int NameKey_LengthKey (NameKey_Name Key)
            converting, a, into a String, for speed.
 */
 
-extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
+extern "C" bool NameKey_IsKey (const char *a_, unsigned int _a_high)
 {
   NameKey_NameNode child;
   NameKey_PtrToChar p;
@@ -479,7 +480,7 @@ extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
                     /* avoid gcc warning by using compound statement even if not strictly necessary.  */
                     if ((*p) == ASCII_nul)
                       {
-                        return TRUE;
+                        return true;
                       }
                     else
                       {
@@ -492,7 +493,7 @@ extern "C" unsigned int NameKey_IsKey (const char *a_, unsigned int _a_high)
           }
       } while (! (child == NULL));
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -521,7 +522,7 @@ extern "C" void NameKey_WriteKey (NameKey_Name key)
                          This function deliberately inlines CAP for speed.
 */
 
-extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2)
+extern "C" bool NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_Name key2)
 {
   NameKey_PtrToChar pi;
   NameKey_PtrToChar pj;
@@ -530,7 +531,7 @@ extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_
 
   if (key1 == key2)
     {
-      return TRUE;
+      return true;
     }
   else
     {
@@ -550,7 +551,7 @@ extern "C" unsigned int NameKey_IsSameExcludingCase (NameKey_Name key1, NameKey_
           else
             {
               /* difference found  */
-              return FALSE;
+              return false;
             }
         }
       return c1 == c2;
