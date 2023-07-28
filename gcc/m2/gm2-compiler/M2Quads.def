@@ -165,6 +165,7 @@ TYPE
                    DivCeilOp, ModCeilOp,
                    DivFloorOp, ModFloorOp, DivTruncOp, ModTruncOp,
       	       	   LogicalOrOp, LogicalAndOp, LogicalXorOp, LogicalDiffOp,
+                   ArithAddOp,
                    InclOp, ExclOp, LogicalShiftOp, LogicalRotateOp,
                    UnboundedOp, HighOp,
                    CoerceOp, ConvertOp, CastOp,
