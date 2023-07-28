@@ -519,6 +519,8 @@ public:
 
   bool is_derive () const;
 
+  std::vector<AST::SimplePath> get_traits_to_derive ();
+
   // default destructor
   ~Attribute () = default;
 

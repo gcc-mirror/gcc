@@ -90,6 +90,78 @@ Attribute::is_derive () const
 	 && get_path () == "derive";
 }
 
+/**
+ * Returns a list of traits to derive from within a given attribute.
+ *
+ * @param attrs The attributes on the item to derive
+ */
+std::vector<AST::SimplePath>
+Attribute::get_traits_to_derive ()
+{
+  std::vector<AST::SimplePath> result;
+  auto &input = get_attr_input ();
+  switch (input.get_attr_input_type ())
+    {
+      case AST::AttrInput::META_ITEM: {
+	auto meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
+	for (auto &current : meta.get_items ())
+	  {
+	    // HACK: Find a better way to achieve the downcast.
+	    switch (current->get_kind ())
+	      {
+		case AST::MetaItemInner::Kind::MetaItem: {
+		  // Let raw pointer go out of scope without freeing, it doesn't
+		  // own the data anyway
+		  auto meta_item
+		    = static_cast<AST::MetaItem *> (current.get ());
+		  switch (meta_item->get_item_kind ())
+		    {
+		      case AST::MetaItem::ItemKind::Path: {
+			auto path
+			  = static_cast<AST::MetaItemPath *> (meta_item);
+			result.push_back (path->get_path ());
+		      }
+		      break;
+		      case AST::MetaItem::ItemKind::Word: {
+			auto word = static_cast<AST::MetaWord *> (meta_item);
+			// Convert current word to path
+			current
+			  = make_unique<AST::MetaItemPath> (AST::MetaItemPath (
+			    AST::SimplePath (word->get_ident ())));
+			auto path
+			  = static_cast<AST::MetaItemPath *> (current.get ());
+
+			result.push_back (path->get_path ());
+		      }
+		      break;
+		    case AST::MetaItem::ItemKind::ListPaths:
+		    case AST::MetaItem::ItemKind::NameValueStr:
+		    case AST::MetaItem::ItemKind::PathLit:
+		    case AST::MetaItem::ItemKind::Seq:
+		    case AST::MetaItem::ItemKind::ListNameValueStr:
+		    default:
+		      gcc_unreachable ();
+		      break;
+		    }
+		}
+		break;
+	      case AST::MetaItemInner::Kind::LitExpr:
+	      default:
+		gcc_unreachable ();
+		break;
+	      }
+	  }
+      }
+      break;
+    case AST::AttrInput::TOKEN_TREE:
+    case AST::AttrInput::LITERAL:
+    case AST::AttrInput::MACRO:
+      rust_unreachable ();
+      break;
+    }
+  return result;
+}
+
 // Copy constructor must deep copy attr_input as unique pointer
 Attribute::Attribute (Attribute const &other)
   : path (other.path), locus (other.locus)
