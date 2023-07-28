@@ -1,3 +1,51 @@
+2023-07-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-04-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_target_compile_default): Conditionally
+	append -lnsl -lsocket to ldflags.
+
+2023-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* gcc.dg/pr110755.c: New test.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* g++.dg/cpp2a/nontype-float3.C: New test.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110829
+	* gcc.dg/pr56837.c: XFAIL part of the testcase.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* gcc.dg/torture/pr110799.c: New testcase.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110766
+	* gcc.dg/torture/pr110766.c: New testcase.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

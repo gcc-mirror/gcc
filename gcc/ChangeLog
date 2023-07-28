@@ -1,3 +1,32 @@
+2023-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* range-op-float.cc (frange_arithmetic): Change +0 result to -0
+	for PLUS_EXPR or MINUS_EXPR if -frounding-math, inf is negative and
+	it is exact op1 + (-op1) or op1 - op1.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* tree-ssa-pre.cc (compute_avail): More thoroughly match
+	up TBAA behavior of redundant loads.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110766
+	* tree-scalar-evolution.cc
+	(analyze_and_compute_bitwise_induction_effect): Check the PHI
+	is defined in the loop header.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.
