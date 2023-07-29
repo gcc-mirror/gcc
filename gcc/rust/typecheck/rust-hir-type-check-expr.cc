@@ -150,6 +150,14 @@ TypeCheckExpr::visit (HIR::TupleExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 {
+  if (!context->have_function_context ())
+    {
+      rust_error_at (expr.get_locus (),
+		     "return statement outside of function body");
+      infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+      return;
+    }
+
   auto fn_return_tyty = context->peek_return_type ();
   location_t expr_locus = expr.has_return_expr ()
 			    ? expr.get_expr ()->get_locus ()
