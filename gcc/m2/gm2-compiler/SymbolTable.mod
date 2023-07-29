@@ -134,9 +134,10 @@ TYPE
                 END ;
 
    PtrToAsmConstraint = POINTER TO RECORD
-                                      name: Name ;
-                                      str : CARDINAL ;   (* regnames or constraints     *)
-                                      obj : CARDINAL ;   (* list of M2 syms             *)
+                                      tokpos: CARDINAL ;
+                                      name  : Name ;
+                                      str   : CARDINAL ;   (* regnames or constraints     *)
+                                      obj   : CARDINAL ;   (* list of M2 syms             *)
                                    END ;
 
    ModuleCtor = RECORD
@@ -2327,6 +2328,46 @@ END IsDeclaredIn ;
 
 
 (*
+   SetFirstUsed - assigns the FirstUsed field in at to tok providing
+                  it has not already been set.
+*)
+
+PROCEDURE SetFirstUsed (tok: CARDINAL; VAR at: Where) ;
+BEGIN
+   IF at.FirstUsed = UnknownTokenNo
+   THEN
+      at.FirstUsed := tok
+   END
+END SetFirstUsed ;
+
+
+(*
+   PutFirstUsed - sets tok to the first used providing it has not already been set.
+                  It also includes the read and write quad into the usage list
+                  providing the quad numbers are not 0.
+*)
+
+PROCEDURE PutFirstUsed (object: CARDINAL; tok: CARDINAL; read, write: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsVar (object)
+   THEN
+      pSym := GetPsym (object) ;
+      SetFirstUsed (tok, pSym^.Var.At) ;
+      IF read # 0
+      THEN
+         PutReadQuad (object, GetMode (object), read)
+      END ;
+      IF write # 0
+      THEN
+         PutWriteQuad (object, GetMode (object), write)
+      END
+   END
+END PutFirstUsed ;
+
+
+(*
    MakeGnuAsm - create a GnuAsm symbol.
 *)
 
@@ -2336,12 +2377,12 @@ VAR
    Sym : CARDINAL ;
 BEGIN
    NewSym(Sym) ;
-   pSym := GetPsym(Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       SymbolType := GnuAsmSym ;
       WITH GnuAsm DO
          String   := NulSym ;
-         InitWhereDeclared(At) ;
+         InitWhereDeclared (At) ;
          Inputs   := NulSym ;
          Outputs  := NulSym ;
          Trashed  := NulSym ;
@@ -2361,7 +2402,7 @@ PROCEDURE PutGnuAsm (sym: CARDINAL; string: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   Assert(IsConstString(string)) ;
+   Assert (IsConstString (string)) ;
    pSym := GetPsym(sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
@@ -2388,7 +2429,7 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      GnuAsmSym: RETURN( GnuAsm.String )
+      GnuAsmSym: RETURN GnuAsm.String
 
       ELSE
          InternalError ('expecting GnuAsm symbol')
@@ -2426,7 +2467,7 @@ PROCEDURE PutGnuAsmInput (sym: CARDINAL; in: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
@@ -2447,7 +2488,7 @@ PROCEDURE PutGnuAsmTrash (sym: CARDINAL; trash: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
@@ -2468,11 +2509,11 @@ PROCEDURE GetGnuAsmInput (sym: CARDINAL) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      GnuAsmSym: RETURN( GnuAsm.Inputs )
+      GnuAsmSym: RETURN GnuAsm.Inputs
 
       ELSE
          InternalError ('expecting PutGnuAsm symbol')
@@ -2489,11 +2530,11 @@ PROCEDURE GetGnuAsmOutput (sym: CARDINAL) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      GnuAsmSym: RETURN( GnuAsm.Outputs )
+      GnuAsmSym: RETURN GnuAsm.Outputs
 
       ELSE
          InternalError ('expecting PutGnuAsm symbol')
@@ -2510,11 +2551,11 @@ PROCEDURE GetGnuAsmTrash (sym: CARDINAL) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      GnuAsmSym: RETURN( GnuAsm.Trashed )
+      GnuAsmSym: RETURN GnuAsm.Trashed
 
       ELSE
          InternalError ('expecting PutGnuAsm symbol')
@@ -2531,7 +2572,7 @@ PROCEDURE PutGnuAsmVolatile (Sym: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
@@ -2552,7 +2593,7 @@ PROCEDURE PutGnuAsmSimple (Sym: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
@@ -2574,13 +2615,13 @@ VAR
    pSym: PtrToSymbol ;
    Sym : CARDINAL ;
 BEGIN
-   NewSym(Sym) ;
-   pSym := GetPsym(Sym) ;
+   NewSym (Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       SymbolType := InterfaceSym ;
       WITH Interface DO
-         Parameters := InitIndex(1) ;
-         InitWhereDeclared(At)
+         Parameters := InitIndex (1) ;
+         InitWhereDeclared (At)
       END
    END ;
    RETURN( Sym )
@@ -2592,9 +2633,13 @@ END MakeRegInterface ;
                      sym, at position, i.
                      The string symbol will either be a register name or a constraint.
                      The object is an optional Modula-2 variable or constant symbol.
+                     read and write are the quadruple numbers representing any read
+                     or write operation.
 *)
 
-PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL; n: Name; string, object: CARDINAL) ;
+PROCEDURE PutRegInterface (tok: CARDINAL;
+                           sym: CARDINAL; i: CARDINAL; n: Name; string, object: CARDINAL;
+                           read, write: CARDINAL) ;
 VAR
    pSym : PtrToSymbol ;
    p    : PtrToAsmConstraint ;
@@ -2614,10 +2659,12 @@ BEGIN
                        InternalError ('expecting to add parameters sequentially')
                     END ;
                     WITH p^ DO
-                       name := n ;
-                       str  := string ;
-                       obj  := object
-                    END
+                       tokpos := tok ;
+                       name   := n ;
+                       str    := string ;
+                       obj    := object
+                    END ;
+                    PutFirstUsed (object, tok, read, write)
 
       ELSE
          InternalError ('expecting Interface symbol')
@@ -2631,7 +2678,8 @@ END PutRegInterface ;
                      sym, from position, i.
 *)
 
-PROCEDURE GetRegInterface (sym: CARDINAL; i: CARDINAL; VAR n: Name; VAR string, object: CARDINAL) ;
+PROCEDURE GetRegInterface (sym: CARDINAL; i: CARDINAL;
+                           VAR tok: CARDINAL; VAR n: Name; VAR string, object: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
    p   : PtrToAsmConstraint ;
@@ -2644,11 +2692,13 @@ BEGIN
                     THEN
                        p := Indexing.GetIndice(Interface.Parameters, i) ;
                        WITH p^ DO
+                          tok    := tokpos ;
                           n      := name ;
                           string := str ;
                           object := obj
                        END
                     ELSE
+                       tok    := UnknownTokenNo ;
                        n      := NulName ;
                        string := NulSym ;
                        object := NulSym
@@ -8853,20 +8903,20 @@ BEGIN
       CASE SymbolType OF
 
       DefImpSym: WITH DefImp DO
-                    CheckForUnknowns( name, ExportQualifiedTree,
-                                      'EXPORT QUALIFIED' ) ;
-                    CheckForUnknowns( name, ExportUnQualifiedTree,
-                                      'EXPORT UNQUALIFIED' ) ;
-                    CheckForSymbols ( ExportRequest,
-                                      'requested by another modules import (symbols have not been exported by the appropriate definition module)' ) ;
-                    CheckForUnknowns( name, Unresolved, 'unresolved' ) ;
-                    CheckForUnknowns( name, LocalSymbols, 'locally used' )
+                    CheckForUnknowns (name, ExportQualifiedTree,
+                                      'EXPORT QUALIFIED') ;
+                    CheckForUnknowns (name, ExportUnQualifiedTree,
+                                      'EXPORT UNQUALIFIED') ;
+                    CheckForSymbols  (ExportRequest,
+                                      'requested by another modules import (symbols have not been exported by the appropriate definition module)') ;
+                    CheckForUnknowns (name, Unresolved, 'unresolved') ;
+                    CheckForUnknowns (name, LocalSymbols, 'locally used')
                  END |
       ModuleSym: WITH Module DO
-                    CheckForUnknowns( name, Unresolved, 'unresolved' ) ;
-                    CheckForUnknowns( name, ExportUndeclared, 'exported but undeclared' ) ;
-                    CheckForUnknowns( name, ExportTree, 'exported but undeclared' ) ;
-                    CheckForUnknowns( name, LocalSymbols, 'locally used' )
+                    CheckForUnknowns (name, Unresolved, 'unresolved') ;
+                    CheckForUnknowns (name, ExportUndeclared, 'exported but undeclared') ;
+                    CheckForUnknowns (name, ExportTree, 'exported but undeclared') ;
+                    CheckForUnknowns (name, LocalSymbols, 'locally used')
                  END
 
       ELSE

@@ -94,6 +94,8 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         NoOfElements,
                         NoOfParam,
                         StartScope, EndScope,
+                        IsGnuAsm, IsGnuAsmVolatile,
+                        MakeRegInterface, PutRegInterface,
                         HasExceptionBlock, PutExceptionBlock,
                         HasExceptionFinally, PutExceptionFinally,
                         GetParent, GetRecord, IsRecordField, IsFieldVarient, IsRecord,
@@ -13995,7 +13997,7 @@ END BuildOptimizeOn ;
 
 PROCEDURE BuildOptimizeOff ;
 BEGIN
-   GenQuad(OptimizeOffOp, NulSym, NulSym, NulSym)
+   GenQuad (OptimizeOffOp, NulSym, NulSym, NulSym)
 END BuildOptimizeOff ;
 
 
@@ -14020,8 +14022,8 @@ PROCEDURE BuildInline ;
 VAR
    Sym: CARDINAL ;
 BEGIN
-   PopT(Sym) ;
-   GenQuad(InlineOp, NulSym, NulSym, Sym)
+   PopT (Sym) ;
+   GenQuad (InlineOp, NulSym, NulSym, Sym)
 END BuildInline ;
 
 
@@ -14047,11 +14049,11 @@ VAR
 BEGIN
    IF (NextQuad#Head) AND (GenerateLineDebug OR GenerateDebugging) AND FALSE
    THEN
-      filename := makekey(string(GetFileName())) ;
-      f := GetQF(NextQuad-1) ;
-      IF NOT ((f^.Operator=LineNumberOp) AND (f^.Operand1=WORD(filename)))
+      filename := makekey (string (GetFileName ())) ;
+      f := GetQF (NextQuad-1) ;
+      IF NOT ((f^.Operator = LineNumberOp) AND (f^.Operand1 = WORD (filename)))
       THEN
-         GenQuad(LineNumberOp, WORD(filename), NulSym, WORD(GetLineNo()))
+         GenQuad (LineNumberOp, WORD (filename), NulSym, WORD (GetLineNo ()))
       END
    END
 END BuildLineNo ;
@@ -14066,14 +14068,14 @@ VAR
    f: QuadFrame ;
 BEGIN
    WITH l^ DO
-      f := GetQF(NextQuad-1) ;
-      IF (f^.Operator=LineNumberOp) AND (f^.Operand1=WORD(File))
+      f := GetQF (NextQuad-1) ;
+      IF (f^.Operator = LineNumberOp) AND (f^.Operand1 = WORD (File))
       THEN
          (* do nothing *)
       ELSE
          IF FALSE
          THEN
-            GenQuad(LineNumberOp, WORD(File), NulSym, WORD(Line))
+            GenQuad (LineNumberOp, WORD (File), NulSym, WORD (Line))
          END
       END ;
       Next := FreeLineList
@@ -14394,6 +14396,68 @@ BEGIN
    PopT(r1) ;
    AddRange(r1, NulSym, GetTokenNo())
 END AddVarientEquality ;
+
+
+(*
+   BuildAsmElement - the stack is expected to contain:
+
+
+                        Entry                      Exit
+                        =====                      ====
+
+                 Ptr ->
+                        +------------------+
+                        | expr | tokpos    |
+                        |------------------|
+                        | str              |
+                        |------------------|
+                        | name             |
+                        |------------------|       +------------------+
+                        | CurrentInterface |       | CurrentInterface |
+                        |------------------|       |------------------|
+                        | CurrentAsm       |       | CurrentAsm       |
+                        |------------------|       |------------------|
+                        | n                |       | n                |
+                        |------------------|       |------------------|
+*)
+
+PROCEDURE BuildAsmElement (input, output, trash: BOOLEAN) ;
+VAR
+   n, str, expr, tokpos,
+   CurrentInterface,
+   CurrentAsm, name    : CARDINAL ;
+BEGIN
+   PopTtok (expr, tokpos) ;
+   PopT (str) ;
+   PopT (name) ;
+   PopT (CurrentInterface) ;
+   PopT (CurrentAsm) ;
+   Assert (IsGnuAsm (CurrentAsm) OR IsGnuAsmVolatile (CurrentAsm)) ;
+   PopT (n) ;
+   INC (n) ;
+   IF CurrentInterface = NulSym
+   THEN
+      CurrentInterface := MakeRegInterface ()
+   END ;
+   IF input
+   THEN
+      PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
+                       NextQuad, 0)
+   END ;
+   IF output
+   THEN
+      PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
+                       0, NextQuad)
+   END ;
+   IF trash
+   THEN
+      PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
+                       0, NextQuad)
+   END ;
+   PushT (n) ;
+   PushT (CurrentAsm) ;
+   PushT (CurrentInterface)
+END BuildAsmElement ;
 
 
 (*
