@@ -1,3 +1,33 @@
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (M2DEFS): Add TextUtil.def.
+	(M2MODS): Add TextUtil.mod.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108344
+	* libm2cor/KeyBoardLEDs.cc (initialize_module): New
+	function.
+	(SwitchScroll): Call initialize_module.
+	(SwitchNum): Call initialize_module.
+	(SwitchCaps): Call initialize_module.
+	(SwitchLEDs): Call initialize_module.
+	(M2EXPORT): Remove initialization code.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

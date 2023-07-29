@@ -1,3 +1,260 @@
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* gm2-libs-iso/LongIO.mod (ReadReal): Call SkipSpaces.
+	* gm2-libs-iso/LongWholeIO.mod (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/RealIO.mod (ReadReal): Call SkipSpaces.
+	* gm2-libs-iso/ShortWholeIO.mod: (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/TextIO.mod: Import SkipSpaces.
+	* gm2-libs-iso/WholeIO.mod (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/TextUtil.def: New file.
+	* gm2-libs-iso/TextUtil.mod: New file.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108344
+	* gm2-libs-coroutines/TimerHandler.mod (EnableLED): New
+	constant.
+	(Timer): Test EnableLED before switching on the scroll LED.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109830
+	* gm2-libs-iso/SeqFile.mod (newCid): New parameter toAppend
+	used to select FIO.OpenForRandom.
+	(OpenRead): Pass extra parameter to newCid.
+	(OpenWrite): Pass extra parameter to newCid.
+	(OpenAppend): Pass extra parameter to newCid.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109810
+	* gm2-compiler/M2ALU.mod (ConvertConstToType): Use
+	PrepareCopyString in place of DoCopyString.
+	* gm2-compiler/M2GenGCC.def (DoCopyString): Rename to ...
+	(PrepareCopyString): ... this.
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Call CodeReturnValue
+	with a single parameter.  Call CodeXIndr with a single parameter.
+	(CodeReturnValue): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	(DoCopyString): Reimplement and rename to ...
+	(PrepareCopyString): ... this.
+	(CodeXIndr): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	(CodeBecomes): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	* gm2-compiler/M2Quads.def (BuildReturn): Rename parameter to
+	tokreturn.
+	* gm2-compiler/M2Quads.mod (BuildReturn): Rename parameter to
+	tokreturn.  Rename tokno to tokcombined.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109779
+	* gm2-libs-iso/RTgen.mod (doLook): Remove old.
+	Remove re-assignment of result.
+	* gm2-libs-iso/TextIO.mod (CanRead): Rename into ...
+	(CharAvailable): ... this.
+	(DumpState): New procedure.
+	(SetResult): Rename as SetNul.
+	(WasGoodChar): Rename into ...
+	(EofOrEoln): ... this.
+	(SkipLine): Skip over the newline.
+	(ReadString): Flip THEN ELSE statements after testing for
+	EofOrEoln.
+	(ReadRestLine): Flip THEN ELSE statements after testing for
+	EofOrEoln.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109729
+	PR modula2/110246
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Detect
+	ArithAddOp and call CodeAddChecked.
+	(ResolveConstantExpressions): Detect ArithAddOp and call
+	FoldArithAdd.
+	(FoldArithAdd): New procedure.
+	(FoldAdd): Refactor to use FoldArithAdd.
+	* gm2-compiler/M2Quads.def (QuadOperator): Add ArithAddOp.
+	* gm2-compiler/M2Quads.mod: Remove commented imports.
+	(QuadFrame): Changed comments to use GNU coding standards.
+	(ArithPlusTok): New global variable.
+	(BuildForToByDo): Use ArithPlusTok instead of PlusTok.
+	(MakeOp): Detect ArithPlusTok and return ArithAddOp.
+	(WriteQuad): Add ArithAddOp clause.
+	(WriteOperator): Add ArithAddOp clause.
+	(Init): Initialize ArithPlusTok.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-maintainer.in (m2/m2obj3/cc1gm2$(exeext)):
+	Remove M2LINK.o from dependency and build rule.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109675
+	* Make-lang.in (MC-LIB-DEFS): Remove M2LINK.def.
+	(BUILD-PGE-O): Remove GM2LINK.o.
+	* Make-maintainer.in (PPG-DEFS): New define.
+	(PPG-LIB-DEFS): Remove M2LINK.def.
+	(BUILD-BOOT-PPG-H): Add PPGDEF .h files.
+	(m2/ppg$(exeext)): Remove M2LINK.o
+	(PGE-DEPS): New define.
+	(m2/pg$(exeext)): Remove M2LINK.o.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): Add -Im2/gm2-pge-boot.
+	(m2/pge$(exeext)): Remove M2LINK.o.
+	(pge-maintainer): Re-implement.
+	(pge-libs-push): Re-implement.
+	(m2/m2obj3/cc1gm2$(exeext)): Remove M2LINK.o.
+	* gm2-libs/DynamicStrings.mod (writeAddress): Re-implement
+	using snprintf.
+	* gm2-libs/M2Dependent.mod: Remove commented out imports.
+	* mc-boot/GDynamicStrings.cc: Rebuild.
+	* mc-boot/GFIO.cc: Rebuild.
+	* mc-boot/GFormatStrings.cc: Rebuild.
+	* mc-boot/GM2Dependent.cc: Rebuild.
+	* mc-boot/GM2Dependent.h: Rebuild.
+	* mc-boot/GM2RTS.cc: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GRTExceptions.cc: Rebuild.
+	* mc-boot/GRTint.cc: Rebuild.
+	* mc-boot/GSFIO.cc: Rebuild.
+	* mc-boot/GStringConvert.cc: Rebuild.
+	* mc-boot/Gdecl.cc: Rebuild.
+	* pge-boot/GASCII.cc: Rebuild.
+	* pge-boot/GASCII.h: Rebuild.
+	* pge-boot/GArgs.cc: Rebuild.
+	* pge-boot/GArgs.h: Rebuild.
+	* pge-boot/GAssertion.cc: Rebuild.
+	* pge-boot/GAssertion.h: Rebuild.
+	* pge-boot/GBreak.h: Rebuild.
+	* pge-boot/GCmdArgs.h: Rebuild.
+	* pge-boot/GDebug.cc: Rebuild.
+	* pge-boot/GDebug.h: Rebuild.
+	* pge-boot/GDynamicStrings.cc: Rebuild.
+	* pge-boot/GDynamicStrings.h: Rebuild.
+	* pge-boot/GEnvironment.h: Rebuild.
+	* pge-boot/GFIO.cc: Rebuild.
+	* pge-boot/GFIO.h: Rebuild.
+	* pge-boot/GFormatStrings.h:: Rebuild.
+	* pge-boot/GFpuIO.h:: Rebuild.
+	* pge-boot/GIO.cc: Rebuild.
+	* pge-boot/GIO.h: Rebuild.
+	* pge-boot/GIndexing.cc: Rebuild.
+	* pge-boot/GIndexing.h: Rebuild.
+	* pge-boot/GLists.cc: Rebuild.
+	* pge-boot/GLists.h: Rebuild.
+	* pge-boot/GM2Dependent.cc: Rebuild.
+	* pge-boot/GM2Dependent.h: Rebuild.
+	* pge-boot/GM2EXCEPTION.cc: Rebuild.
+	* pge-boot/GM2EXCEPTION.h: Rebuild.
+	* pge-boot/GM2RTS.cc: Rebuild.
+	* pge-boot/GM2RTS.h: Rebuild.
+	* pge-boot/GNameKey.cc: Rebuild.
+	* pge-boot/GNameKey.h: Rebuild.
+	* pge-boot/GNumberIO.cc: Rebuild.
+	* pge-boot/GNumberIO.h: Rebuild.
+	* pge-boot/GOutput.cc: Rebuild.
+	* pge-boot/GOutput.h: Rebuild.
+	* pge-boot/GPushBackInput.cc: Rebuild.
+	* pge-boot/GPushBackInput.h: Rebuild.
+	* pge-boot/GRTExceptions.cc: Rebuild.
+	* pge-boot/GRTExceptions.h: Rebuild.
+	* pge-boot/GSArgs.h: Rebuild.
+	* pge-boot/GSEnvironment.h: Rebuild.
+	* pge-boot/GSFIO.cc: Rebuild.
+	* pge-boot/GSFIO.h: Rebuild.
+	* pge-boot/GSYSTEM.h: Rebuild.
+	* pge-boot/GScan.h: Rebuild.
+	* pge-boot/GStdIO.cc: Rebuild.
+	* pge-boot/GStdIO.h: Rebuild.
+	* pge-boot/GStorage.cc: Rebuild.
+	* pge-boot/GStorage.h: Rebuild.
+	* pge-boot/GStrCase.cc: Rebuild.
+	* pge-boot/GStrCase.h: Rebuild.
+	* pge-boot/GStrIO.cc: Rebuild.
+	* pge-boot/GStrIO.h: Rebuild.
+	* pge-boot/GStrLib.cc: Rebuild.
+	* pge-boot/GStrLib.h: Rebuild.
+	* pge-boot/GStringConvert.h: Rebuild.
+	* pge-boot/GSymbolKey.cc: Rebuild.
+	* pge-boot/GSymbolKey.h: Rebuild.
+	* pge-boot/GSysExceptions.h: Rebuild.
+	* pge-boot/GSysStorage.cc: Rebuild.
+	* pge-boot/GSysStorage.h: Rebuild.
+	* pge-boot/GTimeString.h: Rebuild.
+	* pge-boot/GUnixArgs.h: Rebuild.
+	* pge-boot/Gbnflex.cc: Rebuild.
+	* pge-boot/Gbnflex.h: Rebuild.
+	* pge-boot/Gdtoa.h: Rebuild.
+	* pge-boot/Gerrno.h: Rebuild.
+	* pge-boot/Gldtoa.h: Rebuild.
+	* pge-boot/Glibc.h: Rebuild.
+	* pge-boot/Glibm.h: Rebuild.
+	* pge-boot/Gpge.cc: Rebuild.
+	* pge-boot/Gtermios.h: Rebuild.
+	* pge-boot/Gwrapc.h: Rebuild.
+	* mc-boot/GM2LINK.h: Removed.
+	* pge-boot/GM2LINK.cc: Removed.
+	* pge-boot/GM2LINK.h: Removed.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-04-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108121
+	* gm2-compiler/M2ALU.mod (Less): Reformatted.
+	* gm2-compiler/SymbolTable.mod (DetermineSizeOfConstant): Remove
+	from import.
+	(ConstantStringExceedsZType): Import.
+	(GetConstLitType): Re-implement using ConstantStringExceedsZType.
+	* gm2-gcc/m2decl.cc (m2decl_DetermineSizeOfConstant): Remove.
+	(m2decl_ConstantStringExceedsZType): New function.
+	(m2decl_BuildConstLiteralNumber): Re-implement.
+	* gm2-gcc/m2decl.def (DetermineSizeOfConstant): Remove.
+	(ConstantStringExceedsZType): New function.
+	* gm2-gcc/m2decl.h (m2decl_DetermineSizeOfConstant): Remove.
+	(m2decl_ConstantStringExceedsZType): New function.
+	* gm2-gcc/m2expr.cc (append_digit): Remove.
+	(m2expr_interpret_integer): Remove.
+	(append_m2_digit): Remove.
+	(m2expr_StrToWideInt): New function.
+	(m2expr_interpret_m2_integer): Remove.
+	* gm2-gcc/m2expr.def (CheckConstStrZtypeRange): New function.
+	* gm2-gcc/m2expr.h (m2expr_StrToWideInt): New function.
+	* gm2-gcc/m2type.cc (build_m2_word64_type_node): New function.
+	(build_m2_ztype_node): New function.
+	(m2type_InitBaseTypes): Call build_m2_ztype_node.
+	* gm2-lang.cc (gm2_type_for_size): Re-write using early returns.
+
 2023-07-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
