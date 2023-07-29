@@ -1157,8 +1157,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplify ~X & X as zero.  */
 (simplify
- (bit_and:c (convert? @0) (convert? (bit_not @0)))
-  { build_zero_cst (type); })
+ (bit_and (convert? @0) (convert? @1))
+ (if (bitwise_inverted_equal_p (@0, @1))
+  { build_zero_cst (type); }))
 
 /* PR71636: Transform x & ((1U << b) - 1) -> x & ~(~0U << b);  */
 (simplify
@@ -1395,8 +1396,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~x ^ x -> -1 */
 (for op (bit_ior bit_xor)
  (simplify
-  (op:c (convert? @0) (convert? (bit_not @0)))
-  (convert { build_all_ones_cst (TREE_TYPE (@0)); })))
+  (op (convert? @0) (convert? @1))
+  (if (bitwise_inverted_equal_p (@0, @1))
+   (convert { build_all_ones_cst (TREE_TYPE (@0)); }))))
 
 /* x ^ x -> 0 */
 (simplify
@@ -6003,24 +6005,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
  @2)
-
-/* Simple range test simplifications.  */
-/* A < B || A >= B -> true.  */
-(for test1 (lt le le le ne ge)
-     test2 (ge gt ge ne eq ne)
- (simplify
-  (bit_ior:c (test1 @0 @1) (test2 @0 @1))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
-   { constant_boolean_node (true, type); })))
-/* A < B && A >= B -> false.  */
-(for test1 (lt lt lt le ne eq)
-     test2 (ge gt eq gt eq gt)
- (simplify
-  (bit_and:c (test1 @0 @1) (test2 @0 @1))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
-   { constant_boolean_node (false, type); })))
 
 /* A & (2**N - 1) <= 2**K - 1 -> A & (2**N - 2**K) == 0
    A & (2**N - 1) >  2**K - 1 -> A & (2**N - 2**K) != 0
