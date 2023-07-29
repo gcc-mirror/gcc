@@ -1943,8 +1943,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* (~x | y) & x -> x & y */
  /* (~x & y) | x -> x | y */
  (simplify
-  (bitop:c (rbitop:c (bit_not @0) @1) @0)
-  (bitop @0 @1)))
+  (bitop:c (rbitop:c @2 @1) @0)
+  (if (bitwise_inverted_equal_p (@0, @2))
+   (bitop @0 @1))))
 
 /* ((x | y) & z) | x -> (z & y) | x */
 (simplify

@@ -263,3 +263,74 @@ gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
     return true;
   return false;
 }
+
+/* Return true if EXPR1 and EXPR2 have the bitwise opposite value,
+   but not necessarily same type.
+   The types can differ through nop conversions.  */
+#define bitwise_inverted_equal_p(expr1, expr2) \
+  gimple_bitwise_inverted_equal_p (expr1, expr2, valueize)
+
+/* Helper function for bitwise_equal_p macro.  */
+
+static inline bool
+gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
+{
+  if (expr1 == expr2)
+    return false;
+  if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
+    return false;
+  if (TREE_CODE (expr1) == INTEGER_CST && TREE_CODE (expr2) == INTEGER_CST)
+    return wi::to_wide (expr1) == ~wi::to_wide (expr2);
+  if (operand_equal_p (expr1, expr2, 0))
+    return false;
+
+  tree other;
+  if (gimple_nop_convert (expr1, &other, valueize)
+      && gimple_bitwise_inverted_equal_p (other, expr2, valueize))
+    return true;
+
+  if (gimple_nop_convert (expr2, &other, valueize)
+      && gimple_bitwise_inverted_equal_p (expr1, other, valueize))
+    return true;
+
+  if (TREE_CODE (expr1) != SSA_NAME
+      || TREE_CODE (expr2) != SSA_NAME)
+    return false;
+
+  gimple *d1 = get_def (valueize, expr1);
+  gassign *a1 = safe_dyn_cast <gassign *> (d1);
+  gimple *d2 = get_def (valueize, expr2);
+  gassign *a2 = safe_dyn_cast <gassign *> (d2);
+  if (a1
+      && gimple_assign_rhs_code (a1) == BIT_NOT_EXPR
+      && gimple_bitwise_equal_p (do_valueize (valueize,
+					      gimple_assign_rhs1 (a1)),
+				 expr2, valueize))
+	return true;
+  if (a2
+      && gimple_assign_rhs_code (a2) == BIT_NOT_EXPR
+      && gimple_bitwise_equal_p (expr1,
+				 do_valueize (valueize,
+					      gimple_assign_rhs1 (a2)),
+				 valueize))
+	return true;
+
+  if (a1 && a2
+      && TREE_CODE_CLASS (gimple_assign_rhs_code (a1)) == tcc_comparison
+      && TREE_CODE_CLASS (gimple_assign_rhs_code (a2)) == tcc_comparison)
+    {
+      tree op10 = gimple_assign_rhs1 (a1);
+      tree op20 = gimple_assign_rhs1 (a2);
+      if (!operand_equal_p (op10, op20))
+        return false;
+      tree op11 = gimple_assign_rhs2 (a1);
+      tree op21 = gimple_assign_rhs2 (a2);
+      if (!operand_equal_p (op11, op21))
+        return false;
+      if (invert_tree_comparison (gimple_assign_rhs_code (a1),
+				  HONOR_NANS (op10))
+	  == gimple_assign_rhs_code (a2))
+	return true;
+    }
+  return false;
+}

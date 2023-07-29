@@ -121,3 +121,45 @@ bitwise_equal_p (tree expr1, tree expr2)
     return wi::to_wide (expr1) == wi::to_wide (expr2);
   return operand_equal_p (expr1, expr2, 0);
 }
+
+/* Return true if EXPR1 and EXPR2 have the bitwise opposite value,
+   but not necessarily same type.
+   The types can differ through nop conversions.  */
+
+static inline bool
+bitwise_inverted_equal_p (tree expr1, tree expr2)
+{
+  STRIP_NOPS (expr1);
+  STRIP_NOPS (expr2);
+  if (expr1 == expr2)
+    return false;
+  if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
+    return false;
+  if (TREE_CODE (expr1) == INTEGER_CST && TREE_CODE (expr2) == INTEGER_CST)
+    return wi::to_wide (expr1) == ~wi::to_wide (expr2);
+  if (operand_equal_p (expr1, expr2, 0))
+    return false;
+  if (TREE_CODE (expr1) == BIT_NOT_EXPR
+      && bitwise_equal_p (TREE_OPERAND (expr1, 0), expr2))
+    return true;
+  if (TREE_CODE (expr2) == BIT_NOT_EXPR
+      && bitwise_equal_p (expr1, TREE_OPERAND (expr2, 0)))
+    return true;
+  if (COMPARISON_CLASS_P (expr1)
+      && COMPARISON_CLASS_P (expr2))
+    {
+      tree op10 = TREE_OPERAND (expr1, 0);
+      tree op20 = TREE_OPERAND (expr2, 0);
+      if (!operand_equal_p (op10, op20))
+	return false;
+      tree op11 = TREE_OPERAND (expr1, 1);
+      tree op21 = TREE_OPERAND (expr2, 1);
+      if (!operand_equal_p (op11, op21))
+	return false;
+      if (invert_tree_comparison (TREE_CODE (expr1),
+				  HONOR_NANS (op10))
+	  == TREE_CODE (expr2))
+	return true;
+    }
+  return false;
+}
