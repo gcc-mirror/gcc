@@ -319,12 +319,12 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, tree (*valueize) (tree)
       && TREE_CODE_CLASS (gimple_assign_rhs_code (a1)) == tcc_comparison
       && TREE_CODE_CLASS (gimple_assign_rhs_code (a2)) == tcc_comparison)
     {
-      tree op10 = gimple_assign_rhs1 (a1);
-      tree op20 = gimple_assign_rhs1 (a2);
+      tree op10 = do_valueize (valueize, gimple_assign_rhs1 (a1));
+      tree op20 = do_valueize (valueize, gimple_assign_rhs1 (a2));
       if (!operand_equal_p (op10, op20))
         return false;
-      tree op11 = gimple_assign_rhs2 (a1);
-      tree op21 = gimple_assign_rhs2 (a2);
+      tree op11 = do_valueize (valueize, gimple_assign_rhs2 (a1));
+      tree op21 = do_valueize (valueize, gimple_assign_rhs2 (a2));
       if (!operand_equal_p (op11, op21))
         return false;
       if (invert_tree_comparison (gimple_assign_rhs_code (a1),
