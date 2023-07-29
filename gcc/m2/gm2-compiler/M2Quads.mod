@@ -14421,7 +14421,7 @@ END AddVarientEquality ;
                         |------------------|       |------------------|
 *)
 
-PROCEDURE BuildAsmElement (input, output, trash: BOOLEAN) ;
+PROCEDURE BuildAsmElement (input, output: BOOLEAN) ;
 VAR
    n, str, expr, tokpos,
    CurrentInterface,
@@ -14449,15 +14449,53 @@ BEGIN
       PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
                        0, NextQuad)
    END ;
-   IF trash
-   THEN
-      PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
-                       0, NextQuad)
-   END ;
    PushT (n) ;
    PushT (CurrentAsm) ;
    PushT (CurrentInterface)
 END BuildAsmElement ;
+
+
+(*
+   BuildAsmTrash - the stack is expected to contain:
+
+
+                        Entry                      Exit
+                        =====                      ====
+
+                 Ptr ->
+                        +------------------+
+                        | expr | tokpos    |
+                        |------------------|       +------------------+
+                        | CurrentInterface |       | CurrentInterface |
+                        |------------------|       |------------------|
+                        | CurrentAsm       |       | CurrentAsm       |
+                        |------------------|       |------------------|
+                        | n                |       | n                |
+                        |------------------|       |------------------|
+*)
+
+PROCEDURE BuildAsmTrash ;
+VAR
+   n, expr, tokpos,
+   CurrentInterface,
+   CurrentAsm      : CARDINAL ;
+BEGIN
+   PopTtok (expr, tokpos) ;
+   PopT (CurrentInterface) ;
+   PopT (CurrentAsm) ;
+   Assert (IsGnuAsm (CurrentAsm) OR IsGnuAsmVolatile (CurrentAsm)) ;
+   PopT (n) ;
+   INC (n) ;
+   IF CurrentInterface = NulSym
+   THEN
+      CurrentInterface := MakeRegInterface ()
+   END ;
+   PutRegInterface (tokpos, CurrentInterface, n, NulName, NulSym, expr,
+                    0, NextQuad) ;
+   PushT (n) ;
+   PushT (CurrentAsm) ;
+   PushT (CurrentInterface)
+END BuildAsmTrash ;
 
 
 (*
