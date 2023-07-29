@@ -615,7 +615,8 @@ TypeCheckItem::validate_trait_impl_block (
 						   impl_item.get (), self,
 						   specified_bound,
 						   substitutions);
-	  trait_item_refs.push_back (trait_item_ref.get_raw_item ());
+	  if (!trait_item_ref.is_error ())
+	    trait_item_refs.push_back (trait_item_ref.get_raw_item ());
 	}
     }
 
