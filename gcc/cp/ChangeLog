@@ -1,3 +1,9 @@
+2023-07-28  Ng YongXiang  <yongxiangng@gmail.com>
+
+	PR c++/110057
+	PR ipa/83054
+	* init.cc (build_vec_delete_1): Devirtualize array destruction.
+
 2023-07-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110197

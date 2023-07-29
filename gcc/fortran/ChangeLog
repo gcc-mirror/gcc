@@ -1,3 +1,11 @@
+2023-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110825
+	* gfortran.texi: Clarify argument passing convention.
+	* trans-expr.cc (gfc_conv_procedure_call): Do not pass the character
+	length as hidden argument when the declared dummy argument is
+	assumed-type.
+
 2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (resolve_omp_target): Minor cleanup.

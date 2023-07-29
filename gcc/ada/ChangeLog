@@ -1,3 +1,116 @@
+2023-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Restrict previous change to
+	the case where the simple return statement has got no storage pool.
+
+2023-07-28  Clément Chigot  <chigot@adacore.com>
+
+	* libgnarl/s-inmaop__posix.adb: Add assert after sigwait in
+	Interrupt_Wait
+
+2023-07-28  Javier Miranda  <miranda@adacore.com>
+
+	* einfo-utils.adb (Underlying_Type): Protect recursion call
+	against non-available attribute Etype.
+	* einfo.ads (Protected_Subprogram): Fix typo in documentation.
+	* exp_ch3.adb (BIP_Function_Call_Id): New subprogram.
+	(Expand_N_Object_Declaration): Improve code that evaluates if the
+	object is initialized with a BIP function call.
+	* exp_ch6.adb (Is_True_Build_In_Place_Function_Call): New
+	subprogram.
+	(Add_Task_Actuals_To_Build_In_Place_Call): Add dummy actuals if
+	the function does not require the BIP task actuals but it is a
+	dispatching operation that inherited them.
+	(Build_In_Place_Formal): Improve code to avoid never-ending loop
+	if the BIP formal is not found.
+	(Add_Dummy_Build_In_Place_Actuals): New subprogram.
+	(Expand_Call_Helper): Add calls to
+	Add_Dummy_Build_In_Place_Actuals.
+	(Expand_N_Extended_Return_Statement): Adjust assertion.
+	(Expand_Simple_Function_Return): Adjust assertion.
+	(Make_Build_In_Place_Call_In_Allocator): No action needed if the
+	called function inherited the BIP extra formals but it is not a
+	true BIP function.
+	(Make_Build_In_Place_Call_In_Assignment): Ditto.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Remove code
+	reporting unsupported case (since this patch adds support for it).
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Adding assertion
+	to ensure matching of BIP formals when setting the
+	Protected_Formal field of a protected subprogram to reference the
+	corresponding extra formal of the subprogram that implements it.
+	(Might_Need_BIP_Task_Actuals): New subprogram.
+	(Create_Extra_Formals): Improve code adding inherited extra
+	formals.
+
+2023-07-28  Pascal Obry  <obry@adacore.com>
+
+	* s-oscons-tmplt.c: Add support for SO_BINDTODEVICE constant.
+	* libgnat/g-socket.ads (Set_Socket_Option): Handle SO_BINDTODEVICE option.
+	(Get_Socket_Option): Handle SO_BINDTODEVICE option.
+	* libgnat/g-socket.adb: Likewise.
+	(Get_Socket_Option): Handle the case where IF_NAMESIZE is not defined
+	and so equal to -1.
+
+2023-07-28  Léo Creuse  <creuse@adacore.com>
+
+	* par_sco.adb (Has_Decision): Consider that quantified expressions
+	contain decisions.
+
+2023-07-28  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-tposen.adb: Fix race condition. Add comment to justify
+	the locking timing.
+
+2023-07-28  Viljar Indus  <indus@adacore.com>
+
+	* exp_util.adb (Find_Optional_Prim_Op): use "No" instead of "= Empty"
+
+2023-07-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Add guard for the call to
+	Class_Preconditions_Subprogram.
+
+2023-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Two_Dim_Packed_Array): Return true only if the
+	component type of the array is scalar.
+
+2023-07-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Check_Statement_Sequence): Only warn about missing return
+	statements and let GNATprove emit a check when needed.
+
+2023-07-28  Tom Tromey  <tromey@adacore.com>
+
+	* fe.h (Convention): Now inline function.
+	* gen_il-gen.adb (Put_C_Type_And_Subtypes.Put_Enum_Lit)
+	(Put_C_Type_And_Subtypes.Put_Kind_Subtype, Put_C_Getter):
+	Emit enum.
+	* snames.h-tmpl (Name_Id, Name_, Attribute_Id, Attribute_)
+	(Convention_Id, Convention_, Pragma_Id, Pragma_): Now enum.
+	(Get_Attribute_Id, Get_Pragma_Id): Now inline functions.
+	* types.h (Node_Kind, Entity_Kind, Convention_Id, Name_Id):
+	Now enum.
+	* xsnamest.adb (Output_Header_Line, Make_Value): Emit enum.
+
+2023-07-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-except.ads (Save_Occurrence): Fix typo.
+
+2023-07-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo-utils.adb (Number_Formals): Change types in body.
+	* einfo-utils.ads (Number_Formals): Change type in spec.
+	* einfo.ads (Number_Formals): Change type in comment.
+	* sem_ch13.adb (Is_Property_Function): Fix style in a caller of
+	Number_Formals that was likely to crash because of missing guards.
+
+2023-07-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): Don't look at the type of
+	actual parameter when it has no type at all, e.g. because the entire
+	subprogram call is illegal.
+
 2023-07-18  Tom Tromey  <tromey@adacore.com>
 
 	* gcc-interface/decl.cc (check_ok_for_atomic_type): Use Pragma_Id.

@@ -1,3 +1,102 @@
+2023-07-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::merge_range): New.
+	(ssa_lazy_cache::merge_range): New.
+	* gimple-range-cache.h (class ssa_cache): Adjust protoypes.
+	(class ssa_lazy_cache): Ditto.
+	* gimple-range.cc (assume_query::calculate_op): Use merge_range.
+
+2023-07-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-propagate.cc (substitute_and_fold_engine::value_on_edge):
+	Move from value-query.cc.
+	(substitute_and_fold_engine::value_of_stmt): Ditto.
+	(substitute_and_fold_engine::range_of_expr): New.
+	* tree-ssa-propagate.h (substitute_and_fold_engine): Inherit from
+	range_query.  New prototypes.
+	* value-query.cc (value_query::value_on_edge): Relocate.
+	(value_query::value_of_stmt): Ditto.
+	* value-query.h (class value_query): Remove.
+	(class range_query): Remove base class.  Adjust prototypes.
+
+2023-07-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110205
+	* gimple-range-cache.h (ranger_cache::m_estimate): Delete.
+	* range-op-mixed.h (operator_bitwise_xor::op1_op2_relation_effect):
+	Add final override.
+	* range-op.cc (operator_lshift): Add missing final overrides.
+	(operator_rshift): Ditto.
+
+2023-07-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_option_override): Disable tail-call
+	optimizations in BPF target.
+
+2023-07-28  Honza  <jh@ryzen4.suse.cz>
+
+	* cfgloopmanip.cc (loop_count_in): Break out from ...
+	(loop_exit_for_scaling): Break out from ...
+	(update_loop_exit_probability_scale_dom_bbs): Break out from ...;
+	add more sanity check and debug info.
+	(scale_loop_profile): ... here.
+	(create_empty_loop_on_edge): Fix whitespac.
+	* cfgloopmanip.h (update_loop_exit_probability_scale_dom_bbs): Declare.
+	* loop-unroll.cc (unroll_loop_constant_iterations): Use
+	update_loop_exit_probability_scale_dom_bbs.
+	* tree-ssa-loop-manip.cc (update_exit_probability_after_unrolling): Remove.
+	(tree_transform_and_unroll_loop): Use
+	update_loop_exit_probability_scale_dom_bbs.
+	* tree-ssa-loop-split.cc (split_loop): Use
+	update_loop_exit_probability_scale_dom_bbs.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/77689
+	* tree-ssa-loop-split.cc: Include value-query.h.
+	(split_at_bb_p): Analyze cases where EQ/NE can be turned
+	into LT/LE/GT/GE; return updated guard code.
+	(split_loop): Use guard code.
+
+2023-07-28  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/28071
+	PR rtl-optimization/110587
+	* expr.cc (emit_group_load_1): Simplify logic for calling
+	force_reg on ORIG_SRC, to avoid making a copy if the source
+	is already in a pseudo register.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/106923
+	* tree-ssa-loop-split.cc (connect_loops): Change probability
+	of the test preconditioning second loop to very_likely.
+	(fix_loop_bb_probability): Handle correctly case where
+	on of the arms of the conditional is empty.
+	(split_loop): Fold the test guarding first condition to
+	see if it is constant true; Set correct entry block
+	probabilities of the split loops; determine correct loop
+	eixt probabilities.
+
+2023-07-28  xuli  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: remove rounding mode of
+	vsadd[u] and vssub[u].
+	* config/riscv/vector.md: Ditto.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-split.cc (split_loop): Also support NE driven
+	loops when IV test is not overflowing.
+
+2023-07-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110788
+	* config/i386/sse.md (avx512cd_maskb_vec_dup<mode>): Add
+	UNSPEC_MASKOP.
+	(avx512cd_maskw_vec_dup<mode>): Ditto.
+
 2023-07-27  David Faust  <david.faust@oracle.com>
 
 	PR target/110782

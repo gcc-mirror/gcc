@@ -1,3 +1,83 @@
+2023-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110825
+	* gfortran.dg/assumed_type_18.f90: New test.
+
+2023-07-28  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: Add -mabi=lp64d
+	to dg-options.
+
+2023-07-28  Ng YongXiang  <yongxiangng@gmail.com>
+
+	PR c++/110057
+	PR ipa/83054
+	* g++.dg/warn/pr83054.C: Remove devirtualization warning.
+	* g++.dg/lto/pr89335_0.C: Likewise.
+	* g++.dg/tree-ssa/devirt-array-destructor-1.C: New test.
+	* g++.dg/tree-ssa/devirt-array-destructor-2.C: New test.
+	* g++.dg/warn/pr83054-2.C: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/77689
+	* g++.dg/tree-ssa/loop-split-1.C: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/106293
+	* gcc.dg/tree-prof/loop-split-1.c: New test.
+	* gcc.dg/tree-prof/loop-split-2.c: New test.
+	* gcc.dg/tree-prof/loop-split-3.c: New test.
+
+2023-07-28  xuli  <xuli1@eswincomputing.com>
+
+	* g++.target/riscv/rvv/base/bug-12.C: Adapt testcase.
+	* g++.target/riscv/rvv/base/bug-14.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-18.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-19.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-20.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-21.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-22.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-23.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-3.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-8.C: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-100.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-101.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-103.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-104.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-105.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-106.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-107.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-109.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-110.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-111.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-112.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-113.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-115.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-116.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-117.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-118.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-97.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-98.c: Ditto.
+	* gcc.target/riscv/rvv/base/merge_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm-error.c: New test.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm.c: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/ifc-12.c: Disable loop splitting.
+	* gcc.target/i386/avx2-gather-6.c: Likewise.
+	* gcc.target/i386/avx2-vect-aggressive.c: Likewise.
+
+2023-07-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110788.c: New test.
+
 2023-07-27  David Faust  <david.faust@oracle.com>
 
 	PR target/110782
