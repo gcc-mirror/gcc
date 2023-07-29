@@ -8501,7 +8501,7 @@ BEGIN
          PushTFtok (Res, GetSType (Var), combinedtok)
       ELSE
          MetaErrorT1 (combinedtok,
-                      'the parameter to {%A1kABS} must be a variable or constant, seen {%E1ad}',
+                      'the parameter to {%A1kABS} must be a variable or constant, seen {%1ad}',
                       Var)
       END
    ELSE
@@ -9072,7 +9072,7 @@ BEGIN
       THEN
          (* not sensible to try and recover when we dont know the return type.  *)
          MetaErrorT1 (typetok,
-                      'undeclared type found in builtin procedure function {%AkVAL} {%A1ad}',
+                      'undeclared type found in builtin procedure function {%AkVAL} {%1ad}',
                       Type)
          (* non recoverable error.  *)
       ELSIF (IsSet (Type) OR IsEnumeration (Type) OR IsSubrange (Type) OR
@@ -9090,7 +9090,7 @@ BEGIN
       ELSE
          (* not sensible to try and recover when we dont know the return type.  *)
          MetaErrorT0 (functok,
-                      'the builtin procedure {%AkVAL} has thw following formal parameter declaration {%kVAL} (type, expression)')
+                      'the builtin procedure {%AkVAL} has the following formal parameter declaration {%kVAL} (type, expression)')
          (* non recoverable error.  *)
       END
    ELSE
@@ -9182,7 +9182,7 @@ BEGIN
          ELSE
             (* not sensible to try and recover when we dont know the return type.  *)
             MetaErrorT0 (functok,
-                         'the second parameter to the builtin procedure {%AkCAST} must either be a variable, constant or a procedure.  The formal parameters to cast are CAST(type, variable or constant or procedure)')
+                         'the second parameter to the builtin procedure {%AkCAST} must either be a variable, constant or a procedure.  The formal parameters to cast are {%kCAST} (type, variable or constant or procedure)')
             (* non recoverable error.  *)
          END
       ELSE
@@ -9350,7 +9350,7 @@ BEGIN
    ELSIF GetSType (type) = NulSym
    THEN
       MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMIN} value for type {%1Aad}', type) ;
+                   'unable to obtain the {%AkMIN} value for type {%1ad}', type) ;
       (* non recoverable error.  *)
       InternalError ('MetaErrorT1 {%AkMIN} should call abort')
    ELSE
@@ -9388,7 +9388,7 @@ BEGIN
    ELSIF GetSType (type) = NulSym
    THEN
       MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMAX} value for type {%1Aad}', type) ;
+                   'unable to obtain the {%AkMAX} value for type {%1ad}', type) ;
       (* non recoverable error.  *)
       InternalError ('MetaErrorT1 {%AkMAX} should call abort')
    ELSE
@@ -9444,14 +9444,14 @@ BEGIN
       ELSE
          (* we dont know the type therefore cannot fake a return.  *)
          MetaErrorT1 (vartok,
-                      'parameter to {%AkMIN} must be a type or a variable, seen {%1Aad}',
+                      'parameter to {%AkMIN} must be a type or a variable, seen {%1ad}',
                       Var)
          (* non recoverable error.  *)
       END
    ELSE
       (* we dont know the type therefore cannot fake a return.  *)
       MetaErrorT1 (functok,
-                   'the pseudo builtin procedure function {%AkMIN} only has one parameter, seen  {%1An}',
+                   'the pseudo builtin procedure function {%AkMIN} only has one parameter, seen  {%1n}',
                    NoOfParam)
       (* non recoverable error.  *)
    END
@@ -9505,14 +9505,14 @@ BEGIN
       ELSE
          (* we dont know the type therefore cannot fake a return.  *)
          MetaErrorT1 (vartok,
-                      'parameter to {%AkMAX} must be a type or a variable, seen {%1Aad}',
+                      'parameter to {%AkMAX} must be a type or a variable, seen {%1ad}',
                       Var)
          (* non recoverable error.  *) ;
       END
    ELSE
       (* we dont know the type therefore cannot fake a return.  *)
       MetaErrorT1 (functok,
-                   'the pseudo builtin procedure function {%AkMAX} only has one parameter, seen {%1An}',
+                   'the pseudo builtin procedure function {%AkMAX} only has one parameter, seen {%1n}',
                    NoOfParam)
       (* non recoverable error.  *)
    END
@@ -9600,7 +9600,7 @@ BEGIN
    ELSE
       (* we dont know the type therefore cannot fake a return.  *)
       MetaErrorT1 (functok,
-                   'the pseudo builtin procedure function {%AkTRUNC} only has one parameter, seen  {%1An}', NoOfParam)
+                   'the pseudo builtin procedure function {%AkTRUNC} only has one parameter, seen  {%1n}', NoOfParam)
       (* non recoverable error.  *)
    END
 END BuildTruncFunction ;
@@ -10071,18 +10071,18 @@ BEGIN
    THEN
       paramtok := OperandTok (1) ;
       resulttok := MakeVirtualTok (functok, functok, paramtok) ;
-      BuildSizeCheckEnd (ProcSym) ;   (* quadruple generation now on *)
+      BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
       ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
       GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, OperandT(1), TRUE)
    ELSIF IsVar (OperandT (1))
    THEN
-      BuildSizeCheckEnd (ProcSym) ;   (* quadruple generation now on *)
+      BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
       Type := GetSType (OperandT (1)) ;
       paramtok := OperandTok (1) ;
       resulttok := MakeVirtualTok (functok, functok, paramtok) ;
       IF IsUnbounded (Type)
       THEN
-         (* eg. SIZE(a)  ; where a is unbounded dereference HIGH and multiply by the TYPE *)
+         (* Eg. SIZE(a) ; where a is unbounded dereference HIGH and multiply by the TYPE.  *)
          dim := OperandD (1) ;
          IF dim = 0
          THEN
@@ -10106,7 +10106,7 @@ BEGIN
                    OperandT (1)) ;
       ReturnVar := MakeConstLit (resulttok, MakeKey('0'), Cardinal)
    END ;
-   PopN (NoOfParam+1) ;       (* destroy the arguments and function *)
+   PopN (NoOfParam+1) ;       (* Destroy the arguments and function.  *)
    PushTFtok (ReturnVar, GetSType(ProcSym), resulttok)
 END BuildSizeFunction ;
 
