@@ -4540,33 +4540,22 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 	  || __builtin_mul_overflow (element_size, dst_offsets[0], &dst_off)
 	  || __builtin_mul_overflow (element_size, src_offsets[0], &src_off))
 	return EINVAL;
-      if (src_devicep != NULL && src_devicep == dst_devicep)
-	ret = src_devicep->dev2dev_func (src_devicep->target_id,
-					 (char *) dst + dst_off,
-					 (const char *) src + src_off,
-					 length);
-      else if (src_devicep != NULL
-	       && (dst_devicep == NULL
-		   || (dst_devicep->capabilities
-		       & GOMP_OFFLOAD_CAP_SHARED_MEM)))
-	ret = src_devicep->dev2host_func (src_devicep->target_id,
-					  (char *) dst + dst_off,
-					  (const char *) src + src_off,
-					  length);
-      else if (dst_devicep != NULL
-	       && (src_devicep == NULL
-		   || (src_devicep->capabilities
-			& GOMP_OFFLOAD_CAP_SHARED_MEM)))
-	ret = dst_devicep->host2dev_func (dst_devicep->target_id,
-					  (char *) dst + dst_off,
-					  (const char *) src + src_off,
-					  length);
-      else if (dst_devicep == NULL && src_devicep == NULL)
+      if (dst_devicep == NULL && src_devicep == NULL)
 	{
 	  memcpy ((char *) dst + dst_off, (const char *) src + src_off,
 		  length);
 	  ret = 1;
 	}
+      else if (src_devicep == NULL)
+	ret = dst_devicep->host2dev_func (dst_devicep->target_id,
+					  (char *) dst + dst_off,
+					  (const char *) src + src_off,
+					  length);
+      else if (dst_devicep == NULL)
+	ret = src_devicep->dev2host_func (src_devicep->target_id,
+					  (char *) dst + dst_off,
+					  (const char *) src + src_off,
+					  length);
       else if (src_devicep == dst_devicep)
 	ret = src_devicep->dev2dev_func (src_devicep->target_id,
 					 (char *) dst + dst_off,
@@ -4584,7 +4573,8 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 	  else if (*tmp_size < length)
 	    {
 	      *tmp_size = length;
-	      *tmp = realloc (*tmp, length);
+	      free (*tmp);
+	      *tmp = malloc (length);
 	      if (*tmp == NULL)
 		return ENOMEM;
 	    }
@@ -4599,7 +4589,7 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
       return ret ? 0 : EINVAL;
     }
 
-  /* host->device, device->host and same-device device->device.  */
+  /* host->device, device->host and intra device.  */
   if (num_dims == 2
       && ((src_devicep
 	   && src_devicep == dst_devicep
@@ -4711,16 +4701,8 @@ omp_target_memcpy_rect_copy (void *dst, const void *src,
   bool lock_src;
   bool lock_dst;
 
-  lock_src = (src_devicep
-	      && (!dst_devicep
-		  || src_devicep == dst_devicep
-		  || !(src_devicep->capabilities
-		       & GOMP_OFFLOAD_CAP_SHARED_MEM)));
-  lock_dst = (dst_devicep
-	      && (!lock_src
-		  || (src_devicep != dst_devicep
-		      && !(dst_devicep->capabilities
-			   & GOMP_OFFLOAD_CAP_SHARED_MEM))));
+  lock_src = src_devicep != NULL;
+  lock_dst = dst_devicep != NULL && src_devicep != dst_devicep;
   if (lock_src)
     gomp_mutex_lock (&src_devicep->lock);
   if (lock_dst)
@@ -5076,8 +5058,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (free);
   DLSYM (dev2host);
   DLSYM (host2dev);
-  DLSYM (memcpy2d);
-  DLSYM (memcpy3d);
+  DLSYM_OPT (memcpy2d, memcpy2d);
+  DLSYM_OPT (memcpy3d, memcpy3d);
   device->capabilities = device->get_caps_func ();
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
     {

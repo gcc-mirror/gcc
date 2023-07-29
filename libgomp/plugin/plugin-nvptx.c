@@ -1794,6 +1794,8 @@ GOMP_OFFLOAD_memcpy2d (int dst_ord, int src_ord, size_t dim1_size,
   /* TODO: Consider using CU_MEMORYTYPE_UNIFIED if supported.  */
 
   CUDA_MEMCPY2D data;
+
+  memset (&data, 0, sizeof (data));
   data.WidthInBytes = dim1_size;
   data.Height = dim0_len;
 
@@ -1855,6 +1857,8 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   /* TODO: Consider using CU_MEMORYTYPE_UNIFIED if supported.  */
 
   CUDA_MEMCPY3D data;
+
+  memset (&data, 0, sizeof (data));
   data.WidthInBytes = dim2_size;
   data.Height = dim1_len;
   data.Depth = dim0_len;
@@ -1874,7 +1878,6 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   data.dstXInBytes = dst_offset2_size;
   data.dstY = dst_offset1_len;
   data.dstZ = dst_offset0_len;
-  data.dstLOD = 0;
 
   if (src_ord == -1)
     {
@@ -1891,7 +1894,6 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
   data.srcXInBytes = src_offset2_size;
   data.srcY = src_offset1_len;
   data.srcZ = src_offset0_len;
-  data.srcLOD = 0;
 
   CUDA_CALL (cuMemcpy3D, &data);
   return true;

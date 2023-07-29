@@ -147,7 +147,7 @@ typedef struct {
 
   size_t dstXInBytes, dstY;
   CUmemorytype dstMemoryType;
-  const void *dstHost;
+  void *dstHost;
   CUdeviceptr dstDevice;
   CUarray dstArray;
   size_t dstPitch;
@@ -162,16 +162,16 @@ typedef struct {
   const void *srcHost;
   CUdeviceptr srcDevice;
   CUarray srcArray;
-  void *dummy;
+  void *reserved0;
   size_t srcPitch, srcHeight;
 
   size_t dstXInBytes, dstY, dstZ;
   size_t dstLOD;
   CUmemorytype dstMemoryType;
-  const void *dstHost;
+  void *dstHost;
   CUdeviceptr dstDevice;
   CUarray dstArray;
-  void *dummy2;
+  void *reserved1;
   size_t dstPitch, dstHeight;
 
   size_t WidthInBytes, Height, Depth;
@@ -190,7 +190,7 @@ typedef struct {
   size_t dstXInBytes, dstY, dstZ;
   size_t dstLOD;
   CUmemorytype dstMemoryType;
-  const void *dstHost;
+  void *dstHost;
   CUdeviceptr dstDevice;
   CUarray dstArray;
   CUcontext dstContext;
@@ -246,6 +246,8 @@ CUresult cuMemAlloc (CUdeviceptr *, size_t);
 CUresult cuMemAllocHost (void **, size_t);
 CUresult cuMemHostAlloc (void **, size_t, unsigned int);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
+CUresult cuMemcpyPeer (CUdeviceptr, CUcontext, CUdeviceptr, CUcontext, size_t);
+CUresult cuMemcpyPeerAsync (CUdeviceptr, CUcontext, CUdeviceptr, CUcontext, size_t, CUstream);
 #define cuMemcpyDtoDAsync cuMemcpyDtoDAsync_v2
 CUresult cuMemcpyDtoDAsync (CUdeviceptr, CUdeviceptr, size_t, CUstream);
 #define cuMemcpyDtoH cuMemcpyDtoH_v2
