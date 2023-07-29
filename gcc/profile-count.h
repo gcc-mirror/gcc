@@ -650,6 +650,12 @@ public:
       return *this;
     }
 
+  /* Compute n-th power.  */
+  profile_probability pow (int) const;
+
+  /* Compute sware root.  */
+  profile_probability sqrt () const;
+
   /* Get the value of the count.  */
   uint32_t value () const { return m_val; }
 
