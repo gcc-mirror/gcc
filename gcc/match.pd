@@ -2797,14 +2797,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Convert (X == CST1) && (X OP2 CST2) to a known value
    based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+/* Convert (X == Y) && (X OP2 Y) to a known value if X is an integral type.
+   Similarly for (X != Y).  */
 
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_and:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (bit_and:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (if ((TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	     || POINTER_TYPE_P (TREE_TYPE (@1)))
+	    && operand_equal_p (@1, @2)))
     (with
      {
-      int cmp = tree_int_cst_compare (@1, @2);
+      int cmp = 0;
+      if (TREE_CODE (@1) == INTEGER_CST
+	  && TREE_CODE (@2) == INTEGER_CST)
+	cmp = tree_int_cst_compare (@1, @2);
       bool val;
       switch (code2)
 	 {
@@ -2820,17 +2830,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @3)
       (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
-      (if (code1 == NE_EXPR && !val) @4))))))
+      (if (code1 == NE_EXPR && !val) @4)))))))
 
-/* Convert (X OP1 CST1) && (X OP2 CST2).  */
+/* Convert (X OP1 CST1) && (X OP2 CST2).
+   Convert (X OP1 Y) && (X OP2 Y).  */
 
 (for code1 (lt le gt ge)
  (for code2 (lt le gt ge)
   (simplify
-  (bit_and (code1:c@3 @0 INTEGER_CST@1) (code2:c@4 @0 INTEGER_CST@2))
+  (bit_and (code1:c@3 @0 @1) (code2:c@4 @0 @2))
+  (if ((TREE_CODE (@1) == INTEGER_CST
+	&& TREE_CODE (@2) == INTEGER_CST)
+       || ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	   && operand_equal_p (@1, @2)))
    (with
     {
-     int cmp = tree_int_cst_compare (@1, @2);
+     int cmp = 0;
+     if (TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+       cmp = tree_int_cst_compare (@1, @2);
     }
     (switch
      /* Choose the more restrictive of two < or <= comparisons.  */
@@ -2859,18 +2878,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && (code1 == GT_EXPR || code1 == GE_EXPR)
 	  && (code2 == LT_EXPR || code2 == LE_EXPR))
       { constant_boolean_node (false, type); })
-     )))))
+     ))))))
 
 /* Convert (X == CST1) || (X OP2 CST2) to a known value
    based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+/* Convert (X == Y) || (X OP2 Y) to a known value if X is an integral type.
+   Similarly for (X != Y).  */
 
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_ior:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (bit_ior:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (if ((TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	    && operand_equal_p (@1, @2)))
     (with
      {
-      int cmp = tree_int_cst_compare (@1, @2);
+      int cmp = 0;
+      if (TREE_CODE (@1) == INTEGER_CST
+	  && TREE_CODE (@2) == INTEGER_CST)
+	cmp = tree_int_cst_compare (@1, @2);
       bool val;
       switch (code2)
 	{
@@ -2886,17 +2915,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @4)
       (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
-      (if (code1 == NE_EXPR && !val) @3))))))
+      (if (code1 == NE_EXPR && !val) @3)))))))
 
-/* Convert (X OP1 CST1) || (X OP2 CST2).  */
+/* Convert (X OP1 CST1) || (X OP2 CST2).
+   Convert (X OP1 Y)    || (X OP2 Y).  */
 
 (for code1 (lt le gt ge)
  (for code2 (lt le gt ge)
   (simplify
-  (bit_ior (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+  (bit_ior (code1@3 @0 @1) (code2@4 @0 @2))
+  (if ((TREE_CODE (@1) == INTEGER_CST
+        && TREE_CODE (@2) == INTEGER_CST)
+       || ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	   && operand_equal_p (@1, @2)))
    (with
     {
-     int cmp = tree_int_cst_compare (@1, @2);
+     int cmp = 0;
+     if (TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+       cmp = tree_int_cst_compare (@1, @2);
     }
     (switch
      /* Choose the more restrictive of two < or <= comparisons.  */
@@ -2925,7 +2963,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && (code1 == GT_EXPR || code1 == GE_EXPR)
 	  && (code2 == LT_EXPR || code2 == LE_EXPR))
       { constant_boolean_node (true, type); })
-     )))))
+     ))))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
