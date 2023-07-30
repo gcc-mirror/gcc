@@ -45,12 +45,11 @@ PROCEDURE GetFieldInitialized (desc: InitDesc; fieldlist: List) : BOOLEAN ;
 
 
 (*
-   VariableAnalysis - checks to see whether a variable is:
-
-                      read before it has been initialized
+   ScopeBlockVariableAnalysis - checks to see whether a variable is
+                                read before it has been initialized.
 *)
 
-PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
+PROCEDURE ScopeBlockVariableAnalysis (Scope: CARDINAL; Start, End: CARDINAL) ;
 
 
 PROCEDURE PrintSymInit (desc: InitDesc) ;

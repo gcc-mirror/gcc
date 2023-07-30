@@ -158,6 +158,7 @@ EXPORT QUALIFIED NulSym,
                  PutDefLink,
                  PutModLink,
                  PutModuleBuiltin,
+                 PutVarArrayRef, IsVarArrayRef,
 
                  PutConstSet,
                  PutConstructor,
@@ -3559,6 +3560,20 @@ PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   PutVarArrayRef - assigns ArrayRef field with value.
+*)
+
+PROCEDURE PutVarArrayRef (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarArrayRef - returns ArrayRef field value.
+*)
+
+PROCEDURE IsVarArrayRef (sym: CARDINAL) : BOOLEAN ;
 
 
 (*

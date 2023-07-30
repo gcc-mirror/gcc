@@ -395,7 +395,7 @@ BEGIN
          THEN
             RETURN FALSE
          END ;
-         scope := GetScope(scope)
+         scope := GetScope (scope)
       END ;
       InternalError ('expecting scope to eventually reach a module or defimp symbol')
    ELSE
@@ -410,7 +410,7 @@ END IsExportedGcc ;
                         the GCC tree structure.
 *)
 
-PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
+PROCEDURE ConvertQuadsToTree (Scope: CARDINAL; Start, End: CARDINAL) ;
 BEGIN
    REPEAT
       CodeStatement (Start) ;

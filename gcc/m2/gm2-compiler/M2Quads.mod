@@ -126,6 +126,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetUnboundedRecordType,
                         GetUnboundedAddressOffset,
                         GetUnboundedHighOffset,
+                        PutVarArrayRef,
 
                         ForeachFieldEnumerationDo, ForeachLocalSymDo,
                         GetExported, PutImported, GetSym, GetLibName,
@@ -588,6 +589,7 @@ BEGIN
                           RETURN( TRUE )
                        END
 
+      ELSE
       END ;
       i := GetNextQuad (i)
    END ;
@@ -709,6 +711,16 @@ BEGIN
       RETURN( Operator=op )
    END
 END IsQuadA ;
+
+
+(*
+   IsGoto - returns true if QuadNo is a goto operation.
+*)
+
+PROCEDURE IsGoto (QuadNo: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN( IsQuadA (QuadNo, GotoOp) )
+END IsGoto ;
 
 
 (*
@@ -10667,7 +10679,7 @@ END IsInfiniteLoop ;
    LoopAnalysis - checks whether an infinite loop exists.
 *)
 
-PROCEDURE LoopAnalysis (Current, End: CARDINAL) ;
+PROCEDURE LoopAnalysis (Scope: CARDINAL; Current, End: CARDINAL) ;
 VAR
    op           : QuadOperator ;
    op1, op2, op3: CARDINAL ;
@@ -10683,10 +10695,18 @@ BEGIN
                (* found a loop - ie a branch which goes back in quadruple numbers *)
                IF IsInfiniteLoop(Current)
                THEN
+                  MetaErrorT1 (QuadToTokenNo(op3),
+                               'it is very likely (although not absolutely certain) that the top of an infinite loop exists here in {%1Wad}',
+                               Scope) ;
+                  MetaErrorT1 (QuadToTokenNo(Current),
+                               'and the bottom of the infinite loop is ends here in {%1Wad} or alternatively a component of this loop is never executed',
+                               Scope) ;
+(*
                   WarnStringAt(InitString('it is very likely (although not absolutely certain) that the top of an infinite loop is here'),
                                QuadToTokenNo(op3)) ;
                   WarnStringAt(InitString('and the bottom of the infinite loop is ends here or alternatively a component of this loop is never executed'),
                                QuadToTokenNo(Current))
+*)
                END
             END
          END ;
@@ -11216,6 +11236,7 @@ BEGIN
       (* BuildDesignatorArray may have detected des is a constant.  *)
       PutVarConst (Adr, IsVarConst (Array))
    END ;
+   PutVarArrayRef (Adr, TRUE) ;
    (*
       From now on it must reference the array element by its lvalue
       - so we create the type of the referenced entity
@@ -11246,15 +11267,15 @@ BEGIN
    THEN
       (* ti has no type since constant *)
       ti := MakeTemporary (tok, ImmediateValue) ;
-      PutVar(ti, Cardinal) ;
+      PutVar (ti, Cardinal) ;
       GenQuadO (tok, ElementSizeOp, ti, arrayType, 1, TRUE)
    ELSE
       INC(dim) ;
       tk := MakeTemporary (tok, RightValue) ;
-      PutVar(tk, Cardinal) ;
+      PutVar (tk, Cardinal) ;
       GenHigh (tok, tk, dim, arraySym) ;
       tl := MakeTemporary (tok, RightValue) ;
-      PutVar(tl, Cardinal) ;
+      PutVar (tl, Cardinal) ;
       GenQuadO (tok, AddOp, tl, tk, MakeConstLit (tok, MakeKey ('1'), Cardinal), TRUE) ;
       tj := calculateMultipicand (tok, arraySym, arrayType, dim) ;
       ti := MakeTemporary (tok, RightValue) ;
@@ -11385,6 +11406,7 @@ BEGIN
 
    GenQuad (MultOp, tk, ti, tj) ;
    Adr := MakeTemporary (combinedTok, LeftValue) ;
+   PutVarArrayRef (Adr, TRUE) ;
    (*
       Ok must reference by address
       - but we contain the type of the referenced entity
@@ -13168,14 +13190,14 @@ END DisplayQuadList ;
    DisplayQuadRange - displays all quads in list range, start..end.
 *)
 
-PROCEDURE DisplayQuadRange (start, end: CARDINAL) ;
+PROCEDURE DisplayQuadRange (scope: CARDINAL; start, end: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
-   printf0('Quadruples:\n') ;
-   WHILE (start<=end) AND (start#0) DO
-      DisplayQuad(start) ;
-      f := GetQF(start) ;
+   printf0 ('Quadruples for scope: ') ; WriteOperand (scope) ; printf0 ('\n') ;
+   WHILE (start <= end) AND (start # 0) DO
+      DisplayQuad (start) ;
+      f := GetQF (start) ;
       start := f^.Next
    END
 END DisplayQuadRange ;
@@ -13194,10 +13216,10 @@ BEGIN
    IF QuadrupleGeneration
    THEN
       WHILE QuadNo#0 DO
-         f := GetQF(QuadNo) ;
+         f := GetQF (QuadNo) ;
          WITH f^ DO
             i := Operand3 ;                       (* Next Link along the BackPatch *)
-            ManipulateReference(QuadNo, Value)    (* Filling in the BackPatch.     *)
+            ManipulateReference (QuadNo, Value)   (* Filling in the BackPatch.     *)
          END ;
          QuadNo := i
       END
@@ -13596,17 +13618,17 @@ PROCEDURE WriteOperand (Sym: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
-   IF Sym=NulSym
+   IF Sym = NulSym
    THEN
-      printf0('<nulsym>')
+      printf0 ('<nulsym>')
    ELSE
-      n := GetSymName(Sym) ;
-      printf1('%a', n) ;
-      IF IsVar(Sym) OR IsConst(Sym)
+      n := GetSymName (Sym) ;
+      printf1 ('%a', n) ;
+      IF IsVar (Sym) OR IsConst (Sym)
       THEN
-         printf0('[') ; WriteMode(GetMode(Sym)) ; printf0(']')
+         printf0 ('[') ; WriteMode (GetMode (Sym)) ; printf0(']')
       END ;
-      printf1('(%d)', Sym)
+      printf1 ('(%d)', Sym)
    END
 END WriteOperand ;
 
@@ -13666,7 +13688,15 @@ BEGIN
    LogicalOrOp :  RETURN InitString ('{%kOR}') |
    LogicalAndOp:  RETURN InitString ('{%kAND}') |
    InclOp      :  RETURN InitString ('{%kINCL}') |
-   ExclOp      :  RETURN InitString ('{%kEXCL}')
+   ExclOp      :  RETURN InitString ('{%kEXCL}') |
+   IfEquOp     :  RETURN InitString ('=') |
+   IfLessEquOp :  RETURN InitString ('<=') |
+   IfGreEquOp  :  RETURN InitString ('>=') |
+   IfGreOp     :  RETURN InitString ('>') |
+   IfLessOp    :  RETURN InitString ('<') |
+   IfNotEquOp  :  RETURN InitString ('#') |
+   IfInOp      :  RETURN InitString ('IN') |
+   IfNotInOp   :  RETURN InitString ('NOT IN')
 
    ELSE
       RETURN NIL
