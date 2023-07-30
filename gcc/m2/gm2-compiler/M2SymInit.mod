@@ -1550,8 +1550,6 @@ BEGIN
          THEN
             IF IsDeallocate (op2)
             THEN
-               (* SetupLAlias (ptr, heapSym) *)
-               (* SetupIndr (ptr, Nil) *)
                SetupLAlias (ptr, Nil)
             ELSE
                SetupIndr (ptr, heapSym)
