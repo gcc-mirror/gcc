@@ -239,6 +239,8 @@ is_numeric (uint32_t codepoint)
 
 } // namespace Rust
 
+#if CHECKING_P
+
 namespace selftest {
 
 void
@@ -326,3 +328,5 @@ rust_utf8_property_test ()
 }
 
 } // namespace selftest
+
+#endif // CHECKING_P
