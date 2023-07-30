@@ -339,11 +339,11 @@ TraitItemReference::resolve_item (HIR::TraitItemConst &constant)
 void
 TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 {
-  if (!is_optional ())
-    return;
-
   TyTy::BaseType *item_tyty = get_tyty ();
   if (item_tyty->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  if (!is_optional ())
     return;
 
   // check the block and return types

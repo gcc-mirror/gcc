@@ -440,6 +440,16 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       *root_resolved_node_id = ref_node_id;
       *offset = *offset + 1;
       root_tyty = lookup;
+
+      // this enforces the proper get_segments checks to take place
+      bool is_adt = root_tyty->get_kind () == TyTy::TypeKind::ADT;
+      if (is_adt)
+	{
+	  const TyTy::ADTType &adt
+	    = *static_cast<const TyTy::ADTType *> (root_tyty);
+	  if (adt.is_enum ())
+	    return root_tyty;
+	}
     }
 
   return root_tyty;
@@ -497,6 +507,14 @@ TypeCheckType::resolve_segments (
       auto &candidate = *candidates.begin ();
       prev_segment = tyseg;
       tyseg = candidate.ty;
+
+      if (candidate.is_enum_candidate ())
+	{
+	  rust_error_at (seg->get_locus (),
+			 "expected type, found variant of %s",
+			 tyseg->get_name ().c_str ());
+	  return new TyTy::ErrorType (expr_id);
+	}
 
       if (candidate.is_impl_candidate ())
 	{
