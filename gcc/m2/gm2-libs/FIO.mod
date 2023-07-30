@@ -1083,7 +1083,7 @@ END UnReadChar ;
 
 
 (*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 *)
@@ -1091,9 +1091,9 @@ END UnReadChar ;
 PROCEDURE ReadAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
+   IF BufferedRead (f, HIGH (a) + 1, ADR (a)) = VAL (INTEGER, HIGH (a) + 1)
    THEN
-      SetEndOfLine(f, a[HIGH(a)])
+      SetEndOfLine (f, a[HIGH(a)])
    END
 END ReadAny ;
 
@@ -1232,51 +1232,51 @@ END WriteNBytes ;
                    Useful when performing small writes.
 *)
 
-PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
+PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; src: ADDRESS) : INTEGER ;
 VAR
-   t     : ADDRESS ;
+   dest  : ADDRESS ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;
    fd    : FileDescriptor ;
 BEGIN
-   IF f#Error
+   IF f # Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       IF fd#NIL
       THEN
          total := 0 ;   (* how many bytes have we read *)
          WITH fd^ DO
-            IF buffer#NIL
+            IF buffer # NIL
             THEN
                WITH buffer^ DO
-                  WHILE nBytes>0 DO
+                  WHILE nBytes > 0 DO
                      (* place into the buffer first *)
-                     IF left>0
+                     IF left > 0
                      THEN
-                        IF nBytes=1
+                        IF nBytes = 1
                         THEN
                            (* too expensive to call memcpy for 1 character *)
-                           p := a ;
+                           p := src ;
                            contents^[position] := p^ ;
-                           DEC(left) ;         (* reduce space                        *)
-                           INC(position) ;     (* move onwards n byte                 *)
-                           INC(total) ;
+                           DEC (left) ;         (* reduce space                        *)
+                           INC (position) ;     (* move onwards n byte                 *)
+                           INC (total) ;
                            RETURN( total )
                         ELSE
-                           n := Min(left, nBytes) ;
-                           t := address ;
-                           INC(t, position) ;
-                           p := memcpy(a, t, CARDINAL(n)) ;
-                           DEC(left, n) ;      (* remove consumed bytes               *)
-                           INC(position, n) ;  (* move onwards n bytes                *)
-                                               (* move ready for further writes       *)
-                           INC(a, n) ;
-                           DEC(nBytes, n) ;    (* reduce the amount for future writes *)
-                           INC(total, n)
+                           n := Min (left, nBytes) ;
+                           dest := address ;
+                           INC (dest, position) ;
+                           p := memcpy (dest, src, CARDINAL (n)) ;
+                           DEC (left, n) ;      (* remove consumed bytes               *)
+                           INC (position, n) ;  (* move onwards n bytes                *)
+                                                (* move ready for further writes       *)
+                           INC (src, n) ;
+                           DEC (nBytes, n) ;    (* reduce the amount for future writes *)
+                           INC (total, n)
                         END
                      ELSE
-                        FlushBuffer(f) ;
+                        FlushBuffer (f) ;
                         IF (state#successful) AND (state#endofline)
                         THEN
                            nBytes := 0
@@ -1329,7 +1329,7 @@ END FlushBuffer ;
 
 
 (*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 *)
@@ -1337,7 +1337,7 @@ END FlushBuffer ;
 PROCEDURE WriteAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess (f, openedforwrite, TRUE) ;
-   IF BufferedWrite (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
+   IF BufferedWrite (f, HIGH (a) + 1, ADR (a)) = VAL (INTEGER, HIGH (a) + 1)
    THEN
    END
 END WriteAny ;
