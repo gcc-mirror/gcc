@@ -5269,9 +5269,15 @@ BEGIN
          THEN
             GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE)
          ELSE
-            trash := MakeTemporary (paramtok, RightValue) ;
-            PutVar (trash, ParamType) ;
-            PutVarHeap (trash, TRUE) ;
+            IF AllocateProc
+            THEN
+               trash := MakeTemporary (paramtok, RightValue) ;
+               PutVar (trash, ParamType) ;
+               PutVarHeap (trash, TRUE)
+            ELSE
+               Assert (DeallocateProc) ;
+               trash := Nil
+            END ;
             GenQuadOTrash (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE, trash)
          END
       ELSE

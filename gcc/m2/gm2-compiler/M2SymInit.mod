@@ -26,6 +26,7 @@ FROM M2Debug IMPORT Assert ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
 FROM libc IMPORT printf ;
 FROM NameKey IMPORT Name, NulName, KeyToCharStar, MakeKey ;
+FROM M2Base IMPORT Nil ;
 
 FROM M2Options IMPORT UninitVariableChecking, UninitVariableConditionalChecking,
                       CompilerDebugging ;
@@ -693,11 +694,11 @@ BEGIN
          (* SetVarInitialized (sym, TRUE) *)
       ELSIF IsUnbounded (GetSType (sym))
       THEN
-         SetVarInitialized (sym, TRUE)
+         SetVarInitialized (sym, TRUE, tok)
       ELSIF IsComponent (sym)
       THEN
          Trace ("checkReadInit IsComponent (%d) is true)", sym) ;
-         IF (NOT GetVarComponentInitialized (sym)) AND IsUniqueWarning (tok)
+         IF (NOT GetVarComponentInitialized (sym, tok)) AND IsUniqueWarning (tok)
          THEN
             GenerateNoteFlow (lst, i, warning) ;
             IssueWarning (tok,
@@ -766,7 +767,9 @@ END SetVarUninitialized ;
    ComponentFindVar -
 *)
 
-PROCEDURE ComponentFindVar (sym: CARDINAL; VAR lvalue: BOOLEAN) : CARDINAL ;
+PROCEDURE ComponentFindVar (sym: CARDINAL;
+                            VAR lvalue: BOOLEAN;
+                            tok: CARDINAL) : CARDINAL ;
 VAR
    nsym,
    i   : CARDINAL ;
@@ -776,11 +779,17 @@ BEGIN
       nsym := GetNth (sym, i) ;
       lvalue := GetMode (nsym) = LeftValue ;
       nsym := getLAlias (nsym) ;
-      IF (nsym # NulSym) AND IsVar (nsym)
+      IF nsym = Nil
+      THEN
+         MetaErrorT1 (tok,
+                      "attempting to dereference {%1Wad} which will be a {%kNIL} pointer",
+                      sym) ;
+         RETURN NulSym
+      ELSIF (nsym # NulSym) AND IsVar (nsym)
       THEN
          IF (nsym # sym) AND IsComponent (nsym)
          THEN
-            RETURN ComponentFindVar (nsym, lvalue)
+            RETURN ComponentFindVar (nsym, lvalue, tok)
          ELSE
             RETURN nsym
          END
@@ -846,11 +855,12 @@ END ComponentBuildFieldList ;
    deRefComponent -
 *)
 
-PROCEDURE deRefComponent (component: CARDINAL; lvalue: BOOLEAN) : CARDINAL ;
+PROCEDURE deRefComponent (component: CARDINAL; lvalue: BOOLEAN;
+                          sym: CARDINAL; tok: CARDINAL) : CARDINAL ;
 BEGIN
    IF lvalue
    THEN
-      RETURN getContent (component)
+      RETURN getContent (component, sym, tok)
    ELSE
       RETURN component
    END
@@ -861,7 +871,7 @@ END deRefComponent ;
    SetVarComponentInitialized -
 *)
 
-PROCEDURE SetVarComponentInitialized (sym: CARDINAL) ;
+PROCEDURE SetVarComponentInitialized (sym: CARDINAL; tok: CARDINAL) ;
 VAR
    lvalue: BOOLEAN ;
    i, n,
@@ -869,8 +879,8 @@ VAR
    vsym  : CARDINAL ;
    lst   : List ;
 BEGIN
-   vsym := ComponentFindVar (sym, lvalue) ;
-   vsym := deRefComponent (vsym, lvalue) ;
+   vsym := ComponentFindVar (sym, lvalue, tok) ;
+   vsym := deRefComponent (vsym, lvalue, sym, tok) ;
    IF vsym # NulSym
    THEN
       IF Debugging
@@ -911,7 +921,7 @@ END SetVarComponentInitialized ;
    GetVarComponentInitialized -
 *)
 
-PROCEDURE GetVarComponentInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetVarComponentInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 VAR
    lvalue,
    init     : BOOLEAN ;
@@ -919,13 +929,13 @@ VAR
    vsym     : CARDINAL ;
    lst      : List ;
 BEGIN
-   component := ComponentFindVar (sym, lvalue) ;
+   component := ComponentFindVar (sym, lvalue, tok) ;
    IF IsItemInList (ignoreList, component) OR IsExempt (component)
    THEN
       RETURN TRUE
    ELSE
       init := FALSE ;
-      vsym := deRefComponent (component, lvalue) ;
+      vsym := deRefComponent (component, lvalue, sym, tok) ;
       IF vsym # NulSym
       THEN
          IF IsExempt (vsym)
@@ -963,7 +973,8 @@ END Trace ;
                        then set the left and right initialization state.
 *)
 
-PROCEDURE SetVarInitialized (sym: CARDINAL; canDereference: BOOLEAN) ;
+PROCEDURE SetVarInitialized (sym: CARDINAL; canDereference: BOOLEAN;
+                             tok: CARDINAL) ;
 BEGIN
    IF IsVar (sym)
    THEN
@@ -971,7 +982,7 @@ BEGIN
       IF IsComponent (sym)
       THEN
          Trace ("SetVarInitialized sym %d is a component and calling SetVarComponentInitialized", sym);
-         SetVarComponentInitialized (sym)
+         SetVarComponentInitialized (sym, tok)
       ELSIF (GetMode (sym) = LeftValue) AND canDereference
       THEN
          Trace ("SetVarInitialized sym %d is LeftValue and canDeference and calling PutVarInitialized LeftValue and RightValue", sym);
@@ -993,7 +1004,7 @@ END SetVarInitialized ;
    doGetVarInitialized -
 *)
 
-PROCEDURE doGetVarInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE doGetVarInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 BEGIN
    IF IsVar (sym)
    THEN
@@ -1002,7 +1013,7 @@ BEGIN
          RETURN TRUE
       ELSIF IsComponent (sym)
       THEN
-         RETURN GetVarComponentInitialized (sym)
+         RETURN GetVarComponentInitialized (sym, tok)
       END ;
       RETURN VarCheckReadInit (sym, GetMode (sym))
    END ;
@@ -1014,11 +1025,11 @@ END doGetVarInitialized ;
    GetVarInitialized -
 *)
 
-PROCEDURE GetVarInitialized (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE GetVarInitialized (sym: CARDINAL; tok: CARDINAL) : BOOLEAN ;
 VAR
    init: BOOLEAN ;
 BEGIN
-   init := doGetVarInitialized (sym) ;
+   init := doGetVarInitialized (sym, tok) ;
    IF Debugging
    THEN
       IF init
@@ -1061,7 +1072,7 @@ PROCEDURE CheckBinary (procSym,
 BEGIN
    CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
    CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
-   SetVarInitialized (op1, FALSE)
+   SetVarInitialized (op1, FALSE, op1tok)
 END CheckBinary ;
 
 
@@ -1075,7 +1086,7 @@ PROCEDURE CheckUnary (procSym,
                       lst: List; i: CARDINAL) ;
 BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
-   SetVarInitialized (lhs, FALSE)
+   SetVarInitialized (lhs, FALSE, lhstok)
 END CheckUnary ;
 
 
@@ -1093,13 +1104,13 @@ BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, bblst, i) ;
    CheckDeferredRecordAccess (procSym, lhstok, lhs, FALSE, warning, bblst, i) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
-   vsym := getContent (getLAlias (lhs)) ;
+   vsym := getContent (getLAlias (lhs), lhs, lhstok) ;
    IF (vsym # NulSym) AND (vsym # lhs) AND (GetSType (vsym) = type)
    THEN
       IF IsRecord (type)
       THEN
          (* Set all fields of vsym as initialized.  *)
-         SetVarInitialized (vsym, FALSE)
+         SetVarInitialized (vsym, FALSE, lhstok)
       ELSE
          (* Set only the field assigned in vsym as initialized.  *)
          lst := ComponentCreateFieldList (rhs) ;
@@ -1123,7 +1134,7 @@ VAR
    content: CARDINAL ;
 BEGIN
    CheckDeferredRecordAccess (procSym, rhstok, rhs, FALSE, warning, lst, i) ;
-   content := getContent (getLAlias (rhs)) ;
+   content := getContent (getLAlias (rhs), rhs, rhstok) ;
    IF content = NulSym
    THEN
       IncludeItemIntoList (ignoreList, lhs)
@@ -1131,7 +1142,7 @@ BEGIN
       CheckDeferredRecordAccess (procSym, rhstok, content, TRUE, warning, lst, i) ;
       (* SetVarInitialized (lhs, IsVarAParam (rhs))  -- was --  *)
       (* SetVarInitialized (lhs, FALSE) -- was -- *)
-      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue))
+      SetVarInitialized (lhs, VarCheckReadInit (content, RightValue), lhstok)
    END
 END CheckIndrX ;
 
@@ -1159,12 +1170,12 @@ VAR
 BEGIN
    CheckDeferredRecordAccess (procSym, exprtok, expr, FALSE, warning, bblst, i) ;
    SetupLAlias (des, expr) ;
-   SetVarInitialized (des, FALSE) ;
+   SetVarInitialized (des, FALSE, destok) ;
    (* Now see if we know what lhs is pointing to and set fields if necessary.  *)
    IF IsComponent (des)
    THEN
-      vsym := ComponentFindVar (des, lvalue) ;
-      vsym := deRefComponent (vsym, lvalue) ;
+      vsym := ComponentFindVar (des, lvalue, destok) ;
+      vsym := deRefComponent (vsym, lvalue, des, destok) ;
       IF vsym # NulSym
       THEN
          (* Set only the field assigned in vsym as initialized.  *)
@@ -1196,7 +1207,7 @@ END CheckComparison ;
 
 PROCEDURE CheckAddr (procSym, ptrtok, ptr, contenttok, content: CARDINAL) ;
 BEGIN
-   SetVarInitialized (ptr, GetVarInitialized (content)) ;
+   SetVarInitialized (ptr, GetVarInitialized (content, contenttok), ptrtok) ;
    SetupIndr (ptr, content)
 END CheckAddr ;
 
@@ -1281,19 +1292,19 @@ BEGIN
    FunctValueOp,
    StandardFunctionOp,
    HighOp,
-   SizeOp            : SetVarInitialized (op1, FALSE) |
+   SizeOp            : SetVarInitialized (op1, FALSE, op1tok) |
    AddrOp            : CheckAddr (procSym, op1tok, op1, op3tok, op3) |
-   ReturnValueOp     : SetVarInitialized (op1, FALSE) |
+   ReturnValueOp     : SetVarInitialized (op1, FALSE, op1tok) |
    NewLocalVarOp     : |
    ParamOp           : CheckDeferredRecordAccess (procSym, op2tok, op2, FALSE, warning, lst, i) ;
                        CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
                        IF (op1 > 0) AND (op1 <= NoOfParam (op2)) AND
                           IsVarParam (op2, op1)
                        THEN
-                          SetVarInitialized (op3, TRUE)
+                          SetVarInitialized (op3, TRUE, op3tok)
                        END |
    ArrayOp           : CheckDeferredRecordAccess (procSym, op3tok, op3, FALSE, warning, lst, i) ;
-                       SetVarInitialized (op1, TRUE) |
+                       SetVarInitialized (op1, TRUE, op1tok) |
    RecordFieldOp     : CheckRecordField (procSym, op1tok, op1, op2tok, op2) |
    LogicalShiftOp,
    LogicalRotateOp,
@@ -1318,7 +1329,7 @@ BEGIN
                                     op1tok, op1, op2tok, op2, op3tok, op3, warning, lst, i) |
    XIndrOp           : CheckXIndr (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
    IndrXOp           : CheckIndrX (procSym, op1tok, op1, op2, op3tok, op3, warning, lst, i) |
-   SaveExceptionOp   : SetVarInitialized (op1, FALSE) |
+   SaveExceptionOp   : SetVarInitialized (op1, FALSE, op1tok) |
    RestoreExceptionOp: CheckDeferredRecordAccess (procSym, op1tok, op1, FALSE, warning, lst, i) |
 
    SubrangeLowOp,
@@ -1516,13 +1527,16 @@ END DumpBBSequence ;
 
 PROCEDURE trashParam (trashQuad: CARDINAL) ;
 VAR
-   op           : QuadOperator ;
-   op1, op2, op3: CARDINAL ;
-   heapSym, ptr : CARDINAL ;
+   op                          : QuadOperator ;
+   op1, op2, op3               : CARDINAL ;
+   op1tok, op2tok, op3tok, qtok: CARDINAL ;
+   overflowChecking            : BOOLEAN ;
+   heapSym, ptr                : CARDINAL ;
 BEGIN
    IF trashQuad # 0
    THEN
-      GetQuad (trashQuad, op, op1, op2, op3) ;
+      GetQuadOtok (trashQuad, qtok, op, op1, op2, op3, overflowChecking,
+                   op1tok, op2tok, op3tok) ;
       heapSym := GetQuadTrash (trashQuad) ;
       IF Debugging
       THEN
@@ -1530,21 +1544,20 @@ BEGIN
       END ;
       IF heapSym # NulSym
       THEN
-         SetVarInitialized (op3, FALSE) ;
-         ptr := getContent (getLAlias (op3)) ;
+         SetVarInitialized (op3, FALSE, op3tok) ;
+         ptr := getContent (getLAlias (op3), op3, op3tok) ;
          IF ptr # NulSym
          THEN
-            SetupIndr (ptr, heapSym) ;
-            SetVarInitialized (ptr, FALSE)
+            IF IsDeallocate (op2)
+            THEN
+               (* SetupLAlias (ptr, heapSym) *)
+               (* SetupIndr (ptr, Nil) *)
+               SetupLAlias (ptr, Nil)
+            ELSE
+               SetupIndr (ptr, heapSym)
+            END ;
+            SetVarInitialized (ptr, FALSE, op3tok)
          END
-(*
-         vsym := getLAlias (op3) ;
-         VarInitState (vsym) ;
-         VarInitState (heapSym) ;
-         PutVarInitialized (vsym, GetMode (vsym)) ;
-         PutVarInitialized (heapSym, LeftValue) ;
-         SetupLAlias (vsym, heapSym)
-*)
       END
    END ;
    DumpAliases
@@ -1789,6 +1802,16 @@ END IsAllocate ;
 
 
 (*
+   IsDeallocate - return TRUE is sym is DEALLOCATE.
+*)
+
+PROCEDURE IsDeallocate (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsProcedure (sym) AND (GetSymName (sym) = MakeKey('DEALLOCATE'))
+END IsDeallocate ;
+
+
+(*
    DetectTrash -
 *)
 
@@ -1803,7 +1826,7 @@ BEGIN
       i := bbPtr^.start ;
       LOOP
          GetQuad (i, op, op1, op2, op3) ;
-         IF (op = ParamOp) AND (op1 = 1) AND IsAllocate (op2)
+         IF (op = ParamOp) AND (op1 = 1) AND (IsAllocate (op2) OR IsDeallocate (op2))
          THEN
             bbPtr^.trashQuad := i
          END ;
@@ -2078,8 +2101,9 @@ END getLAlias ;
 
 PROCEDURE SetupLAlias (des, exp: CARDINAL) ;
 BEGIN
-   IF IsVar (exp) AND
-      ((GetMode (des) = LeftValue) OR IsReallyPointer (GetSType (des)))
+   IF (exp = Nil) OR
+      (IsVar (exp) AND
+       ((GetMode (des) = LeftValue) OR IsReallyPointer (GetSType (des))))
    THEN
       addAlias (LArray, des, exp) ;
       DumpAliases
@@ -2098,12 +2122,21 @@ END SetupIndr ;
 
 
 (*
-   getContent -
+   getContent - attempts to return the content pointed to by ptr.
+                sym is the original symbol and ptr will be the equivalent lvalue.
 *)
 
-PROCEDURE getContent (ptr: CARDINAL) : CARDINAL ;
+PROCEDURE getContent (ptr: CARDINAL; sym: CARDINAL; tok: CARDINAL) : CARDINAL ;
 BEGIN
-   RETURN doGetAlias (IndirectArray, ptr)
+   IF ptr = Nil
+   THEN
+      MetaErrorT1 (tok,
+                   "attempting to dereference {%1Wad} which will be a {%kNIL} pointer",
+                   sym) ;
+      RETURN NulSym
+   ELSE
+      RETURN doGetAlias (IndirectArray, ptr)
+   END
 END getContent ;
 
 
