@@ -2830,7 +2830,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @3)
       (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
-      (if (code1 == NE_EXPR && !val) @4)))))))
+      (if (code1 == NE_EXPR && !val) @4)
+      (if (code1 == NE_EXPR
+           && code2 == GE_EXPR
+	   && cmp == 0)
+       (gt @0 @1))
+      (if (code1 == NE_EXPR
+           && code2 == LE_EXPR
+	   && cmp == 0)
+       (lt @0 @1))
+     )
+    )
+   )
+  )
+ )
+)
 
 /* Convert (X OP1 CST1) && (X OP2 CST2).
    Convert (X OP1 Y) && (X OP2 Y).  */
@@ -2915,7 +2929,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @4)
       (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
-      (if (code1 == NE_EXPR && !val) @3)))))))
+      (if (code1 == NE_EXPR && !val) @3)
+      (if (code1 == EQ_EXPR
+           && code2 == GT_EXPR
+	   && cmp == 0)
+       (ge @0 @1))
+      (if (code1 == EQ_EXPR
+           && code2 == LT_EXPR
+	   && cmp == 0)
+       (le @0 @1))
+     )
+    )
+   )
+  )
+ )
+)
 
 /* Convert (X OP1 CST1) || (X OP2 CST2).
    Convert (X OP1 Y)    || (X OP2 Y).  */
