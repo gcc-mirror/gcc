@@ -242,7 +242,7 @@ BEGIN
       b := bb ;
       REPEAT
          WITH b^ DO
-            p(StartQuad, EndQuad)
+            p (StartQuad, EndQuad)
          END ;
          b := b^.Right
       UNTIL b=bb

@@ -120,7 +120,7 @@ FROM SymbolTable IMPORT NulSym,
                         ForeachLocalSymDo, ForeachFieldEnumerationDo,
       	       	     	ForeachProcedureDo, ForeachModuleDo,
                         ForeachInnerModuleDo, ForeachImportedDo,
-                        ForeachExportedDo ;
+                        ForeachExportedDo, PrintInitialized ;
 
 FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
                    GetBaseTypeMinMax, MixTypes,
@@ -339,7 +339,6 @@ END DebugSetNumbers ;
                    lists.
 *)
 
-(*
 PROCEDURE AddSymToWatch (sym: WORD) ;
 BEGIN
    IF (sym#NulSym) AND (NOT IsElementInSet(WatchList, sym))
@@ -350,7 +349,6 @@ BEGIN
       FIO.FlushBuffer(FIO.StdOut)
    END
 END AddSymToWatch ;
-*)
 
 
 (*
@@ -409,7 +407,7 @@ BEGIN
 
       tobesolvedbyquads :  doInclude(ToBeSolvedByQuads, "symbol %d -> ToBeSolvedByQuads\n", sym) |
       fullydeclared     :  doInclude(FullyDeclared, "symbol %d -> FullyDeclared\n", sym) ;
-                           IF sym=1265
+                           IF sym=8821
                            THEN
                               mystop
                            END |
@@ -2797,7 +2795,7 @@ PROCEDURE StartDeclareScope (scope: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
-   (* AddSymToWatch (1265) ;  *)
+   (* AddSymToWatch (8821) ;  *)
    (* AddSymToWatch (1157) ;  *)  (* watch goes here *)
    (* AddSymToWatch(TryFindSymbol('IOLink', 'DeviceId')) ; *)
    (* AddSymToWatch(819) ; *)
@@ -3911,6 +3909,8 @@ BEGIN
       THEN
          printf0('component ')
       END ;
+      printf0 ('\n') ;
+      PrintInitialized (sym) ;
       IncludeType(l, sym)
    ELSIF IsConst(sym)
    THEN
@@ -5229,16 +5229,7 @@ BEGIN
          t := CheckAlignment(t, sym)
       END
    END ;
-   IF GetSymName(sym)#NulName
-   THEN
-      IF Debugging
-      THEN
-         n := GetSymName(sym) ;
-         printf1('declaring type %a\n', n)
-      END ;
-      t := RememberType(t)
-   END ;
-   RETURN( t )
+   RETURN RememberType (t)
 END TypeConstFullyDeclared ;
 
 
