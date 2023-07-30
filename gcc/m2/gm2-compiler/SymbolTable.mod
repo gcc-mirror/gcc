@@ -435,7 +435,7 @@ TYPE
                  name          : Name ;       (* Index into name array, name *)
                                               (* of param.                   *)
                  Type          : CARDINAL ;   (* Index to the type of param. *)
-                 IsUnbounded   : BOOLEAN ;    (* ARRAY OF Type?              *)
+                 IsUnbounded   : BOOLEAN ;    (* Is it an ARRAY OF Type?     *)
                  ShadowVar     : CARDINAL ;   (* The local variable used to  *)
                                               (* shadow this parameter.      *)
                  At            : Where ;      (* Where was sym declared/used *)
@@ -445,7 +445,10 @@ TYPE
                     name          : Name ;    (* Index into name array, name *)
                                               (* of param.                   *)
                     Type          : CARDINAL ;(* Index to the type of param. *)
-                    IsUnbounded   : BOOLEAN ; (* ARRAY OF Type?              *)
+                    IsUnbounded   : BOOLEAN ; (* Is it an ARRAY OF Type?     *)
+                    HeapVar       : CARDINAL ;(* The pointer value on heap.  *)
+                                              (* Only used by static         *)
+                                              (* analysis.                   *)
                     ShadowVar     : CARDINAL ;(* The local variable used to  *)
                                               (* shadow this parameter.      *)
                     At            : Where ;   (* Where was sym declared/used *)
@@ -10196,6 +10199,7 @@ BEGIN
             Type := ParamType ;
             IsUnbounded := isUnbounded ;
             ShadowVar := NulSym ;
+            HeapVar := NulSym ;  (* Will contain a pointer value.  *)
             InitWhereDeclaredTok(tok, At)
          END
       END ;
@@ -10556,6 +10560,83 @@ BEGIN
    END ;
    RETURN( NulSym )
 END GetOptArgInit ;
+
+
+(*
+   MakeParameterHeapVar - create a heap variable if sym is a pointer.
+*)
+
+PROCEDURE MakeParameterHeapVar (tok: CARDINAL; type: CARDINAL; mode: ModeOfAddr) : CARDINAL ;
+VAR
+   heapvar: CARDINAL ;
+BEGIN
+   heapvar := NulSym ;
+   type := SkipType (type) ;
+   IF IsPointer (type)
+   THEN
+      heapvar := MakeTemporary (tok, mode) ;
+      PutVar (heapvar, type) ;
+      PutVarHeap (heapvar, TRUE)
+   END ;
+   RETURN heapvar
+END MakeParameterHeapVar ;
+
+
+(*
+   GetParameterHeapVar - return the heap variable associated with the
+                         parameter or NulSym.
+*)
+
+PROCEDURE GetParameterHeapVar (ParSym: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (ParSym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ParamSym   :  RETURN NulSym |   (* Only VarParam has the pointer.  *)
+      VarParamSym:  RETURN VarParam.HeapVar
+
+      ELSE
+         InternalError ('expecting Param or VarParam symbol')
+      END
+   END
+END GetParameterHeapVar ;
+
+
+(*
+   PutParameterHeapVar - creates a heap variable associated with parameter sym.
+*)
+
+PROCEDURE PutParameterHeapVar (sym: CARDINAL) ;
+VAR
+   pSym : PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ParamSym   : |  (* Nothing to do for the non var parameter.  *)
+      VarParamSym: VarParam.HeapVar := MakeParameterHeapVar (GetDeclaredMod (sym),
+                                                             VarParam.Type, LeftValue)
+
+      ELSE
+         InternalError ('Param or VarParam symbol expected')
+      END
+   END
+END PutParameterHeapVar ;
+
+
+(*
+   PutProcedureParameterHeapVars - creates heap variables for parameter sym.
+*)
+
+PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
+BEGIN
+   Assert (IsProcedure (sym)) ;
+   ForeachParamSymDo (sym, PutParameterHeapVar)
+END PutProcedureParameterHeapVars ;
 
 
 (*

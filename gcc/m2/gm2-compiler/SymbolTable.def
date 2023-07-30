@@ -362,7 +362,8 @@ EXPORT QUALIFIED NulSym,
 		 DebugLineNumbers,
                  VarCheckReadInit, VarInitState, PutVarInitialized,
                  PutVarFieldInitialized, GetVarFieldInitialized,
-                 PrintInitialized ;
+                 PrintInitialized,
+                 GetParameterHeapVar, PutProcedureParameterHeapVars ;
 
 
 (*
@@ -3646,6 +3647,21 @@ PROCEDURE GetVarFieldInitialized (sym: CARDINAL; mode: ModeOfAddr;
 *)
 
 PROCEDURE PrintInitialized (sym: CARDINAL) ;
+
+
+(*
+   GetParameterHeapVar - return the heap variable associated with the
+                         parameter or NulSym.
+*)
+
+PROCEDURE GetParameterHeapVar (ParSym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureParameterHeapVars - creates heap variables for parameter sym.
+*)
+
+PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
 
 
 END SymbolTable.
