@@ -115,16 +115,15 @@ infer_crate_name (const std::string &filename)
 static bool
 validate_crate_name (const std::string &crate_name, Error &error)
 {
-  Utf8String utf8_name = {crate_name};
-  tl::optional<std::vector<Codepoint>> uchars_opt = utf8_name.get_chars ();
-
-  if (!uchars_opt.has_value ())
+  tl::optional<Utf8String> utf8_name_opt
+    = Utf8String::make_utf8_string (crate_name);
+  if (!utf8_name_opt.has_value ())
     {
       error = Error (UNDEF_LOCATION, "crate name is not a valid UTF-8 string");
       return false;
     }
 
-  std::vector<Codepoint> uchars = uchars_opt.value ();
+  std::vector<Codepoint> uchars = utf8_name_opt->get_chars ();
   if (uchars.empty ())
     {
       error = Error (UNDEF_LOCATION, "crate name cannot be empty");

@@ -2534,8 +2534,7 @@ namespace selftest {
 
 // Checks if `src` has the same contents as the given characters
 void
-assert_source_content (Rust::Lexer::InputSource &src,
-		       std::vector<uint32_t> expected)
+assert_source_content (Rust::InputSource &src, std::vector<uint32_t> expected)
 {
   Rust::Codepoint src_char = src.next ();
   for (auto expected_char : expected)
@@ -2553,7 +2552,7 @@ assert_source_content (Rust::Lexer::InputSource &src,
 void
 test_buffer_input_source (std::string str, std::vector<uint32_t> expected)
 {
-  Rust::Lexer::BufferInputSource source (str, 0);
+  Rust::BufferInputSource source (str, 0);
   assert_source_content (source, expected);
 }
 
@@ -2564,7 +2563,7 @@ test_file_input_source (std::string str, std::vector<uint32_t> expected)
   // Moves to the first character
   fputs (str.c_str (), tmpf);
   std::rewind (tmpf);
-  Rust::Lexer::FileInputSource source (tmpf);
+  Rust::FileInputSource source (tmpf);
   assert_source_content (source, expected);
 }
 

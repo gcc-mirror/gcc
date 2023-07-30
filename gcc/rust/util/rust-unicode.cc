@@ -1,12 +1,14 @@
 #include "rust-system.h"
 #include "optional.h"
 #include "selftest.h"
+#include "rust-lex.h"
+#include "rust-unicode.h"
 
 #include "rust-unicode-data.h"
 
 namespace Rust {
 
-typedef uint32_t codepoint_t;
+typedef Codepoint codepoint_t;
 typedef std::vector<codepoint_t> string_t;
 
 // These constants are used to compose and decompose of Hangul syllables.
@@ -85,7 +87,7 @@ binary_search_sorted_array (const std::array<uint32_t, SIZE> &array,
 int
 lookup_cc (codepoint_t c)
 {
-  auto it = Rust::CCC_TABLE.find (c);
+  auto it = Rust::CCC_TABLE.find (c.value);
   if (it != Rust::CCC_TABLE.end ())
     return it->second;
   else
@@ -96,11 +98,11 @@ lookup_cc (codepoint_t c)
 tl::optional<codepoint_t>
 lookup_recomp (codepoint_t starter, codepoint_t c)
 {
-  auto it = Rust::RECOMPOSITION_MAP.find ({starter, c});
+  auto it = Rust::RECOMPOSITION_MAP.find ({starter.value, c.value});
   if (it != Rust::RECOMPOSITION_MAP.end ())
     return {it->second};
 
-  it = Rust::RECOMPOSITION_MAP.find ({starter, 0});
+  it = Rust::RECOMPOSITION_MAP.find ({starter.value, 0});
   if (it != Rust::RECOMPOSITION_MAP.end ())
     return {it->second};
 
@@ -110,11 +112,11 @@ lookup_recomp (codepoint_t starter, codepoint_t c)
 void
 recursive_decomp_cano (codepoint_t c, string_t &buf)
 {
-  auto it = Rust::DECOMPOSITION_MAP.find (c);
+  auto it = Rust::DECOMPOSITION_MAP.find (c.value);
   if (it != Rust::DECOMPOSITION_MAP.end ())
     {
-      string_t decomped = it->second;
-      for (codepoint_t cp : decomped)
+      std::vector<uint32_t> decomped = it->second;
+      for (uint32_t cp : decomped)
 	recursive_decomp_cano (cp, buf);
     }
   else
@@ -127,7 +129,7 @@ decomp_cano (string_t s)
   string_t buf;
   for (codepoint_t c : s)
     {
-      int64_t s_index = c - S_BASE;
+      int64_t s_index = c.value - S_BASE;
       if (0 <= s_index && s_index < S_COUNT)
 	{
 	  // decompose Hangul argorithmically
@@ -160,7 +162,7 @@ sort_cano (string_t &s)
       if (cc_here > 0 && cc_prev > 0 && cc_prev > cc_here)
 	{
 	  // swap
-	  int tmp = s[i];
+	  codepoint_t tmp = s[i];
 	  s[i] = s[i - 1];
 	  s[i - 1] = tmp;
 	  if (i > 1)
@@ -183,10 +185,10 @@ compose_hangul (string_t s)
       codepoint_t ch = s[src_pos];
 
       // L V => LV
-      int64_t l_index = last - L_BASE;
+      int64_t l_index = last.value - L_BASE;
       if (0 <= l_index && l_index < L_COUNT)
 	{
-	  int64_t v_index = ch - V_BASE;
+	  int64_t v_index = ch.value - V_BASE;
 	  if (0 <= v_index && v_index < V_COUNT)
 	    {
 	      last = S_BASE + (l_index * V_COUNT + v_index) * T_COUNT;
@@ -198,13 +200,13 @@ compose_hangul (string_t s)
 	}
 
       // LV T => LVT
-      int64_t s_index = last - S_BASE;
+      int64_t s_index = last.value - S_BASE;
       if (0 <= s_index && s_index < S_COUNT && (s_index % T_COUNT) == 0)
 	{
-	  int64_t t_index = ch - T_BASE;
+	  int64_t t_index = ch.value - T_BASE;
 	  if (0 < t_index && t_index < T_COUNT)
 	    {
-	      last += t_index;
+	      last.value += t_index;
 	      // pop LV
 	      buf.pop_back ();
 	      buf.push_back (last);
@@ -282,6 +284,12 @@ nfc_normalize (string_t s)
   return r;
 }
 
+Utf8String
+Utf8String::nfc_normalize () const
+{
+  return Utf8String (Rust::nfc_normalize (chars));
+}
+
 bool
 is_alphabetic (uint32_t codepoint)
 {
@@ -309,9 +317,10 @@ is_numeric (uint32_t codepoint)
 namespace selftest {
 
 void
-assert_normalize (std::vector<uint32_t> origin, std::vector<uint32_t> expected)
+assert_normalize (const std::vector<Rust::Codepoint> origin,
+		  const std::vector<Rust::Codepoint> expected)
 {
-  std::vector<uint32_t> actual = Rust::nfc_normalize (origin);
+  std::vector<Rust::Codepoint> actual = Rust::nfc_normalize (origin);
 
   ASSERT_EQ (actual.size (), expected.size ());
   for (unsigned int i = 0; i < actual.size (); i++)

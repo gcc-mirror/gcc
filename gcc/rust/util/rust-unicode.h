@@ -21,28 +21,43 @@
 
 #include "optional.h"
 #include "rust-system.h"
-#include "rust-lex.h"
+#include "rust-input-source.h"
 
 namespace Rust {
 
 class Utf8String
 {
 private:
-  tl::optional<std::vector<Codepoint>> chars;
+  std::vector<Codepoint> chars;
 
 public:
-  Utf8String (const std::string &maybe_utf8)
+  static tl::optional<Utf8String>
+  make_utf8_string (const std::string &maybe_utf8)
   {
-    Lexer::BufferInputSource input_source = {maybe_utf8, 0};
-    chars = input_source.get_chars ();
+    BufferInputSource input_source = {maybe_utf8, 0};
+    tl::optional<std::vector<Codepoint>> chars_opt = input_source.get_chars ();
+    if (chars_opt.has_value ())
+      return {Utf8String (chars_opt.value ())};
+    else
+      return tl::nullopt;
   }
 
-  // Returns UTF codepoints when string is valid as UTF-8, returns nullopt
-  // otherwise.
-  tl::optional<std::vector<Codepoint>> get_chars () const { return chars; }
-};
+  Utf8String (const std::vector<Codepoint> codepoints) : chars ({codepoints}) {}
 
-// TODO: add function nfc_normalize
+  std::string as_string () const
+  {
+    std::stringstream ss;
+    for (Codepoint c : chars)
+      ss << c.as_string ();
+
+    return ss.str ();
+  };
+
+  // Returns characters
+  std::vector<Codepoint> get_chars () const { return chars; }
+
+  Utf8String nfc_normalize () const;
+};
 
 bool
 is_alphabetic (uint32_t codepoint);

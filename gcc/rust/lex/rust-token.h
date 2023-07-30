@@ -21,7 +21,8 @@
 
 #include "rust-system.h"
 #include "rust-linemap.h"
-#include "rust-codepoint.h"
+#include "rust-make-unique.h"
+#include "rust-unicode.h"
 
 namespace Rust {
 // "Primitive core types" in Rust - the different int and float types, as well
@@ -236,6 +237,10 @@ token_id_keyword_string (TokenId id);
 const char *
 get_type_hint_string (PrimitiveCoreType type);
 
+/* Normalize string if a token is a identifier */
+std::string
+nfc_normalize_token_string (location_t loc, TokenId id, const std::string &str);
+
 // Represents a single token. Create using factory static methods.
 class Token
 {
@@ -259,29 +264,40 @@ private:
 
   // Token constructor from token id, location, and a string.
   Token (TokenId token_id, location_t location, std::string &&paramStr)
-    : token_id (token_id), locus (location),
-      str (new std::string (std::move (paramStr))), type_hint (CORETYPE_UNKNOWN)
-  {}
+    : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
+  {
+    // Normalize identifier tokens
+    str = Rust::make_unique<std::string> (
+      nfc_normalize_token_string (location, token_id, paramStr));
+  }
 
   // Token constructor from token id, location, and a char.
   Token (TokenId token_id, location_t location, char paramChar)
     : token_id (token_id), locus (location),
       str (new std::string (1, paramChar)), type_hint (CORETYPE_UNKNOWN)
-  {}
+  {
+    // Do not need to normalize 1byte char
+  }
 
   // Token constructor from token id, location, and a "codepoint".
   Token (TokenId token_id, location_t location, Codepoint paramCodepoint)
-    : token_id (token_id), locus (location),
-      str (new std::string (paramCodepoint.as_string ())),
-      type_hint (CORETYPE_UNKNOWN)
-  {}
+    : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
+  {
+    // Normalize identifier tokens
+    str = Rust::make_unique<std::string> (
+      nfc_normalize_token_string (location, token_id,
+				  paramCodepoint.as_string ()));
+  }
 
   // Token constructor from token id, location, a string, and type hint.
   Token (TokenId token_id, location_t location, std::string &&paramStr,
 	 PrimitiveCoreType parType)
-    : token_id (token_id), locus (location),
-      str (new std::string (std::move (paramStr))), type_hint (parType)
-  {}
+    : token_id (token_id), locus (location), type_hint (parType)
+  {
+    // Normalize identifier tokens
+    str = Rust::make_unique<std::string> (
+      nfc_normalize_token_string (location, token_id, paramStr));
+  }
 
 public:
   // No default constructor.
