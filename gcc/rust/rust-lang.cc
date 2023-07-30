@@ -40,6 +40,7 @@
 #include "rust-lex.h"
 #include "optional.h"
 #include "rust-unicode.h"
+#include "rust-punycode.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -456,6 +457,7 @@ run_rust_tests ()
   // Call tests for the rust frontend here
   rust_input_source_test ();
   rust_utf8_normalize_test ();
+  rust_punycode_encode_test ();
   rust_cfg_parser_test ();
   rust_privacy_ctx_test ();
   rust_crate_name_validation_test ();
