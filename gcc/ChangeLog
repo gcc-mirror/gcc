@@ -1,3 +1,24 @@
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* doc/gm2.texi (Standard procedures): Fix Next link.
+
+2023-07-29  Di Zhao OS  <dizhao@os.amperecomputing.com>
+
+	* config/aarch64/aarch64.cc: Change fma_reassoc_width for ampere1.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* doc/gm2.texi (High procedure function): New node.
+	(Using): New menu entry for High procedure function.
+
 2023-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

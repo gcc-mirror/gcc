@@ -1,3 +1,44 @@
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110189
+	* gm2/pim/fail/foovaltype.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2/pim/pass/fooasm3.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110019
+	* gm2/cpp/fail/cpp-fail.exp: New test.
+	* gm2/cpp/fail/foocpp.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* gm2/pim/run/pass/hightests.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109908
+	* gm2/isolib/run/pass/testdelete.mod: New test.
+
 2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
