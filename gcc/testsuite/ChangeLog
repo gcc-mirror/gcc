@@ -1,3 +1,13 @@
+2023-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110790
+	* gcc.target/i386/pr110790-1.c: New test case.
+	* gcc.target/i386/pr110790-2.c: Likewise.
+
+2023-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/vect-profile-upate-2.c: New test.
+
 2023-07-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110825

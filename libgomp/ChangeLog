@@ -1,3 +1,14 @@
+2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (omp_target_memcpy_rect_worker): Undo dim=1 change for
+	GOMP_OFFLOAD_CAP_SHARED_MEM.
+	(omp_target_memcpy_rect_copy): Likewise for lock condition.
+	(gomp_load_plugin_for_device): Use DLSYM_OPT not DLSYM for
+	memcpy3d/memcpy2d.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d,
+	GOMP_OFFLOAD_memcpy3d): Use memset 0 to nullify reserved and
+	unused src/dst fields for that mem type; remove '{src,dst}LOD = 0'.
+
 2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp-plugin.h (GOMP_OFFLOAD_memcpy2d,

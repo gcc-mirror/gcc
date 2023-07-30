@@ -1,3 +1,42 @@
+2023-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110790
+	* config/i386/i386.md (extv<mode>): Use QImode for offsets.
+	(extzv<mode>): Likewise.
+	(insv<mode>): Likewise.
+	(*testqi_ext_3): Likewise.
+	(*btr<mode>_2): Likewise.
+	(define_split): Likewise.
+	(*btsq_imm): Likewise.
+	(*btrq_imm): Likewise.
+	(*btcq_imm): Likewise.
+	(define_peephole2 x3): Likewise.
+	(*bt<mode>): Likewise
+	(*bt<mode>_mask): New define_insn_and_split.
+	(*jcc_bt<mode>): Use QImode for offsets.
+	(*jcc_bt<mode>_1): Delete obsolete pattern.
+	(*jcc_bt<mode>_mask): Use QImode offsets.
+	(*jcc_bt<mode>_mask_1): Likewise.
+	(define_split): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): New define_insn_and_split.
+	(bmi2_bzhi_<mode>3): Use QImode offsets.
+	(*bmi2_bzhi_<mode>3): Likewise.
+	(*bmi2_bzhi_<mode>3_1): Likewise.
+	(*bmi2_bzhi_<mode>3_1_ccz): Likewise.
+	(@tbm_bextri_<mode>): Likewise.
+
+2023-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.cc (profile_probability::sqrt): New member function.
+	(profile_probability::pow): Likewise.
+	* profile-count.h: (profile_probability::sqrt): Declare
+	(profile_probability::pow): Likewise.
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Fix profile update.
+
 2023-07-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ssa_cache::merge_range): New.

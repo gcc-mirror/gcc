@@ -1,3 +1,10 @@
+2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (CUDA_MEMCPY2D, CUDA_MEMCPY3D, CUDA_MEMCPY3D_PEER):
+	Remove bogus 'const' from 'const void *dst' and fix reserved-name
+	name in those structs.
+	(cuMemcpyPeer, cuMemcpyPeerAsync): Add.
+
 2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* cuda/cuda.h (CUlimit): Add CUDA_ERROR_NOT_INITIALIZED,
