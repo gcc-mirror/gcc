@@ -85,6 +85,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutPriority, GetPriority,
                         PutProcedureBegin, PutProcedureEnd,
                         PutVarConst, IsVarConst,
+                        PutVarHeap,
                         IsVarParam, IsProcedure, IsPointer, IsParameter,
                         IsUnboundedParam, IsEnumeration, IsDefinitionForC,
                         IsVarAParam, IsVarient, IsLegal,
@@ -290,6 +291,7 @@ TYPE
                              Operand1           : CARDINAL ;
                              Operand2           : CARDINAL ;
                              Operand3           : CARDINAL ;
+                             Trash              : CARDINAL ;
                              Next               : CARDINAL ;     (* Next quadruple.                 *)
                              LineNo             : CARDINAL ;     (* Line No of source text.         *)
                              TokenNo            : CARDINAL ;     (* Token No of source text.        *)
@@ -1481,6 +1483,7 @@ BEGIN
       Operand1 := 0 ;
       Operand2 := 0 ;
       Operand3 := 0 ;
+      Trash := 0 ;
       op1pos   := UnknownTokenNo ;
       op2pos   := UnknownTokenNo ;
       op3pos   := UnknownTokenNo
@@ -5174,17 +5177,24 @@ END BuildRealProcedureCall ;
 
 PROCEDURE BuildRealFuncProcCall (tokno: CARDINAL; IsFunc, IsForC: BOOLEAN) ;
 VAR
+   AllocateProc,
+   DeallocateProc,
    ForcedFunc,
    ParamConstant : BOOLEAN ;
+   trash,
    resulttok,
    paramtok,
    proctok,
    NoOfParameters,
    i, pi,
+   ParamType,
+   Param1,     (* Used to remember first param for allocate/deallocate.  *)
    ReturnVar,
    ProcSym,
    Proc          : CARDINAL ;
 BEGIN
+   Param1 := NulSym ;
+   ParamType := NulSym ;
    CheckProcedureParameters (IsForC) ;
    PopT (NoOfParameters) ;
    PushT (NoOfParameters) ;  (* Restore stack to original state.  *)
@@ -5197,6 +5207,8 @@ BEGIN
    paramtok := proctok ;
    ProcSym := SkipConst (ProcSym) ;
    ForcedFunc := FALSE ;
+   AllocateProc := FALSE ;
+   DeallocateProc := FALSE ;
    IF IsVar (ProcSym)
    THEN
       (* Procedure Variable ? *)
@@ -5204,7 +5216,9 @@ BEGIN
       ParamConstant := FALSE
    ELSE
       Proc := ProcSym ;
-      ParamConstant := IsProcedureBuiltin (Proc)
+      ParamConstant := IsProcedureBuiltin (Proc) ;
+      AllocateProc := GetSymName (Proc) = MakeKey('ALLOCATE') ;
+      DeallocateProc := GetSymName (Proc) = MakeKey('DEALLOCATE')
    END ;
    IF IsFunc
    THEN
@@ -5229,6 +5243,10 @@ BEGIN
          ForcedFunc := TRUE
       END
    END ;
+   IF AllocateProc OR DeallocateProc
+   THEN
+      Param1 := OperandT (NoOfParameters+1)   (* Remember this before manipulating.  *)
+   END ;
    ManipulateParameters (IsForC) ;
    CheckParameterOrdinals ;
    PopT(NoOfParameters) ;
@@ -5244,7 +5262,21 @@ BEGIN
    pi := 1 ;     (* stack index referencing stacked parameter, i *)
    WHILE i>0 DO
       paramtok := OperandTtok (pi) ;
-      GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE) ;
+      IF (AllocateProc OR DeallocateProc) AND (i = 1) AND (Param1 # NulSym)
+      THEN
+         ParamType := GetItemPointedTo (Param1) ;
+         IF ParamType = NulSym
+         THEN
+            GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE)
+         ELSE
+            trash := MakeTemporary (paramtok, RightValue) ;
+            PutVar (trash, ParamType) ;
+            PutVarHeap (trash, TRUE) ;
+            GenQuadOTrash (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE, trash)
+         END
+      ELSE
+         GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE)
+      END ;
       IF NOT IsConst (OperandT (pi))
       THEN
          ParamConstant := FALSE
@@ -6787,7 +6819,7 @@ BEGIN
    THEN
       RETURN GetItemPointedTo (GetSType (Sym))
    ELSE
-      InternalError ('expecting a pointer or variable symbol')
+      RETURN NulSym
    END
 END GetItemPointedTo ;
 
@@ -13079,6 +13111,19 @@ END MakeOp ;
 PROCEDURE GenQuadO (TokPos: CARDINAL;
                     Operation: QuadOperator;
                     Op1, Op2, Op3: CARDINAL; overflow: BOOLEAN) ;
+BEGIN
+   GenQuadOTrash (TokPos, Operation, Op1, Op2, Op3, overflow, NulSym)
+END GenQuadO ;
+
+
+(*
+   GenQuadOTrash - generate a quadruple with Operation, Op1, Op2, Op3, overflow.
+*)
+
+PROCEDURE GenQuadOTrash (TokPos: CARDINAL;
+                         Operation: QuadOperator;
+                         Op1, Op2, Op3: CARDINAL;
+                         overflow: BOOLEAN; trash: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
@@ -13093,6 +13138,7 @@ BEGIN
       PutQuadO (NextQuad, Operation, Op1, Op2, Op3, overflow) ;
       f := GetQF (NextQuad) ;
       WITH f^ DO
+         Trash := trash ;
          Next := 0 ;
          LineNo := GetLineNo () ;
          IF TokPos = UnknownTokenNo
@@ -13109,7 +13155,21 @@ BEGIN
       (* DisplayQuad(NextQuad) ; *)
       NewQuad (NextQuad)
    END
-END GenQuadO ;
+END GenQuadOTrash ;
+
+
+(*
+   GetQuadTrash - return the symbol associated with the trashed operand.
+*)
+
+PROCEDURE GetQuadTrash (quad: CARDINAL) : CARDINAL ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (quad) ;
+   LastQuadNo := quad ;
+   RETURN f^.Trash
+END GetQuadTrash ;
 
 
 (*
@@ -13194,7 +13254,7 @@ PROCEDURE DisplayQuadRange (scope: CARDINAL; start, end: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
-   printf0 ('Quadruples for scope: ') ; WriteOperand (scope) ; printf0 ('\n') ;
+   printf1 ('Quadruples for scope: %d\n', scope) ;
    WHILE (start <= end) AND (start # 0) DO
       DisplayQuad (start) ;
       f := GetQF (start) ;
