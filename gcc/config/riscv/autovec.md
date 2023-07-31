@@ -912,7 +912,7 @@
   "TARGET_VECTOR"
 {
   rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
-  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode).require ();
+  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode);
   rtx mask = gen_reg_rtx (mask_mode);
   riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
 

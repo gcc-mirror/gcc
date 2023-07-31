@@ -312,7 +312,7 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
-opt_machine_mode get_mask_mode (machine_mode);
+machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vec_perm (rtx, rtx, rtx, rtx);

@@ -7541,9 +7541,8 @@ riscv_support_vector_misalignment (machine_mode mode,
 static opt_machine_mode
 riscv_get_mask_mode (machine_mode mode)
 {
-  machine_mode mask_mode = VOIDmode;
-  if (TARGET_VECTOR && riscv_vector::get_mask_mode (mode).exists (&mask_mode))
-    return mask_mode;
+  if (TARGET_VECTOR && riscv_v_ext_mode_p (mode))
+    return riscv_vector::get_mask_mode (mode);
 
   return default_get_mask_mode (mode);
 }
