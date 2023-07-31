@@ -2026,6 +2026,10 @@ struct Crate
 
   NodeId node_id;
 
+  std::vector<AttributeProcMacro> attribute_macros;
+  std::vector<CustomDeriveProcMacro> derive_macros;
+  std::vector<BangProcMacro> bang_macros;
+
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item>> items,
@@ -2087,6 +2091,16 @@ public:
   void set_items (std::vector<std::unique_ptr<AST::Item>> &&new_items)
   {
     items = std::move (new_items);
+  }
+
+  void add_bang_macro (ProcMacro::Bang macro) { bang_macros.push_back (macro); }
+  void add_attribute_macro (ProcMacro::Attribute macro)
+  {
+    attribute_macros.push_back (macro);
+  }
+  void add_derive_macro (ProcMacro::CustomDerive macro)
+  {
+    derive_macros.push_back (macro);
   }
 };
 
