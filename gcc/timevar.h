@@ -21,6 +21,8 @@
 #ifndef GCC_TIMEVAR_H
 #define GCC_TIMEVAR_H
 
+namespace json { class value; }
+
 /* Timing variables are used to measure elapsed time in various
    portions of the compiler.  Each measures elapsed user, system, and
    wall-clock time, as appropriate to and supported by the host
@@ -119,6 +121,7 @@ class timer
   void pop_client_item ();
 
   void print (FILE *fp);
+  json::value *make_json () const;
 
   const char *get_topmost_item_name () const;
 
@@ -140,6 +143,8 @@ class timer
   /* Private type: a timing variable.  */
   struct timevar_def
   {
+    json::value *make_json () const;
+
     /* Elapsed time for this variable.  */
     struct timevar_time_def elapsed;
 

@@ -19933,8 +19933,16 @@ print some statistics about each pass when it finishes.
 
 @opindex ftime-report
 @item -ftime-report
-Makes the compiler print some statistics about the time consumed by each
-pass when it finishes.
+Makes the compiler print some statistics to stderr about the time consumed
+by each pass when it finishes.
+
+If SARIF output of diagnostics was requested via
+@option{-fdiagnostics-format=sarif-file} or
+@option{-fdiagnostics-format=sarif-stderr} then the @option{-ftime-report}
+information is instead emitted in JSON form as part of SARIF output.  The
+precise format of this JSON data is subject to change, and the values may
+not exactly match those emitted to stderr due to being written out at a
+slightly different place within the compiler.
 
 @opindex ftime-report-details
 @item -ftime-report-details

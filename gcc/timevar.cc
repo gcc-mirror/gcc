@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "timevar.h"
 #include "options.h"
+#include "json.h"
 
 #ifndef HAVE_CLOCK_T
 typedef int clock_t;
@@ -135,6 +136,8 @@ class timer::named_items
   void pop ();
   void print (FILE *fp, const timevar_time_def *total);
 
+  json::value *make_json () const;
+
  private:
   /* Which timer instance does this relate to?  */
   timer *m_timer;
@@ -143,7 +146,8 @@ class timer::named_items
      Note that currently we merely store/compare the raw string
      pointers provided by client code; we don't take a copy,
      or use strcmp.  */
-  hash_map <const char *, timer::timevar_def> m_hash_map;
+  typedef hash_map <const char *, timer::timevar_def> hash_map_t;
+  hash_map_t m_hash_map;
 
   /* The order in which items were originally inserted.  */
   auto_vec <const char *> m_names;
@@ -207,6 +211,23 @@ timer::named_items::print (FILE *fp, const timevar_time_def *total)
     }
 }
 
+/* Create a json value representing this object, suitable for use
+   in SARIF output.  */
+
+json::value *
+timer::named_items::make_json () const
+{
+  json::array *arr = new json::array ();
+  for (const char *item_name : m_names)
+    {
+      hash_map_t &mut_map = const_cast <hash_map_t &> (m_hash_map);
+      timer::timevar_def *def = mut_map.get (item_name);
+      gcc_assert (def);
+      arr->append (def->make_json ());
+    }
+  return arr;
+}
+
 /* Fill the current times into TIME.  The definition of this function
    also defines any or all of the HAVE_USER_TIME, HAVE_SYS_TIME, and
    HAVE_WALL_TIME macros.  */
@@ -249,6 +270,19 @@ timevar_accumulate (struct timevar_time_def *timer,
   timer->sys += stop_time->sys - start_time->sys;
   timer->wall += stop_time->wall - start_time->wall;
   timer->ggc_mem += stop_time->ggc_mem - start_time->ggc_mem;
+}
+
+/* Get the difference between STOP_TIME and START_TIME.  */
+
+static void
+timevar_diff (struct timevar_time_def *out,
+	      const timevar_time_def &start_time,
+	      const timevar_time_def &stop_time)
+{
+  out->user = stop_time.user - start_time.user;
+  out->sys = stop_time.sys - start_time.sys;
+  out->wall = stop_time.wall - start_time.wall;
+  out->ggc_mem = stop_time.ggc_mem - start_time.ggc_mem;
 }
 
 /* Class timer's constructor.  */
@@ -789,6 +823,134 @@ timer::print (FILE *fp)
 	  || defined (HAVE_WALL_TIME) */
 
   validate_phases (fp);
+}
+
+/* Create a json value representing this object, suitable for use
+   in SARIF output.  */
+
+json::object *
+make_json_for_timevar_time_def (const timevar_time_def &ttd)
+{
+  json::object *obj = new json::object ();
+  obj->set ("user", new json::float_number (ttd.user));
+  obj->set ("sys", new json::float_number (ttd.sys));
+  obj->set ("wall", new json::float_number (ttd.wall));
+  obj->set ("ggc_mem", new json::integer_number (ttd.ggc_mem));
+  return obj;
+}
+
+/* Create a json value representing this object, suitable for use
+   in SARIF output.  */
+
+json::value *
+timer::timevar_def::make_json () const
+{
+  json::object *timevar_obj = new json::object ();
+  timevar_obj->set ("name", new json::string (name));
+  timevar_obj->set ("elapsed", make_json_for_timevar_time_def (elapsed));
+
+  if (children)
+    {
+      bool any_children_with_time = false;
+      for (auto i : *children)
+	if (!all_zero (i.second))
+	  {
+	    any_children_with_time = true;
+	    break;
+	  }
+      if (any_children_with_time)
+	{
+	  json::array *children_arr = new json::array ();
+	  timevar_obj->set ("children", children_arr);
+	  for (auto i : *children)
+	    {
+	      /* Don't emit timing variables if we're going to get a row of
+		 zeroes.  */
+	      if (all_zero (i.second))
+		continue;
+	      json::object *child_obj = new json::object;
+	      children_arr->append (child_obj);
+	      child_obj->set ("name", new json::string (i.first->name));
+	      child_obj->set ("elapsed",
+			      make_json_for_timevar_time_def (i.second));
+	    }
+	}
+    }
+
+  return timevar_obj;
+}
+
+/* Create a json value representing this object, suitable for use
+   in SARIF output.  */
+
+json::value *
+timer::make_json () const
+{
+  /* Only generate stuff if we have some sort of time information.  */
+#if defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME) || defined (HAVE_WALL_TIME)
+  json::object *report_obj = new json::object ();
+  json::array *json_arr = new json::array ();
+  report_obj->set ("timevars", json_arr);
+
+  for (unsigned id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
+    {
+      const timevar_def *tv = &m_timevars[(timevar_id_t) id];
+
+      /* Don't print the total execution time here; this isn't initialized
+	 by the time the sarif output runs.  */
+      if ((timevar_id_t) id == TV_TOTAL)
+	continue;
+
+      /* Don't emit timing variables that were never used.  */
+      if (!tv->used)
+	continue;
+
+      bool any_children_with_time = false;
+      if (tv->children)
+	for (child_map_t::iterator i = tv->children->begin ();
+	     i != tv->children->end (); ++i)
+	  if (! all_zero ((*i).second))
+	    {
+	      any_children_with_time = true;
+	      break;
+	    }
+
+      /* Don't emit timing variables if we're going to get a row of
+	 zeroes.  Unless there are children with non-zero time.  */
+      if (! any_children_with_time
+	  && all_zero (tv->elapsed))
+	continue;
+
+      json_arr->append (tv->make_json ());
+    }
+
+  /* Special-case for total.  */
+  {
+    /* Get our own total up till now, without affecting TV_TOTAL.  */
+    struct timevar_time_def total_now;
+    struct timevar_time_def total_elapsed;
+    get_time (&total_now);
+    timevar_diff (&total_elapsed, m_timevars[TV_TOTAL].start_time, total_now);
+
+    json::object *total_obj = new json::object();
+    json_arr->append (total_obj);
+    total_obj->set ("name", new json::string ("TOTAL"));
+    total_obj->set ("elapsed", make_json_for_timevar_time_def (total_elapsed));
+  }
+
+  if (m_jit_client_items)
+    report_obj->set ("client_items", m_jit_client_items->make_json ());
+
+  report_obj->set ("CHECKING_P", new json::literal ((bool)CHECKING_P));
+  report_obj->set ("flag_checking", new json::literal ((bool)flag_checking));
+
+  return report_obj;
+
+#else /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
+	  || defined (HAVE_WALL_TIME) */
+  return NULL;
+#endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
+	  || defined (HAVE_WALL_TIME) */
 }
 
 /* Get the name of the topmost item.  For use by jit for validating
