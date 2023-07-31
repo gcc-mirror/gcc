@@ -2040,6 +2040,11 @@
 (define_code_attr nmsub_nmadd [(plus "nmsub") (minus "nmadd")])
 (define_code_attr nmsac_nmacc [(plus "nmsac") (minus "nmacc")])
 
+(define_code_attr ext_to_rshift [(sign_extend "ashiftrt")
+                                 (zero_extend "lshiftrt")])
+(define_code_attr EXT_TO_RSHIFT [(sign_extend "ASHIFTRT")
+                                 (zero_extend "LSHIFTRT")])
+
 (define_code_iterator and_ior [and ior])
 
 (define_code_iterator any_float_binop [plus mult minus div])
