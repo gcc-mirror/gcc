@@ -47,7 +47,7 @@ binary_search_ranges (
 
 template <std::size_t SIZE>
 int64_t
-binary_search_sorted_array (const std::array<std::uint32_t, SIZE> &array,
+binary_search_sorted_array (const std::array<uint32_t, SIZE> &array,
 			    uint32_t target)
 {
   // FIXME: use binray search function from <algorithm>
