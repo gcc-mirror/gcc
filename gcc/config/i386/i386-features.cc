@@ -587,7 +587,7 @@ general_scalar_chain::compute_convert_gain ()
 	  case ROTATE:
 	  case ROTATERT:
 	    igain += m * ix86_cost->shift_const;
-	    if (TARGET_AVX512F)
+	    if (TARGET_AVX512VL)
 	      igain -= ix86_cost->sse_op;
 	    else if (smode == DImode)
 	      {
@@ -1230,7 +1230,7 @@ general_scalar_chain::convert_rotate (enum rtx_code code, rtx op0, rtx op1,
 	  emit_insn_before (pat, insn);
 	  result = gen_lowpart (V2DImode, tmp1);
 	}
-      else if (TARGET_AVX512F)
+      else if (TARGET_AVX512VL)
 	result = simplify_gen_binary (code, V2DImode, op0, op1);
       else if (bits == 16 || bits == 48)
 	{
@@ -1276,7 +1276,7 @@ general_scalar_chain::convert_rotate (enum rtx_code code, rtx op0, rtx op1,
       emit_insn_before (pat, insn);
       result = gen_lowpart (V4SImode, tmp1);
     }
-  else if (TARGET_AVX512F)
+  else if (TARGET_AVX512VL)
     result = simplify_gen_binary (code, V4SImode, op0, op1);
   else
     {
