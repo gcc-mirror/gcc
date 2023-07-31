@@ -19,6 +19,7 @@
 #include "rust-early-name-resolver-2.0.h"
 #include "rust-ast-full.h"
 #include "rust-toplevel-name-resolver-2.0.h"
+#include "rust-attributes.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -172,6 +173,57 @@ Early::visit (AST::UseTreeList &use)
 void
 Early::visit (AST::UseTreeGlob &use)
 {}
+
+void
+Early::visit_attributes (std::vector<AST::Attribute> attrs)
+{
+  for (auto &attr : attrs)
+    {
+      auto name = attr.get_path ().get_segments ().at (0).get_segment_name ();
+
+      if (attr.is_derive ())
+	{
+	  auto traits = attr.get_traits_to_derive ();
+	  for (auto &trait : traits)
+	    {
+	      auto definition = ctx.macros.resolve_path (trait.get ());
+	      if (!definition.has_value ())
+		{
+		  // FIXME: Change to proper error message
+		  rust_error_at (trait.get ().get_locus (),
+				 "could not resolve trait");
+		}
+	    }
+	}
+      else if (Analysis::BuiltinAttributeMappings::get ()
+		 ->lookup_builtin (name)
+		 .is_error ()) // Do not resolve builtins
+	{
+	  auto definition = ctx.macros.resolve_path (attr.get_path ());
+	  if (!definition.has_value ())
+	    {
+	      // FIXME: Change to proper error message
+	      rust_error_at (attr.get_locus (),
+			     "could not resolve attribute macro invocation");
+	      return;
+	    }
+	}
+    }
+}
+
+void
+Early::visit (AST::Function &fn)
+{
+  visit_attributes (fn.get_outer_attrs ());
+  DefaultResolver::visit (fn);
+}
+
+void
+Early::visit (AST::StructStruct &s)
+{
+  visit_attributes (s.get_outer_attrs ());
+  DefaultResolver::visit (s);
+}
 
 } // namespace Resolver2_0
 } // namespace Rust
