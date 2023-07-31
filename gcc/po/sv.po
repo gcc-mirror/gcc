@@ -27,10 +27,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 13.1.0\n"
+"Project-Id-Version: gcc 13.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-07-26 18:38+0000\n"
-"PO-Revision-Date: 2023-04-27 10:10+0200\n"
+"PO-Revision-Date: 2023-07-29 18:00+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -3599,10 +3599,9 @@ msgid "Warn about casts that will produce a null result."
 msgstr "Varna för typkonvertering som kommer producera ett null-resultat."
 
 #: d/lang.opt:143
-#, fuzzy, no-c-format
-#| msgid "Warn when a built-in function is declared with the wrong signature."
+#, no-c-format
 msgid "Warn when a special enum is declared with the wrong base type."
-msgstr "Varna när en inbyggd funktion deklareras med fel signatur."
+msgstr "Varna när en speciell uppräkningstyp deklareras med fel bastyp."
 
 #: d/lang.opt:151
 #, no-c-format
@@ -5735,10 +5734,9 @@ msgid "Set the version of RISC-V ISA spec."
 msgstr "Sätt versionen för RISC-V ISA-specifikationen."
 
 #: config/riscv/riscv.opt:260
-#, fuzzy, no-c-format
-#| msgid "Specify the model for atomic operations."
+#, no-c-format
 msgid "Always inline subword atomic operations."
-msgstr "Ange modellen för atomära operationer."
+msgstr "Inline:a alltid atomära operationer på delord."
 
 #: config/m32c/m32c.opt:23
 #, no-c-format
@@ -39945,7 +39943,7 @@ msgstr "profileringen %<-mcmodel=large%> med PIC stödjs inte"
 #: config/i386/i386.cc:22460
 #, gcc-internal-format
 msgid "%<__bfloat16%> is redefined from typedef %<short%> to real %<__bf16%> since GCC V13, be careful of implicit conversion between %<__bf16%> and %<short%>; a explicit bitcast may be needed here"
-msgstr ""
+msgstr "%<__bfloat16%> är omdefinierat från typedef %<short%> till reell %<__bf16%> sedan GCC V13, var vaksam på implicita konverteringar mellan %<__bf16%> och %<short%>; en explicit bittypkonvertering kan behövas här"
 
 #: config/i386/i386.cc:23686
 #, gcc-internal-format
@@ -51795,16 +51793,14 @@ msgid "ignoring attribute %qE after earlier %qE"
 msgstr "ignorerar attributet %qE efter tidigare %qE"
 
 #: cp/cp-gimplify.cc:3275
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of %qE attribute"
+#, gcc-internal-format
 msgid "pack expansion of %qE attribute"
-msgstr "ogiltigt argument till attributet %qE"
+msgstr "paketexpandering av attributet %qE"
 
 #: cp/cp-gimplify.cc:3278
-#, fuzzy, gcc-internal-format
-#| msgid "parse error in template argument list"
+#, gcc-internal-format
 msgid "use fold expression in the attribute argument instead"
-msgstr "parsningsfel i mallargumentlista"
+msgstr "använd vikningsuttryck i attributargumentet istället"
 
 #: cp/cp-gimplify.cc:3317 cp/cp-gimplify.cc:3329 cp/decl.cc:4275
 #: cp/method.cc:978
@@ -53965,10 +53961,9 @@ msgid "%qs specified with %qT"
 msgstr "%qs specificerad med %qT"
 
 #: cp/decl.cc:12482
-#, fuzzy, gcc-internal-format
-#| msgid "%qs specified with %<typeof%>"
+#, gcc-internal-format
 msgid "%qs specified with typedef-name %qD"
-msgstr "%qs specificerad med %<typeof%>"
+msgstr "%qs specificerad med typedef-namn %qD"
 
 #: cp/decl.cc:12491
 #, gcc-internal-format
@@ -64083,10 +64078,9 @@ msgid "invalid expression for static array dimension: %s"
 msgstr "ogiltigt uttryck som statisk vektordimension: %s"
 
 #: d/types.cc:1110
-#, fuzzy, gcc-internal-format
-#| msgid "size of %qD differ from the size of original declaration"
+#, gcc-internal-format
 msgid "size of %qs (%wd) differ from its declared size (%wd)"
-msgstr "storleken på %qD skiljer från storleken på originaldeklarationen"
+msgstr "storleken på %qs (%wd) skiljer från dess deklarerade storlek (%wd)"
 
 #: fortran/arith.cc:47
 #, gcc-internal-format, gfc-internal-format
@@ -72706,10 +72700,9 @@ msgid "Array is not contiguous at %L"
 msgstr "Vektorn är inte sammanhängande vid %L"
 
 #: fortran/openmp.cc:7725
-#, fuzzy, gcc-internal-format
-#| msgid "Allocate-object at %L must be ALLOCATABLE or a POINTER"
+#, gcc-internal-format
 msgid "%qs clause argument must be ALLOCATABLE or a POINTER at %L"
-msgstr "Allokeringsobjekt vid %L måste vara ALLOCATABLE eller en POINTER"
+msgstr "Argumentet till klausulen %qs måster vara  ALLOCATABLE eller en POINTER vid %L"
 
 #: fortran/openmp.cc:7737
 #, gcc-internal-format, gfc-internal-format
@@ -79873,6 +79866,3 @@ msgstr "ignorerar returnerat värde av typen %qT, som måste användas"
 #, gcc-internal-format
 msgid "unused name %qE"
 msgstr "oanvänt namn %qE"
-
-#~ msgid "%qs specified with %qD"
-#~ msgstr "%qs specificerad med %qD"
