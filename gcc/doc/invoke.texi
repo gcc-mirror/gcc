@@ -498,8 +498,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type  -Wmissing-prototypes  -Wnested-externs
--Wold-style-declaration  -Wold-style-definition
+-Wmissing-parameter-type -Wmissing-prototypes -Wmissing-variable-declarations
+-Wnested-externs -Wold-style-declaration  -Wold-style-definition
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
 
@@ -9610,6 +9610,13 @@ This option is not valid for C++ because all function declarations
 provide prototypes and a non-matching declaration declares an
 overload rather than conflict with an earlier declaration.
 Use @option{-Wmissing-declarations} to detect missing declarations in C++.
+
+@opindex Wmissing-variable-declarations
+@opindex Wno-missing-variable-declarations
+@item -Wmissing-variable-declarations @r{(C and Objective-C only)}
+Warn if a global variable is defined without a previous declaration.
+Use this option to detect global variables that do not have a matching
+extern declaration in a header file.
 
 @opindex Wmissing-declarations
 @opindex Wno-missing-declarations
