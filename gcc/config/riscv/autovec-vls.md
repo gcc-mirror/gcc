@@ -139,3 +139,22 @@
   "vmv%m1r.v\t%0,%1"
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
+
+;; -----------------------------------------------------------------
+;; ---- Duplicate Operations
+;; -----------------------------------------------------------------
+
+(define_insn_and_split "@vec_duplicate<mode>"
+  [(set (match_operand:VLS 0 "register_operand")
+        (vec_duplicate:VLS
+          (match_operand:<VEL> 1 "reg_or_int_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
+                                   riscv_vector::RVV_UNOP, operands);
+    DONE;
+  }
+)

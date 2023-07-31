@@ -2475,7 +2475,6 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 {
   if (autovec_use_vlmax_p ())
     {
-      /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
       poly_uint64 full_size
 	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
 
@@ -2503,7 +2502,25 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	    modes->safe_push (mode);
 	}
     }
-  return 0;
+  unsigned int flag = 0;
+  if (TARGET_VECTOR_VLS)
+    {
+      /* Enable VECT_COMPARE_COSTS between VLA modes VLS modes for scalable
+	 auto-vectorization.  */
+      flag |= VECT_COMPARE_COSTS;
+      /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
+      unsigned int i = 0;
+      unsigned int base_size = TARGET_MIN_VLEN * riscv_autovec_lmul / 8;
+      unsigned int size = base_size;
+      machine_mode mode;
+      while (size > 0 && get_vector_mode (QImode, size).exists (&mode))
+	{
+	  modes->safe_push (mode);
+	  i++;
+	  size = base_size / (1U << i);
+	}
+    }
+  return flag;
 }
 
 /* If the given VECTOR_MODE is an RVV mode,  first get the largest number
