@@ -95,6 +95,9 @@ Attribute::is_derive () const
 std::vector<std::reference_wrapper<AST::SimplePath>>
 Attribute::get_traits_to_derive ()
 {
+  rust_assert (this->is_derive ());
+
+  this->parse_attr_to_meta_item ();
   std::vector<std::reference_wrapper<AST::SimplePath>> result;
   auto &input = get_attr_input ();
   switch (input.get_attr_input_type ())
