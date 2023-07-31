@@ -261,17 +261,17 @@ struct alu_frm_def : public build_base
 	b.append_name (type_suffixes[instance.type.index].vector);
       }
 
+    /* According to rvv-intrinsic-doc, it does not add "_rm" suffix
+       for vop_rm C++ overloaded API.  */
+    if (!overloaded_p)
+      b.append_name ("_rm");
+
     /* According to rvv-intrinsic-doc, it does not add "_m" suffix
        for vop_m C++ overloaded API.  */
     if (overloaded_p && instance.pred == PRED_TYPE_m)
       return b.finish_name ();
 
     b.append_name (predication_suffixes[instance.pred]);
-
-    /* According to rvv-intrinsic-doc, it does not add "_rm" suffix
-       for vop_rm C++ overloaded API.  */
-    if (!overloaded_p)
-      b.append_name ("_rm");
 
     return b.finish_name ();
   }
