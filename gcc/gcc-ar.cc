@@ -135,6 +135,10 @@ main (int ac, char **av)
   int k, status, err;
   const char *err_msg;
   const char **nargv;
+  char **old_argv;
+  const char *rsp_file = NULL;
+  const char *rsp_arg = NULL;
+  const char *rsp_argv[3];
   bool is_ar = !strcmp (PERSONALITY, "ar");
   int exit_code = FATAL_EXIT_CODE;
   int i;
@@ -209,6 +213,13 @@ main (int ac, char **av)
 	}
     }
 
+  /* Expand any @files before modifying the command line
+     and use a temporary response file if there were any.  */
+  old_argv = av;
+  expandargv (&ac, &av);
+  if (av != old_argv)
+    rsp_file = make_temp_file ("");
+
   /* Prepend - if necessary.  */
   if (is_ar && av[1] && av[1][0] != '-')
     av[1] = concat ("-", av[1], NULL);
@@ -224,6 +235,39 @@ main (int ac, char **av)
   for (k = 1; k < ac; k++)
     nargv[j + k] = av[k];
   nargv[j + k] = NULL;
+
+  /* If @file was passed, put nargv into the temporary response
+     file and then change it to a single @FILE argument, where
+     FILE is the temporary filename.  */
+  if (rsp_file)
+    {
+      FILE *f;
+      int status;
+      f = fopen (rsp_file, "w");
+      if (f == NULL)
+	{
+	  fprintf (stderr, "Cannot open temporary file %s\n", rsp_file);
+	  exit (1);
+	}
+      status = writeargv (
+	  CONST_CAST2 (char * const *, const char **, nargv) + 1, f);
+      if (status)
+	{
+	  fprintf (stderr, "Cannot write to temporary file %s\n", rsp_file);
+	  exit (1);
+	}
+      status = fclose (f);
+      if (EOF == status)
+	{
+	  fprintf (stderr, "Cannot close temporary file %s\n", rsp_file);
+	  exit (1);
+	}
+      rsp_arg = concat ("@", rsp_file, NULL);
+      rsp_argv[0] = nargv[0];
+      rsp_argv[1] = rsp_arg;
+      rsp_argv[2] = NULL;
+      nargv = rsp_argv;
+    }
 
   /* Run utility */
   /* ??? the const is misplaced in pex_one's argv? */
@@ -248,6 +292,9 @@ main (int ac, char **av)
     }
   else
     exit_code = SUCCESS_EXIT_CODE;
+
+  if (rsp_file)
+    unlink (rsp_file);
 
   return exit_code;
 }
