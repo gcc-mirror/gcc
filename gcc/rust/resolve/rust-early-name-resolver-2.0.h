@@ -54,8 +54,12 @@ public:
   void visit (AST::UseTreeRebind &) override;
   void visit (AST::UseTreeList &) override;
   void visit (AST::UseTreeGlob &) override;
+  void visit (AST::Function &) override;
+  void visit (AST::StructStruct &) override;
 
 private:
+  void visit_attributes (std::vector<AST::Attribute> attrs);
+
   /**
    * Macros can either be resolved through textual scoping or regular path
    * scoping - which this class represents. Textual scoping works similarly to a
