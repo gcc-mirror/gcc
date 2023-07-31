@@ -152,7 +152,7 @@ TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 {
   if (!context->have_function_context ())
     {
-      rust_error_at (expr.get_locus (),
+      rust_error_at (expr.get_locus (), ErrorCode::E0572,
 		     "return statement outside of function body");
       infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
       return;
