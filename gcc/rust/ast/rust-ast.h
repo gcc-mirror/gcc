@@ -1950,6 +1950,71 @@ public:
   }
 };
 
+class BangProcMacro
+{
+private:
+  std::string name;
+  NodeId node_id;
+  ProcMacro::BangMacro macro;
+
+public:
+  BangProcMacro (ProcMacro::Bang macro)
+    : name (macro.name),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      macro (macro.macro)
+  {}
+
+  const std::string &get_name () const { return name; }
+
+  NodeId get_node_id () const { return node_id; }
+
+  ProcMacro::BangMacro get_handle () const { return macro; }
+};
+
+class AttributeProcMacro
+{
+private:
+  std::string name;
+  NodeId node_id;
+  ProcMacro::AttributeMacro macro;
+
+public:
+  AttributeProcMacro (ProcMacro::Attribute macro)
+    : name (macro.name),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      macro (macro.macro)
+  {}
+
+  const std::string &get_name () const { return name; }
+
+  NodeId get_node_id () const { return node_id; }
+
+  ProcMacro::AttributeMacro get_handle () const { return macro; }
+};
+
+class CustomDeriveProcMacro
+{
+private:
+  std::string trait_name;
+  std::vector<std::string> attributes;
+  NodeId node_id;
+  ProcMacro::CustomDeriveMacro macro;
+
+public:
+  CustomDeriveProcMacro (ProcMacro::CustomDerive macro)
+    : trait_name (macro.trait_name),
+      attributes (macro.attributes, macro.attributes + macro.attr_size),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      macro (macro.macro)
+  {}
+
+  const std::string &get_trait_name () const { return trait_name; }
+
+  NodeId get_node_id () const { return node_id; }
+
+  ProcMacro::CustomDeriveMacro get_handle () const { return macro; }
+};
+
 // A crate AST object - holds all the data for a single compilation unit
 struct Crate
 {
