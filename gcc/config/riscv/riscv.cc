@@ -2504,6 +2504,20 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
+      else if (TARGET_ZICOND
+	       && outer_code == SET
+	       && ((GET_CODE (XEXP (x, 1)) == REG
+		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
+		   || (GET_CODE (XEXP (x, 2)) == REG
+		       && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 2))))
+		   || (GET_CODE (XEXP (x, 1)) == REG
+		       && rtx_equal_p (XEXP (x, 1), XEXP (XEXP (x, 0), 0)))
+		   || (GET_CODE (XEXP (x, 1)) == REG
+		       && rtx_equal_p (XEXP (x, 2), XEXP (XEXP (x, 0), 0)))))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
       else if (LABEL_REF_P (XEXP (x, 1)) && XEXP (x, 2) == pc_rtx)
 	{
 	  if (equality_operator (XEXP (x, 0), mode)
@@ -2877,6 +2891,16 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	{
 	  /* Make AUIPC cheap to avoid spilling its result to the stack.  */
 	  *total = 1;
+	  return true;
+	}
+      return false;
+
+    case SET:
+      /* A simple SET with a register destination takes its cost solely from
+	 the SET_SRC operand.  */
+      if (outer_code == INSN && REG_P (SET_DEST (x)))
+	{
+	  *total = riscv_rtx_costs (SET_SRC (x), mode, SET, opno, total, speed);
 	  return true;
 	}
       return false;
