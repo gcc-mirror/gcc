@@ -16767,6 +16767,22 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
   return stmt_cost;
 }
 
+/* Return true if STMT_INFO is part of a reduction that has the form:
+
+      r = r op ...;
+      r = r op ...;
+
+   with the single accumulator being read and written multiple times.  */
+static bool
+aarch64_force_single_cycle (vec_info *vinfo, stmt_vec_info stmt_info)
+{
+  if (!STMT_VINFO_LIVE_P (stmt_info))
+    return false;
+
+  auto reduc_info = info_for_reduction (vinfo, stmt_info);
+  return STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
+}
+
 /* COUNT, KIND and STMT_INFO are the same as for vector_costs::add_stmt_cost
    and they describe an operation in the body of a vector loop.  Record issue
    information relating to the vector operation in OPS.  */
@@ -16788,10 +16804,13 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     {
       unsigned int base
 	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, m_vec_flags);
-
-      /* ??? Ideally we'd do COUNT reductions in parallel, but unfortunately
-	 that's not yet the case.  */
-      ops->reduction_latency = MAX (ops->reduction_latency, base * count);
+      if (aarch64_force_single_cycle (m_vinfo, stmt_info))
+	/* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
+	   and then accumulate that, but at the moment the loop-carried
+	   dependency includes all copies.  */
+	ops->reduction_latency = MAX (ops->reduction_latency, base * count);
+      else
+	ops->reduction_latency = MAX (ops->reduction_latency, base);
     }
 
   /* Assume that multiply-adds will become a single operation.  */
