@@ -95,15 +95,15 @@ Attribute::is_derive () const
  *
  * @param attrs The attributes on the item to derive
  */
-std::vector<AST::SimplePath>
+std::vector<std::reference_wrapper<AST::SimplePath>>
 Attribute::get_traits_to_derive ()
 {
-  std::vector<AST::SimplePath> result;
+  std::vector<std::reference_wrapper<AST::SimplePath>> result;
   auto &input = get_attr_input ();
   switch (input.get_attr_input_type ())
     {
       case AST::AttrInput::META_ITEM: {
-	auto meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
+	auto &meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
 	for (auto &current : meta.get_items ())
 	  {
 	    // HACK: Find a better way to achieve the downcast.
