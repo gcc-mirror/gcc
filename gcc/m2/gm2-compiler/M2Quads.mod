@@ -14121,29 +14121,29 @@ END BuildOptimizeOff ;
 
 
 (*
-   BuildInline - builds an Inline pseudo quadruple operator.
-                 The inline interface, Sym, is stored as the operand
-                 to the operator InlineOp.
+   BuildAsm - builds an Inline pseudo quadruple operator.
+              The inline interface, Sym, is stored as the operand
+              to the operator InlineOp.
 
-                 The stack is expected to contain:
+              The stack is expected to contain:
 
 
                         Entry                   Exit
                         =====                   ====
 
-                 Ptr ->
-                        +--------------+
-                        | Sym          |        Empty
-                        |--------------|
+              Ptr ->
+                     +--------------+
+                     | Sym          |        Empty
+                     |--------------|
 *)
 
-PROCEDURE BuildInline ;
+PROCEDURE BuildAsm (tok: CARDINAL) ;
 VAR
    Sym: CARDINAL ;
 BEGIN
    PopT (Sym) ;
-   GenQuad (InlineOp, NulSym, NulSym, Sym)
-END BuildInline ;
+   GenQuadO (tok, InlineOp, NulSym, NulSym, Sym, FALSE)
+END BuildAsm ;
 
 
 (*
@@ -14541,7 +14541,10 @@ END AddVarientEquality ;
 *)
 
 PROCEDURE BuildAsmElement (input, output: BOOLEAN) ;
+CONST
+   DebugAsmTokPos = FALSE ;
 VAR
+   s                   : String ;
    n, str, expr, tokpos,
    CurrentInterface,
    CurrentAsm, name    : CARDINAL ;
@@ -14561,12 +14564,22 @@ BEGIN
    IF input
    THEN
       PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
-                       NextQuad, 0)
+                       NextQuad, 0) ;
+      IF DebugAsmTokPos
+      THEN
+         s := InitString ('input expression') ;
+         WarnStringAt (s, tokpos)
+      END
    END ;
    IF output
    THEN
       PutRegInterface (tokpos, CurrentInterface, n, name, str, expr,
-                       0, NextQuad)
+                       0, NextQuad) ;
+      IF DebugAsmTokPos
+      THEN
+         s := InitString ('output expression') ;
+         WarnStringAt (s, tokpos)
+      END
    END ;
    PushT (n) ;
    PushT (CurrentAsm) ;

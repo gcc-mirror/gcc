@@ -98,7 +98,7 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BuildProcedureCall, BuildReturn, BuildNulExpression,
                     CheckBuildFunction,
                     StartBuildWith, EndBuildWith,
-                    BuildInline,
+                    BuildAsm,
                     BuildCaseStart,
                     BuildCaseOr,
                     BuildCaseElse,
@@ -1461,17 +1461,19 @@ Definition := "CONST" { ConstantDeclaration ";" } |
               "VAR" { VariableDeclaration ";" } |
               DefProcedureHeading ";" =:
 
-AsmStatement :=                                                            % VAR CurrentAsm: CARDINAL ; %
+AsmStatement :=                                                            % VAR CurrentAsm: CARDINAL ;
+                                                                             tok: CARDINAL ; %
+                                                                           % tok := GetTokenNo () %
                 'ASM'                                                      % PushAutoOn ;
-                                                                             PushT(0) ;  (* operand count *)
-                                                                             PushT(MakeGnuAsm())
+                                                                             PushT (0) ;  (* operand count *)
+                                                                             PushT (MakeGnuAsm ())
                                                                            %
-                [ 'VOLATILE'                                               % PopT(CurrentAsm) ;
-                                                                             PutGnuAsmVolatile(CurrentAsm) ;
-                                                                             PushT(CurrentAsm)
+                [ 'VOLATILE'                                               % PopT (CurrentAsm) ;
+                                                                             PutGnuAsmVolatile (CurrentAsm) ;
+                                                                             PushT (CurrentAsm)
                                                                            %
                 ] '(' AsmOperands                                          % PopNothing ;  (* throw away interface sym *)
-                                                                             BuildInline ;
+                                                                             BuildAsm (tok) ;
                                                                              PopNothing ;  (* throw away count *)
                                                                              PopAuto
                                                                            %
@@ -1480,22 +1482,22 @@ AsmStatement :=                                                            % VAR
 AsmOperands :=                                                             % VAR CurrentAsm, count: CARDINAL ;
                                                                                  str: CARDINAL ;
                                                                            %
-               ConstExpression                                             % PopT(str) ;
-                                                                             PopT(CurrentAsm) ;
-                                                                             Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
-                                                                             PopT(count) ;
+               ConstExpression                                             % PopT (str) ;
+                                                                             PopT (CurrentAsm) ;
+                                                                             Assert (IsGnuAsm (CurrentAsm) OR IsGnuAsmVolatile (CurrentAsm)) ;
+                                                                             PopT (count) ;
                                                                              IF DebugAsm
                                                                              THEN
-                                                                                printf1('1: count of asm operands: %d\n', count)
+                                                                                printf1 ('1: count of asm operands: %d\n', count)
                                                                              END ;
-                                                                             PushT(count) ;
+                                                                             PushT (count) ;
                                                                              (* adds the name/instruction for this asm *)
-                                                                             PutGnuAsm(CurrentAsm, str) ;
-                                                                             PushT(CurrentAsm) ;
-                                                                             PushT(NulSym)    (* the InterfaceSym *)
+                                                                             PutGnuAsm (CurrentAsm, str) ;
+                                                                             PushT (CurrentAsm) ;
+                                                                             PushT (NulSym)    (* the InterfaceSym *)
                                                                            %
                        ( AsmOperandSpec |                                  % (* epsilon *)
-                                                                             PutGnuAsmSimple(CurrentAsm)
+                                                                             PutGnuAsmSimple (CurrentAsm)
                                                                            %
                                                         )
                =:

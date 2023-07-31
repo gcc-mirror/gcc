@@ -88,7 +88,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  BuildCodeOn, BuildCodeOff,
                  BuildProfileOn, BuildProfileOff,
                  BuildOptimizeOn, BuildOptimizeOff,
-                 BuildInline, BuildStmtNote, BuildLineNo, PushLineNo,
+                 BuildAsm, BuildStmtNote, BuildLineNo, PushLineNo,
                  BuildConstructor,
                  BuildConstructorStart,
                  BuildConstructorEnd,
@@ -2518,23 +2518,23 @@ PROCEDURE BuildOptimizeOff ;
 
 
 (*
-   BuildInline - builds an Inline pseudo quadruple operator.
-                 The inline interface, Sym, is stored as the operand
-                 to the operator InlineOp.
+   BuildAsm - builds an Inline pseudo quadruple operator.
+              The inline interface, Sym, is stored as the operand
+              to the operator InlineOp.
 
-                 The stack is expected to contain:
+              The stack is expected to contain:
 
 
                         Entry                   Exit
                         =====                   ====
 
-                 Ptr ->
-                        +--------------+
-                        | Sym          |        Empty
-                        |--------------|
+              Ptr ->
+                     +--------------+
+                     | Sym          |        Empty
+                     |--------------|
 *)
 
-PROCEDURE BuildInline ;
+PROCEDURE BuildAsm (tok: CARDINAL) ;
 
 
 (*

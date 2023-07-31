@@ -114,16 +114,6 @@ BEGIN
 END IsValidDateTime ;
 
 
-(*
-   foo -
-*)
-
-PROCEDURE foo () : CARDINAL ;
-BEGIN
-   RETURN 1
-END foo ;
-
-
 PROCEDURE GetClock (VAR userData: DateTime) ;
 (* Assigns local date and time of the day to userData *)
 VAR
