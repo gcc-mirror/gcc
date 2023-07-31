@@ -185,7 +185,7 @@ ExpandVisitor::expand_inner_items (
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
-			to_derive.as_string ());
+			to_derive.get ().as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
@@ -271,7 +271,7 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 		  for (auto &to_derive : traits_to_derive)
 		    {
 		      auto maybe_builtin = MacroBuiltin::builtins.lookup (
-			to_derive.as_string ());
+			to_derive.get ().as_string ());
 		      if (MacroBuiltin::builtins.is_iter_ok (maybe_builtin))
 			{
 			  auto new_item
