@@ -83,7 +83,7 @@ template <Namespace N>
 void
 ForeverStack<N>::pop ()
 {
-  assert (!cursor ().is_root ());
+  rust_assert (!cursor ().is_root ());
 
   rust_debug ("popping link");
 
