@@ -18461,8 +18461,13 @@ c_parser_oacc_host_data (location_t loc, c_parser *parser, bool *if_p)
   tree stmt, clauses, block;
 
   clauses = c_parser_oacc_all_clauses (parser, OACC_HOST_DATA_CLAUSE_MASK,
-				       "#pragma acc host_data");
-
+				       "#pragma acc host_data", false);
+  if (!omp_find_clause (clauses, OMP_CLAUSE_USE_DEVICE_PTR))
+    {
+      error_at (loc, "%<host_data%> construct requires %<use_device%> clause");
+      return error_mark_node;
+    }
+  clauses = c_finish_omp_clauses (clauses, C_ORT_ACC);
   block = c_begin_omp_parallel ();
   add_stmt (c_parser_omp_structured_block (parser, if_p));
   stmt = c_finish_oacc_host_data (loc, clauses, block);

@@ -45899,8 +45899,15 @@ cp_parser_oacc_host_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   unsigned int save;
 
   clauses = cp_parser_oacc_all_clauses (parser, OACC_HOST_DATA_CLAUSE_MASK,
-					"#pragma acc host_data", pragma_tok);
-
+					"#pragma acc host_data", pragma_tok,
+					false);
+  if (!omp_find_clause (clauses, OMP_CLAUSE_USE_DEVICE_PTR))
+    {
+      error_at (pragma_tok->location,
+		"%<host_data%> construct requires %<use_device%> clause");
+      return error_mark_node;
+    }
+  clauses = finish_omp_clauses (clauses, C_ORT_ACC);
   block = begin_omp_parallel ();
   save = cp_parser_begin_omp_structured_block (parser);
   cp_parser_statement (parser, NULL_TREE, false, if_p);

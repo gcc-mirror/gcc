@@ -8926,6 +8926,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		   "%<MERGEABLE%> clause", &omp_clauses->detach->where);
     }
 
+  if (openacc
+      && code->op == EXEC_OACC_HOST_DATA
+      && omp_clauses->lists[OMP_LIST_USE_DEVICE] == NULL)
+    gfc_error ("%<host_data%> construct at %L requires %<use_device%> clause",
+	       &code->loc);
+
   if (omp_clauses->assume)
     gfc_resolve_omp_assumptions (omp_clauses->assume);
 }
