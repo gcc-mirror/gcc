@@ -1248,7 +1248,6 @@ void
 expand_vec_series (rtx dest, rtx base, rtx step)
 {
   machine_mode mode = GET_MODE (dest);
-  machine_mode mask_mode = get_mask_mode (mode);
   poly_int64 nunits_m1 = GET_MODE_NUNITS (mode) - 1;
   poly_int64 value;
 
@@ -2317,7 +2316,6 @@ expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
 				 int nelts_reqd)
 {
   machine_mode mode = GET_MODE (target);
-  machine_mode mask_mode = get_mask_mode (mode);
   rtx dup = expand_vector_broadcast (mode, builder.elt (0));
   emit_move_insn (target, dup);
   int ndups = builder.count_dups (0, nelts_reqd - 1, 1);
