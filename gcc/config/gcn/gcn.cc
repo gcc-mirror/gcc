@@ -160,11 +160,18 @@ gcn_option_override (void)
 	acc_lds_size = 32768;
     }
 
-  /* The xnack option is a placeholder, for now.  Before removing, update
-     gcn-hsa.h's XNACKOPT, gcn.opt's mxnack= default init+descr, and
-     invoke.texi's default description.  */
-  if (flag_xnack != HSACO_ATTR_OFF)
-    sorry ("XNACK support");
+  /* gfx803 "Fiji" and gfx1030 do not support XNACK.  */
+  if (gcn_arch == PROCESSOR_FIJI
+      || gcn_arch == PROCESSOR_GFX1030)
+    {
+      if (flag_xnack == HSACO_ATTR_ON)
+	error ("-mxnack=on is incompatible with -march=%s",
+	       (gcn_arch == PROCESSOR_FIJI ? "fiji"
+	        : gcn_arch == PROCESSOR_GFX1030 ? "gfx1030"
+	        : NULL));
+      /* Allow HSACO_ATTR_ANY silently because that's the default.  */
+      flag_xnack = HSACO_ATTR_OFF;
+    }
 }
 
 /* }}}  */
@@ -3585,18 +3592,20 @@ gcn_expand_epilogue (void)
       /* Assume that an exit value compatible with gcn-run is expected.
          That is, the third input parameter is an int*.
 
-         We can't allocate any new registers, but the kernarg_reg is
-         dead after this, so we'll use that.  */
+         We can't allocate any new registers, but the dispatch_ptr and
+	 kernarg_reg are dead after this, so we'll use those.  */
+      rtx dispatch_ptr_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
+					  [DISPATCH_PTR_ARG]);
       rtx kernarg_reg = gen_rtx_REG (DImode, cfun->machine->args.reg
 				     [KERNARG_SEGMENT_PTR_ARG]);
       rtx retptr_mem = gen_rtx_MEM (DImode,
 				    gen_rtx_PLUS (DImode, kernarg_reg,
 						  GEN_INT (16)));
       set_mem_addr_space (retptr_mem, ADDR_SPACE_SCALAR_FLAT);
-      emit_move_insn (kernarg_reg, retptr_mem);
+      emit_move_insn (dispatch_ptr_reg, retptr_mem);
 
       rtx retval_addr = gen_rtx_REG (DImode, FIRST_VPARM_REG + 2);
-      emit_move_insn (retval_addr, kernarg_reg);
+      emit_move_insn (retval_addr, dispatch_ptr_reg);
       rtx retval_mem = gen_rtx_MEM (SImode, retval_addr);
       set_mem_addr_space (retval_mem, ADDR_SPACE_FLAT);
       emit_move_insn (retval_mem, gen_rtx_REG (SImode, RETURN_VALUE_REG));
