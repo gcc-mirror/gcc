@@ -1,3 +1,336 @@
+2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110174
+	* gm2-compiler/M2GCCDeclare.def (PromoteToCString): New procedure
+	function.
+	* gm2-compiler/M2GCCDeclare.mod (PromoteToCString): New procedure
+	function.
+	* gm2-compiler/M2GenGCC.mod (BuildTreeFromInterface): Call
+	skip_const_decl before chaining the parameter value.
+	Use PromoteToCString to ensure the string is nul terminated.
+	(CodeInline): Remove all parameters and replace with quad.
+	Use GetQuadOtok to get operand token numbers.
+	Remove call to DeclareConstant and replace it with PromoteToCString.
+	* gm2-compiler/M2Quads.def (BuildInline): Rename into ...
+	(BuildAsm): ... this.
+	* gm2-compiler/M2Quads.mod: (BuildInline): Rename into ...
+	(BuildAsm): ... this.
+	(BuildAsmElement): Add debugging.
+	* gm2-compiler/P1Build.bnf: Remove import of BuildInline.
+	* gm2-compiler/P2Build.bnf: Remove import of BuildInline.
+	* gm2-compiler/P3Build.bnf: Remove import of BuildInline and
+	import BuildAsm.
+	* gm2-compiler/PHBuild.bnf: Remove import of BuildInline.
+	* gm2-libs-iso/SysClock.mod (foo): Remove.
+	* gm2-libs/FIO.mod (BufferedRead): Rename parameter a to dest.
+	Rename variable t to src.
+	* m2pp.cc (pf): Correct block comment.
+	(pe): Correct block comment.
+	(m2pp_asm_expr): New function.
+	(m2pp_statement): Call m2pp_asm_expr.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110631
+	* gm2-libs/FIO.def (ReadAny): Correct comment as
+	HIGH (a) + 1 is number of bytes.
+	(WriteAny): Correct comment as HIGH (a) + 1 is number of
+	bytes.
+	* gm2-libs/FIO.mod (ReadAny): Correct comment as
+	HIGH (a) + 1 is number of bytes.  Also pass HIGH (a) + 1
+	to BufferedRead.
+	(WriteAny): Correct comment as HIGH (a) + 1 is number of
+	bytes.	Also pass HIGH (a) + 1 to BufferedWrite.
+	(BufferedWrite): Rename parameter a to src, rename variable
+	t to dest.  Correct parameter order to memcpy.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2SymInit.mod (IsExempt): Remove parameter exemption.
+	(CheckIndrX): Call SetupLAlias between lhs and content.
+	(trashParam): Re-write.
+	(SetVarLRInitialized): Indicate shadow and heap are initialized.
+	Call SetupIndr between shadow and heap.
+	* gm2-compiler/P2SymBuild.mod: Import
+	PutProcedureParameterHeapVars.
+	(EndBuildProcedure): Call PutProcedureParameterHeapVars.
+	* gm2-compiler/SymbolTable.def (GetParameterHeapVar): New
+	procedure function.
+	(PutProcedureParameterHeapVars): New procedure function.
+	* gm2-compiler/SymbolTable.mod (MakeParameterHeapVar): New
+	procedure function.
+	(GetParameterHeapVar): New procedure function.
+	(PuttParameterHeapVar): New procedure function.
+	(PutProcedureParameterHeapVars): New procedure.
+	(VarParam): HeapVar new record field.
+	(PutVarParam): HeapVar assigned to NulSym.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (BuildDifAdrFunction): Removed
+	unnecessary in error message.  Use vartok for location.
+	(BuildOddFunction): Use optok for location.
+	(BuildAbsFunction): Use vartok for location.  Bugfix set vartok.
+	(BuildCapFunction): Use optok for location.
+	(BuildOrdFunction): Use optok for location and correct format
+	specifier.
+	(BuildShiftFunction): Use vartok for location.
+	(BuildRotateFunction): Use vartok for location.
+	(BuildTruncFunction): Use vartok for location.
+	(BuildFloatFunction): Use vartok for location.
+	(BuildReFunction): Use vartok for location.
+	(BuildImFunction): Use vartok for location.
+	* gm2-compiler/M2SymInit.mod (trashParam): Remove commented code.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (BuildRealFuncProcCall): Set the trash
+	parameter value to NIL if DEALLOCATE is detected.
+	* gm2-compiler/M2SymInit.mod (CheckDeferredRecordAccess): Pass
+	tok to SetVarInitialized.  Pass tok to GetVarComponentInitialized.
+	(ComponentFindVar): Add tok parameter.  Check aliased pointer
+	against Nil and generate warning if necessary.
+	(deRefComponent): Add tok and sym parameters and pass them to
+	getContent.
+	(SetVarComponentInitialized): Add tok parameter.  Pass tok to
+	ComponentFindVar.  Pass tok and sym to deRefComponent.
+	(GetVarComponentInitialized): Add tok parameter.  Pass tok to
+	ComponentFindVar.  Pass tok to deRefComponent.
+	(SetVarInitialized): Add tok parameter.  Pass tok to
+	SetVarComponentInitialized.
+	(doGetVarInitialized): Add tok parameter.  Pass tok to
+	GetVarComponentInitialized.
+	(CheckXIndr): Pass lhs and lhstok to getContent.
+	(CheckIndrX): Pass rhs and rhstok to getContent.
+	(CheckBecomes): Pass destok to ComponentFindVar.  Pass des and
+	destok to deRefComponent.
+	(CheckAddr): Pass contenttok to GetVarInitialized.  Pass ptrtok
+	to SetVarInitialized.
+	(CheckReadBeforeInitQuad): Pass op1tok to SetVarInitialized for
+	op1 cases and op3tok for op3 cases.
+	(trashParam): Get operand tokens.  Pass op3tok to
+	SetVarInitialized.  Pass op3 and op3tok to getContent.
+	Alias ptr to NIL if procedure is DEALLOCATE.  Pass op3tok to
+	SetVarInitialized.
+	(IsDeallocate): New procedure function.
+	(DetectTrash): Use IsDeallocate.
+	(SetupLAlias): Allow exp to be Nil.
+	(getContent): Generate warning message if ptr is Nil.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in: Minor formatting change.
+	* gm2-compiler/M2GCCDeclare.mod
+	(DeclareUnboundedProcedureParameters): Rename local variables.
+	(WalkUnboundedProcedureParameters): Rename local variables.
+	(DoVariableDeclaration): Avoid declaration of a variable if
+	it is on the heap (used by static analysis only).
+	* gm2-compiler/M2GenGCC.mod: Formatting.
+	* gm2-compiler/M2Quads.def (GetQuadTrash): New procedure function.
+	* gm2-compiler/M2Quads.mod (GetQuadTrash): New procedure function.
+	(QuadFrame): Add Trash field.
+	(BuildRealFuncProcCall): Detect ALLOCATE and DEALLOCATE and create
+	a heap variable for parameter 1 saving it as the trashed variable
+	for static analysis.
+	(GenQuadOTrash): New procedure.
+	(DisplayQuadRange): Bugfix.  Write the scope number.
+	* gm2-compiler/M2SymInit.mod: Rewritten to separate LValue
+	equivalence from LValue to RValue pairings.  Comprehensive
+	detection of variant record implemented.  Allow dereferencing
+	of pointers through LValue/RValue chains.
+	* gm2-compiler/SymbolTable.def (PutVarHeap): New procedure.
+	(IsVarHeap): New procedure function.
+	(ForeachParamSymDo): New procedure.
+	* gm2-compiler/SymbolTable.mod (PutVarHeap): New procedure.
+	(IsVarHeap): New procedure function.
+	(ForeachParamSymDo): New procedure.
+	(MakeVariableForParam): Reformatted.
+	(CheckForUnknownInModule): Reformatted.
+	(SymVar): Add field Heap.
+	(MakeVar): Assign Heap to FALSE.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2BasicBlock.def (InitBasicBlocksFromRange): New
+	parameter ScopeSym.
+	* gm2-compiler/M2BasicBlock.mod (ConvertQuads2BasicBlock): New
+	parameter ScopeSym.
+	(InitBasicBlocksFromRange): New	parameter ScopeSym.  Call
+	ConvertQuads2BasicBlock with ScopeSym.
+	(DisplayBasicBlocks): Uncomment.
+	* gm2-compiler/M2Code.mod: Replace VariableAnalysis with
+	ScopeBlockVariableAnalysis.
+	(InitialDeclareAndOptiomize): Add parameter scope.
+	(SecondDeclareAndOptimize): Add parameter scope.
+	* gm2-compiler/M2GCCDeclare.mod (DeclareConstructor): Add scope
+	parameter to DeclareTypesConstantsProceduresInRange.
+	(DeclareTypesConstantsProceduresInRange): New parameter scope.
+	Pass scope to DisplayQuadRange.  Reformatted.
+	* gm2-compiler/M2GenGCC.def (ConvertQuadsToTree): New parameter
+	scope.
+	* gm2-compiler/M2GenGCC.mod (ConvertQuadsToTree): New parameter
+	scope.
+	* gm2-compiler/M2Optimize.mod (KnownReachable): New parameter
+	scope.
+	* gm2-compiler/M2Options.def (SetUninitVariableChecking): Add
+	arg parameter.
+	* gm2-compiler/M2Options.mod (SetUninitVariableChecking): Add
+	arg parameter and set boolean UninitVariableChecking and
+	UninitVariableConditionalChecking.
+	(UninitVariableConditionalChecking): New boolean set to FALSE.
+	* gm2-compiler/M2Quads.def (IsGoto): New procedure function.
+	(DisplayQuadRange): Add scope parameter.
+	(LoopAnalysis): Add scope parameter.
+	* gm2-compiler/M2Quads.mod: Import PutVarArrayRef.
+	(IsGoto): New procedure function.
+	(LoopAnalysis): Add scope parameter and use MetaErrorT1 instead
+	of WarnStringAt.
+	(BuildStaticArray): Call PutVarArrayRef.
+	(BuildDynamicArray): Call PutVarArrayRef.
+	(DisplayQuadRange): Add scope parameter.
+	(GetM2OperatorDesc): Add relational condition cases.
+	* gm2-compiler/M2Scope.def (ScopeProcedure): Add parameter.
+	* gm2-compiler/M2Scope.mod (DisplayScope): Pass scopeSym to
+	DisplayQuadRange.
+	(ForeachScopeBlockDo): Pass scopeSym to p.
+	* gm2-compiler/M2SymInit.def (VariableAnalysis): Rename to ...
+	(ScopeBlockVariableAnalysis): ... this.
+	* gm2-compiler/M2SymInit.mod (ScopeBlockVariableAnalysis): Add
+	scope parameter.
+	(bbEntry): New pointer to record.
+	(bbArray): New array.
+	(bbFreeList): New variable.
+	(errorList): New list.
+	(IssueConditional): New procedure.
+	(GenerateNoteFlow): New procedure.
+	(IssueWarning): New procedure.
+	(IsUniqueWarning): New procedure.
+	(CheckDeferredRecordAccess): Re-implement.
+	(CheckBinary): Add warning and lst parameters.
+	(CheckUnary): Add warning and lst parameters.
+	(CheckXIndr): Add warning and lst parameters.
+	(CheckIndrX): Add warning and lst parameters.
+	(CheckBecomes): Add warning and lst parameters.
+	(CheckComparison): Add warning and lst parameters.
+	(CheckReadBeforeInitQuad): Add warning and lst parameters to all
+	Check procedures.  Add all case quadruple clauses.
+	(FilterCheckReadBeforeInitQuad): Add warning and lst parameters.
+	(CheckReadBeforeInitFirstBasicBlock): Add warning and lst parameters.
+	(bbArrayKill): New procedure.
+	(DumpBBEntry): New procedure.
+	(DumpBBArray): New procedure.
+	(DumpBBSequence): New procedure.
+	(TestBBSequence): New procedure.
+	(CreateBBPermultations): New procedure.
+	(ScopeBlockVariableAnalysis): New procedure.
+	(GetOp3): New procedure.
+	(GenerateCFG): New procedure.
+	(NewEntry): New procedure.
+	(AppendEntry): New procedure.
+	(init): Initialize bbFreeList and errorList.
+	* gm2-compiler/SymbolTable.def (PutVarArrayRef): New procedure.
+	(IsVarArrayRef): New procedure function.
+	* gm2-compiler/SymbolTable.mod (SymVar): ArrayRef new field.
+	(MakeVar): Set ArrayRef to FALSE.
+	(PutVarArrayRef): New procedure.
+	(IsVarArrayRef): New procedure function.
+	* gm2-gcc/init.cc (_M2_M2SymInit_init): New prototype.
+	(init_PerCompilationInit): Add call to _M2_M2SymInit_init.
+	* gm2-gcc/m2options.h (M2Options_SetUninitVariableChecking):
+	New definition.
+	* gm2-lang.cc (gm2_langhook_handle_option): Add new case
+	OPT_Wuninit_variable_checking_.
+	* lang.opt: Wuninit-variable-checking= new entry.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* Make-lang.in (GM2-COMP-BOOT-DEFS): Add M2SymInit.def.
+	(GM2-COMP-BOOT-MODS): Add M2SymInit.mod.
+	* gm2-compiler/M2BasicBlock.mod: Formatting changes.
+	* gm2-compiler/M2Code.mod: Remove import of VariableAnalysis from
+	M2Quads.  Import VariableAnalysis from M2SymInit.mod.
+	* gm2-compiler/M2GCCDeclare.mod (PrintVerboseFromList):
+	Add debugging print for a component.
+	(TypeConstFullyDeclared): Call RememberType for every type.
+	* gm2-compiler/M2GenGCC.mod (CodeReturnValue): Add parameter to
+	GetQuadOtok.
+	(CodeBecomes): Add parameter to GetQuadOtok.
+	(CodeXIndr): Add parameter to GetQuadOtok.
+	* gm2-compiler/M2Optimize.mod (ReduceBranch): Reformat and
+	preserve operand token positions when reducing the branch
+	quadruples.
+	(ReduceGoto): Reformat.
+	(FoldMultipleGoto): Reformat.
+	(KnownReachable): Reformat.
+	* gm2-compiler/M2Options.def (UninitVariableChecking): New
+	variable declared and exported.
+	(SetUninitVariableChecking): New procedure.
+	* gm2-compiler/M2Options.mod (SetWall): Set
+	UninitVariableChecking.
+	(SetUninitVariableChecking): New procedure.
+	* gm2-compiler/M2Quads.def (PutQuadOtok): Exported and declared.
+	(VariableAnalysis): Removed.
+	* gm2-compiler/M2Quads.mod (PutQuadOtok): New procedure.
+	(doVal): Reformatted.
+	(MarkAsWrite): Reformatted.
+	(MarkArrayAsWritten): Reformatted.
+	(doIndrX): Use PutQuadOtok.
+	(MakeRightValue): Use GenQuadOtok.
+	(MakeLeftValue): Use GenQuadOtok.
+	(CheckReadBeforeInitialized): Remove.
+	(IsNeverAltered): Reformat.
+	(DebugLocation): New procedure.
+	(BuildDesignatorPointer): Use GenQuadO to preserve operand token
+	position.
+	(BuildRelOp): Use GenQuadOtok ditto.
+	* gm2-compiler/SymbolTable.def (VarCheckReadInit): New procedure.
+	(VarInitState): New procedure.
+	(PutVarInitialized): New procedure.
+	(PutVarFieldInitialized): New procedure function.
+	(GetVarFieldInitialized): New procedure function.
+	(PrintInitialized): New procedure.
+	* gm2-compiler/SymbolTable.mod (VarCheckReadInit): New procedure.
+	(VarInitState): New procedure.
+	(PutVarInitialized): New procedure.
+	(PutVarFieldInitialized): New procedure function.
+	(GetVarFieldInitialized): New procedure function.
+	(PrintInitialized): New procedure.
+	(LRInitDesc): New type.
+	(SymVar): InitState new field.
+	(MakeVar): Initialize InitState.
+	* gm2-gcc/m2options.h (M2Options_SetUninitVariableChecking):
+	New function declaration.
+	* gm2-lang.cc (gm2_langhook_handle_option): Detect
+	OPT_Wuninit_variable_checking and call SetUninitVariableChecking.
+	* lang.opt: Add Wuninit-variable-checking.
+	* gm2-compiler/M2SymInit.def: New file.
+	* gm2-compiler/M2SymInit.mod: New file.
+
 2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,129 @@
+2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110174
+	* gm2/pim/pass/program2.mod: Remove import of BuildInline.
+	* gm2/extensions/asm/fail/extensions-asm-fail.exp: New test.
+	* gm2/extensions/asm/fail/stressreturn.mod: New test.
+	* gm2/extensions/asm/pass/extensions-asm-pass.exp: New test.
+	* gm2/extensions/asm/pass/fooasm.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110631
+	* gm2/pimlib/run/pass/testfiobinary.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose4.mod: New test.
+
+2023-07-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110825
+	* gfortran.dg/assumed_type_18.f90: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/errors/fail/badabs.mod: New test.
+	* gm2/errors/fail/badenum.mod: New test.
+
+2023-07-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108961
+	* gfortran.dg/pr108961.f90: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnil.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/pass/assignparam.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/tiny.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/switches-uninit-variable-checking-procedures-fail.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testptrptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/assignparam2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/switches-uninit-variable-checking-procedures-pass.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamlvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamrvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testproc.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testptrptr.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/cascade/fail/cascadedif.mod: New test.
+	* gm2/switches/uninit-variable-checking/cascade/fail/switches-uninit-variable-checking-cascade-fail.exp:
+	New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* gm2/switches/uninit-variable-checking/fail/testinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallvec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithnoptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/switches-uninit-variable-checking-fail.exp: New file.
+	* gm2/switches/uninit-variable-checking/pass/switches-uninit-variable-checking-pass.exp: New file.
+
 2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

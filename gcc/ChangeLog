@@ -1,3 +1,27 @@
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Semantic checking): Change example testwithptr
+	to testnew6.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (-Wuninit-variable-checking=) New item.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* doc/gm2.texi (Semantic checking): Include examples using
+	-Wuninit-variable-checking.
+
 2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
