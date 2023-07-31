@@ -1688,6 +1688,31 @@ package body Sem_Ch3 is
    -------------------------------------
 
    procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id) is
+
+      function Error_Posted_In_Formals (Subp : Entity_Id) return Boolean;
+      --  Determine if an error has been posted in some formal of Subp.
+
+      -----------------------------
+      -- Error_Posted_In_Formals --
+      -----------------------------
+
+      function Error_Posted_In_Formals (Subp : Entity_Id) return Boolean is
+         Formal : Entity_Id := First_Formal (Subp);
+
+      begin
+         while Present (Formal) loop
+            if Error_Posted (Formal) then
+               return True;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         return False;
+      end Error_Posted_In_Formals;
+
+      --  Local variables
+
       Elmt          : Elmt_Id;
       Iface         : Entity_Id;
       Iface_Elmt    : Elmt_Id;
@@ -1740,6 +1765,86 @@ package body Sem_Ch3 is
                end if;
 
                pragma Assert (Present (Prim));
+
+               --  Check subtype conformance; we skip this check if errors have
+               --  been reported in the primitive (or in the formals of the
+               --  primitive) because Find_Primitive_Covering_Interface relies
+               --  on the subprogram Type_Conformant to locate the primitive,
+               --  and reports errors if the formals don't match.
+
+               if not Error_Posted (Prim)
+                 and then not Error_Posted_In_Formals (Prim)
+               then
+                  declare
+                     Alias_Prim : Entity_Id;
+                     Alias_Typ  : Entity_Id;
+                     Err_Loc    : Node_Id := Empty;
+                     Ret_Type   : Entity_Id;
+
+                  begin
+                     --  For inherited primitives, in case of reporting an
+                     --  error, the error must be reported on this primitive
+                     --  (i.e. in the name of its type declaration); otherwise
+                     --  the error would be reported in the formal of the
+                     --  alias primitive defined on its parent type.
+
+                     if Nkind (Parent (Prim)) = N_Full_Type_Declaration then
+                        Err_Loc := Prim;
+                     end if;
+
+                     --  Check subtype conformance of procedures, functions
+                     --  with matching return type, or functions not returning
+                     --  interface types.
+
+                     if Ekind (Prim) = E_Procedure
+                       or else Etype (Iface_Prim) = Etype (Prim)
+                       or else not Is_Interface (Etype (Iface_Prim))
+                     then
+                        Check_Subtype_Conformant
+                          (New_Id  => Prim,
+                           Old_Id  => Iface_Prim,
+                           Err_Loc => Err_Loc,
+                           Skip_Controlling_Formals => True);
+
+                     --  Check subtype conformance of functions returning an
+                     --  interface type; temporarily force both entities to
+                     --  return the same type. Required because subprogram
+                     --  Subtype_Conformant does not handle this case.
+
+                     else
+                        Ret_Type := Etype (Iface_Prim);
+                        Set_Etype (Iface_Prim, Etype (Prim));
+
+                        Check_Subtype_Conformant
+                          (New_Id  => Prim,
+                           Old_Id  => Iface_Prim,
+                           Err_Loc => Err_Loc,
+                           Skip_Controlling_Formals => True);
+
+                        Set_Etype (Iface_Prim, Ret_Type);
+                     end if;
+
+                     --  Complete the error when reported on inherited
+                     --  primitives.
+
+                     if Nkind (Parent (Prim)) = N_Full_Type_Declaration
+                       and then (Error_Posted (Prim)
+                                   or else Error_Posted_In_Formals (Prim))
+                       and then Present (Alias (Prim))
+                     then
+                        Alias_Prim := Ultimate_Alias (Prim);
+                        Alias_Typ  := Find_Dispatching_Type (Alias_Prim);
+
+                        if Alias_Typ /= Tagged_Type
+                          and then Is_Ancestor (Alias_Typ, Tagged_Type)
+                        then
+                           Error_Msg_Sloc := Sloc (Alias_Prim);
+                           Error_Msg_N
+                             ("in primitive inherited from #!", Prim);
+                        end if;
+                     end if;
+                  end;
+               end if;
 
                --  Ada 2012 (AI05-0197): If the name of the covering primitive
                --  differs from the name of the interface primitive then it is
