@@ -5803,21 +5803,21 @@
 ;; But this doesn't seem useful in practice.
 
 (define_expand "vec_fmaddsub<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "nonimmediate_operand")
-	   (match_operand:VF 2 "nonimmediate_operand")
-	   (match_operand:VF 3 "nonimmediate_operand")]
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "nonimmediate_operand")
+	   (match_operand:VFH 2 "nonimmediate_operand")
+	   (match_operand:VFH 3 "nonimmediate_operand")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 
 (define_expand "vec_fmsubadd<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "nonimmediate_operand")
-	   (match_operand:VF 2 "nonimmediate_operand")
-	   (neg:VF
-	     (match_operand:VF 3 "nonimmediate_operand"))]
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "nonimmediate_operand")
+	   (match_operand:VFH 2 "nonimmediate_operand")
+	   (neg:VFH
+	     (match_operand:VFH 3 "nonimmediate_operand"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 
@@ -5877,11 +5877,11 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>"
-  [(set (match_operand:VFH_SF_AVX512VL 0 "register_operand" "=v,v,v")
-	(unspec:VFH_SF_AVX512VL
-	  [(match_operand:VFH_SF_AVX512VL 1 "<round_nimm_predicate>" "%0,0,v")
-	   (match_operand:VFH_SF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
-	   (match_operand:VFH_SF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0")]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v,v,v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "<round_nimm_predicate>" "%0,0,v")
+	   (match_operand:VFH_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
+	   (match_operand:VFH_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_AVX512F && <sd_mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
@@ -5943,12 +5943,12 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>"
-  [(set (match_operand:VFH_SF_AVX512VL 0 "register_operand" "=v,v,v")
-	(unspec:VFH_SF_AVX512VL
-	  [(match_operand:VFH_SF_AVX512VL   1 "<round_nimm_predicate>" "%0,0,v")
-	   (match_operand:VFH_SF_AVX512VL   2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
-	   (neg:VFH_SF_AVX512VL
-	     (match_operand:VFH_SF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0"))]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v,v,v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL   1 "<round_nimm_predicate>" "%0,0,v")
+	   (match_operand:VFH_AVX512VL   2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
+	   (neg:VFH_AVX512VL
+	     (match_operand:VFH_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_AVX512F && <sd_mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
