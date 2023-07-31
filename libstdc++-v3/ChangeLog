@@ -1,3 +1,10 @@
+2023-07-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/compatibility-ldbl-facets-aliases.h: Replace #define with
+	proper #error.
+	* src/c++11/locale-inst-monetary.h: Likewise.
+	* src/c++11/locale-inst-numeric.h: Likewise.
+
 2023-07-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/108046
