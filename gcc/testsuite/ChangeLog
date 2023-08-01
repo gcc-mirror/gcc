@@ -1,3 +1,47 @@
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-compat-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: New test.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/89835
+	* gcc.target/riscv/pr89835.c: New test.
+
+2023-07-31  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Backported from master:
+	2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* gcc.target/aarch64/sve/pr110280.c: New test.
+
 2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

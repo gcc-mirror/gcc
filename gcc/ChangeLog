@@ -1,3 +1,73 @@
+2023-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR target/109713
+	* config/riscv/sync.md: Add gcc_unreachable to a switch.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (atomic_load<mode>): Implement atomic
+	load mapping.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (mem_thread_fence_1): Change fence
+	depending on the given memory model.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-protos.h (riscv_union_memmodels): Expose
+	riscv_union_memmodels function to sync.md.
+	* config/riscv/riscv.cc (riscv_union_memmodels): Add function to
+	get the union of two memmodels in sync.md.
+	(riscv_print_operand): Add %I and %J flags that output the
+	optimal LR/SC flag bits for a given memory model.
+	* config/riscv/sync.md: Remove static .aqrl bits on LR op/.rl
+	bits on SC op and replace with optimized %I, %J flags.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc
+	(riscv_memmodel_needs_amo_release): Change function name.
+	(riscv_print_operand): Remove unneeded %F case.
+	* config/riscv/sync.md: Remove unneeded fences.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/89835
+	* config/riscv/sync.md (atomic_store<mode>): Use simple store
+	instruction in combination with fence(s).
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Change behavior
+	of %A to include release bits.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (atomic_cas_value_strong<mode>): Change
+	FENCE/LR.aq/SC.aq into sequentially consistent LR.aqrl/SC.rl
+	pair.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md: Change LR.aq/SC.rl pairs into
+	sequentially consistent LR.aqrl/SC.rl pairs.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc: Remove MEMMODEL_SYNC_* cases and
+	sanitize memmodel input with memmodel_base.
+
+2023-07-31  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Backported from master:
+	2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* match.pd (vec_perm_expr(v, v, mask) -> v): Explicitly build vector
+	using build_vector_from_val with the element of input operand, and
+	mask's type if operand and mask's types don't match.
+
 2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

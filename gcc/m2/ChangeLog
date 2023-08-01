@@ -1,5 +1,20 @@
 2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
+	PR modula2/110284
+	* Make-lang.in: Build $(generated_files) before building
+	all $(GM2_C_OBJS).
+	(m2_OBJS): Assign $(GM2_C_OBJS).  Add m2/gm2-gcc/rtegraph.o and
+	m2/gm2-compiler-boot/m2flex.o.
+	(GM2_C_OBJS): Remove m2/stor-layout.o.
+	(m2/stor-layout.o): Remove rule.
+	* gm2-gcc/gcc-consolidation.h (rtl.h): Remove include.
+	(df.h): Remove include.
+	(except.h): Remove include.
+	(c-family/m2pp.o): Remove.
+	* Make-maintainer.in (c-family/m2pp.o): Add.
+
+2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
 	Backported from master:
 	2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
