@@ -644,9 +644,11 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
   emit_insn (gen_add (reg, reg, gen_int_mode (-low_idx, mode)));
   rtx op0 = reg; rtx op1 = gen_int_mode (num_idx, mode);
   rtx labelref = copy_rtx (xop[4]);
-  emit_jump_insn (gen_cbranch (gen_rtx_fmt_ee (GTU, VOIDmode, op0, op1),
-                               op0, op1,
-                               labelref));
+  rtx xbranch = gen_cbranch (gen_rtx_fmt_ee (GTU, VOIDmode, op0, op1),
+			     op0, op1, labelref);
+  rtx_insn *cbranch = emit_jump_insn (xbranch);
+  JUMP_LABEL (cbranch) = xop[4];
+  ++LABEL_NUSES (xop[4]);
 
   seq1 = get_insns();
   last1 = get_last_insn();
