@@ -37,14 +37,17 @@ typedef struct __ifunc_arg_t {
 
 #ifdef HWCAP_USCAT
 # if N == 16
-#  define IFUNC_COND_1	ifunc1 (hwcap, features)
+#  define IFUNC_COND_1		(has_lse128 (hwcap, features))
+#  define IFUNC_COND_2		(has_lse2 (hwcap, features))
+#  define IFUNC_NCOND(N)	2
 # else
-#  define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
+#  define IFUNC_COND_1		(hwcap & HWCAP_ATOMICS)
+#  define IFUNC_NCOND(N)	1
 # endif
 #else
 #  define IFUNC_COND_1	(false)
+#  define IFUNC_NCOND(N)	1
 #endif
-#define IFUNC_NCOND(N)	(1)
 
 #endif /* HAVE_IFUNC */
 
@@ -59,7 +62,7 @@ typedef struct __ifunc_arg_t {
 #define MIDR_PARTNUM(midr)	(((midr) >> 4) & 0xfff)
 
 static inline bool
-ifunc1 (unsigned long hwcap, const __ifunc_arg_t *features)
+has_lse2 (unsigned long hwcap, const __ifunc_arg_t *features)
 {
   if (hwcap & HWCAP_USCAT)
     return true;
@@ -75,6 +78,37 @@ ifunc1 (unsigned long hwcap, const __ifunc_arg_t *features)
 
   return false;
 }
+
+/* LSE128 atomic support encoded in ID_AA64ISAR0_EL1.Atomic,
+   bits[23:20].  The expected value is 0b0011.  Check that.  */
+
+#define AT_FEAT_FIELD(isar0)	(((isar0) >> 20) & 15)
+
+/* Ensure backwards compatibility with glibc <= 2.38.  */
+#ifndef HWCAP2_LSE128
+#define HWCAP2_LSE128		(1UL << 47)
+#endif
+
+static inline bool
+has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
+{
+  if (hwcap & _IFUNC_ARG_HWCAP
+      && features->_hwcap2 & HWCAP2_LSE128)
+    return true;
+  /* A 0 HWCAP2_LSE128 bit may be just as much a sign of missing HWCAP2 bit
+     support in older kernels as it is of CPU feature absence.  Try fallback
+     method to guarantee LSE128 is not implemented.
+
+     In the absence of HWCAP_CPUID, we are unable to check for LSE128.  */
+  if (!(hwcap & HWCAP_CPUID))
+    return false;
+  unsigned long isar0;
+  asm volatile ("mrs %0, ID_AA64ISAR0_EL1" : "=r" (isar0));
+  if (AT_FEAT_FIELD (isar0) >= 3)
+    return true;
+  return false;
+}
+
 #endif
 
 #include_next <host-config.h>
