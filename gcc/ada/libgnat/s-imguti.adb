@@ -119,6 +119,9 @@ package body System.Img_Util is
          pragma Assert (Digs'First < Digs'Last);
 
       begin
+         pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "early returns for performance");
+
          --  Nothing to do if rounding past the last digit we have
 
          if N >= LD then
@@ -178,6 +181,8 @@ package body System.Img_Util is
                Digits_Before_Point := Digits_Before_Point + 1;
             end if;
          end if;
+
+         pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
       end Round;
 
       ---------
@@ -246,6 +251,9 @@ package body System.Img_Util is
    --  Start of processing for Set_Decimal_Digits
 
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                    "early returns for performance");
+
       --  Case of exponent given
 
       if Exp > 0 then
@@ -398,6 +406,8 @@ package body System.Img_Util is
             end if;
          end if;
       end if;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Set_Decimal_Digits;
 
    --------------------------------
