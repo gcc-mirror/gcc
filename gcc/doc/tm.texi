@@ -5823,6 +5823,11 @@ This hook determines whether a function from a class of functions
 @code{(enum function_class)}@var{fcode} has a fast implementation.
 @end deftypefn
 
+@deftypefn {Target Hook} unsigned TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL (void)
+This hook determines what value _FORTIFY_SOURCE will be set to when using
+the command-line option -fhardened.
+@end deftypefn
+
 @deftypefn {Target Hook} unsigned TARGET_LIBM_FUNCTION_MAX_ERROR (unsigned @var{cfn}, machine_mode @var{mode}, bool @var{boundary_p})
 This hook determines expected maximum errors for math functions measured
 in ulps (units of the last place).  0 means 0.5ulps precision (correctly

@@ -49,3 +49,12 @@ linux_libm_function_max_error (unsigned cfn, machine_mode mode,
     return glibc_linux_libm_function_max_error (cfn, mode, boundary_p);
   return default_libm_function_max_error (cfn, mode, boundary_p);
 }
+
+unsigned
+linux_fortify_source_default_level ()
+{
+  if (OPTION_GLIBC && TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 35)
+    return 3;
+
+  return 2;
+}

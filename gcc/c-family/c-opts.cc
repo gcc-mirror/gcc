@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "target.h"
 #include "c-target.h"
 #include "c-common.h"
 #include "memmodel.h"
@@ -1573,6 +1574,9 @@ c_finish_options (void)
       cb_file_change (parse_in, cmd_map);
       linemap_line_start (line_table, 0, 1);
 
+      bool fortify_seen_p = false;
+      bool cxx_assert_seen_p = false;
+
       /* All command line defines must have the same location.  */
       cpp_force_token_locations (parse_in, line_table->highest_line);
       for (size_t i = 0; i < deferred_count; i++)
@@ -1590,6 +1594,41 @@ c_finish_options (void)
 	      else
 		cpp_assert (parse_in, opt->arg);
 	    }
+
+	  if (UNLIKELY (flag_hardened)
+	      && (opt->code == OPT_D || opt->code == OPT_U))
+	    {
+	      if (!fortify_seen_p)
+		fortify_seen_p
+		  = (!strncmp (opt->arg, "_FORTIFY_SOURCE", 15)
+		     && (opt->arg[15] == '\0' || opt->arg[15] == '='));
+	      if (!cxx_assert_seen_p)
+		cxx_assert_seen_p
+		  = (!strncmp (opt->arg, "_GLIBCXX_ASSERTIONS", 19)
+		     && (opt->arg[19] == '\0' || opt->arg[19] == '='));
+	    }
+	}
+
+      if (flag_hardened)
+	{
+	  if (!fortify_seen_p && optimize > 0)
+	    cpp_define_formatted (parse_in, "_FORTIFY_SOURCE=%u",
+				  targetm.fortify_source_default_level ());
+	  else if (optimize == 0)
+	    warning_at (UNKNOWN_LOCATION, OPT_Whardened,
+			"%<_FORTIFY_SOURCE%> is not enabled by %<-fhardened%> "
+			"because optimizations are turned off");
+	  else
+	    warning_at (UNKNOWN_LOCATION, OPT_Whardened,
+			"%<_FORTIFY_SOURCE%> is not enabled by %<-fhardened%> "
+			"because it was specified in %<-D%> or %<-U%>");
+	  if (!cxx_assert_seen_p)
+	    cpp_define (parse_in, "_GLIBCXX_ASSERTIONS");
+	  else
+	    warning_at (UNKNOWN_LOCATION, OPT_Whardened,
+			"%<_GLIBCXX_ASSERTIONS%> is not enabled by "
+			"%<-fhardened%> because it was specified in %<-D%> "
+			"or %<-U%>");
 	}
 
       cpp_stop_forcing_token_locations (parse_in);

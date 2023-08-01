@@ -366,7 +366,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-y2k  -Wframe-address
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object
 -Wno-if-not-aligned  -Wno-ignored-attributes
--Wignored-qualifiers  -Wno-incompatible-pointer-types
+-Wignored-qualifiers  -Wno-incompatible-pointer-types  -Whardened
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n}
 -Wno-implicit-function-declaration  -Wno-implicit-int
 -Winfinite-recursion
@@ -644,7 +644,7 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
 -fsanitize-undefined-trap-on-error  -fbounds-check
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
--fharden-compares -fharden-conditional-branches
+-fharden-compares -fharden-conditional-branches  -fhardened
 -fharden-control-flow-redundancy  -fhardcfr-skip-leaf
 -fhardcfr-check-exceptions  -fhardcfr-check-returning-calls
 -fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
@@ -6872,6 +6872,18 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 @item -Wimplicit @r{(C and Objective-C only)}
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
+
+@opindex Whardened
+@opindex Wno-hardened
+@item -Whardened
+Warn when @option{-fhardened} did not enable an option from its set (for
+which see @option{-fhardened}).  For instance, using @option{-fhardened}
+and @option{-fstack-protector} at the same time on the command line causes
+@option{-Whardened} to warn because @option{-fstack-protector-strong} is
+not enabled by @option{-fhardened}.
+
+This warning is enabled by default and has effect only when @option{-fhardened}
+is enabled.
 
 @opindex Wimplicit-fallthrough
 @opindex Wno-implicit-fallthrough
@@ -17637,6 +17649,39 @@ frequently amounts to implicitly calling @code{noreturn} functions, have
 made @option{no-xthrow} the default setting for this option: it excludes
 from the @code{noreturn} treatment only internal functions used to
 (re)raise exceptions, that are not affected by these optimizations.
+
+@opindex fhardened
+@item -fhardened
+Enable a set of flags for C and C++ that improve the security of the
+generated code without affecting its ABI.  The precise flags enabled
+may change between major releases of GCC, but are currently:
+
+@c Keep this in sync with print_help_hardened!
+@gccoptlist{
+-D_FORTIFY_SOURCE=3
+-D_GLIBCXX_ASSERTIONS
+-ftrivial-auto-var-init=zero
+-fPIE  -pie  -Wl,-z,relro,-z,now
+-fstack-protector-strong
+-fstack-clash-protection
+-fcf-protection=full @r{(x86 GNU/Linux only)}
+}
+
+The list of options enabled by @option{-fhardened} can be generated using
+the @option{--help=hardened} option.
+
+When the system glibc is older than 2.35, @option{-D_FORTIFY_SOURCE=2}
+is used instead.
+
+This option is intended to be used in production builds, not merely
+in debug builds.
+
+Currently, @option{-fhardened} is only supported on GNU/Linux targets.
+
+@option{-fhardened} only enables a particular option if it wasn't
+already specified anywhere on the command line.  For instance,
+@option{-fhardened} @option{-fstack-protector} will only enable
+@option{-fstack-protector}, but not @option{-fstack-protector-strong}.
 
 @opindex fstack-protector
 @item -fstack-protector

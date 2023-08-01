@@ -1332,6 +1332,12 @@
 #endif
 
 
+/* Define 0/1 if -fhardened is supported */
+#ifndef USED_FOR_TARGET
+#undef HAVE_FHARDENED_SUPPORT
+#endif
+
+
 /* Define to 1 if you have the `fileno_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FILENO_UNLOCKED
@@ -1740,6 +1746,12 @@
 #endif
 
 
+/* Define 0/1 if your linker supports -z now */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_NOW_SUPPORT
+#endif
+
+
 /* Define if your PowerPC64 linker only needs function descriptor syms. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_NO_DOT_SYMS
@@ -1780,6 +1792,12 @@
 /* Define if your linker supports --push-state/--pop-state */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PUSHPOPSTATE_SUPPORT
+#endif
+
+
+/* Define 0/1 if your linker supports -z relro */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_RELRO_SUPPORT
 #endif
 
 

@@ -302,6 +302,13 @@ static size_t dumpdir_length = 0;
    driver added to dumpdir after dumpbase or linker output name.  */
 static bool dumpdir_trailing_dash_added = false;
 
+/* True if -r, -shared, -pie, or -no-pie were specified on the command
+   line.  */
+static bool any_link_options_p;
+
+/* True if -static was specified on the command line.  */
+static bool static_p;
+
 /* Basename of dump and aux outputs, computed from dumpbase (given or
    derived from output name), to override input_basename in non-%w %b
    et al.  */
@@ -4605,10 +4612,20 @@ driver_handle_option (struct gcc_options *opts,
       save_switch ("-o", 1, &arg, validated, true);
       return true;
 
-#ifdef ENABLE_DEFAULT_PIE
     case OPT_pie:
+#ifdef ENABLE_DEFAULT_PIE
       /* -pie is turned on by default.  */
+      validated = true;
 #endif
+    case OPT_r:
+    case OPT_shared:
+    case OPT_no_pie:
+      any_link_options_p = true;
+      break;
+
+    case OPT_static:
+      static_p = true;
+      break;
 
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
@@ -4982,6 +4999,35 @@ process_command (unsigned int decoded_options_count,
 #if OFFLOAD_DEFAULTED
       offload_targets_default = true;
 #endif
+    }
+
+  /* TODO: check if -static -pie works and maybe use it.  */
+  if (flag_hardened)
+    {
+      if (!any_link_options_p && !static_p)
+	{
+#ifdef HAVE_LD_PIE
+	  save_switch (LD_PIE_SPEC, 0, NULL, /*validated=*/true, /*known=*/false);
+#endif
+	  /* These are passed straight down to collect2 so we have to break
+	     it up like this.  */
+	  if (HAVE_LD_NOW_SUPPORT)
+	    {
+	      add_infile ("-z", "*");
+	      add_infile ("now", "*");
+	    }
+	  if (HAVE_LD_RELRO_SUPPORT)
+	    {
+	      add_infile ("-z", "*");
+	      add_infile ("relro", "*");
+	    }
+	}
+      /* We can't use OPT_Whardened yet.  Sigh.  */
+      else if (warn_hardened)
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "linker hardening options not enabled by %<-fhardened%> "
+		    "because other link options were specified on the command "
+		    "line");
     }
 
   /* Handle -gtoggle as it would later in toplev.cc:process_options to

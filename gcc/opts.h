@@ -344,6 +344,7 @@ struct cl_option_handlers
 /* Hold command-line options associated with stack limitation.  */
 extern const char *opt_fstack_limit_symbol_arg;
 extern int opt_fstack_limit_register_no;
+extern bool flag_stack_protector_set_by_fhardened_p;
 
 /* Input file names.  */
 

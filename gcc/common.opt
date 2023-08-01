@@ -634,6 +634,10 @@ Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
 
+Whardened
+Common Var(warn_hardened) Init(1) Warning
+Warn when -fhardened did not enable an option from its set.
+
 Whsa
 Common Ignore Warning
 Does nothing.  Preserved for backward compatibility.
@@ -1822,6 +1826,10 @@ Merge adjacent stores.
 fguess-branch-probability
 Common Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
+
+fhardened
+Common Driver Var(flag_hardened)
+Enable various security-relevant flags.
 
 fharden-compares
 Common Var(flag_harden_compares) Optimization

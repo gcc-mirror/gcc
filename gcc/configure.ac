@@ -7764,7 +7764,7 @@ if test x"$ld_is_gold" = xno; then
       ld_bndplt_support=yes
     fi
   elif test x$gcc_cv_ld != x; then
-    # Check if linker supports -a bndplt option
+    # Check if linker supports -z bndplt option
     if $gcc_cv_ld --help 2>&1 | grep -- '-z bndplt' > /dev/null; then
       ld_bndplt_support=yes
     fi
@@ -7864,6 +7864,61 @@ standards-compatible mode on s390 targets.])
   fi
   ;;
 esac
+
+# Check if the linker supports '-z now'
+ld_now_support=no
+AC_MSG_CHECKING(linker -z now option)
+if test x"$ld_is_gold" = xyes; then
+  ld_now_support=yes
+elif test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 14 -o "$gcc_cv_gld_major_version" -gt 2; then
+    ld_now_support=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  # Check if linker supports -z now
+  if $gcc_cv_ld --help 2>&1 | grep -- '-z now' > /dev/null; then
+    ld_now_support=yes
+  fi
+fi
+AC_DEFINE_UNQUOTED(HAVE_LD_NOW_SUPPORT,
+  [`if test x"$ld_now_support" = xyes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your linker supports -z now])
+AC_MSG_RESULT($ld_now_support)
+
+# Check if the linker supports '-z relro'
+ld_relro_support=no
+AC_MSG_CHECKING(linker -z relro option)
+if test x"$ld_is_gold" = xyes; then
+  ld_relro_support=yes
+elif test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2; then
+    ld_relro_support=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  # Check if linker supports -z relro
+  if $gcc_cv_ld --help 2>&1 | grep -- '-z relro' > /dev/null; then
+    ld_relro_support=yes
+  fi
+fi
+AC_DEFINE_UNQUOTED(HAVE_LD_RELRO_SUPPORT,
+  [`if test x"$ld_relro_support" = xyes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your linker supports -z relro])
+AC_MSG_RESULT($ld_relro_support)
+
+case $target_os in
+linux* | gnu*)
+  # -fhardened is only supported on GNU/Linux.
+  fhardened_support=yes
+  ;;
+*)
+  fhardened_support=no
+  ;;
+esac
+
+AC_DEFINE_UNQUOTED(HAVE_FHARDENED_SUPPORT,
+  [`if test x"$fhardened_support" = xyes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if -fhardened is supported])
+AC_MSG_RESULT($fhardened_support)
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

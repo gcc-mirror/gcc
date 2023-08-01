@@ -34638,7 +34638,7 @@ if test x"$ld_is_gold" = xno; then
       ld_bndplt_support=yes
     fi
   elif test x$gcc_cv_ld != x; then
-    # Check if linker supports -a bndplt option
+    # Check if linker supports -z bndplt option
     if $gcc_cv_ld --help 2>&1 | grep -- '-z bndplt' > /dev/null; then
       ld_bndplt_support=yes
     fi
@@ -34766,6 +34766,72 @@ $as_echo "#define ENABLE_S390_EXCESS_FLOAT_PRECISION 1" >>confdefs.h
   fi
   ;;
 esac
+
+# Check if the linker supports '-z now'
+ld_now_support=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker -z now option" >&5
+$as_echo_n "checking linker -z now option... " >&6; }
+if test x"$ld_is_gold" = xyes; then
+  ld_now_support=yes
+elif test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 14 -o "$gcc_cv_gld_major_version" -gt 2; then
+    ld_now_support=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  # Check if linker supports -z now
+  if $gcc_cv_ld --help 2>&1 | grep -- '-z now' > /dev/null; then
+    ld_now_support=yes
+  fi
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_NOW_SUPPORT `if test x"$ld_now_support" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_now_support" >&5
+$as_echo "$ld_now_support" >&6; }
+
+# Check if the linker supports '-z relro'
+ld_relro_support=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker -z relro option" >&5
+$as_echo_n "checking linker -z relro option... " >&6; }
+if test x"$ld_is_gold" = xyes; then
+  ld_relro_support=yes
+elif test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2; then
+    ld_relro_support=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+  # Check if linker supports -z relro
+  if $gcc_cv_ld --help 2>&1 | grep -- '-z relro' > /dev/null; then
+    ld_relro_support=yes
+  fi
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_RELRO_SUPPORT `if test x"$ld_relro_support" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_relro_support" >&5
+$as_echo "$ld_relro_support" >&6; }
+
+case $target_os in
+linux* | gnu*)
+  # -fhardened is only supported on GNU/Linux.
+  fhardened_support=yes
+  ;;
+*)
+  fhardened_support=no
+  ;;
+esac
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FHARDENED_SUPPORT `if test x"$fhardened_support" = xyes; then echo 1; else echo 0; fi`
+_ACEOF
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $fhardened_support" >&5
+$as_echo "$fhardened_support" >&6; }
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

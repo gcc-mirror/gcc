@@ -42,6 +42,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Set by -fcanon-prefix-map.  */
 bool flag_canon_prefix_map;
 
+/* Set by finish_options when flag_stack_protector was set only because of
+   -fhardened.  Yuck.  */
+bool flag_stack_protector_set_by_fhardened_p;
+
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 /* Names of fundamental debug info formats indexed by enum
@@ -1092,6 +1096,17 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_section_anchors = 0;
     }
 
+  if (opts->x_flag_hardened)
+    {
+      if (!opts_set->x_flag_auto_var_init)
+	opts->x_flag_auto_var_init = AUTO_INIT_ZERO;
+      else if (opts->x_flag_auto_var_init != AUTO_INIT_ZERO)
+	warning_at (loc, OPT_Whardened,
+		    "%<-ftrivial-auto-var-init=zero%> is not enabled by "
+		    "%<-fhardened%> because it was specified on the command "
+		    "line");
+    }
+
   if (!opts->x_flag_opts_finished)
     {
       /* We initialize opts->x_flag_pie to -1 so that targets can set a
@@ -1101,7 +1116,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  /* We initialize opts->x_flag_pic to -1 so that we can tell if
 	     -fpic, -fPIC, -fno-pic or -fno-PIC is used.  */
 	  if (opts->x_flag_pic == -1)
-	    opts->x_flag_pie = DEFAULT_FLAG_PIE;
+	    opts->x_flag_pie = (opts->x_flag_hardened
+				? /*-fPIE*/ 2 : DEFAULT_FLAG_PIE);
 	  else
 	    opts->x_flag_pie = 0;
 	}
@@ -1116,9 +1132,29 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     }
 
   /* We initialize opts->x_flag_stack_protect to -1 so that targets
-     can set a default value.  */
+     can set a default value.  With --enable-default-ssp or -fhardened
+     the default is -fstack-protector-strong.  */
   if (opts->x_flag_stack_protect == -1)
-    opts->x_flag_stack_protect = DEFAULT_FLAG_SSP;
+    {
+      /* This should check FRAME_GROWS_DOWNWARD, but on some targets it's
+	 defined in such a way that it uses flag_stack_protect which can't
+	 be used here.  Moreover, some targets like BPF don't support
+	 -fstack-protector at all but we don't know that here.  So remember
+	 that flag_stack_protect was set at the behest of -fhardened.  */
+      if (opts->x_flag_hardened)
+	{
+	  opts->x_flag_stack_protect = SPCT_FLAG_STRONG;
+	  flag_stack_protector_set_by_fhardened_p = true;
+	}
+      else
+	opts->x_flag_stack_protect = DEFAULT_FLAG_SSP;
+    }
+  else if (opts->x_flag_hardened
+	   && opts->x_flag_stack_protect != SPCT_FLAG_STRONG)
+    warning_at (UNKNOWN_LOCATION, OPT_Whardened,
+		"%<-fstack-protector-strong%> is not enabled by "
+		"%<-fhardened%> because it was specified on the command "
+		"line");
 
   if (opts->x_optimize == 0)
     {
@@ -2460,6 +2496,30 @@ parse_and_check_patch_area (const char *arg, bool report_error,
   free (patch_area_arg);
 }
 
+/* Print options enabled by -fhardened.  Keep this in sync with the manual!  */
+
+static void
+print_help_hardened ()
+{
+  printf ("%s\n", "The following options are enabled by -fhardened:");
+  /* Unfortunately, I can't seem to use targetm.fortify_source_default_level
+     here.  */
+  printf ("  %s\n", "-D_FORTIFY_SOURCE=3 (or =2 for glibc < 2.35)");
+  printf ("  %s\n", "-D_GLIBCXX_ASSERTIONS");
+  printf ("  %s\n", "-ftrivial-auto-var-init=zero");
+#ifdef HAVE_LD_PIE
+  printf ("  %s  %s\n", "-fPIE", "-pie");
+#endif
+  if (HAVE_LD_NOW_SUPPORT)
+    printf ("  %s\n", "-Wl,-z,now");
+  if (HAVE_LD_RELRO_SUPPORT)
+    printf ("  %s\n", "-Wl,-z,relro");
+  printf ("  %s\n", "-fstack-protector-strong");
+  printf ("  %s\n", "-fstack-clash-protection");
+  printf ("  %s\n", "-fcf-protection=full");
+  putchar ('\n');
+}
+
 /* Print help when OPT__help_ is set.  */
 
 void
@@ -2575,6 +2635,8 @@ print_help (struct gcc_options *opts, unsigned int lang_mask,
 	}
       else if (lang_flag != 0)
 	*pflags |= lang_flag;
+      else if (strncasecmp (a, "hardened", len) == 0)
+	print_help_hardened ();
       else
 	warning (0,
 		 "unrecognized argument to %<--help=%> option: %q.*s",
