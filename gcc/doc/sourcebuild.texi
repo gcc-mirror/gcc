@@ -2186,12 +2186,12 @@ the Custom Datapath Extension (CDE) and floating-point (VFP).
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1m_main_cde_mve
-Arm target supports options to generate instructions from Arm.1-M with
+Arm target supports options to generate instructions from Armv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1m_main_cde_mve_fp
-ARM target supports options to generate instructions from ARMv8.1-M
+Arm target supports options to generate instructions from Armv8.1-M
 with the Custom Datapath Extension (CDE) and M-Profile Vector
 Extension (MVE) with floating-point support.  Some multilibs may be
 incompatible with these options.
