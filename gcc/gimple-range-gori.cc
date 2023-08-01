@@ -627,7 +627,10 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   // likely to be more applicable.
   if (op1 && op2)
     {
-      relation_kind k = handler.op1_op2_relation (lhs);
+      Value_Range r1, r2;
+      r1.set_varying (TREE_TYPE (op1));
+      r2.set_varying (TREE_TYPE (op2));
+      relation_kind k = handler.op1_op2_relation (lhs, r1, r2);
       if (k != VREL_VARYING)
 	{
 	  vrel.set_relation (k, op1, op2);

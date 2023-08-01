@@ -350,16 +350,27 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 // Dispatch a call to op1_op2_relation based on the type of LHS.
 
 relation_kind
-range_op_handler::op1_op2_relation (const vrange &lhs) const
+range_op_handler::op1_op2_relation (const vrange &lhs,
+				    const vrange &op1,
+				    const vrange &op2) const
 {
   gcc_checking_assert (m_operator);
-  switch (dispatch_kind (lhs, lhs, lhs))
+  switch (dispatch_kind (lhs, op1, op2))
     {
       case RO_III:
-	return m_operator->op1_op2_relation (as_a <irange> (lhs));
+	return m_operator->op1_op2_relation (as_a <irange> (lhs),
+					     as_a <irange> (op1),
+					     as_a <irange> (op2));
+
+      case RO_IFF:
+	return m_operator->op1_op2_relation (as_a <irange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2));
 
       case RO_FFF:
-	return m_operator->op1_op2_relation (as_a <frange> (lhs));
+	return m_operator->op1_op2_relation (as_a <frange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2));
 
       default:
 	return VREL_VARYING;
@@ -676,7 +687,9 @@ range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) const
+range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				  const irange &op1 ATTRIBUTE_UNUSED,
+				  const irange &op2 ATTRIBUTE_UNUSED) const
 {
   return VREL_VARYING;
 }
@@ -868,7 +881,8 @@ operator_equal::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_equal::op1_op2_relation (const irange &lhs) const
+operator_equal::op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -969,7 +983,8 @@ operator_not_equal::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_not_equal::op1_op2_relation (const irange &lhs) const
+operator_not_equal::op1_op2_relation (const irange &lhs, const irange &,
+				      const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1129,7 +1144,8 @@ operator_lt::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_lt::op1_op2_relation (const irange &lhs) const
+operator_lt::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1229,7 +1245,8 @@ operator_le::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_le::op1_op2_relation (const irange &lhs) const
+operator_le::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1326,7 +1343,8 @@ operator_gt::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_gt::op1_op2_relation (const irange &lhs) const
+operator_gt::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1421,7 +1439,8 @@ operator_ge::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_ge::op1_op2_relation (const irange &lhs) const
+operator_ge::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;

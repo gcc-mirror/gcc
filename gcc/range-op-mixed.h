@@ -132,7 +132,10 @@ public:
 		  const irange &lhs, const frange &op1,
 		  relation_trio rel = TRIO_VARYING) const final override;
 
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
@@ -162,7 +165,10 @@ public:
 		  const irange &lhs, const irange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
 
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
@@ -192,7 +198,10 @@ public:
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
@@ -225,7 +234,10 @@ public:
 		  const irange &lhs, const frange &op1,
 		  relation_trio rel = TRIO_VARYING) const final override;
 
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
@@ -257,7 +269,10 @@ public:
   bool op2_range (frange &r, tree type,
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
@@ -290,7 +305,10 @@ public:
 		  const irange &lhs, const frange &op1,
 		  relation_trio = TRIO_VARYING) const final override;
 
-  relation_kind op1_op2_relation (const irange &lhs) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const frange &,
+				  const frange &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 };
