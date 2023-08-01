@@ -175,7 +175,7 @@ Early::visit (AST::UseTreeGlob &use)
 {}
 
 void
-Early::visit_attributes (std::vector<AST::Attribute> attrs)
+Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 {
   for (auto &attr : attrs)
     {
