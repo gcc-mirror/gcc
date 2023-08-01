@@ -608,7 +608,7 @@ Gcc_backend::function_ptr_type (tree result_type,
 tree
 Gcc_backend::struct_type (const std::vector<typed_identifier> &fields)
 {
-  return this->fill_in_fields (make_node (RECORD_TYPE), fields);
+  return fill_in_fields (make_node (RECORD_TYPE), fields);
 }
 
 // Make a union type.
@@ -616,7 +616,7 @@ Gcc_backend::struct_type (const std::vector<typed_identifier> &fields)
 tree
 Gcc_backend::union_type (const std::vector<typed_identifier> &fields)
 {
-  return this->fill_in_fields (make_node (UNION_TYPE), fields);
+  return fill_in_fields (make_node (UNION_TYPE), fields);
 }
 
 // Fill in the fields of a struct or union type.
@@ -656,7 +656,7 @@ Gcc_backend::fill_in_fields (tree fill,
 tree
 Gcc_backend::array_type (tree element_type, tree length)
 {
-  return this->fill_in_array (make_node (ARRAY_TYPE), element_type, length);
+  return fill_in_array (make_node (ARRAY_TYPE), element_type, length);
 }
 
 // Fill in an array type.
@@ -873,7 +873,7 @@ Gcc_backend::string_constant_expression (const std::string &val)
 tree
 Gcc_backend::wchar_constant_expression (wchar_t c)
 {
-  return build_int_cst (this->wchar_type (), c);
+  return build_int_cst (wchar_type (), c);
 }
 
 tree
@@ -946,8 +946,7 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
     return error_mark_node;
 
   tree ret;
-  if (this->type_size (type_tree) == 0
-      || TREE_TYPE (expr_tree) == void_type_node)
+  if (type_size (type_tree) == 0 || TREE_TYPE (expr_tree) == void_type_node)
     {
       // Do not convert zero-sized types.
       ret = expr_tree;
@@ -1390,8 +1389,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
       constructor_elt empty = {NULL, NULL};
       constructor_elt *elt = init->quick_push (empty);
       elt->index = field;
-      elt->value
-	= this->convert_tree (TREE_TYPE (field), nested_ctor, location);
+      elt->value = convert_tree (TREE_TYPE (field), nested_ctor, location);
       if (!TREE_CONSTANT (elt->value))
 	is_constant = false;
     }
@@ -1424,8 +1422,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 	      constructor_elt empty = {NULL, NULL};
 	      constructor_elt *elt = init->quick_push (empty);
 	      elt->index = field;
-	      elt->value
-		= this->convert_tree (TREE_TYPE (field), val, location);
+	      elt->value = convert_tree (TREE_TYPE (field), val, location);
 	      if (!TREE_CONSTANT (elt->value))
 		is_constant = false;
 	    }
@@ -1456,8 +1453,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 	      constructor_elt empty = {NULL, NULL};
 	      constructor_elt *elt = init->quick_push (empty);
 	      elt->index = field;
-	      elt->value
-		= this->convert_tree (TREE_TYPE (field), val, location);
+	      elt->value = convert_tree (TREE_TYPE (field), val, location);
 	      if (!TREE_CONSTANT (elt->value))
 		is_constant = false;
 	    }
@@ -1536,24 +1532,24 @@ Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
 
   // Temporary array we initialize with the desired value.
   tree t = NULL_TREE;
-  Bvariable *tmp_array = this->temporary_variable (fndecl, block, array_type,
-						   NULL_TREE, true, locus, &t);
+  Bvariable *tmp_array = temporary_variable (fndecl, block, array_type,
+					     NULL_TREE, true, locus, &t);
   tree arr = tmp_array->get_tree (locus);
   stmts.push_back (t);
 
   // Temporary for the array length used for initialization loop guard.
-  Bvariable *tmp_len = this->temporary_variable (fndecl, block, size_type_node,
-						 length, true, locus, &t);
+  Bvariable *tmp_len = temporary_variable (fndecl, block, size_type_node,
+					   length, true, locus, &t);
   tree len = tmp_len->get_tree (locus);
   stmts.push_back (t);
 
   // Temporary variable for pointer used to initialize elements.
-  tree ptr_type = this->pointer_type (TREE_TYPE (array_type));
+  tree ptr_type = pointer_type (TREE_TYPE (array_type));
   tree ptr_init
     = build1_loc (locus, ADDR_EXPR, ptr_type,
-		  this->array_index_expression (arr, integer_zero_node, locus));
-  Bvariable *tmp_ptr = this->temporary_variable (fndecl, block, ptr_type,
-						 ptr_init, false, locus, &t);
+		  array_index_expression (arr, integer_zero_node, locus));
+  Bvariable *tmp_ptr
+    = temporary_variable (fndecl, block, ptr_type, ptr_init, false, locus, &t);
   tree ptr = tmp_ptr->get_tree (locus);
   stmts.push_back (t);
 
@@ -1562,16 +1558,15 @@ Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
 
   // Loop exit condition:
   //   if (length == 0) break;
-  t = this->comparison_expression (ComparisonOperator::EQUAL, len,
-				   this->zero_expression (TREE_TYPE (len)),
-				   locus);
+  t = comparison_expression (ComparisonOperator::EQUAL, len,
+			     zero_expression (TREE_TYPE (len)), locus);
 
-  t = this->exit_expression (t, locus);
+  t = exit_expression (t, locus);
   loop_stmts.push_back (t);
 
   // Assign value to the current pointer position
   //   *ptr = value;
-  t = this->assignment_statement (build_fold_indirect_ref (ptr), value, locus);
+  t = assignment_statement (build_fold_indirect_ref (ptr), value, locus);
   loop_stmts.push_back (t);
 
   // Move pointer to next element
@@ -1587,13 +1582,13 @@ Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
   loop_stmts.push_back (t);
 
   // pop statments and finish loop
-  tree loop_body = this->statement_list (loop_stmts);
-  stmts.push_back (this->loop_expression (loop_body, locus));
+  tree loop_body = statement_list (loop_stmts);
+  stmts.push_back (loop_expression (loop_body, locus));
 
   // Return the temporary in the provided pointer and the statement list which
   // initializes it.
   *tmp = tmp_array->get_tree (locus);
-  return this->statement_list (stmts);
+  return statement_list (stmts);
 }
 
 // Return an expression representing ARRAY[INDEX]
@@ -1749,9 +1744,9 @@ Gcc_backend::assignment_statement (tree lhs, tree rhs, location_t location)
       || int_size_in_bytes (TREE_TYPE (lhs)) == 0
       || TREE_TYPE (rhs) == void_type_node
       || int_size_in_bytes (TREE_TYPE (rhs)) == 0)
-    return this->compound_statement (lhs, rhs);
+    return compound_statement (lhs, rhs);
 
-  rhs = this->convert_tree (TREE_TYPE (lhs), rhs, location);
+  rhs = convert_tree (TREE_TYPE (lhs), rhs, location);
 
   return fold_build2_loc (location, MODIFY_EXPR, void_type_node, lhs, rhs);
 }
@@ -2059,7 +2054,7 @@ Gcc_backend::global_variable (const std::string &var_name,
   // The GNU linker does not like dynamic variables with zero size.
   tree orig_type_tree = type_tree;
   if ((is_external || !is_hidden) && int_size_in_bytes (type_tree) == 0)
-    type_tree = this->non_zero_size_type (type_tree);
+    type_tree = non_zero_size_type (type_tree);
 
   tree decl = build_decl (location, VAR_DECL,
 			  get_identifier_from_string (var_name), type_tree);
@@ -2228,9 +2223,9 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
       BIND_EXPR_VARS (bind_tree) = BLOCK_VARS (block_tree);
     }
 
-  if (this->type_size (type_tree) != 0 && init_tree != NULL_TREE
+  if (type_size (type_tree) != 0 && init_tree != NULL_TREE
       && TREE_TYPE (init_tree) != void_type_node)
-    DECL_INITIAL (var) = this->convert_tree (type_tree, init_tree, location);
+    DECL_INITIAL (var) = convert_tree (type_tree, init_tree, location);
 
   if (is_address_taken)
     TREE_ADDRESSABLE (var) = 1;
@@ -2240,9 +2235,9 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
   // For a zero sized type, don't initialize VAR with BINIT, but still
   // evaluate BINIT for its side effects.
   if (init_tree != NULL_TREE
-      && (this->type_size (type_tree) == 0
+      && (type_size (type_tree) == 0
 	  || TREE_TYPE (init_tree) == void_type_node))
-    *pstatement = this->compound_statement (init_tree, *pstatement);
+    *pstatement = compound_statement (init_tree, *pstatement);
 
   return new Bvariable (var);
 }
@@ -2364,11 +2359,11 @@ Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
     push_cfun (DECL_STRUCT_FUNCTION (function));
 
   tree stmt_list = NULL;
-  tree label = this->label (function, "", location);
-  tree label_def = this->label_definition_statement (label);
+  tree label = Gcc_backend::label (function, "", location);
+  tree label_def = label_definition_statement (label);
   append_to_statement_list (label_def, &stmt_list);
 
-  tree jump_stmt = this->goto_statement (label, location);
+  tree jump_stmt = goto_statement (label, location);
   tree catch_body
     = build2 (COMPOUND_EXPR, void_type_node, defer_tree, jump_stmt);
   catch_body = build2 (CATCH_EXPR, void_type_node, NULL, catch_body);
