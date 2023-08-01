@@ -1950,71 +1950,6 @@ public:
   }
 };
 
-class BangProcMacro
-{
-private:
-  std::string name;
-  NodeId node_id;
-  ProcMacro::BangMacro macro;
-
-public:
-  BangProcMacro (ProcMacro::Bang macro)
-    : name (macro.name),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      macro (macro.macro)
-  {}
-
-  const std::string &get_name () const { return name; }
-
-  NodeId get_node_id () const { return node_id; }
-
-  ProcMacro::BangMacro get_handle () const { return macro; }
-};
-
-class AttributeProcMacro
-{
-private:
-  std::string name;
-  NodeId node_id;
-  ProcMacro::AttributeMacro macro;
-
-public:
-  AttributeProcMacro (ProcMacro::Attribute macro)
-    : name (macro.name),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      macro (macro.macro)
-  {}
-
-  const std::string &get_name () const { return name; }
-
-  NodeId get_node_id () const { return node_id; }
-
-  ProcMacro::AttributeMacro get_handle () const { return macro; }
-};
-
-class CustomDeriveProcMacro
-{
-private:
-  std::string trait_name;
-  std::vector<std::string> attributes;
-  NodeId node_id;
-  ProcMacro::CustomDeriveMacro macro;
-
-public:
-  CustomDeriveProcMacro (ProcMacro::CustomDerive macro)
-    : trait_name (macro.trait_name),
-      attributes (macro.attributes, macro.attributes + macro.attr_size),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
-      macro (macro.macro)
-  {}
-
-  const std::string &get_trait_name () const { return trait_name; }
-
-  NodeId get_node_id () const { return node_id; }
-
-  ProcMacro::CustomDeriveMacro get_handle () const { return macro; }
-};
-
 // A crate AST object - holds all the data for a single compilation unit
 struct Crate
 {
@@ -2025,10 +1960,6 @@ struct Crate
   std::vector<std::unique_ptr<Item>> items;
 
   NodeId node_id;
-
-  std::vector<AttributeProcMacro> attribute_macros;
-  std::vector<CustomDeriveProcMacro> derive_macros;
-  std::vector<BangProcMacro> bang_macros;
 
 public:
   // Constructor
@@ -2083,21 +2014,6 @@ public:
   NodeId get_node_id () const { return node_id; }
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
 
-  const std::vector<AttributeProcMacro> &get_attribute_macros () const
-  {
-    return attribute_macros;
-  }
-
-  const std::vector<CustomDeriveProcMacro> &get_derive_macros () const
-  {
-    return derive_macros;
-  }
-
-  const std::vector<BangProcMacro> &get_bang_macros () const
-  {
-    return bang_macros;
-  }
-
   std::vector<std::unique_ptr<AST::Item>> take_items ()
   {
     return std::move (items);
@@ -2106,16 +2022,6 @@ public:
   void set_items (std::vector<std::unique_ptr<AST::Item>> &&new_items)
   {
     items = std::move (new_items);
-  }
-
-  void add_bang_macro (ProcMacro::Bang macro) { bang_macros.push_back (macro); }
-  void add_attribute_macro (ProcMacro::Attribute macro)
-  {
-    attribute_macros.push_back (macro);
-  }
-  void add_derive_macro (ProcMacro::CustomDerive macro)
-  {
-    derive_macros.push_back (macro);
   }
 };
 
