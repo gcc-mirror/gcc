@@ -8159,8 +8159,8 @@ fold_ctor_reference (tree type, tree ctor, const poly_uint64 &poly_offset,
      result.  */
   if (!AGGREGATE_TYPE_P (TREE_TYPE (ctor)) && !offset
       /* VIEW_CONVERT_EXPR is defined only for matching sizes.  */
-      && !compare_tree_int (TYPE_SIZE (type), size)
-      && !compare_tree_int (TYPE_SIZE (TREE_TYPE (ctor)), size))
+      && known_eq (wi::to_poly_widest (TYPE_SIZE (type)), size)
+      && known_eq (wi::to_poly_widest (TYPE_SIZE (TREE_TYPE (ctor))), size))
     {
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
       if (ret)
