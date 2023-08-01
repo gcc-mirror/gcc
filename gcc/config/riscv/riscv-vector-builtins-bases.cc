@@ -298,6 +298,23 @@ public:
   }
 };
 
+/* Implements below instructions for frm
+   - vfrsub
+*/
+template<rtx_code CODE>
+class reverse_binop_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_reverse_scalar (CODE, e.vector_mode ()));
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2042,7 +2059,9 @@ static CONSTEXPR const vid vid_obj;
 static CONSTEXPR const binop<PLUS> vfadd_obj;
 static CONSTEXPR const binop<MINUS> vfsub_obj;
 static CONSTEXPR const binop_frm<PLUS> vfadd_frm_obj;
+static CONSTEXPR const binop_frm<MINUS> vfsub_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
+static CONSTEXPR const reverse_binop_frm<MINUS> vfrsub_frm_obj;
 static CONSTEXPR const widen_binop<PLUS> vfwadd_obj;
 static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
 static CONSTEXPR const binop<MULT> vfmul_obj;
@@ -2269,7 +2288,9 @@ BASE (vid)
 BASE (vfadd)
 BASE (vfadd_frm)
 BASE (vfsub)
+BASE (vfsub_frm)
 BASE (vfrsub)
+BASE (vfrsub_frm)
 BASE (vfwadd)
 BASE (vfwsub)
 BASE (vfmul)

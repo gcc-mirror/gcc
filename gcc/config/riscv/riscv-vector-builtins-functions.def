@@ -291,6 +291,9 @@ DEF_RVV_FUNCTION (vfsub, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrsub, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfadd_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfsub_frm, alu_frm, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfrsub_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.3. Vector Widening Floating-Point Add/Subtract Instructions
 DEF_RVV_FUNCTION (vfwadd, widen_alu, full_preds, f_wvv_ops)
