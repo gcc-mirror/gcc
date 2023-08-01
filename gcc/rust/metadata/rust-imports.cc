@@ -174,9 +174,10 @@ Import::try_package_in_directory (const std::string &filename,
 
   close (fd);
 
-  rust_error_at (location,
-		 "%s exists but does not contain any Rust export data",
-		 found_filename.c_str ());
+  if (macros.empty ())
+    rust_error_at (location,
+		   "%s exists but does not contain any Rust export data",
+		   found_filename.c_str ());
 
   return std::make_pair (NULL, macros);
 }
