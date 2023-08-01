@@ -3121,8 +3121,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   tree niters_prolog;
   int bound_prolog = 0;
   if (prolog_peeling)
-    niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
-						  &bound_prolog);
+    {
+      niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
+						    &bound_prolog);
+      /* If algonment peeling is known, we will always execute prolog.  */
+      if (TREE_CODE (niters_prolog) == INTEGER_CST)
+	prob_prolog = profile_probability::always ();
+    }
   else
     niters_prolog = build_int_cst (type, 0);
 

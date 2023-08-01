@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* Assuming we can vectorize char multiplication, here's an execute test.  */
 
 #include <stdarg.h>
@@ -30,3 +31,4 @@ int main()
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

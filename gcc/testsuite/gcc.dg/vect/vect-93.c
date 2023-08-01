@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_float } */
-/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0 -fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -87,3 +87,4 @@ int main (void)
 /* in main: */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

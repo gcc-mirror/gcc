@@ -1,6 +1,7 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -128,3 +129,4 @@ int main (void)
    bitwise or.  */
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail { ! vect_condition } } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { xfail { ! vect_align_stack_vars } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -40,3 +41,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! vect_perm } xfail { aarch64_sve && vect_variable_length } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_perm } } } */
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

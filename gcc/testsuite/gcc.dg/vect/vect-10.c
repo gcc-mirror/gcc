@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_int } */
 
 #define N 16
@@ -23,3 +24,4 @@ int foo ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { ! vect_strided2 } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

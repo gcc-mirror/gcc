@@ -2,6 +2,7 @@
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_shift } */
 /* { dg-require-effective-target vect_floatint_cvt } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 static inline float
 i2f(int x)
@@ -34,3 +35,4 @@ tV()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */
