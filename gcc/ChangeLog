@@ -1,3 +1,230 @@
+2023-08-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/93044
+	* match.pd (nested int casts): A truncation (to the same size or smaller)
+	can always remove the inner cast.
+
+2023-07-31  Hamza Mahfooz  <someguy@effective-light.com>
+
+	PR c/65213
+	* doc/invoke.texi (-Wmissing-variable-declarations): Document
+	new option.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* match.pd (`a != b & a <= b`, `a != b & a >= b`,
+	`a == b | a < b`, `a == b | a > b`): Handle these cases
+	too.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* match.pd: Extend the `(X CMP1 CST1) AND/IOR (X CMP2 CST2)`
+	patterns to support `(X CMP1 Y) AND/IOR (X CMP2 Y)`.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/100864
+	* generic-match-head.cc (bitwise_inverted_equal_p): New function.
+	* gimple-match-head.cc (bitwise_inverted_equal_p): New macro.
+	(gimple_bitwise_inverted_equal_p): New function.
+	* match.pd ((~x | y) & x): Use bitwise_inverted_equal_p
+	instead of direct matching bit_not.
+
+2023-07-31  Costas Argyris  <costas.argyris@gmail.com>
+
+	PR driver/77576
+	* gcc-ar.cc (main): Expand argv and use
+	temporary response file to call ar if any
+	expansions were made.
+
+2023-07-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/110582
+	* gimple-range-fold.cc (fur_list::get_operand): Do not use the
+	range vector for non-ssa names.
+
+2023-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109361
+	* diagnostic-client-data-hooks.h (class sarif_object): New forward
+	decl.
+	(diagnostic_client_data_hooks::add_sarif_invocation_properties):
+	New vfunc.
+	* diagnostic-format-sarif.cc: Include "diagnostic-format-sarif.h".
+	(class sarif_invocation): Inherit from sarif_object rather than
+	json::object.
+	(class sarif_result): Likewise.
+	(class sarif_ice_notification): Likewise.
+	(sarif_object::get_or_create_properties): New.
+	(sarif_invocation::prepare_to_flush): Add "context" param.  Use it
+	to call the context's add_sarif_invocation_properties hook.
+	(sarif_builder::flush_to_file): Pass m_context to
+	sarif_invocation::prepare_to_flush.
+	* diagnostic-format-sarif.h: New header.
+	* doc/invoke.texi (Developer Options): Clarify that -ftime-report
+	writes to stderr.  Document that if SARIF diagnostic output is
+	requested then any timing information is written in JSON form as
+	part of the SARIF output, rather than to stderr.
+	* timevar.cc: Include "json.h".
+	(timer::named_items::m_hash_map): Split out type into...
+	(timer::named_items::hash_map_t): ...this new typedef.
+	(timer::named_items::make_json): New function.
+	(timevar_diff): New function.
+	(make_json_for_timevar_time_def): New function.
+	(timer::timevar_def::make_json): New function.
+	(timer::make_json): New function.
+	* timevar.h (class json::value): New forward decl.
+	(timer::make_json): New decl.
+	(timer::timevar_def::make_json): New decl.
+	* tree-diagnostic-client-data-hooks.cc: Include
+	"diagnostic-format-sarif.h" and "timevar.h".
+	(compiler_data_hooks::add_sarif_invocation_properties): New vfunc
+	implementation.
+
+2023-07-31  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* combine.cc (simplify_compare_const): Narrow comparison of
+	memory and constant.
+	(try_combine): Adapt new function signature.
+	(simplify_comparison): Adapt new function signature.
+
+2023-07-31  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-v.cc (expand_vec_series): Drop unused
+	variable.
+	(expand_vector_init_insert_elems): Ditto.
+
+2023-07-31  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR target/110625
+	* config/aarch64/aarch64.cc (count_ops): Only '* count' for
+	single_defuse_cycle while counting reduction_latency.
+
+2023-07-31  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.def (DEF_INTERNAL_COND_FN): New macro.
+	(DEF_INTERNAL_SIGNED_COND_FN): Ditto.
+	(COND_ADD): Remove.
+	(COND_SUB): Ditto.
+	(COND_MUL): Ditto.
+	(COND_DIV): Ditto.
+	(COND_MOD): Ditto.
+	(COND_RDIV): Ditto.
+	(COND_MIN): Ditto.
+	(COND_MAX): Ditto.
+	(COND_FMIN): Ditto.
+	(COND_FMAX): Ditto.
+	(COND_AND): Ditto.
+	(COND_IOR): Ditto.
+	(COND_XOR): Ditto.
+	(COND_SHL): Ditto.
+	(COND_SHR): Ditto.
+	(COND_FMA): Ditto.
+	(COND_FMS): Ditto.
+	(COND_FNMA): Ditto.
+	(COND_FNMS): Ditto.
+	(COND_NEG): Ditto.
+	(COND_LEN_ADD): Ditto.
+	(COND_LEN_SUB): Ditto.
+	(COND_LEN_MUL): Ditto.
+	(COND_LEN_DIV): Ditto.
+	(COND_LEN_MOD): Ditto.
+	(COND_LEN_RDIV): Ditto.
+	(COND_LEN_MIN): Ditto.
+	(COND_LEN_MAX): Ditto.
+	(COND_LEN_FMIN): Ditto.
+	(COND_LEN_FMAX): Ditto.
+	(COND_LEN_AND): Ditto.
+	(COND_LEN_IOR): Ditto.
+	(COND_LEN_XOR): Ditto.
+	(COND_LEN_SHL): Ditto.
+	(COND_LEN_SHR): Ditto.
+	(COND_LEN_FMA): Ditto.
+	(COND_LEN_FMS): Ditto.
+	(COND_LEN_FNMA): Ditto.
+	(COND_LEN_FNMS): Ditto.
+	(COND_LEN_NEG): Ditto.
+	(ADD): New macro define.
+	(SUB): Ditto.
+	(MUL): Ditto.
+	(DIV): Ditto.
+	(MOD): Ditto.
+	(RDIV): Ditto.
+	(MIN): Ditto.
+	(MAX): Ditto.
+	(FMIN): Ditto.
+	(FMAX): Ditto.
+	(AND): Ditto.
+	(IOR): Ditto.
+	(XOR): Ditto.
+	(SHL): Ditto.
+	(SHR): Ditto.
+	(FMA): Ditto.
+	(FMS): Ditto.
+	(FNMA): Ditto.
+	(FNMS): Ditto.
+	(NEG): Ditto.
+
+2023-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110843
+	* config/i386/i386-features.cc (compute_convert_gain): Check
+	TARGET_AVX512VL (not TARGET_AVX512F) when considering V2DImode
+	and V4SImode rotates in STV.
+	(general_scalar_chain::convert_rotate): Likewise.
+
+2023-07-31  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/autovec.md (abs<mode>2): Remove `.require ()`.
+	* config/riscv/riscv-protos.h (get_mask_mode): Update return
+	type.
+	* config/riscv/riscv-v.cc (rvv_builder::rvv_builder): Remove
+	`.require ()`.
+	(emit_vlmax_insn): Ditto.
+	(emit_vlmax_fp_insn): Ditto.
+	(emit_vlmax_ternary_insn): Ditto.
+	(emit_vlmax_fp_ternary_insn): Ditto.
+	(emit_nonvlmax_fp_ternary_tu_insn): Ditto.
+	(emit_nonvlmax_insn): Ditto.
+	(emit_vlmax_slide_insn): Ditto.
+	(emit_nonvlmax_slide_tu_insn): Ditto.
+	(emit_vlmax_merge_insn): Ditto.
+	(emit_vlmax_masked_insn): Ditto.
+	(emit_nonvlmax_masked_insn): Ditto.
+	(emit_vlmax_masked_store_insn): Ditto.
+	(emit_nonvlmax_masked_store_insn): Ditto.
+	(emit_vlmax_masked_mu_insn): Ditto.
+	(emit_nonvlmax_tu_insn): Ditto.
+	(emit_nonvlmax_fp_tu_insn): Ditto.
+	(emit_scalar_move_insn): Ditto.
+	(emit_vlmax_compress_insn): Ditto.
+	(emit_vlmax_reduction_insn): Ditto.
+	(emit_vlmax_fp_reduction_insn): Ditto.
+	(emit_nonvlmax_fp_reduction_insn): Ditto.
+	(expand_vec_series): Ditto.
+	(expand_vector_init_merge_repeating_sequence): Ditto.
+	(expand_vec_perm): Ditto.
+	(shuffle_merge_patterns): Ditto.
+	(shuffle_compress_patterns): Ditto.
+	(shuffle_decompress_patterns): Ditto.
+	(expand_reduction): Ditto.
+	(get_mask_mode): Update return type.
+	* config/riscv/riscv.cc (riscv_get_mask_mode): Check vector type
+	is valid, and use new get_mask_mode interface.
+
+2023-07-31  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_frm_def):
+	Move rm suffix before mask.
+
+2023-07-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (@vec_duplicate<mode>): New pattern.
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Add VLS autovec
+	support.
+
 2023-07-29  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/110790

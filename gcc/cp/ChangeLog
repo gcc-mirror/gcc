@@ -1,3 +1,8 @@
+2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_host_data): Add checking requiring OpenACC
+	host_data construct to have an use_device clause.
+
 2023-07-28  Ng YongXiang  <yongxiangng@gmail.com>
 
 	PR c++/110057

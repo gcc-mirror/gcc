@@ -1,3 +1,8 @@
+2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.cc (resolve_omp_clauses): Add checking requiring
+	OpenACC host_data construct to have an use_device clause.
+
 2023-07-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110825

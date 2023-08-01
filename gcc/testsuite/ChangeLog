@@ -1,3 +1,85 @@
+2023-08-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/93044
+	* gcc.dg/tree-ssa/cast-1.c: New test.
+	* gcc.dg/tree-ssa/cast-2.c: New test.
+
+2023-07-31  Hamza Mahfooz  <someguy@effective-light.com>
+
+	PR c/65213
+	* gcc.dg/Wmissing-variable-declarations.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* gcc.dg/tree-ssa/cmpbit-2.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* gcc.dg/tree-ssa/cmpbit-1.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/100864
+	* gcc.dg/tree-ssa/bitops-3.c: New test.
+
+2023-07-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr110582.c: New.
+
+2023-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109361
+	* c-c++-common/diagnostic-format-sarif-file-timevars-1.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-timevars-2.c: New test.
+
+2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/host_data-2.c: Adjust testcase.
+	* gfortran.dg/goacc/host_data-error.f90: New testcase.
+	* gfortran.dg/goacc/pr71704.f90: Adjust testcase.
+
+2023-07-31  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/cmp-mem-const-1.c: New test.
+	* gcc.dg/cmp-mem-const-2.c: New test.
+	* gcc.dg/cmp-mem-const-3.c: New test.
+	* gcc.dg/cmp-mem-const-4.c: New test.
+	* gcc.dg/cmp-mem-const-5.c: New test.
+	* gcc.dg/cmp-mem-const-6.c: New test.
+	* gcc.target/s390/cmp-mem-const-1.c: New test.
+
+2023-07-31  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* gcc.target/aarch64/pr110625_1.c: New testcase.
+	* gcc.target/aarch64/pr110625_2.c: New testcase.
+
+2023-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110843
+	* gcc.target/i386/pr110843.c: New test case.
+
+2023-07-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/base/float-point-frm.c: Ditto.
+
+2023-07-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/v-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/dup-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-7.c: New test.
+
 2023-07-29  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/110790
