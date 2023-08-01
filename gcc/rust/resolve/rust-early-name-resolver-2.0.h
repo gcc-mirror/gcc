@@ -58,7 +58,7 @@ public:
   void visit (AST::StructStruct &) override;
 
 private:
-  void visit_attributes (std::vector<AST::Attribute> attrs);
+  void visit_attributes (std::vector<AST::Attribute> &attrs);
 
   /**
    * Macros can either be resolved through textual scoping or regular path
