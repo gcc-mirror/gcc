@@ -56,7 +56,18 @@ TopLevel::go (AST::Crate &crate)
   for (auto &item : crate.items)
     item->accept_vis (*this);
 
-  for (auto &derive : crate.get_derive_macros ())
+  std::vector<CustomDeriveProcMacro> derive_macros;
+  std::vector<AttributeProcMacro> attribute_macros;
+  std::vector<BangProcMacro> bang_macros;
+
+  Analysis::Mappings::get ()->lookup_attribute_proc_macros (
+    crate.get_node_id (), attribute_macros);
+  Analysis::Mappings::get ()->lookup_bang_proc_macros (crate.get_node_id (),
+						       bang_macros);
+  Analysis::Mappings::get ()->lookup_derive_proc_macros (crate.get_node_id (),
+							 derive_macros);
+
+  for (auto &derive : derive_macros)
     {
       auto res = ctx.macros.insert_at_root (derive.get_trait_name (),
 					    derive.get_node_id ());
@@ -67,7 +78,7 @@ TopLevel::go (AST::Crate &crate)
 			 derive.get_trait_name ().c_str ());
 	}
     }
-  for (auto &attribute : crate.get_attribute_macros ())
+  for (auto &attribute : attribute_macros)
     {
       auto res = ctx.macros.insert_at_root (attribute.get_name (),
 					    attribute.get_node_id ());
@@ -78,7 +89,7 @@ TopLevel::go (AST::Crate &crate)
 			 attribute.get_name ().c_str ());
 	}
     }
-  for (auto &bang : crate.get_bang_macros ())
+  for (auto &bang : bang_macros)
     {
       auto res
 	= ctx.macros.insert_at_root (bang.get_name (), bang.get_node_id ());
