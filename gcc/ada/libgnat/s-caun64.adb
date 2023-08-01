@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with System.Address_Operations; use System.Address_Operations;
+with System.Storage_Elements;   use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -82,8 +83,8 @@ package body System.Compare_Array_Unsigned_64 is
             end if;
 
             Clen := Clen - 1;
-            L := AddA (L, 8);
-            R := AddA (R, 8);
+            L := L + Storage_Offset (8);
+            R := R + Storage_Offset (8);
          end loop;
 
       --  Case of going by unaligned double words
@@ -99,8 +100,8 @@ package body System.Compare_Array_Unsigned_64 is
             end if;
 
             Clen := Clen - 1;
-            L := AddA (L, 8);
-            R := AddA (R, 8);
+            L := L + Storage_Offset (8);
+            R := R + Storage_Offset (8);
          end loop;
       end if;
 
