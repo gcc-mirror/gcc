@@ -2083,6 +2083,21 @@ public:
   NodeId get_node_id () const { return node_id; }
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
 
+  const std::vector<AttributeProcMacro> &get_attribute_macros () const
+  {
+    return attribute_macros;
+  }
+
+  const std::vector<CustomDeriveProcMacro> &get_derive_macros () const
+  {
+    return derive_macros;
+  }
+
+  const std::vector<BangProcMacro> &get_bang_macros () const
+  {
+    return bang_macros;
+  }
+
   std::vector<std::unique_ptr<AST::Item>> take_items ()
   {
     return std::move (items);
