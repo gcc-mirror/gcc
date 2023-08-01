@@ -55,6 +55,40 @@ TopLevel::go (AST::Crate &crate)
 {
   for (auto &item : crate.items)
     item->accept_vis (*this);
+
+  for (auto &derive : crate.get_derive_macros ())
+    {
+      auto res = ctx.macros.insert_at_root (derive.get_trait_name (),
+					    derive.get_node_id ());
+      if (!res)
+	{
+	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			 "macro %qs defined multiple times",
+			 derive.get_trait_name ().c_str ());
+	}
+    }
+  for (auto &attribute : crate.get_attribute_macros ())
+    {
+      auto res = ctx.macros.insert_at_root (attribute.get_name (),
+					    attribute.get_node_id ());
+      if (!res)
+	{
+	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			 "macro %qs defined multiple times",
+			 attribute.get_name ().c_str ());
+	}
+    }
+  for (auto &bang : crate.get_bang_macros ())
+    {
+      auto res
+	= ctx.macros.insert_at_root (bang.get_name (), bang.get_node_id ());
+      if (!res)
+	{
+	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			 "macro %qs defined multiple times",
+			 bang.get_name ().c_str ());
+	}
+    }
 }
 
 void
