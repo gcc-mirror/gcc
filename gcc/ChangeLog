@@ -1,3 +1,63 @@
+2023-08-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_encode_section_info): Assume external
+	symbols without explicit alignment to be unaligned if
+	-munaligned-symbols has been specified.
+	* config/s390/s390.opt (-munaligned-symbols): New option.
+
+2023-08-01  Richard Ball  <richard.ball@arm.com>
+
+	* gimple-fold.cc (fold_ctor_reference):
+	Add support for poly_int.
+
+2023-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/110220
+	* config/avr/avr.cc (avr_optimize_casesi): Set JUMP_LABEL and
+	LABEL_NUSES of new conditional branch instruction.
+
+2023-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Fix profile update after
+	constant prologue peeling.
+
+2023-08-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_v8_1m_main_cde_mve_fp): Fix spelling.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (DYNAMIC_FRM_RTL): New macro.
+	(STATIC_FRM_P): Ditto.
+	(struct mode_switching_info): New struct for mode switching.
+	(struct machine_function): Add new field mode switching.
+	(riscv_emit_frm_mode_set): Add DYN_CALL emit.
+	(riscv_frm_adjust_mode_after_call): New function for call mode.
+	(riscv_frm_emit_after_call_in_bb_end): New function for emit
+	insn when call as the end of bb.
+	(riscv_frm_mode_needed): New function for frm mode needed.
+	(frm_unknown_dynamic_p): Remove call check.
+	(riscv_mode_needed): Extrac function for frm.
+	(riscv_frm_mode_after): Add DYN_CALL after.
+	(riscv_mode_entry): Remove backup rtl initialization.
+	* config/riscv/vector.md (frm_mode): Add dyn_call.
+	(fsrmsi_restore_exit): Rename to _volatile.
+	(fsrmsi_restore_volatile): Likewise.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class reverse_binop_frm): Add new template for reversed frm.
+	(vfsub_frm_obj): New obj.
+	(vfrsub_frm_obj): Likewise.
+	* config/riscv/riscv-vector-builtins-bases.h:
+	(vfsub_frm): New declaration.
+	(vfrsub_frm): Likewise.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfsub_frm): New function define.
+	(vfrsub_frm): Likewise.
+
 2023-08-01  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/93044

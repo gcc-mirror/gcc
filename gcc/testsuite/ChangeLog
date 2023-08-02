@@ -1,3 +1,222 @@
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110161
+	* gm2/pim/fail/badxproc.mod: New test.
+
+2023-08-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/aligned-1.c: New test.
+	* gcc.target/s390/unaligned-1.c: New test.
+
+2023-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/vect-1-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-1.c: Check profile consistency.
+	* gcc.dg/vect/vect-10-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-10.c: Check profile consistency.
+	* gcc.dg/vect/vect-100.c: Check profile consistency.
+	* gcc.dg/vect/vect-103.c: Check profile consistency.
+	* gcc.dg/vect/vect-104.c: Check profile consistency.
+	* gcc.dg/vect/vect-105-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-105.c: Check profile consistency.
+	* gcc.dg/vect/vect-106.c: Check profile consistency.
+	* gcc.dg/vect/vect-107.c: Check profile consistency.
+	* gcc.dg/vect/vect-108.c: Check profile consistency.
+	* gcc.dg/vect/vect-109.c: Check profile consistency.
+	* gcc.dg/vect/vect-11.c: Check profile consistency.
+	* gcc.dg/vect/vect-110.c: Check profile consistency.
+	* gcc.dg/vect/vect-112-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-112.c: Check profile consistency.
+	* gcc.dg/vect/vect-113.c: Check profile consistency.
+	* gcc.dg/vect/vect-114.c: Check profile consistency.
+	* gcc.dg/vect/vect-115.c: Check profile consistency.
+	* gcc.dg/vect/vect-116.c: Check profile consistency.
+	* gcc.dg/vect/vect-117.c: Check profile consistency.
+	* gcc.dg/vect/vect-118.c: Check profile consistency.
+	* gcc.dg/vect/vect-119.c: Check profile consistency.
+	* gcc.dg/vect/vect-11a.c: Check profile consistency.
+	* gcc.dg/vect/vect-12.c: Check profile consistency.
+	* gcc.dg/vect/vect-120.c: Check profile consistency.
+	* gcc.dg/vect/vect-121.c: Check profile consistency.
+	* gcc.dg/vect/vect-122.c: Check profile consistency.
+	* gcc.dg/vect/vect-123.c: Check profile consistency.
+	* gcc.dg/vect/vect-124.c: Check profile consistency.
+	* gcc.dg/vect/vect-126.c: Check profile consistency.
+	* gcc.dg/vect/vect-13.c: Check profile consistency.
+	* gcc.dg/vect/vect-14.c: Check profile consistency.
+	* gcc.dg/vect/vect-15-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-15.c: Check profile consistency.
+	* gcc.dg/vect/vect-17.c: Check profile consistency.
+	* gcc.dg/vect/vect-18.c: Check profile consistency.
+	* gcc.dg/vect/vect-19.c: Check profile consistency.
+	* gcc.dg/vect/vect-2-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-2.c: Check profile consistency.
+	* gcc.dg/vect/vect-20.c: Check profile consistency.
+	* gcc.dg/vect/vect-21.c: Check profile consistency.
+	* gcc.dg/vect/vect-22.c: Check profile consistency.
+	* gcc.dg/vect/vect-23.c: Check profile consistency.
+	* gcc.dg/vect/vect-24.c: Check profile consistency.
+	* gcc.dg/vect/vect-25.c: Check profile consistency.
+	* gcc.dg/vect/vect-26.c: Check profile consistency.
+	* gcc.dg/vect/vect-27.c: Check profile consistency.
+	* gcc.dg/vect/vect-28.c: Check profile consistency.
+	* gcc.dg/vect/vect-29.c: Check profile consistency.
+	* gcc.dg/vect/vect-3.c: Check profile consistency.
+	* gcc.dg/vect/vect-30.c: Check profile consistency.
+	* gcc.dg/vect/vect-31-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-31.c: Check profile consistency.
+	* gcc.dg/vect/vect-32-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-32-chars.c: Check profile consistency.
+	* gcc.dg/vect/vect-32.c: Check profile consistency.
+	* gcc.dg/vect/vect-33-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-33.c: Check profile consistency.
+	* gcc.dg/vect/vect-34-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-34.c: Check profile consistency.
+	* gcc.dg/vect/vect-35-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-35.c: Check profile consistency.
+	* gcc.dg/vect/vect-36-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-36.c: Check profile consistency.
+	* gcc.dg/vect/vect-38.c: Check profile consistency.
+	* gcc.dg/vect/vect-4.c: Check profile consistency.
+	* gcc.dg/vect/vect-40.c: Check profile consistency.
+	* gcc.dg/vect/vect-42.c: Check profile consistency.
+	* gcc.dg/vect/vect-44.c: Check profile consistency.
+	* gcc.dg/vect/vect-46.c: Check profile consistency.
+	* gcc.dg/vect/vect-48.c: Check profile consistency.
+	* gcc.dg/vect/vect-5.c: Check profile consistency.
+	* gcc.dg/vect/vect-50.c: Check profile consistency.
+	* gcc.dg/vect/vect-52.c: Check profile consistency.
+	* gcc.dg/vect/vect-54.c: Check profile consistency.
+	* gcc.dg/vect/vect-56.c: Check profile consistency.
+	* gcc.dg/vect/vect-58.c: Check profile consistency.
+	* gcc.dg/vect/vect-6-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-6.c: Check profile consistency.
+	* gcc.dg/vect/vect-60.c: Check profile consistency.
+	* gcc.dg/vect/vect-62.c: Check profile consistency.
+	* gcc.dg/vect/vect-63.c: Check profile consistency.
+	* gcc.dg/vect/vect-64.c: Check profile consistency.
+	* gcc.dg/vect/vect-65.c: Check profile consistency.
+	* gcc.dg/vect/vect-66.c: Check profile consistency.
+	* gcc.dg/vect/vect-67.c: Check profile consistency.
+	* gcc.dg/vect/vect-68.c: Check profile consistency.
+	* gcc.dg/vect/vect-7.c: Check profile consistency.
+	* gcc.dg/vect/vect-70.c: Check profile consistency.
+	* gcc.dg/vect/vect-71.c: Check profile consistency.
+	* gcc.dg/vect/vect-72.c: Check profile consistency.
+	* gcc.dg/vect/vect-73-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-73.c: Check profile consistency.
+	* gcc.dg/vect/vect-74-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-74.c: Check profile consistency.
+	* gcc.dg/vect/vect-75-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-75.c: Check profile consistency.
+	* gcc.dg/vect/vect-76-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-76.c: Check profile consistency.
+	* gcc.dg/vect/vect-77-alignchecks.c: Check profile consistency.
+	* gcc.dg/vect/vect-77-global.c: Check profile consistency.
+	* gcc.dg/vect/vect-77.c: Check profile consistency.
+	* gcc.dg/vect/vect-78-alignchecks.c: Check profile consistency.
+	* gcc.dg/vect/vect-78-global.c: Check profile consistency.
+	* gcc.dg/vect/vect-78.c: Check profile consistency.
+	* gcc.dg/vect/vect-8.c: Check profile consistency.
+	* gcc.dg/vect/vect-80-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-80.c: Check profile consistency.
+	* gcc.dg/vect/vect-82.c: Check profile consistency.
+	* gcc.dg/vect/vect-82_64.c: Check profile consistency.
+	* gcc.dg/vect/vect-83.c: Check profile consistency.
+	* gcc.dg/vect/vect-83_64.c: Check profile consistency.
+	* gcc.dg/vect/vect-85-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-85.c: Check profile consistency.
+	* gcc.dg/vect/vect-86.c: Check profile consistency.
+	* gcc.dg/vect/vect-87.c: Check profile consistency.
+	* gcc.dg/vect/vect-88.c: Check profile consistency.
+	* gcc.dg/vect/vect-89-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-89.c: Check profile consistency.
+	* gcc.dg/vect/vect-9.c: Check profile consistency.
+	* gcc.dg/vect/vect-91.c: Check profile consistency.
+	* gcc.dg/vect/vect-92.c: Check profile consistency.
+	* gcc.dg/vect/vect-93.c: Check profile consistency.
+	* gcc.dg/vect/vect-95.c: Check profile consistency.
+	* gcc.dg/vect/vect-96.c: Check profile consistency.
+	* gcc.dg/vect/vect-97-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-97.c: Check profile consistency.
+	* gcc.dg/vect/vect-98-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-98.c: Check profile consistency.
+	* gcc.dg/vect/vect-99.c: Check profile consistency.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-33.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-34.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-35.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-36.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-37.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-38.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-39.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-40.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-41.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-42.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-43.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-44.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-45.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-46.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-47.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-48.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-51.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-53.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-55.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-56.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-59.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-60.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-61.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-62.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-63.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-64.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-65.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-66.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-67.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-68.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-69.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-70.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-71.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-72.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-73.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-75.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-76.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-77.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-4.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-5.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run.h: New test.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-rsub.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-single-sub.c: New test.
+
+2023-08-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr87007-4.c: Adjust testcase.
+	* gcc.target/i386/pr87007-5.c: Ditto.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110865
+	* gm2/iso/pass/constvec.mod: New test.
+	* gm2/iso/pass/constvec2.mod: New test.
+	* gm2/iso/run/pass/constvec3.mod: New test.
+
 2023-08-01  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/93044

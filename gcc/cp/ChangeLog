@@ -1,3 +1,10 @@
+2023-08-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* parser.cc (c_init_preprocess): New function.
+	(maybe_read_tokens_for_pragma_lex): New function.
+	(pragma_lex): Support preprocess-only mode.
+	(pragma_lex_discard_to_eol): New function.
+
 2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* parser.cc (cp_parser_oacc_host_data): Add checking requiring OpenACC

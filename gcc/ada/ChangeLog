@@ -1,3 +1,74 @@
+2023-08-01  Yannick Moy  <moy@adacore.com>
+
+	* repinfo.adb (Compute_Max_Length): Set parameter to print number
+	in decimal notation.
+	(List_Component_Layout): Same.
+
+2023-08-01  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Check for
+	Skip_Proof and Skip_Flow_And_Proof annotations for deciding
+	whether a subprogram can be inlined.
+
+2023-08-01  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Constrain_Corresponding_Record): When copying
+	information from the unconstrained record type to a newly
+	constructed constrained record subtype, the
+	Direct_Primitive_Operations attribute must be copied.
+
+2023-08-01  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Remove
+	Build_Default_Subtype_OK call and code that could only executed in
+	the case where the removed call would have returned True. Other
+	calls to Build_Default_Subtype_Ok are unaffected by this change.
+
+2023-08-01  Pascal Obry  <obry@adacore.com>
+
+	* aspects.ads (Find_Aspect): Add Boolean parameter Or_Rep_Item
+	(defaulted to False).
+	* aspects.adb (Find_Aspect): If new Boolean parameter Or_Rep_Item
+	is True, then instead of returning an empty result if no
+	appropriate N_Aspect_Specification node is found, return an
+	appropriate N_Attribute_Definition_Clause if one is found.
+	* exp_put_image.ads: Change name of Enable_Put_Image function to
+	Put_Image_Enabled.
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Detect the
+	case where a call to the Put_Image procedure of a derived type can
+	be transformed into a call to the parent type's Put_Image
+	procedure (with a type conversion to the parent type as the actual
+	parameter).
+	(Put_Image_Enabled): Change name of function (previously
+	Enable_Put_Image). Return True in more cases. In particular,
+	return True for a type with an explicitly specified Put_Image
+	aspect even if the type is declared in a predefined unit (or in an
+	instance of a predefined generic unit).
+	* exp_attr.adb: Changes due to Put_Image_Enabled function name
+	change.
+
+2023-08-01  Yannick Moy  <moy@adacore.com>
+
+	* repinfo.adb (List_Common_Type_Info): Fix output when alignment
+	is not statically known, and fix assertion when expansion is not
+	enabled.
+
+2023-08-01  Bob Duff  <duff@adacore.com>
+
+	* atree.adb (Field_Present): New function to detect whether or not
+	a given field is present in a given node, based on either the node
+	kind or the entity kind as appropriate.
+	(Get_Field_Value): Check that the field begin fetched exists.
+	However, disable the check in the case of Scope_Depth_Value,
+	because we have failures in that case. Those failures need to be
+	fixed, and then the check can be enabled for all fields.
+	(Set_Field_Value): Check that the field begin set exists.
+
+2023-08-01  Léo Creuse  <creuse@adacore.com>
+
+	* par_sco.adb (Process_Decisions): Traverse all attributes of
+	quantified expressions nodes.
+
 2023-07-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (gnat_to_gnu): Restrict previous change to
