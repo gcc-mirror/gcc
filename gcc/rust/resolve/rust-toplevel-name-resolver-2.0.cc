@@ -86,7 +86,8 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
 {
   // we do not insert macros in the current rib as that needs to be done in the
   // textual scope of the Early pass. we only insert them in the root of the
-  // crate if they are marked with #[macro_export]
+  // crate if they are marked with #[macro_export]. The execption to this is
+  // macros 2.0, which get resolved and inserted like regular items.
 
   if (is_macro_export (macro))
     {
@@ -103,6 +104,9 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
 			 macro.get_rule_name ().as_string ().c_str ());
 	}
     }
+
+  if (macro.get_kind () == AST::MacroRulesDefinition::MacroKind::DeclMacro)
+    insert_or_error_out (macro.get_rule_name (), macro, Namespace::Macros);
 }
 
 void
