@@ -91,6 +91,9 @@ inline bool relation_equiv_p (relation_kind r)
 
 void print_relation (FILE *f, relation_kind rel);
 
+// Return relation for NAME == NAME with RANGE.
+relation_kind get_identity_relation (tree name, vrange &range);
+
 class relation_oracle
 {
 public:
