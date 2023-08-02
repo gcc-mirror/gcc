@@ -233,6 +233,33 @@ average_num_loop_insns (const class loop *loop)
   return ret;
 }
 
+/* Compute how many times loop is entered.  */
+
+profile_count
+loop_count_in (const class loop *loop)
+{
+  /* Compute number of invocations of the loop.  */
+  profile_count count_in = profile_count::zero ();
+  edge e;
+  edge_iterator ei;
+  bool found_latch = false;
+
+  if (loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+    FOR_EACH_EDGE (e, ei, loop->header->preds)
+      if (!flow_bb_inside_loop_p (loop, e->src))
+	count_in += e->count ();
+      else
+	found_latch = true;
+  else
+    FOR_EACH_EDGE (e, ei, loop->header->preds)
+      if (e->src != loop->latch)
+	count_in += e->count ();
+      else
+	found_latch = true;
+  gcc_checking_assert (found_latch);
+  return count_in;
+}
+
 /* Return true if BB profile can be used to determine the expected number of
    iterations (that is number of executions of latch edge(s) for each
    entry of the loop.  If this is the case initialize RET with the number
@@ -260,26 +287,7 @@ expected_loop_iterations_by_profile (const class loop *loop, sreal *ret,
       || !header_count.nonzero_p ())
     return false;
 
-  profile_count count_in = profile_count::zero ();
-  edge e;
-  edge_iterator ei;
-
-  /* For single-latch loops avoid querying dominators.  */
-  if (loop->latch)
-    {
-      bool found = false;
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src != loop->latch)
-	  count_in += e->count ();
-	else
-	  found = true;
-      /* If latch is not found, loop is inconsistent.  */
-      gcc_checking_assert (found);
-    }
-  else
-    FOR_EACH_EDGE (e, ei, loop->header->preds)
-      if (!dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
-	count_in += e->count ();
+  profile_count count_in = loop_count_in (loop);
 
   bool known;
   /* Number of iterations is number of executions of latch edge.  */

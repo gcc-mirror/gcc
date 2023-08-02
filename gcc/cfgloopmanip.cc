@@ -525,33 +525,6 @@ scale_dominated_blocks_in_loop (class loop *loop, basic_block bb,
       }
 }
 
-/* Compute how many times loop is entered.  */
-
-profile_count
-loop_count_in (class loop *loop)
-{
-  /* Compute number of invocations of the loop.  */
-  profile_count count_in = profile_count::zero ();
-  edge e;
-  edge_iterator ei;
-  bool found_latch = false;
-
-  if (loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
-    FOR_EACH_EDGE (e, ei, loop->header->preds)
-      if (!flow_bb_inside_loop_p (loop, e->src))
-	count_in += e->count ();
-      else
-	found_latch = true;
-  else
-    FOR_EACH_EDGE (e, ei, loop->header->preds)
-      if (e->src != loop->latch)
-	count_in += e->count ();
-      else
-	found_latch = true;
-  gcc_checking_assert (found_latch);
-  return count_in;
-}
-
 /* Return exit that suitable for update when loop iterations
    changed.  */
 
@@ -739,14 +712,14 @@ scale_loop_profile (class loop *loop, profile_probability p,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       ";; guessed iterations of loop %i:%f new upper bound %i:\n",
+	       ";; Guessed iterations of loop %i is %f. New upper bound %i.\n",
 	       loop->num,
 	       iterations.to_double (),
 	       (int)iteration_bound);
     }
 
   /* See if loop is predicted to iterate too many times.  */
-  if (iterations <= iteration_bound)
+  if (iterations <= (sreal)iteration_bound)
     return;
 
   profile_count count_in = loop_count_in (loop);

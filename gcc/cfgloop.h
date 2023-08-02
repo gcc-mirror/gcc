@@ -922,6 +922,7 @@ extern bool get_max_loop_iterations (const class loop *loop, widest_int *nit);
 extern bool get_likely_max_loop_iterations (class loop *loop, widest_int *nit);
 extern int bb_loop_depth (const_basic_block);
 extern edge single_dom_exit (class loop *);
+extern profile_count loop_count_in (const class loop *loop);
 
 /* Converts VAL to widest_int.  */
 
