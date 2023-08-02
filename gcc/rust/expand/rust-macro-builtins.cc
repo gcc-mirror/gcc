@@ -576,10 +576,8 @@ MacroBuiltin::include_str_handler (location_t invoc_locus,
   if (expect_single)
     rust_error_at (invoc_locus, "%s was not a valid utf-8 file",
 		   target_filename.c_str ());
-  else if (!bytes.empty ())
-    str = std::string ((const char *) &bytes[0], bytes.size ());
   else
-    return tl::nullopt;
+    str = std::string ((const char *) bytes.data (), bytes.size ());
 
   auto node = AST::SingleASTNode (make_string (invoc_locus, str));
   auto str_tok = make_token (Token::make_string (invoc_locus, std::move (str)));
