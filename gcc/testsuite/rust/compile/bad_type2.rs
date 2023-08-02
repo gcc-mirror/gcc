@@ -8,7 +8,7 @@ fn main() {
 
     let mut x;
     x = 1;
-    x = true; // { dg-error "expected .<integer>. got .bool." }
+    x = true; // { dg-error "mismatched types, expected .<integer>. but got .bool." }
 
     let call_test = test(1);
 }

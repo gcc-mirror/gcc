@@ -3,7 +3,7 @@ pub trait Sized {}
 
 trait Foo {
     fn Bar() -> i32 {}
-    // { dg-error "expected .i32. got .()." "" { target *-*-* } .-1 }
+    // { dg-error "mismatched types, expected .i32. but got .()." "" { target *-*-* } .-1 }
 }
 
 struct Baz;
