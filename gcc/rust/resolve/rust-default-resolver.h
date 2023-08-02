@@ -56,7 +56,7 @@ public:
   void visit (AST::Union &);
   void visit (AST::Enum &);
 
-  // Visitors that visit their expression node
+  // Visitors that visit their expression node(s)
   void visit (AST::BorrowExpr &);
   void visit (AST::DereferenceExpr &);
   void visit (AST::ErrorPropagationExpr &);
