@@ -25,9 +25,11 @@
 namespace Rust {
 namespace Imports {
 
-ExternCrate::ExternCrate (Import::Stream &stream,
+ExternCrate::ExternCrate (Import::Stream &stream) : import_stream (stream) {}
+
+ExternCrate::ExternCrate (const std::string &crate_name,
 			  std::vector<ProcMacro::Procmacro> macros)
-  : import_stream (stream), proc_macros (macros)
+  : proc_macros (macros), crate_name (crate_name)
 {}
 
 ExternCrate::~ExternCrate () {}
@@ -35,12 +37,14 @@ ExternCrate::~ExternCrate () {}
 bool
 ExternCrate::ok () const
 {
-  return !import_stream.saw_error ();
+  return !import_stream->get ().saw_error ();
 }
 
 bool
 ExternCrate::load (location_t locus)
 {
+  rust_assert (this->import_stream.has_value ());
+  auto &import_stream = this->import_stream->get ();
   // match header
   import_stream.require_bytes (locus, Metadata::kMagicHeader,
 			       sizeof (Metadata::kMagicHeader));

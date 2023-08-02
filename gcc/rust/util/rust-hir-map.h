@@ -30,6 +30,7 @@
 #include "rust-privacy-common.h"
 #include "libproc_macro_internal/proc_macro.h"
 #include "rust-proc-macro.h"
+#include "optional.h"
 
 namespace Rust {
 namespace Analysis {
@@ -294,12 +295,12 @@ public:
   void insert_attribute_proc_macros (CrateNum num,
 				     std::vector<AttributeProcMacro> macros);
 
-  bool lookup_derive_proc_macros (CrateNum num,
-				  std::vector<CustomDeriveProcMacro> &macros);
-  bool lookup_bang_proc_macros (CrateNum num,
-				std::vector<BangProcMacro> &macros);
-  bool lookup_attribute_proc_macros (CrateNum num,
-				     std::vector<AttributeProcMacro> &macros);
+  tl::optional<std::vector<CustomDeriveProcMacro> &>
+  lookup_derive_proc_macros (CrateNum num);
+  tl::optional<std::vector<BangProcMacro> &>
+  lookup_bang_proc_macros (CrateNum num);
+  tl::optional<std::vector<AttributeProcMacro> &>
+  lookup_attribute_proc_macros (CrateNum num);
 
   void insert_derive_proc_macro_def (NodeId id, CustomDeriveProcMacro macro);
   void insert_bang_proc_macro_def (NodeId id, BangProcMacro macro);

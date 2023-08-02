@@ -21,6 +21,7 @@
 
 #include "rust-system.h"
 #include "rust-imports.h"
+#include "optional.h"
 
 namespace Rust {
 namespace Imports {
@@ -28,7 +29,8 @@ namespace Imports {
 class ExternCrate
 {
 public:
-  ExternCrate (Import::Stream &stream,
+  ExternCrate (Import::Stream &stream);
+  ExternCrate (const std::string &crate_name,
 	       std::vector<ProcMacro::Procmacro> macros);
   ~ExternCrate ();
 
@@ -46,7 +48,7 @@ public:
 			     bool is_neg_ok, int *ret);
 
 private:
-  Import::Stream &import_stream;
+  tl::optional<std::reference_wrapper<Import::Stream>> import_stream;
   std::vector<ProcMacro::Procmacro> proc_macros;
 
   std::string crate_name;
