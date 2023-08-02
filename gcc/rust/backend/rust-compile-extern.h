@@ -48,7 +48,7 @@ public:
   void visit (HIR::ExternalStaticItem &item) override
   {
     // check if its already been compiled
-    Bvariable *lookup = ctx->get_backend ()->error_variable ();
+    Bvariable *lookup = Bvariable::error_variable ();
     if (ctx->lookup_var_decl (item.get_mappings ().get_hirid (), &lookup))
       {
 	reference = ctx->get_backend ()->var_expression (lookup, ref_locus);

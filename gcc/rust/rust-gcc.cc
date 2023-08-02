@@ -77,6 +77,12 @@ Bvariable::get_tree (location_t location) const
   return build_fold_indirect_ref_loc (location, t);
 }
 
+Bvariable *
+Bvariable::error_variable ()
+{
+  return new Bvariable (error_mark_node);
+}
+
 // This file implements the interface between the Rust frontend proper
 // and the gcc IR.  This implements specific instantiations of
 // abstract classes defined by the Rust frontend proper.  The Rust
@@ -2048,7 +2054,7 @@ Gcc_backend::global_variable (const std::string &var_name,
 			      bool in_unique_section, location_t location)
 {
   if (type_tree == error_mark_node)
-    return this->error_variable ();
+    return Bvariable::error_variable ();
 
   // The GNU linker does not like dynamic variables with zero size.
   tree orig_type_tree = type_tree;
@@ -2113,7 +2119,7 @@ Gcc_backend::local_variable (tree function, const std::string &name,
 			     location_t location)
 {
   if (type_tree == error_mark_node)
-    return this->error_variable ();
+    return Bvariable::error_variable ();
   tree decl = build_decl (location, VAR_DECL, get_identifier_from_string (name),
 			  type_tree);
   DECL_CONTEXT (decl) = function;
@@ -2134,7 +2140,7 @@ Gcc_backend::parameter_variable (tree function, const std::string &name,
 				 tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
-    return this->error_variable ();
+    return Bvariable::error_variable ();
   tree decl = build_decl (location, PARM_DECL,
 			  get_identifier_from_string (name), type_tree);
   DECL_CONTEXT (decl) = function;
@@ -2151,7 +2157,7 @@ Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
 				    tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
-    return this->error_variable ();
+    return Bvariable::error_variable ();
   tree decl = build_decl (location, PARM_DECL,
 			  get_identifier_from_string (name), type_tree);
   DECL_CONTEXT (decl) = fndecl;
@@ -2188,7 +2194,7 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
       || fndecl == error_mark_node)
     {
       *pstatement = error_mark_node;
-      return this->error_variable ();
+      return Bvariable::error_variable ();
     }
 
   tree var;

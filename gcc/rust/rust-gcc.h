@@ -49,6 +49,11 @@ public:
   // Get the actual decl;
   tree get_decl () const { return this->t_; }
 
+  // Create an error variable.  This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  static Bvariable *error_variable ();
+
 private:
   tree t_;
   tree orig_type_;
