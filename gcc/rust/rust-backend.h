@@ -346,11 +346,6 @@ public:
 
   // Variables.
 
-  // Create an error variable.  This is used for cases which should
-  // not occur in a correct program, in order to keep the compilation
-  // going without crashing.
-  virtual Bvariable *error_variable () = 0;
-
   // Create a global variable. NAME is the package-qualified name of
   // the variable.  ASM_NAME is the encoded identifier for the
   // variable, incorporating the package, and made safe for the
@@ -654,8 +649,6 @@ public:
   void block_add_statements (tree, const std::vector<tree> &);
 
   // Variables.
-
-  Bvariable *error_variable () { return new Bvariable (error_mark_node); }
 
   Bvariable *global_variable (const std::string &var_name,
 			      const std::string &asm_name, tree type,

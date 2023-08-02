@@ -27,7 +27,7 @@ namespace Compile {
 CompileFnParam::CompileFnParam (Context *ctx, tree fndecl, tree decl_type,
 				location_t locus)
   : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type), locus (locus),
-    compiled_param (ctx->get_backend ()->error_variable ())
+    compiled_param (Bvariable::error_variable ())
 {}
 
 Bvariable *
