@@ -22,9 +22,9 @@
 (define_code_attr nez [(eq "eqz") (ne "nez")])
 
 ;; Zicond
-(define_insn "*czero.<eqz>.<GPR:mode><ANYI:mode>"
+(define_insn "*czero.<eqz>.<GPR:mode><X:mode>"
   [(set (match_operand:GPR 0 "register_operand"                      "=r")
-        (if_then_else:GPR (eq_or_ne (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (eq_or_ne (match_operand:X 1 "register_operand" "r")
                                     (const_int 0))
                           (match_operand:GPR 2 "register_operand"    "r")
                           (const_int 0)))]
@@ -32,9 +32,9 @@
   "czero.<eqz>\t%0,%2,%1"
 )
 
-(define_insn "*czero.<nez>.<GPR:mode><ANYI:mode>"
+(define_insn "*czero.<nez>.<GPR:mode><X:mode>"
   [(set (match_operand:GPR 0 "register_operand"                     "=r")
-        (if_then_else:GPR (eq_or_ne (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (eq_or_ne (match_operand:X 1 "register_operand" "r")
                                     (const_int 0))
                           (const_int 0)
                           (match_operand:GPR 2 "register_operand"   "r")))]
@@ -43,9 +43,9 @@
 )
 
 ;; Special optimization under eq/ne in primitive semantics
-(define_insn "*czero.eqz.<GPR:mode><ANYI:mode>.opt1"
+(define_insn "*czero.eqz.<GPR:mode><X:mode>.opt1"
   [(set (match_operand:GPR 0 "register_operand"                   "=r")
-        (if_then_else:GPR (eq (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (eq (match_operand:X 1 "register_operand" "r")
                               (const_int 0))
                           (match_operand:GPR 2 "register_operand" "1")
                           (match_operand:GPR 3 "register_operand" "r")))]
@@ -53,9 +53,9 @@
   "czero.eqz\t%0,%3,%1"
 )
 
-(define_insn "*czero.eqz.<GPR:mode><ANYI:mode>.opt2"
+(define_insn "*czero.eqz.<GPR:mode><X:mode>.opt2"
   [(set (match_operand:GPR 0 "register_operand"                   "=r")
-        (if_then_else:GPR (eq (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (eq (match_operand:X 1 "register_operand" "r")
                               (const_int 0))
                           (match_operand:GPR 2 "register_operand" "r")
                           (match_operand:GPR 3 "register_operand" "1")))]
@@ -63,9 +63,9 @@
   "czero.nez\t%0,%2,%1"
 )
 
-(define_insn "*czero.nez.<GPR:mode><ANYI:mode>.opt3"
+(define_insn "*czero.nez.<GPR:mode><X:mode>.opt3"
   [(set (match_operand:GPR 0 "register_operand"                   "=r")
-        (if_then_else:GPR (ne (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (ne (match_operand:X 1 "register_operand" "r")
                               (const_int 0))
                           (match_operand:GPR 2 "register_operand" "r")
                           (match_operand:GPR 3 "register_operand" "1")))]
@@ -73,9 +73,9 @@
   "czero.eqz\t%0,%2,%1"
 )
 
-(define_insn "*czero.nez.<GPR:mode><ANYI:mode>.opt4"
+(define_insn "*czero.nez.<GPR:mode><X:mode>.opt4"
   [(set (match_operand:GPR 0 "register_operand"                   "=r")
-        (if_then_else:GPR (ne (match_operand:ANYI 1 "register_operand" "r")
+        (if_then_else:GPR (ne (match_operand:X 1 "register_operand" "r")
                               (const_int 0))
                           (match_operand:GPR 2 "register_operand" "1")
                           (match_operand:GPR 3 "register_operand" "r")))]
