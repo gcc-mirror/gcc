@@ -303,15 +303,25 @@ DefaultResolver::visit (AST::StructExprFieldIndexValue &)
 
 void
 DefaultResolver::visit (AST::CallExpr &expr)
-{}
+{
+  expr.get_function_expr ()->accept_vis (*this);
+  for (auto &param : expr.get_params ())
+    param->accept_vis (*this);
+}
 
 void
 DefaultResolver::visit (AST::MethodCallExpr &expr)
-{}
+{
+  expr.get_receiver_expr ()->accept_vis (*this);
+  for (auto &param : expr.get_params ())
+    param->accept_vis (*this);
+}
 
 void
 DefaultResolver::visit (AST::FieldAccessExpr &expr)
-{}
+{
+  expr.get_receiver_expr ()->accept_vis (*this);
+}
 
 void
 DefaultResolver::visit (AST::ClosureExprInner &)
