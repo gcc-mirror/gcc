@@ -972,38 +972,31 @@ Mappings::insert_attribute_proc_macros (CrateNum num,
   procmacrosAttributeMappings[num] = macros;
 }
 
-bool
-Mappings::lookup_derive_proc_macros (CrateNum num,
-				     std::vector<CustomDeriveProcMacro> &macros)
+tl::optional<std::vector<CustomDeriveProcMacro> &>
+Mappings::lookup_derive_proc_macros (CrateNum num)
 {
   auto it = procmacrosDeriveMappings.find (num);
   if (it == procmacrosDeriveMappings.end ())
-    return false;
-
-  macros = it->second;
-  return true;
+    return tl::nullopt;
+  return it->second;
 }
-bool
-Mappings::lookup_bang_proc_macros (CrateNum num,
-				   std::vector<BangProcMacro> &macros)
+
+tl::optional<std::vector<BangProcMacro> &>
+Mappings::lookup_bang_proc_macros (CrateNum num)
 {
   auto it = procmacrosBangMappings.find (num);
   if (it == procmacrosBangMappings.end ())
-    return false;
-
-  macros = it->second;
-  return true;
+    return tl::nullopt;
+  return it->second;
 }
-bool
-Mappings::lookup_attribute_proc_macros (CrateNum num,
-					std::vector<AttributeProcMacro> &macros)
+
+tl::optional<std::vector<AttributeProcMacro> &>
+Mappings::lookup_attribute_proc_macros (CrateNum num)
 {
   auto it = procmacrosAttributeMappings.find (num);
   if (it == procmacrosAttributeMappings.end ())
-    return false;
-
-  macros = it->second;
-  return true;
+    return tl::nullopt;
+  return it->second;
 }
 
 void

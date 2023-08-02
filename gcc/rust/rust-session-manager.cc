@@ -1018,19 +1018,24 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     {
       s = Import::open_package (import_name, locus, relative_import_path);
     }
-  if (s.first == NULL)
+  if (s.first == NULL && s.second.empty ())
     {
       rust_error_at (locus, "failed to locate crate %<%s%>",
 		     import_name.c_str ());
       return UNKNOWN_NODEID;
     }
 
-  Imports::ExternCrate extern_crate (*s.first, s.second);
-  bool ok = extern_crate.load (locus);
-  if (!ok)
+  auto extern_crate = s.first == nullptr
+			? Imports::ExternCrate (crate_name, s.second)
+			: Imports::ExternCrate (*s.first);
+  if (s.first != nullptr)
     {
-      rust_error_at (locus, "failed to load crate metadata");
-      return UNKNOWN_NODEID;
+      bool ok = extern_crate.load (locus);
+      if (!ok)
+	{
+	  rust_error_at (locus, "failed to load crate metadata");
+	  return UNKNOWN_NODEID;
+	}
     }
 
   // ensure the current vs this crate name don't collide

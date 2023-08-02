@@ -73,6 +73,7 @@ private:
   void visit (AST::Enum &enum_item) override;
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
+  void visit (AST::ExternCrate &crate) override;
 };
 
 } // namespace Resolver2_0

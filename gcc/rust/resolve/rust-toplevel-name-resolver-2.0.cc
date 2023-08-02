@@ -55,51 +55,6 @@ TopLevel::go (AST::Crate &crate)
 {
   for (auto &item : crate.items)
     item->accept_vis (*this);
-
-  std::vector<CustomDeriveProcMacro> derive_macros;
-  std::vector<AttributeProcMacro> attribute_macros;
-  std::vector<BangProcMacro> bang_macros;
-
-  Analysis::Mappings::get ()->lookup_attribute_proc_macros (
-    crate.get_node_id (), attribute_macros);
-  Analysis::Mappings::get ()->lookup_bang_proc_macros (crate.get_node_id (),
-						       bang_macros);
-  Analysis::Mappings::get ()->lookup_derive_proc_macros (crate.get_node_id (),
-							 derive_macros);
-
-  for (auto &derive : derive_macros)
-    {
-      auto res = ctx.macros.insert_at_root (derive.get_trait_name (),
-					    derive.get_node_id ());
-      if (!res)
-	{
-	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			 "macro %qs defined multiple times",
-			 derive.get_trait_name ().c_str ());
-	}
-    }
-  for (auto &attribute : attribute_macros)
-    {
-      auto res = ctx.macros.insert_at_root (attribute.get_name (),
-					    attribute.get_node_id ());
-      if (!res)
-	{
-	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			 "macro %qs defined multiple times",
-			 attribute.get_name ().c_str ());
-	}
-    }
-  for (auto &bang : bang_macros)
-    {
-      auto res
-	= ctx.macros.insert_at_root (bang.get_name (), bang.get_node_id ());
-      if (!res)
-	{
-	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			 "macro %qs defined multiple times",
-			 bang.get_name ().c_str ());
-	}
-    }
 }
 
 void
@@ -114,6 +69,68 @@ TopLevel::visit (AST::Module &module)
 
   ctx.scoped (Rib::Kind::Module, module.get_node_id (), sub_visitor,
 	      module.get_name ());
+}
+
+void
+TopLevel::visit (AST::ExternCrate &crate)
+{
+  CrateNum num;
+  if (!Analysis::Mappings::get ()->lookup_crate_name (
+	crate.get_referenced_crate (), num))
+    rust_unreachable ();
+
+  auto attribute_macros
+    = Analysis::Mappings::get ()->lookup_attribute_proc_macros (num);
+
+  auto bang_macros = Analysis::Mappings::get ()->lookup_bang_proc_macros (num);
+
+  auto derive_macros
+    = Analysis::Mappings::get ()->lookup_derive_proc_macros (num);
+
+  auto sub_visitor = [&] () {
+    if (derive_macros.has_value ())
+      for (auto &derive : derive_macros.value ())
+	{
+	  auto res = ctx.macros.insert (derive.get_trait_name (),
+					derive.get_node_id ());
+	  if (!res)
+	    {
+	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			     "macro %qs defined multiple times",
+			     derive.get_trait_name ().c_str ());
+	    }
+	}
+    if (attribute_macros.has_value ())
+      for (auto &attribute : attribute_macros.value ())
+	{
+	  auto res = ctx.macros.insert (attribute.get_name (),
+					attribute.get_node_id ());
+	  if (!res)
+	    {
+	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			     "macro %qs defined multiple times",
+			     attribute.get_name ().c_str ());
+	    }
+	}
+    if (bang_macros.has_value ())
+      for (auto &bang : bang_macros.value ())
+	{
+	  auto res = ctx.macros.insert (bang.get_name (), bang.get_node_id ());
+	  if (!res)
+	    {
+	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			     "macro %qs defined multiple times",
+			     bang.get_name ().c_str ());
+	    }
+	}
+  };
+
+  if (crate.has_as_clause ())
+    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor,
+		crate.get_as_clause ());
+  else
+    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor,
+		crate.get_referenced_crate ());
 }
 
 static bool
