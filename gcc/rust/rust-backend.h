@@ -70,12 +70,6 @@ public:
 
   // Types.
 
-  // Get the unnamed boolean type.
-  virtual tree bool_type () = 0;
-
-  // Get the char type
-  virtual tree char_type () = 0;
-
   // Get the wchar type
   virtual tree wchar_type () = 0;
 
@@ -520,10 +514,6 @@ public:
   tree get_identifier_node (const std::string &str);
 
   // Types.
-
-  tree bool_type () { return boolean_type_node; }
-
-  tree char_type () { return char_type_node; }
 
   tree wchar_type ();
 
