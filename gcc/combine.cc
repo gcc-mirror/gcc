@@ -11998,11 +11998,15 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
      x0 >= 0x40.  */
   if ((code == LEU || code == LTU || code == GEU || code == GTU)
       && is_a <scalar_int_mode> (GET_MODE (op0), &int_mode)
+      && HWI_COMPUTABLE_MODE_P (int_mode)
       && MEM_P (op0)
       && !MEM_VOLATILE_P (op0)
       /* The optimization makes only sense for constants which are big enough
 	 so that we have a chance to chop off something at all.  */
       && (unsigned HOST_WIDE_INT) const_op > 0xff
+      /* Bail out, if the constant does not fit into INT_MODE.  */
+      && (unsigned HOST_WIDE_INT) const_op
+	 < ((HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1) << 1) - 1)
       /* Ensure that we do not overflow during normalization.  */
       && (code != GTU || (unsigned HOST_WIDE_INT) const_op < HOST_WIDE_INT_M1U))
     {
