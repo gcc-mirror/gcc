@@ -1,5 +1,5 @@
 fn test(x: i32) -> bool {
-    return x + 1; // { dg-error "expected .bool. got .i32." }
+    return x + 1; // { dg-error "mismatched types, expected .bool. but got .i32." }
 }
 
 fn main() {

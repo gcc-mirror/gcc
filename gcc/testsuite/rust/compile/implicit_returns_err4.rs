@@ -1,5 +1,5 @@
 fn test(x: bool) -> bool {
-    // { dg-error "expected .bool. got ...." "" { target *-*-*} .-1 }
+    // { dg-error "mismatched types, expected .bool. but got ...." "" { target *-*-*} .-1 }
     return x;
     // { dg-warning "unreachable expression" "" { target *-*-* } .+1 }
     ()

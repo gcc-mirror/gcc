@@ -122,7 +122,8 @@ UnifyRules::emit_type_mismatch () const
   rich_location r (line_table, locus);
   r.add_range (lhs.get_locus ());
   r.add_range (rhs.get_locus ());
-  rust_error_at (r, "expected %<%s%> got %<%s%>",
+  rust_error_at (r, ErrorCode::E0308,
+		 "mismatched types, expected %qs but got %qs",
 		 expected->get_name ().c_str (), expr->get_name ().c_str ());
 }
 

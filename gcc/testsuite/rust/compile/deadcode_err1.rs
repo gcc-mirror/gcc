@@ -3,7 +3,7 @@ fn foo() -> i32 {
 
     let mut a = 1; // { dg-warning "unreachable statement" }
     a = 1.1; // { dg-warning "unreachable statement" }
-    // { dg-error "expected .<integer>. got .<float>." "" { target *-*-* } .-1 }
+    // { dg-error "mismatched types, expected .<integer>. but got .<float>." "" { target *-*-* } .-1 }
 }
 
 fn main() {
