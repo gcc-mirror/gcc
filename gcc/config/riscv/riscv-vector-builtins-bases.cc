@@ -315,6 +315,41 @@ public:
   }
 };
 
+/* Implements below instructions for frm
+   - vfwadd
+*/
+template<rtx_code CODE>
+class widen_binop_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vv:
+	return e.use_exact_insn (
+	  code_for_pred_dual_widen (CODE, e.vector_mode ()));
+      case OP_TYPE_vf:
+	return e.use_exact_insn (
+	  code_for_pred_dual_widen_scalar (CODE, e.vector_mode ()));
+      case OP_TYPE_wv:
+	if (CODE == PLUS)
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_add (e.vector_mode ()));
+	else
+	  return e.use_exact_insn (
+	    code_for_pred_single_widen_sub (e.vector_mode ()));
+      case OP_TYPE_wf:
+	return e.use_exact_insn (
+	  code_for_pred_single_widen_scalar (CODE, e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2063,6 +2098,7 @@ static CONSTEXPR const binop_frm<MINUS> vfsub_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
 static CONSTEXPR const reverse_binop_frm<MINUS> vfrsub_frm_obj;
 static CONSTEXPR const widen_binop<PLUS> vfwadd_obj;
+static CONSTEXPR const widen_binop_frm<PLUS> vfwadd_frm_obj;
 static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
 static CONSTEXPR const binop<MULT> vfmul_obj;
 static CONSTEXPR const binop<DIV> vfdiv_obj;
@@ -2292,6 +2328,7 @@ BASE (vfsub_frm)
 BASE (vfrsub)
 BASE (vfrsub_frm)
 BASE (vfwadd)
+BASE (vfwadd_frm)
 BASE (vfwsub)
 BASE (vfmul)
 BASE (vfdiv)

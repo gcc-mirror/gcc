@@ -75,6 +75,8 @@ build_all (function_builder &b, const function_group_info &group)
   static CONSTEXPR const DEF##_def VAR##_obj; \
   namespace shapes { const function_shape *const VAR = &VAR##_obj; }
 
+#define BASE_NAME_MAX_LEN 16
+
 /* Base class for for build.  */
 struct build_base : public function_shape
 {
@@ -226,8 +228,8 @@ struct alu_def : public build_base
   }
 };
 
-/* alu_frm_def class.  */
-struct alu_frm_def : public build_base
+/* The base class for frm build.  */
+struct build_frm_base : public build_base
 {
   /* Normalize vf<op>_frm to vf<op>.  */
   static void normalize_base_name (char *to, const char *from, int limit)
@@ -241,10 +243,29 @@ struct alu_frm_def : public build_base
     to[limit - 1] = '\0';
   }
 
+  bool check (function_checker &c) const override
+  {
+    gcc_assert (c.any_type_float_p ());
+
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	unsigned int frm_num = c.arg_num () - 2;
+
+	return c.require_immediate (frm_num, FRM_STATIC_MIN, FRM_STATIC_MAX);
+      }
+
+    return true;
+  }
+};
+
+/* alu_frm_def class.  */
+struct alu_frm_def : public build_frm_base
+{
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
   {
-    char base_name[16] = {};
+    char base_name[BASE_NAME_MAX_LEN] = {};
 
     /* Return nullptr if it can not be overloaded.  */
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
@@ -275,20 +296,40 @@ struct alu_frm_def : public build_base
 
     return b.finish_name ();
   }
+};
 
-  bool check (function_checker &c) const override
+/* widen_alu_frm_def class.  */
+struct widen_alu_frm_def : public build_frm_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
   {
-    gcc_assert (c.any_type_float_p ());
+    char base_name[BASE_NAME_MAX_LEN] = {};
 
-    /* Check whether rounding mode argument is a valid immediate.  */
-    if (c.base->has_rounding_mode_operand_p ())
-      {
-	unsigned int frm_num = c.arg_num () - 2;
+    normalize_base_name (base_name, instance.base_name, sizeof (base_name));
 
-	return c.require_immediate (frm_num, FRM_STATIC_MIN, FRM_STATIC_MAX);
-      }
+    b.append_base_name (base_name);
 
-    return true;
+    /* vop<sew> --> vop<sew>_<op>.  */
+    b.append_name (operand_suffixes[instance.op_info->op]);
+
+    /* vop<sew>_<op> --> vop<sew>_<op>_<type>.  */
+    if (!overloaded_p)
+      b.append_name (type_suffixes[instance.type.index].vector);
+
+    /* According to rvv-intrinsic-doc, it does not add "_rm" suffix
+       for vop_rm C++ overloaded API.  */
+    if (!overloaded_p)
+      b.append_name ("_rm");
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+
+    b.append_name (predication_suffixes[instance.pred]);
+
+    return b.finish_name ();
   }
 };
 
@@ -811,6 +852,7 @@ SHAPE(indexed_loadstore, indexed_loadstore)
 SHAPE(alu, alu)
 SHAPE(alu_frm, alu_frm)
 SHAPE(widen_alu, widen_alu)
+SHAPE(widen_alu_frm, widen_alu_frm)
 SHAPE(no_mask_policy, no_mask_policy)
 SHAPE(return_mask, return_mask)
 SHAPE(narrow_alu, narrow_alu)
