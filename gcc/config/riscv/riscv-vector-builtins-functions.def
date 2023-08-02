@@ -306,8 +306,12 @@ DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwsub, widen_alu, full_preds, f_wwf_ops)
 DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvv_ops)
 DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wvf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wvf_ops)
 DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwv_ops)
 DEF_RVV_FUNCTION (vfwadd_frm, widen_alu_frm, full_preds, f_wwf_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwv_ops)
+DEF_RVV_FUNCTION (vfwsub_frm, widen_alu_frm, full_preds, f_wwf_ops)
 
 // 13.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
 DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvv_ops)
