@@ -1695,6 +1695,30 @@ public:
     return NULL_TREE;
   }
 
+  tree
+  lookup_type_by_id (tree id) const final override
+  {
+    if (tree type_decl = lookup_name (id))
+	if (TREE_CODE (type_decl) == TYPE_DECL)
+	  {
+	    tree record_type = TREE_TYPE (type_decl);
+	    if (TREE_CODE (record_type) == RECORD_TYPE)
+	      return record_type;
+	  }
+
+    return NULL_TREE;
+  }
+
+  tree
+  lookup_global_var_by_id (tree id) const final override
+  {
+    if (tree var_decl = lookup_name (id))
+      if (TREE_CODE (var_decl) == VAR_DECL)
+				return var_decl;
+
+    return NULL_TREE;
+  }
+
 private:
   /* Attempt to get an INTEGER_CST from MACRO.
      Only handle the simplest cases: where MACRO's definition is a single
