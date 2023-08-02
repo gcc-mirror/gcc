@@ -270,6 +270,10 @@ gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
 #define bitwise_inverted_equal_p(expr1, expr2) \
   gimple_bitwise_inverted_equal_p (expr1, expr2, valueize)
 
+
+bool gimple_bit_not_with_nop (tree, tree *, tree (*) (tree));
+bool gimple_maybe_cmp (tree, tree *, tree (*) (tree));
+
 /* Helper function for bitwise_equal_p macro.  */
 
 static inline bool
@@ -285,52 +289,51 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, tree (*valueize) (tree)
     return false;
 
   tree other;
-  if (gimple_nop_convert (expr1, &other, valueize)
-      && gimple_bitwise_inverted_equal_p (other, expr2, valueize))
-    return true;
-
-  if (gimple_nop_convert (expr2, &other, valueize)
-      && gimple_bitwise_inverted_equal_p (expr1, other, valueize))
-    return true;
-
-  if (TREE_CODE (expr1) != SSA_NAME
-      || TREE_CODE (expr2) != SSA_NAME)
-    return false;
-
-  gimple *d1 = get_def (valueize, expr1);
-  gassign *a1 = safe_dyn_cast <gassign *> (d1);
-  gimple *d2 = get_def (valueize, expr2);
-  gassign *a2 = safe_dyn_cast <gassign *> (d2);
-  if (a1
-      && gimple_assign_rhs_code (a1) == BIT_NOT_EXPR
-      && gimple_bitwise_equal_p (do_valueize (valueize,
-					      gimple_assign_rhs1 (a1)),
-				 expr2, valueize))
-	return true;
-  if (a2
-      && gimple_assign_rhs_code (a2) == BIT_NOT_EXPR
-      && gimple_bitwise_equal_p (expr1,
-				 do_valueize (valueize,
-					      gimple_assign_rhs1 (a2)),
-				 valueize))
-	return true;
-
-  if (a1 && a2
-      && TREE_CODE_CLASS (gimple_assign_rhs_code (a1)) == tcc_comparison
-      && TREE_CODE_CLASS (gimple_assign_rhs_code (a2)) == tcc_comparison)
+  /* Try if EXPR1 was defined as ~EXPR2. */
+  if (gimple_bit_not_with_nop (expr1, &other, valueize))
     {
-      tree op10 = do_valueize (valueize, gimple_assign_rhs1 (a1));
-      tree op20 = do_valueize (valueize, gimple_assign_rhs1 (a2));
-      if (!operand_equal_p (op10, op20))
-        return false;
-      tree op11 = do_valueize (valueize, gimple_assign_rhs2 (a1));
-      tree op21 = do_valueize (valueize, gimple_assign_rhs2 (a2));
-      if (!operand_equal_p (op11, op21))
-        return false;
-      if (invert_tree_comparison (gimple_assign_rhs_code (a1),
-				  HONOR_NANS (op10))
-	  == gimple_assign_rhs_code (a2))
+      if (operand_equal_p (other, expr2, 0))
+	return true;
+      tree expr4;
+      if (gimple_nop_convert (expr2, &expr4, valueize)
+	  && operand_equal_p (other, expr4, 0))
 	return true;
     }
+  /* Try if EXPR2 was defined as ~EXPR1. */
+  if (gimple_bit_not_with_nop (expr2, &other, valueize))
+    {
+      if (operand_equal_p (other, expr1, 0))
+	return true;
+      tree expr3;
+      if (gimple_nop_convert (expr1, &expr3, valueize)
+	  && operand_equal_p (other, expr3, 0))
+	return true;
+    }
+
+  /* If neither are defined by BIT_NOT, try to see if
+     both are defined by comparisons and see if they are
+     complementary (inversion) of each other. */
+  tree newexpr1, newexpr2;
+  if (!gimple_maybe_cmp (expr1, &newexpr1, valueize))
+    return false;
+  if (!gimple_maybe_cmp (expr2, &newexpr2, valueize))
+    return false;
+
+  gimple *d1 = get_def (valueize, newexpr1);
+  gassign *a1 = dyn_cast <gassign *> (d1);
+  gimple *d2 = get_def (valueize, newexpr2);
+  gassign *a2 = dyn_cast <gassign *> (d2);
+  tree op10 = do_valueize (valueize, gimple_assign_rhs1 (a1));
+  tree op20 = do_valueize (valueize, gimple_assign_rhs1 (a2));
+  if (!operand_equal_p (op10, op20))
+    return false;
+  tree op11 = do_valueize (valueize, gimple_assign_rhs2 (a1));
+  tree op21 = do_valueize (valueize, gimple_assign_rhs2 (a2));
+  if (!operand_equal_p (op11, op21))
+    return false;
+  if (invert_tree_comparison (gimple_assign_rhs_code (a1),
+			      HONOR_NANS (op10))
+	== gimple_assign_rhs_code (a2))
+    return true;
   return false;
 }

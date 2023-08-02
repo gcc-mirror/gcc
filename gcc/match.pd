@@ -155,6 +155,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 
+#if GIMPLE
+/* These are used by gimple_bitwise_inverted_equal_p to simplify
+   detection of BIT_NOT and comparisons. */
+(match (bit_not_with_nop @0)
+ (bit_not @0))
+(match (bit_not_with_nop @0)
+ (convert (bit_not @0))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
+(for cmp (tcc_comparison)
+ (match (maybe_cmp @0)
+  (cmp@0 @1 @2))
+ (match (maybe_cmp @0)
+  (convert (cmp@0 @1 @2))
+   (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
+)
+#endif
+
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
    of the ABSU_EXPR will have the corresponding signed type.  */
