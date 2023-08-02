@@ -1,3 +1,18 @@
+2023-08-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/110220
+	* config/avr/avr.cc (avr_optimize_casesi): Set JUMP_LABEL and
+	LABEL_NUSES of new conditional branch instruction.
+
+2023-08-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* config/rs6000/vsx.md (define_insn xxeval): Correct vsx
+	operands output with "x".
+
 2023-07-31  Martin Liska  <mliska@suse.cz>
 
 	PR target/109713

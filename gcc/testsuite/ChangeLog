@@ -1,3 +1,29 @@
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110161
+	* gm2/pim/fail/badxproc.mod: New test.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110865
+	* gm2/iso/pass/constvec.mod: New test.
+	* gm2/iso/pass/constvec2.mod: New test.
+	* gm2/iso/run/pass/constvec3.mod: New test.
+
+2023-08-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* g++.target/powerpc/pr110741.C: New test.
+
 2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: New test.

@@ -1,3 +1,27 @@
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110161
+	* gm2-compiler/M2Check.mod (checkProcTypeEquivalence): New
+	procedure function.
+	(checkTypeKindEquivalence): Call checkProcTypeEquivalence
+	if either left or right is a proc type.
+	* gm2-compiler/M2Quads.mod (BuildRelOp): Create
+	combinedTok prior to creating the range check quadruple.
+	Use combinedTok when creating the range check quadruple.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110865
+	* gm2-compiler/M2Quads.mod (BuildDesignatorArray):
+	Rename t as type and d as dim.  New variable result.
+	Allow constants of an array type to be indexed.
+
 2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110284
