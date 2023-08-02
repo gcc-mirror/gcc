@@ -1158,7 +1158,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Simplify ~X & X as zero.  */
 (simplify
  (bit_and (convert? @0) (convert? @1))
- (if (bitwise_inverted_equal_p (@0, @1))
+ (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+      && bitwise_inverted_equal_p (@0, @1))
   { build_zero_cst (type); }))
 
 /* PR71636: Transform x & ((1U << b) - 1) -> x & ~(~0U << b);  */
@@ -1397,7 +1398,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (bit_ior bit_xor)
  (simplify
   (op (convert? @0) (convert? @1))
-  (if (bitwise_inverted_equal_p (@0, @1))
+  (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+       && bitwise_inverted_equal_p (@0, @1))
    (convert { build_all_ones_cst (TREE_TYPE (@0)); }))))
 
 /* x ^ x -> 0 */
