@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void phinodes_print_statistics (void);
 extern void reserve_phi_args_for_new_edge (basic_block);
-extern void add_phi_node_to_bb (gphi *phi, basic_block bb);
 extern gphi *create_phi_node (tree, basic_block);
 extern void add_phi_arg (gphi *, tree, edge, location_t);
 extern void remove_phi_args (edge);
