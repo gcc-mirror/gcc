@@ -802,6 +802,11 @@ case "${target}" in
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  hppa*-hp-hpux11*)
+    ;;
+  hppa*-*-hpux*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
@@ -1105,8 +1110,13 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
+  hppa1.1-*-osf* | hppa1.1-*-bsd* )
+    ;;
   hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs gdb"
+    ;;
+  hppa*-*-hpux11*)
+    noconfigdirs="$noconfigdirs gdb ld"
     ;;
   hppa*64*-*-linux*)
     ;;
