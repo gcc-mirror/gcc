@@ -68,7 +68,7 @@ TAB_WIDTH = 8
 #   +--------------------------------------------------+
 
 # this regex matches the first line of the "end" in the initial commit message
-FIRST_LINE_OF_END_RE = re.compile('(?i)^(signed-off-by|co-authored-by|#): ')
+FIRST_LINE_OF_END_RE = re.compile('(?i)^(signed-off-by:|co-authored-by:|#) ')
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
