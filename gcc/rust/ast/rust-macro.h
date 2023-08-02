@@ -576,6 +576,8 @@ public:
     return AST::Kind::MACRO_RULES_DEFINITION;
   }
 
+  MacroKind get_kind () const { return kind; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
