@@ -440,10 +440,8 @@ TyTyResolveCompile::visit (const TyTy::SliceType &type)
 void
 TyTyResolveCompile::visit (const TyTy::BoolType &)
 {
-  translated
-    = ctx->get_backend ()->named_type ("bool",
-				       ctx->get_backend ()->bool_type (),
-				       BUILTINS_LOCATION);
+  translated = ctx->get_backend ()->named_type ("bool", boolean_type_node,
+						BUILTINS_LOCATION);
 }
 
 void

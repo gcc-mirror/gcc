@@ -873,7 +873,7 @@ Gcc_backend::wchar_constant_expression (wchar_t c)
 tree
 Gcc_backend::char_constant_expression (char c)
 {
-  return build_int_cst (this->char_type (), c);
+  return build_int_cst (char_type_node, c);
 }
 
 // Make a constant boolean expression.
