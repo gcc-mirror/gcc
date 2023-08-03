@@ -702,7 +702,8 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
       const std::string &extern_abi = qualifiers.get_extern_abi ();
       abi = get_abi_from_string (extern_abi);
       if (has_extern && abi == ABI::UNKNOWN)
-	rust_error_at (qualifiers.get_locus (), "unknown ABI option");
+	rust_error_at (qualifiers.get_locus (), ErrorCode::E0703,
+		       "invalid ABI: found %qs", extern_abi.c_str ());
     }
 
   return HIR::FunctionQualifiers (qualifiers.get_const_status (), unsafety,
@@ -946,7 +947,8 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
       const std::string &extern_abi = extern_block.get_abi ();
       abi = get_abi_from_string (extern_abi);
       if (abi == ABI::UNKNOWN)
-	rust_error_at (extern_block.get_locus (), "unknown ABI option");
+	rust_error_at (extern_block.get_locus (), ErrorCode::E0703,
+		       "invalid ABI: found %qs", extern_abi.c_str ());
     }
 
   HIR::ExternBlock *hir_extern_block
