@@ -898,10 +898,10 @@ Session::expansion (AST::Crate &crate)
 
   if (iterations == cfg.recursion_limit)
     {
-      auto last_invoc = expander.get_last_invocation ();
-      auto last_def = expander.get_last_definition ();
+      auto &last_invoc = expander.get_last_invocation ();
+      auto &last_def = expander.get_last_definition ();
 
-      rust_assert (last_def && last_invoc);
+      rust_assert (last_def.has_value () && last_invoc.has_value ());
 
       rich_location range (line_table, last_invoc->get_locus ());
       range.add_range (last_def->get_locus ());
