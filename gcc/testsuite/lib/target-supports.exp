@@ -7117,9 +7117,11 @@ proc check_effective_target_whole_vector_shift { } {
 
 proc check_effective_target_vect_bswap { } {
     return [check_cached_effective_target_indexed vect_bswap {
-      expr { [istarget aarch64*-*-*]
-	     || [is-effective-target arm_neon]
-	     || [istarget amdgcn-*-*] }}]
+      expr { ([istarget aarch64*-*-*]
+	      || [is-effective-target arm_neon]
+	      || [istarget amdgcn-*-*])
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports comparison of bool vectors for at
