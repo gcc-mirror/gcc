@@ -199,6 +199,9 @@ public:
 
   void format_error_code (char *buffer) const
   {
+    // we can use the `u` format specifier because the `ErrorCode` enum class
+    // "inherits" from `unsigned int` - add a static assertion to make sure
+    // that's the case before we do the formatting
     static_assert (
       std::is_same<std::underlying_type<ErrorCode>::type, unsigned int>::value,
       "invalid format specifier for ErrorCode's underlying type");
@@ -210,17 +213,9 @@ public:
   char *make_description () const final override
   {
     // 'E' + 4 characters + \0
-    char *buffer = new char[6];
-
-    // is that needed. does C++ suck that much that you
-    // can't zero initialize a new[]'d char array
-    memset (buffer, 0, 6);
+    char *buffer = static_cast<char *> (xcalloc (6, sizeof (char)));
 
     format_error_code (buffer);
-
-    // we can use the `u` format specifier because the `ErrorCode` enum class
-    // "inherits" from `unsigned int` - add a static assertion to make sure
-    // that's the case before we do the formatting
 
     return buffer;
   }
