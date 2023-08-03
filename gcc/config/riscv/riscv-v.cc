@@ -991,6 +991,25 @@ emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a masked instruction.  */
+static void
+emit_vlmax_masked_fp_mu_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ true, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_UNDISTURBED);
+  e.set_rounding_mode (FRM_DYN);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* This function emits a TU instruction.  */
 static void
 emit_nonvlmax_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
@@ -1025,6 +1044,45 @@ emit_nonvlmax_fp_tu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
 					  mask_mode);
   e.set_policy (TAIL_UNDISTURBED);
   e.set_policy (MASK_ANY);
+  e.set_rounding_mode (FRM_DYN);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a TUMU instruction.  */
+static void
+emit_nonvlmax_tumu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_UNDISTURBED);
+  e.set_vl (avl);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* This function emits a TUMU instruction.  */
+static void
+emit_nonvlmax_fp_tumu_insn (unsigned icode, int op_num, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
+					  /*HAS_DEST_P*/ true,
+					  /*FULLY_UNMASKED_P*/ false,
+					  /*USE_REAL_MERGE_P*/ true,
+					  /*HAS_AVL_P*/ true,
+					  /*VLMAX_P*/ false, dest_mode,
+					  mask_mode);
+  e.set_policy (TAIL_UNDISTURBED);
+  e.set_policy (MASK_UNDISTURBED);
   e.set_rounding_mode (FRM_DYN);
   e.set_vl (avl);
   e.emit_insn ((enum insn_code) icode, ops);
@@ -3284,22 +3342,40 @@ expand_cond_len_binop (rtx_code code, rtx *ops)
   machine_mode mode = GET_MODE (dest);
   machine_mode mask_mode = GET_MODE (mask);
 
-  poly_uint64 value;
+  poly_int64 value;
   bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+  bool is_vlmax_len
+    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
+  rtx cond_ops[] = {dest, mask, merge, src1, src2};
+  insn_code icode = code_for_pred (code, mode);
 
   if (is_dummy_mask)
     {
       /* Use TU, MASK ANY policy.  */
-      rtx ops[] = {dest, mask, merge, src1, src2};
-      insn_code icode = code_for_pred (code, mode);
       if (needs_fp_rounding (code, mode))
-	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_TU, ops, len);
+	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_TU, cond_ops, len);
       else
-	emit_nonvlmax_tu_insn (icode, RVV_BINOP_TU, ops, len);
+	emit_nonvlmax_tu_insn (icode, RVV_BINOP_TU, cond_ops, len);
     }
   else
-    /* FIXME: Enable this case when we support it in the middle-end.  */
-    gcc_unreachable ();
+    {
+      if (is_vlmax_len)
+	{
+	  /* Use TAIL ANY, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_vlmax_masked_fp_mu_insn (icode, RVV_BINOP_MU, cond_ops);
+	  else
+	    emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, cond_ops);
+	}
+      else
+	{
+	  /* Use TU, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_nonvlmax_fp_tumu_insn (icode, RVV_BINOP_TUMU, cond_ops, len);
+	  else
+	    emit_nonvlmax_tumu_insn (icode, RVV_BINOP_TUMU, cond_ops, len);
+	}
+    }
 }
 
 /* Prepare insn_code for gather_load/scatter_store according to
@@ -3469,8 +3545,10 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   machine_mode mode = GET_MODE (dest);
   machine_mode mask_mode = GET_MODE (mask);
 
-  poly_uint64 value;
+  poly_int64 value;
   bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+  bool is_vlmax_len
+    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
 
   if (is_dummy_mask)
     {
@@ -3482,8 +3560,24 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
 	gcc_unreachable ();
     }
   else
-    /* FIXME: Enable this case when we support it in the middle-end.  */
-    gcc_unreachable ();
+    {
+      if (is_vlmax_len)
+	{
+	  /* Use TAIL ANY, MU policy.  */
+	  if (FLOAT_MODE_P (mode))
+	    emit_vlmax_masked_fp_mu_insn (icode, RVV_TERNOP_MU, ops);
+	  else
+	    emit_vlmax_masked_mu_insn (icode, RVV_TERNOP_MU, ops);
+	}
+      else
+	{
+	  /* Use TU, MU policy.  */
+	  if (FLOAT_MODE_P (mode))
+	    emit_nonvlmax_fp_tumu_insn (icode, RVV_TERNOP_TUMU, ops, len);
+	  else
+	    emit_nonvlmax_tumu_insn (icode, RVV_TERNOP_TUMU, ops, len);
+	}
+    }
 }
 
 /* Expand reduction operations.  */
@@ -3531,6 +3625,44 @@ expand_reduction (rtx_code code, rtx *ops, rtx init, reduction_type type)
     }
 
   emit_insn (gen_pred_extract_first (m1_mode, ops[0], m1_tmp2));
+}
+
+/* Prepare ops for ternary operations.
+   It can be called before or after RA.  */
+void
+prepare_ternary_operands (rtx *ops, bool split_p)
+{
+  machine_mode mode = GET_MODE (ops[0]);
+
+  if (split_p
+      || (!rtx_equal_p (ops[2], ops[5])
+	  && !rtx_equal_p (ops[3], ops[5])
+	  && !rtx_equal_p (ops[4], ops[5])
+	  && riscv_get_v_regno_alignment (mode) == 8))
+    {
+      /* RA will fail to find vector REG and report ICE, so we pre-merge
+	 the ops for LMUL = 8.  */
+      if (satisfies_constraint_Wc1 (ops[1]))
+	{
+	  emit_move_insn (ops[0], ops[5]);
+	  emit_insn (gen_pred_mov (mode, ops[0], ops[1], ops[0], ops[4], ops[6],
+				   ops[7], ops[8], ops[9]));
+	}
+      else
+	emit_insn (gen_pred_merge (mode, ops[0], RVV_VUNDEF (mode), ops[5],
+				   ops[4], ops[1], ops[6], ops[7], ops[9]));
+      ops[5] = ops[4] = ops[0];
+    }
+  else
+    {
+      /* Swap the multiplication ops if the fallback value is the
+	 second of the two.  */
+      if (rtx_equal_p (ops[3], ops[5]))
+	std::swap (ops[2], ops[3]);
+
+      /* TODO: ??? Maybe we could support splitting FMA (a, 4, b)
+	 into PLUS (ASHIFT (a, 2), b) according to uarchs.  */
+    }
 }
 
 } // namespace riscv_vector

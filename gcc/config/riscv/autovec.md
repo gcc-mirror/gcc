@@ -1452,9 +1452,65 @@
 ;; ---- [INT] Conditional binary operations
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - vsra/vsrl/vsll
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_shift:VI
+     (match_operand:VI 2 "register_operand")
+     (match_operand:VI 3 "vector_shift_operand"))
+   (match_operand:VI 4 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3], operands[4],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_shift:VI
+     (match_operand:VI 2 "register_operand")
+     (match_operand:VI 3 "vector_shift_operand"))
+   (match_operand:VI 4 "register_operand")
+   (match_operand 5 "autovec_length_operand")
+   (match_operand 6 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Conditional binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
 ;; - vadd.vv/vsub.vv/...
 ;; - vadd.vi/vsub.vi/...
 ;; -------------------------------------------------------------------------
+
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_int_binop_no_shift:VI
+     (match_operand:VI 2 "<binop_rhs1_predicate>")
+     (match_operand:VI 3 "<binop_rhs2_predicate>"))
+   (match_operand:VI 4 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3], operands[4],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
 
 (define_expand "cond_len_<optab><mode>"
   [(match_operand:VI 0 "register_operand")
@@ -1479,6 +1535,23 @@
 ;; - vfadd.vf/vfsub.vf/...
 ;; -------------------------------------------------------------------------
 
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_binop:VF
+     (match_operand:VF 2 "register_operand")
+     (match_operand:VF 3 "register_operand"))
+   (match_operand:VF 4 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3], operands[4],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
+
 (define_expand "cond_len_<optab><mode>"
   [(match_operand:VF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
@@ -1500,6 +1573,23 @@
 ;; - vfmin.vf/vfmax.vf
 ;; -------------------------------------------------------------------------
 
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_binop_nofrm:VF
+     (match_operand:VF 2 "register_operand")
+     (match_operand:VF 3 "register_operand"))
+   (match_operand:VF 4 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3], operands[4],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
+
 (define_expand "cond_len_<optab><mode>"
   [(match_operand:VF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
@@ -1516,11 +1606,101 @@
 })
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT] Conditional ternary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vmacc/...
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_fma<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VI 2 "register_operand")
+   (match_operand:VI 3 "register_operand")
+   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fma<mode> (operands[0], operands[1], operands[2],
+				     operands[3], operands[4], operands[5],
+				     gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				     const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_fma<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VI 2 "register_operand")
+   (match_operand:VI 3 "register_operand")
+   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mul_plus (<MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})
+
+(define_expand "cond_fnma<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VI 2 "register_operand")
+   (match_operand:VI 3 "register_operand")
+   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fnma<mode> (operands[0], operands[1], operands[2],
+				      operands[3], operands[4], operands[5],
+				      gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				      const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_fnma<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VI 2 "register_operand")
+   (match_operand:VI 3 "register_operand")
+   (match_operand:VI 4 "register_operand")
+   (match_operand:VI 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_minus_mul (<MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP] Conditional ternary operations
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - vfmacc/...
 ;; -------------------------------------------------------------------------
+
+(define_expand "cond_fma<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fma<mode> (operands[0], operands[1], operands[2],
+				     operands[3], operands[4], operands[5],
+				     gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				     const0_rtx));
+  DONE;
+})
 
 (define_expand "cond_len_fma<mode>"
   [(match_operand:VF 0 "register_operand")
@@ -1534,6 +1714,105 @@
   "TARGET_VECTOR"
 {
   insn_code icode = code_for_pred_mul (PLUS, <MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})
+
+(define_expand "cond_fnma<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fnma<mode> (operands[0], operands[1], operands[2],
+				      operands[3], operands[4], operands[5],
+				      gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				      const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_fnma<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mul_neg (PLUS, <MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})
+
+(define_expand "cond_fms<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fms<mode> (operands[0], operands[1], operands[2],
+				     operands[3], operands[4], operands[5],
+				     gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				     const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_fms<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mul (MINUS, <MODE>mode);
+  riscv_vector::expand_cond_len_ternop (icode, operands);
+  DONE;
+})
+
+(define_expand "cond_fnms<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_fnms<mode> (operands[0], operands[1], operands[2],
+				      operands[3], operands[4], operands[5],
+				      gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+				      const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_fnms<mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (match_operand:VF 2 "register_operand")
+   (match_operand:VF 3 "register_operand")
+   (match_operand:VF 4 "register_operand")
+   (match_operand:VF 5 "register_operand")
+   (match_operand 6 "autovec_length_operand")
+   (match_operand 7 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred_mul_neg (MINUS, <MODE>mode);
   riscv_vector::expand_cond_len_ternop (icode, operands);
   DONE;
 })

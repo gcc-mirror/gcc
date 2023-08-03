@@ -4808,7 +4808,7 @@ riscv_memmodel_needs_amo_release (enum memmodel model)
 /* Get REGNO alignment of vector mode.
    The alignment = LMUL when the LMUL >= 1.
    Otherwise, alignment = 1.  */
-static int
+int
 riscv_get_v_regno_alignment (machine_mode mode)
 {
   /* 3.3.2. LMUL = 2,4,8, register numbers should be multiple of 2,4,8.

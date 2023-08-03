@@ -75,6 +75,8 @@ foreach op $AUTOVEC_TEST_OPTS {
     "" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/reduc/*.\[cS\]]] \
     "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/cond/*.\[cS\]]] \
+    "" "$op"
 }
 
 # widening operation only test on LMUL < 8
