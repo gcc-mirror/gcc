@@ -17704,6 +17704,58 @@ expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
   return false;
 }
 
+/* Try to emit vlbr/vstbr.  Note, this is only a candidate insn since
+   TARGET_VECTORIZE_VEC_PERM_CONST operates on vector registers only.  Thus,
+   either fwprop, combine et al. "fixes" one of the input/output operands into
+   a memory operand or a splitter has to reverse this into a general vperm
+   operation.  */
+
+static bool
+expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
+{
+  static const char perm[4][MAX_VECT_LEN]
+    = { { 1,  0,  3,  2,  5,  4,  7, 6, 9,  8,  11, 10, 13, 12, 15, 14 },
+	{ 3,  2,  1,  0,  7,  6,  5, 4, 11, 10, 9,  8,  15, 14, 13, 12 },
+	{ 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },
+	{ 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } };
+
+  if (!TARGET_VXE2 || d.vmode != V16QImode || d.op0 != d.op1)
+    return false;
+
+  if (memcmp (d.perm, perm[0], MAX_VECT_LEN) == 0)
+    {
+      rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
+      rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
+      emit_insn (gen_bswapv8hi (target, op0));
+      return true;
+    }
+
+  if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
+    {
+      rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
+      rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
+      emit_insn (gen_bswapv4si (target, op0));
+      return true;
+    }
+
+  if (memcmp (d.perm, perm[2], MAX_VECT_LEN) == 0)
+    {
+      rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
+      rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
+      emit_insn (gen_bswapv2di (target, op0));
+      return true;
+    }
+
+  if (memcmp (d.perm, perm[3], MAX_VECT_LEN) == 0)
+    {
+      rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
+      rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
+      emit_insn (gen_bswapv1ti (target, op0));
+      return true;
+    }
+
+  return false;
+}
 
 /* Try to find the best sequence for the vector permute operation
    described by D.  Return true if the operation could be
@@ -17724,6 +17776,9 @@ vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
     return true;
 
   if (expand_perm_with_rot (d))
+    return true;
+
+  if (expand_perm_as_a_vlbr_vstbr_candidate (d))
     return true;
 
   return false;
