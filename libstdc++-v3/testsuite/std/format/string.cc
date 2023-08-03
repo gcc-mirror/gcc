@@ -128,6 +128,19 @@ test_format_spec()
   VERIFY( ! is_format_string_for("{:9999999}", 1) );
 }
 
+void
+test_pr110862()
+{
+  try {
+    // PR libstdc++/110862 out-of-bounds read on invalid format string
+    (void) std::vformat("{0:{0}", std::make_format_args(1));
+    VERIFY( false );
+  } catch (const std::format_error& e) {
+    std::string_view what = e.what();
+    VERIFY( what.find("unmatched left brace") != what.npos );
+  }
+}
+
 int main()
 {
   test_no_args();

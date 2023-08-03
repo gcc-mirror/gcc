@@ -3534,7 +3534,9 @@ namespace __format
 	      _M_pc.advance_to(__ptr);
 	  }
 	_M_format_arg(__id);
-	_M_pc.advance_to(_M_pc.begin() + 1); // Move past '}'
+	if (begin() == end() || *begin() != '}')
+	  __format::__unmatched_left_brace_in_format_string();
+	_M_pc.advance_to(begin() + 1); // Move past '}'
       }
 
       constexpr virtual void _M_format_arg(size_t __id) = 0;
