@@ -866,7 +866,7 @@
 
 ;; Defines rounding mode of an floating-point operation.
 (define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,dyn_exit,dyn_call,none"
-  (cond [(eq_attr "type" "vfalu,vfwalu,vfmul")
+  (cond [(eq_attr "type" "vfalu,vfwalu,vfmul,vfdiv")
          (cond
 	   [(match_test "INTVAL (operands[9]) == riscv_vector::FRM_RNE")
 	    (const_string "rne")
