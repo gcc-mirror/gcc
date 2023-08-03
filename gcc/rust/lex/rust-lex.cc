@@ -2295,7 +2295,17 @@ Lexer::parse_decimal_int_or_float (location_t loc)
   length += std::get<1> (initial_decimal);
 
   // detect float literal
-  if (current_char == '.' && is_float_digit (peek_input (1).value))
+  //
+  // Note:
+  //
+  // We should not use is_float_digit () for this verification but instead
+  // directly ISDIGIT because rust does not support non digit values right after
+  // a dot.
+  // The following value is not legal in rust:
+  // let a = 3.e1;
+  // A `0` should be put between the dot and the exponent to be valid
+  // (eg. 3.0e1).
+  if (current_char == '.' && ISDIGIT (peek_input (1).value))
     {
       // float with a '.', parse another decimal into it
 
