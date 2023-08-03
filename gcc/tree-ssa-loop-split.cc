@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "print-tree.h"
 #include "value-query.h"
+#include "sreal.h"
 
 /* This file implements two kinds of loop splitting.
 
@@ -691,6 +692,37 @@ split_loop (class loop *loop1)
 			= loop1_prob.invert ();
 
 	fix_loop_bb_probability (loop1, loop2, true_edge, false_edge);
+	/* If conditional we split on has reliable profilea nd both
+	   preconditionals of loop1 and loop2 are constant true, we can
+	   only redistribute the iteration counts to the split loops.
+
+	   If the conditionals we insert before loop1 or loop2 are non-trivial
+	   they increase expected loop count, so account this accordingly.
+	   If we do not know the probability of split conditional, avoid
+	   reudcing loop estimates, since we do not really know how they are
+	   split between of the two new loops.  Keep orignal estimate since
+	   it is likely better then completely dropping it.
+
+	   TODO: If we know that onle of the new loops has constant
+	   number of iterations, we can do better.  We could also update
+	   upper bounds.  */
+	if (loop1->any_estimate
+	    && wi::fits_shwi_p (loop1->nb_iterations_estimate))
+	  {
+	    sreal scale = true_edge->probability.reliable_p ()
+			  ? true_edge->probability.to_sreal () : (sreal)1;
+	    sreal scale2 = false_edge->probability.reliable_p ()
+			  ? false_edge->probability.to_sreal () : (sreal)1;
+	    /* +1 to get header interations rather than latch iterations and then
+	       -1 to convert back.  */
+	    loop1->nb_iterations_estimate
+	      = MAX ((((sreal)loop1->nb_iterations_estimate.to_shwi () + 1) * scale
+		     / loop1_prob.to_sreal ()).to_nearest_int () - 1, 0);
+	    loop2->nb_iterations_estimate
+	      = MAX ((((sreal)loop2->nb_iterations_estimate.to_shwi () + 1) * scale2
+		     / profile_probability::very_likely ().to_sreal ())
+		     .to_nearest_int () - 1, 0);
+	  }
 	update_loop_exit_probability_scale_dom_bbs (loop1);
 	update_loop_exit_probability_scale_dom_bbs (loop2);
 
@@ -710,8 +742,6 @@ split_loop (class loop *loop1)
 					    stmts);
 	tree guard_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop1));
 	patch_loop_exit (loop1, guard_stmt, guard_next, newend, initial_true);
-
-	/* TODO: Update any_esitmate and upper bounds.  */
 
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */
