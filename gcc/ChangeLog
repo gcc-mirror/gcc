@@ -1,3 +1,135 @@
+2023-08-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/110867
+	* combine.cc (simplify_compare_const): Try the optimization only
+	in case the constant fits into the comparison mode.
+
+2023-08-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/zicond.md: Remove incorrect zicond patterns and
+	renumber/rename them.
+	(zero.nez.<GPR:MODE><X:mode>.opt2): Fix output string.
+
+2023-08-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-phinodes.h (add_phi_node_to_bb): Remove.
+	* tree-phinodes.cc  (add_phi_node_to_bb): Make static.
+
+2023-08-02  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vec_dupv2df<mask_name>): Fold the middle
+	two of the alternatives.
+
+2023-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92335
+	* tree-ssa-sink.cc (select_best_block): Before loop
+	optimizations avoid sinking unconditional loads/stores
+	in innermost loops to conditional executed places.
+
+2023-08-02  Andrew Pinski  <apinski@marvell.com>
+
+	* gimple-match-head.cc (gimple_bitwise_inverted_equal_p): Valueize
+	the comparison operands before comparing them.
+
+2023-08-02  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`~X & X`, `~X | X`): Move over to
+	use bitwise_inverted_equal_p, removing :c as bitwise_inverted_equal_p
+	handles that already.
+	Remove range test simplifications to true/false as they
+	are now handled by these patterns.
+
+2023-08-02  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Mark's cond
+	statement's lhs and rhs to check if trivial dead.
+	Rename inserted_exprs to exprs_maybe_dce; also move it so
+	bitmap is not allocated if not needed.
+
+2023-08-02  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class widen_binop_frm): New class for binop frm.
+	(BASE): Add vfwadd_frm.
+	* config/riscv/riscv-vector-builtins-bases.h: New declaration.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwadd_frm): New function definition.
+	* config/riscv/riscv-vector-builtins-shapes.cc
+	(BASE_NAME_MAX_LEN): New macro.
+	(struct alu_frm_def): Leverage new base class.
+	(struct build_frm_base): New build base for frm.
+	(struct widen_alu_frm_def): New struct for widen alu frm.
+	(SHAPE): Add widen_alu_frm shape.
+	* config/riscv/riscv-vector-builtins-shapes.h: New declaration.
+	* config/riscv/vector.md (frm_mode): Add vfwalu type.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.h (loop_count_in): Declare.
+	* cfgloopanal.cc (expected_loop_iterations_by_profile): Use count_in.
+	(loop_count_in): Move here from ...
+	* cfgloopmanip.cc (loop_count_in): ... here.
+	(scale_loop_profile): Improve dumping; cast iteration bound to sreal.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.cc (scale_strictly_dominated_blocks): New function.
+	* cfg.h (scale_strictly_dominated_blocks): Declare.
+	* tree-cfg.cc (fold_loop_internal_call): Fixup CFG profile.
+
+2023-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/110587
+	* lra-spills.cc (return_regno_p): Remove.
+	(regno_in_use_p): Likewise.
+	(lra_final_code_change): Do not remove noop moves
+	between hard registers.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/81904
+	* config/i386/sse.md (vec_fmaddsub<mode>4): Extend to vector
+	HFmode, use mode iterator VFH instead.
+	(vec_fmsubadd<mode>4): Ditto.
+	(<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>):
+	Remove scalar mode from iterator, use VFH_AVX512VL instead.
+	(<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>):
+	Ditto.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (*avx2_lddqu_inserti_to_bcasti): New
+	pre_reload define_insn_and_split.
+
+2023-08-02  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add costing for
+	using Zicond to implement some conditional moves.
+
+2023-08-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/zicond.md: Use the X iterator instead of ANYI
+	on the comparison input operands.
+
+2023-08-02  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs, case IF_THEN_ELSE): Add
+	Zicond costing.
+	(case SET): For INSNs that just set a REG, take the cost from the
+	SET_SRC.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-08-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AMX_INT8_SET):
+	Change OPTION_MASK_ISA2_AMX_TILE to OPTION_MASK_ISA2_AMX_TILE_SET.
+	(OPTION_MASK_ISA2_AMX_BF16_SET): Ditto
+	(OPTION_MASK_ISA2_AMX_FP16_SET): Ditto
+	(OPTION_MASK_ISA2_AMX_COMPLEX_SET): Ditto
+	(OPTION_MASK_ISA_ABM_SET):
+	Change OPTION_MASK_ISA_POPCNT to OPTION_MASK_ISA_POPCNT_SET.
+
 2023-08-01  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.cc (s390_encode_section_info): Assume external

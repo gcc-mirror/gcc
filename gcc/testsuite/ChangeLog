@@ -1,3 +1,50 @@
+2023-08-02  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* gcc.dg/plugin/plugin.exp: Add new plugin and test.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: New plugin.
+	* gcc.dg/plugin/cpython-plugin-test-1.c: New test.
+
+2023-08-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/110869
+	* gcc.dg/cmp-mem-const-1.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-2.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-3.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-4.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-5.c: Exclude sparc since here the
+	constant is already reduced.
+	* gcc.dg/cmp-mem-const-6.c: Exclude sparc since here the
+	constant is already reduced.
+
+2023-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92335
+	* gcc.dg/tree-ssa/ssa-sink-10.c: Disable vectorizing.
+	* gcc.dg/tree-ssa/predcom-9.c: Clone from ssa-sink-10.c,
+	expect predictive commoning to happen instead of sinking.
+	* gcc.dg/vect/pr65947-3.c: Ajdust.
+
+2023-08-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-add.c: New test.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/unroll-1.c: Fix template.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/pr98308.c: Check that profile is consistent.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr81904.c: New test.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vlddqu_vinserti128.c: New test.
+
 2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110161

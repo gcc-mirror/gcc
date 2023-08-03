@@ -1,3 +1,11 @@
+2023-08-02  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* analyzer-language.cc (run_callbacks): New function.
+	(on_finish_translation_unit): New function.
+	* analyzer-language.h (GCC_ANALYZER_LANGUAGE_H): New include.
+	(class translation_unit): New vfuncs.
+
 2023-07-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104940
