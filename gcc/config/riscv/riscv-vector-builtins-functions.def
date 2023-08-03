@@ -319,6 +319,8 @@ DEF_RVV_FUNCTION (vfmul, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfdiv, alu, full_preds, f_vvf_ops)
 DEF_RVV_FUNCTION (vfrdiv, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvv_ops)
+DEF_RVV_FUNCTION (vfmul_frm, alu_frm, full_preds, f_vvf_ops)
 
 // 13.5. Vector Widening Floating-Point Multiply
 DEF_RVV_FUNCTION (vfwmul, alu, full_preds, f_wvv_ops)

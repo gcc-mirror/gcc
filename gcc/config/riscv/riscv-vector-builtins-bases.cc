@@ -277,6 +277,7 @@ public:
 
 /* Implements below instructions for now.
    - vfadd
+   - vfmul
 */
 template<rtx_code CODE>
 class binop_frm : public function_base
@@ -2103,6 +2104,7 @@ static CONSTEXPR const widen_binop_frm<PLUS> vfwadd_frm_obj;
 static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
 static CONSTEXPR const widen_binop_frm<MINUS> vfwsub_frm_obj;
 static CONSTEXPR const binop<MULT> vfmul_obj;
+static CONSTEXPR const binop_frm<MULT> vfmul_frm_obj;
 static CONSTEXPR const binop<DIV> vfdiv_obj;
 static CONSTEXPR const reverse_binop<DIV> vfrdiv_obj;
 static CONSTEXPR const widen_binop<MULT> vfwmul_obj;
@@ -2334,6 +2336,7 @@ BASE (vfwadd_frm)
 BASE (vfwsub)
 BASE (vfwsub_frm)
 BASE (vfmul)
+BASE (vfmul_frm)
 BASE (vfdiv)
 BASE (vfrdiv)
 BASE (vfwmul)
