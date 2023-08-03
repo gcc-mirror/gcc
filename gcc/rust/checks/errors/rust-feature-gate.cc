@@ -49,8 +49,8 @@ FeatureGate::check (AST::Crate &crate)
 		    }
 
 		  else
-		    rust_error_at (item->get_locus (), "unknown feature '%s'",
-				   name_str.c_str ());
+		    rust_error_at (item->get_locus (), ErrorCode::E0635,
+				   "unknown feature %qs", name_str.c_str ());
 		}
 	    }
 	}
