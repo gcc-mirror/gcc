@@ -29,6 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Annotate (Gnatcheck, Exempt_On, "Metrics_LSLOC",
+                 "limit exceeded due to proof code");
+
 with Ada.Unchecked_Conversion;
 with System.SPARK.Cut_Operations; use System.SPARK.Cut_Operations;
 
@@ -814,6 +817,8 @@ is
    -- Double_Divide --
    -------------------
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Metrics_Cyclomatic_Complexity",
+                    "limit exceeded due to proof code");
    procedure Double_Divide
      (X, Y, Z : Double_Int;
       Q, R    : out Double_Int;
@@ -1221,6 +1226,7 @@ is
 
       Prove_Signs;
    end Double_Divide;
+   pragma Annotate (Gnatcheck, Exempt_Off, "Metrics_Cyclomatic_Complexity");
 
    ---------
    -- Le3 --
@@ -1899,6 +1905,8 @@ is
    -- Scaled_Divide --
    -------------------
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Metrics_Cyclomatic_Complexity",
+                    "limit exceeded due to proof code");
    procedure Scaled_Divide
      (X, Y, Z : Double_Int;
       Q, R    : out Double_Int;
@@ -3317,6 +3325,7 @@ is
       Prove_Sign_R;
       Prove_Signs;
    end Scaled_Divide;
+   pragma Annotate (Gnatcheck, Exempt_Off, "Metrics_Cyclomatic_Complexity");
 
    ----------
    -- Sub3 --
@@ -3658,3 +3667,5 @@ is
 
    pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
 end System.Arith_Double;
+
+pragma Annotate (Gnatcheck, Exempt_Off, "Metrics_LSLOC");
