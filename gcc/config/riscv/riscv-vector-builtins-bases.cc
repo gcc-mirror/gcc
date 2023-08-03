@@ -277,6 +277,7 @@ public:
 
 /* Implements below instructions for now.
    - vfadd
+   - vfsub
    - vfmul
 */
 template<rtx_code CODE>
