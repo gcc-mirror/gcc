@@ -742,7 +742,7 @@ scale_loop_profile (class loop *loop, profile_probability p,
   /* In a consistent profile unadjusted_exit_count should be same as count_in,
      however to preserve as much of the original info, avoid recomputing
      it.  */
-  profile_count unadjusted_exit_count;
+  profile_count unadjusted_exit_count = profile_count::uninitialized ();
   if (exit_edge)
     unadjusted_exit_count = exit_edge->count ();
   scale_loop_frequencies (loop, scale_prob);
