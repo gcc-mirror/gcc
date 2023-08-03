@@ -7630,7 +7630,22 @@ rewrite_use_address (struct ivopts_data *data,
 				      true, GSI_SAME_STMT);
     }
   else
-    copy_ref_info (ref, *use->op_p);
+    {
+      /* When we end up confused enough and have no suitable base but
+	 stuffed everything to index2 use a LEA for the address and
+	 create a plain MEM_REF to avoid basing a memory reference
+	 on address zero which create_mem_ref_raw does as fallback.  */
+      if (TREE_CODE (ref) == TARGET_MEM_REF
+	  && TMR_INDEX2 (ref) != NULL_TREE
+	  && integer_zerop (TREE_OPERAND (ref, 0)))
+	{
+	  ref = fold_build1 (ADDR_EXPR, TREE_TYPE (TREE_OPERAND (ref, 0)), ref);
+	  ref = force_gimple_operand_gsi (&bsi, ref, true, NULL_TREE,
+					  true, GSI_SAME_STMT);
+	  ref = build2 (MEM_REF, type, ref, build_zero_cst (alias_ptr_type));
+	}
+      copy_ref_info (ref, *use->op_p);
+    }
 
   *use->op_p = ref;
 }
