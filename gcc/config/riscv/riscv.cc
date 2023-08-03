@@ -3580,14 +3580,66 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       riscv_emit_int_compare (&code, &op0, &op1, need_eq_ne_p);
       rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
 
-      /* The expander allows (const_int 0) for CONS for the benefit of
-	 TARGET_XTHEADCONDMOV, but that case isn't supported for
-	 TARGET_SFB_ALU.  So force that operand into a register if
-	 necessary.  */
+      /* The expander is a bit loose in its specification of the true
+	 arm of the conditional move.  That allows us to support more
+	 cases for extensions which are more general than SFB.  But
+	does mean we need to force CONS into a register at this point.  */
       cons = force_reg (GET_MODE (dest), cons);
       emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 							  cond, cons, alt)));
       return true;
+    }
+  else if (TARGET_ZICOND
+	   && (code == EQ || code == NE)
+	   && GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      /* The comparison must be comparing WORD_MODE objects.   We must
+	 enforce that so that we don't strip away a sign_extension
+	 thinking it is unnecessary.  We might consider using
+	 riscv_extend_operands if they are not already properly extended.  */
+      if (GET_MODE (op0) != word_mode || GET_MODE (op1) != word_mode)
+	return false;
+
+      /* 0, reg or 0, imm */
+      if (cons == CONST0_RTX (mode)
+	  && (REG_P (alt)
+	      || (CONST_INT_P (alt) && alt != CONST0_RTX (mode))))
+	{
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	  alt = force_reg (mode, alt);
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_IF_THEN_ELSE (mode, cond,
+							cons, alt)));
+	  return true;
+	}
+      /* imm, imm */
+      else if (CONST_INT_P (cons) && cons != CONST0_RTX (mode)
+	       && CONST_INT_P (alt) && alt != CONST0_RTX (mode))
+	{
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	  HOST_WIDE_INT t = INTVAL (alt) - INTVAL (cons);
+	  alt = force_reg (mode, gen_int_mode (t, mode));
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_IF_THEN_ELSE (mode, cond,
+							CONST0_RTX (mode),
+							alt)));
+	  riscv_emit_binary (PLUS, dest, dest, cons);
+	  return true;
+	}
+      /* reg, 0 or imm, 0  */
+      else if ((REG_P (cons)
+		|| (CONST_INT_P (cons) && cons != CONST0_RTX (mode)))
+	       && alt == CONST0_RTX (mode))
+	{
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	  cons = force_reg (mode, cons);
+	  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode, cond,
+							      cons, alt)));
+	  return true;
+	}
     }
 
   return false;

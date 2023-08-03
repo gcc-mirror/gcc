@@ -2492,9 +2492,9 @@
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "reg_or_0_operand")
+			  (match_operand:GPR 2 "sfb_alu_operand")
 			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV"
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
 				     operands[2], operands[3]))
