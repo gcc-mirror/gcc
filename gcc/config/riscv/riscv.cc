@@ -2913,16 +2913,6 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	}
       return false;
 
-    case SET:
-      /* A simple SET with a register destination takes its cost solely from
-	 the SET_SRC operand.  */
-      if (outer_code == INSN && REG_P (SET_DEST (x)))
-	{
-	  *total = riscv_rtx_costs (SET_SRC (x), mode, SET, opno, total, speed);
-	  return true;
-	}
-      return false;
-
     default:
       return false;
     }
