@@ -19,6 +19,7 @@
 #ifndef RUST_MACRO_EXPAND_H
 #define RUST_MACRO_EXPAND_H
 
+#include "optional.h"
 #include "rust-buffered-queue.h"
 #include "rust-parse.h"
 #include "rust-token.h"
@@ -480,8 +481,15 @@ struct MacroExpander
    */
   void reset_changed_state () { has_changed_flag = false; }
 
-  AST::MacroRulesDefinition *get_last_definition () { return last_def; }
-  AST::MacroInvocation *get_last_invocation () { return last_invoc; }
+  tl::optional<AST::MacroRulesDefinition &> &get_last_definition ()
+  {
+    return last_def;
+  }
+
+  tl::optional<AST::MacroInvocation &> &get_last_invocation ()
+  {
+    return last_invoc;
+  }
 
 private:
   AST::Fragment parse_proc_macro_output (ProcMacro::TokenStream ts);
@@ -493,8 +501,8 @@ private:
   AST::Fragment expanded_fragment;
   bool has_changed_flag;
 
-  AST::MacroRulesDefinition *last_def;
-  AST::MacroInvocation *last_invoc;
+  tl::optional<AST::MacroRulesDefinition &> last_def;
+  tl::optional<AST::MacroInvocation &> last_invoc;
 
 public:
   Resolver::Resolver *resolver;

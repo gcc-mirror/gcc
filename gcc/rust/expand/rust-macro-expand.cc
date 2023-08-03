@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-macro-expand.h"
+#include "optional.h"
 #include "rust-macro-substitute-ctx.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -281,8 +282,8 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
 
   // We store the last expanded invocation and macro definition for error
   // reporting in case the recursion limit is reached
-  last_invoc = &invoc;
-  last_def = rules_def;
+  last_invoc = *invoc.clone_macro_invocation_impl ();
+  last_def = *rules_def;
 
   if (rules_def->is_builtin ())
     fragment
