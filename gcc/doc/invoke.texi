@@ -1403,7 +1403,7 @@ See RS/6000 and PowerPC Options.
 -mpointer-size=@var{size}}
 
 @emph{VxWorks Options}
-@gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic
+@gccoptlist{-mrtp  -msmp  -non-static  -Bstatic  -Bdynamic
 -Xbind-lazy  -Xbind-now}
 
 @emph{x86 Options}
@@ -32441,6 +32441,13 @@ options for that target.
 GCC can generate code for both VxWorks kernels and real time processes
 (RTPs).  This option switches from the former to the latter.  It also
 defines the preprocessor macro @code{__RTP__}.
+
+@opindex msmp
+@item -msmp
+Select SMP runtimes for linking.  Not available on architectures other
+than PowerPC, nor on VxWorks version 7 or later, in which the selection
+is part of the VxWorks build configuration and the library paths are the
+same for either choice.
 
 @opindex non-static
 @item -non-static

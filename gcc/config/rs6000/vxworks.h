@@ -206,7 +206,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  STARTFILE_PREFIX_SPEC
 #define STARTFILE_PREFIX_SPEC						\
- "%{mrtp:%{!shared:/lib/usr/lib/ppc/PPC32/common}}"
+ "%{mrtp:%{!shared:/lib%{msmp:_smp}/usr/lib/ppc/PPC32/common}}"
 
 /* For aggregates passing, use the same, consistent ABI as Linux.  */
 #define AGGREGATE_PADDING_FIXED 0

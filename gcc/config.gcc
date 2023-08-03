@@ -3046,7 +3046,7 @@ powerpc*-wrs-vxworks7r*)
 powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
-	extra_options="${extra_options} rs6000/sysv4.opt"
+	extra_options="${extra_options} rs6000/sysv4.opt vxworks-smp.opt"
 	extra_headers="${extra_headers} ppc-asm.h"
 	case ${target} in
           *-vxworksmils*)
