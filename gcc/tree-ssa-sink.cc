@@ -824,26 +824,17 @@ pass_sink_code::execute (function *fun)
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   virtual_operand_live vop_live;
 
-  auto_vec<basic_block, 64> worklist;
-  worklist.quick_push (EXIT_BLOCK_PTR_FOR_FN (fun));
-  do
-    {
-      basic_block bb = worklist.pop ();
-      todo |= sink_code_in_bb (bb, vop_live);
-      for (basic_block son = first_dom_son (CDI_POST_DOMINATORS, bb);
-	   son;
-	   son = next_dom_son (CDI_POST_DOMINATORS, son))
-	worklist.safe_push (son);
-    }
-  while (!worklist.is_empty ());
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (fun, rpo);
+  for (int i = 0; i < n; ++i)
+    todo |= sink_code_in_bb (BASIC_BLOCK_FOR_FN (fun, rpo[i]), vop_live);
+  free (rpo);
 
   statistics_counter_event (fun, "Sunk statements", sink_stats.sunk);
   statistics_counter_event (fun, "Commoned stores", sink_stats.commoned);
-  free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
   loop_optimizer_finalize ();
 
