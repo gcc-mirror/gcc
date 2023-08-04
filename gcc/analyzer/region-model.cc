@@ -441,6 +441,29 @@ region_model::canonicalize ()
 {
   m_store.canonicalize (m_mgr->get_store_manager ());
   m_constraints->canonicalize ();
+
+  if (!m_dynamic_extents.is_empty ())
+    {
+      /* Purge any dynamic extents for regions that aren't referenced.
+	 Normally these are eliminated when leaks are detected, but we
+	 can also gain stray heap_allocated_regions that aren't seen
+	 by the leak-detection code.  This happens when
+	 region_model::on_call_pre provides a default result for a
+	 function with both attributes "malloc" and "alloc_size" that
+	 also has a known_function implementation.
+	 Purge dynamic extent information for such regions.  */
+      auto_bitmap referenced_base_region_ids;
+      get_referenced_base_regions (referenced_base_region_ids);
+      auto_vec<const region *> purgable_dyn_extents;
+      for (auto iter : m_dynamic_extents)
+	{
+	  const region *reg = iter.first;
+	  if (!bitmap_bit_p (referenced_base_region_ids, reg->get_id ()))
+	    purgable_dyn_extents.safe_push (reg);
+	}
+      for (auto reg : purgable_dyn_extents)
+	m_dynamic_extents.remove (reg);
+    }
 }
 
 /* Return true if this region_model is in canonical form.  */
@@ -1462,6 +1485,48 @@ region_model::get_known_function (enum internal_fn ifn) const
   return known_fn_mgr->get_internal_fn (ifn);
 }
 
+/* Look for attribute "alloc_size" on the called function and, if found,
+   return a symbolic value of type size_type_node for the allocation size
+   based on the call's parameters.
+   Otherwise, return null.  */
+
+static const svalue *
+get_result_size_in_bytes (const call_details &cd)
+{
+  const tree attr = cd.lookup_function_attribute ("alloc_size");
+  if (!attr)
+    return nullptr;
+
+  const tree atval_1 = TREE_VALUE (attr);
+  if (!atval_1)
+    return nullptr;
+
+  unsigned argidx1 = TREE_INT_CST_LOW (TREE_VALUE (atval_1)) - 1;
+  if (cd.num_args () <= argidx1)
+    return nullptr;
+
+  const svalue *sval_arg1 = cd.get_arg_svalue (argidx1);
+
+  if (const tree atval_2 = TREE_CHAIN (atval_1))
+    {
+      /* Two arguments.  */
+      unsigned argidx2 = TREE_INT_CST_LOW (TREE_VALUE (atval_2)) - 1;
+      if (cd.num_args () <= argidx2)
+	return nullptr;
+      const svalue *sval_arg2 = cd.get_arg_svalue (argidx2);
+      /* TODO: ideally we shouldn't need this cast here;
+	 see PR analyzer/110902.  */
+      return cd.get_manager ()->get_or_create_cast
+	(size_type_node,
+	 cd.get_manager ()->get_or_create_binop (size_type_node,
+						 MULT_EXPR,
+						 sval_arg1, sval_arg2));
+    }
+  else
+    /* Single argument.  */
+    return cd.get_manager ()->get_or_create_cast (size_type_node, sval_arg1);
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1522,6 +1587,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 							 lhs_region,
 							 conjured_purge (this,
 									 ctxt));
+	  if (const svalue *size_in_bytes = get_result_size_in_bytes (cd))
+	    {
+	      const region *reg = deref_rvalue (sval, NULL_TREE, ctxt, false);
+	      set_dynamic_extents (reg, size_in_bytes, ctxt);
+	    }
 	}
       set_value (lhs_region, sval, ctxt);
     }
@@ -2461,7 +2531,8 @@ region_model::region_exists_p (const region *reg) const
 
 const region *
 region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
-			    region_model_context *ctxt) const
+			    region_model_context *ctxt,
+			    bool add_nonnull_constraint) const
 {
   gcc_assert (ptr_sval);
   gcc_assert (POINTER_TYPE_P (ptr_sval->get_type ()));
@@ -2471,9 +2542,13 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
      -Wanalyzer-null-dereference for the case where we later have an
      if (PTR_SVAL) that would occur if we considered the false branch
      and transitioned the malloc state machine from start->null.  */
-  tree null_ptr_cst = build_int_cst (ptr_sval->get_type (), 0);
-  const svalue *null_ptr = m_mgr->get_or_create_constant_svalue (null_ptr_cst);
-  m_constraints->add_constraint (ptr_sval, NE_EXPR, null_ptr);
+  if (add_nonnull_constraint)
+    {
+      tree null_ptr_cst = build_int_cst (ptr_sval->get_type (), 0);
+      const svalue *null_ptr
+	= m_mgr->get_or_create_constant_svalue (null_ptr_cst);
+      m_constraints->add_constraint (ptr_sval, NE_EXPR, null_ptr);
+    }
 
   switch (ptr_sval->get_kind ())
     {
@@ -2851,14 +2926,15 @@ class dubious_allocation_size
 : public pending_diagnostic_subclass<dubious_allocation_size>
 {
 public:
-  dubious_allocation_size (const region *lhs, const region *rhs)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE),
+  dubious_allocation_size (const region *lhs, const region *rhs,
+			   const gimple *stmt)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE), m_stmt (stmt),
     m_has_allocation_event (false)
   {}
 
   dubious_allocation_size (const region *lhs, const region *rhs,
-			   tree expr)
-  : m_lhs (lhs), m_rhs (rhs), m_expr (expr),
+			   tree expr, const gimple *stmt)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (expr), m_stmt (stmt),
     m_has_allocation_event (false)
   {}
 
@@ -2869,8 +2945,8 @@ public:
 
   bool operator== (const dubious_allocation_size &other) const
   {
-    return m_lhs == other.m_lhs && m_rhs == other.m_rhs
-	   && pending_diagnostic::same_tree_p (m_expr, other.m_expr);
+    return (m_stmt == other.m_stmt
+	    && pending_diagnostic::same_tree_p (m_expr, other.m_expr));
   }
 
   int get_controlling_option () const final override
@@ -2940,6 +3016,7 @@ private:
   const region *m_lhs;
   const region *m_rhs;
   const tree m_expr;
+  const gimple *m_stmt;
   bool m_has_allocation_event;
 };
 
@@ -3139,10 +3216,6 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
   if (!is_any_cast_p (ctxt->get_stmt ()))
     return;
 
-  const region_svalue *reg_sval = dyn_cast <const region_svalue *> (rhs_sval);
-  if (!reg_sval)
-    return;
-
   tree pointer_type = lhs_reg->get_type ();
   if (pointer_type == NULL_TREE || !POINTER_TYPE_P (pointer_type))
     return;
@@ -3167,7 +3240,7 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
       || integer_onep (pointee_size_tree))
     return;
 
-  const region *rhs_reg = reg_sval->get_pointee ();
+  const region *rhs_reg = deref_rvalue (rhs_sval, NULL_TREE, ctxt, false);
   const svalue *capacity = get_capacity (rhs_reg);
   switch (capacity->get_kind ())
     {
@@ -3180,7 +3253,8 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
 	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
-							     cst_cap));
+							     cst_cap,
+							     ctxt->get_stmt ()));
       }
       break;
     default:
@@ -3193,7 +3267,8 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 		tree expr = get_representative_tree (capacity);
 		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
 								   rhs_reg,
-								   expr));
+								   expr,
+								   ctxt->get_stmt ()));
 	      }
 	  }
       break;

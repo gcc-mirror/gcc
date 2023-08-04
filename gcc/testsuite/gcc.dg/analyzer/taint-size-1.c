@@ -39,3 +39,13 @@ test_2 (size_t sz)
 {
   memcpy (buf, buf2, sz); /* { dg-warning "use of attacker-controlled value 'sz' as size without upper-bounds checking" } */
 }
+
+/* __attribute__ alloc_size with tainted size.  */
+
+extern void* (*my_alloc)(size_t) __attribute__ ((alloc_size (1)));
+
+void * __attribute__((tainted_args))
+test_attr_alloc_size (size_t sz)
+{
+  return my_alloc (sz); /* { dg-warning "use of attacker-controlled value 'sz' as allocation size without upper-bounds checking" } */
+}

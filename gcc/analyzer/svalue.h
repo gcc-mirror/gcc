@@ -1411,6 +1411,7 @@ public:
 
   const gimple *get_stmt () const { return m_stmt; }
   const region *get_id_region () const { return m_id_reg; }
+  bool lhs_value_p () const;
 
  private:
   const gimple *m_stmt;

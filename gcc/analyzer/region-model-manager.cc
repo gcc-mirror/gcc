@@ -654,6 +654,8 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	return get_or_create_constant_svalue (build_int_cst (type, 0));
       /* (VAL * 1) -> VAL.  */
       if (cst1 && integer_onep (cst1))
+	/* TODO: we ought to have a cast to TYPE here, but doing so introduces
+	   regressions; see PR analyzer/110902.  */
 	return arg0;
       break;
     case BIT_AND_EXPR:

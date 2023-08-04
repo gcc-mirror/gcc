@@ -1940,6 +1940,17 @@ conjured_svalue::accept (visitor *v) const
   v->visit_conjured_svalue (this);
 }
 
+/* Return true iff this conjured_svalue is for the LHS of the
+   stmt that conjured it.  */
+
+bool
+conjured_svalue::lhs_value_p () const
+{
+  if (tree decl = m_id_reg->maybe_get_decl ())
+    return decl == gimple_get_lhs (m_stmt);
+  return false;
+}
+
 /* class asm_output_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for asm_output_svalue.  */
