@@ -20,6 +20,7 @@ int main1 (int n)
   }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (a[i] != b[i])

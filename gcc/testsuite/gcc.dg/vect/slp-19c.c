@@ -47,6 +47,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (out[i*12] !=  in[i*12]
@@ -79,6 +80,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (out[i*6] !=  in[i*6]

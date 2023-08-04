@@ -23,6 +23,7 @@ main1 (float *pa)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N1; i++)
     {
       if (pa[i] != 2.0)
@@ -36,6 +37,7 @@ main1 (float *pa)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= N2; i++)
     {
       if (pa[i] != 3.0)
@@ -60,6 +62,7 @@ int main (void)
   for (i = 1; i <= 256; i++) a[i] = b[i-1];
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= 256; i++)
     {
       if (a[i] != i-1)

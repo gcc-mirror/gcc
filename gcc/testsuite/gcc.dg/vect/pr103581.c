@@ -39,6 +39,7 @@ main()
   unsigned int *resusiusi = maskgatherusiusi (16, idx4, data4);
   unsigned long long *resudiudi = maskgatherudiudi (16, idx8, data8);
   unsigned int *resusiudi = maskgatherusiudi (16, idx8, data4);
+#pragma GCC novector
   for (int i = 0; i < 16; ++i)
     {
       unsigned int d = idx4[i];

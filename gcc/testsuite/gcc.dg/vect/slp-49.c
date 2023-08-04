@@ -24,6 +24,7 @@ main()
 
   foo (17);
 
+#pragma GCC novector
   for (int i = 0; i < 512; ++i)
     {
       if (a[2*i] != 5 + i

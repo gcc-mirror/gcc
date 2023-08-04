@@ -15,6 +15,7 @@ main ()
   };
   x ();
   x ();
+#pragma GCC novector
   for (int i = 0; i < 8; ++i)
     if (y[i] != i + 3)
       __builtin_abort ();

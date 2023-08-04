@@ -48,6 +48,7 @@ int main (void)
 
   for (i = 0; i < N; i++)
    {
+#pragma GCC novector
     for (j = 0; j < N; j++)
      {
        if (a[i][j] != c[i][j])

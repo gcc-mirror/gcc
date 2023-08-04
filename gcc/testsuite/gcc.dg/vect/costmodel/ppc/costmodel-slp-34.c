@@ -58,6 +58,7 @@ main (void)
   foo ();
 
   /* Check resiults. */ 
+#pragma GCC novector
   for (i = 0; i < 16; i++)
     {
       if (cf[i].f1 != res1[i])

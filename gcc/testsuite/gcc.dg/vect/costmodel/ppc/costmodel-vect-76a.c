@@ -26,6 +26,7 @@ int main1 (int *pib)
 
 
   /* check results:  */
+#pragma GCC novector
   for (i = OFF; i < N; i++)
     {
      if (ia[i] != pib[i - OFF])

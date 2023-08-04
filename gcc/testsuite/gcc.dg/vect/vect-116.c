@@ -19,6 +19,7 @@ void foo()
   for (i = 0; i < 256; ++i)
     C[i] = A[i] * B[i];
 
+#pragma GCC novector
   for (i = 0; i < 256; ++i)
     if (C[i] != (unsigned char)(i * i))
       abort ();

@@ -26,6 +26,7 @@ int main1 ()
   /* check results: */  
   for (i = 0; i < N; i++)
     {
+#pragma GCC novector
       for (j = 0; j < N; j++)
         {
            if (ia[i][1][j+8] != ib[i])
@@ -47,6 +48,7 @@ int main1 ()
   /* check results: */
   for (i = 0; i < N; i++)
     {
+#pragma GCC novector
       for (j = 0; j < N; j++)
         {
            if (ia[i][1][8] != ib[i])

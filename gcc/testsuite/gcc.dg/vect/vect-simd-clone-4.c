@@ -40,6 +40,7 @@ main ()
   int i;
   check_vect ();
   bar ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (d[i] != (i < 30 ? 5.0f : i * 4 + 123.0f) || e[i] || f[i] != 1)
       abort ();

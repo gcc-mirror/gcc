@@ -21,6 +21,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 2; i < N+1; i++)
     {
       if (ia[ib[i]] != 0)

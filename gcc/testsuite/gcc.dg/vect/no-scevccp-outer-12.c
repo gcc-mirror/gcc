@@ -33,6 +33,7 @@ int main (void)
   foo ();
 
     /* check results:  */
+#pragma GCC novector
   for (i=0; i<N; i++)
     {
       sum = 0;

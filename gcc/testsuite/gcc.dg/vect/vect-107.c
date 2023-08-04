@@ -25,6 +25,7 @@ main1 (void)
     }
 
   /* Check results.  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (a[i] != b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i]

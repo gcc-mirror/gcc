@@ -17,6 +17,7 @@ int main1 ()
   }
 
   /* check results:  */
+#pragma GCC novector
   for (j=0,i=N;  j<N,i>0;  i--,j++) {
       if (ia[j] != i)
         abort ();

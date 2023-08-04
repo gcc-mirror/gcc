@@ -43,6 +43,7 @@ int main1 (int x, int y) {
   /* check results: */
   if (p->a[0] != a[N - 1])
     abort ();
+#pragma GCC novector
   for (i = 1; i < N; i++)
     if (p->a[i] != b[i - 1])
       abort ();

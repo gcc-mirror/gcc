@@ -19,6 +19,7 @@ __attribute__ ((noinline)) int main1 ()
   }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (float_arr[i] != (float) int_arr[i]) 

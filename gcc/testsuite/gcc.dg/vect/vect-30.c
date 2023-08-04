@@ -22,6 +22,7 @@ int main1 (int n)
   }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (a[i] != b[i])
@@ -44,6 +45,7 @@ int main2 (unsigned int n)
   }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < nn; i++)
     {
       if (c[i] != b[i])

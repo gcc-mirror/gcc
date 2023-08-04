@@ -16,6 +16,7 @@ foo ()
   int i;
   for (i = 0; i < 32; i++)
     d[i] = t.s[i].s + 4;
+#pragma GCC novector
   for (i = 0; i < 32; i++)
     if (d[i] != t.s[i].s + 4)
       abort ();

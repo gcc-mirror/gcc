@@ -43,6 +43,7 @@ int main1 (int x) {
   }
 
   /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
    {
     for (j = 0; j < N; j++)

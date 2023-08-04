@@ -34,6 +34,7 @@ typedef unsigned long long ull;
     {								\
       __builtin_memset (a_##TYPE, 0, sizeof (a_##TYPE));	\
       test_##TYPE (DIST, i);					\
+      _Pragma("GCC novector")					\
       for (int j = 0; j < N + DIST * 2; ++j)			\
 	{							\
 	  TYPE expected = 0;					\

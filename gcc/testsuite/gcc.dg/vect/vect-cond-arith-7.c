@@ -22,6 +22,7 @@
 #define TEST(INV)					\
   {							\
     f_##INV (a, b, c, d);				\
+    _Pragma("GCC novector")				\
     for (int i = 0; i < N; ++i)				\
       {							\
 	double mb = (INV & 1 ? -b[i] : b[i]);		\

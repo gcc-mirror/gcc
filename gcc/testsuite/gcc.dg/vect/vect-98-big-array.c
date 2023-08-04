@@ -23,6 +23,7 @@ int main1 (int ia[][N])
     }
 
   /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
        if (ic[0][i] != DOT16 (ia[i], ib))

@@ -24,6 +24,7 @@ main (int argc, char **argv)
     }
   loop ();
   __asm__ volatile ("" : : : "memory");
+#pragma GCC novector
   for (int i = 0; i < N; i++)
     {
       if (out[i] != i*2 + 7)

@@ -28,7 +28,8 @@ int main1 (int off)
   for (i = 0; i < N; i++)
       pp->ia[i] = ib[i];
 
-  /* check results: */  
+  /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
        if (pp->ia[i] != ib[i])

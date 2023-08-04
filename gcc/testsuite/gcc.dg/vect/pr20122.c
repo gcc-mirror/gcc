@@ -27,6 +27,7 @@ static void VecBug2(short Kernel[8][24])
             Kernshort2[i] = Kernel[k][i];
 
     for (k = 0; k<8; k++)
+#pragma GCC novector
         for (i = 0; i<24; i++)
             if (Kernshort2[i] != Kernel[k][i])
                 abort ();

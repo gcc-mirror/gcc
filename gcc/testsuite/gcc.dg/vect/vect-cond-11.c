@@ -79,13 +79,16 @@ baz (unsigned int *a, unsigned int *b,
     }
   if (fn (a, b) != -512U - (N - 32) * 16U + 32 * 127U)
     __builtin_abort ();
+#pragma GCC novector
   for (i = -64; i < 0; i++)
     if (a[i] != 19 || b[i] != 17)
       __builtin_abort ();
+#pragma GCC novector
   for (; i < N; i++)
     if (a[i] != (i - 512U < 32U ? i - 512U + 127 : i - 512U - 16)
 	|| b[i] != (i - 512U < 32U ? i * 2U : i + 1U))
       __builtin_abort ();
+#pragma GCC novector
   for (; i < N + 64; i++)
     if (a[i] != 27 || b[i] != 19)
       __builtin_abort ();

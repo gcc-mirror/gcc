@@ -26,6 +26,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] !=  (unsigned char) in[i*8] + 1

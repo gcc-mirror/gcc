@@ -32,6 +32,7 @@ int main1 (int a, int b)
   /* check results: */  
   for (i = 0; i < N; i++)
     {
+#pragma GCC novector
       for (j = 0; j < N; j++)
         {
            if (ia[i][1][j + NINTS] != (a == b))

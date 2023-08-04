@@ -21,6 +21,7 @@
 #define TEST(OP)					\
   {							\
     f_##OP (a, b, 10);					\
+    _Pragma("GCC novector")				\
     for (int i = 0; i < N; ++i)				\
       {							\
 	int bval = (i % 17) * 10;			\

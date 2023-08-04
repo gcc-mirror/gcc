@@ -81,6 +81,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (ia[i] != !ib[i])
@@ -95,6 +96,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (ca[i] != !cb[i])
@@ -109,6 +111,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (sa[i] != !sb[i])

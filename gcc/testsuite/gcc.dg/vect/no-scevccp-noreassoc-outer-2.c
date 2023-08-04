@@ -31,6 +31,7 @@ int main (void)
   foo ();
 
     /* check results:  */
+#pragma GCC novector
   for (i=0; i<200*N; i++)
     {
       sum = 0;

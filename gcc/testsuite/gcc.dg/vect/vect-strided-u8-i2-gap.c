@@ -25,6 +25,7 @@ main1 (s *arr)
     }
   
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (res[i].a != arr[i].b
@@ -41,6 +42,7 @@ main1 (s *arr)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (res[i].a != arr[i].b)

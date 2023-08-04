@@ -37,6 +37,7 @@ main1 (float *__restrict__  pa, float * __restrict__ pb, float * __restrict__ pc
       pa[i] = q[i] * pc[i];
     }
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != q[i] * pc[i])

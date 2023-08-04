@@ -22,6 +22,7 @@ void u ()
   
   for (i=0; i<8; i++)
     C[i] = A[i] * B[i];
+#pragma GCC novector
   for (i=0; i<8; i++)
     if (C[i] != Answer[i])
       abort ();
@@ -42,6 +43,7 @@ void s()
   
   for (i=0; i<8; i++)
     F[i] = D[i] * E[i];
+#pragma GCC novector
   for (i=0; i<8; i++)
     if (F[i] != Dnswer[i])
       abort ();

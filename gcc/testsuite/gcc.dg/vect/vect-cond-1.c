@@ -43,6 +43,7 @@ int main (void)
 
   foo ();
 
+#pragma GCC novector
   for (j = 0; j < M; j++)
     if (x_out[j] != check_result[j])
       abort ();

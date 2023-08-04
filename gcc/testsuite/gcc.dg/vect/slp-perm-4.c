@@ -103,6 +103,7 @@ int main (int argc, const char* argv[])
 
   foo (input, output);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (output[i] != check_results[i])
       abort ();

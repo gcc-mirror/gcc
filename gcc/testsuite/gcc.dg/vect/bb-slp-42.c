@@ -36,6 +36,7 @@ main ()
   foo (a, b);
 
   for (int i = 0; i < 4; ++i)
+#pragma GCC novector
     for (int j = 0; j < ARR_SIZE; ++j)
       if (a[i][j] != (i + 1) * ARR_SIZE - j + 20 * i)
 	__builtin_abort ();

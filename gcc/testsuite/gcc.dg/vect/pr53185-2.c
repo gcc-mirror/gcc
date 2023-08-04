@@ -20,6 +20,7 @@ int main ()
   for (off = 0; off < 8; ++off)
     {
       fn1 (&a[off], &b[off], 32 - off, 3);
+#pragma GCC novector
       for (i = 0; i < 32 - off; ++i)
 	if (a[off+i] != b[off+i*3])
 	  abort ();

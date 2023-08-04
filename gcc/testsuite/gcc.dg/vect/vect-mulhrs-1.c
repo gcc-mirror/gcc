@@ -37,6 +37,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c, N);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != HRS(BASE1 * BASE2 + i * i * (CONST1 * CONST2)
 		    + i * (BASE1 * CONST2 + BASE2 * CONST1)))

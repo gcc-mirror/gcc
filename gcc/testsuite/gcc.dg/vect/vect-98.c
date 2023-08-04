@@ -20,7 +20,8 @@ int main1 (int ia[][N])
 	ic[0][i] = DOT4 (ia[i], ib);
     }
 
-  /* check results: */  
+  /* check results: */
+#pragma GCC novector
   for (i = 0; i < M; i++)
     {
        if (ic[0][i] != DOT4 (ia[i], ib))

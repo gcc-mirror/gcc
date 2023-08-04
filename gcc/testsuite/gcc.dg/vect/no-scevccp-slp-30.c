@@ -24,6 +24,7 @@ main1 ()
    }
 
   /* check results:  */
+#pragma GCC novector
    for (j = 0; j < N; j++)
    {
     for (i = 0; i < N; i++)

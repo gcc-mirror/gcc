@@ -57,6 +57,7 @@ int main()
   int i;
   check_vect ();
   bar(2, q);
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (q[0].a[i].f != 0 || q[0].a[i].c != i || q[0].a[i].p != -1)
       abort ();

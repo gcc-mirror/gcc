@@ -44,19 +44,23 @@ main ()
   if (sizeof (int) * __CHAR_BIT__ < 32)
     return 0;
   bar (a + 7);
+#pragma GCC novector
   for (i = 0; i < N / 2; i++)
     if (a[i + 7] != (i ^ (i * 3 * 512) ^ (((i * 6) + 2) * 512 * 512)))
       abort ();
   bar (a);
+#pragma GCC novector
   for (i = 0; i < N / 2; i++)
     if (a[i] != (i ^ (i * 3 * 512) ^ (((i * 6) + 2) * 512 * 512)))
       abort ();
 #if 0
   baz (a + 7);
+#pragma GCC novector
   for (i = 0; i < N / 2; i++)
     if (a[i + 7] != (i ^ (i * 3 * 512) ^ (((i * 6) + 2) * 512 * 512)))
       abort ();
   baz (a);
+#pragma GCC novector
   for (i = 0; i < N / 2; i++)
     if (a[i] != (i ^ (i * 3 * 512) ^ (((i * 6) + 2) * 512 * 512)))
       abort ();

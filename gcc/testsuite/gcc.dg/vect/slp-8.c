@@ -22,6 +22,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/4; i++)
     {
       if (fa[4*i] != (float) ib[4*i]      

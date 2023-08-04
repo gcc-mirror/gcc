@@ -41,6 +41,7 @@ int main(int argc, char **argv)
       a42[i*4+n*4+1] = tem4 + a42[i*4+n*4+1];
       __asm__ volatile ("": : : "memory");
     }
+#pragma GCC novector
   for (int i = 0; i < 4 * n * 3; ++i)
     if (a4[i] != a42[i])
       __builtin_abort ();

@@ -20,6 +20,7 @@ main1 (void)
     }
 
   /* Check results.  */
+#pragma GCC novector
   for (i = 0; i <N; i++)
     {
       if (a[i] != b[N-1-i])

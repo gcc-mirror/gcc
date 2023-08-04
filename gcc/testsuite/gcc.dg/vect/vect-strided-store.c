@@ -19,12 +19,14 @@ int main()
   float src[] = {1, 2, 3, 4, 5, 6, 7, 8};
   float dest[64];
   check_vect ();
+#pragma GCC novector
   for (stride = 0; stride < 8; stride++)
     {
       sumit (dest, src, src, stride, 8);
       if (!stride && dest[0] != 16)
 	abort();
       else if (stride)
+#pragma GCC novector
 	for (i = 0; i < 8; i++)
 	  if (2*src[i] != dest[i*stride])
 	    abort ();

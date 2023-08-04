@@ -18,6 +18,7 @@ check1 (s *res)
 {
   int i;
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (res[i].a != C (i)
 	|| res[i].b != A (i)
@@ -30,6 +31,7 @@ check2 (unsigned short *res)
 {
   int i;
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (res[i] != (unsigned short) (A (i) + B (i) + C (i)))
       abort ();
@@ -40,6 +42,7 @@ check3 (s *res)
 {
   int i;
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (res[i].a != i
 	|| res[i].b != i
@@ -52,6 +55,7 @@ check4 (unsigned short *res)
 {
   int i;
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (res[i] != (unsigned short) (A (i) + B (i)))
       abort ();

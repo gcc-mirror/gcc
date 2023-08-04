@@ -36,6 +36,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 10; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
@@ -56,6 +57,7 @@ main2 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 12; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
@@ -76,6 +78,7 @@ main3 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))

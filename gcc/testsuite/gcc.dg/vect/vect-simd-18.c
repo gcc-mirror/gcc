@@ -25,12 +25,14 @@ main ()
   int i, r;
   check_vect ();
   r = foo (78, p);
+#pragma GCC novector
   for (i = 0; i < 10000 / 78; i++)
     if (p[i] != 78 * i)
       abort ();
   if (r != (10000 / 78) * (10000 / 78 + 1) / 2 * 78 * 3)
     abort ();
   r = foo (87, p);
+#pragma GCC novector
   for (i = 0; i < 10000 / 87; i++)
     if (p[i] != 87 * i)
       abort ();

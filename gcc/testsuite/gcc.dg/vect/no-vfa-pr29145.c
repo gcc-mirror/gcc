@@ -41,6 +41,7 @@ int main(void)
   with_restrict(a + 1);
   without_restrict(b + 1);
 
+#pragma GCC novector
   for (i = 0; i < 1002; ++i) {
     if (a[i] != b[i])
       abort();

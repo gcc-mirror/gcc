@@ -42,6 +42,7 @@ main (void)
   if (ret != MAX + 4)
     abort ();
 
+#pragma GCC novector
   for (i=0; i<MAX; i++)
     {
       __asm__ volatile ("");

@@ -23,6 +23,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/4; i++)
     {
       if (tmp.b[2*i] != 5

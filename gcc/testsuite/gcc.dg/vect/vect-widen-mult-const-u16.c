@@ -17,6 +17,7 @@ foo (unsigned int *__restrict a,
   for (i = 0; i < n; i++)
     a[i] = b[i] * 2333;
 
+#pragma GCC novector
   for (i = 0; i < n; i++)
     if (a[i] != b[i] * 2333)
       abort ();
@@ -32,6 +33,7 @@ bar (unsigned int *__restrict a,
   for (i = 0; i < n; i++)
     a[i] = (unsigned short) 2333 * b[i];
 
+#pragma GCC novector
   for (i = 0; i < n; i++)
     if (a[i] != b[i] * (unsigned short) 2333)
       abort ();
@@ -47,6 +49,7 @@ baz (unsigned int *__restrict a,
   for (i = 0; i < n; i++)
     a[i] = b[i] * 233333333;
 
+#pragma GCC novector
   for (i = 0; i < n; i++)
     if (a[i] != b[i] * 233333333)
       abort ();

@@ -47,6 +47,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] !=  (in[i*8] + 5) * 3 - 2

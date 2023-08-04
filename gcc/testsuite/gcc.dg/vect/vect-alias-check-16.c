@@ -33,12 +33,14 @@ typedef unsigned long long ull;
   }
 
 #define DO_TEST(TYPE)						\
+  _Pragma("GCC novector")					\
   for (int i = 0; i < DIST * 2; ++i)				\
     {								\
       TYPE a[N + DIST * 2];					\
       for (int j = 0; j < N + DIST * 2; ++j)			\
 	a[j] = TEST_VALUE (j);					\
       TYPE res = test_##TYPE (a + DIST, a + i);			\
+      _Pragma("GCC novector")					\
       for (int j = 0; j < N; ++j)				\
 	if (a[j + DIST] != (TYPE) j)				\
 	  __builtin_abort ();					\

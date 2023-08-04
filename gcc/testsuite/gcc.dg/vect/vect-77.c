@@ -26,6 +26,7 @@ int main1 (int *ib, int off)
 
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
      if (ia[i] != ib[i+off])

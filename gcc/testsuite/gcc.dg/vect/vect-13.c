@@ -23,6 +23,7 @@ int main1()
     }
 
   /* Check results  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (a[i] != results[i])

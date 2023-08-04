@@ -23,10 +23,12 @@ int main1 (int *a)
     }
 
 
+#pragma GCC novector
   for (j = 0; j < N; j++)
     if (a[j] != i + N - 1)
       abort();	
 
+#pragma GCC novector
   for (j = 0; j < N; j++)
     if (b[j] != j + N)
       abort();	

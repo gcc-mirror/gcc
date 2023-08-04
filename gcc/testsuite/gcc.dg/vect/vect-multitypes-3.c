@@ -39,6 +39,7 @@ int main1 (int n, int * __restrict__ pib,
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (ia[i] != pib[i] 

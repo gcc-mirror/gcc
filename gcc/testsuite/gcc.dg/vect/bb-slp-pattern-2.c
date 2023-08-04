@@ -39,6 +39,7 @@ int main ()
 
   foo (a, b, 8);
 
+#pragma GCC novector
   for (i = 1; i < N; i++)
     if (a[i] != i%8 + 1)
       abort ();

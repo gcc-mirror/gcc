@@ -38,6 +38,7 @@ int main (void)
 
   foo (a, b);
 
+#pragma GCC novector
   for (i = 973; i < 1020; i++)
     if (arr[i] != res[i - 973])
       abort ();

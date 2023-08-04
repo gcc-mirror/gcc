@@ -36,6 +36,7 @@ main ()
       asm ("");
     }
   foo (a, b, c);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (a[i] != ((i & 1) ? -i : i)
 	|| b[i] != ((i & 1) ? a[i] + 2.0f : 7 * i)

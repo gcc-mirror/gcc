@@ -52,6 +52,7 @@ int main1 ()
 
   /* check results:  */
   for (i = 0; i < OUTERN; i++)
+#pragma GCC novector
     for (j = NINTS - 1; j < N - NINTS + 1; j++)
     {
       if (tmp1.e[i].n[1][2][j] != 8)
@@ -67,6 +68,7 @@ int main1 ()
   
   /* check results:  */
   for (i = 0; i < OUTERN; i++)
+#pragma GCC novector
     for (j = NINTS - 1; j < N - NINTS + 1; j++)
     {
       if (tmp1.e[j].n[1][2][j] != 8)

@@ -46,6 +46,7 @@ int main ()
 
   foo(5);
 
+#pragma GCC novector
   for (k = 0; k < K; k++)
     if (out[k] != check_result[k])
       abort ();

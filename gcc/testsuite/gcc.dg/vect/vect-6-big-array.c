@@ -40,6 +40,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i=0; i<N; i++)
     {
       if (a[i] != results1[i] || e[i] != results2[i])
@@ -53,6 +54,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <=N-4; i++)
     {
       if (a[i+3] != b[i-1])

@@ -47,6 +47,7 @@ int main ()
 
   foo(125);
 
+#pragma GCC novector
   for (k = 0; k < K; k++) 
     if (out[k] != 33)
       abort ();

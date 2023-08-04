@@ -35,6 +35,7 @@ int main ()
 
   foo ();
 
+#pragma GCC novector
   for (i = 0; i < 32; ++i)
     if (b[i*8+0] != i*8+0
 	|| b[i*8+1] != i*8+0

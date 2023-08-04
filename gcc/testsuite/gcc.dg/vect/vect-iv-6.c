@@ -28,6 +28,7 @@ __attribute__ ((noinline)) int main1 (int X)
    } while (i < N);
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (arr1[i+1] != X+6*i+2

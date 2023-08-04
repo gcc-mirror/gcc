@@ -35,6 +35,7 @@ main1 (s * __restrict__  pIn, s* __restrict__ pOut)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (q->a != p->a + 5

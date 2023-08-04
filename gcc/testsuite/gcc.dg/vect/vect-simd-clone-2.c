@@ -44,6 +44,7 @@ main ()
   check_vect ();
   baz ();
   bar ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (array[i] != 5 * (i & 7) * i)
       abort ();

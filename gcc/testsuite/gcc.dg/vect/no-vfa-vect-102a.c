@@ -34,6 +34,7 @@ int main1 (int x, int y) {
     }
 
   /* check results: */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
        if (p->a[i] != 1)
