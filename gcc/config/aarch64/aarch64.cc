@@ -16410,10 +16410,6 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
   if (code != PLUS_EXPR && code != MINUS_EXPR)
     return false;
 
-  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (assign))
-      || CONSTANT_CLASS_P (gimple_assign_rhs2 (assign)))
-    return false;
-
   for (int i = 1; i < 3; ++i)
     {
       tree rhs = gimple_op (assign, i);
@@ -16441,7 +16437,8 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
 	    return false;
 	  def_stmt_info = vinfo->lookup_def (rhs);
 	  if (!def_stmt_info
-	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def)
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_constant_def)
 	    return false;
 	}
 
@@ -16721,8 +16718,9 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
    and which when vectorized would operate on vector type VECTYPE.  Add the
    cost of any embedded operations.  */
 static fractional_cost
-aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
-			  tree vectype, fractional_cost stmt_cost)
+aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
+			  stmt_vec_info stmt_info, tree vectype,
+			  unsigned vec_flags, fractional_cost stmt_cost)
 {
   if (vectype)
     {
@@ -16743,6 +16741,14 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 	case 4:
 	  stmt_cost += simd_costs->ld4_st4_permute_cost;
 	  break;
+	}
+
+      gassign *assign = dyn_cast<gassign *> (STMT_VINFO_STMT (stmt_info));
+      if (assign && !vect_is_reduction (stmt_info))
+	{
+	  /* For MLA we need to reduce the cost since MLA is 1 instruction.  */
+	  if (aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
+	    return 0;
 	}
 
       if (kind == vector_stmt || kind == vec_to_scalar)
@@ -17060,8 +17066,8 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       /* Account for any extra "embedded" costs that apply additively
 	 to the base cost calculated above.  */
-      stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
-					    stmt_cost);
+      stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info,
+					    vectype, m_vec_flags, stmt_cost);
 
       /* If we're recording a nonzero vector loop body cost for the
 	 innermost loop, also estimate the operations that would need
