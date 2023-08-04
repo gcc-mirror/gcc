@@ -430,6 +430,9 @@
 (define_mode_iterator VFB_512
   [V32HF V16SF V8DF])
 
+(define_mode_iterator V4SF_V8HF
+  [V4SF V8HF])
+
 (define_mode_iterator VI48_AVX512VL
   [V16SI (V8SI  "TARGET_AVX512VL") (V4SI  "TARGET_AVX512VL")
    V8DI  (V4DI  "TARGET_AVX512VL") (V2DI  "TARGET_AVX512VL")])
@@ -10917,11 +10920,11 @@
    (set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "V4SF,SF,DI,DI")])
 
-(define_insn "*vec_concatv4sf"
-  [(set (match_operand:V4SF 0 "register_operand"       "=x,v,x,v")
-	(vec_concat:V4SF
-	  (match_operand:V2SF 1 "register_operand"     " 0,v,0,v")
-	  (match_operand:V2SF 2 "nonimmediate_operand" " x,v,m,m")))]
+(define_insn "*vec_concat<mode>"
+  [(set (match_operand:V4SF_V8HF 0 "register_operand"       "=x,v,x,v")
+	(vec_concat:V4SF_V8HF
+	  (match_operand:<ssehalfvecmode> 1 "register_operand"     " 0,v,0,v")
+	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" " x,v,m,m")))]
   "TARGET_SSE"
   "@
    movlhps\t{%2, %0|%0, %2}
@@ -10933,16 +10936,33 @@
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
-(define_insn "*vec_concatv4sf_0"
-  [(set (match_operand:V4SF 0 "register_operand"       "=v")
-	(vec_concat:V4SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" "vm")
-	  (match_operand:V2SF 2 "const0_operand")))]
+(define_insn "*vec_concat<mode>_0"
+  [(set (match_operand:V4SF_V8HF 0 "register_operand"       "=v")
+	(vec_concat:V4SF_V8HF
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
+	  (match_operand:<ssehalfvecmode> 2 "const0_operand")))]
   "TARGET_SSE2"
   "%vmovq\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DF")])
+
+(define_insn "*vec_concatv8hf_movss"
+  [(set (match_operand:V8HF 0 "register_operand"       "=x,v,v")
+	(vec_merge:V8HF
+	  (vec_duplicate:V8HF
+	    (match_operand:V2HF 2 "nonimmediate_operand" "x,m,v"))
+	  (match_operand:V8HF 1 "reg_or_0_operand"	 "0,C,v" )
+	  (const_int 3)))]
+  "TARGET_SSE"
+  "@
+   movss\t{%2, %0|%0, %2}
+   %vmovss\t{%2, %0|%0, %2}
+   vmovss\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,*,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix" "orig,maybe_vex,maybe_vex")
+   (set_attr "mode" "SF")])
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.cc

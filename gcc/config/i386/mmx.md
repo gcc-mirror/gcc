@@ -79,9 +79,7 @@
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
 
-;; 4-byte and 8-byte float16 vector modes
-(define_mode_iterator VHF_32_64 [V4HF V2HF])
-
+(define_mode_iterator V2FI_V4HF [V2SF V2SI V4HF])
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
   [(V8QI "b") (V4QI "b") (V2QI "b")
@@ -108,7 +106,7 @@
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr mmxdoublevecmode
-  [(V2SF "V4SF") (V2SI "V4SI")])
+  [(V2SF "V4SF") (V2SI "V4SI") (V4HF "V8HF")])
 
 ;; Mapping of vector modes back to the scalar modes
 (define_mode_attr mmxscalarmode
@@ -594,7 +592,7 @@
 (define_expand "movq_<mode>_to_sse"
   [(set (match_operand:<mmxdoublevecmode> 0 "register_operand")
 	(vec_concat:<mmxdoublevecmode>
-	  (match_operand:V2FI 1 "nonimmediate_operand")
+	  (match_operand:V2FI_V4HF 1 "nonimmediate_operand")
 	  (match_dup 2)))]
   "TARGET_SSE2"
   "operands[2] = CONST0_RTX (<MODE>mode);")
@@ -1927,21 +1925,94 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "<insn><mode>3"
-  [(set (match_operand:VHF_32_64 0 "register_operand" "=v")
-	(plusminusmultdiv:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand" "<comm>v")
-	  (match_operand:VHF_32_64 2 "register_operand" "v")))]
+(define_expand "<insn>v4hf3"
+  [(set (match_operand:V4HF 0 "register_operand")
+	(plusminusmult:V4HF
+	  (match_operand:V4HF 1 "nonimmediate_operand")
+	  (match_operand:V4HF 2 "nonimmediate_operand")))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
-  "v<insn>ph\t{%2, %1, %0|%0, %1, %2}"
-  [(set (attr "type")
-      (cond [(match_test "<CODE> == MULT")
-		(const_string "ssemul")
-	     (match_test "<CODE> == DIV")
-		(const_string "ssediv")]
-	     (const_string "sseadd")))
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "V8HF")])
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op2, operands[2]));
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+
+  emit_insn (gen_<insn>v8hf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "divv4hf3"
+  [(set (match_operand:V4HF 0 "register_operand")
+	(div:V4HF
+	  (match_operand:V4HF 1 "nonimmediate_operand")
+	  (match_operand:V4HF 2 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movq_v4hf_to_sse (op1, operands[1]));
+  rtx tmp = gen_rtx_VEC_CONCAT (V8HFmode, operands[2],
+				force_reg (V4HFmode, CONST1_RTX (V4HFmode)));
+  emit_insn (gen_rtx_SET (op2, tmp));
+  emit_insn (gen_divv8hf3 (op0, op1, op2));
+  emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "movd_v2hf_to_sse"
+  [(set (match_operand:V8HF 0 "register_operand")
+	(vec_merge:V8HF
+	  (vec_duplicate:V8HF
+	    (match_operand:V2HF 1 "nonimmediate_operand"))
+	  (match_operand:V8HF 2 "reg_or_0_operand")
+	  (const_int 3)))]
+  "TARGET_SSE")
+
+(define_expand "<insn>v2hf3"
+  [(set (match_operand:V2HF 0 "register_operand")
+	(plusminusmult:V2HF
+	  (match_operand:V2HF 1 "nonimmediate_operand")
+	  (match_operand:V2HF 2 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movd_v2hf_to_sse (op2, operands[2], CONST0_RTX (V8HFmode)));
+  emit_insn (gen_movd_v2hf_to_sse (op1, operands[1], CONST0_RTX (V8HFmode)));
+  emit_insn (gen_<insn>v8hf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "divv2hf3"
+  [(set (match_operand:V2HF 0 "register_operand")
+	(div:V2HF
+	  (match_operand:V2HF 1 "nonimmediate_operand")
+	  (match_operand:V2HF 2 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  rtx op2 = gen_reg_rtx (V8HFmode);
+  rtx op1 = gen_reg_rtx (V8HFmode);
+  rtx op0 = gen_reg_rtx (V8HFmode);
+
+  emit_insn (gen_movd_v2hf_to_sse (op2, operands[2],
+				  force_reg (V8HFmode, CONST1_RTX (V8HFmode))));
+  emit_insn (gen_movd_v2hf_to_sse (op1, operands[1], CONST0_RTX (V8HFmode)));
+  emit_insn (gen_divv8hf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2HFmode, op0, V8HFmode));
+  DONE;
+})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
