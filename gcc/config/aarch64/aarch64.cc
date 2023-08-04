@@ -16776,7 +16776,7 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 static bool
 aarch64_force_single_cycle (vec_info *vinfo, stmt_vec_info stmt_info)
 {
-  if (!STMT_VINFO_LIVE_P (stmt_info))
+  if (!STMT_VINFO_REDUC_DEF (stmt_info))
     return false;
 
   auto reduc_info = info_for_reduction (vinfo, stmt_info);
