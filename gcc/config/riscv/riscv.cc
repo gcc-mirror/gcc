@@ -2522,20 +2522,6 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      else if (TARGET_ZICOND
-	       && outer_code == SET
-	       && ((GET_CODE (XEXP (x, 1)) == REG
-		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
-		   || (GET_CODE (XEXP (x, 2)) == REG
-		       && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 2))))
-		   || (GET_CODE (XEXP (x, 1)) == REG
-		       && rtx_equal_p (XEXP (x, 1), XEXP (XEXP (x, 0), 0)))
-		   || (GET_CODE (XEXP (x, 1)) == REG
-		       && rtx_equal_p (XEXP (x, 2), XEXP (XEXP (x, 0), 0)))))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return true;
-	}
       else if (LABEL_REF_P (XEXP (x, 1)) && XEXP (x, 2) == pc_rtx)
 	{
 	  if (equality_operator (XEXP (x, 0), mode)
@@ -3583,7 +3569,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       /* The expander is a bit loose in its specification of the true
 	 arm of the conditional move.  That allows us to support more
 	 cases for extensions which are more general than SFB.  But
-	does mean we need to force CONS into a register at this point.  */
+	 does mean we need to force CONS into a register at this point.  */
       cons = force_reg (GET_MODE (dest), cons);
       emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 							  cond, cons, alt)));
@@ -3628,6 +3614,40 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  riscv_emit_binary (PLUS, dest, dest, cons);
 	  return true;
 	}
+      /* imm, reg  */
+      else if (CONST_INT_P (cons) && cons != CONST0_RTX (mode) && REG_P (alt))
+	{
+	  /* Optimize for register value of 0.  */
+	  if (code == NE && rtx_equal_p (op0, alt) && op1 == CONST0_RTX (mode))
+	    {
+	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	      cons = force_reg (mode, cons);
+	      emit_insn (gen_rtx_SET (dest,
+				      gen_rtx_IF_THEN_ELSE (mode, cond,
+							    cons, alt)));
+	      return true;
+	    }
+
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+
+	  rtx temp1 = gen_reg_rtx (mode);
+	  rtx temp2 = gen_int_mode (-1 * INTVAL (cons), mode);
+
+	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
+	     for an addi instruction.  If that's the case, force it into
+	     a register.  */
+	  if (!SMALL_OPERAND (INTVAL (temp2)))
+	    temp2 = force_reg (mode, temp2);
+
+	  riscv_emit_binary (PLUS, temp1, alt, temp2);
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_IF_THEN_ELSE (mode, cond,
+							CONST0_RTX (mode),
+							temp1)));
+	  riscv_emit_binary (PLUS, dest, dest, cons);
+	  return true;
+	}
       /* reg, 0 or imm, 0  */
       else if ((REG_P (cons)
 		|| (CONST_INT_P (cons) && cons != CONST0_RTX (mode)))
@@ -3638,6 +3658,73 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  cons = force_reg (mode, cons);
 	  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (mode, cond,
 							      cons, alt)));
+	  return true;
+	}
+      /* reg, imm  */
+      else if (REG_P (cons) && CONST_INT_P (alt) && alt != CONST0_RTX (mode))
+	{
+	  /* Optimize for register value of 0.  */
+	  if (code == EQ && rtx_equal_p (op0, cons) && op1 == CONST0_RTX (mode))
+	    {
+	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	      alt = force_reg (mode, alt);
+	      emit_insn (gen_rtx_SET (dest,
+				      gen_rtx_IF_THEN_ELSE (mode, cond,
+							    cons, alt)));
+	      return true;
+	    }
+
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+
+	  rtx temp1 = gen_reg_rtx (mode);
+	  rtx temp2 = gen_int_mode (-1 * INTVAL (alt), mode);
+
+	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
+	     for an addi instruction.  If that's the case, force it into
+	     a register.  */
+	  if (!SMALL_OPERAND (INTVAL (temp2)))
+	    temp2 = force_reg (mode, temp2);
+
+	  riscv_emit_binary (PLUS, temp1, cons, temp2);
+	  emit_insn (gen_rtx_SET (dest,
+				  gen_rtx_IF_THEN_ELSE (mode, cond,
+							temp1,
+							CONST0_RTX (mode))));
+	  riscv_emit_binary (PLUS, dest, dest, alt);
+	  return true;
+	}
+      /* reg, reg  */
+      else if (REG_P (cons) && REG_P (alt))
+	{
+	  if ((code == EQ && rtx_equal_p (cons, op0))
+	       || (code == NE && rtx_equal_p (alt, op0)))
+	    {
+	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	      if (!rtx_equal_p (cons, op0))
+		std::swap (alt, cons);
+	      alt = force_reg (mode, alt);
+	      emit_insn (gen_rtx_SET (dest,
+				      gen_rtx_IF_THEN_ELSE (mode, cond,
+							    cons, alt)));
+	      return true;
+	    }
+
+	  rtx reg1 = gen_reg_rtx (mode);
+	  rtx reg2 = gen_reg_rtx (mode);
+	  riscv_emit_int_compare (&code, &op0, &op1, true);
+	  rtx cond1 = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+	  rtx cond2 = gen_rtx_fmt_ee (code == NE ? EQ : NE,
+				      GET_MODE (op0), op0, op1);
+	  emit_insn (gen_rtx_SET (reg2,
+				  gen_rtx_IF_THEN_ELSE (mode, cond2,
+							CONST0_RTX (mode),
+							cons)));
+	  emit_insn (gen_rtx_SET (reg1,
+				  gen_rtx_IF_THEN_ELSE (mode, cond1,
+							CONST0_RTX (mode),
+							alt)));
+	  riscv_emit_binary (IOR, dest, reg1, reg2);
 	  return true;
 	}
     }
