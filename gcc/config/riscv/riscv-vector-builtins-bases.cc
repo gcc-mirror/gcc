@@ -423,28 +423,6 @@ public:
   }
 };
 
-/* Implements below instructions for frm
-   - vfnmsac
-*/
-class vfnmsac_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg (PLUS, e.vector_mode ()));
-    gcc_unreachable ();
-  }
-};
-
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2207,7 +2185,6 @@ static CONSTEXPR const widen_binop_frm<MULT> vfwmul_frm_obj;
 static CONSTEXPR const vfmacc vfmacc_obj;
 static CONSTEXPR const vfmacc_frm vfmacc_frm_obj;
 static CONSTEXPR const vfnmsac vfnmsac_obj;
-static CONSTEXPR const vfnmsac_frm vfnmsac_frm_obj;
 static CONSTEXPR const vfmadd vfmadd_obj;
 static CONSTEXPR const vfnmsub vfnmsub_obj;
 static CONSTEXPR const vfnmacc vfnmacc_obj;
@@ -2446,7 +2423,6 @@ BASE (vfwmul_frm)
 BASE (vfmacc)
 BASE (vfmacc_frm)
 BASE (vfnmsac)
-BASE (vfnmsac_frm)
 BASE (vfmadd)
 BASE (vfnmsub)
 BASE (vfnmacc)
