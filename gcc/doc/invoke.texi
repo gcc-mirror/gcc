@@ -357,6 +357,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion
 -Wenum-int-mismatch
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors
+-Wflex-array-member-not-at-end
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2
 -Wno-format-contains-nul  -Wno-format-extra-args
 -Wformat-nonliteral  -Wformat-overflow=@var{n}
@@ -9311,6 +9312,18 @@ Warn for implicit conversions that may change the sign of an integer
 value, like assigning a signed integer expression to an unsigned
 integer variable. An explicit cast silences the warning. In C, this
 option is enabled also by @option{-Wconversion}.
+
+@opindex Wflex-array-member-not-at-end
+@opindex Wno-flex-array-member-not-at-end
+@item -Wflex-array-member-not-at-end @r{(C and C++ only)}
+Warn when a structure containing a C99 flexible array member as the last
+field is not at the end of another structure.
+This warning warns e.g. about
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+struct mid_flex @{ int m; struct flex flex_data; int n; @};
+@end smallexample
 
 @opindex Wfloat-conversion
 @opindex Wno-float-conversion
