@@ -4853,7 +4853,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_init_stmt (for_stmt);
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
-		       for_stmt, false, 0);
+		       for_stmt, false, 0, false);
       /* We used to pass this decrement to finish_for_expr; now we add it to
 	 elt_init below so it's part of the same full-expression as the
 	 initialization, and thus happens before any potentially throwing

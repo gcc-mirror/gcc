@@ -19094,7 +19094,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       RECUR (FOR_INIT_STMT (t));
       finish_init_stmt (stmt);
       tmp = RECUR (FOR_COND (t));
-      finish_for_cond (tmp, stmt, false, 0);
+      finish_for_cond (tmp, stmt, false, 0, false);
       tmp = RECUR (FOR_EXPR (t));
       finish_for_expr (tmp, stmt);
       {
@@ -19131,6 +19131,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  {
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
 	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
+	    RANGE_FOR_NOVECTOR (stmt) = RANGE_FOR_NOVECTOR (t);
 	    finish_range_for_decl (stmt, decl, expr);
 	    if (decomp_first && decl != error_mark_node)
 	      cp_finish_decomp (decl, decomp_first, decomp_cnt);
@@ -19141,7 +19142,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				     ? tree_to_uhwi (RANGE_FOR_UNROLL (t)) : 0);
 	    stmt = cp_convert_range_for (stmt, decl, expr,
 					 decomp_first, decomp_cnt,
-					 RANGE_FOR_IVDEP (t), unroll);
+					 RANGE_FOR_IVDEP (t), unroll,
+					 RANGE_FOR_NOVECTOR (t));
 	  }
 
 	bool prev = note_iteration_stmt_body_start ();
@@ -19154,7 +19156,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case WHILE_STMT:
       stmt = begin_while_stmt ();
       tmp = RECUR (WHILE_COND (t));
-      finish_while_stmt_cond (tmp, stmt, false, 0);
+      finish_while_stmt_cond (tmp, stmt, false, 0, false);
       {
 	bool prev = note_iteration_stmt_body_start ();
 	RECUR (WHILE_BODY (t));
@@ -19172,7 +19174,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
       finish_do_body (stmt);
       tmp = RECUR (DO_COND (t));
-      finish_do_stmt (tmp, stmt, false, 0);
+      finish_do_stmt (tmp, stmt, false, 0, false);
       break;
 
     case IF_STMT:

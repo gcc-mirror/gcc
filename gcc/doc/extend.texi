@@ -24581,6 +24581,25 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 @}
 @end smallexample
 
+@cindex pragma GCC novector
+@item #pragma GCC novector
+
+With this pragma, the programmer asserts that the following loop should be
+prevented from executing concurrently with SIMD (single instruction multiple
+data) instructions.
+
+For example, the compiler cannot vectorize the following loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC novector
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
+@}
+@end smallexample
+
 @cindex pragma GCC unroll @var{n}
 @item #pragma GCC unroll @var{n}
 
