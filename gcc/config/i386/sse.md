@@ -13554,6 +13554,14 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
 
+;; Convert highpart SUBREG in sse2_storehpd or *vec_extractv2df_1_sse.
+(define_split
+  [(set (match_operand:DF 0 "register_operand")
+	(subreg:DF (match_operand:V2DF 1 "register_operand") 8))]
+  "TARGET_SSE"
+  [(set (match_dup 0)
+	(vec_select:DF (match_dup 1) (parallel [(const_int 1)])))])
+
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "sse2_storelpd"
@@ -13598,6 +13606,14 @@
    movlps\t{%1, %0|%0, %q1}"
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
+
+;; Convert lowpart SUBREG into sse2_storelpd or *vec_extractv2df_0_sse.
+(define_split
+  [(set (match_operand:DF 0 "register_operand")
+	(subreg:DF (match_operand:V2DF 1 "register_operand") 0))]
+  "TARGET_SSE"
+  [(set (match_dup 0)
+	(vec_select:DF (match_dup 1) (parallel [(const_int 0)])))])
 
 (define_expand "sse2_loadhpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand")
