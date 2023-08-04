@@ -24,6 +24,7 @@
 #include "rust-backend.h"
 #include "rust-hir-map.h"
 #include "safe-ctype.h"
+#include "rust-name-resolution-context.h"
 
 #include "config.h"
 #include "rust-system.h"
@@ -413,7 +414,7 @@ private:
   /* Expansion pipeline stage. TODO maybe move to another object? Expands all
    * macros, maybe build test harness in future, AST validation, maybe create
    * macro crate (if not rustdoc).*/
-  void expansion (AST::Crate &crate);
+  void expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx);
 
   // handle cfg_option
   bool handle_cfg_option (std::string &data);
