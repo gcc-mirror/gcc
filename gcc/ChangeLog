@@ -1,3 +1,237 @@
+2023-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.cc (print_loop_info): Print entry count.
+
+2023-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-split.cc (split_loop): Update estimated iteration counts.
+
+2023-08-03  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/110857
+	* cfgloopmanip.cc (scale_loop_profile): (Un)initialize
+	unadjusted_exit_count.
+
+2023-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Read global
+	value/mask.
+
+2023-08-03  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Recognize
+	various Zicond patterns.
+	* config/riscv/riscv.md (mov<mode>cc): Allow TARGET_ZICOND.  Use
+	sfb_alu_operand for both arms of the conditional move.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-08-03  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/107844
+	PR target/107479
+	PR target/107480
+	PR target/107481
+	* config.gcc: Added core-builtins.cc and .o files.
+	* config/bpf/bpf-passes.def: Removed file.
+	* config/bpf/bpf-protos.h (bpf_add_core_reloc,
+	bpf_replace_core_move_operands): New prototypes.
+	* config/bpf/bpf.cc (enum bpf_builtins, is_attr_preserve_access,
+	maybe_make_core_relo, bpf_core_field_info, bpf_core_compute,
+	bpf_core_get_index, bpf_core_new_decl, bpf_core_walk,
+	bpf_is_valid_preserve_field_info_arg, is_attr_preserve_access,
+	handle_attr_preserve, pass_data_bpf_core_attr, pass_bpf_core_attr):
+	Removed.
+	(def_builtin, bpf_expand_builtin, bpf_resolve_overloaded_builtin): Changed.
+	* config/bpf/bpf.md (define_expand mov<MM:mode>): Changed.
+	(mov_reloc_core<mode>): Added.
+	* config/bpf/core-builtins.cc (struct cr_builtin, enum
+	cr_decision struct cr_local, struct cr_final, struct
+	core_builtin_helpers, enum bpf_plugin_states): Added types.
+	(builtins_data, core_builtin_helpers, core_builtin_type_defs):
+	Added variables.
+	(allocate_builtin_data, get_builtin-data, search_builtin_data,
+	remove_parser_plugin, compare_same_kind, compare_same_ptr_expr,
+	compare_same_ptr_type, is_attr_preserve_access, core_field_info,
+	bpf_core_get_index, compute_field_expr,
+	pack_field_expr_for_access_index, pack_field_expr_for_preserve_field,
+	process_field_expr, pack_enum_value, process_enum_value, pack_type,
+	process_type, bpf_require_core_support, make_core_relo, read_kind,
+	kind_access_index, kind_preserve_field_info, kind_enum_value,
+	kind_type_id, kind_preserve_type_info, get_core_builtin_fndecl_for_type,
+	bpf_handle_plugin_finish_type, bpf_init_core_builtins,
+	construct_builtin_core_reloc, bpf_resolve_overloaded_core_builtin,
+	bpf_expand_core_builtin, bpf_add_core_reloc,
+	bpf_replace_core_move_operands): Added functions.
+	* config/bpf/core-builtins.h (enum bpf_builtins): Added.
+	(bpf_init_core_builtins, bpf_expand_core_builtin,
+	bpf_resolve_overloaded_core_builtin): Added functions.
+	* config/bpf/coreout.cc (struct bpf_core_extra): Added.
+	(bpf_core_reloc_add, output_asm_btfext_core_reloc): Changed.
+	* config/bpf/coreout.h (bpf_core_reloc_add) Changed prototype.
+	* config/bpf/t-bpf: Added core-builtins.o.
+	* doc/extend.texi: Added documentation for new BPF builtins.
+
+2023-08-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Add
+	ranges to the call to relation_fold_and_or.
+	(fold_using_range::relation_fold_and_or): Add op1 and op2 ranges.
+	(fur_source::register_outgoing_edges): Add op1 and op2 ranges.
+	* gimple-range-fold.h (relation_fold_and_or): Adjust params.
+	* gimple-range-gori.cc (gori_compute::compute_operand_range): Add
+	a varying op1 and op2 to call.
+	* range-op-float.cc (range_operator::op1_op2_relation): New dafaults.
+	(operator_equal::op1_op2_relation): New float version.
+	(operator_not_equal::op1_op2_relation): Ditto.
+	(operator_lt::op1_op2_relation): Ditto.
+	(operator_le::op1_op2_relation): Ditto.
+	(operator_gt::op1_op2_relation): Ditto.
+	(operator_ge::op1_op2_relation) Ditto.
+	* range-op-mixed.h (operator_equal::op1_op2_relation): New float
+	prototype.
+	(operator_not_equal::op1_op2_relation): Ditto.
+	(operator_lt::op1_op2_relation): Ditto.
+	(operator_le::op1_op2_relation): Ditto.
+	(operator_gt::op1_op2_relation): Ditto.
+	(operator_ge::op1_op2_relation): Ditto.
+	* range-op.cc (range_op_handler::op1_op2_relation): Dispatch new
+	variations.
+	(range_operator::op1_op2_relation): Add extra params.
+	(operator_equal::op1_op2_relation): Ditto.
+	(operator_not_equal::op1_op2_relation): Ditto.
+	(operator_lt::op1_op2_relation): Ditto.
+	(operator_le::op1_op2_relation): Ditto.
+	(operator_gt::op1_op2_relation): Ditto.
+	(operator_ge::op1_op2_relation): Ditto.
+	* range-op.h (range_operator): New prototypes.
+	(range_op_handler): Ditto.
+
+2023-08-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::compute_operand1_range):
+	Use identity relation.
+	(gori_compute::compute_operand2_range): Ditto.
+	* value-relation.cc (get_identity_relation): New.
+	* value-relation.h (get_identity_relation): New prototype.
+
+2023-08-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.h (Value_Range::set_varying): Set the type.
+	(Value_Range::set_zero): Ditto.
+	(Value_Range::set_nonzero): Ditto.
+
+2023-08-03  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Remove errant hunk from
+	recent commit.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Add vfsub.
+
+2023-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* poly-int.h (can_div_trunc_p): Succeed for more boundary conditions.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern):
+	Adjust the shift operand of RSHIFT_EXPRs.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110702
+	* tree-ssa-loop-ivopts.cc (rewrite_use_address): When
+	we created a NULL pointer based access rewrite that to
+	a LEA.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sink.cc: Include tree-ssa-live.h.
+	(pass_sink_code::execute): Instantiate virtual_operand_live
+	and pass it down.
+	(sink_code_in_bb): Pass down virtual_operand_live.
+	(statement_sink_location): Get virtual_operand_live and
+	verify we are not sinking loads across stores by looking up
+	the live virtual operand at the sink location.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.h (class virtual_operand_live): New.
+	* tree-ssa-live.cc (virtual_operand_live::init): New.
+	(virtual_operand_live::get_live_in): Likewise.
+	(virtual_operand_live::get_live_out): Likewise.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* passes.def: Exchange loop splitting and final value
+	replacement passes.
+
+2023-08-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_as_a_vlbr_vstbr_candidate):
+	New function which handles bswap patterns for vec_perm_const.
+	(vectorize_vec_perm_const_1): Call new function.
+	* config/s390/vector.md (*bswap<mode>): Fix operands in output
+	template.
+	(*vstbr<mode>): New insn.
+
+2023-08-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxworks-smp.opt: New.  Introduce -msmp.
+	* config.gcc: Enable it on powerpc* vxworks prior to 7r*.
+	* config/rs6000/vxworks.h (STARTFILE_PREFIX_SPEC): Choose
+	lib_smp when -msmp is present in the command line.
+	* doc/invoke.texi: Document it.
+
+2023-08-03  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* config/riscv/riscv.cc (riscv_save_reg_p): Save ra for leaf
+	when enabling -mno-omit-leaf-frame-pointer
+	(riscv_option_override): Override omit-frame-pointer.
+	(riscv_frame_pointer_required): Save s0 for non-leaf function
+	(TARGET_FRAME_POINTER_REQUIRED): Override defination
+	* config/riscv/riscv.opt: Add option support.
+
+2023-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* config/i386/i386.md (<any_rotate>ti3): For rotations by 64 bits
+	place operand in a register before gen_<insn>64ti2_doubleword.
+	(<any_rotate>di3): Likewise, for rotations by 32 bits, place
+	operand in a register before gen_<insn>32di2_doubleword.
+	(<any_rotate>32di2_doubleword): Constrain operand to be in register.
+	(<any_rotate>64ti2_doubleword): Likewise.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(vfmul_frm_obj): New declaration.
+	(Base): Likewise.
+	* config/riscv/riscv-vector-builtins-bases.h: Likewise.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmul_frm): New function definition.
+	* config/riscv/vector.md: Add vfmul to frm_mode.
+
+2023-08-03  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`~X & X`): Check that the types match.
+	(`~x | x`, `~x ^ x`): Likewise.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.h: Remove
+	redudant declaration.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (BASE): Add
+	vfwsub frm.
+	* config/riscv/riscv-vector-builtins-bases.h: Add declaration.
+	* config/riscv/riscv-vector-builtins-functions.def (vfwsub_frm):
+	Add vfwsub function definitions.
+
 2023-08-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	PR rtl-optimization/110867

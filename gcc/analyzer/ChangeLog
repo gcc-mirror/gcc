@@ -1,3 +1,8 @@
+2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110882
+	* region.cc (int_size_in_bits): Fail on zero-sized types.
+
 2023-08-02  Eric Feng  <ef2648@columbia.edu>
 
 	PR analyzer/107646

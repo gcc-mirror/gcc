@@ -1,3 +1,94 @@
+2023-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/ipa/pure-const-3.C: Move source to...
+	* g++.dg/ipa/pure-const-3.h: ...here, and adjust original test
+	accordingly.
+	* g++.dg/ipa/pure-const-3b.C: New.
+
+2023-08-03  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-builtin-enumvalue.c: New test.
+	* gcc.target/bpf/core-builtin-enumvalue-errors.c: New test.
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-const-elimination.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-1.c: Changed.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-2.c: Changed.
+	* gcc.target/bpf/core-builtin-type-based.c: New test.
+	* gcc.target/bpf/core-builtin-type-id.c: New test.
+	* gcc.target/bpf/core-support.h: New test.
+
+2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108171
+	* gcc.dg/analyzer/pr108171.c: New test.
+
+2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110882
+	* gcc.dg/analyzer/pr110882.c: New test.
+
+2023-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/plugin/poly-int-tests.h (test_can_div_trunc_p_const)
+	(test_can_div_trunc_p_const): Add more tests.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* gcc.dg/torture/pr110838.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110702
+	* gcc.dg/torture/pr110702.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-sink-20.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr87007-5.c: Make sure we split the loop
+	and eliminate both in the end.
+
+2023-08-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Add subdirectory vxe2.
+	* gcc.target/s390/vxe2/vlbr-1.c: New test.
+	* gcc.target/s390/vxe2/vstbr-1.c: New test.
+	* gcc.target/s390/vxe2/vstbr-2.c: New test.
+
+2023-08-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_bswap):
+	Add s390.
+
+2023-08-03  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/omit-frame-pointer-1.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-2.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-3.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-4.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-test.c: New test.
+
+2023-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* g++.target/i386/pr110792.C: New 32-bit C++ test case.
+	* gcc.target/i386/pr110792.c: New 64-bit C test case.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-mul.c: New test.
+
+2023-08-03  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/20230802-1.c: New test.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-sub.c: New test.
+
 2023-08-02  Eric Feng  <ef2648@columbia.edu>
 
 	PR analyzer/107646

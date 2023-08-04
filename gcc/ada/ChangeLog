@@ -1,3 +1,37 @@
+2023-08-03  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/s-aridou.adb: Add pragma to exempt Improper_Returns.
+	* libgnat/s-atopri.adb (Lock_Free_Try_Write): Likewise.
+	* libgnat/s-bitops.adb (Bit_Eq): Likewise.
+	* libgnat/s-carsi8.adb: Likewise.
+	* libgnat/s-carun8.adb: Likewise.
+	* libgnat/s-casi16.adb: Likewise.
+	* libgnat/s-casi32.adb: Likewise.
+	* libgnat/s-casi64.adb: Likewise.
+	* libgnat/s-caun16.adb: Likewise.
+	* libgnat/s-caun32.adb: Likewise.
+	* libgnat/s-caun64.adb: Likewise.
+	* libgnat/s-exponn.adb: Likewise.
+	* libgnat/s-expont.adb: Likewise.
+	* libgnat/s-valspe.adb: Likewise.
+	* libgnat/s-vauspe.adb: Likewise.
+
+2023-08-03  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* libgnat/s-imageb.adb (Set_Image_Based_Unsigned): Rewritten.
+	* libgnat/s-imagew.adb (Set_Image_Width_Unsigned): Likewise.
+
+2023-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Make_Invariant_Call): Convert the expression to
+	the type of the formal parameter if need be.
+
+2023-08-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.adb ("-"): New subtraction operator.
+	(Enable_Cache): Use it to compute the offset.
+	(Symbolic_Address): Likewise.
+
 2023-08-01  Yannick Moy  <moy@adacore.com>
 
 	* repinfo.adb (Compute_Max_Length): Set parameter to print number
