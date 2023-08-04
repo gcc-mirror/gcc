@@ -16447,6 +16447,49 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
   return false;
 }
 
+/* Return true if STMT_INFO is the second part of a two-statement boolean AND
+   expression sequence that might be suitable for fusing into a
+   single instruction.  If VEC_FLAGS is zero, analyze the operation as
+   a scalar one, otherwise analyze it as an operation on vectors with those
+   VEC_* flags.  */
+
+static bool
+aarch64_bool_compound_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			 unsigned int vec_flags)
+{
+  gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
+  if (!assign
+      || gimple_assign_rhs_code (assign) != BIT_AND_EXPR
+      || !STMT_VINFO_VECTYPE (stmt_info)
+      || !VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_info)))
+    return false;
+
+  for (int i = 1; i < 3; ++i)
+    {
+      tree rhs = gimple_op (assign, i);
+
+      if (TREE_CODE (rhs) != SSA_NAME)
+	continue;
+
+      stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+      if (!def_stmt_info
+	  || STMT_VINFO_DEF_TYPE (def_stmt_info) != vect_internal_def)
+	continue;
+
+      gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
+      if (!rhs_assign
+	  || TREE_CODE_CLASS (gimple_assign_rhs_code (rhs_assign))
+		!= tcc_comparison)
+	continue;
+
+      if (vec_flags & VEC_ADVSIMD)
+	return false;
+
+      return true;
+    }
+  return false;
+}
+
 /* We are considering implementing STMT_INFO using SVE.  If STMT_INFO is an
    in-loop reduction that SVE supports directly, return its latency in cycles,
    otherwise return zero.  SVE_COSTS specifies the latencies of the relevant
@@ -16744,10 +16787,16 @@ aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
 	}
 
       gassign *assign = dyn_cast<gassign *> (STMT_VINFO_STMT (stmt_info));
-      if (assign && !vect_is_reduction (stmt_info))
+      if (assign)
 	{
 	  /* For MLA we need to reduce the cost since MLA is 1 instruction.  */
-	  if (aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
+	  if (!vect_is_reduction (stmt_info)
+	      && aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
+	    return 0;
+
+	  /* For vector boolean ANDs with a compare operand we just need
+	     one insn.  */
+	  if (aarch64_bool_compound_p (vinfo, stmt_info, vec_flags))
 	    return 0;
 	}
 
@@ -16821,6 +16870,12 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 
   /* Assume that multiply-adds will become a single operation.  */
   if (stmt_info && aarch64_multiply_add_p (m_vinfo, stmt_info, m_vec_flags))
+    return;
+
+  /* Assume that bool AND with compare operands will become a single
+     operation.  */
+  if (stmt_info
+      && aarch64_bool_compound_p (m_vinfo, stmt_info, m_vec_flags))
     return;
 
   /* Count the basic operation cost associated with KIND.  */
