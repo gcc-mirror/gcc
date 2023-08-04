@@ -1572,9 +1572,11 @@ static tree c_parser_c99_block_statement (c_parser *, bool *,
 					  location_t * = NULL);
 static void c_parser_if_statement (c_parser *, bool *, vec<tree> *);
 static void c_parser_switch_statement (c_parser *, bool *);
-static void c_parser_while_statement (c_parser *, bool, unsigned short, bool *);
-static void c_parser_do_statement (c_parser *, bool, unsigned short);
-static void c_parser_for_statement (c_parser *, bool, unsigned short, bool *);
+static void c_parser_while_statement (c_parser *, bool, unsigned short, bool,
+				      bool *);
+static void c_parser_do_statement (c_parser *, bool, unsigned short, bool);
+static void c_parser_for_statement (c_parser *, bool, unsigned short, bool,
+				    bool *);
 static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
 static tree c_parser_asm_goto_operands (c_parser *);
@@ -6668,13 +6670,13 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  c_parser_switch_statement (parser, if_p);
 	  break;
 	case RID_WHILE:
-	  c_parser_while_statement (parser, false, 0, if_p);
+	  c_parser_while_statement (parser, false, 0, false, if_p);
 	  break;
 	case RID_DO:
-	  c_parser_do_statement (parser, false, 0);
+	  c_parser_do_statement (parser, false, 0, false);
 	  break;
 	case RID_FOR:
-	  c_parser_for_statement (parser, false, 0, if_p);
+	  c_parser_for_statement (parser, false, 0, false, if_p);
 	  break;
 	case RID_GOTO:
 	  c_parser_consume_token (parser);
@@ -7170,7 +7172,7 @@ c_parser_switch_statement (c_parser *parser, bool *if_p)
 
 static void
 c_parser_while_statement (c_parser *parser, bool ivdep, unsigned short unroll,
-			  bool *if_p)
+			  bool novector, bool *if_p)
 {
   tree block, cond, body;
   unsigned char save_in_statement;
@@ -7192,6 +7194,11 @@ c_parser_while_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 		   build_int_cst (integer_type_node,
 				  annot_expr_unroll_kind),
 		   build_int_cst (integer_type_node, unroll));
+  if (novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+				  annot_expr_no_vector_kind),
+		   integer_zero_node);
   save_in_statement = in_statement;
   in_statement = IN_ITERATION_STMT;
 
@@ -7223,7 +7230,8 @@ c_parser_while_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 */
 
 static void
-c_parser_do_statement (c_parser *parser, bool ivdep, unsigned short unroll)
+c_parser_do_statement (c_parser *parser, bool ivdep, unsigned short unroll,
+		       bool novector)
 {
   tree block, cond, body;
   unsigned char save_in_statement;
@@ -7252,6 +7260,11 @@ c_parser_do_statement (c_parser *parser, bool ivdep, unsigned short unroll)
 		   build_int_cst (integer_type_node,
 				  annot_expr_unroll_kind),
  		   build_int_cst (integer_type_node, unroll));
+  if (novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node,
+				  annot_expr_no_vector_kind),
+		   integer_zero_node);
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
 
@@ -7320,7 +7333,7 @@ c_parser_do_statement (c_parser *parser, bool ivdep, unsigned short unroll)
 
 static void
 c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
-			bool *if_p)
+			bool novector, bool *if_p)
 {
   tree block, cond, incr, body;
   unsigned char save_in_statement;
@@ -7476,6 +7489,11 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
  			   build_int_cst (integer_type_node,
 					  annot_expr_unroll_kind),
 			   build_int_cst (integer_type_node, unroll));
+	  if (novector && cond != error_mark_node)
+	    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+			   build_int_cst (integer_type_node,
+					  annot_expr_no_vector_kind),
+			   integer_zero_node);
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is
@@ -13061,6 +13079,16 @@ c_parse_pragma_ivdep (c_parser *parser)
   return true;
 }
 
+/* Parse a pragma GCC novector.  */
+
+static bool
+c_parse_pragma_novector (c_parser *parser)
+{
+  c_parser_consume_pragma (parser);
+  c_parser_skip_to_pragma_eol (parser);
+  return true;
+}
+
 /* Parse a pragma GCC unroll.  */
 
 static unsigned short
@@ -13285,38 +13313,51 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_ORDERED:
       return c_parser_omp_ordered (parser, context, if_p);
 
+    case PRAGMA_NOVECTOR:
+    case PRAGMA_UNROLL:
     case PRAGMA_IVDEP:
       {
-	const bool ivdep = c_parse_pragma_ivdep (parser);
-	unsigned short unroll;
-	if (c_parser_peek_token (parser)->pragma_kind == PRAGMA_UNROLL)
-	  unroll = c_parser_pragma_unroll (parser);
-	else
-	  unroll = 0;
-	if (!c_parser_next_token_is_keyword (parser, RID_FOR)
-	    && !c_parser_next_token_is_keyword (parser, RID_WHILE)
-	    && !c_parser_next_token_is_keyword (parser, RID_DO))
-	  {
-	    c_parser_error (parser, "for, while or do statement expected");
-	    return false;
-	  }
-	if (c_parser_next_token_is_keyword (parser, RID_FOR))
-	  c_parser_for_statement (parser, ivdep, unroll, if_p);
-	else if (c_parser_next_token_is_keyword (parser, RID_WHILE))
-	  c_parser_while_statement (parser, ivdep, unroll, if_p);
-	else
-	  c_parser_do_statement (parser, ivdep, unroll);
-      }
-      return true;
+	bool novector = false;
+	unsigned short unroll = 0;
+	bool ivdep = false;
 
-    case PRAGMA_UNROLL:
-      {
-	unsigned short unroll = c_parser_pragma_unroll (parser);
-	bool ivdep;
-	if (c_parser_peek_token (parser)->pragma_kind == PRAGMA_IVDEP)
-	  ivdep = c_parse_pragma_ivdep (parser);
-	else
-	  ivdep = false;
+	switch (id)
+	  {
+	  case PRAGMA_NOVECTOR:
+	    novector = c_parse_pragma_novector (parser);
+	    break;
+	  case PRAGMA_UNROLL:
+	    unroll = c_parser_pragma_unroll (parser);
+	    break;
+	  case PRAGMA_IVDEP:
+	    ivdep = c_parse_pragma_ivdep (parser);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+
+	c_token *tok = c_parser_peek_token (parser);
+	bool has_more = tok->type == CPP_PRAGMA;
+	while (has_more)
+	  {
+	    switch (tok->pragma_kind)
+	      {
+	      case PRAGMA_IVDEP:
+		ivdep = c_parse_pragma_ivdep (parser);
+		break;
+	      case PRAGMA_UNROLL:
+		unroll = c_parser_pragma_unroll (parser);
+		break;
+	      case PRAGMA_NOVECTOR:
+		novector = c_parse_pragma_novector (parser);
+		break;
+	      default:
+		has_more = false;
+		break;
+	      }
+	    tok = c_parser_peek_token (parser);
+	    has_more = has_more && tok->type == CPP_PRAGMA;
+	  }
 	if (!c_parser_next_token_is_keyword (parser, RID_FOR)
 	    && !c_parser_next_token_is_keyword (parser, RID_WHILE)
 	    && !c_parser_next_token_is_keyword (parser, RID_DO))
@@ -13325,11 +13366,11 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
 	    return false;
 	  }
 	if (c_parser_next_token_is_keyword (parser, RID_FOR))
-	  c_parser_for_statement (parser, ivdep, unroll, if_p);
+	  c_parser_for_statement (parser, ivdep, unroll, novector, if_p);
 	else if (c_parser_next_token_is_keyword (parser, RID_WHILE))
-	  c_parser_while_statement (parser, ivdep, unroll, if_p);
+	  c_parser_while_statement (parser, ivdep, unroll, novector, if_p);
 	else
-	  c_parser_do_statement (parser, ivdep, unroll);
+	  c_parser_do_statement (parser, ivdep, unroll, novector);
       }
       return true;
 
