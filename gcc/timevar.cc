@@ -43,7 +43,7 @@ struct tms
 # define RUSAGE_SELF 0
 #endif
 
-/* Calculation of scale factor to convert ticks to microseconds.
+/* Calculation of scale factor to convert ticks to seconds.
    We mustn't use CLOCKS_PER_SEC except with clock().  */
 #if HAVE_SYSCONF && defined _SC_CLK_TCK
 # define TICKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
@@ -92,14 +92,15 @@ struct tms
    the underlying constants, and that can be very slow, so we have to
    precompute them.  Whose wonderful idea was it to make all those
    _constants_ variable at run time, anyway?  */
+#define NANOSEC_PER_SEC 1000000000
 #ifdef USE_TIMES
-static double ticks_to_msec;
-#define TICKS_TO_MSEC (1 / (double)TICKS_PER_SECOND)
+static uint64_t ticks_to_nanosec;
+#define TICKS_TO_NANOSEC (NANOSEC_PER_SEC / TICKS_PER_SECOND)
 #endif
 
 #ifdef USE_CLOCK
-static double clocks_to_msec;
-#define CLOCKS_TO_MSEC (1 / (double)CLOCKS_PER_SEC)
+static uint64_t clocks_to_nanosec;
+#define CLOCKS_TO_NANOSEC (NANOSEC_PER_SEC / CLOCKS_PER_SEC)
 #endif
 
 /* Non-NULL if timevars should be used.  In GCC, this happens with
@@ -243,18 +244,20 @@ get_time (struct timevar_time_def *now)
   {
 #ifdef USE_TIMES
     struct tms tms;
-    now->wall = times (&tms)  * ticks_to_msec;
-    now->user = tms.tms_utime * ticks_to_msec;
-    now->sys  = tms.tms_stime * ticks_to_msec;
+    now->wall = times (&tms)  * ticks_to_nanosec;
+    now->user = tms.tms_utime * ticks_to_nanosec;
+    now->sys  = tms.tms_stime * ticks_to_nanosec;
 #endif
 #ifdef USE_GETRUSAGE
     struct rusage rusage;
     getrusage (RUSAGE_SELF, &rusage);
-    now->user = rusage.ru_utime.tv_sec + rusage.ru_utime.tv_usec * 1e-6;
-    now->sys  = rusage.ru_stime.tv_sec + rusage.ru_stime.tv_usec * 1e-6;
+    now->user = rusage.ru_utime.tv_sec * NANOSEC_PER_SEC
+		+ rusage.ru_utime.tv_usec * 1000;
+    now->sys  = rusage.ru_stime.tv_sec * NANOSEC_PER_SEC
+		+ rusage.ru_stime.tv_usec * 1000;
 #endif
 #ifdef USE_CLOCK
-    now->user = clock () * clocks_to_msec;
+    now->user = clock () * clocks_to_nanosec;
 #endif
   }
 }
@@ -305,10 +308,10 @@ timer::timer () :
   /* Initialize configuration-specific state.
      Ideally this would be one-time initialization.  */
 #ifdef USE_TIMES
-  ticks_to_msec = TICKS_TO_MSEC;
+  ticks_to_nanosec = TICKS_TO_NANOSEC;
 #endif
 #ifdef USE_CLOCK
-  clocks_to_msec = CLOCKS_TO_MSEC;
+  clocks_to_nanosec = CLOCKS_TO_NANOSEC;
 #endif
 }
 
@@ -617,12 +620,11 @@ timer::validate_phases (FILE *fp) const
 {
   unsigned int /* timevar_id_t */ id;
   const timevar_time_def *total = &m_timevars[TV_TOTAL].elapsed;
-  double phase_user = 0.0;
-  double phase_sys = 0.0;
-  double phase_wall = 0.0;
+  uint64_t phase_user = 0;
+  uint64_t phase_sys = 0;
+  uint64_t phase_wall = 0;
   size_t phase_ggc_mem = 0;
   static char phase_prefix[] = "phase ";
-  const double tolerance = 1.000001;  /* One part in a million.  */
 
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
@@ -641,26 +643,32 @@ timer::validate_phases (FILE *fp) const
 	}
     }
 
-  if (phase_user > total->user * tolerance
-      || phase_sys > total->sys * tolerance
-      || phase_wall > total->wall * tolerance
-      || phase_ggc_mem > total->ggc_mem * tolerance)
+  if (phase_user > total->user
+      || phase_sys > total->sys
+      || phase_wall > total->wall
+      || phase_ggc_mem > total->ggc_mem)
     {
 
       fprintf (fp, "Timing error: total of phase timers exceeds total time.\n");
       if (phase_user > total->user)
-	fprintf (fp, "user    %24.18e > %24.18e\n", phase_user, total->user);
+	fprintf (fp, "user    %13" PRIu64 " > %13" PRIu64 "\n",
+		 phase_user, total->user);
       if (phase_sys > total->sys)
-	fprintf (fp, "sys     %24.18e > %24.18e\n", phase_sys, total->sys);
+	fprintf (fp, "sys     %13" PRIu64 " > %13" PRIu64 "\n",
+		 phase_sys, total->sys);
       if (phase_wall > total->wall)
-	fprintf (fp, "wall    %24.18e > %24.18e\n", phase_wall, total->wall);
+	fprintf (fp, "wall    %13" PRIu64 " > %13" PRIu64 "\n",
+		 phase_wall, total->wall);
       if (phase_ggc_mem > total->ggc_mem)
-	fprintf (fp, "ggc_mem %24lu > %24lu\n", (unsigned long)phase_ggc_mem,
+	fprintf (fp, "ggc_mem %13lu > %13lu\n", (unsigned long)phase_ggc_mem,
 		 (unsigned long)total->ggc_mem);
       gcc_unreachable ();
     }
 }
 
+#define nanosec_to_floating_sec(NANO) ((double)(NANO) * 1e-9)
+#define percent_of(TOTAL, SUBTOTAL) \
+  ((TOTAL) == 0 ? 0 : ((double)SUBTOTAL / TOTAL) * 100)
 /* Helper function for timer::print.  */
 
 void
@@ -674,22 +682,22 @@ timer::print_row (FILE *fp,
 #ifdef HAVE_USER_TIME
   /* Print user-mode time for this process.  */
   fprintf (fp, "%7.2f (%3.0f%%)",
-	   elapsed.user,
-	   (total->user == 0 ? 0 : elapsed.user / total->user) * 100);
+	   nanosec_to_floating_sec (elapsed.user),
+	   percent_of (total->user, elapsed.user));
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
   /* Print system-mode time for this process.  */
   fprintf (fp, "%7.2f (%3.0f%%)",
-	   elapsed.sys,
-	   (total->sys == 0 ? 0 : elapsed.sys / total->sys) * 100);
+	   nanosec_to_floating_sec (elapsed.sys),
+	   percent_of (total->sys, elapsed.sys));
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
   /* Print wall clock time elapsed.  */
   fprintf (fp, "%7.2f (%3.0f%%)",
-	   elapsed.wall,
-	   (total->wall == 0 ? 0 : elapsed.wall / total->wall) * 100);
+	   nanosec_to_floating_sec (elapsed.wall),
+	   percent_of (total->wall, elapsed.wall));
 #endif /* HAVE_WALL_TIME */
 
   /* Print the amount of ggc memory allocated.  */
@@ -707,7 +715,8 @@ timer::print_row (FILE *fp,
 bool
 timer::all_zero (const timevar_time_def &elapsed)
 {
-  const double tiny = 5e-3;
+  /* 5000000 nanosec == 5e-3 seconds.  */
+  uint64_t tiny = 5000000;
   return (elapsed.user < tiny
 	  && elapsed.sys < tiny
 	  && elapsed.wall < tiny
@@ -800,13 +809,13 @@ timer::print (FILE *fp)
   /* Print total time.  */
   fprintf (fp, " %-35s:", "TOTAL");
 #ifdef HAVE_USER_TIME
-  fprintf (fp, "%7.2f      ", total->user);
+  fprintf (fp, "%7.2f      ", nanosec_to_floating_sec (total->user));
 #endif
 #ifdef HAVE_SYS_TIME
-  fprintf (fp, "%8.2f      ", total->sys);
+  fprintf (fp, "%8.2f      ", nanosec_to_floating_sec (total->sys));
 #endif
 #ifdef HAVE_WALL_TIME
-  fprintf (fp, "%8.2f      ", total->wall);
+  fprintf (fp, "%8.2f      ", nanosec_to_floating_sec (total->wall));
 #endif
   fprintf (fp, PRsa (7) "\n", SIZE_AMOUNT (total->ggc_mem));
 
@@ -832,12 +841,16 @@ json::object *
 make_json_for_timevar_time_def (const timevar_time_def &ttd)
 {
   json::object *obj = new json::object ();
-  obj->set ("user", new json::float_number (ttd.user));
-  obj->set ("sys", new json::float_number (ttd.sys));
-  obj->set ("wall", new json::float_number (ttd.wall));
+  obj->set ("user",
+	    new json::float_number (nanosec_to_floating_sec (ttd.user)));
+  obj->set ("sys", new json::float_number (nanosec_to_floating_sec (ttd.sys)));
+  obj->set ("wall",
+	    new json::float_number (nanosec_to_floating_sec (ttd.wall)));
   obj->set ("ggc_mem", new json::integer_number (ttd.ggc_mem));
   return obj;
 }
+#undef nanosec_to_floating_sec
+#undef percent_of
 
 /* Create a json value representing this object, suitable for use
    in SARIF output.  */
