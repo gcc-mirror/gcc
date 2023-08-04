@@ -9392,7 +9392,17 @@ c_parser_generic_selection (c_parser *parser)
 	  return error_expr;
 	}
 
+      bool match = assoc.type == NULL_TREE
+		   || comptypes (assoc.type, selector_type);
+
+      if (!match)
+	c_inhibit_evaluation_warnings++;
+
       assoc.expression = c_parser_expr_no_commas (parser, NULL);
+
+      if (!match)
+	  c_inhibit_evaluation_warnings--;
+
       if (assoc.expression.value == error_mark_node)
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
@@ -9429,7 +9439,7 @@ c_parser_generic_selection (c_parser *parser)
 	      match_found = associations.length ();
 	    }
 	}
-      else if (comptypes (assoc.type, selector_type))
+      else if (match)
 	{
 	  if (match_found < 0 || matched_assoc.type == NULL_TREE)
 	    {
