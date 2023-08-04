@@ -30,7 +30,6 @@ with Checks;         use Checks;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Aggr;       use Exp_Aggr;
@@ -9401,6 +9400,135 @@ package body Exp_Util is
         and then Has_Controlling_Result (Id);
    end Is_Secondary_Stack_Thunk;
 
+   ----------------------------
+   -- Is_Statically_Disabled --
+   ----------------------------
+
+   function Is_Statically_Disabled
+     (N             : Node_Id;
+      Value         : Boolean;
+      Include_Valid : Boolean)
+      return Boolean
+   is
+      function Is_Discrete_Literal (N : Node_Id) return Boolean;
+      --  Returns whether N is an integer, character or enumeration literal
+
+      -------------------------
+      -- Is_Discrete_Literal --
+      -------------------------
+
+      function Is_Discrete_Literal (N : Node_Id) return Boolean is
+        (Nkind (N) in N_Integer_Literal | N_Character_Literal
+          or else (Nkind (N) in N_Identifier | N_Expanded_Name
+                    and then Ekind (Entity (N)) = E_Enumeration_Literal));
+
+      Expr_N : constant Node_Id :=
+        (if Is_Static_Expression (N)
+           and then Entity (N) in Standard_True | Standard_False
+           and then Is_Rewrite_Substitution (N)
+         then Original_Node (N)
+         else N);
+
+   --  Start of processing for Is_Statically_Disabled
+
+   begin
+      --  A "statically disabled" condition which evaluates to Value is either:
+
+      case Nkind (Expr_N) is
+
+         --  an AND or AND THEN operator when:
+         --  - Value is True and both operands are statically disabled
+         --    conditions evaluated to True.
+         --  - Value is False and at least one operand is a statically disabled
+         --    condition evaluated to False.
+
+         when N_Op_And | N_And_Then =>
+            return
+              (if Value then
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  and then Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid))
+               else
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  or else Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid)));
+
+         --  an OR or OR ELSE operator when:
+         --  - Value is True and at least one operand is a statically disabled
+         --    condition evaluated to True.
+         --  - Value is False and both operands are statically disabled
+         --    conditions evaluated to False.
+
+         when N_Op_Or | N_Or_Else =>
+            return
+              (if Value then
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  or else Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid))
+               else
+                 (Is_Statically_Disabled
+                    (Left_Opnd (Expr_N), Value, Include_Valid)
+                  and then Is_Statically_Disabled
+                    (Right_Opnd (Expr_N), Value, Include_Valid)));
+
+         --  a NOT operator when the right operand is a statically disabled
+         --  condition evaluated to the negation of Value.
+
+         when N_Op_Not =>
+            return Is_Statically_Disabled
+              (Right_Opnd (Expr_N), not Value, Include_Valid);
+
+         --  a static constant when it is of a boolean type with aspect
+         --  Warnings Off.
+
+         when N_Identifier | N_Expanded_Name =>
+            return Is_Static_Expression (Expr_N)
+              and then Value = Is_True (Expr_Value (Expr_N))
+              and then Ekind (Entity (Expr_N)) = E_Constant
+              and then Has_Warnings_Off (Entity (Expr_N));
+
+         --  a relational_operator where one operand is a static constant with
+         --  aspect Warnings Off and the other operand is a literal of the
+         --  corresponding type.
+
+         when N_Op_Compare =>
+            declare
+               Left  : constant Node_Id := Left_Opnd (Expr_N);
+               Right : constant Node_Id := Right_Opnd (Expr_N);
+            begin
+               return
+                 Is_Static_Expression (N)
+                   and then Value = Is_True (Expr_Value (N))
+                   and then
+                     ((Is_Discrete_Literal (Right)
+                         and then Nkind (Left) in N_Identifier
+                                                | N_Expanded_Name
+                         and then Ekind (Entity (Left)) = E_Constant
+                         and then Has_Warnings_Off (Entity (Left)))
+                      or else
+                        (Is_Discrete_Literal (Left)
+                           and then Nkind (Right) in N_Identifier
+                                                   | N_Expanded_Name
+                           and then Ekind (Entity (Right)) = E_Constant
+                           and then Has_Warnings_Off (Entity (Right))));
+            end;
+
+         --  a reference to 'Valid or 'Valid_Scalar if Include_Valid is True
+
+         when N_Attribute_Reference =>
+            return Include_Valid
+              and then Get_Attribute_Id (Attribute_Name (Expr_N)) in
+                Attribute_Valid | Attribute_Valid_Scalars
+              and then Value;
+
+         when others =>
+            return False;
+      end case;
+   end Is_Statically_Disabled;
+
    --------------------------------
    -- Is_Uninitialized_Aggregate --
    --------------------------------
@@ -9577,8 +9705,11 @@ package body Exp_Util is
             --  if/case statement and either
             --    a) we are in an instance and the condition/selector
             --       has a statically known value; or
-            --    b) the condition/selector is a simple identifier and
-            --       warnings off is set for this identifier.
+            --    b) the selector of a case statement is a simple identifier
+            --       and warnings off is set for this identifier; or
+            --    c) the condition of an if statement is a "statically
+            --       disabled" condition which evaluates to False as described
+            --       in section 7.3.2 of SPARK User's Guide.
             --  Dead code is common and reasonable in instances, so we don't
             --  want a warning in that case.
 
@@ -9587,18 +9718,28 @@ package body Exp_Util is
             begin
                if Nkind (Parent (N)) = N_If_Statement then
                   C := Condition (Parent (N));
-               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
-                  C := Expression (Parent (Parent (N)));
-               end if;
 
-               if Present (C) then
-                  if (In_Instance and Compile_Time_Known_Value (C))
-                    or else (Nkind (C) = N_Identifier
-                             and then Present (Entity (C))
-                             and then Has_Warnings_Off (Entity (C)))
+                  if Is_Statically_Disabled
+                    (C, Value => False, Include_Valid => False)
                   then
                      W := False;
                   end if;
+
+               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
+                  C := Expression (Parent (Parent (N)));
+
+                  if Nkind (C) = N_Identifier
+                    and then Present (Entity (C))
+                    and then Has_Warnings_Off (Entity (C))
+                  then
+                     W := False;
+                  end if;
+               end if;
+
+               if Present (C)
+                 and then (In_Instance and Compile_Time_Known_Value (C))
+               then
+                  W := False;
                end if;
             end;
 
