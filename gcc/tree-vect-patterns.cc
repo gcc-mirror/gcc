@@ -3109,8 +3109,8 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
       wide_int min_value, max_value;
       if (TREE_CODE (ops[1]) == INTEGER_CST)
 	ops[1] = wide_int_to_tree (op_type,
-				   wi::bit_and (wi::to_wide (ops[1]),
-						new_precision - 1));
+				   wi::umin (wi::to_wide (ops[1]),
+					     new_precision - 1));
       else if (!vect_get_range_info (ops[1], &min_value, &max_value)
 	       || wi::ge_p (max_value, new_precision, TYPE_SIGN (op_type)))
 	{
@@ -3118,11 +3118,23 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 	     same argument widened shifts and it un-CSEs same arguments.  */
 	  tree new_var = vect_recog_temp_ssa_var (op_type, NULL);
 	  gimple *pattern_stmt
-	    = gimple_build_assign (new_var, BIT_AND_EXPR, ops[1],
+	    = gimple_build_assign (new_var, MIN_EXPR, ops[1],
 				   build_int_cst (op_type, new_precision - 1));
-	  ops[1] = new_var;
 	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
-	  append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt);
+	  if (unprom[1].dt == vect_external_def)
+	    {
+	      if (edge e = vect_get_external_def_edge (vinfo, ops[1]))
+		{
+		  basic_block new_bb
+		    = gsi_insert_on_edge_immediate (e, pattern_stmt);
+		  gcc_assert (!new_bb);
+		}
+	      else
+		return NULL;
+	    }
+	  else
+	    append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt);
+	  ops[1] = new_var;
 	}
     }
 
