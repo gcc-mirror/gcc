@@ -3870,13 +3870,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			- TYPE_PRECISION (TREE_TYPE (@2)))))
   (bit_and (convert @0) (lshift { build_minus_one_cst (type); } @1))))
 
-/* Optimize (x << c) >> c into x & ((unsigned)-1 >> c) for unsigned
-   types.  */
+/* For (x << c) >> c, optimize into x & ((unsigned)-1 >> c) for
+   unsigned x OR truncate into the precision(type) - c lowest bits
+   of signed x (if they have mode precision or a precision of 1).  */
 (simplify
- (rshift (lshift @0 INTEGER_CST@1) @1)
- (if (TYPE_UNSIGNED (type)
-      && (wi::ltu_p (wi::to_wide (@1), element_precision (type))))
-  (bit_and @0 (rshift { build_minus_one_cst (type); } @1))))
+ (rshift (nop_convert? (lshift @0 INTEGER_CST@1)) @@1)
+ (if (wi::ltu_p (wi::to_wide (@1), element_precision (type)))
+  (if (TYPE_UNSIGNED (type))
+   (bit_and (convert @0) (rshift { build_minus_one_cst (type); } @1))
+   (if (INTEGRAL_TYPE_P (type))
+    (with {
+      int width = element_precision (type) - tree_to_uhwi (@1);
+      tree stype = build_nonstandard_integer_type (width, 0);
+     }
+     (if (width == 1 || type_has_mode_precision_p (stype))
+      (convert (convert:stype @0))))))))
 
 /* Optimize x >> x into 0 */
 (simplify
