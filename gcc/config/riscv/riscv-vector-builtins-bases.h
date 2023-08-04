@@ -160,7 +160,6 @@ extern const function_base *const vfrdiv_frm;
 extern const function_base *const vfwmul;
 extern const function_base *const vfwmul_frm;
 extern const function_base *const vfmacc;
-extern const function_base *const vfmacc_frm;
 extern const function_base *const vfnmsac;
 extern const function_base *const vfmadd;
 extern const function_base *const vfnmsub;
