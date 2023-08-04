@@ -714,8 +714,11 @@ region_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     {
       pp_string (pp, "region_svalue(");
-      print_quoted_type (pp, get_type ());
-      pp_string (pp, ", ");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
       m_reg->dump_to_pp (pp, simple);
       pp_string (pp, ")");
     }
@@ -811,8 +814,11 @@ constant_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     {
       pp_string (pp, "constant_svalue(");
-      print_quoted_type (pp, get_type ());
-      pp_string (pp, ", ");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
       dump_tree (pp, m_cst_expr);
       pp_string (pp, ")");
     }
@@ -1029,8 +1035,11 @@ initial_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     {
       pp_string (pp, "initial_svalue(");
-      print_quoted_type (pp, get_type ());
-      pp_string (pp, ", ");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
       m_reg->dump_to_pp (pp, simple);
       pp_string (pp, ")");
     }
@@ -1910,7 +1919,11 @@ conjured_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     {
       pp_string (pp, "conjured_svalue (");
-      pp_string (pp, ", ");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
       pp_gimple_stmt_1 (pp, m_stmt, 0, (dump_flags_t)0);
       pp_string (pp, ", ");
       m_id_reg->dump_to_pp (pp, simple);
