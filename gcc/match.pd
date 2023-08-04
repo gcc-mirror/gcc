@@ -1002,6 +1002,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (shift @0 uniform_integer_cst_p@1)
   (if ((GIMPLE || !sanitize_flags_p (SANITIZE_SHIFT_EXPONENT))
+       /* Leave arithmetic right shifts of possibly negative values alone.  */
+       && (TYPE_UNSIGNED (type)
+           || shift == LSHIFT_EXPR
+	   || tree_expr_nonnegative_p (@0))
        /* Use a signed compare to leave negative shift counts alone.  */
        && wi::ges_p (wi::to_wide (uniform_integer_cst_p (@1)),
 		     element_precision (type)))
