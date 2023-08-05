@@ -1,3 +1,8 @@
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_NOVECTOR.
+	* c-pragma.cc (init_pragma): Use it.
+
 2023-08-01  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c-common.h (c_init_preprocess): Declare new function.

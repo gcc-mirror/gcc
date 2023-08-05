@@ -1,3 +1,10 @@
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* c-parser.cc (c_parser_while_statement, c_parser_do_statement,
+	c_parser_for_statement, c_parser_statement_after_labels,
+	c_parse_pragma_novector, c_parser_pragma): Wire through novector and
+	default to false.
+
 2023-08-02  Eric Feng  <ef2648@columbia.edu>
 
 	PR analyzer/107646

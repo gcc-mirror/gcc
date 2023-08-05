@@ -1,3 +1,805 @@
+2023-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110426
+	* gcc.dg/analyzer/allocation-size-1.c: Update expected message to
+	reflect consolidation of size and assignment into a single event.
+	* gcc.dg/analyzer/allocation-size-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-3.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-4.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-1.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-3.c: Likewise.
+	* gcc.dg/analyzer/attr-alloc_size-1.c: New test.
+	* gcc.dg/analyzer/attr-alloc_size-2.c: New test.
+	* gcc.dg/analyzer/attr-alloc_size-3.c: New test.
+	* gcc.dg/analyzer/explode-4.c: New test.
+	* gcc.dg/analyzer/taint-size-1.c: Add test coverage for
+	__attribute__ alloc_size.
+
+2023-08-04  Yan Simonaytes  <simonaytes.yan@ispras.ru>
+
+	PR target/110202
+	* gcc.target/i386/invariant-ternlog-1.c: New test.
+	* gcc.target/i386/invariant-ternlog-2.c: New test.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr110717-2.c: New test case.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr88873.c: Tweak to check for improved code.
+
+2023-08-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/lra-cpymem_qi.c: New.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/pr84556.cc: Add novector pragma.
+	* g++.dg/vect/simd-1.cc: Add novector pragma.
+	* g++.dg/vect/simd-2.cc: Add novector pragma.
+	* g++.dg/vect/simd-3.cc: Add novector pragma.
+	* g++.dg/vect/simd-4.cc: Add novector pragma.
+	* g++.dg/vect/simd-5.cc: Add novector pragma.
+	* g++.dg/vect/simd-6.cc: Add novector pragma.
+	* g++.dg/vect/simd-7.cc: Add novector pragma.
+	* g++.dg/vect/simd-8.cc: Add novector pragma.
+	* g++.dg/vect/simd-9.cc: Add novector pragma.
+	* g++.dg/vect/simd-clone-6.cc: Add novector pragma.
+	* gcc.dg/vect/O3-pr70130.c: Add novector pragma.
+	* gcc.dg/vect/Os-vect-95.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-16.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-24.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-25.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-26.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-27.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-28.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-29.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-42.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pattern-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pow-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pr101615-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pr65935.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-12.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-call-1.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-call-2.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-complex-3.c: Add novector pragma.
+	* gcc.dg/vect/if-cvt-stores-vect-ifcvt-18.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-1.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-2.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10a.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10b.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-11.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-12.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-15.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-16.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-17.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-18.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-19.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-20.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-21.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-22.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-4.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-6-global.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-6.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-7.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-8.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9a.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9b.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-slp-30.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-slp-31.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-vect-iv-2.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-34.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-36.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-65.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-outer-4h.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-2.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-111.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-11.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-12.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-13.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-14.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-15.c: Add novector pragma.
+	* gcc.dg/vect/no-tree-dom-vect-bug.c: Add novector pragma.
+	* gcc.dg/vect/no-tree-pre-slp-29.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-pr29145.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-101.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-102.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-37.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-43.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-45.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-49.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-51.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-53.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-57.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-61.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-79.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-1.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Add novector pragma.
+	* gcc.dg/vect/pr101445.c: Add novector pragma.
+	* gcc.dg/vect/pr103581.c: Add novector pragma.
+	* gcc.dg/vect/pr105219.c: Add novector pragma.
+	* gcc.dg/vect/pr108608.c: Add novector pragma.
+	* gcc.dg/vect/pr18400.c: Add novector pragma.
+	* gcc.dg/vect/pr18536.c: Add novector pragma.
+	* gcc.dg/vect/pr20122.c: Add novector pragma.
+	* gcc.dg/vect/pr25413.c: Add novector pragma.
+	* gcc.dg/vect/pr30784.c: Add novector pragma.
+	* gcc.dg/vect/pr37539.c: Add novector pragma.
+	* gcc.dg/vect/pr40074.c: Add novector pragma.
+	* gcc.dg/vect/pr45752.c: Add novector pragma.
+	* gcc.dg/vect/pr45902.c: Add novector pragma.
+	* gcc.dg/vect/pr46009.c: Add novector pragma.
+	* gcc.dg/vect/pr48172.c: Add novector pragma.
+	* gcc.dg/vect/pr51074.c: Add novector pragma.
+	* gcc.dg/vect/pr51581-3.c: Add novector pragma.
+	* gcc.dg/vect/pr51581-4.c: Add novector pragma.
+	* gcc.dg/vect/pr53185-2.c: Add novector pragma.
+	* gcc.dg/vect/pr56918.c: Add novector pragma.
+	* gcc.dg/vect/pr56920.c: Add novector pragma.
+	* gcc.dg/vect/pr56933.c: Add novector pragma.
+	* gcc.dg/vect/pr57705.c: Add novector pragma.
+	* gcc.dg/vect/pr57741-2.c: Add novector pragma.
+	* gcc.dg/vect/pr57741-3.c: Add novector pragma.
+	* gcc.dg/vect/pr59591-1.c: Add novector pragma.
+	* gcc.dg/vect/pr59591-2.c: Add novector pragma.
+	* gcc.dg/vect/pr59594.c: Add novector pragma.
+	* gcc.dg/vect/pr59984.c: Add novector pragma.
+	* gcc.dg/vect/pr60276.c: Add novector pragma.
+	* gcc.dg/vect/pr61194.c: Add novector pragma.
+	* gcc.dg/vect/pr61680.c: Add novector pragma.
+	* gcc.dg/vect/pr62021.c: Add novector pragma.
+	* gcc.dg/vect/pr63341-2.c: Add novector pragma.
+	* gcc.dg/vect/pr64252.c: Add novector pragma.
+	* gcc.dg/vect/pr64404.c: Add novector pragma.
+	* gcc.dg/vect/pr64421.c: Add novector pragma.
+	* gcc.dg/vect/pr64493.c: Add novector pragma.
+	* gcc.dg/vect/pr64495.c: Add novector pragma.
+	* gcc.dg/vect/pr66251.c: Add novector pragma.
+	* gcc.dg/vect/pr66253.c: Add novector pragma.
+	* gcc.dg/vect/pr68502-1.c: Add novector pragma.
+	* gcc.dg/vect/pr68502-2.c: Add novector pragma.
+	* gcc.dg/vect/pr69820.c: Add novector pragma.
+	* gcc.dg/vect/pr70021.c: Add novector pragma.
+	* gcc.dg/vect/pr70354-1.c: Add novector pragma.
+	* gcc.dg/vect/pr70354-2.c: Add novector pragma.
+	* gcc.dg/vect/pr71259.c: Add novector pragma.
+	* gcc.dg/vect/pr78005.c: Add novector pragma.
+	* gcc.dg/vect/pr78558.c: Add novector pragma.
+	* gcc.dg/vect/pr80815-2.c: Add novector pragma.
+	* gcc.dg/vect/pr80815-3.c: Add novector pragma.
+	* gcc.dg/vect/pr80928.c: Add novector pragma.
+	* gcc.dg/vect/pr81410.c: Add novector pragma.
+	* gcc.dg/vect/pr81633.c: Add novector pragma.
+	* gcc.dg/vect/pr81740-1.c: Add novector pragma.
+	* gcc.dg/vect/pr81740-2.c: Add novector pragma.
+	* gcc.dg/vect/pr85586.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-1.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-2.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-3.c: Add novector pragma.
+	* gcc.dg/vect/pr88903-1.c: Add novector pragma.
+	* gcc.dg/vect/pr88903-2.c: Add novector pragma.
+	* gcc.dg/vect/pr90018.c: Add novector pragma.
+	* gcc.dg/vect/pr92420.c: Add novector pragma.
+	* gcc.dg/vect/pr94994.c: Add novector pragma.
+	* gcc.dg/vect/pr96783-1.c: Add novector pragma.
+	* gcc.dg/vect/pr96783-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97081-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97558-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97678.c: Add novector pragma.
+	* gcc.dg/vect/section-anchors-pr27770.c: Add novector pragma.
+	* gcc.dg/vect/section-anchors-vect-69.c: Add novector pragma.
+	* gcc.dg/vect/slp-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-11a.c: Add novector pragma.
+	* gcc.dg/vect/slp-11b.c: Add novector pragma.
+	* gcc.dg/vect/slp-11c.c: Add novector pragma.
+	* gcc.dg/vect/slp-12a.c: Add novector pragma.
+	* gcc.dg/vect/slp-12b.c: Add novector pragma.
+	* gcc.dg/vect/slp-12c.c: Add novector pragma.
+	* gcc.dg/vect/slp-13-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-13.c: Add novector pragma.
+	* gcc.dg/vect/slp-14.c: Add novector pragma.
+	* gcc.dg/vect/slp-15.c: Add novector pragma.
+	* gcc.dg/vect/slp-16.c: Add novector pragma.
+	* gcc.dg/vect/slp-17.c: Add novector pragma.
+	* gcc.dg/vect/slp-18.c: Add novector pragma.
+	* gcc.dg/vect/slp-19a.c: Add novector pragma.
+	* gcc.dg/vect/slp-19b.c: Add novector pragma.
+	* gcc.dg/vect/slp-19c.c: Add novector pragma.
+	* gcc.dg/vect/slp-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-20.c: Add novector pragma.
+	* gcc.dg/vect/slp-21.c: Add novector pragma.
+	* gcc.dg/vect/slp-22.c: Add novector pragma.
+	* gcc.dg/vect/slp-23.c: Add novector pragma.
+	* gcc.dg/vect/slp-24-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-24.c: Add novector pragma.
+	* gcc.dg/vect/slp-25.c: Add novector pragma.
+	* gcc.dg/vect/slp-26.c: Add novector pragma.
+	* gcc.dg/vect/slp-28.c: Add novector pragma.
+	* gcc.dg/vect/slp-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-33.c: Add novector pragma.
+	* gcc.dg/vect/slp-34-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-34.c: Add novector pragma.
+	* gcc.dg/vect/slp-35.c: Add novector pragma.
+	* gcc.dg/vect/slp-37.c: Add novector pragma.
+	* gcc.dg/vect/slp-4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-41.c: Add novector pragma.
+	* gcc.dg/vect/slp-43.c: Add novector pragma.
+	* gcc.dg/vect/slp-45.c: Add novector pragma.
+	* gcc.dg/vect/slp-46.c: Add novector pragma.
+	* gcc.dg/vect/slp-47.c: Add novector pragma.
+	* gcc.dg/vect/slp-48.c: Add novector pragma.
+	* gcc.dg/vect/slp-49.c: Add novector pragma.
+	* gcc.dg/vect/slp-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-11-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-11.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-12.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-11.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-12.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-half.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-s16.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-100.c: Add novector pragma.
+	* gcc.dg/vect/vect-103.c: Add novector pragma.
+	* gcc.dg/vect/vect-104.c: Add novector pragma.
+	* gcc.dg/vect/vect-105-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-105.c: Add novector pragma.
+	* gcc.dg/vect/vect-106.c: Add novector pragma.
+	* gcc.dg/vect/vect-107.c: Add novector pragma.
+	* gcc.dg/vect/vect-108.c: Add novector pragma.
+	* gcc.dg/vect/vect-109.c: Add novector pragma.
+	* gcc.dg/vect/vect-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-110.c: Add novector pragma.
+	* gcc.dg/vect/vect-113.c: Add novector pragma.
+	* gcc.dg/vect/vect-114.c: Add novector pragma.
+	* gcc.dg/vect/vect-115.c: Add novector pragma.
+	* gcc.dg/vect/vect-116.c: Add novector pragma.
+	* gcc.dg/vect/vect-117.c: Add novector pragma.
+	* gcc.dg/vect/vect-11a.c: Add novector pragma.
+	* gcc.dg/vect/vect-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-122.c: Add novector pragma.
+	* gcc.dg/vect/vect-124.c: Add novector pragma.
+	* gcc.dg/vect/vect-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-15-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-21.c: Add novector pragma.
+	* gcc.dg/vect/vect-22.c: Add novector pragma.
+	* gcc.dg/vect/vect-23.c: Add novector pragma.
+	* gcc.dg/vect/vect-24.c: Add novector pragma.
+	* gcc.dg/vect/vect-25.c: Add novector pragma.
+	* gcc.dg/vect/vect-26.c: Add novector pragma.
+	* gcc.dg/vect/vect-27.c: Add novector pragma.
+	* gcc.dg/vect/vect-28.c: Add novector pragma.
+	* gcc.dg/vect/vect-29.c: Add novector pragma.
+	* gcc.dg/vect/vect-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-30.c: Add novector pragma.
+	* gcc.dg/vect/vect-31-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-31.c: Add novector pragma.
+	* gcc.dg/vect/vect-32-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-32.c: Add novector pragma.
+	* gcc.dg/vect/vect-33-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-33.c: Add novector pragma.
+	* gcc.dg/vect/vect-34-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-34.c: Add novector pragma.
+	* gcc.dg/vect/vect-35-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-35.c: Add novector pragma.
+	* gcc.dg/vect/vect-36-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-36.c: Add novector pragma.
+	* gcc.dg/vect/vect-38.c: Add novector pragma.
+	* gcc.dg/vect/vect-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-40.c: Add novector pragma.
+	* gcc.dg/vect/vect-42.c: Add novector pragma.
+	* gcc.dg/vect/vect-44.c: Add novector pragma.
+	* gcc.dg/vect/vect-46.c: Add novector pragma.
+	* gcc.dg/vect/vect-48.c: Add novector pragma.
+	* gcc.dg/vect/vect-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-50.c: Add novector pragma.
+	* gcc.dg/vect/vect-52.c: Add novector pragma.
+	* gcc.dg/vect/vect-54.c: Add novector pragma.
+	* gcc.dg/vect/vect-56.c: Add novector pragma.
+	* gcc.dg/vect/vect-58.c: Add novector pragma.
+	* gcc.dg/vect/vect-6-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-60.c: Add novector pragma.
+	* gcc.dg/vect/vect-62.c: Add novector pragma.
+	* gcc.dg/vect/vect-63.c: Add novector pragma.
+	* gcc.dg/vect/vect-64.c: Add novector pragma.
+	* gcc.dg/vect/vect-65.c: Add novector pragma.
+	* gcc.dg/vect/vect-66.c: Add novector pragma.
+	* gcc.dg/vect/vect-67.c: Add novector pragma.
+	* gcc.dg/vect/vect-68.c: Add novector pragma.
+	* gcc.dg/vect/vect-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-70.c: Add novector pragma.
+	* gcc.dg/vect/vect-71.c: Add novector pragma.
+	* gcc.dg/vect/vect-72.c: Add novector pragma.
+	* gcc.dg/vect/vect-73-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-73.c: Add novector pragma.
+	* gcc.dg/vect/vect-74-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-74.c: Add novector pragma.
+	* gcc.dg/vect/vect-75-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-75.c: Add novector pragma.
+	* gcc.dg/vect/vect-76-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-76.c: Add novector pragma.
+	* gcc.dg/vect/vect-77-alignchecks.c: Add novector pragma.
+	* gcc.dg/vect/vect-77-global.c: Add novector pragma.
+	* gcc.dg/vect/vect-77.c: Add novector pragma.
+	* gcc.dg/vect/vect-78-alignchecks.c: Add novector pragma.
+	* gcc.dg/vect/vect-78-global.c: Add novector pragma.
+	* gcc.dg/vect/vect-78.c: Add novector pragma.
+	* gcc.dg/vect/vect-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-80-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-80.c: Add novector pragma.
+	* gcc.dg/vect/vect-82.c: Add novector pragma.
+	* gcc.dg/vect/vect-82_64.c: Add novector pragma.
+	* gcc.dg/vect/vect-83.c: Add novector pragma.
+	* gcc.dg/vect/vect-83_64.c: Add novector pragma.
+	* gcc.dg/vect/vect-85-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-85.c: Add novector pragma.
+	* gcc.dg/vect/vect-86.c: Add novector pragma.
+	* gcc.dg/vect/vect-87.c: Add novector pragma.
+	* gcc.dg/vect/vect-88.c: Add novector pragma.
+	* gcc.dg/vect/vect-89-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-89.c: Add novector pragma.
+	* gcc.dg/vect/vect-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-92.c: Add novector pragma.
+	* gcc.dg/vect/vect-93.c: Add novector pragma.
+	* gcc.dg/vect/vect-95.c: Add novector pragma.
+	* gcc.dg/vect/vect-96.c: Add novector pragma.
+	* gcc.dg/vect/vect-97-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-97.c: Add novector pragma.
+	* gcc.dg/vect/vect-98-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-98.c: Add novector pragma.
+	* gcc.dg/vect/vect-99.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-align-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-align-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-all-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-all.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-bool-cmp.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap16.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap32.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap64.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-cselim-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cselim-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask.h: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-6-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-float-extend-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-float-truncate-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-floatint-conversion-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-floatint-conversion-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-fma-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-gather-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-gather-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-4a.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-4b.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8a.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-mask-load-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mulhrs-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-neg-store-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-neg-store-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2a.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2b.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2c-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2c.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2d.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3a.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3b.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3c.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4d-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4d.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-lb-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-lb.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-slp-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-1-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-21.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-22.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-1-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-2-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-4-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-sdivmod-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u32-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-float.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-same-dr.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-shift-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-a-u8-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-u32-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i3.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-i8.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-01.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-02.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-03.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-04.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-slp.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-half.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-s8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-s8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-u8.c: Add novector pragma.
+	* gcc.dg/vect/wrapv-vect-7.c: Add novector pragma.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-novector-pragma.c: New test.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/vect.exp (support vect- prefix).
+	* g++.dg/vect/vect-novector-pragma.cc: New test.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106346
+	* gcc.target/aarch64/pr98772.c: Adjust assembly.
+	* gcc.target/aarch64/vect-widen-shift.c: New test.
+
+2023-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* gcc.dg/vect/pr110838.c: New testcase.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-add.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-add.c:
+	New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-sub.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-sub.c:
+	New test.
+
+2023-08-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110874
+	* gcc.c-torture/compile/pr110874-a.c: New test.
+
+2023-08-04  Drew Ross  <drross@redhat.com>
+
+	PR middle-end/101955
+	* gcc.dg/pr101955.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-sub.c:
+	New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-sub.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-add.c:
+	New test.
+
+2023-08-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* gcc.target/aarch64/pr110625_3.c: New testcase.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-add.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-mul.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-div.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-single-rdiv.c: New test.
+
 2023-08-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	* g++.dg/ipa/pure-const-3.C: Move source to...

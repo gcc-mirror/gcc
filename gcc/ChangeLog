@@ -1,3 +1,277 @@
+2023-08-04  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Recognize
+	more Zicond patterns.  Fix whitespace typo.
+	(riscv_rtx_costs): Remove accidental code duplication.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-08-04  Yan Simonaytes  <simonaytes.yan@ispras.ru>
+
+	PR target/110202
+	* config/i386/i386-protos.h
+	(vpternlog_redundant_operand_mask): Declare.
+	(substitute_vpternlog_operands): Declare.
+	* config/i386/i386.cc
+	(vpternlog_redundant_operand_mask): New helper.
+	(substitute_vpternlog_operands): New function.  Use them...
+	* config/i386/sse.md: ... here in new VPTERNLOG define_splits.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expmed.cc (extract_bit_field_1): Document that an UNSIGNEDP
+	value of -1 is equivalent to don't care.
+	(extract_integral_bit_field): Indicate that we don't require
+	the most significant word to be zero extended, if we're about
+	to sign extend it.
+	(extract_fixed_bit_field_1): Document that an UNSIGNEDP value
+	of -1 is equivalent to don't care.  Don't clear the most
+	significant bits with AND mask when UNSIGNEDP is -1.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md (define_split): Convert highpart:DF extract
+	from V2DFmode register into a sse2_storehpd instruction.
+	(define_split): Likewise, convert lowpart:DF extract from V2DF
+	register into a sse2_storelpd instruction.
+
+2023-08-04  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/invoke.texi (-Wflex-array-member-not-at-end): Document
+	new option.
+
+2023-08-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-lives.cc (process_bb_lives): Check input insn pattern hard regs
+	against early clobber hard regs.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/extend.texi: Document it.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106346
+	* config/aarch64/aarch64-simd.md (vec_widen_<sur>shiftl_lo_<mode>,
+	vec_widen_<sur>shiftl_hi_<mode>): Remove.
+	(aarch64_<sur>shll<mode>_internal): Renamed to...
+	(aarch64_<su>shll<mode>): .. This.
+	(aarch64_<sur>shll2<mode>_internal): Renamed to...
+	(aarch64_<su>shll2<mode>): .. This.
+	(aarch64_<sur>shll_n<mode>, aarch64_<sur>shll2_n<mode>): Re-use new
+	optabs.
+	* config/aarch64/constraints.md (D2, DL): New.
+	* config/aarch64/predicates.md (aarch64_simd_shll_imm_vec): New.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gensupport.cc (conlist): Support length 0 attribute.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_bool_compound_p): New.
+	(aarch64_adjust_stmt_cost, aarch64_vector_costs::count_ops): Use it.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_multiply_add_p): Update handling
+	of constants.
+	(aarch64_adjust_stmt_cost): Use it.
+	(aarch64_vector_costs::count_ops): Likewise.
+	(aarch64_vector_costs::add_stmt_cost): Pass vinfo to
+	aarch64_adjust_stmt_cost.
+
+2023-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern):
+	Fix right-shift value sanitizing.  Properly emit external
+	def mangling in the preheader rather than in the pattern
+	def sequence where it will fail vectorizing.
+
+2023-08-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR middle-end/110316
+	PR middle-end/9903
+	* timevar.cc (NANOSEC_PER_SEC, TICKS_TO_NANOSEC,
+	CLOCKS_TO_NANOSEC, nanosec_to_floating_sec, percent_of): New.
+	(TICKS_TO_MSEC, CLOCKS_TO_MSEC): Remove these macros.
+	(timer::validate_phases): Use integral arithmetic to check
+	validity.
+	(timer::print_row, timer::print): Convert from integral
+	nanoseconds to floating	point seconds before printing.
+	(timer::all_zero): Change limit to nanosec count instead of
+	fractional count of seconds.
+	(make_json_for_timevar_time_def): Convert from integral
+	nanoseconds to floating point seconds before recording.
+	* timevar.h (struct timevar_time_def): Update all measurements
+	to use uint64_t nanoseconds rather than seconds stored in a
+	double.
+
+2023-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* match.pd (([rl]shift @0 out-of-bounds) -> zero): Restrict
+	the arithmetic right-shift case to non-negative operands.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmacc_frm): New class for vfmacc frm.
+	(vfmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmacc_frm): New function definition.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_ternop_insn): Add frm operand support.
+	* config/riscv/vector.md: Add vfmuladd to frm_mode.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmacc_frm): New class for vfnmacc.
+	(vfnmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmacc_frm): New function definition.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmsac_frm): New class for vfmsac frm.
+	(vfmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmsac_frm): New function definition.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmsac_frm): New class for vfnmsac frm.
+	(vfnmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmsac_frm): New function definition.
+
+2023-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr64dd14, avr64dd20, avr64dd28, avr64dd32)
+	(avr64ea28, avr64ea32, avr64ea48, attiny424, attiny426, attiny427)
+	(attiny824, attiny826, attiny827, attiny1624, attiny1626, attiny1627)
+	(attiny3224, attiny3226, attiny3227, avr16dd14, avr16dd20, avr16dd28)
+	(avr16dd32, avr32dd14, avr32dd20, avr32dd28, avr32dd32)
+	(attiny102, attiny104): New devices.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2023-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr128d*, avr64d*): Fix their FLASH_SIZE
+	and PM_OFFSET entries.
+
+2023-08-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110874
+	* gimple-match-head.cc (gimple_bit_not_with_nop): New declaration.
+	(gimple_maybe_cmp): Likewise.
+	(gimple_bitwise_inverted_equal_p): Rewrite to use gimple_bit_not_with_nop
+	and gimple_maybe_cmp instead of being recursive.
+	* match.pd (bit_not_with_nop): New match pattern.
+	(maybe_cmp): Likewise.
+
+2023-08-04  Drew Ross  <drross@redhat.com>
+
+	PR middle-end/101955
+	* match.pd ((signed x << c) >> c): New canonicalization.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmsac_frm): New class for vfnmsac frm.
+	(vfnmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmsac_frm): New function definition.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmsac_frm): New class for vfmsac frm.
+	(vfmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmsac_frm): New function definition.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmacc_frm): New class for vfnmacc.
+	(vfnmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmacc_frm): New function definition.
+
+2023-08-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	PR target/110625
+	* config/aarch64/aarch64.cc (aarch64_force_single_cycle): check
+	STMT_VINFO_REDUC_DEF to avoid failures in info_for_reduction.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmacc_frm): New class for vfmacc frm.
+	(vfmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmacc_frm): New function definition.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_ternop_insn): Add frm operand support.
+	* config/riscv/vector.md: Add vfmuladd to frm_mode.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(vfwmul_frm_obj): New declaration.
+	(vfwmul_frm): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h:
+	(vfwmul_frm): Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwmul_frm): New function definition.
+	* config/riscv/vector.md: (frm_mode) Add vfwmul to frm_mode.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(binop_frm): New declaration.
+	(reverse_binop_frm): Likewise.
+	(BASE): Likewise.
+	* config/riscv/riscv-vector-builtins-bases.h:
+	(vfdiv_frm): New extern declaration.
+	(vfrdiv_frm): Likewise.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfdiv_frm): New function definition.
+	(vfrdiv_frm): Likewise.
+	* config/riscv/vector.md: Add vfdiv to frm_mode.
+
 2023-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.cc (print_loop_info): Print entry count.

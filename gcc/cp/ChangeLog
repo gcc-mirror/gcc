@@ -1,3 +1,19 @@
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* cp-tree.h (RANGE_FOR_NOVECTOR): New.
+	(cp_convert_range_for, finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Add novector param.
+	* init.cc (build_vec_init): Default novector to false.
+	* method.cc (build_comparison_op): Likewise.
+	* parser.cc (cp_parser_statement): Likewise.
+	(cp_parser_for, cp_parser_c_for, cp_parser_range_for,
+	cp_convert_range_for, cp_parser_iteration_statement,
+	cp_parser_omp_for_loop, cp_parser_pragma): Support novector.
+	(cp_parser_pragma_novector): New.
+	* pt.cc (tsubst_expr): Likewise.
+	* semantics.cc (finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Likewise.
+
 2023-08-01  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* parser.cc (c_init_preprocess): New function.
