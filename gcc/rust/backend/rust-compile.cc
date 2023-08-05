@@ -401,11 +401,12 @@ HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
 
   if (ltype_length != rtype_length)
     {
-      rust_error_at (
-	rvalue_locus,
-	"expected an array with a fixed size of " HOST_WIDE_INT_PRINT_UNSIGNED
-	" elements, found one with " HOST_WIDE_INT_PRINT_UNSIGNED " elements",
-	ltype_length, rtype_length);
+      rust_error_at (rvalue_locus, ErrorCode::E0308,
+		     "mismatched types, expected an array with a fixed size "
+		     "of " HOST_WIDE_INT_PRINT_UNSIGNED
+		     " elements, found one with " HOST_WIDE_INT_PRINT_UNSIGNED
+		     " elements",
+		     ltype_length, rtype_length);
       return false;
     }
 
