@@ -9,6 +9,12 @@
 /* function cfmakeraw exists */
 #undef HAVE_CFMAKERAW
 
+/* function clock_gettime exists */
+#undef HAVE_CLOCK_GETTIME
+
+/* function clock_settime exists */
+#undef HAVE_CLOCK_SETTIME
+
 /* function close exists */
 #undef HAVE_CLOSE
 
@@ -179,6 +185,9 @@
 
 /* Define to 1 if the system has the type `struct stat'. */
 #undef HAVE_STRUCT_STAT
+
+/* Define to 1 if the system has the type `struct timespec'. */
+#undef HAVE_STRUCT_TIMESPEC
 
 /* Define to 1 if the system has the type `struct timeval'. */
 #undef HAVE_STRUCT_TIMEVAL

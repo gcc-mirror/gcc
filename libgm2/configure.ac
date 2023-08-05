@@ -187,7 +187,7 @@ else
   multilib_arg=
 fi
 
-AC_CHECK_TYPES([struct timezone, struct stat, struct timeval])
+AC_CHECK_TYPES([struct timezone, struct stat, struct timespec, struct timeval])
 
 AC_LANG_C
 # Check the compiler.
@@ -225,6 +225,8 @@ AC_DEFUN([GM2_CHECK_LIB],[
 GM2_CHECK_LIB([c],[access],[ACCESS])
 GM2_CHECK_LIB([c],[brk],[BRK])
 GM2_CHECK_LIB([c],[cfmakeraw],[CFMAKERAW])
+GM2_CHECK_LIB([c],[clock_gettime],[CLOCK_GETTIME])
+GM2_CHECK_LIB([c],[clock_settime],[CLOCK_SETTIME])
 GM2_CHECK_LIB([c],[close],[CLOSE])
 GM2_CHECK_LIB([c],[ctime],[CTIME])
 GM2_CHECK_LIB([c],[creat],[CREAT])
