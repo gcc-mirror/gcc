@@ -2733,12 +2733,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 (match min_value
  INTEGER_CST
- (if (INTEGRAL_TYPE_P (type)
+ (if ((INTEGRAL_TYPE_P (type)
+       || POINTER_TYPE_P(type))
       && wi::eq_p (wi::to_wide (t), wi::min_value (type)))))
 
 (match max_value
  INTEGER_CST
- (if (INTEGRAL_TYPE_P (type)
+ (if ((INTEGRAL_TYPE_P (type)
+       || POINTER_TYPE_P(type))
       && wi::eq_p (wi::to_wide (t), wi::max_value (type)))))
 
 /* x >  y  &&  x != XXX_MIN  -->  x > y
