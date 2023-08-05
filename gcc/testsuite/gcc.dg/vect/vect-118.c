@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 void f(short * __restrict__ a, short * __restrict__ b, short * __restrict__ x)
 {
@@ -9,3 +10,4 @@ void f(short * __restrict__ a, short * __restrict__ b, short * __restrict__ x)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

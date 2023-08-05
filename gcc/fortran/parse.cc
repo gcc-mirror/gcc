@@ -1318,32 +1318,27 @@ decode_omp_directive (void)
     case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case ST_OMP_TEAMS_LOOP:
-      if (gfc_state_stack->previous && gfc_state_stack->previous->tail)
-	{
-	  gfc_state_data *stk = gfc_state_stack;
-	  do {
-	       stk = stk->previous;
-	     } while (stk && stk->tail && stk->tail->op == EXEC_BLOCK);
-	  if (stk && stk->tail)
-	    switch (stk->tail->op)
-	      {
-	      case EXEC_OMP_TARGET:
-	      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
-	      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
-	      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
-	      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
-	      case EXEC_OMP_TARGET_TEAMS_LOOP:
-	      case EXEC_OMP_TARGET_PARALLEL:
-	      case EXEC_OMP_TARGET_PARALLEL_DO:
-	      case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
-	      case EXEC_OMP_TARGET_PARALLEL_LOOP:
-	      case EXEC_OMP_TARGET_SIMD:
-		stk->tail->ext.omp_clauses->contains_teams_construct = 1;
-		break;
-	  default:
-	    break;
-	  }
-	}
+      for (gfc_state_data *stk = gfc_state_stack->previous; stk;
+	   stk = stk->previous)
+	if (stk && stk->tail)
+	  switch (stk->tail->op)
+	    {
+	    case EXEC_OMP_TARGET:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
+	    case EXEC_OMP_TARGET_PARALLEL:
+	    case EXEC_OMP_TARGET_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+	    case EXEC_OMP_TARGET_SIMD:
+	      stk->tail->ext.omp_clauses->contains_teams_construct = 1;
+	      break;
+	    default:
+	      break;
+	    }
       break;
     case ST_OMP_ERROR:
       if (new_st.ext.omp_clauses->at != OMP_AT_EXECUTION)

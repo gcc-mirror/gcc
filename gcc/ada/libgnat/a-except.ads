@@ -120,7 +120,7 @@ package Ada.Exceptions is
 
    --  Ada 2005 (AI-438): The language revision introduces the following
    --  subprograms and attribute definitions. We do not provide them
-   --  explicitly. instead, the corresponding stream attributes are made
+   --  explicitly. Instead, the corresponding stream attributes are made
    --  available through a pragma Stream_Convert in the private part.
 
    --  procedure Read_Exception_Occurrence

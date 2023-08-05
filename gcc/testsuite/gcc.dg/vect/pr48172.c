@@ -25,6 +25,7 @@ int main() {
     array[HALF+i] = array[2*i] + array[2*i + 1];
 
   /* see if we have any failures */
+#pragma GCC novector
   for (i = 0; i < HALF - 1; i++)
     if (array[HALF+i] != array[2*i] + array[2*i + 1])
       abort ();

@@ -22,6 +22,7 @@ main1 (void)
     }
 
   /* Check results.  */
+#pragma GCC novector
   for (i = 0; i < N/2; i++)
     {
       if (a[i*2] != b[i] + c[i]

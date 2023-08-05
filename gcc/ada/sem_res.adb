@@ -5146,7 +5146,10 @@ package body Sem_Res is
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =
                        Extensions_Visible_True
-              and then No (Class_Preconditions_Subprogram (Current_Scope))
+              and then not
+               (Is_Subprogram (Current_Scope)
+                  and then
+                Present (Class_Preconditions_Subprogram (Current_Scope)))
             then
                Error_Msg_N
                  ("formal parameter cannot act as actual parameter when "

@@ -216,7 +216,15 @@
   RVVM4x2DI,RVVM2x2DI,RVVM1x2DI,RVVM1x8DF,
   RVVM1x7DF,RVVM1x6DF,RVVM1x5DF,RVVM2x4DF,
   RVVM1x4DF,RVVM2x3DF,RVVM1x3DF,RVVM4x2DF,
-  RVVM2x2DF,RVVM1x2DF"
+  RVVM2x2DF,RVVM1x2DF,
+  VNx2x1DF,VNx3x1DF,VNx4x1DF,VNx5x1DF,VNx6x1DF,VNx7x1DF,VNx8x1DF,
+  V1QI,V2QI,V4QI,V8QI,V16QI,V32QI,V64QI,V128QI,V256QI,V512QI,V1024QI,V2048QI,V4096QI,
+  V1HI,V2HI,V4HI,V8HI,V16HI,V32HI,V64HI,V128HI,V256HI,V512HI,V1024HI,V2048HI,
+  V1SI,V2SI,V4SI,V8SI,V16SI,V32SI,V64SI,V128SI,V256SI,V512SI,V1024SI,
+  V1DI,V2DI,V4DI,V8DI,V16DI,V32DI,V64DI,V128DI,V256DI,V512DI,
+  V1HF,V2HF,V4HF,V8HF,V16HF,V32HF,V64HF,V128HF,V256HF,V512HF,V1024HF,V2048HF,
+  V1SF,V2SF,V4SF,V8SF,V16SF,V32SF,V64SF,V128SF,V256SF,V512SF,V1024SF,
+  V1DF,V2DF,V4DF,V8DF,V16DF,V32DF,V64DF,V128DF,V256DF,V512DF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.
@@ -2484,9 +2492,9 @@
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "reg_or_0_operand")
+			  (match_operand:GPR 2 "sfb_alu_operand")
 			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV"
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
 				     operands[2], operands[3]))
@@ -3074,7 +3082,7 @@
   "frcsr\t%0")
 
 (define_insn "riscv_fscsr"
-  [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSCSR)]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] UNSPECV_FSCSR)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fscsr\t%0")
 
@@ -3087,7 +3095,7 @@
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fsflags\t%0")
+  "fsflags%i0\t%0")
 
 (define_insn "*riscv_fsnvsnan<mode>2"
   [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
@@ -3319,3 +3327,4 @@
 (include "sifive-7.md")
 (include "thead.md")
 (include "vector.md")
+(include "zicond.md")

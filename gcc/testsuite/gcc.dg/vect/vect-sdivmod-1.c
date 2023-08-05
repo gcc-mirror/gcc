@@ -88,6 +88,7 @@ main ()
   f4 (4095);
   if (a[0] != (-2048 << 8))
     abort ();
+#pragma GCC novector
   for (i = 1; i < 4096; i++)
     if (a[i] != ((1 + ((i - 2048) % 16)) << 8))
       abort ();

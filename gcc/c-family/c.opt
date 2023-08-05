@@ -1048,6 +1048,10 @@ Wmissing-prototypes
 C ObjC Var(warn_missing_prototypes) Warning
 Warn about global functions without prototypes.
 
+Wmissing-variable-declarations
+C ObjC Var(warn_missing_variable_declarations) Warning
+Warn about global variables without previous declarations.
+
 Wmudflap
 C ObjC C++ ObjC++ WarnRemoved
 

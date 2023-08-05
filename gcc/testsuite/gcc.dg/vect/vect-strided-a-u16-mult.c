@@ -39,6 +39,7 @@ main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (res[i].b != arr[i].b - arr[i].a

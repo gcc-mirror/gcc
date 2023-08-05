@@ -3099,8 +3099,44 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   tree ops[3] = {};
   for (unsigned int i = 1; i < first_op; ++i)
     ops[i - 1] = gimple_op (last_stmt, i);
+  /* For right shifts limit the shift operand.  */
   vect_convert_inputs (vinfo, last_stmt_info, nops, &ops[first_op - 1],
 		       op_type, &unprom[0], op_vectype);
+
+  /* Limit shift operands.  */
+  if (code == RSHIFT_EXPR)
+    {
+      wide_int min_value, max_value;
+      if (TREE_CODE (ops[1]) == INTEGER_CST)
+	ops[1] = wide_int_to_tree (op_type,
+				   wi::umin (wi::to_wide (ops[1]),
+					     new_precision - 1));
+      else if (!vect_get_range_info (ops[1], &min_value, &max_value)
+	       || wi::ge_p (max_value, new_precision, TYPE_SIGN (op_type)))
+	{
+	  /* ???  Note the following bad for SLP as that only supports
+	     same argument widened shifts and it un-CSEs same arguments.  */
+	  tree new_var = vect_recog_temp_ssa_var (op_type, NULL);
+	  gimple *pattern_stmt
+	    = gimple_build_assign (new_var, MIN_EXPR, ops[1],
+				   build_int_cst (op_type, new_precision - 1));
+	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+	  if (unprom[1].dt == vect_external_def)
+	    {
+	      if (edge e = vect_get_external_def_edge (vinfo, ops[1]))
+		{
+		  basic_block new_bb
+		    = gsi_insert_on_edge_immediate (e, pattern_stmt);
+		  gcc_assert (!new_bb);
+		}
+	      else
+		return NULL;
+	    }
+	  else
+	    append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt);
+	  ops[1] = new_var;
+	}
+    }
 
   /* Use the operation to produce a result of type OP_TYPE.  */
   tree new_var = vect_recog_temp_ssa_var (op_type, NULL);

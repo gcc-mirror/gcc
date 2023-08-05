@@ -4605,7 +4605,10 @@ vect_optimize_slp_pass::start_choosing_layouts ()
 	     IFN_MASK_LOADs).  */
 	  gcc_assert (partition.layout == 0 && !m_slpg->vertices[node_i].succ);
 	  if (!STMT_VINFO_GROUPED_ACCESS (dr_stmt))
-	    continue;
+	    {
+	      partition.layout = -1;
+	      continue;
+	    }
 	  dr_stmt = DR_GROUP_FIRST_ELEMENT (dr_stmt);
 	  imin = DR_GROUP_SIZE (dr_stmt) + 1;
 	  tmp_perm.safe_splice (SLP_TREE_LOAD_PERMUTATION (node));

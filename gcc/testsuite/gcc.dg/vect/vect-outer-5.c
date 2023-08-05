@@ -38,6 +38,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N-20; i++)
     {
       s = 0;
@@ -57,6 +58,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 4; i++)
     {
       if (B[i] != E[i])

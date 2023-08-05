@@ -57,6 +57,7 @@ int main()
   rephase ();
   for (i = 0; i < 32; ++i)
     for (j = 0; j < 3; ++j)
+#pragma GCC novector
       for (k = 0; k < 3; ++k)
 	if (lattice->link[i].e[j][k].real != i
 	    || lattice->link[i].e[j][k].imag != i)

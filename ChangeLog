@@ -1,3 +1,25 @@
+2023-08-02  Jan Beulich  <jbeulich@suse.com>
+
+	* MAINTAINERS: Correct my email address.
+
+2023-08-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2023-08-01  Richard Ball  <richard.ball@arm.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-07-31  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (GDCFLAGS): Set default from ${CFLAGS}.
+	* configure: Regenerate.
+	* Makefile.in (GDCFLAGS): Substitute @GDCFLAGS@.
+
+2023-07-31  xuli  <xuli1@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-07-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* MAINTAINERS: List myself as "nvptx port" maintainer.

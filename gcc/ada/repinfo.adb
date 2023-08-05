@@ -428,12 +428,21 @@ package body Repinfo is
          end if;
 
       --  Alignment is not always set for task, protected, and class-wide
-      --  types. Representation aspects are not computed for types in a
-      --  generic unit.
+      --  types, or when doing semantic analysis only. Representation aspects
+      --  are not computed for types in a generic unit.
 
       else
+         --  Add unknown alignment entry in JSON format to ensure the format is
+         --  valid, as a comma is added by the caller before another field.
+
+         if List_Representation_Info_To_JSON then
+            Write_Str ("  ""Alignment"": ");
+            Write_Unknown_Val;
+         end if;
+
          pragma Assert
-           (Is_Concurrent_Type (Ent) or else
+           (not Expander_Active or else
+              Is_Concurrent_Type (Ent) or else
               Is_Class_Wide_Type (Ent) or else
               Sem_Util.In_Generic_Scope (Ent));
       end if;
@@ -1091,7 +1100,7 @@ package body Repinfo is
                      goto Continue;
                   end if;
 
-                  UI_Image (Spos);
+                  UI_Image (Spos, Format => Decimal);
                else
                   --  If the record is not packed, then we know that all fields
                   --  whose position is not specified have starting normalized
@@ -1167,7 +1176,7 @@ package body Repinfo is
                Spos := Spos + 1;
             end if;
 
-            UI_Image (Spos);
+            UI_Image (Spos, Format => Decimal);
             Spaces (Max_Spos_Length - UI_Image_Length);
             Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
 

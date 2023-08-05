@@ -1,3 +1,20 @@
+2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (CUDA_MEMCPY2D, CUDA_MEMCPY3D, CUDA_MEMCPY3D_PEER):
+	Remove bogus 'const' from 'const void *dst' and fix reserved-name
+	name in those structs.
+	(cuMemcpyPeer, cuMemcpyPeerAsync): Add.
+
+2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* cuda/cuda.h (CUlimit): Add CUDA_ERROR_NOT_INITIALIZED,
+	CUDA_ERROR_DEINITIALIZED, CUDA_ERROR_INVALID_HANDLE.
+	(CUarray, CUmemorytype, CUDA_MEMCPY2D, CUDA_MEMCPY3D,
+	CUDA_MEMCPY3D_PEER): New typdefs.
+	(cuMemcpy2D, cuMemcpy2DAsync, cuMemcpy2DUnaligned,
+	cuMemcpy3D, cuMemcpy3DAsync, cuMemcpy3DPeer,
+	cuMemcpy3DPeerAsync): New prototypes.
+
 2023-06-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_map_kind): Change the enum values

@@ -28,10 +28,12 @@ int main (void)
    
   test1 (x + 16);
   
+#pragma GCC novector
   for (i = 0; i < 128; i++)
    if (x[i + 16] != 1234)
      abort ();
   
+#pragma GCC novector
   for (i = 0; i < 16; i++)
     if (x[i] != 5678
        || x[i + 144] != 5678)

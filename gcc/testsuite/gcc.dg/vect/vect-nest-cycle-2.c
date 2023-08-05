@@ -27,6 +27,7 @@ foo ()
       out[i] = res;
     }
 
+#pragma GCC novector
   for (i = 0; i < N; i++)  
     if (out[i] != check_res[i])
       abort ();

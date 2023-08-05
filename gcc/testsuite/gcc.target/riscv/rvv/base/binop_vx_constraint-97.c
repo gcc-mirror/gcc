@@ -15,8 +15,8 @@ void f0 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, -16, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, -16, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, -16, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, -16, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -32,8 +32,8 @@ void f1 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 15, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 15, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 15, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 15, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -49,8 +49,8 @@ void f2 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 16, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 16, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 16, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 16, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -66,8 +66,8 @@ void f3 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAA, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAA, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAA, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAA, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -83,8 +83,8 @@ void f4 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAAAAAAAAAA, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAAAAAAAAAA, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAAAAAAAAAA, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAAAAAAAAAA, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -100,8 +100,8 @@ void f5 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAAAAAAAAAA, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAAAAAAAAAA, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, 0xAAAAAAAAAAAAAAAA, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, 0xAAAAAAAAAAAAAAAA, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }
 
@@ -117,7 +117,7 @@ void f6 (void * in, void *out, int64_t x, int n)
 {
   vint64m1_t v = __riscv_vle64_v_i64m1 (in + 1, 4);
   vint64m1_t v2 = __riscv_vle64_v_i64m1_tu (v, in + 2, 4);
-  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, x, 0,4);
-  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, x, 0,4);
+  vint64m1_t v3 = __riscv_vsadd_vx_i64m1 (v2, x, 4);
+  vint64m1_t v4 = __riscv_vsadd_vx_i64m1 (v3, x, 4);
   __riscv_vse64_v_i64m1 (out + 2, v4, 4);
 }

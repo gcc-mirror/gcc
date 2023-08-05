@@ -31,6 +31,7 @@ int main1 ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i <N/2; i++)
     {
       if (tmp.c[i] != 6)

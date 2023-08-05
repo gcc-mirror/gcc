@@ -40,6 +40,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c, d, e);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != i * 2 + 3
 	|| b[i] != i + 100

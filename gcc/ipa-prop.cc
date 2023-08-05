@@ -2402,8 +2402,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	}
       else
 	{
-	  if (TREE_CODE (arg) == SSA_NAME
-	      && param_type
+	  if (param_type
 	      && Value_Range::supports_type_p (TREE_TYPE (arg))
 	      && Value_Range::supports_type_p (param_type)
 	      && irange::supports_p (TREE_TYPE (arg))
@@ -2422,15 +2421,14 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    gcc_assert (!jfunc->m_vr);
 	}
 
-      if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
-	  && (TREE_CODE (arg) == SSA_NAME || TREE_CODE (arg) == INTEGER_CST))
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg)) && !vr.undefined_p ())
 	{
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    ipa_set_jfunc_bits (jfunc, 0,
-				widest_int::from (get_nonzero_bits (arg),
-						  TYPE_SIGN (TREE_TYPE (arg))));
-	  else
-	    ipa_set_jfunc_bits (jfunc, wi::to_widest (arg), 0);
+	  irange &r = as_a <irange> (vr);
+	  irange_bitmask bm = r.get_bitmask ();
+	  signop sign = TYPE_SIGN (TREE_TYPE (arg));
+	  ipa_set_jfunc_bits (jfunc,
+			      widest_int::from (bm.value (), sign),
+			      widest_int::from (bm.mask (), sign));
 	}
       else if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{

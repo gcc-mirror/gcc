@@ -9,3 +9,5 @@ s_t foo (s_t a, s_t b, s_t c)
 }
 
 /* { dg-final { scan-assembler-times "vpunpcklqdq" 3 } } */
+/* { dg-final { scan-assembler "vunpckhpd" } } */
+/* { dg-final { scan-assembler-not "rsp" } } */

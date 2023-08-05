@@ -41,6 +41,7 @@ main (void)
       for (unsigned int j = 0; j < INPUT_SIZE + MAX_STEP; ++j)
 	x[j] = j + 10;
       copy (x + i, x, INPUT_SIZE);
+#pragma GCC novector
       for (int j = 0; j < INPUT_SIZE + i; ++j)
 	{
 	  int expected;

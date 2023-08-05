@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_int_mult } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -21,6 +22,7 @@ void u ()
   
   for (i=0; i<8; i++)
     C[i] = A[i] * B[i];
+#pragma GCC novector
   for (i=0; i<8; i++)
     if (C[i] != Answer[i])
       abort ();
@@ -41,6 +43,7 @@ void s()
   
   for (i=0; i<8; i++)
     F[i] = D[i] * E[i];
+#pragma GCC novector
   for (i=0; i<8; i++)
     if (F[i] != Dnswer[i])
       abort ();
@@ -62,3 +65,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

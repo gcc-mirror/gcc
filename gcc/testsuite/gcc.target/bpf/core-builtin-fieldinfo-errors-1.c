@@ -17,7 +17,7 @@ unsigned int test (struct F *f) {
 
   unsigned x = __builtin_preserve_field_info (f->arr, FIELD_BYTE_SIZE); /* { dg-error "unsupported variable size field access" } */
 
-  unsigned y = __builtin_preserve_field_info (f->baz, 99); /* { dg-error "invalid second argument to built-in function" } */
+  unsigned y = __builtin_preserve_field_info (f->baz, 99); /* { dg-error "invalid kind argument to core builtin" } */
 
   return x + y;
 }

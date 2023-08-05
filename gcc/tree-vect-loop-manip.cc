@@ -3121,8 +3121,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   tree niters_prolog;
   int bound_prolog = 0;
   if (prolog_peeling)
-    niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
-						  &bound_prolog);
+    {
+      niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
+						    &bound_prolog);
+      /* If algonment peeling is known, we will always execute prolog.  */
+      if (TREE_CODE (niters_prolog) == INTEGER_CST)
+	prob_prolog = profile_probability::always ();
+    }
   else
     niters_prolog = build_int_cst (type, 0);
 
@@ -3784,7 +3789,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
 
   tree cost_name = NULL_TREE;
-  profile_probability prob2 = profile_probability::uninitialized ();
+  profile_probability prob2 = profile_probability::always ();
   if (cond_expr
       && EXPR_P (cond_expr)
       && (version_niter
@@ -3797,7 +3802,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 						      is_gimple_val, NULL_TREE);
       /* Split prob () into two so that the overall probability of passing
 	 both the cost-model and versioning checks is the orig prob.  */
-      prob2 = prob.split (prob);
+      prob2 = prob = prob.sqrt ();
     }
 
   if (version_niter)
@@ -3941,7 +3946,15 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
       initialize_original_copy_tables ();
       nloop = loop_version (loop_to_version, cond_expr, &condition_bb,
-			    prob, prob.invert (), prob, prob.invert (), true);
+			    prob * prob2, (prob * prob2).invert (),
+			    prob * prob2, (prob * prob2).invert (),
+			    true);
+      /* We will later insert second conditional so overall outcome of
+	 both is prob * prob2.  */
+      edge true_e, false_e;
+      extract_true_false_edges_from_block (condition_bb, &true_e, &false_e);
+      true_e->probability = prob;
+      false_e->probability = prob.invert ();
       gcc_assert (nloop);
       nloop = get_loop_copy (loop);
 
@@ -4037,6 +4050,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       edge e2 = make_edge (e->src, false_e->dest, EDGE_FALSE_VALUE);
       e->probability = prob2;
       e2->probability = prob2.invert ();
+      e->dest->count = e->count ();
       set_immediate_dominator (CDI_DOMINATORS, false_e->dest, e->src);
       auto_vec<basic_block, 3> adj;
       for (basic_block son = first_dom_son (CDI_DOMINATORS, e->dest);

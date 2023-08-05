@@ -47,6 +47,7 @@ int main (void)
 
   foo (125);
 
+#pragma GCC novector
   for (j = 0; j < M; j++)
     if (x_out_a[j] != 125
         || x_out_b[j] != 5)

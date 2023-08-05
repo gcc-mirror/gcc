@@ -127,6 +127,7 @@ extern void riscv_reinit (void);
 extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
 extern bool riscv_v_ext_tuple_mode_p (machine_mode);
+extern bool riscv_v_ext_vls_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
@@ -311,7 +312,7 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
-opt_machine_mode get_mask_mode (machine_mode);
+machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
 void expand_vec_perm (rtx, rtx, rtx, rtx);

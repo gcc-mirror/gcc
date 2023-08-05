@@ -1430,22 +1430,24 @@ namespace __format
 	  chars_format __fmt{};
 	  bool __upper = false;
 	  bool __trailing_zeros = false;
-	  char __expc = 0;
+	  char __expc = 'e';
 
 	  switch (_M_spec._M_type)
 	  {
 	    case _Pres_A:
 	      __upper = true;
+	      __expc = 'P';
 	      [[fallthrough]];
 	    case _Pres_a:
-	      __expc = 'p';
+	      if (_M_spec._M_type != _Pres_A)
+		__expc = 'p';
 	      __fmt = chars_format::hex;
 	      break;
 	    case _Pres_E:
 	      __upper = true;
+	      __expc = 'E';
 	      [[fallthrough]];
 	    case _Pres_e:
-	      __expc = 'e';
 	      __use_prec = true;
 	      __fmt = chars_format::scientific;
 	      break;
@@ -1455,10 +1457,10 @@ namespace __format
 	      break;
 	    case _Pres_G:
 	      __upper = true;
+	      __expc = 'E';
 	      [[fallthrough]];
 	    case _Pres_g:
 	      __trailing_zeros = true;
-	      __expc = 'e';
 	      __use_prec = true;
 	      __fmt = chars_format::general;
 	      break;
@@ -1511,7 +1513,6 @@ namespace __format
 	    {
 	      for (char* __p = __start; __p != __res.ptr; ++__p)
 		*__p = std::toupper(*__p);
-	      __expc = std::toupper(__expc);
 	    }
 
 	  // Add sign for non-negative values.
@@ -1545,15 +1546,15 @@ namespace __format
 		  __p = __s.find(__expc);
 		  if (__p == __s.npos)
 		    __p = __s.size();
-		  __d = __p;
+		  __d = __p; // Position where '.' should be inserted.
 		  __sigfigs = __d;
 		}
 
-	      if (__trailing_zeros)
+	      if (__trailing_zeros && __prec != 0)
 		{
 		  if (!__format::__is_xdigit(__s[0]))
 		    --__sigfigs;
-		  __z = __prec - __sigfigs;
+		  __z = __prec - __sigfigs; // Number of zeros to insert.
 		}
 
 	      if (size_t __extras = int(__d == __p) + __z)

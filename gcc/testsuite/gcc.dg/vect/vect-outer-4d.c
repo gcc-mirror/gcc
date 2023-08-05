@@ -35,6 +35,7 @@ int main (void)
 
   foo ();
   
+#pragma GCC novector
   for (i = 0; i < N; i++) {
     diff = 0;
     for (j = 0; j < M; j+=4) {

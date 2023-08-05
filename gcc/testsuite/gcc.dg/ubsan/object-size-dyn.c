@@ -5,12 +5,12 @@
 
 int
 __attribute__ ((noinline))
-dyn (int size, int i)
+dyn (int size, int i, int ret)
 {
   __builtin_printf ("dyn\n");
   fflush (stdout);
   int *alloc = __builtin_calloc (size, sizeof (int));
-  int ret = alloc[i];
+  ret = ret & alloc[i];
   __builtin_free (alloc);
   return ret;
 }
@@ -28,7 +28,7 @@ off (int size, int i, int ret)
 int
 main (void)
 {
-  int ret = dyn (2, 2);
+  int ret = dyn (2, 2, 0);
 
   ret |= off (4, 4, 0);
 

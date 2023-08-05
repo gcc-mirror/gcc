@@ -4526,7 +4526,8 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 			       const size_t *dst_dimensions,
 			       const size_t *src_dimensions,
 			       struct gomp_device_descr *dst_devicep,
-			       struct gomp_device_descr *src_devicep)
+			       struct gomp_device_descr *src_devicep,
+			       size_t *tmp_size, void **tmp)
 {
   size_t dst_slice = element_size;
   size_t src_slice = element_size;
@@ -4561,14 +4562,88 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 					 (const char *) src + src_off,
 					 length);
       else
-	ret = 0;
+	{
+	  if (*tmp_size == 0)
+	    {
+	      *tmp_size = length;
+	      *tmp = malloc (length);
+	      if (*tmp == NULL)
+		return ENOMEM;
+	    }
+	  else if (*tmp_size < length)
+	    {
+	      *tmp_size = length;
+	      free (*tmp);
+	      *tmp = malloc (length);
+	      if (*tmp == NULL)
+		return ENOMEM;
+	    }
+	  ret = src_devicep->dev2host_func (src_devicep->target_id, *tmp,
+					    (const char *) src + src_off,
+					    length);
+	  if (ret == 1)
+	    ret = dst_devicep->host2dev_func (dst_devicep->target_id,
+					      (char *) dst + dst_off, *tmp,
+					      length);
+	}
       return ret ? 0 : EINVAL;
     }
 
-  /* FIXME: it would be nice to have some plugin function to handle
-     num_dims == 2 and num_dims == 3 more efficiently.  Larger ones can
-     be handled in the generic recursion below, and for host-host it
-     should be used even for any num_dims >= 2.  */
+  /* host->device, device->host and intra device.  */
+  if (num_dims == 2
+      && ((src_devicep
+	   && src_devicep == dst_devicep
+	   && src_devicep->memcpy2d_func)
+	  || (!src_devicep != !dst_devicep
+	      && ((src_devicep && src_devicep->memcpy2d_func)
+		  || (dst_devicep && dst_devicep->memcpy2d_func)))))
+    {
+      size_t vol_sz1, dst_sz1, src_sz1, dst_off_sz1, src_off_sz1;
+      int dst_id = dst_devicep ? dst_devicep->target_id : -1;
+      int src_id = src_devicep ? src_devicep->target_id : -1;
+      struct gomp_device_descr *devp = dst_devicep ? dst_devicep : src_devicep;
+
+      if (__builtin_mul_overflow (volume[1], element_size, &vol_sz1)
+	  || __builtin_mul_overflow (dst_dimensions[1], element_size, &dst_sz1)
+	  || __builtin_mul_overflow (src_dimensions[1], element_size, &src_sz1)
+	  || __builtin_mul_overflow (dst_offsets[1], element_size, &dst_off_sz1)
+	  || __builtin_mul_overflow (src_offsets[1], element_size,
+				     &src_off_sz1))
+	return EINVAL;
+      ret = devp->memcpy2d_func (dst_id, src_id, vol_sz1, volume[0],
+				 dst, dst_off_sz1, dst_offsets[0], dst_sz1,
+				 src, src_off_sz1, src_offsets[0], src_sz1);
+      if (ret != -1)
+	return ret ? 0 : EINVAL;
+    }
+  else if (num_dims == 3
+	   && ((src_devicep
+		&& src_devicep == dst_devicep
+		&& src_devicep->memcpy3d_func)
+	       || (!src_devicep != !dst_devicep
+		   && ((src_devicep && src_devicep->memcpy3d_func)
+		       || (dst_devicep && dst_devicep->memcpy3d_func)))))
+    {
+      size_t vol_sz2, dst_sz2, src_sz2, dst_off_sz2, src_off_sz2;
+      int dst_id = dst_devicep ? dst_devicep->target_id : -1;
+      int src_id = src_devicep ? src_devicep->target_id : -1;
+      struct gomp_device_descr *devp = dst_devicep ? dst_devicep : src_devicep;
+
+      if (__builtin_mul_overflow (volume[2], element_size, &vol_sz2)
+	  || __builtin_mul_overflow (dst_dimensions[2], element_size, &dst_sz2)
+	  || __builtin_mul_overflow (src_dimensions[2], element_size, &src_sz2)
+	  || __builtin_mul_overflow (dst_offsets[2], element_size, &dst_off_sz2)
+	  || __builtin_mul_overflow (src_offsets[2], element_size,
+				     &src_off_sz2))
+	return EINVAL;
+      ret = devp->memcpy3d_func (dst_id, src_id, vol_sz2, volume[1], volume[0],
+				 dst, dst_off_sz2, dst_offsets[1],
+				 dst_offsets[0], dst_sz2, dst_dimensions[1],
+				 src, src_off_sz2, src_offsets[1],
+				 src_offsets[0], src_sz2, src_dimensions[1]);
+      if (ret != -1)
+	return ret ? 0 : EINVAL;
+    }
 
   for (i = 1; i < num_dims; i++)
     if (__builtin_mul_overflow (dst_slice, dst_dimensions[i], &dst_slice)
@@ -4585,7 +4660,7 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 					   volume + 1, dst_offsets + 1,
 					   src_offsets + 1, dst_dimensions + 1,
 					   src_dimensions + 1, dst_devicep,
-					   src_devicep);
+					   src_devicep, tmp_size, tmp);
       if (ret)
 	return ret;
       dst_off += dst_slice;
@@ -4608,9 +4683,6 @@ omp_target_memcpy_rect_check (void *dst, const void *src, int dst_device_num,
   if (ret)
     return ret;
 
-  if (*src_devicep != NULL && *dst_devicep != NULL && *src_devicep != *dst_devicep)
-    return EINVAL;
-
   return 0;
 }
 
@@ -4624,18 +4696,28 @@ omp_target_memcpy_rect_copy (void *dst, const void *src,
 			     struct gomp_device_descr *dst_devicep,
 			     struct gomp_device_descr *src_devicep)
 {
-  if (src_devicep)
+  size_t tmp_size = 0;
+  void *tmp = NULL;
+  bool lock_src;
+  bool lock_dst;
+
+  lock_src = src_devicep != NULL;
+  lock_dst = dst_devicep != NULL && src_devicep != dst_devicep;
+  if (lock_src)
     gomp_mutex_lock (&src_devicep->lock);
-  else if (dst_devicep)
+  if (lock_dst)
     gomp_mutex_lock (&dst_devicep->lock);
   int ret = omp_target_memcpy_rect_worker (dst, src, element_size, num_dims,
 					   volume, dst_offsets, src_offsets,
 					   dst_dimensions, src_dimensions,
-					   dst_devicep, src_devicep);
-  if (src_devicep)
+					   dst_devicep, src_devicep,
+					   &tmp_size, &tmp);
+  if (lock_src)
     gomp_mutex_unlock (&src_devicep->lock);
-  else if (dst_devicep)
+  if (lock_dst)
     gomp_mutex_unlock (&dst_devicep->lock);
+  if (tmp)
+    free (tmp);
 
   return ret;
 }
@@ -4976,6 +5058,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (free);
   DLSYM (dev2host);
   DLSYM (host2dev);
+  DLSYM_OPT (memcpy2d, memcpy2d);
+  DLSYM_OPT (memcpy3d, memcpy3d);
   device->capabilities = device->get_caps_func ();
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
     {

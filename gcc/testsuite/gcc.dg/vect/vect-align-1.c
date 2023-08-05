@@ -28,6 +28,7 @@ main1 (struct foo * __restrict__ p)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (p->y[i] != x[i])

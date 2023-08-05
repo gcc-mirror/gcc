@@ -1,3 +1,1633 @@
+2023-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110426
+	* gcc.dg/analyzer/allocation-size-1.c: Update expected message to
+	reflect consolidation of size and assignment into a single event.
+	* gcc.dg/analyzer/allocation-size-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-3.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-4.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-1.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-3.c: Likewise.
+	* gcc.dg/analyzer/attr-alloc_size-1.c: New test.
+	* gcc.dg/analyzer/attr-alloc_size-2.c: New test.
+	* gcc.dg/analyzer/attr-alloc_size-3.c: New test.
+	* gcc.dg/analyzer/explode-4.c: New test.
+	* gcc.dg/analyzer/taint-size-1.c: Add test coverage for
+	__attribute__ alloc_size.
+
+2023-08-04  Yan Simonaytes  <simonaytes.yan@ispras.ru>
+
+	PR target/110202
+	* gcc.target/i386/invariant-ternlog-1.c: New test.
+	* gcc.target/i386/invariant-ternlog-2.c: New test.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr110717-2.c: New test case.
+
+2023-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr88873.c: Tweak to check for improved code.
+
+2023-08-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/lra-cpymem_qi.c: New.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/pr84556.cc: Add novector pragma.
+	* g++.dg/vect/simd-1.cc: Add novector pragma.
+	* g++.dg/vect/simd-2.cc: Add novector pragma.
+	* g++.dg/vect/simd-3.cc: Add novector pragma.
+	* g++.dg/vect/simd-4.cc: Add novector pragma.
+	* g++.dg/vect/simd-5.cc: Add novector pragma.
+	* g++.dg/vect/simd-6.cc: Add novector pragma.
+	* g++.dg/vect/simd-7.cc: Add novector pragma.
+	* g++.dg/vect/simd-8.cc: Add novector pragma.
+	* g++.dg/vect/simd-9.cc: Add novector pragma.
+	* g++.dg/vect/simd-clone-6.cc: Add novector pragma.
+	* gcc.dg/vect/O3-pr70130.c: Add novector pragma.
+	* gcc.dg/vect/Os-vect-95.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-16.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-24.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-25.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-26.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-27.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-28.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-29.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-42.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pattern-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pow-1.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pr101615-2.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-pr65935.c: Add novector pragma.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-12.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76a.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76c.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c: Add novector pragma.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-call-1.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-call-2.c: Add novector pragma.
+	* gcc.dg/vect/fast-math-vect-complex-3.c: Add novector pragma.
+	* gcc.dg/vect/if-cvt-stores-vect-ifcvt-18.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-1.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-2.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10a.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-10b.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-11.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-12.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-15.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-16.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-17.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-18.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-19.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-20.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-21.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-22.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-4.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-6-global.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-6.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-7.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-8.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9a.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-outer-9b.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-slp-30.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-slp-31.c: Add novector pragma.
+	* gcc.dg/vect/no-scevccp-vect-iv-2.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-34.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-36.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-65.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-68.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Add novector pragma.
+	* gcc.dg/vect/no-section-anchors-vect-outer-4h.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-2.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-111.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-11.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-12.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-13.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-14.c: Add novector pragma.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-15.c: Add novector pragma.
+	* gcc.dg/vect/no-tree-dom-vect-bug.c: Add novector pragma.
+	* gcc.dg/vect/no-tree-pre-slp-29.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-pr29145.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-101.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-102.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-37.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-43.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-45.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-49.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-51.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-53.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-57.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-61.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-79.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-1.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Add novector pragma.
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Add novector pragma.
+	* gcc.dg/vect/pr101445.c: Add novector pragma.
+	* gcc.dg/vect/pr103581.c: Add novector pragma.
+	* gcc.dg/vect/pr105219.c: Add novector pragma.
+	* gcc.dg/vect/pr108608.c: Add novector pragma.
+	* gcc.dg/vect/pr18400.c: Add novector pragma.
+	* gcc.dg/vect/pr18536.c: Add novector pragma.
+	* gcc.dg/vect/pr20122.c: Add novector pragma.
+	* gcc.dg/vect/pr25413.c: Add novector pragma.
+	* gcc.dg/vect/pr30784.c: Add novector pragma.
+	* gcc.dg/vect/pr37539.c: Add novector pragma.
+	* gcc.dg/vect/pr40074.c: Add novector pragma.
+	* gcc.dg/vect/pr45752.c: Add novector pragma.
+	* gcc.dg/vect/pr45902.c: Add novector pragma.
+	* gcc.dg/vect/pr46009.c: Add novector pragma.
+	* gcc.dg/vect/pr48172.c: Add novector pragma.
+	* gcc.dg/vect/pr51074.c: Add novector pragma.
+	* gcc.dg/vect/pr51581-3.c: Add novector pragma.
+	* gcc.dg/vect/pr51581-4.c: Add novector pragma.
+	* gcc.dg/vect/pr53185-2.c: Add novector pragma.
+	* gcc.dg/vect/pr56918.c: Add novector pragma.
+	* gcc.dg/vect/pr56920.c: Add novector pragma.
+	* gcc.dg/vect/pr56933.c: Add novector pragma.
+	* gcc.dg/vect/pr57705.c: Add novector pragma.
+	* gcc.dg/vect/pr57741-2.c: Add novector pragma.
+	* gcc.dg/vect/pr57741-3.c: Add novector pragma.
+	* gcc.dg/vect/pr59591-1.c: Add novector pragma.
+	* gcc.dg/vect/pr59591-2.c: Add novector pragma.
+	* gcc.dg/vect/pr59594.c: Add novector pragma.
+	* gcc.dg/vect/pr59984.c: Add novector pragma.
+	* gcc.dg/vect/pr60276.c: Add novector pragma.
+	* gcc.dg/vect/pr61194.c: Add novector pragma.
+	* gcc.dg/vect/pr61680.c: Add novector pragma.
+	* gcc.dg/vect/pr62021.c: Add novector pragma.
+	* gcc.dg/vect/pr63341-2.c: Add novector pragma.
+	* gcc.dg/vect/pr64252.c: Add novector pragma.
+	* gcc.dg/vect/pr64404.c: Add novector pragma.
+	* gcc.dg/vect/pr64421.c: Add novector pragma.
+	* gcc.dg/vect/pr64493.c: Add novector pragma.
+	* gcc.dg/vect/pr64495.c: Add novector pragma.
+	* gcc.dg/vect/pr66251.c: Add novector pragma.
+	* gcc.dg/vect/pr66253.c: Add novector pragma.
+	* gcc.dg/vect/pr68502-1.c: Add novector pragma.
+	* gcc.dg/vect/pr68502-2.c: Add novector pragma.
+	* gcc.dg/vect/pr69820.c: Add novector pragma.
+	* gcc.dg/vect/pr70021.c: Add novector pragma.
+	* gcc.dg/vect/pr70354-1.c: Add novector pragma.
+	* gcc.dg/vect/pr70354-2.c: Add novector pragma.
+	* gcc.dg/vect/pr71259.c: Add novector pragma.
+	* gcc.dg/vect/pr78005.c: Add novector pragma.
+	* gcc.dg/vect/pr78558.c: Add novector pragma.
+	* gcc.dg/vect/pr80815-2.c: Add novector pragma.
+	* gcc.dg/vect/pr80815-3.c: Add novector pragma.
+	* gcc.dg/vect/pr80928.c: Add novector pragma.
+	* gcc.dg/vect/pr81410.c: Add novector pragma.
+	* gcc.dg/vect/pr81633.c: Add novector pragma.
+	* gcc.dg/vect/pr81740-1.c: Add novector pragma.
+	* gcc.dg/vect/pr81740-2.c: Add novector pragma.
+	* gcc.dg/vect/pr85586.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-1.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-2.c: Add novector pragma.
+	* gcc.dg/vect/pr87288-3.c: Add novector pragma.
+	* gcc.dg/vect/pr88903-1.c: Add novector pragma.
+	* gcc.dg/vect/pr88903-2.c: Add novector pragma.
+	* gcc.dg/vect/pr90018.c: Add novector pragma.
+	* gcc.dg/vect/pr92420.c: Add novector pragma.
+	* gcc.dg/vect/pr94994.c: Add novector pragma.
+	* gcc.dg/vect/pr96783-1.c: Add novector pragma.
+	* gcc.dg/vect/pr96783-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97081-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97558-2.c: Add novector pragma.
+	* gcc.dg/vect/pr97678.c: Add novector pragma.
+	* gcc.dg/vect/section-anchors-pr27770.c: Add novector pragma.
+	* gcc.dg/vect/section-anchors-vect-69.c: Add novector pragma.
+	* gcc.dg/vect/slp-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-11a.c: Add novector pragma.
+	* gcc.dg/vect/slp-11b.c: Add novector pragma.
+	* gcc.dg/vect/slp-11c.c: Add novector pragma.
+	* gcc.dg/vect/slp-12a.c: Add novector pragma.
+	* gcc.dg/vect/slp-12b.c: Add novector pragma.
+	* gcc.dg/vect/slp-12c.c: Add novector pragma.
+	* gcc.dg/vect/slp-13-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-13.c: Add novector pragma.
+	* gcc.dg/vect/slp-14.c: Add novector pragma.
+	* gcc.dg/vect/slp-15.c: Add novector pragma.
+	* gcc.dg/vect/slp-16.c: Add novector pragma.
+	* gcc.dg/vect/slp-17.c: Add novector pragma.
+	* gcc.dg/vect/slp-18.c: Add novector pragma.
+	* gcc.dg/vect/slp-19a.c: Add novector pragma.
+	* gcc.dg/vect/slp-19b.c: Add novector pragma.
+	* gcc.dg/vect/slp-19c.c: Add novector pragma.
+	* gcc.dg/vect/slp-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-20.c: Add novector pragma.
+	* gcc.dg/vect/slp-21.c: Add novector pragma.
+	* gcc.dg/vect/slp-22.c: Add novector pragma.
+	* gcc.dg/vect/slp-23.c: Add novector pragma.
+	* gcc.dg/vect/slp-24-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-24.c: Add novector pragma.
+	* gcc.dg/vect/slp-25.c: Add novector pragma.
+	* gcc.dg/vect/slp-26.c: Add novector pragma.
+	* gcc.dg/vect/slp-28.c: Add novector pragma.
+	* gcc.dg/vect/slp-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-33.c: Add novector pragma.
+	* gcc.dg/vect/slp-34-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-34.c: Add novector pragma.
+	* gcc.dg/vect/slp-35.c: Add novector pragma.
+	* gcc.dg/vect/slp-37.c: Add novector pragma.
+	* gcc.dg/vect/slp-4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-41.c: Add novector pragma.
+	* gcc.dg/vect/slp-43.c: Add novector pragma.
+	* gcc.dg/vect/slp-45.c: Add novector pragma.
+	* gcc.dg/vect/slp-46.c: Add novector pragma.
+	* gcc.dg/vect/slp-47.c: Add novector pragma.
+	* gcc.dg/vect/slp-48.c: Add novector pragma.
+	* gcc.dg/vect/slp-49.c: Add novector pragma.
+	* gcc.dg/vect/slp-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-cond-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-11-big-array.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-11.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-12.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-multitypes-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-1.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-10.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-11.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-12.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-2.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-3.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-4.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-5.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-6.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-7.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-8.c: Add novector pragma.
+	* gcc.dg/vect/slp-perm-9.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-half.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-s16.c: Add novector pragma.
+	* gcc.dg/vect/slp-widen-mult-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-100.c: Add novector pragma.
+	* gcc.dg/vect/vect-103.c: Add novector pragma.
+	* gcc.dg/vect/vect-104.c: Add novector pragma.
+	* gcc.dg/vect/vect-105-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-105.c: Add novector pragma.
+	* gcc.dg/vect/vect-106.c: Add novector pragma.
+	* gcc.dg/vect/vect-107.c: Add novector pragma.
+	* gcc.dg/vect/vect-108.c: Add novector pragma.
+	* gcc.dg/vect/vect-109.c: Add novector pragma.
+	* gcc.dg/vect/vect-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-110.c: Add novector pragma.
+	* gcc.dg/vect/vect-113.c: Add novector pragma.
+	* gcc.dg/vect/vect-114.c: Add novector pragma.
+	* gcc.dg/vect/vect-115.c: Add novector pragma.
+	* gcc.dg/vect/vect-116.c: Add novector pragma.
+	* gcc.dg/vect/vect-117.c: Add novector pragma.
+	* gcc.dg/vect/vect-11a.c: Add novector pragma.
+	* gcc.dg/vect/vect-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-122.c: Add novector pragma.
+	* gcc.dg/vect/vect-124.c: Add novector pragma.
+	* gcc.dg/vect/vect-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-15-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-21.c: Add novector pragma.
+	* gcc.dg/vect/vect-22.c: Add novector pragma.
+	* gcc.dg/vect/vect-23.c: Add novector pragma.
+	* gcc.dg/vect/vect-24.c: Add novector pragma.
+	* gcc.dg/vect/vect-25.c: Add novector pragma.
+	* gcc.dg/vect/vect-26.c: Add novector pragma.
+	* gcc.dg/vect/vect-27.c: Add novector pragma.
+	* gcc.dg/vect/vect-28.c: Add novector pragma.
+	* gcc.dg/vect/vect-29.c: Add novector pragma.
+	* gcc.dg/vect/vect-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-30.c: Add novector pragma.
+	* gcc.dg/vect/vect-31-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-31.c: Add novector pragma.
+	* gcc.dg/vect/vect-32-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-32.c: Add novector pragma.
+	* gcc.dg/vect/vect-33-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-33.c: Add novector pragma.
+	* gcc.dg/vect/vect-34-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-34.c: Add novector pragma.
+	* gcc.dg/vect/vect-35-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-35.c: Add novector pragma.
+	* gcc.dg/vect/vect-36-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-36.c: Add novector pragma.
+	* gcc.dg/vect/vect-38.c: Add novector pragma.
+	* gcc.dg/vect/vect-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-40.c: Add novector pragma.
+	* gcc.dg/vect/vect-42.c: Add novector pragma.
+	* gcc.dg/vect/vect-44.c: Add novector pragma.
+	* gcc.dg/vect/vect-46.c: Add novector pragma.
+	* gcc.dg/vect/vect-48.c: Add novector pragma.
+	* gcc.dg/vect/vect-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-50.c: Add novector pragma.
+	* gcc.dg/vect/vect-52.c: Add novector pragma.
+	* gcc.dg/vect/vect-54.c: Add novector pragma.
+	* gcc.dg/vect/vect-56.c: Add novector pragma.
+	* gcc.dg/vect/vect-58.c: Add novector pragma.
+	* gcc.dg/vect/vect-6-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-60.c: Add novector pragma.
+	* gcc.dg/vect/vect-62.c: Add novector pragma.
+	* gcc.dg/vect/vect-63.c: Add novector pragma.
+	* gcc.dg/vect/vect-64.c: Add novector pragma.
+	* gcc.dg/vect/vect-65.c: Add novector pragma.
+	* gcc.dg/vect/vect-66.c: Add novector pragma.
+	* gcc.dg/vect/vect-67.c: Add novector pragma.
+	* gcc.dg/vect/vect-68.c: Add novector pragma.
+	* gcc.dg/vect/vect-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-70.c: Add novector pragma.
+	* gcc.dg/vect/vect-71.c: Add novector pragma.
+	* gcc.dg/vect/vect-72.c: Add novector pragma.
+	* gcc.dg/vect/vect-73-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-73.c: Add novector pragma.
+	* gcc.dg/vect/vect-74-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-74.c: Add novector pragma.
+	* gcc.dg/vect/vect-75-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-75.c: Add novector pragma.
+	* gcc.dg/vect/vect-76-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-76.c: Add novector pragma.
+	* gcc.dg/vect/vect-77-alignchecks.c: Add novector pragma.
+	* gcc.dg/vect/vect-77-global.c: Add novector pragma.
+	* gcc.dg/vect/vect-77.c: Add novector pragma.
+	* gcc.dg/vect/vect-78-alignchecks.c: Add novector pragma.
+	* gcc.dg/vect/vect-78-global.c: Add novector pragma.
+	* gcc.dg/vect/vect-78.c: Add novector pragma.
+	* gcc.dg/vect/vect-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-80-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-80.c: Add novector pragma.
+	* gcc.dg/vect/vect-82.c: Add novector pragma.
+	* gcc.dg/vect/vect-82_64.c: Add novector pragma.
+	* gcc.dg/vect/vect-83.c: Add novector pragma.
+	* gcc.dg/vect/vect-83_64.c: Add novector pragma.
+	* gcc.dg/vect/vect-85-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-85.c: Add novector pragma.
+	* gcc.dg/vect/vect-86.c: Add novector pragma.
+	* gcc.dg/vect/vect-87.c: Add novector pragma.
+	* gcc.dg/vect/vect-88.c: Add novector pragma.
+	* gcc.dg/vect/vect-89-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-89.c: Add novector pragma.
+	* gcc.dg/vect/vect-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-92.c: Add novector pragma.
+	* gcc.dg/vect/vect-93.c: Add novector pragma.
+	* gcc.dg/vect/vect-95.c: Add novector pragma.
+	* gcc.dg/vect/vect-96.c: Add novector pragma.
+	* gcc.dg/vect/vect-97-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-97.c: Add novector pragma.
+	* gcc.dg/vect/vect-98-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-98.c: Add novector pragma.
+	* gcc.dg/vect/vect-99.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-alias-check-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-align-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-align-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-all-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-all.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-avg-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-bitfield-write-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-bool-cmp.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap16.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap32.c: Add novector pragma.
+	* gcc.dg/vect/vect-bswap64.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-complex-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-cond-arith-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-cselim-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-cselim-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-div-bitmask.h: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-6-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-double-reduc-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-float-extend-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-float-truncate-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-floatint-conversion-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-floatint-conversion-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-fma-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-gather-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-gather-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-ifcvt-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-4a.c: Add novector pragma.
+	* gcc.dg/vect/vect-intfloat-conversion-4b.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-iv-8a.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-live-slp-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-mask-load-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mulhrs-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-multitypes-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nb-iter-ub-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-neg-store-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-neg-store-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-nest-cycle-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2a.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2b.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2c-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2c.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-2d.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3a.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3b.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-3c.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4d-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-4d.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-lb-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir-lb.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-fir.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-simd-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-slp-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-outer-slp-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-1-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-21.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-22.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-over-widen-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-1-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-2-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-peel-4-src.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-recurr-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-sdivmod-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-shift-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-12.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-13.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-14.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-16.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-17.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-18.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-19.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-20.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-10.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-11.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-15.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-2.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-3.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-4.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-5.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-6.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-7.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-8.c: Add novector pragma.
+	* gcc.dg/vect/vect-simd-clone-9.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u32-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-float.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-same-dr.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-shift-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-a-u8-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store-u32-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-store.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i3.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u16-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-i4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-i8.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u32-mult.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7-big-array.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c: Add novector pragma.
+	* gcc.dg/vect/vect-strided-u8-i8.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-01.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-02.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-03.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-04.c: Add novector pragma.
+	* gcc.dg/vect/vect-vfa-slp.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-1.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-half.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-s8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-s16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-s8.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-u16.c: Add novector pragma.
+	* gcc.dg/vect/vect-widen-shift-u8.c: Add novector pragma.
+	* gcc.dg/vect/wrapv-vect-7.c: Add novector pragma.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-novector-pragma.c: New test.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/vect.exp (support vect- prefix).
+	* g++.dg/vect/vect-novector-pragma.cc: New test.
+
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106346
+	* gcc.target/aarch64/pr98772.c: Adjust assembly.
+	* gcc.target/aarch64/vect-widen-shift.c: New test.
+
+2023-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* gcc.dg/vect/pr110838.c: New testcase.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-add.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-add.c:
+	New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-sub.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-sub.c:
+	New test.
+
+2023-08-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110874
+	* gcc.c-torture/compile/pr110874-a.c: New test.
+
+2023-08-04  Drew Ross  <drross@redhat.com>
+
+	PR middle-end/101955
+	* gcc.dg/pr101955.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-sub.c:
+	New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-sub.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-negate-multiply-add.c:
+	New test.
+
+2023-08-04  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* gcc.target/aarch64/pr110625_3.c: New testcase.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-multiply-add.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-mul.c: New test.
+
+2023-08-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-div.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-single-rdiv.c: New test.
+
+2023-08-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/ipa/pure-const-3.C: Move source to...
+	* g++.dg/ipa/pure-const-3.h: ...here, and adjust original test
+	accordingly.
+	* g++.dg/ipa/pure-const-3b.C: New.
+
+2023-08-03  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/core-builtin-enumvalue.c: New test.
+	* gcc.target/bpf/core-builtin-enumvalue-errors.c: New test.
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-const-elimination.c: New test.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-1.c: Changed.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-2.c: Changed.
+	* gcc.target/bpf/core-builtin-type-based.c: New test.
+	* gcc.target/bpf/core-builtin-type-id.c: New test.
+	* gcc.target/bpf/core-support.h: New test.
+
+2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108171
+	* gcc.dg/analyzer/pr108171.c: New test.
+
+2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110882
+	* gcc.dg/analyzer/pr110882.c: New test.
+
+2023-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/plugin/poly-int-tests.h (test_can_div_trunc_p_const)
+	(test_can_div_trunc_p_const): Add more tests.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110838
+	* gcc.dg/torture/pr110838.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110702
+	* gcc.dg/torture/pr110702.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-sink-20.c: New testcase.
+
+2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr87007-5.c: Make sure we split the loop
+	and eliminate both in the end.
+
+2023-08-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Add subdirectory vxe2.
+	* gcc.target/s390/vxe2/vlbr-1.c: New test.
+	* gcc.target/s390/vxe2/vstbr-1.c: New test.
+	* gcc.target/s390/vxe2/vstbr-2.c: New test.
+
+2023-08-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_bswap):
+	Add s390.
+
+2023-08-03  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/omit-frame-pointer-1.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-2.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-3.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-4.c: New test.
+	* gcc.target/riscv/omit-frame-pointer-test.c: New test.
+
+2023-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* g++.target/i386/pr110792.C: New 32-bit C++ test case.
+	* gcc.target/i386/pr110792.c: New 64-bit C test case.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-mul.c: New test.
+
+2023-08-03  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/20230802-1.c: New test.
+
+2023-08-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-sub.c: New test.
+
+2023-08-02  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* gcc.dg/plugin/plugin.exp: Add new plugin and test.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: New plugin.
+	* gcc.dg/plugin/cpython-plugin-test-1.c: New test.
+
+2023-08-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/110869
+	* gcc.dg/cmp-mem-const-1.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-2.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-3.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-4.c: Relax mode for constant.
+	* gcc.dg/cmp-mem-const-5.c: Exclude sparc since here the
+	constant is already reduced.
+	* gcc.dg/cmp-mem-const-6.c: Exclude sparc since here the
+	constant is already reduced.
+
+2023-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92335
+	* gcc.dg/tree-ssa/ssa-sink-10.c: Disable vectorizing.
+	* gcc.dg/tree-ssa/predcom-9.c: Clone from ssa-sink-10.c,
+	expect predictive commoning to happen instead of sinking.
+	* gcc.dg/vect/pr65947-3.c: Ajdust.
+
+2023-08-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-widening-add.c: New test.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/unroll-1.c: Fix template.
+
+2023-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/pr98308.c: Check that profile is consistent.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr81904.c: New test.
+
+2023-08-02  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vlddqu_vinserti128.c: New test.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110161
+	* gm2/pim/fail/badxproc.mod: New test.
+
+2023-08-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/aligned-1.c: New test.
+	* gcc.target/s390/unaligned-1.c: New test.
+
+2023-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/vect-1-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-1.c: Check profile consistency.
+	* gcc.dg/vect/vect-10-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-10.c: Check profile consistency.
+	* gcc.dg/vect/vect-100.c: Check profile consistency.
+	* gcc.dg/vect/vect-103.c: Check profile consistency.
+	* gcc.dg/vect/vect-104.c: Check profile consistency.
+	* gcc.dg/vect/vect-105-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-105.c: Check profile consistency.
+	* gcc.dg/vect/vect-106.c: Check profile consistency.
+	* gcc.dg/vect/vect-107.c: Check profile consistency.
+	* gcc.dg/vect/vect-108.c: Check profile consistency.
+	* gcc.dg/vect/vect-109.c: Check profile consistency.
+	* gcc.dg/vect/vect-11.c: Check profile consistency.
+	* gcc.dg/vect/vect-110.c: Check profile consistency.
+	* gcc.dg/vect/vect-112-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-112.c: Check profile consistency.
+	* gcc.dg/vect/vect-113.c: Check profile consistency.
+	* gcc.dg/vect/vect-114.c: Check profile consistency.
+	* gcc.dg/vect/vect-115.c: Check profile consistency.
+	* gcc.dg/vect/vect-116.c: Check profile consistency.
+	* gcc.dg/vect/vect-117.c: Check profile consistency.
+	* gcc.dg/vect/vect-118.c: Check profile consistency.
+	* gcc.dg/vect/vect-119.c: Check profile consistency.
+	* gcc.dg/vect/vect-11a.c: Check profile consistency.
+	* gcc.dg/vect/vect-12.c: Check profile consistency.
+	* gcc.dg/vect/vect-120.c: Check profile consistency.
+	* gcc.dg/vect/vect-121.c: Check profile consistency.
+	* gcc.dg/vect/vect-122.c: Check profile consistency.
+	* gcc.dg/vect/vect-123.c: Check profile consistency.
+	* gcc.dg/vect/vect-124.c: Check profile consistency.
+	* gcc.dg/vect/vect-126.c: Check profile consistency.
+	* gcc.dg/vect/vect-13.c: Check profile consistency.
+	* gcc.dg/vect/vect-14.c: Check profile consistency.
+	* gcc.dg/vect/vect-15-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-15.c: Check profile consistency.
+	* gcc.dg/vect/vect-17.c: Check profile consistency.
+	* gcc.dg/vect/vect-18.c: Check profile consistency.
+	* gcc.dg/vect/vect-19.c: Check profile consistency.
+	* gcc.dg/vect/vect-2-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-2.c: Check profile consistency.
+	* gcc.dg/vect/vect-20.c: Check profile consistency.
+	* gcc.dg/vect/vect-21.c: Check profile consistency.
+	* gcc.dg/vect/vect-22.c: Check profile consistency.
+	* gcc.dg/vect/vect-23.c: Check profile consistency.
+	* gcc.dg/vect/vect-24.c: Check profile consistency.
+	* gcc.dg/vect/vect-25.c: Check profile consistency.
+	* gcc.dg/vect/vect-26.c: Check profile consistency.
+	* gcc.dg/vect/vect-27.c: Check profile consistency.
+	* gcc.dg/vect/vect-28.c: Check profile consistency.
+	* gcc.dg/vect/vect-29.c: Check profile consistency.
+	* gcc.dg/vect/vect-3.c: Check profile consistency.
+	* gcc.dg/vect/vect-30.c: Check profile consistency.
+	* gcc.dg/vect/vect-31-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-31.c: Check profile consistency.
+	* gcc.dg/vect/vect-32-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-32-chars.c: Check profile consistency.
+	* gcc.dg/vect/vect-32.c: Check profile consistency.
+	* gcc.dg/vect/vect-33-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-33.c: Check profile consistency.
+	* gcc.dg/vect/vect-34-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-34.c: Check profile consistency.
+	* gcc.dg/vect/vect-35-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-35.c: Check profile consistency.
+	* gcc.dg/vect/vect-36-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-36.c: Check profile consistency.
+	* gcc.dg/vect/vect-38.c: Check profile consistency.
+	* gcc.dg/vect/vect-4.c: Check profile consistency.
+	* gcc.dg/vect/vect-40.c: Check profile consistency.
+	* gcc.dg/vect/vect-42.c: Check profile consistency.
+	* gcc.dg/vect/vect-44.c: Check profile consistency.
+	* gcc.dg/vect/vect-46.c: Check profile consistency.
+	* gcc.dg/vect/vect-48.c: Check profile consistency.
+	* gcc.dg/vect/vect-5.c: Check profile consistency.
+	* gcc.dg/vect/vect-50.c: Check profile consistency.
+	* gcc.dg/vect/vect-52.c: Check profile consistency.
+	* gcc.dg/vect/vect-54.c: Check profile consistency.
+	* gcc.dg/vect/vect-56.c: Check profile consistency.
+	* gcc.dg/vect/vect-58.c: Check profile consistency.
+	* gcc.dg/vect/vect-6-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-6.c: Check profile consistency.
+	* gcc.dg/vect/vect-60.c: Check profile consistency.
+	* gcc.dg/vect/vect-62.c: Check profile consistency.
+	* gcc.dg/vect/vect-63.c: Check profile consistency.
+	* gcc.dg/vect/vect-64.c: Check profile consistency.
+	* gcc.dg/vect/vect-65.c: Check profile consistency.
+	* gcc.dg/vect/vect-66.c: Check profile consistency.
+	* gcc.dg/vect/vect-67.c: Check profile consistency.
+	* gcc.dg/vect/vect-68.c: Check profile consistency.
+	* gcc.dg/vect/vect-7.c: Check profile consistency.
+	* gcc.dg/vect/vect-70.c: Check profile consistency.
+	* gcc.dg/vect/vect-71.c: Check profile consistency.
+	* gcc.dg/vect/vect-72.c: Check profile consistency.
+	* gcc.dg/vect/vect-73-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-73.c: Check profile consistency.
+	* gcc.dg/vect/vect-74-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-74.c: Check profile consistency.
+	* gcc.dg/vect/vect-75-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-75.c: Check profile consistency.
+	* gcc.dg/vect/vect-76-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-76.c: Check profile consistency.
+	* gcc.dg/vect/vect-77-alignchecks.c: Check profile consistency.
+	* gcc.dg/vect/vect-77-global.c: Check profile consistency.
+	* gcc.dg/vect/vect-77.c: Check profile consistency.
+	* gcc.dg/vect/vect-78-alignchecks.c: Check profile consistency.
+	* gcc.dg/vect/vect-78-global.c: Check profile consistency.
+	* gcc.dg/vect/vect-78.c: Check profile consistency.
+	* gcc.dg/vect/vect-8.c: Check profile consistency.
+	* gcc.dg/vect/vect-80-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-80.c: Check profile consistency.
+	* gcc.dg/vect/vect-82.c: Check profile consistency.
+	* gcc.dg/vect/vect-82_64.c: Check profile consistency.
+	* gcc.dg/vect/vect-83.c: Check profile consistency.
+	* gcc.dg/vect/vect-83_64.c: Check profile consistency.
+	* gcc.dg/vect/vect-85-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-85.c: Check profile consistency.
+	* gcc.dg/vect/vect-86.c: Check profile consistency.
+	* gcc.dg/vect/vect-87.c: Check profile consistency.
+	* gcc.dg/vect/vect-88.c: Check profile consistency.
+	* gcc.dg/vect/vect-89-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-89.c: Check profile consistency.
+	* gcc.dg/vect/vect-9.c: Check profile consistency.
+	* gcc.dg/vect/vect-91.c: Check profile consistency.
+	* gcc.dg/vect/vect-92.c: Check profile consistency.
+	* gcc.dg/vect/vect-93.c: Check profile consistency.
+	* gcc.dg/vect/vect-95.c: Check profile consistency.
+	* gcc.dg/vect/vect-96.c: Check profile consistency.
+	* gcc.dg/vect/vect-97-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-97.c: Check profile consistency.
+	* gcc.dg/vect/vect-98-big-array.c: Check profile consistency.
+	* gcc.dg/vect/vect-98.c: Check profile consistency.
+	* gcc.dg/vect/vect-99.c: Check profile consistency.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-33.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-34.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-35.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-36.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-37.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-38.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-39.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-40.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-41.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-42.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-43.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-44.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-45.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-46.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-47.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-48.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-51.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-53.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-55.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-56.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-59.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-60.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-61.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-62.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-63.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-64.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-65.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-66.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-67.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-68.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-69.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-70.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-71.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-72.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-73.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-75.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-76.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-77.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-4.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run-5.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-frm-run.h: New test.
+
+2023-08-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-rsub.c: New test.
+	* gcc.target/riscv/rvv/base/float-point-single-sub.c: New test.
+
+2023-08-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr87007-4.c: Adjust testcase.
+	* gcc.target/i386/pr87007-5.c: Ditto.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110865
+	* gm2/iso/pass/constvec.mod: New test.
+	* gm2/iso/pass/constvec2.mod: New test.
+	* gm2/iso/run/pass/constvec3.mod: New test.
+
+2023-08-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/93044
+	* gcc.dg/tree-ssa/cast-1.c: New test.
+	* gcc.dg/tree-ssa/cast-2.c: New test.
+
+2023-07-31  Hamza Mahfooz  <someguy@effective-light.com>
+
+	PR c/65213
+	* gcc.dg/Wmissing-variable-declarations.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* gcc.dg/tree-ssa/cmpbit-2.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106164
+	* gcc.dg/tree-ssa/cmpbit-1.c: New test.
+
+2023-07-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/100864
+	* gcc.dg/tree-ssa/bitops-3.c: New test.
+
+2023-07-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr110582.c: New.
+
+2023-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109361
+	* c-c++-common/diagnostic-format-sarif-file-timevars-1.c: New test.
+	* c-c++-common/diagnostic-format-sarif-file-timevars-2.c: New test.
+
+2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/host_data-2.c: Adjust testcase.
+	* gfortran.dg/goacc/host_data-error.f90: New testcase.
+	* gfortran.dg/goacc/pr71704.f90: Adjust testcase.
+
+2023-07-31  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/cmp-mem-const-1.c: New test.
+	* gcc.dg/cmp-mem-const-2.c: New test.
+	* gcc.dg/cmp-mem-const-3.c: New test.
+	* gcc.dg/cmp-mem-const-4.c: New test.
+	* gcc.dg/cmp-mem-const-5.c: New test.
+	* gcc.dg/cmp-mem-const-6.c: New test.
+	* gcc.target/s390/cmp-mem-const-1.c: New test.
+
+2023-07-31  Hao Liu  <hliu@os.amperecomputing.com>
+
+	* gcc.target/aarch64/pr110625_1.c: New testcase.
+	* gcc.target/aarch64/pr110625_2.c: New testcase.
+
+2023-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110843
+	* gcc.target/i386/pr110843.c: New test case.
+
+2023-07-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: Adjust
+	test cases.
+	* gcc.target/riscv/rvv/base/float-point-frm.c: Ditto.
+
+2023-07-31  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/v-1.c: Adapt test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl128b-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/dup-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/dup-7.c: New test.
+
+2023-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110790
+	* gcc.target/i386/pr110790-1.c: New test case.
+	* gcc.target/i386/pr110790-2.c: Likewise.
+
+2023-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/vect-profile-upate-2.c: New test.
+
+2023-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110825
+	* gfortran.dg/assumed_type_18.f90: New test.
+
+2023-07-28  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: Add -mabi=lp64d
+	to dg-options.
+
+2023-07-28  Ng YongXiang  <yongxiangng@gmail.com>
+
+	PR c++/110057
+	PR ipa/83054
+	* g++.dg/warn/pr83054.C: Remove devirtualization warning.
+	* g++.dg/lto/pr89335_0.C: Likewise.
+	* g++.dg/tree-ssa/devirt-array-destructor-1.C: New test.
+	* g++.dg/tree-ssa/devirt-array-destructor-2.C: New test.
+	* g++.dg/warn/pr83054-2.C: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/77689
+	* g++.dg/tree-ssa/loop-split-1.C: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/106293
+	* gcc.dg/tree-prof/loop-split-1.c: New test.
+	* gcc.dg/tree-prof/loop-split-2.c: New test.
+	* gcc.dg/tree-prof/loop-split-3.c: New test.
+
+2023-07-28  xuli  <xuli1@eswincomputing.com>
+
+	* g++.target/riscv/rvv/base/bug-12.C: Adapt testcase.
+	* g++.target/riscv/rvv/base/bug-14.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-18.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-19.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-20.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-21.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-22.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-23.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-3.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-8.C: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-100.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-101.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-103.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-104.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-105.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-106.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-107.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-109.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-110.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-111.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-112.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-113.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-115.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-116.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-117.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-118.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-97.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-98.c: Ditto.
+	* gcc.target/riscv/rvv/base/merge_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm-error.c: New test.
+	* gcc.target/riscv/rvv/base/fixed-point-vxrm.c: New test.
+
+2023-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/ifc-12.c: Disable loop splitting.
+	* gcc.target/i386/avx2-gather-6.c: Likewise.
+	* gcc.target/i386/avx2-vect-aggressive.c: Likewise.
+
+2023-07-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110788.c: New test.
+
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	PR target/110782
+	PR target/110784
+	* gcc.target/bpf/sload-1.c: New test.
+	* gcc.target/bpf/sload-pseudoc-1.c: New test.
+	* gcc.target/bpf/smov-1.c: New test.
+	* gcc.target/bpf/smov-pseudoc-1.c: New test.
+
+2023-07-27  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/alu-2.c: New test.
+	* gcc.target/bpf/alu-pseudoc-2.c: Likewise.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/peel-1.c: Test for profile mismatches.
+	* gcc.dg/tree-prof/unroll-1.c: Test for profile mismatches.
+	* gcc.dg/tree-ssa/peel1.c: Test for profile mismatches.
+	* gcc.dg/unroll-1.c: Test for profile mismatches.
+	* gcc.dg/unroll-3.c: Test for profile mismatches.
+	* gcc.dg/unroll-4.c: Test for profile mismatches.
+	* gcc.dg/unroll-5.c: Test for profile mismatches.
+	* gcc.dg/unroll-6.c: Test for profile mismatches.
+
+2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/teams-6.f90: Extend.
+
+2023-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr102385.c: Check for no profile mismatches.
+	* gcc.dg/pr96931.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-1.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-2.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-3.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-4.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-5.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-7.c: Check for one profile mismatch.
+	* gcc.dg/tree-ssa/predcom-8.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-1.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-10.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-11.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-12.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-2.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-5.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-6.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-7.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-8.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/predcom-dse-9.c: Check for no profile mismatches.
+	* gcc.dg/tree-ssa/update-unroll-1.c: Unxfail.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* g++.dg/cpp0x/constexpr-empty18.C: New test.
+	* g++.dg/cpp0x/constexpr-empty19.C: New test.
+
+2023-07-27  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-9.c: Add more checks.
+	* gcc.target/riscv/rvv/rvv.exp: Add VLS modes tests.
+	* gcc.target/riscv/rvv/autovec/vls/def.h: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mov-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/spill-7.c: New test.
+
+2023-07-27  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: New test.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110829
+	* gcc.dg/pr56837.c: XFAIL part of the testcase.
+
+2023-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103497
+	* g++.dg/cpp1y/decltype-auto-103497.C: New test.
+
+2023-07-27  Kewen Lin  <linkw@linux.ibm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110776
+	* gcc.target/powerpc/pr110776.c: New test.
+
+2023-07-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/arch-23.c: Update expected diagnostic messages.
+	* gcc.target/riscv/pr102957.c: Likewise.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/cpp1z/class-deduction115.C: New test.
+	* g++.dg/template/ttp39.C: New test.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/template/ttp38.C: New test.
+
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics.c: New test.
+	Co-authored-by: Philipp Tomsich <philipp.tomsich@vrull.eu>
+	Co-authored-by: Raphael Zinsly <rzinsly@ventanamicro.com>
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-07-26  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/attribute-20.c: New test.
+	* gcc.target/riscv/attribute-21.c: New test.
+	Co-authored-by: Philipp Tomsich <philipp.tomsich@vrull.eu>
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* g++.dg/cpp2a/nontype-float3.C: New test.
+
+2023-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/68569
+	* gfortran.dg/data_char_4.f90: Adjust expected diagnostic.
+	* gfortran.dg/data_char_5.f90: Likewise.
+	* gfortran.dg/data_char_6.f90: New test.
+
+2023-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* g++.dg/template/template-keyword4.C: New test.
+
+2023-07-26  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/atomic-cmpxchg-1.c: New test.
+	* gcc.target/bpf/atomic-cmpxchg-2.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-1.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-2.c: New test.
+	* gcc.target/bpf/atomic-fetch-op-3.c: New test.
+	* gcc.target/bpf/atomic-op-1.c: New test.
+	* gcc.target/bpf/atomic-op-2.c: New test.
+	* gcc.target/bpf/atomic-op-3.c: New test.
+	* gcc.target/bpf/atomic-xchg-1.c: New test.
+	* gcc.target/bpf/atomic-xchg-2.c: New test.
+
+2023-07-26  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.dg/vect/vect-multi-peel-gaps.c: Add `check_vect` call into
+	`main` of this testcase.
+
+2023-07-26  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Renam
+	vec-replace-word-runnable_1.c.
+	* gcc.target/powerpc/vec-replace-word-runnable_1.c
+	(dg-options): add -flax-vector-conversions.
+	(vec_replace_unaligned) Fix first argument type.
+	(vresult_uchar): Fix expected results.
+	(vec_replace_unaligned): Update for loop to check uchar results.
+	Remove extra spaces in if statements. Insert missing spaces in
+	for statements.
+	* gcc.target/powerpc/vec-replace-word-runnable_2.c: New test file.
+
+2023-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/comparisons_3.F90: Use dg-additional-options
+	instead of dg-options.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106081
+	* gcc.dg/vect/pr106081.c: New testcase.
+
+2023-07-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR testsuite/110763
+	* gcc.dg/ubsan/object-size-dyn.c (dyn): New parameter RET.
+	(main): Use it.
+
+2023-07-26  Li Xu  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/tuple-intrinsic.c: New test.
+
+2023-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110762
+	* gcc.target/i386/pr110762.c: New test.
+
+2023-07-26  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/neg-1.c: New test.
+	* gcc.target/bpf/neg-pseudoc-1.c: Likewise.
+
+2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* gcc.dg/torture/pr110799.c: New testcase.
+
+2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* gcc.dg/pr110755.c: New test.
+
+2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* g++.target/powerpc/pr110741.C: New test.
+
+2023-07-26  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fsflags.c: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96630
+	PR c++/98675
+	PR c++/70331
+	* g++.dg/cpp1y/constexpr-lifetime1.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime2.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime3.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime4.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime5.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime6.C: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110619
+	* g++.dg/cpp1y/constexpr-110619.C: New test.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp0x/constexpr-48089.C: Update diagnostic locations.
+	* g++.dg/cpp0x/constexpr-70323.C: Likewise.
+	* g++.dg/cpp0x/constexpr-70323a.C: Likewise.
+	* g++.dg/cpp0x/constexpr-delete2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice20.C: Likewise.
+	* g++.dg/cpp0x/constexpr-mutable3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-recursion.C: Likewise.
+	* g++.dg/cpp0x/overflow1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89285.C: Likewise.
+	* g++.dg/cpp1y/constexpr-89481.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const14.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const16.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const18.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const19.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const21.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const22.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const3.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const4.C: Likewise.
+	* g++.dg/cpp1y/constexpr-tracking-const7.C: Likewise.
+	* g++.dg/cpp1y/constexpr-union5.C: Likewise.
+	* g++.dg/cpp1y/pr68180.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda6.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda8.C: Likewise.
+	* g++.dg/cpp2a/bit-cast11.C: Likewise.
+	* g++.dg/cpp2a/bit-cast12.C: Likewise.
+	* g++.dg/cpp2a/bit-cast14.C: Likewise.
+	* g++.dg/cpp2a/constexpr-98122.C: Likewise.
+	* g++.dg/cpp2a/constexpr-dynamic17.C: Likewise.
+	* g++.dg/cpp2a/constexpr-init1.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new12.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new3.C: Likewise.
+	* g++.dg/cpp2a/constinit10.C: Likewise.
+	* g++.dg/cpp2a/is-corresponding-member4.C: Likewise.
+	* g++.dg/ext/constexpr-vla2.C: Likewise.
+	* g++.dg/ext/constexpr-vla3.C: Likewise.
+	* g++.dg/ubsan/pr63956.C: Likewise.
+
+2023-07-26  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Check for c++11_only.
+
 2023-07-25  Andrew Pinski  <apinski@marvell.com>
 
 	PR testsuite/110803

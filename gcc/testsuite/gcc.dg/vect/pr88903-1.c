@@ -19,6 +19,7 @@ main()
   for (int i = 0; i < 1024; ++i)
     x[i] = i;
   foo ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     if (x[i] != i << ((i/2+1) & 31))
       __builtin_abort ();

@@ -980,11 +980,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      {
 		const size_type __len =
 		  _M_check_len(__n, "vector<bool>::_M_insert_range");
+		const iterator __begin = begin(), __end = end();
 		_Bit_pointer __q = this->_M_allocate(__len);
 		iterator __start(std::__addressof(*__q), 0);
-		iterator __i = _M_copy_aligned(begin(), __position, __start);
+		iterator __i = _M_copy_aligned(__begin, __position, __start);
 		__i = std::copy(__first, __last, __i);
-		iterator __finish = std::copy(__position, end(), __i);
+		iterator __finish = std::copy(__position, __end, __i);
 		this->_M_deallocate();
 		this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 		this->_M_impl._M_start = __start;

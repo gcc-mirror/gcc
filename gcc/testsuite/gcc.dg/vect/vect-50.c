@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0 -fdump-tree-optimized-details-blocks" } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
@@ -13,6 +13,7 @@ void bar (float *pa, float *pb, float *pc)
   int i;
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != (pb[i] * pc[i]))
@@ -67,3 +68,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || {! vector_alignment_reachable} } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 1 "vect" { target { {! vector_alignment_reachable} && { {! vect_no_align } && {! vect_hw_misalign } } } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

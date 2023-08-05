@@ -24,6 +24,7 @@ main (void)
     }
 
   foo (out, in, 1);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (out[i] != in[i])
       __builtin_abort ();
@@ -33,6 +34,7 @@ main (void)
   foo (out + N - 1, in, -1);
   if (out[0] != in[N - 1])
     __builtin_abort ();
+#pragma GCC novector
   for (int i = 1; i <= N; ++i)
     if (out[i] != 2)
       __builtin_abort ();

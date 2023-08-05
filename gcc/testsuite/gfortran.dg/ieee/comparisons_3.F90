@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-ffree-line-length-none" }
+! { dg-additional-options "-ffree-line-length-none" }
 program foo
   use ieee_arithmetic
   use iso_fortran_env

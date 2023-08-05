@@ -56,6 +56,9 @@ package body System.Value_U_Spec with SPARK_Mode is
 
    function Last_Hexa_Ghost (Str : String) return Positive is
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "occurs in ghost code, not executable");
+
       for J in Str'Range loop
          if Str (J) not in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' then
             return J - 1;
@@ -67,6 +70,8 @@ package body System.Value_U_Spec with SPARK_Mode is
       end loop;
 
       return Str'Last;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Last_Hexa_Ghost;
 
    -----------------------------

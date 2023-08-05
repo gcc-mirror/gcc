@@ -2355,28 +2355,31 @@ can_div_trunc_p (const poly_int_pod<N, Ca> &a,
 	}
       else
 	{
-	  if (q == 0)
-	    {
-	      /* For Q == 0 we simply need: (3') |ai| <= |bi|.  */
-	      if (a.coeffs[i] != ICa (0))
-		{
-		  /* Use negative absolute to avoid overflow, i.e.
-		     -|ai| >= -|bi|.  */
-		  C neg_abs_a = (a.coeffs[i] < 0 ? a.coeffs[i] : -a.coeffs[i]);
-		  C neg_abs_b = (b.coeffs[i] < 0 ? b.coeffs[i] : -b.coeffs[i]);
-		  if (neg_abs_a < neg_abs_b)
-		    return false;
-		  rem_p = true;
-		}
-	    }
+	  /* The only unconditional arithmetic that we can do on ai,
+	     bi and Q is ai / bi and ai % bi.  (ai == minimum int and
+	     bi == -1 would be UB in the caller.)  Anything else runs
+	     the risk of overflow.  */
+	  auto qi = NCa (a.coeffs[i]) / NCb (b.coeffs[i]);
+	  auto ri = NCa (a.coeffs[i]) % NCb (b.coeffs[i]);
+	  /* (2') and (3') are satisfied when ai /[trunc] bi == q.
+	     So is the stricter condition |ai - bi * Q| < |bi|.  */
+	  if (qi == q)
+	    rem_p |= (ri != 0);
+	  /* The only other case is when:
+
+		 |bi * Q| + |bi| = |ai| (for (2'))
+	     and |ai - bi * Q|   = |bi| (for (3'))
+
+	     The first is equivalent to |bi|(|Q| + 1) == |ai|.
+	     The second requires ai == bi * (Q + 1) or ai == bi * (Q - 1).  */
+	  else if (ri != 0)
+	    return false;
+	  else if (q <= 0 && qi < q && qi + 1 == q)
+	    ;
+	  else if (q >= 0 && qi > q && qi - 1 == q)
+	    ;
 	  else
-	    {
-	      /* Otherwise just check for the case in which ai / bi == Q.  */
-	      if (NCa (a.coeffs[i]) / NCb (b.coeffs[i]) != q)
-		return false;
-	      if (NCa (a.coeffs[i]) % NCb (b.coeffs[i]) != 0)
-		rem_p = true;
-	    }
+	    return false;
 	}
     }
 

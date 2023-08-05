@@ -315,7 +315,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
 
 /* Adds PHI to BB.  */
 
-void
+static void
 add_phi_node_to_bb (gphi *phi, basic_block bb)
 {
   gimple_seq seq = phi_nodes (bb);
@@ -330,7 +330,6 @@ add_phi_node_to_bb (gphi *phi, basic_block bb)
 
   /* Associate BB to the PHI node.  */
   gimple_set_bb (phi, bb);
-
 }
 
 /* Create a new PHI node for variable VAR at basic block BB.  */

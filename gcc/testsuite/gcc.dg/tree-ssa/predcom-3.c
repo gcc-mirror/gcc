@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details -fno-tree-pre -fno-tree-loop-vectorize" } */
+/* { dg-options "-O2 -funroll-loops --param max-unroll-times=8 -fpredictive-commoning -fdump-tree-pcom-details-blocks -fno-tree-pre -fno-tree-loop-vectorize" } */
 
 int a[1000], b[1000];
 
@@ -13,3 +13,4 @@ void test(void)
 
 /* Verify that we used 3 temporary variables for the loop.  */
 /* { dg-final { scan-tree-dump-times "Unrolling 3 times." 1 "pcom"} } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

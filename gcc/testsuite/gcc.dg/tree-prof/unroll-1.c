@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-rtl-loop2_unroll-details -funroll-loops -fno-peel-loops" } */
+/* { dg-options "-O3 -fdump-rtl-loop2_unroll-details-blocks -funroll-loops -fno-peel-loops" } */
 void abort ();
 
 int a[1000];
@@ -20,4 +20,5 @@ main()
     t();
   return 0;
 }
-/* { dg-final-use { scan-rtl-dump "considering unrolling loop with constant number of iterations" "loop2_unroll" } } */
+/* { dg-final-use-not-autofdo { scan-rtl-dump "considering unrolling loop with constant number of iterations" "loop2_unroll" } } */
+/* { dg-final-use-not-autofdo { scan-rtl-dump-not "Invalid sum" "loop2_unroll" } } */

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -11,6 +12,7 @@ void bar (float *pd, float *pa, float *pb, float *pc)
   int i;
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (pa[i] != (pb[i] * pc[i]))
@@ -63,3 +65,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { xfail { vect_no_align || vect_element_align } } } } */
 /*  { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
 /*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

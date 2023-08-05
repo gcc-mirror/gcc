@@ -380,10 +380,14 @@
 ;; Like VI, defined in vector.md, but add ISA 2.07 integer vector ops
 (define_mode_iterator VI2 [V4SI V8HI V16QI V2DI])
 
-;; Vector extract_elt iterator/attr for 32-bit and 64-bit elements
-(define_mode_iterator REPLACE_ELT [V4SI V4SF V2DI V2DF])
+;; Aligned and unaligned vector replace iterator/attr for 32-bit and
+;; 64-bit elements
+(define_mode_iterator REPLACE_ELT_V [V4SI V4SF V2DI V2DF])
+(define_mode_iterator REPLACE_ELT [SI SF DI DF])
 (define_mode_attr REPLACE_ELT_char [(V4SI "w") (V4SF "w")
-				    (V2DI  "d") (V2DF "d")])
+				    (V2DI "d") (V2DF "d")
+				    (SI "w") (SF "w")
+				    (DI "d") (DF "d")])
 (define_mode_attr REPLACE_ELT_sh [(V4SI "2") (V4SF "2")
 				  (V2DI  "3") (V2DF "3")])
 (define_mode_attr REPLACE_ELT_max [(V4SI "12") (V4SF "12")
@@ -4183,11 +4187,11 @@
  [(set_attr "type" "vecsimple")])
 
 (define_expand "vreplace_elt_<mode>"
-  [(set (match_operand:REPLACE_ELT 0 "register_operand")
-  (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand")
-		       (match_operand:<VEC_base> 2 "register_operand")
-		       (match_operand:QI 3 "const_0_to_3_operand")]
-		      UNSPEC_REPLACE_ELT))]
+  [(set (match_operand:REPLACE_ELT_V 0 "register_operand")
+  (unspec:REPLACE_ELT_V [(match_operand:REPLACE_ELT_V 1 "register_operand")
+			 (match_operand:<VEC_base> 2 "register_operand")
+			 (match_operand:QI 3 "const_0_to_3_operand")]
+			UNSPEC_REPLACE_ELT))]
  "TARGET_POWER10"
 {
    int index;
@@ -4207,19 +4211,19 @@
 [(set_attr "type" "vecsimple")])
 
 (define_insn "vreplace_elt_<mode>_inst"
- [(set (match_operand:REPLACE_ELT 0 "register_operand" "=v")
-  (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand" "0")
-		       (match_operand:<VEC_base> 2 "register_operand" "r")
-		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
-		      UNSPEC_REPLACE_ELT))]
+ [(set (match_operand:REPLACE_ELT_V 0 "register_operand" "=v")
+  (unspec:REPLACE_ELT_V [(match_operand:REPLACE_ELT_V 1 "register_operand" "0")
+			 (match_operand:<VEC_base> 2 "register_operand" "r")
+			 (match_operand:QI 3 "const_0_to_12_operand" "n")]
+			UNSPEC_REPLACE_ELT))]
  "TARGET_POWER10"
  "vins<REPLACE_ELT_char> %0,%2,%3"
  [(set_attr "type" "vecsimple")])
 
 (define_insn "vreplace_un_<mode>"
  [(set (match_operand:V16QI 0 "register_operand" "=v")
-  (unspec:V16QI [(match_operand:REPLACE_ELT 1 "register_operand" "0")
-                 (match_operand:<VEC_base> 2 "register_operand" "r")
+  (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+		 (match_operand:REPLACE_ELT 2 "register_operand" "r")
 		 (match_operand:QI 3 "const_0_to_12_operand" "n")]
 		UNSPEC_REPLACE_UN))]
  "TARGET_POWER10"
@@ -6586,7 +6590,7 @@
 		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
 		     UNSPEC_XXEVAL))]
    "TARGET_POWER10"
-   "xxeval %0,%1,%2,%3,%4"
+   "xxeval %x0,%x1,%x2,%x3,%4"
    [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 

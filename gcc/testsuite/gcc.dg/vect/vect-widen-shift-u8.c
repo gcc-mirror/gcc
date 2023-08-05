@@ -27,6 +27,7 @@ foo (unsigned char *src, unsigned int *dst1, unsigned int *dst2)
   s = src;
   d1 = dst1;
   d2 = dst2;
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       b = *s++;

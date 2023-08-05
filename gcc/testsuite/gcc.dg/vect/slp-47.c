@@ -35,6 +35,7 @@ main ()
     }
 
   foo ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     if (x[i] != y[1023 - i])
       abort ();
@@ -46,6 +47,7 @@ main ()
     }
 
   bar ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     if (x[i] != y[1023 - i^1])
       abort ();

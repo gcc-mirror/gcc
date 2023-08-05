@@ -2105,8 +2105,8 @@ package body Einfo.Utils is
    -- Number_Formals --
    --------------------
 
-   function Number_Formals (Id : E) return Pos is
-      N      : Int;
+   function Number_Formals (Id : E) return Nat is
+      N      : Nat;
       Formal : Entity_Id;
 
    begin
@@ -3019,7 +3019,7 @@ package body Einfo.Utils is
          --  Otherwise check for the case where we have a derived type or
          --  subtype, and if so get the Underlying_Type of the parent type.
 
-         elsif Etype (Id) /= Id then
+         elsif Present (Etype (Id)) and then Etype (Id) /= Id then
             return Underlying_Type (Etype (Id));
 
          --  Otherwise we have an incomplete or private type that has no full

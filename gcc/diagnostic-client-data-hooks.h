@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_CLIENT_DATA_HOOKS_H
 #define GCC_DIAGNOSTIC_CLIENT_DATA_HOOKS_H
 
+class sarif_object;
 class client_version_info;
 
 /* A bundle of additional metadata, owned by the diagnostic_context,
@@ -41,6 +42,11 @@ class diagnostic_client_data_hooks
      See SARIF v2.1.0 Appendix J for suggested values.  */
   virtual const char *
   maybe_get_sarif_source_language (const char *filename) const = 0;
+
+  /* Hook to allow client to populate a SARIF "invocation" object with
+     a custom property bag (see SARIF v2.1.0 section 3.8).  */
+  virtual void
+  add_sarif_invocation_properties (sarif_object &invocation_obj) const = 0;
 };
 
 /* Factory function for making an instance of diagnostic_client_data_hooks

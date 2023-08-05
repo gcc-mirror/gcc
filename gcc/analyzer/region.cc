@@ -398,14 +398,6 @@ region::~region ()
   delete m_cached_offset;
 }
 
-/* Compare REG1 and REG2 by id.  */
-
-int
-region::cmp_ids (const region *reg1, const region *reg2)
-{
-  return (long)reg1->get_id () - (long)reg2->get_id ();
-}
-
 /* Determine the base region for this region: when considering bindings
    for this region, the base region is the ancestor which identifies
    which cluster they should be partitioned into.
@@ -750,7 +742,11 @@ int_size_in_bits (const_tree type, bit_size_t *out)
     }
 
   tree sz = TYPE_SIZE (type);
-  if (sz && tree_fits_uhwi_p (sz))
+  if (sz
+      && tree_fits_uhwi_p (sz)
+      /* If the size is zero, then we may have a zero-sized
+	 array; handle such cases by returning false.  */
+      && !integer_zerop (sz))
     {
       *out = TREE_INT_CST_LOW (sz);
       return true;
@@ -1099,8 +1095,9 @@ region::is_named_decl_p (const char *decl_name) const
 
 /* region's ctor.  */
 
-region::region (complexity c, unsigned id, const region *parent, tree type)
-: m_complexity (c), m_id (id), m_parent (parent), m_type (type),
+region::region (complexity c, symbol::id_t id, const region *parent, tree type)
+: symbol (c, id),
+  m_parent (parent), m_type (type),
   m_cached_offset (NULL), m_cached_init_sval_at_main (NULL)
 {
   gcc_assert (type == NULL_TREE || TYPE_P (type));
@@ -1347,7 +1344,7 @@ frame_region::get_region_for_local (region_model_manager *mgr,
   if (decl_region **slot = mutable_locals.get (expr))
     return *slot;
   decl_region *reg
-    = new decl_region (mgr->alloc_region_id (), this, expr);
+    = new decl_region (mgr->alloc_symbol_id (), this, expr);
   mutable_locals.put (expr, reg);
   return reg;
 }
@@ -1446,7 +1443,7 @@ heap_region::dump_to_pp (pretty_printer *pp, bool simple) const
 
 /* root_region's ctor.  */
 
-root_region::root_region (unsigned id)
+root_region::root_region (symbol::id_t id)
 : region (complexity (1, 1), id, NULL, NULL_TREE)
 {
 }
@@ -1477,7 +1474,7 @@ thread_local_region::dump_to_pp (pretty_printer *pp, bool simple) const
 
 /* symbolic_region's ctor.  */
 
-symbolic_region::symbolic_region (unsigned id, region *parent,
+symbolic_region::symbolic_region (symbol::id_t id, region *parent,
 				  const svalue *sval_ptr)
 : region (complexity::from_pair (parent, sval_ptr), id, parent,
 	  (sval_ptr->get_type ()

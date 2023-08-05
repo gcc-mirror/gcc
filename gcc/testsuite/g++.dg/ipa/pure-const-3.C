@@ -1,32 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-ipa-vrp -fdump-tree-optimized -fno-tree-ccp -fdisable-tree-evrp"  } */
-int *ptr;
-static int barvar;
-static int b(int a);
-/* We can not detect A to be const because it may be interposed by unoptimized
-   body.  */
-inline
-__attribute__ ((noinline))
-int a(int a)
-{
-  if (a>0)
-    return b(a-1);
-  return *ptr == *ptr;
-}
-inline
-__attribute__ ((noinline))
-static int b(int p)
-{
-  if (p<0)
-    return a(p+1);
-  return 1;
-}
-int main()
-{
-  int aa;
-  ptr = &barvar;
-  aa=!b(3);
-  ptr = 0;
-  return aa;
-}
+/* { dg-options "-O2 -fno-ipa-vrp -fdump-tree-optimized -fno-tree-ccp -fdisable-tree-evrp -fdisable-tree-vrp1 -fdisable-tree-vrp2 -fno-thread-jumps -fno-tree-dominator-opts"  } */
+
+#include "pure-const-3.h"
+
 /* { dg-final { scan-tree-dump "barvar"  "optimized"  } } */

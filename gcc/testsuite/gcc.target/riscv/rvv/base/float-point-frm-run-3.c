@@ -5,41 +5,7 @@
 #include <stdio.h>
 #include <stdint-gcc.h>
 
-static int
-get_frm ()
-{
-  int frm = -1;
-
-  __asm__ volatile (
-    "frrm %0"
-    :"=r"(frm)
-    :
-    :
-  );
-
-  return frm;
-}
-
-static void
-set_frm (int frm)
-{
-  __asm__ volatile (
-    "fsrm %0"
-    :
-    :"r"(frm)
-    :
-  );
-}
-
-static inline void
-assert_equal (int a, int b, char *message)
-{
-  if (a != b)
-    {
-      fprintf (stdout, "%s, but get %d != %d\n", message, a, b);
-      __builtin_abort ();
-    }
-}
+#include "float-point-frm-run.h"
 
 vfloat32m1_t __attribute__ ((noinline))
 test_float_point_frm_run (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
@@ -48,7 +14,7 @@ test_float_point_frm_run (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl)
 
   result = __riscv_vfadd_vv_f32m1_rm (op1, result, 4, vl);
 
-  assert_equal (4, get_frm (), "The value of frm register should be 4.");
+  assert_equal (4, get_frm (), "The value of frm should be equal");
 
   result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
   result = __riscv_vfadd_vv_f32m1 (op1, result, vl);
@@ -66,7 +32,7 @@ main ()
   set_frm (0);
   test_float_point_frm_run (op1, op2, vl);
 
-  assert_equal (0, get_frm (), "The value of frm register should be 0.");
+  assert_equal (0, get_frm (), "The value of frm should be equal");
 
   return 0;
 }

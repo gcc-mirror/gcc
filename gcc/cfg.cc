@@ -1195,3 +1195,27 @@ get_loop_copy (class loop *loop)
   else
     return NULL;
 }
+
+/* Scales the frequencies of all basic blocks that are strictly
+   dominated by BB by NUM/DEN.  */
+
+void
+scale_strictly_dominated_blocks (basic_block bb,
+				 profile_count num, profile_count den)
+{
+  basic_block son;
+
+  if (!den.nonzero_p () && !(num == profile_count::zero ()))
+    return;
+  auto_vec <basic_block, 8> worklist;
+  worklist.safe_push (bb);
+
+  while (!worklist.is_empty ())
+    for (son = first_dom_son (CDI_DOMINATORS, worklist.pop ());
+	 son;
+	 son = next_dom_son (CDI_DOMINATORS, son))
+      {
+	son->count = son->count.apply_scale (num, den);
+	worklist.safe_push (son);
+      }
+}

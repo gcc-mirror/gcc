@@ -41,6 +41,7 @@ int main1 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i+7] != sb[i] + sc[i] || ia[i+3] != ib[i] + ic[i])
@@ -75,6 +76,7 @@ int main2 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < n; i++)
     {
       if (sa[i+3] != sb[i] + sc[i] || ia[i+3] != ib[i] + ic[i])

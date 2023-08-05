@@ -42,6 +42,7 @@ main (void)
 
   Compute ();
 
+#pragma GCC novector
   for (d = 0; d < 1024; d++)
     {
       if (Y[d].l != X[d].l + X[d].h

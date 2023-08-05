@@ -345,11 +345,17 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
       pragma Assert (Entry_Call.State /= Cancelled);
 
+      --  Note that we need to acquire Self_Id's lock before checking the value
+      --  of Entry_Call.State, even though the latter is specified as atomic
+      --  with a pragma. If we didn't, another task could execute the entry on
+      --  our behalf right between the check of Entry_Call.State and the call
+      --  to Wait_For_Completion, and that would cause a deadlock.
+
+      STPO.Write_Lock (Self_Id);
       if Entry_Call.State /= Done then
-         STPO.Write_Lock (Self_Id);
          Wait_For_Completion (Entry_Call'Access);
-         STPO.Unlock (Self_Id);
       end if;
+      STPO.Unlock (Self_Id);
 
       Check_Exception (Self_Id, Entry_Call'Access);
    end Protected_Single_Entry_Call;

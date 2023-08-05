@@ -32,13 +32,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
 #include "text-art/canvas.h"
+#include "diagnostic-format-sarif.h"
 
 class sarif_builder;
 
 /* Subclass of json::object for SARIF invocation objects
    (SARIF v2.1.0 section 3.20).  */
 
-class sarif_invocation : public json::object
+class sarif_invocation : public sarif_object
 {
 public:
   sarif_invocation ()
@@ -49,17 +50,17 @@ public:
   void add_notification_for_ice (diagnostic_context *context,
 				 diagnostic_info *diagnostic,
 				 sarif_builder *builder);
-  void prepare_to_flush ();
+  void prepare_to_flush (diagnostic_context *context);
 
 private:
   json::array *m_notifications_arr;
   bool m_success;
 };
 
-/* Subclass of json::object for SARIF result objects
+/* Subclass of sarif_object for SARIF result objects
    (SARIF v2.1.0 section 3.27).  */
 
-class sarif_result : public json::object
+class sarif_result : public sarif_object
 {
 public:
   sarif_result () : m_related_locations_arr (NULL) {}
@@ -79,13 +80,13 @@ private:
   json::array *m_related_locations_arr;
 };
 
-/* Subclass of json::object for SARIF notification objects
+/* Subclass of sarif_object for SARIF notification objects
    (SARIF v2.1.0 section 3.58).
 
    This subclass is specifically for notifying when an
    internal compiler error occurs.  */
 
-class sarif_ice_notification : public json::object
+class sarif_ice_notification : public sarif_object
 {
 public:
   sarif_ice_notification (diagnostic_context *context,
@@ -232,7 +233,24 @@ private:
 
 static sarif_builder *the_builder;
 
-/* class sarif_invocation : public json::object.  */
+/* class sarif_object : public json::object.  */
+
+sarif_property_bag &
+sarif_object::get_or_create_properties ()
+{
+  json::value *properties_val = get ("properties");
+  if (properties_val)
+    {
+      if (properties_val->get_kind () == json::JSON_OBJECT)
+	return *static_cast <sarif_property_bag *> (properties_val);
+    }
+
+  sarif_property_bag *bag = new sarif_property_bag ();
+  set ("properties", bag);
+  return *bag;
+}
+
+/* class sarif_invocation : public sarif_object.  */
 
 /* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
    Add an object representing the ICE to the notifications array.  */
@@ -250,16 +268,21 @@ sarif_invocation::add_notification_for_ice (diagnostic_context *context,
 }
 
 void
-sarif_invocation::prepare_to_flush ()
+sarif_invocation::prepare_to_flush (diagnostic_context *context)
 {
   /* "executionSuccessful" property (SARIF v2.1.0 section 3.20.14).  */
   set ("executionSuccessful", new json::literal (m_success));
 
   /* "toolExecutionNotifications" property (SARIF v2.1.0 section 3.20.21).  */
   set ("toolExecutionNotifications", m_notifications_arr);
+
+  /* Call client hook, allowing it to create a custom property bag for
+     this object (SARIF v2.1.0 section 3.8) e.g. for recording time vars.  */
+  if (context->m_client_data_hooks)
+    context->m_client_data_hooks->add_sarif_invocation_properties (*this);
 }
 
-/* class sarif_result : public json::object.  */
+/* class sarif_result : public sarif_object.  */
 
 /* Handle secondary diagnostics that occur within a diagnostic group.
    The closest SARIF seems to have to nested diagnostics is the
@@ -319,7 +342,7 @@ sarif_result::add_related_location (json::object *location_obj)
   m_related_locations_arr->append (location_obj);
 }
 
-/* class sarif_ice_notification : public json::object.  */
+/* class sarif_ice_notification : public sarif_object.  */
 
 /* sarif_ice_notification's ctor.
    DIAGNOSTIC is an internal compiler error.  */
@@ -415,7 +438,7 @@ sarif_builder::end_group ()
 void
 sarif_builder::flush_to_file (FILE *outf)
 {
-  m_invocation_obj->prepare_to_flush ();
+  m_invocation_obj->prepare_to_flush (m_context);
   json::object *top = make_top_level_object (m_invocation_obj, m_results_array);
   top->dump (outf);
   m_invocation_obj = NULL;

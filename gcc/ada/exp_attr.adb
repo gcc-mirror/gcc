@@ -5906,7 +5906,7 @@ package body Exp_Attr is
          if No (Pname) then
             --  If Put_Image is disabled, call the "unknown" version
 
-            if not Enable_Put_Image (U_Type) then
+            if not Put_Image_Enabled (U_Type) then
                Rewrite (N, Build_Unknown_Put_Image_Call (N));
                Analyze (N);
                return;
@@ -5937,7 +5937,7 @@ package body Exp_Attr is
 
                --  ????Need Find_Optional_Prim_Op instead of Find_Prim_Op,
                --  because we might be deriving from a predefined type, which
-               --  currently has Enable_Put_Image False.
+               --  currently has Put_Image_Enabled False.
 
                if No (Pname) then
                   Rewrite (N, Build_Unknown_Put_Image_Call (N));

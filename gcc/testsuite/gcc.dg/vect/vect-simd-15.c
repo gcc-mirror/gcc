@@ -109,6 +109,7 @@ main ()
       || r2 != (unsigned short) r
       || r3 != (unsigned char) r)
     abort ();
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s
@@ -129,6 +130,7 @@ main ()
       || s3 != (unsigned char) (1024 * 1023))
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s
@@ -152,6 +154,7 @@ main ()
       || r3 != (unsigned char) r)
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s
@@ -174,6 +177,7 @@ main ()
       || s3 != (unsigned char) (1024 * 1023))
     abort ();
   s = 0;
+#pragma GCC novector
   for (int i = 0; i < 1024; ++i)
     {
       if (b[i] != s

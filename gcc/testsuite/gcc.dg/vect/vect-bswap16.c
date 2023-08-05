@@ -30,6 +30,7 @@ main (void)
 
   vfoo16 (arr);
 
+#pragma GCC novector
   for (i = 0; i < N; ++i)
     {
       if (arr[i] != expect[i])

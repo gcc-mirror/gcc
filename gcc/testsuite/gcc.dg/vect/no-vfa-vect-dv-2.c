@@ -37,6 +37,7 @@ int main ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < N-20; i++)
     {
       if (A[i] != D[i+20])
@@ -50,6 +51,7 @@ int main ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 16; i++)
     {
       if (B[i] != C[i] + 5)
@@ -63,6 +65,7 @@ int main ()
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 0; i < 4; i++)
     {
       if (C[i] != E[i])

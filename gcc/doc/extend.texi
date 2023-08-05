@@ -16015,6 +16015,57 @@ read_y (struct S *arg)
 @end smallexample
 @enddefbuiltin
 
+@defbuiltin{{unsigned int} __builtin_preserve_enum_value (@var{type}, @var{enum}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin collects enum
+information and creates a CO-RE relocation relative to @var{enum} that should
+be of @var{type}.  The @var{kind} specifies the action performed.
+
+The following values are supported for @var{kind}:
+@table @code
+@item ENUM_VALUE_EXISTS = 0
+The return value is either 0 or 1 depending if the enum value exists in the
+target.
+
+@item ENUM_VALUE = 1
+The return value is the enum value in the target kernel.
+@end table
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_btf_type_id (@var{type}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to get
+the BTF type ID of a specified type. Depending on the @var{kind} argument, it
+will either return the ID of the local BTF information, or the BTF type ID in
+the target kernel.
+
+The following values are supported for @var{kind}:
+@table @code
+@item BTF_TYPE_ID_LOCAL = 0
+Return the local BTF type ID. Always succeeds.
+
+@item BTF_TYPE_ID_TARGET = 1
+Return the target BTF type ID. If type does not exist in the target, returns 0.
+@end table
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_preserve_type_info (@var{type}, unsigned int @var{kind})}
+BPF Compile Once-Run Everywhere (CO-RE) support. This builtin performs named
+type (struct/union/enum/typedef) verifications. The type of verification
+dependents on the @var{kind} argument provided.  This builtin will always
+return 0 if type does not exists in the target kernel.
+
+The following values are supported for @var{kind}:
+@table @code
+@item BTF_TYPE_EXISTS = 0
+Checks if type exists in the target.
+
+@item BTF_TYPE_MATCHES = 1
+Checks if type matches the local definition in the target kernel.
+
+@item BTF_TYPE_SIZE = 2
+Returns the size of the type within the target.
+@end table
+@enddefbuiltin
+
 @node FR-V Built-in Functions
 @subsection FR-V Built-in Functions
 
@@ -24527,6 +24578,25 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 #pragma GCC ivdep
   for (int i = 0; i < m; i++)
     a[i] = a[i + k] * c;
+@}
+@end smallexample
+
+@cindex pragma GCC novector
+@item #pragma GCC novector
+
+With this pragma, the programmer asserts that the following loop should be
+prevented from executing concurrently with SIMD (single instruction multiple
+data) instructions.
+
+For example, the compiler cannot vectorize the following loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC novector
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
 @}
 @end smallexample
 

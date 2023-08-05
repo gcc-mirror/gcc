@@ -31,6 +31,7 @@ int main ()
     a[i] = i;
   foo (a + 3 * 5, 6-1, 5);
   const long b[3 * 8] = { 0, 1, 2, 21, 22, 23, 18, 19, 20, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+#pragma GCC novector
   for (int i = 0; i < 3 * 8; ++i)
     if (a[i] != b[i])
       __builtin_abort ();

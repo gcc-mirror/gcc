@@ -1327,6 +1327,7 @@ ANALYZER_OBJS = \
 	analyzer/store.o \
 	analyzer/supergraph.o \
 	analyzer/svalue.o \
+	analyzer/symbol.o \
 	analyzer/trimmed-graph.o \
 	analyzer/varargs.o
 

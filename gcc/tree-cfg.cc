@@ -7703,6 +7703,44 @@ fold_loop_internal_call (gimple *g, tree value)
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 	SET_USE (use_p, value);
       update_stmt (use_stmt);
+      /* If we turn conditional to constant, scale profile counts.
+	 We know that the conditional was created by loop distribution
+	 and all basic blocks dominated by the taken edge are part of
+	 the loop distributed.  */
+      if (gimple_code (use_stmt) == GIMPLE_COND)
+	{
+	  edge true_edge, false_edge;
+	  extract_true_false_edges_from_block (gimple_bb (use_stmt),
+					       &true_edge, &false_edge);
+	  edge taken_edge = NULL, other_edge = NULL;
+	  if (gimple_cond_true_p (as_a <gcond *>(use_stmt)))
+	    {
+	      taken_edge = true_edge;
+	      other_edge = false_edge;
+	    }
+	  else if (gimple_cond_false_p (as_a <gcond *>(use_stmt)))
+	    {
+	      taken_edge = false_edge;
+	      other_edge = true_edge;
+	    }
+	  if (taken_edge
+	      && !(taken_edge->probability == profile_probability::always ()))
+	    {
+	      profile_count old_count = taken_edge->count ();
+	      profile_count new_count = taken_edge->src->count;
+	      taken_edge->probability = profile_probability::always ();
+	      other_edge->probability = profile_probability::never ();
+	      /* If we have multiple predecessors, we can't use the dominance
+		 test.  This should not happen as the guarded code should
+		 start with pre-header.  */
+	      gcc_assert (single_pred_edge (taken_edge->dest));
+	      taken_edge->dest->count
+		= taken_edge->dest->count.apply_scale (new_count,
+						       old_count);
+	      scale_strictly_dominated_blocks (taken_edge->dest,
+					       new_count, old_count);
+	    }
+	}
     }
 }
 
@@ -8524,9 +8562,10 @@ print_loop_info (FILE *file, const class loop *loop, const char *prefix)
   sreal iterations;
   if (loop->num && expected_loop_iterations_by_profile (loop, &iterations, &reliable))
     {
-      fprintf (file, "\n%siterations by profile: %f (%s%s)", prefix,
+      fprintf (file, "\n%siterations by profile: %f (%s%s) entry count:", prefix,
 	       iterations.to_double (), reliable ? "reliable" : "unreliable",
 	       maybe_flat_loop_profile (loop) ? ", maybe flat" : "");
+      loop_count_in (loop).dump (dump_file, cfun);
     }
 
 }

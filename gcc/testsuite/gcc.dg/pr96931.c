@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fpredictive-commoning -fno-tree-loop-im" } */
+/* { dg-options "-O1 -fpredictive-commoning -fno-tree-loop-im -fdump-tree-pcom-details-blocks" } */
 
 int bl;
 
@@ -17,3 +17,4 @@ ie (void)
 
   ie ();
 }
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */

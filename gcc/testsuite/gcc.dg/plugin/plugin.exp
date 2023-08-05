@@ -160,6 +160,8 @@ set plugin_test_list [list \
 	  taint-CVE-2011-0521-5-fixed.c \
 	  taint-CVE-2011-0521-6.c \
 	  taint-antipatterns-1.c } \
+    { analyzer_cpython_plugin.c \
+	  cpython-plugin-test-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

@@ -26,6 +26,7 @@ int main()
       __asm__ volatile ("" : : : "memory");
     }
   foo ();
+#pragma GCC novector
   for (int i = 0; i < 8; ++i)
     if (y[2*i] != 3*i || y[2*i+1] != 3*i + 1)
       __builtin_abort ();

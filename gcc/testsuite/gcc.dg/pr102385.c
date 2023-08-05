@@ -1,4 +1,4 @@
-/* { dg-options "-Wall -Wextra -O2 -fno-toplevel-reorder -fno-tree-ch -fno-tree-dce -fno-tree-dominator-opts -fno-tree-dse -fno-tree-loop-ivcanon -fpredictive-commoning" } */
+/* { dg-options "-Wall -Wextra -O2 -fno-toplevel-reorder -fno-tree-ch -fno-tree-dce -fno-tree-dominator-opts -fno-tree-dse -fno-tree-loop-ivcanon -fpredictive-commoning -fdump-tree-pcom-details-blocks -fdump-tree-lim-details-blocks" } */
 
 short a, b;
 int c[9];
@@ -12,3 +12,5 @@ void e() {
   }
 }
 int main() {return 0;}
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "lim2" } } */

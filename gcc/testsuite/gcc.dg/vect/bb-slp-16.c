@@ -37,6 +37,7 @@ main1 (int dummy)
 
   a = 0;
   /* check results: */ 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     {
       if (out[i*8] !=  in[i*8] + a

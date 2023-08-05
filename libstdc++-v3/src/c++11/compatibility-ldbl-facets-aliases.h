@@ -23,11 +23,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #ifndef C
-#define "This file should not be compiled directly, only included"
+# error "This file should not be compiled directly, only included"
 #endif
 
 #ifndef _GLIBCXX_LONG_DOUBLE_COMPAT
-#define "This file should only be used for _GLIBCXX_LONG_DOUBLE_COMPAT builds"
+# error "This file should only be used for _GLIBCXX_LONG_DOUBLE_COMPAT builds"
 #endif
 
 // XXX GLIBCXX_ABI Deprecated

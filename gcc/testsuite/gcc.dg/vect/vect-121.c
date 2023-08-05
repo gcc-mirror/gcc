@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 float *x;
 float parm;
@@ -15,3 +16,4 @@ test (int start, int end)
 }
 
 /* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #ifndef C
-#define "This file should not be compiled directly, only included"
+# error "This file should not be compiled directly, only included"
 #endif
 
 #include "facet_inst_macros.h"

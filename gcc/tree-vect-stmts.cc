@@ -2214,8 +2214,9 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     we can end up with no gap recorded but still excess
 	     elements accessed, see PR103116.  Make sure we peel for
 	     gaps if necessary and sufficient and give up if not.
-	     If there is a combination of the access not covering the full vector and
-	     a gap recorded then we may need to peel twice.  */
+
+	     If there is a combination of the access not covering the full
+	     vector and a gap recorded then we may need to peel twice.  */
 	  if (loop_vinfo
 	      && *memory_access_type == VMAT_CONTIGUOUS
 	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
@@ -9875,7 +9876,10 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      if (costing_p)
 		{
-		  if (VECTOR_TYPE_P (ltype))
+		  /* For VMAT_ELEMENTWISE, just cost it as scalar_load to
+		     avoid ICE, see PR110776.  */
+		  if (VECTOR_TYPE_P (ltype)
+		      && memory_access_type != VMAT_ELEMENTWISE)
 		    vect_get_load_cost (vinfo, stmt_info, 1,
 					alignment_support_scheme, misalignment,
 					false, &inside_cost, nullptr, cost_vec,

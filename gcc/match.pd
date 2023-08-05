@@ -155,6 +155,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 
+#if GIMPLE
+/* These are used by gimple_bitwise_inverted_equal_p to simplify
+   detection of BIT_NOT and comparisons. */
+(match (bit_not_with_nop @0)
+ (bit_not @0))
+(match (bit_not_with_nop @0)
+ (convert (bit_not @0))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
+(for cmp (tcc_comparison)
+ (match (maybe_cmp @0)
+  (cmp@0 @1 @2))
+ (match (maybe_cmp @0)
+  (convert (cmp@0 @1 @2))
+   (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
+)
+#endif
+
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
    of the ABSU_EXPR will have the corresponding signed type.  */
@@ -1059,6 +1076,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
+/* Shifts by precision or greater result in zero.  */
+(for shift (lshift rshift)
+ (simplify
+  (shift @0 uniform_integer_cst_p@1)
+  (if ((GIMPLE || !sanitize_flags_p (SANITIZE_SHIFT_EXPONENT))
+       /* Leave arithmetic right shifts of possibly negative values alone.  */
+       && (TYPE_UNSIGNED (type)
+           || shift == LSHIFT_EXPR
+	   || tree_expr_nonnegative_p (@0))
+       /* Use a signed compare to leave negative shift counts alone.  */
+       && wi::ges_p (wi::to_wide (uniform_integer_cst_p (@1)),
+		     element_precision (type)))
+   { build_zero_cst (type); })))
+
 /* Shifts by constants distribute over several binary operations,
    hence (X << C) + (Y << C) can be simplified to (X + Y) << C.  */
 (for op (plus minus)
@@ -1147,8 +1178,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplify ~X & X as zero.  */
 (simplify
- (bit_and:c (convert? @0) (convert? (bit_not @0)))
-  { build_zero_cst (type); })
+ (bit_and (convert? @0) (convert? @1))
+ (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+      && bitwise_inverted_equal_p (@0, @1))
+  { build_zero_cst (type); }))
 
 /* PR71636: Transform x & ((1U << b) - 1) -> x & ~(~0U << b);  */
 (simplify
@@ -1385,8 +1418,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~x ^ x -> -1 */
 (for op (bit_ior bit_xor)
  (simplify
-  (op:c (convert? @0) (convert? (bit_not @0)))
-  (convert { build_all_ones_cst (TREE_TYPE (@0)); })))
+  (op (convert? @0) (convert? @1))
+  (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+       && bitwise_inverted_equal_p (@0, @1))
+   (convert { build_all_ones_cst (TREE_TYPE (@0)); }))))
 
 /* x ^ x -> 0 */
 (simplify
@@ -1933,8 +1968,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* (~x | y) & x -> x & y */
  /* (~x & y) | x -> x | y */
  (simplify
-  (bitop:c (rbitop:c (bit_not @0) @1) @0)
-  (bitop @0 @1)))
+  (bitop:c (rbitop:c @2 @1) @0)
+  (if (bitwise_inverted_equal_p (@0, @2))
+   (bitop @0 @1))))
 
 /* ((x | y) & z) | x -> (z & y) | x */
 (simplify
@@ -2786,14 +2822,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Convert (X == CST1) && (X OP2 CST2) to a known value
    based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+/* Convert (X == Y) && (X OP2 Y) to a known value if X is an integral type.
+   Similarly for (X != Y).  */
 
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_and:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (bit_and:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (if ((TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	     || POINTER_TYPE_P (TREE_TYPE (@1)))
+	    && operand_equal_p (@1, @2)))
     (with
      {
-      int cmp = tree_int_cst_compare (@1, @2);
+      int cmp = 0;
+      if (TREE_CODE (@1) == INTEGER_CST
+	  && TREE_CODE (@2) == INTEGER_CST)
+	cmp = tree_int_cst_compare (@1, @2);
       bool val;
       switch (code2)
 	 {
@@ -2809,17 +2855,40 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @3)
       (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
-      (if (code1 == NE_EXPR && !val) @4))))))
+      (if (code1 == NE_EXPR && !val) @4)
+      (if (code1 == NE_EXPR
+           && code2 == GE_EXPR
+	   && cmp == 0)
+       (gt @0 @1))
+      (if (code1 == NE_EXPR
+           && code2 == LE_EXPR
+	   && cmp == 0)
+       (lt @0 @1))
+     )
+    )
+   )
+  )
+ )
+)
 
-/* Convert (X OP1 CST1) && (X OP2 CST2).  */
+/* Convert (X OP1 CST1) && (X OP2 CST2).
+   Convert (X OP1 Y) && (X OP2 Y).  */
 
 (for code1 (lt le gt ge)
  (for code2 (lt le gt ge)
   (simplify
-  (bit_and (code1:c@3 @0 INTEGER_CST@1) (code2:c@4 @0 INTEGER_CST@2))
+  (bit_and (code1:c@3 @0 @1) (code2:c@4 @0 @2))
+  (if ((TREE_CODE (@1) == INTEGER_CST
+	&& TREE_CODE (@2) == INTEGER_CST)
+       || ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	   && operand_equal_p (@1, @2)))
    (with
     {
-     int cmp = tree_int_cst_compare (@1, @2);
+     int cmp = 0;
+     if (TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+       cmp = tree_int_cst_compare (@1, @2);
     }
     (switch
      /* Choose the more restrictive of two < or <= comparisons.  */
@@ -2848,18 +2917,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && (code1 == GT_EXPR || code1 == GE_EXPR)
 	  && (code2 == LT_EXPR || code2 == LE_EXPR))
       { constant_boolean_node (false, type); })
-     )))))
+     ))))))
 
 /* Convert (X == CST1) || (X OP2 CST2) to a known value
    based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+/* Convert (X == Y) || (X OP2 Y) to a known value if X is an integral type.
+   Similarly for (X != Y).  */
 
 (for code1 (eq ne)
  (for code2 (eq ne lt gt le ge)
   (simplify
-   (bit_ior:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (bit_ior:c (code1@3 @0 @1) (code2@4 @0 @2))
+   (if ((TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+	|| ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	    && operand_equal_p (@1, @2)))
     (with
      {
-      int cmp = tree_int_cst_compare (@1, @2);
+      int cmp = 0;
+      if (TREE_CODE (@1) == INTEGER_CST
+	  && TREE_CODE (@2) == INTEGER_CST)
+	cmp = tree_int_cst_compare (@1, @2);
       bool val;
       switch (code2)
 	{
@@ -2875,17 +2954,40 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (switch
       (if (code1 == EQ_EXPR && val) @4)
       (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
-      (if (code1 == NE_EXPR && !val) @3))))))
+      (if (code1 == NE_EXPR && !val) @3)
+      (if (code1 == EQ_EXPR
+           && code2 == GT_EXPR
+	   && cmp == 0)
+       (ge @0 @1))
+      (if (code1 == EQ_EXPR
+           && code2 == LT_EXPR
+	   && cmp == 0)
+       (le @0 @1))
+     )
+    )
+   )
+  )
+ )
+)
 
-/* Convert (X OP1 CST1) || (X OP2 CST2).  */
+/* Convert (X OP1 CST1) || (X OP2 CST2).
+   Convert (X OP1 Y)    || (X OP2 Y).  */
 
 (for code1 (lt le gt ge)
  (for code2 (lt le gt ge)
   (simplify
-  (bit_ior (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+  (bit_ior (code1@3 @0 @1) (code2@4 @0 @2))
+  (if ((TREE_CODE (@1) == INTEGER_CST
+        && TREE_CODE (@2) == INTEGER_CST)
+       || ((INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    || POINTER_TYPE_P (TREE_TYPE (@1)))
+	   && operand_equal_p (@1, @2)))
    (with
     {
-     int cmp = tree_int_cst_compare (@1, @2);
+     int cmp = 0;
+     if (TREE_CODE (@1) == INTEGER_CST
+	 && TREE_CODE (@2) == INTEGER_CST)
+       cmp = tree_int_cst_compare (@1, @2);
     }
     (switch
      /* Choose the more restrictive of two < or <= comparisons.  */
@@ -2914,7 +3016,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && (code1 == GT_EXPR || code1 == GE_EXPR)
 	  && (code2 == LT_EXPR || code2 == LE_EXPR))
       { constant_boolean_node (true, type); })
-     )))))
+     ))))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
@@ -3789,13 +3891,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			- TYPE_PRECISION (TREE_TYPE (@2)))))
   (bit_and (convert @0) (lshift { build_minus_one_cst (type); } @1))))
 
-/* Optimize (x << c) >> c into x & ((unsigned)-1 >> c) for unsigned
-   types.  */
+/* For (x << c) >> c, optimize into x & ((unsigned)-1 >> c) for
+   unsigned x OR truncate into the precision(type) - c lowest bits
+   of signed x (if they have mode precision or a precision of 1).  */
 (simplify
- (rshift (lshift @0 INTEGER_CST@1) @1)
- (if (TYPE_UNSIGNED (type)
-      && (wi::ltu_p (wi::to_wide (@1), element_precision (type))))
-  (bit_and @0 (rshift { build_minus_one_cst (type); } @1))))
+ (rshift (nop_convert? (lshift @0 INTEGER_CST@1)) @@1)
+ (if (wi::ltu_p (wi::to_wide (@1), element_precision (type)))
+  (if (TYPE_UNSIGNED (type))
+   (bit_and (convert @0) (rshift { build_minus_one_cst (type); } @1))
+   (if (INTEGRAL_TYPE_P (type))
+    (with {
+      int width = element_precision (type) - tree_to_uhwi (@1);
+      tree stype = build_nonstandard_integer_type (width, 0);
+     }
+     (if (width == 1 || type_has_mode_precision_p (stype))
+      (convert (convert:stype @0))))))))
 
 /* Optimize x >> x into 0 */
 (simplify
@@ -4262,6 +4372,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && ! (inside_ptr && inter_prec != final_prec)
 	 && ! (final_ptr && inside_prec != inter_prec))
      (ocvt @0))
+
+   /* `(outer:M)(inter:N) a:O`
+      can be converted to `(outer:M) a`
+      if M <= O && N >= O. No matter what signedness of the casts,
+      as the final is either a truncation from the original or just
+      a sign change of the type. */
+   (if (inside_int && inter_int && final_int
+        && final_prec <= inside_prec
+	&& inter_prec >= inside_prec)
+    (convert @0))
 
     /* A truncation to an unsigned type (a zero-extension) should be
        canonicalized as bitwise and of a mask.  */
@@ -5916,24 +6036,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
  @2)
-
-/* Simple range test simplifications.  */
-/* A < B || A >= B -> true.  */
-(for test1 (lt le le le ne ge)
-     test2 (ge gt ge ne eq ne)
- (simplify
-  (bit_ior:c (test1 @0 @1) (test2 @0 @1))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
-   { constant_boolean_node (true, type); })))
-/* A < B && A >= B -> false.  */
-(for test1 (lt lt lt le ne eq)
-     test2 (ge gt eq gt eq gt)
- (simplify
-  (bit_and:c (test1 @0 @1) (test2 @0 @1))
-  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
-   { constant_boolean_node (false, type); })))
 
 /* A & (2**N - 1) <= 2**K - 1 -> A & (2**N - 2**K) == 0
    A & (2**N - 1) >  2**K - 1 -> A & (2**N - 2**K) != 0

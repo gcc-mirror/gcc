@@ -58,6 +58,9 @@ package body System.Compare_Array_Signed_8 is
    function To_Big_Bytes is new
      Ada.Unchecked_Conversion (System.Address, Big_Bytes_Ptr);
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                    "early returns for performance");
+
    ----------------------
    -- Compare_Array_S8 --
    ----------------------
@@ -147,4 +150,5 @@ package body System.Compare_Array_Signed_8 is
       end if;
    end Compare_Array_S8_Unaligned;
 
+   pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
 end System.Compare_Array_Signed_8;

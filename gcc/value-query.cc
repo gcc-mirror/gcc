@@ -33,27 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "value-range-storage.h"
 
-// value_query default methods.
-
-tree
-value_query::value_on_edge (edge, tree expr)
-{
-  return value_of_expr (expr);
-}
-
-tree
-value_query::value_of_stmt (gimple *stmt, tree name)
-{
-  if (!name)
-    name = gimple_get_lhs (stmt);
-
-  gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
-
-  if (name)
-    return value_of_expr (name);
-  return NULL_TREE;
-}
-
 // range_query default methods.
 
 bool

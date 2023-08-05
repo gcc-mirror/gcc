@@ -912,7 +912,7 @@
   "TARGET_VECTOR"
 {
   rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
-  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode).require ();
+  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode);
   rtx mask = gen_reg_rtx (mask_mode);
   riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
 
@@ -1012,8 +1012,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VI:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_ternary_insn (code_for_pred_mul_plus (<VI:MODE>mode),
 					   riscv_vector::RVV_TERNOP, ops, operands[4]);
@@ -1058,8 +1056,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VI:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_ternary_insn (code_for_pred_minus_mul (<VI:MODE>mode),
     					   riscv_vector::RVV_TERNOP, ops, operands[4]);
@@ -1102,8 +1098,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (PLUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
@@ -1148,8 +1142,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (PLUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
@@ -1194,8 +1186,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul (MINUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);
@@ -1242,8 +1232,6 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_vsetvl (<VF:MODE>mode, operands[4]);
-    if (which_alternative == 2)
-      emit_insn (gen_rtx_SET (operands[0], operands[3]));
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3], operands[0]};
     riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_mul_neg (MINUS, <VF:MODE>mode),
 					      riscv_vector::RVV_TERNOP, ops, operands[4]);

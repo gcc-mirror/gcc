@@ -65,24 +65,28 @@ main1 ()
       d[i] = i * i;
     }
   f1 (16);
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     if (fabsf (((i & 2) ? -4 * i : 4 * i) + 1 + (i & 3) + i - a[i]) >= 0.0001f)
       abort ();
     else
       a[i] = 131.25;
   f2 (16);
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     if (fabsf (((i & 2) ? -4 * i : 4 * i) + 1 + (i & 1) + i - a[i]) >= 0.0001f)
       abort ();
     else
       a[i] = 131.25;
   f3 ();
+#pragma GCC novector
   for (i = 0; i < 64; i++)
     if (fabsf (((i & 2) ? -4 * i : 4 * i) + 1 + i - a[i]) >= 0.0001f)
       abort ();
     else
       a[i] = 131.25;
   f4 (10);
+#pragma GCC novector
   for (i = 0; i < 60; i++)
     if (fabsf (((i & 2) ? -4 * i : 4 * i) + 1 + (i % 3) + i - a[i]) >= 0.0001f)
       abort ();

@@ -990,6 +990,9 @@ extern void c_parse_file (void);
 
 extern void c_parse_final_cleanups (void);
 
+/* This initializes for preprocess-only mode.  */
+extern void c_init_preprocess (void);
+
 /* These macros provide convenient access to the various _STMT nodes.  */
 
 /* Nonzero if a given STATEMENT_LIST represents the outermost binding

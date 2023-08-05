@@ -1,3 +1,41 @@
+2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (omp_target_memcpy_rect_worker): Undo dim=1 change for
+	GOMP_OFFLOAD_CAP_SHARED_MEM.
+	(omp_target_memcpy_rect_copy): Likewise for lock condition.
+	(gomp_load_plugin_for_device): Use DLSYM_OPT not DLSYM for
+	memcpy3d/memcpy2d.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d,
+	GOMP_OFFLOAD_memcpy3d): Use memset 0 to nullify reserved and
+	unused src/dst fields for that mem type; remove '{src,dst}LOD = 0'.
+
+2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_memcpy2d,
+	GOMP_OFFLOAD_memcpy3d): New prototypes.
+	* libgomp.h (struct gomp_device_descr): Add memcpy2d_func
+	and memcpy3d_func.
+	* libgomp.texi (nvtpx): Document when cuMemcpy2D/cuMemcpy3D is used.
+	* oacc-host.c (memcpy2d_func, .memcpy3d_func): Init with NULL.
+	* plugin/cuda-lib.def (cuMemcpy2D, cuMemcpy2DUnaligned,
+	cuMemcpy3D): Invoke via CUDA_ONE_CALL.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d,
+	GOMP_OFFLOAD_memcpy3d): New.
+	* target.c (omp_target_memcpy_rect_worker):
+	(omp_target_memcpy_rect_check, omp_target_memcpy_rect_copy):
+	Permit all device-to-device copyies; invoke new plugins for
+	2D and 3D copying when available.
+	(gomp_load_plugin_for_device): DLSYM the new plugin functions.
+	* testsuite/libgomp.c/target-12.c: Fix dimension bug.
+	* testsuite/libgomp.fortran/target-12.f90: Likewise.
+	* testsuite/libgomp.fortran/target-memcpy-rect-1.f90: New test.
+
+2023-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2 features): Add 'all' for 'defaultmap' as 'N'.
+	(Tasking Routines): Document omp_in_explicit_task.
+	(Implementation-defined ICV Initialization): Use @ref not @code.
+
 2023-07-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Runtime Library Routines):

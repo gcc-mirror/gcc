@@ -620,7 +620,7 @@ public:
   conlist (const char *ns, unsigned int len, bool numeric)
   {
     /* Trim leading whitespaces.  */
-    while (ISBLANK (*ns))
+    while (len > 0 && ISBLANK (*ns))
       {
 	ns++;
 	len--;
@@ -632,7 +632,7 @@ public:
 	break;
 
     /* Parse off any modifiers.  */
-    while (!ISALNUM (*ns))
+    while (len > 0 && !ISALNUM (*ns))
       {
 	con += *(ns++);
 	len--;

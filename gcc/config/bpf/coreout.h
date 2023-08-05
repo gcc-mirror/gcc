@@ -23,6 +23,7 @@
 #define __COREOUT_H
 
 #include <stdint.h>
+#include "ctfc.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -55,6 +56,7 @@ struct btf_ext_lineinfo
 
 enum btf_core_reloc_kind
 {
+  BPF_RELO_INVALID = -1,
   BPF_RELO_FIELD_BYTE_OFFSET = 0,
   BPF_RELO_FIELD_BYTE_SIZE = 1,
   BPF_RELO_FIELD_EXISTS = 2,
@@ -66,7 +68,8 @@ enum btf_core_reloc_kind
   BPF_RELO_TYPE_EXISTS = 8,
   BPF_RELO_TYPE_SIZE = 9,
   BPF_RELO_ENUMVAL_EXISTS = 10,
-  BPF_RELO_ENUMVAL_VALUE = 11
+  BPF_RELO_ENUMVAL_VALUE = 11,
+  BPF_RELO_TYPE_MATCHES = 12
 };
 
 struct btf_ext_reloc
@@ -102,8 +105,12 @@ struct btf_ext_header
 extern void btf_ext_init (void);
 extern void btf_ext_output (void);
 
-extern void bpf_core_reloc_add (const tree, const char *, vec<unsigned int> *,
-				rtx_code_label *, enum btf_core_reloc_kind);
+void
+bpf_core_reloc_add (const tree type, const char * section_name,
+		    const char *accessor,
+		    rtx_code_label *label,
+		    enum btf_core_reloc_kind kind);
+
 extern int bpf_core_get_sou_member_index (ctf_container_ref, const tree);
 
 #ifdef	__cplusplus

@@ -357,6 +357,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion
 -Wenum-int-mismatch
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors
+-Wflex-array-member-not-at-end
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2
 -Wno-format-contains-nul  -Wno-format-extra-args
 -Wformat-nonliteral  -Wformat-overflow=@var{n}
@@ -498,8 +499,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type  -Wmissing-prototypes  -Wnested-externs
--Wold-style-declaration  -Wold-style-definition
+-Wmissing-parameter-type -Wmissing-prototypes -Wmissing-variable-declarations
+-Wnested-externs -Wold-style-declaration  -Wold-style-definition
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
 -Wdeclaration-after-statement  -Wpointer-sign}
 
@@ -945,9 +946,10 @@ Objective-C and Objective-C++ Dialects}.
 -mmemory-latency=@var{time}}
 
 @emph{eBPF Options}
-@gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
+@gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
--mjmp32 -malu32 -mcpu=@var{version} -masm=@var{dialect}}
+-mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
+-masm=@var{dialect}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -1402,7 +1404,7 @@ See RS/6000 and PowerPC Options.
 -mpointer-size=@var{size}}
 
 @emph{VxWorks Options}
-@gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic
+@gccoptlist{-mrtp  -msmp  -non-static  -Bstatic  -Bdynamic
 -Xbind-lazy  -Xbind-now}
 
 @emph{x86 Options}
@@ -9311,6 +9313,18 @@ value, like assigning a signed integer expression to an unsigned
 integer variable. An explicit cast silences the warning. In C, this
 option is enabled also by @option{-Wconversion}.
 
+@opindex Wflex-array-member-not-at-end
+@opindex Wno-flex-array-member-not-at-end
+@item -Wflex-array-member-not-at-end @r{(C and C++ only)}
+Warn when a structure containing a C99 flexible array member as the last
+field is not at the end of another structure.
+This warning warns e.g. about
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+struct mid_flex @{ int m; struct flex flex_data; int n; @};
+@end smallexample
+
 @opindex Wfloat-conversion
 @opindex Wno-float-conversion
 @item -Wfloat-conversion
@@ -9609,6 +9623,13 @@ This option is not valid for C++ because all function declarations
 provide prototypes and a non-matching declaration declares an
 overload rather than conflict with an earlier declaration.
 Use @option{-Wmissing-declarations} to detect missing declarations in C++.
+
+@opindex Wmissing-variable-declarations
+@opindex Wno-missing-variable-declarations
+@item -Wmissing-variable-declarations @r{(C and Objective-C only)}
+Warn if a global variable is defined without a previous declaration.
+Use this option to detect global variables that do not have a matching
+extern declaration in a header file.
 
 @opindex Wmissing-declarations
 @opindex Wno-missing-declarations
@@ -19932,8 +19953,16 @@ print some statistics about each pass when it finishes.
 
 @opindex ftime-report
 @item -ftime-report
-Makes the compiler print some statistics about the time consumed by each
-pass when it finishes.
+Makes the compiler print some statistics to stderr about the time consumed
+by each pass when it finishes.
+
+If SARIF output of diagnostics was requested via
+@option{-fdiagnostics-format=sarif-file} or
+@option{-fdiagnostics-format=sarif-stderr} then the @option{-ftime-report}
+information is instead emitted in JSON form as part of SARIF output.  The
+precise format of this JSON data is subject to change, and the values may
+not exactly match those emitted to stderr due to being written out at a
+slightly different place within the compiler.
 
 @opindex ftime-report-details
 @item -ftime-report-details
@@ -24674,18 +24703,6 @@ the value that can be specified should be less than or equal to
 @samp{32767}.  Defaults to whatever limit is imposed by the version of
 the Linux kernel targeted.
 
-@opindex mkernel
-@item -mkernel=@var{version}
-This specifies the minimum version of the kernel that will run the
-compiled program.  GCC uses this version to determine which
-instructions to use, what kernel helpers to allow, etc.  Currently,
-@var{version} can be one of @samp{4.0}, @samp{4.1}, @samp{4.2},
-@samp{4.3}, @samp{4.4}, @samp{4.5}, @samp{4.6}, @samp{4.7},
-@samp{4.8}, @samp{4.9}, @samp{4.10}, @samp{4.11}, @samp{4.12},
-@samp{4.13}, @samp{4.14}, @samp{4.15}, @samp{4.16}, @samp{4.17},
-@samp{4.18}, @samp{4.19}, @samp{4.20}, @samp{5.0}, @samp{5.1},
-@samp{5.2}, @samp{latest} and @samp{native}.
-
 @opindex mbig-endian
 @item -mbig-endian
 Generate code for a big-endian target.
@@ -24696,25 +24713,44 @@ Generate code for a little-endian target.  This is the default.
 
 @opindex mjmpext
 @item -mjmpext
-Enable generation of extra conditional-branch instructions.
+@itemx -mno-jmpext
+Enable or disable generation of extra conditional-branch instructions.
 Enabled for CPU v2 and above.
 
 @opindex mjmp32
 @item -mjmp32
-Enable 32-bit jump instructions. Enabled for CPU v3 and above.
+@itemx -mno-jmp32
+Enable or disable generation of 32-bit jump instructions.
+Enabled for CPU v3 and above.
 
 @opindex malu32
 @item -malu32
-Enable 32-bit ALU instructions. Enabled for CPU v3 and above.
+@itemx -mno-alu32
+Enable or disable generation of 32-bit ALU instructions.
+Enabled for CPU v3 and above.
+
+@opindex mv3-atomics
+@item -mv3-atomics
+@itemx -mno-v3-atomics
+Enable or disable instructions for general atomic operations introduced
+in CPU v3.  Enabled for CPU v3 and above.
 
 @opindex mbswap
 @item -mbswap
-Enable byte swap instructions.  Enabled for CPU v4 and above.
+@itemx -mno-bswap
+Enable or disable byte swap instructions.  Enabled for CPU v4 and above.
 
 @opindex msdiv
 @item -msdiv
-Enable signed division and modulus instructions.  Enabled for CPU v4
-and above.
+@itemx -mno-sdiv
+Enable or disable signed division and modulus instructions.  Enabled for
+CPU v4 and above.
+
+@opindex msmov
+@item -msmov
+@itemx -mno-smov
+Enable or disable sign-extending move and memory load instructions.
+Enabled for CPU v4 and above.
 
 @opindex mcpu
 @item -mcpu=@var{version}
@@ -24735,12 +24771,15 @@ All features of v2, plus:
 @itemize @minus
 @item 32-bit jump operations, as in @option{-mjmp32}
 @item 32-bit ALU operations, as in @option{-malu32}
+@item general atomic operations, as in @option{-mv3-atomics}
 @end itemize
 
 @item v4
 All features of v3, plus:
 @itemize @minus
 @item Byte swap instructions, as in @option{-mbswap}
+@item Signed division and modulus instructions, as in @option{-msdiv}
+@item Sign-extending move and memory load instructions, as in @option{-msmov}
 @end itemize
 @end table
 
@@ -32415,6 +32454,13 @@ options for that target.
 GCC can generate code for both VxWorks kernels and real time processes
 (RTPs).  This option switches from the former to the latter.  It also
 defines the preprocessor macro @code{__RTP__}.
+
+@opindex msmp
+@item -msmp
+Select SMP runtimes for linking.  Not available on architectures other
+than PowerPC, nor on VxWorks version 7 or later, in which the selection
+is part of the VxWorks build configuration and the library paths are the
+same for either choice.
 
 @opindex non-static
 @item -non-static

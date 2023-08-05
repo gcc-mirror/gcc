@@ -22,6 +22,7 @@ f(struct s *ptr, unsigned n) {
 
 void __attribute__ ((noipa))
 check_f(struct s *ptr) {
+#pragma GCC novector
     for (unsigned i = 0; i < N; ++i)
       if (ptr[i].a != V)
 	abort ();

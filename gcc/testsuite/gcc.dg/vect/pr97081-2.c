@@ -24,6 +24,7 @@ main ()
       c[i] = i;
     }
   foo (3);
+#pragma GCC novector
   for (int i = 0; i < 1024; i++)
     if (s[i] != (unsigned short) ((i << 3) | (i >> (__SIZEOF_SHORT__ * __CHAR_BIT__ - 3)))
         || c[i] != (unsigned char) ((((unsigned char) i) << 3) | (((unsigned char) i) >> (__CHAR_BIT__ - 3))))

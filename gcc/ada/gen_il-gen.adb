@@ -2957,9 +2957,9 @@ package body Gen_IL.Gen is
          --  Current Node_Kind'Pos or Entity_Kind'Pos to be printed
 
          procedure Put_Enum_Lit (T : Node_Or_Entity_Type);
-         --  Print out the #define corresponding to the Ada enumeration literal
+         --  Print out the enumerator corresponding to the Ada enumeration literal
          --  for T in Node_Kind and Entity_Kind (i.e. concrete types).
-         --  This looks like "#define Some_Kind <pos>", where Some_Kind
+         --  This looks like "Some_Kind = <pos>", where Some_Kind
          --  is the Node_Kind or Entity_Kind enumeration literal, and
          --  <pos> is Node_Kind'Pos or Entity_Kind'Pos of that literal.
 
@@ -2970,7 +2970,7 @@ package body Gen_IL.Gen is
          procedure Put_Enum_Lit (T : Node_Or_Entity_Type) is
          begin
             if T in Concrete_Type then
-               Put (S, "#define " & Image (T) & " " & Image (Cur_Pos) & LF);
+               Put (S, "  " & Image (T) & " = " & Image (Cur_Pos) & "," & LF);
                Cur_Pos := Cur_Pos + 1;
             end if;
          end Put_Enum_Lit;
@@ -2990,7 +2990,9 @@ package body Gen_IL.Gen is
       begin
          Put_Union_Membership (S, Root, Only_Prototypes => True);
 
+         Put (S, "enum " & Node_Or_Entity (Root) & "_Kind : unsigned int {" & LF);
          Iterate_Types (Root, Pre => Put_Enum_Lit'Access);
+         Put (S, "};" & LF);
 
          Put (S, "#define Number_" & Node_Or_Entity (Root) & "_Kinds " &
               Image (Cur_Pos) & "" & LF & LF);
@@ -3046,7 +3048,8 @@ package body Gen_IL.Gen is
             Put (S, "unsigned int Raw = slot;" & LF);
          end if;
 
-         Put (S, Get_Set_Id_Image (Rec.Field_Type) & " val = ");
+         Put (S, Get_Set_Id_Image (Rec.Field_Type) & " val = (" &
+                Get_Set_Id_Image (Rec.Field_Type) & ") ");
 
          if Field_Has_Special_Default (Rec.Field_Type) then
             Increase_Indent (S, 2);

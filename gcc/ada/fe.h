@@ -683,8 +683,12 @@ Entity_Kind Parameter_Mode (E Id);
 // The following is needed because Convention in Sem_Util is a renaming
 // of Basic_Convention.
 
-#define Convention einfo__entities__basic_convention
-Convention_Id Convention (N Node);
+static inline Convention_Id
+Convention (N Node)
+{
+  extern Byte einfo__entities__basic_convention (N Node);
+  return (Convention_Id) einfo__entities__basic_convention (Node);
+}
 
 // See comments regarding Entity_Or_Associated_Node in Sinfo.Utils.
 

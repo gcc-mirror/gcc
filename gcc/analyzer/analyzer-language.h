@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_LANGUAGE_H
 #define GCC_ANALYZER_LANGUAGE_H
 
+#include "analyzer/analyzer-logging.h"
+
 #if ENABLE_ANALYZER
 
 namespace ana {
@@ -35,7 +37,14 @@ class translation_unit
      have been seen).  If it is defined and an integer (e.g. either as a
      macro or enum), return the INTEGER_CST value, otherwise return NULL.  */
   virtual tree lookup_constant_by_id (tree id) const = 0;
+  virtual tree lookup_type_by_id (tree id) const = 0;
+  virtual tree lookup_global_var_by_id (tree id) const = 0;
 };
+
+typedef void (*finish_translation_unit_callback)
+   (logger *, const translation_unit &);
+void register_finish_translation_unit_callback (
+    finish_translation_unit_callback callback);
 
 /* Analyzer hook for frontends to call at the end of the TU.  */
 

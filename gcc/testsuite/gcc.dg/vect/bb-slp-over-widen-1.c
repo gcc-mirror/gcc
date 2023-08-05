@@ -45,6 +45,7 @@ DEF_LOOP (unsigned)
 	asm volatile ("" ::: "memory");			\
       }							\
     f_##SIGNEDNESS (a, b, c);				\
+    _Pragma("GCC novector")				\
     for (int i = 0; i < N; ++i)				\
       if (a[i] != (BASE_B + BASE_C + i * 29) >> 1)	\
 	__builtin_abort ();				\

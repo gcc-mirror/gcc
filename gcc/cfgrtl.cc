@@ -5409,7 +5409,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_flow_call_edges_add,
   NULL, /* execute_on_growing_pred */
   NULL, /* execute_on_shrinking_pred */
-  duplicate_loop_body_to_header_edge, /* duplicate loop for trees */
+  duplicate_loop_body_to_header_edge, /* duplicate loop for rtl */
   rtl_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   NULL, /* lv_adjust_loop_header_phi*/
   rtl_extract_cond_bb_edges, /* extract_cond_bb_edges */

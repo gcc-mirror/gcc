@@ -52,6 +52,7 @@ main (void)
       a[i] = i;
     }
 
+#pragma GCC novector
   for (i=0; i<4; i++)
     {
       __asm__ volatile ("");
@@ -61,6 +62,7 @@ main (void)
       if (ret != (MAX * 4) - 4 + i)
 	abort ();
 
+#pragma GCC novector
       for (i=0; i<MAX*4; i++)
 	{
 	  __asm__ volatile ("");

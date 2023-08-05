@@ -350,16 +350,27 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 // Dispatch a call to op1_op2_relation based on the type of LHS.
 
 relation_kind
-range_op_handler::op1_op2_relation (const vrange &lhs) const
+range_op_handler::op1_op2_relation (const vrange &lhs,
+				    const vrange &op1,
+				    const vrange &op2) const
 {
   gcc_checking_assert (m_operator);
-  switch (dispatch_kind (lhs, lhs, lhs))
+  switch (dispatch_kind (lhs, op1, op2))
     {
       case RO_III:
-	return m_operator->op1_op2_relation (as_a <irange> (lhs));
+	return m_operator->op1_op2_relation (as_a <irange> (lhs),
+					     as_a <irange> (op1),
+					     as_a <irange> (op2));
+
+      case RO_IFF:
+	return m_operator->op1_op2_relation (as_a <irange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2));
 
       case RO_FFF:
-	return m_operator->op1_op2_relation (as_a <frange> (lhs));
+	return m_operator->op1_op2_relation (as_a <frange> (lhs),
+					     as_a <frange> (op1),
+					     as_a <frange> (op2));
 
       default:
 	return VREL_VARYING;
@@ -385,15 +396,29 @@ update_known_bitmask (irange &r, tree_code code,
   irange_bitmask lh_bits = lh.get_bitmask ();
   irange_bitmask rh_bits = rh.get_bitmask ();
 
-  bit_value_binop (code, sign, prec, &widest_value, &widest_mask,
-		   TYPE_SIGN (lh.type ()),
-		   TYPE_PRECISION (lh.type ()),
-		   widest_int::from (lh_bits.value (), sign),
-		   widest_int::from (lh_bits.mask (), sign),
-		   TYPE_SIGN (rh.type ()),
-		   TYPE_PRECISION (rh.type ()),
-		   widest_int::from (rh_bits.value (), sign),
-		   widest_int::from (rh_bits.mask (), sign));
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+      bit_value_unop (code, sign, prec, &widest_value, &widest_mask,
+		      TYPE_SIGN (lh.type ()),
+		      TYPE_PRECISION (lh.type ()),
+		      widest_int::from (lh_bits.value (), sign),
+		      widest_int::from (lh_bits.mask (), sign));
+      break;
+    case GIMPLE_BINARY_RHS:
+      bit_value_binop (code, sign, prec, &widest_value, &widest_mask,
+		       TYPE_SIGN (lh.type ()),
+		       TYPE_PRECISION (lh.type ()),
+		       widest_int::from (lh_bits.value (), sign),
+		       widest_int::from (lh_bits.mask (), sign),
+		       TYPE_SIGN (rh.type ()),
+		       TYPE_PRECISION (rh.type ()),
+		       widest_int::from (rh_bits.value (), sign),
+		       widest_int::from (rh_bits.mask (), sign));
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   wide_int mask = wide_int::from (widest_mask, prec, sign);
   wide_int value = wide_int::from (widest_value, prec, sign);
@@ -662,7 +687,9 @@ range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 }
 
 relation_kind
-range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED) const
+range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				  const irange &op1 ATTRIBUTE_UNUSED,
+				  const irange &op2 ATTRIBUTE_UNUSED) const
 {
   return VREL_VARYING;
 }
@@ -854,7 +881,8 @@ operator_equal::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_equal::op1_op2_relation (const irange &lhs) const
+operator_equal::op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -955,7 +983,8 @@ operator_not_equal::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_not_equal::op1_op2_relation (const irange &lhs) const
+operator_not_equal::op1_op2_relation (const irange &lhs, const irange &,
+				      const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1115,7 +1144,8 @@ operator_lt::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_lt::op1_op2_relation (const irange &lhs) const
+operator_lt::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1215,7 +1245,8 @@ operator_le::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_le::op1_op2_relation (const irange &lhs) const
+operator_le::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1312,7 +1343,8 @@ operator_gt::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_gt::op1_op2_relation (const irange &lhs) const
+operator_gt::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -1407,7 +1439,8 @@ operator_ge::update_bitmask (irange &r, const irange &lh,
 // Check if the LHS range indicates a relation between OP1 and OP2.
 
 relation_kind
-operator_ge::op1_op2_relation (const irange &lhs) const
+operator_ge::op1_op2_relation (const irange &lhs, const irange &,
+			       const irange &) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -2380,22 +2413,21 @@ class operator_lshift : public cross_product_operator
   using range_operator::fold_range;
   using range_operator::op1_range;
 public:
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
+  virtual bool op1_range (irange &r, tree type, const irange &lhs,
+			  const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
+  virtual bool fold_range (irange &r, tree type, const irange &op1,
+			   const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
 
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res,
 				tree type,
 				const wide_int &,
-				const wide_int &) const;
+				const wide_int &) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, LSHIFT_EXPR, lh, rh); }
@@ -2407,27 +2439,24 @@ class operator_rshift : public cross_product_operator
   using range_operator::op1_range;
   using range_operator::lhs_op1_relation;
 public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2,
-			   relation_trio rel = TRIO_VARYING) const;
+  virtual bool fold_range (irange &r, tree type, const irange &op1,
+			   const irange &op2, relation_trio rel = TRIO_VARYING)
+   const final override;
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb,
 			const wide_int &lh_ub,
 			const wide_int &rh_lb,
-			const wide_int &rh_ub) const;
+			const wide_int &rh_ub) const final override;
   virtual bool wi_op_overflows (wide_int &res,
 				tree type,
 				const wide_int &w0,
-				const wide_int &w1) const;
-  virtual bool op1_range (irange &, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual relation_kind lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2,
-					   relation_kind rel) const;
+				const wide_int &w1) const final override;
+  virtual bool op1_range (irange &, tree type, const irange &lhs,
+			  const irange &op2, relation_trio rel = TRIO_VARYING)
+    const final override;
+  virtual relation_kind lhs_op1_relation (const irange &lhs, const irange &op1,
+					  const irange &op2, relation_kind rel)
+    const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override
     { update_known_bitmask (r, RSHIFT_EXPR, lh, rh); }
@@ -2867,22 +2896,15 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
 	return true;
     }
 
-  // Update the bitmask.  Truncating casts are problematic unless
-  // the conversion fits in the resulting outer type.
-  irange_bitmask bm = inner.get_bitmask ();
-  if (truncating_cast_p (inner, outer)
-      && wi::rshift (bm.mask (),
-		     wi::uhwi (TYPE_PRECISION (outer.type ()),
-			       TYPE_PRECISION (inner.type ())),
-		     TYPE_SIGN (inner.type ())) != 0)
-    return true;
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (inner.type ());
-  bm = irange_bitmask (wide_int::from (bm.value (), prec, sign),
-		       wide_int::from (bm.mask (), prec, sign));
-  r.update_bitmask (bm);
-
+  update_bitmask (r, inner, outer);
   return true;
+}
+
+void
+operator_cast::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
+{
+  update_known_bitmask (r, CONVERT_EXPR, lh, rh);
 }
 
 bool
@@ -4013,6 +4035,13 @@ operator_bitwise_not::op1_range (irange &r, tree type,
   return fold_range (r, type, lhs, op2);
 }
 
+void
+operator_bitwise_not::update_bitmask (irange &r, const irange &lh,
+				      const irange &rh) const
+{
+  update_known_bitmask (r, BIT_NOT_EXPR, lh, rh);
+}
+
 
 bool
 operator_cst::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
@@ -4187,6 +4216,12 @@ operator_abs::op1_range (irange &r, tree type,
   return true;
 }
 
+void
+operator_abs::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
+{
+  update_known_bitmask (r, ABS_EXPR, lh, rh);
+}
 
 class operator_absu : public range_operator
 {
@@ -4194,6 +4229,8 @@ class operator_absu : public range_operator
   virtual void wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const;
+  virtual void update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const final override;
 } op_absu;
 
 void
@@ -4229,6 +4266,13 @@ operator_absu::wi_fold (irange &r, tree type,
 
   gcc_checking_assert (TYPE_UNSIGNED (type));
   r = int_range<1> (type, new_lb, new_ub);
+}
+
+void
+operator_absu::update_bitmask (irange &r, const irange &lh,
+			      const irange &rh) const
+{
+  update_known_bitmask (r, ABSU_EXPR, lh, rh);
 }
 
 

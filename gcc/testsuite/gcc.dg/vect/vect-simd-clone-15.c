@@ -32,6 +32,7 @@ main ()
   int i;
   check_vect ();
   bar ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (array[i] != ((i >> 1) + (-3 * i)))
       abort ();

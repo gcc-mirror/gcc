@@ -679,15 +679,16 @@ public:
   tree type () { return m_vrange->type (); }
   bool varying_p () const { return m_vrange->varying_p (); }
   bool undefined_p () const { return m_vrange->undefined_p (); }
-  void set_varying (tree type) { m_vrange->set_varying (type); }
+  void set_varying (tree type) { init (type); m_vrange->set_varying (type); }
   void set_undefined () { m_vrange->set_undefined (); }
   bool union_ (const vrange &r) { return m_vrange->union_ (r); }
   bool intersect (const vrange &r) { return m_vrange->intersect (r); }
   bool contains_p (tree cst) const { return m_vrange->contains_p (cst); }
   bool singleton_p (tree *result = NULL) const
     { return m_vrange->singleton_p (result); }
-  void set_zero (tree type) { return m_vrange->set_zero (type); }
-  void set_nonzero (tree type) { return m_vrange->set_nonzero (type); }
+  void set_zero (tree type) { init (type); return m_vrange->set_zero (type); }
+  void set_nonzero (tree type)
+    { init (type); return m_vrange->set_nonzero (type); }
   bool nonzero_p () const { return m_vrange->nonzero_p (); }
   bool zero_p () const { return m_vrange->zero_p (); }
   wide_int lower_bound () const; // For irange/prange comparability.

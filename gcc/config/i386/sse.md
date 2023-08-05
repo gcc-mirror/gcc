@@ -5803,21 +5803,21 @@
 ;; But this doesn't seem useful in practice.
 
 (define_expand "vec_fmaddsub<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "nonimmediate_operand")
-	   (match_operand:VF 2 "nonimmediate_operand")
-	   (match_operand:VF 3 "nonimmediate_operand")]
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "nonimmediate_operand")
+	   (match_operand:VFH 2 "nonimmediate_operand")
+	   (match_operand:VFH 3 "nonimmediate_operand")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 
 (define_expand "vec_fmsubadd<mode>4"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "nonimmediate_operand")
-	   (match_operand:VF 2 "nonimmediate_operand")
-	   (neg:VF
-	     (match_operand:VF 3 "nonimmediate_operand"))]
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "nonimmediate_operand")
+	   (match_operand:VFH 2 "nonimmediate_operand")
+	   (neg:VFH
+	     (match_operand:VFH 3 "nonimmediate_operand"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 
@@ -5877,11 +5877,11 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>"
-  [(set (match_operand:VFH_SF_AVX512VL 0 "register_operand" "=v,v,v")
-	(unspec:VFH_SF_AVX512VL
-	  [(match_operand:VFH_SF_AVX512VL 1 "<round_nimm_predicate>" "%0,0,v")
-	   (match_operand:VFH_SF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
-	   (match_operand:VFH_SF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0")]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v,v,v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL 1 "<round_nimm_predicate>" "%0,0,v")
+	   (match_operand:VFH_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
+	   (match_operand:VFH_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_AVX512F && <sd_mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
@@ -5943,12 +5943,12 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>"
-  [(set (match_operand:VFH_SF_AVX512VL 0 "register_operand" "=v,v,v")
-	(unspec:VFH_SF_AVX512VL
-	  [(match_operand:VFH_SF_AVX512VL   1 "<round_nimm_predicate>" "%0,0,v")
-	   (match_operand:VFH_SF_AVX512VL   2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
-	   (neg:VFH_SF_AVX512VL
-	     (match_operand:VFH_SF_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0"))]
+  [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v,v,v")
+	(unspec:VFH_AVX512VL
+	  [(match_operand:VFH_AVX512VL   1 "<round_nimm_predicate>" "%0,0,v")
+	   (match_operand:VFH_AVX512VL   2 "<round_nimm_predicate>" "<round_constraint>,v,<round_constraint>")
+	   (neg:VFH_AVX512VL
+	     (match_operand:VFH_AVX512VL 3 "<round_nimm_predicate>" "v,<round_constraint>,0"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_AVX512F && <sd_mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
@@ -12695,6 +12695,48 @@
 		      (symbol_ref "<MODE_SIZE> == 64 || TARGET_AVX512VL")
 		      (const_string "*")))])
 
+;; When VPTERNLOG happens to be invariant w.r.t first and second operands,
+;; and the third operand is memory, eliminate false dependencies by loading
+;; memory into the output operand first.
+(define_split
+  [(set (match_operand:V 0 "register_operand")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand")
+	   (match_operand:V 2 "register_operand")
+	   (match_operand:V 3 "memory_operand")
+	   (match_operand:SI 4 "const_0_to_255_operand")]
+	  UNSPEC_VTERNLOG))]
+  "!reload_completed && vpternlog_redundant_operand_mask (operands) == 3"
+  [(set (match_dup 0)
+	(match_dup 3))
+   (set (match_dup 0)
+	(unspec:V
+	  [(match_dup 0)
+	   (match_dup 0)
+	   (match_dup 0)
+	   (match_dup 4)]
+	  UNSPEC_VTERNLOG))])
+
+;; Eliminate false dependencies when VPTERNLOG is invariant w.r.t any
+;; of input operands (except the case handled in the above split).
+(define_split
+  [(set (match_operand:V 0 "register_operand")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand")
+	   (match_operand:V 2 "register_operand")
+	   (match_operand:V 3 "nonimmediate_operand")
+	   (match_operand:SI 4 "const_0_to_255_operand")]
+	  UNSPEC_VTERNLOG))]
+  "!reload_completed && vpternlog_redundant_operand_mask (operands) != 0"
+  [(set (match_dup 0)
+	(unspec:V
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)]
+	  UNSPEC_VTERNLOG))]
+  "substitute_vpternlog_operands (operands);")
+
 ;; There must be lots of other combinations like
 ;;
 ;; (any_logic:V
@@ -13554,6 +13596,14 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
 
+;; Convert highpart SUBREG in sse2_storehpd or *vec_extractv2df_1_sse.
+(define_split
+  [(set (match_operand:DF 0 "register_operand")
+	(subreg:DF (match_operand:V2DF 1 "register_operand") 8))]
+  "TARGET_SSE"
+  [(set (match_dup 0)
+	(vec_select:DF (match_dup 1) (parallel [(const_int 1)])))])
+
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "sse2_storelpd"
@@ -13598,6 +13648,14 @@
    movlps\t{%1, %0|%0, %q1}"
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
+
+;; Convert lowpart SUBREG into sse2_storelpd or *vec_extractv2df_0_sse.
+(define_split
+  [(set (match_operand:DF 0 "register_operand")
+	(subreg:DF (match_operand:V2DF 1 "register_operand") 0))]
+  "TARGET_SSE"
+  [(set (match_dup 0)
+	(vec_select:DF (match_dup 1) (parallel [(const_int 0)])))])
 
 (define_expand "sse2_loadhpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand")
@@ -13784,21 +13842,20 @@
    (set_attr "mode" "DF,DF,V1DF,V1DF,V1DF,V2DF,V1DF,V1DF,V1DF")])
 
 (define_insn "vec_dupv2df<mask_name>"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,v")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,v,v")
 	(vec_duplicate:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" "0,xm,vm,vm")))]
+	  (match_operand:DF 1 "nonimmediate_operand" "0,Yvm,vm")))]
   "TARGET_SSE2"
   "@
    unpcklpd\t%0, %0
    %vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
-   vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}
    vbroadcastsd\t{%1, }%g0<mask_operand2>{|, %1}"
-  [(set_attr "isa" "noavx,sse3,avx512vl,*")
-   (set_attr "type" "sselog1,ssemov,ssemov,ssemov")
-   (set_attr "prefix" "orig,maybe_vex,evex,evex")
-   (set_attr "mode" "V2DF,DF,DF,V8DF")
+  [(set_attr "isa" "noavx,sse3,*")
+   (set_attr "type" "sselog1,ssemov,ssemov")
+   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "mode" "V2DF,DF,V8DF")
    (set (attr "enabled")
-	(cond [(eq_attr "alternative" "3")
+	(cond [(eq_attr "alternative" "2")
 		 (symbol_ref "TARGET_AVX512F && !TARGET_AVX512VL
 			      && !TARGET_PREFER_AVX256")
 	       (match_test "<mask_avx512vl_condition>")
@@ -26609,6 +26666,24 @@
    (set_attr "prefix" "vex,evex,evex")
    (set_attr "mode" "OI")])
 
+;; optimize vlddqu + vinserti128 to vbroadcasti128, the former will use
+;; extra shuffle port in addition to load port than the latter.
+;; For latency perspective,vbroadcasti is no worse.
+(define_insn_and_split "avx2_lddqu_inserti_to_bcasti"
+  [(set (match_operand:V4DI 0 "register_operand" "=x,v,v")
+	(vec_concat:V4DI
+	  (subreg:V2DI
+	    (unspec:V16QI [(match_operand:V16QI 1 "memory_operand")]
+			  UNSPEC_LDDQU) 0)
+	  (subreg:V2DI (unspec:V16QI [(match_dup 1)]
+			  UNSPEC_LDDQU) 0)))]
+  "TARGET_AVX2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V4DI (match_dup 1) (match_dup 1)))]
+  "operands[1] = adjust_address_nv (operands[1], V2DImode, 0);")
+
 ;; Modes handled by AVX vec_dup patterns.
 (define_mode_iterator AVX_VEC_DUP_MODE
   [V8SI V8SF V4DI V4DF])
@@ -26778,11 +26853,14 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+;; Use unspec to prevent rtl optimizer to optimize zero_extend + vec_duplicate
+;; to pbroadcastm, there could be an extra kmov after RA.
 (define_insn "avx512cd_maskb_vec_dup<mode>"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(vec_duplicate:VI8_AVX512VL
 	  (zero_extend:DI
-	    (match_operand:QI 1 "register_operand" "k"))))]
+	    (match_operand:QI 1 "register_operand" "k"))))
+   (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512CD"
   "vpbroadcastmb2q\t{%1, %0|%0, %1}"
   [(set_attr "type" "mskmov")
@@ -26793,7 +26871,8 @@
   [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
 	(vec_duplicate:VI4_AVX512VL
 	  (zero_extend:SI
-	    (match_operand:HI 1 "register_operand" "k"))))]
+	    (match_operand:HI 1 "register_operand" "k"))))
+   (unspec [(const_int 0)] UNSPEC_MASKOP)]
   "TARGET_AVX512CD"
   "vpbroadcastmw2d\t{%1, %0|%0, %1}"
   [(set_attr "type" "mskmov")

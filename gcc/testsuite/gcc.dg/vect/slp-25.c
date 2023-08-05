@@ -24,6 +24,7 @@ int main1 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= N/2; i++)
     {
       if (ia[2*i] != 25
@@ -38,6 +39,7 @@ int main1 (int n)
     }
 
   /* check results:  */
+#pragma GCC novector
   for (i = 1; i <= n/2; i++)
     {
       if (sa[2*i] != 25

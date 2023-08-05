@@ -1,7 +1,7 @@
 /* PR optimization/8599 */
 /* { dg-do run } */
-/* { dg-options "-O2 -funroll-loops" } */
-/* { dg-options "-mtune=k6 -O2 -funroll-loops" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-O2 -funroll-loops -fdump-rtl-loop2_unroll-details-blocks" } */
+/* { dg-options "-mtune=k6 -O2 -funroll-loops -fdump-rtl-loop2_unroll-details-blocks" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 
 extern void abort (void);
@@ -25,3 +25,4 @@ int main()
     abort ();
   return 0;
 }
+/* { dg-final { scan-rtl-dump-not "Invalid sum" "loop2_unroll" } } */

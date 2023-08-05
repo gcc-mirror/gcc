@@ -33,6 +33,7 @@ main ()
   check_vect ();
   r[0] = 0;
   foo (1.5f);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (p[i] != 1.0f + i * 1.5f || q[i] != 2.0f + i * 0.5f || r[i] != 1)
       abort ();

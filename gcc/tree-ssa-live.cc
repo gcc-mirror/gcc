@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo.h"
 #include "gimple-walk.h"
 #include "cfganal.h"
+#include "tree-cfg.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 
@@ -1650,4 +1651,78 @@ verify_live_on_entry (tree_live_info_p live)
 	}
     }
   gcc_assert (num <= 0);
+}
+
+
+/* Virtual operand liveness analysis data init.  */
+
+void
+virtual_operand_live::init ()
+{
+  liveout = XCNEWVEC (tree, last_basic_block_for_fn (cfun) + 1);
+  liveout[ENTRY_BLOCK] = ssa_default_def (cfun, gimple_vop (cfun));
+}
+
+/* Compute live-in of BB from cached live-out.  */
+
+tree
+virtual_operand_live::get_live_in (basic_block bb)
+{
+  /* A virtual PHI is a convenient cache for live-in.  */
+  gphi *phi = get_virtual_phi (bb);
+  if (phi)
+    return gimple_phi_result (phi);
+
+  if (!liveout)
+    init ();
+
+  /* Since we don't have a virtual PHI we can now pick any of the
+     incoming edges liveout value.  All returns from the function have
+     a virtual use forcing generation of virtual PHIs.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (liveout[e->src->index])
+      {
+	if (EDGE_PRED (bb, 0) != e)
+	  liveout[EDGE_PRED (bb, 0)->src->index] = liveout[e->src->index];
+	return liveout[e->src->index];
+      }
+
+  /* Since virtuals are in SSA form at most the immediate dominator can
+     contain the definition of the live version.  Skipping to that deals
+     with CFG cycles as well.  */
+  return get_live_out (get_immediate_dominator (CDI_DOMINATORS, bb));
+}
+
+/* Compute live-out of BB.  */
+
+tree
+virtual_operand_live::get_live_out (basic_block bb)
+{
+  if (!liveout)
+    init ();
+
+  if (liveout[bb->index])
+    return liveout[bb->index];
+
+  tree lo = NULL_TREE;
+  for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_vdef (stmt))
+	{
+	  lo = gimple_vdef (stmt);
+	  break;
+	}
+      if (gimple_vuse (stmt))
+	{
+	  lo = gimple_vuse (stmt);
+	  break;
+	}
+    }
+  if (!lo)
+    lo = get_live_in (bb);
+  liveout[bb->index] = lo;
+  return lo;
 }

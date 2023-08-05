@@ -457,7 +457,7 @@ static rtx simplify_shift_const (rtx, enum rtx_code, machine_mode, rtx,
 static int recog_for_combine (rtx *, rtx_insn *, rtx *);
 static rtx gen_lowpart_for_combine (machine_mode, rtx);
 static enum rtx_code simplify_compare_const (enum rtx_code, machine_mode,
-					     rtx, rtx *);
+					     rtx *, rtx *);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
 static void record_value_for_reg (rtx, rtx_insn *, rtx);
@@ -3187,7 +3187,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  compare_code = orig_compare_code = GET_CODE (*cc_use_loc);
 	  if (is_a <scalar_int_mode> (GET_MODE (i2dest), &mode))
 	    compare_code = simplify_compare_const (compare_code, mode,
-						   op0, &op1);
+						   &op0, &op1);
 	  target_canonicalize_comparison (&compare_code, &op0, &op1, 1);
 	}
 
@@ -11800,13 +11800,14 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
    (CODE OP0 const0_rtx) form.
 
    The result is a possibly different comparison code to use.
-   *POP1 may be updated.  */
+   *POP0 and *POP1 may be updated.  */
 
 static enum rtx_code
 simplify_compare_const (enum rtx_code code, machine_mode mode,
-			rtx op0, rtx *pop1)
+			rtx *pop0, rtx *pop1)
 {
   scalar_int_mode int_mode;
+  rtx op0 = *pop0;
   HOST_WIDE_INT const_op = INTVAL (*pop1);
 
   /* Get the constant we are comparing against and turn off all bits
@@ -11989,6 +11990,78 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 
     default:
       break;
+    }
+
+  /* Narrow non-symmetric comparison of memory and constant as e.g.
+     x0...x7 <= 0x3fffffffffffffff into x0 <= 0x3f where x0 is the most
+     significant byte.  Likewise, transform x0...x7 >= 0x4000000000000000 into
+     x0 >= 0x40.  */
+  if ((code == LEU || code == LTU || code == GEU || code == GTU)
+      && is_a <scalar_int_mode> (GET_MODE (op0), &int_mode)
+      && HWI_COMPUTABLE_MODE_P (int_mode)
+      && MEM_P (op0)
+      && !MEM_VOLATILE_P (op0)
+      /* The optimization makes only sense for constants which are big enough
+	 so that we have a chance to chop off something at all.  */
+      && (unsigned HOST_WIDE_INT) const_op > 0xff
+      /* Bail out, if the constant does not fit into INT_MODE.  */
+      && (unsigned HOST_WIDE_INT) const_op
+	 < ((HOST_WIDE_INT_1U << (GET_MODE_PRECISION (int_mode) - 1) << 1) - 1)
+      /* Ensure that we do not overflow during normalization.  */
+      && (code != GTU || (unsigned HOST_WIDE_INT) const_op < HOST_WIDE_INT_M1U))
+    {
+      unsigned HOST_WIDE_INT n = (unsigned HOST_WIDE_INT) const_op;
+      enum rtx_code adjusted_code;
+
+      /* Normalize code to either LEU or GEU.  */
+      if (code == LTU)
+	{
+	  --n;
+	  adjusted_code = LEU;
+	}
+      else if (code == GTU)
+	{
+	  ++n;
+	  adjusted_code = GEU;
+	}
+      else
+	adjusted_code = code;
+
+      scalar_int_mode narrow_mode_iter;
+      FOR_EACH_MODE_UNTIL (narrow_mode_iter, int_mode)
+	{
+	  unsigned nbits = GET_MODE_PRECISION (int_mode)
+			   - GET_MODE_PRECISION (narrow_mode_iter);
+	  unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << nbits) - 1;
+	  unsigned HOST_WIDE_INT lower_bits = n & mask;
+	  if ((adjusted_code == LEU && lower_bits == mask)
+	      || (adjusted_code == GEU && lower_bits == 0))
+	    {
+	      n >>= nbits;
+	      break;
+	    }
+	}
+
+      if (narrow_mode_iter < int_mode)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (
+		dump_file, "narrow comparison from mode %s to %s: (MEM %s "
+		HOST_WIDE_INT_PRINT_HEX ") to (MEM %s "
+		HOST_WIDE_INT_PRINT_HEX ").\n", GET_MODE_NAME (int_mode),
+		GET_MODE_NAME (narrow_mode_iter), GET_RTX_NAME (code),
+		(unsigned HOST_WIDE_INT)const_op, GET_RTX_NAME (adjusted_code),
+		n);
+	    }
+	  poly_int64 offset = (BYTES_BIG_ENDIAN
+			       ? 0
+			       : (GET_MODE_SIZE (int_mode)
+				  - GET_MODE_SIZE (narrow_mode_iter)));
+	  *pop0 = adjust_address_nv (op0, narrow_mode_iter, offset);
+	  *pop1 = GEN_INT (n);
+	  return adjusted_code;
+	}
     }
 
   *pop1 = GEN_INT (const_op);
@@ -12183,7 +12256,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
       /* Try to simplify the compare to constant, possibly changing the
 	 comparison op, and/or changing op1 to zero.  */
-      code = simplify_compare_const (code, raw_mode, op0, &op1);
+      code = simplify_compare_const (code, raw_mode, &op0, &op1);
       const_op = INTVAL (op1);
 
       /* Compute some predicates to simplify code below.  */

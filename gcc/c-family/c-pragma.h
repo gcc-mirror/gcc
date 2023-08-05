@@ -87,6 +87,7 @@ enum pragma_kind {
   PRAGMA_GCC_PCH_PREPROCESS,
   PRAGMA_IVDEP,
   PRAGMA_UNROLL,
+  PRAGMA_NOVECTOR,
 
   PRAGMA_FIRST_EXTERNAL
 };
@@ -263,7 +264,9 @@ extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void maybe_apply_pragma_scalar_storage_order (tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 
+/* These are to be implemented in each frontend that needs them.  */
 extern enum cpp_ttype pragma_lex (tree *, location_t *loc = NULL);
+extern void pragma_lex_discard_to_eol ();
 
 /* Flags for use with c_lex_with_flags.  The values here were picked
    so that 0 means to translate and join strings.  */

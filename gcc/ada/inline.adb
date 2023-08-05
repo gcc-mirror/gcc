@@ -1503,6 +1503,10 @@ package body Inline is
       --  an unconstrained record type with per-object constraints on component
       --  types.
 
+      function Has_Skip_Proof_Annotation (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id has an annotation Skip_Proof or
+      --  Skip_Flow_And_Proof.
+
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id has any contract. The presence of
       --  Extensions_Visible or Volatile_Function is also considered as a
@@ -1700,6 +1704,45 @@ package body Inline is
 
          return False;
       end Has_Formal_With_Discriminant_Dependent_Fields;
+
+      -------------------------------
+      -- Has_Skip_Proof_Annotation --
+      -------------------------------
+
+      function Has_Skip_Proof_Annotation (Id : Entity_Id) return Boolean is
+         Decl : Node_Id := Unit_Declaration_Node (Id);
+
+      begin
+         Next (Decl);
+
+         while Present (Decl)
+           and then Nkind (Decl) = N_Pragma
+         loop
+            if Get_Pragma_Id (Decl) = Pragma_Annotate
+              and then List_Length (Pragma_Argument_Associations (Decl)) = 3
+            then
+               declare
+                  Arg1      : constant Node_Id :=
+                    First (Pragma_Argument_Associations (Decl));
+                  Arg2      : constant Node_Id := Next (Arg1);
+                  Arg1_Name : constant String :=
+                    Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
+                  Arg2_Name : constant String :=
+                    Get_Name_String (Chars (Get_Pragma_Arg (Arg2)));
+               begin
+                  if Arg1_Name = "gnatprove"
+                    and then Arg2_Name in "skip_proof" | "skip_flow_and_proof"
+                  then
+                     return True;
+                  end if;
+               end;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         return False;
+      end Has_Skip_Proof_Annotation;
 
       -----------------------
       -- Has_Some_Contract --
@@ -1901,6 +1944,12 @@ package body Inline is
       --  pointer usage.
 
       elsif Maybe_Traversal_Function (Id) then
+         return False;
+
+      --  Do not inline subprograms with the Skip_Proof or Skip_Flow_And_Proof
+      --  annotation, which should be handled separately.
+
+      elsif Has_Skip_Proof_Annotation (Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a

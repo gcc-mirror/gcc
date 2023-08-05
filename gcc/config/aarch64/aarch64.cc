@@ -16410,10 +16410,6 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
   if (code != PLUS_EXPR && code != MINUS_EXPR)
     return false;
 
-  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (assign))
-      || CONSTANT_CLASS_P (gimple_assign_rhs2 (assign)))
-    return false;
-
   for (int i = 1; i < 3; ++i)
     {
       tree rhs = gimple_op (assign, i);
@@ -16441,9 +16437,53 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
 	    return false;
 	  def_stmt_info = vinfo->lookup_def (rhs);
 	  if (!def_stmt_info
-	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def)
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_constant_def)
 	    return false;
 	}
+
+      return true;
+    }
+  return false;
+}
+
+/* Return true if STMT_INFO is the second part of a two-statement boolean AND
+   expression sequence that might be suitable for fusing into a
+   single instruction.  If VEC_FLAGS is zero, analyze the operation as
+   a scalar one, otherwise analyze it as an operation on vectors with those
+   VEC_* flags.  */
+
+static bool
+aarch64_bool_compound_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			 unsigned int vec_flags)
+{
+  gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
+  if (!assign
+      || gimple_assign_rhs_code (assign) != BIT_AND_EXPR
+      || !STMT_VINFO_VECTYPE (stmt_info)
+      || !VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_info)))
+    return false;
+
+  for (int i = 1; i < 3; ++i)
+    {
+      tree rhs = gimple_op (assign, i);
+
+      if (TREE_CODE (rhs) != SSA_NAME)
+	continue;
+
+      stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+      if (!def_stmt_info
+	  || STMT_VINFO_DEF_TYPE (def_stmt_info) != vect_internal_def)
+	continue;
+
+      gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
+      if (!rhs_assign
+	  || TREE_CODE_CLASS (gimple_assign_rhs_code (rhs_assign))
+		!= tcc_comparison)
+	continue;
+
+      if (vec_flags & VEC_ADVSIMD)
+	return false;
 
       return true;
     }
@@ -16721,8 +16761,9 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
    and which when vectorized would operate on vector type VECTYPE.  Add the
    cost of any embedded operations.  */
 static fractional_cost
-aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
-			  tree vectype, fractional_cost stmt_cost)
+aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
+			  stmt_vec_info stmt_info, tree vectype,
+			  unsigned vec_flags, fractional_cost stmt_cost)
 {
   if (vectype)
     {
@@ -16743,6 +16784,20 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 	case 4:
 	  stmt_cost += simd_costs->ld4_st4_permute_cost;
 	  break;
+	}
+
+      gassign *assign = dyn_cast<gassign *> (STMT_VINFO_STMT (stmt_info));
+      if (assign)
+	{
+	  /* For MLA we need to reduce the cost since MLA is 1 instruction.  */
+	  if (!vect_is_reduction (stmt_info)
+	      && aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
+	    return 0;
+
+	  /* For vector boolean ANDs with a compare operand we just need
+	     one insn.  */
+	  if (aarch64_bool_compound_p (vinfo, stmt_info, vec_flags))
+	    return 0;
 	}
 
       if (kind == vector_stmt || kind == vec_to_scalar)
@@ -16767,6 +16822,22 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
   return stmt_cost;
 }
 
+/* Return true if STMT_INFO is part of a reduction that has the form:
+
+      r = r op ...;
+      r = r op ...;
+
+   with the single accumulator being read and written multiple times.  */
+static bool
+aarch64_force_single_cycle (vec_info *vinfo, stmt_vec_info stmt_info)
+{
+  if (!STMT_VINFO_REDUC_DEF (stmt_info))
+    return false;
+
+  auto reduc_info = info_for_reduction (vinfo, stmt_info);
+  return STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
+}
+
 /* COUNT, KIND and STMT_INFO are the same as for vector_costs::add_stmt_cost
    and they describe an operation in the body of a vector loop.  Record issue
    information relating to the vector operation in OPS.  */
@@ -16788,14 +16859,23 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     {
       unsigned int base
 	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, m_vec_flags);
-
-      /* ??? Ideally we'd do COUNT reductions in parallel, but unfortunately
-	 that's not yet the case.  */
-      ops->reduction_latency = MAX (ops->reduction_latency, base * count);
+      if (aarch64_force_single_cycle (m_vinfo, stmt_info))
+	/* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
+	   and then accumulate that, but at the moment the loop-carried
+	   dependency includes all copies.  */
+	ops->reduction_latency = MAX (ops->reduction_latency, base * count);
+      else
+	ops->reduction_latency = MAX (ops->reduction_latency, base);
     }
 
   /* Assume that multiply-adds will become a single operation.  */
   if (stmt_info && aarch64_multiply_add_p (m_vinfo, stmt_info, m_vec_flags))
+    return;
+
+  /* Assume that bool AND with compare operands will become a single
+     operation.  */
+  if (stmt_info
+      && aarch64_bool_compound_p (m_vinfo, stmt_info, m_vec_flags))
     return;
 
   /* Count the basic operation cost associated with KIND.  */
@@ -17041,8 +17121,8 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       /* Account for any extra "embedded" costs that apply additively
 	 to the base cost calculated above.  */
-      stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
-					    stmt_cost);
+      stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info,
+					    vectype, m_vec_flags, stmt_cost);
 
       /* If we're recording a nonzero vector loop body cost for the
 	 innermost loop, also estimate the operations that would need

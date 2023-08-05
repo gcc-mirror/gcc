@@ -20,6 +20,7 @@ int main (int argc, const char **argv)
   int i;
   check_vect ();
   foo (31);
+#pragma GCC novector
   for (i = 0; i < 31; i++)
     if (ii[i] != i)
       __builtin_abort ();

@@ -1,3 +1,136 @@
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* cp-tree.h (RANGE_FOR_NOVECTOR): New.
+	(cp_convert_range_for, finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Add novector param.
+	* init.cc (build_vec_init): Default novector to false.
+	* method.cc (build_comparison_op): Likewise.
+	* parser.cc (cp_parser_statement): Likewise.
+	(cp_parser_for, cp_parser_c_for, cp_parser_range_for,
+	cp_convert_range_for, cp_parser_iteration_statement,
+	cp_parser_omp_for_loop, cp_parser_pragma): Support novector.
+	(cp_parser_pragma_novector): New.
+	* pt.cc (tsubst_expr): Likewise.
+	* semantics.cc (finish_while_stmt_cond, finish_do_stmt,
+	finish_for_cond): Likewise.
+
+2023-08-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* parser.cc (c_init_preprocess): New function.
+	(maybe_read_tokens_for_pragma_lex): New function.
+	(pragma_lex): Support preprocess-only mode.
+	(pragma_lex_discard_to_eol): New function.
+
+2023-07-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_oacc_host_data): Add checking requiring OpenACC
+	host_data construct to have an use_device clause.
+
+2023-07-28  Ng YongXiang  <yongxiangng@gmail.com>
+
+	PR c++/110057
+	PR ipa/83054
+	* init.cc (build_vec_delete_1): Devirtualize array destruction.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* constexpr.cc (cxx_eval_array_reference): Allow synthesizing an
+	empty subobject even if CONSTRUCTOR_NO_CLEARING is set.
+	(cxx_eval_bare_aggregate): Set 'no_slot' to true more generally
+	whenever new_ctx.ctor is set to NULL_TREE by init_subob_ctx,
+	i.e. whenever initializing an subobject of empty type.
+	(cxx_eval_vec_init_1): Define 'no_slot' as above and use it
+	accordingly.
+
+2023-07-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/103497
+	* pt.cc (type_uses_auto): Check inside parameter packs.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* pt.cc (reduce_template_parm_level): Set DECL_TEMPLATE_INFO
+	on the DECL_TEMPLATE_RESULT of the new ttp.
+	(add_defaults_to_ttp): Make a copy of the original ttp's
+	DECL_TEMPLATE_RESULT, and update this copy's DECL_TEMPLATE_INFO
+	as well.
+	(coerce_template_template_parms): Make sure 'scope_args' has
+	the right amount of levels for the ttp argument.
+	(most_general_template): Handle template template parameters.
+	(rewrite_template_parm): Set DECL_TEMPLATE_RESULT on the
+	DECL_TEMPLATE_RESULT of the new ttp.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* pt.cc (coerce_template_template_parms): Simplify by using
+	DECL_INNERMOST_TEMPLATE_PARMS and removing redundant asserts.
+	Always pass the parameters of the most general template to
+	coerce_template_parms.
+
+2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* pt.cc (unify) <case INTEGER_CST>: Generalize to handle
+	REAL_CST as well.
+
+2023-07-26  Marek Polacek  <polacek@redhat.com>
+
+	* parser.cc (cp_parser_constant_expression): Allow non_constant_p to be
+	nullptr even when allow_non_constant_p is true.  Don't call
+	_rvalue_constant_expression when not necessary.  Move local variable
+	declarations closer to their first use.
+	(cp_parser_static_assert): Don't pass a dummy down to
+	cp_parser_constant_expression.
+
+2023-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* parser.cc (cp_parser_template_name): Skip non-member
+	lookup after the template keyword.
+	(cp_parser_lookup_name): Pass down template_keyword_p.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/96630
+	PR c++/98675
+	PR c++/70331
+	* constexpr.cc (constexpr_global_ctx::is_outside_lifetime): New
+	function.
+	(constexpr_global_ctx::get_value): Don't return expired values.
+	(constexpr_global_ctx::get_value_ptr): Likewise.
+	(constexpr_global_ctx::remove_value): Mark value outside
+	lifetime.
+	(outside_lifetime_error): New function.
+	(cxx_eval_call_expression): No longer track save_exprs.
+	(cxx_eval_loop_expr): Likewise.
+	(cxx_eval_constant_expression): Add checks for outside lifetime
+	values. Remove local variables at end of bind exprs, and
+	temporaries after cleanup points.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/110619
+	* cp-gimplify.cc (cp_genericize_r): Transform RETURN_EXPRs to
+	not return dangling pointers.
+	* cp-tree.h (RETURN_EXPR_LOCAL_ADDR_P): New flag.
+	(check_return_expr): Add a new parameter.
+	* semantics.cc (finish_return_stmt): Set flag on RETURN_EXPR
+	when referring to dangling pointer.
+	* typeck.cc (check_return_expr): Disable transformation of
+	dangling pointers, instead pass this information to caller.
+
+2023-07-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constexpr.cc (modifying_const_object_error): Find the source
+	location of the const object's declaration.
+	(cxx_eval_constant_expression): Update input_location to the
+	location of the currently evaluated expression, if possible.
+
 2023-07-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/108960

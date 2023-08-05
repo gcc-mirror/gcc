@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0 -fdump-tree-optimized-details-blocks" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -23,10 +23,12 @@ int main1 (int n, int *a)
     }
 
 
+#pragma GCC novector
   for (j = 0; j < n; j++)
     if (a[j] != i + n - 1)
       abort();	
 
+#pragma GCC novector
   for (j = 0; j < n; j++)
     if (b[j] != j + n)
       abort();	
@@ -52,3 +54,4 @@ int main (void)
 /* Fails for targets that don't vectorize PLUS (e.g alpha).  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" {target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

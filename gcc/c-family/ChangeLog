@@ -1,3 +1,31 @@
+2023-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_NOVECTOR.
+	* c-pragma.cc (init_pragma): Use it.
+
+2023-08-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-common.h (c_init_preprocess): Declare new function.
+	* c-opts.cc (c_common_init): Call it.
+	* c-lex.cc (cb_def_pragma): Add a comment.
+	(get_token): New function wrapping cpp_get_token.
+	(c_lex_with_flags): Use the new wrapper function to support
+	obtaining tokens in preprocess_only mode.
+	(lex_string): Likewise.
+	* c-pragma.cc (pragma_diagnostic_lex_normal): Rename to...
+	(pragma_diagnostic_lex): ...this.
+	(pragma_diagnostic_lex_pp): Remove.
+	(handle_pragma_diagnostic_impl): Call pragma_diagnostic_lex () in
+	all modes.
+	(c_pp_invoke_early_pragma_handler): Adapt to support pragma_lex ()
+	usage.
+	* c-pragma.h (pragma_lex_discard_to_eol): Declare.
+
+2023-07-31  Hamza Mahfooz  <someguy@effective-light.com>
+
+	PR c/65213
+	* c.opt (-Wmissing-variable-declarations): New option.
+
 2023-07-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR middle-end/77928

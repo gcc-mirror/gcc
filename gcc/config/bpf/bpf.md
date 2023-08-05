@@ -35,7 +35,17 @@
 
 (define_c_enum "unspec" [
   UNSPEC_LDINDABS
-  UNSPEC_XADD
+  UNSPEC_AADD
+  UNSPEC_AAND
+  UNSPEC_AOR
+  UNSPEC_AXOR
+  UNSPEC_AFADD
+  UNSPEC_AFAND
+  UNSPEC_AFOR
+  UNSPEC_AFXOR
+  UNSPEC_AXCHG
+  UNSPEC_ACMP
+  UNSPEC_CORE_RELOC
 ])
 
 ;;;; Constants
@@ -67,11 +77,10 @@
 ;; st		generic store instructions for immediates.
 ;; stx		generic store instructions.
 ;; jmp		jump instructions.
-;; xadd		atomic exchange-and-add instructions.
 ;; multi	multiword sequence (or user asm statements).
 
 (define_attr "type"
-  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,xadd,multi"
+  "unknown,alu,alu32,end,ld,lddw,ldx,st,stx,jmp,multi,atomic"
   (const_string "unknown"))
 
 ;; Length of instruction in bytes.
@@ -123,7 +132,7 @@
         (plus:AM (match_operand:AM 1 "register_operand"   " 0,0")
                  (match_operand:AM 2 "reg_or_imm_operand" " r,I")))]
   "1"
-  "{add<msuffix>\t%0,%2|%w0 += %w1}"
+  "{add<msuffix>\t%0,%2|%w0 += %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Subtraction
@@ -136,15 +145,15 @@
         (minus:AM (match_operand:AM 1 "register_operand" " 0")
                   (match_operand:AM 2 "register_operand" " r")))]
   ""
-  "{sub<msuffix>\t%0,%2|%w0 -= %w1}"
+  "{sub<msuffix>\t%0,%2|%w0 -= %w2}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Negation
 (define_insn "neg<AM:mode>2"
   [(set (match_operand:AM         0 "register_operand"   "=r,r")
-        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " r,I")))]
+        (neg:AM (match_operand:AM 1 "reg_or_imm_operand" " 0,I")))]
   ""
-  "{neg<msuffix>\t%0,%1|%w0 = -%w1}"
+  "{neg<msuffix>\t%0|%w0 = -%w1}"
   [(set_attr "type" "<mtype>")])
 
 ;;; Multiplication
@@ -299,6 +308,56 @@
   DONE;
 })
 
+;; ISA V4 introduces sign-extending move and load operations.
+
+(define_insn "*extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,32|%0 = (s32) %1}
+   {ldxsw\t%0,%1|%0 = *(s32 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,16|%0 = (s16) %1}
+   {ldxsh\t%0,%1|%0 = *(s16 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+        (sign_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,q")))]
+  "bpf_has_smov"
+  "@
+   {movs\t%0,%1,8|%0 = (s8) %1}
+   {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
+  [(set_attr "type" "alu,ldx")])
+
+(define_insn "extendsisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:SI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,32|%w0 = (s32) %w1}"
+  [(set_attr "type" "alu")])
+
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,16|%w0 = (s16) %w1}"
+  [(set_attr "type" "alu")])
+
+(define_insn "extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "bpf_has_smov"
+  "{movs32\t%0,%1,8|%w0 = (s8) %w1}"
+  [(set_attr "type" "alu")])
+
 ;;;; Data movement
 
 (define_mode_iterator MM [QI HI SI DI SF DF])
@@ -309,6 +368,8 @@
         ""
         "
 {
+  bpf_replace_core_move_operands (operands);
+
   if (!register_operand(operands[0], <MM:MODE>mode)
       && !register_operand(operands[1], <MM:MODE>mode))
     operands[1] = force_reg (<MM:MODE>mode, operands[1]);
@@ -325,6 +386,20 @@
    {stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}
    {st<mop>\t%0,%1|*(<smop> *) (%0) = %1}"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
+
+(define_insn "mov_reloc_core<MM:mode>"
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r,q,r")
+	(unspec:MM [
+	  (match_operand:MM 1 "immediate_operand"  " I,I,B")
+	  (match_operand:SI 2 "immediate_operand"  " I,I,I")
+	 ] UNSPEC_CORE_RELOC)
+   )]
+  ""
+  "@
+   *return bpf_add_core_reloc (operands, \"{mov\t%0,%1|%0 = %1}\");
+   *return bpf_add_core_reloc (operands, \"{st<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");
+   *return bpf_add_core_reloc (operands, \"{lddw\t%0,%1|%0 = %1 ll}\");"
+  [(set_attr "type" "alu,st,alu")])
 
 ;;;; Shifts
 
@@ -548,17 +623,4 @@
   "{ldabs<ldop>\t%0|r0 = *(<pldop> *) skb[%0]}"
   [(set_attr "type" "ld")])
 
-;;;; Atomic increments
-
-(define_mode_iterator AMO [SI DI])
-
-(define_insn "atomic_add<AMO:mode>"
-  [(set (match_operand:AMO 0 "memory_operand" "+m")
-        (unspec_volatile:AMO
-         [(plus:AMO (match_dup 0)
-                    (match_operand:AMO 1 "register_operand" "r"))
-          (match_operand:SI 2 "const_int_operand")] ;; Memory model.
-         UNSPEC_XADD))]
-  ""
-  "{xadd<mop>\t%0,%1|*(<smop> *) %0 += %1}"
-  [(set_attr "type" "xadd")])
+(include "atomic.md")

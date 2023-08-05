@@ -197,7 +197,11 @@ test_samples (struct backtrace_state *state)
       unsigned char *uncompressed;
       size_t uncompressed_len;
 
-      uncompressed = (unsigned char *) malloc (tests[i].uncompressed_len);
+      uncompressed_len = tests[i].uncompressed_len;
+      if (uncompressed_len == 0)
+	uncompressed_len = strlen (tests[i].uncompressed);
+
+      uncompressed = (unsigned char *) malloc (uncompressed_len);
       if (uncompressed == NULL)
 	{
 	  perror ("malloc");
@@ -205,10 +209,6 @@ test_samples (struct backtrace_state *state)
 	  ++failures;
 	  continue;
 	}
-
-      uncompressed_len = tests[i].uncompressed_len;
-      if (uncompressed_len == 0)
-	uncompressed_len = strlen (tests[i].uncompressed);
 
       if (!backtrace_uncompress_zstd (state,
 				      ((const unsigned char *)

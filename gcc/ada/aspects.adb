@@ -193,13 +193,14 @@ package body Aspects is
    function Find_Aspect
      (Id            : Entity_Id;
       A             : Aspect_Id;
-      Class_Present : Boolean := False) return Node_Id
+      Class_Present : Boolean := False;
+      Or_Rep_Item   : Boolean := False) return Node_Id
    is
-      Decl  : Node_Id;
-      Item  : Node_Id;
-      Owner : Entity_Id;
-      Spec  : Node_Id;
-
+      Decl                 : Node_Id;
+      Item                 : Node_Id;
+      Owner                : Entity_Id;
+      Spec                 : Node_Id;
+      Alternative_Rep_Item : Node_Id := Empty;
    begin
       Owner := Id;
 
@@ -231,6 +232,18 @@ package body Aspects is
            and then Class_Present = Sinfo.Nodes.Class_Present (Item)
          then
             return Item;
+
+         --  We could do something similar here for an N_Pragma node
+         --  when Get_Aspect_Id (Pragma_Name (Item)) = A, but let's
+         --  wait for a demonstrated need.
+
+         elsif Or_Rep_Item
+           and then not Class_Present
+           and then Nkind (Item) = N_Attribute_Definition_Clause
+           and then Get_Aspect_Id (Chars (Item)) = A
+         then
+            --  Remember this candidate in case we don't find anything better
+            Alternative_Rep_Item := Item;
          end if;
 
          Next_Rep_Item (Item);
@@ -266,9 +279,10 @@ package body Aspects is
       end if;
 
       --  The entity does not carry any aspects or the desired aspect was not
-      --  found.
+      --  found. We have no N_Aspect_Specification node to return, but
+      --  Alternative_Rep_Item may have been set (if Or_Rep_Item is True).
 
-      return Empty;
+      return Alternative_Rep_Item;
    end Find_Aspect;
 
    --------------------------

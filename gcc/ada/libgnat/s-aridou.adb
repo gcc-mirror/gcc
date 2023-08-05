@@ -90,6 +90,9 @@ is
      (On, "non-preelaborable call not allowed in preelaborated unit");
    pragma Warnings (On, "non-static constant in preelaborated unit");
 
+   pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                    "early returns for performance");
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -3653,4 +3656,5 @@ is
       end if;
    end To_Pos_Int;
 
+   pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
 end System.Arith_Double;

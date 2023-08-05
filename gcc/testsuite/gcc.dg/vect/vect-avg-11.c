@@ -43,6 +43,7 @@ main (void)
       asm volatile ("" ::: "memory");
     }
   f (a, b, c);
+#pragma GCC novector
   for (int i = 0; i < N; ++i)
     if (a[i] != (((((BASE1 + i * 5) ^ 0x55)
 		   + (BASE2 + i * 4)

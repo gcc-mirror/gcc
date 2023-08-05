@@ -47,14 +47,17 @@ main ()
   int i;
   check_vect ();
   foo (5, 3);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (a[i] != 5 + 4 * i)
       abort ();
   bar (5, 3);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (a[i] != 9 + 4 * i)
       abort ();
   baz (5, 3);
+#pragma GCC novector
   for (i = 0; i < 1024; i++)
     if (a[i] != 5 + 4 * i || b[i] != (unsigned char) i)
       abort ();

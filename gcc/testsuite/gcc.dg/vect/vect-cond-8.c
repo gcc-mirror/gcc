@@ -79,18 +79,22 @@ main ()
       e[i] = 2 * i;
     }
   f1 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 ? 17 : 0))
       abort ();
   f2 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 ? 0 : 24))
       abort ();
   f3 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (k[i] != ((i % 3) == 0 ? 51 : 12))
       abort ();
   f4 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (f[i] != ((i % 3) == 0 ? d[i] : e[i]))
       abort ();
@@ -112,6 +116,7 @@ main ()
       b[i] = i / 2;
     }
   f5 ();
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if (c[i] != ((i % 3) == 0 ? a[i] : b[i]))
       abort ();

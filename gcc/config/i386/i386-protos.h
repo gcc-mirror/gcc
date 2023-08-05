@@ -70,6 +70,9 @@ extern machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 extern int avx_vpermilp_parallel (rtx par, machine_mode mode);
 extern int avx_vperm2f128_parallel (rtx par, machine_mode mode);
 
+extern int vpternlog_redundant_operand_mask (rtx[]);
+extern void substitute_vpternlog_operands (rtx[]);
+
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);

@@ -1359,7 +1359,10 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
     case ABS_EXPR:
     case ABSU_EXPR:
       if (wi::sext (rmask, rtype_precision) == -1)
-	*mask = -1;
+	{
+	  *mask = -1;
+	  *val = 0;
+	}
       else if (wi::neg_p (rmask))
 	{
 	  /* Result is either rval or -rval.  */
@@ -1385,6 +1388,7 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 
     default:
       *mask = -1;
+      *val = 0;
       break;
     }
 }
