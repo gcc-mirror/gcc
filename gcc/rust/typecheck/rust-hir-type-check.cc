@@ -57,7 +57,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
     bool ok = infer_var->default_type (&default_type);
     if (!ok)
       {
-	rust_error_at (mappings->lookup_location (id),
+	rust_error_at (mappings->lookup_location (id), ErrorCode::E0282,
 		       "type annotations needed");
 	return true;
       }
