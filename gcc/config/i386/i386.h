@@ -760,6 +760,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Minimum allocation boundary for the code of a function.  */
 #define FUNCTION_BOUNDARY 8
 
+/* We will and with this value to test if a custom function descriptor needs
+   a static chain.  The function boundary must the adjusted so that the bit
+   this represents is no longer part of the address.  0 Disables the custom
+   function descriptors.  */
+#define X86_CUSTOM_FUNCTION_TEST 1
+
 /* C++ stores the virtual bit in the lowest bit of function pointers.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_pfn
 
