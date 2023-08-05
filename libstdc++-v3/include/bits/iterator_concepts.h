@@ -80,20 +80,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Tp>
-      using __with_ref = _Tp&;
+      using __with_ref = _Tp&&;
 
     template<typename _Tp>
       concept __can_reference = requires { typename __with_ref<_Tp>; };
 
     template<typename _Tp>
-      concept __dereferenceable = requires(_Tp& __t)
+      concept __dereferenceable = requires(_Tp&& __t)
 	{
-	  { *__t } -> __can_reference;
+	  { *static_cast<_Tp&&>(__t) } -> __can_reference;
 	};
   } // namespace __detail
 
   template<__detail::__dereferenceable _Tp>
-    using iter_reference_t = decltype(*std::declval<_Tp&>());
+    using iter_reference_t = decltype(*std::declval<_Tp&&>());
 
   namespace ranges
   {
@@ -116,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Tp>
 	  requires __adl_imove<_Tp>
 	  struct __result<_Tp>
-	  { using type = decltype(iter_move(std::declval<_Tp>())); };
+	  { using type = decltype(iter_move(std::declval<_Tp&&>())); };
 
 	template<typename _Tp>
 	  requires (!__adl_imove<_Tp>)
@@ -129,9 +129,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _S_noexcept()
 	  {
 	    if constexpr (__adl_imove<_Tp>)
-	      return noexcept(iter_move(std::declval<_Tp>()));
+	      return noexcept(iter_move(std::declval<_Tp&&>()));
 	    else
-	      return noexcept(*std::declval<_Tp>());
+	      return noexcept(*std::declval<_Tp&&>());
 	  }
 
       public:
@@ -148,9 +148,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
 	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
-	      return static_cast<__type<_Tp>>(*__e);
+	      return static_cast<__type<_Tp>>(*static_cast<_Tp&&>(__e));
 	    else
-	      return *__e;
+	      return *static_cast<_Tp&&>(__e);
 	  }
       };
     } // namespace __cust_imove
