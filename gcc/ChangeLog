@@ -1,3 +1,18 @@
+2023-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr64dd14, avr64dd20, avr64dd28, avr64dd32)
+	(avr64ea28, avr64ea32, avr64ea48, attiny424, attiny426, attiny427)
+	(attiny824, attiny826, attiny827, attiny1624, attiny1626, attiny1627)
+	(attiny3224, attiny3226, attiny3227, avr16dd14, avr16dd20, avr16dd28)
+	(avr16dd32, avr32dd14, avr32dd20, avr32dd28, avr32dd32)
+	(attiny102, attiny104): New devices.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2023-08-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (avr128d*, avr64d*): Fix their FLASH_SIZE
+	and PM_OFFSET entries.
+
 2023-08-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/110220
