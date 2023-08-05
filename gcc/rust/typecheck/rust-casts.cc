@@ -300,11 +300,33 @@ TypeCastRules::check_ptr_ptr_cast ()
 void
 TypeCastRules::emit_cast_error () const
 {
-  // error[E0604]
   rich_location r (line_table, locus);
   r.add_range (from.get_locus ());
   r.add_range (to.get_locus ());
-  rust_error_at (r, ErrorCode::E0054, "invalid cast %<%s%> to %<%s%>",
+  ErrorCode error_code;
+  std::string error_msg;
+  switch (to.get_ty ()->get_kind ())
+    {
+    case TyTy::TypeKind::BOOL:
+      error_msg = "cannot cast %qs as %qs";
+      error_code = ErrorCode::E0054;
+      break;
+    case TyTy::TypeKind::CHAR:
+      error_msg
+	+= "cannot cast %qs as %qs, only %<u8%> can be cast as %<char%>";
+      error_code = ErrorCode::E0604;
+      break;
+    case TyTy::TypeKind::SLICE:
+      error_msg = "cast to unsized type: %qs as %qs";
+      error_code = ErrorCode::E0620;
+      break;
+
+    default:
+      error_msg = "casting %qs as %qs is invalid";
+      error_code = ErrorCode::E0606;
+      break;
+    }
+  rust_error_at (r, error_code, error_msg.c_str (),
 		 from.get_ty ()->get_name ().c_str (),
 		 to.get_ty ()->get_name ().c_str ());
 }
