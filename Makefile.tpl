@@ -447,7 +447,7 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 GOCFLAGS = $(CFLAGS)
-GDCFLAGS = $(CFLAGS)
+GDCFLAGS = @GDCFLAGS@
 GM2FLAGS = $(CFLAGS)
 
 # Pass additional PGO and LTO compiler options to the PGO build.
