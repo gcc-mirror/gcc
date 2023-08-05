@@ -2927,9 +2927,24 @@ Common Var(flag_tracer) Optimization
 Perform superblock formation via tail duplication.
 
 ftrampolines
-Common Var(flag_trampolines) Init(0)
+Common Var(flag_trampolines) Init(HEAP_TRAMPOLINES_INIT)
 For targets that normally need trampolines for nested functions, always
 generate them instead of using descriptors.
+
+ftrampoline-impl=
+Common Joined RejectNegative Enum(trampoline_impl) Var(flag_trampoline_impl) Init(HEAP_TRAMPOLINES_INIT ? TRAMPOLINE_IMPL_HEAP : TRAMPOLINE_IMPL_STACK)
+Whether trampolines are generated in executable memory rather than
+executable stack.
+
+Enum
+Name(trampoline_impl) Type(enum trampoline_impl) UnknownError(unknown trampoline implementation %qs)
+
+EnumValue
+Enum(trampoline_impl) String(stack) Value(TRAMPOLINE_IMPL_STACK)
+
+EnumValue
+Enum(trampoline_impl) String(heap) Value(TRAMPOLINE_IMPL_HEAP)
+
 
 ; Zero means that floating-point math operations cannot generate a
 ; (user-visible) trap.  This is the case, for example, in nonstop

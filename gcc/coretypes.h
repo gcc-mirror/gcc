@@ -204,6 +204,12 @@ enum tls_model {
   TLS_MODEL_LOCAL_EXEC
 };
 
+/* Types of trampoline implementation.  */
+enum trampoline_impl {
+  TRAMPOLINE_IMPL_STACK,
+  TRAMPOLINE_IMPL_HEAP
+};
+
 /* Types of ABI for an offload compiler.  */
 enum offload_abi {
   OFFLOAD_ABI_UNSET,
