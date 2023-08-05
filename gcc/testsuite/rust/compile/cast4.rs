@@ -1,5 +1,5 @@
 fn main() {
     let a: i32 = 123;
     let u = a as bool;
-    // { dg-error "invalid cast .i32. to .bool." "" { target *-*-* } .-1 }
+    // { dg-error "cannot cast .i32. as .bool." "" { target *-*-* } .-1 }
 }
