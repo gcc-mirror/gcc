@@ -212,7 +212,8 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
 	    }
 	  else
 	    {
-	      rust_error_at (attr.get_locus (), "unknown meta item %qs",
+	      rust_error_at (attr.get_locus (), ErrorCode::E0541,
+			     "unknown meta item %qs",
 			     key_value.first.as_string ().c_str ());
 	    }
 	}
