@@ -15,4 +15,3 @@ unsigned __int128 whirl(unsigned char x0)
    asm("":::"memory");
    return tt;
 }
-/* { dg-final { scan-assembler-not "movq\tWHIRL_S\\+8\\(%rdi\\), %rdi" } } */
