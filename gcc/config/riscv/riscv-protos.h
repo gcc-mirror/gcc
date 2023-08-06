@@ -349,8 +349,12 @@ enum floating_point_rounding_mode
   FRM_DYN = 7, /* Aka 0b111.  */
   FRM_STATIC_MIN = FRM_RNE,
   FRM_STATIC_MAX = FRM_RMM,
+  FRM_DYN_EXIT = 8,
+  FRM_DYN_CALL = 9,
+  FRM_NONE = 10,
 };
 
+enum floating_point_rounding_mode get_frm_mode (rtx);
 opt_machine_mode vectorize_related_mode (machine_mode, scalar_mode,
 					 poly_uint64);
 unsigned int autovectorize_vector_modes (vec<machine_mode> *, bool);

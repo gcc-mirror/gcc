@@ -865,28 +865,10 @@
         (const_string "none")))
 
 ;; Defines rounding mode of an floating-point operation.
-(define_attr "frm_mode" "rne,rtz,rdn,rup,rmm,dyn,dyn_exit,dyn_call,none"
+(define_attr "frm_mode" ""
   (cond [(eq_attr "type" "vfalu,vfwalu,vfmul,vfdiv,vfwmul")
-         (cond
-	   [(match_test "INTVAL (operands[9]) == riscv_vector::FRM_RNE")
-	    (const_string "rne")
-
-	    (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RTZ")
-	    (const_string "rtz")
-
-	    (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RDN")
-	    (const_string "rdn")
-
-	    (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RUP")
-	    (const_string "rup")
-
-	    (match_test "INTVAL (operands[9]) == riscv_vector::FRM_RMM")
-	    (const_string "rmm")
-
-	    (match_test "INTVAL (operands[9]) == riscv_vector::FRM_DYN")
-	    (const_string "dyn")]
-           (const_string "none"))]
-        (const_string "none")))
+	 (symbol_ref "riscv_vector::FRM_DYN")]
+	(symbol_ref "riscv_vector::FRM_NONE")))
 
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
@@ -6021,7 +6003,9 @@
   "TARGET_VECTOR"
   "vf<insn>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "<float_insn_type>")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_<optab><mode>"
   [(set (match_operand:VF 0 "register_operand"           "=vd, vd, vr, vr")
@@ -6064,7 +6048,9 @@
   "TARGET_VECTOR"
   "vf<insn>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "<float_insn_type>")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_<optab><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand"           "=vd, vd, vr, vr")
@@ -6108,7 +6094,9 @@
   "TARGET_VECTOR"
   "vf<insn>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "<float_insn_type>")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_<optab><mode>_reverse_scalar"
   [(set (match_operand:VF 0 "register_operand"           "=vd, vd, vr, vr")
@@ -6131,7 +6119,9 @@
   "TARGET_VECTOR"
   "vfr<insn>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "<float_insn_type>")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_<copysign><mode>"
   [(set (match_operand:VF 0 "register_operand"           "=vd, vd, vr, vr")
@@ -6279,7 +6269,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "*pred_<macc_msac><mode>"
   [(set (match_operand:VF 0 "register_operand"           "=vd, ?&vd, vr, ?&vr")
@@ -6312,7 +6304,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn_and_rewrite "*pred_mul_<optab><mode>"
   [(set (match_operand:VF 0 "register_operand"            "=&vr")
@@ -6343,7 +6337,9 @@
     riscv_vector::prepare_ternary_operands (operands, true);
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[10])"))])
 
 (define_expand "@pred_mul_<optab><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand")
@@ -6400,7 +6396,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "*pred_<macc_msac><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand"            "=vd, ?&vd, vr, ?&vr")
@@ -6434,7 +6432,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn_and_rewrite "*pred_mul_<optab><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand"            "=&vr")
@@ -6465,7 +6465,9 @@
     riscv_vector::prepare_ternary_operands (operands, true);
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[10])"))])
 
 (define_expand "@pred_mul_neg_<optab><mode>"
   [(set (match_operand:VF 0 "register_operand")
@@ -6524,7 +6526,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "*pred_<nmsac_nmacc><mode>"
   [(set (match_operand:VF 0 "register_operand"           "=vd, ?&vd, vr, ?&vr")
@@ -6558,7 +6562,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn_and_rewrite "*pred_mul_neg_<optab><mode>"
   [(set (match_operand:VF 0 "register_operand"            "=&vr")
@@ -6590,7 +6596,9 @@
     riscv_vector::prepare_ternary_operands (operands, true);
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[10])"))])
 
 (define_expand "@pred_mul_neg_<optab><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand")
@@ -6649,7 +6657,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "*pred_<nmsac_nmacc><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand"              "=vd, ?&vd, vr, ?&vr")
@@ -6684,7 +6694,9 @@
    (set_attr "vl_op_idx" "5")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[6])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[7])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[8])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn_and_rewrite "*pred_mul_neg_<optab><mode>_scalar"
   [(set (match_operand:VF 0 "register_operand"               "=&vr")
@@ -6716,7 +6728,9 @@
     riscv_vector::prepare_ternary_operands (operands, true);
   }
   [(set_attr "type" "vfmuladd")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[10])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated floating-point unary operations
@@ -6752,7 +6766,9 @@
    (set_attr "vl_op_idx" "4")
    (set (attr "ta") (symbol_ref "riscv_vector::get_ta(operands[5])"))
    (set (attr "ma") (symbol_ref "riscv_vector::get_ma(operands[6])"))
-   (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
+   (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_<optab><mode>"
   [(set (match_operand:VF 0 "register_operand"           "=vd, vd, vr, vr")
@@ -6846,7 +6862,9 @@
   "TARGET_VECTOR"
   "vfw<insn>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vf<widen_binop_insn_type>")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_dual_widen_<optab><mode>_scalar"
   [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
@@ -6871,7 +6889,9 @@
   "TARGET_VECTOR"
   "vfw<insn>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "vf<widen_binop_insn_type>")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_single_widen_add<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
@@ -6894,7 +6914,9 @@
   "TARGET_VECTOR"
   "vfwadd.wv\t%0,%3,%4%p1"
   [(set_attr "type" "vfwalu")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_single_widen_sub<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
@@ -6917,7 +6939,9 @@
   "TARGET_VECTOR"
   "vfwsub.wv\t%0,%3,%4%p1"
   [(set_attr "type" "vfwalu")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_single_widen_<plus_minus:optab><mode>_scalar"
   [(set (match_operand:VWEXTF 0 "register_operand"                  "=&vr,  &vr")
@@ -6941,7 +6965,9 @@
   "TARGET_VECTOR"
   "vfw<insn>.wf\t%0,%3,%4%p1"
   [(set_attr "type" "vf<widen_binop_insn_type>")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated widen floating-point ternary operations
@@ -6974,7 +7000,9 @@
   "TARGET_VECTOR"
   "vfw<macc_msac>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_widen_mul_<optab><mode>_scalar"
   [(set (match_operand:VWEXTF 0 "register_operand"                    "=&vr")
@@ -7001,7 +7029,9 @@
   "TARGET_VECTOR"
   "vfw<macc_msac>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_widen_mul_neg_<optab><mode>"
   [(set (match_operand:VWEXTF 0 "register_operand"                      "=&vr")
@@ -7028,7 +7058,9 @@
   "TARGET_VECTOR"
   "vfw<nmsac_nmacc>.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 (define_insn "@pred_widen_mul_neg_<optab><mode>_scalar"
   [(set (match_operand:VWEXTF 0 "register_operand"                      "=&vr")
@@ -7056,7 +7088,9 @@
   "TARGET_VECTOR"
   "vfw<nmsac_nmacc>.vf\t%0,%3,%4%p1"
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[9])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated floating-point comparison operations
@@ -7366,7 +7400,9 @@
   "TARGET_VECTOR"
   "vfcvt.x<v_su>.f.v\t%0,%3%p1"
   [(set_attr "type" "vfcvtftoi")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_<fix_cvt><mode>"
   [(set (match_operand:<VCONVERT> 0 "register_operand"       "=vd, vd, vr, vr")
@@ -7406,7 +7442,9 @@
   "TARGET_VECTOR"
   "vfcvt.f.x<u>.v\t%0,%3%p1"
   [(set_attr "type" "vfcvtitof")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated floating-point widen conversions
@@ -7434,7 +7472,9 @@
   "TARGET_VECTOR"
   "vfwcvt.x<v_su>.f.v\t%0,%3%p1"
   [(set_attr "type" "vfwcvtftoi")
-   (set_attr "mode" "<VNCONVERT>")])
+   (set_attr "mode" "<VNCONVERT>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_widen_<fix_cvt><mode>"
   [(set (match_operand:VWCONVERTI 0 "register_operand"        "=&vr,  &vr")
@@ -7519,7 +7559,9 @@
   "TARGET_VECTOR"
   "vfncvt.x<v_su>.f.w\t%0,%3%p1"
   [(set_attr "type" "vfncvtftoi")
-   (set_attr "mode" "<VNCONVERT>")])
+   (set_attr "mode" "<VNCONVERT>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_narrow_<fix_cvt><mode>"
   [(set (match_operand:<VNCONVERT> 0 "register_operand"        "=vd, vd, vr, vr,  &vr,  &vr")
@@ -7559,7 +7601,9 @@
   "TARGET_VECTOR"
   "vfncvt.f.x<u>.w\t%0,%3%p1"
   [(set_attr "type" "vfncvtitof")
-   (set_attr "mode" "<VNCONVERT>")])
+   (set_attr "mode" "<VNCONVERT>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_trunc<mode>"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"       "=vd, vd, vr, vr,  &vr,  &vr")
@@ -7580,7 +7624,9 @@
   "TARGET_VECTOR"
   "vfncvt.f.f.w\t%0,%3%p1"
   [(set_attr "type" "vfncvtftof")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 (define_insn "@pred_rod_trunc<mode>"
   [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand"       "=vd, vd, vr, vr,  &vr,  &vr")
@@ -7860,7 +7906,9 @@
   "TARGET_VECTOR"
   "vfred<order>sum.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfred<order>")
-   (set_attr "mode" "<VHF:MODE>")])
+   (set_attr "mode" "<VHF:MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; Float Ordered Reduction Sum for SF
 (define_insn "@pred_reduc_plus<order><VSF:mode><VSF_LMUL1:mode>"
@@ -7886,7 +7934,9 @@
   "TARGET_VECTOR"
   "vfred<order>sum.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfred<order>")
-   (set_attr "mode" "<VSF:MODE>")])
+   (set_attr "mode" "<VSF:MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; Float Ordered Reduction Sum for DF
 (define_insn "@pred_reduc_plus<order><VDF:mode><VDF_LMUL1:mode>"
@@ -7912,7 +7962,9 @@
   "TARGET_VECTOR"
   "vfred<order>sum.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfred<order>")
-   (set_attr "mode" "<VDF:MODE>")])
+   (set_attr "mode" "<VDF:MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; Float Widen Reduction for HF, aka SF = HF op SF
 (define_insn "@pred_widen_reduc_plus<order><VHF:mode><VSF_LMUL1:mode>"
@@ -7934,7 +7986,9 @@
   "TARGET_VECTOR"
   "vfwred<order>sum.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfwred<order>")
-   (set_attr "mode" "<VHF:MODE>")])
+   (set_attr "mode" "<VHF:MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; Float Widen Reduction for SF, aka DF = SF * DF
 (define_insn "@pred_widen_reduc_plus<order><VSF:mode><VDF_LMUL1:mode>"
@@ -7956,7 +8010,9 @@
   "TARGET_VECTOR"
   "vfwred<order>sum.vs\t%0,%3,%4%p1"
   [(set_attr "type" "vfwred<order>")
-    (set_attr "mode" "<VSF:MODE>")])
+   (set_attr "mode" "<VSF:MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[8])"))])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated permutation operations

@@ -8054,11 +8054,11 @@ riscv_static_frm_mode_p (int mode)
 {
   switch (mode)
     {
-    case FRM_MODE_RDN:
-    case FRM_MODE_RUP:
-    case FRM_MODE_RTZ:
-    case FRM_MODE_RMM:
-    case FRM_MODE_RNE:
+    case riscv_vector::FRM_RDN:
+    case riscv_vector::FRM_RUP:
+    case riscv_vector::FRM_RTZ:
+    case riscv_vector::FRM_RMM:
+    case riscv_vector::FRM_RNE:
       return true;
     default:
       return false;
@@ -8074,28 +8074,24 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
 {
   rtx backup_reg = DYNAMIC_FRM_RTL (cfun);
 
-  if (prev_mode == FRM_MODE_DYN_CALL)
+  if (prev_mode == riscv_vector::FRM_DYN_CALL)
     emit_insn (gen_frrmsi (backup_reg)); /* Backup frm when DYN_CALL.  */
 
   if (mode != prev_mode)
     {
-      /* TODO: By design, FRM_MODE_xxx used by mode switch which is
-	 different from the FRM value like FRM_RTZ defined in
-	 riscv-protos.h.  When mode switching we actually need a conversion
-	 function to convert the mode of mode switching to the actual
-	 FRM value like FRM_RTZ.  For now, the value between the mode of
-	 mode swith and the FRM value in riscv-protos.h take the same value,
-	 and then we leverage this assumption when emit.  */
       rtx frm = gen_int_mode (mode, SImode);
 
-      if (mode == FRM_MODE_DYN_CALL && prev_mode != FRM_MODE_DYN)
+      if (mode == riscv_vector::FRM_DYN_CALL
+	&& prev_mode != riscv_vector::FRM_DYN)
 	/* No need to emit when prev mode is DYN already.  */
 	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
-      else if (mode == FRM_MODE_DYN_EXIT && STATIC_FRM_P (cfun)
-	&& prev_mode != FRM_MODE_DYN && prev_mode != FRM_MODE_DYN_CALL)
+      else if (mode == riscv_vector::FRM_DYN_EXIT && STATIC_FRM_P (cfun)
+	&& prev_mode != riscv_vector::FRM_DYN
+	&& prev_mode != riscv_vector::FRM_DYN_CALL)
 	/* No need to emit when prev mode is DYN or DYN_CALL already.  */
 	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
-      else if (mode == FRM_MODE_DYN && prev_mode != FRM_MODE_DYN_CALL)
+      else if (mode == riscv_vector::FRM_DYN
+	&& prev_mode != riscv_vector::FRM_DYN_CALL)
 	/* Restore frm value from backup when switch to DYN mode.  */
 	emit_insn (gen_fsrmsi_restore (backup_reg));
       else if (riscv_static_frm_mode_p (mode))
@@ -8124,7 +8120,7 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
     }
 }
 
-/* Adjust the FRM_MODE_NONE insn after a call to FRM_MODE_DYN for the
+/* Adjust the FRM_NONE insn after a call to FRM_DYN for the
    underlying emit.  */
 
 static int
@@ -8133,7 +8129,7 @@ riscv_frm_adjust_mode_after_call (rtx_insn *cur_insn, int mode)
   rtx_insn *insn = prev_nonnote_nondebug_insn_bb (cur_insn);
 
   if (insn && CALL_P (insn))
-    return FRM_MODE_DYN;
+    return riscv_vector::FRM_DYN;
 
   return mode;
 }
@@ -8184,12 +8180,12 @@ riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
       if (!insn)
 	riscv_frm_emit_after_bb_end (cur_insn);
 
-      return FRM_MODE_DYN_CALL;
+      return riscv_vector::FRM_DYN_CALL;
     }
 
-  int mode = code >= 0 ? get_attr_frm_mode (cur_insn) : FRM_MODE_NONE;
+  int mode = code >= 0 ? get_attr_frm_mode (cur_insn) : riscv_vector::FRM_NONE;
 
-  if (mode == FRM_MODE_NONE)
+  if (mode == riscv_vector::FRM_NONE)
       /* After meet a call, we need to backup the frm because it may be
 	 updated during the call. Here, for each insn, we will check if
 	 the previous insn is a call or not. When previous insn is call,
@@ -8297,7 +8293,7 @@ riscv_frm_mode_after (rtx_insn *insn, int mode)
     return mode;
 
   if (frm_unknown_dynamic_p (insn))
-    return FRM_MODE_DYN;
+    return riscv_vector::FRM_DYN;
 
   if (recog_memoized (insn) < 0)
     return mode;
@@ -8339,7 +8335,7 @@ riscv_mode_entry (int entity)
 	  /* According to RVV 1.0 spec, all vector floating-point operations use
 	     the dynamic rounding mode in the frm register.  Likewise in other
 	     similar places.  */
-	return FRM_MODE_DYN;
+	return riscv_vector::FRM_DYN;
       }
     default:
       gcc_unreachable ();
@@ -8357,7 +8353,7 @@ riscv_mode_exit (int entity)
     case RISCV_VXRM:
       return VXRM_MODE_NONE;
     case RISCV_FRM:
-      return FRM_MODE_DYN_EXIT;
+      return riscv_vector::FRM_DYN_EXIT;
     default:
       gcc_unreachable ();
     }

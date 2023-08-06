@@ -112,6 +112,7 @@ public:
   {
     m_has_fp_rounding_mode_p = true;
     m_fp_rounding_mode = mode;
+    gcc_assert (mode <= FRM_DYN);
   }
 
   void add_output_operand (rtx x, machine_mode mode)
@@ -1588,6 +1589,34 @@ expand_const_vector (rtx target, rtx src)
     }
   else
     gcc_unreachable ();
+}
+
+/* Get the frm mode with given CONST_INT rtx, the default mode is
+   FRM_DYN.  */
+enum floating_point_rounding_mode
+get_frm_mode (rtx operand)
+{
+  gcc_assert (CONST_INT_P (operand));
+
+  switch (INTVAL (operand))
+    {
+    case FRM_RNE:
+      return FRM_RNE;
+    case FRM_RTZ:
+      return FRM_RTZ;
+    case FRM_RDN:
+      return FRM_RDN;
+    case FRM_RUP:
+      return FRM_RUP;
+    case FRM_RMM:
+      return FRM_RMM;
+    case FRM_DYN:
+      return FRM_DYN;
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_unreachable ();
 }
 
 /* Expand a pre-RA RVV data move from SRC to DEST.
