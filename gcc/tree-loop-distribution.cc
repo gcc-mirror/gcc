@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "memmodel.h"
 #include "optabs.h"
+#include "tree-ssa-loop-niter.h"
 
 
 #define MAX_DATAREFS_NUM \
@@ -3871,10 +3872,20 @@ loop_distribution::execute (function *fun)
 
 	  bool destroy_p;
 	  int nb_generated_loops, nb_generated_calls;
+	  bool only_patterns = !optimize_loop_for_speed_p (loop)
+			       || !flag_tree_loop_distribution;
+	  /* do not try to distribute loops that are not expected to iterate.  */
+	  if (!only_patterns)
+	    {
+	      HOST_WIDE_INT iterations = estimated_loop_iterations_int (loop);
+	      if (iterations < 0)
+		iterations = likely_max_loop_iterations_int (loop);
+	      if (!iterations)
+		only_patterns = true;
+	    }
 	  nb_generated_loops
 	    = distribute_loop (loop, work_list, cd, &nb_generated_calls,
-			       &destroy_p, (!optimize_loop_for_speed_p (loop)
-					    || !flag_tree_loop_distribution));
+			       &destroy_p, only_patterns);
 	  if (destroy_p)
 	    loops_to_be_destroyed.safe_push (loop);
 
