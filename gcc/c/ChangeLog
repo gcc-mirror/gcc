@@ -1,3 +1,8 @@
+2023-08-05  Martin Uecker  <uecker@tugraz.at>
+
+	* c-parser.cc (c_parser_generic_selection): Inhibit evaluation
+	warnings branches that are known not be taken during parsing.
+
 2023-08-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* c-parser.cc (c_parser_while_statement, c_parser_do_statement,

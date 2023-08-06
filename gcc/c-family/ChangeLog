@@ -1,3 +1,9 @@
+2023-08-05  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/98536
+	* c-warn.cc (warn_parm_array_mismatch): Do not warn if more
+	bounds are specified.
+
 2023-08-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_NOVECTOR.
