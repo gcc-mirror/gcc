@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 /* { dg-do compile } */
 /* { dg-additional-options "-mavx2" { target { i?86-*-* x86_64-*-* } } } */
 
@@ -16,3 +17,4 @@ void foo (int n)
 }
 
 /* { dg-final { scan-tree-dump-times "Move stmt to created bb" 4 "vect" { target { i?86-*-* x86_64-*-* } xfail { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */
