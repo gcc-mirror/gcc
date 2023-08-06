@@ -36,15 +36,13 @@ constexpr uint32_t INITIAL_BIAS = 72;
 constexpr uint32_t INITIAL_N = 128;
 constexpr char DELIMITER = '-';
 
-constexpr uint32_t MAX_ASCII_CODEPOINT = 0x7F;
-
 std::string
 extract_basic_string (const std::vector<Codepoint> &src)
 {
   std::string basic_string;
   for (auto c : src)
     {
-      if (c.value <= MAX_ASCII_CODEPOINT)
+      if (c.value <= 0x7F)
 	basic_string += c.as_string ();
     }
   return basic_string;
