@@ -295,7 +295,7 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
 	   : "i" (0x00200000));
 #endif
 
-  if (!((__eax ^ __ebx) & 0x00200000))
+  if (__builtin_expect (!((__eax ^ __ebx) & 0x00200000), 0))
     return 0;
 #endif
 
@@ -338,7 +338,7 @@ __get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
   unsigned int __ext = __leaf & 0x80000000;
   unsigned int __maxlevel = __get_cpuid_max (__ext, 0);
 
-  if (__maxlevel == 0 || __maxlevel < __leaf)
+  if (__builtin_expect (__maxlevel == 0, 0) || __maxlevel < __leaf)
     return 0;
 
   __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
