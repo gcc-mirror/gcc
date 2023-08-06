@@ -4902,6 +4902,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
+/* (a > 1) ? 0 : (cast)a is the same as (cast)(a == 1)
+   for unsigned types. */
+(simplify
+ (cond (gt @0 integer_onep@1) integer_zerop (convert? @2))
+ (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+      && bitwise_equal_p (@0, @2))
+  (convert (eq @0 @1))
+ )
+)
+
+/* (a <= 1) & (cast)a is the same as (cast)(a == 1)
+   for unsigned types. */
+(simplify
+ (bit_and:c (convert1? (le @0 integer_onep@1)) (convert2? @2))
+ (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+      && bitwise_equal_p (@0, @2))
+  (convert (eq @0 @1))
+ )
+)
+
 (simplify
  (cond @0 zero_one_valued_p@1 zero_one_valued_p@2)
  (switch
