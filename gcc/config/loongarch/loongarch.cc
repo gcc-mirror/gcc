@@ -5761,6 +5761,7 @@ loongarch_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 		break;
 
 	      new_rhs = rhs + (increment ? 1 : -1);
+	      new_rhs = trunc_int_for_mode (new_rhs, GET_MODE (*op0));
 	      if (loongarch_integer_cost (new_rhs)
 		    < loongarch_integer_cost (rhs))
 		{
