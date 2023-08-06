@@ -22,6 +22,10 @@
 #       > rust-unicode-data.h
 
 import sys
+from typing import Tuple
+
+Codepoint = int
+Range = Tuple[Codepoint, Codepoint]
 
 COPYRIGHT = (
     "// Copyright (C) 2020-2023 Free Software Foundation, Inc.\n"
@@ -44,25 +48,25 @@ COPYRIGHT = (
 )
 
 # Decomposition_Mapping table
-decomposition_map = {}
+decomposition_map: dict[Codepoint, list[Codepoint]] = {}
 # Canonical_Combining_Class table
-ccc_table = {}
+ccc_table: dict[Codepoint, int] = {}
 # Ranges of codepoints with the Full_Composition_Exclusion property
-composition_exclusion_ranges = []
+composition_exclusion_ranges: list[Range] = []
 # Ranges of codepoints with the Full_Composition_Exclusion property
-alphabetic_ranges = []
+alphabetic_ranges: list[Range] = []
 # Ranges of codepoints with NFC_QC=No
-nfc_qc_no_ranges = []
+nfc_qc_no_ranges: list[Range] = []
 # Ranges of codepoints with NFC_QC=Maybe
-nfc_qc_maybe_ranges = []
-numeric_codepoints = []
+nfc_qc_maybe_ranges: list[Range] = []
+numeric_codepoints: list[Codepoint] = []
 
 # Note that an element of range `[m, n]` (a list in python) represents [m, n)
 
 
-def binary_search_ranges(ranges, target):
-    low = 0
-    high = len(ranges) - 1
+def binary_search_ranges(ranges: list[Range], target: Codepoint) -> int:
+    low: int = 0
+    high: int = len(ranges) - 1
     while low <= high:
         mid = (low + high) // 2
         start, end = ranges[mid]
@@ -77,8 +81,8 @@ def binary_search_ranges(ranges, target):
 
 
 # Utility function to parse '<codepoint>...<codepoint>' or '<codepoint>'
-def parse_codepoint_range(range_str):
-    codepoint_range = range_str.split("..")
+def parse_codepoint_range(range_str: str) -> Range:
+    codepoint_range: list[str] = range_str.split("..")
     assert len(codepoint_range) == 1 or len(codepoint_range) == 2, "Invalid format"
     start_cp, end_cp = 0, 0
     if len(codepoint_range) == 1:
@@ -89,11 +93,11 @@ def parse_codepoint_range(range_str):
         # m => [m, m+1)
         start_cp = int(codepoint_range[0], 16)
         end_cp = int(codepoint_range[1], 16) + 1
-    return [start_cp, end_cp]
+    return start_cp, end_cp
 
 
-def read_unicode_data_txt(filepath):
-    def process_line(line):
+def read_unicode_data_txt(filepath: str) -> None:
+    def process_line(line: str) -> None:
         rows = line.split(";")
         if len(rows) != 15:
             return
@@ -124,13 +128,13 @@ def read_unicode_data_txt(filepath):
             if len(decomp_cps) > 0:
                 decomposition_map[cp] = decomp_cps
 
-    with open(sys.argv[1], "r", encoding="UTF-8") as file:
+    with open(filepath, "r", encoding="UTF-8") as file:
         while line := file.readline():
             process_line(line.rstrip())
 
 
-def read_derived_norm_props_txt(filepath):
-    def process_line(line):
+def read_derived_norm_props_txt(filepath: str) -> None:
+    def process_line(line) -> None:
         # Ignore comments
         line = line.split("#")[0]
         rows = line.split(";")
@@ -157,8 +161,8 @@ def read_derived_norm_props_txt(filepath):
             process_line(line.rstrip())
 
 
-def read_derived_core_props_txt(filepath):
-    def process_line(line):
+def read_derived_core_props_txt(filepath: str) -> None:
+    def process_line(line: str) -> None:
         # Ignore comments
         line = line.split("#")[0]
         rows = line.split(";")
@@ -169,7 +173,7 @@ def read_derived_core_props_txt(filepath):
         rows[1] = rows[1].lstrip().rstrip()
         if rows[1] != "Alphabetic":
             return
-        cp_range = parse_codepoint_range(rows[0])
+        cp_range: Range = parse_codepoint_range(rows[0])
         alphabetic_ranges.append(cp_range)
 
     with open(filepath, "r", encoding="UTF-8") as file:
@@ -177,7 +181,7 @@ def read_derived_core_props_txt(filepath):
             process_line(line.rstrip())
 
 
-def write_decomposition():
+def write_decomposition() -> None:
     print("const std::map<uint32_t, std::vector<uint32_t>> DECOMPOSITION_MAP = {")
     print("  // clang-format off")
     for cp in sorted(decomposition_map):
@@ -190,7 +194,7 @@ def write_decomposition():
     print("};")
 
 
-def write_recomposition():
+def write_recomposition() -> None:
     print(
         "const std::map<std::pair<uint32_t, uint32_t>, uint32_t> RECOMPOSITION_MAP = {{"
     )
@@ -198,6 +202,8 @@ def write_recomposition():
     for cp in decomposition_map:
         if binary_search_ranges(composition_exclusion_ranges, cp) != -1:
             continue
+        d1: Codepoint
+        d2: Codepoint
         if len(decomposition_map[cp]) == 1:
             d1 = decomposition_map[cp][0]
             d2 = 0
@@ -209,7 +215,7 @@ def write_recomposition():
     print("}};")
 
 
-def write_ccc():
+def write_ccc() -> None:
     print("const std::map<uint32_t, int32_t> CCC_TABLE = {")
     print("  // clang-format off")
     for cp in ccc_table:
@@ -218,7 +224,7 @@ def write_ccc():
     print("};")
 
 
-def write_alphabetic():
+def write_alphabetic() -> None:
     print(
         "const std::array<std::pair<uint32_t, uint32_t>, NUM_ALPHABETIC_RANGES> ALPHABETIC_RANGES = {{"
     )
@@ -229,7 +235,7 @@ def write_alphabetic():
     print("}};")
 
 
-def write_numeric():
+def write_numeric() -> None:
     print("const std::array<uint32_t, NUM_NUMERIC_CODEPOINTS> NUMERIC_CODEPOINTS = {{")
     print("  // clang-format off")
     for i, cp in enumerate(numeric_codepoints):
@@ -244,13 +250,13 @@ def write_numeric():
     print("}};")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 4:
         print("too few arguments", file=sys.stderr)
         exit(-1)
-    unicode_txt_path = sys.argv[1]
-    norm_props_txt_path = sys.argv[2]
-    core_props_txt_path = sys.argv[3]
+    unicode_txt_path: str = sys.argv[1]
+    norm_props_txt_path: str = sys.argv[2]
+    core_props_txt_path: str = sys.argv[3]
 
     read_unicode_data_txt(unicode_txt_path)
     read_derived_norm_props_txt(norm_props_txt_path)
@@ -271,8 +277,6 @@ def main():
     print()
     write_recomposition()
     print()
-    # write_composition_exclusion()
-    # print()
     write_ccc()
     print()
     write_alphabetic()
