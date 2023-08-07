@@ -63,7 +63,7 @@ enum_to_str (Mutability mut)
       return "Mut";
     }
   gcc_unreachable ();
-};
+}
 
 } // namespace Rust
 
