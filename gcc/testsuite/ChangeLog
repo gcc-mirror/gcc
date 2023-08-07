@@ -1,3 +1,20 @@
+2023-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/107397
+	* gfortran.dg/pr107397.f90: Adjust expected diagnostic wording and
+	add space between dg-error string and closing }.
+
+2023-08-06  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2022-12-18  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107397
+	* gfortran.dg/pr107397.f90: New test.
+
 2023-08-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
