@@ -257,6 +257,10 @@ public:
      from, NULL otherwise.  */
   vec<stmt_vec_info> root_stmts;
 
+  /* For slp_inst_kind_bb_reduc the defs that were not vectorized, NULL
+     otherwise.  */
+  vec<stmt_vec_info> remain_stmts;
+
   /* The unrolling factor required to vectorized this SLP instance.  */
   poly_uint64 unrolling_factor;
 
@@ -285,6 +289,7 @@ public:
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMTS(S)               (S)->root_stmts
+#define SLP_INSTANCE_REMAIN_STMTS(S)             (S)->remain_stmts
 #define SLP_INSTANCE_KIND(S)                     (S)->kind
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children

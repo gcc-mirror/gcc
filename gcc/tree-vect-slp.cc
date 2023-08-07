@@ -209,6 +209,7 @@ vect_free_slp_instance (slp_instance instance)
   vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
   SLP_INSTANCE_LOADS (instance).release ();
   SLP_INSTANCE_ROOT_STMTS (instance).release ();
+  SLP_INSTANCE_REMAIN_STMTS (instance).release ();
   instance->subgraph_entries.release ();
   instance->cost_vec.release ();
   free (instance);
@@ -3128,6 +3129,16 @@ vect_build_slp_instance (vec_info *vinfo,
 			 "  %G", scalar_stmts[i]->stmt);
     }
 
+  /* When a BB reduction doesn't have an even number of lanes
+     strip it down, treating the remaining lane as scalar.
+     ???  Selecting the optimal set of lanes to vectorize would be nice
+     but SLP build for all lanes will fail quickly because we think
+     we're going to need unrolling.  */
+  auto_vec<stmt_vec_info> remain;
+  if (kind == slp_inst_kind_bb_reduc
+      && (scalar_stmts.length () & 1))
+    remain.safe_push (scalar_stmts.pop ());
+
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
   bool *matches = XALLOCAVEC (bool, group_size);
@@ -3175,6 +3186,10 @@ vect_build_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
+	  if (!remain.is_empty ())
+	    SLP_INSTANCE_REMAIN_STMTS (new_instance) = remain.copy ();
+	  else
+	    SLP_INSTANCE_REMAIN_STMTS (new_instance) = vNULL;
 	  SLP_INSTANCE_KIND (new_instance) = kind;
 	  new_instance->reduc_phis = NULL;
 	  new_instance->cost_vec = vNULL;
@@ -9138,7 +9153,20 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	gcc_unreachable ();
       tree scalar_def = gimple_build (&epilogue, as_combined_fn (reduc_fn),
 				      TREE_TYPE (TREE_TYPE (vec_def)), vec_def);
-
+      if (!SLP_INSTANCE_REMAIN_STMTS (instance).is_empty ())
+	{
+	  tree rem_def = NULL_TREE;
+	  for (auto rem : SLP_INSTANCE_REMAIN_STMTS (instance))
+	    if (!rem_def)
+	      rem_def = gimple_get_lhs (rem->stmt);
+	    else
+	      rem_def = gimple_build (&epilogue, reduc_code,
+				      TREE_TYPE (scalar_def),
+				      rem_def, gimple_get_lhs (rem->stmt));
+	  scalar_def = gimple_build (&epilogue, reduc_code,
+				     TREE_TYPE (scalar_def),
+				     scalar_def, rem_def);
+	}
       gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
       gsi_insert_seq_before (&rgsi, epilogue, GSI_SAME_STMT);
       gimple_assign_set_rhs_from_tree (&rgsi, scalar_def);
