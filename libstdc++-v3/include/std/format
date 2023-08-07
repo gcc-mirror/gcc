@@ -2536,6 +2536,7 @@ namespace __format
   // not introduce any invalid pointer arithmetic or overflows that would not
   // have happened anyway.
   template<typename _CharT, contiguous_iterator _OutIter>
+    requires same_as<iter_value_t<_OutIter>, _CharT>
     class _Iter_sink<_CharT, _OutIter> : public _Sink<_CharT>
     {
       using uint64_t = __UINTPTR_TYPE__;
