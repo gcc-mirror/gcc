@@ -1,3 +1,8 @@
+2023-08-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add __cxa_call_terminate
+	symbol export.
+
 2023-07-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/compatibility-ldbl-facets-aliases.h: Replace #define with

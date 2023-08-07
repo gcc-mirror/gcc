@@ -1,3 +1,26 @@
+2023-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* gcc.target/i386/pr110792.c: Remove dg-final scan-assembler-not.
+
+2023-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/vect-bitfield-read-1.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-2.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-3.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-4.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-5.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-6.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-read-7.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-write-1.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-write-2.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-write-3.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-write-4.c: Check profile consistency.
+	* gcc.dg/vect/vect-bitfield-write-5.c: Check profile consistency.
+	* gcc.dg/vect/vect-epilogues-2.c: Check profile consistency.
+	* gcc.dg/vect/vect-epilogues.c: Check profile consistency.
+	* gcc.dg/vect/vect-mask-store-move-1.c: Check profile consistency.
+
 2023-08-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110779
