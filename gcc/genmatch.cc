@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "hash-set.h"
 #include "is-a.h"
+#include "ordered-hash-map.h"
 
 
 /* Stubs for GGC referenced through instantiations triggered by hash-map.  */
@@ -1684,7 +1685,7 @@ struct sinfo_hashmap_traits : simple_hashmap_traits<pointer_hash<dt_simplify>,
   template <typename T> static inline void remove (T &) {}
 };
 
-typedef hash_map<void * /* unused */, sinfo *, sinfo_hashmap_traits>
+typedef ordered_hash_map<void * /* unused */, sinfo *, sinfo_hashmap_traits>
   sinfo_map_t;
 
 /* Current simplifier ID we are processing during insertion into the
