@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 #include "tree-vect.h"
 
 #define N 1024
@@ -116,3 +117,4 @@ main ()
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

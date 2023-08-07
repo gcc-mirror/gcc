@@ -11318,8 +11318,19 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			      &advance);
   if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
       && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
-    scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
-			    LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
+    {
+      /* Ifcvt duplicates loop preheader, loop body and produces an basic
+	 block after loop exit.  We need to scale all that.  */
+      basic_block preheader
+       	= loop_preheader_edge (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))->src;
+      preheader->count
+       	= preheader->count.apply_probability
+	      (LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
+      scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
+			      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
+      single_exit (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))->dest->count
+	= preheader->count;
+    }
 
   if (niters_vector == NULL_TREE)
     {

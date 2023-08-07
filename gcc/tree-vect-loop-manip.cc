@@ -3933,9 +3933,15 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       te->probability = prob;
       fe->probability = prob.invert ();
       /* We can scale loops counts immediately but have to postpone
-         scaling the scalar loop because we re-use it during peeling.  */
-      scale_loop_frequencies (loop_to_version, te->probability);
-      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo) = fe->probability;
+	 scaling the scalar loop because we re-use it during peeling.
+
+	 Ifcvt duplicates loop preheader, loop body and produces an basic
+	 block after loop exit.  We need to scale all that.  */
+      basic_block preheader = loop_preheader_edge (loop_to_version)->src;
+      preheader->count = preheader->count.apply_probability (prob * prob2);
+      scale_loop_frequencies (loop_to_version, prob * prob2);
+      single_exit (loop_to_version)->dest->count = preheader->count;
+      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo) = (prob * prob2).invert ();
 
       nloop = scalar_loop;
       if (dump_enabled_p ())
@@ -4069,6 +4075,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	  adj.safe_push (son);
       for (auto son : adj)
 	set_immediate_dominator (CDI_DOMINATORS, son, e->src);
+      //debug_bb (condition_bb);
+      //debug_bb (e->src);
     }
 
   if (version_niter)
