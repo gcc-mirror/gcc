@@ -3499,7 +3499,7 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 /* CODE-compare OP0 and OP1.  Store the result in TARGET.  */
 
 void
-riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1)
+riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1, bool *invert_ptr)
 {
   riscv_extend_comparands (code, &op0, &op1);
   op0 = force_reg (word_mode, op0);
@@ -3510,7 +3510,7 @@ riscv_expand_int_scc (rtx target, enum rtx_code code, rtx op0, rtx op1)
       riscv_emit_binary (code, target, zie, const0_rtx);
     }
   else
-    riscv_emit_int_order_test (code, 0, target, op0, op1);
+    riscv_emit_int_order_test (code, invert_ptr, target, op0, op1);
 }
 
 /* Like riscv_expand_int_scc, but for floating-point comparisons.  */
@@ -3576,7 +3576,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       return true;
     }
   else if (TARGET_ZICOND
-	   && (code == EQ || code == NE)
 	   && GET_MODE_CLASS (mode) == MODE_INT)
     {
       /* The comparison must be comparing WORD_MODE objects.   We must
@@ -3585,6 +3584,45 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 riscv_extend_operands if they are not already properly extended.  */
       if (GET_MODE (op0) != word_mode || GET_MODE (op1) != word_mode)
 	return false;
+
+      /* Canonicalize the comparison.  It must be an equality comparison
+	 against 0.  If it isn't, then emit an SCC instruction so that
+	 we can then use an equality comparison against zero.  */
+      if (!equality_operator (op, VOIDmode) || op1 != CONST0_RTX (mode))
+	{
+	  enum rtx_code new_code = NE;
+	  bool *invert_ptr = 0;
+	  bool invert = false;
+
+	  if (code == LE || code == GE)
+	    invert_ptr = &invert;
+
+	  /* Emit an scc like instruction into a temporary
+	     so that we can use an EQ/NE comparison.  */
+	  rtx tmp = gen_reg_rtx (mode);
+
+	  /* We can support both FP and integer conditional moves.  */
+	  if (INTEGRAL_MODE_P (GET_MODE (XEXP (op, 0))))
+	    riscv_expand_int_scc (tmp, code, op0, op1, invert_ptr);
+	  else if (FLOAT_MODE_P (GET_MODE (XEXP (op, 0)))
+		   && fp_scc_comparison (op, GET_MODE (op)))
+	    riscv_expand_float_scc (tmp, code, op0, op1);
+	  else
+	    return false;
+
+	  /* If riscv_expand_int_scc inverts the condition, then it will
+	     flip the value of INVERT.  We need to know where so that
+	     we can adjust it for our needs.  */
+	  if (invert)
+	    new_code = EQ;
+
+	  op = gen_rtx_fmt_ee (new_code, mode, tmp, const0_rtx);
+
+	  /* We've generated a new comparison.  Update the local variables.  */
+	  code = GET_CODE (op);
+	  op0 = XEXP (op, 0);
+	  op1 = XEXP (op, 1);
+	}
 
       /* 0, reg or 0, imm */
       if (cons == CONST0_RTX (mode)

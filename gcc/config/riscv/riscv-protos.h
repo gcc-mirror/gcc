@@ -103,7 +103,7 @@ extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
 
 #ifdef RTX_CODE
-extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
+extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_conditional_branch (rtx, enum rtx_code, rtx, rtx);
 extern rtx riscv_emit_binary (enum rtx_code code, rtx dest, rtx x, rtx y);
