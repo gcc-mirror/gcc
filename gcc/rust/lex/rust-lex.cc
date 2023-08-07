@@ -2543,8 +2543,9 @@ Lexer::start_line (int current_line, int current_column)
 namespace selftest {
 
 // Checks if `src` has the same contents as the given characters
-void
-assert_source_content (Rust::InputSource &src, std::vector<uint32_t> expected)
+static void
+assert_source_content (Rust::InputSource &src,
+		       const std::vector<uint32_t> &expected)
 {
   Rust::Codepoint src_char = src.next ();
   for (auto expected_char : expected)
@@ -2559,15 +2560,16 @@ assert_source_content (Rust::InputSource &src, std::vector<uint32_t> expected)
   ASSERT_TRUE (src_char.is_eof ());
 }
 
-void
-test_buffer_input_source (std::string str, std::vector<uint32_t> expected)
+static void
+test_buffer_input_source (std::string str,
+			  const std::vector<uint32_t> &expected)
 {
   Rust::BufferInputSource source (str, 0);
   assert_source_content (source, expected);
 }
 
-void
-test_file_input_source (std::string str, std::vector<uint32_t> expected)
+static void
+test_file_input_source (std::string str, const std::vector<uint32_t> &expected)
 {
   FILE *tmpf = tmpfile ();
   // Moves to the first character

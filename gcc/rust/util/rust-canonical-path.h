@@ -58,7 +58,7 @@ public:
   {
     rust_assert (!path.empty ());
     return CanonicalPath ({std::pair<NodeId, std::string> (id, path)},
-			  UNKNOWN_CREATENUM);
+			  UNKNOWN_CRATENUM);
   }
 
   static CanonicalPath
@@ -88,7 +88,7 @@ public:
 
   static CanonicalPath create_empty ()
   {
-    return CanonicalPath ({}, UNKNOWN_CREATENUM);
+    return CanonicalPath ({}, UNKNOWN_CRATENUM);
   }
 
   bool is_empty () const { return segs.size () == 0; }
@@ -171,7 +171,7 @@ public:
 
   CrateNum get_crate_num () const
   {
-    rust_assert (crate_num != UNKNOWN_CREATENUM);
+    rust_assert (crate_num != UNKNOWN_CRATENUM);
     return crate_num;
   }
 

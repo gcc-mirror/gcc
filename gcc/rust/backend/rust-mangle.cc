@@ -1,8 +1,11 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
+#include "optional.h"
 #include "rust-base62.h"
 #include "rust-unicode.h"
-#include "optional.h"
+#include "rust-diagnostics.h"
+#include "rust-unicode.h"
+#include "rust-punycode.h"
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";
@@ -249,22 +252,42 @@ v0_add_disambiguator (std::string &mangled, uint64_t dis)
 static void
 v0_add_identifier (std::string &mangled, const std::string &identifier)
 {
-  // FIXME: gccrs cannot handle unicode identifiers yet, so we never have to
-  // create mangling for unicode values for now. However, this is handled
-  // by the v0 mangling scheme. The grammar for unicode identifier is
-  // contained in <undisambiguated-identifier>, right under the <identifier>
-  // one. If the identifier contains unicode values, then an extra "u" needs
-  // to be added to the mangling string and `punycode` must be used to encode
-  // the characters.
+  // The grammar for unicode identifier is contained in
+  // <undisambiguated-identifier>, right under the <identifier> one. If the
+  // identifier contains unicode values, then an extra "u" needs to be added to
+  // the mangling string and `punycode` must be used to encode the characters.
+  tl::optional<Utf8String> uident_opt
+    = Utf8String::make_utf8_string (identifier);
+  rust_assert (uident_opt.has_value ());
+  tl::optional<std::string> punycode_opt
+    = encode_punycode (uident_opt.value ());
+  rust_assert (punycode_opt.has_value ());
 
-  mangled += std::to_string (identifier.size ());
+  bool is_ascii_ident = true;
+  for (auto c : uident_opt.value ().get_chars ())
+    if (c.value > 127)
+      {
+	is_ascii_ident = false;
+	break;
+      }
 
+  std::string punycode = punycode_opt.value ();
+  // remove tailing hyphen
+  if (punycode.back () == '-')
+    punycode.pop_back ();
+  // replace hyphens in punycode with underscores
+  std::replace (punycode.begin (), punycode.end (), '-', '_');
+
+  if (!is_ascii_ident)
+    mangled.append ("u");
+
+  mangled += std::to_string (punycode.size ());
   // If the first character of the identifier is a digit or an underscore, we
   // add an extra underscore
-  if (identifier[0] == '_')
-    mangled.append ("_");
+  if (punycode[0] == '_')
+    mangled += "_";
 
-  mangled.append (identifier);
+  mangled += punycode;
 }
 
 static std::string
@@ -300,9 +323,9 @@ v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path)
 
   std::string mangled;
   // FIXME: Add real algorithm once all pieces are implemented
-  auto ty_prefix = v0_type_prefix (ty);
   v0_add_identifier (mangled, crate_name);
   v0_add_disambiguator (mangled, 62);
+  auto ty_prefix = v0_type_prefix (ty);
 
   rust_unreachable ();
 }
