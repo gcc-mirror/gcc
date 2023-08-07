@@ -55,9 +55,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NULL (void *)0
 #endif
 
+
 /* InitTimeval returns a newly created opaque type.  */
 
-#if defined(HAVE_TIMEVAL) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_STRUCT_TIMEVAL) && defined(HAVE_MALLOC_H)
 extern "C" struct timeval *
 EXPORT(InitTimeval) (void)
 {
@@ -174,7 +175,7 @@ EXPORT(settimeofday) (void *tv, void *tz)
 /* wraptime_GetFractions - returns the tv_usec field inside the
    timeval structure.  */
 
-#if defined(HAVE_TIMEVAL)
+#if defined(HAVE_STRUCT_TIMEVAL)
 extern "C" unsigned int
 EXPORT(GetFractions) (struct timeval *tv)
 {
@@ -193,7 +194,7 @@ EXPORT(GetFractions) (void *tv)
    this procedure function expects, timeval, as its first parameter
    and not a time_t (as expected by the posix equivalent).  */
 
-#if defined(HAVE_TIMEVAL)
+#if defined(HAVE_STRUCT_TIMEVAL)
 extern "C" struct tm *
 EXPORT(localtime_r) (struct timeval *tv, struct tm *m)
 {
@@ -366,7 +367,7 @@ EXPORT(SetTimezone) (void *tz, int zone, int minuteswest)
 /* SetTimeval - sets the fields in tm, t, with: second, minute, hour,
    day, month, year, fractions.  */
 
-#if defined(HAVE_TIMEVAL)
+#if defined(HAVE_STRUCT_TIMEVAL)
 extern "C" void
 EXPORT(SetTimeval) (struct tm *t, unsigned int second, unsigned int minute,
 		    unsigned int hour, unsigned int day, unsigned int month,
