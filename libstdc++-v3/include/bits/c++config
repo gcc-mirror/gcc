@@ -822,10 +822,10 @@ namespace std
 # define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128 1
 #endif
 
-#ifdef __STDCPP_BFLOAT16_T__
+#if defined __cplusplus && defined __BFLT16_DIG__
 namespace __gnu_cxx
 {
-  using __bfloat16_t = decltype(0.0bf16);
+  typedef __decltype(0.0bf16) __bfloat16_t;
 }
 #endif
 
