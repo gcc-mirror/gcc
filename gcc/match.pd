@@ -6460,6 +6460,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (cmp == NE_EXPR)
        { constant_boolean_node (true, type); })))))))
 
+#if GIMPLE
+/* a?~t:t -> (-(a))^t */
+(simplify
+ (cond @0 @1 @2)
+ (if (INTEGRAL_TYPE_P (type)
+      && bitwise_inverted_equal_p (@1, @2))
+  (with {
+    auto prec = TYPE_PRECISION (type);
+    auto unsign = TYPE_UNSIGNED (type);
+    tree inttype = build_nonstandard_integer_type (prec, unsign);
+   }
+   (convert (bit_xor (negate (convert:inttype @0)) (convert:inttype @2))))))
+#endif
+
 /* Simplify pointer equality compares using PTA.  */
 (for neeq (ne eq)
  (simplify
