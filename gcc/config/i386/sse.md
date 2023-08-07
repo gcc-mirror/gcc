@@ -5422,6 +5422,7 @@
    vfmadd213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmadd231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fma<mode>"
@@ -5461,6 +5462,7 @@
    vfmadd132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfmadd213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmadd_<mode>_mask3<round_name>"
@@ -5475,6 +5477,7 @@
   "TARGET_AVX512F"
   "vfmadd231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma_fmsub_<mode>"
@@ -5522,6 +5525,7 @@
    vfmsub213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fms<mode>"
@@ -5563,6 +5567,7 @@
    vfmsub132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfmsub213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmsub_<mode>_mask3<round_name>"
@@ -5578,6 +5583,7 @@
   "TARGET_AVX512F && <round_mode512bit_condition>"
   "vfmsub231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma_fnmadd_<mode>"
@@ -5625,6 +5631,7 @@
    vfnmadd213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfnmadd231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fnma<mode>"
@@ -5666,6 +5673,7 @@
    vfnmadd132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfnmadd213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fnmadd_<mode>_mask3<round_name>"
@@ -5681,6 +5689,7 @@
   "TARGET_AVX512F && <round_mode512bit_condition>"
   "vfnmadd231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma_fnmsub_<mode>"
@@ -5730,6 +5739,7 @@
    vfnmsub213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfnmsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cond_fnms<mode>"
@@ -5773,6 +5783,7 @@
    vfnmsub132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfnmsub213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fnmsub_<mode>_mask3<round_name>"
@@ -5789,6 +5800,7 @@
   "TARGET_AVX512F"
   "vfnmsub231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 ;; FMA parallel floating point multiply addsub and subadd operations.
@@ -5889,6 +5901,7 @@
    vfmaddsub213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmaddsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmaddsub_<mode>_mask<round_name>"
@@ -5906,6 +5919,7 @@
    vfmaddsub132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfmaddsub213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmaddsub_<mode>_mask3<round_name>"
@@ -5921,6 +5935,7 @@
   "TARGET_AVX512F"
   "vfmaddsub231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma_fmsubadd_<mode>"
@@ -5956,6 +5971,7 @@
    vfmsubadd213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmsubadd231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmsubadd_<mode>_mask<round_name>"
@@ -5974,6 +5990,7 @@
    vfmsubadd132<ssemodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %3, %2<round_op5>}
    vfmsubadd213<ssemodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %2, %3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<avx512>_fmsubadd_<mode>_mask3<round_name>"
@@ -5990,6 +6007,7 @@
   "TARGET_AVX512F"
   "vfmsubadd231<ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 ;; FMA3 floating point scalar intrinsics. These merge result with
@@ -6057,6 +6075,7 @@
    vfmadd132<ssescalarmodesuffix>\t{<round_op4>%2, %3, %0|%0, %<iptr>3, %<iptr>2<round_op4>}
    vfmadd213<ssescalarmodesuffix>\t{<round_op4>%3, %2, %0|%0, %<iptr>2, %<iptr>3<round_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fmai_fmsub_<mode>"
@@ -6074,6 +6093,7 @@
    vfmsub132<ssescalarmodesuffix>\t{<round_op4>%2, %3, %0|%0, %<iptr>3, %<iptr>2<round_op4>}
    vfmsub213<ssescalarmodesuffix>\t{<round_op4>%3, %2, %0|%0, %<iptr>2, %<iptr>3<round_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fmai_fnmadd_<mode><round_name>"
@@ -6091,6 +6111,7 @@
    vfnmadd132<ssescalarmodesuffix>\t{<round_op4>%2, %3, %0|%0, %<iptr>3, %<iptr>2<round_op4>}
    vfnmadd213<ssescalarmodesuffix>\t{<round_op4>%3, %2, %0|%0, %<iptr>2, %<iptr>3<round_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fmai_fnmsub_<mode><round_name>"
@@ -6109,6 +6130,7 @@
    vfnmsub132<ssescalarmodesuffix>\t{<round_op4>%2, %3, %0|%0, %<iptr>3, %<iptr>2<round_op4>}
    vfnmsub213<ssescalarmodesuffix>\t{<round_op4>%3, %2, %0|%0, %<iptr>2, %<iptr>3<round_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vmfmadd_<mode>_mask<round_name>"
@@ -6128,6 +6150,7 @@
    vfmadd132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
    vfmadd213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vmfmadd_<mode>_mask3<round_name>"
@@ -6145,6 +6168,7 @@
   "TARGET_AVX512F"
   "vfmadd231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "avx512f_vmfmadd_<mode>_maskz<round_expand_name>"
@@ -6178,6 +6202,7 @@
    vfmadd132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
    vfmadd213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_vmfmsub_<mode>_mask<round_name>"
@@ -6198,6 +6223,7 @@
    vfmsub132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
    vfmsub213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vmfmsub_<mode>_mask3<round_name>"
@@ -6216,6 +6242,7 @@
   "TARGET_AVX512F"
   "vfmsub231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_vmfmsub_<mode>_maskz_1<round_name>"
@@ -6236,6 +6263,7 @@
    vfmsub132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
    vfmsub213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vmfnmadd_<mode>_mask<round_name>"
@@ -6256,6 +6284,7 @@
    vfnmadd132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
    vfnmadd213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512f_vmfnmadd_<mode>_mask3<round_name>"
@@ -6274,6 +6303,7 @@
   "TARGET_AVX512F"
   "vfnmadd231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "avx512f_vmfnmadd_<mode>_maskz<round_expand_name>"
@@ -6308,6 +6338,7 @@
    vfnmadd132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
    vfnmadd213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_vmfnmsub_<mode>_mask<round_name>"
@@ -6329,6 +6360,7 @@
    vfnmsub132<ssescalarmodesuffix>\t{<round_op5>%2, %3, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}
    vfnmsub213<ssescalarmodesuffix>\t{<round_op5>%3, %2, %0%{%4%}|%0%{%4%}, %<iptr>2, %<iptr>3<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_vmfnmsub_<mode>_mask3<round_name>"
@@ -6348,6 +6380,7 @@
   "TARGET_AVX512F"
   "vfnmsub231<ssescalarmodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %<iptr>3, %<iptr>2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*avx512f_vmfnmsub_<mode>_maskz_1<round_name>"
@@ -6369,6 +6402,7 @@
    vfnmsub132<ssescalarmodesuffix>\t{<round_op6>%2, %3, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>3, %<iptr>2<round_op6>}
    vfnmsub213<ssescalarmodesuffix>\t{<round_op6>%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %<iptr>2, %<iptr>3<round_op6>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 ;; FMA4 floating point scalar intrinsics.  These write the
@@ -6398,6 +6432,7 @@
   "TARGET_FMA4"
   "vfmadd<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma4i_vmfmsub_<mode>"
@@ -6413,6 +6448,7 @@
   "TARGET_FMA4"
   "vfmsub<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma4i_vmfnmadd_<mode>"
@@ -6428,6 +6464,7 @@
   "TARGET_FMA4"
   "vfnmadd<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*fma4i_vmfnmsub_<mode>"
@@ -6444,6 +6481,7 @@
   "TARGET_FMA4"
   "vfnmsub<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %<iptr>3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -6591,6 +6629,7 @@
   "TARGET_AVX512FP16 && <sdc_mask_mode512bit_condition> && <round_mode512bit_condition>"
   "v<complexopname><ssemodesuffix>\t{<round_sdc_mask_op4>%2, %1, %0<sdc_mask_op4>|%0<sdc_mask_op4>, %1, %2<round_sdc_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_insn_and_split "fma_<mode>_fadd_fmul"
@@ -6654,7 +6693,9 @@
 	  UNSPEC_COMPLEX_F_C_MA_PAIR))]
  "TARGET_AVX512FP16"
  "v<complexpairopname>ph\t{%2, %1, %0|%0, %1, %2}"
- [(set_attr "type" "ssemuladd")])
+ [(set_attr "type" "ssemuladd")
+  (set_attr "prefix" "evex")
+  (set_attr "mode" "<MODE>")])
 
 (define_insn_and_split "fma_<mode>_fmaddc_bcst"
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
@@ -6726,6 +6767,7 @@
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
   "v<complexopname><ssemodesuffix>\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "cmul<conj_op><mode>3"
@@ -6913,6 +6955,7 @@
   "TARGET_AVX512FP16"
   "v<complexopname>sh\t{<round_scalarcz_mask_op4>%2, %1, %0<mask_scalarcz_operand4>|%0<mask_scalarcz_operand4>, %1, %2<round_scalarcz_mask_op4>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "V8HF")])
 
 (define_insn "avx512fp16_<complexopname>sh_v8hf_mask<round_name>"
@@ -6932,6 +6975,7 @@
   "TARGET_AVX512FP16"
   "v<complexopname>sh\t{<round_op5>%2, %1, %0%{%4%}|%0%{%4%}, %1, %2<round_op5>}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "V8HF")])
 
 (define_insn "avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>"
@@ -24779,6 +24823,7 @@
   "TARGET_XOP"
   "vp<macs><ssemodesuffix><ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<macs>dql"
@@ -24797,6 +24842,7 @@
   "TARGET_XOP"
   "vp<macs>dql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<macs>dqh"
@@ -24815,6 +24861,7 @@
   "TARGET_XOP"
   "vp<macs>dqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel integer multiply/add instructions for the intrinisics
@@ -24836,6 +24883,7 @@
   "TARGET_XOP"
   "vp<macs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<madcs>wd"
@@ -24868,6 +24916,7 @@
   "TARGET_XOP"
   "vp<madcs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel XMM conditional moves
