@@ -3540,7 +3540,10 @@ vectorizable_call (vec_info *vinfo,
 
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
   internal_fn cond_fn = get_conditional_internal_fn (ifn);
+  internal_fn cond_len_fn = get_len_internal_fn (ifn);
+  int len_opno = internal_fn_len_index (cond_len_fn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
+  vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   if (!vec_stmt) /* transformation not required.  */
     {
       if (slp_node)
@@ -3569,6 +3572,9 @@ vectorizable_call (vec_info *vinfo,
 	  if (reduc_idx >= 0
 	      && (cond_fn == IFN_LAST
 		  || !direct_internal_fn_supported_p (cond_fn, vectype_out,
+						      OPTIMIZE_FOR_SPEED))
+	      && (cond_len_fn == IFN_LAST
+		  || !direct_internal_fn_supported_p (cond_len_fn, vectype_out,
 						      OPTIMIZE_FOR_SPEED)))
 	    {
 	      if (dump_enabled_p ())
@@ -3586,8 +3592,14 @@ vectorizable_call (vec_info *vinfo,
 	      tree scalar_mask = NULL_TREE;
 	      if (mask_opno >= 0)
 		scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
-	      vect_record_loop_mask (loop_vinfo, masks, nvectors,
-				     vectype_out, scalar_mask);
+	      if (cond_len_fn != IFN_LAST
+		  && direct_internal_fn_supported_p (cond_len_fn, vectype_out,
+						     OPTIMIZE_FOR_SPEED))
+		vect_record_loop_len (loop_vinfo, lens, nvectors, vectype_out,
+				      1);
+	      else
+		vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype_out,
+				       scalar_mask);
 	    }
 	}
       return true;
@@ -3603,8 +3615,20 @@ vectorizable_call (vec_info *vinfo,
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  bool len_loop_p = loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo);
   unsigned int vect_nargs = nargs;
-  if (masked_loop_p && reduc_idx >= 0)
+  if (len_loop_p)
+    {
+      if (len_opno >= 0)
+	{
+	  ifn = cond_len_fn;
+	  /* COND_* -> COND_LEN_* takes 2 extra arguments:LEN,BIAS.  */
+	  vect_nargs += 2;
+	}
+      else if (reduc_idx >= 0)
+	gcc_unreachable ();
+    }
+  else if (masked_loop_p && reduc_idx >= 0)
     {
       ifn = cond_fn;
       vect_nargs += 2;
@@ -3671,7 +3695,21 @@ vectorizable_call (vec_info *vinfo,
 		    }
 		  else
 		    {
-		      if (mask_opno >= 0 && masked_loop_p)
+		      if (len_opno >= 0 && len_loop_p)
+			{
+			  unsigned int vec_num = vec_oprnds0.length ();
+			  /* Always true for SLP.  */
+			  gcc_assert (ncopies == 1);
+			  tree len
+			    = vect_get_loop_len (loop_vinfo, gsi, lens, vec_num,
+						 vectype_out, i, 1);
+			  signed char biasval
+			    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+			  tree bias = build_int_cst (intQI_type_node, biasval);
+			  vargs[len_opno] = len;
+			  vargs[len_opno + 1] = bias;
+			}
+		      else if (mask_opno >= 0 && masked_loop_p)
 			{
 			  unsigned int vec_num = vec_oprnds0.length ();
 			  /* Always true for SLP.  */
@@ -3719,7 +3757,17 @@ vectorizable_call (vec_info *vinfo,
 	  if (masked_loop_p && reduc_idx >= 0)
 	    vargs[varg++] = vargs[reduc_idx + 1];
 
-	  if (mask_opno >= 0 && masked_loop_p)
+	  if (len_opno >= 0 && len_loop_p)
+	    {
+	      tree len = vect_get_loop_len (loop_vinfo, gsi, lens, ncopies,
+					    vectype_out, j, 1);
+	      signed char biasval
+		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+	      tree bias = build_int_cst (intQI_type_node, biasval);
+	      vargs[len_opno] = len;
+	      vargs[len_opno + 1] = bias;
+	    }
+	  else if (mask_opno >= 0 && masked_loop_p)
 	    {
 	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks, ncopies,
 					      vectype_out, j);

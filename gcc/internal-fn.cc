@@ -4443,6 +4443,30 @@ get_conditional_internal_fn (internal_fn fn)
     }
 }
 
+/* If there exists an internal function like IFN that operates on vectors,
+   but with additional length and bias parameters, return the internal_fn
+   for that function, otherwise return IFN_LAST.  */
+internal_fn
+get_len_internal_fn (internal_fn fn)
+{
+  switch (fn)
+    {
+#undef DEF_INTERNAL_COND_FN
+#undef DEF_INTERNAL_SIGNED_COND_FN
+#define DEF_INTERNAL_COND_FN(NAME, ...)                                        \
+  case IFN_COND_##NAME:                                                        \
+    return IFN_COND_LEN_##NAME;
+#define DEF_INTERNAL_SIGNED_COND_FN(NAME, ...)                                 \
+  case IFN_COND_##NAME:                                                        \
+    return IFN_COND_LEN_##NAME;
+#include "internal-fn.def"
+#undef DEF_INTERNAL_COND_FN
+#undef DEF_INTERNAL_SIGNED_COND_FN
+    default:
+      return IFN_LAST;
+    }
+}
+
 /* If IFN implements the conditional form of an unconditional internal
    function, return that unconditional function, otherwise return IFN_LAST.  */
 
