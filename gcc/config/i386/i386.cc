@@ -19454,10 +19454,10 @@ avx_vperm2f128_parallel (rtx par, machine_mode mode)
 /* Return a mask of VPTERNLOG operands that do not affect output.  */
 
 int
-vpternlog_redundant_operand_mask (rtx *operands)
+vpternlog_redundant_operand_mask (rtx pternlog_imm)
 {
   int mask = 0;
-  int imm8 = XINT (operands[4], 0);
+  int imm8 = INTVAL (pternlog_imm);
 
   if (((imm8 >> 4) & 0x0F) == (imm8 & 0x0F))
     mask |= 1;
@@ -19475,7 +19475,7 @@ vpternlog_redundant_operand_mask (rtx *operands)
 void
 substitute_vpternlog_operands (rtx *operands)
 {
-  int mask = vpternlog_redundant_operand_mask (operands);
+  int mask = vpternlog_redundant_operand_mask (operands[4]);
 
   if (mask & 1) /* The first operand is redundant.  */
     operands[1] = operands[2];

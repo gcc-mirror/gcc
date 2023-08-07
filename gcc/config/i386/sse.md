@@ -12751,7 +12751,7 @@
 	   (match_operand:V 3 "memory_operand")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_VTERNLOG))]
-  "!reload_completed && vpternlog_redundant_operand_mask (operands) == 3"
+  "!reload_completed && vpternlog_redundant_operand_mask (operands[4]) == 3"
   [(set (match_dup 0)
 	(match_dup 3))
    (set (match_dup 0)
@@ -12772,7 +12772,7 @@
 	   (match_operand:V 3 "nonimmediate_operand")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_VTERNLOG))]
-  "!reload_completed && vpternlog_redundant_operand_mask (operands) != 0"
+  "!reload_completed && vpternlog_redundant_operand_mask (operands[4]) != 0"
   [(set (match_dup 0)
 	(unspec:V
 	  [(match_dup 1)
