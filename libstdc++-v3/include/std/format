@@ -1487,9 +1487,20 @@ namespace __format
 	    {
 	      // If the buffer is too small it's probably because of a large
 	      // precision, or a very large value in fixed format.
-	      size_t __guess =  __prec + sizeof(__buf);
-	      if (__fmt == chars_format::fixed)
-		__guess += max((int)__builtin_log10(__builtin_abs(__v)) / 2, 1);
+	      size_t __guess = 8 + __prec;
+	      if (__fmt == chars_format::fixed) // +ddd.prec
+		{
+		  if constexpr (is_same_v<_Fp, float>)
+		    __guess += __builtin_log10f(__v < 0.0f ? -__v : __v);
+		  else if constexpr (is_same_v<_Fp, double>)
+		    __guess += __builtin_log10(__v < 0.0 ? -__v : __v);
+		  else if constexpr (is_same_v<_Fp, long double>)
+		    __guess += __builtin_log10l(__v < 0.0l ? -__v : __v);
+		  else
+		    __guess += numeric_limits<_Fp>::max_exponent10;
+		}
+	      if (__guess <= sizeof(__buf)) [[unlikely]]
+		__guess = sizeof(__buf) * 2;
 	      __dynbuf.reserve(__guess);
 
 	      do
