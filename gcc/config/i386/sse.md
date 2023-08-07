@@ -6790,6 +6790,7 @@
   return "v<complexopname><ssemodesuffix>\t{<round_maskc_op3>%2, %1, %0<maskc_operand3>|%0<maskc_operand3>, %1, %2<round_maskc_op3>}";
 }
   [(set_attr "type" "ssemul")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "avx512fp16_fmaddcsh_v8hf_maskz<round_expand_name>"
@@ -6993,6 +6994,7 @@
   return "v<complexopname>sh\t{<round_scalarc_mask_op3>%2, %1, %0<mask_scalarc_operand3>|%0<mask_scalarc_operand3>, %1, %2<round_scalarc_mask_op3>}";
 }
   [(set_attr "type" "ssemul")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "V8HF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
