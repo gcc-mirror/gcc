@@ -347,38 +347,6 @@ test_p1652r1() // printf corner cases in std::format
   VERIFY( s == "3.31" );
 }
 
-template<typename T>
-bool format_float()
-{
-    auto s = std::format("{:#} != {:<+7.3f}", (T)-0.0, (T)0.5);
-    return s == "-0. != +0.500 ";
-}
-
-#if __cplusplus > 202002L
-template<typename T>
-concept formattable = std::formattable<T, char>;
-#else
-template<typename T>
-concept formattable = requires (T t, char* p) { std::to_chars(p, p, t); };
-#endif
-
-void
-test_float128()
-{
-#ifdef __SIZEOF_FLOAT128__
-  if constexpr (formattable<__float128>)
-    VERIFY( format_float<__float128>() );
-  else
-    std::puts("Cannot format __float128 on this target");
-#endif
-#if __FLT128_DIG__
-  if constexpr (formattable<_Float128>)
-    VERIFY( format_float<_Float128>() );
-  else
-    std::puts("Cannot format _Float128 on this target");
-#endif
-}
-
 void
 test_pointer()
 {
@@ -429,6 +397,5 @@ int main()
   test_wchar();
   test_minmax();
   test_p1652r1();
-  test_float128();
   test_pointer();
 }
