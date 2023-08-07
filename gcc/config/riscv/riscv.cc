@@ -3582,7 +3582,8 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 enforce that so that we don't strip away a sign_extension
 	 thinking it is unnecessary.  We might consider using
 	 riscv_extend_operands if they are not already properly extended.  */
-      if (GET_MODE (op0) != word_mode || GET_MODE (op1) != word_mode)
+      if ((GET_MODE (op0) != word_mode && GET_MODE (op0) != VOIDmode)
+	  || (GET_MODE (op1) != word_mode && GET_MODE (op1) != VOIDmode))
 	return false;
 
       /* Canonicalize the comparison.  It must be an equality comparison
