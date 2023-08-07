@@ -1072,6 +1072,20 @@ ipa_param_body_adjustments::carry_over_param (tree t)
   return new_parm;
 }
 
+/* If DECL is a gimple register that has a default definition SSA name and that
+   has some uses, return the default definition, otherwise return NULL_TREE.  */
+
+tree
+ipa_param_body_adjustments::get_ddef_if_exists_and_is_used (tree decl)
+{
+ if (!is_gimple_reg (decl))
+    return NULL_TREE;
+  tree ddef = ssa_default_def (m_id->src_cfun, decl);
+  if (!ddef || has_zero_uses (ddef))
+    return NULL_TREE;
+  return ddef;
+}
+
 /* Populate m_dead_stmts given that DEAD_PARAM is going to be removed without
    any replacement or splitting.  REPL is the replacement VAR_SECL to base any
    remaining uses of a removed parameter on.  Push all removed SSA names that
@@ -1084,10 +1098,8 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
   /* Current IPA analyses which remove unused parameters never remove a
      non-gimple register ones which have any use except as parameters in other
      calls, so we can safely leve them as they are.  */
-  if (!is_gimple_reg (dead_param))
-    return;
-  tree parm_ddef = ssa_default_def (m_id->src_cfun, dead_param);
-  if (!parm_ddef || has_zero_uses (parm_ddef))
+  tree parm_ddef = get_ddef_if_exists_and_is_used (dead_param);
+  if (!parm_ddef)
     return;
 
   auto_vec<tree, 4> stack;
@@ -1167,6 +1179,28 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
   /* FIXME: Is setting the mode really necessary? */
   SET_DECL_MODE (dp_ddecl, DECL_MODE (dead_param));
   m_dead_ssa_debug_equiv.put (parm_ddef, dp_ddecl);
+}
+
+/* Put all clobbers of of dereference of default definition of PARAM into
+   m_dead_stmts.  */
+
+void
+ipa_param_body_adjustments::mark_clobbers_dead (tree param)
+{
+  if (!is_gimple_reg (param))
+    return;
+  tree ddef = get_ddef_if_exists_and_is_used (param);
+  if (!ddef)
+    return;
+
+ imm_use_iterator imm_iter;
+ use_operand_p use_p;
+ FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ddef)
+   {
+     gimple *stmt = USE_STMT (use_p);
+     if (gimple_clobber_p (stmt))
+       m_dead_stmts.add (stmt);
+   }
 }
 
 /* Callback to walk_tree.  If REMAP is an SSA_NAME that is present in hash_map
@@ -1504,6 +1538,8 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	       that will guide what not to copy to the new body.  */
 	    if (!split[i])
 	      mark_dead_statements (m_oparms[i], &ssas_to_process_debug);
+	    else
+	      mark_clobbers_dead (m_oparms[i]);
 	    if (MAY_HAVE_DEBUG_STMTS
 		&& is_gimple_reg (m_oparms[i]))
 	      m_reset_debug_decls.safe_push (m_oparms[i]);
