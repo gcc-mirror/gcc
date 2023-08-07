@@ -3133,7 +3133,8 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 		return NULL;
 	    }
 	  else
-	    append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt);
+	    append_pattern_def_seq (vinfo, last_stmt_info, pattern_stmt,
+				    op_vectype);
 	  ops[1] = new_var;
 	}
     }
