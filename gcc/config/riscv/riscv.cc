@@ -2490,6 +2490,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
   switch (GET_CODE (x))
     {
     case CONST_INT:
+      /* trivial constants checked using OUTER_CODE in case they are
+	 encodable in insn itself w/o need for additional insn(s).  */
       if (riscv_immediate_operand_p (outer_code, INTVAL (x)))
 	{
 	  *total = 0;
@@ -2507,17 +2509,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       /* Fall through.  */
 
     case CONST:
+      /* Non trivial CONST_INT Fall through: check if need multiple insns.  */
       if ((cost = riscv_const_insns (x)) > 0)
 	{
-	  /* If the constant is likely to be stored in a GPR, SETs of
-	     single-insn constants are as cheap as register sets; we
-	     never want to CSE them.  */
-	  if (cost == 1 && outer_code == SET)
-	    *total = 0;
-	  /* When we load a constant more than once, it usually is better
-	     to duplicate the last operation in the sequence than to CSE
-	     the constant itself.  */
-	  else if (outer_code == SET || GET_MODE (x) == VOIDmode)
+	  /* 1. Hoist will GCSE constants only if TOTAL returned is non-zero.
+	     2. For constants loaded more than once, the approach so far has
+		been to duplicate the operation than to CSE the constant.
+	     3. TODO: make cost more accurate specially if riscv_const_insns
+		returns > 1.  */
+	  if (outer_code == SET || GET_MODE (x) == VOIDmode)
 	    *total = COSTS_N_INSNS (1);
 	}
       else /* The instruction will be fetched from the constant pool.  */
