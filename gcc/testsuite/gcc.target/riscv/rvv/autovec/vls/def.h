@@ -86,3 +86,51 @@ typedef double v512df __attribute__ ((vector_size (4096)));
 		   "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17",     \
 		   "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25",     \
 		   "v26", "v27", "v28", "v29", "v30", "v31");
+
+#define DEF_OP_VV(PREFIX, NUM, TYPE, OP)                                       \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP c[i];                                                     \
+  }
+
+#define DEF_OP_VI_M16(PREFIX, NUM, TYPE, OP)                                   \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP -16;                                                      \
+  }
+
+#define DEF_OP_VI_15(PREFIX, NUM, TYPE, OP)                                    \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP 15;                                                       \
+  }
+
+#define DEF_OP_IV_M16(PREFIX, NUM, TYPE, OP)                                   \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = -16 OP b[i];                                                      \
+  }
+
+#define DEF_OP_IV_15(PREFIX, NUM, TYPE, OP)                                    \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = 15 OP b[i];                                                       \
+  }
+
+#define DEF_MINMAX_VV(PREFIX, NUM, TYPE, OP)                                   \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b, TYPE *restrict c)  \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = b[i] OP c[i] ? b[i] : c[i];                                       \
+  }

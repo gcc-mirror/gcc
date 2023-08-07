@@ -158,3 +158,26 @@
     DONE;
   }
 )
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vadd.vv/vsub.vv/...
+;; - vadd.vi/vsub.vi/...
+;; -------------------------------------------------------------------------
+
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSI 0 "register_operand")
+    (any_int_binop_no_shift:VLSI
+     (match_operand:VLSI 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSI 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
