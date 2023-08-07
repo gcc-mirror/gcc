@@ -1,3 +1,11 @@
+2023-08-06  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2022-12-18  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/107397
+	* decl.cc (add_init_expr_to_sym): Add check with new error message.
+
 2023-07-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
