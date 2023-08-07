@@ -979,7 +979,7 @@ NodeId
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
-  CrateNum found_crate_num = UNKNOWN_CREATENUM;
+  CrateNum found_crate_num = UNKNOWN_CRATENUM;
   bool found = mappings->lookup_crate_name (crate_name, found_crate_num);
   if (found)
     {

@@ -430,7 +430,7 @@ public:
       }
     else
       {
-	CrateNum found_crate_num = UNKNOWN_CREATENUM;
+	CrateNum found_crate_num = UNKNOWN_CRATENUM;
 	bool found
 	  = mappings->lookup_crate_name (extern_crate.get_referenced_crate (),
 					 found_crate_num);

@@ -29,7 +29,7 @@ namespace Analysis {
 NodeMapping
 NodeMapping::get_error ()
 {
-  return NodeMapping (UNKNOWN_CREATENUM, UNKNOWN_NODEID, UNKNOWN_HIRID,
+  return NodeMapping (UNKNOWN_CRATENUM, UNKNOWN_NODEID, UNKNOWN_HIRID,
 		      UNKNOWN_LOCAL_DEFID);
 }
 
@@ -94,7 +94,7 @@ static const HirId kDefaultHirIdBegin = 1;
 static const HirId kDefaultCrateNumBegin = 0;
 
 Mappings::Mappings ()
-  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CREATENUM),
+  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CRATENUM),
     hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin)
 {
   Analysis::NodeMapping node (0, 0, 0, 0);
