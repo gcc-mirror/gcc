@@ -862,7 +862,7 @@ void
 ConstChecker::visit (ReferenceType &type)
 {
   if (const_context.is_in_context () && type.is_mut ())
-    rust_error_at (type.get_locus (),
+    rust_error_at (type.get_locus (), ErrorCode::E0658,
 		   "mutable references are not allowed in constant functions");
 }
 
