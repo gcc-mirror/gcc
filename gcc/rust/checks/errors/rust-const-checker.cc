@@ -339,8 +339,9 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
     }
 
   if (is_error)
-    rust_error_at (locus, "only functions marked as %<const%> are allowed to "
-			  "be called from constant contexts");
+    rust_error_at (locus, ErrorCode::E0015,
+		   "only functions marked as %<const%> are allowed to be "
+		   "called from constant contexts");
 }
 
 void
