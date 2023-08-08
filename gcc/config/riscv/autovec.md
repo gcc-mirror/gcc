@@ -400,9 +400,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand" "=vr")
-    (any_shift:VI
-     (match_operand:VI 1 "register_operand"    " vr")
+  [(set (match_operand:V_VLSI 0 "register_operand" "=vr")
+    (any_shift:V_VLSI
+     (match_operand:V_VLSI 1 "register_operand"    " vr")
      (match_operand:<VEL> 2 "csr_operand"      " rK")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -425,10 +425,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "v<optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand"  "=vr,vr")
-    (any_shift:VI
-     (match_operand:VI 1 "register_operand"     " vr,vr")
-     (match_operand:VI 2 "vector_shift_operand" " vr,vk")))]
+  [(set (match_operand:V_VLSI 0 "register_operand"  "=vr,vr")
+    (any_shift:V_VLSI
+     (match_operand:V_VLSI 1 "register_operand"     " vr,vr")
+     (match_operand:V_VLSI 2 "vector_shift_operand" " vr,vk")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
