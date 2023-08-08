@@ -16520,10 +16520,6 @@ cp_parser_decltype_expr (cp_parser *parser,
 	expr = cp_parser_lookup_name_simple (parser, expr,
 					     id_expr_start_token->location);
 
-      if (expr && TREE_CODE (expr) == TEMPLATE_DECL)
-	/* A template without args is not a complete id-expression.  */
-	expr = error_mark_node;
-
       if (expr
           && expr != error_mark_node
           && TREE_CODE (expr) != TYPE_DECL
@@ -16544,13 +16540,17 @@ cp_parser_decltype_expr (cp_parser *parser,
                    &error_msg,
 		   id_expr_start_token->location));
 
-          if (expr == error_mark_node)
-            /* We found an id-expression, but it was something that we
-               should not have found. This is an error, not something
-               we can recover from, so note that we found an
-               id-expression and we'll recover as gracefully as
-               possible.  */
-            id_expression_or_member_access_p = true;
+	  if (error_msg)
+	    {
+	      /* We found an id-expression, but it was something that we
+		 should not have found. This is an error, not something
+		 we can recover from, so report the error we found and
+		 we'll recover as gracefully as possible.  */
+	      cp_parser_parse_definitely (parser);
+	      cp_parser_error (parser, error_msg);
+	      id_expression_or_member_access_p = true;
+	      return error_mark_node;
+	    }
         }
 
       if (expr
