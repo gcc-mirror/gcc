@@ -874,6 +874,7 @@ Session::expansion (AST::Crate &crate)
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
   MacroExpander expander (crate, cfg, *this);
+  std::vector<Resolver2_0::ResolveError> macro_errors;
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
@@ -882,7 +883,11 @@ Session::expansion (AST::Crate &crate)
       auto ctx = Resolver2_0::NameResolutionContext ();
 
       if (flag_name_resolution_2_0)
-	Resolver2_0::Early (ctx).go (crate);
+	{
+	  Resolver2_0::Early early (ctx);
+	  early.go (crate);
+	  macro_errors = early.get_macro_resolve_errors ();
+	}
       else
 	Resolver::EarlyNameResolver ().go (crate);
 
@@ -895,6 +900,10 @@ Session::expansion (AST::Crate &crate)
       if (saw_errors ())
 	break;
     }
+
+  // Fixed point reached: Emit unresolved macros error
+  for (auto &error : macro_errors)
+    error ();
 
   if (iterations == cfg.recursion_limit)
     {

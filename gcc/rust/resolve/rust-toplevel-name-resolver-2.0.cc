@@ -107,6 +107,13 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
 
   if (macro.get_kind () == AST::MacroRulesDefinition::MacroKind::DeclMacro)
     insert_or_error_out (macro.get_rule_name (), macro, Namespace::Macros);
+
+  auto mappings = Analysis::Mappings::get ();
+  AST::MacroRulesDefinition *tmp = nullptr;
+  if (mappings->lookup_macro_def (macro.get_node_id (), &tmp))
+    return;
+
+  mappings->insert_macro_def (&macro);
 }
 
 void
