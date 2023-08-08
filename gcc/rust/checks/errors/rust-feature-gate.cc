@@ -86,7 +86,7 @@ FeatureGate::gate (Feature::Name name, location_t loc,
 	{
 	  const char *fmt_str
 	    = "%s. add `#![feature(%s)]` to the crate attributes to enable.";
-	  rust_error_at (loc, fmt_str, error_msg.c_str (),
+	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
 			 feature.as_string ().c_str ());
 	}
     }
