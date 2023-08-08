@@ -1,3 +1,12 @@
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_UPDATE and C_ORT_OMP_UPDATE
+	codes.
+	* c-omp.cc (omp_basic_map_kind_name): New function.
+	(omp_instantiate_mapper): Add LOC parameter.  Add 'target update'
+	support.
+	(c_omp_instantiate_mappers): Add 'target update' support.
+
 2023-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* c-common.h (expand_array_base): Update prototype.
