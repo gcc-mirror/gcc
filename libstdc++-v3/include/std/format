@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace __format
 {
   // Type-erased character sink.
-  template<typename _CharT> struct _Sink;
+  template<typename _CharT> class _Sink;
   // Output iterator that writes to a type-erase character sink.
   template<typename _CharT>
     class _Sink_iter;
@@ -280,7 +280,6 @@ namespace __format
 	}
       else
 	{
-	  unsigned short __val = 0;
 	  constexpr int __n = 32;
 	  char __buf[__n]{};
 	  for (int __i = 0; __i < __n && (__first + __i) != __last; ++__i)
@@ -1468,6 +1467,8 @@ namespace __format
 	      if (__use_prec)
 		__fmt = chars_format::general;
 	      break;
+	    default:
+	      __builtin_unreachable();
 	  }
 
 	  // Write value into buffer using std::to_chars.
@@ -2083,7 +2084,11 @@ namespace __format
 
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // P2510R3 Formatting pointers
-#define _GLIBCXX_P2518R3 (__cplusplus > 202302L || ! defined __STRICT_ANSI__)
+#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+#define _GLIBCXX_P2518R3 1
+#else
+#define _GLIBCXX_P2518R3 0
+#endif
 
 #if _GLIBCXX_P2518R3
 	__first = __spec._M_parse_zero_fill(__first, __last);
@@ -2641,7 +2646,7 @@ namespace __format
     _Arg_none, _Arg_bool, _Arg_c, _Arg_i, _Arg_u, _Arg_ll, _Arg_ull,
     _Arg_flt, _Arg_dbl, _Arg_ldbl, _Arg_str, _Arg_sv, _Arg_ptr, _Arg_handle,
     _Arg_i128, _Arg_u128,
-    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64,
+    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64, // These are unused.
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
     _Arg_next_value_,
     _Arg_f128 = _Arg_ldbl,
@@ -3106,14 +3111,16 @@ namespace __format
 	    case _Arg_u128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_u128);
 #endif
-	      // TODO _Arg_f16 etc.
 
 #if _GLIBCXX_FORMAT_F128 == 2
 	    case _Arg_f128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_f128);
 #endif
+
+	    default:
+	      // _Arg_f16 etc.
+	      __builtin_unreachable();
 	  }
-	  __builtin_unreachable();
 	}
     };
 
@@ -3422,15 +3429,6 @@ namespace __format
 /// @cond undocumented
 namespace __format
 {
-  template<typename _Ctx, typename _CharT>
-    [[__gnu__::__always_inline__]]
-    inline void
-    __write(_Ctx& __ctx, basic_string_view<_CharT> __str)
-    requires requires { { __ctx.out() } -> output_iterator<const _CharT&>; }
-    {
-      __ctx.advance_to(__format::__write(__ctx.out()));
-    }
-
   // Abstract base class defining an interface for scanning format strings.
   // Scan the characters in a format string, dividing it up into strings of
   // ordinary characters, escape sequences, and replacement fields.
