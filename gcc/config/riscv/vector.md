@@ -3386,8 +3386,8 @@
 ;; -------------------------------------------------------------------------------
 
 (define_insn "@pred_<optab><mode>"
-  [(set (match_operand:VI 0 "register_operand"          "=vd,vd, vr, vr")
-	(if_then_else:VI
+  [(set (match_operand:V_VLSI 0 "register_operand"          "=vd,vd, vr, vr")
+	(if_then_else:V_VLSI
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" "vm,vm,Wc1,Wc1")
 	     (match_operand 4 "vector_length_operand"    "rK,rK, rK, rK")
@@ -3396,9 +3396,9 @@
 	     (match_operand 7 "const_int_operand"        " i, i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (any_int_unop:VI
-	    (match_operand:VI 3 "register_operand"       "vr,vr, vr, vr"))
-	  (match_operand:VI 2 "vector_merge_operand"     "vu, 0, vu,  0")))]
+	  (any_int_unop:V_VLSI
+	    (match_operand:V_VLSI 3 "register_operand"       "vr,vr, vr, vr"))
+	  (match_operand:V_VLSI 2 "vector_merge_operand"     "vu, 0, vu,  0")))]
   "TARGET_VECTOR"
   "v<insn>.v\t%0,%3%p1"
   [(set_attr "type" "vialu")

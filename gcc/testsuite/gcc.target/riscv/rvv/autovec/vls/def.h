@@ -142,3 +142,11 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = b[i] OP 7;                                                        \
   }
+
+#define DEF_OP_V(PREFIX, NUM, TYPE, OP)                                        \
+  void __attribute__ ((noinline, noclone))                                     \
+  PREFIX##_##TYPE##NUM (TYPE *restrict a, TYPE *restrict b)                    \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = OP b[i];                                                          \
+  }
