@@ -1,3 +1,9 @@
+2023-08-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_stacktrace_sparc.cpp,
+	sanitizer_common/sanitizer_unwind_linux_libcdep.cpp: Cherry-pick
+	llvm-project revision 679c076ae446af81eba81ce9b94203a273d4b88a.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

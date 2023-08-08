@@ -1,3 +1,28 @@
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* g++.dg/cpp0x/constexpr-empty18.C: New test.
+	* g++.dg/cpp0x/constexpr-empty19.C: New test.
+
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/template/ttp38.C: New test.
+
+2023-08-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* gm2/iso/run/pass/m2date.mod: New test.
+	* gm2/iso/run/pass/testclock.mod: New test.
+	* gm2/iso/run/pass/testclock2.mod: New test.
+
 2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
