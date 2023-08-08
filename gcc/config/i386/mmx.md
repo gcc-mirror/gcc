@@ -595,7 +595,18 @@
 	  (match_operand:V2FI_V4HF 1 "nonimmediate_operand")
 	  (match_dup 2)))]
   "TARGET_SSE2"
-  "operands[2] = CONST0_RTX (<MODE>mode);")
+{
+  if (<MODE>mode == V2SFmode
+      && !flag_trapping_math)
+    {
+      rtx op1 = force_reg (<MODE>mode, operands[1]);
+      emit_move_insn (operands[0], lowpart_subreg (<mmxdoublevecmode>mode,
+						   op1, <MODE>mode));
+      DONE;
+    }
+
+  operands[2] = CONST0_RTX (<MODE>mode);
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -648,7 +659,7 @@
 	(plusminusmult:V2SF
 	  (match_operand:V2SF 1 "nonimmediate_operand")
 	  (match_operand:V2SF 2 "nonimmediate_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V4SFmode);
   rtx op1 = gen_reg_rtx (V4SFmode);
@@ -726,7 +737,7 @@
   [(set (match_operand:V2SF 0 "register_operand")
 	(div:V2SF (match_operand:V2SF 1 "register_operand")
 		  (match_operand:V2SF 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V4SFmode);
   rtx op1 = gen_reg_rtx (V4SFmode);
@@ -748,7 +759,7 @@
         (smaxmin:V2SF
 	  (match_operand:V2SF 1 "register_operand")
 	  (match_operand:V2SF 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V4SFmode);
   rtx op1 = gen_reg_rtx (V4SFmode);
@@ -850,7 +861,7 @@
 (define_expand "sqrtv2sf2"
   [(set (match_operand:V2SF 0 "register_operand")
 	(sqrt:V2SF (match_operand:V2SF 1 "nonimmediate_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -931,7 +942,7 @@
 	  (vec_select:SF
 	    (match_dup 1)
 	    (parallel [(match_operand:SI 3 "const_0_to_1_operand")]))))]
-  "TARGET_SSE3 && TARGET_MMX_WITH_SSE
+  "TARGET_SSE3 && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math
    && INTVAL (operands[2]) != INTVAL (operands[3])
    && ix86_pre_reload_split ()"
   "#"
@@ -977,7 +988,7 @@
 	  (vec_select:SF
 	    (match_dup 1)
 	    (parallel [(const_int 1)]))))]
-  "TARGET_SSE3 && TARGET_MMX_WITH_SSE
+  "TARGET_SSE3 && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
@@ -1039,7 +1050,7 @@
 	    (match_operand:V2SF 2 "nonimmediate_operand"))
 	  (plus:V2SF (match_dup 1) (match_dup 2))
 	  (const_int 1)))]
-  "TARGET_SSE3 && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE3 && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V4SFmode);
   rtx op1 = gen_reg_rtx (V4SFmode);
@@ -1102,7 +1113,7 @@
 	(match_operator:V2SI 1 ""
 	  [(match_operand:V2SF 2 "nonimmediate_operand")
 	   (match_operand:V2SF 3 "nonimmediate_operand")]))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx ops[4];
   ops[3] = gen_reg_rtx (V4SFmode);
@@ -1128,7 +1139,7 @@
 	     (match_operand:V2SF 5 "nonimmediate_operand")])
 	  (match_operand:V2FI 1 "general_operand")
 	  (match_operand:V2FI 2 "general_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx ops[6];
   ops[5] = gen_reg_rtx (V4SFmode);
@@ -1318,7 +1329,7 @@
 	  (match_operand:V2SF 2 "nonimmediate_operand")
 	  (match_operand:V2SF 3 "nonimmediate_operand")))]
   "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op3 = gen_reg_rtx (V4SFmode);
   rtx op2 = gen_reg_rtx (V4SFmode);
@@ -1343,7 +1354,7 @@
 	  (neg:V2SF
 	    (match_operand:V2SF 3 "nonimmediate_operand"))))]
   "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op3 = gen_reg_rtx (V4SFmode);
   rtx op2 = gen_reg_rtx (V4SFmode);
@@ -1368,7 +1379,7 @@
 	  (match_operand:V2SF   2 "nonimmediate_operand")
 	  (match_operand:V2SF   3 "nonimmediate_operand")))]
   "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op3 = gen_reg_rtx (V4SFmode);
   rtx op2 = gen_reg_rtx (V4SFmode);
@@ -1394,7 +1405,7 @@
 	  (neg:V2SF
 	    (match_operand:V2SF 3 "nonimmediate_operand"))))]
   "(TARGET_FMA || TARGET_FMA4 || TARGET_AVX512VL)
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op3 = gen_reg_rtx (V4SFmode);
   rtx op2 = gen_reg_rtx (V4SFmode);
@@ -1420,7 +1431,7 @@
 (define_expand "fix_truncv2sfv2si2"
   [(set (match_operand:V2SI 0 "register_operand")
 	(fix:V2SI (match_operand:V2SF 1 "nonimmediate_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);
@@ -1436,7 +1447,7 @@
 (define_expand "fixuns_truncv2sfv2si2"
   [(set (match_operand:V2SI 0 "register_operand")
 	(unsigned_fix:V2SI (match_operand:V2SF 1 "nonimmediate_operand")))]
-  "TARGET_AVX512VL && TARGET_MMX_WITH_SSE"
+  "TARGET_AVX512VL && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);
@@ -1461,7 +1472,7 @@
 (define_expand "floatv2siv2sf2"
   [(set (match_operand:V2SF 0 "register_operand")
 	(float:V2SF (match_operand:V2SI 1 "nonimmediate_operand")))]
-  "TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SImode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1477,7 +1488,7 @@
 (define_expand "floatunsv2siv2sf2"
   [(set (match_operand:V2SF 0 "register_operand")
 	(unsigned_float:V2SF (match_operand:V2SI 1 "nonimmediate_operand")))]
-  "TARGET_AVX512VL && TARGET_MMX_WITH_SSE"
+  "TARGET_AVX512VL && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SImode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1754,7 +1765,7 @@
 (define_expand "nearbyintv2sf2"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
-  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1770,7 +1781,7 @@
 (define_expand "rintv2sf2"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
-  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1786,8 +1797,8 @@
 (define_expand "lrintv2sfv2si2"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);
@@ -1804,7 +1815,7 @@
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
   "TARGET_SSE4_1 && !flag_trapping_math
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1820,8 +1831,8 @@
 (define_expand "lceilv2sfv2si2"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);
@@ -1838,7 +1849,7 @@
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
   "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1854,8 +1865,8 @@
 (define_expand "lfloorv2sfv2si2"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);
@@ -1872,7 +1883,7 @@
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
   "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1889,7 +1900,7 @@
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
   "TARGET_SSE4_1 && !flag_trapping_math
-   && TARGET_MMX_WITH_SSE"
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SFmode);
@@ -1905,8 +1916,8 @@
 (define_expand "lroundv2sfv2si2"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V2SF 1 "nonimmediate_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math
-  && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && !flag_trapping_math
+   && TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4SImode);

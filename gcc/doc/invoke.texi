@@ -1419,6 +1419,7 @@ See RS/6000 and PowerPC Options.
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait
 -mrecip  -mrecip=@var{opt}
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
+-mpartial-vector-fp-math
 -mmove-max=@var{bits} -mstore-max=@var{bits}
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl
@@ -33753,6 +33754,23 @@ This option instructs GCC to use 128-bit AVX instructions instead of
 @item -mprefer-vector-width=@var{opt}
 This option instructs GCC to use @var{opt}-bit vector width in instructions
 instead of default on the selected platform.
+
+@opindex mpartial-vector-fp-math
+@item -mpartial-vector-fp-math
+This option enables GCC to generate floating-point operations that might
+affect the set of floating-point status flags on partial vectors, where
+vector elements reside in the low part of the 128-bit SSE register.  Unless
+@option{-fno-trapping-math} is specified, the compiler guarantees correct
+behavior by sanitizing all input operands to have zeroes in the unused
+upper part of the vector register.  Note that by using built-in functions
+or inline assembly with partial vector arguments, NaNs, denormal or invalid
+values can leak into the upper part of the vector, causing possible
+performance issues when @option{-fno-trapping-math} is in effect.  These
+issues can be mitigated by manually sanitizing the upper part of the partial
+vector argument register or by using @option{-mdaz-ftz} to set
+denormals-are-zero (DAZ) flag in the MXCSR register.
+
+This option is enabled by default.
 
 @opindex mmove-max
 @item -mmove-max=@var{bits}
