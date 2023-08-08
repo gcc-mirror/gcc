@@ -1711,15 +1711,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Sets value of string to characters in the range [__first,__last).
       */
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	_GLIBCXX20_CONSTEXPR
+	basic_string&
+	assign(_InputIterator __first, _InputIterator __last)
+	{
+#if __cplusplus >= 202002L
+	  if constexpr (contiguous_iterator<_InputIterator>
+			  && is_same_v<iter_value_t<_InputIterator>, _CharT>)
+#else
+	  if constexpr (__is_one_of<_InputIterator, const_iterator, iterator,
+				    const _CharT*, _CharT*>::value)
+#endif
+	    {
+	      __glibcxx_requires_valid_range(__first, __last);
+	      return _M_replace(size_type(0), size(),
+				std::__to_address(__first), __last - __first);
+	    }
+	  else
+	    return *this = basic_string(__first, __last, get_allocator());
+	}
+#pragma GCC diagnostic pop
 #else
       template<class _InputIterator>
+	basic_string&
+	assign(_InputIterator __first, _InputIterator __last)
+	{ return this->replace(begin(), end(), __first, __last); }
 #endif
-        basic_string&
-        assign(_InputIterator __first, _InputIterator __last)
-        { return this->replace(begin(), end(), __first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1730,7 +1751,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       basic_string&
       assign(initializer_list<_CharT> __l)
-      { return this->assign(__l.begin(), __l.size()); }
+      {
+	// The initializer_list array cannot alias the characters in *this
+	// so we don't need to use replace to that case.
+	const size_type __n = __l.size();
+	if (__n > capacity())
+	  *this = basic_string(__l.begin(), __l.end(), get_allocator());
+	else
+	  {
+	    if (__n)
+	      _S_copy(_M_data(), __l.begin(), __n);
+	    _M_set_length(__n);
+	  }
+	return *this;
+      }
 #endif // C++11
 
 #if __cplusplus >= 201703L
