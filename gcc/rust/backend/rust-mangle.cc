@@ -4,8 +4,17 @@
 #include "rust-base62.h"
 #include "rust-unicode.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-full-decls.h"
+#include "rust-hir-item.h"
+#include "rust-hir-type-bounds.h"
+#include "rust-system.h"
+#include "rust-tyty-subst.h"
+#include "rust-tyty.h"
 #include "rust-unicode.h"
 #include "rust-punycode.h"
+#include "rust-hir.h"
+#include "rust-compile-type.h"
+#include <sstream>
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";
@@ -27,6 +36,43 @@ namespace Rust {
 namespace Compile {
 
 Mangler::MangleVersion Mangler::version = MangleVersion::LEGACY;
+
+struct V0Path
+{
+  std::string prefix = "";
+  // Used for "N"
+  std::string ns = "";
+  std::string path = "";
+  // Used for "N" and "C"
+  std::string ident = "";
+  // Used for "C"
+  std::string crate_disambiguator = "";
+  // Used for "M" and "X"
+  std::string impl_path = "";
+  std::string impl_type = "";
+  std::string trait_type = "";
+  // Used for generic types
+  std::string generic_postfix = "";
+  std::string generic_prefix = "";
+
+  std::string as_string () const
+  {
+    if (prefix == "N")
+      return generic_prefix + prefix + ns + path + ident + generic_postfix;
+    else if (prefix == "M")
+      return prefix + impl_path + impl_type;
+    else if (prefix == "X")
+      return prefix + impl_type + trait_type;
+    else if (prefix == "C")
+      return prefix + crate_disambiguator + ident;
+    else
+      rust_unreachable ();
+  }
+};
+
+static std::string
+v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
+	 const Resolver::CanonicalPath &path);
 
 static std::string
 legacy_mangle_name (const std::string &name)
@@ -52,8 +98,7 @@ legacy_mangle_name (const std::string &name)
   // _ZN74_$LT$example..Identity$u20$as$u20$example..FnLike$LT$$RF$T$C$$RF$T$GT$$GT$4call17ha9ee58935895acb3E
 
   tl::optional<Utf8String> utf8_name = Utf8String::make_utf8_string (name);
-  if (!utf8_name.has_value ())
-    rust_unreachable ();
+  rust_assert (utf8_name.has_value ());
   std::vector<Codepoint> chars = utf8_name.value ().get_chars ();
   std::string buffer;
   for (size_t i = 0; i < chars.size (); i++)
@@ -151,9 +196,9 @@ static std::string
 v0_numeric_prefix (const TyTy::BaseType *ty)
 {
   static const std::map<std::string, std::string> num_prefixes = {
-    {"[i8]", "a"},    {"[u8]", "h"},	{"[i16]", "s"}, {"[u16]", "t"},
-    {"[i32]", "l"},   {"[u32]", "m"},	{"[i64]", "x"}, {"[u64]", "y"},
-    {"[isize]", "i"}, {"[usize]", "j"}, {"[f32]", "f"}, {"[f64]", "d"},
+    {"i8", "a"},    {"u8", "h"},    {"i16", "s"}, {"u16", "t"},
+    {"i32", "l"},   {"u32", "m"},   {"i64", "x"}, {"u64", "y"},
+    {"isize", "i"}, {"usize", "j"}, {"f32", "f"}, {"f64", "d"},
   };
 
   auto ty_kind = ty->get_kind ();
@@ -170,7 +215,7 @@ v0_numeric_prefix (const TyTy::BaseType *ty)
   if (numeric_iter != num_prefixes.end ())
     return numeric_iter->second;
 
-  return "";
+  rust_unreachable ();
 }
 
 static std::string
@@ -212,46 +257,96 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
   rust_unreachable ();
 }
 
-// Add an underscore-terminated base62 integer to the mangling string.
+static std::string
+v0_complex_type_prefix (Context *ctx, const TyTy::BaseType *ty)
+{
+  // FIXME: ref, slice, dyn, etc.
+  // TODO: generics
+  switch (ty->get_kind ())
+    {
+      case TyTy::TypeKind::ADT: {
+	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (ty);
+	return v0_path (ctx, ty, adt->get_ident ().path);
+      }
+      break;
+    default:
+      return "";
+    }
+}
+
+// Returns an underscore-terminated base62 integer.
 // This corresponds to the `<base-62-number>` grammar in the v0 mangling RFC:
 //  - 0 is encoded as "_"
 //  - any other value is encoded as itself minus one in base 62, followed by
 //  "_"
-static void
-v0_add_integer_62 (std::string &mangled, uint64_t x)
+static std::string
+v0_integer_62 (uint64_t x)
 {
+  std::stringstream s;
   if (x > 0)
-    mangled.append (base62_integer (x - 1));
+    s << base62_integer (x - 1);
 
-  mangled.append ("_");
+  s << "_";
+  return s.str ();
 }
 
-// Add a tag-prefixed base62 integer to the mangling string when the
+//  Returns a tag-prefixed base62 integer when the
 // integer is greater than 0:
 //  - 0 is encoded as "" (nothing)
-//  - any other value is encoded as <tag> + v0_add_integer_62(itself), that is
+//  - any other value is encoded as <tag> + v0_integer_62(itself), that is
 //  <tag> + base62(itself - 1) + '_'
-static void
-v0_add_opt_integer_62 (std::string &mangled, std::string tag, uint64_t x)
+static std::string
+v0_opt_integer_62 (std::string tag, uint64_t x)
 {
   if (x > 0)
     {
-      mangled.append (tag);
-      v0_add_integer_62 (mangled, x);
+      return tag + v0_integer_62 (x);
     }
+  return "";
 }
 
-static void
-v0_add_disambiguator (std::string &mangled, uint64_t dis)
+static std::string
+v0_disambiguator (uint64_t dis)
 {
-  v0_add_opt_integer_62 (mangled, "s", dis);
+  return v0_opt_integer_62 ("s", dis);
 }
 
-// Add an identifier to the mangled string. This corresponds to the
+static std::string
+v0_type_prefix (Context *ctx, const TyTy::BaseType *ty)
+{
+  std::string ty_prefix;
+
+  ty_prefix = v0_simple_type_prefix (ty);
+  if (!ty_prefix.empty ())
+    return ty_prefix;
+
+  ty_prefix = v0_complex_type_prefix (ctx, ty);
+  if (!ty_prefix.empty ())
+    return ty_prefix;
+
+  rust_unreachable ();
+}
+
+static std::string
+v0_generic_args (Context *ctx, const TyTy::BaseType *ty)
+{
+  std::stringstream ss;
+  const TyTy::FnType *fnty = static_cast<const TyTy::FnType *> (ty);
+  TyTy::SubstitutionArgumentMappings &subst_ref
+    = const_cast<TyTy::FnType *> (fnty)->get_substitution_arguments ();
+  for (TyTy::SubstitutionArg &map : subst_ref.get_mappings ())
+    {
+      ss << v0_type_prefix (ctx, map.get_tyty ());
+    }
+  return ss.str ();
+}
+
+// Returns an mangled identifier. This corresponds to the
 // `<identifier>` grammar in the v0 mangling RFC.
-static void
-v0_add_identifier (std::string &mangled, const std::string &identifier)
+static std::string
+v0_identifier (const std::string &identifier)
 {
+  std::stringstream mangled;
   // The grammar for unicode identifier is contained in
   // <undisambiguated-identifier>, right under the <identifier> one. If the
   // identifier contains unicode values, then an extra "u" needs to be added to
@@ -279,26 +374,219 @@ v0_add_identifier (std::string &mangled, const std::string &identifier)
   std::replace (punycode.begin (), punycode.end (), '-', '_');
 
   if (!is_ascii_ident)
-    mangled.append ("u");
+    mangled << "u";
 
-  mangled += std::to_string (punycode.size ());
+  mangled << std::to_string (punycode.size ());
   // If the first character of the identifier is a digit or an underscore, we
   // add an extra underscore
   if (punycode[0] == '_')
-    mangled += "_";
+    mangled << "_";
 
-  mangled += punycode;
+  mangled << punycode;
+  return mangled.str ();
+}
+
+static V0Path
+v0_type_path (V0Path path, std::string ident)
+{
+  V0Path v0path;
+  v0path.prefix = "N";
+  v0path.ns = "t";
+  v0path.path = path.as_string ();
+  v0path.ident = ident;
+  // TODO: Need <generic-arg>?
+  return v0path;
+}
+
+static V0Path
+v0_function_path (V0Path path, Rust::Compile::Context *ctx,
+		  const TyTy::BaseType *ty, HIR::Function *fn,
+		  std::string ident)
+{
+  V0Path v0path;
+  v0path.prefix = "N";
+  v0path.ns = "v";
+  v0path.path = path.as_string ();
+  v0path.ident = ident;
+  if (!fn->get_generic_params ().empty ())
+    {
+      v0path.generic_prefix = "I";
+      v0path.generic_postfix = v0_generic_args (ctx, ty) + "E";
+    }
+  return v0path;
+}
+
+static V0Path
+v0_scope_path (V0Path path, std::string ident)
+{
+  V0Path v0path;
+  v0path.prefix = "N";
+  v0path.ns = "v";
+  v0path.path = path.as_string ();
+  v0path.ident = ident;
+  return v0path;
+}
+
+static V0Path
+v0_crate_path (CrateNum crate_num, std::string ident)
+{
+  V0Path v0path;
+  v0path.prefix = "C";
+  v0path.crate_disambiguator = v0_disambiguator (crate_num);
+  v0path.ident = ident;
+  return v0path;
+}
+
+static V0Path
+v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
+				HIR::ImplBlock *impl_block)
+{
+  V0Path v0path;
+  bool ok;
+
+  // lookup impl type
+  TyTy::BaseType *impl_ty = nullptr;
+  ok = ctx->get_tyctx ()->lookup_type (
+    impl_block->get_type ()->get_mappings ().get_hirid (), &impl_ty);
+  rust_assert (ok);
+
+  // FIXME: dummy value for now
+  v0path.impl_path = "C5crate";
+  v0path.impl_type = v0_type_prefix (ctx, impl_ty);
+
+  if (impl_block->has_trait_ref ())
+    {
+      // trait impl: X <impl-path> <type> <path>
+      v0path.prefix = "X";
+
+      TyTy::BaseType *trait_ty = nullptr;
+      ok = ctx->get_tyctx ()->lookup_type (
+	impl_block->get_trait_ref ()->get_mappings ().get_hirid (), &trait_ty);
+      rust_assert (ok);
+
+      v0path.trait_type = v0_type_prefix (ctx, trait_ty);
+    }
+  else
+    // inherent impl: M <impl-path> <type>
+    v0path.prefix = "M";
+
+  return v0path;
 }
 
 static std::string
-v0_type_prefix (const TyTy::BaseType *ty)
+v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
+	 const Resolver::CanonicalPath &cpath)
 {
-  auto ty_prefix = v0_simple_type_prefix (ty);
-  if (!ty_prefix.empty ())
-    return ty_prefix;
+  auto mappings = Analysis::Mappings::get ();
 
-  // FIXME: We need to fetch more type prefixes
-  rust_unreachable ();
+  V0Path v0path = {};
+
+  cpath.iterate_segs ([&] (const Resolver::CanonicalPath &seg) {
+    HirId hir_id;
+    bool ok = mappings->lookup_node_to_hir (seg.get_node_id (), &hir_id);
+    if (!ok)
+      {
+	// FIXME: generic arg in canonical path? (e.g. <i32> in crate::S<i32>)
+	rust_unreachable ();
+      }
+
+    HirId parent_impl_id = UNKNOWN_HIRID;
+    HIR::ImplItem *impl_item
+      = mappings->lookup_hir_implitem (hir_id, &parent_impl_id);
+    HIR::TraitItem *trait_item = mappings->lookup_hir_trait_item (hir_id);
+    HIR::Item *item = mappings->lookup_hir_item (hir_id);
+
+    if (impl_item != nullptr)
+      {
+	switch (impl_item->get_impl_item_type ())
+	  {
+	    case HIR::ImplItem::FUNCTION: {
+	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
+	      v0path = v0_function_path (v0path, ctx, ty, fn,
+					 v0_identifier (seg.get ()));
+	    }
+	    break;
+	  case HIR::ImplItem::CONSTANT:
+	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	    break;
+	  default:
+	    rust_internal_error_at (UNDEF_LOCATION, "Attempt to mangle '%s'",
+				    cpath.get ().c_str ());
+	    break;
+	  }
+      }
+    else if (trait_item != nullptr)
+      {
+	switch (trait_item->get_item_kind ())
+	  {
+	    case HIR::TraitItem::FUNC: {
+	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
+	      v0path = v0_function_path (v0path, ctx, ty, fn,
+					 v0_identifier (seg.get ()));
+	    }
+	    break;
+	  case HIR::TraitItem::CONST:
+	    v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	    break;
+	  default:
+	    rust_internal_error_at (UNDEF_LOCATION, "Attempt to mangle '%s'",
+				    cpath.get ().c_str ());
+	    break;
+	  }
+      }
+    else if (item != nullptr)
+      switch (item->get_item_kind ())
+	{
+	  case HIR::Item::ItemKind::Function: {
+	    HIR::Function *fn = static_cast<HIR::Function *> (item);
+	    v0path = v0_function_path (v0path, ctx, ty, fn,
+				       v0_identifier (seg.get ()));
+	  }
+	  break;
+	case HIR::Item::ItemKind::Module:
+	case HIR::Item::ItemKind::Trait:
+	case HIR::Item::ItemKind::Static:
+	case HIR::Item::ItemKind::Constant:
+	  v0path = v0_scope_path (v0path, v0_identifier (seg.get ()));
+	  break;
+	case HIR::Item::ItemKind::Struct:
+	case HIR::Item::ItemKind::Enum:
+	case HIR::Item::ItemKind::Union:
+	  v0path = v0_type_path (v0path, v0_identifier (seg.get ()));
+	  break;
+	case HIR::Item::ItemKind::Impl:
+	  // Trait impl or inherent impl.
+	  {
+	    HIR::ImplBlock *impl_block = static_cast<HIR::ImplBlock *> (item);
+	    v0path = v0_inherent_or_trait_impl_path (ctx, impl_block);
+	  }
+	  break;
+	case HIR::Item::ItemKind::ExternBlock:
+	case HIR::Item::ItemKind::ExternCrate:
+	case HIR::Item::ItemKind::UseDeclaration:
+	case HIR::Item::ItemKind::TypeAlias:
+	case HIR::Item::ItemKind::EnumItem: // FIXME: correct?
+	  rust_internal_error_at (UNDEF_LOCATION, "Attempt to mangle '%s'",
+				  cpath.get ().c_str ());
+	  break;
+	}
+    else
+      {
+	// Not HIR item, impl item, nor trait impl item. Assume a crate.
+	// FIXME: Do closures get here?
+
+	// std::string crate_name;
+	// bool ok = mappings->get_crate_name (path.get_crate_num (),
+	// crate_name); rust_assert (ok); rust_assert (crate_name == seg.get());
+
+	v0path
+	  = v0_crate_path (cpath.get_crate_num (), v0_identifier (seg.get ()));
+      }
+
+    return true;
+  });
+
+  return v0path.as_string ();
 }
 
 static std::string
@@ -313,25 +601,27 @@ legacy_mangle_item (const TyTy::BaseType *ty,
 }
 
 static std::string
-v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path)
+v0_mangle_item (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
+		const Resolver::CanonicalPath &path)
 {
-  // we can get this from the canonical_path
-  auto mappings = Analysis::Mappings::get ();
-  std::string crate_name;
-  bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
-  rust_assert (ok);
+  rust_debug ("Start mangling: %s", path.get ().c_str ());
 
-  std::string mangled;
-  // FIXME: Add real algorithm once all pieces are implemented
-  v0_add_identifier (mangled, crate_name);
-  v0_add_disambiguator (mangled, 62);
-  auto ty_prefix = v0_type_prefix (ty);
+  // auto mappings = Analysis::Mappings::get ();
+  // std::string crate_name;
+  // bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
+  // rust_assert (ok);
 
-  rust_unreachable ();
+  std::stringstream mangled;
+  mangled << "_R";
+  mangled << v0_path (ctx, ty, path);
+
+  rust_debug ("=> %s", mangled.str ().c_str ());
+
+  return mangled.str ();
 }
 
 std::string
-Mangler::mangle_item (const TyTy::BaseType *ty,
+Mangler::mangle_item (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 		      const Resolver::CanonicalPath &path) const
 {
   switch (version)
@@ -339,7 +629,7 @@ Mangler::mangle_item (const TyTy::BaseType *ty,
     case Mangler::MangleVersion::LEGACY:
       return legacy_mangle_item (ty, path);
     case Mangler::MangleVersion::V0:
-      return v0_mangle_item (ty, path);
+      return v0_mangle_item (ctx, ty, path);
     default:
       rust_unreachable ();
     }

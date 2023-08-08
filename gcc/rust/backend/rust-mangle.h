@@ -23,6 +23,8 @@
 namespace Rust {
 namespace Compile {
 
+class Context;
+
 class Mangler
 {
 public:
@@ -34,7 +36,8 @@ public:
   };
 
   // this needs to support Legacy and V0 see github #429 or #305
-  std::string mangle_item (const TyTy::BaseType *ty,
+  std::string mangle_item (Rust::Compile::Context *ctx,
+			   const TyTy::BaseType *ty,
 			   const Resolver::CanonicalPath &path) const;
 
   static void set_mangling (int frust_mangling_value)
@@ -48,5 +51,4 @@ private:
 
 } // namespace Compile
 } // namespace Rust
-
 #endif // RUST_MANGLE_H

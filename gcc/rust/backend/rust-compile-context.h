@@ -340,9 +340,9 @@ public:
   bool const_context_p (void) { return (const_context > 0); }
 
   std::string mangle_item (const TyTy::BaseType *ty,
-			   const Resolver::CanonicalPath &path) const
+			   const Resolver::CanonicalPath &path)
   {
-    return mangler.mangle_item (ty, path);
+    return mangler.mangle_item (this, ty, path);
   }
 
   void push_closure_context (HirId id);

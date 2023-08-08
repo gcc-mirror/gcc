@@ -22,6 +22,7 @@
 #include "rust-abi.h"
 #include "rust-ast-full-decls.h"
 #include "rust-common.h"
+#include "rust-hir-expr.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 
