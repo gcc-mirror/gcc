@@ -1555,7 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = _Rb_tree<_Key, _Val, _KeyOfValue, _Compare2, _Alloc>;
 
       template<typename, typename>
-	friend class _Rb_tree_merge_helper;
+	friend struct _Rb_tree_merge_helper;
 
       /// Merge from a compatible container into one with unique keys.
       template<typename _Compare2>

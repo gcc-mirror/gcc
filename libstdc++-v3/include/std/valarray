@@ -60,22 +60,22 @@ namespace __detail
         template<class, class> class _Meta1,
         template<class, class> class _Meta2,
         class _Dom1, class _Dom2>
-    class _BinClos;
+    struct _BinClos;
 
   template<template<class, class> class _Meta, class _Dom>
-    class _SClos;
+    struct _SClos;
 
   template<template<class, class> class _Meta, class _Dom>
-    class _GClos;
+    struct _GClos;
 
   template<template<class, class> class _Meta, class _Dom>
-    class _IClos;
+    struct _IClos;
 
   template<template<class, class> class _Meta, class _Dom>
-    class _ValFunClos;
+    struct _ValFunClos;
 
   template<template<class, class> class _Meta, class _Dom>
-    class _RefFunClos;
+    struct _RefFunClos;
 } // namespace __detail
 
   using __detail::_UnClos;

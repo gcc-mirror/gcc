@@ -623,10 +623,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class _Async_state_impl;
 
     template<typename _Signature>
-      class _Task_state_base;
+      struct _Task_state_base;
 
     template<typename _Fn, typename _Alloc, typename _Signature>
-      class _Task_state;
+      struct _Task_state;
 
     template<typename _Res_ptr, typename _Fn,
 	     typename _Res = typename _Res_ptr::element_type::result_type>
