@@ -1359,6 +1359,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
+#endif
+
 #if __cplusplus > 202002L
       template<typename _Up>
 	explicit(!requires(_Up __u) { value_type{__u}; })
@@ -1510,6 +1514,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
 #if __cplusplus > 202002L
@@ -1664,6 +1672,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
 #if __cplusplus > 202002L
@@ -1901,6 +1913,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Let the compiler synthesize the copy and assignment
       // operator.  It always does a pretty good job.
+      constexpr complex(const complex&) = default;
       constexpr complex& operator=(const complex&) = default;
 
       template<typename _Up>
