@@ -135,13 +135,28 @@ Early::visit (AST::MacroInvocation &invoc)
   // if the definition still does not have a value, then it's an error
   if (!definition.has_value ())
     {
-      rust_error_at (invoc.get_locus (), ErrorCode::E0433,
-		     "could not resolve macro invocation");
+      collect_error ([&] () {
+	rust_error_at (invoc.get_locus (), ErrorCode::E0433,
+		       "could not resolve macro invocation");
+      });
       return;
     }
 
   // now do we need to keep mappings or something? or insert "uses" into our
   // ForeverStack? can we do that? are mappings simpler?
+  auto mappings = Analysis::Mappings::get ();
+  AST::MacroRulesDefinition *rules_def = nullptr;
+  if (!mappings->lookup_macro_def (definition.value (), &rules_def))
+    {
+      // Macro definition not found, maybe it is not expanded yet.
+      return;
+    }
+
+  AST::MacroRulesDefinition *tmp_def = nullptr;
+  if (mappings->lookup_macro_invocation (invoc, &tmp_def))
+    return;
+
+  mappings->insert_macro_invocation (invoc, rules_def);
 }
 
 void
