@@ -1,3 +1,23 @@
+2023-08-07  Sheri Bernstein  <bernstein@adacore.com>
+
+	* libgnat/s-parame__qnx.adb: Refactor multiple returns.
+
+2023-08-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/i-cstrin.ads (Value): Extend preconditions; adapt comment for
+	the package.
+
+2023-08-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Always call Cannot_Inline so that
+	subprogram called is marked as not always inlined.
+
+2023-08-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Do not warn on conversion
+	to class-wide type on internally build helpers of class-wide
+	preconditions.
+
 2023-08-03  Sheri Bernstein  <bernstein@adacore.com>
 
 	* libgnat/s-aridou.adb: Add pragma to exempt Improper_Returns.

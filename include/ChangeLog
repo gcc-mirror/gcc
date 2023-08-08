@@ -1,3 +1,20 @@
+2023-08-07  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
+
+	* collectorAPI.h: New file.
+	* libcollector.h: New file.
+	* libfcollector.h: New file.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* xtensa-dynconfig.h (xtensa_isa_internal): Delete unnecessary
+	forward declaration.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* plugin-api.h: When handling non-gcc or gcc < 4.6.0 include
+	necessary header files before testing macros.  Make more use
+	of #elif.  Test _LITTLE_ENDIAN and _BIG_ENDIAN in final tests.
+
 2023-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	* cuda/cuda.h (CUDA_MEMCPY2D, CUDA_MEMCPY3D, CUDA_MEMCPY3D_PEER):

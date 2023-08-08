@@ -1,3 +1,104 @@
+2023-08-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* Makefile.def: Reflect that libsframe needs to installed before
+	libbfd.  Reorder a bit to better track libsframe dependencies.
+	* Makefile.in: Regenerate.
+
+2023-08-07  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* Makefile.def: Add install dependency on libsframe for libbfd.
+	* Makefile.in: Regenerated.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (lt_cv_sys_global_symbol_pipe): Augment symcode for
+	Solaris 11.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add Haiku to list of ELF OSes
+	* libtool.m4: Update sys_lib_dlsearch_path_spec on Haiku.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (LT_PATH_NM): Handle user-specified NM with
+	options, including options containing paths.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* libtool.m4 (LT_PATH_NM): Try BSDization flags with a user-provided
+	NM, if there is one.  Run nm on itself, not on /dev/null, to avoid
+	errors from nms that refuse to work on non-regular files.  Remove
+	other workarounds for this problem.  Strip out blank lines from the
+	nm output.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Reinstate 32b PA-RISC HP-UX targets
+	* configure: Regenerate.
+
+2023-08-07  Simon Marchi  <simon.marchi@efficios.com>
+
+	* configure.ac: Add AC_SUBST(PKG_CONFIG_PATH).
+	* configure: Re-generate.
+	* Makefile.tpl (HOST_EXPORTS): Pass PKG_CONFIG_PATH.
+	(PKG_CONFIG_PATH): New.
+	* Makefile.in: Re-generate.
+
+2023-08-07  Luis Machado  <luis.machado@arm.com>
+
+	* configure.ac: Disable year2038 by default on 32-bit hosts.
+	* configure: Regenerate.
+
+2023-08-07  Vladimir Mezentsev  <vladimir.mezentsev@oracle.com>
+
+	* Makefile.def: Add gprofng module.
+	* configure.ac: Add --enable-gprofng option.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-08-07  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Add --enable-default-compressed-debug-sections-algorithm.
+	* configure: Regenerate.
+
+2023-08-07  Fangrui Song  <maskray@google.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add --with-zstd.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure: Regenerate.
+	* configure.ac: Recover tilegx/tilepro targets.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerated.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Check if AR works with
+	--plugin and rc before enabling --plugin.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2023-08-07  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.tpl: Substitute @GDCFLAGS@ instead of using
+	$(CFLAGS).
+
+2023-08-07  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS: Add the BPF port to my reviewer listing.
+
 2023-08-02  Jan Beulich  <jbeulich@suse.com>
 
 	* MAINTAINERS: Correct my email address.

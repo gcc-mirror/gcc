@@ -1,3 +1,68 @@
+2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add basic operations.
+	* gcc.target/riscv/rvv/autovec/vls/and-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/and-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/and-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/div-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ior-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ior-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/ior-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/max-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/min-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/minus-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/minus-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/minus-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mod-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/mult-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/plus-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/plus-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/plus-3.c: New test.
+
+2023-08-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110378
+	* g++.dg/ipa/pr110378-1.C: New test.
+
+2023-08-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109959
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: Remove xfail.
+	* c-c++-common/Wrestrict.c: Update test and remove some xfail.
+	* gcc.dg/tree-ssa/cmpeq-1.c: New test.
+	* gcc.dg/tree-ssa/cmpeq-2.c: New test.
+	* gcc.dg/tree-ssa/cmpeq-3.c: New test.
+
+2023-08-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr110762-v4hf.c: New test.
+
+2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/narrow-1.c: Adapt testcase.
+
+2023-08-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/106293
+	* gcc.dg/vect/vect-cond-11.c: Check profile consistency.
+	* gcc.dg/vect/vect-widen-mult-extern-1.c: Check profile consistency.
+
+2023-08-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/96695
+	* gcc.dg/pr96695-1.c: New test.
+	* gcc.dg/pr96695-10.c: New test.
+	* gcc.dg/pr96695-11.c: New test.
+	* gcc.dg/pr96695-12.c: New test.
+	* gcc.dg/pr96695-2.c: New test.
+	* gcc.dg/pr96695-3.c: New test.
+	* gcc.dg/pr96695-4.c: New test.
+	* gcc.dg/pr96695-5.c: New test.
+	* gcc.dg/pr96695-6.c: New test.
+	* gcc.dg/pr96695-7.c: New test.
+	* gcc.dg/pr96695-8.c: New test.
+	* gcc.dg/pr96695-9.c: New test.
+
 2023-08-06  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/110792

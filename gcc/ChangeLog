@@ -1,3 +1,360 @@
+2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (<optab><mode>3): Add VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/i386/i386.cc (ix86_invalid_conversion): Fix grammar.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* configure: Regenerate.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Alexander von Gluck IV  <kallisti5@unixzen.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure: Regenerate.
+
+2023-08-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Allow
+	VOIDmode operands to conditional before canonicalization.
+
+2023-08-07  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* regcprop.cc (maybe_copy_reg_attrs): Remove unnecessary function.
+	(find_oldest_value_reg): Inline stack_pointer_rtx check.
+	(copyprop_hardreg_forward_1): Inline stack_pointer_rtx check.
+
+2023-08-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/110378
+	* ipa-param-manipulation.h (class ipa_param_body_adjustments): New
+	members get_ddef_if_exists_and_is_used and mark_clobbers_dead.
+	* ipa-sra.cc (isra_track_scalar_value_uses): Ignore clobbers.
+	(ptr_parm_has_nonarg_uses): Likewise.
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::get_ddef_if_exists_and_is_used): New.
+	(ipa_param_body_adjustments::mark_dead_statements): Move initial
+	checks to get_ddef_if_exists_and_is_used.
+	(ipa_param_body_adjustments::mark_clobbers_dead): New.
+	(ipa_param_body_adjustments::common_initialization): Call
+	mark_clobbers_dead when splitting.
+
+2023-08-07  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_int_scc): Add invert_ptr
+	as an argument and pass it to riscv_emit_int_order_test.
+	(riscv_expand_conditional_move): Handle cases where the condition
+	is not EQ/NE or the second argument to the conditional is not
+	(const_int 0).
+	* config/riscv/riscv-protos.h (riscv_expand_int_scc): Update prototype.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-08-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109959
+	* match.pd (`(a > 1) ? 0 : (cast)a`, `(a <= 1) & (cast)a`):
+	New patterns.
+
+2023-08-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sink.cc (pass_sink_code::execute): Do not
+	calculate post-dominators.  Calculate RPO on the inverted
+	graph and process blocks in that order.
+
+2023-08-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110926
+	* config/i386/i386-protos.h
+	(vpternlog_redundant_operand_mask): Adjust parameter type.
+	* config/i386/i386.cc (vpternlog_redundant_operand_mask): Use
+	INTVAL instead of XINT, also adjust parameter type from rtx*
+	to rtx since the function only needs operands[4] in vpternlog
+	pattern.
+	(substitute_vpternlog_operands): Pass operands[4] instead of
+	operands to vpternlog_redundant_operand_mask.
+	* config/i386/sse.md: Ditto.
+
+2023-08-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_region): Save/restore vect_location
+	around dumping code.
+
+2023-08-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110762
+	* config/i386/mmx.md (<insn><mode>3): Changed from define_insn
+	to define_expand and break into ..
+	(<insn>v4hf3): .. this.
+	(divv4hf3): .. this.
+	(<insn>v2hf3): .. this.
+	(divv2hf3): .. this.
+	(movd_v2hf_to_sse): New define_expand.
+	(movq_<mode>_to_sse): Extend to V4HFmode.
+	(mmxdoublevecmode): Ditto.
+	(V2FI_V4HF): New mode iterator.
+	* config/i386/sse.md (*vec_concatv4sf): Extend to hanlde V8HF
+	by using mode iterator V4SF_V8HF, renamed to ..
+	(*vec_concat<mode>): .. this.
+	(*vec_concatv4sf_0): Extend to handle V8HF by using mode
+	iterator V4SF_V8HF, renamed to ..
+	(*vec_concat<mode>_0): .. this.
+	(*vec_concatv8hf_movss): New define_insn.
+	(V4SF_V8HF): New mode iterator.
+
+2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Add op vectype.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/mmx.md (*mmx_pinsrd): Drop "prefix_data16".
+	(*mmx_pinsrb): Likewise.
+	(*mmx_pextrb): Likewise.
+	(*mmx_pextrb_zext): Likewise.
+	(mmx_pshufbv8qi3): Likewise.
+	(mmx_pshufbv4qi3): Likewise.
+	(mmx_pswapdv2si2): Likewise.
+	(*pinsrb): Likewise.
+	(*pextrb): Likewise.
+	(*pextrb_zext): Likewise.
+	* config/i386/sse.md (*sse4_1_mulv2siv2di3<mask_name>): Likewise.
+	(*sse2_eq<mode>3): Likewise.
+	(*sse2_gt<mode>3): Likewise.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Likewise.
+	(*vec_extract<mode>): Likewise.
+	(*vec_extract<PEXTR_MODE12:mode>_zext): Likewise.
+	(*vec_extractv16qi_zext): Likewise.
+	(ssse3_ph<plusminus_mnemonic>wv8hi3): Likewise.
+	(ssse3_pmaddubsw128): Likewise.
+	(*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>): Likewise.
+	(<ssse3_avx2>_pshufb<mode>3<mask_name>): Likewise.
+	(<ssse3_avx2>_psign<mode>3): Likewise.
+	(<ssse3_avx2>_palignr<mode>): Likewise.
+	(*abs<mode>2): Likewise.
+	(sse4_2_pcmpestr): Likewise.
+	(sse4_2_pcmpestri): Likewise.
+	(sse4_2_pcmpestrm): Likewise.
+	(sse4_2_pcmpestr_cconly): Likewise.
+	(sse4_2_pcmpistr): Likewise.
+	(sse4_2_pcmpistri): Likewise.
+	(sse4_2_pcmpistrm): Likewise.
+	(sse4_2_pcmpistr_cconly): Likewise.
+	(vgf2p8affineinvqb_<mode><mask_name>): Likewise.
+	(vgf2p8affineqb_<mode><mask_name>): Likewise.
+	(vgf2p8mulb_<mode><mask_name>): Likewise.
+	(*<code>v8hi3 [smaxmin]): Drop "prefix_data16" and
+	"prefix_extra".
+	(*<code>v16qi3 [umaxmin]): Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (sse4_1_round<mode>2): Make
+	"length_immediate" uniformly 1.
+	* config/i386/mmx.md (mmx_pblendvb_v8qi): Likewise.
+	(mmx_pblendvb_<mode>): Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md
+	(<avx512>_<complexopname>_<mode><maskc_name><round_name>): Add
+	"prefix" attribute.
+	(avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>):
+	Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (xop_phadd<u>bw): Add "prefix",
+	"prefix_extra", and "mode" attributes.
+	(xop_phadd<u>bd): Likewise.
+	(xop_phadd<u>bq): Likewise.
+	(xop_phadd<u>wd): Likewise.
+	(xop_phadd<u>wq): Likewise.
+	(xop_phadd<u>dq): Likewise.
+	(xop_phsubbw): Likewise.
+	(xop_phsubwd): Likewise.
+	(xop_phsubdq): Likewise.
+	(xop_rotl<mode>3): Add "prefix" and "prefix_extra" attributes.
+	(xop_rotr<mode>3): Likewise.
+	(xop_frcz<mode>2): Likewise.
+	(*xop_vmfrcz<mode>2): Likewise.
+	(xop_vrotl<mode>3): Add "prefix" attribute. Change
+	"prefix_extra" to 1.
+	(xop_sha<mode>3): Likewise.
+	(xop_shl<mode>3): Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md
+	(*<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Drop
+	"prefix_extra".
+	(avx512dq_vextract<shuffletype>64x2_1_mask): Likewise.
+	(*avx512dq_vextract<shuffletype>64x2_1): Likewise.
+	(avx512f_vextract<shuffletype>32x4_1_mask): Likewise.
+	(*avx512f_vextract<shuffletype>32x4_1): Likewise.
+	(vec_extract_lo_<mode>_mask [AVX512 forms]): Likewise.
+	(vec_extract_lo_<mode> [AVX512 forms]): Likewise.
+	(vec_extract_hi_<mode>_mask [AVX512 forms]): Likewise.
+	(vec_extract_hi_<mode> [AVX512 forms]): Likewise.
+	(@vec_extract_lo_<mode> [AVX512 forms]): Likewise.
+	(@vec_extract_hi_<mode> [AVX512 forms]): Likewise.
+	(vec_extract_lo_v64qi): Likewise.
+	(vec_extract_hi_v64qi): Likewise.
+	(*vec_widen_umult_even_v16si<mask_name>): Likewise.
+	(*vec_widen_smult_even_v16si<mask_name>): Likewise.
+	(*avx512f_<code><mode>3<mask_name>): Likewise.
+	(*vec_extractv4ti): Likewise.
+	(avx512bw_<code>v32qiv32hi2<mask_name>): Likewise.
+	(<mask_codefor>avx512dq_broadcast<mode><mask_name>_1): Likewise.
+	Add "length_immediate".
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (@rdrand<mode>): Add "prefix_0f". Drop
+	"prefix_extra".
+	(@rdseed<mode>): Likewise.
+	* config/i386/mmx.md (<code><mode>3 [smaxmin and umaxmin cases]):
+	Adjust "prefix_extra".
+	* config/i386/sse.md (@vec_set<mode>_0): Likewise.
+	(*sse4_1_<code><mode>3<mask_name>): Likewise.
+	(*avx2_eq<mode>3): Likewise.
+	(avx2_gt<mode>3): Likewise.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Likewise.
+	(*vec_extract<mode>): Likewise.
+	(<vi8_sse4_1_avx2_avx512>_movntdqa): Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (rd<fsgs>base<mode>): Add "prefix_0f" and
+	"prefix_rep". Drop "prefix_extra".
+	(wr<fsgs>base<mode>): Likewise.
+	(ptwrite<mode>): Likewise.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (isa): Move up.
+	(length_immediate): Handle "fma4".
+	(prefix): Handle "ssemuladd".
+	* config/i386/sse.md (*fma_fmadd_<mode>): Add "prefix" attribute.
+	(<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fmadd_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fmadd_<mode>_mask3<round_name>): Likewise.
+	(<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fmsub_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fmsub_<mode>_mask3<round_name>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fnmadd_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fnmadd_<mode>_mask3<round_name>): Likewise.
+	(<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fnmsub_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fnmsub_<mode>_mask3<round_name>): Likewise.
+	(<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fmaddsub_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fmaddsub_<mode>_mask3<round_name>): Likewise.
+	(<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>):
+	Likewise.
+	(<avx512>_fmsubadd_<mode>_mask<round_name>): Likewise.
+	(<avx512>_fmsubadd_<mode>_mask3<round_name>): Likewise.
+	(*fmai_fmadd_<mode>): Likewise.
+	(*fmai_fmsub_<mode>): Likewise.
+	(*fmai_fnmadd_<mode><round_name>): Likewise.
+	(*fmai_fnmsub_<mode><round_name>): Likewise.
+	(avx512f_vmfmadd_<mode>_mask<round_name>): Likewise.
+	(avx512f_vmfmadd_<mode>_mask3<round_name>): Likewise.
+	(avx512f_vmfmadd_<mode>_maskz_1<round_name>): Likewise.
+	(*avx512f_vmfmsub_<mode>_mask<round_name>): Likewise.
+	(avx512f_vmfmsub_<mode>_mask3<round_name>): Likewise.
+	(*avx512f_vmfmsub_<mode>_maskz_1<round_name>): Likewise.
+	(avx512f_vmfnmadd_<mode>_mask<round_name>): Likewise.
+	(avx512f_vmfnmadd_<mode>_mask3<round_name>): Likewise.
+	(avx512f_vmfnmadd_<mode>_maskz_1<round_name>): Likewise.
+	(*avx512f_vmfnmsub_<mode>_mask<round_name>): Likewise.
+	(*avx512f_vmfnmsub_<mode>_mask3<round_name>): Likewise.
+	(*avx512f_vmfnmsub_<mode>_maskz_1<round_name>): Likewise.
+	(*fma4i_vmfmadd_<mode>): Likewise.
+	(*fma4i_vmfmsub_<mode>): Likewise.
+	(*fma4i_vmfnmadd_<mode>): Likewise.
+	(*fma4i_vmfnmsub_<mode>): Likewise.
+	(fma_<complexopname>_<mode><sdc_maskz_name><round_name>): Likewise.
+	(<avx512>_<complexopname>_<mode>_mask<round_name>): Likewise.
+	(avx512fp16_fma_<complexopname>sh_v8hf<mask_scalarcz_name><round_scalarcz_name>):
+	Likewise.
+	(avx512fp16_<complexopname>sh_v8hf_mask<round_name>): Likewise.
+	(xop_p<macs><ssemodesuffix><ssemodesuffix>): Likewise.
+	(xop_p<macs>dql): Likewise.
+	(xop_p<macs>dqh): Likewise.
+	(xop_p<macs>wd): Likewise.
+	(xop_p<madcs>wd): Likewise.
+	(fma_<complexpairopname>_<mode>_pair): Likewise. Add "mode" attribute.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (length_immediate): Handle "sse4arg".
+	(prefix): Likewise.
+	(*xop_pcmov_<mode>): Add "mode" attribute.
+	* config/i386/mmx.md (*xop_maskcmp<mode>3): Drop "prefix_data16",
+	"prefix_rep", "prefix_extra", and "length_immediate" attributes.
+	(*xop_maskcmp_uns<mode>3): Likewise. Switch "type" to "sse4arg".
+	(*xop_pcmov_<mode>): Add "mode" attribute.
+	* config/i386/sse.md (xop_pcmov_<mode><avxsizesuffix>): Add "mode"
+	attribute.
+	(xop_maskcmp<mode>3): Drop "prefix_data16", "prefix_rep",
+	"prefix_extra", and "length_immediate" attributes.
+	(xop_maskcmp_uns<mode>3): Likewise. Switch "type" to "sse4arg".
+	(xop_maskcmp_uns2<mode>3): Drop "prefix_data16", "prefix_extra",
+	and "length_immediate" attributes. Switch "type" to "sse4arg".
+	(xop_pcom_tf<mode>3): Likewise.
+	(xop_vpermil2<mode>3): Drop "length_immediate" attribute.
+
+2023-08-07  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/i386.md (prefix_extra): Correct comment. Fold
+	cases yielding 2 into ones yielding 1.
+
+2023-08-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/106293
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Fix profile update.
+	* tree-vect-loop.cc (vect_transform_loop): Likewise.
+
+2023-08-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/96695
+	* match.pd (min_value, max_value): Extend to
+	pointer types too.
+
 2023-08-06  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/cpuid.h (__get_cpuid_count, __get_cpuid_max): Add

@@ -1,3 +1,11 @@
+2023-08-07  John Ericson  <git@JohnEricson.me>
+
+	* configure: Regenerate.
+
+2023-08-07  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2023-07-23  Andrew Pinski  <apinski@marvell.com>
 
 	* config.host (riscv*-*-linux*): Add t-crtstuff to tmake_file.
