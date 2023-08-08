@@ -104,11 +104,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __inner_type_impl& operator=(__inner_type_impl&&) = default;
 
       template<typename _Alloc>
-      __inner_type_impl(const __inner_type_impl<_Alloc>& __other) noexcept
+      __inner_type_impl(const __inner_type_impl<_Alloc>&) noexcept
       { }
 
       template<typename _Alloc>
-      __inner_type_impl(__inner_type_impl<_Alloc>&& __other) noexcept
+      __inner_type_impl(__inner_type_impl<_Alloc>&&) noexcept
       { }
 
       __type&

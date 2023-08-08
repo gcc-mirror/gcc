@@ -493,7 +493,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       [[__nodiscard__,__gnu__::__always_inline__]]
       static _GLIBCXX20_CONSTEXPR pointer
-      allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
+      allocate(allocator_type& __a, size_type __n,
+	       [[maybe_unused]] const_void_pointer __hint)
       {
 #if __cplusplus <= 201703L
 	return __a.allocate(__n, __hint);

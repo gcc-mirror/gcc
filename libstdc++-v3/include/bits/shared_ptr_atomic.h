@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Tp, _Lock_policy _Lp>
     inline bool
-    atomic_is_lock_free(const __shared_ptr<_Tp, _Lp>* __p)
+    atomic_is_lock_free(const __shared_ptr<_Tp, _Lp>*)
     {
 #ifdef __GTHREADS
       return __gthread_active_p() == 0;

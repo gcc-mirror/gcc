@@ -3039,7 +3039,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Duration2, typename _TimeZonePtr2>
 	  zoned_time(_TimeZonePtr __z,
 		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
-		     choose __c)
+		     choose)
 	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
 	  : _M_zone(__z), _M_tp(__zt._M_tp)
 	  { }
@@ -3057,7 +3057,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Duration2, typename _TimeZonePtr2>
 	  zoned_time(string_view __name,
 		     const zoned_time<_Duration2, _TimeZonePtr2>& __zt,
-		     choose __c)
+		     choose)
 	  requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
 	  && requires {
 	    { _Traits::locate_zone(__name) } -> convertible_to<_TimeZonePtr>;
