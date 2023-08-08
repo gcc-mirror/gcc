@@ -164,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_inner == __other._M_inner; }
 
     private:
-      template<typename...> friend class __inner_type_impl;
+      template<typename...> friend struct __inner_type_impl;
       template<typename, typename...> friend class scoped_allocator_adaptor;
 
       __type _M_inner;
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         friend class scoped_allocator_adaptor;
 
       template<typename...>
-        friend class __inner_type_impl;
+	friend struct __inner_type_impl;
 
       tuple<const _OuterAlloc&, const _InnerAllocs&...>
       _M_tie() const noexcept

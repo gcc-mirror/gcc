@@ -358,7 +358,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 202002L
 # define __cpp_lib_atomic_shared_ptr 201711L
   template<typename _Tp>
-    class atomic;
+    struct atomic;
 
   /**
    * @addtogroup pointer_abstractions
@@ -376,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using value_type = _Tp;
 
-      friend class atomic<_Tp>;
+      friend struct atomic<_Tp>;
 
       // An atomic version of __shared_count<> and __weak_count<>.
       // Stores a _Sp_counted_base<>* but uses the LSB as a lock.
@@ -610,7 +610,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    class atomic<shared_ptr<_Tp>>
+    struct atomic<shared_ptr<_Tp>>
     {
     public:
       using value_type = shared_ptr<_Tp>;
@@ -733,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    class atomic<weak_ptr<_Tp>>
+    struct atomic<weak_ptr<_Tp>>
     {
     public:
       using value_type = weak_ptr<_Tp>;
