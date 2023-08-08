@@ -1,5 +1,14 @@
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
+	* parser.cc (cp_parser_omp_var_list_no_open): Support array-shaping
+	operator in 'declare mapper' definitions.
+	(cp_parser_omp_clause_from_to): Add parsing for mapper modifier.
+	(cp_parser_omp_clause_map): Pass C_ORT_OMP_DECLARE_MAPPER to
+	cp_parser_omp_var_list_no_open in mapper definitions.
+	(cp_parser_omp_target_update): Instantiate mappers.
+
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
 	* pt.cc (tsubst_omp_clauses): Use C_ORT_OMP_DECLARE_MAPPER.
 	(tsubst_expr): Likewise.
 

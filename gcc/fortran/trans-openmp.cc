@@ -6171,11 +6171,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  gcc_unreachable ();
 		}
 
+	      gfc_ref *lastref = NULL;
+	      if (n->expr)
+		for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
+		  if (ref->type == REF_COMPONENT || ref->type == REF_ARRAY)
+		    lastref = ref;
+
 	      if ((list == OMP_LIST_TO || list == OMP_LIST_FROM)
-		  && (!n->expr
-		       || (n->expr
-			   && n->expr->ref
-			   && n->expr->ref->type == REF_ARRAY))
+		  && (!n->expr || (lastref && lastref->type == REF_ARRAY))
 		  && !gfc_omp_contiguous_update_p (n))
 		{
 		  int ndims;
@@ -6197,7 +6200,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			 or other data between elements, e.g. of a derived-type
 			 array).  */
 		      span = gfc_get_array_span (desc, n->expr);
-		      ndims = n->expr->ref->u.ar.dimen;
+		      ndims = lastref->u.ar.dimen;
 		    }
 		  else
 		    {
@@ -10568,7 +10571,12 @@ gfc_trans_omp_target_update (gfc_code *code)
   tree stmt, omp_clauses;
 
   gfc_start_block (&block);
-  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
+  gfc_omp_clauses *target_update_clauses = code->ext.omp_clauses;
+  gfc_omp_instantiate_mappers (code, target_update_clauses, TOC_OPENMP,
+			       OMP_LIST_TO);
+  gfc_omp_instantiate_mappers (code, target_update_clauses, TOC_OPENMP,
+			       OMP_LIST_FROM);
+  omp_clauses = gfc_trans_omp_clauses (&block, target_update_clauses,
 				       code->loc);
   stmt = build1_loc (input_location, OMP_TARGET_UPDATE, void_type_node,
 		     omp_clauses);

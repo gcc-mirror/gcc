@@ -1,3 +1,12 @@
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_variable_list): Support array-shaping
+	operator in 'declare mapper' definitions.
+	(c_parser_omp_clause_map): Pass C_ORT_OMP_DECLARE_MAPPER to
+	c_parser_omp_variable_list in mapper definitions.
+	(c_parser_omp_clause_from_to): Add parsing for mapper modifier.
+	(c_parser_omp_target_update): Instantiate mappers.
+
 2023-07-06  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_target_data): Instantiate mappers for

@@ -14196,7 +14196,9 @@ c_parser_omp_variable_list (c_parser *parser,
 	  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
 	  c_omp_array_section_p = true;
 	  c_omp_array_shaping_op_p
-	    = (kind == OMP_CLAUSE_TO || kind == OMP_CLAUSE_FROM);
+	    = (kind == OMP_CLAUSE_TO
+	       || kind == OMP_CLAUSE_FROM
+	       || ort == C_ORT_OMP_DECLARE_MAPPER);
 	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
 	  if (expr.value != error_mark_node)
 	    mark_exp_read (expr.value);
@@ -18078,7 +18080,9 @@ c_parser_omp_clause_map (c_parser *parser, tree list, enum gomp_map_kind kind)
     }
 
   nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list,
-				   C_ORT_OMP, true);
+				   (kind == GOMP_MAP_UNSET
+				    ? C_ORT_OMP_DECLARE_MAPPER
+				    : C_ORT_OMP), true);
 
   tree last_new = NULL_TREE;
 
@@ -18355,25 +18359,147 @@ c_parser_omp_clause_from_to (c_parser *parser, enum omp_clause_code kind,
   if (!parens.require_open (parser))
     return list;
 
-  bool present = false;
-  c_token *token = c_parser_peek_token (parser);
+  int pos = 1, colon_pos = 0;
 
-  if (token->type == CPP_NAME
-      && strcmp (IDENTIFIER_POINTER (token->value), "present") == 0
-      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+  while (c_parser_peek_nth_token_raw (parser, pos)->type == CPP_NAME)
     {
-      present = true;
-      c_parser_consume_token (parser);
-      c_parser_consume_token (parser);
+      if (c_parser_peek_nth_token_raw (parser, pos + 1)->type == CPP_COMMA)
+	pos += 2;
+      else if (c_parser_peek_nth_token_raw (parser, pos + 1)->type
+	       == CPP_OPEN_PAREN)
+	{
+	  unsigned int npos = pos + 2;
+	  if (c_parser_check_balanced_raw_token_sequence (parser, &npos)
+	     && (c_parser_peek_nth_token_raw (parser, npos)->type
+		 == CPP_CLOSE_PAREN))
+	    pos = npos + 1;
+	}
+      else
+	pos++;
+      if (c_parser_peek_nth_token_raw (parser, pos)->type == CPP_COLON)
+	{
+	  colon_pos = pos;
+	  break;
+	}
     }
+
+  int present_modifier = false;
+  int mapper_modifier = false;
+  tree mapper_name = NULL_TREE;
+
+  for (int pos = 1; pos < colon_pos; ++pos)
+    {
+      c_token *tok = c_parser_peek_token (parser);
+      if (tok->type == CPP_COMMA)
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      const char *p = IDENTIFIER_POINTER (tok->value);
+      if (strcmp ("present", p) == 0)
+	{
+	  if (present_modifier)
+	    {
+	      c_parser_error (parser, "too many %<present%> modifiers");
+	      parens.skip_until_found_close (parser);
+	      return list;
+	    }
+	  present_modifier++;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("mapper", p) == 0)
+	{
+	  c_parser_consume_token (parser);
+
+	  matching_parens mparens;
+	  if (mparens.require_open (parser))
+	    {
+	      if (mapper_modifier)
+		{
+		  c_parser_error (parser, "too many %<mapper%> modifiers");
+		  /* Assume it's a well-formed mapper modifier, even if it
+		     seems to be in the wrong place.  */
+		  c_parser_consume_token (parser);
+		  mparens.require_close (parser);
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+
+	      tok = c_parser_peek_token (parser);
+
+	      switch (tok->type)
+		{
+		case CPP_NAME:
+		  {
+		    mapper_name = tok->value;
+		    c_parser_consume_token (parser);
+		  }
+		  break;
+
+		case CPP_KEYWORD:
+		  if (tok->keyword == RID_DEFAULT)
+		    {
+		      c_parser_consume_token (parser);
+		      break;
+		    }
+		  /* Fallthrough.  */
+
+		default:
+		  error_at (tok->location,
+			    "expected identifier or %<default%>");
+		  return list;
+		}
+
+	      if (!mparens.require_close (parser))
+		{
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+
+	      mapper_modifier++;
+	      pos += 3;
+	    }
+	}
+      else
+	{
+	  c_parser_error (parser, "%<to%> or %<from%> clause with modifier "
+			  "other than %<present%> or %<mapper%>");
+	  parens.skip_until_found_close (parser);
+	  return list;
+	}
+    }
+
+  if (colon_pos)
+    c_parser_require (parser, CPP_COLON, "expected %<:%>");
 
   tree nl = c_parser_omp_variable_list (parser, loc, kind, list, C_ORT_OMP,
 					true);
   parens.skip_until_found_close (parser);
 
-  if (present)
+  if (present_modifier)
     for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
       OMP_CLAUSE_MOTION_PRESENT (c) = 1;
+
+  if (mapper_name)
+    {
+      tree last_new = NULL_TREE;
+      for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+	last_new = c;
+
+      tree name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_PUSH_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = mapper_name;
+      OMP_CLAUSE_CHAIN (name) = nl;
+      nl = name;
+
+      gcc_assert (last_new);
+
+      name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_POP_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = null_pointer_node;
+      OMP_CLAUSE_CHAIN (name) = OMP_CLAUSE_CHAIN (last_new);
+      OMP_CLAUSE_CHAIN (last_new) = name;
+    }
 
   return nl;
 }
@@ -23023,7 +23149,9 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
 
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_UPDATE_CLAUSE_MASK,
-				"#pragma omp target update");
+				"#pragma omp target update", false);
+  clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_UPDATE);
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP_UPDATE);
   bool to_clause = false, from_clause = false;
   for (tree c = clauses;
        c && !to_clause && !from_clause;

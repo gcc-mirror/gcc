@@ -37770,7 +37770,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	  auto s = make_temp_override (parser->omp_array_section_p, true);
 	  auto o = make_temp_override (parser->omp_array_shaping_op_p,
 				       (kind == OMP_CLAUSE_TO
-					|| kind == OMP_CLAUSE_FROM));
+					|| kind == OMP_CLAUSE_FROM
+					|| ort == C_ORT_OMP_DECLARE_MAPPER));
 	  tree reshaped_to = NULL_TREE;
 	  token = cp_lexer_peek_token (parser->lexer);
 	  location_t loc = token->location;
@@ -41308,23 +41309,152 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  bool present = false;
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  int pos = 1;
+  int colon_pos = 0;
 
-  if (token->type == CPP_NAME
-      && strcmp (IDENTIFIER_POINTER (token->u.value), "present") == 0
-      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+  while (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_NAME)
     {
-      present = true;
-      cp_lexer_consume_token (parser->lexer);
-      cp_lexer_consume_token (parser->lexer);
+      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COMMA)
+	pos += 2;
+      else if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type
+	       == CPP_OPEN_PAREN)
+	pos = cp_parser_skip_balanced_tokens (parser, pos + 1);
+      else
+	pos++;
+      if (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_COLON)
+	{
+	  colon_pos = pos;
+	  break;
+	}
     }
+
+  bool present_modifier = false;
+  bool mapper_modifier = false;
+  tree mapper_name = NULL_TREE;
+
+  for (int pos = 1; pos < colon_pos; ++pos)
+    {
+      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+      if (tok->type == CPP_COMMA)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      const char *p = IDENTIFIER_POINTER (tok->u.value);
+      if (strcmp ("present", p) == 0)
+	{
+	  if (present_modifier)
+	    {
+	      cp_parser_error (parser, "too many %<present%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  present_modifier = true;
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (strcmp ("mapper", p) == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  matching_parens parens;
+	  if (parens.require_open (parser))
+	    {
+	      if (mapper_modifier)
+		{
+		  cp_parser_error (parser, "too many %<mapper%> modifiers");
+		  /* Assume it's a well-formed mapper modifier, even if it
+		     seems to be in the wrong place.  */
+		  cp_lexer_consume_token (parser->lexer);
+		  parens.require_close (parser);
+		  cp_parser_skip_to_closing_parenthesis (parser,
+							 /*recovering=*/true,
+							 /*or_comma=*/false,
+							 /*consume_paren=*/
+							 true);
+		  return list;
+		}
+	      tok = cp_lexer_peek_token (parser->lexer);
+	      switch (tok->type)
+		{
+		case CPP_NAME:
+		  {
+		    cp_expr e = cp_parser_identifier (parser);
+		    if (e != error_mark_node)
+		      mapper_name = e;
+		    else
+		      goto err;
+		  }
+		  break;
+		case CPP_KEYWORD:
+		  if (tok->keyword == RID_DEFAULT)
+		    {
+		      cp_lexer_consume_token (parser->lexer);
+		      break;
+		    }
+		  /* Fallthrough.  */
+		default:
+		err:
+		  cp_parser_error (parser,
+				   "expected identifier or %<default%>");
+		  return list;
+		}
+
+	      if (!parens.require_close (parser))
+		{
+		  cp_parser_skip_to_closing_parenthesis (parser,
+							 /*recovering=*/true,
+							 /*or_comma=*/false,
+							 /*consume_paren=*/
+							 true);
+		  return list;
+		}
+	      mapper_modifier = true;
+	      pos += 3;
+	    }
+	  else
+	    {
+	      cp_parser_error (parser, "%<to%> or %<from%> clause with "
+			       "modifier other than %<present%> or %<mapper%>");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	}
+    }
+
+  if (colon_pos)
+    cp_parser_require (parser, CPP_COLON, RT_COLON);
 
   tree nl = cp_parser_omp_var_list_no_open (parser, kind, list, NULL, C_ORT_OMP,
 					    true);
-  if (present)
+  if (present_modifier)
     for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
       OMP_CLAUSE_MOTION_PRESENT (c) = 1;
+
+  if (mapper_name)
+    {
+      tree last_new = NULL_TREE;
+      for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+	last_new = c;
+
+      tree name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_PUSH_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = mapper_name;
+      OMP_CLAUSE_CHAIN (name) = nl;
+      nl = name;
+
+      gcc_assert (last_new);
+
+      name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_POP_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = null_pointer_node;
+      OMP_CLAUSE_CHAIN (name) = OMP_CLAUSE_CHAIN (last_new);
+      OMP_CLAUSE_CHAIN (last_new) = name;
+    }
 
   return nl;
 }
@@ -41559,7 +41689,9 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, enum gomp_map_kind kind)
      legally.  */
   begin_scope (sk_omp, NULL);
   nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_MAP, list,
-					  NULL, C_ORT_OMP, true);
+					  NULL, (kind == GOMP_MAP_UNSET
+						 ? C_ORT_OMP_DECLARE_MAPPER
+						 : C_ORT_OMP), true);
   finish_scope ();
 
   tree last_new = NULL_TREE;
@@ -46931,7 +47063,11 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_UPDATE_CLAUSE_MASK,
-				 "#pragma omp target update", pragma_tok);
+				 "#pragma omp target update", pragma_tok,
+				 false);
+  if (!processing_template_decl)
+    clauses = c_omp_instantiate_mappers (clauses, C_ORT_OMP_UPDATE);
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP_UPDATE);
   bool to_clause = false, from_clause = false;
   for (tree c = clauses;
        c && !to_clause && !from_clause;

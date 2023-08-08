@@ -1,5 +1,15 @@
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
+	* openmp.cc (gfc_match_motion_var_list): Add parsing for mapper
+	modifier.
+	(gfc_match_omp_clauses): Adjust error handling for changes to
+	gfc_match_motion_var_list.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Use correct ref for update
+	operations.
+	(gfc_trans_omp_target_update): Instantiate mappers.
+
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
 	* gfortran.h (gfc_omp_namelist_udm): Add MAPPER_ID field to store the
 	mapper name to use for lookup during resolution.
 	* match.cc (gfc_free_omp_namelist): Handle OMP_LIST_TO and
