@@ -147,11 +147,12 @@ static char btf_ext_info_section_label[MAX_BTF_EXT_LABEL_BYTES];
 
 static GTY (()) vec<bpf_core_section_ref, va_gc> *bpf_core_sections;
 
-struct bpf_core_extra {
+struct GTY(()) bpf_core_extra {
   const char *accessor_str;
   tree type;
 };
-static hash_map<bpf_core_reloc_ref, struct bpf_core_extra *> bpf_comment_info;
+typedef struct bpf_core_extra *bpf_core_extra_ref;
+static GTY(()) hash_map<bpf_core_reloc_ref, bpf_core_extra_ref> *bpf_comment_info;
 
 /* Create a new BPF CO-RE relocation record, and add it to the appropriate
    CO-RE section.  */
@@ -162,7 +163,7 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 		    enum btf_core_reloc_kind kind)
 {
   bpf_core_reloc_ref bpfcr = ggc_cleared_alloc<bpf_core_reloc_t> ();
-  struct bpf_core_extra *info = ggc_cleared_alloc<struct bpf_core_extra> ();
+  bpf_core_extra_ref info = ggc_cleared_alloc<struct bpf_core_extra> ();
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
 
   /* Buffer the access string in the auxiliary strtab.  */
@@ -173,7 +174,7 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 
   info->accessor_str = accessor;
   info->type = type;
-  bpf_comment_info.put (bpfcr, info);
+  bpf_comment_info->put (bpfcr, info);
 
   /* Add the CO-RE reloc to the appropriate section.  */
   bpf_core_section_ref sec;
@@ -288,7 +289,7 @@ output_btfext_header (void)
 static void
 output_asm_btfext_core_reloc (bpf_core_reloc_ref bpfcr)
 {
-  struct bpf_core_extra **info = bpf_comment_info.get (bpfcr);
+  bpf_core_extra_ref *info = bpf_comment_info->get (bpfcr);
   gcc_assert (info != NULL);
 
   bpfcr->bpfcr_astr_off += ctfc_get_strtab_len (ctf_get_tu_ctfc (),
@@ -365,6 +366,7 @@ btf_ext_init (void)
 			       btf_ext_label_num++);
 
   vec_alloc (bpf_core_sections, 1);
+  bpf_comment_info = hash_map<bpf_core_reloc_ref, bpf_core_extra_ref>::create_ggc ();
 }
 
 /* Output the entire .BTF.ext section.  */
