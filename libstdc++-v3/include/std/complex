@@ -1098,6 +1098,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
+#endif
+
       explicit _GLIBCXX_CONSTEXPR complex(const complex<double>&);
       explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);
 
@@ -1242,6 +1246,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
       _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
@@ -1389,6 +1397,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__real__ _M_value = __r;
 	__imag__ _M_value = __i;
       }
+#endif
+
+#if __cplusplus >= 201103L
+      _GLIBCXX14_CONSTEXPR complex(const complex&) = default;
 #endif
 
       _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
