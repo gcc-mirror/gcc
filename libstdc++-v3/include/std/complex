@@ -47,6 +47,11 @@
 // Get rid of a macro possibly defined in <complex.h>
 #undef complex
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-extensions"
+#endif
+
 #if __cplusplus > 201703L
 # define __cpp_lib_constexpr_complex 201711L
 #endif
@@ -2641,5 +2646,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif  // C++11
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #endif  /* _GLIBCXX_COMPLEX */
