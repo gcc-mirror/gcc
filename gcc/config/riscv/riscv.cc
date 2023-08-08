@@ -3600,7 +3600,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 
 	  /* Emit an scc like instruction into a temporary
 	     so that we can use an EQ/NE comparison.  */
-	  rtx tmp = gen_reg_rtx (mode);
+	  rtx tmp = gen_reg_rtx (word_mode);
 
 	  /* We can support both FP and integer conditional moves.  */
 	  if (INTEGRAL_MODE_P (GET_MODE (XEXP (op, 0))))
