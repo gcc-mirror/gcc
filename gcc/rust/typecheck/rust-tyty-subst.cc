@@ -633,7 +633,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       r.add_range (substitutions.front ().get_param_locus ());
 
       rust_error_at (
-	r,
+	r, ErrorCode::E0107,
 	"generic item takes at least %lu type arguments but %lu were supplied",
 	(unsigned long) (min_required_substitutions () - offs),
 	(unsigned long) args.get_type_args ().size ());
