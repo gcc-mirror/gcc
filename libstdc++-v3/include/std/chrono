@@ -2792,7 +2792,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       friend const tzdb& reload_tzdb();
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
 
       explicit time_zone_link(nullptr_t) { }
 
@@ -2896,7 +2896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       explicit leap_second(seconds::rep __s) : _M_s(__s) { }
 
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
 
       friend const tzdb& reload_tzdb();
 
@@ -2937,7 +2937,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       friend const tzdb& reload_tzdb();
       friend class time_zone;
-      friend class tzdb_list::_Node;
+      friend struct tzdb_list::_Node;
     };
 
     tzdb_list& get_tzdb_list();
