@@ -1135,7 +1135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isfinite(_Tp __x)
+    isfinite(_Tp)
     { return true; }
 #endif
 
@@ -1162,7 +1162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isinf(_Tp __x)
+    isinf(_Tp)
     { return false; }
 #endif
 
@@ -1189,7 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
                                               bool>::__type
-    isnan(_Tp __x)
+    isnan(_Tp)
     { return false; }
 #endif
 

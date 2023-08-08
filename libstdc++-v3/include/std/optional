@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructor used by _Optional_base copy constructor when the
       // contained value is not trivially copy constructible.
       constexpr
-      _Optional_payload_base(bool __engaged,
+      _Optional_payload_base(bool /* __engaged */,
 			     const _Optional_payload_base& __other)
       {
 	if (__other._M_engaged)
@@ -148,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constructor used by _Optional_base move constructor when the
       // contained value is not trivially move constructible.
       constexpr
-      _Optional_payload_base(bool __engaged,
+      _Optional_payload_base(bool /* __engaged */,
 			     _Optional_payload_base&& __other)
       {
 	if (__other._M_engaged)

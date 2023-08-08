@@ -806,8 +806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       template<typename _ForwardIterator>
         static void
-        __uninit_default_novalue(_ForwardIterator __first,
-				 _ForwardIterator __last)
+        __uninit_default_novalue(_ForwardIterator, _ForwardIterator)
 	{
 	}
     };

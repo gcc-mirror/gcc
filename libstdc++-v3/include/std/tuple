@@ -564,14 +564,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    const _Head& __head)
 	: _Base(__use_alloc<_Head, _Alloc, const _Head&>(__a), __head)
 	{ }
 
       template<typename _Alloc, typename _UHead>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    _UHead&& __head)
 	: _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
 		std::forward<_UHead>(__head))
@@ -579,14 +579,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    const _Tuple_impl& __in)
 	: _Base(__use_alloc<_Head, _Alloc, const _Head&>(__a), _M_head(__in))
 	{ }
 
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    _Tuple_impl&& __in)
 	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
 		std::forward<_Head>(_M_head(__in)))
@@ -594,7 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Alloc, typename _UHead>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    const _Tuple_impl<_Idx, _UHead>& __in)
 	: _Base(__use_alloc<_Head, _Alloc, const _UHead&>(__a),
 		_Tuple_impl<_Idx, _UHead>::_M_head(__in))
@@ -602,7 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Alloc, typename _UHead>
 	_GLIBCXX20_CONSTEXPR
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    _Tuple_impl<_Idx, _UHead>&& __in)
 	: _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
 		std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
@@ -611,7 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 202002L
       template<typename _Alloc, typename _UHead>
 	constexpr
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    _Tuple_impl<_Idx, _UHead>& __in)
 	: _Base(__use_alloc<_Head, _Alloc, _UHead&>(__a),
 		_Tuple_impl<_Idx, _UHead>::_M_head(__in))
@@ -619,7 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Alloc, typename _UHead>
 	constexpr
-	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	_Tuple_impl(allocator_arg_t, const _Alloc& __a,
 		    const _Tuple_impl<_Idx, _UHead>&& __in)
 	: _Base(__use_alloc<_Head, _Alloc, const _UHead>(__a),
 		std::forward<const _UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
