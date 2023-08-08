@@ -2103,9 +2103,8 @@ slide1_sew64_helper (int unspec, machine_mode mode, machine_mode demote_mode,
 			     CONSTM1_RTX (demote_mask_mode), merge, temp,
 			     demote_scalar_op2, vl_x2, ta, ma, ops[8]));
 
-  if (rtx_equal_p (ops[1], CONSTM1_RTX (GET_MODE (ops[1]))))
-    return true;
-  else
+  if (!rtx_equal_p (ops[1], CONSTM1_RTX (GET_MODE (ops[1])))
+      && !rtx_equal_p (ops[2], RVV_VUNDEF (GET_MODE (ops[2]))))
     emit_insn (gen_pred_merge (mode, ops[0], ops[2], ops[2], ops[0], ops[1],
 			       force_vector_length_operand (ops[5]), ops[6],
 			       ops[8]));
