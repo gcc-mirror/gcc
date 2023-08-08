@@ -18328,7 +18328,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
     }
 
   new_clauses = nreverse (new_clauses);
-  if (ort != C_ORT_OMP_DECLARE_SIMD)
+  if (ort != C_ORT_OMP_DECLARE_SIMD && ort != C_ORT_OMP_DECLARE_MAPPER)
     {
       if (ort & C_ORT_OMP)
 	new_clauses = c_omp_instantiate_mappers (new_clauses, ort);
@@ -19905,7 +19905,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	decl = tsubst (decl, args, complain, in_decl);
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree clauses = OMP_DECLARE_MAPPER_CLAUSES (t);
-	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_SIMD, args,
+	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_MAPPER, args,
 				      complain, in_decl);
 	TREE_TYPE (t) = type;
 	OMP_DECLARE_MAPPER_DECL (t) = decl;
