@@ -132,7 +132,8 @@ static void mmix_target_asm_function_end_prologue (FILE *);
 static void mmix_target_asm_function_epilogue (FILE *);
 static reg_class_t mmix_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t mmix_preferred_output_reload_class (rtx, reg_class_t);
-static bool mmix_legitimate_address_p (machine_mode, rtx, bool);
+static bool mmix_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 static bool mmix_legitimate_constant_p (machine_mode, rtx);
 static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
@@ -1109,7 +1110,8 @@ mmix_constant_address_p (rtx x)
 bool
 mmix_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			   rtx x,
-			   bool strict_checking)
+			   bool strict_checking,
+			   code_helper)
 {
 #define MMIX_REG_OK(X)							\
   ((strict_checking							\

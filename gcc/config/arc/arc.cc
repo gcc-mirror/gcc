@@ -6715,7 +6715,8 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
 }
 
 static bool
-arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+arc_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			  code_helper = ERROR_MARK)
 {
   if (RTX_OK_FOR_BASE_P (x, strict))
      return true;

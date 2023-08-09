@@ -1654,7 +1654,7 @@ gcn_global_address_p (rtx addr)
 
 static bool
 gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
-				     addr_space_t as)
+				     addr_space_t as, code_helper = ERROR_MARK)
 {
   /* All vector instructions need to work on addresses in registers.  */
   if (!TARGET_GCN5_PLUS && (vgpr_vector_mode_p (mode) && !REG_P (x)))

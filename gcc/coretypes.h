@@ -99,6 +99,7 @@ typedef const union tree_node *const_tree;
 struct gimple;
 typedef gimple *gimple_seq;
 struct gimple_stmt_iterator;
+class code_helper;
 
 /* Forward decls for leaf gimple subclasses (for individual gimple codes).
    Keep this in the same order as the corresponding codes in gimple.def.  */

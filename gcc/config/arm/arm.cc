@@ -9171,7 +9171,7 @@ thumb_legitimate_offset_p (machine_mode mode, HOST_WIDE_INT val)
 }
 
 bool
-arm_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+arm_legitimate_address_p (machine_mode mode, rtx x, bool strict_p, code_helper)
 {
   if (TARGET_ARM)
     return arm_legitimate_address_outer_p (mode, x, SET, strict_p);

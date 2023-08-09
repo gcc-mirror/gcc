@@ -2053,7 +2053,8 @@ epiphany_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
      || RTX_OK_FOR_OFFSET_P (MODE, XEXP (X, 1))))
 
 static bool
-epiphany_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+epiphany_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			       code_helper = ERROR_MARK)
 {
 #define REG_OK_FOR_BASE_P(X) \
   (strict ? GPR_P (REGNO (X)) : GPR_AP_OR_PSEUDO_P (REGNO (X)))

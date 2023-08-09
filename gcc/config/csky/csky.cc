@@ -3186,7 +3186,8 @@ csky_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
    be recognized.  */
 
 static bool
-csky_legitimate_address_p (machine_mode mode, rtx addr, bool strict_p)
+csky_legitimate_address_p (machine_mode mode, rtx addr, bool strict_p,
+			   code_helper = ERROR_MARK)
 {
   enum rtx_code code = GET_CODE (addr);
 

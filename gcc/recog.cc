@@ -1813,7 +1813,8 @@ memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
  win:
   return true;
 #else
-  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
+  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as,
+						  ERROR_MARK);
 #endif
 }
 

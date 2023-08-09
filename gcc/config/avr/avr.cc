@@ -13433,8 +13433,8 @@ avr_reg_ok_for_pgm_addr (rtx reg, bool strict)
 /* Implement `TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P'.  */
 
 static bool
-avr_addr_space_legitimate_address_p (machine_mode mode, rtx x,
-                                     bool strict, addr_space_t as)
+avr_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+				     addr_space_t as, code_helper = ERROR_MARK)
 {
   bool ok = false;
 

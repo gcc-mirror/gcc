@@ -2696,7 +2696,8 @@ mips_classify_address (struct mips_address_info *info, rtx x,
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-mips_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+mips_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			   code_helper = ERROR_MARK)
 {
   struct mips_address_info addr;
 

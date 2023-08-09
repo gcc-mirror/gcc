@@ -99,7 +99,8 @@ along with GCC; see the file COPYING3.  If not see
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			      rtx addr ATTRIBUTE_UNUSED,
-			      bool strict ATTRIBUTE_UNUSED)
+			      bool strict ATTRIBUTE_UNUSED,
+			      code_helper ATTRIBUTE_UNUSED)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   /* Defer to the old implementation using a goto.  */
@@ -1680,9 +1681,10 @@ target_default_pointer_address_modes_p (void)
 bool
 default_addr_space_legitimate_address_p (machine_mode mode, rtx mem,
 					 bool strict,
-					 addr_space_t as ATTRIBUTE_UNUSED)
+					 addr_space_t as ATTRIBUTE_UNUSED,
+					 code_helper code)
 {
-  return targetm.legitimate_address_p (mode, mem, strict);
+  return targetm.legitimate_address_p (mode, mem, strict, code);
 }
 
 /* Named address space version of LEGITIMIZE_ADDRESS.

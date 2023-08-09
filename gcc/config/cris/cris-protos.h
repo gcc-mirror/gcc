@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Prototypes for the CRIS port.  */
 
+#include "tree.h" /* For ERROR_MARK.  */
+
 extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);
@@ -34,7 +36,8 @@ extern bool cris_base_or_autoincr_p (const_rtx, bool);
 extern bool cris_bdap_index_p (const_rtx, bool);
 extern void cris_reduce_compare (rtx *, rtx *, rtx *);
 extern bool cris_biap_index_p (const_rtx, bool);
-extern bool cris_legitimate_address_p (machine_mode, rtx, bool);
+extern bool cris_legitimate_address_p (machine_mode, rtx, bool,
+				       code_helper = ERROR_MARK);
 extern bool cris_store_multiple_op_p (rtx);
 extern bool cris_movem_load_rest_p (rtx);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);

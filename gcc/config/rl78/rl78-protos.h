@@ -18,6 +18,9 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+
+#include "tree.h"  /* For ERROR_MARK.  */
+
 const char *    rl78_addsi3_internal (rtx *, unsigned int);
 void		rl78_emit_eh_epilogue (rtx);
 void		rl78_expand_compare (rtx *);
@@ -33,7 +36,8 @@ int		rl78_far_p (rtx x);
 bool		rl78_hl_b_c_addr_p (rtx);
 int		rl78_initial_elimination_offset (int, int);
 bool		rl78_as_legitimate_address (machine_mode, rtx,
-					    bool, addr_space_t);
+					    bool, addr_space_t,
+					    code_helper = ERROR_MARK);
 int		rl78_legitimize_reload_address (rtx *, machine_mode, int,int, int);
 enum reg_class	rl78_mode_code_base_reg_class (machine_mode, addr_space_t, int, int);
 bool		rl78_peep_movhi_p (rtx *);

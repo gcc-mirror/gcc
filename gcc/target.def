@@ -2897,6 +2897,13 @@ DEFHOOK
 (legitimate_address_p,
  "A function that returns whether @var{x} (an RTX) is a legitimate memory\n\
 address on the target machine for a memory operand of mode @var{mode}.\n\
+If @var{ch} is not @code{ERROR_MARK}, it can be called from middle-end to\n\
+determine if it is valid to use @var{x} as a memory operand for RTX insn\n\
+which is generated for the given code_helper @var{ch}.  For example,\n\
+assuming the given @var{ch} is IFN_LEN_LOAD, on some target its underlying\n\
+hardware instructions support fewer addressing modes than what are for the\n\
+normal vector load and store, then with this @var{ch} target can know the\n\
+actual use context and return more exact result.\n\
 \n\
 Legitimate addresses are defined in two variants: a strict variant and a\n\
 non-strict one.  The @var{strict} parameter chooses which variant is\n\
@@ -2957,7 +2964,7 @@ that case and the non-strict variant otherwise.\n\
 \n\
 Using the hook is usually simpler because it limits the number of\n\
 files that are recompiled when changes are made.",
- bool, (machine_mode mode, rtx x, bool strict),
+ bool, (machine_mode mode, rtx x, bool strict, code_helper ch),
  default_legitimate_address_p)
 
 /* True if the given constant can be put into an object_block.  */
@@ -3348,12 +3355,13 @@ target hooks for the given address space.",
 DEFHOOK
 (legitimate_address_p,
  "Define this to return true if @var{exp} is a valid address for mode\n\
-@var{mode} in the named address space @var{as}.  The @var{strict}\n\
-parameter says whether strict addressing is in effect after reload has\n\
-finished.  This target hook is the same as the\n\
+@var{mode} in the named address space @var{as} with the use context\n\
+@var{ch}.  The @var{strict} parameter says whether strict addressing\n\
+is in effect after reload has finished.  The @var{ch} indicates what\n\
+context @var{exp} will be used for.  This target hook is the same as the\n\
 @code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes\n\
 explicit named address space support.",
- bool, (machine_mode mode, rtx exp, bool strict, addr_space_t as),
+ bool, (machine_mode mode, rtx exp, bool strict, addr_space_t as, code_helper ch),
  default_addr_space_legitimate_address_p)
 
 /* Return an updated address to convert an invalid pointer to a named

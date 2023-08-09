@@ -11182,7 +11182,8 @@ aarch64_classify_symbolic_expression (rtx x)
 /* Return TRUE if X is a legitimate address for accessing memory in
    mode MODE.  */
 static bool
-aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p)
+aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p,
+				   code_helper = ERROR_MARK)
 {
   struct aarch64_address_info addr;
 

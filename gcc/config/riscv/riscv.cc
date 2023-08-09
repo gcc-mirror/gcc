@@ -1213,7 +1213,8 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+riscv_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			    code_helper = ERROR_MARK)
 {
   struct riscv_address_info addr;
 

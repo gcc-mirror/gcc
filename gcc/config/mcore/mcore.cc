@@ -144,7 +144,8 @@ static bool       mcore_warn_func_return        (tree);
 static void       mcore_option_override		(void);
 static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
 static bool	  mcore_legitimate_address_p	(machine_mode, rtx, bool,
-						 addr_space_t);
+						 addr_space_t,
+						 code_helper = ERROR_MARK);
 static bool	  mcore_hard_regno_mode_ok	(unsigned int, machine_mode);
 static bool	  mcore_modes_tieable_p		(machine_mode, machine_mode);
 
@@ -3249,7 +3250,7 @@ mcore_legitimate_index_p (machine_mode mode, const_rtx op)
 
 static bool
 mcore_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
-			    addr_space_t as)
+			    addr_space_t as, code_helper)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
 

@@ -179,7 +179,8 @@ rx_small_data_operand (rtx op)
 
 static bool
 rx_is_legitimate_address (machine_mode mode, rtx x,
-			  bool strict ATTRIBUTE_UNUSED)
+			  bool strict ATTRIBUTE_UNUSED,
+			  code_helper = ERROR_MARK)
 {
   if (RTX_OK_FOR_BASE (x, strict))
     /* Register Indirect.  */

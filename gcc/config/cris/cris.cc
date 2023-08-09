@@ -1537,7 +1537,7 @@ cris_biap_index_p (const_rtx x, bool strict)
 /* Worker function for TARGET_LEGITIMATE_ADDRESS_P.  */
 
 bool
-cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+cris_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   const_rtx x1, x2;
 

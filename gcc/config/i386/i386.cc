@@ -11040,7 +11040,8 @@ ix86_validate_address_register (rtx op)
    be recognized.  */
 
 static bool
-ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
+ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
+			   code_helper = ERROR_MARK)
 {
   struct ix86_address parts;
   rtx base, index, disp;

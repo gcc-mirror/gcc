@@ -194,7 +194,8 @@ static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 
 static bool visium_legitimate_constant_p (machine_mode, rtx);
 
-static bool visium_legitimate_address_p (machine_mode, rtx, bool);
+static bool visium_legitimate_address_p (machine_mode, rtx, bool,
+					 code_helper = ERROR_MARK);
 
 static bool visium_print_operand_punct_valid_p (unsigned char);
 static void visium_print_operand (FILE *, rtx, int);
@@ -1818,7 +1819,7 @@ rtx_ok_for_offset_p (machine_mode mode, rtx op)
    kind of register is required.  */
 
 static bool
-visium_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+visium_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 {
   rtx base;
   unsigned int regno;

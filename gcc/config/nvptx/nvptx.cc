@@ -2202,7 +2202,7 @@ nvptx_gen_shared_bcast (rtx reg, propagate_mask pm, unsigned rep,
 /* Returns true if X is a valid address for use in a memory reference.  */
 
 static bool
-nvptx_legitimate_address_p (machine_mode, rtx x, bool)
+nvptx_legitimate_address_p (machine_mode, rtx x, bool, code_helper)
 {
   enum rtx_code code = GET_CODE (x);
 

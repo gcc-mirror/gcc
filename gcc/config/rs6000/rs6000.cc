@@ -1109,7 +1109,8 @@ struct processor_costs ppca2_cost = {
 static tree (*rs6000_veclib_handler) (combined_fn, tree, tree);
 
 
-static bool rs6000_debug_legitimate_address_p (machine_mode, rtx, bool);
+static bool rs6000_debug_legitimate_address_p (machine_mode, rtx, bool,
+					       code_helper = ERROR_MARK);
 static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
@@ -9883,7 +9884,8 @@ use_toc_relative_ref (rtx sym, machine_mode mode)
    because adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
 static bool
-rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
+rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict,
+			     code_helper = ERROR_MARK)
 {
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
   bool quad_offset_p = mode_supports_dq_form (mode);
@@ -9986,10 +9988,10 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
 
 /* Debug version of rs6000_legitimate_address_p.  */
 static bool
-rs6000_debug_legitimate_address_p (machine_mode mode, rtx x,
-				   bool reg_ok_strict)
+rs6000_debug_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict,
+				   code_helper ch)
 {
-  bool ret = rs6000_legitimate_address_p (mode, x, reg_ok_strict);
+  bool ret = rs6000_legitimate_address_p (mode, x, reg_ok_strict, ch);
   fprintf (stderr,
 	   "\nrs6000_legitimate_address_p: return = %s, mode = %s, "
 	   "strict = %d, reload = %s, code = %s\n",

@@ -577,7 +577,8 @@ moxie_reg_ok_for_base_p (const_rtx reg, bool strict_p)
 static bool
 moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx x, bool strict_p,
-			    addr_space_t as)
+			    addr_space_t as,
+			    code_helper = ERROR_MARK)
 {
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
 

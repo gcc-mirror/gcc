@@ -2444,7 +2444,8 @@ c6x_legitimate_address_p_1 (machine_mode mode, rtx x, bool strict,
 }
 
 static bool
-c6x_legitimate_address_p (machine_mode mode, rtx x, bool strict)
+c6x_legitimate_address_p (machine_mode mode, rtx x, bool strict,
+			  code_helper = ERROR_MARK)
 {
   return c6x_legitimate_address_p_1 (mode, x, strict, false);
 }

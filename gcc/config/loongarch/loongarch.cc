@@ -2096,7 +2096,8 @@ loongarch_classify_address (struct loongarch_address_info *info, rtx x,
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
 static bool
-loongarch_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
+loongarch_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+				code_helper = ERROR_MARK)
 {
   struct loongarch_address_info addr;
 

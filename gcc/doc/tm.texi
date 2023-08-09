@@ -5853,9 +5853,16 @@ the maximum number that @code{TARGET_LEGITIMATE_ADDRESS_P} would ever
 accept.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{x}, bool @var{strict}, code_helper @var{ch})
 A function that returns whether @var{x} (an RTX) is a legitimate memory
 address on the target machine for a memory operand of mode @var{mode}.
+If @var{ch} is not @code{ERROR_MARK}, it can be called from middle-end to
+determine if it is valid to use @var{x} as a memory operand for RTX insn
+which is generated for the given code_helper @var{ch}.  For example,
+assuming the given @var{ch} is IFN_LEN_LOAD, on some target its underlying
+hardware instructions support fewer addressing modes than what are for the
+normal vector load and store, then with this @var{ch} target can know the
+actual use context and return more exact result.
 
 Legitimate addresses are defined in two variants: a strict variant and a
 non-strict one.  The @var{strict} parameter chooses which variant is
@@ -10992,11 +10999,12 @@ version of this hook returns true for the modes returned by either the
 target hooks for the given address space.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as}, code_helper @var{ch})
 Define this to return true if @var{exp} is a valid address for mode
-@var{mode} in the named address space @var{as}.  The @var{strict}
-parameter says whether strict addressing is in effect after reload has
-finished.  This target hook is the same as the
+@var{mode} in the named address space @var{as} with the use context
+@var{ch}.  The @var{strict} parameter says whether strict addressing
+is in effect after reload has finished.  The @var{ch} indicates what
+context @var{exp} will be used for.  This target hook is the same as the
 @code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes
 explicit named address space support.
 @end deftypefn

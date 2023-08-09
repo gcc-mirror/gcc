@@ -2141,8 +2141,9 @@ nios2_valid_addr_expr_p (rtx base, rtx offset, bool strict_p)
 
 /* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 static bool
-nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
-			    rtx operand, bool strict_p)
+nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx operand,
+			    bool strict_p,
+			    code_helper = ERROR_MARK)
 {
   switch (GET_CODE (operand))
     {
