@@ -276,8 +276,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (is_same_v<_ToDur, duration<_Rep, _Period>>)
 	  return __d;
 	else
+	  {
 #endif
-	{
 	  using __to_period = typename _ToDur::period;
 	  using __to_rep = typename _ToDur::rep;
 	  using __cf = ratio_divide<_Period, __to_period>;
@@ -285,7 +285,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using __dc = __duration_cast_impl<_ToDur, __cf, __cr,
 					    __cf::num == 1, __cf::den == 1>;
 	  return __dc::__cast(__d);
-	}
+#if __cpp_inline_variables && __cpp_if_constexpr
+	  }
+#endif
       }
 
     /** Trait indicating whether to treat a type as a floating-point type.

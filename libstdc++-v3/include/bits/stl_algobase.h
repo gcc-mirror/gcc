@@ -1518,15 +1518,12 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       return std::__bit_width(make_unsigned_t<_Tp>(__n)) - 1;
 #else
       // Use +__n so it promotes to at least int.
-      const int __sz = sizeof(+__n);
-      int __w = __sz * __CHAR_BIT__ - 1;
-      if (__sz == sizeof(long long))
-	__w -= __builtin_clzll(+__n);
-      else if (__sz == sizeof(long))
-	__w -= __builtin_clzl(+__n);
-      else if (__sz == sizeof(int))
-	__w -= __builtin_clz(+__n);
-      return __w;
+      return (sizeof(+__n) * __CHAR_BIT__ - 1)
+	       - (sizeof(+__n) == sizeof(long long)
+		    ? __builtin_clzll(+__n)
+		    : (sizeof(+__n) == sizeof(long)
+			 ? __builtin_clzl(+__n)
+			 : __builtin_clz(+__n)));
 #endif
     }
 

@@ -1042,7 +1042,7 @@ namespace __detail
     inline std::basic_string<_CharT, _Traits, _Allocator>
     path::string(const _Allocator& __a) const
     {
-      if _GLIBCXX_CONSTEXPR (is_same<_CharT, value_type>::value)
+      if _GLIBCXX17_CONSTEXPR (is_same<_CharT, value_type>::value)
 	return { _M_pathname.begin(), _M_pathname.end(), __a };
 
       using _WString = basic_string<_CharT, _Traits, _Allocator>;

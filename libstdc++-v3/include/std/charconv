@@ -242,7 +242,7 @@ namespace __detail
       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
 
       to_chars_result __res;
-      unsigned __len;
+      unsigned __len = 0;
 
       if _GLIBCXX17_CONSTEXPR (__gnu_cxx::__int_traits<_Tp>::__digits <= 16)
 	{
