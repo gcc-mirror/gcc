@@ -1,4 +1,5 @@
 /* { dg-do run { target { riscv_vector } } } */
+/* { dg-additional-options "-mcmodel=medany" } */
 
 #include "strided_load-1.c"
 #include <assert.h>
