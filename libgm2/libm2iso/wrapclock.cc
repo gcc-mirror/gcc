@@ -67,9 +67,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern "C" long int
 EXPORT(timezone) (void)
 {
+#if defined(HAVE_STRUCT_TM) && defined(HAVE_STRUCT_TIMESPEC)
   struct tm result;
   struct timespec ts;
 
+#if defined(HAVE_CLOCK_GETTIME) && defined(HAVE_TM_TM_GMTOFF)
   if (clock_gettime (CLOCK_REALTIME, &ts) == 0)
     {
       time_t time = ts.tv_sec;
@@ -77,6 +79,8 @@ EXPORT(timezone) (void)
       return result.tm_gmtoff;
     }
   else
+#endif
+#endif
     return timezone;
 }
 
@@ -84,7 +88,11 @@ EXPORT(timezone) (void)
 extern "C" int
 EXPORT(daylight) (void)
 {
+#if defined(HAVE_DAYLIGHT)
   return daylight;
+#else
+  return 0;
+#endif
 }
 
 
@@ -94,9 +102,11 @@ EXPORT(daylight) (void)
 extern "C" int
 EXPORT(isdst) (void)
 {
+#if defined(HAVE_STRUCT_TM) && defined(HAVE_STRUCT_TIMESPEC)
   struct tm result;
   struct timespec ts;
 
+#if defined(HAVE_CLOCK_SETTIME)
   if (clock_gettime (CLOCK_REALTIME, &ts) == 0)
     {
       time_t time = ts.tv_sec;
@@ -104,6 +114,8 @@ EXPORT(isdst) (void)
       return result.tm_isdst;
     }
   else
+#endif
+#endif
     return 0;
 }
 
@@ -111,12 +123,17 @@ EXPORT(isdst) (void)
 /* tzname returns the string associated with the local timezone.
    The daylight value is 0 or 1.  The value 0 returns the non
    daylight saving timezone string and the value of 1 returns the
-   daylight saving timezone string.  */
+   daylight saving timezone string.  It returns NULL if tzname is
+   unavailable.  */
 
 extern "C" char *
 EXPORT(tzname) (int daylight)
 {
+#if defined(HAVE_TZNAME)
   return tzname[daylight];
+#else
+  return NULL;
+#endif
 }
 
 
@@ -124,6 +141,7 @@ EXPORT(tzname) (int daylight)
    gettime returns 0 on success and -1 on failure.  If the underlying
    system does not have gettime then GetTimeRealtime returns 1.  */
 
+#if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" int
 EXPORT(GetTimeRealtime) (struct timespec *ts)
 {
@@ -134,11 +152,21 @@ EXPORT(GetTimeRealtime) (struct timespec *ts)
 #endif
 }
 
+#else
+
+extern "C" int
+EXPORT(GetTimeRealtime) (void *ts)
+{
+  return 1;
+}
+#endif
+
 
 /* SetTimeRealtime performs return settime (CLOCK_REALTIME, ts).
    gettime returns 0 on success and -1 on failure.  If the underlying
    system does not have gettime then GetTimeRealtime returns 1.  */
 
+#if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" int
 EXPORT(SetTimeRealtime) (struct timespec *ts)
 {
@@ -149,18 +177,42 @@ EXPORT(SetTimeRealtime) (struct timespec *ts)
 #endif
 }
 
+#else
+
+extern "C" int
+EXPORT(SetTimeRealtime) (void *ts)
+{
+  return 1;
+}
+#endif
+
 
 /* InitTimespec returns a newly created opaque type.  */
 
+#if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" struct timespec *
 EXPORT(InitTimespec) (void)
 {
+#if defined(HAVE_STRUCT_TIMESPEC) && defined(HAVE_MALLOC_H)
   return (struct timespec *)malloc (sizeof (struct timespec));
+#else
+  return NULL;
+#endif
 }
+
+#else
+
+extern "C" void *
+EXPORT(InitTimespec) (void)
+{
+  return NULL;
+}
+#endif
 
 
 /* KillTimeval deallocates the memory associated with an opaque type.  */
 
+#if defined(HAVE_STRUCT_TIMESPEC)
 extern "C" struct timespec *
 EXPORT(KillTimespec) (void *ts)
 {
@@ -170,26 +222,64 @@ EXPORT(KillTimespec) (void *ts)
   return NULL;
 }
 
+#else
+
+extern "C" void *
+EXPORT(KillTimespec) (void *ts)
+{
+  return NULL;
+}
+#endif
+
 
 /* GetTimespec retrieves the number of seconds and nanoseconds from the
    timespec.  */
 
-extern "C" void
+#if defined(HAVE_STRUCT_TIMESPEC)
+extern "C" int
 EXPORT(GetTimespec) (timespec *ts, unsigned long *sec, unsigned long *nano)
 {
+#if defined(HAVE_STRUCT_TIMESPEC)
   *sec = ts->tv_sec;
   *nano = ts->tv_nsec;
+  return 1;
+#else
+  return 0;
+#endif
 }
+
+#else
+extern "C" int
+EXPORT(GetTimespec) (void *ts, unsigned long *sec, unsigned long *nano)
+{
+  return 0;
+}
+#endif
 
 
 /* SetTimespec sets the number of seconds and nanoseconds into timespec.  */
 
-extern "C" void
+#if defined(HAVE_STRUCT_TIMESPEC)
+extern "C" int
 EXPORT(SetTimespec) (timespec *ts, unsigned long sec, unsigned long nano)
 {
+#if defined(HAVE_STRUCT_TIMESPEC)
   ts->tv_sec = sec;
   ts->tv_nsec = nano;
+  return 1;
+#else
+  return 0;
+#endif
 }
+
+#else
+
+extern "C" int
+EXPORT(SetTimespec) (void *ts, unsigned long sec, unsigned long nano)
+{
+  return 0;
+}
+#endif
 
 
 /* init - init/finish functions for the module */
