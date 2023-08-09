@@ -596,7 +596,7 @@
 	  (match_dup 2)))]
   "TARGET_SSE2"
 {
-  if (<MODE>mode == V2SFmode
+  if (<MODE>mode != V2SImode
       && !flag_trapping_math)
     {
       rtx op1 = force_reg (<MODE>mode, operands[1]);
@@ -1941,7 +1941,7 @@
 	(plusminusmult:V4HF
 	  (match_operand:V4HF 1 "nonimmediate_operand")
 	  (match_operand:V4HF 2 "nonimmediate_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
@@ -1961,7 +1961,7 @@
 	(div:V4HF
 	  (match_operand:V4HF 1 "nonimmediate_operand")
 	  (match_operand:V4HF 2 "nonimmediate_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
@@ -1983,14 +1983,22 @@
 	    (match_operand:V2HF 1 "nonimmediate_operand"))
 	  (match_operand:V8HF 2 "reg_or_0_operand")
 	  (const_int 3)))]
-  "TARGET_SSE")
+  "TARGET_SSE"
+{
+  if (!flag_trapping_math && operands[2] == CONST0_RTX (V8HFmode))
+  {
+    rtx op1 = force_reg (V2HFmode, operands[1]);
+    emit_move_insn (operands[0], lowpart_subreg (V8HFmode, op1, V2HFmode));
+    DONE;
+  }
+})
 
 (define_expand "<insn>v2hf3"
   [(set (match_operand:V2HF 0 "register_operand")
 	(plusminusmult:V2HF
 	  (match_operand:V2HF 1 "nonimmediate_operand")
 	  (match_operand:V2HF 2 "nonimmediate_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
@@ -2009,7 +2017,7 @@
 	(div:V2HF
 	  (match_operand:V2HF 1 "nonimmediate_operand")
 	  (match_operand:V2HF 2 "nonimmediate_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
