@@ -634,7 +634,7 @@ Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
 
 mpartial-vector-fp-math
 Target Var(ix86_partial_vec_fp_math) Init(1)
-Enable floating-point status flags setting SSE vector operations on partial vectors
+Enable floating-point status flags setting SSE vector operations on partial vectors.
 
 mmove-max=
 Target RejectNegative Joined Var(ix86_move_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
