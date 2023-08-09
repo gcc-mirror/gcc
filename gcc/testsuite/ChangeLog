@@ -1,3 +1,191 @@
+2023-08-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zicond-ice-1.c: New test.
+
+2023-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100482
+	* g++.dg/cpp0x/decltype-100482.C: New test.
+
+2023-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110832
+	* gcc.target/i386/pr110832-1.c: New test.
+	* gcc.target/i386/pr110832-2.c: New test.
+	* gcc.target/i386/pr110832-3.c: New test.
+
+2023-08-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103281
+	PR tree-optimization/28794
+	* gcc.dg/tree-ssa/pr103281-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-compare-1.c: New test.
+
+2023-08-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-single-rsub.c: Enhance
+	cases.
+	* gcc.target/riscv/rvv/base/float-point-single-sub.c: Ditto.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add condition tests.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_arith_run-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_logical_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_shift_run-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc_call-5.c: New test.
+
+2023-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/49955
+	* gfortran.dg/vect/pr49955.f: New testcase.
+
+2023-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110924
+	* gcc.dg/torture/pr110924.c: New testcase.
+
+2023-08-08  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/vslide1down-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-3.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-3.c: New test.
+
+2023-08-08  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/110869
+	* gcc.dg/cmp-mem-const-1.c: Use optimization level 2.
+	* gcc.dg/cmp-mem-const-2.c: Dito.
+	* gcc.dg/cmp-mem-const-3.c: Exclude sparc from this test.
+	* gcc.dg/cmp-mem-const-4.c: Dito.
+	* gcc.dg/cmp-mem-const-5.c: Dito.
+	* gcc.dg/cmp-mem-const-6.c: Dito.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/neg-1.c: New test.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS shift.
+	* gcc.target/riscv/rvv/autovec/vls/shift-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/shift-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/shift-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/shift-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/shift-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/shift-6.c: New test.
+
 2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/vls/def.h: Add basic operations.

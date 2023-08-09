@@ -1,3 +1,37 @@
+2023-08-08  Marek Polacek  <polacek@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Adjust the call to
+	cp_parser_braced_list.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_new_initializer): Likewise.
+	(cp_parser_assignment_expression): Adjust the call to
+	cp_parser_initializer_clause.
+	(cp_parser_lambda_introducer): Adjust the call to cp_parser_initializer.
+	(cp_parser_range_for): Adjust the call to cp_parser_braced_list.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_mem_initializer): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_default_argument): Adjust the call to cp_parser_initializer.
+	(cp_parser_initializer): Handle null is_direct_init and non_constant_p
+	arguments.
+	(cp_parser_initializer_clause): Handle null non_constant_p argument.
+	(cp_parser_braced_list): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_member_declaration): Adjust the call to
+	cp_parser_initializer_clause and cp_parser_initializer.
+	(cp_parser_yield_expression): Adjust the call to cp_parser_braced_list.
+	(cp_parser_functional_cast): Likewise.
+	(cp_parser_late_parse_one_default_arg): Adjust the call to
+	cp_parser_initializer.
+	(cp_parser_omp_for_loop_init): Likewise.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+
+2023-08-08  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100482
+	* parser.cc (cp_parser_decltype_expr): Report errors raised by
+	finish_id_expression.
+
 2023-08-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* cp-tree.h (RANGE_FOR_NOVECTOR): New.

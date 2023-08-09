@@ -1,3 +1,156 @@
+2023-08-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use word_mode
+	for the temporary when canonicalizing the condition.
+
+2023-08-08  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc: Cleaned include headers.
+	(struct cr_builtins): Added GTY.
+	(cr_builtins_ref): Created.
+	(builtins_data) Changed to GC root.
+	(allocate_builtin_data): Changed.
+	Included gt-core-builtins.h.
+	* config/bpf/coreout.cc: (bpf_core_extra) Added GTY.
+	(bpf_core_extra_ref): Created.
+	(bpf_comment_info): Changed to GC root.
+	(bpf_core_reloc_add, output_btfext_header, btf_ext_init): Changed.
+
+2023-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/110832
+	* config/i386/i386.opt (mpartial-vector-fp-math): New option.
+	* config/i386/mmx.md (movq_<mode>_to_sse): Do not sanitize
+	upper part of V2SFmode register with -fno-trapping-math.
+	(<plusminusmult:insn>v2sf3): Enable for ix86_partial_vec_fp_math.
+	(divv2sf3): Ditto.
+	(<smaxmin:code>v2sf3): Ditto.
+	(sqrtv2sf2): Ditto.
+	(*mmx_haddv2sf3_low): Ditto.
+	(*mmx_hsubv2sf3_low): Ditto.
+	(vec_addsubv2sf3): Ditto.
+	(vec_cmpv2sfv2si): Ditto.
+	(vcond<V2FI:mode>v2sf): Ditto.
+	(fmav2sf4): Ditto.
+	(fmsv2sf4): Ditto.
+	(fnmav2sf4): Ditto.
+	(fnmsv2sf4): Ditto.
+	(fix_truncv2sfv2si2): Ditto.
+	(fixuns_truncv2sfv2si2): Ditto.
+	(floatv2siv2sf2): Ditto.
+	(floatunsv2siv2sf2): Ditto.
+	(nearbyintv2sf2): Ditto.
+	(rintv2sf2): Ditto.
+	(lrintv2sfv2si2): Ditto.
+	(ceilv2sf2): Ditto.
+	(lceilv2sfv2si2): Ditto.
+	(floorv2sf2): Ditto.
+	(lfloorv2sfv2si2): Ditto.
+	(btruncv2sf2): Ditto.
+	(roundv2sf2): Ditto.
+	(lroundv2sfv2si2): Ditto.
+	* doc/invoke.texi (x86 Options): Document
+	-mpartial-vector-fp-math option.
+
+2023-08-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103281
+	PR tree-optimization/28794
+	* vr-values.cc (simplify_using_ranges::simplify_cond_using_ranges_1): Split out
+	majority to ...
+	(simplify_using_ranges::simplify_compare_using_ranges_1): Here.
+	(simplify_using_ranges::simplify_casted_cond): Rename to ...
+	(simplify_using_ranges::simplify_casted_compare): This
+	and change arguments to take op0 and op1.
+	(simplify_using_ranges::simplify_compare_assign_using_ranges_1): New method.
+	(simplify_using_ranges::simplify): For tcc_comparison assignments call
+	simplify_compare_assign_using_ranges_1.
+	* vr-values.h (simplify_using_ranges): Add
+	new methods, simplify_compare_using_ranges_1 and simplify_compare_assign_using_ranges_1.
+	Rename simplify_casted_cond and simplify_casted_compare and
+	update argument types.
+
+2023-08-08  Andrzej Turko  <andrzej.turko@gmail.com>
+
+	* genmatch.cc: Log line numbers indirectly.
+
+2023-08-08  Andrzej Turko  <andrzej.turko@gmail.com>
+
+	* genmatch.cc: Make sinfo map ordered.
+	* Makefile.in: Require the ordered map header for genmatch.o.
+
+2023-08-08  Andrzej Turko  <andrzej.turko@gmail.com>
+
+	* ordered-hash-map.h: Add get_or_insert.
+	* ordered-hash-map-tests.cc: Use get_or_insert in tests.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (cond_<optab><mode>): New pattern.
+	(cond_len_<optab><mode>): Ditto.
+	(cond_fma<mode>): Ditto.
+	(cond_len_fma<mode>): Ditto.
+	(cond_fnma<mode>): Ditto.
+	(cond_len_fnma<mode>): Ditto.
+	(cond_fms<mode>): Ditto.
+	(cond_len_fms<mode>): Ditto.
+	(cond_fnms<mode>): Ditto.
+	(cond_len_fnms<mode>): Ditto.
+	* config/riscv/riscv-protos.h (riscv_get_v_regno_alignment): Export
+	global.
+	(enum insn_type): Add new enum type.
+	(prepare_ternary_operands): New function.
+	* config/riscv/riscv-v.cc (emit_vlmax_masked_fp_mu_insn): Ditto.
+	(emit_nonvlmax_tumu_insn): Ditto.
+	(emit_nonvlmax_fp_tumu_insn): Ditto.
+	(expand_cond_len_binop): Add condtional operations.
+	(expand_cond_len_ternop): Ditto.
+	(prepare_ternary_operands): New function.
+	* config/riscv/riscv.cc (riscv_memmodel_needs_amo_release): Export
+	riscv_get_v_regno_alignment as global scope.
+	* config/riscv/vector.md: Fix ternary bugs.
+
+2023-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/49955
+	* tree-vectorizer.h (_slp_instance::remain_stmts): New.
+	(SLP_INSTANCE_REMAIN_STMTS): Likewise.
+	* tree-vect-slp.cc (vect_free_slp_instance): Release
+	SLP_INSTANCE_REMAIN_STMTS.
+	(vect_build_slp_instance): Make the number of lanes of
+	a BB reduction even.
+	(vectorize_slp_instance_root_stmt): Handle unvectorized
+	defs of a BB reduction.
+
+2023-08-08  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (get_len_internal_fn): New function.
+	(DEF_INTERNAL_COND_FN): Ditto.
+	(DEF_INTERNAL_SIGNED_COND_FN): Ditto.
+	* internal-fn.h (get_len_internal_fn): Ditto.
+	* tree-vect-stmts.cc (vectorizable_call): Add CALL auto-vectorization.
+
+2023-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110924
+	* tree-ssa-live.h (virtual_operand_live): Update comment.
+	* tree-ssa-live.cc (virtual_operand_live::get_live_in): Remove
+	optimization, look at each predecessor.
+	* tree-ssa-sink.cc (pass_sink_code::execute): Mark backedges.
+
+2023-08-08  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/riscv-v.cc (slide1_sew64_helper): Modify.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (<optab><mode>2): Add VLS neg.
+	* config/riscv/vector.md: Ditto.
+
+2023-08-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS shift.
+
 2023-08-07  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec-vls.md (<optab><mode>3): Add VLS modes.
