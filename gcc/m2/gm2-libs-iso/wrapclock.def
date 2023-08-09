@@ -88,18 +88,20 @@ PROCEDURE KillTimespec (tv: timespec) : timespec ;
 
 (*
    GetTimespec - retrieves the number of seconds and nanoseconds
-                 from the timespec.
+                 from the timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
 *)
 
-PROCEDURE GetTimespec (ts: timespec; VAR sec, nano: LONGCARD) ;
+PROCEDURE GetTimespec (ts: timespec; VAR sec, nano: LONGCARD) : INTEGER ;
 
 
 (*
    SetTimespec - sets the number of seconds and nanoseconds
-                 into timespec.
+                 into timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
 *)
 
-PROCEDURE SetTimespec (ts: timespec; sec, nano: LONGCARD) ;
+PROCEDURE SetTimespec (ts: timespec; sec, nano: LONGCARD) : INTEGER ;
 
 
 (*

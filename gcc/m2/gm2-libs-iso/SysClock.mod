@@ -185,25 +185,29 @@ BEGIN
       ts := InitTimespec () ;
       IF GetTimeRealtime (ts) = 0
       THEN
-         GetTimespec (ts, sec, nano) ;
-         offset := timezone () ;
-         IF Debugging
+         IF GetTimespec (ts, sec, nano) = 1
          THEN
-            printf ("getclock = %ld\n", sec)
-         END ;
-         sec := VAL (LONGINT, sec) + offset ;
-         IF Debugging
-         THEN
-            printf ("getclock = %ld\n", sec)
-         END ;
-         WITH userData DO
-            second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
-            minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
-            hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;
-            ExtractDate (sec, year, month, day) ;
-            fractions := nano DIV ((1000 * 1000 * 1000) DIV maxSecondParts) ;
-            zone := - (offset DIV 60) ;
-            summerTimeFlag := (isdst () = 1)
+            offset := timezone () ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            sec := VAL (LONGINT, sec) + offset ;
+            IF Debugging
+            THEN
+               printf ("getclock = %ld\n", sec)
+            END ;
+            WITH userData DO
+               second := VAL (Sec, DivMod (sec, MAX (Sec) + 1)) ;
+               minute := VAL (Min, DivMod (sec, MAX (Min) + 1)) ;
+               hour := VAL (Hour, DivMod (sec, MAX (Hour) + 1)) ;
+               ExtractDate (sec, year, month, day) ;
+               fractions := nano DIV ((1000 * 1000 * 1000) DIV maxSecondParts) ;
+               zone := - (offset DIV 60) ;
+               summerTimeFlag := (isdst () = 1)
+            END
+         ELSE
+            HALT
          END
       ELSE
          HALT
@@ -306,7 +310,10 @@ BEGIN
                            userData.month, userData.year) ;
       offset := timezone () ;
       sec := VAL (LONGINT, sec) - offset ;
-      SetTimespec (ts, sec, nano) ;
+      IF SetTimespec (ts, sec, nano) = 0
+      THEN
+         HALT
+      END ;
       IF SetTimeRealtime (ts) # 0
       THEN
          HALT
