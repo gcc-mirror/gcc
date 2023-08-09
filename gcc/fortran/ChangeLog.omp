@@ -1,5 +1,18 @@
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
+	* gfortran.h (gfc_omp_namelist_udm): Add MAPPER_ID field to store the
+	mapper name to use for lookup during resolution.
+	* match.cc (gfc_free_omp_namelist): Handle OMP_LIST_TO and
+	OMP_LIST_FROM when freeing mapper references.
+	* module.cc (load_omp_udms, write_omp_udm): Handle MAPPER_ID field.
+	* openmp.cc (gfc_match_omp_clauses): Handle explicitly-specified
+	'default' name.  Don't do mapper lookup here, but record mapper name if
+	the user specifies one.
+	(resolve_omp_clauses): Do mapper lookup here instead.  Report error for
+	missing named mapper.
+
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
 	* gfortran.h (gfc_omp_clauses): Add NS field.
 	* openmp.cc (verify_omp_clauses_symbol_dups,
 	omp_verify_map_motion_clauses): New functions, broken out of...
