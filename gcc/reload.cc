@@ -2162,7 +2162,7 @@ hard_reg_set_here_p (unsigned int beg_regno, unsigned int end_regno, rtx x)
 
 bool
 strict_memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
-				    rtx addr, addr_space_t as)
+				    rtx addr, addr_space_t as, code_helper)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   gcc_assert (ADDR_SPACE_GENERIC_P (as));

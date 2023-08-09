@@ -1802,8 +1802,8 @@ pop_operand (rtx op, machine_mode mode)
    for mode MODE in address space AS.  */
 
 bool
-memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
-			     rtx addr, addr_space_t as)
+memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED, rtx addr,
+			     addr_space_t as, code_helper ch)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
@@ -1813,8 +1813,7 @@ memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
  win:
   return true;
 #else
-  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as,
-						  ERROR_MARK);
+  return targetm.addr_space.legitimate_address_p (mode, addr, 0, as, ch);
 #endif
 }
 
@@ -2430,7 +2429,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
   rtx z;
   rtx y1 = y;
   rtx *y2;
-  bool (*addressp) (machine_mode, rtx, addr_space_t) =
+  bool (*addressp) (machine_mode, rtx, addr_space_t, code_helper) =
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
   poly_int64 mode_sz = GET_MODE_SIZE (mode);
@@ -2469,7 +2468,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
       *y2 = plus_constant (address_mode, *y2, mode_sz - 1);
       /* Use QImode because an odd displacement may be automatically invalid
 	 for any wider mode.  But it should be valid for a single byte.  */
-      good = (*addressp) (QImode, y, as);
+      good = (*addressp) (QImode, y, as, ERROR_MARK);
 
       /* In any case, restore old contents of memory.  */
       *y2 = y1;
@@ -2504,7 +2503,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */
-  return (*addressp) (QImode, z, as);
+  return (*addressp) (QImode, z, as, ERROR_MARK);
 }
 
 /* Return true if ADDR is an address-expression whose effect depends

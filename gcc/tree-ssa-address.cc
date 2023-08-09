@@ -344,7 +344,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
 
 bool
 valid_mem_ref_p (machine_mode mode, addr_space_t as,
-		 struct mem_address *addr)
+		 struct mem_address *addr, code_helper ch)
 {
   rtx address;
 
@@ -352,7 +352,7 @@ valid_mem_ref_p (machine_mode mode, addr_space_t as,
   if (!address)
     return false;
 
-  return memory_address_addr_space_p (mode, address, as);
+  return memory_address_addr_space_p (mode, address, as, ch);
 }
 
 /* Checks whether a TARGET_MEM_REF with type TYPE and parameters given by ADDR

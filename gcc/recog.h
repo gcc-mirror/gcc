@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RECOG_H
 #define GCC_RECOG_H
 
+/* For enum tree_code ERROR_MARK.  */
+#include "tree.h"
+
 /* Random number that should be large enough for all purposes.  Also define
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
@@ -200,11 +203,12 @@ extern void temporarily_undo_changes (int);
 extern void redo_changes (int);
 extern bool constrain_operands (int, alternative_mask);
 extern bool constrain_operands_cached (rtx_insn *, int);
-extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
+extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t,
+					 code_helper = ERROR_MARK);
 #define memory_address_p(mode,addr) \
 	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern bool strict_memory_address_addr_space_p (machine_mode, rtx,
-						addr_space_t);
+extern bool strict_memory_address_addr_space_p (machine_mode, rtx, addr_space_t,
+						code_helper = ERROR_MARK);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
 extern bool validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);

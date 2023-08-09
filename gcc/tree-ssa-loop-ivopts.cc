@@ -4704,17 +4704,25 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
   /* Only true if ratio != 1.  */
   bool ok_with_ratio_p = false;
   bool ok_without_ratio_p = false;
+  code_helper code = ERROR_MARK;
+
+  if (use->type == USE_PTR_ADDRESS)
+    {
+      gcall *call = as_a<gcall *> (use->stmt);
+      gcc_assert (gimple_call_internal_p (call));
+      code = gimple_call_internal_fn (call);
+    }
 
   if (!aff_combination_const_p (aff_inv))
     {
       parts.index = integer_one_node;
       /* Addressing mode "base + index".  */
-      ok_without_ratio_p = valid_mem_ref_p (mem_mode, as, &parts);
+      ok_without_ratio_p = valid_mem_ref_p (mem_mode, as, &parts, code);
       if (ratio != 1)
 	{
 	  parts.step = wide_int_to_tree (type, ratio);
 	  /* Addressing mode "base + index << scale".  */
-	  ok_with_ratio_p = valid_mem_ref_p (mem_mode, as, &parts);
+	  ok_with_ratio_p = valid_mem_ref_p (mem_mode, as, &parts, code);
 	  if (!ok_with_ratio_p)
 	    parts.step = NULL_TREE;
 	}
@@ -4724,7 +4732,7 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 	    {
 	      parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
 	      /* Addressing mode "base + index [<< scale] + offset".  */
-	      if (!valid_mem_ref_p (mem_mode, as, &parts))
+	      if (!valid_mem_ref_p (mem_mode, as, &parts, code))
 		parts.offset = NULL_TREE;
 	      else
 		aff_inv->offset = 0;
@@ -4737,7 +4745,7 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 
 	  /* Addressing mode "symbol + base + index [<< scale] [+ offset]".  */
 	  if (parts.symbol != NULL_TREE
-	      && !valid_mem_ref_p (mem_mode, as, &parts))
+	      && !valid_mem_ref_p (mem_mode, as, &parts, code))
 	    {
 	      aff_combination_add_elt (aff_inv, parts.symbol, 1);
 	      parts.symbol = NULL_TREE;
@@ -4775,7 +4783,7 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 	{
 	  parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
 	  /* Addressing mode "base + offset".  */
-	  if (!valid_mem_ref_p (mem_mode, as, &parts))
+	  if (!valid_mem_ref_p (mem_mode, as, &parts, code))
 	    parts.offset = NULL_TREE;
 	  else
 	    aff_inv->offset = 0;
