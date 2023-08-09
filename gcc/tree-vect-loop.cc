@@ -2061,8 +2061,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	  if (ok
 	      && STMT_VINFO_LIVE_P (stmt_info)
 	      && !PURE_SLP_STMT (stmt_info))
-	    ok = vectorizable_live_operation (loop_vinfo,
-					      stmt_info, NULL, NULL, NULL,
+	    ok = vectorizable_live_operation (loop_vinfo, stmt_info, NULL, NULL,
 					      -1, false, &cost_vec);
 
           if (!ok)
@@ -10185,9 +10184,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
    it can be supported.  */
 
 bool
-vectorizable_live_operation (vec_info *vinfo,
-			     stmt_vec_info stmt_info,
-			     gimple_stmt_iterator *gsi,
+vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 			     slp_tree slp_node, slp_instance slp_node_instance,
 			     int slp_index, bool vec_stmt_p,
 			     stmt_vector_for_cost *cost_vec)
@@ -10393,9 +10390,12 @@ vectorizable_live_operation (vec_info *vinfo,
 	     the loop mask for the final iteration.  */
 	  gcc_assert (ncopies == 1 && !slp_node);
 	  tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
-	  tree mask = vect_get_loop_mask (loop_vinfo, gsi,
+	  gimple_seq tem = NULL;
+	  gimple_stmt_iterator gsi = gsi_last (tem);
+	  tree mask = vect_get_loop_mask (loop_vinfo, &gsi,
 					  &LOOP_VINFO_MASKS (loop_vinfo),
 					  1, vectype, 0);
+	  gimple_seq_add_seq (&stmts, tem);
 	  tree scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
 					  mask, vec_lhs_phi);
 
