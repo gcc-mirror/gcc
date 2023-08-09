@@ -663,7 +663,6 @@ get_available_features (struct __processor_model *cpu_model,
   unsigned int max_cpuid_level = cpu_model2->__cpu_max_level;
   unsigned int eax, ebx;
   unsigned int ext_level;
-  unsigned int subleaf_level;
 
   /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
 #define XCR_XFEATURE_ENABLED_MASK	0x0
@@ -763,7 +762,9 @@ get_available_features (struct __processor_model *cpu_model,
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0/1). */
   if (max_cpuid_level >= 7)
     {
-      __cpuid_count (7, 0, subleaf_level, ebx, ecx, edx);
+      unsigned int max_subleaf_level;
+
+      __cpuid_count (7, 0, max_subleaf_level, ebx, ecx, edx);
       if (ebx & bit_BMI)
 	set_feature (FEATURE_BMI);
       if (ebx & bit_SGX)
@@ -875,7 +876,7 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512FP16);
 	}
 
-      if (subleaf_level >= 1)
+      if (max_subleaf_level >= 1)
 	{
 	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
 	  if (eax & bit_HRESET)
