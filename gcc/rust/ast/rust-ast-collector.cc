@@ -2349,9 +2349,7 @@ TokenCollector::visit (MacroInvocation &invocation)
   push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
   visit (data.get_delim_tok_tree ());
   if (invocation.has_semicolon ())
-    {
-      push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
-    }
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
 }
 
 void
