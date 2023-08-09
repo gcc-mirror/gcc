@@ -441,29 +441,6 @@ region_model::canonicalize ()
 {
   m_store.canonicalize (m_mgr->get_store_manager ());
   m_constraints->canonicalize ();
-
-  if (!m_dynamic_extents.is_empty ())
-    {
-      /* Purge any dynamic extents for regions that aren't referenced.
-	 Normally these are eliminated when leaks are detected, but we
-	 can also gain stray heap_allocated_regions that aren't seen
-	 by the leak-detection code.  This happens when
-	 region_model::on_call_pre provides a default result for a
-	 function with both attributes "malloc" and "alloc_size" that
-	 also has a known_function implementation.
-	 Purge dynamic extent information for such regions.  */
-      auto_bitmap referenced_base_region_ids;
-      get_referenced_base_regions (referenced_base_region_ids);
-      auto_vec<const region *> purgable_dyn_extents;
-      for (auto iter : m_dynamic_extents)
-	{
-	  const region *reg = iter.first;
-	  if (!bitmap_bit_p (referenced_base_region_ids, reg->get_id ()))
-	    purgable_dyn_extents.safe_push (reg);
-	}
-      for (auto reg : purgable_dyn_extents)
-	m_dynamic_extents.remove (reg);
-    }
 }
 
 /* Return true if this region_model is in canonical form.  */
@@ -1304,51 +1281,6 @@ region_model::check_call_args (const call_details &cd) const
     cd.get_arg_svalue (arg_idx);
 }
 
-/* Return true if CD is known to be a call to a function with
-   __attribute__((const)).  */
-
-static bool
-const_fn_p (const call_details &cd)
-{
-  tree fndecl = cd.get_fndecl_for_call ();
-  if (!fndecl)
-    return false;
-  gcc_assert (DECL_P (fndecl));
-  return TREE_READONLY (fndecl);
-}
-
-/* If this CD is known to be a call to a function with
-   __attribute__((const)), attempt to get a const_fn_result_svalue
-   based on the arguments, or return NULL otherwise.  */
-
-static const svalue *
-maybe_get_const_fn_result (const call_details &cd)
-{
-  if (!const_fn_p (cd))
-    return NULL;
-
-  unsigned num_args = cd.num_args ();
-  if (num_args > const_fn_result_svalue::MAX_INPUTS)
-    /* Too many arguments.  */
-    return NULL;
-
-  auto_vec<const svalue *> inputs (num_args);
-  for (unsigned arg_idx = 0; arg_idx < num_args; arg_idx++)
-    {
-      const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
-      if (!arg_sval->can_have_associated_state_p ())
-	return NULL;
-      inputs.quick_push (arg_sval);
-    }
-
-  region_model_manager *mgr = cd.get_manager ();
-  const svalue *sval
-    = mgr->get_or_create_const_fn_result_svalue (cd.get_lhs_type (),
-						 cd.get_fndecl_for_call (),
-						 inputs);
-  return sval;
-}
-
 /* Update this model for an outcome of a call that returns a specific
    integer constant.
    If UNMERGEABLE, then make the result unmergeable, e.g. to prevent
@@ -1381,7 +1313,9 @@ region_model::update_for_zero_return (const call_details &cd,
   update_for_int_cst_return (cd, 0, unmergeable);
 }
 
-/* Update this model for an outcome of a call that returns non-zero.  */
+/* Update this model for an outcome of a call that returns non-zero.
+   Specifically, assign an svalue to the LHS, and add a constraint that
+   that svalue is non-zero.  */
 
 void
 region_model::update_for_nonzero_return (const call_details &cd)
@@ -1390,6 +1324,7 @@ region_model::update_for_nonzero_return (const call_details &cd)
     return;
   if (TREE_CODE (cd.get_lhs_type ()) != INTEGER_TYPE)
     return;
+  cd.set_any_lhs_with_defaults ();
   const svalue *zero
     = m_mgr->get_or_create_int_cst (cd.get_lhs_type (), 0);
   const svalue *result
@@ -1485,48 +1420,6 @@ region_model::get_known_function (enum internal_fn ifn) const
   return known_fn_mgr->get_internal_fn (ifn);
 }
 
-/* Look for attribute "alloc_size" on the called function and, if found,
-   return a symbolic value of type size_type_node for the allocation size
-   based on the call's parameters.
-   Otherwise, return null.  */
-
-static const svalue *
-get_result_size_in_bytes (const call_details &cd)
-{
-  const tree attr = cd.lookup_function_attribute ("alloc_size");
-  if (!attr)
-    return nullptr;
-
-  const tree atval_1 = TREE_VALUE (attr);
-  if (!atval_1)
-    return nullptr;
-
-  unsigned argidx1 = TREE_INT_CST_LOW (TREE_VALUE (atval_1)) - 1;
-  if (cd.num_args () <= argidx1)
-    return nullptr;
-
-  const svalue *sval_arg1 = cd.get_arg_svalue (argidx1);
-
-  if (const tree atval_2 = TREE_CHAIN (atval_1))
-    {
-      /* Two arguments.  */
-      unsigned argidx2 = TREE_INT_CST_LOW (TREE_VALUE (atval_2)) - 1;
-      if (cd.num_args () <= argidx2)
-	return nullptr;
-      const svalue *sval_arg2 = cd.get_arg_svalue (argidx2);
-      /* TODO: ideally we shouldn't need this cast here;
-	 see PR analyzer/110902.  */
-      return cd.get_manager ()->get_or_create_cast
-	(size_type_node,
-	 cd.get_manager ()->get_or_create_binop (size_type_node,
-						 MULT_EXPR,
-						 sval_arg1, sval_arg2));
-    }
-  else
-    /* Single argument.  */
-    return cd.get_manager ()->get_or_create_cast (size_type_node, sval_arg1);
-}
-
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1562,40 +1455,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 
   tree callee_fndecl = get_fndecl_for_call (call, ctxt);
 
-  /* Some of the cases below update the lhs of the call based on the
-     return value, but not all.  Provide a default value, which may
-     get overwritten below.  */
-  if (tree lhs = gimple_call_lhs (call))
-    {
-      const region *lhs_region = get_lvalue (lhs, ctxt);
-      const svalue *sval = maybe_get_const_fn_result (cd);
-      if (!sval)
-	{
-	  if (callee_fndecl
-	      && lookup_attribute ("malloc", DECL_ATTRIBUTES (callee_fndecl)))
-	    {
-	      const region *new_reg
-		= get_or_create_region_for_heap_alloc (NULL, ctxt);
-	      mark_region_as_unknown (new_reg, NULL);
-	      sval = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
-	    }
-	  else
-	    /* For the common case of functions without __attribute__((const)),
-	       use a conjured value, and purge any prior state involving that
-	       value (in case this is in a loop).  */
-	    sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-							 lhs_region,
-							 conjured_purge (this,
-									 ctxt));
-	  if (const svalue *size_in_bytes = get_result_size_in_bytes (cd))
-	    {
-	      const region *reg = deref_rvalue (sval, NULL_TREE, ctxt, false);
-	      set_dynamic_extents (reg, size_in_bytes, ctxt);
-	    }
-	}
-      set_value (lhs_region, sval, ctxt);
-    }
-
   if (gimple_call_internal_p (call))
     if (const known_function *kf
 	  = get_known_function (gimple_call_internal_fn (call)))
@@ -1605,13 +1464,18 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
       }
 
   if (!callee_fndecl)
-    return true; /* Unknown side effects.  */
+    {
+      cd.set_any_lhs_with_defaults ();
+      return true; /* Unknown side effects.  */
+    }
 
   if (const known_function *kf = get_known_function (callee_fndecl, cd))
     {
       kf->impl_call_pre (cd);
       return false; /* No further side effects.  */
     }
+
+  cd.set_any_lhs_with_defaults ();
 
   const int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
   if (callee_fndecl_flags & (ECF_CONST | ECF_PURE))

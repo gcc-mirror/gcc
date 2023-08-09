@@ -6,8 +6,9 @@
 void test_1 (void)
 {
   char buf[256];
-  memset (buf, 0, 256);
+  void *p = memset (buf, 0, 256);
   __analyzer_eval (buf[42] == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (p == buf); /* { dg-warning "TRUE" } */
 }
 
 /* As above, but with __builtin_memset.  */

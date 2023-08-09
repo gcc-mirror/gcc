@@ -1372,7 +1372,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 					   const saved_diagnostic &sd)
 {
   LOG_SCOPE (get_logger ());
-  log ("sd: %qs at SN: %i", sd.m_d->get_kind (), sd.m_snode->m_index);
+  log ("sd[%i]: %qs at SN: %i",
+       sd.get_index (), sd.m_d->get_kind (), sd.m_snode->m_index);
   log ("num dupes: %i", sd.get_num_dupes ());
 
   pretty_printer *pp = global_dc->printer->clone ();

@@ -40,6 +40,15 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* class pure_known_function_with_default_return : public known_function.  */
+
+void
+pure_known_function_with_default_return::
+impl_call_pre (const call_details &cd) const
+{
+  cd.set_any_lhs_with_defaults ();
+}
+
 /* Implementations of specific functions.  */
 
 /* Handler for "alloca".  */
@@ -557,6 +566,8 @@ kf_memset::impl_call_pre (const call_details &cd) const
 				 nullptr,
 				 cd.get_ctxt ());
   model->fill_region (sized_dest_reg, fill_value_u8);
+
+  cd.maybe_set_lhs (dest_sval);
 }
 
 /* A subclass of pending_diagnostic for complaining about 'putenv'
@@ -683,6 +694,7 @@ public:
 	  ctxt->warn (make_unique<putenv_of_auto_var> (fndecl, reg));
 	break;
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
@@ -1034,12 +1046,13 @@ public:
       = model->deref_rvalue (dst_ptr, cd.get_arg_tree (0), ctxt);
     const svalue *content = cd.get_or_create_conjured_svalue (dst_reg);
     model->set_value (dst_reg, content, ctxt);
+    cd.set_any_lhs_with_defaults ();
   }
 };
 
 /* Handler for "__builtin_stack_restore".  */
 
-class kf_stack_restore : public known_function
+class kf_stack_restore : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &) const final override
@@ -1052,7 +1065,7 @@ public:
 
 /* Handler for "__builtin_stack_save".  */
 
-class kf_stack_save : public known_function
+class kf_stack_save : public pure_known_function_with_default_return
 {
 public:
   bool matches_call_types_p (const call_details &) const final override
@@ -1175,6 +1188,7 @@ kf_strlen::impl_call_pre (const call_details &cd) const
 	}
     }
   /* Otherwise a conjured value.  */
+  cd.set_any_lhs_with_defaults ();
 }
 
 /* Handler for "strndup" and "__builtin_strndup".  */

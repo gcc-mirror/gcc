@@ -293,6 +293,16 @@ public:
   }
 };
 
+/* Abstract subclass of known_function that merely sets the return
+   value of the function (based on function attributes), and assumes
+   it has no side-effects.  */
+
+class pure_known_function_with_default_return : public known_function
+{
+public:
+  void impl_call_pre (const call_details &cd) const override;
+};
+
 extern void register_known_functions (known_function_manager &mgr);
 extern void register_known_analyzer_functions (known_function_manager &kfm);
 extern void register_known_fd_functions (known_function_manager &kfm);

@@ -2282,10 +2282,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_socket (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2329,10 +2335,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       return fd_sm->on_bind (cd, m_success, sm_ctxt.get (), *ext_state);
     }
   };
@@ -2374,10 +2386,16 @@ class kf_listen : public known_function
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_listen (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2420,10 +2438,16 @@ class kf_accept : public known_function
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_accept (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2469,10 +2493,16 @@ public:
       const fd_state_machine *fd_sm;
       std::unique_ptr<sm_context> sm_ctxt;
       if (!get_fd_state (ctxt, &smap, &fd_sm, NULL, &sm_ctxt))
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
       const extrinsic_state *ext_state = ctxt->get_ext_state ();
       if (!ext_state)
-	return true;
+	{
+	  cd.set_any_lhs_with_defaults ();
+	  return true;
+	}
 
       return fd_sm->on_connect (cd, m_success, sm_ctxt.get (), *ext_state);
     }
@@ -2687,6 +2717,7 @@ public:
 	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
 	model->set_value (base_reg, new_sval, cd.get_ctxt ());
       }
+    cd.set_any_lhs_with_defaults ();
   }
 };
 

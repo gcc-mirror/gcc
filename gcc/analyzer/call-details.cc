@@ -105,6 +105,135 @@ call_details::maybe_set_lhs (const svalue *result) const
     return false;
 }
 
+/* Return true if CD is known to be a call to a function with
+   __attribute__((const)).  */
+
+static bool
+const_fn_p (const call_details &cd)
+{
+  tree fndecl = cd.get_fndecl_for_call ();
+  if (!fndecl)
+    return false;
+  gcc_assert (DECL_P (fndecl));
+  return TREE_READONLY (fndecl);
+}
+
+/* If this CD is known to be a call to a function with
+   __attribute__((const)), attempt to get a const_fn_result_svalue
+   based on the arguments, or return NULL otherwise.  */
+
+static const svalue *
+maybe_get_const_fn_result (const call_details &cd)
+{
+  if (!const_fn_p (cd))
+    return NULL;
+
+  unsigned num_args = cd.num_args ();
+  if (num_args > const_fn_result_svalue::MAX_INPUTS)
+    /* Too many arguments.  */
+    return NULL;
+
+  auto_vec<const svalue *> inputs (num_args);
+  for (unsigned arg_idx = 0; arg_idx < num_args; arg_idx++)
+    {
+      const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
+      if (!arg_sval->can_have_associated_state_p ())
+	return NULL;
+      inputs.quick_push (arg_sval);
+    }
+
+  region_model_manager *mgr = cd.get_manager ();
+  const svalue *sval
+    = mgr->get_or_create_const_fn_result_svalue (cd.get_lhs_type (),
+						 cd.get_fndecl_for_call (),
+						 inputs);
+  return sval;
+}
+
+/* Look for attribute "alloc_size" on the called function and, if found,
+   return a symbolic value of type size_type_node for the allocation size
+   based on the call's parameters.
+   Otherwise, return null.  */
+
+static const svalue *
+get_result_size_in_bytes (const call_details &cd)
+{
+  const tree attr = cd.lookup_function_attribute ("alloc_size");
+  if (!attr)
+    return nullptr;
+
+  const tree atval_1 = TREE_VALUE (attr);
+  if (!atval_1)
+    return nullptr;
+
+  unsigned argidx1 = TREE_INT_CST_LOW (TREE_VALUE (atval_1)) - 1;
+  if (cd.num_args () <= argidx1)
+    return nullptr;
+
+  const svalue *sval_arg1 = cd.get_arg_svalue (argidx1);
+
+  if (const tree atval_2 = TREE_CHAIN (atval_1))
+    {
+      /* Two arguments.  */
+      unsigned argidx2 = TREE_INT_CST_LOW (TREE_VALUE (atval_2)) - 1;
+      if (cd.num_args () <= argidx2)
+	return nullptr;
+      const svalue *sval_arg2 = cd.get_arg_svalue (argidx2);
+      /* TODO: ideally we shouldn't need this cast here;
+	 see PR analyzer/110902.  */
+      return cd.get_manager ()->get_or_create_cast
+	(size_type_node,
+	 cd.get_manager ()->get_or_create_binop (size_type_node,
+						 MULT_EXPR,
+						 sval_arg1, sval_arg2));
+    }
+  else
+    /* Single argument.  */
+    return cd.get_manager ()->get_or_create_cast (size_type_node, sval_arg1);
+}
+
+/* If this call has an LHS, assign a value to it based on attributes
+   of the function:
+   - if __attribute__((const)), use a const_fn_result_svalue,
+   - if __attribute__((malloc)), use a heap-allocated region with
+   unknown content
+   - otherwise, use a conjured_svalue.
+
+   If __attribute__((alloc_size), set the dynamic extents on the region
+   pointed to.  */
+
+void
+call_details::set_any_lhs_with_defaults () const
+{
+  if (!m_lhs_region)
+    return;
+
+  const svalue *sval = maybe_get_const_fn_result (*this);
+  if (!sval)
+    {
+      region_model_manager *mgr = get_manager ();
+      if (lookup_function_attribute ("malloc"))
+	{
+	  const region *new_reg
+	    = m_model->get_or_create_region_for_heap_alloc (NULL, m_ctxt);
+	  m_model->mark_region_as_unknown (new_reg, NULL);
+	  sval = mgr->get_ptr_svalue (get_lhs_type (), new_reg);
+	}
+      else
+	/* For the common case of functions without __attribute__((const)),
+	   use a conjured value, and purge any prior state involving that
+	   value (in case this is in a loop).  */
+	sval = get_or_create_conjured_svalue (m_lhs_region);
+      if (const svalue *size_in_bytes = get_result_size_in_bytes (*this))
+	{
+	  const region *reg
+	    = m_model->deref_rvalue (sval, NULL_TREE, m_ctxt, false);
+	  m_model->set_dynamic_extents (reg, size_in_bytes, m_ctxt);
+	}
+    }
+  maybe_set_lhs (sval);
+}
+
 /* Return the number of arguments used by the call statement.  */
 
 unsigned

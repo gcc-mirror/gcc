@@ -41,6 +41,7 @@ public:
   const region *get_lhs_region () const { return m_lhs_region; }
 
   bool maybe_set_lhs (const svalue *result) const;
+  void set_any_lhs_with_defaults () const;
 
   unsigned num_args () const;
   bool arg_is_pointer_p (unsigned idx) const
