@@ -1563,6 +1563,25 @@ expand_const_vector (rtx target, rtx src)
 			       add_ops);
 	    }
 	}
+      else if (npatterns == 1 && nelts_per_pattern == 3)
+	{
+	  /* Generate the following CONST_VECTOR:
+	     { base0, base1, base1 + step, base1 + step * 2, ... }  */
+	  rtx base0 = CONST_VECTOR_ELT (src, 0);
+	  rtx base1 = CONST_VECTOR_ELT (src, 1);
+	  rtx step = CONST_VECTOR_ELT (src, 2);
+	  /* Step 1 - { base1, base1 + step, base1 + step * 2, ... }  */
+	  rtx tmp = gen_reg_rtx (mode);
+	  emit_insn (gen_vec_series (mode, tmp, base1, step));
+	  /* Step 2 - { base0, base1, base1 + step, base1 + step * 2, ... }  */
+	  scalar_mode elem_mode = GET_MODE_INNER (mode);
+	  if (!rtx_equal_p (base0, const0_rtx))
+	    base0 = force_reg (elem_mode, base0);
+
+	  insn_code icode = optab_handler (vec_shl_insert_optab, mode);
+	  gcc_assert (icode != CODE_FOR_nothing);
+	  emit_insn (GEN_FCN (icode) (target, tmp, base0));
+	}
       else
 	/* TODO: We will enable more variable-length vector in the future.  */
 	gcc_unreachable ();
