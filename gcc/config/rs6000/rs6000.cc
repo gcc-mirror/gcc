@@ -9885,12 +9885,18 @@ use_toc_relative_ref (rtx sym, machine_mode mode)
    during assembly output.  */
 static bool
 rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict,
-			     code_helper = ERROR_MARK)
+			     code_helper ch = ERROR_MARK)
 {
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
   bool quad_offset_p = mode_supports_dq_form (mode);
 
   if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
+    return 0;
+
+  /* lxvl and stxvl doesn't support any addressing modes with PLUS.  */
+  if (ch.is_internal_fn ()
+      && (ch == IFN_LEN_LOAD || ch == IFN_LEN_STORE)
+      && GET_CODE (x) == PLUS)
     return 0;
 
   /* Handle unaligned altivec lvx/stvx type addresses.  */
