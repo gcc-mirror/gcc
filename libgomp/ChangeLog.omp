@@ -1,3 +1,9 @@
+2023-08-10  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-mapper-30.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-4.f90: Adjust test for new
+	lookup behaviour.
+
 2023-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/metadirective-1.f90: Extend.

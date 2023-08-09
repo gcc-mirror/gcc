@@ -3615,6 +3615,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      m = gfc_match (" %n ) ", mapper_id);
 		      if (m != MATCH_YES)
 			goto error;
+		      if (strcmp (mapper_id, "default") == 0)
+			mapper_id[0] = '\0';
 		    }
 		  else
 		    break;
@@ -3689,19 +3691,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  for (n = *head; n; n = n->next)
 		    {
 		      n->u.map_op = map_op;
-
-		      gfc_typespec *ts;
-		      if (n->expr)
-			ts = &n->expr->ts;
-		      else
-			ts = &n->sym->ts;
-
-		      gfc_omp_udm *udm
-			= gfc_find_omp_udm (gfc_current_ns, mapper_id, ts);
-		      if (udm)
+		      if (mapper_id[0] != '\0')
 			{
 			  n->u2.udm = gfc_get_omp_namelist_udm ();
-			  n->u2.udm->udm = udm;
+			  n->u2.udm->mapper_id
+			    = gfc_get_string ("%s", mapper_id);
 			}
 		    }
 		  continue;
@@ -9155,6 +9149,36 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (!omp_verify_map_motion_clauses (code, list, name, n,
 						    openacc))
 		  break;
+		if (list == OMP_LIST_MAP
+		    || list == OMP_LIST_TO
+		    || list == OMP_LIST_FROM)
+		  {
+		    gfc_typespec *ts;
+
+		    if (n->expr)
+		      ts = &n->expr->ts;
+		    else
+		      ts = &n->sym->ts;
+
+		    const char *mapper_id
+		      = n->u2.udm ? n->u2.udm->mapper_id : "";
+
+		    gfc_omp_udm *udm = gfc_find_omp_udm (gfc_current_ns,
+							 mapper_id, ts);
+		    if (mapper_id[0] != '\0' && !udm)
+		      gfc_error ("User-defined mapper %qs not found at %L",
+				 mapper_id, &n->where);
+		    else if (udm)
+		      {
+			if (!n->u2.udm)
+			  {
+			    n->u2.udm = gfc_get_omp_namelist_udm ();
+			    gcc_assert (mapper_id[0] == '\0');
+			    n->u2.udm->mapper_id = mapper_id;
+			  }
+			n->u2.udm->udm = udm;
+		      }
+		  }
 	      }
 
 	    if (list != OMP_LIST_DEPEND)
