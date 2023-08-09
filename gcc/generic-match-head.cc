@@ -127,10 +127,11 @@ bitwise_equal_p (tree expr1, tree expr2)
    The types can differ through nop conversions.  */
 
 static inline bool
-bitwise_inverted_equal_p (tree expr1, tree expr2)
+bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp)
 {
   STRIP_NOPS (expr1);
   STRIP_NOPS (expr2);
+  wascmp = false;
   if (expr1 == expr2)
     return false;
   if (!tree_nop_conversion_p (TREE_TYPE (expr1), TREE_TYPE (expr2)))
@@ -150,6 +151,7 @@ bitwise_inverted_equal_p (tree expr1, tree expr2)
     {
       tree op10 = TREE_OPERAND (expr1, 0);
       tree op20 = TREE_OPERAND (expr2, 0);
+      wascmp = true;
       if (!operand_equal_p (op10, op20))
 	return false;
       tree op11 = TREE_OPERAND (expr1, 1);
