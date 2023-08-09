@@ -6698,6 +6698,31 @@ riscv_issue_rate (void)
   return tune_param->issue_rate;
 }
 
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+static int
+riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
+{
+  if (DEBUG_INSN_P (insn))
+    return more;
+
+  rtx_code code = GET_CODE (PATTERN (insn));
+  if (code == USE || code == CLOBBER)
+    return more;
+
+  /* GHOST insns are used for blockage and similar cases which
+     effectively end a cycle.  */
+  if (get_attr_type (insn) == TYPE_GHOST)
+    return 0;
+
+#if 0
+  /* If we ever encounter an insn with an unknown type, trip
+     an assert so we can find and fix this problem.  */
+  gcc_assert (get_attr_type (insn) != TYPE_UNKNOWN);
+#endif
+
+  return more - 1;
+}
+
 /* Auxiliary function to emit RISC-V ELF attribute. */
 static void
 riscv_emit_attribute ()
@@ -8419,6 +8444,9 @@ riscv_frame_pointer_required (void)
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE riscv_issue_rate
+
+#undef  TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE riscv_sched_variable_issue
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL riscv_function_ok_for_sibcall
