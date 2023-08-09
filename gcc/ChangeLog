@@ -1,3 +1,14 @@
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/i386/i386.cc (ix86_invalid_conversion): Fix grammar.
+
+2023-08-08  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/riscv-v.cc (slide1_sew64_helper): Modify.
+
 2023-08-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-mcus.def (avr64dd14, avr64dd20, avr64dd28, avr64dd32)

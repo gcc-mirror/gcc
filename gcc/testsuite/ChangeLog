@@ -1,3 +1,12 @@
+2023-08-08  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/vslide1down-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-3.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-3.c: New test.
+
 2023-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

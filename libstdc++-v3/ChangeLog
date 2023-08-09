@@ -1,3 +1,34 @@
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110860
+	* include/std/format (__formatter_fp::format): Do not use
+	__builtin_abs and __builtin_log10 with arbitrary floating-point
+	types.
+
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110917
+	* include/std/format (__format::_Iter_sink<CharT, OutIter>):
+	Constrain partial specialization for contiguous iterators to
+	require the value type to be CharT.
+	* testsuite/std/format/functions/format_to.cc: New test.
+
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110862
+	* include/std/format (_Scanner::_M_on_replacement_field):
+	Check for expected '}' before incrementing iterator.
+	* testsuite/std/format/string.cc: Check "{0:{0}" format string.
+
 2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
