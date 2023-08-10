@@ -1490,7 +1490,7 @@ C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
 Wuseless-cast
-C++ ObjC++ Var(warn_useless_cast) Warning
+C ObjC C++ ObjC++ Var(warn_useless_cast) Warning
 Warn about useless casts.
 
 Wsubobject-linkage

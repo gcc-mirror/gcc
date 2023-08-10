@@ -4773,7 +4773,7 @@ pointers after reallocation.
 
 @opindex Wuseless-cast
 @opindex Wno-useless-cast
-@item -Wuseless-cast @r{(C++ and Objective-C++ only)}
+@item -Wuseless-cast @r{(C, Objective-C, C++ and Objective-C++ only)}
 Warn when an expression is cast to its own type.  This warning does not
 occur when a class object is converted to a non-reference type as that
 is a way to create a temporary:
