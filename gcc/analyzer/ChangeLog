@@ -1,3 +1,59 @@
+2023-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class pure_known_function_with_default_return): New
+	subclass.
+	* call-details.cc (const_fn_p): Move here from region-model.cc.
+	(maybe_get_const_fn_result): Likewise.
+	(get_result_size_in_bytes): Likewise.
+	(call_details::set_any_lhs_with_defaults): New function, based on
+	code in region_model::on_call_pre.
+	* call-details.h (call_details::set_any_lhs_with_defaults): New
+	decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Log the index of the
+	saved_diagnostic.
+	* kf.cc (pure_known_function_with_default_return::impl_call_pre):
+	New.
+	(kf_memset::impl_call_pre): Set the LHS to the first param.
+	(kf_putenv::impl_call_pre): Call cd.set_any_lhs_with_defaults.
+	(kf_sprintf::impl_call_pre): Call cd.set_any_lhs_with_defaults.
+	(class kf_stack_restore): Derive from
+	pure_known_function_with_default_return.
+	(class kf_stack_save): Likewise.
+	(kf_strlen::impl_call_pre): Call cd.set_any_lhs_with_defaults.
+	* region-model-reachability.cc (reachable_regions::handle_sval):
+	Remove logic for symbolic regions for pointers.
+	* region-model.cc (region_model::canonicalize): Remove purging of
+	dynamic extents workaround for surplus values from
+	region_model::on_call_pre's default LHS code.
+	(const_fn_p): Move to call-details.cc.
+	(maybe_get_const_fn_result): Likewise.
+	(get_result_size_in_bytes): Likewise.
+	(region_model::update_for_nonzero_return): Call
+	cd.set_any_lhs_with_defaults.
+	(region_model::on_call_pre): Remove the assignment to the LHS of a
+	default return value, instead requiring all known_function
+	implementations to write to any LHS of the call.  Use
+	cd.set_any_lhs_with_defaults on the non-kf paths.
+	* sm-fd.cc (kf_socket::outcome_of_socket::update_model): Use
+	cd.set_any_lhs_with_defaults when failing to get at fd state.
+	(kf_bind::outcome_of_bind::update_model): Likewise.
+	(kf_listen::outcome_of_listen::update_model): Likewise.
+	(kf_accept::outcome_of_accept::update_model): Likewise.
+	(kf_connect::outcome_of_connect::update_model): Likewise.
+	(kf_read::impl_call_pre): Use cd.set_any_lhs_with_defaults.
+	* sm-file.cc (class kf_stdio_output_fn): Derive from
+	pure_known_function_with_default_return.
+	(class kf_ferror): Likewise.
+	(class kf_fileno): Likewise.
+	(kf_fgets::impl_call_pre): Use cd.set_any_lhs_with_defaults.
+	(kf_read::impl_call_pre): Likewise.
+	(class kf_getc): Derive from
+	pure_known_function_with_default_return.
+	(class kf_getchar): Likewise.
+	* varargs.cc (kf_va_arg::impl_call_pre): Use
+	cd.set_any_lhs_with_defaults.
+
 2023-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/110426

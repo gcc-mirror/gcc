@@ -1,3 +1,68 @@
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration_cast): Do not use braces
+	around statements for C++11 constexpr rules.
+	* include/bits/stl_algobase.h (__lg): Rewrite as a single
+	statement for C++11 constexpr rules.
+	* include/experimental/bits/fs_path.h (path::string): Use
+	_GLIBCXX17_CONSTEXPR not _GLIBCXX_CONSTEXPR for 'if constexpr'.
+	* include/std/charconv (__to_chars_8): Initialize variable for
+	C++17 constexpr rules.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/list.tcc (list::sort(Cmp)): Fix -Wsign-compare
+	warning for loop condition.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex: Add diagnostic pragma for clang.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic): Change class-head
+	to struct.
+	* include/bits/stl_tree.h (_Rb_tree_merge_helper): Change
+	class-head to struct in friend declaration.
+	* include/std/chrono (tzdb_list::_Node): Likewise.
+	* include/std/future (_Task_state_base, _Task_state): Likewise.
+	* include/std/scoped_allocator (__inner_type_impl): Likewise.
+	* include/std/valarray (_BinClos, _SClos, _GClos, _IClos)
+	(_ValFunClos, _RefFunClos): Change class-head to struct.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocate): Add [[maybe_unused]]
+	attribute.
+	* include/bits/regex_executor.tcc: Remove name of unused
+	parameter.
+	* include/bits/shared_ptr_atomic.h (atomic_is_lock_free):
+	Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/streambuf_iterator.h (operator==): Likewise.
+	* include/bits/uses_allocator.h: Likewise.
+	* include/c_global/cmath (isfinite, isinf, isnan): Likewise.
+	* include/std/chrono (zoned_time): Likewise.
+	* include/std/future (__future_base::_S_allocate_result):
+	Likewise.
+	(packaged_task): Likewise.
+	* include/std/optional (_Optional_payload_base): Likewise.
+	* include/std/scoped_allocator (__inner_type_impl): Likewise.
+	* include/std/tuple (_Tuple_impl): Likewise.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/new_allocator.h (__new_allocator): Define copy
+	assignment operator as defaulted.
+	* include/std/complex (complex<float>, complex<double>)
+	(complex<long double>): Define copy constructor as defaulted.
+
+2023-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Fix some warnings.
+	(__format::__write(Ctx&, basic_string_view<CharT>)): Remove
+	unused function template.
+
 2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110860

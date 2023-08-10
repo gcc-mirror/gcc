@@ -1,3 +1,59 @@
+2023-08-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load_run-1.c:
+	Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-36.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-15.c: Ditto.
+
+2023-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/allocation-size-1.c: Update expected results
+	to reflect splitting of allocation size and assignment messages
+	from a single event into pairs of events
+	* gcc.dg/analyzer/allocation-size-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-3.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-4.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-1.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-3.c: Likewise.
+	* gcc.dg/analyzer/memset-1.c (test_1): Verify that the return
+	value is the initial argument.
+	* gcc.dg/plugin/analyzer_kernel_plugin.c
+	(copy_across_boundary_fn::impl_call_pre): Ensure the LHS is set on
+	the "known zero size" case.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c
+	(known_function_attempt_to_copy::impl_call_pre): Likewise.
+
+2023-08-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110937
+	PR tree-optimization/100798
+	* gcc.dg/tree-ssa/bool-14.c: New test.
+	* gcc.dg/tree-ssa/bool-15.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-33.c: New test.
+	* gcc.dg/tree-ssa/20030709-2.c: Update testcase
+	so `a ? -1 : 0` is not used to hit the match
+	pattern.
+
+2023-08-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-cmpne-runnable.c: New execution test.
+	* gcc.target/powerpc/vec-cmpne.c (define_test_functions,
+	execute_test_functions): Move to vec-cmpne.h.  Add
+	scan-assembler-times for vcmpequb, vcmpequh, vcmpequw.
+	* gcc.target/powerpc/vec-cmpne.h: New include file for vec-cmpne.c
+	and vec-cmpne-runnable.c. Split define_test_functions definition
+	into define_test_functions and define_init_verify_functions.
+
+2023-08-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110950
+	* gcc.target/riscv/rvv/autovec/pr110950.c: New test.
+
 2023-08-08  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/zicond-ice-1.c: New test.
