@@ -1302,3 +1302,11 @@ msm4
 Target Mask(ISA2_SM4) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
 SM4 built-in functions and code generation.
+
+mgather
+Target Alias(mtune-ctrl=, use_gather, ^use_gather)
+Enable vectorization for gather instruction.
+
+mscatter
+Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
+Enable vectorization for scatter instruction.
