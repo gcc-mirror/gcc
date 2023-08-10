@@ -35,7 +35,7 @@ namespace HIR {
 //    field: ...
 // ]
 //
-// When a field is a collection of other HIR object:
+// When a field is a collection of other HIR objects:
 //   field {
 //     SomeHIRNode [ ... ]
 //     SomeOtherHIRNode [ ... ]
@@ -1214,19 +1214,13 @@ Dump::visit (ClosureExpr &e)
 	  auto oa = param.get_outer_attrs ();
 	  do_outer_attrs (oa);
 	  visit_field ("pattern", param.get_pattern ());
-	  if (param.has_type_given ())
-	    visit_field ("type", param.get_type ());
-	  else
-	    put_field ("type", "none");
+	  visit_field ("type", param.get_type ());
 	  end ("ClosureParam");
 	}
       end_field ("params");
     }
 
-  if (e.has_return_type ())
-    visit_field ("return_type", *e.get_return_type ());
-  else
-    put_field ("return_type", "none");
+  visit_field ("return_type", e.get_return_type ());
 
   visit_field ("expr", e.get_expr ());
   end ("ClosureExpr");
@@ -1241,10 +1235,7 @@ Dump::visit (BlockExpr &e)
 
   visit_collection ("statements", e.get_statements ());
 
-  if (e.has_expr ())
-    visit_field ("expr", e.get_final_expr ());
-  else
-    put_field ("expr", "none");
+  visit_field ("expr", e.get_final_expr ());
 
   end ("BlockExpr");
 }
@@ -1273,10 +1264,7 @@ Dump::visit (BreakExpr &e)
   else
     put_field ("label", "none");
 
-  if (e.has_break_expr ())
-    visit_field ("break_expr ", e.get_expr ());
-  else
-    put_field ("break_expr ", "none");
+  visit_field ("break_expr ", e.get_expr ());
 
   end ("BreakExpr");
 }
@@ -1346,10 +1334,7 @@ Dump::visit (ReturnExpr &e)
   begin ("ReturnExpr");
   do_mappings (e.get_mappings ());
 
-  if (e.has_return_expr ())
-    visit_field ("return_expr", e.get_expr ());
-  else
-    put_field ("return_expr", "none");
+  visit_field ("return_expr", e.get_expr ());
 
   end ("ReturnExpr");
 }
@@ -1496,10 +1481,7 @@ Dump::visit (TypeParam &e)
 
   visit_collection ("type_param_bounds", e.get_type_param_bounds ());
 
-  if (e.has_type ())
-    visit_field ("type", e.get_type ());
-  else
-    put_field ("type", "none");
+  visit_field ("type", e.get_type ());
 
   end ("TypeParam");
 }
@@ -1665,10 +1647,7 @@ Dump::visit (Function &e)
       put_field ("function_params", "empty");
     }
 
-  if (e.has_function_return_type ())
-    visit_field ("return_type", *e.get_return_type ());
-  else
-    put_field ("return_type", "none");
+  visit_field ("return_type", e.get_return_type ());
 
   if (!e.has_where_clause ())
     put_field ("where_clause", "none");
@@ -1901,10 +1880,7 @@ Dump::visit (TraitItemFunc &e)
 
   do_traitfunctiondecl (e.get_decl ());
 
-  if (e.has_definition ())
-    visit_field ("block_expr", e.get_block_expr ());
-  else
-    put_field ("block_expr", "none");
+  visit_field ("block_expr", e.get_block_expr ());
 
   end ("TraitItemFunc");
 }
@@ -2019,10 +1995,7 @@ Dump::visit (ExternalFunctionItem &e)
 
   put_field ("has_variadics", std::to_string (e.is_variadic ()));
 
-  if (e.has_return_type ())
-    visit_field ("return_type", e.get_return_type ());
-  else
-    put_field ("return_type", "none");
+  visit_field ("return_type", e.get_return_type ());
 
   end ("ExternalFunctionItem");
 }
