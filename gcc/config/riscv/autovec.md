@@ -288,6 +288,27 @@
 ;; =========================================================================
 
 ;; -------------------------------------------------------------------------
+;; ---- [BOOL] Duplicate element
+;; -------------------------------------------------------------------------
+;; The patterns in this section are synthetic.
+;; -------------------------------------------------------------------------
+
+;; Implement a predicate broadcast by shifting the low bit of the scalar
+;; input into the top bit by duplicate the input and do a compare with zero.
+(define_expand "vec_duplicate<mode>"
+  [(set (match_operand:VB 0 "register_operand")
+	(vec_duplicate:VB (match_operand:QI 1 "register_operand")))]
+  "TARGET_VECTOR"
+  {
+    poly_int64 nunits = GET_MODE_NUNITS (<MODE>mode);
+    machine_mode mode = riscv_vector::get_vector_mode (QImode, nunits).require ();
+    rtx dup = expand_vector_broadcast (mode, operands[1]);
+    riscv_vector::expand_vec_cmp (operands[0], NE, dup, CONST0_RTX (mode));
+    DONE;
+  }
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT] Linear series
 ;; -------------------------------------------------------------------------
 ;; Includes:
