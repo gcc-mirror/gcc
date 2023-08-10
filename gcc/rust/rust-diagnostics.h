@@ -23,6 +23,10 @@
 
 #include "rust-linemap.h"
 
+// This macro is used to specify the position of format string & it's
+// arguments within the function's paramter list.
+// 'm' specifies the position of the format string parameter.
+// 'n' specifies the position of the first argument for the format string.
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)
 #define RUST_ATTRIBUTE_GCC_DIAG(m, n)                                          \
   __attribute__ ((__format__ (__gcc_tdiag__, m, n)))                           \
@@ -160,18 +164,59 @@ struct Error
 
   Kind kind;
   location_t locus;
+  rich_location *richlocus = nullptr;
+  ErrorCode errorcode;
   std::string message;
-  // TODO: store more stuff? e.g. node id?
+  bool is_errorcode = false;
 
+  // simple location
   Error (Kind kind, location_t locus, std::string message)
     : kind (kind), locus (locus), message (std::move (message))
   {
     message.shrink_to_fit ();
   }
-
+  // simple location + error code
+  Error (Kind kind, location_t locus, ErrorCode code, std::string message)
+    : kind (kind), locus (locus), errorcode (std::move (code)),
+      message (std::move (message))
+  {
+    is_errorcode = true;
+    message.shrink_to_fit ();
+  }
+  // rich location
+  Error (Kind kind, rich_location *richlocus, std::string message)
+    : kind (kind), richlocus (richlocus), message (std::move (message))
+  {
+    message.shrink_to_fit ();
+  }
+  // rich location + error code
+  Error (Kind kind, rich_location *richlocus, ErrorCode code,
+	 std::string message)
+    : kind (kind), richlocus (richlocus), errorcode (std::move (code)),
+      message (std::move (message))
+  {
+    is_errorcode = true;
+    message.shrink_to_fit ();
+  }
+  // simple location
   Error (location_t locus, std::string message)
   {
     Error (Kind::Err, locus, std::move (message));
+  }
+  // simple location + error code
+  Error (location_t locus, ErrorCode code, std::string message)
+  {
+    Error (Kind::Err, locus, std::move (code), std::move (message));
+  }
+  // rich location
+  Error (rich_location *richlocus, std::string message)
+  {
+    Error (Kind::Err, richlocus, std::move (message));
+  }
+  // rich location + error code
+  Error (rich_location *richlocus, ErrorCode code, std::string message)
+  {
+    Error (Kind::Err, richlocus, std::move (code), std::move (message));
   }
 
   static Error Hint (location_t locus, std::string message)
@@ -185,8 +230,21 @@ struct Error
   }
 
   // TODO: the attribute part might be incorrect
+  // simple location
   Error (location_t locus, const char *fmt,
 	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+
+  // simple location + error code
+  Error (location_t locus, ErrorCode code, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (3, 4)*/ RUST_ATTRIBUTE_GCC_DIAG (4, 5);
+
+  // rich location
+  Error (rich_location *richlocus, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
+
+  // rich location + error code
+  Error (rich_location *richlocus, ErrorCode code, const char *fmt,
+	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (3, 4)*/ RUST_ATTRIBUTE_GCC_DIAG (4, 5);
 
   /**
    * printf-like overload of Error::Hint
@@ -208,7 +266,20 @@ struct Error
 	rust_inform (locus, "%s", message.c_str ());
 	break;
       case Kind::Err:
-	rust_error_at (locus, "%s", message.c_str ());
+	if (is_errorcode)
+	  {
+	    if (richlocus == nullptr)
+	      rust_error_at (locus, errorcode, "%s", message.c_str ());
+	    else
+	      rust_error_at (*richlocus, errorcode, "%s", message.c_str ());
+	  }
+	else
+	  {
+	    if (richlocus == nullptr)
+	      rust_error_at (locus, "%s", message.c_str ());
+	    else
+	      rust_error_at (*richlocus, "%s", message.c_str ());
+	  }
 	break;
       case Kind::FatalErr:
 	rust_fatal_error (locus, "%s", message.c_str ());

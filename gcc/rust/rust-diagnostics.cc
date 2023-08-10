@@ -379,10 +379,28 @@ namespace Rust {
 /**
  * This function takes ownership of `args` and calls `va_end` on it
  */
+
+// simple location
 static Error
 va_constructor (Error::Kind kind, location_t locus, const char *fmt,
 		va_list args) RUST_ATTRIBUTE_GCC_DIAG (3, 0);
 
+// simple location + error code
+static Error
+va_constructor (Error::Kind kind, location_t locus, const ErrorCode code,
+		const char *fmt, va_list args) RUST_ATTRIBUTE_GCC_DIAG (4, 0);
+
+// rich location
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const char *fmt,
+		va_list args) RUST_ATTRIBUTE_GCC_DIAG (3, 0);
+
+// rich location + error code
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const ErrorCode code,
+		const char *fmt, va_list args) RUST_ATTRIBUTE_GCC_DIAG (4, 0);
+
+// simple location
 static Error
 va_constructor (Error::Kind kind, location_t locus, const char *fmt,
 		va_list args)
@@ -394,6 +412,43 @@ va_constructor (Error::Kind kind, location_t locus, const char *fmt,
   return Error (kind, locus, message);
 }
 
+// simple location + error code
+static Error
+va_constructor (Error::Kind kind, location_t locus, const ErrorCode code,
+		const char *fmt, va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, locus, code, message);
+}
+
+// rich location
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const char *fmt,
+		va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, r_locus, message);
+}
+
+// rich location + error code
+static Error
+va_constructor (Error::Kind kind, rich_location *r_locus, const ErrorCode code,
+		const char *fmt, va_list args)
+{
+  std::string message = expand_message (fmt, args);
+  message.shrink_to_fit ();
+  va_end (args);
+
+  return Error (kind, r_locus, code, message);
+}
+
+// simple location
 Error::Error (const location_t location, const char *fmt, ...)
   : kind (Kind::Err), locus (location)
 {
@@ -401,6 +456,38 @@ Error::Error (const location_t location, const char *fmt, ...)
   va_start (ap, fmt);
 
   *this = va_constructor (Kind::Err, location, fmt, ap);
+}
+
+// simple location + error code
+Error::Error (const location_t location, const ErrorCode code, const char *fmt,
+	      ...)
+  : kind (Kind::Err), locus (location), errorcode (code)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, location, code, fmt, ap);
+}
+
+// rich location
+Error::Error (rich_location *r_locus, const char *fmt, ...)
+  : kind (Kind::Err), richlocus (r_locus)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, r_locus, fmt, ap);
+}
+
+// rich location + error code
+Error::Error (rich_location *r_locus, const ErrorCode code, const char *fmt,
+	      ...)
+  : kind (Kind::Err), richlocus (r_locus), errorcode (code)
+{
+  va_list ap;
+  va_start (ap, fmt);
+
+  *this = va_constructor (Kind::Err, r_locus, code, fmt, ap);
 }
 
 Error
