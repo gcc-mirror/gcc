@@ -103,6 +103,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __clamp_iter_cat
 	= __conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
 
+    template<typename _Iter, typename _Limit>
+      using __clamped_iter_cat_t
+	= __clamp_iter_cat<__iter_category_t<_Iter>, _Limit>;
+
     template<typename _Tp, typename _Up>
       concept __different_from
 	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
@@ -168,8 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  random_access_iterator_tag,
 			  bidirectional_iterator_tag>;
       using iterator_category
-	= __detail::__clamp_iter_cat<typename __traits_type::iterator_category,
-				     random_access_iterator_tag>;
+	= __detail::__clamped_iter_cat_t<_Iterator, random_access_iterator_tag>;
       using value_type = iter_value_t<_Iterator>;
       using difference_type = iter_difference_t<_Iterator>;
       using reference = iter_reference_t<_Iterator>;
@@ -1426,12 +1429,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
 
     template<typename _Iterator>
-      requires requires { typename iterator_traits<_Iterator>::iterator_category; }
+      requires requires { typename __iter_category_t<_Iterator>; }
       struct __move_iter_cat<_Iterator>
       {
 	using iterator_category
-	  = __clamp_iter_cat<typename iterator_traits<_Iterator>::iterator_category,
-			     random_access_iterator_tag>;
+	  = __clamped_iter_cat_t<_Iterator, random_access_iterator_tag>;
       };
 #endif
   }
@@ -2288,8 +2290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static auto
       _S_iter_cat()
       {
-	using _Traits = iterator_traits<_It>;
-	if constexpr (requires { requires derived_from<typename _Traits::iterator_category,
+	if constexpr (requires { requires derived_from<__iter_category_t<_It>,
 						       forward_iterator_tag>; })
 	  return forward_iterator_tag{};
 	else
@@ -2615,7 +2616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<forward_iterator _It>
       struct __basic_const_iterator_iter_cat<_It>
-      { using iterator_category = iterator_traits<_It>::iterator_category; };
+      { using iterator_category = __iter_category_t<_It>; };
   } // namespace detail
 
   template<input_iterator _It>
