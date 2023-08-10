@@ -351,6 +351,8 @@ DEF_RVV_FUNCTION (vfmsub, alu, full_preds, f_vvfv_ops)
 
 DEF_RVV_FUNCTION (vfmacc_frm, alu_frm, full_preds, f_vvvv_ops)
 DEF_RVV_FUNCTION (vfmacc_frm, alu_frm, full_preds, f_vvfv_ops)
+DEF_RVV_FUNCTION (vfnmacc_frm, alu_frm, full_preds, f_vvvv_ops)
+DEF_RVV_FUNCTION (vfnmacc_frm, alu_frm, full_preds, f_vvfv_ops)
 
 // 13.7. Vector Widening Floating-Point Fused Multiply-Add Instructions
 DEF_RVV_FUNCTION (vfwmacc, alu, full_preds, f_wwvv_ops)
