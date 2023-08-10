@@ -323,6 +323,14 @@ Dump::do_structexprstruct (StructExprStruct &e)
 }
 
 void
+Dump::do_ifexpr (IfExpr &e)
+{
+  do_expr (e);
+  visit_field ("condition", e.get_if_condition ());
+  visit_field ("if_block", e.get_if_block ());
+}
+
+void
 Dump::do_expr (Expr &e)
 {
   do_mappings (e.get_mappings ());
@@ -1404,18 +1412,10 @@ Dump::visit (ForLoopExpr &e)
 }
 
 void
-Dump::visit (IfExpr &if_expr)
+Dump::visit (IfExpr &e)
 {
   begin ("IfExpr");
-  begin ("condition");
-
-  if_expr.vis_if_condition (*this);
-  end ("condition");
-
-  begin ("if_block");
-  if_expr.vis_if_block (*this);
-  end ("if_block");
-
+  do_ifexpr (e);
   end ("IfExpr");
 }
 
@@ -1423,18 +1423,8 @@ void
 Dump::visit (IfExprConseqElse &e)
 {
   begin ("IfExprConseqElse");
-
-  begin ("condition");
-  e.vis_if_condition (*this);
-  end ("condition");
-
-  begin ("if_block");
-  e.vis_if_block (*this);
-  end ("if_block");
-
-  begin ("else_block");
-  e.vis_else_block (*this);
-  end ("else_block");
+  do_ifexpr (e);
+  visit_field ("else_block", e.get_else_block ());
 
   end ("IfExprConseqElse");
 }
