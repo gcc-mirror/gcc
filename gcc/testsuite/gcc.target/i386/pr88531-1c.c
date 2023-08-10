@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=skylake-avx512 -mfpmath=sse" } */
+/* { dg-options "-O3 -march=skylake-avx512 -mfpmath=sse -mtune=haswell" } */
 
 #include "pr88531-1a.c"
 
