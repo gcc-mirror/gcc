@@ -209,13 +209,15 @@ DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
 
-DEF_INTERNAL_OPTAB_FN (VCOND, 0, vcond, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
+DEF_INTERNAL_OPTAB_FN (VCOND, ECF_CONST | ECF_NOTHROW, vcond, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDU, ECF_CONST | ECF_NOTHROW, vcondu, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDEQ, ECF_CONST | ECF_NOTHROW, vcondeq, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCOND_MASK, ECF_CONST | ECF_NOTHROW,
+		       vcond_mask, vec_cond_mask)
 
-DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
-DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, 0, vec_extract, vec_extract)
+DEF_INTERNAL_OPTAB_FN (VEC_SET, ECF_CONST | ECF_NOTHROW, vec_set, vec_set)
+DEF_INTERNAL_OPTAB_FN (VEC_EXTRACT, ECF_CONST | ECF_NOTHROW,
+		       vec_extract, vec_extract)
 
 DEF_INTERNAL_OPTAB_FN (LEN_STORE, 0, len_store, len_store)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE, 0, mask_len_store, mask_len_store)
