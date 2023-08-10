@@ -152,6 +152,10 @@ enum riscv_entity
 #define TARGET_ZKSH   ((riscv_zk_subext & MASK_ZKSH) != 0)
 #define TARGET_ZKT    ((riscv_zk_subext & MASK_ZKT) != 0)
 
+#define MASK_ZTSO   (1 << 0)
+
+#define TARGET_ZTSO ((riscv_ztso_subext & MASK_ZTSO) != 0)
+
 #define MASK_VECTOR_ELEN_32    (1 << 0)
 #define MASK_VECTOR_ELEN_64    (1 << 1)
 #define MASK_VECTOR_ELEN_FP_32 (1 << 2)
