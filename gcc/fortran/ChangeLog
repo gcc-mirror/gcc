@@ -1,3 +1,9 @@
+2023-08-09  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR fortran/109684
+	* resolve.cc (resolve_types): Exclude contained procedures with
+	the artificial attribute from test for pureness.
+
 2023-07-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
