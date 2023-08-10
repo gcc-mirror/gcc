@@ -3604,8 +3604,7 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
       if (FLOAT_MODE_P (mode))
 	emit_nonvlmax_fp_ternary_tu_insn (icode, RVV_TERNOP_TU, ops, len);
       else
-	/* FIXME: Enable this case when we support it in the middle-end.  */
-	gcc_unreachable ();
+	emit_nonvlmax_tu_insn (icode, RVV_TERNOP_TU, ops, len);
     }
   else
     {
