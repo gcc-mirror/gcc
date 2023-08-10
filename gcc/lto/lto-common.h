@@ -26,7 +26,6 @@ void print_lto_report_1 (void);
 
 extern tree lto_eh_personality_decl;
 extern GTY(()) vec<tree, va_gc> *tree_with_vars;
-extern const unsigned char *lto_mode_identity_table;
 extern tree first_personality_decl;
 
 #endif
