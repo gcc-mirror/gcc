@@ -1218,3 +1218,11 @@ Do not use GOT to access external symbols.
 -param=x86-stlf-window-ninsns=
 Target Joined UInteger Var(x86_stlf_window_ninsns) Init(64) Param
 Instructions number above which STFL stall penalty can be compensated.
+
+mgather
+Target Alias(mtune-ctrl=, use_gather, ^use_gather)
+Enable vectorization for gather instruction.
+
+mscatter
+Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
+Enable vectorization for scatter instruction.

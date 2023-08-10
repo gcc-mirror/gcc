@@ -398,10 +398,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS]
 #define TARGET_USE_SCATTER_4PARTS \
 	ix86_tune_features[X86_TUNE_USE_SCATTER_4PARTS]
-#define TARGET_USE_GATHER \
-	ix86_tune_features[X86_TUNE_USE_GATHER]
-#define TARGET_USE_SCATTER \
-	ix86_tune_features[X86_TUNE_USE_SCATTER]
+#define TARGET_USE_GATHER_8PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_8PARTS]
+#define TARGET_USE_SCATTER_8PARTS \
+	ix86_tune_features[X86_TUNE_USE_SCATTER_8PARTS]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_32]
 #define TARGET_FUSE_CMP_AND_BRANCH_64 \
