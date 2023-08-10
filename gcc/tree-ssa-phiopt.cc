@@ -63,7 +63,13 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
   gimple_stmt_iterator i;
   gphi *phi = NULL;
   if (gimple_seq_singleton_p (seq))
-    return as_a <gphi *> (gsi_stmt (gsi_start (seq)));
+    {
+      phi = as_a <gphi *> (gsi_stmt (gsi_start (seq)));
+      /* Never return virtual phis.  */
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	return NULL;
+      return phi;
+    }
   for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     {
       gphi *p = as_a <gphi *> (gsi_stmt (i));
@@ -71,6 +77,10 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
       if (operand_equal_for_phi_arg_p (gimple_phi_arg_def (p, e0->dest_idx),
 				       gimple_phi_arg_def (p, e1->dest_idx)))
 	continue;
+
+      /* Punt on virtual phis with different arguments from the edges.  */
+      if (virtual_operand_p (gimple_phi_result (p)))
+	return NULL;
 
       /* If we already have a PHI that has the two edge arguments are
 	 different, then return it is not a singleton for these PHIs. */
