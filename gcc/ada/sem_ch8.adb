@@ -38,6 +38,7 @@ with Impunit;        use Impunit;
 with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
 with Lib.Xref;       use Lib.Xref;
+with Local_Restrict;
 with Namet;          use Namet;
 with Namet.Sp;       use Namet.Sp;
 with Nlists;         use Nlists;
@@ -4245,6 +4246,11 @@ package body Sem_Ch8 is
          if Present (Alias (New_S)) then
             Mark_Use_Clauses (Alias (New_S));
          end if;
+      end if;
+
+      if Is_Actual then
+         Local_Restrict.Check_Actual_Subprogram_For_Instance
+           (Actual_Subp_Name => Nam, Formal_Subp => Formal_Spec);
       end if;
    end Analyze_Subprogram_Renaming;
 

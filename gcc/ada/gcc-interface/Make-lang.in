@@ -371,6 +371,7 @@ GNAT_ADA_OBJS =	\
  ada/lib-xref.o	\
  ada/lib.o	\
  ada/live.o	\
+ ada/local_restrict.o \
  ada/namet-sp.o	\
  ada/namet.o	\
  ada/nlists.o	\

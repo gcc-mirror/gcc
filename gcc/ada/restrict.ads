@@ -601,6 +601,20 @@ package Restrict is
    --  Add specified restriction to stored configuration boolean restrictions.
    --  This is used for handling the special case of No_Elaboration_Code.
 
+   package Local_Restrictions is
+      --  In the body of package Restrict, we want to call a subprogram
+      --  declared in package Local_Restrict. Doing this in the obvious
+      --  way introduces problems (by pulling the bulk of semantics into
+      --  the closure of package Restrict). So we declare an access-to-subp
+      --  object here and call through it later if it happens to be non-null;
+      --  it is initialized in the body of package Local_Restrict.
+
+      type Local_Restriction_Checking_Proc_Ref is access
+        procedure (R : All_Restrictions; N : Node_Id);
+
+      Local_Restriction_Checking_Hook : Local_Restriction_Checking_Proc_Ref;
+   end Local_Restrictions;
+
 private
    type Save_Cunit_Boolean_Restrictions is
      array (Cunit_Boolean_Restrictions) of Boolean;

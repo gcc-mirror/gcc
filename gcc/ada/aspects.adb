@@ -261,6 +261,13 @@ package body Aspects is
       Decl := Parent (Owner);
       if not Permits_Aspect_Specifications (Decl) then
          Decl := Parent (Decl);
+
+         if No (Decl) then
+            --  Perhaps this happens because the tree is under construction
+            --  and Parent (Decl) has not been set yet?
+
+            return Empty;
+         end if;
       end if;
 
       --  Search the list of aspect specifications for the desired aspect
@@ -273,6 +280,18 @@ package body Aspects is
             then
                return Spec;
             end if;
+
+            declare
+               use User_Aspect_Support;
+            begin
+               if Get_Aspect_Id (Spec) = Aspect_User_Aspect
+                  and then not Analyzed (Spec)
+                  and then
+                    Analyze_User_Aspect_Aspect_Specification_Hook /= null
+               then
+                  Analyze_User_Aspect_Aspect_Specification_Hook.all (Spec);
+               end if;
+            end;
 
             Next (Spec);
          end loop;
@@ -590,6 +609,42 @@ package body Aspects is
       Set_Parent (L, N);
       Aspect_Specifications_Hash_Table.Set (N, L);
    end Set_Aspect_Specifications;
+
+   package body User_Aspect_Support is
+
+      --  This is similar to the way that user-defined check names are
+      --  managed via package Checks.Check_Names; simple global state.
+
+      UAD_Pragma_Map_Size : constant := 511;
+
+      subtype UAD_Pragma_Map_Header is
+        Integer range 0 .. UAD_Pragma_Map_Size - 1;
+
+      function UAD_Pragma_Map_Hash (Chars : Name_Id)
+        return UAD_Pragma_Map_Header
+      is (UAD_Pragma_Map_Header (Chars mod UAD_Pragma_Map_Size));
+
+      package UAD_Pragma_Map is new GNAT.Htable.Simple_Htable
+        (Header_Num => UAD_Pragma_Map_Header,
+         Key        => Name_Id,
+         Element    => Opt_N_Pragma_Id,
+         No_Element => Empty,
+         Hash       => UAD_Pragma_Map_Hash,
+         Equal      => "=");
+
+      procedure Register_UAD_Pragma (UAD_Pragma : Node_Id) is
+         Aspect_Name : constant Name_Id :=
+           Chars (Expression
+                    (First (Pragma_Argument_Associations (UAD_Pragma))));
+      begin
+         UAD_Pragma_Map.Set (Aspect_Name, UAD_Pragma);
+      end Register_UAD_Pragma;
+
+      function Registered_UAD_Pragma (Aspect_Name : Name_Id) return Node_Id is
+      begin
+         return UAD_Pragma_Map.Get (Aspect_Name);
+      end Registered_UAD_Pragma;
+   end User_Aspect_Support;
 
 --  Package initialization sets up Aspect Id hash table
 

@@ -42,6 +42,7 @@ with Exp_Tss;        use Exp_Tss;
 with Ghost;          use Ghost;
 with Layout;         use Layout;
 with Lib;            use Lib;
+with Local_Restrict;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -10176,6 +10177,13 @@ package body Freeze is
       then
          Error_Msg_N
            ("pragma Inline_Always not allowed for dispatching subprograms", E);
+      end if;
+
+      if Is_Dispatching_Operation (E)
+        and then Present (Overridden_Operation (E))
+      then
+         Local_Restrict.Check_Overriding
+           (Overrider_Op => E, Overridden_Op => Overridden_Operation (E));
       end if;
 
       --  Because of the implicit representation of inherited predefined

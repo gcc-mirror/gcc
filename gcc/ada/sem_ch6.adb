@@ -47,6 +47,7 @@ with Inline;         use Inline;
 with Itypes;         use Itypes;
 with Lib.Xref;       use Lib.Xref;
 with Layout;         use Layout;
+with Local_Restrict;
 with Namet;          use Namet;
 with Lib;            use Lib;
 with Nlists;         use Nlists;
@@ -7571,6 +7572,15 @@ package body Sem_Ch6 is
         (New_Id, Old_Id, Subtype_Conformant, True, Result, Err_Loc,
          Skip_Controlling_Formals => Skip_Controlling_Formals,
          Get_Inst                 => Get_Inst);
+
+      if Old_Id /= New_Id
+        and then Is_Subprogram (New_Id)
+        and then Is_Subprogram (Old_Id)
+      then
+         Local_Restrict.Check_Overriding
+           (Overrider_Op => New_Id,
+            Overridden_Op => Old_Id);
+      end if;
    end Check_Subtype_Conformant;
 
    -----------------------------------

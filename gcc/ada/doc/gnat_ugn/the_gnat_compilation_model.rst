@@ -1462,6 +1462,7 @@ recognized by GNAT::
      Unevaluated_Use_Of_Old
      Unsuppress
      Use_VADS_Size
+     User_Aspect_Definition
      Validity_Checks
      Warning_As_Error
      Warnings

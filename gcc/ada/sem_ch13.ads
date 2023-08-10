@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Local_Restrict;
 with Types; use Types;
 with Sem_Disp; use Sem_Disp;
 with Uintp; use Uintp;
@@ -146,6 +147,11 @@ package Sem_Ch13 is
    --  Utility to unpack the subprograms in an occurrence of aspect Aggregate;
    --  used to verify the structure of the aspect, and resolve and expand an
    --  aggregate for a container type that carries the aspect.
+
+   function Parse_Aspect_Local_Restrictions (Aspect_Spec : Node_Id)
+     return Local_Restrict.Local_Restriction_Set;
+   --  Utility to unpack the set of local restrictions specified in a
+   --  Local_Restrictions aspect specification.
 
    function Parse_Aspect_Stable_Properties
      (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List;

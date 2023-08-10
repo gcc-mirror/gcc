@@ -46,6 +46,7 @@ with Inline;         use Inline;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Local_Restrict;
 with Namet;          use Namet;
 with Nmake;          use Nmake;
 with Nlists;         use Nlists;
@@ -6781,6 +6782,13 @@ package body Sem_Res is
 
       if Is_Ghost_Entity (Nam) and then Comes_From_Source (N) then
          Check_Ghost_Context (Nam, N);
+      end if;
+
+      if Is_Entity_Name (Subp) then
+         Local_Restrict.Check_Call
+           (Call => N, Callee => Ultimate_Alias (Nam));
+      else
+         Local_Restrict.Check_Call (Call => N);
       end if;
 
       --  If we are calling the current subprogram from immediately within its
