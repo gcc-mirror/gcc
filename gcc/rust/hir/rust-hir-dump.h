@@ -77,6 +77,7 @@ private:
   void do_item (Item &);
   void do_type (Type &);
   void do_expr (Expr &);
+  void do_ifexpr (IfExpr &);
   void do_ifletexpr (IfLetExpr &);
   void do_pathexpr (PathExpr &);
   void do_pathpattern (PathPattern &);
