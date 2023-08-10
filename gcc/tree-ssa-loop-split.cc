@@ -703,7 +703,7 @@ split_loop (class loop *loop1)
 	   split between of the two new loops.  Keep orignal estimate since
 	   it is likely better then completely dropping it.
 
-	   TODO: If we know that onle of the new loops has constant
+	   TODO: If we know that one of the new loops has constant
 	   number of iterations, we can do better.  We could also update
 	   upper bounds.  */
 	if (loop1->any_estimate
@@ -713,11 +713,15 @@ split_loop (class loop *loop1)
 			  ? true_edge->probability.to_sreal () : (sreal)1;
 	    sreal scale2 = false_edge->probability.reliable_p ()
 			  ? false_edge->probability.to_sreal () : (sreal)1;
+	    sreal div1 = loop1_prob.to_sreal ();
 	    /* +1 to get header interations rather than latch iterations and then
 	       -1 to convert back.  */
-	    loop1->nb_iterations_estimate
-	      = MAX ((((sreal)loop1->nb_iterations_estimate.to_shwi () + 1) * scale
-		     / loop1_prob.to_sreal ()).to_nearest_int () - 1, 0);
+	    if (div1 != 0)
+	      loop1->nb_iterations_estimate
+		= MAX ((((sreal)loop1->nb_iterations_estimate.to_shwi () + 1)
+		       * scale / div1).to_nearest_int () - 1, 0);
+	    else
+	      loop1->any_estimate = false;
 	    loop2->nb_iterations_estimate
 	      = MAX ((((sreal)loop2->nb_iterations_estimate.to_shwi () + 1) * scale2
 		     / profile_probability::very_likely ().to_sreal ())
