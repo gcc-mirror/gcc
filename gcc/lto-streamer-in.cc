@@ -1888,7 +1888,7 @@ lto_input_tree_1 (class lto_input_block *ib, class data_in *data_in,
 
       for (i = 0; i < len; i++)
 	a[i] = streamer_read_hwi (ib);
-      gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
+      gcc_assert (TYPE_PRECISION (type) <= WIDE_INT_MAX_PRECISION);
       result = wide_int_to_tree (type, wide_int::from_array
 				 (a, len, TYPE_PRECISION (type)));
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
