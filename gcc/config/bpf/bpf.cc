@@ -76,10 +76,6 @@ struct GTY(()) machine_function
 {
   /* Number of bytes saved on the stack for local variables.  */
   int local_vars_size;
-
-  /* Number of bytes saved on the stack for callee-saved
-     registers.  */
-  int callee_saved_reg_size;
 };
 
 /* Handle an attribute requiring a FUNCTION_DECL;
@@ -346,7 +342,7 @@ static void
 bpf_compute_frame_layout (void)
 {
   int stack_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
-  int padding_locals, regno;
+  int padding_locals;
 
   /* Set the space used in the stack by local variables.  This is
      rounded up to respect the minimum stack alignment.  */
@@ -358,23 +354,9 @@ bpf_compute_frame_layout (void)
 
   cfun->machine->local_vars_size += padding_locals;
 
-  if (TARGET_XBPF)
-    {
-      /* Set the space used in the stack by callee-saved used
-	 registers in the current function.  There is no need to round
-	 up, since the registers are all 8 bytes wide.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if ((df_regs_ever_live_p (regno)
-	     && !call_used_or_fixed_reg_p (regno))
-	    || (cfun->calls_alloca
-		&& regno == STACK_POINTER_REGNUM))
-	  cfun->machine->callee_saved_reg_size += 8;
-    }
-
   /* Check that the total size of the frame doesn't exceed the limit
      imposed by eBPF.  */
-  if ((cfun->machine->local_vars_size
-       + cfun->machine->callee_saved_reg_size) > bpf_frame_limit)
+  if (cfun->machine->local_vars_size > bpf_frame_limit)
     {
       static int stack_limit_exceeded = 0;
 
@@ -393,69 +375,19 @@ bpf_compute_frame_layout (void)
 void
 bpf_expand_prologue (void)
 {
-  HOST_WIDE_INT size;
-
-  size = (cfun->machine->local_vars_size
-	  + cfun->machine->callee_saved_reg_size);
-
   /* The BPF "hardware" provides a fresh new set of registers for each
      called function, some of which are initialized to the values of
      the arguments passed in the first five registers.  In doing so,
-     it saves the values of the registers of the caller, and restored
+     it saves the values of the registers of the caller, and restores
      them upon returning.  Therefore, there is no need to save the
-     callee-saved registers here.  What is worse, the kernel
-     implementation refuses to run programs in which registers are
-     referred before being initialized.  */
-  if (TARGET_XBPF)
-    {
-      int regno;
-      int fp_offset = -cfun->machine->local_vars_size;
+     callee-saved registers here.  In fact, the kernel implementation
+     refuses to run programs in which registers are referred before
+     being initialized.  */
 
-      /* Save callee-saved hard registes.  The register-save-area
-	 starts right after the local variables.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	{
-	  if ((df_regs_ever_live_p (regno)
-	       && !call_used_or_fixed_reg_p (regno))
-	      || (cfun->calls_alloca
-		  && regno == STACK_POINTER_REGNUM))
-	    {
-	      rtx mem;
-
-	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-		/* This has been already reported as an error in
-		   bpf_compute_frame_layout. */
-		break;
-	      else
-		{
-		  mem = gen_frame_mem (DImode,
-				       plus_constant (DImode,
-						      hard_frame_pointer_rtx,
-						      fp_offset - 8));
-		  emit_move_insn (mem, gen_rtx_REG (DImode, regno));
-		  fp_offset -= 8;
-		}
-	    }
-	}
-    }
-
-  /* Set the stack pointer, if the function allocates space
-     dynamically.  Note that the value of %sp should be directly
-     derived from %fp, for the kernel verifier to track it as a stack
-     accessor.  */
-  if (cfun->calls_alloca)
-    {
-      emit_move_insn (stack_pointer_rtx,
-                      hard_frame_pointer_rtx);
-
-      if (size > 0)
-	{
-	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
-                                  gen_rtx_PLUS (Pmode,
-                                                stack_pointer_rtx,
-                                                GEN_INT (-size))));
-	}
-    }
+  /* BPF does not support functions that allocate stack space
+     dynamically.  This should have been checked already and an error
+     emitted.  */
+  gcc_assert (!cfun->calls_alloca);
 }
 
 /* Expand to the instructions in a function epilogue.  This function
@@ -466,37 +398,6 @@ bpf_expand_epilogue (void)
 {
   /* See note in bpf_expand_prologue for an explanation on why we are
      not restoring callee-saved registers in BPF.  */
-  if (TARGET_XBPF)
-    {
-      int regno;
-      int fp_offset = -cfun->machine->local_vars_size;
-
-      /* Restore callee-saved hard registes from the stack.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	{
-	  if ((df_regs_ever_live_p (regno)
-	       && !call_used_or_fixed_reg_p (regno))
-	      || (cfun->calls_alloca
-		  && regno == STACK_POINTER_REGNUM))
-	    {
-	      rtx mem;
-
-	      if (!IN_RANGE (fp_offset, -1 - 0x7fff, 0x7fff))
-		/* This has been already reported as an error in
-		   bpf_compute_frame_layout. */
-		break;
-	      else
-		{
-		  mem = gen_frame_mem (DImode,
-				       plus_constant (DImode,
-						      hard_frame_pointer_rtx,
-						      fp_offset - 8));
-		  emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-		  fp_offset -= 8;
-		}
-	    }
-	}
-    }
 
   emit_jump_insn (gen_exit ());
 }
@@ -543,11 +444,10 @@ bpf_initial_elimination_offset (int from, int to)
 {
   HOST_WIDE_INT ret;
 
-  if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    ret = (cfun->machine->local_vars_size
-	   + cfun->machine->callee_saved_reg_size);
-  else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     ret = 0;
+  else if (from == STACK_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    ret = -(cfun->machine->local_vars_size);
   else
     gcc_unreachable ();
 

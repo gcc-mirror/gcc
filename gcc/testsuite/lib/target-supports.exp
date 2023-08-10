@@ -975,6 +975,9 @@ proc check_effective_target_untyped_assembly {} {
 # Return 1 if alloca is supported, 0 otherwise.
 
 proc check_effective_target_alloca {} {
+    if { [istarget bpf-*-*] } {
+      return 0
+    }
     if { [istarget nvptx-*-*] } {
 	return [check_no_compiler_messages alloca assembly {
 	    void f (void*);

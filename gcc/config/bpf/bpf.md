@@ -115,6 +115,19 @@
   "{ja\t0|goto 0}"
   [(set_attr "type" "alu")])
 
+;;;; Stack usage
+
+(define_expand "allocate_stack"
+  [(match_operand:DI 0 "general_operand" "")
+   (match_operand:DI 1 "general_operand" "")]
+  ""
+  "
+{
+  error (\"BPF does not support dynamic stack allocation\");
+  emit_insn (gen_nop ());
+  DONE;
+}")
+
 ;;;; Arithmetic/Logical
 
 ;; The arithmetic and logic operations below are defined for SI and DI
