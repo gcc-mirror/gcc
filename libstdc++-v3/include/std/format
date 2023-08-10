@@ -521,10 +521,11 @@ namespace __format
 	if (__first[0] != '.')
 	  return __first;
 
-	++__first;
+	iterator __next = ++__first;
 	bool __arg_id = false;
-	auto __next = _S_parse_width_or_precision(__first, __last, _M_prec,
-						  __arg_id, __pc);
+	if (__next != __last)
+	  __next = _S_parse_width_or_precision(__first, __last, _M_prec,
+					       __arg_id, __pc);
 	if (__next == __first)
 	  __throw_format_error("format error: missing precision after '.' in "
 			       "format string");
