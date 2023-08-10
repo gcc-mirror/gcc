@@ -1059,14 +1059,19 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	     threading path.  */
 	  if (!any_remaining_duplicated_blocks (path, i))
 	    {
-	      e2 = redirect_edge_and_branch (victim, elast->dest);
-	      /* If we redirected the edge, then we need to copy PHI arguments
-		 at the target.  If the edge already existed (e2 != victim
-		 case), then the PHIs in the target already have the correct
-		 arguments.  */
-	      if (e2 == victim)
-		copy_phi_args (e2->dest, elast, e2,
-			       path, multi_incomings ? 0 : i);
+	      if (victim->dest != elast->dest)
+		{
+		  e2 = redirect_edge_and_branch (victim, elast->dest);
+		  /* If we redirected the edge, then we need to copy PHI arguments
+		     at the target.  If the edge already existed (e2 != victim
+		     case), then the PHIs in the target already have the correct
+		     arguments.  */
+		  if (e2 == victim)
+		    copy_phi_args (e2->dest, elast, e2,
+				   path, multi_incomings ? 0 : i);
+		}
+	      else
+		e2 = victim;
 	    }
 	  else
 	    {
