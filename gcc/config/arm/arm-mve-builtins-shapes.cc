@@ -439,7 +439,7 @@ struct binary_acca_int32_def : public overloaded_base<0>
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
-    unsigned int last_arg = i;
+    unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
@@ -476,7 +476,7 @@ struct binary_acca_int64_def : public overloaded_base<0>
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
-    unsigned int last_arg = i;
+    unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
