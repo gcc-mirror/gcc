@@ -732,7 +732,14 @@ bpf_function_arg_advance (cumulative_args_t ca,
   unsigned num_words = CEIL (num_bytes, UNITS_PER_WORD);
 
   if (*cum <= 5 && *cum + num_words > 5)
-    error ("too many function arguments for eBPF");
+    {
+      /* Too many arguments for BPF.  However, if the function is
+         gonna be inline for sure, we let it pass.  Otherwise, issue
+         an error.  */
+      if (!lookup_attribute ("always_inline",
+                             DECL_ATTRIBUTES (cfun->decl)))
+        error ("too many function arguments for eBPF");
+    }
 
   *cum += num_words;
 }

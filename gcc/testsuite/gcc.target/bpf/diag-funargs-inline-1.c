@@ -1,10 +1,8 @@
-/* Verify proper errors are generated for functions taking too many
-   arguments.  */
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "" } */
 
-int
-foo (int a1,  /* { dg-error "too many function arguments" } */
+inline int __attribute__ ((always_inline))
+foo (int a1,
      int a2,
      int a3,
      int a4,
@@ -19,3 +17,5 @@ bar (int i1, int i2, int i3, int i4, int i5)
 {
   return foo (i1, i2, i3, i4, i5, 10);
 }
+
+/* { dg-final { scan-assembler-not "call\t.*" } } */
