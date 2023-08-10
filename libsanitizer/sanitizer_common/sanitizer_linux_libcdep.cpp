@@ -969,8 +969,8 @@ void ReExec() {
   // rely on that will fail to load shared libraries. Query AT_EXECFN instead.
   pathname = reinterpret_cast<const char *>(getauxval(AT_EXECFN));
 #endif
-
-  uptr rv = internal_execve(pathname, GetArgv(), GetEnviron());
+  char **argv = GetArgv();
+  uptr rv = internal_execve(argv[0], argv, GetEnviron());
   int rverrno;
   CHECK_EQ(internal_iserror(rv, &rverrno), true);
   Printf("execve failed, errno %d\n", rverrno);
