@@ -1608,8 +1608,8 @@ namespace __format
 
 
 	  _Optional_locale __loc;
-	  basic_string_view<_CharT> __str;
 	  basic_string<_CharT> __wstr;
+	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<_CharT, char>)
 	    __str = __narrow_str;
 	  else
@@ -1632,7 +1632,8 @@ namespace __format
 		__wstr = _M_localize(__str, __expc, __fc.locale());
 	      else
 		__wstr = _M_localize(__str, __expc, __loc.value());
-	      __str = __wstr;
+	      if (!__wstr.empty())
+		__str = __wstr;
 	    }
 
 	  size_t __width = _M_spec._M_get_width(__fc);

@@ -193,6 +193,9 @@ test_locale()
   s = std::format(eloc, "{0:#Lg} {0:+#.3Lg} {0:#08.4Lg}", -1234.);
   VERIFY( s == "-1.234,00 -1,23e+03 -01.234," );
 
+  s = std::format(cloc, "{:05L}", -1.0); // PR libstdc++/110968
+  VERIFY( s == "-0001" );
+
   // Restore
   std::locale::global(cloc);
 }
