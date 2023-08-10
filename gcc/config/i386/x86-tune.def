@@ -491,7 +491,7 @@ DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER_2PARTS, "use_gather_2parts",
 	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE
-	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC))
+	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC | m_GDS))
 
 /* X86_TUNE_USE_SCATTER_2PARTS: Use scater instructions for vectors with 2
    elements.  */
@@ -502,7 +502,7 @@ DEF_TUNE (X86_TUNE_USE_SCATTER_2PARTS, "use_scatter_2parts",
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER_4PARTS, "use_gather_4parts",
 	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ALDERLAKE
-	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC))
+	    | m_ARROWLAKE | m_CORE_ATOM | m_GENERIC | m_GDS))
 
 /* X86_TUNE_USE_SCATTER_4PARTS: Use scater instructions for vectors with 4
    elements.  */
@@ -513,7 +513,7 @@ DEF_TUNE (X86_TUNE_USE_SCATTER_4PARTS, "use_scatter_4parts",
    elements.  */
 DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
 	  ~(m_ZNVER1 | m_ZNVER2 | m_ZNVER4 | m_ALDERLAKE | m_ARROWLAKE
-	    | m_CORE_ATOM | m_GENERIC))
+	    | m_CORE_ATOM | m_GENERIC | m_GDS))
 
 /* X86_TUNE_USE_SCATTER: Use scater instructions for vectors with 8 or more
    elements.  */
