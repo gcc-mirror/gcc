@@ -2482,14 +2482,16 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (op_prio (op0) < op_prio (node))
 	pp_right_paren (pp);
       pp_string (pp, str);
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      op0 = component_ref_field_offset (node);
-      if (op0 && TREE_CODE (op0) != INTEGER_CST)
-	{
-	  pp_string (pp, "{off: ");
-	      dump_generic_node (pp, op0, spc, flags, false);
+      op1 = TREE_OPERAND (node, 1);
+      dump_generic_node (pp, op1, spc, flags, false);
+      if (DECL_P (op1)) /* Not always a decl in the C++ FE.  */
+	if (tree off = component_ref_field_offset (node))
+	  if (TREE_CODE (off) != INTEGER_CST)
+	    {
+	      pp_string (pp, "{off: ");
+	      dump_generic_node (pp, off, spc, flags, false);
 	      pp_right_brace (pp);
-	}
+	    }
       break;
 
     case BIT_FIELD_REF:
