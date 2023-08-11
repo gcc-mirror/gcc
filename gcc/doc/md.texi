@@ -4978,6 +4978,23 @@ for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_len_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_len_load_lanes@var{m}@var{n}}
+Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2), length operand (operand 3) as well as bias operand (operand 4)
+that specifies which elements of the destination vectors should be loaded.
+Other elements of the destination vectors are undefined.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < operand3 + operand4; j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[i][j] = operand1[j * c + i];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_store_lanes@var{m}@var{n}}
 Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
@@ -5004,6 +5021,23 @@ vectors should be stored.  The operation is equivalent to:
 @smallexample
 int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
 for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[j * c + i] = operand1[i][j];
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_mask_len_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_len_store_lanes@var{m}@var{n}}
+Like @samp{vec_store_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2), length operand (operand 3) as well as bias operand (operand 4)
+that specifies which elements of the source vectors should be stored.
+The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < operand3 + operand4; j++)
   if (operand2[j])
     for (i = 0; i < c; i++)
       operand0[j * c + i] = operand1[i][j];
