@@ -640,7 +640,7 @@ public:
 
     name.assign (ns, len);
     if (numeric)
-      idx = std::stoi (name);
+      idx = strtol (name.c_str (), (char **)NULL, 10);
   }
 
   /* Adds a character to the end of the string.  */
