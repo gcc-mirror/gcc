@@ -1490,7 +1490,7 @@ namespace __format
 	      // If the buffer is too small it's probably because of a large
 	      // precision, or a very large value in fixed format.
 	      size_t __guess = 8 + __prec;
-	      if (__fmt == chars_format::fixed) // +ddd.prec
+	      if (__fmt == chars_format::fixed && __v != 0) // +ddd.prec
 		{
 		  if constexpr (is_same_v<_Fp, float>)
 		    __guess += __builtin_log10f(__v < 0.0f ? -__v : __v);
