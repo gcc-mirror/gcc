@@ -2478,7 +2478,8 @@ namespace __format
       _Seq
       get() &&
       {
-	_Seq_sink::_M_overflow();
+	if (this->_M_used().size() != 0)
+	  _Seq_sink::_M_overflow();
 	return std::move(_M_seq);
       }
     };
@@ -2534,7 +2535,8 @@ namespace __format
       format_to_n_result<_OutIter>
       _M_finish() &&
       {
-	_Iter_sink::_M_overflow();
+	if (this->_M_used().size() != 0)
+	  _Iter_sink::_M_overflow();
 	iter_difference_t<_OutIter> __count(_M_count);
 	return { std::move(_M_out), __count };
       }
@@ -2561,8 +2563,11 @@ namespace __format
 
     protected:
       void
-      _M_overflow()
+      _M_overflow() override
       {
+	if (this->_M_unused().size() != 0)
+	  return; // No need to switch to internal buffer yet.
+
 	auto __s = this->_M_used();
 	_M_count += __s.size();
 
@@ -2626,15 +2631,18 @@ namespace __format
       format_to_n_result<_OutIter>
       _M_finish() &&
       {
-	_Iter_sink::_M_overflow();
-	iter_difference_t<_OutIter> __count(_M_count);
 	auto __s = this->_M_used();
-	auto __last = _M_first;
-	if (__s.data() == _M_buf) // Wrote at least _M_max characters.
-	  __last += _M_max;
-	else
-	  __last += iter_difference_t<_OutIter>(__s.size());
-	return { __last, __count };
+	if (__s.data() == _M_buf)
+	  {
+	    // Switched to internal buffer, so must have written _M_max.
+	    iter_difference_t<_OutIter> __count(_M_count + __s.size());
+	    return { _M_first + _M_max, __count };
+	  }
+	else // Not using internal buffer yet
+	  {
+	    iter_difference_t<_OutIter> __count(__s.size());
+	    return { _M_first + __count, __count };
+	  }
       }
     };
 
@@ -3883,11 +3891,8 @@ namespace __format
 
       [[__gnu__::__always_inline__]]
       size_t
-      count()
-      {
-	_Counting_sink::_M_overflow();
-	return this->_M_count;
-      }
+      count() const
+      { return this->_M_count + this->_M_used().size(); }
     };
 #else
   template<typename _CharT>
