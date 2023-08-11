@@ -6905,7 +6905,17 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 
   tree vector_identity = NULL_TREE;
   if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-    vector_identity = build_zero_cst (vectype_out);
+    {
+      vector_identity = build_zero_cst (vectype_out);
+      if (!HONOR_SIGNED_ZEROS (vectype_out))
+	;
+      else
+	{
+	  gcc_assert (!HONOR_SIGN_DEPENDENT_ROUNDING (vectype_out));
+	  vector_identity = const_unop (NEGATE_EXPR, vectype_out,
+					vector_identity);
+	}
+    }
 
   tree scalar_dest_var = vect_create_destination_var (scalar_dest, NULL);
   int i;
@@ -8035,6 +8045,18 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't operate on partial vectors because"
 			     " no conditional operation is available.\n");
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	}
+      else if (reduction_type == FOLD_LEFT_REDUCTION
+	       && reduc_fn == IFN_LAST
+	       && FLOAT_TYPE_P (vectype_in)
+	       && HONOR_SIGNED_ZEROS (vectype_in)
+	       && HONOR_SIGN_DEPENDENT_ROUNDING (vectype_in))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't operate on partial vectors because"
+			     " signed zeros cannot be preserved.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	}
       else
