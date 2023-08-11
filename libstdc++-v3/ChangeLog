@@ -1,3 +1,26 @@
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110974
+	* include/std/format (_Spec::_M_parse_precision): Check for
+	empty range before dereferencing iterator.
+	* testsuite/std/format/string.cc: Check for expected exception.
+	Fix expected exception message in test_pr110862() and actually
+	call it.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110968
+	* include/std/format (__formatter_fp::format): Check return
+	value of _M_localize.
+	* testsuite/std/format/functions/format.cc: Check classic
+	locale.
+
 2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
