@@ -14439,7 +14439,16 @@ grokdeclarator (const cp_declarator *declarator,
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
 		decl = build_lang_decl_loc (id_loc, VAR_DECL,
-					    unqualified_id, type);
+					    dname, type);
+		if (unqualified_id
+		    && TREE_CODE (unqualified_id) == TEMPLATE_ID_EXPR)
+		  {
+		    decl = check_explicit_specialization (unqualified_id, decl,
+							  template_count,
+							  concept_p * 8);
+		    if (decl == error_mark_node)
+		      return error_mark_node;
+		  }
 		set_linkage_for_static_data_member (decl);
 		if (concept_p)
 		  error_at (declspecs->locations[ds_concept],

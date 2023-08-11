@@ -314,7 +314,7 @@ finish_member_template_decl (tree decl)
 	  return DECL_TI_TEMPLATE (decl);
 	}
       else
-	return decl;
+	return NULL_TREE;
     }
   else
     error_at (DECL_SOURCE_LOCATION (decl),
