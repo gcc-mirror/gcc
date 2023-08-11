@@ -9125,11 +9125,8 @@ vectorizable_store (vec_info *vinfo,
 		  if (!final_len)
 		    {
 		      /* Pass VF value to 'len' argument of
-		         MASK_LEN_STORE if LOOP_LENS is invalid.  */
-		      tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
-		      final_len
-			= build_int_cst (iv_type,
-					 TYPE_VECTOR_SUBPARTS (vectype));
+			 MASK_LEN_STORE if LOOP_LENS is invalid.  */
+		      final_len = size_int (TYPE_VECTOR_SUBPARTS (vectype));
 		    }
 		  if (!final_mask)
 		    {
@@ -10713,11 +10710,8 @@ vectorizable_load (vec_info *vinfo,
 			  {
 			    /* Pass VF value to 'len' argument of
 			       MASK_LEN_LOAD if LOOP_LENS is invalid.  */
-			    tree iv_type
-			      = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
 			    final_len
-			      = build_int_cst (iv_type,
-					       TYPE_VECTOR_SUBPARTS (vectype));
+			      = size_int (TYPE_VECTOR_SUBPARTS (vectype));
 			  }
 			if (!final_mask)
 			  {
