@@ -30939,7 +30939,7 @@ cp_parser_type_requirement (cp_parser *parser)
   cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
   cp_parser_nested_name_specifier_opt (parser,
                                        /*typename_keyword_p=*/true,
-                                       /*check_dependency_p=*/false,
+				       /*check_dependency_p=*/true,
                                        /*type_p=*/true,
                                        /*is_declaration=*/false);
 
@@ -30949,7 +30949,7 @@ cp_parser_type_requirement (cp_parser *parser)
       cp_lexer_consume_token (parser->lexer);
       type = cp_parser_template_id (parser,
                                     /*template_keyword_p=*/true,
-                                    /*check_dependency=*/false,
+				    /*check_dependency_p=*/true,
                                     /*tag_type=*/none_type,
                                     /*is_declaration=*/false);
       type = make_typename_type (parser->scope, type, typename_type,
