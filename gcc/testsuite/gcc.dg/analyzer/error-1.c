@@ -64,3 +64,15 @@ void test_6 (int st, const char *str)
   error (st, errno, "test: %s", str);
   __analyzer_eval (st == 0); /* { dg-warning "TRUE" } */
 }
+
+char *test_error_unterminated (int st)
+{
+  char fmt[3] = "abc";
+  error (st, errno, fmt); /* { dg-warning "passing pointer to unterminated string '&fmt' as argument 3 of 'error'" } */
+}
+
+char *test_error_at_line_unterminated (int st, int errno)
+{
+  char fmt[3] = "abc";
+  error_at_line (st, errno, __FILE__, __LINE__, fmt); /* { dg-warning "passing pointer to unterminated string '&fmt' as argument 5 of 'error_at_line'" } */
+}

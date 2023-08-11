@@ -25,3 +25,9 @@ void test_3 (const char *s, int c)
   char *p = strchr (s, c); /* { dg-message "when 'strchr' returns NULL"} */
   *p = 'A'; /* { dg-warning "dereference of NULL 'p'" "null deref" } */
 }
+
+void test_unterminated (int c)
+{
+  char buf[3] = "abc";
+  strchr (buf, c); /* { dg-warning "passing pointer to unterminated string '&buf' as argument 1 of 'strchr'" } */
+}

@@ -53,4 +53,9 @@ extern void __analyzer_eval (int);
 /* Obtain an "unknown" void *.  */
 extern void *__analyzer_get_unknown_ptr (void);
 
+/* Complain if PTR doesn't point to a null-terminated string.
+   TODO: eventually get the strlen of the buffer (without the
+   optimizer touching it).  */
+extern __SIZE_TYPE__ __analyzer_get_strlen (const char *ptr);
+
 #endif /* #ifndef ANALYZER_DECLS_H.  */

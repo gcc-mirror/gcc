@@ -486,6 +486,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-size
 -Wanalyzer-too-complex
 -Wno-analyzer-unsafe-call-within-signal-handler
+-Wno-analyzer-unterminated-string
 -Wno-analyzer-use-after-free
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 -Wno-analyzer-use-of-uninitialized-value
@@ -10319,6 +10320,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-overflow
 -Wanalyzer-stale-setjmp-buffer
 -Wanalyzer-unsafe-call-within-signal-handler
+-Wanalyzer-unterminated-string
 -Wanalyzer-use-after-free
 -Wanalyzer-use-of-pointer-in-stale-stack-frame
 -Wanalyzer-use-of-uninitialized-value
@@ -10907,6 +10909,17 @@ function known to be async-signal-unsafe (such as @code{fprintf}) is
 called from a signal handler.
 
 See @uref{https://cwe.mitre.org/data/definitions/479.html, CWE-479: Signal Handler Use of a Non-reentrant Function}.
+
+@opindex Wanalyzer-unterminated-string
+@opindex Wno-analyzer-unterminated-string
+@item -Wno-analyzer-unterminated-string
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-unterminated-string} to disable it.
+
+This diagnostic warns about code paths which attempt to find the length
+of an unterminated string.  For example, passing a pointer to an unterminated
+buffer to @code{strlen} would lead to accesses beyond the end of the buffer
+whilst attempting to find the terminating zero character.
 
 @opindex Wanalyzer-use-after-free
 @opindex Wno-analyzer-use-after-free

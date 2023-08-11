@@ -38,3 +38,9 @@ void test_6 (const char *s)
   char *p = __builtin_strdup (s); /* { dg-message "this call could return NULL" } */
   requires_nonnull (p); /* { dg-warning "use of possibly-NULL 'p'" } */
 }
+
+char *test_unterminated (void)
+{
+  char buf[3] = "abc";
+  return strdup (buf); /* { dg-warning "passing pointer to unterminated string '&buf' as argument 1 of 'strdup'" } */
+}

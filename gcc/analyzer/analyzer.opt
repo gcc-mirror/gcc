@@ -214,6 +214,10 @@ Wanalyzer-tainted-size
 Common Var(warn_analyzer_tainted_size) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as a size.
 
+Wanalyzer-unterminated-string
+Common Var(warn_analyzer_unterminated_string) Init(1) Warning
+Warn about code paths which attempt to find the length of an unterminated string.
+
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning
 Warn about code paths in which a freed value is used.

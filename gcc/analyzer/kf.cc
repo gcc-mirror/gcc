@@ -414,6 +414,10 @@ kf_error::impl_call_pre (const call_details &cd) const
   if (!model->add_constraint (status, EQ_EXPR, integer_zero_node, ctxt))
     if (ctxt)
       ctxt->terminate_path ();
+
+  /* Check "format" arg.  */
+  const int fmt_arg_idx = (m_min_args == 3) ? 2 : 4;
+  model->check_for_null_terminated_string_arg (cd, fmt_arg_idx);
 }
 
 /* Handler for "free", after sm-handling.
@@ -674,6 +678,7 @@ public:
     gcc_assert (fndecl);
     region_model_context *ctxt = cd.get_ctxt ();
     region_model *model = cd.get_model ();
+    model->check_for_null_terminated_string_arg (cd, 0);
     const svalue *ptr_sval = cd.get_arg_svalue (0);
     const region *reg
       = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
@@ -949,6 +954,10 @@ public:
   {
     return (cd.num_args () == 2 && cd.arg_is_pointer_p (0));
   }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+  }
   void impl_call_post (const call_details &cd) const final override;
 };
 
@@ -1109,6 +1118,7 @@ kf_strcpy::impl_call_pre (const call_details &cd) const
 					cd.get_ctxt ());
   const svalue *src_contents_sval = model->get_store_value (src_reg,
 							    cd.get_ctxt ());
+  cd.check_for_null_terminated_string_arg (1);
 
   cd.maybe_set_lhs (dest_sval);
 
@@ -1136,6 +1146,7 @@ public:
   {
     region_model *model = cd.get_model ();
     region_model_manager *mgr = cd.get_manager ();
+    cd.check_for_null_terminated_string_arg (0);
     /* Ideally we'd get the size here, and simulate copying the bytes.  */
     const region *new_reg
       = model->get_or_create_region_for_heap_alloc (NULL, cd.get_ctxt ());

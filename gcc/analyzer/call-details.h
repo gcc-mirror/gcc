@@ -71,6 +71,8 @@ public:
 
   tree lookup_function_attribute (const char *attr_name) const;
 
+  void check_for_null_terminated_string_arg (unsigned arg_idx) const;
+
 private:
   const gcall *m_call;
   region_model *m_model;

@@ -108,3 +108,10 @@ void test_outer (void)
   char arr_outer[] = "NAME=VALUE"; /* { dg-message "'arr_outer' declared on stack here" } */
   __analyzer_test_inner (arr_outer);
 }
+
+void test_unterminated (void)
+{
+  char buf[3] = "abc";
+  putenv (buf); /* { dg-warning "passing pointer to unterminated string" } */
+  /* { dg-warning "'putenv' on a pointer to automatic variable 'buf'" "POS34-C" { target *-*-* } .-1 } */
+}
