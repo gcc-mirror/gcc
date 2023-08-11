@@ -843,6 +843,13 @@ Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
 @end itemize
 
+The ISO C2X operator @code{typeof_unqual} is available in ISO C2X mode
+and its result is the non-atomic unqualified version of what @code{typeof}
+operator returns.  Alternate spelling @code{__typeof_unqual__} is
+available in all C modes and provides non-atomic unqualified version of
+what @code{__typeof__} operator returns.
+@xref{Alternate Keywords}.
+
 @cindex @code{__auto_type} in GNU C
 In GNU C, but not GNU C++, you may also declare the type of a variable
 as @code{__auto_type}.  In that case, the declaration must declare

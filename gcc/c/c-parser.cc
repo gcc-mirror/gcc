@@ -4164,7 +4164,8 @@ c_parser_typeof_specifier (c_parser *parser)
     {
       gcc_assert (c_parser_next_token_is_keyword (parser, RID_TYPEOF_UNQUAL));
       is_unqual = true;
-      is_std = true;
+      tree spelling = c_parser_peek_token (parser)->value;
+      is_std = strcmp (IDENTIFIER_POINTER (spelling), "typeof_unqual") == 0;
     }
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
