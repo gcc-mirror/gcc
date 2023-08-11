@@ -1309,6 +1309,7 @@ expand_vec_series (rtx dest, rtx base, rtx step)
   machine_mode mode = GET_MODE (dest);
   poly_int64 nunits_m1 = GET_MODE_NUNITS (mode) - 1;
   poly_int64 value;
+  rtx result = register_operand (dest, mode) ? dest : gen_reg_rtx (mode);
 
   /* VECT_IV = BASE + I * STEP.  */
 
@@ -1317,15 +1318,10 @@ expand_vec_series (rtx dest, rtx base, rtx step)
   rtx op[] = {vid};
   emit_vlmax_insn (code_for_pred_series (mode), RVV_MISC_OP, op);
 
-  /* Step 2: Generate I * STEP.
-     - STEP is 1, we don't emit any instructions.
-     - STEP is power of 2, we use vsll.vi/vsll.vx.
-     - STEP is non-power of 2, we use vmul.vx.  */
   rtx step_adj;
-  if (rtx_equal_p (step, const1_rtx))
-    step_adj = vid;
-  else if (rtx_equal_p (step, constm1_rtx) && poly_int_rtx_p (base, &value)
-	   && known_eq (nunits_m1, value))
+  if (rtx_equal_p (step, constm1_rtx)
+      && poly_int_rtx_p (base, &value)
+      && known_eq (nunits_m1, value))
     {
       /* Special case:
 	   {nunits - 1, nunits - 2, ... , 0}.
@@ -1334,46 +1330,54 @@ expand_vec_series (rtx dest, rtx base, rtx step)
 	 Code sequence:
 	   vid.v v
 	   vrsub nunits - 1, v.  */
-      rtx ops[] = {dest, vid, gen_int_mode (nunits_m1, GET_MODE_INNER (mode))};
+      rtx ops[]
+	= {result, vid, gen_int_mode (nunits_m1, GET_MODE_INNER (mode))};
       insn_code icode = code_for_pred_sub_reverse_scalar (mode);
       emit_vlmax_insn (icode, RVV_BINOP, ops);
-      return;
     }
   else
     {
-      step_adj = gen_reg_rtx (mode);
-      if (CONST_INT_P (step) && pow2p_hwi (INTVAL (step)))
-	{
-	  /* Emit logical left shift operation.  */
-	  int shift = exact_log2 (INTVAL (step));
-	  rtx shift_amount = gen_int_mode (shift, Pmode);
-	  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
-	  rtx ops[] = {step_adj, vid, shift_amount};
-	  emit_vlmax_insn (icode, RVV_BINOP, ops);
-	}
+      /* Step 2: Generate I * STEP.
+	 - STEP is 1, we don't emit any instructions.
+	 - STEP is power of 2, we use vsll.vi/vsll.vx.
+	 - STEP is non-power of 2, we use vmul.vx.  */
+      if (rtx_equal_p (step, const1_rtx))
+	step_adj = vid;
       else
 	{
-	  insn_code icode = code_for_pred_scalar (MULT, mode);
-	  rtx ops[] = {step_adj, vid, step};
+	  step_adj = gen_reg_rtx (mode);
+	  if (CONST_INT_P (step) && pow2p_hwi (INTVAL (step)))
+	    {
+	      /* Emit logical left shift operation.  */
+	      int shift = exact_log2 (INTVAL (step));
+	      rtx shift_amount = gen_int_mode (shift, Pmode);
+	      insn_code icode = code_for_pred_scalar (ASHIFT, mode);
+	      rtx ops[] = {step_adj, vid, shift_amount};
+	      emit_vlmax_insn (icode, RVV_BINOP, ops);
+	    }
+	  else
+	    {
+	      insn_code icode = code_for_pred_scalar (MULT, mode);
+	      rtx ops[] = {step_adj, vid, step};
+	      emit_vlmax_insn (icode, RVV_BINOP, ops);
+	    }
+	}
+
+      /* Step 3: Generate BASE + I * STEP.
+	  - BASE is 0, use result of vid.
+	  - BASE is not 0, we use vadd.vx/vadd.vi.  */
+      if (rtx_equal_p (base, const0_rtx))
+	emit_move_insn (result, step_adj);
+      else
+	{
+	  insn_code icode = code_for_pred_scalar (PLUS, mode);
+	  rtx ops[] = {result, step_adj, base};
 	  emit_vlmax_insn (icode, RVV_BINOP, ops);
 	}
     }
 
-  /* Step 3: Generate BASE + I * STEP.
-     - BASE is 0, use result of vid.
-     - BASE is not 0, we use vadd.vx/vadd.vi.  */
-  if (rtx_equal_p (base, const0_rtx))
-    {
-      emit_move_insn (dest, step_adj);
-    }
-  else
-    {
-      rtx result = gen_reg_rtx (mode);
-      insn_code icode = code_for_pred_scalar (PLUS, mode);
-      rtx ops[] = {result, step_adj, base};
-      emit_vlmax_insn (icode, RVV_BINOP, ops);
-      emit_move_insn (dest, result);
-    }
+  if (result != dest)
+    emit_move_insn (dest, result);
 }
 
 static void
