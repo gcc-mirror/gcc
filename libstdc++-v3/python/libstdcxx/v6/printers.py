@@ -2021,11 +2021,16 @@ class StdChronoCalendarPrinter:
         if typ == 'std::chrono::day':
             return '{}'.format(int(val['_M_d']))
         if typ == 'std::chrono::month':
+            if m < 1 or m >= len(months):
+                return "%d is not a valid month" % m
             return months[m]
         if typ == 'std::chrono::year':
             return '{}y'.format(y)
         if typ == 'std::chrono::weekday':
-            return '{}'.format(weekdays[val['_M_wd']])
+            wd = val['_M_wd']
+            if wd < 0 or wd >= len(weekdays):
+                return "%d is not a valid weekday" % wd
+            return '{}'.format(weekdays[wd])
         if typ == 'std::chrono::weekday_indexed':
             return '{}[{}]'.format(val['_M_wd'], int(val['_M_index']))
         if typ == 'std::chrono::weekday_last':
