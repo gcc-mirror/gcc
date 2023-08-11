@@ -5956,8 +5956,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_series<mode>"
-  [(set (match_operand:VI 0 "register_operand"           "=vd, vd, vr, vr")
-	(if_then_else:VI
+  [(set (match_operand:V_VLSI 0 "register_operand"           "=vd, vd, vr, vr")
+	(if_then_else:V_VLSI
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, vm,Wc1,Wc1")
 	     (match_operand 3 "vector_length_operand"    " rK, rK, rK, rK")
@@ -5966,8 +5966,8 @@
 	     (match_operand 6 "const_int_operand"        "  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_series:VI (const_int 0) (const_int 1))
-	  (match_operand:VI 2 "vector_merge_operand"     " vu,  0, vu,  0")))]
+	  (vec_series:V_VLSI (const_int 0) (const_int 1))
+	  (match_operand:V_VLSI 2 "vector_merge_operand"     " vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "vid.v\t%0%p1"
   [(set_attr "type" "vmidx")

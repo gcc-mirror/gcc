@@ -1336,7 +1336,7 @@ riscv_const_insns (rtx x)
 	       out range of [-16, 15].
 	  - 3. const series vector.
 	  ...etc.  */
-	if (riscv_v_ext_vector_mode_p (GET_MODE (x)))
+	if (riscv_v_ext_mode_p (GET_MODE (x)))
 	  {
 	    /* const series vector.  */
 	    rtx base, step;

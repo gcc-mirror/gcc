@@ -150,3 +150,17 @@ typedef double v512df __attribute__ ((vector_size (4096)));
     for (int i = 0; i < NUM; ++i)                                              \
       a[i] = OP b[i];                                                          \
   }
+
+#define DEF_CONST(TYPE, VAL, NUM)                                              \
+  void const_##TYPE##_##NUM (TYPE *restrict a)                                 \
+  {                                                                            \
+    for (int i = 0; i < NUM; ++i)                                              \
+      a[i] = VAL;                                                              \
+  }
+
+#define DEF_SERIES(TYPE, BASE, STEP, NUM, SUFFIX)                              \
+  void series_##TYPE##_##SUFFIX (TYPE *restrict a)                             \
+  {                                                                            \
+    for (TYPE i = 0; i < NUM; ++i)                                             \
+      a[i] = (BASE) + i * (STEP);                                              \
+  }
