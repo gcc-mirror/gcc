@@ -12559,3 +12559,28 @@ proc check_effective_target_const_volatile_readonly_section { } {
     }
   return 1
 }
+
+# Appends necessary Python flags to extra-tool-flags if Python.h is supported.
+# Otherwise, modifies dg-do-what.
+proc dg-require-python-h { args } {
+    upvar dg-extra-tool-flags extra-tool-flags
+
+    verbose "ENTER dg-require-python-h" 2
+
+    set result [remote_exec host "python3-config --includes"]
+    set status [lindex $result 0]
+    if { $status == 0 } {
+        set python_flags [lindex $result 1]
+    } else {
+	verbose "Python.h not supported" 2
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+
+    verbose "Python flags are: $python_flags" 2
+
+    verbose "Before appending, extra-tool-flags: ${extra-tool-flags}" 3
+    eval lappend extra-tool-flags $python_flags
+    verbose "After appending, extra-tool-flags: ${extra-tool-flags}" 3
+}

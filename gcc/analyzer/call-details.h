@@ -49,6 +49,10 @@ public:
     return POINTER_TYPE_P (get_arg_type (idx));
   }
   bool arg_is_size_p (unsigned idx) const;
+  bool arg_is_integral_p (unsigned idx) const
+  {
+    return INTEGRAL_TYPE_P (get_arg_type (idx));
+  }
 
   const gcall *get_call_stmt () const { return m_call; }
   location_t get_location () const;

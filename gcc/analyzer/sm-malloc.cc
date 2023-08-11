@@ -434,6 +434,11 @@ public:
 			     const svalue *new_ptr_sval,
 			     const extrinsic_state &ext_state) const;
 
+  void transition_ptr_sval_non_null (region_model *model,
+      sm_state_map *smap,
+      const svalue *new_ptr_sval,
+      const extrinsic_state &ext_state) const;
+
   standard_deallocator_set m_free;
   standard_deallocator_set m_scalar_delete;
   standard_deallocator_set m_vector_delete;
@@ -2504,6 +2509,17 @@ on_realloc_with_move (region_model *model,
 		   NULL, ext_state);
 }
 
+/*  Hook for get_or_create_region_for_heap_alloc for the case when we want
+   ptr_sval to mark a newly created region as assumed non null on malloc SM.  */
+void
+malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
+    sm_state_map *smap,
+    const svalue *new_ptr_sval,
+    const extrinsic_state &ext_state) const
+{
+  smap->set_state (model, new_ptr_sval, m_free.m_nonnull, NULL, ext_state);
+}
+
 } // anonymous namespace
 
 /* Internal interface to this file. */
@@ -2546,6 +2562,32 @@ region_model::on_realloc_with_move (const call_details &cd,
 				  old_ptr_sval,
 				  new_ptr_sval,
 				  *ext_state);
+}
+
+/* Moves ptr_sval from start to assumed non-null, for use by
+   region_model::get_or_create_region_for_heap_alloc.  */
+void
+region_model::transition_ptr_sval_non_null (region_model_context *ctxt,
+const svalue *ptr_sval)
+{
+  if (!ctxt)
+    return;
+  const extrinsic_state *ext_state = ctxt->get_ext_state ();
+  if (!ext_state)
+    return;
+
+  sm_state_map *smap;
+  const state_machine *sm;
+  unsigned sm_idx;
+  if (!ctxt->get_malloc_map (&smap, &sm, &sm_idx))
+    return;
+
+  gcc_assert (smap);
+  gcc_assert (sm);
+
+  const malloc_state_machine &malloc_sm = (const malloc_state_machine &)*sm;
+
+  malloc_sm.transition_ptr_sval_non_null (this, smap, ptr_sval, *ext_state);
 }
 
 } // namespace ana
