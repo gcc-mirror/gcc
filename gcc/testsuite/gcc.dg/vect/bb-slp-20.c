@@ -63,6 +63,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target vect_int_mult } } } */
+/* { dg-final { scan-tree-dump-times "Basic block will be vectorized using SLP" 1 "slp2" { target vect_int_mult } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { target vect_int_mult } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp2" { target vect_int_mult } } } */
   

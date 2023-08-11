@@ -58,5 +58,6 @@ int main (void)
 }
 
 /* We need V2SI vector add support for the b[] vectorization, if we don't
-   have that we might only see the store vectorized and thus 2 subgraphs.  */
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target { vect_int_mult && vect64 } } } } */
+   have that we might only see the store vectorized.  In any case we have
+   two subgraph entries.  */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { target { vect_int_mult && vect64 } } } } */
