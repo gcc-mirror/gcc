@@ -49,7 +49,7 @@ AC_DEFUN([GCC_ENABLE_PLUGINS],
        elif test x$host = x$target; then
 	 export_sym_check="$gcc_cv_objdump -T"
        else
-	 export_sym_check=
+	 export_sym_check="$ac_cv_prog_OBJDUMP -T"
        fi
      ;;
    esac
