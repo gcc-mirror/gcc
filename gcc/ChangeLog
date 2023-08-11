@@ -1,3 +1,151 @@
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110923
+	* tree-ssa-loop-split.cc (split_loop): Watch for division by zero.
+
+2023-08-10  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add Ztso and mark Ztso as
+	dependent on 'a' extension.
+	* config/riscv/riscv-opts.h (MASK_ZTSO): New mask.
+	(TARGET_ZTSO): New target.
+	* config/riscv/riscv.cc (riscv_memmodel_needs_amo_acquire): Add
+	Ztso case.
+	(riscv_memmodel_needs_amo_release): Add Ztso case.
+	(riscv_print_operand): Add Ztso case for LR/SC annotations.
+	* config/riscv/riscv.md: Import sync-rvwmo.md and sync-ztso.md.
+	* config/riscv/riscv.opt: Add Ztso target variable.
+	* config/riscv/sync.md (mem_thread_fence_1): Expand to RVWMO or
+	Ztso specific insn.
+	(atomic_load<mode>): Expand to RVWMO or Ztso specific insn.
+	(atomic_store<mode>): Expand to RVWMO or Ztso specific insn.
+	* config/riscv/sync-rvwmo.md: New file. Seperate out RVWMO
+	specific load/store/fence mappings.
+	* config/riscv/sync-ztso.md: New file. Seperate out Ztso
+	specific load/store/fence mappings.
+
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopmanip.cc (duplicate_loop_body_to_header_edge): Special case loops with
+	0 iteration count.
+
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-threadupdate.cc (ssa_fix_duplicate_block_edges): Fix profile update.
+
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.cc (profile_count::differs_from_p): Fix overflow and
+	handling of undefined values.
+
+2023-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* tree-ssa-phiopt.cc (single_non_singleton_phi_for_edges): Never
+	return virtual phis and return NULL if there is a virtual phi
+	where the arguments from E0 and E1 edges aren't equal.
+
+2023-08-10  Richard Biener  <rguenther@suse.de>
+
+	* internal-fn.def (VCOND, VCONDU, VCONDEQ, VCOND_MASK,
+	VEC_SET, VEC_EXTRACT): Make ECF_CONST | ECF_NOTHROW.
+
+2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110962
+	* config/riscv/autovec.md (vec_duplicate<mode>): New pattern.
+
+2023-08-10  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmacc_frm): New class for vfnmacc.
+	(vfnmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmacc_frm): New function definition.
+
+2023-08-10  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmacc_frm): New class for vfmacc frm.
+	(vfmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmacc_frm): New function definition.
+
+2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110964
+	* config/riscv/riscv-v.cc (expand_cond_len_ternop): Add integer ternary.
+
+2023-08-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_live_operation): Remove
+	gimple_stmt_iterator * argument.
+	* tree-vect-loop.cc (vectorizable_live_operation): Likewise.
+	Adjust plumbing around vect_get_loop_mask.
+	(vect_analyze_loop_operations): Adjust.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1): Likewise.
+	(vect_bb_slp_mark_live_stmts): Likewise.
+	(vect_schedule_slp_node): Likewise.
+	* tree-vect-stmts.cc (can_vectorize_live_stmts): Likewise.
+	Remove gimple_stmt_iterator * argument.
+	(vect_transform_stmt): Adjust.
+
+2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: Add missing modes.
+
+2023-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* lto-streamer-in.cc (lto_input_tree_1): Assert TYPE_PRECISION
+	is up to WIDE_INT_MAX_PRECISION rather than MAX_BITSIZE_MODE_ANY_INT.
+
+2023-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/102989
+	* expr.cc (expand_expr_real_1) <case MEM_REF>: Add an early return for
+	EXPAND_WRITE or EXPAND_MEMORY modifiers to avoid testing it multiple
+	times.
+
+2023-08-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/110832
+	* config/i386/mmx.md: (movq_<mode>_to_sse): Also do not
+	sanitize upper part of V4HFmode register with
+	-fno-trapping-math.
+	(<insn>v4hf3): Enable for ix86_partial_vec_fp_math.
+	(<divv4hf3): Ditto.
+	(<insn>v2hf3): Ditto.
+	(divv2hf3): Ditto.
+	(movd_v2hf_to_sse): Do not sanitize upper part of V2HFmode
+	register with -fno-trapping-math.
+
+2023-08-10  Pan Li  <pan2.li@intel.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h
+	(enum floating_point_rounding_mode): Add NONE, DYN_EXIT and DYN_CALL.
+	(get_frm_mode): New declaration.
+	* config/riscv/riscv-v.cc (get_frm_mode): New function to get frm mode.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_ternop_insn): Take care of frm reg.
+	* config/riscv/riscv.cc (riscv_static_frm_mode_p): Migrate to FRM_XXX.
+	(riscv_emit_frm_mode_set): Ditto.
+	(riscv_emit_mode_set): Ditto.
+	(riscv_frm_adjust_mode_after_call): Ditto.
+	(riscv_frm_mode_needed): Ditto.
+	(riscv_frm_mode_after): Ditto.
+	(riscv_mode_entry): Ditto.
+	(riscv_mode_exit): Ditto.
+	* config/riscv/riscv.h (NUM_MODES_FOR_MODE_SWITCHING): Ditto.
+	* config/riscv/vector.md
+	(rne,rtz,rdn,rup,rmm,dyn,dyn_exit,dyn_call,none): Removed
+	(symbol_ref): * config/riscv/vector.md: Set frm_mode attr explicitly.
+
 2023-08-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p): Fix

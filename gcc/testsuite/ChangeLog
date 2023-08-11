@@ -1,3 +1,56 @@
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110923
+	* gcc.dg/tree-ssa/pr110923.c: New test.
+
+2023-08-10  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: New test.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: New test.
+	* gcc.target/riscv/amo-table-ztso-fence-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-fence-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-fence-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-fence-4.c: New test.
+	* gcc.target/riscv/amo-table-ztso-fence-5.c: New test.
+	* gcc.target/riscv/amo-table-ztso-load-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-load-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-load-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-store-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-store-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-store-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: New test.
+
+2023-08-10  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: Check profile consistency.
+
+2023-08-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-nmacc.c: New test.
+
+2023-08-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-macc.c: New test.
+
+2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110964
+	* gcc.target/riscv/rvv/autovec/pr110964.c: New test.
+
 2023-08-09  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load_run-1.c:
