@@ -4095,7 +4095,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   should not complain at you.
 
 
-.. index:: -gnatwm  (gcc)
+.. index:: -gnatw.x  (gcc)
 
 :switch:`-gnatw.x`
   *Activate warnings for No_Exception_Propagation mode.*
