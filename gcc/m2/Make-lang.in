@@ -90,6 +90,10 @@ PGE=m2/pge$(exeext)
 
 SRC_PREFIX=G
 
+ifeq ($(enable_plugin),yes)
+M2RTE_PLUGIN_SO=plugin/m2rte$(exeext).so
+endif
+
 m2/gm2spec.o: $(srcdir)/m2/gm2spec.cc $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
                m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS) \
                $(generated_files) $(C_TREE_H) insn-attr-common.h
@@ -122,9 +126,9 @@ po-generated:
 
 # Build hooks:
 
-m2.all.cross: gm2-cross$(exeext) plugin/m2rte$(soext)
+m2.all.cross: gm2-cross$(exeext) $(M2RTE_PLUGIN_SO)
 
-m2.start.encap: gm2$(exeext) plugin/m2rte$(soext)
+m2.start.encap: gm2$(exeext) $(M2RTE_PLUGIN_SO)
 m2.rest.encap:
 
 
@@ -400,9 +404,10 @@ m2.uninstall:
 	-rm -rf $(bindir)/$(GM2_INSTALL_NAME)
 	-rm -rf $(bindir)/$(GM2_CROSS_NAME)
 
+ifeq ($(enable_plugin),yes)
 m2.install-plugin: installdirs
 	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
-	$(INSTALL_PROGRAM) plugin/m2rte$(soext) $(DESTDIR)$(plugin_resourcesdir)/m2rte$(soext)
+	$(INSTALL_PROGRAM) $(M2RTE_PLUGIN_SO) $(DESTDIR)$(plugin_resourcesdir)/m2rte$(soext)
 	chmod a+x $(DESTDIR)$(plugin_resourcesdir)/m2rte$(soext)
 
 override PLUGINCFLAGS := $(filter-out -mdynamic-no-pic,$(PLUGINCFLAGS))
@@ -412,6 +417,12 @@ plugin/m2rte$(soext): $(srcdir)/m2/plugin/m2rte.cc $(GCC_HEADER_DEPENDENCIES_FOR
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) $(INCINTL) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.cc
 	$(PLUGINCC) $(PLUGINCFLAGS) $(PLUGINLDFLAGS) $(PLUGINLIBS) $(LIBINTL) -fno-rtti plugin/m2rte.o -shared -o $@
+else
+m2.install-plugin:
+
+plugin/m2rte$(exeext).so:
+
+endif
 
 
 # Clean hooks:
@@ -519,7 +530,7 @@ cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 
 m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext)
+                            m2/gm2-gcc/rtegraph.o $(M2RTE_PLUGIN_SO)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
@@ -532,7 +543,7 @@ m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(
 m2/stage1/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) \
+                            m2/gm2-gcc/rtegraph.o $(M2RTE_PLUGIN_SO) \
                             $(m2.prev)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)

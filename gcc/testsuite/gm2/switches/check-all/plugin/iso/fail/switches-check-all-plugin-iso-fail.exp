@@ -45,7 +45,7 @@ set TORTURE_OPTIONS [list \
 			 { -O3 -fsoft-check-all } \
 		         { -O3 -g -fsoft-check-all } ]
 
-gm2_init_iso "${srcdir}/gm2/switches/check-all/plugin/iso/fail/"
+gm2_init_iso "${srcdir}/gm2/switches/check-all/plugin/iso/fail/" -fm2-plugin
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
