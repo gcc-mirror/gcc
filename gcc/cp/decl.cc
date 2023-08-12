@@ -3297,10 +3297,6 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	    }
 	}
 
-      if (deduction_guide_p (olddecl)
-	  && deduction_guide_p (newdecl))
-	return G_("deduction guide %q+D redeclared");
-
       /* [class.compare.default]: A definition of a comparison operator as
 	 defaulted that appears in a class shall be the first declaration of
 	 that function.  */
@@ -3354,10 +3350,6 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 			  "%<gnu_inline%> attribute");
 	    }
 	}
-
-      if (deduction_guide_p (olddecl)
-	  && deduction_guide_p (newdecl))
-	return G_("deduction guide %q+D redeclared");
 
       /* Core issue #226 (C++11):
 
@@ -10351,6 +10343,12 @@ grokfndecl (tree ctype,
     case sfk_destructor:
       DECL_CXX_DESTRUCTOR_P (decl) = 1;
       DECL_NAME (decl) = dtor_identifier;
+      break;
+    case sfk_deduction_guide:
+      /* Give deduction guides a definition even though they don't really
+	 have one: the restriction that you can't repeat a deduction guide
+	 makes them more like a definition anyway.  */
+      DECL_INITIAL (decl) = void_node;
       break;
     default:
       break;

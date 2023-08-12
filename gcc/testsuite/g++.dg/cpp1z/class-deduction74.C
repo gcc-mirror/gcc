@@ -7,20 +7,20 @@
 template<typename> struct S { };
 template<typename> struct X { };
 
-S() -> S<int>; // { dg-message "previously declared here|old declaration" }
-S() -> S<int>; // { dg-error "redeclared" }
+S() -> S<int>; // { dg-message "previously defined here|old declaration" }
+S() -> S<int>; // { dg-error "redefinition" }
 X() -> X<int>;
 S() -> S<float>; // { dg-error "ambiguating new declaration of" }
 
-S(bool) -> S<int>; // { dg-message "previously declared here" }
-explicit S(bool) -> S<int>; // { dg-error "redeclared" }
+S(bool) -> S<int>; // { dg-message "previously defined here" }
+explicit S(bool) -> S<int>; // { dg-error "redefinition" }
 
-explicit S(char) -> S<int>; // { dg-message "previously declared here" }
-S(char) -> S<int>; // { dg-error "redeclared" }
+explicit S(char) -> S<int>; // { dg-message "previously defined here" }
+S(char) -> S<int>; // { dg-error "redefinition" }
 
 template<typename T> S(T, T) -> S<int>; // { dg-message "previously declared here" }
 template<typename T> X(T, T) -> X<int>;
-template<typename T> S(T, T) -> S<int>; // { dg-error "redeclared" }
+template<typename T> S(T, T) -> S<int>; // { dg-error "redefinition" }
 
 // OK: Use SFINAE.
 template<typename T> S(T) -> S<typename T::foo>;
