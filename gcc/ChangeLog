@@ -1,3 +1,163 @@
+2023-08-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* doc/analyzer.texi (__analyzer_get_strlen): New.
+	* doc/invoke.texi: Add -Wanalyzer-unterminated-string.
+
+2023-08-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/rx/rx.md (subdi3): Fix test for borrow.
+
+2023-08-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR middle-end/110989
+	* tree-vect-stmts.cc (vectorizable_store): Replace iv_type with sizetype.
+	(vectorizable_load): Ditto.
+
+2023-08-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.md (allocate_stack): Define.
+	* config/bpf/bpf.h (FIRST_PSEUDO_REGISTER): Make room for fake
+	stack pointer register.
+	(FIXED_REGISTERS): Adjust accordingly.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGISTER_NAMES): Likewise.
+	* config/bpf/bpf.cc (bpf_compute_frame_layout): Do not reserve
+	space for callee-saved registers.
+	(bpf_expand_prologue): Do not save callee-saved registers in xbpf.
+	(bpf_expand_epilogue): Do not restore callee-saved registers in
+	xbpf.
+
+2023-08-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_function_arg_advance): Do not complain
+	about too many arguments if function is always inlined.
+
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	* tree-pretty-print.cc (dump_generic_node) <case COMPONENT_REF>:
+	Don't call component_ref_field_offset if the RHS isn't a decl.
+
+2023-08-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/110646
+	* gensupport.cc(class conlist): Use strtol instead of std::stoi.
+
+2023-08-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (goal_alt_out_sp_reload_p): New flag.
+	(process_alt_operands): Set the flag.
+	(curr_insn_transform): Modify stack pointer offsets if output
+	stack pointer reload is generated.
+
+2023-08-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure: Regenerate.
+
+2023-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110979
+	* tree-vect-loop.cc (vectorizable_reduction): For
+	FOLD_LEFT_REDUCTION without target support make sure
+	we don't need to honor signed zeros and sign dependent rounding.
+
+2023-08-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_region): Provide opt-info for all SLP
+	subgraph entries.  Dump the used vector size based on the
+	SLP subgraph entry root vector type.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmsub_frm): New class for vfmsub frm.
+	(vfmsub_frm): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmsub_frm): New function declaration.
+
+2023-08-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add vec_mask_len_{load_lanes,store_lanes} patterns.
+	* internal-fn.cc (expand_partial_load_optab_fn): Ditto.
+	(expand_partial_store_optab_fn): Ditto.
+	* internal-fn.def (MASK_LEN_LOAD_LANES): Ditto.
+	(MASK_LEN_STORE_LANES): Ditto.
+	* optabs.def (OPTAB_CD): Ditto.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmadd_frm): New class for vfnmadd frm.
+	(vfnmadd_frm): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmadd_frm): New function declaration.
+
+2023-08-11  Drew Ross  <drross@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109938
+	* match.pd (((x ^ y) & z) | x -> (z & y) | x): New simplification.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmadd_frm): New class for vfmadd frm.
+	(vfmadd_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmadd_frm): New function definition.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmsac_frm): New class for vfnmsac frm.
+	(vfnmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmsac_frm): New function definition.
+
+2023-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (Typeof): Document typeof_unqual
+	and __typeof_unqual__.
+
+2023-08-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110954
+	* generic-match-head.cc (bitwise_inverted_equal_p): Add
+	wascmp argument and set it accordingly.
+	* gimple-match-head.cc (bitwise_inverted_equal_p): Add
+	wascmp argument to the macro.
+	(gimple_bitwise_inverted_equal_p): Add
+	wascmp argument and set it accordingly.
+	* match.pd (`a & ~a`, `a ^| ~a`): Update call
+	to bitwise_inverted_equal_p and handle wascmp case.
+	(`(~x | y) & x`, `(~x | y) & x`, `a?~t:t`): Update
+	call to bitwise_inverted_equal_p and check to see
+	if was !wascmp or if precision was 1.
+
+2023-08-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/84510
+	* doc/invoke.texi: Update.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfmsac_frm): New class for vfmsac frm.
+	(vfmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfmsac_frm): New function definition
+
 2023-08-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/110923

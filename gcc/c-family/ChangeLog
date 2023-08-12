@@ -1,3 +1,13 @@
+2023-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __typeof_unqual
+	and __typeof_unqual__ spellings of typeof_unqual.
+
+2023-08-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/84510
+	* c.opt: Enable warning for C and ObjC.
+
 2023-08-05  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/98536

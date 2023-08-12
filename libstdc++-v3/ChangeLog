@@ -1,3 +1,63 @@
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110990
+	* include/std/format (_Seq_sink::get): Only call _M_overflow if
+	its precondition is met.
+	(_Iter_sink::_M_finish): Likewise.
+	(_Iter_sink<C, ContigIter>::_M_overflow): Only switch to the
+	internal buffer after running out of space.
+	(_Iter_sink<C, ContigIter>::_M_finish): Do not use _M_overflow.
+	(_Counting_sink::count): Likewise.
+	* testsuite/std/format/functions/format_to_n.cc: Check cases
+	where the output fits into the buffer.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104167
+	* include/bits/chrono_io.h (operator|=, operator|): Add noexcept
+	to _ChronoParts operators.
+	(from_stream, parse): Define new functions.
+	(__detail::_Parse, __detail::_Parser): New class templates.
+	* include/std/chrono (__cpp_lib_chrono): Define to 201907L for
+	C++20.
+	* include/std/version (__cpp_lib_chrono): Likewise.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc:
+	Adjust expected value of feature test macro.
+	* testsuite/20_util/duration/io.cc: Test parsing.
+	* testsuite/std/time/clock/file/io.cc: Likewise.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+	* testsuite/std/time/clock/system/io.cc: Likewise.
+	* testsuite/std/time/clock/tai/io.cc: Likewise.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+	* testsuite/std/time/day/io.cc: Likewise.
+	* testsuite/std/time/month/io.cc: Likewise.
+	* testsuite/std/time/month_day/io.cc: Likewise.
+	* testsuite/std/time/weekday/io.cc: Likewise.
+	* testsuite/std/time/year/io.cc: Likewise.
+	* testsuite/std/time/year_month/io.cc: Likewise.
+	* testsuite/std/time/year_month_day/io.cc: Likewise.
+	* testsuite/std/time/syn_c++20.cc: Check value of macro and for
+	the existence of parse and from_stream in namespace chrono.
+	* testsuite/std/time/clock/local/io.cc: New test.
+	* testsuite/std/time/parse.cc: New test.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110860
+	* include/std/format (__formatter_fp::format): Do not call log10
+	with zero values.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoCalendarPrinter):
+	Check for out-of-range month an weekday indices.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Check invalid
+	month and weekday values.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__clamped_iter_cat_t): Remove.
+
 2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110974

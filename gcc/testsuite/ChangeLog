@@ -1,3 +1,145 @@
+2023-08-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_get_strlen): New.
+	* gcc.dg/analyzer/error-1.c (test_error_unterminated): New.
+	(test_error_at_line_unterminated): New.
+	* gcc.dg/analyzer/null-terminated-strings-1.c: New test.
+	* gcc.dg/analyzer/putenv-1.c (test_unterminated): New.
+	* gcc.dg/analyzer/strchr-1.c (test_unterminated): New.
+	* gcc.dg/analyzer/strcpy-1.c (test_unterminated): New.
+	* gcc.dg/analyzer/strdup-1.c (test_unterminated): New.
+
+2023-08-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR middle-end/110989
+	* gcc.target/riscv/rvv/autovec/pr110989.c: New test.
+
+2023-08-11  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Add -mabi=lp64d
+	to dg-options.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-fence-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-load-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-store-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Ditto.
+
+2023-08-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* lib/target-supports.exp (check_effective_target_alloca): BPF
+	target does not support alloca.
+	* gcc.target/bpf/diag-alloca-1.c: New test.
+	* gcc.target/bpf/diag-alloca-2.c: Likewise.
+	* gcc.target/bpf/xbpf-callee-saved-regs-1.c: Remove test.
+	* gcc.target/bpf/xbpf-callee-saved-regs-2.c: Likewise.
+	* gcc.target/bpf/regs-availability-1.c: Likewise.
+
+2023-08-11  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/diag-funargs-inline-1.c: New test.
+	* gcc.target/bpf/diag-funargs.c: Adapt test.
+
+2023-08-11  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Analyzer support for
+	PyList_New, PyList_Append, PyLong_FromLong
+	* gcc.dg/plugin/plugin.exp: New test.
+	* lib/target-supports.exp: New procedure.
+	* gcc.dg/plugin/cpython-plugin-test-2.c: New test.
+
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110927
+	* g++.dg/cpp2a/concepts-requires35.C: New test.
+
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/71954
+	* g++.dg/cpp1y/var-templ84.C: New test.
+	* g++.dg/cpp1y/var-templ84a.C: New test.
+
+2023-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110979
+	* gcc.dg/torture/pr110979.c: New testcase.
+
+2023-08-11  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr87105.cc: Adjust.
+	* gcc.dg/vect/bb-slp-17.c: Likewise.
+	* gcc.dg/vect/bb-slp-20.c: Likewise.
+	* gcc.dg/vect/bb-slp-21.c: Likewise.
+	* gcc.dg/vect/bb-slp-22.c: Likewise.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Likewise.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-msub.c: New test.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-nmadd.c: New test.
+
+2023-08-11  Drew Ross  <drross@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109938
+	* gcc.c-torture/execute/pr109938.c: New test.
+	* gcc.dg/tree-ssa/pr109938.c: New test.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-madd.c: New test.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-nmsac.c: New test.
+
+2023-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/c11-typeof-2.c: New test.
+	* gcc.dg/c11-typeof-3.c: New test.
+	* gcc.dg/gnu11-typeof-3.c: New test.
+	* gcc.dg/gnu11-typeof-4.c: New test.
+
+2023-08-11  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110954
+	* gcc.c-torture/execute/pr110954-1.c: New test.
+
+2023-08-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/84510
+	* gcc.dg/Wuseless-cast.c: New test.
+
+2023-08-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-msac.c: New test.
+
 2023-08-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/110923

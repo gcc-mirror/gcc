@@ -1,3 +1,33 @@
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110927
+	* parser.cc (cp_parser_type_requirement): Pass
+	check_dependency_p=true instead of =false.
+
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/71954
+	* decl.cc (grokdeclarator): Pass 'dname' instead of
+	'unqualified_id' as the name when building the VAR_DECL for a
+	static data member.  Call check_explicit_specialization for a
+	TEMPLATE_ID_EXPR such member.
+	* pt.cc (finish_member_template_decl): Return NULL_TREE
+	instead of 'decl' when DECL_TEMPLATE_SPECIALIZATION is not
+	set.
+
+2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	* ptree.cc (cxx_print_decl): Check for DECL_LANG_SPECIFIC and
+	TS_DECL_COMMON only when necessary.  Print DECL_TEMPLATE_INFO
+	for all decls that have it, not just VAR_DECL or FUNCTION_DECL.
+	Also print DECL_USE_TEMPLATE.
+	(cxx_print_type): Print TYPE_TEMPLATE_INFO.
+	<case BOUND_TEMPLATE_TEMPLATE_PARM>: Don't print TYPE_TI_ARGS
+	anymore.
+	<case TEMPLATE_TYPE/TEMPLATE_PARM>: Print TEMPLATE_TYPE_PARM_INDEX
+	instead of printing the index, level and original level
+	individually.
+
 2023-08-08  Marek Polacek  <polacek@redhat.com>
 
 	* parser.cc (cp_parser_postfix_expression): Adjust the call to
