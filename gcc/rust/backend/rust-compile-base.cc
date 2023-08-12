@@ -843,6 +843,12 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
   // look for the exact fntype
   for (auto &candidate : filteredFunctionCandidates)
     {
+      if (filteredFunctionCandidates.size () == 1)
+	{
+	  selectedCandidate = &candidate;
+	  break;
+	}
+
       bool compatable
 	= Resolver::types_compatable (TyTy::TyWithLocation (candidate.ty),
 				      TyTy::TyWithLocation (fntype), expr_locus,
