@@ -300,6 +300,7 @@ enum riscv_entity
 
 /* We only enable VLS modes for VLA vectorization since fixed length VLMAX mode
    is the highest priority choice and should not conflict with VLS modes.  */
-#define TARGET_VECTOR_VLS (riscv_autovec_preference == RVV_SCALABLE)
+#define TARGET_VECTOR_VLS                                                      \
+  (TARGET_VECTOR && riscv_autovec_preference == RVV_SCALABLE)
 
 #endif /* ! GCC_RISCV_OPTS_H */
