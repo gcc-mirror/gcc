@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
      lround<srcmode><dstmode>2.
 
    - cond_binary: a conditional binary optab, such as cond_add<mode>
+   - cond_unary: a conditional unary optab, such as cond_neg<mode>
    - cond_ternary: a conditional ternary optab, such as cond_fma_rev<mode>
 
    - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
@@ -282,6 +283,7 @@ DEF_INTERNAL_COND_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_COND_FN (FNMS, ECF_CONST, fnms, ternary)
 
 DEF_INTERNAL_COND_FN (NEG, ECF_CONST, neg, unary)
+DEF_INTERNAL_COND_FN (NOT, ECF_CONST, one_cmpl, unary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
