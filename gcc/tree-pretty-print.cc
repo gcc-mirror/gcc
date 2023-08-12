@@ -1900,6 +1900,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case TREE_VEC:
       {
 	size_t i;
+	pp_left_brace (pp);
 	if (TREE_VEC_LENGTH (node) > 0)
 	  {
 	    size_t len = TREE_VEC_LENGTH (node);
@@ -1913,6 +1914,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    dump_generic_node (pp, TREE_VEC_ELT (node, len - 1), spc,
 			       flags, false);
 	  }
+	pp_right_brace (pp);
       }
       break;
 
