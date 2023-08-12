@@ -8932,10 +8932,14 @@ get_tuple_size (tree type)
 				     /*context*/std_node,
 				     /*entering_scope*/false, tf_none);
   inst = complete_type (inst);
-  if (inst == error_mark_node || !COMPLETE_TYPE_P (inst))
+  if (inst == error_mark_node
+      || !COMPLETE_TYPE_P (inst)
+      || !CLASS_TYPE_P (type))
     return NULL_TREE;
   tree val = lookup_qualified_name (inst, value_identifier,
 				    LOOK_want::NORMAL, /*complain*/false);
+  if (val == error_mark_node)
+    return NULL_TREE;
   if (VAR_P (val) || TREE_CODE (val) == CONST_DECL)
     val = maybe_constant_value (val);
   if (TREE_CODE (val) == INTEGER_CST)
