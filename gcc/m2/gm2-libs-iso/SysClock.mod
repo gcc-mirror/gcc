@@ -173,6 +173,26 @@ BEGIN
 END ExtractDate ;
 
 
+(*
+   EpochTime - assigns all fields of userData to 0 or FALSE.
+*)
+
+PROCEDURE EpochTime (VAR userData: DateTime) ;
+BEGIN
+   WITH userData DO
+      second := 0 ;
+      minute :=  0 ;
+      hour := 0 ;
+      year := 0 ;
+      month := 0 ;
+      day := 0 ;
+      fractions := 0 ;
+      zone := 0 ;
+      summerTimeFlag := FALSE
+   END
+END EpochTime ;
+
+
 PROCEDURE GetClock (VAR userData: DateTime) ;
 (* Assigns local date and time of the day to userData *)
 VAR
@@ -207,10 +227,10 @@ BEGIN
                summerTimeFlag := (isdst () = 1)
             END
          ELSE
-            HALT
+            EpochTime (userData)
          END
       ELSE
-         HALT
+         EpochTime (userData)
       END ;
       ts := KillTimespec (ts)
    END
@@ -310,13 +330,11 @@ BEGIN
                            userData.month, userData.year) ;
       offset := timezone () ;
       sec := VAL (LONGINT, sec) - offset ;
-      IF SetTimespec (ts, sec, nano) = 0
+      IF SetTimespec (ts, sec, nano) = 1
       THEN
-         HALT
-      END ;
-      IF SetTimeRealtime (ts) # 0
-      THEN
-         HALT
+         IF SetTimeRealtime (ts) = 0
+         THEN
+         END
       END ;
       ts := KillTimespec (ts)
    END

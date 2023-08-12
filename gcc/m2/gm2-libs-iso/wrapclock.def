@@ -36,9 +36,21 @@ TYPE
    timezone - return the glibc timezone value.
               This contains the difference between UTC and the latest
               local standard time, in seconds west of UTC.
+              If the underlying timezone is unavailable and
+              clock_gettime, localtime_r, tm_gmtoff
+              is unavailable then 0 is returned.
 *)
 
 PROCEDURE timezone () : LONGINT ;
+
+
+(*
+   istimezone returns 1 if timezone in wrapclock.cc can resolve the
+              timezone value using the timezone C library call or by using
+              clock_gettime, localtime_r and tm_gmtoff.
+*)
+
+PROCEDURE istimezone () : INTEGER ;
 
 
 (*
