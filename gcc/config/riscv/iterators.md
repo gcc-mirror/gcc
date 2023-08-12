@@ -67,6 +67,11 @@
 			    (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
 			    (HF "TARGET_ZFH || TARGET_ZHINX")])
 
+;; Iterator for hardware-supported load/store floating-point modes.
+(define_mode_iterator ANYLSF [(SF "TARGET_HARD_FLOAT || TARGET_ZFINX")
+			      (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
+			      (HF "TARGET_ZFHMIN || TARGET_ZHINXMIN")])
+
 ;; Iterator for floating-point modes that can be loaded into X registers.
 (define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
 
