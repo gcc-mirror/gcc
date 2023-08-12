@@ -158,6 +158,12 @@ public:
   bool has_subsititions_defined () const;
   bool needs_generic_substitutions () const;
 
+  std::string mangle_string () const
+  {
+    return TypeKindFormat::to_string (get_kind ()) + ":" + as_string () + ":"
+	   + mappings_str () + ":" + bounds_as_string ();
+  }
+
   /* Returns a pointer to a clone of this. The caller is responsible for
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () const = 0;
