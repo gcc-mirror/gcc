@@ -1,6 +1,8 @@
 #include "rust-mangle.h"
 #include "fnv-hash.h"
 #include "rust-base62.h"
+#include "rust-unicode.h"
+#include "optional.h"
 
 // FIXME: Rename those to legacy_*
 static const std::string kMangledSymbolPrefix = "_ZN";
@@ -46,11 +48,15 @@ legacy_mangle_name (const std::string &name)
   // <example::Identity as example::FnLike<&T,&T>>::call
   // _ZN74_$LT$example..Identity$u20$as$u20$example..FnLike$LT$$RF$T$C$$RF$T$GT$$GT$4call17ha9ee58935895acb3E
 
+  tl::optional<Utf8String> utf8_name = Utf8String::make_utf8_string (name);
+  if (!utf8_name.has_value ())
+    rust_unreachable ();
+  std::vector<Codepoint> chars = utf8_name.value ().get_chars ();
   std::string buffer;
-  for (size_t i = 0; i < name.size (); i++)
+  for (size_t i = 0; i < chars.size (); i++)
     {
       std::string m;
-      char c = name.at (i);
+      Codepoint c = chars.at (i);
 
       if (c == ' ')
 	m = kMangledSpace;
@@ -76,14 +82,21 @@ legacy_mangle_name (const std::string &name)
 	m = kMangledComma;
       else if (c == ':')
 	{
-	  rust_assert (i + 1 < name.size ());
-	  rust_assert (name.at (i + 1) == ':');
+	  rust_assert (i + 1 < chars.size ());
+	  rust_assert (chars.at (i + 1) == ':');
 	  i++;
 	  m = "..";
 	}
+      else if (c.value < 0x80)
+	// ASCII
+	m.push_back (c.value);
       else
-	m.push_back (c);
-
+	{
+	  // Non-ASCII
+	  std::stringstream escaped;
+	  escaped << std::hex << "$u" << c.value << "$";
+	  m += escaped.str ();
+	}
       buffer += m;
     }
 
