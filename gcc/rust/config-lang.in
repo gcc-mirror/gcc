@@ -31,4 +31,4 @@ build_by_default="no"
 
 target_libs="target-libgrust"
 
-gtfiles="\$(srcdir)/rust/rust-lang.cc"
+gtfiles="\$(srcdir)/rust/rust-lang.cc \$(srcdir)/rust/backend/rust-constexpr.cc"
