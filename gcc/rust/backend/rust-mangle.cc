@@ -282,7 +282,7 @@ static std::string
 legacy_mangle_item (const TyTy::BaseType *ty,
 		    const Resolver::CanonicalPath &path)
 {
-  const std::string hash = legacy_hash (ty->as_string ());
+  const std::string hash = legacy_hash (ty->mangle_string ());
   const std::string hash_sig = legacy_mangle_name (hash);
 
   return kMangledSymbolPrefix + legacy_mangle_canonical_path (path) + hash_sig

@@ -242,17 +242,12 @@ Intrinsics::compile (TyTy::FnType *fntype)
 static bool
 check_for_cached_intrinsic (Context *ctx, TyTy::FnType *fntype, tree *lookup)
 {
+  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
+  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), lookup,
-				 fntype->get_id (), fntype))
+				 fntype->get_id (), fntype, asm_name))
     {
-      // Has this been added to the list? Then it must be finished
-      if (ctx->function_completed (*lookup))
-	{
-	  tree dummy = NULL_TREE;
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    ctx->insert_function_decl (fntype, *lookup);
-	  return true;
-	}
+      return true;
     }
 
   return false;
