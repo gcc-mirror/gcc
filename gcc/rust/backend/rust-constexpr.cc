@@ -150,7 +150,7 @@ struct GTY ((for_user)) constexpr_call
   bool manifestly_const_eval;
 };
 
-struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
+struct rust_constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
 {
   static hashval_t hash (constexpr_call *);
   static bool equal (constexpr_call *, constexpr_call *);
@@ -201,7 +201,7 @@ struct constexpr_ctx
   bool manifestly_const_eval;
 };
 
-struct constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
+struct rust_constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
 {
   static hashval_t hash (const constexpr_fundef *);
   static bool equal (const constexpr_fundef *, const constexpr_fundef *);
@@ -210,15 +210,16 @@ struct constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
 /* This table holds all constexpr function definitions seen in
    the current translation unit.  */
 
-static GTY (()) hash_table<constexpr_fundef_hasher> *constexpr_fundef_table;
+static GTY (())
+  hash_table<rust_constexpr_fundef_hasher> *constexpr_fundef_table;
 
 /* Utility function used for managing the constexpr function table.
    Return true if the entries pointed to by P and Q are for the
    same constexpr function.  */
 
 inline bool
-constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
-				const constexpr_fundef *rhs)
+rust_constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
+				     const constexpr_fundef *rhs)
 {
   return lhs->decl == rhs->decl;
 }
@@ -227,7 +228,7 @@ constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
    Return a hash value for the entry pointed to by Q.  */
 
 inline hashval_t
-constexpr_fundef_hasher::hash (const constexpr_fundef *fundef)
+rust_constexpr_fundef_hasher::hash (const constexpr_fundef *fundef)
 {
   return DECL_UID (fundef->decl);
 }
@@ -343,12 +344,12 @@ uid_sensitive_constexpr_evaluation_checker::evaluation_restricted_p () const
 /* A table of all constexpr calls that have been evaluated by the
    compiler in this translation unit.  */
 
-static GTY (()) hash_table<constexpr_call_hasher> *constexpr_call_table;
+static GTY (()) hash_table<rust_constexpr_call_hasher> *constexpr_call_table;
 
 /* Compute a hash value for a constexpr call representation.  */
 
 inline hashval_t
-constexpr_call_hasher::hash (constexpr_call *info)
+rust_constexpr_call_hasher::hash (constexpr_call *info)
 {
   return info->hash;
 }
@@ -358,7 +359,7 @@ constexpr_call_hasher::hash (constexpr_call *info)
    Otherwise, return false.  */
 
 bool
-constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
+rust_constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
 {
   if (lhs == rhs)
     return true;
@@ -366,7 +367,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return false;
   if (lhs->manifestly_const_eval != rhs->manifestly_const_eval)
     return false;
-  if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
+  if (!rust_constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
   return rs_tree_equal (lhs->bindings, rhs->bindings);
 }
@@ -377,7 +378,8 @@ static void
 maybe_initialize_constexpr_call_table (void)
 {
   if (constexpr_call_table == NULL)
-    constexpr_call_table = hash_table<constexpr_call_hasher>::create_ggc (101);
+    constexpr_call_table
+      = hash_table<rust_constexpr_call_hasher>::create_ggc (101);
 }
 
 /* During constexpr CALL_EXPR evaluation, to avoid issues with sharing when
@@ -3461,7 +3463,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
   constexpr_call *entry = NULL;
   if (depth_ok && !non_constant_args && ctx->strict)
     {
-      new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
+      new_call.hash = rust_constexpr_fundef_hasher::hash (new_call.fundef);
       new_call.hash = iterative_hash_object (new_call.bindings, new_call.hash);
       new_call.hash
 	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
@@ -4582,7 +4584,7 @@ register_constexpr_fundef (const constexpr_fundef &value)
   /* Create the constexpr function table if necessary.  */
   if (constexpr_fundef_table == NULL)
     constexpr_fundef_table
-      = hash_table<constexpr_fundef_hasher>::create_ggc (101);
+      = hash_table<rust_constexpr_fundef_hasher>::create_ggc (101);
 
   constexpr_fundef **slot = constexpr_fundef_table->find_slot (
     const_cast<constexpr_fundef *> (&value), INSERT);
@@ -6472,7 +6474,9 @@ fold_non_dependent_init (tree t, tsubst_flags_t /*=tf_warning_or_error*/,
   return maybe_constant_init (t, object, manifestly_const_eval);
 }
 
-// #include "gt-rust-rust-constexpr.h"
-
 } // namespace Compile
 } // namespace Rust
+
+using namespace Rust::Compile;
+
+#include "gt-rust-rust-constexpr.h"
