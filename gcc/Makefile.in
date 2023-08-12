@@ -469,6 +469,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdnoreturn.h \
 	 $(srcdir)/ginclude/stdalign.h \
 	 $(srcdir)/ginclude/stdatomic.h \
+	 $(srcdir)/ginclude/stdckdint.h \
 	 $(EXTRA_HEADERS)
 
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
