@@ -25,6 +25,7 @@
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-stmt.h"
+#include "rust-hir-type-check-item.h"
 #include "rust-type-util.h"
 
 namespace Rust {
@@ -1122,58 +1123,31 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
     }
 
   fn->prepare_higher_ranked_bounds ();
-  auto root = receiver_tyty->get_root ();
-  if (root->get_kind () == TyTy::TypeKind::ADT)
+  rust_debug_loc (expr.get_locus (), "resolved method call to: {%u} {%s}",
+		  candidate.candidate.ty->get_ref (),
+		  candidate.candidate.ty->debug_str ().c_str ());
+
+  if (resolved_candidate.is_impl_candidate ())
     {
-      const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
-      if (adt->has_substitutions () && fn->needs_substitution ())
+      auto infer_arguments = TyTy::SubstitutionArgumentMappings::error ();
+      HIR::ImplBlock &impl = *resolved_candidate.item.impl.parent;
+      TyTy::BaseType *impl_self_infer
+	= TypeCheckItem::ResolveImplBlockSelfWithInference (impl,
+							    expr.get_locus (),
+							    &infer_arguments);
+      if (impl_self_infer->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  // consider the case where we have:
-	  //
-	  // struct Foo<X,Y>(X,Y);
-	  //
-	  // impl<T> Foo<T, i32> {
-	  //   fn test<X>(self, a:X) -> (T,X) { (self.0, a) }
-	  // }
-	  //
-	  // In this case we end up with an fn type of:
-	  //
-	  // fn <T,X> test(self:Foo<T,i32>, a:X) -> (T,X)
-	  //
-	  // This means the instance or self we are calling this method for
-	  // will be substituted such that we can get the inherited type
-	  // arguments but then need to use the turbo fish if available or
-	  // infer the remaining arguments. Luckily rust does not allow for
-	  // default types GenericParams on impl blocks since these must
-	  // always be at the end of the list
+	  rich_location r (line_table, expr.get_locus ());
+	  r.add_range (impl.get_type ()->get_locus ());
+	  rust_error_at (
+	    r, "failed to resolve impl type for method call resolution");
+	  return;
+	}
 
-	  auto s = fn->get_self_type ()->get_root ();
-	  rust_assert (s->can_eq (adt, false));
-	  rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
-	  const TyTy::ADTType *self_adt
-	    = static_cast<const TyTy::ADTType *> (s);
-
-	  // we need to grab the Self substitutions as the inherit type
-	  // parameters for this
-	  if (self_adt->needs_substitution ())
-	    {
-	      rust_assert (adt->was_substituted ());
-
-	      TyTy::SubstitutionArgumentMappings used_args_in_prev_segment
-		= GetUsedSubstArgs::From (adt);
-
-	      TyTy::SubstitutionArgumentMappings inherit_type_args
-		= self_adt->solve_mappings_from_receiver_for_self (
-		  used_args_in_prev_segment);
-
-	      // there may or may not be inherited type arguments
-	      if (!inherit_type_args.is_error ())
-		{
-		  // need to apply the inherited type arguments to the
-		  // function
-		  lookup = fn->handle_substitions (inherit_type_args);
-		}
-	    }
+      if (!infer_arguments.is_empty ())
+	{
+	  lookup = SubstMapperInternal::Resolve (lookup, infer_arguments);
+	  lookup->debug ();
 	}
     }
 
@@ -1687,6 +1661,24 @@ TypeCheckExpr::resolve_operator_overload (
   rust_debug ("is_impl_item_candidate: %s",
 	      resolved_candidate.is_impl_candidate () ? "true" : "false");
 
+  if (resolved_candidate.is_impl_candidate ())
+    {
+      auto infer_arguments = TyTy::SubstitutionArgumentMappings::error ();
+      HIR::ImplBlock &impl = *resolved_candidate.item.impl.parent;
+      TyTy::BaseType *impl_self_infer
+	= TypeCheckItem::ResolveImplBlockSelfWithInference (impl,
+							    expr.get_locus (),
+							    &infer_arguments);
+      if (impl_self_infer->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  return false;
+	}
+      if (!infer_arguments.is_empty ())
+	{
+	  lookup = SubstMapperInternal::Resolve (lookup, infer_arguments);
+	}
+    }
+
   // in the case where we resolve to a trait bound we have to be careful we are
   // able to do so there is a case where we are currently resolving the deref
   // operator overload function which is generic and this might resolve to the
@@ -1734,61 +1726,6 @@ TypeCheckExpr::resolve_operator_overload (
   rust_debug_loc (expr.get_locus (), "resolved operator overload to: {%u} {%s}",
 		  candidate.candidate.ty->get_ref (),
 		  candidate.candidate.ty->debug_str ().c_str ());
-
-  auto root = lhs->get_root ();
-  if (root->get_kind () == TyTy::TypeKind::ADT)
-    {
-      const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
-      if (adt->has_substitutions () && fn->needs_substitution ())
-	{
-	  // consider the case where we have:
-	  //
-	  // struct Foo<X,Y>(X,Y);
-	  //
-	  // impl<T> Foo<T, i32> {
-	  //   fn test<X>(self, a:X) -> (T,X) { (self.0, a) }
-	  // }
-	  //
-	  // In this case we end up with an fn type of:
-	  //
-	  // fn <T,X> test(self:Foo<T,i32>, a:X) -> (T,X)
-	  //
-	  // This means the instance or self we are calling this method for
-	  // will be substituted such that we can get the inherited type
-	  // arguments but then need to use the turbo fish if available or
-	  // infer the remaining arguments. Luckily rust does not allow for
-	  // default types GenericParams on impl blocks since these must
-	  // always be at the end of the list
-
-	  auto s = fn->get_self_type ()->get_root ();
-	  rust_assert (s->can_eq (adt, false));
-	  rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
-	  const TyTy::ADTType *self_adt
-	    = static_cast<const TyTy::ADTType *> (s);
-
-	  // we need to grab the Self substitutions as the inherit type
-	  // parameters for this
-	  if (self_adt->needs_substitution ())
-	    {
-	      rust_assert (adt->was_substituted ());
-
-	      TyTy::SubstitutionArgumentMappings used_args_in_prev_segment
-		= GetUsedSubstArgs::From (adt);
-
-	      TyTy::SubstitutionArgumentMappings inherit_type_args
-		= self_adt->solve_mappings_from_receiver_for_self (
-		  used_args_in_prev_segment);
-
-	      // there may or may not be inherited type arguments
-	      if (!inherit_type_args.is_error ())
-		{
-		  // need to apply the inherited type arguments to the
-		  // function
-		  lookup = fn->handle_substitions (inherit_type_args);
-		}
-	    }
-	}
-    }
 
   // handle generics
   if (lookup->needs_generic_substitutions ())
