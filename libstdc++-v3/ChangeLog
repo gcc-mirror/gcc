@@ -1,6 +1,29 @@
 2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
+	2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoCalendarPrinter):
+	Check for out-of-range month an weekday indices.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Check invalid
+	month and weekday values.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110970
+	* include/bits/stl_iterator.h (__detail::__move_iter_cat): Use
+	__iter_category_t.
+	(iterator_traits<common_iterator<I, S>>::_S_iter_cat): Likewise.
+	(__detail::__basic_const_iterator_iter_cat): Likewise.
+	* include/bits/stl_iterator_base_types.h (__iterator_category_t):
+	Rename to __iter_category_t.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
 	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110974

@@ -1,3 +1,9 @@
+2023-08-11  Thomas Neumann  <thomas.neumann@in.tum.de>
+
+	PR libgcc/110956
+	* unwind-dw2-fde.c: Associate object with address of unwinding
+	table.
+
 2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/atomic.c: Change LR.aq/SC.rl pairs into

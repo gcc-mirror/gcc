@@ -1,3 +1,13 @@
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* g++.dg/cpp1z/variant1.C: New test.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* g++.dg/template/template-keyword4.C: New test.
+
 2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-1.c: Adjust tests.
