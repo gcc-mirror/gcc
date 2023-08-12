@@ -282,10 +282,7 @@
 
 (define_special_predicate "autovec_length_operand"
   (ior (match_operand 0 "pmode_register_operand")
-       (ior (match_operand 0 "const_csr_operand")
-            (match_test "rtx_equal_p (op, gen_int_mode
-                         (GET_MODE_NUNITS (GET_MODE (op)),
-                                           Pmode))"))))
+       (match_code "const_int,const_poly_int")))
 
 (define_predicate "reg_or_mem_operand"
   (ior (match_operand 0 "register_operand")
