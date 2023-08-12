@@ -42,6 +42,42 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
+if test "$build" != "$host"; then
+  # We are being configured with some form of cross compiler.
+  GLIBCXX_IS_NATIVE=false
+  case "$host","$target" in
+    # Darwin crosses can use the host system's libraries and headers,
+    # because of the fat library support.  Of course, it must be the
+    # same version of Darwin on both sides.  Allow the user to
+    # just say --target=foo-darwin without a version number to mean
+    # "the version on this system".
+      *-*-darwin*,*-*-darwin*)
+	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
+	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
+	if test $hostos = $targetos || test $targetos = darwin ; then
+	  GLIBCXX_IS_NATIVE=true
+	fi
+	;;
+
+      *)
+	GCC_NO_EXECUTABLES
+	;;
+  esac
+else
+  GLIBCXX_IS_NATIVE=true
+fi
+
+# Runs configure.host, and assorted other critical bits.  Sets
+# up critical shell variables.
+GLIBCXX_CONFIGURE
+
+# For gettimeofday support.
+GLIBCXX_CHECK_GETTIMEOFDAY
+
+# For clock_gettime, nanosleep and sched_yield support.
+GLIBCXX_ENABLE_LIBSTDCXX_TIME
+
+
 AM_INIT_AUTOMAKE([1.15.1 no-define foreign no-dist -Wall -Wno-portability])
 
 AH_TEMPLATE(PACKAGE, [Name of package])
