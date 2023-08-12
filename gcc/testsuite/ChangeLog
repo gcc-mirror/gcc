@@ -1,3 +1,23 @@
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* g++.dg/template/template-keyword4.C: New test.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106890
+	PR c++/109666
+	* g++.dg/cpp0x/nsdmi-array2.C: New test.
+	* g++.dg/cpp0x/nsdmi-template25.C: New test.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-7.C: New test.
+	* g++.dg/ext/int128-8.C: New test.
+	* g++.dg/ext/unsigned-typedef2.C: New test.
+	* g++.dg/ext/unsigned-typedef3.C: New test.
+
 2023-08-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
