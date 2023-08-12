@@ -150,6 +150,8 @@ encode_punycode (const Utf8String &input)
 
 } // namespace Rust
 
+#if CHECKING_P
+
 namespace selftest {
 
 void
@@ -176,3 +178,5 @@ rust_punycode_encode_test ()
 }
 
 } // namespace selftest
+
+#endif // CHECKING_P
