@@ -158,7 +158,7 @@
 ;; See also comment above the "*call_real" pattern.
 
 (define_predicate "mmix_address_operand"
-  (if_then_else (match_test "reload_in_progress || reload_completed")
+  (if_then_else (match_test "lra_in_progress || reload_completed")
     (match_test "strict_memory_address_p (Pmode, op)")
     (match_test "memory_address_p (Pmode, op)")))
 
