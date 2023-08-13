@@ -1,3 +1,29 @@
+2023-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (USER_H): Add stdckdint.h.
+	* ginclude/stdckdint.h: New file.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110994
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_VLS): Add TARGET_VETOR.
+
+2023-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	* tree-pretty-print.cc (dump_generic_node) <case TREE_VEC>:
+	Delimit output with braces.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110985
+	* config/riscv/riscv-v.cc (expand_vec_series): Refactor the expander.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md: Add VLS CONST_VECTOR.
+	* config/riscv/riscv.cc (riscv_const_insns): Ditto.
+	* config/riscv/vector.md: Ditto.
+
 2023-08-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

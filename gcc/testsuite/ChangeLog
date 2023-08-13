@@ -1,3 +1,52 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108119
+	* gm2/iso/check/fail/iso-check-fail.exp (gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/auto-init/fail/switches-auto-init-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/pim2/fail/switches-check-all-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/iso/fail/switches-check-all-plugin-iso-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/pim2/fail/switches-check-all-plugin-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+
+2023-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/stdckdint-1.c: New test.
+	* gcc.dg/stdckdint-2.c: New test.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110994
+	* gcc.target/riscv/rvv/autovec/vls/pr110994.c: New test.
+
+2023-08-12  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/106604
+	* g++.dg/cpp1z/class-deduction74.C: Expect "defined" instead
+	of "declared" in the repeated deduction guide diagnostics.
+	* g++.dg/cpp1z/class-deduction116.C: New test.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110985
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/pr110985.c: New test.
+
+2023-08-12  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h: Add VLS CONST_VECTOR tests.
+	* gcc.target/riscv/rvv/autovec/vls/const-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/const-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/const-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/const-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/const-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/series-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/series-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/series-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/series-4.c: New test.
+
 2023-08-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

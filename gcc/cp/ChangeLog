@@ -1,3 +1,11 @@
+2023-08-12  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/106604
+	* decl.cc (redeclaration_error_message): Remove special handling
+	for deduction guides.
+	(grokfndecl): Give deduction guides a dummy DECL_INITIAL.
+
 2023-08-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/110927

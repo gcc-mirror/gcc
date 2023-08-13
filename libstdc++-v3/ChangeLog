@@ -1,3 +1,10 @@
+2023-08-12  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (true_type): Use __bool_constant
+	instead.
+	(false_type): Likewise.
+	(bool_constant): Likewise.
+
 2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110990
