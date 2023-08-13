@@ -39,6 +39,7 @@ else
   PLUGINLDFLAGS = -Wl,-undefined,dynamic_lookup
   PLUGINLDFLAGS += -Wl,-install_name,m2rte$(soext)
   PLUGINLDFLAGS += -nodefaultlibs
+  PLUGINLDFLAGS += -lc
 endif
 
 TEXISRC = $(srcdir)/doc/gm2.texi \
@@ -91,7 +92,7 @@ PGE=m2/pge$(exeext)
 SRC_PREFIX=G
 
 ifeq ($(enable_plugin),yes)
-M2RTE_PLUGIN_SO=plugin/m2rte$(exeext).so
+M2RTE_PLUGIN_SO=plugin/m2rte$(soext)
 endif
 
 m2/gm2spec.o: $(srcdir)/m2/gm2spec.cc $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
@@ -420,7 +421,7 @@ plugin/m2rte$(soext): $(srcdir)/m2/plugin/m2rte.cc $(GCC_HEADER_DEPENDENCIES_FOR
 else
 m2.install-plugin:
 
-plugin/m2rte$(exeext).so:
+plugin/m2rte$(soext):
 
 endif
 
