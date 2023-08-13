@@ -1,3 +1,32 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* gm2-libs-iso/SysClock.mod (EpochTime): New procedure.
+	(GetClock): Call EpochTime if the C time functions are
+	unavailable.
+	* gm2-libs-iso/wrapclock.def (istimezone): New function
+	definition.
+
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108119
+	* Make-lang.in (M2RTE_PLUGIN_SO): Assigned to
+	plugin/m2rte$(exeext).so if enable_plugin is yes.
+	(m2.all.cross): Replace plugin/m2rte$(soext) with
+	$(M2RTE_PLUGIN_SO).
+	(m2.all.encap): Replace plugin/m2rte$(soext) with
+	$(M2RTE_PLUGIN_SO).
+	(m2.install-plugin): Add dummy rule when enable_plugin
+	is not yes.
+	(plugin/m2rte$(exeext).so): Add dummy rule when enable_plugin
+	is not yes.
+	(m2/stage2/cc1gm2$(exeext)): Replace plugin/m2rte$(soext) with
+	$(M2RTE_PLUGIN_SO).
+	(m2/stage1/cc1gm2$(exeext)): Replace plugin/m2rte$(soext) with
+	$(M2RTE_PLUGIN_SO).
+	* gm2spec.cc (lang_specific_driver): Set need_plugin to false
+	by default.
+
 2023-08-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110779

@@ -1,3 +1,23 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* configure: Regenerate.
+	* configure.ac: Provide special case test for Darwin cross
+	configuration.
+	(GLIBCXX_CONFIGURE): New statement.
+	(GLIBCXX_CHECK_GETTIMEOFDAY): New statement.
+	(GLIBCXX_ENABLE_LIBSTDCXX_TIME): New statement.
+	* libm2iso/wrapclock.cc: New sys/time.h conditional include.
+	(sys/syscall.h): Conditional include.
+	(unistd.h): Conditional include.
+	(GetTimeRealtime): Re-implement.
+	(SetTimeRealtime): Re-implement.
+	(timezone): Re-implement.
+	(istimezone): New function.
+	(daylight): Re-implement.
+	(isdst): Re-implement.
+	(tzname): Re-implement.
+
 2023-08-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/110779

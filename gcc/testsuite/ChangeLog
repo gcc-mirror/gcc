@@ -1,3 +1,16 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108119
+	* gm2/iso/check/fail/iso-check-fail.exp (gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/auto-init/fail/switches-auto-init-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/pim2/fail/switches-check-all-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/iso/fail/switches-check-all-plugin-iso-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/pim2/fail/switches-check-all-plugin-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+
 2023-08-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109678
