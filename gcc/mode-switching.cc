@@ -411,6 +411,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			   conflict with address reloads.  */
 			if (copy_start >= ret_start
 			    && copy_start + copy_num <= ret_end
+			    && GET_CODE (return_copy_pat) == SET
 			    && OBJECT_P (SET_SRC (return_copy_pat)))
 			  forced_late_switch = true;
 			break;
