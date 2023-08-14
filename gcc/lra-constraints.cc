@@ -4852,6 +4852,7 @@ curr_insn_transform (bool check_only_p)
 	    && SET_DEST (set) == stack_pointer_rtx)
 	  {
 	    lra_assert (!done_p);
+	    done_p = true;
 	    curr_id->sp_offset = 0;
 	    lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	    id->sp_offset = sp_offset;
@@ -4860,7 +4861,7 @@ curr_insn_transform (bool check_only_p)
 		       "            Moving sp offset from insn %u to %u\n",
 		       INSN_UID (curr_insn), INSN_UID (insn));
 	  }
-      lra_assert (!done_p);
+      lra_assert (done_p);
     }
   return change_p;
 }
