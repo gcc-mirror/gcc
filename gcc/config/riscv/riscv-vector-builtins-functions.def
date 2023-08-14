@@ -388,6 +388,8 @@ DEF_RVV_FUNCTION (vfwnmsac_frm, alu_frm, full_preds, f_wwfv_ops)
 // 13.8. Vector Floating-Point Square-Root Instruction
 DEF_RVV_FUNCTION (vfsqrt, alu, full_preds, f_v_ops)
 
+DEF_RVV_FUNCTION (vfsqrt_frm, alu_frm, full_preds, f_v_ops)
+
 // 13.9. Vector Floating-Point Reciprocal Square-Root Estimate Instruction
 DEF_RVV_FUNCTION (vfrsqrt7, alu, full_preds, f_v_ops)
 

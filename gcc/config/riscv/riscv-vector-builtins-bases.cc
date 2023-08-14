@@ -631,6 +631,21 @@ public:
   }
 };
 
+/* Implements below instructions for frm
+   - vfsqrt
+*/
+template<rtx_code CODE>
+class unop_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2415,6 +2430,7 @@ static CONSTEXPR const vfwmsac_frm vfwmsac_frm_obj;
 static CONSTEXPR const vfwnmsac vfwnmsac_obj;
 static CONSTEXPR const vfwnmsac_frm vfwnmsac_frm_obj;
 static CONSTEXPR const unop<SQRT> vfsqrt_obj;
+static CONSTEXPR const unop_frm<SQRT> vfsqrt_frm_obj;
 static CONSTEXPR const float_misc<UNSPEC_VFRSQRT7> vfrsqrt7_obj;
 static CONSTEXPR const float_misc<UNSPEC_VFREC7> vfrec7_obj;
 static CONSTEXPR const binop<SMIN> vfmin_obj;
@@ -2662,6 +2678,7 @@ BASE (vfwmsac_frm)
 BASE (vfwnmsac)
 BASE (vfwnmsac_frm)
 BASE (vfsqrt)
+BASE (vfsqrt_frm)
 BASE (vfrsqrt7)
 BASE (vfrec7)
 BASE (vfmin)
