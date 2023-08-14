@@ -130,9 +130,9 @@ end program test
 ! { dg-final { scan-tree-dump "multiso .&.v..1..lb: 1 sz: 1., &.x..1..lb: 1 sz: 1..;" "original" } }
 ! { dg-final { scan-tree-dump "multiso2 .&.w..1..lb: 1 sz: 1., &.x..1..lb: 1 sz: 1..;" "original" } }
 !
-! { dg-final { scan-tree-dump "mult_val ..x., .x., 1, 1.;" "original" } }
+! { dg-final { scan-tree-dump "mult_val .120, 120, 1, 1.;" "original" } }
 ! { dg-final { scan-tree-dump "multiso_val .121, 120.;" "original" } }
-! { dg-final { scan-tree-dump "multiso2_val ..z., .x..;" "original" } }
+! { dg-final { scan-tree-dump "multiso2_val .122, 120.;" "original" } }
 !
 ! Single argument dump:
 !
@@ -144,7 +144,7 @@ end program test
 ! { dg-final { scan-tree-dump "subiso .&.v..1..lb: 1 sz: 1..;" "original" } }
 ! { dg-final { scan-tree-dump "subiso2 .&.w..1..lb: 1 sz: 1..;" "original" } }
 !
-! { dg-final { scan-tree-dump "sub_val ..x., 1.;" "original" } }
+! { dg-final { scan-tree-dump "sub_val .120, 1.;" "original" } }
 ! { dg-final { scan-tree-dump "subiso_val .121.;" "original" } }
-! { dg-final { scan-tree-dump "subiso2_val ..z..;" "original" } }
+! { dg-final { scan-tree-dump "subiso2_val .122.;" "original" } }
 !

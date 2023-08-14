@@ -2313,7 +2313,10 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 	      && sym->ns->proc_name
 	      && sym->ns->proc_name->attr.is_bind_c)
 	  || (sym->ts.deferred && (!sym->ts.u.cl
-				   || !sym->ts.u.cl->backend_decl))))
+				   || !sym->ts.u.cl->backend_decl))
+	  || (sym->attr.dummy
+	      && sym->attr.value
+	      && gfc_length_one_character_type_p (&sym->ts))))
     type = gfc_get_char_type (sym->ts.kind);
   else
     type = gfc_typenode_for_spec (&sym->ts, sym->attr.codimension);

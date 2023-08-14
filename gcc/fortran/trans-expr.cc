@@ -6451,26 +6451,24 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		    /* ABI: actual arguments to CHARACTER(len=1),VALUE
 		       dummy arguments are actually passed by value.
-		       Strings are truncated to length 1.
-		       The BIND(C) case is handled elsewhere.  */
-		    if (!fsym->ts.is_c_interop
-			&& gfc_length_one_character_type_p (&fsym->ts))
+		       Strings are truncated to length 1.  */
+		    if (gfc_length_one_character_type_p (&fsym->ts))
 		      {
-			if (e->expr_type != EXPR_CONSTANT)
-			  {
-			    tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
-			    gfc_conv_string_parameter (&parmse);
-			    parmse.expr = gfc_string_to_single_character (slen1,
-									  parmse.expr,
-									  e->ts.kind);
-			    /* Truncate resulting string to length 1.  */
-			    parmse.string_length = slen1;
-			  }
-			else if (e->value.character.length > 1)
+			if (e->expr_type == EXPR_CONSTANT
+			    && e->value.character.length > 1)
 			  {
 			    e->value.character.length = 1;
 			    gfc_conv_expr (&parmse, e);
 			  }
+
+			tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+			gfc_conv_string_parameter (&parmse);
+			parmse.expr
+			    = gfc_string_to_single_character (slen1,
+							      parmse.expr,
+							      e->ts.kind);
+			/* Truncate resulting string to length 1.  */
+			parmse.string_length = slen1;
 		      }
 
 		    if (fsym->attr.optional
@@ -10610,6 +10608,13 @@ void
 gfc_conv_string_parameter (gfc_se * se)
 {
   tree type;
+
+  if (TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE
+      && integer_onep (se->string_length))
+    {
+      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+      return;
+    }
 
   if (TREE_CODE (se->expr) == STRING_CST)
     {
