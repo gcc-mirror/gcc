@@ -499,10 +499,15 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 
 		if (t.has_type ())
 		  {
-		    // see https://github.com/rust-lang/rust/issues/36887
-		    rust_error_at (
+		    rich_location rich_locus (line_table, t.get_locus ());
+		    rich_locus.add_fixit_replace (
 		      t.get_locus (),
-		      "defaults for type parameters are not allowed here");
+		      "for more information, see issue #36887 "
+		      "<https://github.com/rust-lang/rust/issues/36887>");
+		    rust_error_at (rich_locus,
+				   "defaults for type parameters are only "
+				   "allowed in %<struct%>, %<enum%>, %<type%>, "
+				   "or %<trait%> definitions");
 		  }
 	      }
 	      break;
@@ -645,10 +650,15 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 
 		if (t.has_type ())
 		  {
-		    // see https://github.com/rust-lang/rust/issues/36887
-		    rust_error_at (
-		      t.get_locus (),
-		      "defaults for type parameters are not allowed here");
+		    rich_location rich_locus (line_table, t.get_locus ());
+		    rich_locus.add_fixit_replace (
+		      t.get_locus (), "for more information, see issue #36887 "
+				      "<https://github.com/rust-lang/rust/"
+				      "issues/36887>");
+		    rust_error_at (rich_locus,
+				   "defaults for type parameters are only "
+				   "allowed in %<struct%>, %<enum%>, %<type%>, "
+				   "or %<trait%> definitions");
 		  }
 	      }
 	      break;
