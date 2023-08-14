@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "input.h"
 #include "pretty-print.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
@@ -2282,6 +2283,8 @@ diagnostic_manager::prune_path (checker_path *path,
   path->maybe_log (get_logger (), "path");
   prune_for_sm_diagnostic (path, sm, sval, state);
   prune_interproc_events (path);
+  if (! flag_analyzer_show_events_in_system_headers)
+    prune_system_headers (path);
   consolidate_conditions (path);
   finish_pruning (path);
   path->maybe_log (get_logger (), "pruned");
@@ -2666,6 +2669,99 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 
     }
   while (changed);
+}
+
+/* Remove everything within [call point, IDX]. For consistency,
+   IDX should represent the return event of the frame to delete,
+   or if there is none it should be the last event of the frame.
+   After this function, IDX designates the event prior to calling
+   this frame.  */
+
+static void
+prune_frame (checker_path *path, int &idx)
+{
+  gcc_assert (idx >= 0);
+  int nesting = 1;
+  if (path->get_checker_event (idx)->is_return_p ())
+    nesting = 0;
+  do
+    {
+      if (path->get_checker_event (idx)->is_call_p ())
+	nesting--;
+      else if (path->get_checker_event (idx)->is_return_p ())
+	nesting++;
+
+      path->delete_event (idx--);
+    } while (idx >= 0 && nesting != 0);
+}
+
+/* This function is called when fanalyzer-show-events-in-system-headers
+   is disabled and will prune the diagnostic of all events within a
+   system header, only keeping the entry and exit events to the header.
+   This should be called after diagnostic_manager::prune_interproc_events
+   so that sucessive events [system header call, system header return]
+   are preserved thereafter.
+
+   Given a diagnostics path diving into a system header in the form
+   [
+     prefix events...,
+     system header call,
+       system header entry,
+       events within system headers...,
+     system header return,
+     suffix events...
+   ]
+
+   then transforms it into
+   [
+     prefix events...,
+     system header call,
+     system header return,
+     suffix events...
+   ].  */
+
+void
+diagnostic_manager::prune_system_headers (checker_path *path) const
+{
+  int idx = (signed)path->num_events () - 1;
+  while (idx >= 0)
+    {
+      const checker_event *event = path->get_checker_event (idx);
+      /* Prune everything between
+	 [..., system entry, (...), system return, ...].  */
+      if (event->is_return_p ()
+	  && in_system_header_at (event->get_location ()))
+      {
+	int ret_idx = idx;
+	prune_frame (path, idx);
+
+	if (get_logger ())
+	{
+	  log ("filtering system headers events %i-%i:",
+	       idx, ret_idx);
+	}
+	// Delete function entry within system headers.
+	if (idx >= 0)
+	  {
+	    event = path->get_checker_event (idx);
+	    if (event->is_function_entry_p ()
+		&& in_system_header_at (event->get_location ()))
+	      {
+		if (get_logger ())
+		  {
+		    label_text desc (event->get_desc (false));
+		    log ("filtering event %i:"
+			 "system header entry event: %s",
+			 idx, desc.get ());
+		  }
+
+		path->delete_event (idx);
+	      }
+	  }
+      }
+
+      idx--;
+    }
 }
 
 /* Return true iff event IDX within PATH is on the same line as REF_EXP_LOC.  */

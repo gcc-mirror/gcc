@@ -430,6 +430,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-checker=@var{name}
 -fno-analyzer-feasibility
 -fanalyzer-fine-grained
+-fanalyzer-show-events-in-system-headers
 -fno-analyzer-state-merge
 -fno-analyzer-state-purge
 -fno-analyzer-suppress-followups
@@ -11216,6 +11217,14 @@ This option is intended for analyzer developers: if multiple diagnostics
 have been detected as being duplicates of each other, it emits a note when
 reporting the best diagnostic, giving the number of additional diagnostics
 that were suppressed by the deduplication logic.
+
+@opindex fanalyzer-show-events-in-system-headers
+@opindex fno-analyzer-show-events-in-system-headers
+@item -fanalyzer-show-events-in-system-headers
+By default the analyzer emits simplified diagnostics paths by hiding
+events fully located within a system header.
+With @option{-fanalyzer-show-events-in-system-headers} such
+events are no longer suppressed.
 
 @opindex fanalyzer-state-merge
 @opindex fno-analyzer-state-merge

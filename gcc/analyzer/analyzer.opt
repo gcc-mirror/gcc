@@ -294,6 +294,10 @@ fanalyzer-transitivity
 Common Var(flag_analyzer_transitivity) Init(0)
 Enable transitivity of constraints during analysis.
 
+fanalyzer-show-events-in-system-headers
+Common Var(flag_analyzer_show_events_in_system_headers) Init(0)
+Show events within system headers in analyzer execution paths.
+
 fanalyzer-call-summaries
 Common Var(flag_analyzer_call_summaries) Init(0)
 Approximate the effect of function calls to simplify analysis.
