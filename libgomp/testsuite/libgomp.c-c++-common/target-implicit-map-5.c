@@ -18,7 +18,8 @@ main (void)
   for (int i = 0; i < N; i++)
     a.ptr[i] = 0;
 
-  #pragma omp target enter data map(to: a.ptr, a.ptr[:N])
+  #pragma omp target enter data map(to: a.ptr)
+  #pragma omp target enter data map(to: a.ptr[:N])
 
   #pragma omp target
   for (int i = 0; i < N; i++)
@@ -40,7 +41,8 @@ main (void)
     if (a.ptr[i] != 2)
       abort ();
 
-  #pragma omp target exit data map(from:a.ptr, a.ptr[:N])
+  #pragma omp target exit data map(release: a.ptr[:N])
+  #pragma omp target exit data map(release: a.ptr)
 
   free (a.ptr);
 

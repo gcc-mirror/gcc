@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 
 struct T
 {
@@ -18,12 +19,13 @@ struct T
     auto fn = [=](void) -> bool
       {
 	bool mapped;
+	uintptr_t hostptr = (uintptr_t) ptr;
 	#pragma omp target map(from:mapped)
 	{
-	  if (ptr)
+	  if (ptr != (int *) hostptr)
 	    for (int i = 0; i < ptr_len; i++)
 	      ptr[i] = n;
-	  mapped = (ptr != NULL);
+	  mapped = (ptr != (int *) hostptr);
 	}
 	return mapped;
       };
@@ -35,12 +37,13 @@ struct T
     auto fn = [=](void) -> bool
       {
 	bool mapped;
+	uintptr_t hostrefptr = (uintptr_t) refptr;
 	#pragma omp target map(from:mapped)
 	{
-	  if (refptr)
+	  if (refptr != (int *) hostrefptr)
 	    for (int i = 0; i < refptr_len; i++)
 	      refptr[i] = n;
-	  mapped = (refptr != NULL);
+	  mapped = (refptr != (int *) hostrefptr);
 	}
 	return mapped;
       };

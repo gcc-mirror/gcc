@@ -18727,8 +18727,8 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OACC_KERNELS:
     case OACC_PARALLEL:
     case OACC_SERIAL:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), C_ORT_ACC, args, complain,
-				in_decl);
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), C_ORT_ACC_TARGET, args,
+				complain, in_decl);
       stmt = begin_omp_parallel ();
       RECUR (OMP_BODY (t));
       finish_omp_construct (TREE_CODE (t), stmt, tmp);

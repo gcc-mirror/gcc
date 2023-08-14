@@ -13,4 +13,4 @@ void foo (struct S *s)
   #pragma omp target enter data map (alloc: s->a, s->b)
 }
 
-/* { dg-final { scan-tree-dump-times "map\\(struct:\\*s \\\[len: 2\\\]\\) map\\(alloc:s->a \\\[len: \[0-9\]+\\\]\\) map\\(alloc:s->b \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(struct:\\*s \\\[len: 2\\\]\\) map\\(alloc:s\[\\._0-9\]+->a \\\[len: \[0-9\]+\\\]\\) map\\(alloc:s\[\\._0-9\]+->b \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */
