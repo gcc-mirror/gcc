@@ -1187,6 +1187,55 @@ struct binary_widen_def : public overloaded_base<0>
 };
 SHAPE (binary_widen)
 
+/* <T0:twice>_t vfoo[_t0](<T0>_t, <T0>_t)
+
+   Example: vmullbq_poly.
+   uint32x4_t [__arm_]vmullbq_poly[_p16](uint16x8_t a, uint16x8_t b)
+   uint32x4_t [__arm_]vmullbq_poly_m[_p16](uint32x4_t inactive, uint16x8_t a, uint16x8_t b, mve_pred16_t p)
+   uint32x4_t [__arm_]vmullbq_poly_x[_p16](uint16x8_t a, uint16x8_t b, mve_pred16_t p)  */
+struct binary_widen_poly_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "vU0,vp0,vp0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* infer_vector_type found the 'unsigned' version of the 'poly'
+       type we are looking for, so find the 'poly' type with the same
+       width.  */
+    type = find_type_suffix (TYPE_poly, type_suffixes[type].element_bits);
+
+    type_suffix_index wide_suffix
+      = find_type_suffix (TYPE_unsigned,
+			  type_suffixes[type].element_bits * 2);
+
+    /* Require the 'poly' type, require_matching_vector_type would try
+       and fail with the 'unsigned' one.  */
+    if (!r.require_vector_type (i, type_suffixes[type].vector_type))
+      return error_mark_node;
+
+    /* Check the inactive argument has the wide type.  */
+    if ((r.pred == PRED_m)
+	&& (r.infer_vector_type (0) != wide_suffix))
+      return r.report_no_such_form (type);
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (binary_widen_poly)
+
 /* <T0:twice>_t vfoo[_n_t0](<T0>_t, const int)
 
    Check that 'imm' is in the [1..#bits] range.
