@@ -7734,11 +7734,14 @@ fold_loop_internal_call (gimple *g, tree value)
 		 test.  This should not happen as the guarded code should
 		 start with pre-header.  */
 	      gcc_assert (single_pred_edge (taken_edge->dest));
-	      taken_edge->dest->count
-		= taken_edge->dest->count.apply_scale (new_count,
-						       old_count);
-	      scale_strictly_dominated_blocks (taken_edge->dest,
-					       new_count, old_count);
+	      if (old_count.nonzero_p ())
+		{
+		  taken_edge->dest->count
+		    = taken_edge->dest->count.apply_scale (new_count,
+							   old_count);
+		  scale_strictly_dominated_blocks (taken_edge->dest,
+						   new_count, old_count);
+		}
 	    }
 	}
     }
