@@ -396,6 +396,8 @@ DEF_RVV_FUNCTION (vfrsqrt7, alu, full_preds, f_v_ops)
 // 13.10. Vector Floating-Point Reciprocal Estimate Instruction
 DEF_RVV_FUNCTION (vfrec7, alu, full_preds, f_v_ops)
 
+DEF_RVV_FUNCTION (vfrec7_frm, alu_frm, full_preds, f_v_ops)
+
 // 13.11. Vector Floating-Point MIN/MAX Instructions
 DEF_RVV_FUNCTION (vfmin, alu, full_preds, f_vvv_ops)
 DEF_RVV_FUNCTION (vfmin, alu, full_preds, f_vvf_ops)

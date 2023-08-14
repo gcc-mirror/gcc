@@ -187,6 +187,7 @@ extern const function_base *const vfsqrt;
 extern const function_base *const vfsqrt_frm;
 extern const function_base *const vfrsqrt7;
 extern const function_base *const vfrec7;
+extern const function_base *const vfrec7_frm;
 extern const function_base *const vfmin;
 extern const function_base *const vfmax;
 extern const function_base *const vfsgnj;

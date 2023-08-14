@@ -1867,7 +1867,9 @@
 
 (define_int_iterator VMISC [UNSPEC_VMSBF UNSPEC_VMSIF UNSPEC_VMSOF])
 
-(define_int_iterator VFMISC [UNSPEC_VFRSQRT7 UNSPEC_VFREC7])
+(define_int_iterator VFMISC [UNSPEC_VFRSQRT7])
+
+(define_int_iterator VFMISC_FRM [UNSPEC_VFREC7])
 
 (define_int_iterator VFCVTS [UNSPEC_VFCVT UNSPEC_UNSIGNED_VFCVT])
 
@@ -1890,9 +1892,13 @@
 				(UNSPEC_VNCLIPU "vnclip")])
 
 (define_int_attr misc_op [(UNSPEC_VMSBF "sbf") (UNSPEC_VMSIF "sif") (UNSPEC_VMSOF "sof")
-			  (UNSPEC_VFRSQRT7 "rsqrt7") (UNSPEC_VFREC7 "rec7")])
+			  (UNSPEC_VFRSQRT7 "rsqrt7")])
 
-(define_int_attr float_insn_type [(UNSPEC_VFRSQRT7 "vfsqrt") (UNSPEC_VFREC7 "vfrecp")])
+(define_int_attr misc_frm_op [(UNSPEC_VFREC7 "rec7")])
+
+(define_int_attr float_insn_type [(UNSPEC_VFRSQRT7 "vfsqrt")])
+
+(define_int_attr float_frm_insn_type [(UNSPEC_VFREC7 "vfrecp")])
 
 (define_int_iterator VCOPYSIGNS [UNSPEC_VCOPYSIGN UNSPEC_VXORSIGN])
 
