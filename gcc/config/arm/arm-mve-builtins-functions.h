@@ -838,7 +838,6 @@ public:
   }
 };
 
-
 /* Map the vmull-related function directly to CODE (UNSPEC, UNSPEC, M)
    where M is the vector mode associated with type suffix 0.  We need
    this special case because the builtins have _int in their
@@ -902,6 +901,61 @@ public:
 	else
 	  code = code_for_mve_q_int_m (m_unspec_for_m_sint, m_unspec_for_m_sint, e.vector_mode (0));
 
+	return e.use_pred_x_insn (code);
+
+      default:
+	gcc_unreachable ();
+      }
+
+    gcc_unreachable ();
+  }
+};
+
+/* Map the vmull_poly-related function directly to CODE (UNSPEC,
+   UNSPEC, M) where M is the vector mode associated with type suffix
+   0.  We need this special case because the builtins have _poly in
+   their names, and use the special poly type..  */
+class unspec_mve_function_exact_insn_vmull_poly : public function_base
+{
+public:
+  CONSTEXPR unspec_mve_function_exact_insn_vmull_poly (int unspec_for_poly,
+						       int unspec_for_m_poly)
+    : m_unspec_for_poly (unspec_for_poly),
+      m_unspec_for_m_poly (unspec_for_m_poly)
+  {}
+
+  /* The unspec code associated with signed-integer, unsigned-integer
+     and poly operations respectively.  It covers the cases with and
+     without the _m predicate.  */
+  int m_unspec_for_poly;
+  int m_unspec_for_m_poly;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+
+    if (e.mode_suffix_id != MODE_none)
+      gcc_unreachable ();
+
+    if (! e.type_suffix (0).poly_p)
+      gcc_unreachable ();
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate, no suffix.  */
+	code = code_for_mve_q_poly (m_unspec_for_poly, m_unspec_for_poly, e.vector_mode (0));
+	return e.use_exact_insn (code);
+
+      case PRED_m:
+	/* No suffix, "m" predicate.  */
+	code = code_for_mve_q_poly_m (m_unspec_for_m_poly, m_unspec_for_m_poly, e.vector_mode (0));
+	return e.use_cond_insn (code, 0);
+
+      case PRED_x:
+	/* No suffix, "x" predicate.  */
+	code = code_for_mve_q_poly_m (m_unspec_for_m_poly, m_unspec_for_m_poly, e.vector_mode (0));
 	return e.use_pred_x_insn (code);
 
       default:
