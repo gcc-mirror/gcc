@@ -1490,14 +1490,23 @@ namespace __format
 	      // If the buffer is too small it's probably because of a large
 	      // precision, or a very large value in fixed format.
 	      size_t __guess = 8 + __prec;
-	      if (__fmt == chars_format::fixed && __v != 0) // +ddd.prec
+	      if (__fmt == chars_format::fixed) // +ddd.prec
 		{
-		  if constexpr (is_same_v<_Fp, float>)
-		    __guess += __builtin_log10f(__v < 0.0f ? -__v : __v);
-		  else if constexpr (is_same_v<_Fp, double>)
-		    __guess += __builtin_log10(__v < 0.0 ? -__v : __v);
-		  else if constexpr (is_same_v<_Fp, long double>)
-		    __guess += __builtin_log10l(__v < 0.0l ? -__v : __v);
+		  if constexpr (is_same_v<_Fp, float> || is_same_v<_Fp, double>
+				  || is_same_v<_Fp, long double>)
+		    {
+		      // The number of digits to the left of the decimal point
+		      // is floor(log10(max(abs(__v),1)))+1
+		      int __exp{};
+		      if constexpr (is_same_v<_Fp, float>)
+			__builtin_frexpf(__v, &__exp);
+		      else if constexpr (is_same_v<_Fp, double>)
+			__builtin_frexp(__v, &__exp);
+		      else if constexpr (is_same_v<_Fp, long double>)
+			__builtin_frexpl(__v, &__exp);
+		      if (__exp > 0)
+			__guess += 1U + __exp * 4004U / 13301U; // log10(2) approx.
+		    }
 		  else
 		    __guess += numeric_limits<_Fp>::max_exponent10;
 		}
