@@ -61,10 +61,12 @@ apply_predication (const function_instance &instance, tree return_type,
 
    [01]    - the element type in type suffix 0 or 1 of INSTANCE.
    h<elt>  - a half-sized version of <elt>
+   p<elt>  - a poly type with the same width as <elt>
    s<bits> - a signed type with the given number of bits
    s[01]   - a signed type with the same width as type suffix 0 or 1
    u<bits> - an unsigned type with the given number of bits
    u[01]   - an unsigned type with the same width as type suffix 0 or 1
+   U<elt>  - an unsigned type with the double width as <elt>
    w<elt>  - a double-sized version of <elt>
    x<bits> - a type with the given number of bits and same signedness
              as the next argument.
@@ -100,6 +102,20 @@ parse_element_type (const function_instance &instance, const char *&format)
       type_suffix_index suffix = parse_element_type (instance, format);
       return find_type_suffix (type_suffixes[suffix].tclass,
 			       type_suffixes[suffix].element_bits * 2);
+    }
+
+   if (ch == 'U')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      return find_type_suffix (TYPE_unsigned,
+			       type_suffixes[suffix].element_bits * 2);
+    }
+
+   if (ch == 'p')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      return find_type_suffix (TYPE_poly,
+			       type_suffixes[suffix].element_bits);
     }
 
   if (ch == 'x')
