@@ -78,8 +78,7 @@ parse_element_type (const function_instance &instance, const char *&format)
 
   if (ch == 's' || ch == 'u')
     {
-      type_class_index tclass = (ch == 'f' ? TYPE_float
-				 : ch == 's' ? TYPE_signed
+      type_class_index tclass = (ch == 's' ? TYPE_signed
 				 : TYPE_unsigned);
       char *end;
       unsigned int bits = strtol (format, &end, 10);
