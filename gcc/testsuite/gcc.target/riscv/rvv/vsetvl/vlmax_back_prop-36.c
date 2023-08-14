@@ -37,7 +37,7 @@ void f (int32_t * restrict in, int32_t * restrict out, int32_t * restrict in2, i
    }
   for (int i = 0; i < n; i++) 
     {
-      vint8mf8_t v1;
+      vint8mf8_t v1 = *(vint8mf8_t*)(in2 + i + 20);
       *(vint8mf8_t*)(out + i + 10) = v1;
     }
 }

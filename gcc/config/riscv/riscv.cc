@@ -4284,6 +4284,36 @@ riscv_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
   fputc (')', file);
 }
 
+/* Return the memory model that encapuslates both given models.  */
+
+enum memmodel
+riscv_union_memmodels (enum memmodel model1, enum memmodel model2)
+{
+  model1 = memmodel_base (model1);
+  model2 = memmodel_base (model2);
+
+  enum memmodel weaker = model1 <= model2 ? model1: model2;
+  enum memmodel stronger = model1 > model2 ? model1: model2;
+
+  switch (stronger)
+    {
+      case MEMMODEL_SEQ_CST:
+      case MEMMODEL_ACQ_REL:
+	return stronger;
+      case MEMMODEL_RELEASE:
+	if (weaker == MEMMODEL_ACQUIRE || weaker == MEMMODEL_CONSUME)
+	  return MEMMODEL_ACQ_REL;
+	else
+	  return stronger;
+      case MEMMODEL_ACQUIRE:
+      case MEMMODEL_CONSUME:
+      case MEMMODEL_RELAXED:
+	return stronger;
+      default:
+	gcc_unreachable ();
+    }
+}
+
 /* Return true if the .AQ suffix should be added to an AMO to implement the
    acquire portion of memory model MODEL.  */
 
@@ -4294,14 +4324,11 @@ riscv_memmodel_needs_amo_acquire (enum memmodel model)
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_ACQUIRE:
       case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
 	return true;
 
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
       case MEMMODEL_RELAXED:
 	return false;
 
@@ -4310,24 +4337,21 @@ riscv_memmodel_needs_amo_acquire (enum memmodel model)
     }
 }
 
-/* Return true if a FENCE should be emitted to before a memory access to
-   implement the release portion of memory model MODEL.  */
+/* Return true if the .RL suffix should be added to an AMO to implement the
+   release portion of memory model MODEL.  */
 
 static bool
-riscv_memmodel_needs_release_fence (enum memmodel model)
+riscv_memmodel_needs_amo_release (enum memmodel model)
 {
   switch (model)
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
 	return true;
 
       case MEMMODEL_ACQUIRE:
       case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
       case MEMMODEL_RELAXED:
 	return false;
 
@@ -4343,7 +4367,8 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
    'R'	Print the low-part relocation associated with OP.
    'C'	Print the integer branch condition for comparison OP.
    'A'	Print the atomic operation suffix for memory model OP.
-   'F'	Print a FENCE if the memory model requires a release.
+   'I'	Print the LR suffix for memory model OP.
+   'J'	Print the SC suffix for memory model OP.
    'z'	Print x0 if OP is zero, otherwise print OP normally.
    'i'	Print i if the operand is not a register.
    'S'	Print shift-index of single-bit mask OP.
@@ -4366,6 +4391,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
     }
   machine_mode mode = GET_MODE (op);
   enum rtx_code code = GET_CODE (op);
+  const enum memmodel model = memmodel_base (INTVAL (op));
 
   switch (letter)
     {
@@ -4503,13 +4529,25 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'A':
-      if (riscv_memmodel_needs_amo_acquire ((enum memmodel) INTVAL (op)))
+      if (riscv_memmodel_needs_amo_acquire (model)
+	  && riscv_memmodel_needs_amo_release (model))
+	fputs (".aqrl", file);
+      else if (riscv_memmodel_needs_amo_acquire (model))
+	fputs (".aq", file);
+      else if (riscv_memmodel_needs_amo_release (model))
+	fputs (".rl", file);
+      break;
+
+    case 'I':
+      if (model == MEMMODEL_SEQ_CST)
+	fputs (".aqrl", file);
+      else if (riscv_memmodel_needs_amo_acquire (model))
 	fputs (".aq", file);
       break;
 
-    case 'F':
-      if (riscv_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
-	fputs ("fence iorw,ow; ", file);
+    case 'J':
+      if (riscv_memmodel_needs_amo_release (model))
+	fputs (".rl", file);
       break;
 
     case 'i':

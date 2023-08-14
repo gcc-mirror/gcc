@@ -1426,11 +1426,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
 
     template<typename _Iterator>
-      requires requires { typename iterator_traits<_Iterator>::iterator_category; }
+      requires requires { typename __iter_category_t<_Iterator>; }
       struct __move_iter_cat<_Iterator>
       {
 	using iterator_category
-	  = __clamp_iter_cat<typename iterator_traits<_Iterator>::iterator_category,
+	  = __clamp_iter_cat<__iter_category_t<_Iterator>,
 			     random_access_iterator_tag>;
       };
 #endif
@@ -2288,8 +2288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static auto
       _S_iter_cat()
       {
-	using _Traits = iterator_traits<_It>;
-	if constexpr (requires { requires derived_from<typename _Traits::iterator_category,
+	if constexpr (requires { requires derived_from<__iter_category_t<_It>,
 						       forward_iterator_tag>; })
 	  return forward_iterator_tag{};
 	else
@@ -2615,7 +2614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<forward_iterator _It>
       struct __basic_const_iterator_iter_cat<_It>
-      { using iterator_category = iterator_traits<_It>::iterator_category; };
+      { using iterator_category = __iter_category_t<_It>; };
   } // namespace detail
 
   template<input_iterator _It>

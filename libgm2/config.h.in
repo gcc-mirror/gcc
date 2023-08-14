@@ -9,6 +9,12 @@
 /* function cfmakeraw exists */
 #undef HAVE_CFMAKERAW
 
+/* function clock_gettime exists */
+#undef HAVE_CLOCK_GETTIME
+
+/* function clock_settime exists */
+#undef HAVE_CLOCK_SETTIME
+
 /* function close exists */
 #undef HAVE_CLOSE
 
@@ -17,6 +23,9 @@
 
 /* function ctime exists */
 #undef HAVE_CTIME
+
+/* function daylight exists */
+#undef HAVE_DAYLIGHT
 
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
@@ -180,11 +189,17 @@
 /* Define to 1 if the system has the type `struct stat'. */
 #undef HAVE_STRUCT_STAT
 
+/* Define to 1 if the system has the type `struct timespec'. */
+#undef HAVE_STRUCT_TIMESPEC
+
 /* Define to 1 if the system has the type `struct timeval'. */
 #undef HAVE_STRUCT_TIMEVAL
 
 /* Define to 1 if the system has the type `struct timezone'. */
 #undef HAVE_STRUCT_TIMEZONE
+
+/* Define to 1 if the system has the type `struct tm'. */
+#undef HAVE_STRUCT_TM
 
 /* Define to 1 if you have the <sys/errno.h> header file. */
 #undef HAVE_SYS_ERRNO_H
@@ -231,8 +246,17 @@
 /* function times exists */
 #undef HAVE_TIMES
 
+/* function timezone exists */
+#undef HAVE_TIMEZONE
+
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
+
+/* Define if struct tm has a tm_gmtoff field. */
+#undef HAVE_TM_TM_GMTOFF
+
+/* function tzname exists */
+#undef HAVE_TZNAME
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

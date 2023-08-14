@@ -218,6 +218,10 @@ proc gm2_target_compile_default { source dest type options } {
     if [info exists TOOL_OPTIONS] {
 	lappend options "additional_flags=$TOOL_OPTIONS"
     }
+    if [istarget *-*-solaris2*] {
+       lappend options "ldflags=-lnsl -lsocket"
+    }
+
     lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
     # puts stderr "options = $options\n"

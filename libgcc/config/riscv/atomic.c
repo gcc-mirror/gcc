@@ -41,7 +41,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     unsigned old, tmp1, tmp2;						\
 									\
     asm volatile ("1:\n\t"						\
-		  "lr.w.aq %[old], %[mem]\n\t"				\
+		  "lr.w.aqrl %[old], %[mem]\n\t"			\
 		  #insn " %[tmp1], %[old], %[value]\n\t"		\
 		  invert						\
 		  "and %[tmp1], %[tmp1], %[mask]\n\t"			\
@@ -75,7 +75,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     unsigned old, tmp1;							\
 									\
     asm volatile ("1:\n\t"						\
-		  "lr.w.aq %[old], %[mem]\n\t"				\
+		  "lr.w.aqrl %[old], %[mem]\n\t"			\
 		  "and %[tmp1], %[old], %[mask]\n\t"			\
 		  "bne %[tmp1], %[o], 1f\n\t"				\
 		  "and %[tmp1], %[old], %[not_mask]\n\t"		\

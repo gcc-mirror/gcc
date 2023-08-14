@@ -37,8 +37,7 @@ FROM M2Quads IMPORT PushT, PopT,
                     EndBuildInit,
                     BuildProcedureStart,
                     BuildProcedureEnd,
-                    BuildAssignment,
-                    BuildInline ;
+                    BuildAssignment ;
 
 FROM P1SymBuild IMPORT P1StartBuildProgramModule,
                        P1EndBuildProgramModule,

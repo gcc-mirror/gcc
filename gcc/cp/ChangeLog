@@ -1,3 +1,50 @@
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* constexpr.cc (cxx_fold_indirect_ref_1): Handle empty base first.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* parser.cc (cp_parser_template_name): Skip non-member
+	lookup after the template keyword.
+	(cp_parser_lookup_name): Pass down template_keyword_p.
+
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* constexpr.cc (cxx_eval_array_reference): Allow synthesizing an
+	empty subobject even if CONSTRUCTOR_NO_CLEARING is set.
+	(cxx_eval_bare_aggregate): Set 'no_slot' to true more generally
+	whenever new_ctx.ctor is set to NULL_TREE by init_subob_ctx,
+	i.e. whenever initializing an subobject of empty type.
+	(cxx_eval_vec_init_1): Define 'no_slot' as above and use it
+	accordingly.
+
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* pt.cc (coerce_template_template_parms): Simplify by using
+	DECL_INNERMOST_TEMPLATE_PARMS and removing redundant asserts.
+	Always pass the parameters of the most general template to
+	coerce_template_parms.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* pt.cc (unify) <case INTEGER_CST>: Generalize to handle
+	REAL_CST as well.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

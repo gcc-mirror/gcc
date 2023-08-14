@@ -71,6 +71,10 @@ test_format()
   s = std::format("{:%t} {:%t%M}", -2h, -123s);
   VERIFY( s == "\t \t-02" );
 
+  // Locale-specific formats:
+  s = std::format(std::locale::classic(), "{:%r %OH:%OM:%OS}", 123456ms);
+  VERIFY( s == "12:02:03 AM 00:02:03" );
+
   std::string_view specs = "aAbBcCdDeFgGhHIjmMpqQrRSTuUVwWxXyYzZ";
   std::string_view my_specs = "HIjMpqQrRSTX";
   for (char c : specs)

@@ -29,9 +29,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_M2Dependent_H)
 #   define _M2Dependent_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -51,7 +54,7 @@ typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 typedef void (*M2Dependent_ArgCVEnvP_t) (int, void *, void *);
 struct M2Dependent_ArgCVEnvP_p { M2Dependent_ArgCVEnvP_t proc; };
 
-EXTERN void M2Dependent_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+EXTERN void M2Dependent_ConstructModules (void * applicationmodule, void * libname, void * overrideliborder, int argc, void * argv, void * envp);
 EXTERN void M2Dependent_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*

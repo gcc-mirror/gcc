@@ -4261,6 +4261,9 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 
   /* Not found.  */
 
+  if (is_really_empty_class (elem_type, /*ignore_vptr*/false))
+    return build_constructor (elem_type, NULL);
+
   if (TREE_CODE (ary) == CONSTRUCTOR
       && CONSTRUCTOR_NO_CLEARING (ary))
     {
@@ -4278,9 +4281,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
   tree val;
   constexpr_ctx new_ctx;
-  if (is_really_empty_class (elem_type, /*ignore_vptr*/false))
-    return build_constructor (elem_type, NULL);
-  else if (CP_AGGREGATE_TYPE_P (elem_type))
+  if (CP_AGGREGATE_TYPE_P (elem_type))
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
@@ -5043,9 +5044,9 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
     {
       tree orig_value = value;
-      /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
-      bool no_slot = TREE_CODE (type) == RECORD_TYPE && is_empty_field (index);
       init_subob_ctx (ctx, new_ctx, index, value);
+      /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
+      bool no_slot = new_ctx.ctor == NULL_TREE;
       int pos_hint = -1;
       if (new_ctx.ctor != ctx->ctor && !no_slot)
 	{
@@ -5209,7 +5210,8 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       bool reuse = false;
       constexpr_ctx new_ctx;
       init_subob_ctx (ctx, new_ctx, idx, pre_init ? init : elttype);
-      if (new_ctx.ctor != ctx->ctor)
+      bool no_slot = new_ctx.ctor == NULL_TREE;
+      if (new_ctx.ctor != ctx->ctor && !no_slot)
 	{
 	  if (zeroed_out)
 	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = false;
@@ -5254,7 +5256,14 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	}
       if (*non_constant_p)
 	break;
-      if (new_ctx.ctor != ctx->ctor)
+      if (no_slot)
+	{
+	  /* This is an initializer for an empty subobject; now that we've
+	     checked that it's constant, we can ignore it.  */
+	  gcc_checking_assert (i == 0);
+	  break;
+	}
+      else if (new_ctx.ctor != ctx->ctor)
 	{
 	  /* We appended this element above; update the value.  */
 	  gcc_assert ((*p)->last().index == idx);
@@ -5449,6 +5458,19 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 		  return ret;
 	      }
 	  }
+
+      /* Handle conversion to an empty base class, which is represented with a
+	 NOP_EXPR.  Do this before spelunking into the non-empty subobjects,
+	 which is likely to be a waste of time (109678).  */
+      if (is_empty_class (type)
+	  && CLASS_TYPE_P (optype)
+	  && DERIVED_FROM_P (type, optype))
+	{
+	  if (empty_base)
+	    *empty_base = true;
+	  return op;
+	}
+
       for (tree field = TYPE_FIELDS (optype);
 	   field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
@@ -5471,15 +5493,6 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 		  return ret;
 	      }
 	  }
-      /* Also handle conversion to an empty base class, which
-	 is represented with a NOP_EXPR.  */
-      if (is_empty_class (type)
-	  && CLASS_TYPE_P (optype)
-	  && DERIVED_FROM_P (type, optype))
-	{
-	  *empty_base = true;
-	  return op;
-	}
     }
 
   return NULL_TREE;

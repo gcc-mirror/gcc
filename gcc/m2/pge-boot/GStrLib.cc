@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -58,8 +59,8 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
              string, b.
 */
 
-extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
-extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+extern "C" bool StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+extern "C" bool StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 extern "C" unsigned int StrLib_StrLen (const char *a_, unsigned int _a_high);
 
 /*
@@ -74,7 +75,7 @@ extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+extern "C" bool StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrRemoveWhitePrefix - copies string, into string, b, excluding any white
@@ -87,14 +88,14 @@ extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_hig
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch);
+static bool IsWhite (char ch);
 
 
 /*
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch)
+static bool IsWhite (char ch)
 {
   return (ch == ' ') || (ch == ASCII_tab);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -142,7 +143,7 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
              string, b.
 */
 
-extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
+extern "C" bool StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int Higha;
   unsigned int Highb;
@@ -161,12 +162,12 @@ extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, co
     {
       if (a[i] < b[i])
         {
-          return TRUE;
+          return true;
         }
       else if (a[i] > b[i])
         {
           /* avoid dangling else.  */
-          return FALSE;
+          return false;
         }
       /* must be equal, move on to next character  */
       i += 1;
@@ -176,7 +177,7 @@ extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, co
   __builtin_unreachable ();
 }
 
-extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
+extern "C" bool StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int i;
   unsigned int higha;
@@ -195,7 +196,7 @@ extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, c
     {
       if (a[i] != b[i])
         {
-          return FALSE;
+          return false;
         }
       i += 1;
     }
@@ -260,7 +261,7 @@ extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
+extern "C" bool StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int i;
   unsigned int j;
@@ -287,7 +288,7 @@ extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high
             }
           if (j == LengthB)
             {
-              return TRUE;
+              return true;
             }
           else
             {
@@ -295,7 +296,7 @@ extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high
             }
         }
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

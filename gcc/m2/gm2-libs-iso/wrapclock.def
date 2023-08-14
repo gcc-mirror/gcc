@@ -1,0 +1,139 @@
+(* wrapclock.def provides access to clock primitives.
+
+Copyright (C) 2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE wrapclock ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   timespec = ADDRESS ;
+
+
+(*
+   timezone - return the glibc timezone value.
+              This contains the difference between UTC and the latest
+              local standard time, in seconds west of UTC.
+              If the underlying timezone is unavailable and
+              clock_gettime, localtime_r, tm_gmtoff
+              is unavailable then 0 is returned.
+*)
+
+PROCEDURE timezone () : LONGINT ;
+
+
+(*
+   istimezone returns 1 if timezone in wrapclock.cc can resolve the
+              timezone value using the timezone C library call or by using
+              clock_gettime, localtime_r and tm_gmtoff.
+*)
+
+PROCEDURE istimezone () : INTEGER ;
+
+
+(*
+   daylight - return the glibc daylight value.
+              This variable has a nonzero value if Daylight Saving
+              Time rules apply.
+              A nonzero value does not necessarily mean that Daylight
+              Saving Time is now in effect; it means only that Daylight
+              Saving Time is sometimes in effect.
+*)
+
+PROCEDURE daylight () : INTEGER ;
+
+
+(*
+   isdst - returns 1 if daylight saving time is currently in effect and
+           returns 0 if it is not.
+*)
+
+PROCEDURE isdst () : INTEGER ;
+
+
+(*
+   tzname - returns the string associated with the local timezone.
+            The daylight value is 0 or 1.  The value 0 returns the non
+            daylight saving timezone string and the value of 1 returns
+            the daylight saving timezone string.
+*)
+
+PROCEDURE tzname (daylight: INTEGER) : ADDRESS ;
+
+
+(*
+   InitTimespec - returns a newly created opaque type.
+*)
+
+PROCEDURE InitTimespec () : timespec ;
+
+
+(*
+   KillTimespec - deallocates the memory associated with an
+                  opaque type.
+*)
+
+PROCEDURE KillTimespec (tv: timespec) : timespec ;
+
+
+(*
+   GetTimespec - retrieves the number of seconds and nanoseconds
+                 from the timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
+*)
+
+PROCEDURE GetTimespec (ts: timespec; VAR sec, nano: LONGCARD) : INTEGER ;
+
+
+(*
+   SetTimespec - sets the number of seconds and nanoseconds
+                 into timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
+*)
+
+PROCEDURE SetTimespec (ts: timespec; sec, nano: LONGCARD) : INTEGER ;
+
+
+(*
+   GetTimeRealtime - performs return gettime (CLOCK_REALTIME, ts).
+                     gettime returns 0 on success and -1 on failure.
+                     If the underlying system does not have gettime
+                     then GetTimeRealtime returns 1.
+*)
+
+PROCEDURE GetTimeRealtime (ts: timespec) : INTEGER ;
+
+
+(*
+   SetTimeRealtime - performs return settime (CLOCK_REALTIME, ts).
+                     gettime returns 0 on success and -1 on failure.
+                     If the underlying system does not have gettime
+                     then SetTimeRealtime returns 1.
+*)
+
+PROCEDURE SetTimeRealtime (ts: timespec) : INTEGER ;
+
+
+END wrapclock.

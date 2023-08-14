@@ -72,6 +72,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  AutoInit,
                  VariantValueChecking,
                  UnusedVariableChecking, UnusedParameterChecking,
+                 UninitVariableChecking, SetUninitVariableChecking,
+                 UninitVariableConditionalChecking,
                  SetUnusedVariableChecking, SetUnusedParameterChecking,
                  Quiet, LineDirectives, StrictTypeChecking,
                  CPreProcessor, Xcode, ExtendedOpaque,
@@ -159,6 +161,12 @@ VAR
    Exceptions,                   (* Should we generate exception code?       *)
    UnusedVariableChecking,       (* Should we warn about unused variables?   *)
    UnusedParameterChecking,      (* Should we warn about unused parameters?  *)
+   UninitVariableChecking,       (* Should we warn about accessing           *)
+                                 (* uninitialized variables in the first bb? *)
+   UninitVariableConditionalChecking,
+                                 (* Should we warn about accessing           *)
+                                 (* uninitialized variables in subsequent    *)
+                                 (* basic blocks? *)
    LowerCaseKeywords,            (* Should keywords in errors be in lower?   *)
    DebugBuiltins,                (* Should we always call a real function?   *)
    AutoInit,                     (* -fauto-init assigns pointers to NIL.     *)
@@ -916,6 +924,16 @@ PROCEDURE GetGenModuleFilename () : String ;
 *)
 
 PROCEDURE SetShared (value: BOOLEAN) ;
+
+
+(*
+   SetUninitVariableChecking - sets the UninitVariableChecking flag to value
+                               or UninitVariableConditionalChecking to value.
+                               Arg can be "known", "known,cond", "cond,known"
+                               or "all".
+*)
+
+PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
 
 
 (*

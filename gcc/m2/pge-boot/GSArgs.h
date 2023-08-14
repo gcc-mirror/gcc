@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -56,7 +57,7 @@ extern "C" {
             new string, otherwise s is set to NIL.
 */
 
-EXTERN unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
+EXTERN bool SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from

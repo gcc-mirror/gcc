@@ -28,7 +28,7 @@ FROM M2Search IMPORT SetDefExtension, SetModExtension ;
 FROM PathName IMPORT DumpPathName, AddInclude ;
 FROM M2Printf IMPORT printf0, printf1, fprintf1 ;
 FROM FIO IMPORT StdErr ;
-FROM libc IMPORT exit ;
+FROM libc IMPORT exit, printf ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
 FROM m2configure IMPORT FullPathCPP ;
@@ -1190,6 +1190,7 @@ PROCEDURE SetWall (value: BOOLEAN) ;
 BEGIN
    UnusedVariableChecking  := value ;
    UnusedParameterChecking := value ;
+   UninitVariableChecking := value ;
    PedanticCast := value ;
    PedanticParamNames := value ;
    StyleChecking := value
@@ -1225,6 +1226,7 @@ PROCEDURE GetSaveTempsDir () : String ;
 BEGIN
    RETURN SaveTempsDir
 END GetSaveTempsDir ;
+
 
 (*
    SetDumpDir - Set the dump dir.
@@ -1363,76 +1365,118 @@ BEGIN
 END SetShared ;
 
 
+(*
+   SetUninitVariableChecking - sets the UninitVariableChecking flag to value.
+*)
+
+PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
+VAR
+   s: String ;
 BEGIN
-   cflag                        := FALSE ;  (* -c.  *)
-   RuntimeModuleOverride        := InitString (DefaultRuntimeModuleOverride) ;
-   CppArgs                      := InitString ('') ;
-   Pim                          :=  TRUE ;
-   Pim2                         := FALSE ;
-   Pim3                         := FALSE ;
-   Pim4                         :=  TRUE ;
-   PositiveModFloorDiv          := FALSE ;
-   Iso                          := FALSE ;
-   SeenSources                  := FALSE ;
-   Statistics                   := FALSE ;
-   StyleChecking                := FALSE ;
-   CompilerDebugging            := FALSE ;
-   GenerateDebugging            := FALSE ;
-   Optimizing                   := FALSE ;
-   Pedantic                     := FALSE ;
-   Verbose                      := FALSE ;
-   Quiet                        :=  TRUE ;
-   CC1Quiet                     :=  TRUE ;
-   Profiling                    := FALSE ;
-   DisplayQuadruples            := FALSE ;
-   OptimizeBasicBlock           := FALSE ;
-   OptimizeUncalledProcedures   := FALSE ;
-   OptimizeCommonSubExpressions := FALSE ;
-   NilChecking                  := FALSE ;
-   WholeDivChecking             := FALSE ;
-   WholeValueChecking           := FALSE ;
-   FloatValueChecking           := FALSE ;
-   IndexChecking                := FALSE ;
-   RangeChecking                := FALSE ;
-   ReturnChecking               := FALSE ;
-   CaseElseChecking             := FALSE ;
-   CPreProcessor                := FALSE ;
-   LineDirectives               := FALSE ;
-   ExtendedOpaque               := FALSE ;
-   UnboundedByReference         := FALSE ;
-   VerboseUnbounded             := FALSE ;
-   PedanticParamNames           := FALSE ;
-   PedanticCast                 := FALSE ;
-   Xcode                        := FALSE ;
-   DumpSystemExports            := FALSE ;
-   GenerateSwig                 := FALSE ;
-   Exceptions                   :=  TRUE ;
-   DebugBuiltins                := FALSE ;
-   ForcedLocation               := FALSE ;
-   WholeProgram                 := FALSE ;
-   DebugTraceQuad               := FALSE ;
-   DebugTraceAPI                := FALSE ;
-   DebugFunctionLineNumbers     := FALSE ;
-   GenerateStatementNote        := FALSE ;
-   LowerCaseKeywords            := FALSE ;
-   UnusedVariableChecking       := FALSE ;
-   UnusedParameterChecking      := FALSE ;
-   StrictTypeChecking           := TRUE ;
-   AutoInit                     := FALSE ;
-   SaveTemps                    := FALSE ;
-   ScaffoldDynamic              := TRUE ;
-   ScaffoldStatic               := FALSE ;
-   ScaffoldMain                 := FALSE ;
-   UselistFilename              := NIL ;
-   GenModuleList                := FALSE ;
-   GenModuleListFilename        := NIL ;
-   SharedFlag                   := FALSE ;
-   Barg                         := NIL ;
-   MDarg                        := NIL ;
-   MMDarg                       := NIL ;
-   MQarg                        := NIL ;
-   SaveTempsDir                 := NIL ;
-   DumpDir                      := NIL ;
-   M2Prefix                     := InitString ('') ;
-   M2PathName                   := InitString ('')
+   IF Debugging
+   THEN
+      IF value
+      THEN
+         printf ("SetUninitVariableChecking (TRUE, %s)\n", arg)
+      ELSE
+         printf ("SetUninitVariableChecking (FALSE, %s)\n", arg)
+      END
+   END ;
+   s := InitStringCharStar (arg) ;
+   IF EqualArray (s, "all") OR
+      EqualArray (s, "known,cond") OR
+      EqualArray (s, "cond,known") OR
+      EqualArray (s, "cond")
+   THEN
+      UninitVariableChecking := value ;
+      UninitVariableConditionalChecking := value ;
+      s := KillString (s) ;
+      RETURN 1
+   ELSIF EqualArray (s, "known")
+   THEN
+      UninitVariableChecking := value ;
+      UninitVariableConditionalChecking := NOT value ;
+      s := KillString (s) ;
+      RETURN 1
+   ELSE
+      s := KillString (s) ;
+      RETURN 0
+   END
+END SetUninitVariableChecking ;
+
+
+BEGIN
+   cflag                             := FALSE ;  (* -c.  *)
+   RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
+   CppArgs                           := InitString ('') ;
+   Pim                               :=  TRUE ;
+   Pim2                              := FALSE ;
+   Pim3                              := FALSE ;
+   Pim4                              :=  TRUE ;
+   PositiveModFloorDiv               := FALSE ;
+   Iso                               := FALSE ;
+   SeenSources                       := FALSE ;
+   Statistics                        := FALSE ;
+   StyleChecking                     := FALSE ;
+   CompilerDebugging                 := FALSE ;
+   GenerateDebugging                 := FALSE ;
+   Optimizing                        := FALSE ;
+   Pedantic                          := FALSE ;
+   Verbose                           := FALSE ;
+   Quiet                             :=  TRUE ;
+   CC1Quiet                          :=  TRUE ;
+   Profiling                         := FALSE ;
+   DisplayQuadruples                 := FALSE ;
+   OptimizeBasicBlock                := FALSE ;
+   OptimizeUncalledProcedures        := FALSE ;
+   OptimizeCommonSubExpressions      := FALSE ;
+   NilChecking                       := FALSE ;
+   WholeDivChecking                  := FALSE ;
+   WholeValueChecking                := FALSE ;
+   FloatValueChecking                := FALSE ;
+   IndexChecking                     := FALSE ;
+   RangeChecking                     := FALSE ;
+   ReturnChecking                    := FALSE ;
+   CaseElseChecking                  := FALSE ;
+   CPreProcessor                     := FALSE ;
+   LineDirectives                    := FALSE ;
+   ExtendedOpaque                    := FALSE ;
+   UnboundedByReference              := FALSE ;
+   VerboseUnbounded                  := FALSE ;
+   PedanticParamNames                := FALSE ;
+   PedanticCast                      := FALSE ;
+   Xcode                             := FALSE ;
+   DumpSystemExports                 := FALSE ;
+   GenerateSwig                      := FALSE ;
+   Exceptions                        :=  TRUE ;
+   DebugBuiltins                     := FALSE ;
+   ForcedLocation                    := FALSE ;
+   WholeProgram                      := FALSE ;
+   DebugTraceQuad                    := FALSE ;
+   DebugTraceAPI                     := FALSE ;
+   DebugFunctionLineNumbers          := FALSE ;
+   GenerateStatementNote             := FALSE ;
+   LowerCaseKeywords                 := FALSE ;
+   UnusedVariableChecking            := FALSE ;
+   UnusedParameterChecking           := FALSE ;
+   StrictTypeChecking                := TRUE ;
+   AutoInit                          := FALSE ;
+   SaveTemps                         := FALSE ;
+   ScaffoldDynamic                   := TRUE ;
+   ScaffoldStatic                    := FALSE ;
+   ScaffoldMain                      := FALSE ;
+   UselistFilename                   := NIL ;
+   GenModuleList                     := FALSE ;
+   GenModuleListFilename             := NIL ;
+   SharedFlag                        := FALSE ;
+   Barg                              := NIL ;
+   MDarg                             := NIL ;
+   MMDarg                            := NIL ;
+   MQarg                             := NIL ;
+   SaveTempsDir                      := NIL ;
+   DumpDir                           := NIL ;
+   UninitVariableChecking            := FALSE ;
+   UninitVariableConditionalChecking := FALSE ;
+   M2Prefix                          := InitString ('') ;
+   M2PathName                        := InitString ('')
 END M2Options.

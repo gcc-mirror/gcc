@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -191,7 +192,7 @@ extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, uns
 extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsigned int *x)
 {
   unsigned int i;
-  unsigned int ok;
+  bool ok;
   unsigned int higha;
   char a[_a_high+1];
 
@@ -201,7 +202,7 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
   i = 0;
-  ok = TRUE;
+  ok = true;
   while (ok)
     {
       if (i < higha)
@@ -212,18 +213,18 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
             }
           else
             {
-              ok = FALSE;
+              ok = false;
             }
         }
       else
         {
-          ok = FALSE;
+          ok = false;
         }
     }
   (*x) = 0;
   if (i < higha)
     {
-      ok = TRUE;
+      ok = true;
       do {
         (*x) = (10*(*x))+( ((unsigned int) (a[i]))- ((unsigned int) ('0')));
         if (i < higha)
@@ -232,12 +233,12 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
             i += 1;
             if ((a[i] < '0') || (a[i] > '9'))
               {
-                ok = FALSE;
+                ok = false;
               }
           }
         else
           {
-            ok = FALSE;
+            ok = false;
           }
       } while (! (! ok));
     }
@@ -315,12 +316,12 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
   unsigned int c;
   unsigned int Higha;
   IntToStr__T9 buf;
-  unsigned int Negative;
+  bool Negative;
 
   if (x < 0)
     {
       /* avoid dangling else.  */
-      Negative = TRUE;
+      Negative = true;
       c = ((unsigned int ) (abs (x+1)))+1;
       if (n > 0)
         {
@@ -330,7 +331,7 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
   else
     {
       c = x;
-      Negative = FALSE;
+      Negative = false;
     }
   i = 0;
   do {
@@ -373,8 +374,8 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
 extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
-  unsigned int ok;
-  unsigned int Negative;
+  bool ok;
+  bool Negative;
   unsigned int higha;
   char a[_a_high+1];
 
@@ -384,8 +385,8 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
   i = 0;
-  Negative = FALSE;
-  ok = TRUE;
+  Negative = false;
+  ok = true;
   while (ok)
     {
       if (i < higha)
@@ -403,18 +404,18 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
           else
             {
               /* avoid dangling else.  */
-              ok = FALSE;
+              ok = false;
             }
         }
       else
         {
-          ok = FALSE;
+          ok = false;
         }
     }
   (*x) = 0;
   if (i < higha)
     {
-      ok = TRUE;
+      ok = true;
       do {
         if (Negative)
           {
@@ -430,12 +431,12 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
             i += 1;
             if ((a[i] < '0') || (a[i] > '9'))
               {
-                ok = FALSE;
+                ok = false;
               }
           }
         else
           {
-            ok = FALSE;
+            ok = false;
           }
       } while (! (! ok));
     }
@@ -598,7 +599,7 @@ extern "C" void NumberIO_StrToBin (const char *a_, unsigned int _a_high, unsigne
 extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
-  unsigned int ok;
+  bool ok;
   unsigned int higha;
   char a[_a_high+1];
 
@@ -608,7 +609,7 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
   i = 0;
-  ok = TRUE;
+  ok = true;
   while (ok)
     {
       if (i < higha)
@@ -619,18 +620,18 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
             }
           else
             {
-              ok = FALSE;
+              ok = false;
             }
         }
       else
         {
-          ok = FALSE;
+          ok = false;
         }
     }
   (*x) = 0;
   if (i < higha)
     {
-      ok = TRUE;
+      ok = true;
       do {
         (*x) = (2*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
         if (i < higha)
@@ -639,12 +640,12 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
             i += 1;
             if ((a[i] < '0') || (a[i] > '1'))
               {
-                ok = FALSE;
+                ok = false;
               }
           }
         else
           {
-            ok = FALSE;
+            ok = false;
           }
       } while (! (! ok));
     }
@@ -653,7 +654,7 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
 extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
-  unsigned int ok;
+  bool ok;
   unsigned int higha;
   char a[_a_high+1];
 
@@ -663,14 +664,14 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
   i = 0;
-  ok = TRUE;
+  ok = true;
   while (ok)
     {
       if (i < higha)
         {
           if (((a[i] >= '0') && (a[i] <= '9')) || ((a[i] >= 'A') && (a[i] <= 'F')))
             {
-              ok = FALSE;
+              ok = false;
             }
           else
             {
@@ -679,13 +680,13 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
         }
       else
         {
-          ok = FALSE;
+          ok = false;
         }
     }
   (*x) = 0;
   if (i < higha)
     {
-      ok = TRUE;
+      ok = true;
       do {
         if ((a[i] >= '0') && (a[i] <= '9'))
           {
@@ -702,12 +703,12 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
             i += 1;
             if (((a[i] < '0') || (a[i] > '9')) && ((a[i] < 'A') || (a[i] > 'F')))
               {
-                ok = FALSE;
+                ok = false;
               }
           }
         else
           {
-            ok = FALSE;
+            ok = false;
           }
       } while (! (! ok));
     }
@@ -716,7 +717,7 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
 extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
-  unsigned int ok;
+  bool ok;
   unsigned int higha;
   char a[_a_high+1];
 
@@ -726,7 +727,7 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
   i = 0;
-  ok = TRUE;
+  ok = true;
   while (ok)
     {
       if (i < higha)
@@ -737,18 +738,18 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
             }
           else
             {
-              ok = FALSE;
+              ok = false;
             }
         }
       else
         {
-          ok = FALSE;
+          ok = false;
         }
     }
   (*x) = 0;
   if (i < higha)
     {
-      ok = TRUE;
+      ok = true;
       do {
         (*x) = (8*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
         if (i < higha)
@@ -757,12 +758,12 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
             i += 1;
             if ((a[i] < '0') || (a[i] > '7'))
               {
-                ok = FALSE;
+                ok = false;
               }
           }
         else
           {
-            ok = FALSE;
+            ok = false;
           }
       } while (! (! ok));
     }

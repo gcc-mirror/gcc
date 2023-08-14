@@ -469,6 +469,10 @@ gm2_langhook_handle_option (
     case OPT_Wunused_parameter:
       M2Options_SetUnusedParameterChecking (value);
       return 1;
+    case OPT_Wuninit_variable_checking:
+      return M2Options_SetUninitVariableChecking (value, "known");
+    case OPT_Wuninit_variable_checking_:
+      return M2Options_SetUninitVariableChecking (value, arg);
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;
@@ -1107,41 +1111,40 @@ gm2_mark_addressable (tree exp)
 tree
 gm2_type_for_size (unsigned int bits, int unsignedp)
 {
-  tree type;
-
   if (unsignedp)
     {
       if (bits == INT_TYPE_SIZE)
-        type = unsigned_type_node;
+        return unsigned_type_node;
       else if (bits == CHAR_TYPE_SIZE)
-        type = unsigned_char_type_node;
+        return unsigned_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
-        type = short_unsigned_type_node;
+        return short_unsigned_type_node;
       else if (bits == LONG_TYPE_SIZE)
-        type = long_unsigned_type_node;
+        return long_unsigned_type_node;
       else if (bits == LONG_LONG_TYPE_SIZE)
-        type = long_long_unsigned_type_node;
+        return long_long_unsigned_type_node;
       else
-	type = build_nonstandard_integer_type (bits,
+	return build_nonstandard_integer_type (bits,
 					       unsignedp);
     }
   else
     {
       if (bits == INT_TYPE_SIZE)
-        type = integer_type_node;
+        return integer_type_node;
       else if (bits == CHAR_TYPE_SIZE)
-        type = signed_char_type_node;
+        return signed_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
-        type = short_integer_type_node;
+        return short_integer_type_node;
       else if (bits == LONG_TYPE_SIZE)
-        type = long_integer_type_node;
+        return long_integer_type_node;
       else if (bits == LONG_LONG_TYPE_SIZE)
-        type = long_long_integer_type_node;
+        return long_long_integer_type_node;
       else
-	type = build_nonstandard_integer_type (bits,
+	return build_nonstandard_integer_type (bits,
 					       unsignedp);
     }
-  return type;
+  /* Never reach here.  */
+  gcc_unreachable ();
 }
 
 /* Allow the analyzer to understand Storage ALLOCATE/DEALLOCATE.  */

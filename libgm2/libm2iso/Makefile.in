@@ -107,15 +107,15 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = libm2iso
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am
@@ -176,11 +176,11 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	Storage.lo StreamFile.lo StringChan.lo \
 @BUILD_ISOLIB_TRUE@	Strings.lo SWholeIO.lo SysClock.lo \
 @BUILD_ISOLIB_TRUE@	SYSTEM.lo TermFile.lo TERMINATION.lo \
-@BUILD_ISOLIB_TRUE@	TextIO.lo WholeConv.lo WholeIO.lo \
-@BUILD_ISOLIB_TRUE@	WholeStr.lo
+@BUILD_ISOLIB_TRUE@	TextIO.lo TextUtil.lo WholeConv.lo \
+@BUILD_ISOLIB_TRUE@	WholeIO.lo WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
-@BUILD_ISOLIB_TRUE@	ErrnoCategory.lo wraptime.lo RTco.lo \
-@BUILD_ISOLIB_TRUE@	libm2iso_la-wrapsock.lo
+@BUILD_ISOLIB_TRUE@	ErrnoCategory.lo RTco.lo wrapclock.lo \
+@BUILD_ISOLIB_TRUE@	wraptime.lo libm2iso_la-wrapsock.lo
 libm2iso_la_OBJECTS = $(am_libm2iso_la_OBJECTS)
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -512,9 +512,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.def  SysClock.def \
 @BUILD_ISOLIB_TRUE@         SYSTEM.def  TermFile.def \
 @BUILD_ISOLIB_TRUE@         TERMINATION.def  TextIO.def \
+@BUILD_ISOLIB_TRUE@         TextUtil.def \
 @BUILD_ISOLIB_TRUE@         WholeConv.def  WholeIO.def \
-@BUILD_ISOLIB_TRUE@         WholeStr.def  wrapsock.def \
-@BUILD_ISOLIB_TRUE@         wraptime.def
+@BUILD_ISOLIB_TRUE@         WholeStr.def  wrapclock.def \
+@BUILD_ISOLIB_TRUE@         wrapsock.def wraptime.def
 
 @BUILD_ISOLIB_TRUE@M2MODS = ChanConsts.mod  CharClass.mod \
 @BUILD_ISOLIB_TRUE@         ClientSocket.mod  ComplexMath.mod \
@@ -551,12 +552,13 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         SWholeIO.mod  SysClock.mod \
 @BUILD_ISOLIB_TRUE@         SYSTEM.mod  TermFile.mod \
 @BUILD_ISOLIB_TRUE@         TERMINATION.mod  TextIO.mod \
+@BUILD_ISOLIB_TRUE@         TextUtil.mod \
 @BUILD_ISOLIB_TRUE@         WholeConv.mod  WholeIO.mod \
 @BUILD_ISOLIB_TRUE@         WholeStr.mod
 
 @BUILD_ISOLIB_TRUE@toolexeclib_LTLIBRARIES = libm2iso.la
 @BUILD_ISOLIB_TRUE@libm2iso_la_SOURCES = $(M2MODS) \
-@BUILD_ISOLIB_TRUE@                     ErrnoCategory.cc wraptime.cc RTco.cc wrapsock.c
+@BUILD_ISOLIB_TRUE@                     ErrnoCategory.cc RTco.cc wrapclock.cc wraptime.cc wrapsock.c
 
 #  wrapsock.cc
 @BUILD_ISOLIB_TRUE@C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
@@ -657,6 +659,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrnoCategory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RTco.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-wrapsock.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wrapclock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wraptime.Plo@am__quote@
 
 .c.o:

@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -46,12 +47,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 */
 
-extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high);
+extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, const char *Module_, unsigned int _Module_high, const char *Function_, unsigned int _Function_high, unsigned int LineNo);
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
@@ -83,12 +84,12 @@ static void WriteLn (void)
 
 /*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 */
 
-extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high)
+extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, const char *Module_, unsigned int _Module_high, const char *Function_, unsigned int _Function_high, unsigned int LineNo)
 {
   typedef struct Halt__T1_a Halt__T1;
 
@@ -96,12 +97,17 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, un
   Halt__T1 No;
   char Message[_Message_high+1];
   char Module[_Module_high+1];
+  char Function[_Function_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (Message, Message_, _Message_high+1);
   memcpy (Module, Module_, _Module_high+1);
+  memcpy (Function, Function_, _Function_high+1);
 
   Debug_DebugString ((const char *) Module, _Module_high);  /* should be large enough for most source files..  */
+  Debug_DebugString ((const char *) ":", 1);
+  Debug_DebugString ((const char *) Function, _Function_high);
+  Debug_DebugString ((const char *) ":", 1);
   NumberIO_CardToStr (LineNo, 0, (char *) &No.array[0], MaxNoOfDigits);
   Debug_DebugString ((const char *) ":", 1);
   Debug_DebugString ((const char *) &No.array[0], MaxNoOfDigits);

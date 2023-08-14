@@ -28,8 +28,6 @@ IMPLEMENTATION MODULE M2Dependent ;
 
 
 FROM libc IMPORT abort, exit, write, getenv, printf, snprintf, strncpy ;
-(* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
-(* FROM M2LINK IMPORT ForcedModuleInitOrder, StaticInitialization, PtrToChar ; *)
 FROM ASCII IMPORT nul, nl ;
 FROM SYSTEM IMPORT ADR, SIZE ;
 FROM Storage IMPORT ALLOCATE ;

@@ -521,10 +521,11 @@ namespace __format
 	if (__first[0] != '.')
 	  return __first;
 
-	++__first;
+	iterator __next = ++__first;
 	bool __arg_id = false;
-	auto __next = _S_parse_width_or_precision(__first, __last, _M_prec,
-						  __arg_id, __pc);
+	if (__next != __last)
+	  __next = _S_parse_width_or_precision(__first, __last, _M_prec,
+					       __arg_id, __pc);
 	if (__next == __first)
 	  __throw_format_error("format error: missing precision after '.' in "
 			       "format string");
@@ -610,6 +611,7 @@ namespace __format
     {
       const size_t __buflen = 0x20;
       _CharT __padding_chars[__buflen];
+      __padding_chars[0] = _CharT();
       basic_string_view<_CharT> __padding{__padding_chars, __buflen};
 
       auto __pad = [&__padding] (size_t __n, _Out& __o) {
@@ -1484,9 +1486,20 @@ namespace __format
 	    {
 	      // If the buffer is too small it's probably because of a large
 	      // precision, or a very large value in fixed format.
-	      size_t __guess =  __prec + sizeof(__buf);
-	      if (__fmt == chars_format::fixed)
-		__guess += max((int)__builtin_log10(__builtin_abs(__v)) / 2, 1);
+	      size_t __guess = 8 + __prec;
+	      if (__fmt == chars_format::fixed) // +ddd.prec
+		{
+		  if constexpr (is_same_v<_Fp, float>)
+		    __guess += __builtin_log10f(__v < 0.0f ? -__v : __v);
+		  else if constexpr (is_same_v<_Fp, double>)
+		    __guess += __builtin_log10(__v < 0.0 ? -__v : __v);
+		  else if constexpr (is_same_v<_Fp, long double>)
+		    __guess += __builtin_log10l(__v < 0.0l ? -__v : __v);
+		  else
+		    __guess += numeric_limits<_Fp>::max_exponent10;
+		}
+	      if (__guess <= sizeof(__buf)) [[unlikely]]
+		__guess = sizeof(__buf) * 2;
 	      __dynbuf.reserve(__guess);
 
 	      do
@@ -1596,8 +1609,8 @@ namespace __format
 
 
 	  _Optional_locale __loc;
-	  basic_string_view<_CharT> __str;
 	  basic_string<_CharT> __wstr;
+	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<_CharT, char>)
 	    __str = __narrow_str;
 	  else
@@ -1620,7 +1633,8 @@ namespace __format
 		__wstr = _M_localize(__str, __expc, __fc.locale());
 	      else
 		__wstr = _M_localize(__str, __expc, __loc.value());
-	      __str = __wstr;
+	      if (!__wstr.empty())
+		__str = __wstr;
 	    }
 
 	  size_t __width = _M_spec._M_get_width(__fc);
@@ -2534,6 +2548,7 @@ namespace __format
   // not introduce any invalid pointer arithmetic or overflows that would not
   // have happened anyway.
   template<typename _CharT, contiguous_iterator _OutIter>
+    requires same_as<iter_value_t<_OutIter>, _CharT>
     class _Iter_sink<_CharT, _OutIter> : public _Sink<_CharT>
     {
       using uint64_t = __UINTPTR_TYPE__;
@@ -3532,7 +3547,9 @@ namespace __format
 	      _M_pc.advance_to(__ptr);
 	  }
 	_M_format_arg(__id);
-	_M_pc.advance_to(_M_pc.begin() + 1); // Move past '}'
+	if (begin() == end() || *begin() != '}')
+	  __format::__unmatched_left_brace_in_format_string();
+	_M_pc.advance_to(begin() + 1); // Move past '}'
       }
 
       constexpr virtual void _M_format_arg(size_t __id) = 0;
@@ -3553,14 +3570,14 @@ namespace __format
 
       using iterator = typename _Scanner<_CharT>::iterator;
 
-      void
+      constexpr void
       _M_on_chars(iterator __last) override
       {
 	basic_string_view<_CharT> __str(this->begin(), __last);
 	_M_fc.advance_to(__format::__write(_M_fc.out(), __str));
       }
 
-      void
+      constexpr void
       _M_format_arg(size_t __id) override
       {
 	using _Context = basic_format_context<_Out, _CharT>;

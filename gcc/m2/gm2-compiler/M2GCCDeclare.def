@@ -32,18 +32,6 @@ DEFINITION MODULE M2GCCDeclare ;
 
 FROM SYSTEM IMPORT WORD ;
 FROM m2tree IMPORT Tree ;
-EXPORT QUALIFIED FoldConstants,
-                 DeclareConstant, TryDeclareConstant,
-                 DeclareConstructor, TryDeclareConstructor,
-                 DeclareLocalVariables, PromoteToString, DeclareLocalVariable,
-                 InitDeclarations, StartDeclareScope, EndDeclareScope,
-                 DeclareModuleVariables, IsProcedureGccNested,
-                 DeclareProcedure, PoisonSymbols, DeclareParameters,
-                 CompletelyResolved, MarkExported, PrintSym,
-                 ConstantKnownAndUsed,
-                 PutToBeSolvedByQuads,
-                 GetTypeMin, GetTypeMax,
-                 WalkAction, IsAction ;
 
 TYPE
    WalkAction = PROCEDURE (WORD) ;
@@ -171,6 +159,17 @@ PROCEDURE PoisonSymbols (sym: CARDINAL) ;
 *)
 
 PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+
+
+(*
+   PromoteToCString - declare, sym, and then promote it to a string.
+                      Note that if sym is a single character we do
+                          *not* record it as a string
+                          but as a char however we always
+                          return a string constant.
+*)
+
+PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 
 
 (*

@@ -7351,11 +7351,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	}
 
       /* Character strings are passed as two parameters, a length and a
-	 pointer - except for Bind(c) which only passes the pointer.
+	 pointer - except for Bind(c) and c_ptrs which only pass the pointer.
 	 An unlimited polymorphic formal argument likewise does not
 	 need the length.  */
       if (parmse.string_length != NULL_TREE
 	  && !sym->attr.is_bind_c
+	  && !(fsym && fsym->ts.type == BT_DERIVED && fsym->ts.u.derived
+	       && fsym->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR
+	       && fsym->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING )
+	  && !(fsym && fsym->ts.type == BT_ASSUMED)
 	  && !(fsym && UNLIMITED_POLY (fsym)))
 	vec_safe_push (stringargs, parmse.string_length);
 

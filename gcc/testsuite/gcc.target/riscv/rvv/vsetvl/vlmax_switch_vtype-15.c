@@ -6,7 +6,7 @@
 void f (void * restrict in, void * restrict out, int32_t * a, int32_t * b, int n, int cond)
 {
   for (int i = 0; i < n; i++) {
-    vint16mf4_t v;
+    vint16mf4_t v = __riscv_vmv_v_x_i16mf4 (0, __riscv_vsetvlmax_e16mf4 ());
     *(vint16mf4_t*)(out + i + 700) = v;
   }
   for (int i = 0; i < n; i++) {
@@ -19,27 +19,27 @@ void f (void * restrict in, void * restrict out, int32_t * a, int32_t * b, int n
     a[i] = a[i] - b[i];
   }
   for (int i = 0; i < n; i++) {
-    vint32mf2_t v;
+    vint32mf2_t v = __riscv_vmv_v_x_i32mf2 (0, __riscv_vsetvlmax_e32mf2 ());
     *(vint32mf2_t*)(out + i + 7000) = v;
   }
   for (int i = 0; i < n; i++) {
-    vint16mf2_t v;
+    vint16mf2_t v = __riscv_vmv_v_x_i16mf2 (0, __riscv_vsetvlmax_e16mf2 ());
     *(vint16mf2_t*)(out + i + 777) = v;
   }
   for (int i = 0; i < n; i++) {
-    vint64m1_t v;
+    vint64m1_t v = __riscv_vmv_v_x_i64m1 (0, __riscv_vsetvlmax_e64m1 ());
     *(vint64m1_t*)(out + i + 8000) = v;
   }
   for (int i = 0; i < n; i++) {
-    vfloat32mf2_t v;
+    vfloat32mf2_t v = __riscv_vfmv_v_f_f32mf2 (0, __riscv_vsetvlmax_e32mf2 ());
     *(vfloat32mf2_t*)(out + i + 7777) = v;
   }
   for (int i = 0; i < n; i++) {
-    vuint16mf2_t v;
+    vuint16mf2_t v = __riscv_vmv_v_x_u16mf2 (0, __riscv_vsetvlmax_e16mf2 ());
     *(vuint16mf2_t*)(out + i + 888) = v;
   }
   for (int i = 0; i < n; i++) {
-    vint8mf8_t v;
+    vint8mf8_t v = __riscv_vmv_v_x_i8mf8 (0, __riscv_vsetvlmax_e8mf8 ());
     *(vint8mf8_t*)(out + i + 9000) = v;
   }
 }

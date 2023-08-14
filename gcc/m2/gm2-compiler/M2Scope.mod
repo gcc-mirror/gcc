@@ -349,7 +349,7 @@ BEGIN
 
       END ;
       printf0 ("\n") ;
-      DisplayQuadRange (low, high) ;
+      DisplayQuadRange (scopeSym, low, high) ;
       IF next#NIL
       THEN
          DisplayScope (next)
@@ -428,7 +428,7 @@ BEGIN
          enter (sb) ;
          IF (low # 0) AND (high # 0)
          THEN
-            p (low, high)
+            p (scopeSym, low, high)
          END ;
          leave (sb)
       END ;

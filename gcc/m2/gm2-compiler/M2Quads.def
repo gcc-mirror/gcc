@@ -88,7 +88,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  BuildCodeOn, BuildCodeOff,
                  BuildProfileOn, BuildProfileOff,
                  BuildOptimizeOn, BuildOptimizeOff,
-                 BuildInline, BuildStmtNote, BuildLineNo, PushLineNo,
+                 BuildAsm, BuildStmtNote, BuildLineNo, PushLineNo,
                  BuildConstructor,
                  BuildConstructorStart,
                  BuildConstructorEnd,
@@ -106,6 +106,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsBackReference,
                  IsUnConditional,
                  IsConditional, IsBackReferenceConditional,
+                 IsGoto,
                  IsCall,
                  IsReturn,
                  IsProcedureScope,
@@ -129,13 +130,13 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
 
                  GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
                  SubQuad, EraseQuad, GetRealQuad,
-                 GetQuadtok, GetQuadOtok,
+                 GetQuadtok, GetQuadOtok, PutQuadOtok,
                  GetQuadOp, GetM2OperatorDesc,
                  CountQuads,
                  GetLastFileQuad,
                  GetLastQuadNo,
                  QuadToLineNo, QuadToTokenNo,
-                 VariableAnalysis, LoopAnalysis, ForLoopAnalysis,
+                 LoopAnalysis, ForLoopAnalysis,
                  AddVarientFieldToList, AddRecordToList,
                  AddVarientToList,
                  AddVarientRange, AddVarientEquality,
@@ -144,7 +145,8 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
                  PushInConstExpression, PopInConstExpression,
                  IsInConstExpression,
-                 MustCheckOverflow ;
+                 MustCheckOverflow, BuildAsmElement, BuildAsmTrash,
+                 GetQuadTrash ;
 
 
 TYPE
@@ -165,6 +167,7 @@ TYPE
                    DivCeilOp, ModCeilOp,
                    DivFloorOp, ModFloorOp, DivTruncOp, ModTruncOp,
       	       	   LogicalOrOp, LogicalAndOp, LogicalXorOp, LogicalDiffOp,
+                   ArithAddOp,
                    InclOp, ExclOp, LogicalShiftOp, LogicalRotateOp,
                    UnboundedOp, HighOp,
                    CoerceOp, ConvertOp, CastOp,
@@ -246,6 +249,13 @@ PROCEDURE IsConditional (QuadNo: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE IsBackReferenceConditional (q: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsGoto - returns true if QuadNo is a goto operation.
+*)
+
+PROCEDURE IsGoto (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -381,7 +391,7 @@ PROCEDURE DisplayQuadList ;
    DisplayQuadRange - displays all quads in list range, start..end.
 *)
 
-PROCEDURE DisplayQuadRange (start, end: CARDINAL) ;
+PROCEDURE DisplayQuadRange (scope: CARDINAL; start, end: CARDINAL) ;
 
 
 (*
@@ -476,7 +486,21 @@ PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
                        VAR tok: CARDINAL;
                        VAR Op: QuadOperator;
                        VAR Oper1, Oper2, Oper3: CARDINAL;
+                       VAR overflowChecking: BOOLEAN ;
                        VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
+
+(*
+   PutQuadOtok - alters a quadruple QuadNo with Op, Oper1, Oper2, Oper3, and
+                 sets a boolean to determinine whether overflow should be checked.
+*)
+
+PROCEDURE PutQuadOtok (QuadNo: CARDINAL;
+                       tok: CARDINAL;
+                       Op: QuadOperator;
+                       Oper1, Oper2, Oper3: CARDINAL;
+                       overflowChecking: BOOLEAN ;
+                       Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 
 
 (*
@@ -1704,7 +1728,7 @@ PROCEDURE BuildProcedureEnd ;
                  |------------|
 *)
 
-PROCEDURE BuildReturn (tokno: CARDINAL) ;
+PROCEDURE BuildReturn (tokreturn: CARDINAL) ;
 
 
 (*
@@ -2494,23 +2518,23 @@ PROCEDURE BuildOptimizeOff ;
 
 
 (*
-   BuildInline - builds an Inline pseudo quadruple operator.
-                 The inline interface, Sym, is stored as the operand
-                 to the operator InlineOp.
+   BuildAsm - builds an Inline pseudo quadruple operator.
+              The inline interface, Sym, is stored as the operand
+              to the operator InlineOp.
 
-                 The stack is expected to contain:
+              The stack is expected to contain:
 
 
                         Entry                   Exit
                         =====                   ====
 
-                 Ptr ->
-                        +--------------+
-                        | Sym          |        Empty
-                        |--------------|
+              Ptr ->
+                     +--------------+
+                     | Sym          |        Empty
+                     |--------------|
 *)
 
-PROCEDURE BuildInline ;
+PROCEDURE BuildAsm (tok: CARDINAL) ;
 
 
 (*
@@ -2573,20 +2597,10 @@ PROCEDURE BuildStmtNote (offset: INTEGER) ;
 
 
 (*
-   VariableAnalysis - checks to see whether a variable is:
-
-                      read without being initialized or
-                      written over when it is a non var parameter
-*)
-
-PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
-
-
-(*
    LoopAnalysis - checks whether an infinite loop exists.
 *)
 
-PROCEDURE LoopAnalysis (Current, End: CARDINAL) ;
+PROCEDURE LoopAnalysis (Scope: CARDINAL; Current, End: CARDINAL) ;
 
 
 (*
@@ -2708,6 +2722,61 @@ PROCEDURE PopInConstExpression ;
 *)
 
 PROCEDURE IsInConstExpression () : BOOLEAN ;
+
+
+(*
+   BuildAsmElement - the stack is expected to contain:
+
+
+                        Entry                      Exit
+                        =====                      ====
+
+                 Ptr ->
+                        +------------------+
+                        | expr | tokpos    |
+                        |------------------|
+                        | str              |
+                        |------------------|
+                        | name             |
+                        |------------------|       +------------------+
+                        | CurrentInterface |       | CurrentInterface |
+                        |------------------|       |------------------|
+                        | CurrentAsm       |       | CurrentAsm       |
+                        |------------------|       |------------------|
+                        | n                |       | n                |
+                        |------------------|       |------------------|
+*)
+
+PROCEDURE BuildAsmElement (input, output: BOOLEAN) ;
+
+
+(*
+   BuildAsmTrash - the stack is expected to contain:
+
+
+                        Entry                      Exit
+                        =====                      ====
+
+                 Ptr ->
+                        +------------------+
+                        | expr | tokpos    |
+                        |------------------|       +------------------+
+                        | CurrentInterface |       | CurrentInterface |
+                        |------------------|       |------------------|
+                        | CurrentAsm       |       | CurrentAsm       |
+                        |------------------|       |------------------|
+                        | n                |       | n                |
+                        |------------------|       |------------------|
+*)
+
+PROCEDURE BuildAsmTrash ;
+
+
+(*
+   GetQuadTrash - return the symbol associated with the trashed operand.
+*)
+
+PROCEDURE GetQuadTrash (quad: CARDINAL) : CARDINAL ;
 
 
 END M2Quads.

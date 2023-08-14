@@ -95,7 +95,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsProcedureReachable, IsParameter, IsConstLit,
                         IsDummy, IsVarAParam, IsProcedureVariable,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
-                        IsError, IsHiddenType,
+                        IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
@@ -120,7 +120,7 @@ FROM SymbolTable IMPORT NulSym,
                         ForeachLocalSymDo, ForeachFieldEnumerationDo,
       	       	     	ForeachProcedureDo, ForeachModuleDo,
                         ForeachInnerModuleDo, ForeachImportedDo,
-                        ForeachExportedDo ;
+                        ForeachExportedDo, PrintInitialized ;
 
 FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
                    GetBaseTypeMinMax, MixTypes,
@@ -339,7 +339,6 @@ END DebugSetNumbers ;
                    lists.
 *)
 
-(*
 PROCEDURE AddSymToWatch (sym: WORD) ;
 BEGIN
    IF (sym#NulSym) AND (NOT IsElementInSet(WatchList, sym))
@@ -350,7 +349,6 @@ BEGIN
       FIO.FlushBuffer(FIO.StdOut)
    END
 END AddSymToWatch ;
-*)
 
 
 (*
@@ -409,7 +407,7 @@ BEGIN
 
       tobesolvedbyquads :  doInclude(ToBeSolvedByQuads, "symbol %d -> ToBeSolvedByQuads\n", sym) |
       fullydeclared     :  doInclude(FullyDeclared, "symbol %d -> FullyDeclared\n", sym) ;
-                           IF sym=1265
+                           IF sym=8821
                            THEN
                               mystop
                            END |
@@ -1586,6 +1584,33 @@ END PromoteToString ;
 
 
 (*
+   PromoteToCString - declare, sym, and then promote it to a string.
+                      Note that if sym is a single character we do
+                          *not* record it as a string
+                          but as a char however we always
+                          return a string constant.
+*)
+
+PROCEDURE PromoteToCString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+VAR
+   size: CARDINAL ;
+   ch  : CHAR ;
+BEGIN
+   DeclareConstant (tokenno, sym) ;
+   IF IsConst (sym) AND (GetSType (sym) = Char)
+   THEN
+      PushValue (sym) ;
+      ch := PopChar (tokenno) ;
+      RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
+   ELSE
+      size := GetStringLength (sym) ;
+      RETURN BuildCStringConstant (KeyToCharStar (GetString (sym)),
+                                   size)
+   END
+END PromoteToCString ;
+
+
+(*
    WalkConstructor - walks all dependants of, sym.
 *)
 
@@ -1612,13 +1637,13 @@ BEGIN
    THEN
       InternalError ('trying to declare the NulSym')
    END ;
-   IF IsConstructor(sym) AND (NOT GccKnowsAbout(sym))
+   IF IsConstructor (sym) AND (NOT GccKnowsAbout (sym))
    THEN
-      WalkConstructor(sym, TraverseDependants) ;
-      DeclareTypesConstantsProceduresInRange(quad, quad) ;
-      Assert(IsConstructorDependants(sym, IsFullyDeclared)) ;
-      PushValue(sym) ;
-      DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
+      WalkConstructor (sym, TraverseDependants) ;
+      DeclareTypesConstantsProceduresInRange (GetScope (sym), quad, quad) ;
+      Assert (IsConstructorDependants (sym, IsFullyDeclared)) ;
+      PushValue (sym) ;
+      DeclareConstantFromTree (sym, PopConstructorTree (tokenno))
    END
 END DeclareConstructor ;
 
@@ -2120,7 +2145,8 @@ END WalkTypeInfo ;
 
 PROCEDURE DeclareUnboundedProcedureParameters (sym: WORD) ;
 VAR
-   son, type,
+   param,
+   type,
    p, i     : CARDINAL ;
    location : location_t ;
 BEGIN
@@ -2131,8 +2157,8 @@ BEGIN
       WHILE i>0 DO
          IF IsUnboundedParam(sym, i)
          THEN
-            son := GetNthParam(sym, i) ;
-            type := GetSType(son) ;
+            param := GetNthParam(sym, i) ;
+            type := GetSType(param) ;
             TraverseDependants(type) ;
             IF GccKnowsAbout(type)
             THEN
@@ -2140,8 +2166,8 @@ BEGIN
                BuildTypeDeclaration(location, Mod2Gcc(type))
             END
          ELSE
-            son := GetNth(sym, i) ;
-            type := GetSType(son) ;
+            param := GetNth(sym, i) ;
+            type := GetSType(param) ;
             TraverseDependants(type)
          END ;
          DEC(i)
@@ -2156,31 +2182,24 @@ END DeclareUnboundedProcedureParameters ;
 
 PROCEDURE WalkUnboundedProcedureParameters (sym: WORD) ;
 VAR
-   son,
+   param,
    type,
    p, i: CARDINAL ;
 BEGIN
-   IF IsProcedure(sym)
+   IF IsProcedure (sym)
    THEN
-      p := NoOfParam(sym) ;
+      p := NoOfParam (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
+         IF IsUnboundedParam (sym, i)
          THEN
-            son := GetNthParam(sym, i) ;
-            type := GetSType(son) ;
-            WalkTypeInfo(type) ;
-(*
-            type := GetUnboundedRecordType(type) ;
-            Assert(IsRecord(type)) ;
-            RecordNotPacked(type)      (* which is never packed.                   *)
-*)
+            param := GetNthParam (sym, i)
          ELSE
-            son := GetNth(sym, i) ;
-            type := GetSType(son) ;
-            WalkTypeInfo(type)
+            param := GetNth (sym, i)
          END ;
-         DEC(i)
+         type := GetSType (param) ;
+         WalkTypeInfo (type) ;
+         DEC (i)
       END
    END
 END WalkUnboundedProcedureParameters ;
@@ -2541,24 +2560,24 @@ END FoldConstants ;
    DeclareTypesConstantsProceduresInRange -
 *)
 
-PROCEDURE DeclareTypesConstantsProceduresInRange (start, end: CARDINAL) ;
+PROCEDURE DeclareTypesConstantsProceduresInRange (scope, start, end: CARDINAL) ;
 VAR
    n, m: CARDINAL ;
 BEGIN
    IF DisplayQuadruples
    THEN
-      DisplayQuadRange(start, end)
+      DisplayQuadRange (scope, start, end)
    END ;
    REPEAT
       n := NoOfElementsInSet(ToDoList) ;
-      WHILE ResolveConstantExpressions(DeclareConstFully, start, end) DO
+      WHILE ResolveConstantExpressions (DeclareConstFully, start, end) DO
       END ;
       (* we need to evaluate some constant expressions to resolve these types *)
       IF DeclaredOutstandingTypes (FALSE)
       THEN
       END ;
       m := NoOfElementsInSet(ToDoList)
-   UNTIL (NOT ResolveConstantExpressions(DeclareConstFully, start, end)) AND
+   UNTIL (NOT ResolveConstantExpressions (DeclareConstFully, start, end)) AND
          (n=m)
 END DeclareTypesConstantsProceduresInRange ;
 
@@ -2622,16 +2641,16 @@ VAR
    s, t: CARDINAL ;
    sb  : ScopeBlock ;
 BEGIN
-   sb := InitScopeBlock(scope) ;
-   PushBinding(scope) ;
+   sb := InitScopeBlock (scope) ;
+   PushBinding (scope) ;
    REPEAT
-      s := NoOfElementsInSet(ToDoList) ;
+      s := NoOfElementsInSet (ToDoList) ;
       (* ForeachLocalSymDo(scope, DeclareTypeInfo) ; *)
-      ForeachScopeBlockDo(sb, DeclareTypesConstantsProceduresInRange) ;
-      t := NoOfElementsInSet(ToDoList) ;
+      ForeachScopeBlockDo (sb, DeclareTypesConstantsProceduresInRange) ;
+      t := NoOfElementsInSet (ToDoList) ;
    UNTIL s=t ;
-   PopBinding(scope) ;
-   KillScopeBlock(sb)
+   PopBinding (scope) ;
+   KillScopeBlock (sb)
 END DeclareTypesConstantsProcedures ;
 
 
@@ -2693,7 +2712,7 @@ BEGIN
    WalkTypesInProcedure(scope) ;
    DeclareProcedure(scope) ;
    ForeachInnerModuleDo(scope, WalkTypesInModule) ;
-   DeclareTypesConstantsProcedures(scope) ;
+   DeclareTypesConstantsProcedures (scope) ;
    ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
    DeclareLocalVariables(scope) ;
    ForeachInnerModuleDo(scope, DeclareModuleVariables) ;
@@ -2797,7 +2816,7 @@ PROCEDURE StartDeclareScope (scope: CARDINAL) ;
 VAR
    n: Name ;
 BEGIN
-   (* AddSymToWatch (1265) ;  *)
+   (* AddSymToWatch (8821) ;  *)
    (* AddSymToWatch (1157) ;  *)  (* watch goes here *)
    (* AddSymToWatch(TryFindSymbol('IOLink', 'DeviceId')) ; *)
    (* AddSymToWatch(819) ; *)
@@ -3175,7 +3194,7 @@ VAR
    varType : CARDINAL ;
    location: location_t ;
 BEGIN
-   IF IsComponent (var)
+   IF IsComponent (var) OR IsVarHeap (var)
    THEN
       RETURN
    END ;
@@ -3911,6 +3930,12 @@ BEGIN
       THEN
          printf0('component ')
       END ;
+      IF IsVarHeap (sym)
+      THEN
+         printf0('heap ')
+      END ;
+      printf0 ('\n') ;
+      PrintInitialized (sym) ;
       IncludeType(l, sym)
    ELSIF IsConst(sym)
    THEN
@@ -5229,16 +5254,7 @@ BEGIN
          t := CheckAlignment(t, sym)
       END
    END ;
-   IF GetSymName(sym)#NulName
-   THEN
-      IF Debugging
-      THEN
-         n := GetSymName(sym) ;
-         printf1('declaring type %a\n', n)
-      END ;
-      t := RememberType(t)
-   END ;
-   RETURN( t )
+   RETURN RememberType (t)
 END TypeConstFullyDeclared ;
 
 

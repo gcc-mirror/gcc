@@ -134,9 +134,10 @@ M2DEFS = ChanConsts.def  CharClass.def \
          SWholeIO.def  SysClock.def \
          SYSTEM.def  TermFile.def \
          TERMINATION.def  TextIO.def \
+         TextUtil.def \
          WholeConv.def  WholeIO.def \
-         WholeStr.def  wrapsock.def \
-         wraptime.def
+         WholeStr.def  wrapclock.def \
+         wrapsock.def wraptime.def
 
 M2MODS = ChanConsts.mod  CharClass.mod \
          ClientSocket.mod  ComplexMath.mod \
@@ -173,12 +174,13 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          SWholeIO.mod  SysClock.mod \
          SYSTEM.mod  TermFile.mod \
          TERMINATION.mod  TextIO.mod \
+         TextUtil.mod \
          WholeConv.mod  WholeIO.mod \
          WholeStr.mod
 
 toolexeclib_LTLIBRARIES = libm2iso.la
 libm2iso_la_SOURCES =  $(M2MODS) \
-                     ErrnoCategory.cc wraptime.cc RTco.cc wrapsock.c
+                     ErrnoCategory.cc RTco.cc wrapclock.cc wraptime.cc wrapsock.c
 #  wrapsock.cc
 
 C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include

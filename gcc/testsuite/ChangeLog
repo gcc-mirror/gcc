@@ -1,3 +1,410 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108119
+	* gm2/iso/check/fail/iso-check-fail.exp (gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/auto-init/fail/switches-auto-init-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/pim2/fail/switches-check-all-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/iso/fail/switches-check-all-plugin-iso-fail.exp
+	(gm2_init_iso): Add -fm2-plugin.
+	* gm2/switches/check-all/plugin/pim2/fail/switches-check-all-plugin-pim2-fail.exp
+	(gm2_init_pim2): Add -fm2-plugin.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* g++.dg/cpp1z/variant1.C: New test.
+
+2023-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106310
+	* g++.dg/template/template-keyword4.C: New test.
+
+2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-1.c: Adjust tests.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-25.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-36.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-16.c: Ditto.
+
+2023-08-08  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/vslide1down-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1down-3.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-1.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-2.c: New test.
+	* gcc.target/riscv/rvv/base/vslide1up-3.c: New test.
+
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110197
+	* g++.dg/cpp0x/constexpr-empty18.C: New test.
+	* g++.dg/cpp0x/constexpr-empty19.C: New test.
+
+2023-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110566
+	PR c++/108179
+	* g++.dg/template/ttp38.C: New test.
+
+2023-08-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* gm2/iso/run/pass/m2date.mod: New test.
+	* gm2/iso/run/pass/testclock.mod: New test.
+	* gm2/iso/run/pass/testclock2.mod: New test.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110161
+	* gm2/pim/fail/badxproc.mod: New test.
+
+2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-08-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110865
+	* gm2/iso/pass/constvec.mod: New test.
+	* gm2/iso/pass/constvec2.mod: New test.
+	* gm2/iso/run/pass/constvec3.mod: New test.
+
+2023-08-01  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/110741
+	* g++.target/powerpc/pr110741.C: New test.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-compat-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: New test.
+
+2023-07-31  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/89835
+	* gcc.target/riscv/pr89835.c: New test.
+
+2023-07-31  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Backported from master:
+	2023-06-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/110280
+	* gcc.target/aarch64/sve/pr110280.c: New test.
+
+2023-07-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110174
+	* gm2/pim/pass/program2.mod: Remove import of BuildInline.
+	* gm2/extensions/asm/fail/extensions-asm-fail.exp: New test.
+	* gm2/extensions/asm/fail/stressreturn.mod: New test.
+	* gm2/extensions/asm/pass/extensions-asm-pass.exp: New test.
+	* gm2/extensions/asm/pass/fooasm.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110631
+	* gm2/pimlib/run/pass/testfiobinary.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testdispose4.mod: New test.
+
+2023-07-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110825
+	* gfortran.dg/assumed_type_18.f90: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/errors/fail/badabs.mod: New test.
+	* gm2/errors/fail/badenum.mod: New test.
+
+2023-07-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108961
+	* gfortran.dg/pr108961.f90: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testdispose2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnil.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/pass/assignparam.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/tiny.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/switches-uninit-variable-checking-procedures-fail.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew3.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew4.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/fail/testptrptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/assignparam2.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/switches-uninit-variable-checking-procedures-pass.exp:
+	New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew5.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testnew6.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamlvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testparamrvalue.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testproc.mod: New test.
+	* gm2/switches/uninit-variable-checking/procedures/pass/testptrptr.mod: New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/switches/uninit-variable-checking/cascade/fail/cascadedif.mod: New test.
+	* gm2/switches/uninit-variable-checking/cascade/fail/switches-uninit-variable-checking-cascade-fail.exp:
+	New test.
+
+2023-07-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-07-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110125
+	* gm2/switches/uninit-variable-checking/fail/testinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testlarge2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testsmallvec.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithnoptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit3.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testrecinit5.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testsmallrec2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testvarinit.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr2.mod: New test.
+	* gm2/switches/uninit-variable-checking/pass/testwithptr3.mod: New test.
+	* gm2/switches/uninit-variable-checking/fail/switches-uninit-variable-checking-fail.exp: New file.
+	* gm2/switches/uninit-variable-checking/pass/switches-uninit-variable-checking-pass.exp: New file.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110189
+	* gm2/pim/fail/foovaltype.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110126
+	* gm2/pim/pass/fooasm3.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110019
+	* gm2/cpp/fail/cpp-fail.exp: New test.
+	* gm2/cpp/fail/foocpp.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109952
+	* gm2/pim/run/pass/hightests.mod: New test.
+
+2023-07-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109908
+	* gm2/isolib/run/pass/testdelete.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* gm2/isolib/run/pass/testreadint.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109830
+	* gm2/isolib/run/pass/seqappend.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109810
+	* gm2/pim/fail/highice.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109779
+	* gm2/isolib/run/pass/skiplinetest.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109729
+	* gm2/pim/run/pass/ForChar.mod: New test.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-04-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108121
+	* gm2/pim/fail/largeconst.mod: Increased constant value test
+	to fail now that cc1gm2 uses widest_int to represent a ZTYPE.
+	* gm2/pim/fail/largeconst2.mod: New test.
+
+2023-07-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-04-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_target_compile_default): Conditionally
+	append -lnsl -lsocket to ldflags.
+
+2023-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110755
+	* gcc.dg/pr110755.c: New test.
+
+2023-07-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110809
+	* g++.dg/cpp2a/nontype-float3.C: New test.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110829
+	* gcc.dg/pr56837.c: XFAIL part of the testcase.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110799
+	* gcc.dg/torture/pr110799.c: New testcase.
+
+2023-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110766
+	* gcc.dg/torture/pr110766.c: New testcase.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

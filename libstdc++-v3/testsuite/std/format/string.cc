@@ -128,9 +128,41 @@ test_format_spec()
   VERIFY( ! is_format_string_for("{:9999999}", 1) );
 }
 
+void
+test_pr110862()
+{
+  try {
+    // PR libstdc++/110862 out-of-bounds read on invalid format string
+    (void) std::vformat("{0:{0}", std::make_format_args(1));
+    VERIFY( false );
+  } catch (const std::format_error& e) {
+    std::string_view what = e.what();
+    VERIFY( what.find("unmatched '{'") != what.npos );
+  }
+}
+
+void
+test_pr110974()
+{
+  try {
+    // PR libstdc++/110974 out of bounds read on invalid format string "{:{}."
+    std::string_view fmt{"{:{}.0", 5}; // "0" is not part of the format string.
+    (void) std::vformat(fmt, std::make_format_args(1.0, 1));
+    VERIFY( false );
+  } catch (const std::format_error& e) {
+    std::string_view what = e.what();
+    // GCC 13.2 throws "invalid width or precision in format-spec" after
+    // trying to parse the "0" past-the-end of the format string.
+    // There should be an exception before even trying that:
+    VERIFY( what.find("missing precision after '.'") != what.npos );
+  }
+}
+
 int main()
 {
   test_no_args();
   test_indexing();
   test_format_spec();
+  test_pr110862();
+  test_pr110974();
 }

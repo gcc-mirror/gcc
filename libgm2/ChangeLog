@@ -1,3 +1,87 @@
+2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* configure: Regenerate.
+	* configure.ac: Provide special case test for Darwin cross
+	configuration.
+	(GLIBCXX_CONFIGURE): New statement.
+	(GLIBCXX_CHECK_GETTIMEOFDAY): New statement.
+	(GLIBCXX_ENABLE_LIBSTDCXX_TIME): New statement.
+	* libm2iso/wrapclock.cc: New sys/time.h conditional include.
+	(sys/syscall.h): Conditional include.
+	(unistd.h): Conditional include.
+	(GetTimeRealtime): Re-implement.
+	(SetTimeRealtime): Re-implement.
+	(timezone): Re-implement.
+	(istimezone): New function.
+	(daylight): Re-implement.
+	(isdst): Re-implement.
+	(tzname): Re-implement.
+
+2023-08-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_CACHE_CHECK): Check for tm_gmtoff field in
+	struct tm.
+	(GM2_CHECK_LIB): Check for daylight, timezone and tzname.
+	* libm2iso/wrapclock.cc (timezone): Guard against absence of
+	struct tm and tm_gmtoff.
+	(daylight): Check for daylight.
+	(timezone): Check for timezone.
+	(isdst): Check for isdst.
+	(tzname): Check for tzname.
+	(GetTimeRealtime): Check for struct timespec.
+	(SetTimeRealtime): Check for struct timespec.
+	(InitTimespec): Check for struct timespec.
+	(KillTimespec): Check for struct timespec.
+	(SetTimespec): Check for struct timespec.
+	(GetTimespec): Check for struct timespec.
+
+2023-08-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/110779
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (GM2_CHECK_LIB): Check for clock_gettime
+	and clock_settime.
+	* libm2iso/Makefile.am (M2DEFS): Add wrapclock.def.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2iso/wraptime.cc: Replace HAVE_TIMEVAL with
+	HAVE_STRUCT_TIMEVAL.
+	* libm2iso/wrapclock.cc: New file.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (M2DEFS): Add TextUtil.def.
+	(M2MODS): Add TextUtil.mod.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2023-07-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108344
+	* libm2cor/KeyBoardLEDs.cc (initialize_module): New
+	function.
+	(SwitchScroll): Call initialize_module.
+	(SwitchNum): Call initialize_module.
+	(SwitchCaps): Call initialize_module.
+	(SwitchLEDs): Call initialize_module.
+	(M2EXPORT): Remove initialization code.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

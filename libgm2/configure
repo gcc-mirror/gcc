@@ -3977,6 +3977,42 @@ test -n "$target_alias" &&
 target_alias=${target_alias-$host_alias}
 
 
+if test "$build" != "$host"; then
+  # We are being configured with some form of cross compiler.
+  GLIBCXX_IS_NATIVE=false
+  case "$host","$target" in
+    # Darwin crosses can use the host system's libraries and headers,
+    # because of the fat library support.  Of course, it must be the
+    # same version of Darwin on both sides.  Allow the user to
+    # just say --target=foo-darwin without a version number to mean
+    # "the version on this system".
+      *-*-darwin*,*-*-darwin*)
+	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
+	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
+	if test $hostos = $targetos || test $targetos = darwin ; then
+	  GLIBCXX_IS_NATIVE=true
+	fi
+	;;
+
+      *)
+
+	;;
+  esac
+else
+  GLIBCXX_IS_NATIVE=true
+fi
+
+# Runs configure.host, and assorted other critical bits.  Sets
+# up critical shell variables.
+GLIBCXX_CONFIGURE
+
+# For gettimeofday support.
+GLIBCXX_CHECK_GETTIMEOFDAY
+
+# For clock_gettime, nanosleep and sched_yield support.
+GLIBCXX_ENABLE_LIBSTDCXX_TIME
+
+
 am__api_version='1.15'
 
 # Find a good install program.  We prefer a C program (faster),
@@ -12706,7 +12742,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12709 "configure"
+#line 12745 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12812,7 +12848,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12815 "configure"
+#line 12851 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16116,6 +16152,15 @@ _ACEOF
 
 
 fi
+ac_fn_c_check_type "$LINENO" "struct timespec" "ac_cv_type_struct_timespec" "$ac_includes_default"
+if test "x$ac_cv_type_struct_timespec" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_TIMESPEC 1
+_ACEOF
+
+
+fi
 ac_fn_c_check_type "$LINENO" "struct timeval" "ac_cv_type_struct_timeval" "$ac_includes_default"
 if test "x$ac_cv_type_struct_timeval" = xyes; then :
 
@@ -16125,7 +16170,58 @@ _ACEOF
 
 
 fi
+ac_fn_c_check_type "$LINENO" "struct tm" "ac_cv_type_struct_tm" "$ac_includes_default"
+if test "x$ac_cv_type_struct_tm" = xyes; then :
 
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_TM 1
+_ACEOF
+
+
+fi
+
+
+# Check if struct tm contains the tm_gmtoff field.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for tm_gmtoff in struct tm" >&5
+$as_echo_n "checking for tm_gmtoff in struct tm... " >&6; }
+if ${ac_cv_struct_tm_gmtoff+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <time.h>
+
+int
+main ()
+{
+
+      struct tm tm;
+      tm.tm_gmtoff = 1;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_struct_tm_gmtoff=yes
+else
+  ac_cv_struct_tm_gmtoff=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_struct_tm_gmtoff" >&5
+$as_echo "$ac_cv_struct_tm_gmtoff" >&6; }
+
+if (test "$ac_cv_struct_tm_gmtoff" = "yes"); then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end detects struct tm with the tm_gmtoff field." >&5
+$as_echo_n "checking m2 front end detects struct tm with the tm_gmtoff field.... " >&6; }
+
+$as_echo "#define HAVE_TM_TM_GMTOFF 1" >>confdefs.h
+
+fi
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -16955,6 +17051,144 @@ $as_echo "#define HAVE_CFMAKERAW 1" >>confdefs.h
   fi
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for clock_gettime" >&5
+$as_echo_n "checking m2 front end checking c library for clock_gettime... " >&6; }
+  if test x$gcc_no_link != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lc" >&5
+$as_echo_n "checking for clock_gettime in -lc... " >&6; }
+if ${ac_cv_lib_c_clock_gettime+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime ();
+int
+main ()
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_clock_gettime=yes
+else
+  ac_cv_lib_c_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_clock_gettime" >&5
+$as_echo "$ac_cv_lib_c_clock_gettime" >&6; }
+if test "x$ac_cv_lib_c_clock_gettime" = xyes; then :
+
+$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+else
+
+  $as_echo "#undef HAVE_CLOCK_GETTIME" >>confdefs.h
+
+fi
+
+  else
+    if test "x$ac_cv_lib_c_clock_gettime" = xyes; then
+
+$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+    elif test "x$ac_cv_func_clock_gettime" = xyes; then
+
+$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+    else
+
+  $as_echo "#undef HAVE_CLOCK_GETTIME" >>confdefs.h
+
+    fi
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for clock_settime" >&5
+$as_echo_n "checking m2 front end checking c library for clock_settime... " >&6; }
+  if test x$gcc_no_link != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_settime in -lc" >&5
+$as_echo_n "checking for clock_settime in -lc... " >&6; }
+if ${ac_cv_lib_c_clock_settime+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_settime ();
+int
+main ()
+{
+return clock_settime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_clock_settime=yes
+else
+  ac_cv_lib_c_clock_settime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_clock_settime" >&5
+$as_echo "$ac_cv_lib_c_clock_settime" >&6; }
+if test "x$ac_cv_lib_c_clock_settime" = xyes; then :
+
+$as_echo "#define HAVE_CLOCK_SETTIME 1" >>confdefs.h
+
+else
+
+  $as_echo "#undef HAVE_CLOCK_SETTIME" >>confdefs.h
+
+fi
+
+  else
+    if test "x$ac_cv_lib_c_clock_settime" = xyes; then
+
+$as_echo "#define HAVE_CLOCK_SETTIME 1" >>confdefs.h
+
+    elif test "x$ac_cv_func_clock_settime" = xyes; then
+
+$as_echo "#define HAVE_CLOCK_SETTIME 1" >>confdefs.h
+
+    else
+
+  $as_echo "#undef HAVE_CLOCK_SETTIME" >>confdefs.h
+
+    fi
+  fi
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for close" >&5
 $as_echo_n "checking m2 front end checking c library for close... " >&6; }
   if test x$gcc_no_link != xyes; then
@@ -17157,6 +17391,75 @@ $as_echo "#define HAVE_CREAT 1" >>confdefs.h
     else
 
   $as_echo "#undef HAVE_CREAT" >>confdefs.h
+
+    fi
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for daylight" >&5
+$as_echo_n "checking m2 front end checking c library for daylight... " >&6; }
+  if test x$gcc_no_link != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for daylight in -lc" >&5
+$as_echo_n "checking for daylight in -lc... " >&6; }
+if ${ac_cv_lib_c_daylight+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char daylight ();
+int
+main ()
+{
+return daylight ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_daylight=yes
+else
+  ac_cv_lib_c_daylight=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_daylight" >&5
+$as_echo "$ac_cv_lib_c_daylight" >&6; }
+if test "x$ac_cv_lib_c_daylight" = xyes; then :
+
+$as_echo "#define HAVE_DAYLIGHT 1" >>confdefs.h
+
+else
+
+  $as_echo "#undef HAVE_DAYLIGHT" >>confdefs.h
+
+fi
+
+  else
+    if test "x$ac_cv_lib_c_daylight" = xyes; then
+
+$as_echo "#define HAVE_DAYLIGHT 1" >>confdefs.h
+
+    elif test "x$ac_cv_func_daylight" = xyes; then
+
+$as_echo "#define HAVE_DAYLIGHT 1" >>confdefs.h
+
+    else
+
+  $as_echo "#undef HAVE_DAYLIGHT" >>confdefs.h
 
     fi
   fi
@@ -19089,6 +19392,144 @@ $as_echo "#define HAVE_TIMES 1" >>confdefs.h
     else
 
   $as_echo "#undef HAVE_TIMES" >>confdefs.h
+
+    fi
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for timezone" >&5
+$as_echo_n "checking m2 front end checking c library for timezone... " >&6; }
+  if test x$gcc_no_link != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for timezone in -lc" >&5
+$as_echo_n "checking for timezone in -lc... " >&6; }
+if ${ac_cv_lib_c_timezone+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char timezone ();
+int
+main ()
+{
+return timezone ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_timezone=yes
+else
+  ac_cv_lib_c_timezone=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_timezone" >&5
+$as_echo "$ac_cv_lib_c_timezone" >&6; }
+if test "x$ac_cv_lib_c_timezone" = xyes; then :
+
+$as_echo "#define HAVE_TIMEZONE 1" >>confdefs.h
+
+else
+
+  $as_echo "#undef HAVE_TIMEZONE" >>confdefs.h
+
+fi
+
+  else
+    if test "x$ac_cv_lib_c_timezone" = xyes; then
+
+$as_echo "#define HAVE_TIMEZONE 1" >>confdefs.h
+
+    elif test "x$ac_cv_func_timezone" = xyes; then
+
+$as_echo "#define HAVE_TIMEZONE 1" >>confdefs.h
+
+    else
+
+  $as_echo "#undef HAVE_TIMEZONE" >>confdefs.h
+
+    fi
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking m2 front end checking c library for tzname" >&5
+$as_echo_n "checking m2 front end checking c library for tzname... " >&6; }
+  if test x$gcc_no_link != xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tzname in -lc" >&5
+$as_echo_n "checking for tzname in -lc... " >&6; }
+if ${ac_cv_lib_c_tzname+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char tzname ();
+int
+main ()
+{
+return tzname ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_c_tzname=yes
+else
+  ac_cv_lib_c_tzname=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_tzname" >&5
+$as_echo "$ac_cv_lib_c_tzname" >&6; }
+if test "x$ac_cv_lib_c_tzname" = xyes; then :
+
+$as_echo "#define HAVE_TZNAME 1" >>confdefs.h
+
+else
+
+  $as_echo "#undef HAVE_TZNAME" >>confdefs.h
+
+fi
+
+  else
+    if test "x$ac_cv_lib_c_tzname" = xyes; then
+
+$as_echo "#define HAVE_TZNAME 1" >>confdefs.h
+
+    elif test "x$ac_cv_func_tzname" = xyes; then
+
+$as_echo "#define HAVE_TZNAME 1" >>confdefs.h
+
+    else
+
+  $as_echo "#undef HAVE_TZNAME" >>confdefs.h
 
     fi
   fi

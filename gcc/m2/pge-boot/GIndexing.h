@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -82,7 +83,7 @@ EXTERN Indexing_Index Indexing_DebugIndex (Indexing_Index i);
               of the dynamic array.
 */
 
-EXTERN unsigned int Indexing_InBounds (Indexing_Index i, unsigned int n);
+EXTERN bool Indexing_InBounds (Indexing_Index i, unsigned int n);
 
 /*
    HighIndice - returns the last legally accessible indice of this array.
@@ -112,7 +113,7 @@ EXTERN void * Indexing_GetIndice (Indexing_Index i, unsigned int n);
    IsIndiceInIndex - returns TRUE if, a, is in the index, i.
 */
 
-EXTERN unsigned int Indexing_IsIndiceInIndex (Indexing_Index i, void * a);
+EXTERN bool Indexing_IsIndiceInIndex (Indexing_Index i, void * a);
 
 /*
    RemoveIndiceFromIndex - removes, a, from Index, i.

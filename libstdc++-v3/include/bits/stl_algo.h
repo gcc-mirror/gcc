@@ -4572,7 +4572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  equally likely.
    *
    *  @deprecated
-   *  Since C++14 `std::random_shuffle` is not part of the C++ standard.
+   *  Since C++17, `std::random_shuffle` is not part of the C++ standard.
    *  Use `std::shuffle` instead, which was introduced in C++11.
   */
   template<typename _RandomAccessIterator>
@@ -4611,7 +4611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  range `[0, N)`.
    *
    *  @deprecated
-   *  Since C++14 `std::random_shuffle` is not part of the C++ standard.
+   *  Since C++17, `std::random_shuffle` is not part of the C++ standard.
    *  Use `std::shuffle` instead, which was introduced in C++11.
   */
   template<typename _RandomAccessIterator, typename _RandomNumberGenerator>
@@ -4639,7 +4639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	}
     }
 #endif // HOSTED
-#endif // C++11 || USE_DEPRECATED
+#endif // <= C++11 || USE_DEPRECATED
 
   /**
    *  @brief Move elements for which a predicate is true to the beginning

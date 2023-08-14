@@ -330,7 +330,9 @@ anticipatable_occurrence_p (const bb_info *bb, const vector_insn_info dem)
   if (dem.has_avl_reg ())
     {
       /* rs1 (avl) are not modified in the basic block prior to the VSETVL.  */
-      if (!vlmax_avl_p (dem.get_avl ()))
+      rtx avl
+	= has_vl_op (insn->rtl ()) ? get_vl (insn->rtl ()) : dem.get_avl ();
+      if (!vlmax_avl_p (avl))
 	{
 	  set_info *set = dem.get_avl_source ();
 	  /* If it's undefined, it's not anticipatable conservatively.  */

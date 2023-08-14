@@ -1,3 +1,217 @@
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdChronoCalendarPrinter):
+	Check for out-of-range month an weekday indices.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Check invalid
+	month and weekday values.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110970
+	* include/bits/stl_iterator.h (__detail::__move_iter_cat): Use
+	__iter_category_t.
+	(iterator_traits<common_iterator<I, S>>::_S_iter_cat): Likewise.
+	(__detail::__basic_const_iterator_iter_cat): Likewise.
+	* include/bits/stl_iterator_base_types.h (__iterator_category_t):
+	Rename to __iter_category_t.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110974
+	* include/std/format (_Spec::_M_parse_precision): Check for
+	empty range before dereferencing iterator.
+	* testsuite/std/format/string.cc: Check for expected exception.
+	Fix expected exception message in test_pr110862() and actually
+	call it.
+
+2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110968
+	* include/std/format (__formatter_fp::format): Check return
+	value of _M_localize.
+	* testsuite/std/format/functions/format.cc: Check classic
+	locale.
+
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110860
+	* include/std/format (__formatter_fp::format): Do not use
+	__builtin_abs and __builtin_log10 with arbitrary floating-point
+	types.
+
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110917
+	* include/std/format (__format::_Iter_sink<CharT, OutIter>):
+	Constrain partial specialization for contiguous iterators to
+	require the value type to be CharT.
+	* testsuite/std/format/functions/format_to.cc: New test.
+
+2023-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110862
+	* include/std/format (_Scanner::_M_on_replacement_field):
+	Check for expected '}' before incrementing iterator.
+	* testsuite/std/format/string.cc: Check "{0:{0}" format string.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format):
+	Do not set __is_neg for hh_mm_ss before calling
+	_M_format_to_ostream. Change __print_sign lambda to only check
+	__is_neg for durations and hh_mm_ss types.
+	(__formatter_chrono::_M_format_to_ostream): Only check __is_neg
+	for duration types.
+	* testsuite/std/time/hh_mm_ss/io.cc: Check negative values.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110719
+	* include/bits/chrono_io.h (__formatter_chrono::_S_floor_seconds):
+	Handle duration and hh_mm_ss.
+	* testsuite/20_util/duration/io.cc: Check locale-specific
+	formats.
+	* testsuite/std/time/hh_mm_ss/io.cc: Likewise.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110719
+	* include/bits/chrono_io.h (__formatter_chrono::_M_parse): Fix
+	allowed modifiers for %z and %Z. Fix -Wparentheses and
+	-Wnarrowing warnings.
+	(__formatter_chrono::_M_format): Call new functions for %d, %e,
+	%H, %I, %m and %M.
+	(__formatter_chrono::_M_c): Use _S_floor_seconds to remove
+	subsecond precision.
+	(__formatter_chrono::_M_C_y_Y): Use _M_locale_fmt to handle
+	modifiers.
+	(__formatter_chrono::_M_e): Replace with _M_d_e and use
+	_M_locale_fmt.
+	(__formatter_chrono::_M_I): Replace with _M_H_I and use
+	_M_locale_fmt.
+	(__formatter_chrono::_M_m): New function.
+	(__formatter_chrono::_M_M): New function.
+	(__formatter_chrono::_M_r): Use _M_locale_fmt.
+	(__formatter_chrono::_M_S): Likewise.
+	(__formatter_chrono::_M_u_w): Likewise.
+	(__formatter_chrono::_M_U_V_W): Likewise.
+	(__formatter_chrono::_M_X): Use _S_floor_seconds.
+	(__formatter_chrono::_M_Z): Fix untested branch for wchar_t.
+	(__formatter_chrono::_S_altnum): Remove function.
+	(__formatter_chrono::_S_dd_zero_fill): Remove function.
+	(__formatter_chrono::_S_floor_seconds): New function.
+	(__formatter_chrono::_M_locale_fmt): New function.
+	* testsuite/std/time/clock/system/io.cc: Adjust expected output
+	for locale-specific formats and check modified formats.
+	* testsuite/std/time/clock/utc/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: New test.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110708
+	* include/bits/chrono_io.h (__formatter_chrono::_M_parse): Only
+	allow a single modifier.
+	* testsuite/std/time/format.cc: Check multiple modifiers.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__write_padded): Initialize first element
+	of array to avoid a -Wmaybe-uninitialized warning.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110593
+	* include/bits/chrono.h (duration): Improve static assert
+	messages.
+	(__is_ratio): Move to ...
+	* include/std/ratio (__is_ratio): ... here.
+	(__is_ratio_v): New variable template and partial
+	specialization.
+	(__are_both_ratios): New function template.
+	(__ratio_multiply, ratio_equal, ratio_less, __ratio_add):
+	Add static assertion.
+	* testsuite/20_util/ratio/requirements/type_constraints.cc:
+	New test.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc:
+	Adjust expected error.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Likewise.
+
+2023-07-28  Deev Patel  <pateldeev@nevada.unr.edu>
+
+	Backported from master:
+	2023-07-24  Deev Patel  <pateldeev@nevada.unr.edu>
+
+	* include/std/format (_Formatting_scanner::_M_on_chars): Add
+	missing constexpr specifier.
+	(_Formatting_scanner::_M_format_arg): Likewise.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110807
+	* include/bits/stl_bvector.h (vector(const vector&)): Access
+	iterators before allocating.
+	* include/bits/vector.tcc (vector<bool>::_M_insert_range):
+	Likewise.
+	* testsuite/23_containers/vector/bool/110807.cc: New test.
+
+2023-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h (random_shuffle): Add deprecated
+	attribute.
+	* include/bits/stl_algo.h (random_shuffle): Correct comments.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Disable
+	deprecated warnings.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/deprecated.cc: New
+	test.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.
