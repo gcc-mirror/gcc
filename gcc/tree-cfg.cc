@@ -8565,7 +8565,7 @@ print_loop_info (FILE *file, const class loop *loop, const char *prefix)
       fprintf (file, "\n%siterations by profile: %f (%s%s) entry count:", prefix,
 	       iterations.to_double (), reliable ? "reliable" : "unreliable",
 	       maybe_flat_loop_profile (loop) ? ", maybe flat" : "");
-      loop_count_in (loop).dump (dump_file, cfun);
+      loop_count_in (loop).dump (file, cfun);
     }
 
 }
