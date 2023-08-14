@@ -585,6 +585,29 @@ public:
   }
 };
 
+/* Implements below instructions for frm
+   - vfwmsac
+*/
+class vfwmsac_frm : public function_base
+{
+public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (e.op_info->op == OP_TYPE_vf)
+      return e.use_widen_ternop_insn (
+	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
+    if (e.op_info->op == OP_TYPE_vv)
+      return e.use_widen_ternop_insn (
+	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
+
+    gcc_unreachable ();
+  }
+};
+
 /* Implements vrsub.  */
 class vrsub : public function_base
 {
@@ -2365,6 +2388,7 @@ static CONSTEXPR const vfwmacc_frm vfwmacc_frm_obj;
 static CONSTEXPR const vfwnmacc vfwnmacc_obj;
 static CONSTEXPR const vfwnmacc_frm vfwnmacc_frm_obj;
 static CONSTEXPR const vfwmsac vfwmsac_obj;
+static CONSTEXPR const vfwmsac_frm vfwmsac_frm_obj;
 static CONSTEXPR const vfwnmsac vfwnmsac_obj;
 static CONSTEXPR const unop<SQRT> vfsqrt_obj;
 static CONSTEXPR const float_misc<UNSPEC_VFRSQRT7> vfrsqrt7_obj;
@@ -2610,6 +2634,7 @@ BASE (vfwmacc_frm)
 BASE (vfwnmacc)
 BASE (vfwnmacc_frm)
 BASE (vfwmsac)
+BASE (vfwmsac_frm)
 BASE (vfwnmsac)
 BASE (vfsqrt)
 BASE (vfrsqrt7)

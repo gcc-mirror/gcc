@@ -380,6 +380,8 @@ DEF_RVV_FUNCTION (vfwmacc_frm, alu_frm, full_preds, f_wwvv_ops)
 DEF_RVV_FUNCTION (vfwmacc_frm, alu_frm, full_preds, f_wwfv_ops)
 DEF_RVV_FUNCTION (vfwnmacc_frm, alu_frm, full_preds, f_wwvv_ops)
 DEF_RVV_FUNCTION (vfwnmacc_frm, alu_frm, full_preds, f_wwfv_ops)
+DEF_RVV_FUNCTION (vfwmsac_frm, alu_frm, full_preds, f_wwvv_ops)
+DEF_RVV_FUNCTION (vfwmsac_frm, alu_frm, full_preds, f_wwfv_ops)
 
 // 13.8. Vector Floating-Point Square-Root Instruction
 DEF_RVV_FUNCTION (vfsqrt, alu, full_preds, f_v_ops)
