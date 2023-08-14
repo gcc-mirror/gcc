@@ -3182,6 +3182,21 @@ gfc_finalizer;
 
 /************************ Function prototypes *************************/
 
+
+/* Returns true if the type specified in TS is a character type whose length
+   is the constant one.  Otherwise returns false.  */
+
+inline bool
+gfc_length_one_character_type_p (gfc_typespec *ts)
+{
+  return ts->type == BT_CHARACTER
+	 && ts->u.cl
+	 && ts->u.cl->length
+	 && ts->u.cl->length->expr_type == EXPR_CONSTANT
+	 && ts->u.cl->length->ts.type == BT_INTEGER
+	 && mpz_cmp_ui (ts->u.cl->length->value.integer, 1) == 0;
+}
+
 /* decl.cc */
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);

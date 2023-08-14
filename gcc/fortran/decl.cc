@@ -6064,9 +6064,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 
       /* BIND(C) functions cannot return a character string.  */
       if (bind_c_function && tmp_sym->ts.type == BT_CHARACTER)
-	if (tmp_sym->ts.u.cl == NULL || tmp_sym->ts.u.cl->length == NULL
-	    || tmp_sym->ts.u.cl->length->expr_type != EXPR_CONSTANT
-	    || mpz_cmp_si (tmp_sym->ts.u.cl->length->value.integer, 1) != 0)
+	if (!gfc_length_one_character_type_p (&tmp_sym->ts))
 	  gfc_error ("Return type of BIND(C) function %qs of character "
 		     "type at %L must have length 1", tmp_sym->name,
 			 &(tmp_sym->declared_at));

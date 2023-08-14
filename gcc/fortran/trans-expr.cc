@@ -6453,12 +6453,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		       dummy arguments are actually passed by value.
 		       Strings are truncated to length 1.
 		       The BIND(C) case is handled elsewhere.  */
-		    if (fsym->ts.type == BT_CHARACTER
-			&& !fsym->ts.is_c_interop
-			&& fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT
-			&& fsym->ts.u.cl->length->ts.type == BT_INTEGER
-			&& (mpz_cmp_ui
-			    (fsym->ts.u.cl->length->value.integer, 1) == 0))
+		    if (!fsym->ts.is_c_interop
+			&& gfc_length_one_character_type_p (&fsym->ts))
 		      {
 			if (e->expr_type != EXPR_CONSTANT)
 			  {
