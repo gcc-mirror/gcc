@@ -121,7 +121,7 @@ void foo8 (void *base, void *out, size_t vl, double x)
 /*
 ** foo9:
 ** ...
-** vmv.v.i\tv[0-9]+,\s*-15
+** vmv.s.x\tv[0-9]+,\s*[a-x0-9]+
 ** ...
 ** ret
 */
@@ -150,7 +150,7 @@ void foo10 (void *base, void *out, size_t vl)
 /*
 ** foo11:
 ** ...
-** vmv.v.i\tv[0-9]+,\s*0
+** vmv.s.x\tv[0-9]+,\s*zero
 ** ...
 ** ret
 */
@@ -164,7 +164,7 @@ void foo11 (void *base, void *out, size_t vl)
 /*
 ** foo12:
 ** ...
-** vfmv.s.f\tv[0-9]+,\s*[a-x0-9]+
+** vmv.s.x\tv[0-9]+,\s*zero
 ** ...
 ** ret
 */
@@ -172,5 +172,19 @@ void foo12 (void *base, void *out, size_t vl)
 {
     vfloat64m2_t merge = *(vfloat64m2_t*) (base + 200);
     vfloat64m2_t v = __riscv_vfmv_s_f_f64m2_tu (merge, 0, vl);
+    *(vfloat64m2_t*)out = v;
+}
+
+/*
+** foo13:
+** ...
+** vfmv.s.f\tv[0-9]+,\s*[a-x0-9]+
+** ...
+** ret
+*/
+void foo13 (void *base, void *out, size_t vl)
+{
+    vfloat64m2_t merge = *(vfloat64m2_t*) (base + 200);
+    vfloat64m2_t v = __riscv_vfmv_s_f_f64m2_tu (merge, 0.2, vl);
     *(vfloat64m2_t*)out = v;
 }

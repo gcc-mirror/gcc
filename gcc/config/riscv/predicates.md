@@ -292,6 +292,10 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_int_operand")))
 
+(define_predicate "vector_const_0_operand"
+  (and (match_code "const_vector")
+       (match_test "satisfies_constraint_Wc0 (op)")))
+
 (define_predicate "vector_move_operand"
   (ior (match_operand 0 "nonimmediate_operand")
        (and (match_code "const_vector")

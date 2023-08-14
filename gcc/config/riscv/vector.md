@@ -1728,23 +1728,24 @@
 	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
-  /* Handle vmv.s.x instruction which has memory scalar.  */
-  if (satisfies_constraint_Wdm (operands[3]) || riscv_vector::simm5_p (operands[3])
-      || rtx_equal_p (operands[3], CONST0_RTX (<VEL>mode)))
+  /* Handle vmv.s.x instruction (Wb1 mask) which has memory scalar.  */
+  if (satisfies_constraint_Wdm (operands[3]))
     {
       if (satisfies_constraint_Wb1 (operands[1]))
-        {
-          // Case 1: vmv.s.x (TA) ==> vlse.v (TA)
-          if (satisfies_constraint_vu (operands[2]))
-            operands[1] = CONSTM1_RTX (<VM>mode);
-          else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode))
-            {
-	      // Case 2: vmv.s.x (TU) ==> andi vl + vlse.v (TU) in RV32 system.
+	{
+	  /* Case 1: vmv.s.x (TA, x == memory) ==> vlse.v (TA)  */
+	  if (satisfies_constraint_vu (operands[2]))
+	    operands[1] = CONSTM1_RTX (<VM>mode);
+	  else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode))
+	    {
+	      /* Case 2: vmv.s.x (TU, x == memory) ==>
+			   vl = 0 or 1; + vlse.v (TU) in RV32 system  */
 	      operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
 	      operands[1] = CONSTM1_RTX (<VM>mode);
 	    }
-          else
-            operands[3] = force_reg (<VEL>mode, operands[3]);
+	  else
+	    /* Case 3: load x (memory) to register.  */
+	    operands[3] = force_reg (<VEL>mode, operands[3]);
 	}
     }
   else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)
@@ -1872,6 +1873,24 @@
    vmv.s.x\t%0,%3
    vmv.s.x\t%0,%3"
   [(set_attr "type" "vimov,vimov,vimovxv,vimovxv")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*pred_broadcast<mode>_zero"
+  [(set (match_operand:V_VLS 0 "register_operand"                          "=vr,    vr")
+    (if_then_else:V_VLS
+      (unspec:<VM>
+        [(match_operand:<VM> 1 "vector_least_significant_set_mask_operand" "Wb1,   Wb1")
+         (match_operand 4 "vector_length_operand"                          " rK,    rK")
+         (match_operand 5 "const_int_operand"                              "  i,     i")
+         (match_operand 6 "const_int_operand"                              "  i,     i")
+         (match_operand 7 "const_int_operand"                              "  i,     i")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (match_operand:V_VLS 3 "vector_const_0_operand"                      "Wc0,   Wc0")
+      (match_operand:V_VLS 2 "vector_merge_operand"                        " vu,     0")))]
+  "TARGET_VECTOR"
+  "vmv.s.x\t%0,zero"
+  [(set_attr "type" "vimovxv,vimovxv")
    (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------------
