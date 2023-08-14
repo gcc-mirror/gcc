@@ -537,6 +537,7 @@ get_intel_cpu (struct __processor_model *cpu_model,
     case 0x9a:
       /* Alder Lake.  */
     case 0xb7:
+    case 0xba:
     case 0xbf:
       /* Raptor Lake.  */
     case 0xaa:
