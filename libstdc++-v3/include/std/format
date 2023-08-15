@@ -79,8 +79,10 @@ namespace __format
 
   using format_context
     = basic_format_context<__format::_Sink_iter<char>, char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using wformat_context
     = basic_format_context<__format::_Sink_iter<wchar_t>, wchar_t>;
+#endif
 
   // [format.args], class template basic_format_args
   template<typename _Context> class basic_format_args;
@@ -118,9 +120,11 @@ namespace __format
   template<typename... _Args>
     using format_string = basic_format_string<char, type_identity_t<_Args>...>;
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename... _Args>
     using wformat_string
       = basic_format_string<wchar_t, type_identity_t<_Args>...>;
+#endif
 
   // [format.formatter], formatter
 
@@ -181,7 +185,9 @@ namespace __format
   // [format.parse.ctx], class template basic_format_parse_context
   template<typename _CharT> class basic_format_parse_context;
   using format_parse_context = basic_format_parse_context<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using wformat_parse_context = basic_format_parse_context<wchar_t>;
+#endif
 
   template<typename _CharT>
     class basic_format_parse_context
@@ -745,8 +751,13 @@ namespace __format
     bool _M_hasval = false;
   };
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _CharT>
     concept __char = same_as<_CharT, char> || same_as<_CharT, wchar_t>;
+#else
+  template<typename _CharT>
+    concept __char = same_as<_CharT, char>;
+#endif
 
   template<__char _CharT>
     struct __formatter_str
@@ -1125,26 +1136,20 @@ namespace __format
 	{
 	  size_t __width = _M_spec._M_get_width(__fc);
 
-	  _Optional_locale __loc;
-
 	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<char, _CharT>)
 	    __str = __narrow_str;
 	  else
 	    {
-	      __loc = __fc.locale();
-	      auto& __ct = use_facet<ctype<_CharT>>(__loc.value());
 	      size_t __n = __narrow_str.size();
 	      auto __p = (_CharT*)__builtin_alloca(__n * sizeof(_CharT));
-	      __ct.widen(__narrow_str.data(), __narrow_str.data() + __n, __p);
+	      __to_wstring_numeric(__narrow_str.data(), __n, __p);
 	      __str = {__p, __n};
 	    }
 
 	  if (_M_spec._M_localized)
 	    {
-	      if constexpr (is_same_v<char, _CharT>)
-		__loc = __fc.locale();
-	      const auto& __l = __loc.value();
+	      const auto& __l = __fc.locale();
 	      if (__l.name() != "C")
 		{
 		  auto& __np = use_facet<numpunct<_CharT>>(__l);
@@ -1612,35 +1617,19 @@ namespace __format
 		}
 	    }
 
-	  // TODO move everything below to a new member function that
-	  // doesn't depend on _Fp type.
-
-
-	  _Optional_locale __loc;
 	  basic_string<_CharT> __wstr;
 	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<_CharT, char>)
 	    __str = __narrow_str;
 	  else
 	    {
-	      __loc = __fc.locale();
-	      auto& __ct = use_facet<ctype<_CharT>>(__loc.value());
-	      const char* __data = __narrow_str.data();
-	      auto __overwrite = [&__data, &__ct](_CharT* __p, size_t __n)
-	      {
-		__ct.widen(__data, __data + __n, __p);
-		return __n;
-	      };
-	      _S_resize_and_overwrite(__wstr, __narrow_str.size(), __overwrite);
+	      __wstr = std::__to_wstring_numeric(__narrow_str);
 	      __str = __wstr;
 	    }
 
 	  if (_M_spec._M_localized)
 	    {
-	      if constexpr (is_same_v<char, _CharT>)
-		__wstr = _M_localize(__str, __expc, __fc.locale());
-	      else
-		__wstr = _M_localize(__str, __expc, __loc.value());
+	      __wstr = _M_localize(__str, __expc, __fc.locale());
 	      if (!__wstr.empty())
 		__str = __wstr;
 	    }
@@ -1697,9 +1686,24 @@ namespace __format
 	  }
 	else
 	  {
-	    const auto& __ct = use_facet<ctype<_CharT>>(__loc);
-	    __dot = __ct.widen('.');
-	    __exp = __ct.widen(__expc);
+	    __dot = L'.';
+	    switch (__expc)
+	    {
+	      case 'e':
+		__exp = L'e';
+		break;
+	      case 'E':
+		__exp = L'E';
+		break;
+	      case 'p':
+		__exp = L'p';
+		break;
+	      case 'P':
+		__exp = L'P';
+		break;
+	      default:
+		__builtin_unreachable();
+	    }
 	  }
 
 	if (__grp.empty() && __point == __dot)
@@ -1737,7 +1741,7 @@ namespace __format
 } // namespace __format
 /// @endcond
 
-  // Format a character.
+  /// Format a character.
   template<__format::__char _CharT>
     struct formatter<_CharT, _CharT>
     {
@@ -1774,7 +1778,8 @@ namespace __format
       __format::__formatter_int<_CharT> _M_f;
     };
 
-  // Format a char value for wide character output.
+#ifdef _GLIBCXX_USE_WCHAR_T
+  /// Format a char value for wide character output.
   template<>
     struct formatter<char, wchar_t>
     {
@@ -1808,6 +1813,7 @@ namespace __format
     private:
       __format::__formatter_int<wchar_t> _M_f;
     };
+#endif // USE_WCHAR_T
 
   /** Format a string.
    * @{
@@ -1903,6 +1909,7 @@ namespace __format
       __format::__formatter_str<char> _M_f;
     };
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Traits, typename _Alloc>
     struct formatter<basic_string<wchar_t, _Traits, _Alloc>, wchar_t>
     {
@@ -1926,6 +1933,7 @@ namespace __format
     private:
       __format::__formatter_str<wchar_t> _M_f;
     };
+#endif // USE_WCHAR_T
 
   template<typename _Traits>
     struct formatter<basic_string_view<char, _Traits>, char>
@@ -1951,6 +1959,7 @@ namespace __format
       __format::__formatter_str<char> _M_f;
     };
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Traits>
     struct formatter<basic_string_view<wchar_t, _Traits>, wchar_t>
     {
@@ -1974,6 +1983,7 @@ namespace __format
     private:
       __format::__formatter_str<wchar_t> _M_f;
     };
+#endif // USE_WCHAR_T
   /// @}
 
   /// Format an integer.
@@ -2144,10 +2154,8 @@ namespace __format
 	    __str = string_view(__buf, __n);
 	  else
 	    {
-	      const std::locale& __loc = __fc.locale();
-	      auto& __ct = use_facet<ctype<_CharT>>(__loc);
 	      auto __p = (_CharT*)__builtin_alloca(__n * sizeof(_CharT));
-	      __ct.widen(__buf, __buf + __n, __p);
+	      __to_wstring_numeric(__buf, __n, __p);
 	      __str = wstring_view(__p, __n);
 	    }
 
@@ -3698,25 +3706,33 @@ namespace __format
     vformat_to(_Out __out, string_view __fmt, format_args __args)
     { return __format::__do_vformat_to(std::move(__out), __fmt, __args); }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out> requires output_iterator<_Out, const wchar_t&>
     [[__gnu__::__always_inline__]]
     inline _Out
     vformat_to(_Out __out, wstring_view __fmt, wformat_args __args)
     { return __format::__do_vformat_to(std::move(__out), __fmt, __args); }
+#endif
 
   template<typename _Out> requires output_iterator<_Out, const char&>
     [[__gnu__::__always_inline__]]
     inline _Out
     vformat_to(_Out __out, const locale& __loc, string_view __fmt,
 	       format_args __args)
-    { return __format::__do_vformat_to(std::move(__out), __fmt, __args, &__loc); }
+    {
+      return __format::__do_vformat_to(std::move(__out), __fmt, __args, &__loc);
+    }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out> requires output_iterator<_Out, const wchar_t&>
     [[__gnu__::__always_inline__]]
     inline _Out
     vformat_to(_Out __out, const locale& __loc, wstring_view __fmt,
 	       wformat_args __args)
-    { return __format::__do_vformat_to(std::move(__out), __fmt, __args, &__loc); }
+    {
+      return __format::__do_vformat_to(std::move(__out), __fmt, __args, &__loc);
+    }
+#endif
 
   [[nodiscard]]
   inline string
@@ -3727,6 +3743,7 @@ namespace __format
     return std::move(__buf).get();
   }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   [[nodiscard]]
   inline wstring
   vformat(wstring_view __fmt, wformat_args __args)
@@ -3735,6 +3752,7 @@ namespace __format
     std::vformat_to(__buf.out(), __fmt, __args);
     return std::move(__buf).get();
   }
+#endif
 
   [[nodiscard]]
   inline string
@@ -3745,6 +3763,7 @@ namespace __format
     return std::move(__buf).get();
   }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   [[nodiscard]]
   inline wstring
   vformat(const locale& __loc, wstring_view __fmt, wformat_args __args)
@@ -3753,6 +3772,7 @@ namespace __format
     std::vformat_to(__buf.out(), __loc, __fmt, __args);
     return std::move(__buf).get();
   }
+#endif
 
   template<typename... _Args>
     [[nodiscard]]
@@ -3760,11 +3780,13 @@ namespace __format
     format(format_string<_Args...> __fmt, _Args&&... __args)
     { return std::vformat(__fmt.get(), std::make_format_args(__args...)); }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename... _Args>
     [[nodiscard]]
     inline wstring
     format(wformat_string<_Args...> __fmt, _Args&&... __args)
     { return std::vformat(__fmt.get(), std::make_wformat_args(__args...)); }
+#endif
 
   template<typename... _Args>
     [[nodiscard]]
@@ -3776,6 +3798,7 @@ namespace __format
 			  std::make_format_args(__args...));
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename... _Args>
     [[nodiscard]]
     inline wstring
@@ -3785,6 +3808,7 @@ namespace __format
       return std::vformat(__loc, __fmt.get(),
 			  std::make_wformat_args(__args...));
     }
+#endif
 
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const char&>
@@ -3795,6 +3819,7 @@ namespace __format
 			     std::make_format_args(std::forward<_Args>(__args)...));
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const wchar_t&>
     inline _Out
@@ -3803,6 +3828,7 @@ namespace __format
       return std::vformat_to(std::move(__out), __fmt.get(),
 			     std::make_wformat_args(std::forward<_Args>(__args)...));
     }
+#endif
 
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const char&>
@@ -3814,6 +3840,7 @@ namespace __format
 			     std::make_format_args(std::forward<_Args>(__args)...));
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const wchar_t&>
     inline _Out
@@ -3823,6 +3850,7 @@ namespace __format
       return std::vformat_to(std::move(__out), __loc, __fmt.get(),
 			     std::make_wformat_args(std::forward<_Args>(__args)...));
     }
+#endif
 
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const char&>
@@ -3836,6 +3864,7 @@ namespace __format
       return std::move(__sink)._M_finish();
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const wchar_t&>
     inline format_to_n_result<_Out>
@@ -3847,6 +3876,7 @@ namespace __format
 		      std::make_wformat_args(__args...));
       return std::move(__sink)._M_finish();
     }
+#endif
 
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const char&>
@@ -3860,6 +3890,7 @@ namespace __format
       return std::move(__sink)._M_finish();
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Out, typename... _Args>
     requires output_iterator<_Out, const wchar_t&>
     inline format_to_n_result<_Out>
@@ -3871,6 +3902,7 @@ namespace __format
 		      std::make_wformat_args(__args...));
       return std::move(__sink)._M_finish();
     }
+#endif
 
 /// @cond undocumented
 namespace __format
@@ -3927,6 +3959,7 @@ namespace __format
       return __buf.count();
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename... _Args>
     [[nodiscard]]
     inline size_t
@@ -3937,6 +3970,7 @@ namespace __format
 		      std::make_wformat_args(std::forward<_Args>(__args)...));
       return __buf.count();
     }
+#endif
 
   template<typename... _Args>
     [[nodiscard]]
@@ -3950,6 +3984,7 @@ namespace __format
       return __buf.count();
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<typename... _Args>
     [[nodiscard]]
     inline size_t
@@ -3961,6 +3996,7 @@ namespace __format
 		      std::make_wformat_args(std::forward<_Args>(__args)...));
       return __buf.count();
     }
+#endif
 
 #if __cpp_lib_format_ranges
   // [format.range], formatting of ranges
