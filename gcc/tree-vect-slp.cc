@@ -3121,6 +3121,14 @@ vect_build_slp_instance (vec_info *vinfo,
 			 /* ???  We need stmt_info for group splitting.  */
 			 stmt_vec_info stmt_info_)
 {
+  if (kind == slp_inst_kind_ctor)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Analyzing vectorizable constructor: %G\n",
+			 root_stmt_infos[0]->stmt);
+    }
+
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location,
@@ -3427,22 +3435,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
       STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
 	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
     }
-  else if (kind == slp_inst_kind_ctor)
-    {
-      tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
-      tree val;
-      scalar_stmts.create (CONSTRUCTOR_NELTS (rhs));
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
-	{
-	  stmt_vec_info def_info = vinfo->lookup_def (val);
-	  def_info = vect_stmt_to_vectorize (def_info);
-	  scalar_stmts.quick_push (def_info);
-	}
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Analyzing vectorizable constructor: %G\n",
-			 stmt_info->stmt);
-    }
   else if (kind == slp_inst_kind_reduc_group)
     {
       /* Collect reduction statements.  */
@@ -3467,19 +3459,12 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
   vec<stmt_vec_info> roots = vNULL;
   vec<tree> remain = vNULL;
-  if (kind == slp_inst_kind_ctor)
-    {
-      roots.create (1);
-      roots.quick_push (stmt_info);
-    }
   /* Build the tree for the SLP instance.  */
   bool res = vect_build_slp_instance (vinfo, kind, scalar_stmts,
 				      roots, remain,
 				      max_tree_size, limit, bst_map,
 				      kind == slp_inst_kind_store
 				      ? stmt_info : NULL);
-  if (!res)
-    roots.release ();
 
   /* ???  If this is slp_inst_kind_store and the above succeeded here's
      where we should do store group splitting.  */
@@ -3507,9 +3492,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
   /* Find SLP sequences starting from groups of grouped stores.  */
   FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
     vect_analyze_slp_instance (vinfo, bst_map, first_element,
-			       STMT_VINFO_GROUPED_ACCESS (first_element)
-			       ? slp_inst_kind_store : slp_inst_kind_ctor,
-			       max_tree_size, &limit);
+			       slp_inst_kind_store, max_tree_size, &limit);
 
   if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo))
     {
@@ -7096,7 +7079,7 @@ vect_slp_is_lane_insert (gimple *use_stmt, tree vec, unsigned *this_lane)
    array.  */
 
 static void
-vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
+vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 {
   for (unsigned i = 0; i < bb_vinfo->bbs.length (); ++i)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[i]);
@@ -7122,14 +7105,21 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	  unsigned j;
 	  tree val;
 	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), j, val)
-	      if (TREE_CODE (val) != SSA_NAME
-		  || !bb_vinfo->lookup_def (val))
-		break;
+	    if (TREE_CODE (val) != SSA_NAME
+		|| !bb_vinfo->lookup_def (val))
+	      break;
 	  if (j != CONSTRUCTOR_NELTS (rhs))
 	    continue;
 
-	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (assign);
-	  BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
+	  vec<stmt_vec_info> roots = vNULL;
+	  roots.safe_push (bb_vinfo->lookup_stmt (assign));
+	  vec<stmt_vec_info> stmts;
+	  stmts.create (CONSTRUCTOR_NELTS (rhs));
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), j, val)
+	    stmts.quick_push
+	      (vect_stmt_to_vectorize (bb_vinfo->lookup_def (val)));
+	  bb_vinfo->roots.safe_push (slp_root (slp_inst_kind_ctor,
+					       stmts, roots));
 	}
       else if (code == BIT_INSERT_EXPR
 	       && VECTOR_TYPE_P (TREE_TYPE (rhs))
@@ -7387,7 +7377,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
       return false;
     }
 
-  vect_slp_check_for_constructors (bb_vinfo);
+  vect_slp_check_for_roots (bb_vinfo);
 
   /* If there are no grouped stores and no constructors in the region
      there is no need to continue with pattern recog as vect_analyze_slp
