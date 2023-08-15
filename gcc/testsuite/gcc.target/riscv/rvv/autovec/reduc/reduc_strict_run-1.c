@@ -17,7 +17,8 @@
 	asm volatile ("" ::: "memory");		\
       }						\
     TYPE res = reduc_plus_##TYPE (a, b);	\
-    if (res != r * q)				\
+    TYPE ref = r * q;				\
+    if (res != ref)				\
       __builtin_abort ();			\
   }
 
