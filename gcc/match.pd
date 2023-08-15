@@ -4704,6 +4704,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (op (vec_cond:s @0 @1 @2))
   (vec_cond @0 (op! @1) (op! @2))))
 
+/* Sink unary conversions to branches, but only if we do fold both
+   and the target's truth type is the same as we already have.  */
+(simplify
+ (convert (vec_cond:s @0 @1 @2))
+ (if (VECTOR_TYPE_P (type)
+      && types_match (TREE_TYPE (@0), truth_type_for (type)))
+  (vec_cond @0 (convert! @1) (convert! @2))))
+
 /* Sink binary operation to branches, but only if we can fold it.  */
 (for op (tcc_comparison plus minus mult bit_and bit_ior bit_xor
 	 lshift rshift rdiv trunc_div ceil_div floor_div round_div
