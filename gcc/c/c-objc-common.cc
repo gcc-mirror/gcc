@@ -422,6 +422,11 @@ c_get_alias_set (tree t)
   if (TREE_CODE (t) == ENUMERAL_TYPE)
     return get_alias_set (ENUM_UNDERLYING_TYPE (t));
 
+  /* Structs with variable size can alias different incompatible
+     structs.  Let them alias anything.   */
+  if (RECORD_OR_UNION_TYPE_P (t) && C_TYPE_VARIABLE_SIZE (t))
+    return 0;
+
   return c_common_get_alias_set (t);
 }
 

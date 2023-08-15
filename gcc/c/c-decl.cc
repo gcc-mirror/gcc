@@ -634,6 +634,36 @@ public:
   auto_vec<tree> typedefs_seen;
 };
 
+
+/* Hash table for structs and unions.  */
+struct c_struct_hasher : ggc_ptr_hash<tree_node>
+{
+  static hashval_t hash (tree t);
+  static bool equal (tree, tree);
+};
+
+/* Hash an RECORD OR UNION.  */
+hashval_t
+c_struct_hasher::hash (tree type)
+{
+  inchash::hash hstate;
+
+  hstate.add_int (TREE_CODE (type));
+  hstate.add_object (TYPE_NAME (type));
+
+  return hstate.end ();
+}
+
+/* Compare two RECORD or UNION types.  */
+bool
+c_struct_hasher::equal (tree t1,  tree t2)
+{
+  return comptypes_equiv_p (t1, t2);
+}
+
+/* All tagged typed so that TYPE_CANONICAL can be set correctly.  */
+static GTY (()) hash_table<c_struct_hasher> *c_struct_htab;
+
 /* Information for the struct or union currently being parsed, or
    NULL if not parsing a struct or union.  */
 static class c_struct_parse_info *struct_parse_info;
@@ -8713,7 +8743,8 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
   ref = lookup_tag (code, name, has_enum_type_specifier, &refloc);
 
   /* If the visble type is still being defined, see if there is
-     an earlier definition (which may be complete).  */
+     an earlier definition (which may be complete).  We do not
+     have to loop because nested redefinitions are not allowed.  */
   if (flag_isoc23 && ref && C_TYPE_BEING_DEFINED (ref))
     {
       tree vis = previous_tag (ref);
@@ -9660,6 +9691,24 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
 
   C_TYPE_BEING_DEFINED (t) = 0;
+
+  /* Set type canonical based on equivalence class.  */
+  if (flag_isoc23)
+    {
+      if (NULL == c_struct_htab)
+	c_struct_htab = hash_table<c_struct_hasher>::create_ggc (61);
+
+      hashval_t hash = c_struct_hasher::hash (t);
+
+      tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
+      if (*e)
+	TYPE_CANONICAL (t) = *e;
+      else
+	{
+	  TYPE_CANONICAL (t) = t;
+	  *e = t;
+	}
+    }
 
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! "*-*-*" } } }
+/* { dg-do compile }
  * { dg-options "-std=c23" }
  */
 

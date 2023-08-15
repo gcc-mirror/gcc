@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! "*-*-*" } } }
+/* { dg-do run }
  * { dg-options "-std=c23 -fpermissive" }
  */
 

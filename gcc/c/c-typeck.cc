@@ -1063,6 +1063,7 @@ struct comptypes_data {
   bool different_types_p;
   bool warning_needed;
   bool anon_field;
+  bool equiv;
 
   const struct tagged_tu_seen_cache* cache;
 };
@@ -1123,6 +1124,21 @@ comptypes_check_different_types (tree type1, tree type2,
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
+
+
+/* Like comptypes, but if it returns nonzero for struct and union
+   types considered equivalent for aliasing purposes.  */
+
+bool
+comptypes_equiv_p (tree type1, tree type2)
+{
+  struct comptypes_data data = { };
+  data.equiv = true;
+  bool ret = comptypes_internal (type1, type2, &data);
+
+  return ret;
+}
+
 
 /* Return true if TYPE1 and TYPE2 are compatible types for assignment
    or various other operations.  If they are compatible but a warning may
@@ -1250,6 +1266,9 @@ comptypes_internal (const_tree type1, const_tree type2,
 
 	if ((d1 == NULL_TREE) != (d2 == NULL_TREE))
 	  data->different_types_p = true;
+	/* Ignore size mismatches.  */
+	if (data->equiv)
+	  return true;
 	/* Sizes must match unless one is missing or variable.  */
 	if (d1 == NULL_TREE || d2 == NULL_TREE || d1 == d2)
 	  return true;
@@ -1467,6 +1486,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
 	  return false;
 
+	if (data->equiv && (C_TYPE_VARIABLE_SIZE (t1) || C_TYPE_VARIABLE_SIZE (t2)))
+	  return false;
+
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
 	     s1 && s2;
 	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
@@ -1486,6 +1508,15 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
 				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
 	      return false;
+
+	    tree st1 = TYPE_SIZE (TREE_TYPE (s1));
+	    tree st2 = TYPE_SIZE (TREE_TYPE (s2));
+
+	    if (data->equiv
+		&& st1 && TREE_CODE (st1) == INTEGER_CST
+		&& st2 && TREE_CODE (st2) == INTEGER_CST
+		&& !tree_int_cst_equal (st1, st2))
+	     return false;
 	  }
 	return true;
 
