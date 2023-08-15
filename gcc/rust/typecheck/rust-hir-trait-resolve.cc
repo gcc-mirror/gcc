@@ -156,7 +156,10 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   DefId trait_id = trait_reference->get_mappings ().get_defid ();
   if (context->trait_query_in_progress (trait_id))
     {
-      rust_error_at (trait_reference->get_locus (), "trait cycle detected");
+      rust_error_at (
+	trait_reference->get_locus (), ErrorCode::E0391,
+	"cycle detected when computing the super predicates of %qs",
+	trait_reference->get_name ().as_string ().c_str ());
       return &TraitReference::error_node ();
     }
 
