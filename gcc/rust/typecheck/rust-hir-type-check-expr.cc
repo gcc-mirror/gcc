@@ -1065,11 +1065,18 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   if (candidates.size () > 1)
     {
       rich_location r (line_table, expr.get_method_name ().get_locus ());
+      std::string rich_msg
+	= "multiple " + expr.get_method_name ().get_segment ().as_string ()
+	  + " found";
+
       for (auto &c : candidates)
 	r.add_range (c.candidate.locus);
 
+      r.add_fixit_replace (rich_msg.c_str ());
+
       rust_error_at (
-	r, "multiple candidates found for method %<%s%>",
+	r, ErrorCode::E0034,
+	"multiple applicable items in scope for method %qs",
 	expr.get_method_name ().get_segment ().as_string ().c_str ());
       return;
     }

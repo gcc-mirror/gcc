@@ -26,5 +26,5 @@ impl<T> Foo<T> {
 fn main() {
     let a = Foo { a: 123 };
     a.bar();
-    // { dg-error "multiple candidates found for method .bar." "" { target *-*-* } .-1 }
+    // { dg-error "multiple applicable items in scope for method .bar." "" { target *-*-* } .-1 }
 }

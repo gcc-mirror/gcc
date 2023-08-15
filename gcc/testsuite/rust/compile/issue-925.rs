@@ -21,5 +21,5 @@ impl B for S {
 fn test() {
     let a = S;
     a.foo();
-    // { dg-error "multiple candidates found for method .foo." "" { target *-*-* } .-1 }
+    // { dg-error "multiple applicable items in scope for method .foo." "" { target *-*-* } .-1 }
 }
