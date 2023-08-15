@@ -7217,13 +7217,10 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 	}
       else if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
 	       && (associative_tree_code (code) || code == MINUS_EXPR)
-	       /* ???  The flag_associative_math and TYPE_OVERFLOW_WRAPS
-		  checks pessimize a two-element reduction.  PR54400.
+	       /* ???  This pessimizes a two-element reduction.  PR54400.
 		  ???  In-order reduction could be handled if we only
 		  traverse one operand chain in vect_slp_linearize_chain.  */
-	       && ((FLOAT_TYPE_P (TREE_TYPE (rhs)) && flag_associative_math)
-		   || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
-		       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (rhs))))
+	       && !needs_fold_left_reduction_p (TREE_TYPE (rhs), code)
 	       /* Ops with constants at the tail can be stripped here.  */
 	       && TREE_CODE (rhs) == SSA_NAME
 	       && TREE_CODE (gimple_assign_rhs2 (assign)) == SSA_NAME
@@ -9161,9 +9158,25 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
       /* We may end up with more than one vector result, reduce them
 	 to one vector.  */
       tree vec_def = vec_defs[0];
+      tree vectype = TREE_TYPE (vec_def);
+      tree compute_vectype = vectype;
+      bool pun_for_overflow_p = (ANY_INTEGRAL_TYPE_P (vectype)
+				 && TYPE_OVERFLOW_UNDEFINED (vectype));
+      if (pun_for_overflow_p)
+	{
+	  compute_vectype = unsigned_type_for (vectype);
+	  vec_def = gimple_build (&epilogue, VIEW_CONVERT_EXPR,
+				  compute_vectype, vec_def);
+	}
       for (unsigned i = 1; i < vec_defs.length (); ++i)
-	vec_def = gimple_build (&epilogue, reduc_code, TREE_TYPE (vec_def),
-				vec_def, vec_defs[i]);
+	{
+	  tree def = vec_defs[i];
+	  if (pun_for_overflow_p)
+	    def = gimple_build (&epilogue, VIEW_CONVERT_EXPR,
+				compute_vectype, def);
+	  vec_def = gimple_build (&epilogue, reduc_code, compute_vectype,
+				  vec_def, def);
+	}
       vec_defs.release ();
       /* ???  Support other schemes than direct internal fn.  */
       internal_fn reduc_fn;
@@ -9171,21 +9184,26 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	  || reduc_fn == IFN_LAST)
 	gcc_unreachable ();
       tree scalar_def = gimple_build (&epilogue, as_combined_fn (reduc_fn),
-				      TREE_TYPE (TREE_TYPE (vec_def)), vec_def);
+				      TREE_TYPE (compute_vectype), vec_def);
       if (!SLP_INSTANCE_REMAIN_DEFS (instance).is_empty ())
 	{
 	  tree rem_def = NULL_TREE;
 	  for (auto def : SLP_INSTANCE_REMAIN_DEFS (instance))
-	    if (!rem_def)
-	      rem_def = def;
-	    else
-	      rem_def = gimple_build (&epilogue, reduc_code,
-				      TREE_TYPE (scalar_def),
-				      rem_def, def);
+	    {
+	      def = gimple_convert (&epilogue, TREE_TYPE (scalar_def), def);
+	      if (!rem_def)
+		rem_def = def;
+	      else
+		rem_def = gimple_build (&epilogue, reduc_code,
+					TREE_TYPE (scalar_def),
+					rem_def, def);
+	    }
 	  scalar_def = gimple_build (&epilogue, reduc_code,
 				     TREE_TYPE (scalar_def),
 				     scalar_def, rem_def);
 	}
+      scalar_def = gimple_convert (&epilogue,
+				   TREE_TYPE (vectype), scalar_def);
       gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
       gsi_insert_seq_before (&rgsi, epilogue, GSI_SAME_STMT);
       gimple_assign_set_rhs_from_tree (&rgsi, scalar_def);
