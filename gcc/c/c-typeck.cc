@@ -190,19 +190,13 @@ remove_c_maybe_const_expr (tree expr)
     return expr;
 }
 
-/* This is a cache to hold if two types are compatible or not.  */
+/* This is a cache to hold if two types are seen.  */
 
 struct tagged_tu_seen_cache {
   const struct tagged_tu_seen_cache * next;
   const_tree t1;
   const_tree t2;
-  /* The return value of tagged_types_tu_compatible_p if we had seen
-     these two types already.  */
-  int val;
 };
-
-static const struct tagged_tu_seen_cache * tagged_tu_seen_base;
-static void free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *);
 
 /* Do `exp = require_complete_type (loc, exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)
@@ -1065,10 +1059,12 @@ common_type (tree t1, tree t2)
 }
 
 struct comptypes_data {
-
   bool enum_and_int_p;
   bool different_types_p;
   bool warning_needed;
+  bool anon_field;
+
+  const struct tagged_tu_seen_cache* cache;
 };
 
 /* Return 1 if TYPE1 and TYPE2 are compatible types for assignment
@@ -1078,12 +1074,8 @@ struct comptypes_data {
 int
 comptypes (tree type1, tree type2)
 {
-  const struct tagged_tu_seen_cache * tagged_tu_seen_base1 = tagged_tu_seen_base;
-
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
-
-  free_all_tagged_tu_seen_up_to (tagged_tu_seen_base1);
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
@@ -1094,13 +1086,9 @@ comptypes (tree type1, tree type2)
 int
 comptypes_check_enum_int (tree type1, tree type2, bool *enum_and_int_p)
 {
-  const struct tagged_tu_seen_cache * tagged_tu_seen_base1 = tagged_tu_seen_base;
-
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
   *enum_and_int_p = data.enum_and_int_p;
-
-  free_all_tagged_tu_seen_up_to (tagged_tu_seen_base1);
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
@@ -1112,13 +1100,9 @@ int
 comptypes_check_different_types (tree type1, tree type2,
 				 bool *different_types_p)
 {
-  const struct tagged_tu_seen_cache * tagged_tu_seen_base1 = tagged_tu_seen_base;
-
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
   *different_types_p = data.different_types_p;
-
-  free_all_tagged_tu_seen_up_to (tagged_tu_seen_base1);
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
@@ -1357,52 +1341,6 @@ comp_target_types (location_t location, tree ttl, tree ttr)
 
 /* Subroutines of `comptypes'.  */
 
-
-
-/* Allocate the seen two types, assuming that they are compatible. */
-
-static struct tagged_tu_seen_cache *
-alloc_tagged_tu_seen_cache (const_tree t1, const_tree t2)
-{
-  struct tagged_tu_seen_cache *tu = XNEW (struct tagged_tu_seen_cache);
-  tu->next = tagged_tu_seen_base;
-  tu->t1 = t1;
-  tu->t2 = t2;
-
-  tagged_tu_seen_base = tu;
-
-  /* The C standard says that two structures in different translation
-     units are compatible with each other only if the types of their
-     fields are compatible (among other things).  We assume that they
-     are compatible until proven otherwise when building the cache.
-     An example where this can occur is:
-     struct a
-     {
-       struct a *next;
-     };
-     If we are comparing this against a similar struct in another TU,
-     and did not assume they were compatible, we end up with an infinite
-     loop.  */
-  tu->val = 1;
-  return tu;
-}
-
-/* Free the seen types until we get to TU_TIL. */
-
-static void
-free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *tu_til)
-{
-  const struct tagged_tu_seen_cache *tu = tagged_tu_seen_base;
-  while (tu != tu_til)
-    {
-      const struct tagged_tu_seen_cache *const tu1
-	= (const struct tagged_tu_seen_cache *) tu;
-      tu = tu1->next;
-      XDELETE (CONST_CAST (struct tagged_tu_seen_cache *, tu1));
-    }
-  tagged_tu_seen_base = tu_til;
-}
-
 /* Return true if two 'struct', 'union', or 'enum' types T1 and T2 are
    compatible.  The two types are not the same (which has been
    checked earlier in comptypes_internal).  */
@@ -1429,189 +1367,107 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	 && DECL_ORIGINAL_TYPE (TYPE_NAME (t2)))
     t2 = DECL_ORIGINAL_TYPE (TYPE_NAME (t2));
 
-  /* C90 didn't have the requirement that the two tags be the same.  */
-  if (flag_isoc99 && TYPE_NAME (t1) != TYPE_NAME (t2))
-    return 0;
+  if (TYPE_NAME (t1) != TYPE_NAME (t2))
+    return false;
 
-  /* C90 didn't say what happened if one or both of the types were
-     incomplete; we choose to follow C99 rules here, which is that they
-     are compatible.  */
-  if (TYPE_SIZE (t1) == NULL
-      || TYPE_SIZE (t2) == NULL)
-    return 1;
+  if (!data->anon_field && NULL_TREE == TYPE_NAME (t1))
+    return false;
 
-  {
-    const struct tagged_tu_seen_cache * tts_i;
-    for (tts_i = tagged_tu_seen_base; tts_i != NULL; tts_i = tts_i->next)
-      if (tts_i->t1 == t1 && tts_i->t2 == t2)
-	return tts_i->val;
-  }
+  if (!data->anon_field && TYPE_STUB_DECL (t1) != TYPE_STUB_DECL (t2))
+    data->different_types_p = true;
+
+  data->anon_field = false;
+
+  /* Incomplete types are incompatible inside a TU.  */
+  if (TYPE_SIZE (t1) == NULL || TYPE_SIZE (t2) == NULL)
+    return false;
+
+  if (ENUMERAL_TYPE != TREE_CODE (t1)
+      && (TYPE_REVERSE_STORAGE_ORDER (t1)
+	  != TYPE_REVERSE_STORAGE_ORDER (t2)))
+    return false;
+
+  /* For types already being looked at in some active
+     invocation of this function, assume compatibility.
+     The cache is built as a linked list on the stack
+     with the head of the list passed downwards.  */
+  for (const struct tagged_tu_seen_cache *t = data->cache;
+       t != NULL; t = t->next)
+    if (t->t1 == t1 && t->t2 == t2)
+      return true;
+
+  const struct tagged_tu_seen_cache entry = { data->cache, t1, t2 };
 
   switch (TREE_CODE (t1))
     {
     case ENUMERAL_TYPE:
       {
-	struct tagged_tu_seen_cache *tu = alloc_tagged_tu_seen_cache (t1, t2);
 	/* Speed up the case where the type values are in the same order.  */
 	tree tv1 = TYPE_VALUES (t1);
 	tree tv2 = TYPE_VALUES (t2);
 
 	if (tv1 == tv2)
-	  {
-	    return 1;
-	  }
+	  return true;
 
 	for (;tv1 && tv2; tv1 = TREE_CHAIN (tv1), tv2 = TREE_CHAIN (tv2))
 	  {
 	    if (TREE_PURPOSE (tv1) != TREE_PURPOSE (tv2))
 	      break;
-	    if (simple_cst_equal (TREE_VALUE (tv1), TREE_VALUE (tv2)) != 1)
-	      {
-		tu->val = 0;
-		return 0;
-	      }
+
+	    if (simple_cst_equal (DECL_INITIAL (TREE_VALUE (tv1)),
+				  DECL_INITIAL (TREE_VALUE (tv2))) != 1)
+	      break;
 	  }
 
 	if (tv1 == NULL_TREE && tv2 == NULL_TREE)
-	  {
-	    return 1;
-	  }
+	  return true;
+
 	if (tv1 == NULL_TREE || tv2 == NULL_TREE)
-	  {
-	    tu->val = 0;
-	    return 0;
-	  }
+	  return false;
 
 	if (list_length (TYPE_VALUES (t1)) != list_length (TYPE_VALUES (t2)))
-	  {
-	    tu->val = 0;
-	    return 0;
-	  }
+	  return false;
 
 	for (s1 = TYPE_VALUES (t1); s1; s1 = TREE_CHAIN (s1))
 	  {
 	    s2 = purpose_member (TREE_PURPOSE (s1), TYPE_VALUES (t2));
+
 	    if (s2 == NULL
-		|| simple_cst_equal (TREE_VALUE (s1), TREE_VALUE (s2)) != 1)
-	      {
-		tu->val = 0;
-		return 0;
-	      }
+		|| simple_cst_equal (DECL_INITIAL (TREE_VALUE (s1)),
+				     DECL_INITIAL (TREE_VALUE (s2))) != 1)
+	      return false;
 	  }
-	return 1;
+
+	return true;
       }
 
     case UNION_TYPE:
-      {
-	struct tagged_tu_seen_cache *tu = alloc_tagged_tu_seen_cache (t1, t2);
-
-	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
-	  {
-	    tu->val = 0;
-	    return 0;
-	  }
-
-	/*  Speed up the common case where the fields are in the same order. */
-	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2); s1 && s2;
-	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
-	  {
-	    int result;
-
-	    if (DECL_NAME (s1) != DECL_NAME (s2))
-	      break;
-	    result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data);
-
-	    if (result != 1 && !DECL_NAME (s1))
-	      break;
-	    if (result == 0)
-	      {
-		tu->val = 0;
-		return 0;
-	      }
-
-	    if (TREE_CODE (s1) == FIELD_DECL
-		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
-				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
-	      {
-		tu->val = 0;
-		return 0;
-	      }
-	  }
-	if (!s1 && !s2)
-	  {
-	    return tu->val;
-	  }
-
-	for (s1 = TYPE_FIELDS (t1); s1; s1 = DECL_CHAIN (s1))
-	  {
-	    bool ok = false;
-
-	    for (s2 = TYPE_FIELDS (t2); s2; s2 = DECL_CHAIN (s2))
-	      if (DECL_NAME (s1) == DECL_NAME (s2))
-		{
-		  int result;
-
-		  result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2),
-					       data);
-
-		  if (result != 1 && !DECL_NAME (s1))
-		    continue;
-		  if (result == 0)
-		    {
-		      tu->val = 0;
-		      return 0;
-		    }
-
-		  if (TREE_CODE (s1) == FIELD_DECL
-		      && simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
-					   DECL_FIELD_BIT_OFFSET (s2)) != 1)
-		    break;
-
-		  ok = true;
-		  break;
-		}
-	    if (!ok)
-	      {
-		tu->val = 0;
-		return 0;
-	      }
-	  }
-	return tu->val;
-      }
-
     case RECORD_TYPE:
-      {
-	struct tagged_tu_seen_cache *tu = alloc_tagged_tu_seen_cache (t1, t2);
 
 	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
-	  {
-	    tu->val = 0;
-	    return 0;
-	  }
+	  return false;
 
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
 	     s1 && s2;
 	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
 	  {
-	    int result;
 	    if (TREE_CODE (s1) != TREE_CODE (s2)
 		|| DECL_NAME (s1) != DECL_NAME (s2))
-	      break;
-	    result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data);
-	    if (result == 0)
-	      break;
+	      return false;
+
+	    if (!DECL_NAME (s1) && RECORD_OR_UNION_TYPE_P (TREE_TYPE (s1)))
+	      data->anon_field = true;
+
+	    data->cache = &entry;
+	    if (!comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data))
+	      return false;
 
 	    if (TREE_CODE (s1) == FIELD_DECL
 		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
 				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
-	      break;
+	      return false;
 	  }
-	if (s1 && s2)
-	  tu->val = 0;
-	else
-	  tu->val = 1;
-	return tu->val;
-      }
+	return true;
 
     default:
       gcc_unreachable ();
