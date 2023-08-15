@@ -319,6 +319,16 @@ test_wchar()
   VERIFY( s == L"0.0625" );
   s = std::format(L"{}", 0.25);
   VERIFY( s == L"0.25" );
+  s = std::format(L"{:+a} {:A}", 0x1.23p45, -0x1.abcdefp-15);
+  VERIFY( s == L"+1.23p+45 -1.ABCDEFP-15" );
+
+  double inf = std::numeric_limits<double>::infinity();
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  s = std::format(L"{0} {0:F} {1} {1:E}", -inf, -nan);
+  VERIFY( s == L"-inf -INF -nan -NAN" );
+
+  s = std::format(L"{0:#b} {0:#B} {0:#x} {0:#X}", 99);
+  VERIFY( s == L"0b1100011 0B1100011 0x63 0X63" );
 
   // P2909R4 Fix formatting of code units as integers (Dude, where’s my char?)
   s = std::format(L"{:d} {:d}", wchar_t(-1), char(-1));
