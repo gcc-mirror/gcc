@@ -2291,16 +2291,12 @@ public:
                 result = null;
 
                 // Reserve stack space for all tuple members
-                if (!td.objects)
-                    return;
-                foreach (o; *td.objects)
+                td.foreachVar((s)
                 {
-                    Expression ex = isExpression(o);
-                    DsymbolExp ds = ex ? ex.isDsymbolExp() : null;
-                    VarDeclaration v2 = ds ? ds.s.isVarDeclaration() : null;
+                    VarDeclaration v2 = s.isVarDeclaration();
                     assert(v2);
                     if (v2.isDataseg() && !v2.isCTFE())
-                        continue;
+                        return 0;
 
                     ctfeGlobals.stack.push(v2);
                     if (v2._init)
@@ -2310,7 +2306,7 @@ public:
                         {
                             einit = interpretRegion(ie.exp, istate, goal);
                             if (exceptionOrCant(einit))
-                                return;
+                                return 1;
                         }
                         else if (v2._init.isVoidInitializer())
                         {
@@ -2320,11 +2316,12 @@ public:
                         {
                             e.error("declaration `%s` is not yet implemented in CTFE", e.toChars());
                             result = CTFEExp.cantexp;
-                            return;
+                            return 1;
                         }
                         setValue(v2, einit);
                     }
-                }
+                    return 0;
+                });
                 return;
             }
             if (v.isStatic())

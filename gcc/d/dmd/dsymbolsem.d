@@ -650,7 +650,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else
                     ti = dsym._init ? dsym._init.syntaxCopy() : null;
 
-                StorageClass storage_class = STC.temp | STC.local | dsym.storage_class;
+                StorageClass storage_class = STC.temp | dsym.storage_class;
                 if ((dsym.storage_class & STC.parameter) && (arg.storageClass & STC.parameter))
                     storage_class |= arg.storageClass;
                 auto v = new VarDeclaration(dsym.loc, arg.type, id, ti, storage_class);
@@ -658,14 +658,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 v.overlapped = dsym.overlapped;
 
                 v.dsymbolSemantic(sc);
-
-                if (sc.scopesym)
-                {
-                    //printf("adding %s to %s\n", v.toChars(), sc.scopesym.toChars());
-                    if (sc.scopesym.members)
-                        // Note this prevents using foreach() over members, because the limits can change
-                        sc.scopesym.members.push(v);
-                }
 
                 Expression e = new DsymbolExp(dsym.loc, v);
                 (*exps)[i] = e;
@@ -6819,7 +6811,12 @@ bool determineFields(AggregateDeclaration ad)
             return 1;
 
         if (v.aliassym)
-            return 0;   // If this variable was really a tuple, skip it.
+        {
+            // If this variable was really a tuple, process each element.
+            if (auto tup = v.aliassym.isTupleDeclaration())
+                return tup.foreachVar(tv => tv.apply(&func, ad));
+            return 0;
+        }
 
         if (v.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.ctfe | STC.templateparameter))
             return 0;

@@ -1407,16 +1407,7 @@ void genKill(ref ObState obstate, ObNode* ob)
                     }
                     else if (auto td = s.isTupleDeclaration())
                     {
-                        foreach (o; *td.objects)
-                        {
-                            if (auto eo = o.isExpression())
-                            {
-                                if (auto se = eo.isDsymbolExp())
-                                {
-                                    Dsymbol_visit(se.s);
-                                }
-                            }
-                        }
+                        td.foreachVar(&Dsymbol_visit);
                     }
                 }
 
@@ -2107,16 +2098,7 @@ void checkObErrors(ref ObState obstate)
                     }
                     else if (auto td = s.isTupleDeclaration())
                     {
-                        foreach (o; *td.objects)
-                        {
-                            if (auto eo = o.isExpression())
-                            {
-                                if (auto se = eo.isDsymbolExp())
-                                {
-                                    Dsymbol_visit(se.s);
-                                }
-                            }
-                        }
+                        td.foreachVar(&Dsymbol_visit);
                     }
                 }
 

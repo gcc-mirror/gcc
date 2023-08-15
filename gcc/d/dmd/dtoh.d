@@ -877,7 +877,11 @@ public:
         // Tuple field are expanded into multiple VarDeclarations
         // (we'll visit them later)
         if (vd.type && vd.type.isTypeTuple())
+        {
+            assert(vd.aliassym);
+            vd.toAlias().accept(this);
             return;
+        }
 
         if (vd.originalType && vd.type == AST.Type.tsize_t)
             origType = vd.originalType;
@@ -1665,6 +1669,13 @@ public:
         }
 
         assert(false, "This node type should be handled in the EnumDeclaration");
+    }
+
+    override void visit(AST.TupleDeclaration tup)
+    {
+        debug (Debug_DtoH) mixin(traceVisit!tup);
+
+        tup.foreachVar((s) { s.accept(this); });
     }
 
     /**

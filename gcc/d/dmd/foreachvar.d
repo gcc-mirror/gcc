@@ -75,19 +75,7 @@ void foreachVar(Expression e, void delegate(VarDeclaration) dgVar)
             if (!v)
                 return;
             if (TupleDeclaration td = v.toAlias().isTupleDeclaration())
-            {
-                if (!td.objects)
-                    return;
-                foreach (o; *td.objects)
-                {
-                    Expression ex = isExpression(o);
-                    DsymbolExp s = ex ? ex.isDsymbolExp() : null;
-                    assert(s);
-                    VarDeclaration v2 = s.s.isVarDeclaration();
-                    assert(v2);
-                    dgVar(v2);
-                }
-            }
+                td.foreachVar((s) { dgVar(s.isVarDeclaration()); });
             else
                 dgVar(v);
             Dsymbol s = v.toAlias();
