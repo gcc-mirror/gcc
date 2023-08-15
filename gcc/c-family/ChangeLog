@@ -1,3 +1,7 @@
+2023-08-14  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Adjust __cpp_concepts.
+
 2023-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.cc (c_common_reswords): Add __typeof_unqual

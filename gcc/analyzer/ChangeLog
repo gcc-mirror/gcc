@@ -1,3 +1,13 @@
+2023-08-14  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	PR analyzer/110543
+	* analyzer.opt: Add new option.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_path): Call prune_system_headers.
+	(prune_frame): New function that deletes all events in a frame.
+	(diagnostic_manager::prune_system_headers): New function.
+	* diagnostic-manager.h: Add prune_system_headers declaration.
+
 2023-08-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

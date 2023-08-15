@@ -1,3 +1,25 @@
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110360
+	PR fortran/110419
+	* trans-types.cc (gfc_sym_type): Use a bare character type for length
+	one value character dummy arguments.
+	* trans-expr.cc (gfc_conv_string_parameter): Handle single character
+	case.
+	(gfc_conv_procedure_call): Don't exclude interoperable kinds
+	from single character handling.  For single character dummy arguments,
+	extend the existing handling of non-constant expressions to constant
+	expressions.
+
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_length_one_character_type_p): New inline
+	function.
+	* check.cc (is_c_interoperable): Use
+	gfc_length_one_character_type_p.
+	* decl.cc (verify_bind_c_sym): Same.
+	* trans-expr.cc (gfc_conv_procedure_call): Same.
+
 2023-08-09  Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
 	PR fortran/109684

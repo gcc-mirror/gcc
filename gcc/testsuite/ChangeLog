@@ -1,3 +1,61 @@
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/value_9.f90 (val, val4, sub, sub4): Take the error
+	codes from the arguments.
+	(p): Update calls: pass explicit distinct error codes.
+
+2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/110360
+	PR fortran/110419
+	* gfortran.dg/bind_c_usage_13.f03: Update tree dump patterns.
+
+2023-08-14  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	PR analyzer/110543
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-default.C:
+	New test.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-no.C:
+	New test.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers.C:
+	New test.
+
+2023-08-14  gnaggnoyil  <gnaggnoyil@gmail.com>
+
+	DR 2386
+	PR c++/110216
+	* g++.dg/cpp1z/decomp10.C: Update expected error for DR 2386.
+	* g++.dg/cpp1z/pr110216.C: New test.
+
+2023-08-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-24.c: New test.
+	* gcc.target/riscv/arch-25.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-sqrt.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wnmsac.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wmsac.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wnmacc.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-fwmacc.c: New test.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-nmsub.c: New test.
+
 2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108119

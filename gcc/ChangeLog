@@ -1,3 +1,155 @@
+2023-08-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (curr_insn_transform): Process output stack
+	pointer reloads before emitting reload insns.
+
+2023-08-14  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	PR analyzer/110543
+	* doc/invoke.texi: Add documentation of
+	fanalyzer-show-events-in-system-headers
+
+2023-08-14  Jan Hubicka  <jh@suse.cz>
+
+	PR gcov-profile/110988
+	* tree-cfg.cc (fold_loop_internal_call): Avoid division by zero.
+
+2023-08-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins):
+	Enable compressed builtins when ZC* extensions enabled.
+	* config/riscv/riscv-shorten-memrefs.cc:
+	Enable shorten_memrefs pass when ZC* extensions enabled.
+	* config/riscv/riscv.cc (riscv_compressed_reg_p):
+	Enable compressible registers when ZC* extensions enabled.
+	(riscv_rtx_costs): Allow adjusting rtx costs when ZC* extensions enabled.
+	(riscv_address_cost): Allow adjusting address cost when ZC* extensions enabled.
+	(riscv_first_stack_step): Allow compression of the register saves
+	without adding extra instructions.
+	* config/riscv/riscv.h (FUNCTION_BOUNDARY): Adjusts function boundary
+	to 16 bits when ZC* extensions enabled.
+
+2023-08-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse): New extensions.
+	* config/riscv/riscv-opts.h (MASK_ZCA): New mask.
+	(MASK_ZCB): Ditto.
+	(MASK_ZCE): Ditto.
+	(MASK_ZCF): Ditto.
+	(MASK_ZCD): Ditto.
+	(MASK_ZCMP): Ditto.
+	(MASK_ZCMT): Ditto.
+	(TARGET_ZCA): New target.
+	(TARGET_ZCB): Ditto.
+	(TARGET_ZCE): Ditto.
+	(TARGET_ZCF): Ditto.
+	(TARGET_ZCD): Ditto.
+	(TARGET_ZCMP): Ditto.
+	(TARGET_ZCMT): Ditto.
+	* config/riscv/riscv.opt: New target variable.
+
+2023-08-14  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	Revert:
+	2023-05-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* genrecog.cc (print_nonbool_test): Fix type error of
+	switch (SUBREG_BYTE (op))'.
+
+2023-08-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.cc (print_loop_info): Dump to 'file', not 'dump_file'.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class unop_frm): New class for frm.
+	(vfsqrt_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfsqrt_frm): New intrinsic function definition.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfwnmsac_frm): New class for frm.
+	(vfwnmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwnmsac_frm): New intrinsic function definition.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfwmsac_frm): New class for frm.
+	(vfwmsac_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwmsac_frm): New intrinsic function definition.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfwnmacc_frm): New class for frm.
+	(vfwnmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwnmacc_frm): New intrinsic function definition.
+
+2023-08-14  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add model value 0xba
+	to Raptorlake.
+
+2023-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/mmix/predicates.md (mmix_address_operand): Use
+	lra_in_progress, not reload_in_progress.
+
+2023-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/mmix/mmix.cc: Re-enable LRA.
+
+2023-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/mmix/predicates.md (frame_pointer_operand): Handle FP+offset
+	when lra_in_progress.
+
+2023-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/mmix/mmix.cc: Disable LRA for MMIX.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfwmacc_frm): New class for vfwmacc frm.
+	(vfwmacc_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwmacc_frm): Function definition for vfwmacc.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_widen_ternop_insn): Add frm support.
+
+2023-08-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfnmsub_frm): New class for vfnmsub frm.
+	(vfnmsub_frm): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfnmsub_frm): New function declaration.
+
+2023-08-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (curr_insn_transform): Set done_p up and
+	check it on true after processing output stack pointer reload.
+
 2023-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (USER_H): Add stdckdint.h.

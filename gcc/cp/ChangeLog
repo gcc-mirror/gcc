@@ -1,3 +1,14 @@
+2023-08-14  gnaggnoyil  <gnaggnoyil@gmail.com>
+
+	DR 2386
+	PR c++/110216
+	* decl.cc (get_tuple_size): Update implementation for DR 2386.
+
+2023-08-14  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (cp_parser_simple_type_specifier): Handle -std=c++14
+	-fconcepts.
+
 2023-08-12  Patrick Palka  <ppalka@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
