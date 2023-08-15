@@ -1,3 +1,8 @@
+2023-08-14  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add model value 0xba
+	to Raptorlake.
+
 2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p):

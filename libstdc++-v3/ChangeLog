@@ -1,3 +1,28 @@
+2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110860
+	* include/std/format (__formatter_fp::format): Use frexp instead
+	of log10.
+
+2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110990
+	* include/std/format (_Seq_sink::get): Only call _M_overflow if
+	its precondition is met.
+	(_Iter_sink::_M_finish): Likewise.
+	(_Iter_sink<C, ContigIter>::_M_overflow): Only switch to the
+	internal buffer after running out of space.
+	(_Iter_sink<C, ContigIter>::_M_finish): Do not use _M_overflow.
+	(_Counting_sink::count): Likewise.
+	* testsuite/std/format/functions/format_to_n.cc: Check cases
+	where the output fits into the buffer.
+
 2023-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
