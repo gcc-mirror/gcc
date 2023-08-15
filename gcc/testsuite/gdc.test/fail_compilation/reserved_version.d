@@ -118,6 +118,7 @@ fail_compilation/reserved_version.d(219): Error: version identifier `D_PostCondi
 fail_compilation/reserved_version.d(220): Error: version identifier `D_ProfileGC` is reserved and cannot be set
 fail_compilation/reserved_version.d(221): Error: version identifier `D_Invariants` is reserved and cannot be set
 fail_compilation/reserved_version.d(222): Error: version identifier `D_Optimized` is reserved and cannot be set
+fail_compilation/reserved_version.d(223): Error: version identifier `VisionOS` is reserved and cannot be set
 ---
 */
 
@@ -242,6 +243,7 @@ version = D_PostConditions;
 version = D_ProfileGC;
 version = D_Invariants;
 version = D_Optimized;
+version = VisionOS;
 
 // This should work though
 debug = DigitalMars;

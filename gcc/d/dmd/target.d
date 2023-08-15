@@ -25,7 +25,7 @@
 
 module dmd.target;
 
-import dmd.globals : Param;
+import dmd.globals : Param, CHECKENABLE;
 
 enum CPU : ubyte
 {
@@ -111,7 +111,7 @@ extern (C++) struct Target
     /// Architecture name
     const(char)[] architectureName;
     CPU cpu = CPU.baseline; // CPU instruction set to target
-    bool is64bit;           // generate 64 bit code for x86_64; true by default for 64 bit dmd
+    bool isX86_64;          // generate 64 bit code for x86_64; true by default for 64 bit dmd
     bool isLP64;            // pointers are 64 bits
 
     // Environmental

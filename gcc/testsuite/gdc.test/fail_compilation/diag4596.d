@@ -1,12 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag4596.d(15): Error: `this` is not an lvalue and cannot be modified
-fail_compilation/diag4596.d(16): Error: conditional expression `1 ? this : this` is not a modifiable lvalue
 fail_compilation/diag4596.d(18): Error: `super` is not an lvalue and cannot be modified
 fail_compilation/diag4596.d(19): Error: conditional expression `1 ? super : super` is not a modifiable lvalue
 ---
 */
+
+
 
 class NoGo4596
 {

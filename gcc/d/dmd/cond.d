@@ -733,6 +733,7 @@ extern (C++) final class VersionCondition : DVCondition
             case "SysV4":
             case "TVOS":
             case "unittest":
+            case "VisionOS":
             case "WASI":
             case "WatchOS":
             case "WebAssembly":

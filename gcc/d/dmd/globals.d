@@ -81,11 +81,11 @@ enum CppStdRevision : uint
 }
 
 /// Trivalent boolean to represent the state of a `revert`able change
-enum FeatureState : byte
+enum FeatureState : ubyte
 {
-    default_ = -1, /// Not specified by the user
-    disabled = 0,  /// Specified as `-revert=`
-    enabled = 1    /// Specified as `-preview=`
+    default_ = 0,  /// Not specified by the user
+    disabled = 1,  /// Specified as `-revert=`
+    enabled  = 2,  /// Specified as `-preview=`
 }
 
 extern(C++) struct Output
@@ -124,6 +124,7 @@ extern (C++) struct Param
     bool release;           // build release version
     bool preservePaths;     // true means don't strip path from source file
     DiagnosticReporting warnings = DiagnosticReporting.off;  // how compiler warnings are handled
+    bool obsolete;          // enable warnings about use of obsolete messages
     bool color;             // use ANSI colors in console output
     bool cov;               // generate code coverage data
     ubyte covPercent;       // 0..100 code coverage percentage required
@@ -132,6 +133,7 @@ extern (C++) struct Param
     bool useModuleInfo = true;   // generate runtime module information
     bool useTypeInfo = true;     // generate runtime type information
     bool useExceptions = true;   // support exception handling
+    bool useGC = true;           // support features that require the GC
     bool betterC;           // be a "better C" compiler; no dependency on D runtime
     bool addMain;           // add a default main() function
     bool allInst;           // generate code for all template instantiations

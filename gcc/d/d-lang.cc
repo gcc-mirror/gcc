@@ -779,6 +779,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_Wall:
       if (value)
 	global.params.warnings = DIAGNOSTICinform;
+      global.params.obsolete = value;
       break;
 
     case OPT_Wdeprecated:
@@ -894,6 +895,7 @@ d_post_options (const char ** fn)
 	  flag_exceptions = false;
 	}
 
+      global.params.useGC = false;
       global.params.checkAction = CHECKACTION_C;
     }
 
@@ -939,6 +941,7 @@ d_post_options (const char ** fn)
   global.compileEnv.previewIn = global.params.previewIn;
   global.compileEnv.ddocOutput = global.params.ddoc.doOutput;
   global.compileEnv.shortenedMethods = global.params.shortenedMethods;
+  global.compileEnv.obsolete = global.params.obsolete;
 
   /* Add in versions given on the command line.  */
   if (global.params.versionids)

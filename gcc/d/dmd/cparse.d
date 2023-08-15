@@ -1911,14 +1911,12 @@ final class CParser(AST) : Parser!AST
                     if (tt.id || tt.tok == TOK.enum_)
                     {
                         if (!tt.id && id)
+                            /* This applies for enums declared as
+                             * typedef enum {A} E;
+                             */
                             tt.id = id;
                         Specifier spec;
-                        auto stag = declareTag(tt, spec);
-                        if (tt.tok == TOK.enum_)
-                        {
-                            isalias = false;
-                            s = new AST.AliasDeclaration(token.loc, id, stag);
-                        }
+                        declareTag(tt, spec);
                     }
                 }
                 if (isalias)

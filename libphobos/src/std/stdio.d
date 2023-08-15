@@ -425,21 +425,6 @@ private extern (C) @nogc nothrow
         pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(wchar_t ch, _iobuf* h) @trusted;
 }
 
-static if (__traits(compiles, core.sys.posix.stdio.getdelim))
-{
-    extern(C) nothrow @nogc
-    {
-        // @@@DEPRECATED_2.104@@@
-        deprecated("To be removed after 2.104. Use core.sys.posix.stdio.getdelim instead.")
-        ptrdiff_t getdelim(char**, size_t*, int, FILE*);
-
-        // @@@DEPRECATED_2.104@@@
-        // getline() always comes together with getdelim()
-        deprecated("To be removed after 2.104. Use core.sys.posix.stdio.getline instead.")
-        ptrdiff_t getline(char**, size_t*, FILE*);
-    }
-}
-
 //------------------------------------------------------------------------------
 private struct ByRecordImpl(Fields...)
 {
