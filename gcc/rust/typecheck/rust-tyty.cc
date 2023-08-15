@@ -351,8 +351,15 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 		      r.add_range (predicate.get_locus ());
 		      r.add_range (mappings->lookup_location (i.get_hirid ()));
 
+		      std::string rich_msg
+			= "expected " + bound_ty->destructure ()->get_name ()
+			  + ", found "
+			  + impl_item_ty->destructure ()->get_name ();
+		      r.add_fixit_replace (rich_msg.c_str ());
+
 		      rust_error_at (
-			r, "expected %<%s%> got %<%s%>",
+			r, ErrorCode::E0271,
+			"type mismatch, expected %qs but got %qs",
 			bound_ty->destructure ()->get_name ().c_str (),
 			impl_item_ty->destructure ()->get_name ().c_str ());
 		    }
