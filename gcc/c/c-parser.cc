@@ -3667,6 +3667,7 @@ c_parser_enum_specifier (c_parser *parser)
 {
   struct c_typespec ret;
   bool have_std_attrs;
+  bool potential_nesting_p = false;
   tree std_attrs = NULL_TREE;
   tree attrs;
   tree ident = NULL_TREE;
@@ -3706,6 +3707,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  if (!ENUM_FIXED_UNDERLYING_TYPE_P (ret.spec))
 	    error_at (enum_loc, "%<enum%> declared both with and without "
 		      "fixed underlying type");
+	  potential_nesting_p = NULL_TREE == TYPE_VALUES (ret.spec);
 	}
       else
 	{
@@ -3776,7 +3778,8 @@ c_parser_enum_specifier (c_parser *parser)
 	 forward order at the end.  */
       tree values;
       timevar_push (TV_PARSE_ENUM);
-      type = start_enum (enum_loc, &the_enum, ident, fixed_underlying_type);
+      type = start_enum (enum_loc, &the_enum, ident, fixed_underlying_type,
+			 potential_nesting_p);
       values = NULL_TREE;
       c_parser_consume_token (parser);
       while (true)

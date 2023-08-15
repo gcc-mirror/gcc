@@ -683,7 +683,8 @@ extern void c_warn_unused_attributes (tree);
 extern tree c_warn_type_attributes (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (location_t, struct c_enum_contents *, tree, tree);
+extern tree start_enum (location_t, struct c_enum_contents *, tree, tree,
+			bool potential_nesting_p);
 extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree, bool = true, location_t * = NULL);

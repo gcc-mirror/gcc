@@ -1419,6 +1419,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
     {
     case ENUMERAL_TYPE:
       {
+	if (!comptypes (ENUM_UNDERLYING_TYPE (t1), ENUM_UNDERLYING_TYPE (t2)))
+	  return false;
+
 	/* Speed up the case where the type values are in the same order.  */
 	tree tv1 = TYPE_VALUES (t1);
 	tree tv2 = TYPE_VALUES (t2);
@@ -7019,7 +7022,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (checktype != error_mark_node
 	  && TREE_CODE (checktype) == ENUMERAL_TYPE
 	  && TREE_CODE (type) == ENUMERAL_TYPE
-	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
+	  && !comptypes (TYPE_MAIN_VARIANT (checktype), TYPE_MAIN_VARIANT (type)))
        {
 	  gcc_rich_location loc (location);
 	  warning_at (&loc, OPT_Wenum_conversion,
