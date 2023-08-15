@@ -209,7 +209,7 @@ vect_free_slp_instance (slp_instance instance)
   vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
   SLP_INSTANCE_LOADS (instance).release ();
   SLP_INSTANCE_ROOT_STMTS (instance).release ();
-  SLP_INSTANCE_REMAIN_STMTS (instance).release ();
+  SLP_INSTANCE_REMAIN_DEFS (instance).release ();
   instance->subgraph_entries.release ();
   instance->cost_vec.release ();
   free (instance);
@@ -3115,6 +3115,7 @@ vect_build_slp_instance (vec_info *vinfo,
 			 slp_instance_kind kind,
 			 vec<stmt_vec_info> &scalar_stmts,
 			 vec<stmt_vec_info> &root_stmt_infos,
+			 vec<tree> &remain,
 			 unsigned max_tree_size, unsigned *limit,
 			 scalar_stmts_to_slp_tree_map_t *bst_map,
 			 /* ???  We need stmt_info for group splitting.  */
@@ -3134,10 +3135,9 @@ vect_build_slp_instance (vec_info *vinfo,
      ???  Selecting the optimal set of lanes to vectorize would be nice
      but SLP build for all lanes will fail quickly because we think
      we're going to need unrolling.  */
-  auto_vec<stmt_vec_info> remain;
   if (kind == slp_inst_kind_bb_reduc
       && (scalar_stmts.length () & 1))
-    remain.safe_push (scalar_stmts.pop ());
+    remain.safe_insert (0, gimple_get_lhs (scalar_stmts.pop ()->stmt));
 
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
@@ -3186,10 +3186,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
-	  if (!remain.is_empty ())
-	    SLP_INSTANCE_REMAIN_STMTS (new_instance) = remain.copy ();
-	  else
-	    SLP_INSTANCE_REMAIN_STMTS (new_instance) = vNULL;
+	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
 	  SLP_INSTANCE_KIND (new_instance) = kind;
 	  new_instance->reduc_phis = NULL;
 	  new_instance->cost_vec = vNULL;
@@ -3469,6 +3466,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
     gcc_unreachable ();
 
   vec<stmt_vec_info> roots = vNULL;
+  vec<tree> remain = vNULL;
   if (kind == slp_inst_kind_ctor)
     {
       roots.create (1);
@@ -3476,7 +3474,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
     }
   /* Build the tree for the SLP instance.  */
   bool res = vect_build_slp_instance (vinfo, kind, scalar_stmts,
-				      roots,
+				      roots, remain,
 				      max_tree_size, limit, bst_map,
 				      kind == slp_inst_kind_store
 				      ? stmt_info : NULL);
@@ -3521,10 +3519,12 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	  if (vect_build_slp_instance (bb_vinfo, bb_vinfo->roots[i].kind,
 				       bb_vinfo->roots[i].stmts,
 				       bb_vinfo->roots[i].roots,
+				       bb_vinfo->roots[i].remain,
 				       max_tree_size, &limit, bst_map, NULL))
 	    {
 	      bb_vinfo->roots[i].stmts = vNULL;
 	      bb_vinfo->roots[i].roots = vNULL;
+	      bb_vinfo->roots[i].remain = vNULL;
 	    }
 	}
     }
@@ -5955,6 +5955,7 @@ _bb_vec_info::~_bb_vec_info ()
     {
       roots[i].stmts.release ();
       roots[i].roots.release ();
+      roots[i].remain.release ();
     }
   roots.release ();
 }
@@ -6405,7 +6406,13 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
       || !direct_internal_fn_supported_p (reduc_fn, vectype, OPTIMIZE_FOR_BOTH)
       || !useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
 				     TREE_TYPE (vectype)))
-    return false;
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: basic block reduction epilogue "
+			 "operation unsupported.\n");
+      return false;
+    }
 
   /* There's no way to cost a horizontal vector reduction via REDUC_FN so
      cost log2 vector operations plus shuffles and one extraction.  */
@@ -7262,22 +7269,37 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 		 but record those to be handled in the epilogue.  */
 	      /* ???  For now do not allow mixing ops or externs/constants.  */
 	      bool invalid = false;
+	      unsigned remain_cnt = 0;
 	      for (unsigned i = 0; i < chain.length (); ++i)
-		if (chain[i].dt != vect_internal_def
-		    || chain[i].code != code)
-		  invalid = true;
-	      if (!invalid)
+		{
+		  if (chain[i].code != code)
+		    {
+		      invalid = true;
+		      break;
+		    }
+		  if (chain[i].dt != vect_internal_def)
+		    remain_cnt++;
+		}
+	      if (!invalid && chain.length () - remain_cnt > 1)
 		{
 		  vec<stmt_vec_info> stmts;
+		  vec<tree> remain = vNULL;
 		  stmts.create (chain.length ());
+		  if (remain_cnt > 0)
+		    remain.create (remain_cnt);
 		  for (unsigned i = 0; i < chain.length (); ++i)
-		    stmts.quick_push (bb_vinfo->lookup_def (chain[i].op));
+		    {
+		      if (chain[i].dt == vect_internal_def)
+			stmts.quick_push (bb_vinfo->lookup_def (chain[i].op));
+		      else
+			remain.quick_push (chain[i].op);
+		    }
 		  vec<stmt_vec_info> roots;
 		  roots.create (chain_stmts.length ());
 		  for (unsigned i = 0; i < chain_stmts.length (); ++i)
 		    roots.quick_push (bb_vinfo->lookup_stmt (chain_stmts[i]));
 		  bb_vinfo->roots.safe_push (slp_root (slp_inst_kind_bb_reduc,
-						       stmts, roots));
+						       stmts, roots, remain));
 		}
 	    }
 	}
@@ -9160,16 +9182,16 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	gcc_unreachable ();
       tree scalar_def = gimple_build (&epilogue, as_combined_fn (reduc_fn),
 				      TREE_TYPE (TREE_TYPE (vec_def)), vec_def);
-      if (!SLP_INSTANCE_REMAIN_STMTS (instance).is_empty ())
+      if (!SLP_INSTANCE_REMAIN_DEFS (instance).is_empty ())
 	{
 	  tree rem_def = NULL_TREE;
-	  for (auto rem : SLP_INSTANCE_REMAIN_STMTS (instance))
+	  for (auto def : SLP_INSTANCE_REMAIN_DEFS (instance))
 	    if (!rem_def)
-	      rem_def = gimple_get_lhs (rem->stmt);
+	      rem_def = def;
 	    else
 	      rem_def = gimple_build (&epilogue, reduc_code,
 				      TREE_TYPE (scalar_def),
-				      rem_def, gimple_get_lhs (rem->stmt));
+				      rem_def, def);
 	  scalar_def = gimple_build (&epilogue, reduc_code,
 				     TREE_TYPE (scalar_def),
 				     scalar_def, rem_def);

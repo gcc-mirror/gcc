@@ -259,7 +259,7 @@ public:
 
   /* For slp_inst_kind_bb_reduc the defs that were not vectorized, NULL
      otherwise.  */
-  vec<stmt_vec_info> remain_stmts;
+  vec<tree> remain_defs;
 
   /* The unrolling factor required to vectorized this SLP instance.  */
   poly_uint64 unrolling_factor;
@@ -289,7 +289,7 @@ public:
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMTS(S)               (S)->root_stmts
-#define SLP_INSTANCE_REMAIN_STMTS(S)             (S)->remain_stmts
+#define SLP_INSTANCE_REMAIN_DEFS(S)              (S)->remain_defs
 #define SLP_INSTANCE_KIND(S)                     (S)->kind
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
@@ -1027,11 +1027,12 @@ loop_vec_info_for_loop (class loop *loop)
 struct slp_root
 {
   slp_root (slp_instance_kind kind_, vec<stmt_vec_info> stmts_,
-	    vec<stmt_vec_info> roots_)
-    : kind(kind_), stmts(stmts_), roots(roots_) {}
+	    vec<stmt_vec_info> roots_, vec<tree> remain_ = vNULL)
+    : kind(kind_), stmts(stmts_), roots(roots_), remain(remain_) {}
   slp_instance_kind kind;
   vec<stmt_vec_info> stmts;
   vec<stmt_vec_info> roots;
+  vec<tree> remain;
 };
 
 typedef class _bb_vec_info : public vec_info
