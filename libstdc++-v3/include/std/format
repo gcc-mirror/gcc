@@ -2442,6 +2442,10 @@ namespace __format
       iter_difference_t<_Out> size;
     };
 
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+template<typename, typename> class vector;
+_GLIBCXX_END_NAMESPACE_CONTAINER
+
 /// @cond undocumented
 namespace __format
 {
@@ -2492,6 +2496,10 @@ namespace __format
       [[__gnu__::__always_inline__]]
       constexpr _Sink_iter
       operator++(int) { return *this; }
+
+      auto
+      _M_reserve(size_t __n) const
+      { return _M_sink->_M_reserve(__n); }
     };
 
   // Abstract base class for type-erased character sinks.
@@ -2508,6 +2516,7 @@ namespace __format
       // Called when the span is full, to make more space available.
       // Precondition: _M_next != _M_span.begin()
       // Postcondition: _M_next != _M_span.end()
+      // TODO: remove the precondition? could make overflow handle it.
       virtual void _M_overflow() = 0;
 
     protected:
@@ -2572,6 +2581,46 @@ namespace __format
 	  }
       }
 
+      // A successful _Reservation can be used to directly write
+      // up to N characters to the sink to avoid unwanted buffering.
+      struct _Reservation
+      {
+	// True if the reservation was successful, false otherwise.
+	explicit operator bool() const noexcept { return _M_sink; }
+	// A pointer to write directly to the sink.
+	_CharT* get() const noexcept { return _M_sink->_M_next.operator->(); }
+	// Add n to the _M_next iterator for the sink.
+	void _M_bump(size_t __n) { _M_sink->_M_bump(__n); }
+	_Sink* _M_sink;
+      };
+
+      // Attempt to reserve space to write n characters to the sink.
+      // If anything is written to the reservation then there must be a call
+      // to _M_bump(N2) before any call to another member function of *this,
+      // where N2 is the number of characters written.
+      virtual _Reservation
+      _M_reserve(size_t __n)
+      {
+	auto __avail = _M_unused();
+	if (__n <= __avail.size())
+	  return { this };
+
+	if (__n <= _M_span.size()) // Cannot meet the request.
+	  {
+	    _M_overflow(); // Make more space available.
+	    __avail = _M_unused();
+	    if (__n <= __avail.size())
+	      return { this };
+	  }
+	return { nullptr };
+      }
+
+      // Update the next output position after writing directly to the sink.
+      // pre: no calls to _M_write or _M_overflow since _M_reserve.
+      virtual void
+      _M_bump(size_t __n)
+      { _M_next += __n; }
+
     public:
       _Sink(const _Sink&) = delete;
       _Sink& operator=(const _Sink&) = delete;
@@ -2596,6 +2645,8 @@ namespace __format
       { }
     };
 
+  using _GLIBCXX_STD_C::vector;
+
   // A sink that fills a sequence (e.g. std::string, std::vector, std::deque).
   // Writes to a buffer then appends that to the sequence when it fills up.
   template<typename _Seq>
@@ -2617,6 +2668,45 @@ namespace __format
 	else
 	  _M_seq.insert(_M_seq.end(), __s.begin(), __s.end());
 	this->_M_rewind();
+      }
+
+      typename _Sink<_CharT>::_Reservation
+      _M_reserve(size_t __n) override
+      {
+	if constexpr (__is_specialization_of<_Seq, basic_string>
+			|| __is_specialization_of<_Seq, vector>)
+	  {
+	    // Flush the buffer to _M_seq first:
+	    if (this->_M_used().size())
+	      _M_overflow();
+	    // Expand _M_seq to make __n new characters available:
+	    const auto __sz = _M_seq.size();
+	    if constexpr (is_same_v<string, _Seq> || is_same_v<wstring, _Seq>)
+	      _M_seq.__resize_and_overwrite(__sz + __n,
+					    [](auto, auto __n2) {
+					      return __n2;
+					    });
+	    else
+	      _M_seq.resize(__sz + __n);
+	    // Set _M_used() to be a span over the original part of _M_seq:
+	    this->_M_reset(_M_seq, __sz);
+	    return { this };
+	  }
+	else // Try to use the base class' buffer.
+	  return _Sink<_CharT>::_M_reserve();
+      }
+
+      void
+      _M_bump(size_t __n) override
+      {
+	if constexpr (__is_specialization_of<_Seq, basic_string>
+			|| __is_specialization_of<_Seq, vector>)
+	  {
+	    // Truncate the sequence to the part that was actually written to:
+	    _M_seq.resize(this->_M_used().size() + __n);
+	    // Switch back to using buffer:
+	    this->_M_reset(this->_M_buf);
+	  }
       }
 
     public:
@@ -2744,6 +2834,21 @@ namespace __format
 	  }
       }
 
+      typename _Sink<_CharT>::_Reservation
+      _M_reserve(size_t __n) final
+      {
+	auto __avail = this->_M_unused();
+	if (__n > __avail.size())
+	  {
+	    if (_M_max >= 0)
+	      return {}; // cannot grow
+
+	    auto __s = this->_M_used();
+	    this->_M_reset({__s.data(), __s.size() + __n}, __s.size());
+	  }
+	return { this };
+      }
+
     private:
       static span<_CharT>
       _S_make_span(_CharT* __ptr, iter_difference_t<_OutIter> __n,
@@ -2773,7 +2878,7 @@ namespace __format
 	uint64_t __off = reinterpret_cast<uint64_t>(__ptr) % 1024;
 	__n = (1024 - __off) / sizeof(_CharT);
 	if (__n > 0) [[likely]]
-	return {__ptr, static_cast<size_t>(__n)};
+	  return {__ptr, static_cast<size_t>(__n)};
 	else // Misaligned/packed buffer of wchar_t?
 	  return {__ptr, 1};
       }
@@ -3834,6 +3939,63 @@ namespace __format
 	__sink_out = __out; // Already a sink iterator, safe to use post-move.
       else
 	__sink_out = __sink.out();
+
+      if constexpr (is_same_v<_CharT, char>)
+	if (__fmt.size() == 2 && __fmt[0] == '{' && __fmt[1] == '}')
+	  {
+	    bool __done = false;
+	    std::visit_format_arg([&](auto& __arg) {
+	      using _Tp = remove_cvref_t<decltype(__arg)>;
+	      if constexpr (is_same_v<_Tp, bool>)
+		{
+		  size_t __len = 4 + !__arg;
+		  const char* __chars[] = { "false", "true" };
+		  if (auto __res = __sink_out._M_reserve(__len))
+		    {
+		      __builtin_memcpy(__res.get(), __chars[__arg], __len);
+		      __res._M_bump(__len);
+		      __done = true;
+		    }
+		}
+	      else if constexpr (is_integral_v<_Tp>)
+		{
+		  make_unsigned_t<_Tp> __uval;
+		  const bool __neg = __arg < 0;
+		  if (__neg)
+		    __uval = make_unsigned_t<_Tp>(~__arg) + 1u;
+		  else
+		    __uval = __arg;
+		  const auto __n = __detail::__to_chars_len(__uval) + __neg;
+		  if (auto __res = __sink_out._M_reserve(__n))
+		    {
+		      auto __ptr = __res.get();
+		      *__ptr = '-';
+		      __detail::__to_chars_10_impl(__ptr + (int)__neg, __n,
+						   __uval);
+		      __res._M_bump(__n);
+		      __done = true;
+		    }
+		}
+	      else if constexpr (is_convertible_v<_Tp, string_view>)
+		{
+		  string_view __sv = __arg;
+		  if (auto __res = __sink_out._M_reserve(__sv.size()))
+		    {
+		      __builtin_memcpy(__res.get(), __sv.data(), __sv.size());
+		      __res._M_bump(__sv.size());
+		      __done = true;
+		    }
+		}
+	    }, __args.get(0));
+
+	    if (__done)
+	      {
+		if constexpr (is_same_v<_Out, _Sink_iter<_CharT>>)
+		  return __sink_out;
+		else
+		  return std::move(__sink)._M_finish().out;
+	      }
+	  }
 
       auto __ctx = __loc == nullptr
 		     ? _Context(__args, __sink_out)
