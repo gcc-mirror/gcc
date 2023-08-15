@@ -120,6 +120,26 @@ test05()
   return true;
 }
 
+void
+test06()
+{
+  std::string s = "0123456789";
+  s.resize_and_overwrite(16, [](char* p, int n) {
+    VERIFY( n == 16 );
+    std::char_traits<char>::copy(p + 10, "0123456798", 6);
+    return n;
+  });
+  VERIFY( s.size() == 16 );
+  VERIFY( s == "0123456789012345" );
+
+  s.resize_and_overwrite(4, [](char* p, int n) {
+    VERIFY( n == 4 );
+    std::char_traits<char>::copy(p, "abcd", 4);
+    return n;
+  });
+  VERIFY( s.size() == 4 );
+}
+
 int main()
 {
   test01();
@@ -127,4 +147,5 @@ int main()
   test03();
   test04();
   static_assert( test05() );
+  test06();
 }

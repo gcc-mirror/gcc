@@ -256,6 +256,11 @@ test_wchar()
   std::locale loc;
   s = std::format(loc, L"{:L} {:.3s}{:Lc}", true, L"data"sv, '.');
   VERIFY( s == L"true dat." );
+
+  s = std::format(L"{}", 0.0625);
+  VERIFY( s == L"0.0625" );
+  s = std::format(L"{}", 0.25);
+  VERIFY( s == L"0.25" );
 }
 
 void

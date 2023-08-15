@@ -566,13 +566,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Operation>
     constexpr void
     basic_string<_CharT, _Traits, _Alloc>::
-    resize_and_overwrite(size_type __n, _Operation __op)
+    resize_and_overwrite(const size_type __n, _Operation __op)
     {
       const size_type __capacity = capacity();
       _CharT* __p;
       if (__n > __capacity)
 	{
-	  __p = _M_create(__n, __capacity);
+	  auto __new_capacity = __n; // Must not allow _M_create to modify __n.
+	  __p = _M_create(__new_capacity, __capacity);
 	  this->_S_copy(__p, _M_data(), length()); // exclude trailing null
 #if __cpp_lib_is_constant_evaluated
 	  if (std::is_constant_evaluated())
@@ -580,7 +581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  _M_dispose();
 	  _M_data(__p);
-	  _M_capacity(__n);
+	  _M_capacity(__new_capacity);
 	}
       else
 	__p = _M_data();
