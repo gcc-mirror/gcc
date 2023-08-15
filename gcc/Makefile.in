@@ -992,7 +992,7 @@ GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
 GCOV_IO_H = gcov-io.h version.h auto-host.h gcov-counter.def
-RECOG_H = recog.h
+RECOG_H = recog.h $(TREE_H)
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
 OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
