@@ -2037,6 +2037,28 @@ locate_old_decl (tree decl)
 	    decl, TREE_TYPE (decl));
 }
 
+
+/* Helper function.  For a tagged type, it finds the declaration
+   for a visible tag declared in the the same scope if such a
+   declaration exists.  */
+static tree
+previous_tag (tree type)
+{
+  struct c_binding *b = NULL;
+  tree name = TYPE_NAME (type);
+
+  if (name)
+    b = I_TAG_BINDING (name);
+
+  if (b)
+    b = b->shadowed;
+
+  if (b && B_IN_CURRENT_SCOPE (b))
+    return b->decl;
+
+  return NULL_TREE;
+}
+
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.
    Returns true if the caller should proceed to merge the two, false
    if OLDDECL should simply be discarded.  As a side effect, issues
@@ -8573,11 +8595,14 @@ get_parm_info (bool ellipsis, tree expr)
 	  if (TREE_CODE (decl) != UNION_TYPE || b->id != NULL_TREE)
 	    {
 	      if (b->id)
-		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (b->locus, 0,
-			    "%<%s %E%> declared inside parameter list"
-			    " will not be visible outside of this definition or"
-			    " declaration", keyword, b->id);
+		{
+		  /* The %s will be one of 'struct', 'union', or 'enum'.  */
+		  if (!flag_isoc23)
+		    warning_at (b->locus, 0,
+				"%<%s %E%> declared inside parameter list"
+				" will not be visible outside of this definition or"
+				" declaration", keyword, b->id);
+		}
 	      else
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
 		warning_at (b->locus, 0,
@@ -8668,6 +8693,16 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
      present, only a definition in the current scope is relevant.  */
 
   ref = lookup_tag (code, name, has_enum_type_specifier, &refloc);
+
+  /* If the visble type is still being defined, see if there is
+     an earlier definition (which may be complete).  */
+  if (flag_isoc23 && ref && C_TYPE_BEING_DEFINED (ref))
+    {
+      tree vis = previous_tag (ref);
+      if (vis)
+	ref = vis;
+    }
+
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -8782,6 +8817,14 @@ start_struct (location_t loc, enum tree_code code, tree name,
 
   if (name != NULL_TREE)
     ref = lookup_tag (code, name, true, &refloc);
+
+  /* For C23, even if we already have a completed definition,
+     we do not use it. We will check for consistency later.
+     If we are in a nested redefinition the type is not
+     complete. We will then detect this below.  */
+  if (flag_isoc23 && ref && TYPE_SIZE (ref))
+    ref = NULL_TREE;
+
   if (ref && TREE_CODE (ref) == code)
     {
       if (TYPE_STUB_DECL (ref))
@@ -9580,6 +9623,25 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       TYPE_TRANSPARENT_AGGR (t) = 0;
       warning_at (loc, 0, "union cannot be made transparent");
     }
+
+  /* Check for consistency with previous definition.  */
+  if (flag_isoc23)
+    {
+      tree vistype = previous_tag (t);
+      if (vistype
+	  && TREE_CODE (vistype) == TREE_CODE (t)
+	  && !C_TYPE_BEING_DEFINED (vistype))
+	{
+	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (t);
+	  if (c_type_variably_modified_p (t))
+	    error ("redefinition of struct or union %qT with variably "
+		   "modified type", t);
+	  else if (!comptypes_same_p (t, vistype))
+	    error ("redefinition of struct or union %qT", t);
+	}
+    }
+
+  C_TYPE_BEING_DEFINED (t) = 0;
 
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))

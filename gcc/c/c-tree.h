@@ -757,6 +757,7 @@ extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
+extern bool comptypes_same_p (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern int comptypes_check_enum_int (tree, tree, bool *);
 extern bool c_mark_addressable (tree, bool = false);

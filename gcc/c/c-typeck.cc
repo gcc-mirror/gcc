@@ -1080,6 +1080,23 @@ comptypes (tree type1, tree type2)
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
 
+
+/* Like comptypes, but it returns non-zero only for identical
+   types.  */
+
+bool
+comptypes_same_p (tree type1, tree type2)
+{
+  struct comptypes_data data = { };
+  bool ret = comptypes_internal (type1, type2, &data);
+
+  if (data.different_types_p)
+    return false;
+
+  return ret;
+}
+
+
 /* Like comptypes, but if it returns non-zero because enum and int are
    compatible, it sets *ENUM_AND_INT_P to true.  */
 
@@ -1266,11 +1283,11 @@ comptypes_internal (const_tree type1, const_tree type2,
     case ENUMERAL_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (false)
-	{
-	  return tagged_types_tu_compatible_p (t1, t2, data);
-	}
-      return false;
+
+      if (!flag_isoc23)
+	return false;
+
+      return tagged_types_tu_compatible_p (t1, t2, data);
 
     case VECTOR_TYPE:
       return known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
@@ -7102,7 +7119,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   /* Aggregates in different TUs might need conversion.  */
   if ((codel == RECORD_TYPE || codel == UNION_TYPE)
       && codel == coder
-      && comptypes (type, rhstype))
+      && comptypes (TYPE_MAIN_VARIANT (type), TYPE_MAIN_VARIANT (rhstype)))
     return convert_and_check (expr_loc != UNKNOWN_LOCATION
 			      ? expr_loc : location, type, rhs);
 
@@ -8456,6 +8473,13 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	/* Although the types are compatible, we may require a
 	   conversion.  */
 	inside_init = convert (type, inside_init);
+
+      if ((code == RECORD_TYPE || code == UNION_TYPE)
+	  && !comptypes (TYPE_MAIN_VARIANT (type), TYPE_MAIN_VARIANT (TREE_TYPE (inside_init))))
+	{
+	  error_init (init_loc, "invalid initializer");
+	  return error_mark_node;
+	}
 
       if (require_constant
 	  && TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
@@ -10542,7 +10566,7 @@ initialize_elementwise_p (tree type, tree value)
     return !VECTOR_TYPE_P (value_type);
 
   if (AGGREGATE_TYPE_P (type))
-    return type != TYPE_MAIN_VARIANT (value_type);
+    return !comptypes (type, TYPE_MAIN_VARIANT (value_type));
 
   return false;
 }
