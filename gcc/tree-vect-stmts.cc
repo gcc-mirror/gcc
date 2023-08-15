@@ -10499,7 +10499,7 @@ vectorizable_load (vec_info *vinfo,
 	      tree bias = NULL_TREE;
 	      if (!costing_p)
 		{
-		  if (loop_masks && memory_access_type != VMAT_INVARIANT)
+		  if (loop_masks)
 		    final_mask
 		      = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 					    vec_num * ncopies, vectype,
@@ -10729,7 +10729,7 @@ vectorizable_load (vec_info *vinfo,
 			bias = build_int_cst (intQI_type_node, biasval);
 		      }
 
-		    if (final_len && memory_access_type != VMAT_INVARIANT)
+		    if (final_len)
 		      {
 			tree ptr
 			  = build_int_cst (ref_type, align * BITS_PER_UNIT);
