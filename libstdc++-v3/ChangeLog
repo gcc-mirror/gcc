@@ -1,7 +1,7 @@
 2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
-	2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
+	2023-08-14  Paul Dreik  <gccpatches@pauldreik.se>
 
 	PR libstdc++/110860
 	* include/std/format (__formatter_fp::format): Use frexp instead
