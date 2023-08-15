@@ -168,6 +168,8 @@ static unsigned int cris_hard_regno_nregs (unsigned int, machine_mode);
 static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
 static HOST_WIDE_INT cris_static_rtx_alignment (machine_mode);
 static HOST_WIDE_INT cris_constant_alignment (const_tree, HOST_WIDE_INT);
+static bool cris_legitimate_address_p_hook (machine_mode, rtx, bool,
+					    code_helper);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -217,7 +219,7 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
-#define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p
+#define TARGET_LEGITIMATE_ADDRESS_P cris_legitimate_address_p_hook
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS cris_preferred_reload_class
@@ -1536,8 +1538,15 @@ cris_biap_index_p (const_rtx x, bool strict)
 
 /* Worker function for TARGET_LEGITIMATE_ADDRESS_P.  */
 
+static bool
+cris_legitimate_address_p_hook (machine_mode mode, rtx x, bool strict,
+				code_helper)
+{
+  return cris_legitimate_address_p (mode, x, strict);
+}
+
 bool
-cris_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
+cris_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   const_rtx x1, x2;
 
