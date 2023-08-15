@@ -2839,7 +2839,8 @@ start_over:
 	     instructions record it and move on to the next instance.  */
 	  if (loads_permuted
 	      && SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
-	      && vect_store_lanes_supported (vectype, group_size, false))
+	      && vect_store_lanes_supported (vectype, group_size, false)
+		   != IFN_LAST)
 	    {
 	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
 		{
@@ -2848,9 +2849,9 @@ start_over:
 		  /* Use SLP for strided accesses (or if we can't
 		     load-lanes).  */
 		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-		      || ! vect_load_lanes_supported
+		      || vect_load_lanes_supported
 			    (STMT_VINFO_VECTYPE (stmt_vinfo),
-			     DR_GROUP_SIZE (stmt_vinfo), false))
+			     DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
 		    break;
 		}
 
@@ -3153,7 +3154,7 @@ again:
       vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
       unsigned int size = DR_GROUP_SIZE (vinfo);
       tree vectype = STMT_VINFO_VECTYPE (vinfo);
-      if (! vect_store_lanes_supported (vectype, size, false)
+      if (vect_store_lanes_supported (vectype, size, false) == IFN_LAST
 	 && ! known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U)
 	 && ! vect_grouped_store_supported (vectype, size))
 	return opt_result::failure_at (vinfo->stmt,
@@ -3165,7 +3166,7 @@ again:
 	  bool single_element_p = !DR_GROUP_NEXT_ELEMENT (vinfo);
 	  size = DR_GROUP_SIZE (vinfo);
 	  vectype = STMT_VINFO_VECTYPE (vinfo);
-	  if (! vect_load_lanes_supported (vectype, size, false)
+	  if (vect_load_lanes_supported (vectype, size, false) == IFN_LAST
 	      && ! vect_grouped_load_supported (vectype, single_element_p,
 						size))
 	    return opt_result::failure_at (vinfo->stmt,

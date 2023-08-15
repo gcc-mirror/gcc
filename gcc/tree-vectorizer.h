@@ -2297,9 +2297,9 @@ extern tree bump_vector_ptr (vec_info *, tree, gimple *, gimple_stmt_iterator *,
 extern void vect_copy_ref_info (tree, tree);
 extern tree vect_create_destination_var (tree, tree);
 extern bool vect_grouped_store_supported (tree, unsigned HOST_WIDE_INT);
-extern bool vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
+extern internal_fn vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
 extern bool vect_grouped_load_supported (tree, bool, unsigned HOST_WIDE_INT);
-extern bool vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
+extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);
 extern void vect_permute_store_chain (vec_info *, vec<tree> &,
 				      unsigned int, stmt_vec_info,
 				      gimple_stmt_iterator *, vec<tree> *);

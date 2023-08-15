@@ -3094,7 +3094,7 @@ vect_slp_prefer_store_lanes_p (vec_info *vinfo, stmt_vec_info stmt_info,
   if (multiple_p (group_size - new_group_size, TYPE_VECTOR_SUBPARTS (vectype))
       || multiple_p (new_group_size, TYPE_VECTOR_SUBPARTS (vectype)))
     return false;
-  return vect_store_lanes_supported (vectype, group_size, false);
+  return vect_store_lanes_supported (vectype, group_size, false) != IFN_LAST;
 }
 
 /* Analyze an SLP instance starting from a group of grouped stores.  Call

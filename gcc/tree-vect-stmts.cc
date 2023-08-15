@@ -1610,9 +1610,15 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
   bool is_load = (vls_type == VLS_LOAD);
   if (memory_access_type == VMAT_LOAD_STORE_LANES)
     {
-      if (is_load
-	  ? !vect_load_lanes_supported (vectype, group_size, true)
-	  : !vect_store_lanes_supported (vectype, group_size, true))
+      internal_fn ifn
+	= (is_load ? vect_load_lanes_supported (vectype, group_size, true)
+		   : vect_store_lanes_supported (vectype, group_size, true));
+      if (ifn == IFN_MASK_LEN_LOAD_LANES || ifn == IFN_MASK_LEN_STORE_LANES)
+	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, 1);
+      else if (ifn == IFN_MASK_LOAD_LANES || ifn == IFN_MASK_STORE_LANES)
+	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
+			       scalar_mask);
+      else
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1620,10 +1626,7 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 			     " the target doesn't have an appropriate"
 			     " load/store-lanes instruction.\n");
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	  return;
 	}
-      vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype,
-			     scalar_mask);
       return;
     }
 
@@ -2074,7 +2077,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			   poly_int64 *poffset,
 			   dr_alignment_support *alignment_support_scheme,
 			   int *misalignment,
-			   gather_scatter_info *gs_info)
+			   gather_scatter_info *gs_info,
+			   internal_fn *lanes_ifn)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
@@ -2272,24 +2276,30 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	  if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U))
 	    ;
 
-	  /* Otherwise try using LOAD/STORE_LANES.  */
-	  else if (vls_type == VLS_LOAD
-		   ? vect_load_lanes_supported (vectype, group_size, masked_p)
-		   : vect_store_lanes_supported (vectype, group_size,
-						 masked_p))
+	  else
 	    {
-	      *memory_access_type = VMAT_LOAD_STORE_LANES;
-	      overrun_p = would_overrun_p;
-	    }
+	      /* Otherwise try using LOAD/STORE_LANES.  */
+	      *lanes_ifn
+		= vls_type == VLS_LOAD
+		    ? vect_load_lanes_supported (vectype, group_size, masked_p)
+		    : vect_store_lanes_supported (vectype, group_size,
+						  masked_p);
+	      if (*lanes_ifn != IFN_LAST)
+		{
+		  *memory_access_type = VMAT_LOAD_STORE_LANES;
+		  overrun_p = would_overrun_p;
+		}
 
-	  /* If that fails, try using permuting loads.  */
-	  else if (vls_type == VLS_LOAD
-		   ? vect_grouped_load_supported (vectype, single_element_p,
-						  group_size)
-		   : vect_grouped_store_supported (vectype, group_size))
-	    {
-	      *memory_access_type = VMAT_CONTIGUOUS_PERMUTE;
-	      overrun_p = would_overrun_p;
+	      /* If that fails, try using permuting loads.  */
+	      else if (vls_type == VLS_LOAD
+			 ? vect_grouped_load_supported (vectype,
+							single_element_p,
+							group_size)
+			 : vect_grouped_store_supported (vectype, group_size))
+		{
+		  *memory_access_type = VMAT_CONTIGUOUS_PERMUTE;
+		  overrun_p = would_overrun_p;
+		}
 	    }
 	}
 
@@ -2378,7 +2388,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     poly_int64 *poffset,
 		     dr_alignment_support *alignment_support_scheme,
 		     int *misalignment,
-		     gather_scatter_info *gs_info)
+		     gather_scatter_info *gs_info,
+		     internal_fn *lanes_ifn)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -2441,7 +2452,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 				      masked_p,
 				      vls_type, memory_access_type, poffset,
 				      alignment_support_scheme,
-				      misalignment, gs_info))
+				      misalignment, gs_info, lanes_ifn))
 	return false;
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
@@ -3087,11 +3098,8 @@ vect_get_loop_variant_data_ptr_increment (
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
   tree step = vect_dr_behavior (vinfo, dr_info)->step;
 
-  /* TODO: We don't support gather/scatter or load_lanes/store_lanes for pointer
-     IVs are updated by variable amount but we will support them in the future.
-   */
-  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER
-	      && memory_access_type != VMAT_LOAD_STORE_LANES);
+  /* gather/scatter never reach here.  */
+  gcc_assert (memory_access_type != VMAT_GATHER_SCATTER);
 
   /* When we support SELECT_VL pattern, we dynamic adjust
      the memory address by .SELECT_VL result.
@@ -8094,9 +8102,11 @@ vectorizable_store (vec_info *vinfo,
   enum dr_alignment_support alignment_support_scheme;
   int misalignment;
   poly_int64 poffset;
+  internal_fn lanes_ifn;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, vls_type,
 			    ncopies, &memory_access_type, &poffset,
-			    &alignment_support_scheme, &misalignment, &gs_info))
+			    &alignment_support_scheme, &misalignment, &gs_info,
+			    &lanes_ifn))
     return false;
 
   if (mask)
@@ -8885,6 +8895,8 @@ vectorizable_store (vec_info *vinfo,
 	    }
 
 	  tree final_mask = NULL;
+	  tree final_len = NULL;
+	  tree bias = NULL;
 	  if (loop_masks)
 	    final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 					     ncopies, vectype, j);
@@ -8892,8 +8904,37 @@ vectorizable_store (vec_info *vinfo,
 	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype,
 					   final_mask, vec_mask, gsi);
 
+	  if (lanes_ifn == IFN_MASK_LEN_STORE_LANES)
+	    {
+	      if (loop_lens)
+		final_len = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+					       ncopies, vectype, j, 1);
+	      else
+		final_len = size_int (TYPE_VECTOR_SUBPARTS (vectype));
+	      signed char biasval
+		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+	      bias = build_int_cst (intQI_type_node, biasval);
+	      if (!final_mask)
+		{
+		  mask_vectype = truth_type_for (vectype);
+		  final_mask = build_minus_one_cst (mask_vectype);
+		}
+	    }
+
 	  gcall *call;
-	  if (final_mask)
+	  if (final_len && final_mask)
+	    {
+	      /* Emit:
+		   MASK_LEN_STORE_LANES (DATAREF_PTR, ALIAS_PTR, VEC_MASK,
+					 LEN, BIAS, VEC_ARRAY).  */
+	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
+	      tree alias_ptr = build_int_cst (ref_type, align);
+	      call = gimple_build_call_internal (IFN_MASK_LEN_STORE_LANES, 6,
+						 dataref_ptr, alias_ptr,
+						 final_mask, final_len, bias,
+						 vec_array);
+	    }
+	  else if (final_mask)
 	    {
 	      /* Emit:
 		   MASK_STORE_LANES (DATAREF_PTR, ALIAS_PTR, VEC_MASK,
@@ -9598,9 +9639,11 @@ vectorizable_load (vec_info *vinfo,
   enum dr_alignment_support alignment_support_scheme;
   int misalignment;
   poly_int64 poffset;
+  internal_fn lanes_ifn;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
 			    ncopies, &memory_access_type, &poffset,
-			    &alignment_support_scheme, &misalignment, &gs_info))
+			    &alignment_support_scheme, &misalignment, &gs_info,
+			    &lanes_ifn))
     return false;
 
   if (mask)
@@ -10386,6 +10429,8 @@ vectorizable_load (vec_info *vinfo,
 	  tree vec_array = create_vector_array (vectype, vec_num);
 
 	  tree final_mask = NULL_TREE;
+	  tree final_len = NULL_TREE;
+	  tree bias = NULL_TREE;
 	  if (loop_masks)
 	    final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 					     ncopies, vectype, j);
@@ -10393,8 +10438,36 @@ vectorizable_load (vec_info *vinfo,
 	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype, final_mask,
 					   vec_mask, gsi);
 
+	  if (lanes_ifn == IFN_MASK_LEN_LOAD_LANES)
+	    {
+	      if (loop_lens)
+		final_len = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+					       ncopies, vectype, j, 1);
+	      else
+		final_len = size_int (TYPE_VECTOR_SUBPARTS (vectype));
+	      signed char biasval
+		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+	      bias = build_int_cst (intQI_type_node, biasval);
+	      if (!final_mask)
+		{
+		  mask_vectype = truth_type_for (vectype);
+		  final_mask = build_minus_one_cst (mask_vectype);
+		}
+	    }
+
 	  gcall *call;
-	  if (final_mask)
+	  if (final_len && final_mask)
+	    {
+	      /* Emit:
+		   VEC_ARRAY = MASK_LEN_LOAD_LANES (DATAREF_PTR, ALIAS_PTR,
+						    VEC_MASK, LEN, BIAS).  */
+	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
+	      tree alias_ptr = build_int_cst (ref_type, align);
+	      call = gimple_build_call_internal (IFN_MASK_LEN_LOAD_LANES, 5,
+						 dataref_ptr, alias_ptr,
+						 final_mask, final_len, bias);
+	    }
+	  else if (final_mask)
 	    {
 	      /* Emit:
 		   VEC_ARRAY = MASK_LOAD_LANES (DATAREF_PTR, ALIAS_PTR,

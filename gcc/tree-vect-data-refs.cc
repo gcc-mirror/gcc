@@ -5438,22 +5438,31 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   return false;
 }
 
+/* Return FN if vec_{mask_,mask_len_}store_lanes is available for COUNT vectors
+   of type VECTYPE.  MASKED_P says whether the masked form is needed.  */
 
-/* Return TRUE if vec_{mask_}store_lanes is available for COUNT vectors of
-   type VECTYPE.  MASKED_P says whether the masked form is needed.  */
-
-bool
+internal_fn
 vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
 			    bool masked_p)
 {
-  if (masked_p)
-    return vect_lanes_optab_supported_p ("vec_mask_store_lanes",
-					 vec_mask_store_lanes_optab,
-					 vectype, count);
+  if (vect_lanes_optab_supported_p ("vec_mask_len_store_lanes",
+				    vec_mask_len_store_lanes_optab, vectype,
+				    count))
+    return IFN_MASK_LEN_STORE_LANES;
+  else if (masked_p)
+    {
+      if (vect_lanes_optab_supported_p ("vec_mask_store_lanes",
+					vec_mask_store_lanes_optab, vectype,
+					count))
+	return IFN_MASK_STORE_LANES;
+    }
   else
-    return vect_lanes_optab_supported_p ("vec_store_lanes",
-					 vec_store_lanes_optab,
-					 vectype, count);
+    {
+      if (vect_lanes_optab_supported_p ("vec_store_lanes",
+					vec_store_lanes_optab, vectype, count))
+	return IFN_STORE_LANES;
+    }
+  return IFN_LAST;
 }
 
 
@@ -6056,21 +6065,31 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
   return false;
 }
 
-/* Return TRUE if vec_{masked_}load_lanes is available for COUNT vectors of
-   type VECTYPE.  MASKED_P says whether the masked form is needed.  */
+/* Return FN if vec_{masked_,mask_len_}load_lanes is available for COUNT vectors
+   of type VECTYPE.  MASKED_P says whether the masked form is needed.  */
 
-bool
+internal_fn
 vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
 			   bool masked_p)
 {
-  if (masked_p)
-    return vect_lanes_optab_supported_p ("vec_mask_load_lanes",
-					 vec_mask_load_lanes_optab,
-					 vectype, count);
+  if (vect_lanes_optab_supported_p ("vec_mask_len_load_lanes",
+				    vec_mask_len_load_lanes_optab, vectype,
+				    count))
+    return IFN_MASK_LEN_LOAD_LANES;
+  else if (masked_p)
+    {
+      if (vect_lanes_optab_supported_p ("vec_mask_load_lanes",
+					vec_mask_load_lanes_optab, vectype,
+					count))
+	return IFN_MASK_LOAD_LANES;
+    }
   else
-    return vect_lanes_optab_supported_p ("vec_load_lanes",
-					 vec_load_lanes_optab,
-					 vectype, count);
+    {
+      if (vect_lanes_optab_supported_p ("vec_load_lanes", vec_load_lanes_optab,
+					vectype, count))
+	return IFN_LOAD_LANES;
+    }
+  return IFN_LAST;
 }
 
 /* Function vect_permute_load_chain.
