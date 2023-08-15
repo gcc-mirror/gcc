@@ -275,7 +275,11 @@ HIRCompileBase::handle_inline_attribute_on_fndecl (tree fndecl,
     }
   else
     {
-      rust_error_at (attr.get_locus (), "unknown inline option");
+      rich_location rich_locus (line_table, attr.get_locus ());
+      rich_locus.add_fixit_replace ("unknown inline option");
+      rust_error_at (rich_locus, ErrorCode::E0535,
+		     "invalid argument, %<inline%> attribute only accepts "
+		     "%<always%> or %<never%>");
     }
 }
 
