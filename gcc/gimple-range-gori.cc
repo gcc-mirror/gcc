@@ -1605,3 +1605,216 @@ gori_export_iterator::get_name ()
     }
   return NULL_TREE;
 }
+
+// This is a helper class to set up STMT with a known LHS for further GORI
+// processing.
+
+class gori_stmt_info : public gimple_range_op_handler
+{
+public:
+  gori_stmt_info (vrange &lhs, gimple *stmt, range_query *q);
+  Value_Range op1_range;
+  Value_Range op2_range;
+  tree ssa1;
+  tree ssa2;
+};
+
+
+// Uses query Q to get the known ranges on STMT with a LHS range
+// for op1_range and op2_range and set ssa1 and ssa2 if either or both of
+// those operands are SSA_NAMES.
+
+gori_stmt_info::gori_stmt_info (vrange &lhs, gimple *stmt, range_query *q)
+  : gimple_range_op_handler (stmt)
+{
+  ssa1 = NULL;
+  ssa2 = NULL;
+  // Don't handle switches as yet for vector processing.
+  if (is_a<gswitch *> (stmt))
+    return;
+
+  // No frther processing for VARYING or undefined.
+  if (lhs.undefined_p () || lhs.varying_p ())
+    return;
+
+  // If there is no range-op handler, we are also done.
+  if (!*this)
+    return;
+
+  // Only evaluate logical cases if both operands must be the same as the LHS.
+  // Otherwise its becomes exponential in time, as well as more complicated.
+  if (is_gimple_logical_p (stmt))
+    {
+      gcc_checking_assert (range_compatible_p (lhs.type (), boolean_type_node));
+      enum tree_code code = gimple_expr_code (stmt);
+      if (code == TRUTH_OR_EXPR ||  code == BIT_IOR_EXPR)
+	{
+	  // [0, 0] = x || y  means both x and y must be zero.
+	  if (!lhs.singleton_p () || !lhs.zero_p ())
+	    return;
+	}
+      else if (code == TRUTH_AND_EXPR ||  code == BIT_AND_EXPR)
+	{
+	  // [1, 1] = x && y  means both x and y must be one.
+	  if (!lhs.singleton_p () || lhs.zero_p ())
+	    return;
+	}
+    }
+
+  tree op1 = operand1 ();
+  tree op2 = operand2 ();
+  ssa1 = gimple_range_ssa_p (op1);
+  ssa2 = gimple_range_ssa_p (op2);
+  // If both operands are the same, only process one of them.
+  if (ssa1 && ssa1 == ssa2)
+    ssa2 = NULL_TREE;
+
+  // Extract current ranges for the operands.
+  fur_stmt src (stmt, q);
+  if (op1)
+    {
+      op1_range.set_type (TREE_TYPE (op1));
+      src.get_operand (op1_range, op1);
+    }
+
+  // And satisfy the second operand for single op satements.
+  if (op2)
+    {
+      op2_range.set_type (TREE_TYPE (op2));
+      src.get_operand (op2_range, op2);
+    }
+  else if (op1)
+    op2_range = op1_range;
+  return;
+}
+
+
+// Process STMT using LHS as the range of the LHS. Invoke GORI processing
+// to resolve ranges for all SSA_NAMES feeding STMT which may be altered
+// based on LHS.  Fill R with the results, and resolve all incoming
+// ranges using range-query Q.
+
+static void
+gori_calc_operands (vrange &lhs, gimple *stmt, ssa_cache &r, range_query *q)
+{
+  struct gori_stmt_info si(lhs, stmt, q);
+  if (!si)
+    return;
+
+  Value_Range tmp;
+  // Now evaluate operand ranges, and set them in the edge cache.
+  // If there was already a range, leave it and do no further evaluation.
+  if (si.ssa1 && !r.has_range (si.ssa1))
+    {
+      tmp.set_type (TREE_TYPE (si.ssa1));
+      if (si.calc_op1 (tmp, lhs, si.op2_range))
+	si.op1_range.intersect (tmp);
+      r.set_range (si.ssa1, si.op1_range);
+      gimple *src = SSA_NAME_DEF_STMT (si.ssa1);
+      // If defintion is in the same basic lock, evaluate it.
+      if (src && gimple_bb (src) == gimple_bb (stmt))
+	gori_calc_operands (si.op1_range, src, r, q);
+    }
+
+  if (si.ssa2 && !r.has_range (si.ssa2))
+    {
+      tmp.set_type (TREE_TYPE (si.ssa2));
+      if (si.calc_op2 (tmp, lhs, si.op1_range))
+	si.op2_range.intersect (tmp);
+      r.set_range (si.ssa2, si.op2_range);
+      gimple *src = SSA_NAME_DEF_STMT (si.ssa2);
+      if (src && gimple_bb (src) == gimple_bb (stmt))
+	gori_calc_operands (si.op2_range, src, r, q);
+    }
+}
+
+// Use ssa_cache R as a repository for all outgoing ranges on edge E that
+// can be calculated.  Use OGR if present to establish starting edge ranges,
+// and Q to resolve operand values.  If Q is NULL use the current range
+// query available to the system.
+
+bool
+gori_on_edge (ssa_cache &r, edge e, range_query *q, gimple_outgoing_range *ogr)
+{
+  // Start with an empty vector
+  r.clear ();
+  int_range_max lhs;
+  // Determine if there is an outgoing edge.
+  gimple *stmt;
+  if (ogr)
+    stmt = ogr->edge_range_p (lhs, e);
+  else
+    {
+      stmt = gimple_outgoing_range_stmt_p (e->src);
+      if (stmt && is_a<gcond *> (stmt))
+	gcond_edge_range (lhs, e);
+      else
+	stmt = NULL;
+    }
+  if (!stmt)
+    return false;
+  gori_calc_operands (lhs, stmt, r, q);
+  return true;
+}
+
+// Helper for GORI_NAME_ON_EDGE which uses query Q to determine if STMT
+// provides a range for NAME, and returns it in R if so. If it does not,
+// continue processing feeding statments until we run out of statements
+// or fine a range for NAME.
+
+bool
+gori_name_helper (vrange &r, tree name, vrange &lhs, gimple *stmt,
+		  range_query *q)
+{
+  struct gori_stmt_info si(lhs, stmt, q);
+  if (!si)
+    return false;
+
+  if (si.ssa1 == name)
+    return si.calc_op1 (r, lhs, si.op2_range);
+  if (si.ssa2 == name)
+    return si.calc_op2 (r, lhs, si.op1_range);
+
+  Value_Range tmp;
+  // Now evaluate operand ranges, and set them in the edge cache.
+  // If there was already a range, leave it and do no further evaluation.
+  if (si.ssa1)
+    {
+      tmp.set_type (TREE_TYPE (si.ssa1));
+      if (si.calc_op1 (tmp, lhs, si.op2_range))
+	si.op1_range.intersect (tmp);
+      gimple *src = SSA_NAME_DEF_STMT (si.ssa1);
+      // If defintion is in the same basic lock, evaluate it.
+      if (src && gimple_bb (src) == gimple_bb (stmt))
+	if (gori_name_helper (r, name, si.op1_range, src, q))
+	  return true;
+    }
+
+  if (si.ssa2)
+    {
+      tmp.set_type (TREE_TYPE (si.ssa2));
+      if (si.calc_op2 (tmp, lhs, si.op1_range))
+	si.op2_range.intersect (tmp);
+      gimple *src = SSA_NAME_DEF_STMT (si.ssa2);
+      if (src && gimple_bb (src) == gimple_bb (stmt))
+	if (gori_name_helper (r, name, si.op2_range, src, q))
+	  return true;
+    }
+  return false;
+}
+
+// Check if NAME has an outgoing range on edge E.  Use query Q to evaluate
+// the operands.  Return TRUE and the range in R if there is an outgoing range.
+// This is like gori_on_edge except it only looks for the single name and
+// does not require an ssa_cache.
+
+bool
+gori_name_on_edge (vrange &r, tree name, edge e, range_query *q)
+{
+  int_range_max lhs;
+  gimple *stmt = gimple_outgoing_range_stmt_p (e->src);
+  if (!stmt || !is_a<gcond *> (stmt))
+    return false;
+  gcond_edge_range (lhs, e);
+  return gori_name_helper (r, name, lhs, stmt, q);
+}
