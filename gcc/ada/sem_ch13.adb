@@ -16470,7 +16470,7 @@ package body Sem_Ch13 is
          Op_Name := Chars (First (Choices (Assoc)));
 
          --  When verifying the consistency of aspects between the freeze point
-         --  and the end of declarqtions, we use a copy which is not analyzed
+         --  and the end of declarations, we use a copy which is not analyzed
          --  yet, so do it now.
 
          Subp_Id := Expression (Assoc);
