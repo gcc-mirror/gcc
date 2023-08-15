@@ -350,13 +350,6 @@
    {ldxsb\t%0,%1|%0 = *(s8 *) (%1)}"
   [(set_attr "type" "alu,ldx")])
 
-(define_insn "extendsisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (sign_extend:SI (match_operand:SI 1 "register_operand" "r")))]
-  "bpf_has_smov"
-  "{movs32\t%0,%1,32|%w0 = (s32) %w1}"
-  [(set_attr "type" "alu")])
-
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
