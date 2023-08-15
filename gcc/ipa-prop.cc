@@ -5760,6 +5760,34 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
   return NULL;
 }
 
+/* If IPA-CP discovered a constant in parameter PARM at OFFSET of a given SIZE
+   - whether passed by reference or not is given by BY_REF - return that
+   constant.  Otherwise return NULL_TREE.  */
+
+tree
+ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
+			  HOST_WIDE_INT bit_offset, HOST_WIDE_INT bit_size)
+{
+  cgraph_node *node = cgraph_node::get (func->decl);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
+
+  if (!ts || !ts->m_agg_values)
+    return NULL_TREE;
+
+  int index = ts->get_param_index (func->decl, parm);
+  if (index < 0)
+    return NULL_TREE;
+
+  ipa_argagg_value_list avl (ts);
+  unsigned unit_offset = bit_offset / BITS_PER_UNIT;
+  tree v = avl.get_value (index, unit_offset, by_ref);
+  if (!v
+      || maybe_ne (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (v))), bit_size))
+    return NULL_TREE;
+
+  return v;
+}
+
 /* Return true if we have recorded VALUE and MASK about PARM.
    Set VALUE and MASk accordingly.  */
 
@@ -6030,11 +6058,6 @@ ipcp_transform_function (struct cgraph_node *node)
   FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
     free_ipa_bb_info (bi);
   fbi.bb_infos.release ();
-
-  ipcp_transformation *s = ipcp_transformation_sum->get (node);
-  s->m_agg_values = NULL;
-  s->bits = NULL;
-  s->m_vr = NULL;
 
   vec_free (descriptors);
   if (cfg_changed)
