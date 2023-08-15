@@ -247,7 +247,10 @@ HIRCompileBase::handle_inline_attribute_on_fndecl (tree fndecl,
   AST::AttrInputMetaItemContainer *meta_item = option.parse_to_meta_item ();
   if (meta_item->get_items ().size () != 1)
     {
-      rust_error_at (attr.get_locus (), "invalid number of arguments");
+      rich_location rich_locus (line_table, attr.get_locus ());
+      rich_locus.add_fixit_replace ("expected one argument");
+      rust_error_at (rich_locus, ErrorCode::E0534,
+		     "invalid number of arguments");
       return;
     }
 
