@@ -175,7 +175,7 @@ init_internal_fns ()
 #define len_store_direct { 3, 3, false }
 #define mask_len_store_direct { 4, 5, false }
 #define vec_set_direct { 3, 3, false }
-#define vec_extract_direct { 3, 3, false }
+#define vec_extract_direct { 0, -1, false }
 #define unary_direct { 0, 0, true }
 #define unary_convert_direct { -1, 0, true }
 #define binary_direct { 0, 0, true }
@@ -3127,43 +3127,6 @@ expand_vec_set_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   gcc_unreachable ();
 }
 
-/* Expand VEC_EXTRACT optab internal function.  */
-
-static void
-expand_vec_extract_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
-{
-  tree lhs = gimple_call_lhs (stmt);
-  tree op0 = gimple_call_arg (stmt, 0);
-  tree op1 = gimple_call_arg (stmt, 1);
-
-  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-  machine_mode outermode = TYPE_MODE (TREE_TYPE (op0));
-  machine_mode extract_mode = TYPE_MODE (TREE_TYPE (lhs));
-
-  rtx src = expand_normal (op0);
-  rtx pos = expand_normal (op1);
-
-  class expand_operand ops[3];
-  enum insn_code icode = convert_optab_handler (optab, outermode,
-						extract_mode);
-
-  if (icode != CODE_FOR_nothing)
-    {
-      create_output_operand (&ops[0], target, extract_mode);
-      create_input_operand (&ops[1], src, outermode);
-      create_convert_operand_from (&ops[2], pos,
-				   TYPE_MODE (TREE_TYPE (op1)), true);
-      if (maybe_expand_insn (icode, 3, ops))
-	{
-	  if (!rtx_equal_p (target, ops[0].value))
-	    emit_move_insn (target, ops[0].value);
-	  return;
-	}
-    }
-  gcc_unreachable ();
-}
-
 static void
 expand_ABNORMAL_DISPATCHER (internal_fn, gcall *)
 {
@@ -3917,6 +3880,9 @@ expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
 #define expand_unary_convert_optab_fn(FN, STMT, OPTAB) \
   expand_convert_optab_fn (FN, STMT, OPTAB, 1)
 
+#define expand_vec_extract_optab_fn(FN, STMT, OPTAB) \
+  expand_convert_optab_fn (FN, STMT, OPTAB, 2)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -4019,7 +3985,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_len_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_check_ptrs_optab_supported_p direct_optab_supported_p
 #define direct_vec_set_optab_supported_p direct_optab_supported_p
-#define direct_vec_extract_optab_supported_p direct_optab_supported_p
+#define direct_vec_extract_optab_supported_p convert_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
