@@ -2492,7 +2492,7 @@ static CONSTEXPR const vfcvt_x<UNSPEC_UNSIGNED_VFCVT> vfcvt_xu_obj;
 static CONSTEXPR const vfcvt_x<UNSPEC_UNSIGNED_VFCVT, HAS_FRM> vfcvt_xu_frm_obj;
 static CONSTEXPR const vfcvt_rtz_x<FIX> vfcvt_rtz_x_obj;
 static CONSTEXPR const vfcvt_rtz_x<UNSIGNED_FIX> vfcvt_rtz_xu_obj;
-static CONSTEXPR const vfcvt_f vfcvt_f_obj;
+static CONSTEXPR const vfcvt_f<NO_FRM> vfcvt_f_obj;
 static CONSTEXPR const vfcvt_f<HAS_FRM> vfcvt_f_frm_obj;
 static CONSTEXPR const vfwcvt_x<UNSPEC_VFCVT> vfwcvt_x_obj;
 static CONSTEXPR const vfwcvt_x<UNSPEC_VFCVT, HAS_FRM> vfwcvt_x_frm_obj;
