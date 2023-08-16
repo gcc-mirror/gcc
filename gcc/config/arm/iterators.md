@@ -271,7 +271,7 @@
 
 ;; MVE mode iterator.
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
-(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
+(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
 (define_mode_iterator MVE_VLD_ST_scatter [V16QI V8HI V4SI V8HF V4SF V2DI])
 (define_mode_iterator MVE_VLD_ST_scatter_shifted [V8HI V4SI V8HF V4SF V2DI])
