@@ -1694,9 +1694,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfcvt_f : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_x_v)
@@ -2482,6 +2488,7 @@ static CONSTEXPR const vfcvt_x<UNSPEC_UNSIGNED_VFCVT, HAS_FRM> vfcvt_xu_frm_obj;
 static CONSTEXPR const vfcvt_rtz_x<FIX> vfcvt_rtz_x_obj;
 static CONSTEXPR const vfcvt_rtz_x<UNSIGNED_FIX> vfcvt_rtz_xu_obj;
 static CONSTEXPR const vfcvt_f vfcvt_f_obj;
+static CONSTEXPR const vfcvt_f<HAS_FRM> vfcvt_f_frm_obj;
 static CONSTEXPR const vfwcvt_x<UNSPEC_VFCVT> vfwcvt_x_obj;
 static CONSTEXPR const vfwcvt_x<UNSPEC_UNSIGNED_VFCVT> vfwcvt_xu_obj;
 static CONSTEXPR const vfwcvt_rtz_x<FIX> vfwcvt_rtz_x_obj;
@@ -2733,6 +2740,7 @@ BASE (vfcvt_xu_frm)
 BASE (vfcvt_rtz_x)
 BASE (vfcvt_rtz_xu)
 BASE (vfcvt_f)
+BASE (vfcvt_f_frm)
 BASE (vfwcvt_x)
 BASE (vfwcvt_xu)
 BASE (vfwcvt_rtz_x)
