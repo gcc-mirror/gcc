@@ -1086,18 +1086,18 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
   lra_update_insn_recog_data (insn);
 }
 
-/* Spill pseudos which are assigned to hard registers in SET.  Add
-   affected insns for processing in the subsequent constraint
-   pass.  */
-static void
-spill_pseudos (HARD_REG_SET set)
+/* Spill pseudos which are assigned to hard registers in SET, record them in
+   SPILLED_PSEUDOS unless it is null, and return the recorded pseudos number.
+   Add affected insns for processing in the subsequent constraint pass.  */
+static int
+spill_pseudos (HARD_REG_SET set, int *spilled_pseudos)
 {
-  int i;
+  int i, n;
   bitmap_head to_process;
   rtx_insn *insn;
 
   if (hard_reg_set_empty_p (set))
-    return;
+    return 0;
   if (lra_dump_file != NULL)
     {
       fprintf (lra_dump_file, "	   Spilling non-eliminable hard regs:");
@@ -1107,6 +1107,7 @@ spill_pseudos (HARD_REG_SET set)
       fprintf (lra_dump_file, "\n");
     }
   bitmap_initialize (&to_process, &reg_obstack);
+  n = 0;
   for (i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
     if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	&& overlaps_hard_reg_set_p (set,
@@ -1116,6 +1117,8 @@ spill_pseudos (HARD_REG_SET set)
 	  fprintf (lra_dump_file, "	 Spilling r%d(%d)\n",
 		   i, reg_renumber[i]);
 	reg_renumber[i] = -1;
+	if (spilled_pseudos != NULL)
+	  spilled_pseudos[n++] = i;
 	bitmap_ior_into (&to_process, &lra_reg_info[i].insn_bitmap);
       }
   lra_no_alloc_regs |= set;
@@ -1126,6 +1129,7 @@ spill_pseudos (HARD_REG_SET set)
 	lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
       }
   bitmap_clear (&to_process);
+  return n;
 }
 
 /* Update all offsets and possibility for elimination on eliminable
@@ -1238,7 +1242,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
       }
   lra_no_alloc_regs |= temp_hard_reg_set;
   eliminable_regset &= ~temp_hard_reg_set;
-  spill_pseudos (temp_hard_reg_set);
+  spill_pseudos (temp_hard_reg_set, NULL);
   return result;
 }
 
@@ -1382,15 +1386,17 @@ process_insn_for_elimination (rtx_insn *insn, bool final_p, bool first_p)
 
 /* Update frame pointer to stack pointer elimination if we started with
    permitted frame pointer elimination and now target reports that we can not
-   do this elimination anymore.  */
-void
-lra_update_fp2sp_elimination (void)
+   do this elimination anymore.  Record spilled pseudos in SPILLED_PSEUDOS
+   unless it is null, and return the recorded pseudos number.  */
+int
+lra_update_fp2sp_elimination (int *spilled_pseudos)
 {
+  int n;
   HARD_REG_SET set;
   class lra_elim_table *ep;
 
   if (frame_pointer_needed || !targetm.frame_pointer_required ())
-    return;
+    return 0;
   gcc_assert (!elimination_fp2sp_occured_p);
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
@@ -1398,10 +1404,11 @@ lra_update_fp2sp_elimination (void)
   frame_pointer_needed = true;
   CLEAR_HARD_REG_SET (set);
   add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
-  spill_pseudos (set);
+  n = spill_pseudos (set, spilled_pseudos);
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
       setup_can_eliminate (ep, false);
+  return n;
 }
 
 /* Entry function to do final elimination if FINAL_P or to update

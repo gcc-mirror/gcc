@@ -606,7 +606,7 @@ lra_need_for_spills_p (void)
 void
 lra_spill (void)
 {
-  int i, n, curr_regno;
+  int i, n, n2, curr_regno;
   int *pseudo_regnos;
 
   regs_num = max_reg_num ();
@@ -632,8 +632,14 @@ lra_spill (void)
   for (i = 0; i < n; i++)
     if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
       assign_mem_slot (pseudo_regnos[i]);
-  lra_update_fp2sp_elimination ();
-  if (n > 0 && crtl->stack_alignment_needed)
+  if ((n2 = lra_update_fp2sp_elimination (pseudo_regnos)) > 0)
+    {
+      /* Assign stack slots to spilled pseudos assigned to fp.  */
+      for (i = 0; i < n2; i++)
+	if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
+	  assign_mem_slot (pseudo_regnos[i]);
+    }
+  if (n + n2 > 0 && crtl->stack_alignment_needed)
     /* If we have a stack frame, we must align it now.  The stack size
        may be a part of the offset computation for register
        elimination.  */
