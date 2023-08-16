@@ -1590,7 +1590,7 @@ stds[11] = ">= 201103L";
 stds[14] = ">= 201402L";
 stds[17] = ">= 201703L";
 stds[20] = ">= 202002L";
-stds[23] = ">  202002L"; // TODO: update when finalized
+stds[23] = ">= 202302L";
 
 // Local Variables:
 // compile-command: "autogen version.def"
