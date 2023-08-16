@@ -4044,8 +4044,9 @@ conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
       gfc_typespec ts;
       gfc_clear_ts (&ts);
 
-      *expr = gfc_get_int_expr (gfc_default_character_kind, NULL,
-				(*expr)->value.character.string[0]);
+      gfc_expr *tmp = gfc_get_int_expr (gfc_default_character_kind, NULL,
+					(*expr)->value.character.string[0]);
+      gfc_replace_expr (*expr, tmp);
     }
   else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
     {
