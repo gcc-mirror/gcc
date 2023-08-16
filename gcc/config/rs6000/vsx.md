@@ -3753,9 +3753,9 @@
 (define_expand  "vsx_extract_<mode>"
   [(parallel [(set (match_operand:<VEC_base> 0 "gpc_reg_operand")
 		   (vec_select:<VEC_base>
-		    (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand")
+		    (match_operand:VSX_EXTRACT_I2 1 "gpc_reg_operand")
 		    (parallel [(match_operand:QI 2 "const_int_operand")])))
-	      (clobber (match_scratch:VSX_EXTRACT_I 3))])]
+	      (clobber (match_scratch:VSX_EXTRACT_I2 3))])]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_DIRECT_MOVE_64BIT"
 {
   /* If we have ISA 3.0, we can do a xxextractuw/vextractu{b,h}.  */
@@ -3766,6 +3766,63 @@
       DONE;
     }
 })
+
+(define_expand  "vsx_extract_v4si"
+  [(parallel [(set (match_operand:SI 0 "gpc_reg_operand")
+		   (vec_select:SI
+		    (match_operand:V4SI 1 "gpc_reg_operand")
+		    (parallel [(match_operand:QI 2 "const_0_to_3_operand")])))
+	      (clobber (match_scratch:V4SI 3))])]
+  "TARGET_DIRECT_MOVE_64BIT"
+{
+  /* The word 1 (BE order) can be extracted by mfvsrwz/stxsiwx.  So just
+     fall through to vsx_extract_v4si_w1.  */
+  if (TARGET_P9_VECTOR
+      && INTVAL (operands[2]) != (BYTES_BIG_ENDIAN ? 1 : 2))
+    {
+      emit_insn (gen_vsx_extract_v4si_p9 (operands[0], operands[1],
+					  operands[2]));
+      DONE;
+    }
+})
+
+;; Extract from word 1 (BE order).
+(define_insn "vsx_extract_v4si_w1"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wa,Z,wa")
+	(vec_select:SI
+	 (match_operand:V4SI 1 "gpc_reg_operand" "v,v,v,0")
+	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n,n")])))
+   (clobber (match_scratch:V4SI 3 "=v,v,v,v"))]
+  "TARGET_DIRECT_MOVE_64BIT
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 1 : 2)"
+{
+   if (which_alternative == 0)
+     return "mfvsrwz %0,%x1";
+
+   if (which_alternative == 1)
+     return "xxlor %x0,%x1,%x1";
+
+   if (which_alternative == 2)
+     return "stxsiwx %x1,%y0";
+
+   return ASM_COMMENT_START " vec_extract to same register";
+}
+  [(set_attr "type" "mfvsr,veclogical,fpstore,*")
+   (set_attr "length" "4,4,4,0")
+   (set_attr "isa" "p8v,*,p8v,*")])
+
+(define_insn "*mfvsrwz"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V4SI 1 "vsx_register_operand" "wa")
+	    (parallel [(match_operand:QI 2 "const_int_operand" "n")]))))
+   (clobber (match_scratch:V4SI 3 "=v"))]
+  "TARGET_DIRECT_MOVE_64BIT
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 1 : 2)"
+  "mfvsrwz %0,%x1"
+  [(set_attr "type" "mfvsr")
+   (set_attr "isa" "p8v")])
 
 (define_insn "vsx_extract_<mode>_p9"
   [(set (match_operand:<VEC_base> 0 "gpc_reg_operand" "=r,<VSX_EX>")
@@ -3838,6 +3895,9 @@
 		    (parallel [(match_dup 2)])))
 	      (clobber (match_dup 3))])]
 {
+  gcc_assert (<MODE>mode != V4SImode
+	      || INTVAL (operands[2]) != (BYTES_BIG_ENDIAN ? 1 : 2));
+
   operands[4] = gen_rtx_REG (<VEC_base>mode, REGNO (operands[0]));
 }
   [(set_attr "isa" "p9v,*")])
@@ -3861,58 +3921,42 @@
    (set (match_dup 0)
 	(match_dup 3))])
 
-(define_insn_and_split  "*vsx_extract_si"
+;; Extract from word 0, 2, 3 (BE order).
+(define_insn_and_split "*vsx_extract_v4si_w023"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,wa,Z")
 	(vec_select:SI
 	 (match_operand:V4SI 1 "gpc_reg_operand" "v,v,v")
 	 (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n,n,n")])))
    (clobber (match_scratch:V4SI 3 "=v,v,v"))]
-  "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT && !TARGET_P9_VECTOR"
+  "TARGET_DIRECT_MOVE_64BIT"
   "#"
-  "&& reload_completed"
+  "&& INTVAL (operands[2]) != (BYTES_BIG_ENDIAN ? 1 : 2)"
   [(const_int 0)]
 {
+  gcc_assert (!TARGET_P9_VECTOR);
+
   rtx dest = operands[0];
   rtx src = operands[1];
   rtx element = operands[2];
-  rtx vec_tmp = operands[3];
-  int value;
+  rtx vec_tmp;
+
+  if (GET_CODE (operands[3]) == SCRATCH)
+    vec_tmp = gen_reg_rtx (V4SImode);
+  else
+    vec_tmp = operands[3];
 
   /* Adjust index for LE element ordering, the below minuend 3 is computed by
      GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
     element = GEN_INT (3 - INTVAL (element));
 
-  /* If the value is in the correct position, we can avoid doing the VSPLT<x>
-     instruction.  */
-  value = INTVAL (element);
-  if (value != 1)
-    emit_insn (gen_altivec_vspltw_direct (vec_tmp, src, element));
-  else
-    vec_tmp = src;
+  emit_insn (gen_altivec_vspltw_direct (vec_tmp, src, element));
 
-  if (MEM_P (operands[0]))
-    {
-      if (can_create_pseudo_p ())
-	dest = rs6000_force_indexed_or_indirect_mem (dest);
-
-      if (TARGET_P8_VECTOR)
-	emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
-      else
-	emit_insn (gen_stfiwx (dest, gen_rtx_REG (DImode, REGNO (vec_tmp))));
-    }
-
-  else if (TARGET_P8_VECTOR)
-    emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
-  else
-    emit_move_insn (gen_rtx_REG (DImode, REGNO (dest)),
-		    gen_rtx_REG (DImode, REGNO (vec_tmp)));
+  int value = BYTES_BIG_ENDIAN ? 1 : 2;
+  emit_insn (gen_vsx_extract_v4si_w1 (dest, vec_tmp, GEN_INT (value)));
 
   DONE;
-}
-  [(set_attr "type" "mfvsr,vecperm,fpstore")
-   (set_attr "length" "8")
-   (set_attr "isa" "*,p8v,*")])
+})
 
 (define_insn_and_split  "*vsx_extract_<mode>_p8"
   [(set (match_operand:<VEC_base> 0 "nonimmediate_operand" "=r")
