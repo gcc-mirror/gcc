@@ -333,6 +333,44 @@ struct widen_alu_frm_def : public build_frm_base
   }
 };
 
+/* narrow_alu_frm_def class.  */
+struct narrow_alu_frm_def : public build_frm_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    char base_name[BASE_NAME_MAX_LEN] = {};
+
+    normalize_base_name (base_name, instance.base_name, sizeof (base_name));
+
+    b.append_base_name (base_name);
+
+    if (!overloaded_p)
+      {
+	/* vop --> vop_<op>.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop_<op> --> vop_<op>_<type>.  */
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_rm" suffix
+       for vop_rm C++ overloaded API.  */
+    if (!overloaded_p)
+      b.append_name ("_rm");
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+
+    b.append_name (predication_suffixes[instance.pred]);
+
+    return b.finish_name ();
+  }
+};
+
 /* widen_alu_def class. Handle vwadd/vwsub. Unlike
    vadd.vx/vadd.vv/vwmul.vv/vwmul.vx, vwadd.vv/vwadd.vx/vwadd.wv/vwadd.wx has
    'OP' suffix in overloaded API.  */
@@ -856,6 +894,7 @@ SHAPE(widen_alu_frm, widen_alu_frm)
 SHAPE(no_mask_policy, no_mask_policy)
 SHAPE(return_mask, return_mask)
 SHAPE(narrow_alu, narrow_alu)
+SHAPE(narrow_alu_frm, narrow_alu_frm)
 SHAPE(move, move)
 SHAPE(mask_alu, mask_alu)
 SHAPE(reduc_alu, reduc_alu)

@@ -1759,10 +1759,15 @@ public:
 };
 
 /* Implements vfncvt.x.  */
-template<int UNSPEC>
+template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
 class vfncvt_x : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -2502,6 +2507,7 @@ static CONSTEXPR const vfwcvt_rtz_x<FIX> vfwcvt_rtz_x_obj;
 static CONSTEXPR const vfwcvt_rtz_x<UNSIGNED_FIX> vfwcvt_rtz_xu_obj;
 static CONSTEXPR const vfwcvt_f vfwcvt_f_obj;
 static CONSTEXPR const vfncvt_x<UNSPEC_VFCVT> vfncvt_x_obj;
+static CONSTEXPR const vfncvt_x<UNSPEC_VFCVT, HAS_FRM> vfncvt_x_frm_obj;
 static CONSTEXPR const vfncvt_x<UNSPEC_UNSIGNED_VFCVT> vfncvt_xu_obj;
 static CONSTEXPR const vfncvt_rtz_x<FIX> vfncvt_rtz_x_obj;
 static CONSTEXPR const vfncvt_rtz_x<UNSIGNED_FIX> vfncvt_rtz_xu_obj;
@@ -2756,6 +2762,7 @@ BASE (vfwcvt_rtz_x)
 BASE (vfwcvt_rtz_xu)
 BASE (vfwcvt_f)
 BASE (vfncvt_x)
+BASE (vfncvt_x_frm)
 BASE (vfncvt_xu)
 BASE (vfncvt_rtz_x)
 BASE (vfncvt_rtz_xu)

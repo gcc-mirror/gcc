@@ -220,6 +220,7 @@ extern const function_base *const vfwcvt_rtz_x;
 extern const function_base *const vfwcvt_rtz_xu;
 extern const function_base *const vfwcvt_f;
 extern const function_base *const vfncvt_x;
+extern const function_base *const vfncvt_x_frm;
 extern const function_base *const vfncvt_xu;
 extern const function_base *const vfncvt_rtz_x;
 extern const function_base *const vfncvt_rtz_xu;

@@ -35,6 +35,7 @@ extern const function_shape *const widen_alu_frm;
 extern const function_shape *const no_mask_policy;
 extern const function_shape *const return_mask;
 extern const function_shape *const narrow_alu;
+extern const function_shape *const narrow_alu_frm;
 extern const function_shape *const move;
 extern const function_shape *const mask_alu;
 extern const function_shape *const reduc_alu;
