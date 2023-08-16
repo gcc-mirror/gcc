@@ -184,8 +184,14 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
     {
       std::string variant_type
 	= TyTy::VariantDef::variant_type_string (variant->get_variant_type ());
-      rust_error_at (pattern.get_locus (),
-		     "expected struct variant, found %s variant %s",
+
+      rich_location rich_locus (line_table, pattern.get_locus ());
+      std::string rich_msg = "use the tuple variant pattern syntax instead "
+			     + variant->get_identifier () + "(_)";
+      rich_locus.add_fixit_replace (rich_msg.c_str ());
+
+      rust_error_at (rich_locus, ErrorCode::E0769,
+		     "%s variant %qs written as struct variant",
 		     variant_type.c_str (),
 		     variant->get_identifier ().c_str ());
       return;
