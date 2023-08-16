@@ -344,9 +344,10 @@ phi_analyzer::operator[] (tree name)
       process_phi (as_a<gphi *> (SSA_NAME_DEF_STMT (name)));
       if (bitmap_bit_p (m_simple, v))
 	return  NULL;
-      // If m_simple bit isn't set, then process_phi allocated the table
-      // and should have a group.
-      gcc_checking_assert (v < m_tab.length ());
+     // If m_simple bit isn't set, and process_phi didn't allocated the table
+     // no group was created, so return NULL.
+     if (v >= m_tab.length ())
+      return NULL;
     }
   return m_tab[v];
 }
@@ -363,6 +364,7 @@ phi_analyzer::process_phi (gphi *phi)
   unsigned x;
   m_work.truncate (0);
   m_work.safe_push (gimple_phi_result (phi));
+  unsigned phi_count = 1;
   bitmap_clear (m_current);
 
   // We can only have 2 externals: an initial value and a modifier.
@@ -407,6 +409,7 @@ phi_analyzer::process_phi (gphi *phi)
 	      gimple *arg_stmt = SSA_NAME_DEF_STMT (arg);
 	      if (arg_stmt && is_a<gphi *> (arg_stmt))
 		{
+		  phi_count++;
 		  m_work.safe_push (arg);
 		  continue;
 		}
@@ -430,9 +433,12 @@ phi_analyzer::process_phi (gphi *phi)
 	}
     }
 
-  // If there are no names in the group, we're done.
-  if (bitmap_empty_p (m_current))
+  // If there are less than 2 names, just return.  This PHI may be included
+  // by another PHI, making it simple or a group of one will prevent a larger
+  // group from being formed.
+  if (phi_count < 2)
     return;
+  gcc_checking_assert (!bitmap_empty_p (m_current));
 
   phi_group *g = NULL;
   if (cycle_p)
