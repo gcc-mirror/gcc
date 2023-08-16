@@ -8425,24 +8425,6 @@ riscv_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   return false;
 }
 
-/* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
-   prefer to use the first arithmetic operand as the else value if
-   the else value doesn't matter, since that exactly matches the RVV
-   destructive merging form.  For ternary operations we could either
-   pick the first operand and use VMADD-like instructions or the last
-   operand and use VMACC-like instructions; the latter seems more
-   natural.
-
-   TODO: Currently, the return value is not ideal for RVV since it will
-   let VSETVL PASS use MU or TU. We will suport undefine value that allows
-   VSETVL PASS use TA/MA in the future.  */
-
-static tree
-riscv_preferred_else_value (unsigned, tree, unsigned int nops, tree *ops)
-{
-  return nops == 3 ? ops[2] : ops[0];
-}
-
 static bool
 riscv_frame_pointer_required (void)
 {
@@ -8752,9 +8734,6 @@ riscv_frame_pointer_required (void)
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST riscv_vectorize_vec_perm_const
-
-#undef TARGET_PREFERRED_ELSE_VALUE
-#define TARGET_PREFERRED_ELSE_VALUE riscv_preferred_else_value
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED riscv_frame_pointer_required
