@@ -3919,7 +3919,21 @@
 		    (parallel [(match_dup 2)])))
 	      (clobber (match_dup 4))])
    (set (match_dup 0)
-	(match_dup 3))])
+	(match_dup 3))]
+{
+  if (which_alternative == 0
+      && ((<MODE>mode == V16QImode
+	   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 7 : 8))
+	  || (<MODE>mode == V8HImode
+	      && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 3 : 4))))
+    {
+      enum machine_mode dest_mode = GET_MODE (operands[0]);
+      emit_move_insn (operands[0],
+		      gen_rtx_REG (dest_mode, REGNO (operands[3])));
+      DONE;
+    }
+})
+
 
 ;; Extract from word 0, 2, 3 (BE order).
 (define_insn_and_split "*vsx_extract_v4si_w023"
