@@ -46,14 +46,19 @@ void test01()
   const string six(to_string(400ull));
   VERIFY( six == "400" );
 
+  string tail;
+#if __cpp_lib_to_string < 202306L
+  tail = ".000000";
+#endif
+
   const string seven(to_string(-1.0F));
-  VERIFY( seven == "-1.000000" );
+  VERIFY( seven == "-1" + tail );
 
   const string eight(to_string(2.0));
-  VERIFY( eight == "2.000000" );
+  VERIFY( eight == "2" + tail );
 
   const string nine(to_string(-4.0L));
-  VERIFY( nine == "-4.000000" );
+  VERIFY( nine == "-4" + tail );
 }
 
 int main()

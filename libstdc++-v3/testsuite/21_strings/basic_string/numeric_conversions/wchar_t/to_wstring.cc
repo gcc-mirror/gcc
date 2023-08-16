@@ -47,13 +47,18 @@ test01()
   wstring four(to_wstring(ull2));
   VERIFY( four == L"3000" );
 
+  wstring tail;
+#if __cpp_lib_to_string < 202306L
+  tail = L".000000";
+#endif
+
   long double ld1 = 2.0L;
   wstring five(to_wstring(ld1));
-  VERIFY( five == L"2.000000" );
+  VERIFY( five == L"2" + tail );
 
   long double ld2 = -4.0L;
   wstring six(to_wstring(ld2));
-  VERIFY( six == L"-4.000000" );
+  VERIFY( six == L"-4" + tail );
 
 #endif
 }

@@ -1582,6 +1582,16 @@ ftms = {
   };
 };
 
+ftms = {
+  name = to_string;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+    extra_cond = "__glibcxx_to_chars";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";
@@ -1590,6 +1600,7 @@ stds[14] = ">= 201402L";
 stds[17] = ">= 201703L";
 stds[20] = ">= 202002L";
 stds[23] = ">= 202302L";
+stds[26] = ">  202302L"; // TODO: update when finalized
 
 // Local Variables:
 // compile-command: "autogen version.def"

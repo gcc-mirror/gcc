@@ -47,9 +47,14 @@
 # include <string_view>
 #endif
 
+#if __cplusplus > 202302L
+# include <charconv>
+#endif
+
 #define __glibcxx_want_constexpr_string
 #define __glibcxx_want_string_resize_and_overwrite
 #define __glibcxx_want_string_udls
+#define __glibcxx_want_to_string
 #include <bits/version.h>
 
 #if ! _GLIBCXX_USE_CXX11_ABI
@@ -4185,6 +4190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return std::stod(__str, __idx); }
 #endif
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 1261. Insufficent overloads for to_string / to_wstring
 
   _GLIBCXX_NODISCARD
@@ -4287,7 +4293,65 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 
-#if _GLIBCXX_USE_C99_STDIO
+#if __cpp_lib_to_string >= 202306L
+
+  [[nodiscard]]
+  inline string
+  to_string(float __val)
+  {
+    string __str;
+    size_t __len = 15;
+    do {
+      __str.resize_and_overwrite(__len,
+				 [__val, &__len] (char* __p, size_t __n) {
+	auto [__end, __err] = std::to_chars(__p, __p + __n, __val);
+	if (__err == errc{}) [[likely]]
+	  return __end - __p;
+	__len *= 2;
+	return __p - __p;;
+      });
+    } while (__str.empty());
+    return __str;
+  }
+
+  [[nodiscard]]
+  inline string
+  to_string(double __val)
+  {
+    string __str;
+    size_t __len = 15;
+    do {
+      __str.resize_and_overwrite(__len,
+				 [__val, &__len] (char* __p, size_t __n) {
+	auto [__end, __err] = std::to_chars(__p, __p + __n, __val);
+	if (__err == errc{}) [[likely]]
+	  return __end - __p;
+	__len *= 2;
+	return __p - __p;;
+      });
+    } while (__str.empty());
+    return __str;
+  }
+
+  [[nodiscard]]
+  inline string
+  to_string(long double __val)
+  {
+    string __str;
+    size_t __len = 15;
+    do {
+      __str.resize_and_overwrite(__len,
+				 [__val, &__len] (char* __p, size_t __n) {
+	auto [__end, __err] = std::to_chars(__p, __p + __n, __val);
+	if (__err == errc{}) [[likely]]
+	  return __end - __p;
+	__len *= 2;
+	return __p - __p;;
+      });
+    } while (__str.empty());
+    return __str;
+  }
+#elif _GLIBCXX_USE_C99_STDIO
   // NB: (v)snprintf vs sprintf.
 
   _GLIBCXX_NODISCARD
@@ -4465,7 +4529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   to_wstring(unsigned long long __val)
   { return std::__to_wstring_numeric(std::to_string(__val)); }
 
-#if _GLIBCXX_USE_C99_STDIO
+#if __cpp_lib_to_string || _GLIBCXX_USE_C99_STDIO
   _GLIBCXX_NODISCARD
   inline wstring
   to_wstring(float __val)
