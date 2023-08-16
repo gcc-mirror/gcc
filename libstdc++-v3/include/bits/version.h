@@ -1874,6 +1874,17 @@
 #undef __glibcxx_want_adaptor_iterator_pair_constructor
 
 // from version.def line 1530
+#if !defined(__cpp_lib_formatters)
+# if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_formatters 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_formatters)
+#   define __cpp_lib_formatters 202302L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_formatters) && defined(__glibcxx_want_formatters) */
+#undef __glibcxx_want_formatters
+
+// from version.def line 1539
 #if !defined(__cpp_lib_ios_noreplace)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_ios_noreplace 202207L
@@ -1884,7 +1895,7 @@
 #endif /* !defined(__cpp_lib_ios_noreplace) && defined(__glibcxx_want_ios_noreplace) */
 #undef __glibcxx_want_ios_noreplace
 
-// from version.def line 1539
+// from version.def line 1548
 #if !defined(__cpp_lib_move_only_function)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_move_only_function 202110L
@@ -1895,7 +1906,7 @@
 #endif /* !defined(__cpp_lib_move_only_function) && defined(__glibcxx_want_move_only_function) */
 #undef __glibcxx_want_move_only_function
 
-// from version.def line 1548
+// from version.def line 1557
 #if !defined(__cpp_lib_spanstream)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED && (__glibcxx_span)
 #  define __glibcxx_spanstream 202106L
@@ -1906,7 +1917,7 @@
 #endif /* !defined(__cpp_lib_spanstream) && defined(__glibcxx_want_spanstream) */
 #undef __glibcxx_want_spanstream
 
-// from version.def line 1558
+// from version.def line 1567
 #if !defined(__cpp_lib_stacktrace)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED && (_GLIBCXX_HAVE_STACKTRACE)
 #  define __glibcxx_stacktrace 202011L
@@ -1917,7 +1928,7 @@
 #endif /* !defined(__cpp_lib_stacktrace) && defined(__glibcxx_want_stacktrace) */
 #undef __glibcxx_want_stacktrace
 
-// from version.def line 1568
+// from version.def line 1577
 #if !defined(__cpp_lib_string_contains)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_contains 202011L
@@ -1928,7 +1939,7 @@
 #endif /* !defined(__cpp_lib_string_contains) && defined(__glibcxx_want_string_contains) */
 #undef __glibcxx_want_string_contains
 
-// from version.def line 1577
+// from version.def line 1586
 #if !defined(__cpp_lib_string_resize_and_overwrite)
 # if (__cplusplus >= 202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_resize_and_overwrite 202110L
@@ -1939,7 +1950,7 @@
 #endif /* !defined(__cpp_lib_string_resize_and_overwrite) && defined(__glibcxx_want_string_resize_and_overwrite) */
 #undef __glibcxx_want_string_resize_and_overwrite
 
-// from version.def line 1586
+// from version.def line 1595
 #if !defined(__cpp_lib_ratio)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_ratio 202306L
@@ -1950,7 +1961,7 @@
 #endif /* !defined(__cpp_lib_ratio) && defined(__glibcxx_want_ratio) */
 #undef __glibcxx_want_ratio
 
-// from version.def line 1594
+// from version.def line 1603
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L

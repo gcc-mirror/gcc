@@ -1527,6 +1527,15 @@ ftms = {
 };
 
 ftms = {
+  name = formatters;
+  values = {
+    v = 202302;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = ios_noreplace;
   values = {
     v = 202207;
