@@ -1,3 +1,140 @@
+2023-08-15  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (extendsisi2): Delete useless define_insn.
+
+2023-08-15  David Faust  <david.faust@oracle.com>
+
+	PR target/111029
+	* config/bpf/bpf.cc (bpf_print_register): Print 'w' registers
+	for any mode 32-bits or smaller, not just SImode.
+
+2023-08-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/68930
+	PR ipa/92497
+	* ipa-prop.h (ipcp_get_aggregate_const): Declare.
+	* ipa-prop.cc (ipcp_get_aggregate_const): New function.
+	(ipcp_transform_function): Do not deallocate transformation info.
+	* tree-ssa-sccvn.cc: Include alloc-pool.h, symbol-summary.h and
+	ipa-prop.h.
+	(vn_reference_lookup_2): When hitting default-def vuse, query
+	IPA-CP transformation info for any known constants.
+
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimplify.cc (oacc_region_type_name): New function.
+	(oacc_default_clause): If no 'default' clause appears on this
+	compute construct, see if one appears on a lexically containing
+	'data' construct.
+	(gimplify_scan_omp_clauses): Upon OMP_CLAUSE_DEFAULT case, set
+	ctx->oacc_default_clause_ctx to current context.
+
+2023-08-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110989
+	* config/riscv/predicates.md: Fix predicate.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp_instance): Remove
+	slp_inst_kind_ctor handling.
+	(vect_analyze_slp): Simplify.
+	(vect_build_slp_instance): Dump when we analyze a CTOR.
+	(vect_slp_check_for_constructors): Rename to ...
+	(vect_slp_check_for_roots): ... this.  Register a
+	slp_root for CONSTRUCTORs instead of shoving them to
+	the set of grouped stores.
+	(vect_slp_analyze_bb_1): Adjust.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_instance::remain_stmts): Change
+	to ...
+	(_slp_instance::remain_defs): ... this.
+	(SLP_INSTANCE_REMAIN_STMTS): Rename to ...
+	(SLP_INSTANCE_REMAIN_DEFS): ... this.
+	(slp_root::remain): New.
+	(slp_root::slp_root): Adjust.
+	* tree-vect-slp.cc (vect_free_slp_instance): Adjust.
+	(vect_build_slp_instance): Get extra remain parameter,
+	adjust former handling of a cut off stmt.
+	(vect_analyze_slp_instance): Adjust.
+	(vect_analyze_slp): Likewise.
+	(_bb_vec_info::~_bb_vec_info): Likewise.
+	(vectorizable_bb_reduc_epilogue): Dump something if we fail.
+	(vect_slp_check_for_constructors): Handle non-internal
+	defs as remain defs of a reduction.
+	(vectorize_slp_instance_root_stmt): Adjust.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivcanon.cc: Include tree-vectorizer.h
+	(canonicalize_loop_induction_variables): Use find_loop_location.
+
+2023-08-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR bootstrap/111021
+	* config/cris/cris-protos.h: Revert recent change.
+	* config/cris/cris.cc (cris_legitimate_address_p): Remove
+	code_helper unused parameter.
+	(cris_legitimate_address_p_hook): New wrapper function.
+	(TARGET_LEGITIMATE_ADDRESS_P): Change to
+	cris_legitimate_address_p_hook.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110963
+	* tree-ssa-pre.cc (do_pre_regular_insertion): Also insert
+	a PHI node when the expression is available on all edges
+	and we insert at most one copy from a constant.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110991
+	* tree-ssa-loop-ivcanon.cc (constant_after_peeling): Handle
+	VIEW_CONVERT_EXPR <op>, handle more simple IV-like SSA cycles
+	that will end up constant.
+
+2023-08-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR bootstrap/111021
+	* Makefile.in (RECOG_H): Add $(TREE_H) as dependence.
+
+2023-08-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Move the handlings on
+	VMAT_LOAD_STORE_LANES in the final loop nest to its own loop,
+	and update the final nest accordingly.
+
+2023-08-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Remove some useless checks
+	on VMAT_INVARIANT.
+
+2023-08-15  Pan Li  <pan2.li@intel.com>
+
+	* mode-switching.cc (create_pre_exit): Add SET insn check.
+
+2023-08-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class vfrec7_frm): New class for frm.
+	(vfrec7_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfrec7_frm): New intrinsic function definition.
+	* config/riscv/vector-iterators.md
+	(VFMISC): Remove VFREC7.
+	(misc_op): Ditto.
+	(float_insn_type): Ditto.
+	(VFMISC_FRM): New int iterator.
+	(misc_frm_op): New op for frm.
+	(float_frm_insn_type): New type for frm.
+	* config/riscv/vector.md (@pred_<misc_frm_op><mode>):
+	New pattern for misc frm.
+
 2023-08-14  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.cc (curr_insn_transform): Process output stack

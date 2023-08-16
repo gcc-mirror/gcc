@@ -1,3 +1,58 @@
+2023-08-15  David Faust  <david.faust@oracle.com>
+
+	PR target/111029
+	* gcc.target/bpf/smov-2.c: New test.
+	* gcc.target/bpf/smov-pseudoc-2.c: New test.
+
+2023-08-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/68930
+	PR ipa/92497
+	* gcc.dg/ipa/pr92497-1.c: New test.
+	* gcc.dg/ipa/pr92497-2.c: Likewise.
+
+2023-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110959
+	* gdc.dg/pr110959.d: New test.
+
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/default-3.c: Adjust testcase.
+	* c-c++-common/goacc/default-4.c: Adjust testcase.
+	* c-c++-common/goacc/default-5.c: Adjust testcase.
+	* gfortran.dg/goacc/default-3.f95: Adjust testcase.
+	* gfortran.dg/goacc/default-4.f: Adjust testcase.
+	* gfortran.dg/goacc/default-5.f: Adjust testcase.
+
+2023-08-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/110989
+	* gcc.target/riscv/rvv/autovec/pr110989.c: Add vsetvli assembly check.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-75.c: New testcase.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110963
+	* gcc.dg/tree-ssa/ssa-pre-34.c: New testcase.
+
+2023-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110991
+	* gcc.dg/tree-ssa/cunroll-16.c: New testcase.
+
+2023-08-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/mode-switch-ice-1.c: New test.
+
+2023-08-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-rec7.c: New test.
+
 2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.dg/value_9.f90 (val, val4, sub, sub4): Take the error

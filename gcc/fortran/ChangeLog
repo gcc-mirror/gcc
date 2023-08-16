@@ -1,3 +1,15 @@
+2023-08-15  Martin Jambor  <mjambor@suse.cz>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110677
+	* resolve.cc (resolve_structure_cons): Check comp->ts is character
+	type before accessing stuff through comp->ts.u.cl.
+
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (OACC_DATA_CLAUSES): Add OMP_CLAUSE_DEFAULT.
+
 2023-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/110360

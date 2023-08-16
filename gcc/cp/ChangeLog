@@ -1,3 +1,8 @@
+2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (OACC_DATA_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_DEFAULT.
+
 2023-08-14  gnaggnoyil  <gnaggnoyil@gmail.com>
 
 	DR 2386
