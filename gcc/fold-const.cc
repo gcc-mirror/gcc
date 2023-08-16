@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple code, we need to handle GIMPLE tuples as well as their
    corresponding tree equivalents.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -10520,6 +10521,181 @@ vec_cst_ctor_to_array (tree arg, unsigned int nelts, tree *elts)
   return true;
 }
 
+/* Helper routine for fold_vec_perm_cst to check if SEL is a suitable
+   mask for VLA vec_perm folding.
+   REASON if specified, will contain the reason why SEL is not suitable.
+   Used only for debugging and unit-testing.  */
+
+static bool
+valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
+				    const vec_perm_indices &sel,
+				    const char **reason = NULL)
+{
+  unsigned sel_npatterns = sel.encoding ().npatterns ();
+  unsigned sel_nelts_per_pattern = sel.encoding ().nelts_per_pattern ();
+
+  if (!(pow2p_hwi (sel_npatterns)
+	&& pow2p_hwi (VECTOR_CST_NPATTERNS (arg0))
+	&& pow2p_hwi (VECTOR_CST_NPATTERNS (arg1))))
+    {
+      if (reason)
+	*reason = "npatterns is not power of 2";
+      return false;
+    }
+
+  /* We want to avoid cases where sel.length is not a multiple of npatterns.
+     For eg: sel.length = 2 + 2x, and sel npatterns = 4.  */
+  poly_uint64 esel;
+  if (!multiple_p (sel.length (), sel_npatterns, &esel))
+    {
+      if (reason)
+	*reason = "sel.length is not multiple of sel_npatterns";
+      return false;
+    }
+
+  if (sel_nelts_per_pattern < 3)
+    return true;
+
+  for (unsigned pattern = 0; pattern < sel_npatterns; pattern++)
+    {
+      poly_uint64 a1 = sel[pattern + sel_npatterns];
+      poly_uint64 a2 = sel[pattern + 2 * sel_npatterns];
+      HOST_WIDE_INT step;
+      if (!poly_int64 (a2 - a1).is_constant (&step))
+	{
+	  if (reason)
+	    *reason = "step is not constant";
+	  return false;
+	}
+      // FIXME: Punt on step < 0 for now, revisit later.
+      if (step < 0)
+	return false;
+      if (step == 0)
+	continue;
+
+      if (!pow2p_hwi (step))
+	{
+	  if (reason)
+	    *reason = "step is not power of 2";
+	  return false;
+	}
+
+      /* Ensure that stepped sequence of the pattern selects elements
+	 only from the same input vector.  */
+      uint64_t q1, qe;
+      poly_uint64 r1, re;
+      poly_uint64 ae = a1 + (esel - 2) * step;
+      poly_uint64 arg_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+      if (!(can_div_trunc_p (a1, arg_len, &q1, &r1)
+	    && can_div_trunc_p (ae, arg_len, &qe, &re)
+	    && q1 == qe))
+	{
+	  if (reason)
+	    *reason = "crossed input vectors";
+	  return false;
+	}
+
+      /* Ensure that the stepped sequence always selects from the same
+	 input pattern.  */
+      unsigned arg_npatterns
+	= ((q1 & 0) == 0) ? VECTOR_CST_NPATTERNS (arg0)
+			  : VECTOR_CST_NPATTERNS (arg1);
+
+      if (!multiple_p (step, arg_npatterns))
+	{
+	  if (reason)
+	    *reason = "step is not multiple of npatterns";
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* Try to fold permutation of ARG0 and ARG1 with SEL selector when
+   the input vectors are VECTOR_CST. Return NULL_TREE otherwise.
+   REASON has same purpose as described in
+   valid_mask_for_fold_vec_perm_cst_p.  */
+
+static tree
+fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
+		   const char **reason = NULL)
+{
+  unsigned res_npatterns, res_nelts_per_pattern;
+  unsigned HOST_WIDE_INT res_nelts;
+
+  /* (1) If SEL is a suitable mask as determined by
+     valid_mask_for_fold_vec_perm_cst_p, then:
+     res_npatterns = max of npatterns between ARG0, ARG1, and SEL
+     res_nelts_per_pattern = max of nelts_per_pattern between
+			     ARG0, ARG1 and SEL.
+     (2) If SEL is not a suitable mask, and TYPE is VLS then:
+     res_npatterns = nelts in result vector.
+     res_nelts_per_pattern = 1.
+     This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
+  if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
+    {
+      res_npatterns
+	= std::max (VECTOR_CST_NPATTERNS (arg0),
+		    std::max (VECTOR_CST_NPATTERNS (arg1),
+			      sel.encoding ().npatterns ()));
+
+      res_nelts_per_pattern
+	= std::max (VECTOR_CST_NELTS_PER_PATTERN (arg0),
+		    std::max (VECTOR_CST_NELTS_PER_PATTERN (arg1),
+			      sel.encoding ().nelts_per_pattern ()));
+
+      res_nelts = res_npatterns * res_nelts_per_pattern;
+    }
+  else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
+    {
+      res_npatterns = res_nelts;
+      res_nelts_per_pattern = 1;
+    }
+  else
+    return NULL_TREE;
+
+  tree_vector_builder out_elts (type, res_npatterns, res_nelts_per_pattern);
+  for (unsigned i = 0; i < res_nelts; i++)
+    {
+      poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      uint64_t q;
+      poly_uint64 r;
+      unsigned HOST_WIDE_INT index;
+
+      /* Punt if sel[i] /trunc_div len cannot be determined,
+	 because the input vector to be chosen will depend on
+	 runtime vector length.
+	 For example if len == 4 + 4x, and sel[i] == 4,
+	 If len at runtime equals 4, we choose arg1[0].
+	 For any other value of len > 4 at runtime, we choose arg0[4].
+	 which makes the element choice dependent on runtime vector length.  */
+      if (!can_div_trunc_p (sel[i], len, &q, &r))
+	{
+	  if (reason)
+	    *reason = "cannot divide selector element by arg len";
+	  return NULL_TREE;
+	}
+
+      /* sel[i] % len will give the index of element in the chosen input
+	 vector. For example if sel[i] == 5 + 4x and len == 4 + 4x,
+	 we will choose arg1[1] since (5 + 4x) % (4 + 4x) == 1.  */
+      if (!r.is_constant (&index))
+	{
+	  if (reason)
+	    *reason = "remainder is not constant";
+	  return NULL_TREE;
+	}
+
+      tree arg = ((q & 1) == 0) ? arg0 : arg1;
+      tree elem = vector_cst_elt (arg, index);
+      out_elts.quick_push (elem);
+    }
+
+  return out_elts.build ();
+}
+
 /* Attempt to fold vector permutation of ARG0 and ARG1 vectors using SEL
    selector.  Return the folded VECTOR_CST or CONSTRUCTOR if successful,
    NULL_TREE otherwise.  */
@@ -10529,43 +10705,41 @@ fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
 {
   unsigned int i;
   unsigned HOST_WIDE_INT nelts;
-  bool need_ctor = false;
 
-  if (!sel.length ().is_constant (&nelts))
-    return NULL_TREE;
-  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type), nelts)
-	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)), nelts)
-	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)), nelts));
+  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type), sel.length ())
+	      && known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)),
+			   TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))));
+
   if (TREE_TYPE (TREE_TYPE (arg0)) != TREE_TYPE (type)
       || TREE_TYPE (TREE_TYPE (arg1)) != TREE_TYPE (type))
     return NULL_TREE;
 
+  if (TREE_CODE (arg0) == VECTOR_CST
+      && TREE_CODE (arg1) == VECTOR_CST)
+    return fold_vec_perm_cst (type, arg0, arg1, sel);
+
+  /* For fall back case, we want to ensure we have VLS vectors
+     with equal length.  */
+  if (!sel.length ().is_constant (&nelts))
+    return NULL_TREE;
+
+  gcc_assert (known_eq (sel.length (),
+			TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0))));
   tree *in_elts = XALLOCAVEC (tree, nelts * 2);
   if (!vec_cst_ctor_to_array (arg0, nelts, in_elts)
       || !vec_cst_ctor_to_array (arg1, nelts, in_elts + nelts))
     return NULL_TREE;
 
-  tree_vector_builder out_elts (type, nelts, 1);
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, nelts);
   for (i = 0; i < nelts; i++)
     {
       HOST_WIDE_INT index;
       if (!sel[i].is_constant (&index))
 	return NULL_TREE;
-      if (!CONSTANT_CLASS_P (in_elts[index]))
-	need_ctor = true;
-      out_elts.quick_push (unshare_expr (in_elts[index]));
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, in_elts[index]);
     }
-
-  if (need_ctor)
-    {
-      vec<constructor_elt, va_gc> *v;
-      vec_alloc (v, nelts);
-      for (i = 0; i < nelts; i++)
-	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, out_elts[i]);
-      return build_constructor (type, v);
-    }
-  else
-    return out_elts.build ();
+  return build_constructor (type, v);
 }
 
 /* Try to fold a pointer difference of type TYPE two address expressions of
@@ -16892,6 +17066,588 @@ test_arithmetic_folding ()
 				   x);
 }
 
+namespace test_fold_vec_perm_cst {
+
+/* Build a VECTOR_CST corresponding to VMODE, and has
+   encoding given by NPATTERNS, NELTS_PER_PATTERN and STEP.
+   Fill it with randomized elements, using rand() % THRESHOLD.  */
+
+static tree
+build_vec_cst_rand (machine_mode vmode, unsigned npatterns,
+		    unsigned nelts_per_pattern,
+		    int step = 0, int threshold = 100)
+{
+  tree inner_type = lang_hooks.types.type_for_mode (GET_MODE_INNER (vmode), 1);
+  tree vectype = build_vector_type_for_mode (inner_type, vmode);
+  tree_vector_builder builder (vectype, npatterns, nelts_per_pattern);
+
+  // Fill a0 for each pattern
+  for (unsigned i = 0; i < npatterns; i++)
+    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
+
+  if (nelts_per_pattern == 1)
+    return builder.build ();
+
+  // Fill a1 for each pattern
+  for (unsigned i = 0; i < npatterns; i++)
+    builder.quick_push (build_int_cst (inner_type, rand () % threshold));
+
+  if (nelts_per_pattern == 2)
+    return builder.build ();
+
+  for (unsigned i = npatterns * 2; i < npatterns * nelts_per_pattern; i++)
+    {
+      tree prev_elem = builder[i - npatterns];
+      int prev_elem_val = TREE_INT_CST_LOW (prev_elem);
+      int val = prev_elem_val + step;
+      builder.quick_push (build_int_cst (inner_type, val));
+    }
+
+  return builder.build ();
+}
+
+/* Validate result of VEC_PERM_EXPR folding for the unit-tests below,
+   when result is VLA.  */
+
+static void
+validate_res (unsigned npatterns, unsigned nelts_per_pattern,
+	      tree res, tree *expected_res)
+{
+  /* Actual npatterns and encoded_elts in res may be less than expected due
+     to canonicalization.  */
+  ASSERT_TRUE (res != NULL_TREE);
+  ASSERT_TRUE (VECTOR_CST_NPATTERNS (res) <= npatterns);
+  ASSERT_TRUE (vector_cst_encoded_nelts (res) <= npatterns * nelts_per_pattern);
+
+  for (unsigned i = 0; i < npatterns * nelts_per_pattern; i++)
+    ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (res, i), expected_res[i], 0));
+}
+
+/* Validate result of VEC_PERM_EXPR folding for the unit-tests below,
+   when the result is VLS.  */
+
+static void
+validate_res_vls (tree res, tree *expected_res, unsigned expected_nelts)
+{
+  ASSERT_TRUE (known_eq (VECTOR_CST_NELTS (res), expected_nelts));
+  for (unsigned i = 0; i < expected_nelts; i++)
+    ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (res, i), expected_res[i], 0));
+}
+
+/* Helper routine to push multiple elements into BUILDER.  */
+template<unsigned N>
+static void builder_push_elems (vec_perm_builder& builder,
+				poly_uint64 (&elems)[N])
+{
+  for (unsigned i = 0; i < N; i++)
+    builder.quick_push (elems[i]);
+}
+
+#define ARG0(index) vector_cst_elt (arg0, index)
+#define ARG1(index) vector_cst_elt (arg1, index)
+
+/* Test cases where result is VNx4SI and input vectors are V4SI.  */
+
+static void
+test_vnx4si_v4si (machine_mode vnx4si_mode, machine_mode v4si_mode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1:
+	 sel = { 0, 4, 1, 5, ... }
+	 res = { arg[0], arg1[0], arg0[1], arg1[1], ...} // (4, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+	tree arg1 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (vnx4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, vnx4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, 4, 1, 5 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (4, 1, res, expected_res);
+      }
+
+      /* Case 2: Same as case 1, but contains an out of bounds access which
+	 should wrap around.
+	 sel = {0, 8, 4, 12, ...} (4, 1)
+	 res = { arg0[0], arg0[0], arg1[0], arg1[0], ... } (4, 1).  */
+      {
+	tree arg0 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+	tree arg1 = build_vec_cst_rand (v4si_mode, 4, 1, 0);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (vnx4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, vnx4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, 8, 4, 12 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG1(0), ARG1(0) };
+	validate_res (4, 1, res, expected_res);
+      }
+    }
+}
+
+/* Test cases where result is V4SI and input vectors are VNx4SI.  */
+
+static void
+test_v4si_vnx4si (machine_mode v4si_mode, machine_mode vnx4si_mode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1:
+	 sel = { 0, 1, 2, 3}
+	 res = { arg0[0], arg0[1], arg0[2], arg0[3] }.  */
+      {
+	tree arg0 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (v4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, v4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = {0, 1, 2, 3};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(1), ARG0(2), ARG0(3) };
+	validate_res_vls (res, expected_res, 4);
+      }
+
+      /* Case 2: Same as Case 1, but crossing input vector.
+	 sel = {0, 2, 4, 6}
+	 In this case,the index 4 is ambiguous since len = 4 + 4x.
+	 Since we cannot determine, which vector to choose from during
+	 compile time, should return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vnx4si_mode, 4, 1);
+
+	tree inner_type
+	  = lang_hooks.types.type_for_mode (GET_MODE_INNER (v4si_mode), 1);
+	tree res_type = build_vector_type_for_mode (inner_type, v4si_mode);
+
+	poly_uint64 res_len = TYPE_VECTOR_SUBPARTS (res_type);
+	vec_perm_builder builder (res_len, 4, 1);
+	poly_uint64 mask_elems[] = {0, 2, 4, 6};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, res_len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel, &reason);
+
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "cannot divide selector element by arg len"));
+      }
+    }
+}
+
+/* Test all input vectors.  */
+
+static void
+test_all_nunits (machine_mode vmode)
+{
+  /* Test with 10 different inputs.  */
+  for (int i = 0; i < 10; i++)
+    {
+      tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+      tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+      poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+      /* Case 1: mask = {0, ...} // (1, 1)
+	 res = { arg0[0], ... } // (1, 1)  */
+      {
+	vec_perm_builder builder (len, 1, 1);
+	builder.quick_push (0);
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0) };
+	validate_res (1, 1, res, expected_res);
+      }
+
+      /* Case 2: mask = {len, ...} // (1, 1)
+	 res = { arg1[0], ... } // (1, 1)  */
+      {
+	vec_perm_builder builder (len, 1, 1);
+	builder.quick_push (len);
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG1(0) };
+	validate_res (1, 1, res, expected_res);
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 2 elements.  */
+
+static void
+test_nunits_min_2 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: mask = { 0, len, ... }  // (2, 1)
+	 res = { arg0[0], arg1[0], ... } // (2, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 1);
+	poly_uint64 mask_elems[] = { 0, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0) };
+	validate_res (2, 1, res, expected_res);
+      }
+
+      /* Case 2: mask = { 0, len, 1, len+1, ... } // (2, 2)
+	 res = { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (2, 2)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 2);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (2, 2, res, expected_res);
+      }
+
+      /* Case 4: mask = {0, 0, 1, ...} // (1, 3)
+	 Test that the stepped sequence of the pattern selects from
+	 same input pattern. Since input vectors have npatterns = 2,
+	 and step (a2 - a1) = 1, step is not a multiple of npatterns
+	 in input vector. So return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel,
+				      &reason);
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
+      }
+
+      /* Case 5: mask = {len, 0, 1, ...} // (1, 3)
+	 Test that stepped sequence of the pattern selects from arg0.
+	 res = { arg1[0], arg0[0], arg0[1], ... } // (1, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = { len, 0, 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG1(0), ARG0(0), ARG0(1) };
+	validate_res (1, 3, res, expected_res);
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 4 elements.  */
+
+static void
+test_nunits_min_4 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: mask = { 0, len, 1, len+1, ... } // (4, 1)
+	 res: { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (4, 1)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 4, 1);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (4, 1, res, expected_res);
+      }
+
+      /* Case 2: sel = {0, 1, 2, ...}  // (1, 3)
+	 res: { arg0[0], arg0[1], arg0[2], ... } // (1, 3) */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 arg0_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (arg0_len, 1, 3);
+	poly_uint64 mask_elems[] = {0, 1, 2};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, arg0_len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0), ARG0(1), ARG0(2) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 3: sel = {len, len+1, len+2, ...} // (1, 3)
+	 res: { arg1[0], arg1[1], arg1[2], ... } // (1, 3) */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 1, 3);
+	poly_uint64 mask_elems[] = {len, len + 1, len + 2};
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG1(0), ARG1(1), ARG1(2) };
+	validate_res (1, 3, res, expected_res);
+      }
+
+      /* Case 4:
+	sel = { len, 0, 2, ... } // (1, 3)
+	This should return NULL because we cross the input vectors.
+	Because,
+	Let's assume len = C + Cx
+	a1 = 0
+	S = 2
+	esel = arg0_len / sel_npatterns = C + Cx
+	ae = 0 + (esel - 2) * S
+	   = 0 + (C + Cx - 2) * 2
+	   = 2(C-2) + 2Cx
+
+	For C >= 4:
+	Let q1 = a1 / arg0_len = 0 / (C + Cx) = 0
+	Let qe = ae / arg0_len = (2(C-2) + 2Cx) / (C + Cx) = 1
+	Since q1 != qe, we cross input vectors.
+	So return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 2);
+	poly_uint64 arg0_len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (arg0_len, 1, 3);
+	poly_uint64 mask_elems[] = { arg0_len, 0, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, arg0_len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "crossed input vectors"));
+      }
+
+      /* Case 5: npatterns(arg0) = 4 > npatterns(sel) = 2
+	 mask = { 0, len, 1, len + 1, ...} // (2, 2)
+	 res = { arg0[0], arg1[0], arg0[1], arg1[1], ... } // (2, 2)
+
+	 Note that fold_vec_perm_cst will set
+	 res_npatterns = max(4, max(4, 2)) = 4
+	 However after canonicalizing, we will end up with shape (2, 2).  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 4, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 4, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 2);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
+	validate_res (2, 2, res, expected_res);
+      }
+
+      /* Case 6: Test combination in sel, where one pattern is dup and other
+	 is stepped sequence.
+	 sel = { 0, 0, 0, 1, 0, 2, ... } // (2, 3)
+	 res = { arg0[0], arg0[0], arg0[0],
+		 arg0[1], arg0[0], arg0[2], ... } // (2, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 0, 1, 0, 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(0),
+				ARG0(1), ARG0(0), ARG0(2) };
+	validate_res (2, 3, res, expected_res);
+      }
+    }
+}
+
+/* Test all vectors which contain at-least 8 elements.  */
+
+static void
+test_nunits_min_8 (machine_mode vmode)
+{
+  for (int i = 0; i < 10; i++)
+    {
+      /* Case 1: sel_npatterns (4) > input npatterns (2)
+	 sel: { 0, 0, 1, len, 2, 0, 3, len, 4, 0, 5, len, ...} // (4, 3)
+	 res: { arg0[0], arg0[0], arg0[0], arg1[0],
+		arg0[2], arg0[0], arg0[3], arg1[0],
+		arg0[4], arg0[0], arg0[5], arg1[0], ... } // (4, 3)  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 2, 3, 2);
+	tree arg1 = build_vec_cst_rand (vmode, 2, 3, 2);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder(len, 4, 3);
+	poly_uint64 mask_elems[] = { 0, 0, 1, len, 2, 0, 3, len,
+				     4, 0, 5, len };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel);
+
+	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(1), ARG1(0),
+				ARG0(2), ARG0(0), ARG0(3), ARG1(0),
+				ARG0(4), ARG0(0), ARG0(5), ARG1(0) };
+	validate_res (4, 3, res, expected_res);
+      }
+    }
+}
+
+/* Test vectors for which nunits[0] <= 4.  */
+
+static void
+test_nunits_max_4 (machine_mode vmode)
+{
+  /* Case 1: mask = {0, 4, ...} // (1, 2)
+     This should return NULL_TREE because the index 4 may choose
+     from either arg0 or arg1 depending on vector length.  */
+  {
+    tree arg0 = build_vec_cst_rand (vmode, 1, 3, 1);
+    tree arg1 = build_vec_cst_rand (vmode, 1, 3, 1);
+    poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+    vec_perm_builder builder (len, 1, 2);
+    poly_uint64 mask_elems[] = {0, 4};
+    builder_push_elems (builder, mask_elems);
+
+    vec_perm_indices sel (builder, 2, len);
+    const char *reason;
+    tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+    ASSERT_TRUE (res == NULL_TREE);
+    ASSERT_TRUE (reason != NULL);
+    ASSERT_TRUE (!strcmp (reason, "cannot divide selector element by arg len"));
+  }
+}
+
+#undef ARG0
+#undef ARG1
+
+/* Return true if SIZE is of the form C + Cx and C is power of 2.  */
+
+static bool
+is_simple_vla_size (poly_uint64 size)
+{
+  if (size.is_constant ()
+      || !pow2p_hwi (size.coeffs[0]))
+    return false;
+  for (unsigned i = 1; i < ARRAY_SIZE (size.coeffs); ++i)
+    if (size.coeffs[i] != (i <= 1 ? size.coeffs[0] : 0))
+      return false;
+  return true;
+}
+
+/* Execute fold_vec_perm_cst unit tests.  */
+
+static void
+test ()
+{
+  machine_mode vnx4si_mode = E_VOIDmode;
+  machine_mode v4si_mode = E_VOIDmode;
+
+  machine_mode vmode;
+  FOR_EACH_MODE_IN_CLASS (vmode, MODE_VECTOR_INT)
+    {
+      /* Obtain modes corresponding to VNx4SI and V4SI,
+	 to call mixed mode tests below.
+	 FIXME: Is there a better way to do this ?  */
+      if (GET_MODE_INNER (vmode) == SImode)
+	{
+	  poly_uint64 nunits = GET_MODE_NUNITS (vmode);
+	  if (is_simple_vla_size (nunits)
+	      && nunits.coeffs[0] == 4)
+	    vnx4si_mode = vmode;
+	  else if (known_eq (nunits, poly_uint64 (4)))
+	    v4si_mode = vmode;
+	}
+
+      if (!is_simple_vla_size (GET_MODE_NUNITS (vmode))
+	  || !targetm.vector_mode_supported_p (vmode))
+	continue;
+
+      poly_uint64 nunits = GET_MODE_NUNITS (vmode);
+      test_all_nunits (vmode);
+      if (nunits.coeffs[0] >= 2)
+	test_nunits_min_2 (vmode);
+      if (nunits.coeffs[0] >= 4)
+	test_nunits_min_4 (vmode);
+      if (nunits.coeffs[0] >= 8)
+	test_nunits_min_8 (vmode);
+
+      if (nunits.coeffs[0] <= 4)
+	test_nunits_max_4 (vmode);
+    }
+
+  if (vnx4si_mode != E_VOIDmode && v4si_mode != E_VOIDmode
+      && targetm.vector_mode_supported_p (vnx4si_mode)
+      && targetm.vector_mode_supported_p (v4si_mode))
+    {
+      test_vnx4si_v4si (vnx4si_mode, v4si_mode);
+      test_v4si_vnx4si (v4si_mode, vnx4si_mode);
+    }
+}
+} // end of test_fold_vec_perm_cst namespace
+
 /* Verify that various binary operations on vectors are folded
    correctly.  */
 
@@ -16943,6 +17699,7 @@ fold_const_cc_tests ()
   test_arithmetic_folding ();
   test_vector_folding ();
   test_vec_duplicate_folding ();
+  test_fold_vec_perm_cst::test ();
 }
 
 } // namespace selftest
