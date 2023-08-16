@@ -1105,6 +1105,16 @@ EarlyNameResolver::visit (AST::TupleStructItemsRange &tuple_items)
 void
 EarlyNameResolver::visit (AST::TupleStructPattern &pattern)
 {
+  if (!pattern.has_items ())
+    {
+      rich_location rich_locus (line_table, pattern.get_locus ());
+      rich_locus.add_fixit_replace (
+	"function calls are not allowed in patterns");
+      rust_error_at (
+	rich_locus, ErrorCode::E0164,
+	"expected tuple struct or tuple variant, found associated function");
+      return;
+    }
   pattern.get_items ()->accept_vis (*this);
 }
 

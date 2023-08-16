@@ -76,14 +76,16 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
     }
 
   // error[E0532]: expected tuple struct or tuple variant, found struct variant
-  // `Foo::D`
+  // `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
   if (variant->get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       std::string variant_type
 	= TyTy::VariantDef::variant_type_string (variant->get_variant_type ());
 
+      rich_location rich_locus (line_table, pattern.get_locus ());
+      rich_locus.add_fixit_replace ("not a tuple struct or tuple variant");
       rust_error_at (
-	pattern.get_locus (),
+	rich_locus, ErrorCode::E0164,
 	"expected tuple struct or tuple variant, found %s variant %<%s::%s%>",
 	variant_type.c_str (), adt->get_name ().c_str (),
 	variant->get_identifier ().c_str ());
