@@ -478,13 +478,6 @@ enum threader_debug
   THREADER_DEBUG_ALL = 1
 };
 
-/* VRP modes.  */
-enum vrp_mode
-{
-  VRP_MODE_VRP,
-  VRP_MODE_RANGER
-};
-
 /* Modes of OpenACC 'kernels' constructs handling.  */
 enum openacc_kernels
 {
