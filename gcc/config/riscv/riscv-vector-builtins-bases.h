@@ -213,6 +213,7 @@ extern const function_base *const vfcvt_rtz_xu;
 extern const function_base *const vfcvt_f;
 extern const function_base *const vfcvt_f_frm;
 extern const function_base *const vfwcvt_x;
+extern const function_base *const vfwcvt_x_frm;
 extern const function_base *const vfwcvt_xu;
 extern const function_base *const vfwcvt_rtz_x;
 extern const function_base *const vfwcvt_rtz_xu;
