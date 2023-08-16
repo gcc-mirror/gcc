@@ -1,3 +1,9 @@
+2023-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/110959
+	* gdc.dg/pr110959.d: New test.
+	* gdc.test/runnable/test23010.d: New test.
+
 2023-08-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106310
