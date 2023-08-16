@@ -8,7 +8,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Note: This file was derived from set.pass.cc which is part of the upstream
+// Note: This file was derived from set.pass.cpp which is part of the upstream
 // source.
 
 #ifndef __PSTL_TEST_SET_UTIL_H

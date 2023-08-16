@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Note: This file was derived from set.pass.cc which is part of the upstream
+// Note: This file was derived from set.pass.cpp which is part of the upstream
 // source.
 
 #include "pstl/pstl_test_config.h"
