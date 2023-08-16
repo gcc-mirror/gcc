@@ -1176,12 +1176,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<TupleStructItems> &get_items ()
-  {
-    rust_assert (has_items ());
-    return items;
-  }
+  std::unique_ptr<TupleStructItems> &get_items () { return items; }
 
   PathInExpression &get_path () { return path; }
   const PathInExpression &get_path () const { return path; }
