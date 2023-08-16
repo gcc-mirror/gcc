@@ -460,6 +460,7 @@ DEF_RVV_FUNCTION (vfwcvt_f, alu, full_preds, u_to_wf_xu_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_f, alu, full_preds, f_to_wf_f_v_ops)
 
 DEF_RVV_FUNCTION (vfwcvt_x_frm, alu_frm, full_preds, f_to_wi_f_v_ops)
+DEF_RVV_FUNCTION (vfwcvt_xu_frm, alu_frm, full_preds, f_to_wu_f_v_ops)
 
 // 13.19. Narrowing Floating-Point/Integer Type-Convert Instructions
 DEF_RVV_FUNCTION (vfncvt_x, narrow_alu, full_preds, f_to_ni_f_w_ops)
