@@ -284,6 +284,36 @@
 })
 
 ;; =========================================================================
+;; == Array Load/Store
+;; =========================================================================
+
+(define_expand "vec_mask_len_load_lanes<mode><vsingle>"
+  [(match_operand:VT 0 "register_operand")
+   (match_operand:VT 1 "memory_operand")
+   (match_operand:<VM> 2 "vector_mask_operand")
+   (match_operand 3 "autovec_length_operand")
+   (match_operand 4 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_lanes_load_store (operands, true);
+    DONE;
+  }
+)
+
+(define_expand "vec_mask_len_store_lanes<mode><vsingle>"
+  [(match_operand:VT 0 "memory_operand")
+   (match_operand:VT 1 "register_operand")
+   (match_operand:<VM> 2 "vector_mask_operand")
+   (match_operand 3 "autovec_length_operand")
+   (match_operand 4 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_lanes_load_store (operands, false);
+    DONE;
+  }
+)
+
+;; =========================================================================
 ;; == Vector creation
 ;; =========================================================================
 

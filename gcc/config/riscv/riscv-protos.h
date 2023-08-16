@@ -325,6 +325,7 @@ void expand_load_store (rtx *, bool);
 void expand_gather_scatter (rtx *, bool);
 void expand_cond_len_ternop (unsigned, rtx *);
 void prepare_ternary_operands (rtx *, bool = false);
+void expand_lanes_load_store (rtx *, bool);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode

@@ -21,6 +21,6 @@ f (float *restrict a, float *restrict b,
     }
 }
 
-/* { dg-final { scan-tree-dump "\.VEC_PERM" "optimized" } } */
-/* { dg-final { scan-assembler {\tvid\.v} } } */
+/* { dg-final { scan-tree-dump "\.VEC_PERM" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler {\tvid\.v} { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-not {\tvmul} } } */

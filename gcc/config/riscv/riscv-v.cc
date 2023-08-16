@@ -1900,7 +1900,13 @@ get_avl_type_rtx (enum avl_type type)
 machine_mode
 get_mask_mode (machine_mode mode)
 {
-  return get_vector_mode (BImode, GET_MODE_NUNITS (mode)).require();
+  poly_int64 nunits = GET_MODE_NUNITS (mode);
+  if (riscv_v_ext_tuple_mode_p (mode))
+    {
+      unsigned int nf = get_nf (mode);
+      nunits = exact_div (nunits, nf);
+    }
+  return get_vector_mode (BImode, nunits).require ();
 }
 
 /* Return the appropriate M1 mode for MODE.  */
@@ -3713,6 +3719,50 @@ prepare_ternary_operands (rtx *ops, bool split_p)
 
       /* TODO: ??? Maybe we could support splitting FMA (a, 4, b)
 	 into PLUS (ASHIFT (a, 2), b) according to uarchs.  */
+    }
+}
+
+/* Expand VEC_MASK_LEN_{LOAD_LANES,STORE_LANES}.  */
+void
+expand_lanes_load_store (rtx *ops, bool is_load)
+{
+  poly_int64 value;
+  rtx mask = ops[2];
+  rtx len = ops[3];
+  rtx addr = is_load ? XEXP (ops[1], 0) : XEXP (ops[0], 0);
+  rtx reg = is_load ? ops[0] : ops[1];
+  machine_mode mode = GET_MODE (ops[0]);
+
+  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+    {
+      /* If the length operand is equal to VF, it is VLMAX load/store.  */
+      if (is_load)
+	{
+	  rtx m_ops[] = {reg, mask, RVV_VUNDEF (mode), addr};
+	  emit_vlmax_masked_insn (code_for_pred_unit_strided_load (mode),
+				  RVV_UNOP_M, m_ops);
+	}
+      else
+	{
+	  len = gen_reg_rtx (Pmode);
+	  emit_vlmax_vsetvl (mode, len);
+	  emit_insn (gen_pred_unit_strided_store (mode, mask, addr, reg, len,
+						  get_avl_type_rtx (VLMAX)));
+	}
+    }
+  else
+    {
+      if (!satisfies_constraint_K (len))
+	len = force_reg (Pmode, len);
+      if (is_load)
+	{
+	  rtx m_ops[] = {reg, mask, RVV_VUNDEF (mode), addr};
+	  emit_nonvlmax_masked_insn (code_for_pred_unit_strided_load (mode),
+				     RVV_UNOP_M, m_ops, len);
+	}
+      else
+	emit_insn (gen_pred_unit_strided_store (mode, mask, addr, reg, len,
+						get_avl_type_rtx (NONVLMAX)));
     }
 }
 

@@ -21,6 +21,7 @@ f (float *restrict a, float *restrict b,
     }
 }
 
-/* { dg-final { scan-tree-dump "\.VEC_PERM" "optimized" } } */
-/* { dg-final { scan-assembler {\tvid\.v} } } */
+/* FIXME: Since we don't have VECT cost model yet, LOAD_LANES/STORE_LANES are chosen instead of SLP.  */
+/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler {\tvid\.v} { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-not {\tvmul} } } */

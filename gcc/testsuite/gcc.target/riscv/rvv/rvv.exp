@@ -50,6 +50,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
 	"-O3 -ftree-vectorize" $CFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls/*.\[cS\]]] \
 	"-O3 -ftree-vectorize --param riscv-autovec-preference=scalable" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/struct/*.\[cS\]]] \
+	"" "-O3 -ftree-vectorize"
 
 set AUTOVEC_TEST_OPTS [list \
   {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
