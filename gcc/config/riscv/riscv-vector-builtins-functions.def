@@ -445,6 +445,8 @@ DEF_RVV_FUNCTION (vfcvt_rtz_xu, alu, full_preds, f_to_u_f_v_ops)
 DEF_RVV_FUNCTION (vfcvt_f, alu, full_preds, i_to_f_x_v_ops)
 DEF_RVV_FUNCTION (vfcvt_f, alu, full_preds, u_to_f_xu_v_ops)
 
+DEF_RVV_FUNCTION (vfcvt_x_frm, alu_frm, full_preds, f_to_i_f_v_ops)
+
 // 13.18. Widening Floating-Point/Integer Type-Convert Instructions
 DEF_RVV_FUNCTION (vfwcvt_x, alu, full_preds, f_to_wi_f_v_ops)
 DEF_RVV_FUNCTION (vfwcvt_xu, alu, full_preds, f_to_wu_f_v_ops)

@@ -58,6 +58,12 @@ enum lst_type
   LST_INDEXED,
 };
 
+enum frm_op_type
+{
+  NO_FRM,
+  HAS_FRM,
+};
+
 /* Helper function to fold vleff and vlsegff.  */
 static gimple *
 fold_fault_load (gimple_folder &f)
@@ -1662,10 +1668,15 @@ public:
 };
 
 /* Implements vfcvt.x.  */
-template<int UNSPEC>
+template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
 class vfcvt_x : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_pred_fcvt_x_f (UNSPEC, e.arg_mode (0)));
@@ -2465,6 +2476,7 @@ static CONSTEXPR const vfclass vfclass_obj;
 static CONSTEXPR const vmerge vfmerge_obj;
 static CONSTEXPR const vmv_v vfmv_v_obj;
 static CONSTEXPR const vfcvt_x<UNSPEC_VFCVT> vfcvt_x_obj;
+static CONSTEXPR const vfcvt_x<UNSPEC_VFCVT, HAS_FRM> vfcvt_x_frm_obj;
 static CONSTEXPR const vfcvt_x<UNSPEC_UNSIGNED_VFCVT> vfcvt_xu_obj;
 static CONSTEXPR const vfcvt_rtz_x<FIX> vfcvt_rtz_x_obj;
 static CONSTEXPR const vfcvt_rtz_x<UNSIGNED_FIX> vfcvt_rtz_xu_obj;
@@ -2714,6 +2726,7 @@ BASE (vfclass)
 BASE (vfmerge)
 BASE (vfmv_v)
 BASE (vfcvt_x)
+BASE (vfcvt_x_frm)
 BASE (vfcvt_xu)
 BASE (vfcvt_rtz_x)
 BASE (vfcvt_rtz_xu)

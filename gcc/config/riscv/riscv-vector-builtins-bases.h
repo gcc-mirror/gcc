@@ -205,6 +205,7 @@ extern const function_base *const vfclass;
 extern const function_base *const vfmerge;
 extern const function_base *const vfmv_v;
 extern const function_base *const vfcvt_x;
+extern const function_base *const vfcvt_x_frm;
 extern const function_base *const vfcvt_xu;
 extern const function_base *const vfcvt_rtz_x;
 extern const function_base *const vfcvt_rtz_xu;
