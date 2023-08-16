@@ -965,6 +965,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+      /** Resize the string and call a function to fill it.
+       *
+       * @param __n   The maximum size requested.
+       * @param __op  A callable object that writes characters to the string.
+       *
+       * This is a low-level function that is easy to misuse, be careful.
+       *
+       * Calling `str.resize_and_overwrite(n, op)` will reserve at least `n`
+       * characters in `str`, evaluate `n2 = std::move(op)(str.data(), n)`,
+       * and finally set the string length to `n2` (adding a null terminator
+       * at the end). The function object `op` is allowed to write to the
+       * extra capacity added by the initial reserve operation, which is not
+       * allowed if you just call `str.reserve(n)` yourself.
+       *
+       * This can be used to efficiently fill a `string` buffer without the
+       * overhead of zero-initializing characters that will be overwritten
+       * anyway.
+       *
+       * The callable `op` must not access the string directly (only through
+       * the pointer passed as its first argument), must not write more than
+       * `n` characters to the string, must return a value no greater than `n`,
+       * and must ensure that all characters up to the returned length are
+       * valid after it returns (i.e. there must be no uninitialized values
+       * left in the string after the call, because accessing them would
+       * have undefined behaviour). If `op` exits by throwing an exception
+       * the behaviour is undefined.
+       *
+       * @since C++23
+       */
+      template<typename _Operation>
+	void
+	resize_and_overwrite(size_type __n, _Operation __op);
+#endif // __cpp_lib_string_resize_and_overwrite
+
+#if __cplusplus >= 201103L
+      /// Non-standard version of resize_and_overwrite for C++11 and above.
+      template<typename _Operation>
+	void
+	__resize_and_overwrite(size_type __n, _Operation __op);
+#endif
+
       /**
        *  Returns the total number of characters that the %string can hold
        *  before needing to allocate more memory.
@@ -3711,6 +3753,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 21.3.5.7 par 3: do not append null.  (good.)
       return __n;
     }
+
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+  template<typename _CharT, typename _Traits, typename _Alloc>
+  template<typename _Operation>
+    [[__gnu__::__always_inline__]]
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+    __resize_and_overwrite(const size_type __n, _Operation __op)
+    { resize_and_overwrite<_Operation&>(__n, __op); }
+#endif
+
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Traits, typename _Alloc>
+  template<typename _Operation>
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
+    resize_and_overwrite(const size_type __n, _Operation __op)
+#else
+    __resize_and_overwrite(const size_type __n, _Operation __op)
+#endif
+    {
+      const size_type __capacity = capacity();
+      _CharT* __p;
+      if (__n > __capacity || _M_rep()->_M_is_shared())
+	this->reserve(__n);
+      __p = _M_data();
+      struct _Terminator {
+	~_Terminator() { _M_this->_M_rep()->_M_set_length_and_sharable(_M_r); }
+	basic_string* _M_this;
+	size_type _M_r;
+      };
+      _Terminator __term{this, 0};
+      auto __r = std::move(__op)(__p + 0, __n + 0);
+#ifdef __cpp_lib_concepts
+      static_assert(ranges::__detail::__is_integer_like<decltype(__r)>);
+#else
+      static_assert(__gnu_cxx::__is_integer_nonstrict<decltype(__r)>::__value,
+		    "resize_and_overwrite operation must return an integer");
+#endif
+      _GLIBCXX_DEBUG_ASSERT(__r >= 0 && __r <= __n);
+      __term._M_r = size_type(__r);
+      if (__term._M_r > __n)
+	__builtin_unreachable();
+    }
+#endif // C++11
+
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif  // ! _GLIBCXX_USE_CXX11_ABI

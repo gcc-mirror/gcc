@@ -1519,8 +1519,8 @@ namespace __format
 		    return __res.ec == errc{} ? __res.ptr - __p : 0;
 		  };
 
-		  _S_resize_and_overwrite(__dynbuf, __dynbuf.capacity() * 2,
-					  __overwrite);
+		  __dynbuf.__resize_and_overwrite(__dynbuf.capacity() * 2,
+						  __overwrite);
 		  __start = __dynbuf.data() + 1; // reserve space for sign
 		  __end = __dynbuf.data() + __dynbuf.size();
 		}
@@ -1727,21 +1727,9 @@ namespace __format
 	    }
 	  return (__end - __p);
 	};
-	_S_resize_and_overwrite(__lstr, __e * 2 + __r, __overwrite);
+	__lstr.__resize_and_overwrite(__e * 2 + __r, __overwrite);
 	return __lstr;
       }
-
-      template<typename _Ch, typename _Func>
-	static void
-	_S_resize_and_overwrite(basic_string<_Ch>& __str, size_t __n, _Func __f)
-	{
-#if __cpp_lib_string_resize_and_overwrite
-	  __str.resize_and_overwrite(__n, __f);
-#else
-	  __str.resize(__n);
-	  __str.resize(__f(__str.data(), __n));
-#endif
-	}
 
       _Spec<_CharT> _M_spec{};
     };

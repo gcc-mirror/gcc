@@ -1151,6 +1151,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	resize_and_overwrite(size_type __n, _Operation __op);
 #endif
 
+#if __cplusplus >= 201103L
+      /// Non-standard version of resize_and_overwrite for C++11 and above.
+      template<typename _Operation>
+	_GLIBCXX20_CONSTEXPR void
+	__resize_and_overwrite(size_type __n, _Operation __op);
+#endif
+
       /**
        *  Returns the total number of characters that the %string can hold
        *  before needing to allocate more memory.

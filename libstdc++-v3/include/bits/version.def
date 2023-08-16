@@ -1579,7 +1579,6 @@ ftms = {
     v = 202110;
     cxxmin = 23;
     hosted = yes;
-    cxx11abi = yes;
   };
 };
 
