@@ -4190,8 +4190,7 @@
     (vec_select:<V_elem>
      (match_operand:MVE_2 1 "s_register_operand" "w")
      (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
-  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))"
 {
   if (BYTES_BIG_ENDIAN)
     {
@@ -4209,8 +4208,7 @@
     (vec_select:<V_elem>
      (match_operand:MVE_2 1 "s_register_operand" "w")
      (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
-  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))"
 {
   if (BYTES_BIG_ENDIAN)
     {
