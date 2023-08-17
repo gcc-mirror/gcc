@@ -173,6 +173,7 @@ public:
   ForeverStack<Namespace::Values> values;
   ForeverStack<Namespace::Types> types;
   ForeverStack<Namespace::Macros> macros;
+  ForeverStack<Namespace::Labels> labels;
 };
 
 } // namespace Resolver2_0
