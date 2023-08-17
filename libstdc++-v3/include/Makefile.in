@@ -1940,9 +1940,9 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch3_source} -o $@
 
 # AutoGen <bits/version.h>.
-${bits_srcdir}/version.h: ${bits_srcdir}/version.def \
-				${bits_srcdir}/version.tpl
-	cd $(@D) && \
+.PHONY: update-version
+update-version:
+	cd ${bits_srcdir} && \
 	autogen version.def
 
 # The real deal.
