@@ -154,6 +154,10 @@ static const struct attribute_spec bpf_attribute_table[] =
  { "preserve_access_index", 0, -1, false, true, false, true,
    bpf_handle_preserve_access_index_attribute, NULL },
 
+ /* Support for `naked' function attribute.  */
+ { "naked", 0, 1, false, false, false, false,
+   bpf_handle_fndecl_attribute, NULL },
+
  /* The last attribute spec is set to be NULL.  */
  { NULL,	0,  0, false, false, false, false, NULL, NULL }
 };
@@ -335,6 +339,21 @@ bpf_function_value_regno_p (const unsigned int regno)
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P bpf_function_value_regno_p
 
+
+/* Determine whether to warn about lack of return statement in a
+   function.  */
+
+static bool
+bpf_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including
+     the return instructions.  */
+  return lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) == NULL_TREE;
+}
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN bpf_warn_func_return
+
 /* Compute the size of the function's stack frame, including the local
    area and the register-save area.  */
 
@@ -388,6 +407,9 @@ bpf_expand_prologue (void)
      dynamically.  This should have been checked already and an error
      emitted.  */
   gcc_assert (!cfun->calls_alloca);
+
+  /* If we ever need to have a proper prologue here, please mind the
+     `naked' function attribute.  */
 }
 
 /* Expand to the instructions in a function epilogue.  This function
@@ -398,6 +420,9 @@ bpf_expand_epilogue (void)
 {
   /* See note in bpf_expand_prologue for an explanation on why we are
      not restoring callee-saved registers in BPF.  */
+
+  /* If we ever need to do anything else than just generating a return
+     instruction here, please mind the `naked' function attribute.  */
 
   emit_jump_insn (gen_exit ());
 }
