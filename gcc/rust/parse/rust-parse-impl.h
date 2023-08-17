@@ -1218,8 +1218,9 @@ Parser<ManagedTokenSource>::parse_outer_attribute ()
   if (lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
     {
       Error error (
-	lexer.peek_token ()->get_locus (),
-	"inner doc (%<//!%> or %</*!%>) only allowed at start of item "
+	lexer.peek_token ()->get_locus (), ErrorCode::E0753,
+	"expected outer doc comment, inner doc (%<//!%> or %</*!%>) only "
+	"allowed at start of item "
 	"and before any outer attribute or doc (%<#[%>, %<///%> or %</**%>)");
       add_error (std::move (error));
       lexer.skip_token ();
