@@ -18,4 +18,4 @@ int main() {
   }
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate c_.* to 1" 1 "evrp" } } */
+/* { dg-final { scan-tree-dump-times "Global Exported: c_.*1, 1" 1 "evrp" } } */
