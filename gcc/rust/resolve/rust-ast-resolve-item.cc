@@ -1031,7 +1031,7 @@ ResolveItem::visit (AST::UseDeclaration &use_item)
       if (!ok)
 	continue;
 
-      const AST::SimplePathSegment &final_seg = path.get_final_segment ();
+      const AST::SimplePathSegment &final_seg = path.get_segments ().back ();
 
       auto decl
 	= CanonicalPath::new_seg (resolved_node_id, final_seg.as_string ());

@@ -313,7 +313,8 @@ ForeverStack<N>::find_starting_point (
   for (; !is_last (iterator, segments); iterator++)
     {
       auto seg = *iterator;
-      auto is_self_or_crate = seg.is_crate_path_seg () || seg.is_lower_self ();
+      auto is_self_or_crate
+	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
 
       // if we're after the first path segment and meet `self` or `crate`, it's
       // an error - we should only be seeing `super` keywords at this point
@@ -327,7 +328,7 @@ ForeverStack<N>::find_starting_point (
 	  iterator++;
 	  break;
 	}
-      if (seg.is_lower_self ())
+      if (seg.is_lower_self_seg ())
 	{
 	  // do nothing and exit
 	  iterator++;
@@ -371,7 +372,7 @@ ForeverStack<N>::resolve_segments (
       // check that we don't encounter *any* leading keywords afterwards
       if (check_leading_kw_at_start (seg, seg.is_crate_path_seg ()
 					    || seg.is_super_path_seg ()
-					    || seg.is_lower_self ()))
+					    || seg.is_lower_self_seg ()))
 	return tl::nullopt;
 
       tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
