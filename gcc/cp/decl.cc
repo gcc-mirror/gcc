@@ -951,6 +951,30 @@ determine_local_discriminator (tree decl)
 }
 
 
+/* True if DECL is a constrained hidden friend as per [temp.friend]/9:
+
+   A non-template friend declaration with a requires-clause shall be a
+   definition. A friend function template with a constraint that depends on a
+   template parameter from an enclosing template shall be a definition. Such a
+   constrained friend function or function template declaration does not
+   declare the same function or function template as a declaration in any other
+   scope.
+
+   The ABI calls this a "member-like constrained friend" and mangles it like a
+   member function to avoid collisions.  */
+
+bool
+member_like_constrained_friend_p (tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_UNIQUE_FRIEND_P (decl)
+	  && DECL_FRIEND_CONTEXT (decl)
+	  && get_constraints (decl)
+	  && (!DECL_TEMPLATE_INFO (decl)
+	      || !PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
+	      || (uses_outer_template_parms_in_constraints
+		  (most_general_template (decl)))));
+}
 
 /* Returns true if functions FN1 and FN2 have equivalent trailing
    requires clauses.  */
@@ -967,6 +991,13 @@ function_requirements_equivalent_p (tree newfn, tree oldfn)
       tree req2 = ci2 ? CI_ASSOCIATED_CONSTRAINTS (ci2) : NULL_TREE;
       return cp_tree_equal (req1, req2);
     }
+
+  /* [temp.friend]/9 "Such a constrained friend function does not declare the
+     same function as a declaration in any other scope."  So no need to
+     actually compare the requirements.  */
+  if (member_like_constrained_friend_p (newfn)
+      || member_like_constrained_friend_p (oldfn))
+    return false;
 
   /* Compare only trailing requirements.  */
   tree reqs1 = get_trailing_function_requirements (newfn);
@@ -1936,6 +1967,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     are not ambiguous.  */
 	  else if ((!DECL_FUNCTION_VERSIONED (newdecl)
 		    && !DECL_FUNCTION_VERSIONED (olddecl))
+		   /* Let constrained hidden friends coexist for now, we'll
+		      check satisfaction later.  */
+		   && !member_like_constrained_friend_p (newdecl)
+		   && !member_like_constrained_friend_p (olddecl)
                    // The functions have the same parameter types.
 		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 				 TYPE_ARG_TYPES (TREE_TYPE (olddecl)))
@@ -10305,16 +10340,28 @@ grokfndecl (tree ctype,
           ci = NULL_TREE;
         }
       /* C++20 CA378: Remove non-templated constrained functions.  */
+      /* [temp.friend]/9 A non-template friend declaration with a
+	 requires-clause shall be a definition. A friend function template with
+	 a constraint that depends on a template parameter from an enclosing
+	 template shall be a definition. */
       if (ci
 	  && (block_local
 	      || (!flag_concepts_ts
 		  && (!processing_template_decl
 		      || (friendp && !memtmpl && !funcdef_flag)))))
 	{
-	  error_at (location, "constraints on a non-templated function");
+	  if (!friendp || !processing_template_decl)
+	    error_at (location, "constraints on a non-templated function");
+	  else
+	    error_at (location, "constrained non-template friend declaration"
+		      " must be a definition");
 	  ci = NULL_TREE;
 	}
       set_constraints (decl, ci);
+      if (ci && friendp && memtmpl && !funcdef_flag
+	  && uses_outer_template_parms_in_constraints (decl, ctx))
+	error_at (location, "friend function template with constraints that "
+		  "depend on outer template parameters must be a definition");
     }
 
   if (TREE_CODE (type) == METHOD_TYPE)

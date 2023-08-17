@@ -11049,14 +11049,21 @@ uses_outer_template_parms (tree decl)
    from its enclosing scope.  */
 
 bool
-uses_outer_template_parms_in_constraints (tree decl)
+uses_outer_template_parms_in_constraints (tree decl, tree ctx/*=NULL_TREE*/)
 {
   tree ci = get_constraints (decl);
   if (ci)
     ci = CI_ASSOCIATED_CONSTRAINTS (ci);
   if (!ci)
     return false;
-  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  if (!ctx)
+    {
+      if (tree fc = DECL_FRIEND_CONTEXT (decl))
+	ctx = fc;
+      else
+	ctx = CP_DECL_CONTEXT (decl);
+    }
+  int depth = template_class_depth (ctx);
   if (depth == 0)
     return false;
   return for_each_template_parm (ci, template_parm_outer_level,
@@ -11393,9 +11400,6 @@ tsubst_friend_function (tree decl, tree args)
 	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
 	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
 	}
-      else if (!constraints_satisfied_p (new_friend))
-	/* Only define a constrained hidden friend when satisfied.  */
-	return error_mark_node;
 
       /* Inside pushdecl_namespace_level, we will push into the
 	 current namespace. However, the friend function should go

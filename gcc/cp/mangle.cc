@@ -963,6 +963,9 @@ decl_mangling_context (tree decl)
 
   tcontext = CP_DECL_CONTEXT (decl);
 
+  if (member_like_constrained_friend_p (decl))
+    tcontext = DECL_FRIEND_CONTEXT (decl);
+
   /* Ignore the artificial declare reduction functions.  */
   if (tcontext
       && TREE_CODE (tcontext) == FUNCTION_DECL
@@ -1419,6 +1422,7 @@ anon_aggr_naming_decl (tree type)
 			::= [<module-name>] <source-name>
 			::= [<module-name>] <unnamed-type-name>
 			::= <local-source-name> 
+			::= F <source-name> # member-like constrained friend
 
     <local-source-name>	::= L <source-name> <discriminator> */
 
@@ -1476,6 +1480,12 @@ write_unqualified_name (tree decl)
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
       found = true;
+
+      /* A constrained hidden friend is mangled like a member function, with
+	 the name prefixed by 'F'.  */
+      if (member_like_constrained_friend_p (decl))
+	write_char ('F');
+
       if (DECL_CONSTRUCTOR_P (decl))
 	write_special_name_constructor (decl);
       else if (DECL_DESTRUCTOR_P (decl))

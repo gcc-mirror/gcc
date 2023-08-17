@@ -1,21 +1,29 @@
 // CWG2596
 // { dg-do compile { target c++20 } }
+// { dg-additional-options -fno-implicit-constexpr }
 
 struct Base {};
-
-int foo(Base&) { return 0; } // #0
 
 template<int N>
 struct S : Base {
   friend int foo(Base&) requires (N == 1) { return 1; }  // #1
-  // friend int foo(Base&) requires (N == 2) { return 3; }  // #2
+  friend int foo(Base&) requires (N == 2) { return 3; }  // #2
+
+  template <class T>
+  friend int bar(Base&) requires (N == 1) { return 1; }
+  template <class T>
+  friend int bar(Base&) requires (N == 2) { return 3; }
 };
 
 S<1> s1;
-S<2> s2;          // OK, no conflict between #1 and #0
-int x = foo(s1);  // { dg-error "ambiguous" }
-int y = foo(s2);  // OK, selects #0
+S<2> s2;          // OK, no conflict between #1 and #2
 
-// ??? currently the foos all mangle the same, so comment out #2
-// and only test that #1 isn't multiply defined and overloads with #0.
-// The 2596 example does not include #0 and expects both calls to work.
+// { dg-final { scan-assembler "_ZN1SILi1EEF3fooER4Base" } }
+int x = foo(s1);  // OK, selects #1
+// { dg-final { scan-assembler "_ZN1SILi2EEF3fooER4Base" } }
+int y = foo(s2);  // OK, selects #2
+
+// { dg-final { scan-assembler "_ZN1SILi1EEF3barIiEEiR4Base" } }
+int x2 = bar<int>(s1);  // OK, selects #1
+// { dg-final { scan-assembler "_ZN1SILi2EEF3barIiEEiR4Base" } }
+int y2 = bar<int>(s2);  // OK, selects #2
