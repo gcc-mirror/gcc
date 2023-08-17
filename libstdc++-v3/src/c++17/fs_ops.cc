@@ -112,18 +112,17 @@ fs::absolute(const path& p, error_code& ec)
   wstring buf;
   do
     {
-      buf.resize(len);
-      len = GetFullPathNameW(s.data(), len, buf.data(), nullptr);
+      buf.__resize_and_overwrite(len, [&s, &len](wchar_t* p, unsigned n) {
+	len = GetFullPathNameW(s.data(), n, p, nullptr);
+	return len > n ? 0 : len;
+      });
     }
   while (len > buf.size());
 
   if (len == 0)
     ec = __last_system_error();
   else
-    {
-      buf.resize(len);
-      ret = std::move(buf);
-    }
+    ret = std::move(buf);
 #else
   ret = current_path(ec);
   ret /= p;
@@ -1187,31 +1186,33 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
       return result;
     }
 
-  std::string buf(st.st_size ? st.st_size + 1 : 128, '\0');
+  std::string buf;
+  size_t bufsz = st.st_size ? st.st_size + 1 : 128;
   do
     {
-      ssize_t len = ::readlink(p.c_str(), buf.data(), buf.size());
-      if (len == -1)
+      ssize_t len;
+      buf.__resize_and_overwrite(bufsz, [&p, &len](char* ptr, size_t n) {
+	len = ::readlink(p.c_str(), ptr, n);
+	return size_t(len) < n ? len : 0;
+      });
+      if (buf.size())
+	{
+	  result.assign(std::move(buf));
+	  ec.clear();
+	  break;
+	}
+      else if (len == -1)
 	{
 	  ec.assign(errno, std::generic_category());
 	  return result;
 	}
-      else if (len == (ssize_t)buf.size())
+      else if (bufsz > 4096)
 	{
-	  if (buf.size() > 4096)
-	    {
-	      ec.assign(ENAMETOOLONG, std::generic_category());
-	      return result;
-	    }
-	  buf.resize(buf.size() * 2);
+	  ec.assign(ENAMETOOLONG, std::generic_category());
+	  return result;
 	}
       else
-	{
-	  buf.resize(len);
-	  result.assign(buf);
-	  ec.clear();
-	  break;
-	}
+	bufsz *= 2;
     }
   while (true);
 #else
