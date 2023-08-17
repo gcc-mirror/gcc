@@ -2740,6 +2740,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const value_type*		  pointer;
       typedef const value_type&		  reference;
       typedef std::forward_iterator_tag	  iterator_category;
+#if __cplusplus > 201703L
+      typedef std::input_iterator_tag	  iterator_concept;
+#endif
 
       /**
        * @brief Provides a singular iterator, useful for indicating
@@ -2869,6 +2872,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const value_type*			pointer;
       typedef const value_type&			reference;
       typedef std::forward_iterator_tag		iterator_category;
+#if __cplusplus > 201703L
+      typedef std::input_iterator_tag		iterator_concept;
+#endif
 
     public:
       /**

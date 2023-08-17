@@ -2738,6 +2738,14 @@ namespace views::__adaptor
     inline constexpr _DropWhile drop_while;
   } // namespace views
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      constexpr _Tp&
+      __as_lvalue(_Tp&& __t)
+      { return static_cast<_Tp&>(__t); }
+  } // namespace __detail
+
   template<input_range _Vp>
     requires view<_Vp> && input_range<range_reference_t<_Vp>>
     class join_view : public view_interface<join_view<_Vp>>
@@ -2800,6 +2808,8 @@ namespace views::__adaptor
 	  using _Parent = __detail::__maybe_const_t<_Const, join_view>;
 	  using _Base = join_view::_Base<_Const>;
 
+	  friend join_view;
+
 	  static constexpr bool _S_ref_is_glvalue
 	    = join_view::_S_ref_is_glvalue<_Const>;
 
@@ -2813,9 +2823,10 @@ namespace views::__adaptor
 		return _M_parent->_M_inner._M_emplace_deref(__x);
 	    };
 
-	    for (; _M_outer != ranges::end(_M_parent->_M_base); ++_M_outer)
+	    _Outer_iter& __outer = _M_get_outer();
+	    for (; __outer != ranges::end(_M_parent->_M_base); ++__outer)
 	      {
-		auto&& __inner = __update_inner(_M_outer);
+		auto&& __inner = __update_inner(__outer);
 		_M_inner = ranges::begin(__inner);
 		if (_M_inner != ranges::end(__inner))
 		  return;
@@ -2844,7 +2855,36 @@ namespace views::__adaptor
 	  using _Outer_iter = join_view::_Outer_iter<_Const>;
 	  using _Inner_iter = join_view::_Inner_iter<_Const>;
 
-	  _Outer_iter _M_outer = _Outer_iter();
+	  constexpr _Outer_iter&
+	  _M_get_outer()
+	  {
+	    if constexpr (forward_range<_Base>)
+	      return _M_outer;
+	    else
+	      return *_M_parent->_M_outer;
+	  }
+
+	  constexpr const _Outer_iter&
+	  _M_get_outer() const
+	  {
+	    if constexpr (forward_range<_Base>)
+	      return _M_outer;
+	    else
+	      return *_M_parent->_M_outer;
+	  }
+
+	  constexpr
+	  _Iterator(_Parent* __parent, _Outer_iter __outer) requires forward_range<_Base>
+	    : _M_outer(std::move(__outer)), _M_parent(__parent)
+	  { _M_satisfy(); }
+
+	  constexpr explicit
+	  _Iterator(_Parent* __parent) requires (!forward_range<_Base>)
+	    : _M_parent(__parent)
+	  { _M_satisfy(); }
+
+	  [[no_unique_address]]
+	    __detail::__maybe_present_t<forward_range<_Base>, _Outer_iter> _M_outer;
 	  optional<_Inner_iter> _M_inner;
 	  _Parent* _M_parent = nullptr;
 
@@ -2856,13 +2896,7 @@ namespace views::__adaptor
 	    = common_type_t<range_difference_t<_Base>,
 			    range_difference_t<range_reference_t<_Base>>>;
 
-	  _Iterator() requires default_initializable<_Outer_iter> = default;
-
-	  constexpr
-	  _Iterator(_Parent* __parent, _Outer_iter __outer)
-	    : _M_outer(std::move(__outer)),
-	      _M_parent(__parent)
-	  { _M_satisfy(); }
+	  _Iterator() = default;
 
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
@@ -2890,13 +2924,13 @@ namespace views::__adaptor
 	  {
 	    auto&& __inner_range = [this] () -> auto&& {
 	      if constexpr (_S_ref_is_glvalue)
-		return *_M_outer;
+		return *_M_get_outer();
 	      else
 		return *_M_parent->_M_inner;
 	    }();
 	    if (++*_M_inner == ranges::end(__inner_range))
 	      {
-		++_M_outer;
+		++_M_get_outer();
 		_M_satisfy();
 	      }
 	    return *this;
@@ -2923,9 +2957,9 @@ namespace views::__adaptor
 	      && common_range<range_reference_t<_Base>>
 	  {
 	    if (_M_outer == ranges::end(_M_parent->_M_base))
-	      _M_inner = ranges::end(*--_M_outer);
-	    while (*_M_inner == ranges::begin(*_M_outer))
-	      *_M_inner = ranges::end(*--_M_outer);
+	      _M_inner = ranges::end(__detail::__as_lvalue(*--_M_outer));
+	    while (*_M_inner == ranges::begin(__detail::__as_lvalue(*_M_outer)))
+	      *_M_inner = ranges::end(__detail::__as_lvalue(*--_M_outer));
 	    --*_M_inner;
 	    return *this;
 	  }
@@ -2944,7 +2978,7 @@ namespace views::__adaptor
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
 	    requires _S_ref_is_glvalue
-	      && equality_comparable<_Outer_iter>
+	      && forward_range<_Base>
 	      && equality_comparable<_Inner_iter>
 	  {
 	    return (__x._M_outer == __y._M_outer
@@ -2976,7 +3010,7 @@ namespace views::__adaptor
 	  template<bool _Const2>
 	    constexpr bool
 	    __equal(const _Iterator<_Const2>& __i) const
-	    { return __i._M_outer == _M_end; }
+	    { return __i._M_get_outer() == _M_end; }
 
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
 
@@ -3006,6 +3040,9 @@ namespace views::__adaptor
 
       _Vp _M_base = _Vp();
       [[no_unique_address]]
+	__detail::__maybe_present_t<!forward_range<_Vp>,
+	  __detail::__non_propagating_cache<iterator_t<_Vp>>> _M_outer;
+      [[no_unique_address]]
 	__detail::__non_propagating_cache<remove_cv_t<_InnerRange>> _M_inner;
 
     public:
@@ -3027,16 +3064,25 @@ namespace views::__adaptor
       constexpr auto
       begin()
       {
-	constexpr bool __use_const
-	  = (__detail::__simple_view<_Vp>
-	     && is_reference_v<range_reference_t<_Vp>>);
-	return _Iterator<__use_const>{this, ranges::begin(_M_base)};
+	if constexpr (forward_range<_Vp>)
+	  {
+	    constexpr bool __use_const
+	      = (__detail::__simple_view<_Vp>
+		 && is_reference_v<range_reference_t<_Vp>>);
+	    return _Iterator<__use_const>{this, ranges::begin(_M_base)};
+	  }
+	else
+	  {
+	    _M_outer = ranges::begin(_M_base);
+	    return _Iterator<false>{this};
+	  }
       }
 
       constexpr auto
       begin() const
-	requires input_range<const _Vp>
+	requires forward_range<const _Vp>
 	  && is_reference_v<range_reference_t<const _Vp>>
+	  && input_range<range_reference_t<const _Vp>>
       {
 	return _Iterator<true>{this, ranges::begin(_M_base)};
       }
@@ -3055,11 +3101,11 @@ namespace views::__adaptor
 
       constexpr auto
       end() const
-	requires input_range<const _Vp>
+	requires forward_range<const _Vp>
 	  && is_reference_v<range_reference_t<const _Vp>>
+	  && input_range<range_reference_t<const _Vp>>
       {
-	if constexpr (forward_range<const _Vp>
-		      && is_reference_v<range_reference_t<const _Vp>>
+	if constexpr (is_reference_v<range_reference_t<const _Vp>>
 		      && forward_range<range_reference_t<const _Vp>>
 		      && common_range<const _Vp>
 		      && common_range<range_reference_t<const _Vp>>)
@@ -6978,6 +7024,9 @@ namespace views::__adaptor
     using _InnerRange = range_reference_t<_Vp>;
 
     _Vp _M_base = _Vp();
+    [[no_unique_address]]
+      __detail::__maybe_present_t<!forward_range<_Vp>,
+	__detail::__non_propagating_cache<iterator_t<_Vp>>> _M_outer_it;
     __detail::__non_propagating_cache<remove_cv_t<_InnerRange>> _M_inner;
     _Pattern _M_pattern = _Pattern();
 
@@ -7065,16 +7114,25 @@ namespace views::__adaptor
     constexpr auto
     begin()
     {
-      constexpr bool __use_const = is_reference_v<_InnerRange>
-	&& __detail::__simple_view<_Vp> && __detail::__simple_view<_Pattern>;
-      return _Iterator<__use_const>{*this, ranges::begin(_M_base)};
+      if constexpr (forward_range<_Vp>)
+	{
+	  constexpr bool __use_const = is_reference_v<_InnerRange>
+	    && __detail::__simple_view<_Vp> && __detail::__simple_view<_Pattern>;
+	  return _Iterator<__use_const>{*this, ranges::begin(_M_base)};
+	}
+      else
+	{
+	  _M_outer_it = ranges::begin(_M_base);
+	  return _Iterator<false>{*this};
+	}
     }
 
     constexpr auto
     begin() const
-      requires input_range<const _Vp>
+      requires forward_range<const _Vp>
 	&& forward_range<const _Pattern>
 	&& is_reference_v<range_reference_t<const _Vp>>
+	&& input_range<range_reference_t<const _Vp>>
     { return _Iterator<true>{*this, ranges::begin(_M_base)}; }
 
     constexpr auto
@@ -7092,13 +7150,13 @@ namespace views::__adaptor
 
     constexpr auto
     end() const
-      requires input_range<const _Vp>
+      requires forward_range<const _Vp>
 	&& forward_range<const _Pattern>
 	&& is_reference_v<range_reference_t<const _Vp>>
+	&& input_range<range_reference_t<const _Vp>>
     {
       using _InnerConstRange = range_reference_t<const _Vp>;
-      if constexpr (forward_range<const _Vp>
-		    && forward_range<_InnerConstRange>
+      if constexpr (forward_range<_InnerConstRange>
 		    && common_range<const _Vp>
 		    && common_range<_InnerConstRange>)
         return _Iterator<true>{*this, ranges::end(_M_base)};
@@ -7135,35 +7193,69 @@ namespace views::__adaptor
     static constexpr bool _S_ref_is_glvalue = join_with_view::_S_ref_is_glvalue<_Const>;
 
     _Parent* _M_parent = nullptr;
-    _OuterIter _M_outer_it = _OuterIter();
+    [[no_unique_address]]
+      __detail::__maybe_present_t<forward_range<_Base>, _OuterIter> _M_outer_it;
     variant<_PatternIter, _InnerIter> _M_inner_it;
 
+    constexpr _OuterIter&
+    _M_get_outer()
+    {
+      if constexpr (forward_range<_Base>)
+	return _M_outer_it;
+      else
+	return *_M_parent->_M_outer_it;
+    }
+
+    constexpr const _OuterIter&
+    _M_get_outer() const
+    {
+      if constexpr (forward_range<_Base>)
+	return _M_outer_it;
+      else
+	return *_M_parent->_M_outer_it;
+    }
+
     constexpr
-    _Iterator(_Parent& __parent, iterator_t<_Base> __outer)
+    _Iterator(_Parent& __parent, _OuterIter __outer)
+      requires forward_range<_Base>
     : _M_parent(std::__addressof(__parent)), _M_outer_it(std::move(__outer))
     {
-      if (_M_outer_it != ranges::end(_M_parent->_M_base))
+      if (_M_get_outer() != ranges::end(_M_parent->_M_base))
 	{
-	  auto&& __inner = _M_update_inner(_M_outer_it);
+	  auto&& __inner = _M_update_inner();
 	  _M_inner_it.template emplace<1>(ranges::begin(__inner));
 	  _M_satisfy();
 	}
     }
 
-    constexpr auto&&
-    _M_update_inner(const _OuterIter& __x)
+    constexpr
+    _Iterator(_Parent& __parent)
+      requires (!forward_range<_Base>)
+    : _M_parent(std::__addressof(__parent))
     {
-      if constexpr (_S_ref_is_glvalue)
-	return *__x;
-      else
-	return _M_parent->_M_inner._M_emplace_deref(__x);
+      if (_M_get_outer() != ranges::end(_M_parent->_M_base))
+	{
+	  auto&& __inner = _M_update_inner();
+	  _M_inner_it.template emplace<1>(ranges::begin(__inner));
+	  _M_satisfy();
+	}
     }
 
-    constexpr auto&&
-    _M_get_inner(const _OuterIter& __x)
+    constexpr auto&
+    _M_update_inner()
+    {
+      _OuterIter& __outer = _M_get_outer();
+      if constexpr (_S_ref_is_glvalue)
+	return __detail::__as_lvalue(*__outer);
+      else
+	return _M_parent->_M_inner._M_emplace_deref(__outer);
+    }
+
+    constexpr auto&
+    _M_get_inner()
     {
       if constexpr (_S_ref_is_glvalue)
-	return *__x;
+	return __detail::__as_lvalue(*_M_get_outer());
       else
 	return *_M_parent->_M_inner;
     }
@@ -7178,16 +7270,16 @@ namespace views::__adaptor
 	      if (std::get<0>(_M_inner_it) != ranges::end(_M_parent->_M_pattern))
 		break;
 
-	      auto&& __inner = _M_update_inner(_M_outer_it);
+	      auto&& __inner = _M_update_inner();
 	      _M_inner_it.template emplace<1>(ranges::begin(__inner));
 	    }
 	  else
 	    {
-	      auto&& __inner = _M_get_inner(_M_outer_it);
+	      auto&& __inner = _M_get_inner();
 	      if (std::get<1>(_M_inner_it) != ranges::end(__inner))
 		break;
 
-	      if (++_M_outer_it == ranges::end(_M_parent->_M_base))
+	      if (++_M_get_outer() == ranges::end(_M_parent->_M_base))
 		{
 		  if constexpr (_S_ref_is_glvalue)
 		    _M_inner_it.template emplace<0>();
@@ -7226,7 +7318,7 @@ namespace views::__adaptor
 					  iter_difference_t<_InnerIter>,
 					  iter_difference_t<_PatternIter>>;
 
-    _Iterator() requires default_initializable<_OuterIter> = default;
+    _Iterator() = default;
 
     constexpr
     _Iterator(_Iterator<!_Const> __i)
@@ -7336,7 +7428,7 @@ namespace views::__adaptor
     friend constexpr bool
     operator==(const _Iterator& __x, const _Iterator& __y)
       requires _S_ref_is_glvalue
-	&& equality_comparable<_OuterIter> && equality_comparable<_InnerIter>
+	&& forward_range<_Base> && equality_comparable<_InnerIter>
     { return __x._M_outer_it == __y._M_outer_it && __x._M_inner_it ==__y._M_inner_it; }
 
     friend constexpr common_reference_t<iter_rvalue_reference_t<_InnerIter>,
@@ -7403,7 +7495,7 @@ namespace views::__adaptor
 			    iterator_t<__detail::__maybe_const_t<_OtherConst, _Vp>>>
     friend constexpr bool
     operator==(const _Iterator<_OtherConst>& __x, const _Sentinel& __y)
-    { return __x._M_outer_it == __y._M_end; }
+    { return __x._M_get_outer() == __y._M_end; }
   };
 
   namespace views
