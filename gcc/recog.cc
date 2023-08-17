@@ -1803,7 +1803,7 @@ pop_operand (rtx op, machine_mode mode)
 
 bool
 memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED, rtx addr,
-			     addr_space_t as, code_helper ch)
+			     addr_space_t as, code_helper ch ATTRIBUTE_UNUSED)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
