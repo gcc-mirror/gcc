@@ -5478,6 +5478,12 @@ ix86_get_ssemov (rtx *operands, unsigned size,
   bool evex_reg_p = (size == 64
 		     || EXT_REX_SSE_REG_P (operands[0])
 		     || EXT_REX_SSE_REG_P (operands[1]));
+
+  bool egpr_p = (TARGET_APX_EGPR
+		 && (x86_extended_rex2reg_mentioned_p (operands[0])
+		     || x86_extended_rex2reg_mentioned_p (operands[1])));
+  bool egpr_vl = egpr_p && TARGET_AVX512VL;
+
   machine_mode scalar_mode;
 
   const char *opcode = NULL;
@@ -5550,12 +5556,18 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 	{
 	case E_HFmode:
 	case E_BFmode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
 			 ? "vmovdqu16"
 			 : "vmovdqu64")
 		      : "vmovdqa64");
+	  else if (egpr_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovups")
+		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
@@ -5570,8 +5582,10 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 	  opcode = misaligned_p ? "%vmovupd" : "%vmovapd";
 	  break;
 	case E_TFmode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else if (egpr_p)
+	    opcode = misaligned_p ? "%vmovups" : "%vmovaps";
 	  else
 	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
 	  break;
@@ -5584,12 +5598,18 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (scalar_mode)
 	{
 	case E_QImode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
 			 ? "vmovdqu8"
 			 : "vmovdqu64")
 		      : "vmovdqa64");
+	  else if (egpr_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu8"
+			 : "%vmovups")
+		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
@@ -5598,12 +5618,18 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 		      : "%vmovdqa");
 	  break;
 	case E_HImode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
 			 ? "vmovdqu16"
 			 : "vmovdqu64")
 		      : "vmovdqa64");
+	  else if (egpr_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovups")
+		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
@@ -5612,16 +5638,20 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 		      : "%vmovdqa");
 	  break;
 	case E_SImode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  else if (egpr_p)
+	    opcode = misaligned_p ? "%vmovups" : "%vmovaps";
 	  else
 	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
 	  break;
 	case E_DImode:
 	case E_TImode:
 	case E_OImode:
-	  if (evex_reg_p)
+	  if (evex_reg_p || egpr_vl)
 	    opcode = misaligned_p ? "vmovdqu64" : "vmovdqa64";
+	  else if (egpr_p)
+	    opcode = misaligned_p ? "%vmovups" : "%vmovaps";
 	  else
 	    opcode = misaligned_p ? "%vmovdqu" : "%vmovdqa";
 	  break;

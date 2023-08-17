@@ -18912,6 +18912,12 @@
 {
   if (which_alternative == 0)
     return "vinsert<shuffletype><extract_suf>\t{$0, %2, %1, %0|%0, %1, %2, 0}";
+  bool egpr_used = (TARGET_APX_EGPR
+		    && x86_extended_rex2reg_mentioned_p (operands[2]));
+  const char *align_templ = egpr_used ? "vmovaps\t{%2, %x0|%x0, %2}"
+				      : "vmovdqa\t{%2, %x0|%x0, %2}";
+  const char *unalign_templ = egpr_used ? "vmovups\t{%2, %x0|%x0, %2}"
+					: "vmovdqu\t{%2, %x0|%x0, %2}";
   switch (<MODE>mode)
     {
     case E_V8DFmode:
@@ -18927,17 +18933,17 @@
     case E_V8DImode:
       if (misaligned_operand (operands[2], <ssequartermode>mode))
 	return which_alternative == 2 ? "vmovdqu64\t{%2, %x0|%x0, %2}"
-				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+				      : unalign_templ;
       else
 	return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
-				      : "vmovdqa\t{%2, %x0|%x0, %2}";
+				      : align_templ;
     case E_V16SImode:
       if (misaligned_operand (operands[2], <ssequartermode>mode))
 	return which_alternative == 2 ? "vmovdqu32\t{%2, %x0|%x0, %2}"
-				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+				      : unalign_templ;
       else
 	return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
-				      : "vmovdqa\t{%2, %x0|%x0, %2}";
+				      : align_templ;
     default:
       gcc_unreachable ();
     }
@@ -27661,11 +27667,13 @@
   [(set (match_operand:V_256_512 0 "register_operand" "=x,v,x,Yv")
 	(vec_concat:V_256_512
 	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "x,v,xm,vm")
-	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "xm,vm,C,C")))]
+	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "xBt,vm,C,C")))]
   "TARGET_AVX
    && (operands[2] == CONST0_RTX (<ssehalfvecmode>mode)
        || !MEM_P (operands[1]))"
 {
+  bool egpr_used = (TARGET_APX_EGPR
+		    && x86_extended_rex2reg_mentioned_p (operands[1]));
   switch (which_alternative)
     {
     case 0:
@@ -27713,7 +27721,8 @@
 	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
 	    {
 	      if (which_alternative == 2)
-		return "vmovdqu\t{%1, %t0|%t0, %1}";
+		return egpr_used ? "vmovups\t{%1, %t0|%t0, %1}"
+				 : "vmovdqu\t{%1, %t0|%t0, %1}";
 	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
 		return "vmovdqu64\t{%1, %t0|%t0, %1}";
 	      else
@@ -27722,7 +27731,8 @@
 	  else
 	    {
 	      if (which_alternative == 2)
-		return "vmovdqa\t{%1, %t0|%t0, %1}";
+		return egpr_used ? "vmovaps\t{%1, %t0|%t0, %1}"
+				 : "vmovdqa\t{%1, %t0|%t0, %1}";
 	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
 		return "vmovdqa64\t{%1, %t0|%t0, %1}";
 	      else
@@ -27732,7 +27742,8 @@
 	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
 	    {
 	      if (which_alternative == 2)
-		return "vmovdqu\t{%1, %x0|%x0, %1}";
+		return egpr_used ? "vmovups\t{%1, %x0|%x0, %1}"
+				 : "vmovdqu\t{%1, %x0|%x0, %1}";
 	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
 		return "vmovdqu64\t{%1, %x0|%x0, %1}";
 	      else
@@ -27741,7 +27752,8 @@
 	  else
 	    {
 	      if (which_alternative == 2)
-		return "vmovdqa\t{%1, %x0|%x0, %1}";
+		return egpr_used ? "vmovaps\t{%1, %x0|%x0, %1}"
+				 : "vmovdqa\t{%1, %x0|%x0, %1}";
 	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
 		return "vmovdqa64\t{%1, %x0|%x0, %1}";
 	      else
@@ -27754,7 +27766,9 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "sselog,sselog,ssemov,ssemov")
+  [(set_attr "isa" "noavx512f,avx512f,*,*")
+   (set_attr "gpr32" "0,1,1,1")
+   (set_attr "type" "sselog,sselog,ssemov,ssemov")
    (set_attr "prefix_extra" "1,1,*,*")
    (set_attr "length_immediate" "1,1,*,*")
    (set_attr "prefix" "maybe_evex")
