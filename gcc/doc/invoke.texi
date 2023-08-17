@@ -345,6 +345,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
+-Wcompare-distinct-pointer-types
 -Wno-complain-wrong-lang
 -Wconversion  -Wno-coverage-mismatch  -Wno-cpp
 -Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}
@@ -9105,6 +9106,11 @@ and the Fortran front end to compile @file{b.f90}.
 The latter front end diagnoses
 @samp{f951: Warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for Fortran},
 which may be disabled with @option{-Wno-complain-wrong-lang}.
+
+@opindex Wcompare-distinct-pointer-types
+@item -Wcompare-distinct-pointer-types @r{(C and Objective-C only)}
+Warn if pointers of distinct types are compared without a cast.  This
+warning is enabled by default.
 
 @opindex Wconversion
 @opindex Wno-conversion
