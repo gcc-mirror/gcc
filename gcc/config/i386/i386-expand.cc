@@ -12718,6 +12718,8 @@ ix86_check_builtin_isa_match (unsigned int fcode,
 		 OPTION_MASK_ISA2_AVXNECONVERT);
   SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, OPTION_MASK_ISA_AVX512VL,
 		 OPTION_MASK_ISA2_VAES);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512VL, 0, 0, OPTION_MASK_ISA2_AVX10_1);
+  SHARE_BUILTIN (OPTION_MASK_ISA_AVX512DQ, 0, 0, OPTION_MASK_ISA2_AVX10_1);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 
@@ -23949,9 +23951,11 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
   if (TARGET_AVX512DQ && mode == V8DImode)
     emit_insn (gen_avx512dq_mulv8di3 (op0, op1, op2));
-  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V4DImode)
+  else if (((TARGET_AVX512DQ && TARGET_AVX512VL) || TARGET_AVX10_1)
+	   && mode == V4DImode)
     emit_insn (gen_avx512dq_mulv4di3 (op0, op1, op2));
-  else if (TARGET_AVX512DQ && TARGET_AVX512VL && mode == V2DImode)
+  else if (((TARGET_AVX512DQ && TARGET_AVX512VL) || TARGET_AVX10_1)
+	   && mode == V2DImode)
     emit_insn (gen_avx512dq_mulv2di3 (op0, op1, op2));
   else if (TARGET_XOP && mode == V2DImode)
     {

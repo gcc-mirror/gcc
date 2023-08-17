@@ -28,12 +28,6 @@
 #ifndef _AVX512VLDQINTRIN_H_INCLUDED
 #define _AVX512VLDQINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
-#pragma GCC push_options
-#pragma GCC target("avx512vl,avx512dq")
-#define __DISABLE_AVX512VLDQ__
-#endif /* __AVX512VLDQ__ */
-
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvttpd_epi64 (__m256d __A)
@@ -678,6 +672,12 @@ _mm_maskz_andnot_ps (__mmask8 __U, __m128 __A, __m128 __B)
 						 _mm_setzero_ps (),
 						 (__mmask8) __U);
 }
+
+#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
+#pragma GCC push_options
+#pragma GCC target("avx512vl,avx512dq")
+#define __DISABLE_AVX512VLDQ__
+#endif /* __AVX512VLDQ__ */
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
