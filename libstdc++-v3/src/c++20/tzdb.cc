@@ -1078,8 +1078,8 @@ namespace std::chrono
     }
 
     // N.B. Leading slash as required by zoneinfo_file function.
-    const string tzdata_file = "/tzdata.zi";
-    const string leaps_file = "/leapseconds";
+    const string_view tzdata_file = "/tzdata.zi";
+    const string_view leaps_file = "/leapseconds";
 
 #ifdef _GLIBCXX_STATIC_TZDATA
 // Static copy of tzdata.zi embedded in the library as tzdata_chars[]
