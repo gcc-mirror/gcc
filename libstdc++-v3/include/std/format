@@ -2537,11 +2537,10 @@ namespace __format
 
       // Replace the current output range.
       void
-      _M_reset(span<_CharT> __s,
-	       typename span<_CharT>::iterator __next) noexcept
+      _M_reset(span<_CharT> __s, size_t __pos = 0) noexcept
       {
 	_M_span = __s;
-	_M_next = __next;
+	_M_next = __s.begin() + __pos;
       }
 
       // Called by the iterator for *it++ = c
@@ -2599,7 +2598,7 @@ namespace __format
   // A sink that fills a sequence (e.g. std::string, std::vector, std::deque).
   // Writes to a buffer then appends that to the sequence when it fills up.
   template<typename _Seq>
-    class _Seq_sink : public _Buf_sink<typename _Seq::value_type>
+    class _Seq_sink final : public _Buf_sink<typename _Seq::value_type>
     {
       using _CharT = typename _Seq::value_type;
 
@@ -2610,6 +2609,8 @@ namespace __format
       _M_overflow() override
       {
 	auto __s = this->_M_used();
+	if (__s.empty())
+	  return;
 	if constexpr (__is_specialization_of<_Seq, basic_string>)
 	  _M_seq.append(__s.data(), __s.size());
 	else
@@ -2618,6 +2619,9 @@ namespace __format
       }
 
     public:
+      // TODO: for SSO string, use SSO buffer as initial span, then switch
+      // to _M_buf if it overflows? Or even do that for all unused capacity?
+
       [[__gnu__::__always_inline__]]
       _Seq_sink() noexcept(is_nothrow_default_constructible_v<_Seq>)
       { }
@@ -2722,21 +2726,20 @@ namespace __format
 	  return; // No need to switch to internal buffer yet.
 
 	auto __s = this->_M_used();
-	_M_count += __s.size();
 
 	if (_M_max >= 0)
 	  {
+	    _M_count += __s.size();
 	    // Span was already sized for the maximum character count,
 	    // if it overflows then any further output must go to the
 	    // internal buffer, to be discarded.
-	    span<_CharT> __buf{_M_buf};
-	    this->_M_reset(__buf, __buf.begin());
+	    this->_M_reset(this->_M_buf);
 	  }
 	else
 	  {
 	    // No maximum character count. Just extend the span to allow
 	    // writing more characters to it.
-	    this->_M_reset({__s.data(), __s.size() + 1024}, __s.end());
+	    this->_M_reset({__s.data(), __s.size() + 1024}, __s.size());
 	  }
       }
 
@@ -3473,6 +3476,7 @@ namespace __format
 
   template<typename _Context>
     template<typename... _Args>
+      inline
       basic_format_args<_Context>::
       basic_format_args(const _Store<_Args...>& __store) noexcept
       {
@@ -4063,7 +4067,7 @@ namespace __format
 {
 #if 1
   template<typename _CharT>
-    class _Counting_sink : public _Iter_sink<_CharT, _CharT*>
+    class _Counting_sink final : public _Iter_sink<_CharT, _CharT*>
     {
     public:
       _Counting_sink() : _Iter_sink<_CharT, _CharT*>(nullptr, 0) { }
