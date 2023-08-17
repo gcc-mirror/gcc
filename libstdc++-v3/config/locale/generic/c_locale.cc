@@ -187,11 +187,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __convert_to_v(const char* __s, long double& __v,
 		   ios_base::iostate& __err, const __c_locale&) throw()
     {
-#if __DBL_MANT_DIG__ == __LDBL_MANT_DIG__
-      double __d;
-      __convert_to_v(__s, __d, __err, __c_locale);
-      __v = __d;
-#else
       // Assumes __s formatted for "C" locale.
       const char* __sav = __set_C_locale();
       if (!__sav)
@@ -238,7 +233,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       setlocale(LC_ALL, __sav);
       delete [] __sav;
-#endif // __DBL_MANT_DIG__ == __LDBL_MANT_DIG__
     }
 
   void
