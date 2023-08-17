@@ -363,7 +363,6 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 {
   int i, j, regno;
 
-  slots_num = 0;
   /* Assign stack slot numbers to spilled pseudos, use smaller numbers
      for most frequently used pseudos.	*/
   for (i = 0; i < n; i++)
@@ -628,6 +627,7 @@ lra_spill (void)
   /* Sort regnos according their usage frequencies.  */
   qsort (pseudo_regnos, n, sizeof (int), regno_freq_compare);
   n = assign_spill_hard_regs (pseudo_regnos, n);
+  slots_num = 0;
   assign_stack_slot_num_and_sort_pseudos (pseudo_regnos, n);
   for (i = 0; i < n; i++)
     if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
@@ -635,6 +635,7 @@ lra_spill (void)
   if ((n2 = lra_update_fp2sp_elimination (pseudo_regnos)) > 0)
     {
       /* Assign stack slots to spilled pseudos assigned to fp.  */
+      assign_stack_slot_num_and_sort_pseudos (pseudo_regnos, n2);
       for (i = 0; i < n2; i++)
 	if (pseudo_slots[pseudo_regnos[i]].mem == NULL_RTX)
 	  assign_mem_slot (pseudo_regnos[i]);
