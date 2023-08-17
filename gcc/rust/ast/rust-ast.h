@@ -399,7 +399,7 @@ public:
   {
     return as_string ().compare ("crate") == 0;
   }
-  bool is_lower_self () const { return as_string ().compare ("self") == 0; }
+  bool is_lower_self_seg () const { return as_string ().compare ("self") == 0; }
   bool is_big_self () const { return as_string ().compare ("Self") == 0; }
 };
 

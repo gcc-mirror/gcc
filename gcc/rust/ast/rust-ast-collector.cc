@@ -191,7 +191,7 @@ TokenCollector::visit (SimplePathSegment &segment)
     {
       push (Rust::Token::make (SUPER, segment.get_locus ()));
     }
-  else if (segment.is_lower_self ())
+  else if (segment.is_lower_self_seg ())
     {
       push (Rust::Token::make (SELF, segment.get_locus ()));
     }

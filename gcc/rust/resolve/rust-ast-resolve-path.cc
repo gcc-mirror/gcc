@@ -367,7 +367,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
       //   	      is_first_segment ? "true" : "false",
       //   	      is_final_segment ? "true" : "false");
       if (resolved_node_id == UNKNOWN_NODEID && !is_first_segment
-	  && is_final_segment && segment.is_lower_self ())
+	  && is_final_segment && segment.is_lower_self_seg ())
 	{
 	  resolved_node_id = previous_resolved_node_id;
 	}

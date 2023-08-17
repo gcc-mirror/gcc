@@ -536,6 +536,7 @@ public:
   {
     return !has_generic_args () && get_ident_segment ().is_crate_segment ();
   }
+
   bool is_lower_self_seg () const
   {
     return !has_generic_args () && get_ident_segment ().is_lower_self ();
@@ -644,6 +645,14 @@ public:
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
     outer_attrs = std::move (new_attrs);
+  }
+
+  NodeId get_pattern_node_id () const { return get_node_id (); }
+
+  PathExprSegment &get_final_segment () { return get_segments ().back (); }
+  const PathExprSegment &get_final_segment () const
+  {
+    return get_segments ().back ();
   }
 
 protected:
