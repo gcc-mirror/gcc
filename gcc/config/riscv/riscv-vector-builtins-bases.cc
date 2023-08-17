@@ -2548,6 +2548,7 @@ static CONSTEXPR const freducop<UNSPEC_ORDERED, HAS_FRM> vfredosum_frm_obj;
 static CONSTEXPR const reducop<SMAX> vfredmax_obj;
 static CONSTEXPR const reducop<SMIN> vfredmin_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
+static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED, HAS_FRM> vfwredusum_frm_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_ORDERED, HAS_FRM> vfwredosum_frm_obj;
 static CONSTEXPR const vmv vmv_x_obj;
@@ -2810,6 +2811,7 @@ BASE (vfredmin)
 BASE (vfwredosum)
 BASE (vfwredosum_frm)
 BASE (vfwredusum)
+BASE (vfwredusum_frm)
 BASE (vmv_x)
 BASE (vmv_s)
 BASE (vfmv_f)

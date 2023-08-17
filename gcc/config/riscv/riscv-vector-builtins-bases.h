@@ -247,6 +247,7 @@ extern const function_base *const vfredmin;
 extern const function_base *const vfwredosum;
 extern const function_base *const vfwredosum_frm;
 extern const function_base *const vfwredusum;
+extern const function_base *const vfwredusum_frm;
 extern const function_base *const vmv_x;
 extern const function_base *const vmv_s;
 extern const function_base *const vfmv_f;

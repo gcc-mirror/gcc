@@ -508,6 +508,7 @@ DEF_RVV_FUNCTION (vfwredosum, reduc_alu, no_mu_preds, wf_vs_ops)
 DEF_RVV_FUNCTION (vfwredusum, reduc_alu, no_mu_preds, wf_vs_ops)
 
 DEF_RVV_FUNCTION (vfwredosum_frm, reduc_alu_frm, no_mu_preds, wf_vs_ops)
+DEF_RVV_FUNCTION (vfwredusum_frm, reduc_alu_frm, no_mu_preds, wf_vs_ops)
 
 /* 15. Vector Mask Instructions.  */
 
