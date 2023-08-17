@@ -1866,10 +1866,15 @@ public:
 };
 
 /* Implements widening floating-point reduction instructions.  */
-template<int UNSPEC>
+template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
 class widen_freducop : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool apply_mask_policy_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -2544,6 +2549,7 @@ static CONSTEXPR const reducop<SMAX> vfredmax_obj;
 static CONSTEXPR const reducop<SMIN> vfredmin_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
+static CONSTEXPR const widen_freducop<UNSPEC_ORDERED, HAS_FRM> vfwredosum_frm_obj;
 static CONSTEXPR const vmv vmv_x_obj;
 static CONSTEXPR const vmv_s vmv_s_obj;
 static CONSTEXPR const vmv vfmv_f_obj;
@@ -2802,6 +2808,7 @@ BASE (vfredosum_frm)
 BASE (vfredmax)
 BASE (vfredmin)
 BASE (vfwredosum)
+BASE (vfwredosum_frm)
 BASE (vfwredusum)
 BASE (vmv_x)
 BASE (vmv_s)
