@@ -854,7 +854,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  options = concat (options, " ",
 				    isa_names_table[i].option, NULL);
 	      }
-	    else if (isa_names_table[i].feature != FEATURE_AVX10_1)
+	    else if ((isa_names_table[i].feature != FEATURE_AVX10_1)
+		     && (isa_names_table[i].feature != FEATURE_AVX10_512BIT))
 	      options = concat (options, neg_option,
 				isa_names_table[i].option + 2, NULL);
 	  }
