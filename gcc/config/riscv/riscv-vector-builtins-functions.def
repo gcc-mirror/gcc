@@ -501,6 +501,7 @@ DEF_RVV_FUNCTION (vfredmax, reduc_alu, no_mu_preds, f_vs_ops)
 DEF_RVV_FUNCTION (vfredmin, reduc_alu, no_mu_preds, f_vs_ops)
 
 DEF_RVV_FUNCTION (vfredusum_frm, reduc_alu_frm, no_mu_preds, f_vs_ops)
+DEF_RVV_FUNCTION (vfredosum_frm, reduc_alu_frm, no_mu_preds, f_vs_ops)
 
 // 14.4. Vector Widening Floating-Point Reduction Instructions
 DEF_RVV_FUNCTION (vfwredosum, reduc_alu, no_mu_preds, wf_vs_ops)
