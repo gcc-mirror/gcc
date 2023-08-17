@@ -21,7 +21,8 @@ f (float *restrict a, float *restrict b,
     }
 }
 
-/* FIXME: Since we don't have VECT cost model yet, LOAD_LANES/STORE_LANES are chosen instead of SLP.  */
-/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" { xfail *-*-* } } } */
-/* { dg-final { scan-assembler {\tvid\.v} { xfail *-*-* } } } */
+/* FIXME: Since we don't have VECT cost model yet, LOAD_LANES/STORE_LANES are chosen
+   instead of SLP when riscv-autovec-lmul=m1 or m2.  */
+/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 2 "optimized" { xfail { any-opts "--param riscv-autovec-lmul=m1" "--param riscv-autovec-lmul=m2" } } } } */
+/* { dg-final { scan-assembler {\tvid\.v} { xfail { any-opts "--param riscv-autovec-lmul=m1" "--param riscv-autovec-lmul=m2" } } } } */
 /* { dg-final { scan-assembler-not {\tvmul} } } */
