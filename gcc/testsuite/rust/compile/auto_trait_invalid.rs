@@ -2,7 +2,7 @@
 
 #![feature(optin_builtin_traits)]
 
-unsafe auto trait Invalid { // { dg-error "associated items are forbidden within auto traits" }
+unsafe auto trait Invalid { // { dg-error "auto traits cannot have associated items" }
     fn foo(); // { dg-message "remove this item" }
 
     fn bar() {} // { dg-message "remove this item" }
