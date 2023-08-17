@@ -7194,6 +7194,40 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{cond_neg@var{mode}} instruction pattern
+@cindex @code{cond_one_cmpl@var{mode}} instruction pattern
+@item @samp{cond_neg@var{mode}}
+@itemx @samp{cond_one_cmpl@var{mode}}
+When operand 1 is true, perform an operation on operands 2 and
+store the result in operand 0, otherwise store operand 3 in operand 0.
+The operation works elementwise if the operands are vectors.
+
+The scalar case is equivalent to:
+
+@smallexample
+op0 = op1 ? @var{op} op2 : op3;
+@end smallexample
+
+while the vector case is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+@end smallexample
+
+where, for example, @var{op} is @code{~} for @samp{cond_one_cmpl@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op2[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, and 3 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}2}.
+
 @cindex @code{cond_add@var{mode}} instruction pattern
 @cindex @code{cond_sub@var{mode}} instruction pattern
 @cindex @code{cond_mul@var{mode}} instruction pattern
@@ -7280,6 +7314,34 @@ takes 3 operands rather than two.  For example, the vector form of
 for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
   op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
 @end smallexample
+
+@cindex @code{cond_len_neg@var{mode}} instruction pattern
+@cindex @code{cond_len_one_cmpl@var{mode}} instruction pattern
+@item @samp{cond_len_neg@var{mode}}
+@itemx @samp{cond_len_one_cmpl@var{mode}}
+When operand 1 is true and element index < operand 4 + operand 5, perform an operation on operands 1 and
+store the result in operand 0, otherwise store operand 2 in operand 0.
+The operation only works for the operands are vectors.
+
+@smallexample
+for (i = 0; i < ops[4] + ops[5]; i++)
+  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+@end smallexample
+
+where, for example, @var{op} is @code{~} for @samp{cond_len_one_cmpl@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op2[i]}
+are not interpreted if @samp{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2, and 3 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 4 has whichever
+integer mode the target prefers.
+
+@samp{cond_len_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}2}.
+
 
 @cindex @code{cond_len_add@var{mode}} instruction pattern
 @cindex @code{cond_len_sub@var{mode}} instruction pattern
