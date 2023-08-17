@@ -39,6 +39,7 @@
 
 #include <ios>
 #include <bits/ostream_insert.h>
+#include <bits/version.h> // __glibcxx_syncbuf
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -804,7 +805,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::move(__os);
     }
 
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#ifdef __glibcxx_syncbuf // C++ >= 20 && HOSTED && CXX11ABI
   template<typename _CharT, typename _Traits>
     class __syncbuf_base : public basic_streambuf<_CharT, _Traits>
     {
@@ -869,8 +870,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __os.flush();
       return __os;
     }
-
-#endif // C++20
+#endif // __glibcxx_syncbuf
 
 #endif // C++11
 
