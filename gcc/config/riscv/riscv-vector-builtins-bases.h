@@ -226,6 +226,7 @@ extern const function_base *const vfncvt_xu_frm;
 extern const function_base *const vfncvt_rtz_x;
 extern const function_base *const vfncvt_rtz_xu;
 extern const function_base *const vfncvt_f;
+extern const function_base *const vfncvt_f_frm;
 extern const function_base *const vfncvt_rod_f;
 extern const function_base *const vredsum;
 extern const function_base *const vredmaxu;

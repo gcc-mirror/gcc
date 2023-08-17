@@ -1786,9 +1786,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfncvt_f : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_f_w)
@@ -2512,7 +2518,8 @@ static CONSTEXPR const vfncvt_x<UNSPEC_UNSIGNED_VFCVT> vfncvt_xu_obj;
 static CONSTEXPR const vfncvt_x<UNSPEC_UNSIGNED_VFCVT, HAS_FRM> vfncvt_xu_frm_obj;
 static CONSTEXPR const vfncvt_rtz_x<FIX> vfncvt_rtz_x_obj;
 static CONSTEXPR const vfncvt_rtz_x<UNSIGNED_FIX> vfncvt_rtz_xu_obj;
-static CONSTEXPR const vfncvt_f vfncvt_f_obj;
+static CONSTEXPR const vfncvt_f<NO_FRM> vfncvt_f_obj;
+static CONSTEXPR const vfncvt_f<HAS_FRM> vfncvt_f_frm_obj;
 static CONSTEXPR const vfncvt_rod_f vfncvt_rod_f_obj;
 static CONSTEXPR const reducop<PLUS> vredsum_obj;
 static CONSTEXPR const reducop<UMAX> vredmaxu_obj;
@@ -2769,6 +2776,7 @@ BASE (vfncvt_xu_frm)
 BASE (vfncvt_rtz_x)
 BASE (vfncvt_rtz_xu)
 BASE (vfncvt_f)
+BASE (vfncvt_f_frm)
 BASE (vfncvt_rod_f)
 BASE (vredsum)
 BASE (vredmaxu)

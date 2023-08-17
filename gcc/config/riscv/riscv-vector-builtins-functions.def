@@ -474,6 +474,9 @@ DEF_RVV_FUNCTION (vfncvt_rod_f, narrow_alu, full_preds, f_to_nf_f_w_ops)
 
 DEF_RVV_FUNCTION (vfncvt_x_frm, narrow_alu_frm, full_preds, f_to_ni_f_w_ops)
 DEF_RVV_FUNCTION (vfncvt_xu_frm, narrow_alu_frm, full_preds, f_to_nu_f_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, i_to_nf_x_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, u_to_nf_xu_w_ops)
+DEF_RVV_FUNCTION (vfncvt_f_frm, narrow_alu_frm, full_preds, f_to_nf_f_w_ops)
 
 /* 14. Vector Reduction Operations.  */
 
