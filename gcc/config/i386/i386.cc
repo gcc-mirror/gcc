@@ -5316,8 +5316,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_V4DF:
 	  if (!EXT_REX_SSE_REG_P (operands[0]))
 	    return "vxorpd\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ)
-	    return (TARGET_AVX512VL
+	  else if (TARGET_AVX512DQ || TARGET_AVX10_1)
+	    return ((TARGET_AVX512VL || TARGET_AVX10_1)
 		    ? "vxorpd\t%x0, %x0, %x0"
 		    : "vxorpd\t%g0, %g0, %g0");
 	  else
@@ -5333,8 +5333,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_V8SF:
 	  if (!EXT_REX_SSE_REG_P (operands[0]))
 	    return "vxorps\t%x0, %x0, %x0";
-	  else if (TARGET_AVX512DQ)
-	    return (TARGET_AVX512VL
+	  else if (TARGET_AVX512DQ || TARGET_AVX10_1)
+	    return ((TARGET_AVX512VL || TARGET_AVX10_1)
 		    ? "vxorps\t%x0, %x0, %x0"
 		    : "vxorps\t%g0, %g0, %g0");
 	  else
