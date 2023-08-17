@@ -7,7 +7,8 @@ int foo(Base&) { return 0; } // #0
 
 template<int N>
 struct S : Base {
-  friend int foo(Base&) requires (N == 1) { return 1; }  // #1
+  friend int foo(Base&) requires (N == 1) { return 1; }	// #1
+  // { dg-bogus "redefinition" "" { xfail *-*-* } .-1 }
   // friend int foo(Base&) requires (N == 2) { return 3; }  // #2
 };
 
