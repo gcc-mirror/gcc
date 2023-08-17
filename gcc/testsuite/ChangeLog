@@ -1,3 +1,28 @@
+2023-08-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110927
+	* g++.dg/cpp2a/concepts-requires35.C: New test.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-gather-2.c: Adjust options to keep
+	gather vectorization.
+	* gcc.target/i386/avx2-gather-6.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-1.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-5.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-11.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-3.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-9.c: Ditto.
+	* gcc.target/i386/pr88531-1b.c: Ditto.
+	* gcc.target/i386/pr88531-1c.c: Ditto.
+
 2023-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108119
