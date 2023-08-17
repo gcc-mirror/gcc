@@ -4923,8 +4923,8 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 
   if (is_auto_trait && !trait_items.empty ())
     {
-      add_error (
-	Error (locus, "associated items are forbidden within auto traits"));
+      add_error (Error (locus, ErrorCode::E0380,
+			"auto traits cannot have associated items"));
 
       // FIXME: unsure if this should be done at parsing time or not
       for (const auto &item : trait_items)
