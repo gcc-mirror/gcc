@@ -3330,6 +3330,23 @@ pass_vsetvl::backward_demand_fusion (void)
 	  else if (block_info.reaching_out.dirty_p ())
 	    {
 	      /* DIRTY -> DIRTY or VALID -> DIRTY.  */
+
+	      /* Forbidden this case fuse because it change the value of a5.
+		   bb 1: vsetvl zero, no_zero_avl
+			 ...
+			 use a5
+			 ...
+		   bb 2: vsetvl a5, zero
+		 =>
+		   bb 1: vsetvl a5, zero
+			 ...
+			 use a5
+			 ...
+		   bb 2:
+	      */
+	      if (block_info.reaching_out.demand_p (DEMAND_NONZERO_AVL)
+		  && vlmax_avl_p (prop.get_avl ()))
+		continue;
 	      vector_insn_info new_info;
 
 	      if (block_info.reaching_out.compatible_p (prop))
