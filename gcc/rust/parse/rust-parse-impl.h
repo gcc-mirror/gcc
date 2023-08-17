@@ -3142,9 +3142,12 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 
   // FIXME: Add reordering hint
   if (order_error)
-    rust_error_at (generic_params.front ()->get_locus (),
-		   "invalid order for generic parameters: lifetimes should "
-		   "always come before types");
+    {
+      Error error (generic_params.front ()->get_locus (),
+		   "invalid order for generic parameters: lifetime parameters "
+		   "must be declared prior to type and const parameters");
+      add_error (std::move (error));
+    }
 
   generic_params.shrink_to_fit ();
   return generic_params;
