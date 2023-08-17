@@ -892,25 +892,35 @@ namespace views::__adaptor
   // The derived class should define the optional static data member
   // _S_has_simple_call_op to true if the behavior of this adaptor is
   // independent of the constness/value category of the adaptor object.
-  struct _RangeAdaptorClosure
-  {
-    // range | adaptor is equivalent to adaptor(range).
-    template<typename _Self, typename _Range>
-      requires derived_from<remove_cvref_t<_Self>, _RangeAdaptorClosure>
-	&& __adaptor_invocable<_Self, _Range>
-      friend constexpr auto
-      operator|(_Range&& __r, _Self&& __self)
-      { return std::forward<_Self>(__self)(std::forward<_Range>(__r)); }
+  template<typename _Derived>
+    struct _RangeAdaptorClosure
+    { };
 
-    // Compose the adaptors __lhs and __rhs into a pipeline, returning
-    // another range adaptor closure object.
-    template<typename _Lhs, typename _Rhs>
-      requires derived_from<_Lhs, _RangeAdaptorClosure>
-	&& derived_from<_Rhs, _RangeAdaptorClosure>
-      friend constexpr auto
-      operator|(_Lhs __lhs, _Rhs __rhs)
-      { return _Pipe<_Lhs, _Rhs>{std::move(__lhs), std::move(__rhs)}; }
-  };
+  template<typename _Tp, typename _Up>
+    requires (!same_as<_Tp, _RangeAdaptorClosure<_Up>>)
+    void __is_range_adaptor_closure_fn
+      (const _Tp&, const _RangeAdaptorClosure<_Up>&); // not defined
+
+  template<typename _Tp>
+    concept __is_range_adaptor_closure
+      = requires (_Tp __t) { __adaptor::__is_range_adaptor_closure_fn(__t, __t); };
+
+  // range | adaptor is equivalent to adaptor(range).
+  template<typename _Self, typename _Range>
+    requires __is_range_adaptor_closure<_Self>
+      && __adaptor_invocable<_Self, _Range>
+    constexpr auto
+    operator|(_Range&& __r, _Self&& __self)
+    { return std::forward<_Self>(__self)(std::forward<_Range>(__r)); }
+
+  // Compose the adaptors __lhs and __rhs into a pipeline, returning
+  // another range adaptor closure object.
+  template<typename _Lhs, typename _Rhs>
+    requires __is_range_adaptor_closure<_Lhs>
+      && __is_range_adaptor_closure<_Rhs>
+    constexpr auto
+    operator|(_Lhs __lhs, _Rhs __rhs)
+    { return _Pipe<_Lhs, _Rhs>{std::move(__lhs), std::move(__rhs)}; }
 
   // The base class of every range adaptor non-closure.
   //
@@ -952,7 +962,7 @@ namespace views::__adaptor
   // A range adaptor closure that represents partial application of
   // the range adaptor _Adaptor with arguments _Args.
   template<typename _Adaptor, typename... _Args>
-    struct _Partial : _RangeAdaptorClosure
+    struct _Partial : _RangeAdaptorClosure<_Partial<_Adaptor, _Args...>>
     {
       tuple<_Args...> _M_args;
 
@@ -993,7 +1003,7 @@ namespace views::__adaptor
   // A lightweight specialization of the above primary template for
   // the common case where _Adaptor accepts a single extra argument.
   template<typename _Adaptor, typename _Arg>
-    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
+    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure<_Partial<_Adaptor, _Arg>>
     {
       _Arg _M_arg;
 
@@ -1026,7 +1036,7 @@ namespace views::__adaptor
   template<typename _Adaptor, typename... _Args>
     requires __adaptor_has_simple_extra_args<_Adaptor, _Args...>
       && (is_trivially_copyable_v<_Args> && ...)
-    struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure
+    struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure<_Partial<_Adaptor, _Args...>>
     {
       tuple<_Args...> _M_args;
 
@@ -1056,7 +1066,7 @@ namespace views::__adaptor
   template<typename _Adaptor, typename _Arg>
     requires __adaptor_has_simple_extra_args<_Adaptor, _Arg>
       && is_trivially_copyable_v<_Arg>
-    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
+    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure<_Partial<_Adaptor, _Arg>>
     {
       _Arg _M_arg;
 
@@ -1081,7 +1091,7 @@ namespace views::__adaptor
   // A range adaptor closure that represents composition of the range
   // adaptor closures _Lhs and _Rhs.
   template<typename _Lhs, typename _Rhs>
-    struct _Pipe : _RangeAdaptorClosure
+    struct _Pipe : _RangeAdaptorClosure<_Pipe<_Lhs, _Rhs>>
     {
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
@@ -1117,7 +1127,7 @@ namespace views::__adaptor
   template<typename _Lhs, typename _Rhs>
     requires __closure_has_simple_call_op<_Lhs>
       && __closure_has_simple_call_op<_Rhs>
-    struct _Pipe<_Lhs, _Rhs> : _RangeAdaptorClosure
+    struct _Pipe<_Lhs, _Rhs> : _RangeAdaptorClosure<_Pipe<_Lhs, _Rhs>>
     {
       [[no_unique_address]] _Lhs _M_lhs;
       [[no_unique_address]] _Rhs _M_rhs;
@@ -1141,7 +1151,7 @@ namespace views::__adaptor
   template<typename _Derived>
     requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class range_adaptor_closure
-    : public views::__adaptor::_RangeAdaptorClosure
+    : public views::__adaptor::_RangeAdaptorClosure<_Derived>
     { };
 #endif
 
@@ -1287,7 +1297,7 @@ namespace views::__adaptor
 	concept __can_owning_view = requires { owning_view{std::declval<_Range>()}; };
     } // namespace __detail
 
-    struct _All : __adaptor::_RangeAdaptorClosure
+    struct _All : __adaptor::_RangeAdaptorClosure<_All>
     {
       template<typename _Range>
 	static constexpr bool
@@ -3071,7 +3081,7 @@ namespace views::__adaptor
 	  = requires { join_view<all_t<_Range>>{std::declval<_Range>()}; };
     } // namespace __detail
 
-    struct _Join : __adaptor::_RangeAdaptorClosure
+    struct _Join : __adaptor::_RangeAdaptorClosure<_Join>
     {
       template<viewable_range _Range>
 	requires __detail::__can_join_view<_Range>
@@ -3865,7 +3875,7 @@ namespace views::__adaptor
 	  = requires { common_view{std::declval<_Range>()}; };
     } // namespace __detail
 
-    struct _Common : __adaptor::_RangeAdaptorClosure
+    struct _Common : __adaptor::_RangeAdaptorClosure<_Common>
     {
       template<viewable_range _Range>
 	requires __detail::__already_common<_Range>
@@ -3986,7 +3996,7 @@ namespace views::__adaptor
 	  = requires { reverse_view{std::declval<_Range>()}; };
     } // namespace __detail
 
-    struct _Reverse : __adaptor::_RangeAdaptorClosure
+    struct _Reverse : __adaptor::_RangeAdaptorClosure<_Reverse>
     {
       template<viewable_range _Range>
 	requires __detail::__is_reverse_view<remove_cvref_t<_Range>>
@@ -4386,7 +4396,7 @@ namespace views::__adaptor
     } // namespace __detail
 
     template<size_t _Nm>
-      struct _Elements : __adaptor::_RangeAdaptorClosure
+      struct _Elements : __adaptor::_RangeAdaptorClosure<_Elements<_Nm>>
       {
 	template<viewable_range _Range>
 	  requires __detail::__can_elements_view<_Nm, _Range>
@@ -5504,7 +5514,7 @@ namespace views::__adaptor
     }
 
     template<size_t _Nm>
-      struct _Adjacent : __adaptor::_RangeAdaptorClosure
+      struct _Adjacent : __adaptor::_RangeAdaptorClosure<_Adjacent<_Nm>>
       {
 	template<viewable_range _Range>
 	  requires (_Nm == 0) || __detail::__can_adjacent_view<_Nm, _Range>
@@ -8629,7 +8639,7 @@ namespace views::__adaptor
 	concept __can_as_rvalue_view = requires { as_rvalue_view(std::declval<_Tp>()); };
     }
 
-    struct _AsRvalue : __adaptor::_RangeAdaptorClosure
+    struct _AsRvalue : __adaptor::_RangeAdaptorClosure<_AsRvalue>
     {
       template<viewable_range _Range>
 	requires __detail::__can_as_rvalue_view<_Range>
@@ -8938,7 +8948,7 @@ namespace views::__adaptor
 	  = requires { enumerate_view<all_t<_Tp>>(std::declval<_Tp>()); };
     }
 
-    struct _Enumerate : __adaptor::_RangeAdaptorClosure
+    struct _Enumerate : __adaptor::_RangeAdaptorClosure<_Enumerate>
     {
       template<viewable_range _Range>
 	requires __detail::__can_enumerate_view<_Range>
@@ -9024,7 +9034,7 @@ namespace views::__adaptor
 	concept __can_as_const_view = requires { as_const_view(std::declval<_Range>()); };
     }
 
-    struct _AsConst : __adaptor::_RangeAdaptorClosure
+    struct _AsConst : __adaptor::_RangeAdaptorClosure<_AsConst>
     {
       template<viewable_range _Range>
       constexpr auto
