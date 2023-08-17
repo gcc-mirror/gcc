@@ -1097,8 +1097,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       r.add_fixit_replace (rich_msg.c_str ());
 
       rust_error_at (
-	r, ErrorCode::E0034,
-	"multiple applicable items in scope for method %qs",
+	r, ErrorCode::E0592, "duplicate definitions with name %qs",
 	expr.get_method_name ().get_segment ().as_string ().c_str ());
       return;
     }

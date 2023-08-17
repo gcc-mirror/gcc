@@ -129,8 +129,11 @@ public:
 			   const std::string &name)
   {
     rich_location r (line_table, dup->get_locus ());
+    std::string msg = "duplicate definitions for " + name;
+    r.add_fixit_replace (query->get_locus (), msg.c_str ());
     r.add_range (query->get_locus ());
-    rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
+    rust_error_at (r, ErrorCode::E0592, "duplicate definitions with name %qs",
+		   name.c_str ());
   }
 
 private:
