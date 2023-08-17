@@ -10,7 +10,7 @@ impl<T> Foo<i32, T> {
 }
 
 impl Foo<i32, f32> {
-    fn test() -> f32 { // { dg-error "duplicate definitions with name test" }
+    fn test() -> f32 { // { dg-error "duplicate definitions with name .test." }
         123f32
     }
 }

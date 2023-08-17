@@ -22,9 +22,9 @@ impl<T> Foo<T> {
         self.a
     }
 }
-
+// E0592
 fn main() {
     let a = Foo { a: 123 };
     a.bar();
-    // { dg-error "multiple applicable items in scope for method .bar." "" { target *-*-* } .-1 }
+    // { dg-error "duplicate definitions with name .bar." "" { target *-*-* } .-1 }
 }
