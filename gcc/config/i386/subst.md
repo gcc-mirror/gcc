@@ -65,7 +65,7 @@
 							    || TARGET_AVX10_1)")
 (define_subst_attr "mask_avx512vl_condition" "mask" "1" "(TARGET_AVX512VL || TARGET_AVX10_1)")
 (define_subst_attr "mask_avx512bw_condition" "mask" "1" "TARGET_AVX512BW")
-(define_subst_attr "mask_avx512dq_condition" "mask" "1" "TARGET_AVX512DQ")
+(define_subst_attr "mask_avx512dq_condition" "mask" "1" "(TARGET_AVX512DQ || TARGET_AVX10_1)")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
@@ -120,7 +120,7 @@
 (define_subst "mask_scalar_merge"
   [(set (match_operand:SUBST_S 0)
         (match_operand:SUBST_S 1))]
-  "TARGET_AVX512F"
+  "TARGET_AVX512F || TARGET_AVX10_1"
   [(set (match_dup 0)
         (and:SUBST_S
 	  (match_dup 1)

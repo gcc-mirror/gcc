@@ -1331,12 +1331,6 @@ _mm256_movepi64_mask (__m256i __A)
   return (__mmask8) __builtin_ia32_cvtq2mask256 ((__v4di) __A);
 }
 
-#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
-#pragma GCC push_options
-#pragma GCC target("avx512vl,avx512dq")
-#define __DISABLE_AVX512VLDQ__
-#endif /* __AVX512VLDQ__ */
-
 #ifdef __OPTIMIZE__
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -2007,10 +2001,5 @@ _mm256_maskz_insertf64x2 (__mmask8 __U, __m256d __A, __m128d __B,
 						(int) (C),(__mmask8)-1))
 
 #endif
-
-#ifdef __DISABLE_AVX512VLDQ__
-#undef __DISABLE_AVX512VLDQ__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512VLDQ__ */
 
 #endif /* _AVX512VLDQINTRIN_H_INCLUDED */
