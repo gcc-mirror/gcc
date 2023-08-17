@@ -256,6 +256,13 @@ ftms = {
 ftms = {
   name = to_chars;
   values = {
+    v = 202306;
+    cxxmin = 26;
+    extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
+    "&& _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 "
+    "&& __SIZE_WIDTH__ >= 32";
+  };
+  values = {
     v = 201611;
     cxxmin = 14;
     extra_cond = "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 "
