@@ -1,3 +1,162 @@
+2023-08-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-template.h: New test.
+
+2023-08-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1u.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2u.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3u.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4u.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-runu.c: New test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wcvt-xu.c: New test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wcvt-x.c: New test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-cvt-f.c: New test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-cvt-xu.c: New test.
+
+2023-08-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/110429
+	* gcc.target/powerpc/pr110429.c: New.
+
+2023-08-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/106769
+	* gcc.target/powerpc/pr106769.h: New.
+	* gcc.target/powerpc/pr106769-p8.c: New.
+	* gcc.target/powerpc/pr106769-p9.c: New.
+
+2023-08-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-2.c:
+	Adapt test.
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-6.c: Ditto.
+	* gcc.target/riscv/rvv/rvv.exp: Add lanes tests.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_run-9.c: New test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-cvt-x.c: New test.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-gather-2.c: Adjust options to keep
+	gather vectorization.
+	* gcc.target/i386/avx2-gather-6.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-1.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-5.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-1.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-11.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-3.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-9.c: Ditto.
+	* gcc.target/i386/pr88531-1b.c: Ditto.
+	* gcc.target/i386/pr88531-1c.c: Ditto.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr89229-4a.c: Adjust testcase.
+
 2023-08-15  David Faust  <david.faust@oracle.com>
 
 	PR target/111029

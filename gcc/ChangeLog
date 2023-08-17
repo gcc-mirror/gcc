@@ -1,3 +1,194 @@
+2023-08-16  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/110254
+	* ira-color.cc (improve_allocation): Update array
+	allocated_hard_reg_p.
+
+2023-08-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-int.h (lra_update_fp2sp_elimination): Change the prototype.
+	* lra-eliminations.cc (spill_pseudos): Record spilled pseudos.
+	(lra_update_fp2sp_elimination): Ditto.
+	(update_reg_eliminate): Adjust spill_pseudos call.
+	* lra-spills.cc (lra_spill): Assign stack slots to pseudos spilled
+	in lra_update_fp2sp_elimination.
+
+2023-08-16  Richard Ball  <richard.ball@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add Cortex-A720 CPU.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document Cortex-A720 CPU.
+
+2023-08-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<u>avg<v_double_trunc>3_floor):
+	Implement expander.
+	(<u>avg<v_double_trunc>3_ceil): Ditto.
+	* config/riscv/vector-iterators.md (ashiftrt): New iterator.
+	(ASHIFTRT): Ditto.
+
+2023-08-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* internal-fn.cc (vec_extract_direct): Change type argument
+	numbers.
+	(expand_vec_extract_optab_fn): Call convert_optab_fn.
+	(direct_vec_extract_optab_supported_p): Use
+	convert_optab_supported_p.
+
+2023-08-16  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const.cc (INCLUDE_ALGORITHM): Add Include.
+	(valid_mask_for_fold_vec_perm_cst_p): New function.
+	(fold_vec_perm_cst): Likewise.
+	(fold_vec_perm): Adjust assert and call fold_vec_perm_cst.
+	(test_fold_vec_perm_cst): New namespace.
+	(test_fold_vec_perm_cst::build_vec_cst_rand): New function.
+	(test_fold_vec_perm_cst::validate_res): Likewise.
+	(test_fold_vec_perm_cst::validate_res_vls): Likewise.
+	(test_fold_vec_perm_cst::builder_push_elems): Likewise.
+	(test_fold_vec_perm_cst::test_vnx4si_v4si): Likewise.
+	(test_fold_vec_perm_cst::test_v4si_vnx4si): Likewise.
+	(test_fold_vec_perm_cst::test_all_nunits): Likewise.
+	(test_fold_vec_perm_cst::test_nunits_min_2): Likewise.
+	(test_fold_vec_perm_cst::test_nunits_min_4): Likewise.
+	(test_fold_vec_perm_cst::test_nunits_min_8): Likewise.
+	(test_fold_vec_perm_cst::test_nunits_max_4): Likewise.
+	(test_fold_vec_perm_cst::is_simple_vla_size): Likewise.
+	(test_fold_vec_perm_cst::test): Likewise.
+	(fold_const_cc_tests): Call test_fold_vec_perm_cst::test.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(BASE): New declaration.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwcvt_xu_frm): New intrinsic function def.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Use explicit argument.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(BASE): New declaration.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwcvt_x_frm): New intrinsic function def.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (BASE): New declaration.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfcvt_f_frm): New intrinsic function def.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(BASE): New declaration.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfcvt_xu_frm): New intrinsic function def..
+
+2023-08-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/110429
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_store_p9): Skip vector
+	extract when the element is 7 on BE while 8 on LE for byte or 3 on
+	BE while 4 on LE for halfword.
+
+2023-08-16  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/106769
+	* config/rs6000/vsx.md (expand vsx_extract_<mode>): Set it only
+	for V8HI and V16QI.
+	(vsx_extract_v4si): New expand for V4SI extraction.
+	(vsx_extract_v4si_w1): New insn pattern for V4SI extraction on
+	word 1 from BE order.
+	(*mfvsrwz): New insn pattern for mfvsrwz.
+	(*vsx_extract_<mode>_di_p9): Assert that it won't be generated on
+	word 1 from BE order.
+	(*vsx_extract_si): Remove.
+	(*vsx_extract_v4si_w023): New insn and split pattern on word 0, 2,
+	3 from BE order.
+
+2023-08-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (vec_mask_len_load_lanes<mode><vsingle>):
+	New pattern.
+	(vec_mask_len_store_lanes<mode><vsingle>): Ditto.
+	* config/riscv/riscv-protos.h (expand_lanes_load_store): New function.
+	* config/riscv/riscv-v.cc (get_mask_mode): Add tuple mask mode.
+	(expand_lanes_load_store): New function.
+	* config/riscv/vector-iterators.md: New iterator.
+
+2023-08-16  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (internal_load_fn_p): Apply
+	MASK_LEN_{LOAD_LANES,STORE_LANES} into vectorizer.
+	(internal_store_fn_p): Ditto.
+	(internal_fn_len_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(internal_fn_stored_value_index): Ditto.
+	* tree-vect-data-refs.cc (vect_store_lanes_supported): Ditto.
+	(vect_load_lanes_supported): Ditto.
+	* tree-vect-loop.cc: Ditto.
+	* tree-vect-slp.cc (vect_slp_prefer_store_lanes_p): Ditto.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors): Ditto.
+	(get_group_load_store_type): Ditto.
+	(vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (vect_store_lanes_supported): Ditto.
+	(vect_load_lanes_supported): Ditto.
+
+2023-08-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(enum frm_op_type): New type for frm.
+	(BASE): New declaration.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfcvt_x_frm): New intrinsic function def.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtins.cc
+	(ix86_vectorize_builtin_gather): Adjust for use_gather_8parts.
+	* config/i386/i386-options.cc (parse_mtune_ctrl_str):
+	Set/Clear tune features use_{gather,scatter}_{2parts, 4parts,
+	8parts} for -mtune-crtl={,^}{use_gather,use_scatter}.
+	* config/i386/i386.cc (ix86_vectorize_builtin_scatter): Adjust
+	for use_scatter_8parts
+	* config/i386/i386.h (TARGET_USE_GATHER): Rename to ..
+	(TARGET_USE_GATHER_8PARTS): .. this.
+	(TARGET_USE_SCATTER): Rename to ..
+	(TARGET_USE_SCATTER_8PARTS): .. this.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER): Rename to
+	(X86_TUNE_USE_GATHER_8PARTS): .. this.
+	(X86_TUNE_USE_SCATTER): Rename to
+	(X86_TUNE_USE_SCATTER_8PARTS): .. this.
+	* config/i386/i386.opt: Add new options mgather, mscatter.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (m_GDS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Don't
+	enable for m_GDS.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER): Ditto.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (movdf_internal): Generate vmovapd instead of
+	vmovsd when moving DFmode between SSE_REGS.
+	(movhi_internal): Generate vmovdqa instead of vmovsh when
+	moving HImode between SSE_REGS.
+	(mov<mode>_internal): Use vmovaps instead of vmovsh when
+	moving HF/BFmode between SSE_REGS.
+
 2023-08-15  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.md (extendsisi2): Delete useless define_insn.

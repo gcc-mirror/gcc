@@ -1,3 +1,450 @@
+2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (resize_and_overwrite): Invoke
+	the callable with the same size as resize_and_overwrite was
+	called with.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Check with small values for the new size.
+	* testsuite/std/format/functions/format.cc: Check wide
+	formatting of double values that produce small strings.
+	* testsuite/std/format/functions/format_c++23.cc: New test.
+
+2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (stds): Update value for C++23.
+	* include/bits/version.h: Regenerate.
+
+2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_sorting/set_difference.cc:
+	Fix name of upstream file this was derived from.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_intersection.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_symmetric_difference.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_union.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_util.h: Likewise.
+
+2023-08-16  Arsen Arsenović  <arsen@aarsen.me>
+
+	* libsupc++/typeinfo: Switch to bits/version.h for
+	__cpp_lib_constexpr_typeinfo.
+	* libsupc++/new: Switch to bits/version.h for
+	__cpp_lib_{launder,hardware_interference_size,destroying_delete}.
+	(launder): Guard behind __cpp_lib_launder.
+	(hardware_destructive_interference_size)
+	(hardware_constructive_interference_size): Guard behind
+	__cpp_lib_hardware_interference_size.
+	* libsupc++/exception: Switch to bits/version.h for
+	__cpp_lib_uncaught_exceptions.
+	(uncaught_exceptions): Guard behind __cpp_lib_uncaught_exceptions.
+	* libsupc++/compare: Switch to bits/version.h for
+	__cpp_lib_three_way_comparison.
+	(three_way_comparable, three_way_comparable_with)
+	(compare_three_way, weak_order, strong_order, partial_order):
+	Guard behind __cpp_lib_three_way_comparison >= 201907L.
+	* include/std/chrono: Drop __cpp_lib_chrono definition.
+	* include/std/vector: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	(erase, erase_if): Guard behind __cpp_lib_erase_if.
+	* include/std/variant: Switch to bits/version.h for
+	__cpp_lib_variant.  Guard whole header behind that FTM.
+	* include/std/utility: Switch to bits/version.h for
+	__cpp_lib_{exchange_function,constexpr_algorithms,as_const},
+	__cpp_lib_{integer_comparison_functions,to_underlying}, and
+	__cpp_lib_unreachable.
+	(exchange): Guard behind __cpp_lib_exchange_function.
+	(cmp_equal, cmp_not_equal, cmp_less, cmp_greater, cmp_less_equal)
+	(cmp_greater_equal, in_range): Guard behind
+	__cpp_lib_integer_comparison_functions.
+	(to_underlying): Guard behind __cpp_lib_to_underlying.
+	(unreachable): Guard behind __cpp_lib_unreachable.
+	* include/std/type_traits: Switch to bits/version.h for
+	__cpp_lib_is_{null_pointer,final,nothrow_convertible,aggregate},
+	__cpp_lib_is_{constant_evaluated,invocable,layout_compatible},
+	__cpp_lib_is_{pointer_interconvertible,scoped_enum,swappable},
+	__cpp_lib_{logical_traits,reference_from_temporary,remove_cvref},
+	__cpp_lib_{result_of_sfinae,transformation_trait_aliases},
+	__cpp_lib_{type_identity,type_trait_variable_templates},
+	__cpp_lib_{unwrap_ref,void_t,integral_constant_callable},
+	__cpp_lib_{bool_constant,bounded_array_traits}, and
+	__cpp_lib_has_unique_object_representations.
+	(integral_constant::operator()): Guard behind
+	__cpp_lib_integral_constant_callable.
+	(bool_constant): Guard behind __cpp_lib_bool_constant.
+	(conjunction, disjunction, negation, conjunction_v, disjunction_v)
+	(negation_v): Guard behind __cpp_lib_logical_traits.
+	(is_null_pointer): Guard behind __cpp_lib_is_null_pointer.
+	(is_final): Guard behind __cpp_lib_is_final.
+	(is_nothrow_convertible, is_nothrow_convertible_v): Guard behind
+	__cpp_lib_is_nothrow_convertible.
+	(remove_const_t, remove_volatile_t, remove_cv_t)
+	(add_const_t, add_volatile_t, add_cv_t): Guard behind
+	__cpp_lib_transformation_trait_aliases.
+	(void_t): Guard behind __cpp_lib_void_t.
+	(is_swappable_with_v, is_nothrow_swappable_with_v)
+	(is_swappable_with, is_nothrow_swappable_with): Guard behind
+	__cpp_lib_is_swappable.
+	(is_nothrow_invocable_r, is_invocable_r, invoke_result)
+	(is_invocable, invoke_result_t): Guard behind
+	__cpp_lib_is_invocable.
+	(alignment_of_v, extent_v, has_virtual_destructor_v)
+	(is_abstract_v, is_arithmetic_v, is_array_v)
+	(is_assignable_v, is_base_of_v, is_class_v, is_compound_v)
+	(is_constructible_v, is_const_v, is_convertible_v)
+	(is_copy_assignable_v, is_copy_constructible_v)
+	(is_default_constructible_v, is_destructible_v)
+	(is_empty_v, is_enum_v, is_final_v, is_floating_point_v)
+	(is_function_v, is_fundamental_v, is_integral_v)
+	(is_invocable_r_v, is_invocable_v, is_literal_type_v)
+	(is_lvalue_reference_v, is_member_function_pointer_v)
+	(is_member_object_pointer_v, is_member_pointer_v)
+	(is_move_assignable_v, is_move_constructible_v)
+	(is_nothrow_assignable_v, is_nothrow_constructible_v)
+	(is_nothrow_copy_assignable_v, is_nothrow_copy_constructible_v)
+	(is_nothrow_default_constructible_v, is_nothrow_destructible_v)
+	(is_nothrow_invocable_r_v, is_nothrow_invocable_v)
+	(is_nothrow_move_assignable_v, is_nothrow_move_constructible_v)
+	(is_null_pointer_v, is_object_v, is_pod_v, is_pointer_v)
+	(is_polymorphic_v, is_reference_v, is_rvalue_reference_v)
+	(is_same_v, is_scalar_v, is_signed_v, is_standard_layout_v)
+	(is_trivially_assignable_v, is_trivially_constructible_v)
+	(is_trivially_copyable_v, is_trivially_copy_assignable_v)
+	(is_trivially_copy_constructible_v)
+	(is_trivially_default_constructible_v)
+	(is_trivially_destructible_v, is_trivially_move_assignable_v)
+	(is_trivially_move_constructible_v, is_trivial_v, is_union_v)
+	(is_unsigned_v, is_void_v, is_volatile_v, rank_v, as variadic):
+	Guard behind __cpp_lib_type_trait_variable_templates.
+	(has_unique_object_representations)
+	(has_unique_object_representations_v): Guard behind
+	__cpp_lib_has_unique_object_representation.
+	(is_aggregate): Guard behind __cpp_lib_is_aggregate.
+	(remove_cvref, remove_cvref_t): Guard behind
+	__cpp_lib_remove_cvref.
+	(type_identity, type_identity_t): Guard behind
+	__cpp_lib_type_identity.
+	(unwrap_reference, unwrap_reference_t, unwrap_ref_decay)
+	(unwrap_ref_decay_t): Guard behind __cpp_lib_unwrap_ref.
+	(is_bounded_array_v, is_unbounded_array_v, is_bounded_array)
+	(is_unbounded_array): Guard behind __cpp_lib_bounded_array_traits.
+	(is_scoped_enum, is_scoped_enum_v): Guard behind
+	__cpp_lib_is_scoped_enum.
+	(reference_constructs_from_temporary)
+	(reference_constructs_from_temporary_v): Guard behind
+	__cpp_lib_reference_from_temporary.
+	* include/std/tuple: Switch to bits/version.h for
+	__cpp_lib_{constexpr_tuple,tuple_by_type,apply_make_from_tuple}.
+	(get<T>): Guard behind __cpp_lib_tuple_by_type.
+	(apply): Guard behind __cpp_lib_apply.
+	(make_from_tuple): Guard behind __cpp_lib_make_from_tuple.
+	* include/std/syncstream: Switch to bits/version.h for
+	__cpp_lib_syncbuf.  Guard header behind that FTM.
+	* include/std/string_view: Switch to bits/version.h for
+	__cpp_lib_{string_{view,contains},constexpr_string_view} and
+	__cpp_lib_starts_ends_with.
+	(basic_string_view::starts_with, basic_string_view::ends_with):
+	Guard behind __cpp_lib_starts_ends_with.
+	[C++23 && _GLIBCXX_HOSTED && !defined(__cpp_lib_string_contains)]:
+	Assert as impossible ithout a bug in C++23.
+	* include/std/string: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	(erase, erase_if): Guard behind __cpp_lib_erase_if.
+	* include/std/thread: Switch to bits/version.h for
+	__cpp_lib_jthread.
+	* include/std/stop_token: Switch to bits/version.h for
+	__cpp_lib_jthread.
+	* include/std/spanstream: Switch to bits/version.h for
+	__cpp_lib_spanstream.  Guard header behind that FTM.
+	* include/std/span: Switch to bits/version.h for __cpp_lib_span.
+	Guard header behind that FTM.
+	* include/std/source_location: Switch to bits/version.h for
+	__cpp_lib_source_location.  Guard header with that FTM.
+	* include/std/shared_mutex: Switch to bits/version.h for
+	__cpp_lib_shared{,_timed}_mutex.
+	(shared_mutex): Guard behind __cpp_lib_shared_mutex.
+	* include/std/semaphore: Switch to bits/version.h for
+	__cpp_lib_semaphore.  Guard header behind that FTM.
+	* include/std/ranges: Switch to bits/version.h for
+	__cpp_lib_ranges_{zip,chunk{,_by},slide,join_with},
+	__cpp_lib_ranges_{repeat_stride,cartesian_product,as_rvalue},
+	and __cpp_lib_ranges_{as_const,enumerate,iota}.
+	(ranges::zip et al, ranges::chunk et al, ranges::slide et al)
+	(ranges::chunk_by et al, ranges::join_with et al)
+	(ranges::stride et al, ranges::cartesian_product et al)
+	(ranges::as_rvalue et al, ranges::as_const et al)
+	(ranges::enumerate et al): Guard behind appropriate FTM.
+	* include/std/optional: Switch to bits/version.h for
+	__cpp_lib_optional.  Guard header behind that FTM.
+	* include/std/numeric: Switch to bits/version.h for
+	__cpp_lib_{gcd{,_lcm},lcm,constexpr_numeric,interpolate}
+	and __cpp_lib_parallel_algorithm.
+	(gcd, lcm): Guard behind __cpp_lib_gcd_lcm.
+	(midpoint): Guard behind __cpp_lib_interpolate.
+	* include/std/numbers: Switch to bits/version.h for
+	__cpp_lib_math_constants.  Guard header behind that FTM.
+	* include/std/mutex: Switch to bits/version.h for
+	__cpp_lib_scoped_lock.
+	(scoped_Lock): Guard behind __cpp_lib_scoped_lock.
+	* include/std/memory_resource: Switch to bits/version.h for
+	__cpp_lib_{polymorphic_allocator,memory_resource}.
+	(synchronized_pool_resource): Guard behind
+	__cpp_lib_memory_resource >= 201603L.
+	(polymorphic_allocator): Guard behind
+	__cpp_lib_polymorphic_allocator.
+	* include/std/memory: Switch to bits/version.h for
+	__cpp_lib_{parallel_algorithm,atomic_value_initialization}.
+	* include/std/list: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	(erase, erase_if): Guard behind __cpp_lib_erase_if.
+	* include/std/latch: Switch to bits/version.h for __cpp_lib_latch.
+	Guard header behind that FTM.
+	* include/std/iterator: Switch to bits/version.h for
+	__cpp_lib_null_iterators.
+	* include/std/iomanip: Switch to bits/version.h for
+	__cpp_lib_quoted_string_io.
+	(quoted): Guard behind __cpp_lib_quoted_string_io.
+	* include/std/functional: Switch to bits/version.h for
+	__cpp_lib_{invoke{,_r},constexpr_functional,bind_front} and
+	__cpp_lib_{not_fn,booyer_moore_searcher}.
+	(invoke): Guard behind __cpp_lib_invoke.
+	(invoke_r): Guard behind __cpp_lib_invoke_r.
+	(bind_front): Guard behind __cpp_lib_bind_front.
+	(not_fn): Guard behind __cpp_lib_not_fn.
+	(boyer_moore_searcher, boyer_moore_horspool_searcher): Guard
+	definition behind __cpp_lib_boyer_moore_searcher.
+	* include/std/forward_list: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	(erase, erase_if): Guard behind __cpp_lib_erase_if.
+	* include/std/format: Switch to bits/version.h for
+	__cpp_lib_format.  Guard header behind that FTM.
+	* include/std/filesystem: Switch to bits/version.h for
+	__cpp_lib_filesystem.  Guard header behind that FTM.
+	* include/std/expected: Switch to bits/version.h for
+	__cpp_lib_expected.  Guard header behind it.
+	* include/std/execution: Switch to bits/version.h for
+	__cpp_lib_{execution,parallel_algorithm}.  Guard header behind
+	either.
+	* include/std/deque: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	(erase, erase_if): Guard behind __cpp_lib_erase_if.
+	* include/std/coroutine: Switch to bits/version.h for
+	__cpp_lib_coroutine.  Guard header behind that FTM.
+	* include/std/concepts: Switch to bits/version.h for
+	__cpp_lib_concepts.  Guard header behind that FTM.
+	* include/std/complex: Switch to bits/version.h for
+	__cpp_lib_{complex_udls,constexpr_complex}.
+	(operator""if, operator""i, operator""il): Guard behind
+	__cpp_lib_complex_udls.
+	* include/std/charconv: Swtich to bits/version.h for
+	__cpp_lib_{to_chars,constexpr_charconv}.
+	* include/std/bitset: Switch to bits/version.h for
+	__cpp_lib_constexpr_bitset.
+	* include/std/bit: Switch to bits/version.h for
+	__cpp_lib_{bit_cast,byteswap,bitops,int_pow2,endian}.
+	(bit_cast): Guard behind __cpp_lib_bit_cast.
+	(byteswap): Guard behind __cpp_lib_byteswap.
+	(rotl, rotr, countl_zero, countl_one, countr_zero, countr_one)
+	(popcount): Guard behind __cpp_lib_bitops.
+	(has_single_bit, bit_ceil, bit_floor, bit_width): Guard behind
+	__cpp_lib_int_pow2.
+	(endian): Guard behind __cpp_lib_endian.
+	* include/std/barrier: Switch to bits/version.h for
+	__cpp_lib_barrier.  Guard header behind that FTM.
+	* include/std/atomic: Switch to bits/version.h for
+	__cpp_lib_atomic_{is_always_lock_free,float,ref}
+	and __cpp_lib_lock_free_type_aliases.
+	(*::is_always_lock_free): Guard behind
+	__cpp_lib_atomic_is_always_lock_free.
+	(atomic<float>): Guard behind __cpp_lib_atomic_float.
+	(atomic_ref): Guard behind __cpp_lib_atomic_ref.
+	(atomic_signed_lock_free, atomic_unsigned_lock_free): Guard behind
+	__cpp_lib_atomic_lock_free_type_aliases.
+	* include/std/array: Switch to bits/version.h for
+	__cpp_lib_to_array.
+	(to_array): Guard behind __cpp_lib_to_array.
+	* include/std/any: Switch to bits/version.h for __cpp_lib_any.
+	Guard header behind that FTM.
+	* include/std/algorithm: Switch to bits/version.h for
+	__cpp_lib_parallel_algorithm.
+	* include/c_global/cstddef: Switch to bits/version.h for
+	__cpp_lib_byte.
+	(byte): Guard behind __cpp_lib_byte.
+	* include/c_global/cmath: Switch to bits/version.h for
+	__cpp_lib_{hypot,interpolate}.
+	(hypot3): Guard behind __cpp_lib_hypot.
+	(lerp): Guard behind __cpp_lib_interpolate.
+	* include/c_compatibility/stdatomic.h: Switch to
+	bits/stl_version.h for __cpp_lib_atomic.  Guard header behind that
+	FTM.
+	* include/bits/utility.h: Switch to bits/version.h for
+	__cpp_lib_{tuple_element_t,integer_sequence,ranges_zip}.
+	(tuple_element_t): Guard behind __cpp_lib_tuple_element_t.
+	(integer_sequence et al): Guard behind __cpp_lib_integer_sequence.
+	* include/bits/uses_allocator_args.h: Switch to bits/version.h for
+	__cpp_lib_make_obj_using_allocator.  Guard header behind that FTM.
+	* include/bits/unordered_map.h: Switch to bits/version.h for
+	__cpp_lib_unordered_map_try_emplace.
+	(try_emplace): Guard behind __cpp_lib_unordered_map_try_emplace.
+	* include/bits/unique_ptr.h: Switch to bits/version.h for
+	__cpp_lib_{constexpr_memory,make_unique}.
+	(make_unique): Guard behind __cpp_lib_make_unique.
+	* include/bits/stl_vector.h: Switch to bits/version.h for
+	__cpp_lib_constexpr_vector.
+	* include/bits/stl_uninitialized.h: Switch to bits/version.h for
+	__cpp_lib_raw_memory_algorithms.
+	(uninitialized_default_construct)
+	(uninitialized_default_construct_n, uninitialized_move)
+	(uninitialized_move_n, uninitialized_value_construct)
+	(uninitialized_value_construct_n): Guard behind
+	__cpp_lib_raw_memory_algorithms.
+	* include/bits/stl_tree.h: Switch to bits/version.h for
+	__cpp_lib_generic_associative_lookup.
+	* include/bits/stl_stack.h: Switch to bits/version.h for
+	__cpp_lib_adaptor_iterator_pair_constructor.
+	(stack): Guard iterator-pair constructor behind
+	__cpp_lib_adaptor_iterator_pair_constructor.
+	* include/bits/stl_queue.h: Switch to bits/version.h for
+	__cpp_lib_adaptor_iterator_pair_constructor.
+	(queue): Guard iterator-pair constructor behind
+	__cpp_lib_adaptor_iterator_pair_constructor.
+	* include/bits/stl_pair.h: Switch to bits/version.h for
+	__cpp_lib_{concepts,tuples_by_type}.
+	(get): Guard type-getting overloads behind
+	__cpp_lib_tuples_by_type.
+	* include/bits/stl_map.h: Switch to bits/version.h for
+	__cpp_lib_map_try_emplace.
+	(map<>::try_emplace): Guard behind __cpp_lib_map_try_emplace.
+	* include/bits/stl_list.h: Switch to bits/version.h for
+	__cpp_lib_list_remove_return_type.
+	(__remove_return_type, _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG)
+	[C++20]: guard behind __cpp_lib_list_remove_return_type instead.
+	* include/bits/stl_iterator.h: Switch to bits/version.h for
+	__cpp_lib_{constexpr_iterator,array_constexpr} and
+	__cpp_lib_{make_reverse_iterator,move_iterator_concept}.
+	(make_reverse_iterator): Guard behind
+	__cpp_lib_make_reverse_iterator.
+	(iterator_concept et al): Guard __cpp_lib_move_iterator_concept
+	changes behind that FTM.
+	* include/bits/stl_function.h: Switch to bits/version.h for
+	__cpp_lib_transparent_operators.
+	(equal_to, not_equal_to, greater, less, greater_equal)
+	(less_equal, bit_and, bit_or, bit_xor, bit_not, logical_and)
+	(logical_or, logical_not, plus, minus, multiplies, divides)
+	(modulus, negate): Guard '= void' fwdecls behind
+	__cpp_lib_transparent_operators.
+	(plus<void>, minus<void>, multiplies<void>, divides<void>)
+	(modulus<void>, negate<void>, logical_and<void>, logical_or<void>)
+	(logical_not<void>, bit_and<void>, bit_or<void>, bit_xor<void>)
+	(equal_to<void>, not_equal_to<void>, greater<void>, less<void>)
+	(greater_equal<void>, less_equal<void>, bit_not<void>)
+	(__has_is_transparent): Guard behind
+	__cpp_lib_transparent_operators.
+	* include/bits/stl_algobase.h: Switch to bits/version.h for
+	__cpp_lib_robust_nonmodifying_seq_ops.
+	(robust equal, mismatch): Guard behind
+	__cpp_lib_nonmember_container_access.
+	* include/bits/stl_algo.h: Swtich to bits/version.h for
+	__cpp_lib_{clamp,sample}.
+	(clamp): Guard behind __cpp_lib_clamp.
+	(sample): Guard behind __cpp_lib_sample.
+	* include/bits/specfun.h: Switch to bits/version.h for
+	__cpp_lib_math_special_functions and __STDCPP_MATH_SPEC_FUNCS__.
+	* include/bits/shared_ptr_base.h: Switch to bits/version.h for
+	__cpp_lib_{smart_ptr_for_overwrite,shared_ptr_arrays}.
+	(_Sp_overwrite_tag): Guard behind
+	__cpp_lib_smart_ptr_for_overwrite.
+	* include/bits/shared_ptr_atomic.h: Switch to bits/version.h for
+	__cpp_lib_atomic_shared_ptr.
+	* include/bits/shared_ptr.h: Switch to bits/version.h for
+	__cpp_lib_{enable_shared_from_this,shared_ptr_weak_type}.
+	(shared_ptr<T>::weak_type): Guard behind
+	__cpp_lib_shared_ptr_weak_type.
+	(enable_shared_from_this<T>::weak_from_this): Guard behind
+	__cpp_lib_enable_shared_from_this.
+	* include/bits/ranges_cmp.h: Switch to bits/version.h for
+	__cpp_lib_ranges.
+	* include/bits/ranges_algo.h: Switch to bits/version.h for
+	__cpp_lib_{shift,ranges_{contains,find_last,fold,iota}}.
+	* include/bits/range_access.h: Switch to bits/version.h for
+	__cpp_lib_nonmember_container_access
+	(size, empty, data): Guard behind
+	__cpp_lib_nonmember_container_access.
+	(ssize): Guard behind __cpp_lib_ssize.
+	* include/bits/ptr_traits.h: Switch to bits/version.h. for
+	__cpp_lib_{constexpr_memory,to_address}.
+	(to_address): Guard behind __cpp_lib_to_address.
+	* include/bits/node_handle.h: Switch to bits/version.h for
+	__cpp_lib_node_extract.  Guard header behind that FTM.
+	* include/bits/move_only_function.h: Switch to bits/version.h for
+	__cpp_lib_move_only_function.  Guard header behind that FTM.
+	* include/bits/move.h: Switch to bits/version.h for
+	__cpp_lib_addressof_constexpr.
+	* include/bits/ios_base.h: Switch to bits/version.h for
+	__cpp_lib_ios_noreplace.
+	(noreplace): Guard with __cpp_lib_ios_noreplace.
+	* include/bits/hashtable.h: Switch to bits/version.h for
+	__cpp_lib_generic_unordered_lookup.
+	(_M_equal_range_tr, _M_count_tr, _M_find_tr): Guard behind
+	__cpp_lib_generic_unordered_lookup.
+	* include/bits/forward_list.h: Switch to bits/version.h for
+	__cpp_lib_list_remove_return_type.
+	(__remove_return_type): Guard behind
+	__cpp_lib_list_remove_return_type.
+	* include/bits/erase_if.h: Switch to bits/version.h for
+	__cpp_lib_erase_if.
+	* include/bits/cow_string.h: Switch to bits/version.h for
+	__cpp_lib_constexpr_string.
+	* include/bits/chrono.h: Swtich to bits/version.h for
+	__cpp_lib_chrono{,_udls}.
+	(ceil): Guard behind __cpp_lib_chrono.
+	(operator""ns et al): Guard behind __cpp_lib_chrono_udls.
+	* include/bits/char_traits.h: Switch to bits/version.h for
+	__cpp_lib_constexpr_char_traits.
+	* include/bits/basic_string.h: Switch to bits/version.h for
+	__cpp_lib_{constexpr_string,string_{resize_and_overwrite,udls}}.
+	(resize_and_overwrite): Guard behind
+	__cpp_lib_string_resize_and_overwrite.
+	(operator""s): Guard behind __cpp_lib_string_udls.
+	* include/bits/atomic_wait.h: Switch to bits/version.h for
+	__cpp_lib_atomic_wait.  Guard header behind that FTM.
+	* include/bits/atomic_base.h: Switch to bits/version.h for
+	__cpp_lib_atomic_value_initialization and
+	__cpp_lib_atomic_flag_test.
+	(atomic_flag::test): Guard behind __cpp_lib_atomic_flag_test,
+	rather than C++20.
+	* include/bits/allocator.h: Switch to bits/version.h for
+	__cpp_lib_incomplete_container_elements.
+	* include/bits/alloc_traits.h: Switch to using bits/version.h for
+	__cpp_lib_constexpr_dynamic_alloc and
+	__cpp_lib_allocator_traits_is_always_equal.
+	* include/bits/align.h: Switch to bits/version.h for defining
+	__cpp_lib_assume_aligned.
+	(assume_aligned): Guard with __cpp_lib_assume_aligned.
+	* include/bits/algorithmfwd.h: Switch to bits/version.h for
+	defining __cpp_lib_constexpr_algorithms.
+	* include/std/stacktrace: Switch to bits/version.h for
+	__cpp_lib_stacktrace.  Guard header behind that FTM.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Update line numbers.
+
+2023-08-16  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/Makefile.am (bits_freestanding): Add version.h.
+	(allcreated): Add version.h.
+	(${bits_srcdir}/version.h): New rule.  Regenerates
+	version.h out of version.{def,tpl}.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def: New file.  Declares a list of
+	all feature test macros, their values and their preconditions.
+	* include/bits/version.tpl: New file.  Turns version.def
+	into a sequence of #if blocks.
+	* include/bits/version.h: New file.  Generated from
+	version.def.
+	* include/std/version: Replace with a __glibcxx_want_all define
+	and bits/version.h include.
+
 2023-08-14  Paul Dreik  <gccpatches@pauldreik.se>
 
 	PR libstdc++/110860

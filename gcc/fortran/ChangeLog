@@ -1,3 +1,9 @@
+2023-08-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110360
+	* trans-expr.cc (conv_scalar_char_value): Use gfc_replace_expr to
+	avoid leaking replaced gfc_expr.
+
 2023-08-15  Martin Jambor  <mjambor@suse.cz>
 	    Harald Anlauf  <anlauf@gmx.de>
 
