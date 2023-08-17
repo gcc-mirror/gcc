@@ -309,7 +309,7 @@ namespace __format
     // Presentation types for integral types (including bool and charT).
     _Pres_d = 1, _Pres_b, _Pres_B, _Pres_o, _Pres_x, _Pres_X, _Pres_c,
     // Presentation types for floating-point types.
-    _Pres_a = 1, _Pres_A, _Pres_e, _Pres_E, _Pres_f, _Pres_g, _Pres_G,
+    _Pres_a = 1, _Pres_A, _Pres_e, _Pres_E, _Pres_f, _Pres_F, _Pres_g, _Pres_G,
     _Pres_p = 0, _Pres_P,   // For pointers.
     _Pres_s = 0,            // For strings and bool.
     _Pres_esc = 0xf,        // For strings and charT.
@@ -1382,8 +1382,11 @@ namespace __format
 	    ++__first;
 	    break;
 	  case 'f':
-	  case 'F':
 	    __spec._M_type = _Pres_f;
+	    ++__first;
+	    break;
+	  case 'F':
+	    __spec._M_type = _Pres_F;
 	    ++__first;
 	    break;
 	  case 'g':
@@ -1442,6 +1445,9 @@ namespace __format
 	      __use_prec = true;
 	      __fmt = chars_format::scientific;
 	      break;
+	    case _Pres_F:
+	      __upper = true;
+	      [[fallthrough]];
 	    case _Pres_f:
 	      __use_prec = true;
 	      __fmt = chars_format::fixed;

@@ -159,6 +159,18 @@ test_alternate_forms()
   VERIFY( s == "1.e+01 1.e+01 1.e+01" );
 }
 
+void
+test_infnan()
+{
+  double inf = std::numeric_limits<double>::infinity();
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  std::string s;
+  s = std::format("{0} {0:e} {0:E} {0:f} {0:F} {0:g} {0:G} {0:a} {0:A}", inf);
+  VERIFY( s == "inf inf INF inf INF inf INF inf INF" );
+  s = std::format("{0} {0:e} {0:E} {0:f} {0:F} {0:g} {0:G} {0:a} {0:A}", nan);
+  VERIFY( s == "nan nan NAN nan NAN nan NAN nan NAN" );
+}
+
 struct euro_punc : std::numpunct<char>
 {
   std::string do_grouping() const override { return "\3\3"; }
