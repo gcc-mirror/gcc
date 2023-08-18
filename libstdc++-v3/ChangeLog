@@ -1,3 +1,230 @@
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v): Reuse
+	double overload for long double if possible.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdata_file, leaps_file): Change type to
+	std::string_view.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v): Reuse
+	double overload for long double if possible.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/localename.cc (is_C_locale): New function.
+	(locale::locale(const char*)): Use is_C_locale.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110945
+	* include/bits/basic_string.h (basic_string::assign(Iter, Iter)):
+	Dispatch to _M_replace or move assignment from a temporary,
+	based on the iterator type.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (formatter): Add partial specializations
+	for extended floating-point types.
+	* testsuite/std/format/functions/format.cc: Move test_float128()
+	to ...
+	* testsuite/std/format/formatter/ext_float.cc: New test.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__gnu_cxx::__bfloat16_t): Define
+	whenever __BFLT16_DIG__ is defined, not only for C++23.
+	* include/std/limits (numeric_limits<bfloat16_t>): Likewise.
+	(numeric_limits<_Float16>, numeric_limits<_Float32>)
+	(numeric_limits<_Float64>): Likewise for other extended
+	floating-point types.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v4::to_string): Remove
+	unused parameter name.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::__unseq): Make ctor consteval.
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: Prune
+	excess errors caused by invalid consteval calls.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__units_suffix_misc): Remove.
+	(__units_suffix): Return a known suffix as string view, do not
+	write unknown suffixes to a buffer.
+	(__fmt_units_suffix): New function that formats the suffix using
+	std::format_to.
+	(operator<<, __chrono_formatter::_M_q): Use __fmt_units_suffix.
+	(__chrono_formatter::_M_Z): Correct lifetime of wstring.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format [_GLIBCXX_USE_WCHAR_T]: Guard all wide
+	string formatters with this macro.
+	(__formatter_int::_M_format_int, __formatter_fp::format)
+	(formatter<const void*, C>::format): Use __to_wstring_numeric
+	instead of std::ctype::widen.
+	(__formatter_fp::_M_localize): Use hardcoded wchar_t values
+	instead of std::ctype::widen.
+	* testsuite/std/format/functions/format.cc: Add more checks for
+	wstring formatting of arithmetic types.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (to_string(floating-point-type)):
+	Implement using std::to_chars for C++26.
+	* include/bits/version.def (__cpp_lib_to_string): Define.
+	* include/bits/version.h: Regenerate.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/dr1261.cc:
+	Adjust expected result in C++26 mode.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/to_string.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/dr1261.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/to_wstring.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/to_string_float.cc:
+	New test.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/to_wstring_float.cc:
+	New test.
+	* testsuite/21_strings/basic_string/numeric_conversions/version.cc:
+	New test.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (to_string(integral-type)): Use
+	resize_and_overwrite when available.
+	(__to_wstring_numeric): New helper functions.
+	(to_wstring): Use std::to_string then __to_wstring_numeric.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/to_string_int.cc:
+	Remove check for no excess capacity.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__resize_and_overwrite): New
+	function.
+	* include/bits/basic_string.tcc (__resize_and_overwrite): New
+	function.
+	(resize_and_overwrite): Simplify by using reserve instead of
+	growing the string manually. Adjust for C++11 compatibility.
+	* include/bits/cow_string.h (resize_and_overwrite): New
+	function.
+	(__resize_and_overwrite): New function.
+	* include/bits/version.def (__cpp_lib_string_resize_and_overwrite):
+	Do not depend on cxx11abi.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (__formatter_fp::_S_resize_and_overwrite):
+	Remove.
+	(__formatter_fp::format, __formatter_fp::_M_localize): Use
+	__resize_and_overwrite instead of _S_resize_and_overwrite.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Adjust for C++11 compatibility when included by ...
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite_ext.cc:
+	New test.
+
+2023-08-17  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/regex.h (regex_iterator::iterator_concept):
+	Define for C++20 as per P2770R0.
+	(regex_token_iterator::iterator_concept): Likewise.
+	* include/std/ranges (__detail::__as_lvalue): Define.
+	(join_view::_Iterator): Befriend join_view.
+	(join_view::_Iterator::_M_satisfy): Use _M_get_outer
+	instead of _M_outer.
+	(join_view::_Iterator::_M_get_outer): Define.
+	(join_view::_Iterator::_Iterator): Split constructor taking
+	_Parent argument into two as per P2770R0.  Remove constraint on
+	default constructor.
+	(join_view::_Iterator::_M_outer): Make this data member present
+	only when the underlying range is forward.
+	(join_view::_Iterator::operator++): Use _M_get_outer instead of
+	_M_outer.
+	(join_view::_Iterator::operator--): Use __as_lvalue helper.
+	(join_view::_Iterator::operator==): Adjust constraints as per
+	P2770R0.
+	(join_view::_Sentinel::__equal): Use _M_get_outer instead of
+	_M_outer.
+	(join_view::_M_outer): New data member when the underlying range
+	is non-forward.
+	(join_view::begin): Adjust definition as per P2770R0.
+	(join_view::end): Likewise.
+	(join_with_view::_M_outer_it): New data member when the
+	underlying range is non-forward.
+	(join_with_view::begin): Adjust definition as per P2770R0.
+	(join_with_view::end): Likewise.
+	(join_with_view::_Iterator::_M_outer_it): Make this data member
+	present only when the underlying range is forward.
+	(join_with_view::_Iterator::_M_get_outer): Define.
+	(join_with_view::_Iterator::_Iterator): Split constructor
+	taking _Parent argument into two as per P2770R0.  Remove
+	constraint on default constructor.
+	(join_with_view::_Iterator::_M_update_inner): Adjust definition
+	as per P2770R0.
+	(join_with_view::_Iterator::_M_get_inner): Likewise.
+	(join_with_view::_Iterator::_M_satisfy): Adjust calls to
+	_M_get_inner.  Use _M_get_outer instead of _M_outer_it.
+	(join_with_view::_Iterator::operator==): Adjust constraints
+	as per P2770R0.
+	(join_with_view::_Sentinel::operator==): Use _M_get_outer
+	instead of _M_outer_it.
+	* testsuite/std/ranges/adaptors/p2770r0.cc: New test.
+
+2023-08-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108827
+	* include/std/ranges (__adaptor::_RangeAdaptorClosure):
+	Convert into a CRTP class template.  Move hidden operator|
+	friends into namespace scope and adjust their constraints.
+	(__closure::__is_range_adaptor_closure_fn): Define.
+	(__closure::__is_range_adaptor_closure): Define.
+	(__adaptor::_Partial): Adjust use of _RangeAdaptorClosure.
+	(__adaptor::_Pipe): Likewise.
+	(views::_All): Likewise.
+	(views::_Join): Likewise.
+	(views::_Common): Likewise.
+	(views::_Reverse): Likewise.
+	(views::_Elements): Likewise.
+	(views::_Adjacent): Likewise.
+	(views::_AsRvalue): Likewise.
+	(views::_Enumerate): Likewise.
+	(views::_AsConst): Likewise.
+	* testsuite/std/ranges/adaptors/all.cc: Reinstate assertion
+	expecting that adding empty range adaptor closure objects to a
+	pipeline doesn't increase the size of a pipeline.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Pres_type): Add _Pres_F.
+	(__formatter_fp::parse): Use _Pres_F for 'F'.
+	(__formatter_fp::format): Set __upper for _Pres_F.
+	* testsuite/std/format/functions/format.cc: Check formatting of
+	infinity and NaN for each presentation type.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.in: Regenerate.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/p2520r0.cc: Add no_pch.
+	* testsuite/std/format/functions/format.cc: Likewise.
+	* testsuite/std/format/functions/format_c++23.cc: Likewise.
+
+2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/dg-options.exp (add_options_for_no_pch): Remove
+	any "-include bits/stdc++.h" from options and add the macro to
+	the existing options instead of replacing them.
+
 2023-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.tcc (resize_and_overwrite): Invoke

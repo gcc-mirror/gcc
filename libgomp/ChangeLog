@@ -1,3 +1,9 @@
+2023-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libgomp/111024
+	* allocator.c (gomp_init_libnuma): Call numa_available; if
+	not available or not returning 0, disable libnuma usage.
+
 2023-08-07  Nick Alcock  <nick.alcock@oracle.com>
 
 	* configure: Regenerate.

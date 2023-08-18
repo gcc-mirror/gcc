@@ -1,3 +1,9 @@
+2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR c/106537
+	* c-typeck.cc (build_binary_op): Warning on comparing distinct
+	pointer types only when -Wcompare-distinct-pointer-types.
+
 2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

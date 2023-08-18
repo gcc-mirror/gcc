@@ -1,3 +1,193 @@
+2023-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111009
+	* gcc.dg/pr111009.c: New.
+
+2023-08-17  Patrick O'Neill  <patrick@rivosinc.com>
+	    Charlie Jenkins  <charlie@rivosinc.com>
+
+	* gcc.target/riscv/zbb-rol-ror-08.c: New test.
+	* gcc.target/riscv/zbb-rol-ror-09.c: New test.
+
+2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR c/106537
+	* gcc.c-torture/compile/pr106537-1.c: New test.
+	* gcc.c-torture/compile/pr106537-2.c: Likewise.
+	* gcc.c-torture/compile/pr106537-3.c: Likewise.
+
+2023-08-17  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zvkn.c: Deduplicate #error messages.
+	* gcc.target/riscv/zvkn-1.c: Ditto.
+	* gcc.target/riscv/zvknc.c: Ditto.
+	* gcc.target/riscv/zvknc-1.c: Ditto.
+	* gcc.target/riscv/zvknc-2.c: Ditto.
+	* gcc.target/riscv/zvkng.c: Ditto.
+	* gcc.target/riscv/zvkng-1.c: Ditto.
+	* gcc.target/riscv/zvkng-2.c: Ditto.
+	* gcc.target/riscv/zvks.c: Ditto.
+	* gcc.target/riscv/zvks-1.c: Ditto.
+	* gcc.target/riscv/zvksc.c: Ditto.
+	* gcc.target/riscv/zvksc-1.c: Ditto.
+	* gcc.target/riscv/zvksc-2.c: Ditto.
+	* gcc.target/riscv/zvksg.c: Ditto.
+	* gcc.target/riscv/zvksg-1.c: Ditto.
+	* gcc.target/riscv/zvksg-2.c: Ditto.
+
+2023-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111039
+	* gcc.dg/pr111039.c: New testcase.
+
+2023-08-17  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Fix.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-6.c: Ditto.
+
+2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/naked-1.c: New test.
+
+2023-08-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-reduc-2.c: New testcase.
+
+2023-08-17  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers.C:
+	Remove dg-line var declare_a.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wredosum.c: New test.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-redosum.c: New test.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-redusum.c: New test.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-ncvt-f.c: New test.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-ncvt-xu.c: New test.
+
+2023-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-ncvt-x.c: New test.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-vextractf64x2-1.c: New test.
+	* gcc.target/i386/avx10_1-vextracti64x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vfpclasspd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vfpclassps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vinsertf64x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vinserti64x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vrangepd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vrangeps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vreducepd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vreduceps-1.c: Ditto.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-abs-copysign-1.c: New test.
+	* gcc.target/i386/avx10_1-vandpd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vandps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtps2qq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtps2uqq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtqq2pd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtqq2ps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtuqq2pd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtuqq2ps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vorpd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vorps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vpmovd2m-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vpmovm2d-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vpmovm2q-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vpmovq2m-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vxorpd-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vxorps-1.c: Ditto.
+
+2023-08-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/111037
+	* gcc.target/riscv/rvv/base/pr111037-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr111037-2.c: New test.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-vandnpd-1.c: New test.
+	* gcc.target/i386/avx10_1-vandnps-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vbroadcastf32x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vbroadcastf64x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vbroadcasti32x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vbroadcasti64x2-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtpd2qq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvtpd2uqq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvttpd2qq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvttpd2uqq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvttps2qq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vcvttps2uqq-1.c: Ditto.
+	* gcc.target/i386/avx10_1-vpmullq-1.c: Ditto.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add -mavx10.1.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/sse-26.c: Skip AVX512VLDQ intrin file.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-15.c: New test.
+	* gcc.target/i386/avx10_1-16.c: Ditto.
+	* gcc.target/i386/avx10_1-17.c: Ditto.
+	* gcc.target/i386/avx10_1-18.c: Ditto.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-11.c: New test.
+	* gcc.target/i386/avx10_1-12.c: Ditto.
+	* gcc.target/i386/avx10_1-13.c: Ditto.
+	* gcc.target/i386/avx10_1-14.c: Ditto.
+
+2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv33.C: New test.
+	* gcc.target/i386/avx10_1-1.c: Ditto.
+	* gcc.target/i386/avx10_1-2.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-4.c: Ditto.
+	* gcc.target/i386/avx10_1-5.c: Ditto.
+	* gcc.target/i386/avx10_1-6.c: Ditto.
+	* gcc.target/i386/avx10_1-7.c: Ditto.
+	* gcc.target/i386/avx10_1-8.c: Ditto.
+	* gcc.target/i386/avx10_1-9.c: Ditto.
+	* gcc.target/i386/avx10_1-10.c: Ditto.
+
+2023-08-17  Yanzhang Wang  <yanzhang.wang@intel.com>
+
+	* gcc.target/riscv/rvv/base/simplify-vrsub.c: New test.
+
+2023-08-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/110986
+	* gcc.target/aarch64/sve/cond_unary_9.c: New test.
+
 2023-08-16  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/widen/vec-avg-run.c: New test.
