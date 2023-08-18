@@ -42240,15 +42240,12 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
       if (nested && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
 	break;
 
-      if (!first || nested != 2)
-	{
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	    cp_lexer_consume_token (parser->lexer);
-	  else if (nested == 2)
-	    error_at (cp_lexer_peek_token (parser->lexer)->location,
-		      "clauses in %<simd%> trait should be separated "
-                      "by %<,%>");
-	}
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else if (!first && nested == 2)
+	error_at (cp_lexer_peek_token (parser->lexer)->location,
+		  "clauses in %<simd%> trait should be separated "
+		  "by %<,%>");
 
       token = cp_lexer_peek_token (parser->lexer);
       c_kind = cp_parser_omp_clause_name (parser);
@@ -44803,6 +44800,11 @@ cp_parser_see_omp_loop_nest (cp_parser *parser, enum tree_code code,
 	  || (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
 	      == PRAGMA_OMP_TILE))
 	return true;
+      if (cp_lexer_nth_token_is_keyword
+	  (parser->lexer,
+	   cp_parser_skip_std_attribute_spec_seq (parser, 1),
+	   RID_FOR))
+	return true;
       if (error_p)
 	cp_parser_error (parser, "loop nest expected");
     }
@@ -44868,6 +44870,11 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
      the depth of the *next* loop, not the level of the loop body the
      transformation directive appears in.  */
 
+  /* Arrange for C++ standard attribute syntax to be parsed as regular
+     pragmas.  */
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
+
   if ((cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
        == PRAGMA_OMP_UNROLL)
       || (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
@@ -44893,19 +44900,29 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 	    omp_for_parse_state->orig_declv
 	      = grow_tree_vec (omp_for_parse_state->orig_declv, count);
 	}
-      if (cp_parser_see_omp_loop_nest (parser, omp_for_parse_state->code,
-				       true))
-	return cp_parser_omp_loop_nest (parser, if_p);
-      else
-	{
-	  /* FIXME: Better error recovery here?  */
-	  omp_for_parse_state->fail = true;
-	  return NULL_TREE;
-	}
     }
 
-  /* We have already matched the FOR token but not consumed it yet.  */
-  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR));
+  /* Diagnose errors if we don't have a "for" loop following the
+     optional loop transforms.  Otherwise, consume the token.  */
+  if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+    {
+      omp_for_parse_state->fail = true;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      /* Don't call cp_parser_error here since it overrides the
+	 provided message with a more confusing one if there was
+	 a bad pragma or attribute directive.  */
+      error_at (token->location, "loop nest expected");
+      /* See if we can recover by skipping over bad pragma(s).  */
+      while (token->type == CPP_PRAGMA)
+	{
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  if (cp_parser_see_omp_loop_nest (parser, omp_for_parse_state->code,
+					   false))
+	    return cp_parser_omp_loop_nest (parser, if_p);
+	  token = cp_lexer_peek_token (parser->lexer);
+	}
+      return NULL_TREE;
+    }
   loc = cp_lexer_consume_token (parser->lexer)->location;
 
   /* Forbid break/continue in the loop initializer, condition, and
@@ -45161,11 +45178,8 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
   moreloops = depth < omp_for_parse_state->count - 1;
   omp_for_parse_state->want_nested_loop = moreloops;
   if (moreloops
-      && (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR)
-	  || (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
-	      == PRAGMA_OMP_UNROLL)
-	  || (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
-	      == PRAGMA_OMP_TILE)))
+      && cp_parser_see_omp_loop_nest (parser, omp_for_parse_state->code,
+				      false))
     {
       omp_for_parse_state->depth++;
       add_stmt (cp_parser_omp_loop_nest (parser, if_p));
@@ -47323,6 +47337,9 @@ cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
   tree sizes = NULL_TREE;
   cp_lexer *lexer = parser->lexer;
 
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+    cp_lexer_consume_token (parser->lexer);
+
   cp_token *tok = cp_lexer_peek_token (lexer);
   if (tok->type != CPP_NAME
       || strcmp ("sizes", IDENTIFIER_POINTER (tok->u.value)))
@@ -47374,6 +47391,8 @@ cp_parser_omp_tile (cp_parser *parser, cp_token *tok, bool *if_p)
 {
   tree block;
   tree ret = error_mark_node;
+
+  gcc_assert (!parser->omp_for_parse_state);
 
   tree clauses = cp_parser_omp_tile_sizes (parser, tok->location);
   cp_parser_require_pragma_eol (parser, tok);
@@ -47552,6 +47571,8 @@ cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
   tree block, ret;
   static const char *p_name = "#pragma omp unroll";
   omp_clause_mask mask = OMP_UNROLL_CLAUSE_MASK;
+
+  gcc_assert (!parser->omp_for_parse_state);
 
   tree clauses = cp_parser_omp_all_clauses (parser, mask, p_name, tok, true);
 

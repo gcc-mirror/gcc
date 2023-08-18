@@ -1,5 +1,20 @@
 2023-08-18  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* parser.cc (cp_parser_omp_all_clauses): Allow comma before first
+	clause.
+	(cp_parser_see_omp_loop_nest): Accept C++ standard attributes
+	before RID_FOR.
+	(cp_parser_omp_loop_nest): Process C++ standard attributes like
+	pragmas.  Improve error handling for bad pragmas/attributes.
+	Use cp_parser_see_omp_loop_nest instead of duplicating what it
+	does.
+	(cp_parser_omp_tile_sizes): Permit comma before the clause.
+	(cp_parser_omp_tile): Assert that this isn't called for inner
+	directive.
+	(cp_parser_omp_unroll): Likewise.
+
+2023-08-18  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* parser.cc (cp_parser_omp_declare_mapper): Allow commas between
 	clauses.
 
