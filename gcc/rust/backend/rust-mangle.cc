@@ -90,7 +90,7 @@ legacy_mangle_name (const std::string &name)
 	  i++;
 	  m = "..";
 	}
-      else if (c.value < 0x80)
+      else if (c.is_ascii ())
 	// ASCII
 	m.push_back (c.value);
       else

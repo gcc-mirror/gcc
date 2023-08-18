@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-input-source.h"
 #include "rust-system.h"
 #include "optional.h"
 #include "selftest.h"
@@ -326,6 +327,15 @@ is_numeric (uint32_t codepoint)
     return false;
   else
     return true;
+}
+
+bool
+is_ascii_only (const std::string &str)
+{
+  for (char c : str)
+    if (static_cast<uint32_t> (c) > MAX_ASCII_CODEPOINT)
+      return false;
+  return true;
 }
 
 } // namespace Rust

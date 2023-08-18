@@ -28,9 +28,6 @@ constexpr uint8_t UTF8_BOM1 = 0xEF;
 constexpr uint8_t UTF8_BOM2 = 0xBB;
 constexpr uint8_t UTF8_BOM3 = 0xBF;
 
-constexpr uint32_t MAX_ASCII_CODEPOINT = 0x7F;
-constexpr uint32_t CODEPOINT_INVALID = 0xFFFE;
-
 // Input source wrapper thing.
 class InputSource
 {

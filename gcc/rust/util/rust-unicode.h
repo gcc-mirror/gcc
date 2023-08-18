@@ -63,6 +63,9 @@ bool
 is_alphabetic (uint32_t codepoint);
 
 bool
+is_ascii_only (const std::string &str);
+
+bool
 is_numeric (uint32_t codepoint);
 
 } // namespace Rust

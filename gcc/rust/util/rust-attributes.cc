@@ -22,6 +22,7 @@
 #include "rust-ast.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-unicode.h"
 
 namespace Rust {
 namespace Analysis {
@@ -612,6 +613,22 @@ AttributeChecker::visit (AST::UseDeclaration &declaration)
   check_proc_macro_non_function (declaration.get_outer_attrs ());
 }
 
+static void
+check_no_mangle_function (const AST::Attribute &attribute,
+			  const AST::Function &fun)
+{
+  if (attribute.has_attr_input ())
+    {
+      rust_error_at (attribute.get_locus (), ErrorCode::E0754,
+		     "malformed %<no_mangle%> attribute input");
+      rust_inform (attribute.get_locus (),
+		   "must be of the form: %<#[no_mangle]%>");
+    }
+  if (!is_ascii_only (fun.get_function_name ().as_string ()))
+    rust_error_at (fun.get_function_name ().get_locus (),
+		   "the %<#[no_mangle]%> attribute requires ASCII identifier");
+}
+
 void
 AttributeChecker::visit (AST::Function &fun)
 {
@@ -649,6 +666,8 @@ AttributeChecker::visit (AST::Function &fun)
 	{
 	  check_crate_type (name, attribute);
 	}
+      else if (result.name == "no_mangle")
+	check_no_mangle_function (attribute, fun);
     }
   fun.get_definition ()->accept_vis (*this);
 }
