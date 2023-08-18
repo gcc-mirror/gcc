@@ -1142,13 +1142,15 @@ namespace __format
 	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<char, _CharT>)
 	    __str = __narrow_str;
+#ifdef _GLIBCXX_USE_WCHAR_T
 	  else
 	    {
 	      size_t __n = __narrow_str.size();
 	      auto __p = (_CharT*)__builtin_alloca(__n * sizeof(_CharT));
-	      __to_wstring_numeric(__narrow_str.data(), __n, __p);
+	      std::__to_wstring_numeric(__narrow_str.data(), __n, __p);
 	      __str = {__p, __n};
 	    }
+#endif
 
 	  if (_M_spec._M_localized)
 	    {
@@ -1624,11 +1626,13 @@ namespace __format
 	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<_CharT, char>)
 	    __str = __narrow_str;
+#ifdef _GLIBCXX_USE_WCHAR_T
 	  else
 	    {
 	      __wstr = std::__to_wstring_numeric(__narrow_str);
 	      __str = __wstr;
 	    }
+#endif
 
 	  if (_M_spec._M_localized)
 	    {
@@ -2290,12 +2294,14 @@ namespace __format
 	  basic_string_view<_CharT> __str;
 	  if constexpr (is_same_v<_CharT, char>)
 	    __str = string_view(__buf, __n);
+#ifdef _GLIBCXX_USE_WCHAR_T
 	  else
 	    {
 	      auto __p = (_CharT*)__builtin_alloca(__n * sizeof(_CharT));
-	      __to_wstring_numeric(__buf, __n, __p);
+	      std::__to_wstring_numeric(__buf, __n, __p);
 	      __str = wstring_view(__p, __n);
 	    }
+#endif
 
 #if _GLIBCXX_P2518R3
 	  if (_M_spec._M_zero_fill)

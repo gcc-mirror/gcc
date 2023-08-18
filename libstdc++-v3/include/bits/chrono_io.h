@@ -2390,15 +2390,14 @@ namespace __detail
       __os2.imbue(__os.getloc());
       __os2 << __wdi.weekday();
       const auto __i = __wdi.index();
-      if constexpr (is_same_v<_CharT, char>)
-	__os2 << std::format("[{}", __i);
-      else
-	__os2 << std::format(L"[{}", __i);
-      basic_string_view<_CharT> __s = _GLIBCXX_WIDEN(" is not a valid index]");
+      basic_string_view<_CharT> __s
+	= _GLIBCXX_WIDEN("[ is not a valid index]");
+      __os2 << __s[0];
+      __os2 << std::format(_GLIBCXX_WIDEN("{}"), __i);
       if (__i >= 1 && __i <= 5)
 	__os2 << __s.back();
       else
-	__os2 << __s;
+	__os2 << __s.substr(1);
       __os << __os2.view();
       return __os;
     }
@@ -2457,11 +2456,7 @@ namespace __detail
       // As above, just write straight to a stringstream, as if by "{:L}/last"
       basic_stringstream<_CharT> __os2;
       __os2.imbue(__os.getloc());
-      __os2 << __mdl.month();
-      if constexpr (is_same_v<_CharT, char>)
-	__os2 << "/last";
-      else
-	__os2 << L"/last";
+      __os2 << __mdl.month() << _GLIBCXX_WIDEN("/last");
       __os << __os2.view();
       return __os;
     }
