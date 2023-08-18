@@ -12570,11 +12570,21 @@ proc dg-require-python-h { args } {
 
     verbose "ENTER dg-require-python-h" 2
 
+    set supported 0
     set result [remote_exec host "python3-config --includes"]
     set status [lindex $result 0]
     if { $status == 0 } {
-        set python_flags [lindex $result 1]
-    } else {
+	# Remove trailing newline from python3-config output.
+	set python_flags [string trim [lindex $result 1]]
+	if [check_no_compiler_messages python_h assembly {
+	    #include <Python.h>
+	    int main (void) { return 0; }
+	} $python_flags] {
+	    set supported 1
+	}
+    }
+
+    if { $supported == 0 } {
 	verbose "Python.h not supported" 2
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
