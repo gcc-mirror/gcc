@@ -2016,6 +2016,8 @@ riscv_get_valid_option_values (int option_code,
 static const struct default_options riscv_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
+    /* Enable -fsched-pressure starting at -O1.  */
+    { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
 #if TARGET_DEFAULT_ASYNC_UNWIND_TABLES == 1
     { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },

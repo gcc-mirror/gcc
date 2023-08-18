@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "cfgrtl.h"
 #include "sel-sched.h"
+#include "sched-int.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "gimple-expr.h"
@@ -7095,6 +7096,10 @@ riscv_option_override (void)
   if (TARGET_MIN_VLEN > 4096)
     sorry (
       "Current RISC-V GCC cannot support VLEN greater than 4096bit for 'V' Extension");
+
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_pressure_algorithm,
+		       SCHED_PRESSURE_MODEL);
 
   /* Convert -march to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_bits ();
