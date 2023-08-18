@@ -10625,6 +10625,11 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
   unsigned res_npatterns, res_nelts_per_pattern;
   unsigned HOST_WIDE_INT res_nelts;
 
+  if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
+    {
+      res_npatterns = res_nelts;
+      res_nelts_per_pattern = 1;
+    }
   /* (1) If SEL is a suitable mask as determined by
      valid_mask_for_fold_vec_perm_cst_p, then:
      res_npatterns = max of npatterns between ARG0, ARG1, and SEL
@@ -10634,7 +10639,7 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
      res_npatterns = nelts in result vector.
      res_nelts_per_pattern = 1.
      This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
-  if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
+  else if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
     {
       res_npatterns
 	= std::max (VECTOR_CST_NPATTERNS (arg0),
@@ -10647,11 +10652,6 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
 			      sel.encoding ().nelts_per_pattern ()));
 
       res_nelts = res_npatterns * res_nelts_per_pattern;
-    }
-  else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
-    {
-      res_npatterns = res_nelts;
-      res_nelts_per_pattern = 1;
     }
   else
     return NULL_TREE;
