@@ -4954,7 +4954,8 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	    else if (satisfies_constraint_Wc0 (op))
 	      asm_fprintf (file, "0");
 	    else if (satisfies_constraint_vi (op)
-		     || satisfies_constraint_vj (op))
+		     || satisfies_constraint_vj (op)
+		     || satisfies_constraint_vk (op))
 	      asm_fprintf (file, "%wd", INTVAL (elt));
 	    else
 	      output_operand_lossage ("invalid vector constant");
