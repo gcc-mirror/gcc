@@ -50358,6 +50358,8 @@ cp_parser_omp_declare_mapper (cp_parser *parser, cp_token *pragma_tok,
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
       pragma_omp_clause c_kind = cp_parser_omp_clause_name (parser);
       if (c_kind != PRAGMA_OMP_CLAUSE_MAP)
 	{

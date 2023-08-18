@@ -5500,8 +5500,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "critical", nullptr, nullptr, PRAGMA_OMP_CRITICAL,
     C_OMP_DIR_CONSTRUCT, false },
-  /* { "declare", "mapper", nullptr, PRAGMA_OMP_DECLARE,
-    C_OMP_DIR_DECLARATIVE, false },  */
+  { "declare", "mapper", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, false },
   { "declare", "reduction", nullptr, PRAGMA_OMP_DECLARE,
     C_OMP_DIR_DECLARATIVE, true },
   { "declare", "simd", nullptr, PRAGMA_OMP_DECLARE,
