@@ -333,9 +333,12 @@ ASTLoweringPattern::visit (AST::AltPattern &pattern)
     = new HIR::AltPattern (mapping, std::move (alts), pattern.get_locus ());
 
   if (is_let_top_level)
-    rust_error_at (pattern.get_locus (),
-		   "top level alternate patterns are not allowed for %<let%> "
-		   "bindings - use an outer grouped pattern");
+    {
+      rich_location richloc (line_table, pattern.get_locus ());
+      richloc.add_fixit_replace ("use an outer grouped pattern");
+      rust_error_at (
+	richloc, "top level or-patterns are not allowed for %<let%> bindings");
+    }
 }
 
 } // namespace HIR
