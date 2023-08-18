@@ -2125,13 +2125,154 @@ struct GTY (()) saved_scope
 
 extern GTY (()) struct saved_scope *scope_chain;
 
+// forked from gcc/cp/name_lookup.h cp_class_binding
+
+struct GTY (()) rust_cp_class_binding
+{
+  cxx_binding *base;
+  /* The bound name.  */
+  tree identifier;
+};
+
+// forked from gcc/cp/name_lookup.h cp_binding_level
+
+/* For each binding contour we allocate a binding_level structure
+   which records the names defined in that contour.
+   Contours include:
+    0) the global one
+    1) one for each function definition,
+       where internal declarations of the parameters appear.
+    2) one for each compound statement,
+       to record its declarations.
+
+   The current meaning of a name can be found by searching the levels
+   from the current one out to the global one.
+
+   Off to the side, may be the class_binding_level.  This exists only
+   to catch class-local declarations.  It is otherwise nonexistent.
+
+   Also there may be binding levels that catch cleanups that must be
+   run when exceptions occur.  Thus, to see whether a name is bound in
+   the current scope, it is not enough to look in the
+   CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
+   instead.  */
+
+struct GTY (()) rust_cp_binding_level
+{
+  /* A chain of _DECL nodes for all variables, constants, functions,
+      and typedef types.  These are in the reverse of the order
+      supplied.  There may be OVERLOADs on this list, too, but they
+      are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
+  tree names;
+
+  /* Using directives.  */
+  vec<tree, va_gc> *using_directives;
+
+  /* For the binding level corresponding to a class, the entities
+      declared in the class or its base classes.  */
+  vec<rust_cp_class_binding, va_gc> *class_shadowed;
+
+  /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
+      is used for all binding levels. The TREE_PURPOSE is the name of
+      the entity, the TREE_TYPE is the associated type.  In addition
+      the TREE_VALUE is the IDENTIFIER_TYPE_VALUE before we entered
+      the class.  */
+  tree type_shadowed;
+
+  /* For each level (except not the global one),
+      a chain of BLOCK nodes for all the levels
+      that were entered and exited one level down.  */
+  tree blocks;
+
+  /* The entity (namespace, class, function) the scope of which this
+      binding contour corresponds to.  Otherwise NULL.  */
+  tree this_entity;
+
+  /* The binding level which this one is contained in (inherits from).  */
+  rust_cp_binding_level *level_chain;
+
+  /* STATEMENT_LIST for statements in this binding contour.
+      Only used at present for SK_CLEANUP temporary bindings.  */
+  tree statement_list;
+
+  /* Binding depth at which this level began.  */
+  int binding_depth;
+
+  /* The kind of scope that this object represents.  However, a
+      SK_TEMPLATE_SPEC scope is represented with KIND set to
+      SK_TEMPLATE_PARMS and EXPLICIT_SPEC_P set to true.  */
+  ENUM_BITFIELD (scope_kind) kind : 4;
+
+  /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
+      only valid if KIND == SK_TEMPLATE_PARMS.  */
+  BOOL_BITFIELD explicit_spec_p : 1;
+
+  /* true means make a BLOCK for this level regardless of all else.  */
+  unsigned keep : 1;
+
+  /* Nonzero if this level can safely have additional
+      cleanup-needing variables added to it.  */
+  unsigned more_cleanups_ok : 1;
+  unsigned have_cleanups : 1;
+
+  /* Transient state set if this scope is of sk_class kind
+     and is in the process of defining 'this_entity'.  Reset
+     on leaving the class definition to allow for the scope
+     to be subsequently re-used as a non-defining scope for
+     'this_entity'.  */
+  unsigned defining_class_p : 1;
+
+  /* True for SK_FUNCTION_PARMS of a requires-expression.  */
+  unsigned requires_expression : 1;
+
+  /* 22 bits left to fill a 32-bit word.  */
+};
+
+// forked from gcc/cp/decl.cc named_label_entry
+
+/* A list of all LABEL_DECLs in the function that have names.  Here so
+   we can clear out their names' definitions at the end of the
+   function, and so we can check the validity of jumps to these labels.  */
+
+struct GTY ((for_user)) rust_named_label_entry
+{
+  tree name; /* Name of decl. */
+
+  tree label_decl; /* LABEL_DECL, unless deleted local label. */
+
+  rust_named_label_entry *outer; /* Outer shadowed chain.  */
+
+  /* The binding level to which the label is *currently* attached.
+     This is initially set to the binding level in which the label
+     is defined, but is modified as scopes are closed.  */
+  rust_cp_binding_level *binding_level;
+
+  /* The head of the names list that was current when the label was
+     defined, or the inner scope popped.  These are the decls that will
+     be skipped when jumping to the label.  */
+  tree names_in_scope;
+
+  /* A vector of all decls from all binding levels that would be
+     crossed by a backward branch to the label.  */
+  vec<tree, va_gc> *bad_decls;
+
+  /* The following bits are set after the label is defined, and are
+     updated as scopes are popped.  They indicate that a jump to the
+     label will illegally enter a scope of the given flavor.  */
+  bool in_try_scope;
+  bool in_catch_scope;
+  bool in_omp_scope;
+  bool in_transaction_scope;
+  bool in_constexpr_if;
+  bool in_consteval_if;
+  bool in_stmt_expr;
+};
+
 // forked from gcc/cp/cp-tree.h named_label_hash
 
-struct named_label_entry; /* Defined in decl.cc.  */
-
-struct rust_named_label_hash : ggc_remove<named_label_entry *>
+struct rust_named_label_hash : ggc_remove<rust_named_label_entry *>
 {
-  typedef named_label_entry *value_type;
+  typedef rust_named_label_entry *value_type;
   typedef tree compare_type; /* An identifier.  */
 
   inline static hashval_t hash (value_type);
