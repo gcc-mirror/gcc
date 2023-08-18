@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64if_zfhmin -mabi=lp64f -O" } */
+/* { dg-options "-march=rv64i_zhinxmin -mabi=lp64 -O" } */
 
 int foo1 (_Float16 a, _Float16 b)
 {
