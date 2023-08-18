@@ -65,23 +65,7 @@
  */
 
 #include "rust-session-manager.h"
-
-// Language-dependent contents of a type. GTY() mark used for garbage collector.
-struct GTY (()) lang_type
-{
-};
-
-// Language-dependent contents of a decl.
-struct GTY (()) lang_decl
-{
-};
-
-// Language-dependent contents of an identifier.  This must include a
-// tree_identifier.
-struct GTY (()) lang_identifier
-{
-  struct tree_identifier common;
-};
+#include "rust-tree.h"
 
 // The resulting tree type.
 union GTY ((
@@ -93,11 +77,6 @@ union GTY ((
 {
   union tree_node GTY ((tag ("0"), desc ("tree_node_structure (&%h)"))) generic;
   struct lang_identifier GTY ((tag ("1"))) identifier;
-};
-
-// We don't use language_function.
-struct GTY (()) language_function
-{
 };
 
 // has to be in same compilation unit as session, so here for now

@@ -2289,7 +2289,8 @@ struct rust_named_label_hash : ggc_remove<rust_named_label_entry *>
 
 // forked from gcc/cp/cp-tree.h
 
-/* Global state pertinent to the current function.  */
+/* Global state pertinent to the current function.
+   TODO: remove vestigial fields  */
 
 struct GTY (()) language_function
 {

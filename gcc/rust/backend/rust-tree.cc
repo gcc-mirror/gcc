@@ -6207,3 +6207,7 @@ array_string_literal_compatible_p (tree type, tree init)
 }
 
 } // namespace Rust
+
+using namespace Rust;
+
+#include "gt-rust-rust-tree.h"
