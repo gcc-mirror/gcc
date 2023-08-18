@@ -2019,31 +2019,6 @@ struct GTY (()) lang_decl_base
    || TREE_CODE (NODE) == TEMPLATE_DECL || TREE_CODE (NODE) == USING_DECL      \
    || TREE_CODE (NODE) == CONCEPT_DECL)
 
-// forked from gcc/c-family-common.h stmt_tree_s
-
-/* Information about a statement tree.  */
-
-struct GTY (()) stmt_tree_s
-{
-  /* A stack of statement lists being collected.  */
-  vec<tree, va_gc> *x_cur_stmt_list;
-
-  /* In C++, Nonzero if we should treat statements as full
-     expressions.  In particular, this variable is non-zero if at the
-     end of a statement we should destroy any temporaries created
-     during that statement.  Similarly, if, at the end of a block, we
-     should destroy any local variables in this block.  Normally, this
-     variable is nonzero, since those are the normal semantics of
-     C++.
-
-     This flag has no effect in C.  */
-  int stmts_are_full_exprs_p;
-};
-
-// forked from gcc/c-family-common.h stmt_tree_s
-
-typedef struct stmt_tree_s *stmt_tree;
-
 // forked from gcc/c-family-common.h c_language_function
 
 /* Global state pertinent to the current function.  Some C dialects
@@ -2051,10 +2026,6 @@ typedef struct stmt_tree_s *stmt_tree;
 
 struct GTY (()) c_language_function
 {
-  /* While we are parsing the function, this contains information
-     about the statement-tree that we are building.  */
-  struct stmt_tree_s x_stmt_tree;
-
   /* Vector of locally defined typedefs, for
      -Wunused-local-typedefs.  */
   vec<tree, va_gc> *local_typedefs;
@@ -2139,8 +2110,6 @@ struct GTY (()) saved_scope
   int inhibit_evaluation_warnings;
   int noexcept_operand;
   int ref_temp_count;
-
-  struct stmt_tree_s x_stmt_tree;
 
   hash_map<tree, tree> *GTY ((skip)) x_local_specializations;
   vec<omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
@@ -2268,7 +2237,6 @@ struct GTY (()) lang_decl_fn
   unsigned defaulted_p : 1;
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
-  unsigned pending_inline_p : 1;
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;
 
@@ -2280,7 +2248,7 @@ struct GTY (()) lang_decl_fn
   unsigned coroutine_p : 1;
   unsigned implicit_constexpr : 1;
 
-  unsigned spare : 9;
+  unsigned spare : 10;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -2309,11 +2277,7 @@ struct GTY (()) lang_decl_fn
     HOST_WIDE_INT GTY ((tag ("1"))) fixed_offset;
   } GTY ((desc ("%1.thunk_p"))) u5;
 
-  union lang_decl_u3
-  {
-    struct cp_token_cache *GTY ((tag ("1"))) pending_inline_info;
-    tree GTY ((tag ("0"))) saved_auto_return_type;
-  } GTY ((desc ("%1.pending_inline_p"))) u;
+  tree GTY (()) saved_auto_return_type;
 };
 
 // forked from gcc/cp/cp-tree.h lang_decl_ns
