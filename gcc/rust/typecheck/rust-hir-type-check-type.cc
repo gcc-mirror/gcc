@@ -510,9 +510,17 @@ TypeCheckType::resolve_segments (
 
       if (candidate.is_enum_candidate ())
 	{
-	  rust_error_at (seg->get_locus (),
-			 "expected type, found variant of %s",
-			 tyseg->get_name ().c_str ());
+	  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyseg);
+	  auto last_variant = adt->get_variants ();
+	  TyTy::VariantDef *variant = last_variant.back ();
+
+	  rich_location richloc (line_table, seg->get_locus ());
+	  richloc.add_fixit_replace ("not a type");
+
+	  rust_error_at (richloc, ErrorCode::E0573,
+			 "expected type, found variant of %<%s::%s%>",
+			 adt->get_name ().c_str (),
+			 variant->get_identifier ().c_str ());
 	  return new TyTy::ErrorType (expr_id);
 	}
 
