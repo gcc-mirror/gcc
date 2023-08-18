@@ -262,15 +262,21 @@ public:
    vremu/vsadd/vsaddu/vssub/vssubu
    vfadd/vfsub/
 */
-template<rtx_code CODE>
+template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
 class binop : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
       {
       case OP_TYPE_vx:
+	gcc_assert (FRM_OP == NO_FRM);
       case OP_TYPE_vf:
 	return e.use_exact_insn (code_for_pred_scalar (CODE, e.vector_mode ()));
       case OP_TYPE_vv:
@@ -278,391 +284,6 @@ public:
       default:
 	gcc_unreachable ();
       }
-  }
-};
-
-/* Implements below instructions for now.
-   - vfadd
-   - vfsub
-   - vfmul
-   - vfdiv
-*/
-template<rtx_code CODE>
-class binop_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  rtx expand (function_expander &e) const override
-  {
-    switch (e.op_info->op)
-      {
-      case OP_TYPE_vf:
-	return e.use_exact_insn (code_for_pred_scalar (CODE, e.vector_mode ()));
-      case OP_TYPE_vv:
-	return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
-      default:
-	gcc_unreachable ();
-      }
-  }
-};
-
-/* Implements below instructions for frm
-   - vfrsub
-   - vfrdiv
-*/
-template<rtx_code CODE>
-class reverse_binop_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-public:
-  rtx expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (
-      code_for_pred_reverse_scalar (CODE, e.vector_mode ()));
-  }
-};
-
-/* Implements below instructions for frm
-   - vfwadd
-   - vfwsub
-   - vfwmul
-*/
-template<rtx_code CODE>
-class widen_binop_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  rtx expand (function_expander &e) const override
-  {
-    switch (e.op_info->op)
-      {
-      case OP_TYPE_vv:
-	return e.use_exact_insn (
-	  code_for_pred_dual_widen (CODE, e.vector_mode ()));
-      case OP_TYPE_vf:
-	return e.use_exact_insn (
-	  code_for_pred_dual_widen_scalar (CODE, e.vector_mode ()));
-      case OP_TYPE_wv:
-	if (CODE == PLUS)
-	  return e.use_exact_insn (
-	    code_for_pred_single_widen_add (e.vector_mode ()));
-	else
-	  return e.use_exact_insn (
-	    code_for_pred_single_widen_sub (e.vector_mode ()));
-      case OP_TYPE_wf:
-	return e.use_exact_insn (
-	  code_for_pred_single_widen_scalar (CODE, e.vector_mode ()));
-      default:
-	gcc_unreachable ();
-      }
-  }
-};
-
-/* Implements below instructions for frm
-   - vfmacc
-*/
-class vfmacc_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (PLUS,
-							  e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul (PLUS, e.vector_mode ()));
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfnmacc
-*/
-class vfnmacc_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg (MINUS, e.vector_mode ()));
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfmsac
-*/
-class vfmsac_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul (MINUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfnmsac
-*/
-class vfnmsac_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	true, code_for_pred_mul_neg (PLUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfmadd
-*/
-class vfmadd_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul (PLUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfnmadd
-*/
-class vfnmadd_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_neg (MINUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfmsub
-*/
-class vfmsub_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul (MINUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfnmsub
-*/
-class vfnmsub_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (
-	false, code_for_pred_mul_neg (PLUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfwmacc
-*/
-class vfwmacc_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul (PLUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfwnmacc
-*/
-class vfwnmacc_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_neg_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_neg (MINUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfwmsac
-*/
-class vfwmsac_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfwnmsac
-*/
-class vfwnmsac_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  bool has_merge_operand_p () const override { return false; }
-
-  rtx expand (function_expander &e) const override
-  {
-    if (e.op_info->op == OP_TYPE_vf)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_neg_scalar (PLUS, e.vector_mode ()));
-    if (e.op_info->op == OP_TYPE_vv)
-      return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_neg (PLUS, e.vector_mode ()));
-
-    gcc_unreachable ();
-  }
-};
-
-/* Implements below instructions for frm
-   - vfsqrt
-*/
-template<rtx_code CODE>
-class unop_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  rtx expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
-  }
-};
-
-/* Implements below instructions for frm
-   - vfrec7
-*/
-class vfrec7_frm : public function_base
-{
-public:
-  bool has_rounding_mode_operand_p () const override { return true; }
-
-  rtx expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (code_for_pred (UNSPEC_VFREC7, e.vector_mode ()));
   }
 };
 
@@ -678,10 +299,15 @@ public:
 };
 
 /* Implements vneg/vnot.  */
-template<rtx_code CODE>
+template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
 class unop : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_pred (CODE, e.vector_mode ()));
@@ -730,7 +356,7 @@ public:
   }
 };
 
-/* Implements vwadd/vwsub/vwmul/vfwadd/vfwsub/vfwmul.  */
+/* Implements vwadd/vwsub/vwmul.  */
 template<rtx_code CODE1, rtx_code CODE2 = FLOAT_EXTEND>
 class widen_binop : public function_base
 {
@@ -760,10 +386,17 @@ public:
       }
   }
 };
-template<rtx_code CODE>
-class widen_binop<CODE, FLOAT_EXTEND> : public function_base
+
+/* Implement vfwadd/vfwsub/vfwmul.  */
+template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
+class widen_binop_fp : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
@@ -1382,10 +1015,15 @@ public:
 };
 
 /* Implements vfrsub/vfrdiv.  */
-template<rtx_code CODE>
+template<rtx_code CODE, enum frm_op_type FRM_OP = NO_FRM>
 class reverse_binop : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     return e.use_exact_insn (
@@ -1393,9 +1031,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfmacc : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1411,9 +1055,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfnmsac : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1428,9 +1078,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfmadd : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1446,9 +1102,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfnmsub : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1463,9 +1125,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfnmacc : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1480,9 +1148,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfmsac : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1498,9 +1172,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfnmadd : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1515,9 +1195,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfmsub : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1533,9 +1219,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfwmacc : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1550,9 +1242,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfwnmacc : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1567,9 +1265,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfwmsac : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1584,9 +1288,15 @@ public:
   }
 };
 
+template<enum frm_op_type FRM_OP = NO_FRM>
 class vfwnmsac : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   bool has_merge_operand_p () const override { return false; }
 
   rtx expand (function_expander &e) const override
@@ -1602,10 +1312,15 @@ public:
 };
 
 /* Implements vfsqrt7/vfrec7/vfclass/vfsgnj/vfsgnjx.  */
-template<int UNSPEC>
+template<int UNSPEC, enum frm_op_type FRM_OP = NO_FRM>
 class float_misc : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
@@ -2446,51 +2161,51 @@ static CONSTEXPR const viota viota_obj;
 static CONSTEXPR const vid vid_obj;
 static CONSTEXPR const binop<PLUS> vfadd_obj;
 static CONSTEXPR const binop<MINUS> vfsub_obj;
-static CONSTEXPR const binop_frm<PLUS> vfadd_frm_obj;
-static CONSTEXPR const binop_frm<MINUS> vfsub_frm_obj;
+static CONSTEXPR const binop<PLUS, HAS_FRM> vfadd_frm_obj;
+static CONSTEXPR const binop<MINUS, HAS_FRM> vfsub_frm_obj;
 static CONSTEXPR const reverse_binop<MINUS> vfrsub_obj;
-static CONSTEXPR const reverse_binop_frm<MINUS> vfrsub_frm_obj;
-static CONSTEXPR const widen_binop<PLUS> vfwadd_obj;
-static CONSTEXPR const widen_binop_frm<PLUS> vfwadd_frm_obj;
-static CONSTEXPR const widen_binop<MINUS> vfwsub_obj;
-static CONSTEXPR const widen_binop_frm<MINUS> vfwsub_frm_obj;
+static CONSTEXPR const reverse_binop<MINUS, HAS_FRM> vfrsub_frm_obj;
+static CONSTEXPR const widen_binop_fp<PLUS> vfwadd_obj;
+static CONSTEXPR const widen_binop_fp<PLUS, HAS_FRM> vfwadd_frm_obj;
+static CONSTEXPR const widen_binop_fp<MINUS> vfwsub_obj;
+static CONSTEXPR const widen_binop_fp<MINUS, HAS_FRM> vfwsub_frm_obj;
 static CONSTEXPR const binop<MULT> vfmul_obj;
-static CONSTEXPR const binop_frm<MULT> vfmul_frm_obj;
+static CONSTEXPR const binop<MULT, HAS_FRM> vfmul_frm_obj;
 static CONSTEXPR const binop<DIV> vfdiv_obj;
-static CONSTEXPR const binop_frm<DIV> vfdiv_frm_obj;
+static CONSTEXPR const binop<DIV, HAS_FRM> vfdiv_frm_obj;
 static CONSTEXPR const reverse_binop<DIV> vfrdiv_obj;
-static CONSTEXPR const reverse_binop_frm<DIV> vfrdiv_frm_obj;
-static CONSTEXPR const widen_binop<MULT> vfwmul_obj;
-static CONSTEXPR const widen_binop_frm<MULT> vfwmul_frm_obj;
-static CONSTEXPR const vfmacc vfmacc_obj;
-static CONSTEXPR const vfmacc_frm vfmacc_frm_obj;
-static CONSTEXPR const vfnmsac vfnmsac_obj;
-static CONSTEXPR const vfnmsac_frm vfnmsac_frm_obj;
-static CONSTEXPR const vfmadd vfmadd_obj;
-static CONSTEXPR const vfmadd_frm vfmadd_frm_obj;
-static CONSTEXPR const vfnmsub vfnmsub_obj;
-static CONSTEXPR const vfnmsub_frm vfnmsub_frm_obj;
-static CONSTEXPR const vfnmacc vfnmacc_obj;
-static CONSTEXPR const vfnmacc_frm vfnmacc_frm_obj;
-static CONSTEXPR const vfmsac vfmsac_obj;
-static CONSTEXPR const vfmsac_frm vfmsac_frm_obj;
-static CONSTEXPR const vfnmadd vfnmadd_obj;
-static CONSTEXPR const vfnmadd_frm vfnmadd_frm_obj;
-static CONSTEXPR const vfmsub vfmsub_obj;
-static CONSTEXPR const vfmsub_frm vfmsub_frm_obj;
-static CONSTEXPR const vfwmacc vfwmacc_obj;
-static CONSTEXPR const vfwmacc_frm vfwmacc_frm_obj;
-static CONSTEXPR const vfwnmacc vfwnmacc_obj;
-static CONSTEXPR const vfwnmacc_frm vfwnmacc_frm_obj;
-static CONSTEXPR const vfwmsac vfwmsac_obj;
-static CONSTEXPR const vfwmsac_frm vfwmsac_frm_obj;
-static CONSTEXPR const vfwnmsac vfwnmsac_obj;
-static CONSTEXPR const vfwnmsac_frm vfwnmsac_frm_obj;
+static CONSTEXPR const reverse_binop<DIV, HAS_FRM> vfrdiv_frm_obj;
+static CONSTEXPR const widen_binop_fp<MULT> vfwmul_obj;
+static CONSTEXPR const widen_binop_fp<MULT, HAS_FRM> vfwmul_frm_obj;
+static CONSTEXPR const vfmacc<NO_FRM> vfmacc_obj;
+static CONSTEXPR const vfmacc<HAS_FRM> vfmacc_frm_obj;
+static CONSTEXPR const vfnmsac<NO_FRM> vfnmsac_obj;
+static CONSTEXPR const vfnmsac<HAS_FRM> vfnmsac_frm_obj;
+static CONSTEXPR const vfmadd<NO_FRM> vfmadd_obj;
+static CONSTEXPR const vfmadd<HAS_FRM> vfmadd_frm_obj;
+static CONSTEXPR const vfnmsub<NO_FRM> vfnmsub_obj;
+static CONSTEXPR const vfnmsub<HAS_FRM> vfnmsub_frm_obj;
+static CONSTEXPR const vfnmacc<NO_FRM> vfnmacc_obj;
+static CONSTEXPR const vfnmacc<HAS_FRM> vfnmacc_frm_obj;
+static CONSTEXPR const vfmsac<NO_FRM> vfmsac_obj;
+static CONSTEXPR const vfmsac<HAS_FRM> vfmsac_frm_obj;
+static CONSTEXPR const vfnmadd<NO_FRM> vfnmadd_obj;
+static CONSTEXPR const vfnmadd<HAS_FRM> vfnmadd_frm_obj;
+static CONSTEXPR const vfmsub<NO_FRM> vfmsub_obj;
+static CONSTEXPR const vfmsub<HAS_FRM> vfmsub_frm_obj;
+static CONSTEXPR const vfwmacc<NO_FRM> vfwmacc_obj;
+static CONSTEXPR const vfwmacc<HAS_FRM> vfwmacc_frm_obj;
+static CONSTEXPR const vfwnmacc<NO_FRM> vfwnmacc_obj;
+static CONSTEXPR const vfwnmacc<HAS_FRM> vfwnmacc_frm_obj;
+static CONSTEXPR const vfwmsac<NO_FRM> vfwmsac_obj;
+static CONSTEXPR const vfwmsac<HAS_FRM> vfwmsac_frm_obj;
+static CONSTEXPR const vfwnmsac<NO_FRM> vfwnmsac_obj;
+static CONSTEXPR const vfwnmsac<HAS_FRM> vfwnmsac_frm_obj;
 static CONSTEXPR const unop<SQRT> vfsqrt_obj;
-static CONSTEXPR const unop_frm<SQRT> vfsqrt_frm_obj;
+static CONSTEXPR const unop<SQRT, HAS_FRM> vfsqrt_frm_obj;
 static CONSTEXPR const float_misc<UNSPEC_VFRSQRT7> vfrsqrt7_obj;
 static CONSTEXPR const float_misc<UNSPEC_VFREC7> vfrec7_obj;
-static CONSTEXPR const vfrec7_frm vfrec7_frm_obj;
+static CONSTEXPR const float_misc<UNSPEC_VFREC7, HAS_FRM> vfrec7_frm_obj;
 static CONSTEXPR const binop<SMIN> vfmin_obj;
 static CONSTEXPR const binop<SMAX> vfmax_obj;
 static CONSTEXPR const float_misc<UNSPEC_VCOPYSIGN> vfsgnj_obj;
