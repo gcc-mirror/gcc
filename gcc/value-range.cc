@@ -1876,6 +1876,8 @@ irange::get_bitmask () const
   //
   // 3 is in the range endpoints, but is excluded per the known 0 bits
   // in the mask.
+  //
+  // See also the note in irange_bitmask::intersect.
   irange_bitmask bm = get_bitmask_from_range ();
   if (!m_bitmask.unknown_p ())
     bm.intersect (m_bitmask);
@@ -1915,10 +1917,18 @@ irange::intersect_bitmask (const irange &r)
     return false;
 
   irange_bitmask bm = get_bitmask ();
+  irange_bitmask save = bm;
   if (!bm.intersect (r.get_bitmask ()))
     return false;
 
   m_bitmask = bm;
+
+  // Updating m_bitmask may still yield a semantic bitmask (as
+  // returned by get_bitmask) which is functionally equivalent to what
+  // we originally had.  In which case, there's still no change.
+  if (save == get_bitmask ())
+    return false;
+
   if (!set_range_from_bitmask ())
     normalize_kind ();
   if (flag_checking)
@@ -1938,10 +1948,18 @@ irange::union_bitmask (const irange &r)
     return false;
 
   irange_bitmask bm = get_bitmask ();
+  irange_bitmask save = bm;
   if (!bm.union_ (r.get_bitmask ()))
     return false;
 
   m_bitmask = bm;
+
+  // Updating m_bitmask may still yield a semantic bitmask (as
+  // returned by get_bitmask) which is functionally equivalent to what
+  // we originally had.  In which case, there's still no change.
+  if (save == get_bitmask ())
+    return false;
+
   // No need to call set_range_from_mask, because we'll never
   // narrow the range.  Besides, it would cause endless recursion
   // because of the union_ in set_range_from_mask.
