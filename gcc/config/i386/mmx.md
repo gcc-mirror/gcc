@@ -3744,8 +3744,14 @@
   [(set (match_operand:V4HI 0 "register_operand")
 	(any_extend:V4HI
 	  (match_operand:V4QI 1 "register_operand")))]
-  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE"
 {
+  if (!TARGET_SSE4_1)
+    {
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
+      DONE;
+    }
+
   rtx op1 = force_reg (V4QImode, operands[1]);
   op1 = lowpart_subreg (V8QImode, op1, V4QImode);
   emit_insn (gen_sse4_1_<code>v4qiv4hi2 (operands[0], op1));
@@ -3770,8 +3776,14 @@
   [(set (match_operand:V2SI 0 "register_operand")
 	(any_extend:V2SI
 	  (match_operand:V2HI 1 "register_operand")))]
-  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "TARGET_MMX_WITH_SSE"
 {
+  if (!TARGET_SSE4_1)
+    {
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
+      DONE;
+    }
+
   rtx op1 = force_reg (V2HImode, operands[1]);
   op1 = lowpart_subreg (V4HImode, op1, V2HImode);
   emit_insn (gen_sse4_1_<code>v2hiv2si2 (operands[0], op1));
@@ -3822,8 +3834,14 @@
   [(set (match_operand:V2HI 0 "register_operand")
 	(any_extend:V2HI
 	  (match_operand:V2QI 1 "register_operand")))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE2"
 {
+  if (!TARGET_SSE4_1)
+    {
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
+      DONE;
+    }
+
   rtx op1 = force_reg (V2QImode, operands[1]);
   op1 = lowpart_subreg (V4QImode, op1, V2QImode);
   emit_insn (gen_sse4_1_<code>v2qiv2hi2 (operands[0], op1));

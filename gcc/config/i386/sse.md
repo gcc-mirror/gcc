@@ -22919,8 +22919,15 @@
   [(set (match_operand:V8HI 0 "register_operand")
 	(any_extend:V8HI
 	  (match_operand:V8QI 1 "nonimmediate_operand")))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 || TARGET_MMX_WITH_SSE"
 {
+  if (!TARGET_SSE4_1)
+    {
+      rtx op1 = force_reg (V8QImode, operands[1]);
+      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      DONE;
+    }
+
   if (!MEM_P (operands[1]))
     {
       rtx op1 = force_reg (V8QImode, operands[1]);
@@ -23229,8 +23236,15 @@
   [(set (match_operand:V4SI 0 "register_operand")
 	(any_extend:V4SI
 	  (match_operand:V4HI 1 "nonimmediate_operand")))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 || TARGET_MMX_WITH_SSE"
 {
+  if (!TARGET_SSE4_1)
+    {
+      rtx op1 = force_reg (V4HImode, operands[1]);
+      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      DONE;
+    }
+
   if (!MEM_P (operands[1]))
     {
       rtx op1 = force_reg (V4HImode, operands[1]);
@@ -23828,8 +23842,15 @@
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (match_operand:V2SI 1 "nonimmediate_operand")))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 || TARGET_MMX_WITH_SSE"
 {
+  if (!TARGET_SSE4_1)
+    {
+      rtx op1 = force_reg (V2SImode, operands[1]);
+      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      DONE;
+    }
+
   if (!MEM_P (operands[1]))
     {
       rtx op1 = force_reg (V2SImode, operands[1]);
