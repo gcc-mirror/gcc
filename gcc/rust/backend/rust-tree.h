@@ -1944,7 +1944,7 @@ typedef struct ptrmem_cst *ptrmem_cst_t;
 /* hash traits for declarations.  Hashes potential overload sets via
    DECL_NAME.  */
 
-struct named_decl_hash : ggc_remove<tree>
+struct rust_named_decl_hash : ggc_remove<tree>
 {
   typedef tree value_type;   /* A DECL or OVERLOAD  */
   typedef tree compare_type; /* An identifier.  */
@@ -2060,7 +2060,7 @@ struct GTY (()) cxx_binding
 
 /* Datatype used to temporarily save C++ bindings (for implicit
    instantiations purposes and like).  Implemented in decl.cc.  */
-struct GTY (()) cxx_saved_binding
+struct GTY (()) rust_cxx_saved_binding
 {
   /* The name of the current binding.  */
   tree identifier;
@@ -2075,7 +2075,7 @@ struct GTY (()) cxx_saved_binding
 
 struct GTY (()) saved_scope
 {
-  vec<cxx_saved_binding, va_gc> *old_bindings;
+  vec<rust_cxx_saved_binding, va_gc> *old_bindings;
   tree old_namespace;
   vec<tree, va_gc> *decl_ns_list;
   tree class_name;
@@ -2123,7 +2123,7 @@ extern GTY (()) struct saved_scope *scope_chain;
 
 struct named_label_entry; /* Defined in decl.cc.  */
 
-struct named_label_hash : ggc_remove<named_label_entry *>
+struct rust_named_label_hash : ggc_remove<named_label_entry *>
 {
   typedef named_label_entry *value_type;
   typedef tree compare_type; /* An identifier.  */
@@ -2169,7 +2169,7 @@ struct GTY (()) language_function
   BOOL_BITFIELD invalid_constexpr : 1;
   BOOL_BITFIELD throwing_cleanup : 1;
 
-  hash_table<named_label_hash> *x_named_labels;
+  hash_table<rust_named_label_hash> *x_named_labels;
 
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
      vec<bool> doesn't work with gtype.  */
@@ -2294,7 +2294,7 @@ struct GTY (()) lang_decl_ns
   /* Hash table of bound decls. It'd be nice to have this inline, but
      as the hash_map has a dtor, we can't then put this struct into a
      union (until moving to c++11).  */
-  hash_table<named_decl_hash> *bindings;
+  hash_table<rust_named_decl_hash> *bindings;
 };
 
 // forked from gcc/cp/cp-tree.h lang_decl_parm
@@ -2504,7 +2504,7 @@ public:
 
 // forked from gcc/cp/cp-tree.h treee_pair_s
 
-struct GTY (()) tree_pair_s
+struct GTY (()) rust_tree_pair_s
 {
   tree purpose;
   tree value;
@@ -2512,7 +2512,7 @@ struct GTY (()) tree_pair_s
 
 // forked from gcc/cp/cp-tree.h tree_pair_p
 
-typedef tree_pair_s *tree_pair_p;
+typedef rust_tree_pair_s *rust_tree_pair_p;
 
 // forked from gcc/cp/cp-tree.h lang_type
 
@@ -2602,7 +2602,7 @@ struct GTY (()) lang_type
   unsigned dummy : 3;
 
   tree primary_base;
-  vec<tree_pair_s, va_gc> *vcall_indices;
+  vec<rust_tree_pair_s, va_gc> *vcall_indices;
   tree vtables;
   tree typeinfo_var;
   vec<tree, va_gc> *vbases;

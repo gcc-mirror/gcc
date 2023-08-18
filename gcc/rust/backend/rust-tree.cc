@@ -1334,7 +1334,7 @@ struct find_parameter_pack_data
 // forked from gcc/cp/lex.cc conv_type_hasher
 
 /* Hasher for the conversion operator name hash table.  */
-struct conv_type_hasher : ggc_ptr_hash<tree_node>
+struct rust_conv_type_hasher : ggc_ptr_hash<tree_node>
 {
   /* Hash NODE, an identifier node in the table.  TYPE_UID is
      suitable, as we're not concerned about matching canonicalness
@@ -1349,7 +1349,7 @@ struct conv_type_hasher : ggc_ptr_hash<tree_node>
   static bool equal (tree node, tree type) { return TREE_TYPE (node) == type; }
 };
 
-static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
+static GTY (()) hash_table<rust_conv_type_hasher> *conv_type_names;
 
 // forked from gcc/cp/lex.cc make_conv_op_name
 
@@ -1368,7 +1368,7 @@ make_conv_op_name (tree type)
     return error_mark_node;
 
   if (conv_type_names == NULL)
-    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
+    conv_type_names = hash_table<rust_conv_type_hasher>::create_ggc (31);
 
   tree *slot
     = conv_type_names->find_slot_with_hash (type, (hashval_t) TYPE_UID (type),
@@ -2251,7 +2251,7 @@ struct cplus_array_info
 
 // forked from gcc/cp/tree.cc cplus_array_hasher
 
-struct cplus_array_hasher : ggc_ptr_hash<tree_node>
+struct rust_cplus_array_hasher : ggc_ptr_hash<tree_node>
 {
   typedef cplus_array_info *compare_type;
 
@@ -2262,7 +2262,7 @@ struct cplus_array_hasher : ggc_ptr_hash<tree_node>
 /* Hash an ARRAY_TYPE.  K is really of type `tree'.  */
 
 hashval_t
-cplus_array_hasher::hash (tree t)
+rust_cplus_array_hasher::hash (tree t)
 {
   hashval_t hash;
 
@@ -2276,7 +2276,7 @@ cplus_array_hasher::hash (tree t)
    of type `cplus_array_info*'. */
 
 bool
-cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
+rust_cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
 {
   return (TREE_TYPE (t1) == t2->type && TYPE_DOMAIN (t1) == t2->domain);
 }
@@ -2285,7 +2285,7 @@ cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
 
 /* Hash table containing dependent array types, which are unsuitable for
    the language-independent type hash table.  */
-static GTY (()) hash_table<cplus_array_hasher> *cplus_array_htab;
+static GTY (()) hash_table<rust_cplus_array_hasher> *cplus_array_htab;
 
 // forked from gcc/cp/tree.cc is_byte_access_type
 
@@ -2332,7 +2332,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       hashval_t hash;
 
       if (cplus_array_htab == NULL)
-	cplus_array_htab = hash_table<cplus_array_hasher>::create_ggc (61);
+	cplus_array_htab = hash_table<rust_cplus_array_hasher>::create_ggc (61);
 
       hash = TYPE_UID (elt_type);
       if (index_type)
@@ -4260,7 +4260,7 @@ namespace Rust {
 
 /* Traits class for function start hash maps below.  */
 
-struct source_location_table_entry_hash
+struct rust_source_location_table_entry_hash
   : ggc_remove<source_location_table_entry>
 {
   typedef source_location_table_entry value_type;
@@ -4318,7 +4318,7 @@ struct source_location_table_entry_hash
 };
 
 static GTY (())
-  hash_table<source_location_table_entry_hash> *source_location_table;
+  hash_table<rust_source_location_table_entry_hash> *source_location_table;
 static GTY (()) unsigned int source_location_id;
 
 // Above is forked from gcc/cp/cp-gimplify.cc
@@ -4760,7 +4760,7 @@ fold_builtin_source_location (location_t loc)
     return build_zero_cst (const_ptr_type_node);
   if (source_location_table == NULL)
     source_location_table
-      = hash_table<source_location_table_entry_hash>::create_ggc (64);
+      = hash_table<rust_source_location_table_entry_hash>::create_ggc (64);
   const line_map_ordinary *map;
   source_location_table_entry entry;
   entry.loc = linemap_resolve_location (line_table, loc,
