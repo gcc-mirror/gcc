@@ -533,6 +533,9 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
       break;
+
+    case 0xbe:
+      /* Alder Lake N, E-core only.  */
     case 0x97:
     case 0x9a:
       /* Alder Lake.  */
