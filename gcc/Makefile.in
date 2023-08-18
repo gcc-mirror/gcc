@@ -894,7 +894,8 @@ OPTIONS_C_EXTRA = $(PRETTY_PRINT_H)
 BCONFIG_H = bconfig.h $(build_xm_file_list)
 CONFIG_H  = config.h  $(host_xm_file_list)
 TCONFIG_H = tconfig.h $(xm_file_list)
-TM_P_H    = tm_p.h    $(tm_p_file_list)
+# Some $(target)-protos.h depends on tree.h
+TM_P_H    = tm_p.h    $(tm_p_file_list) $(TREE_H)
 TM_D_H    = tm_d.h    $(tm_d_file_list)
 GTM_H     = tm.h      $(tm_file_list) insn-constants.h
 TM_H      = $(GTM_H) insn-flags.h $(OPTIONS_H)
