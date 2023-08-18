@@ -74,20 +74,23 @@ namespace __format
   // Output iterator that writes to a type-erase character sink.
   template<typename _CharT>
     class _Sink_iter;
+
+  template<typename _CharT>
+    using __format_context = basic_format_context<_Sink_iter<_CharT>, _CharT>;
 } // namespace __format
 /// @endcond
 
-  using format_context
-    = basic_format_context<__format::_Sink_iter<char>, char>;
+  using format_context  = __format::__format_context<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
-  using wformat_context
-    = basic_format_context<__format::_Sink_iter<wchar_t>, wchar_t>;
+  using wformat_context = __format::__format_context<wchar_t>;
 #endif
 
   // [format.args], class template basic_format_args
   template<typename _Context> class basic_format_args;
   using format_args = basic_format_args<format_context>;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using wformat_args = basic_format_args<wformat_context>;
+#endif
 
   // [format.arguments], arguments
   // [format.arg], class template basic_format_arg
@@ -3505,12 +3508,14 @@ namespace __format
       return _Store(__fmt_args...);
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   /// Capture formatting arguments for use by `std::vformat` (for wide output).
   template<typename... _Args>
     [[nodiscard,__gnu__::__always_inline__]]
     inline auto
     make_wformat_args(_Args&&... __args) noexcept
     { return std::make_format_args<wformat_context>(__args...); }
+#endif
 
 /// @cond undocumented
 namespace __format

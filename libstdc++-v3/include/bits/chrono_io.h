@@ -2263,8 +2263,7 @@ namespace __detail
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const day& __d)
     {
-      using _Ctx = __conditional_t<is_same_v<_CharT, char>,
-				   format_context, wformat_context>;
+      using _Ctx = __format::__format_context<_CharT>;
       using _Str = basic_string_view<_CharT>;
       _Str __s = _GLIBCXX_WIDEN("{:02d} is not a valid day");
       if (__d.ok())
@@ -2291,8 +2290,7 @@ namespace __detail
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const month& __m)
     {
-      using _Ctx = __conditional_t<is_same_v<_CharT, char>,
-				   format_context, wformat_context>;
+      using _Ctx = __format::__format_context<_CharT>;
       using _Str = basic_string_view<_CharT>;
       _Str __s = _GLIBCXX_WIDEN("{:L%b}{} is not a valid month");
       if (__m.ok())
@@ -2322,8 +2320,7 @@ namespace __detail
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const year& __y)
     {
-      using _Ctx = __conditional_t<is_same_v<_CharT, char>,
-				   format_context, wformat_context>;
+      using _Ctx = __format::__format_context<_CharT>;
       using _Str = basic_string_view<_CharT>;
       _Str __s = _GLIBCXX_WIDEN("-{:04d} is not a valid year");
       if (__y.ok())
@@ -2355,8 +2352,7 @@ namespace __detail
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const weekday& __wd)
     {
-      using _Ctx = __conditional_t<is_same_v<_CharT, char>,
-				   format_context, wformat_context>;
+      using _Ctx = __format::__format_context<_CharT>;
       using _Str = basic_string_view<_CharT>;
       _Str __s = _GLIBCXX_WIDEN("{:L%a}{} is not a valid weekday");
       if (__wd.ok())
@@ -2544,8 +2540,7 @@ namespace __detail
     operator<<(basic_ostream<_CharT, _Traits>& __os,
 	       const year_month_day& __ymd)
     {
-      using _Ctx = __conditional_t<is_same_v<_CharT, char>,
-				   format_context, wformat_context>;
+      using _Ctx = __format::__format_context<_CharT>;
       using _Str = basic_string_view<_CharT>;
       _Str __s = _GLIBCXX_WIDEN("{:%F} is not a valid date");
       __os << std::vformat(__ymd.ok() ? __s.substr(0, 5) : __s,
