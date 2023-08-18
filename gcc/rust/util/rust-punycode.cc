@@ -42,7 +42,7 @@ extract_basic_string (const std::vector<Codepoint> &src)
   std::string basic_string;
   for (auto c : src)
     {
-      if (c.value <= 0x7F)
+      if (c.is_ascii ())
 	basic_string += c.as_string ();
     }
   return basic_string;

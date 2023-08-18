@@ -23,6 +23,9 @@
 
 namespace Rust {
 
+constexpr uint32_t MAX_ASCII_CODEPOINT = 0x7F;
+constexpr uint32_t CODEPOINT_INVALID = 0xFFFE;
+
 // FIXME: move this to rust-unicode.h?
 struct Codepoint
 {
@@ -36,6 +39,7 @@ struct Codepoint
 
   static Codepoint eof () { return Codepoint (UINT32_MAX); }
   bool is_eof () const { return value == UINT32_MAX; }
+  bool is_ascii () const { return value <= MAX_ASCII_CODEPOINT; }
 
   // Returns a C++ string containing string value of codepoint.
   std::string as_string ();
