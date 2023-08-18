@@ -1657,6 +1657,56 @@ build_min_array_type (tree elt_type, tree index_type)
   return t;
 }
 
+// forked from gcc/cp/name-lookup.cc resort_data
+
+} // namespace Rust
+
+static struct
+{
+  gt_pointer_operator new_value;
+  void *cookie;
+} resort_data;
+
+// forked from gcc/cp/name-lookup.cc resort_member_name_cmp
+
+/* This routine compares two fields like member_name_cmp but using the
+   pointer operator in resort_field_decl_data.  We don't have to deal
+   with duplicates here.  */
+
+static int
+resort_member_name_cmp (const void *a_p, const void *b_p)
+{
+  tree a = *(const tree *) a_p;
+  tree b = *(const tree *) b_p;
+  tree name_a = OVL_NAME (a);
+  tree name_b = OVL_NAME (b);
+
+  resort_data.new_value (&name_a, &name_a, resort_data.cookie);
+  resort_data.new_value (&name_b, &name_b, resort_data.cookie);
+
+  gcc_checking_assert (name_a != name_b);
+
+  return name_a < name_b ? -1 : +1;
+}
+
+// forked from gcc/cp/name-lookup.cc resort_type_member_vec
+
+/* Resort CLASSTYPE_MEMBER_VEC because pointers have been reordered.  */
+
+void
+resort_type_member_vec (void *obj, void * /*orig_obj*/,
+			gt_pointer_operator new_value, void *cookie)
+{
+  if (vec<tree, va_gc> *member_vec = (vec<tree, va_gc> *) obj)
+    {
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      member_vec->qsort (resort_member_name_cmp);
+    }
+}
+
+namespace Rust {
+
 // forked from gcc/cp/name-lookup.cc fields_linear_search
 
 /* Linear search of (partially ordered) fields of KLASS for NAME.  */

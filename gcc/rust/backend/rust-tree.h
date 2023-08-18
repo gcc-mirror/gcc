@@ -2069,6 +2069,12 @@ struct GTY (()) rust_cxx_saved_binding
   tree real_type_value;
 };
 
+// forked from gcc/cp/name-lookup.h resort_type_member_vec
+
+/* needed for GTY annotation */
+extern void
+resort_type_member_vec (void *, void *, gt_pointer_operator, void *);
+
 // forked from gcc/cp/cp-tree.h saved_scope
 
 /* Global state.  */
