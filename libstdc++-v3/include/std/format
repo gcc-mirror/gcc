@@ -2083,7 +2083,7 @@ namespace __format
     };
 #endif
 
-#if defined(__FLT16_DIG__)
+#ifdef __STDCPP_FLOAT16_T__
   // Reuse __formatter_fp<C>::format<float, Out> for _Float16.
   template<__format::__char _CharT>
     struct formatter<_Float16, _CharT>
@@ -2171,7 +2171,7 @@ namespace __format
     };
 #endif
 
-#if defined(__BFLT16_DIG__)
+#ifdef __STDCPP_BFLOAT16_T__
   // Reuse __formatter_fp<C>::format<float, Out> for bfloat16_t.
   template<__format::__char _CharT>
     struct formatter<__gnu_cxx::__bfloat16_t, _CharT>

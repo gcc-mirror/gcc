@@ -1982,7 +1982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= round_to_nearest; 						\
     }; 									\
 
-#ifdef __FLT16_DIG__
+#ifdef __STDCPP_FLOAT16_T__
 __glibcxx_float_n(16)
 #endif
 #ifdef __FLT32_DIG__
@@ -2002,7 +2002,7 @@ __glibcxx_float_n(128)
 # undef __max_digits10
 #endif
 
-#ifdef __BFLT16_DIG__
+#ifdef __STDCPP_BFLOAT16_T__
   __extension__
   template<>
     struct numeric_limits<__gnu_cxx::__bfloat16_t>
@@ -2079,7 +2079,7 @@ __glibcxx_float_n(128)
       static _GLIBCXX_USE_CONSTEXPR float_round_style round_style
 	= round_to_nearest;
     };
-#endif
+#endif // __STDCPP_BFLOAT16_T__
 
 #if defined(_GLIBCXX_USE_FLOAT128)
 // We either need Q literal suffixes, or IEEE double.
