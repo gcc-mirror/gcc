@@ -1,3 +1,14 @@
+2023-08-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/gomp/attrs-metadirective-1.C: New file.
+	* g++.dg/gomp/attrs-metadirective-2.C: New file.
+	* g++.dg/gomp/attrs-metadirective-3.C: New file.
+	* g++.dg/gomp/attrs-metadirective-4.C: New file.
+	* g++.dg/gomp/attrs-metadirective-5.C: New file.
+	* g++.dg/gomp/attrs-metadirective-6.C: New file.
+	* g++.dg/gomp/attrs-metadirective-7.C: New file.
+	* g++.dg/gomp/attrs-metadirective-8.C: New file.
+
 2023-08-10  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/gomp/declare-mapper-17.c: New test.

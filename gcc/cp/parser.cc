@@ -49458,6 +49458,7 @@ analyze_metadirective_body (cp_parser *parser,
   int bracket_depth = 0;
   bool in_case = false;
   bool in_label_decl = false;
+  cp_token *pragma_tok = NULL;
 
   while (1)
     {
@@ -49501,6 +49502,19 @@ analyze_metadirective_body (cp_parser *parser,
 	  /* Local label declarations are terminated by a semicolon.  */
 	  in_label_decl = false;
 	  goto add;
+	case CPP_PRAGMA:
+	  parser->lexer->in_pragma = true;
+	  pragma_tok = token;
+	  goto add;
+	case CPP_PRAGMA_EOL:
+	  /* C++ attribute syntax for OMP directives lexes as a pragma,
+	     but we must reset the associated lexer state when we reach
+	     the end in order to get the tokens for the statement that
+	     come after it.  */
+	  tokens.safe_push (*token);
+	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	  pragma_tok = NULL;
+	  continue;
 	default:
 	add:
 	  tokens.safe_push (*token);
@@ -49541,6 +49555,8 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_KEYWORD))
 	{
