@@ -1,3 +1,49 @@
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtins.cc
+	(ix86_vectorize_builtin_gather): Adjust for use_gather_8parts.
+	* config/i386/i386-options.cc (parse_mtune_ctrl_str):
+	Set/Clear tune features use_{gather,scatter}_{2parts, 4parts,
+	8parts} for -mtune-crtl={,^}{use_gather,use_scatter}.
+	* config/i386/i386.cc (ix86_vectorize_builtin_scatter): Adjust
+	for use_scatter_8parts
+	* config/i386/i386.h (TARGET_USE_GATHER): Rename to ..
+	(TARGET_USE_GATHER_8PARTS): .. this.
+	(TARGET_USE_SCATTER): Rename to ..
+	(TARGET_USE_SCATTER_8PARTS): .. this.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER): Rename to
+	(X86_TUNE_USE_GATHER_8PARTS): .. this.
+	(X86_TUNE_USE_SCATTER): Rename to
+	(X86_TUNE_USE_SCATTER_8PARTS): .. this.
+	* config/i386/i386.opt: Add new options mgather, mscatter.
+
+2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2023-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (m_GDS): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Don't
+	enable for m_GDS.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER): Ditto.
+
+2023-08-15  Cui, Lili  <lili.cui@intel.com>
+
+	Backported from master:
+	2023-06-29  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Remove model value 0xa8
+	from Rocketlake, and 0xbf from Alderlake.
+
+2023-08-14  Cui, Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add model value 0xba
+	to Raptorlake.
+
 2023-08-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (anticipatable_occurrence_p):

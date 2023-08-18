@@ -1278,3 +1278,11 @@ Enum(lam_type) String(u57) Value(lam_u57)
 mamx-complex
 Target Mask(ISA2_AMX_COMPLEX) Var(ix86_isa_flags2) Save
 Support AMX-COMPLEX built-in functions and code generation.
+
+mgather
+Target Alias(mtune-ctrl=, use_gather, ^use_gather)
+Enable vectorization for gather instruction.
+
+mscatter
+Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
+Enable vectorization for scatter instruction.
