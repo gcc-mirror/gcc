@@ -7083,7 +7083,7 @@ extern tree maybe_set_retval_sentinel		(void);
 extern tree template_parms_to_args		(tree);
 extern tree template_parms_level_to_args	(tree);
 extern tree generic_targs_for			(tree);
-extern tree outer_template_args			(tree);
+extern tree outer_template_args			(const_tree);
 
 /* in expr.cc */
 extern tree cplus_expand_constant		(tree);

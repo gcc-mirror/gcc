@@ -4966,19 +4966,21 @@ generic_targs_for (tree tmpl)
 }
 
 /* Return the template arguments corresponding to the template parameters of
-   TMPL's enclosing scope.  When TMPL is a member of a partial specialization,
+   DECL's enclosing scope.  When DECL is a member of a partial specialization,
    this returns the arguments for the partial specialization as opposed to those
    for the primary template, which is the main difference between this function
-   and simply using e.g. the TYPE_TI_ARGS of TMPL's DECL_CONTEXT.  */
+   and simply using e.g. the TYPE_TI_ARGS of DECL's DECL_CONTEXT.  */
 
 tree
-outer_template_args (tree tmpl)
+outer_template_args (const_tree decl)
 {
-  tree ti = get_template_info (DECL_TEMPLATE_RESULT (tmpl));
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    decl = DECL_TEMPLATE_RESULT (decl);
+  tree ti = get_template_info (decl);
   if (!ti)
     return NULL_TREE;
   tree args = TI_ARGS (ti);
-  if (!PRIMARY_TEMPLATE_P (tmpl))
+  if (!PRIMARY_TEMPLATE_P (TI_TEMPLATE (ti)))
     return args;
   if (TMPL_ARGS_DEPTH (args) == 1)
     return NULL_TREE;
