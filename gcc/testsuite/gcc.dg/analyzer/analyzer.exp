@@ -32,6 +32,14 @@ if [info exists DEFAULT_CFLAGS] then {
 # If a testcase doesn't have special options, use these.
 set DEFAULT_CFLAGS "-fanalyzer -Wanalyzer-too-complex -fanalyzer-call-summaries"
 
+if { [istarget "*-*-darwin*" ] } {
+  # On macOS, system headers redefine by default some macros (memcpy,
+  # memmove, etc) to checked versions, which defeats the analyzer. We
+  # want to turn this off.
+  # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104042
+  set DEFAULT_CFLAGS "$DEFAULT_CFLAGS -D_FORTIFY_SOURCE=0"
+}
+
 # Initialize `dg'.
 dg-init
 
