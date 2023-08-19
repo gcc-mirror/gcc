@@ -1,3 +1,63 @@
+2023-08-18  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* lib/target-supports.exp (dg-require-python-h): Test
+	whether Python.h can really be used.
+
+2023-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111023
+	* gcc.target/i386/pr111023-2.c: New test.
+	* gcc.target/i386/pr111023-4b.c: New test.
+	* gcc.target/i386/pr111023-8b.c: New test.
+	* gcc.target/i386/pr111023.c: New test.
+
+2023-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR ipa/110753
+	* gcc.dg/tree-ssa/pr110753.c: New test.
+
+2023-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111019
+	* g++.dg/torture/pr111019.C: New testcase.
+
+2023-08-18  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/frame-limit-1.c: New test.
+	* gcc.target/bpf/frame-limit-2.c: Likewise.
+
+2023-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111048
+	* gcc.dg/torture/pr111048.c: New testcase.
+
+2023-08-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111051
+	PR target/111051
+	* gcc.target/i386/pr111051-1.c: New test.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/_Float16-zhinxmin-3.c: Adjust.
+	* gcc.target/riscv/_Float16-zhinxmin-4.c: Ditto.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/_Float16-zfhmin-4.c: New test.
+	* gcc.target/riscv/_Float16-zhinxmin-4.c: New test.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/scalar_move-5.c: Update.
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: Ditto.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load_run-1.c:
+	Address failure due to uninitialized vtype register.
+
 2023-08-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111009

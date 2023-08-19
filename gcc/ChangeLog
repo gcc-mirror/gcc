@@ -1,3 +1,93 @@
+2023-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111023
+	* config/i386/i386-expand.cc (ix86_split_mmx_punpck):
+	Also handle V2QImode.
+	(ix86_expand_sse_extend): New function.
+	* config/i386/i386-protos.h (ix86_expand_sse_extend): New prototype.
+	* config/i386/mmx.md (<any_extend:insn>v4qiv4hi2): Enable for
+	TARGET_SSE2.  Expand through ix86_expand_sse_extend for !TARGET_SSE4_1.
+	(<any_extend:insn>v2hiv2si2): Ditto.
+	(<any_extend:insn>v2qiv2hi2): Ditto.
+	* config/i386/sse.md (<any_extend:insn>v8qiv8hi2): Ditto.
+	(<any_extend:insn>v4hiv4si2): Ditto.
+	(<any_extend:insn>v2siv2di2): Ditto.
+
+2023-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR ipa/110753
+	* value-range.cc (irange::union_bitmask): Return FALSE if updated
+	bitmask is semantically equivalent to the original mask.
+	(irange::intersect_bitmask): Same.
+	(irange::get_bitmask): Add comment.
+
+2023-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111019
+	* tree-ssa-loop-im.cc (gather_mem_refs_stmt): When canonicalizing
+	also scrap base and offset in case the ref is indirect.
+
+2023-08-18  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.opt (mframe-limit): Set default to 32767.
+
+2023-08-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR bootstrap/111021
+	* Makefile.in (TM_P_H): Add $(TREE_H) as dependence.
+
+2023-08-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vect_build_scatter_store_calls): New, factor
+	out from ...
+	(vectorizable_store): ... here.
+
+2023-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111048
+	* fold-const.cc (fold_vec_perm_cst): Check for non-VLA
+	vectors first.
+
+2023-08-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111051
+	* config/i386/avx512vldqintrin.h: Push AVX2 when AVX2 is
+	disabled.
+
+2023-08-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Move the handlings on
+	VMAT_GATHER_SCATTER in the final loop nest to its own loop,
+	and update the final nest accordingly.
+
+2023-08-18  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/md.texi (Standard patterns): Document cond_neg, cond_one_cmpl,
+	cond_len_neg and cond_len_one_cmpl.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/iterators.md (TARGET_HARD_FLOAT || TARGET_ZFINX): New.
+	* config/riscv/pic.md (*local_pic_load<ANYF:mode>): Change ANYF.
+	(*local_pic_load<ANYLSF:mode>): To ANYLSF.
+	(*local_pic_load_32d<ANYF:mode>): Ditto.
+	(*local_pic_load_32d<ANYLSF:mode>): Ditto.
+	(*local_pic_store<ANYF:mode>): Ditto.
+	(*local_pic_store<ANYLSF:mode>): Ditto.
+	(*local_pic_store_32d<ANYF:mode>): Ditto.
+	(*local_pic_store_32d<ANYLSF:mode>): Ditto.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md (vector_const_0_operand): New.
+	* config/riscv/vector.md (*pred_broadcast<mode>_zero): Ditto.
+
+2023-08-18  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::backward_demand_fusion):
+	Forbidden.
+
 2023-08-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/111009

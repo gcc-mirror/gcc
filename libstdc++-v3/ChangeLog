@@ -1,3 +1,25 @@
+2023-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR target/111060
+	* include/std/format (formatter): Only define specializations
+	for 16-bit floating-point types for C++23.
+	* include/std/limits (numeric_limits): Likewise.
+
+2023-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (operator<<): Make uses of wide
+	strings with streams and std::format type-dependent on _CharT.
+	* include/std/format [!_GLIBCXX_USE_WCHAR_T] Do not use
+	__to_wstring_numeric.
+
+2023-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (operator<<): Use __format_context.
+	* include/std/format (__format::__format_context): New alias
+	template.
+	[!_GLIBCXX_USE_WCHAR_T] (wformat_args, make_wformat_arg):
+	Disable.
+
 2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Revert:
