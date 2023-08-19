@@ -3,6 +3,7 @@
 /* { dg-require-effective-target sockets } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
