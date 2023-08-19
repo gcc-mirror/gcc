@@ -7,4 +7,4 @@
 #endif
 
 struct A { A(); } a __attribute__((init_priority(500)));
-// { dg-warning "attribute directive ignored" "" { target { ! init_priority } } .-1 }
+// { dg-warning "attribute ignored" "" { target { ! init_priority } } .-1 }
