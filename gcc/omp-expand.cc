@@ -2562,7 +2562,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      tree factor = fd->factor;
 	      gcond *cond_stmt
 		= expand_omp_build_cond (gsi, NE_EXPR, factor,
-					 build_zero_cst (TREE_TYPE (factor)));
+					 build_zero_cst (TREE_TYPE (factor)),
+					 true);
 	      edge e = split_block (gsi_bb (*gsi), cond_stmt);
 	      basic_block bb0 = e->src;
 	      e->flags = EDGE_TRUE_VALUE;
