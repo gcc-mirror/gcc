@@ -4247,6 +4247,17 @@ struct GTY ((for_user)) source_location_table_entry
   tree var;
 };
 
+// exit/reenter namespace to declare some external functions
+
+} // namespace Rust
+
+extern void
+gt_pch_nx (Rust::source_location_table_entry &);
+extern void
+gt_pch_nx (Rust::source_location_table_entry *, gt_pointer_operator, void *);
+
+namespace Rust {
+
 /* Traits class for function start hash maps below.  */
 
 struct source_location_table_entry_hash
@@ -4297,17 +4308,11 @@ struct source_location_table_entry_hash
 	    && ref.var == NULL_TREE);
   }
 
-  static void pch_nx (source_location_table_entry &p)
-  {
-    extern void gt_pch_nx (source_location_table_entry &);
-    gt_pch_nx (p);
-  }
+  static void pch_nx (source_location_table_entry &p) { gt_pch_nx (p); }
 
   static void pch_nx (source_location_table_entry &p, gt_pointer_operator op,
 		      void *cookie)
   {
-    extern void gt_pch_nx (source_location_table_entry *, gt_pointer_operator,
-			   void *);
     gt_pch_nx (&p, op, cookie);
   }
 };

@@ -609,7 +609,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define OVL_EXPORT_P(NODE) TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
-#define OVL_FIRST(NODE) ovl_first (NODE)
+#define OVL_FIRST(NODE) Rust::ovl_first (NODE)
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
 
