@@ -22923,8 +22923,7 @@
 {
   if (!TARGET_SSE4_1)
     {
-      rtx op1 = force_reg (V8QImode, operands[1]);
-      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
       DONE;
     }
 
@@ -23240,8 +23239,7 @@
 {
   if (!TARGET_SSE4_1)
     {
-      rtx op1 = force_reg (V4HImode, operands[1]);
-      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
       DONE;
     }
 
@@ -23846,8 +23844,7 @@
 {
   if (!TARGET_SSE4_1)
     {
-      rtx op1 = force_reg (V2SImode, operands[1]);
-      ix86_expand_sse_extend (operands[0], op1, <u_bool>);
+      ix86_expand_sse_extend (operands[0], operands[1], <u_bool>);
       DONE;
     }
 

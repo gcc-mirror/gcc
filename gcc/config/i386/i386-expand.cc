@@ -5667,7 +5667,7 @@ ix86_expand_sse_extend (rtx dest, rtx src, bool unsigned_p)
     ops[2] = force_reg (imode, CONST0_RTX (imode));
   else
     ops[2] = ix86_expand_sse_cmp (gen_reg_rtx (imode), GT, CONST0_RTX (imode),
-				  src, pc_rtx, pc_rtx);
+				  ops[1], pc_rtx, pc_rtx);
 
   ix86_split_mmx_punpck (ops, false);
   emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), ops[0], imode));
