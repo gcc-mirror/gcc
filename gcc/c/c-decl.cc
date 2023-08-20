@@ -9674,7 +9674,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
 
   /* Check for consistency with previous definition.  */
-  if (flag_isoc23)
+  if (flag_isoc23 && NULL != enclosing_struct_parse_info)
     {
       tree vistype = previous_tag (t);
       if (vistype
@@ -9744,16 +9744,19 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (warn_cxx_compat)
     warn_cxx_compat_finish_struct (fieldlist, TREE_CODE (t), loc);
 
-  delete struct_parse_info;
+  if (NULL != enclosing_struct_parse_info)
+    {
+      delete struct_parse_info;
 
-  struct_parse_info = enclosing_struct_parse_info;
+      struct_parse_info = enclosing_struct_parse_info;
 
-  /* If this struct is defined inside a struct, add it to
-     struct_types.  */
-  if (warn_cxx_compat
-      && struct_parse_info != NULL
-      && !in_sizeof && !in_typeof && !in_alignof)
-    struct_parse_info->struct_types.safe_push (t);
+      /* If this struct is defined inside a struct, add it to
+	 struct_types.  */
+      if (warn_cxx_compat
+	  && struct_parse_info != NULL
+	  && !in_sizeof && !in_typeof && !in_alignof)
+	struct_parse_info->struct_types.safe_push (t);
+     }
 
   return t;
 }
