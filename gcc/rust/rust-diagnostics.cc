@@ -278,6 +278,28 @@ rust_error_at (const rich_location &location, const ErrorCode code,
 }
 
 void
+rust_be_error_at (rich_location *richloc, const ErrorCode code,
+		  const std::string &errmsg)
+{
+  diagnostic_metadata m;
+  rust_error_code_rule rule (code);
+  m.add_rule (rule);
+  error_meta (richloc, m, "%s", errmsg.c_str ());
+}
+
+void
+rust_error_at (rich_location *richloc, const ErrorCode code, const char *fmt,
+	       ...)
+{
+  /* TODO: Refactoring diagnostics to this overload */
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (richloc, code, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
 rust_be_warning_at (const location_t location, int opt,
 		    const std::string &warningmsg)
 {
@@ -342,6 +364,23 @@ rust_error_at (const rich_location &location, const char *fmt, ...)
 
   va_start (ap, fmt);
   rust_be_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
+rust_be_error_at (rich_location *richloc, const std::string &errmsg)
+{
+  error_at (richloc, "%s", errmsg.c_str ());
+}
+
+void
+rust_error_at (rich_location *richloc, const char *fmt, ...)
+{
+  /* TODO: Refactoring diagnostics to this overload */
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (richloc, expand_message (fmt, ap));
   va_end (ap);
 }
 
