@@ -1214,8 +1214,8 @@ check_function_format (const_tree fn, tree attrs, int nargs,
 		    skipped_default_format = true;
 		    break;
 		  }
-		if (skipped_default_format)
-		  continue;
+	       if (skipped_default_format)
+		 continue;
 	    }
 
 	  if (warn_format)
