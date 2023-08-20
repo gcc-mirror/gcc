@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-require-alias "" } */
 /* { dg-options "-O2 -fdump-ipa-icf-optimized -flto -fdump-tree-optimized" } */
 /* { dg-require-effective-target lto } */
 /* { dg-additional-sources "ipa-icf-38a.c" }*/
