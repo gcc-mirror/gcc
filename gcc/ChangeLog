@@ -1,3 +1,17 @@
+2023-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/111017
+	* omp-expand.cc (expand_omp_for_init_vars): Pass after=true
+	to expand_omp_build_cond for 'factor != 0' condition, resulting
+	in pre-r12-5295-g47de0b56ee455e code for the gimple insert.
+
+2023-08-19  Guo Jie  <guojie@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/t-loongarch: Add loongarch-driver.h into
+	TM_H. Add loongarch-def.h and loongarch-tune.h into
+	OPTIONS_H_EXTRA.
+
 2023-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/111023
