@@ -52,5 +52,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_fold_extract_last } } } */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_fold_extract_last } } } } */
+/* { dg-final { scan-tree-dump "optimizing condition reduction with FOLD_EXTRACT_LAST" "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target aarch64*-*-* } } } */
