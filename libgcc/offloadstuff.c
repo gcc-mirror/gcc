@@ -63,6 +63,19 @@ const void *const __offload_vars_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
 
+extern void GOMP_offload_register_ver (unsigned, const void *, int,
+				       const void *);
+extern const void *const __OFFLOAD_TABLE__[0] __attribute__ ((weak));
+static void __attribute__((constructor))
+init_non_offload (void)
+{
+  /* If an OpenMP program has no offloading, post-offload_register callbacks
+     that need to run will require a call to GOMP_offload_register_ver, in
+     order to properly trigger those callbacks during init.  */
+  if (__OFFLOAD_TABLE__ == NULL)
+    GOMP_offload_register_ver (0, NULL, 0, NULL);
+}
+
 #elif defined CRT_TABLE
 
 extern const void *const __offload_func_table[];

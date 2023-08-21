@@ -878,6 +878,11 @@ internal_proto(xrealloc);
 extern void xfree (void *);
 internal_proto(xfree);
 
+#if !defined(LIBGFOR_MINIMAL) && defined(__linux__)
+extern void mem_allocators_init (void *, void *, void *, void *);
+export_proto(mem_allocators_init);
+#endif
+
 /* environ.c */
 
 extern void init_variables (void);

@@ -1765,3 +1765,8 @@ GFORTRAN_13 {
     __ieee_exceptions_MOD_ieee_get_modes;
     __ieee_exceptions_MOD_ieee_set_modes;
 } GFORTRAN_12;
+
+GFORTRAN_14 {
+  global:
+  _gfortran_mem_allocators_init;
+} GFORTRAN_13;
