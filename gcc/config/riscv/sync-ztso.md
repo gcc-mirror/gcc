@@ -52,7 +52,7 @@
 
     if (model == MEMMODEL_SEQ_CST)
       return "fence\trw,rw\;"
-	     "l<amo>\t%0,%1\;";
+	     "l<amo>\t%0,%1";
     else
       return "l<amo>\t%0,%1";
   }
