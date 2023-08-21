@@ -27,6 +27,33 @@ namespace Resolver2_0 {
 Early::Early (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
 
 void
+Early::insert_once (AST::MacroInvocation &invocation, NodeId resolved)
+{
+  // TODO: Should we use `ctx.mark_resolved()`?
+  AST::MacroRulesDefinition *definition;
+  auto ok = ctx.mappings.lookup_macro_def (resolved, &definition);
+
+  rust_assert (ok);
+
+  AST::MacroRulesDefinition *existing;
+  auto exists = ctx.mappings.lookup_macro_invocation (invocation, &existing);
+
+  if (!exists)
+    ctx.mappings.insert_macro_invocation (invocation, definition);
+}
+
+void
+Early::insert_once (AST::MacroRulesDefinition &def)
+{
+  // TODO: Should we use `ctx.mark_resolved()`?
+  AST::MacroRulesDefinition *definition;
+  auto exists = ctx.mappings.lookup_macro_def (def.get_node_id (), &definition);
+
+  if (!exists)
+    ctx.mappings.insert_macro_def (&def);
+}
+
+void
 Early::go (AST::Crate &crate)
 {
   // First we go through TopLevel resolution to get all our declared items
@@ -89,6 +116,7 @@ Early::visit (AST::MacroRulesDefinition &def)
   DefaultResolver::visit (def);
 
   textual_scope.insert (def.get_rule_name ().as_string (), def.get_node_id ());
+  insert_once (def);
 }
 
 void
@@ -140,6 +168,8 @@ Early::visit (AST::MacroInvocation &invoc)
 			    "could not resolve macro invocation"));
       return;
     }
+
+  insert_once (invoc, *definition);
 
   // now do we need to keep mappings or something? or insert "uses" into our
   // ForeverStack? can we do that? are mappings simpler?

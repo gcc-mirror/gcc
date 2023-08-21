@@ -61,6 +61,16 @@ private:
   void visit_attributes (std::vector<AST::Attribute> &attrs);
 
   /**
+   * Insert a resolved macro invocation into the mappings once, meaning that we
+   * can call this function each time the early name resolution pass is underway
+   * and it will not trigger assertions for already resolved invocations.
+   */
+  // TODO: Rename
+  void insert_once (AST::MacroInvocation &invocation, NodeId resolved);
+  // TODO: Rename
+  void insert_once (AST::MacroRulesDefinition &definition);
+
+  /**
    * Macros can either be resolved through textual scoping or regular path
    * scoping - which this class represents. Textual scoping works similarly to a
    * "simple" name resolution algorith, with the addition of "shadowing". Each
