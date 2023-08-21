@@ -8634,6 +8634,24 @@ proc check_effective_target_vect_variable_length { } {
     return [expr { [lindex [available_vector_sizes] 0] == 0 }]
 }
 
+# Return 1 if the target supports vectors of 512 bits.
+
+proc check_effective_target_vect512 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 512] >= 0 }]
+}
+
+# Return 1 if the target supports vectors of 256 bits.
+
+proc check_effective_target_vect256 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 256] >= 0 }]
+}
+
+# Return 1 if the target supports vectors of 128 bits.
+
+proc check_effective_target_vect128 { } {
+    return [expr { [lsearch -exact [available_vector_sizes] 128] >= 0 }]
+}
+
 # Return 1 if the target supports vectors of 64 bits.
 
 proc check_effective_target_vect64 { } {
