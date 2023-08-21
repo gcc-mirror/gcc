@@ -231,7 +231,6 @@ package body System.Img_Util is
       begin
          pragma Assert (S >= Digs'First and E <= Digs'Last);
          --  S and E should be in the Digs array range
-         --  TBC: Analysis should be completed
          for J in S .. E loop
             Set (Digs (J));
          end loop;
