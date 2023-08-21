@@ -8023,6 +8023,20 @@ package body Freeze is
 
          Adjust_Esize_For_Alignment (Typ);
       end if;
+
+      --  Reject a very large size on a type with a non-standard representation
+      --  because Expand_Freeze_Enumeration_Type cannot deal with it.
+
+      if Has_Non_Standard_Rep (Typ)
+        and then Known_Esize (Typ)
+        and then Esize (Typ) > System_Max_Integer_Size
+      then
+         Error_Msg_N
+           ("enumeration type with representation clause too large", Typ);
+         Error_Msg_Uint_1 := UI_From_Int (System_Max_Integer_Size);
+         Error_Msg_N
+           ("\the size of such a type cannot exceed ^ bits", Typ);
+      end if;
    end Freeze_Enumeration_Type;
 
    -----------------------
