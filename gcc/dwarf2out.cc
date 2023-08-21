@@ -30141,8 +30141,13 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_reference_type:
     case DW_TAG_rvalue_reference_type:
     case DW_TAG_volatile_type:
+    case DW_TAG_restrict_type:
+    case DW_TAG_shared_type:
+    case DW_TAG_atomic_type:
+    case DW_TAG_immutable_type:
     case DW_TAG_typedef:
     case DW_TAG_array_type:
+    case DW_TAG_coarray_type:
     case DW_TAG_friend:
     case DW_TAG_enumeration_type:
     case DW_TAG_subroutine_type:
@@ -30151,6 +30156,8 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_subrange_type:
     case DW_TAG_ptr_to_member_type:
     case DW_TAG_file_type:
+    case DW_TAG_unspecified_type:
+    case DW_TAG_dynamic_type:
       /* Type nodes are useful only when other DIEs reference them --- don't
 	 mark them.  */
       /* FALLTHROUGH */
