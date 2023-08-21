@@ -604,7 +604,7 @@ dnl  XSL_STYLE_DIR
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_DOCBOOK], [
 
-glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
+glibcxx_docbook_url=http://cdn.docbook.org/release/xsl/current/
 
 AC_MSG_CHECKING([for local stylesheet directory])
 glibcxx_local_stylesheets=no

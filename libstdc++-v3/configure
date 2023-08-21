@@ -74178,7 +74178,7 @@ fi
 
 
 
-glibcxx_docbook_url=http://docbook.sourceforge.net/release/xsl-ns/current/
+glibcxx_docbook_url=http://cdn.docbook.org/release/xsl/current/
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for local stylesheet directory" >&5
 $as_echo_n "checking for local stylesheet directory... " >&6; }
