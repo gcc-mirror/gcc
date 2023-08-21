@@ -103,7 +103,8 @@
 			       (match_dup 4)))]
 {
 	operands[3] = GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2]));
-})
+}
+[(set_attr "type" "bitmanip")])
 
 (define_insn "*shNadduw"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -533,7 +534,9 @@
   "&& reload_completed"
   [(set (match_dup 3) (sign_extend:DI (match_dup 1)))
    (set (match_dup 4) (match_dup 2))
-   (set (match_dup 0) (<minmax_optab>:DI (match_dup 3) (match_dup 4)))])
+   (set (match_dup 0) (<minmax_optab>:DI (match_dup 3) (match_dup 4)))]
+  ""
+  [(set_attr "type" "bitmanip")])
 
 ;; ZBS extension.
 
@@ -628,7 +631,8 @@
 
 	operands[3] = GEN_INT (~bits | topbit);
 	operands[4] = GEN_INT (~topbit);
-})
+}
+[(set_attr "type" "bitmanip")])
 
 ;; In case of a paradoxical subreg, the sign bit and the high bits are
 ;; not allowed to be changed
@@ -648,7 +652,8 @@
 
 	operands[3] = GEN_INT (~bits | topbit);
 	operands[4] = GEN_INT (~topbit);
-})
+}
+[(set_attr "type" "bitmanip")])
 
 (define_insn "*binv<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
@@ -743,7 +748,8 @@
 
 	operands[3] = GEN_INT (bits &~ topbit);
 	operands[4] = GEN_INT (topbit);
-})
+}
+[(set_attr "type" "bitmanip")])
 
 ;; Same to use blcri + andi and blcri + bclri
 (define_insn_and_split "*andi<mode>_extrabit"
@@ -761,7 +767,8 @@
 
 	operands[3] = GEN_INT (bits | topbit);
 	operands[4] = GEN_INT (~topbit);
-})
+}
+[(set_attr "type" "bitmanip")])
 
 ;; IF_THEN_ELSE: test for 2 bits of opposite polarity
 (define_insn_and_split "*branch<X:mode>_mask_twobits_equals_singlebit"
@@ -803,7 +810,8 @@
 
    operands[8] = GEN_INT (setbit);
    operands[9] = GEN_INT (clearbit);
-})
+}
+[(set_attr "type" "bitmanip")])
 
 ;; IF_THEN_ELSE: test for (a & (1 << BIT_NO))
 (define_insn_and_split "*branch<X:mode>_bext"
@@ -826,7 +834,9 @@
 					(zero_extend:X (match_dup 3))))
    (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
 			   (label_ref (match_dup 0))
-			   (pc)))])
+			   (pc)))]
+   ""
+  [(set_attr "type" "bitmanip")])
 
 ;; ZBKC or ZBC extension
 (define_insn "riscv_clmul_<mode>"
