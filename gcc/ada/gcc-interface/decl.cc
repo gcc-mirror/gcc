@@ -2388,6 +2388,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  = (Is_Packed (gnat_entity)
 	     || Is_Packed_Array_Impl_Type (gnat_entity));
 
+	TYPE_BIT_PACKED_ARRAY_TYPE_P (tem)
+	  = (Is_Packed_Array_Impl_Type (gnat_entity)
+	     ? Is_Bit_Packed_Array (Original_Array_Type (gnat_entity))
+	     : Is_Bit_Packed_Array (gnat_entity));
+
 	if (Treat_As_Volatile (gnat_entity))
 	  tem = change_qualified_type (tem, TYPE_QUAL_VOLATILE);
 
@@ -2815,7 +2820,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  TYPE_BIT_PACKED_ARRAY_TYPE_P (gnu_type)
 	    = (Is_Packed_Array_Impl_Type (gnat_entity)
-	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
+	       ? Is_Bit_Packed_Array (Original_Array_Type (gnat_entity))
+	       : Is_Bit_Packed_Array (gnat_entity));
 
 	  /* If the maximum size doesn't overflow, use it.  */
 	  if (gnu_max_size
