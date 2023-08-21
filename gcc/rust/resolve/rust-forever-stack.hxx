@@ -208,7 +208,7 @@ ForeverStack<N>::update_cursor (Node &new_cursor)
 }
 
 template <Namespace N>
-inline tl::optional<NodeId>
+tl::optional<NodeId>
 ForeverStack<N>::get (const Identifier &name)
 {
   tl::optional<NodeId> resolved_node = tl::nullopt;
@@ -228,6 +228,33 @@ ForeverStack<N>::get (const Identifier &name)
 	return KeepGoing::No;
       },
       // if there was no candidate, we keep iterating
+      KeepGoing::Yes);
+  });
+
+  return resolved_node;
+}
+
+template <>
+tl::optional<NodeId> inline ForeverStack<Namespace::Labels>::get (
+  const Identifier &name)
+{
+  tl::optional<NodeId> resolved_node = tl::nullopt;
+
+  reverse_iter ([&resolved_node, &name] (Node &current) {
+    // looking up for labels cannot go through function ribs
+    // TODO: What other ribs?
+    if (current.rib.kind == Rib::Kind::Function)
+      return KeepGoing::No;
+
+    auto candidate = current.rib.get (name.as_string ());
+
+    // FIXME: Factor this in a function with the generic `get`
+    return candidate.map_or (
+      [&resolved_node] (NodeId found) {
+	resolved_node = found;
+
+	return KeepGoing::No;
+      },
       KeepGoing::Yes);
   });
 
