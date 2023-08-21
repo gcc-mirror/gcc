@@ -1,3 +1,24 @@
+2023-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_extend): Use ops[1]
+	instead of src in the call to ix86_expand_sse_cmp.
+	* config/i386/sse.md (<any_extend:insn>v8qiv8hi2): Do not
+	force operands[1] to a register.
+	(<any_extend:insn>v4hiv4si2): Ditto.
+	(<any_extend:insn>v2siv2di2): Ditto.
+
+2023-08-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111006
+	PR tree-optimization/110986
+	* match.pd: (op(vec_cond(a,b,c))): Handle convert for op.
+
+2023-08-20  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR target/90835
+	* Makefile.in: improve error message when /usr/include is
+	missing
+
 2023-08-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/111017

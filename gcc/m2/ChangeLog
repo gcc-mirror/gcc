@@ -1,3 +1,16 @@
+2023-08-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/111085
+	* gm2-libs/Builtins.def (nexttoward): Alter the second
+	parameter to LONGREAL.
+	(nexttowardf): Alter the second	parameter to LONGREAL.
+	* gm2-libs/Builtins.mod (nexttoward): Alter the second
+	parameter to LONGREAL.
+	(nexttowardf): Alter the second	parameter to LONGREAL.
+	* gm2-libs/cbuiltin.def (nexttoward): Alter the second
+	parameter to LONGREAL.
+	(nexttowardf): Alter the second	parameter to LONGREAL.
+
 2023-08-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in: Update suffix spellings to use 'soext'.

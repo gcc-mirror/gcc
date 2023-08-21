@@ -1,3 +1,46 @@
+2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Account for macOS 13 and 14.
+
+2023-08-20  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	PR testsuite/110756
+	* g++.dg/gomp/pr58567.C: Adjust to new compiler error message.
+
+2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/plugin/taint-CVE-2011-0521-5-fixed.c: Use
+	_FORTIFY_SOURCE=0 on darwin.
+	* gcc.dg/plugin/taint-CVE-2011-0521-5.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-6.c: Likewise.
+
+2023-08-20  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/ipa/ipa-icf-38.c: Require alias support.
+
+2023-08-20  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Update
+	expected pattern.
+
+2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR analyzer/104042
+	* gcc.dg/analyzer/analyzer.exp: Pass -D_FORTIFY_SOURCE=0 on Darwin.
+	* gcc.dg/analyzer/fd-bind.c: Add missing <string.h> header.
+	* gcc.dg/analyzer/fd-datagram-socket.c: Likewise.
+	* gcc.dg/analyzer/fd-listen.c: Likewise.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket.c: Likewise.
+	* gcc.dg/analyzer/fd-symbolic-socket.c: Likewise.
+
+2023-08-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111006
+	* gcc.target/aarch64/sve/cond_convert_7.c: New test.
+
 2023-08-18  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
 
 	* lib/target-supports.exp (dg-require-python-h): Test
