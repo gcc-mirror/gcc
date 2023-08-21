@@ -106,9 +106,24 @@ TyTyResolveCompile::visit (const TyTy::ErrorType &)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::InferType &)
+TyTyResolveCompile::visit (const TyTy::InferType &type)
 {
-  translated = error_mark_node;
+  const TyTy::BaseType *orig = &type;
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (type.get_ref (), &lookup);
+  if (!ok)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  if (orig == lookup)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  translated = TyTyResolveCompile::compile (ctx, lookup);
 }
 
 void
