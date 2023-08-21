@@ -473,7 +473,7 @@ public:
    * @return a valid option with the NodeId if the path is present in the
    *         current map, an empty one otherwise.
    */
-  tl::optional<NodeId> resolve_path (const AST::SimplePath &path);
+  template <typename P> tl::optional<NodeId> resolve_path (const P &path);
 
   std::string as_debug_string ();
 
@@ -550,18 +550,19 @@ private:
 
   /* Helper types and functions for `resolve_path` */
 
-  using SegIterator = std::vector<AST::SimplePathSegment>::const_iterator;
+  template <typename S>
+  using SegIterator = typename std::vector<S>::const_iterator;
 
   Node &find_closest_module (Node &starting_point);
 
-  tl::optional<SegIterator>
-  find_starting_point (const std::vector<AST::SimplePathSegment> &segments,
-		       Node &starting_point);
+  template <typename S>
+  tl::optional<SegIterator<S>>
+  find_starting_point (const std::vector<S> &segments, Node &starting_point);
 
-  tl::optional<Node &>
-  resolve_segments (Node &starting_point,
-		    const std::vector<AST::SimplePathSegment> &segments,
-		    SegIterator iterator);
+  template <typename S>
+  tl::optional<Node &> resolve_segments (Node &starting_point,
+					 const std::vector<S> &segments,
+					 SegIterator<S> iterator);
 };
 
 } // namespace Resolver2_0
