@@ -9161,7 +9161,8 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
       tree vectype = TREE_TYPE (vec_def);
       tree compute_vectype = vectype;
       bool pun_for_overflow_p = (ANY_INTEGRAL_TYPE_P (vectype)
-				 && TYPE_OVERFLOW_UNDEFINED (vectype));
+				 && TYPE_OVERFLOW_UNDEFINED (vectype)
+				 && operation_can_overflow (reduc_code));
       if (pun_for_overflow_p)
 	{
 	  compute_vectype = unsigned_type_for (vectype);
