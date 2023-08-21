@@ -1,6 +1,6 @@
 /* PR tree-optimization/88464 */
 /* { dg-do run { target { avx512vl } } } */
-/* { dg-options "-O3 -mavx512vl -mprefer-vector-width=256 -mtune=skylake-avx512" } */
+/* { dg-options "-O3 -mavx512vl -mprefer-vector-width=256 -mtune=skylake-avx512 -mgather" } */
 
 #define AVX512VL
 #define AVX512F_LEN 512

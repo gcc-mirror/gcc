@@ -1,6 +1,6 @@
 /* PR tree-optimization/88464 */
 /* { dg-do run { target { avx512f } } } */
-/* { dg-options "-O3 -mavx512f -mprefer-vector-width=512 -mtune=skylake-avx512" } */
+/* { dg-options "-O3 -mavx512f -mprefer-vector-width=512 -mtune=skylake-avx512 -mgather" } */
 
 #include "avx512f-check.h"
 
