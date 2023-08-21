@@ -10599,7 +10599,7 @@ valid_mask_for_fold_vec_perm_cst_p (tree arg0, tree arg1,
       /* Ensure that the stepped sequence always selects from the same
 	 input pattern.  */
       unsigned arg_npatterns
-	= ((q1 & 0) == 0) ? VECTOR_CST_NPATTERNS (arg0)
+	= ((q1 & 1) == 0) ? VECTOR_CST_NPATTERNS (arg0)
 			  : VECTOR_CST_NPATTERNS (arg1);
 
       if (!multiple_p (step, arg_npatterns))
@@ -10625,11 +10625,6 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
   unsigned res_npatterns, res_nelts_per_pattern;
   unsigned HOST_WIDE_INT res_nelts;
 
-  if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
-    {
-      res_npatterns = res_nelts;
-      res_nelts_per_pattern = 1;
-    }
   /* (1) If SEL is a suitable mask as determined by
      valid_mask_for_fold_vec_perm_cst_p, then:
      res_npatterns = max of npatterns between ARG0, ARG1, and SEL
@@ -10639,7 +10634,7 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
      res_npatterns = nelts in result vector.
      res_nelts_per_pattern = 1.
      This exception is made so that VLS ARG0, ARG1 and SEL work as before.  */
-  else if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
+  if (valid_mask_for_fold_vec_perm_cst_p (arg0, arg1, sel, reason))
     {
       res_npatterns
 	= std::max (VECTOR_CST_NPATTERNS (arg0),
@@ -10652,6 +10647,11 @@ fold_vec_perm_cst (tree type, tree arg0, tree arg1, const vec_perm_indices &sel,
 			      sel.encoding ().nelts_per_pattern ()));
 
       res_nelts = res_npatterns * res_nelts_per_pattern;
+    }
+  else if (TYPE_VECTOR_SUBPARTS (type).is_constant (&res_nelts))
+    {
+      res_npatterns = res_nelts;
+      res_nelts_per_pattern = 1;
     }
   else
     return NULL_TREE;
@@ -17517,6 +17517,36 @@ test_nunits_min_4 (machine_mode vmode)
 	tree expected_res[] = { ARG0(0), ARG0(0), ARG0(0),
 				ARG0(1), ARG0(0), ARG0(2) };
 	validate_res (2, 3, res, expected_res);
+      }
+
+      /* Case 7: PR111048: Check that we set arg_npatterns correctly,
+	 when arg0, arg1 and sel have different number of patterns.
+	 arg0 is of shape (1, 1)
+	 arg1 is of shape (4, 1)
+	 sel is of shape (2, 3) = {1, len, 2, len+1, 3, len+2, ...}
+
+	 In this case the pattern: {len, len+1, len+2, ...} chooses arg1.
+	 However,
+	 step = (len+2) - (len+1) = 1
+	 arg_npatterns = VECTOR_CST_NPATTERNS (arg1) = 4
+	 Since step is not a multiple of arg_npatterns,
+	 valid_mask_for_fold_vec_perm_cst should return false,
+	 and thus fold_vec_perm_cst should return NULL_TREE.  */
+      {
+	tree arg0 = build_vec_cst_rand (vmode, 1, 1);
+	tree arg1 = build_vec_cst_rand (vmode, 4, 1);
+	poly_uint64 len = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+
+	vec_perm_builder builder (len, 2, 3);
+	poly_uint64 mask_elems[] = { 0, len, 1, len + 1, 2, len + 2 };
+	builder_push_elems (builder, mask_elems);
+
+	vec_perm_indices sel (builder, 2, len);
+	const char *reason;
+	tree res = fold_vec_perm_cst (TREE_TYPE (arg0), arg0, arg1, sel, &reason);
+
+	ASSERT_TRUE (res == NULL_TREE);
+	ASSERT_TRUE (!strcmp (reason, "step is not multiple of npatterns"));
       }
     }
 }
