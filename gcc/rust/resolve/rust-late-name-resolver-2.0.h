@@ -47,6 +47,8 @@ public:
   void visit (AST::PathInExpression &) override;
 
 private:
+  /* Setup Rust's builtin types (u8, i32, !...) in the resolver */
+  void setup_builtin_types ();
 };
 
 // TODO: Add missing mappings and data structures
