@@ -51,6 +51,19 @@ memory_access (T accesses) -> decltype (accesses[0])
   return nullptr;
 }
 
+// If ACCESSES has a memory access, drop it.  Otherwise, return ACCESSES
+// unchanged.
+template<typename T>
+inline T
+drop_memory_access (T accesses)
+{
+  if (!memory_access (accesses))
+    return accesses;
+
+  access_array arr (accesses);
+  return T (arr.begin (), accesses.size () - 1);
+}
+
 // If sorted array ACCESSES includes a reference to REGNO, return the
 // access, otherwise return null.
 template<typename T>
