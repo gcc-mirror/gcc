@@ -12037,6 +12037,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  switch (OMP_CLAUSE_DEFAULTMAP_CATEGORY (c))
 	    {
 	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL:
 	      gdmkmin = GDMK_SCALAR;
 	      gdmkmax = GDMK_POINTER;
 	      break;

@@ -1248,6 +1248,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	{
 	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
 	  break;
+	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL:
+	  pp_string (pp, ":all");
+	  break;
 	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
 	  pp_string (pp, ":scalar");
 	  break;

@@ -2250,17 +2250,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    category = OMP_DEFAULTMAP_CAT_ALLOCATABLE;
 		  else if (gfc_match ("pointer ") == MATCH_YES)
 		    category = OMP_DEFAULTMAP_CAT_POINTER;
+		  else if (gfc_match ("all ") == MATCH_YES)
+		    category = OMP_DEFAULTMAP_CAT_ALL;
 		  else
 		    {
-		      gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE or "
-				 "POINTER at %C");
+		      gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE, "
+				 "POINTER or ALL at %C");
 		      break;
 		    }
 		}
 	      for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; ++i)
 		{
 		  if (i != category
-		      && category != OMP_DEFAULTMAP_CAT_UNCATEGORIZED)
+		      && category != OMP_DEFAULTMAP_CAT_UNCATEGORIZED
+		      && category != OMP_DEFAULTMAP_CAT_ALL
+		      && i != OMP_DEFAULTMAP_CAT_UNCATEGORIZED
+		      && i != OMP_DEFAULTMAP_CAT_ALL)
 		    continue;
 		  if (c->defaultmap[i] != OMP_DEFAULTMAP_UNSET)
 		    {
@@ -2268,6 +2273,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      switch (i)
 			{
 			case OMP_DEFAULTMAP_CAT_UNCATEGORIZED: break;
+			case OMP_DEFAULTMAP_CAT_ALL: pcategory = "ALL"; break;
 			case OMP_DEFAULTMAP_CAT_SCALAR: pcategory = "SCALAR"; break;
 			case OMP_DEFAULTMAP_CAT_AGGREGATE:
 			  pcategory = "AGGREGATE";
