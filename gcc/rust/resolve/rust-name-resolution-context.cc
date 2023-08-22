@@ -21,6 +21,10 @@
 namespace Rust {
 namespace Resolver2_0 {
 
+NameResolutionContext::NameResolutionContext ()
+  : mappings (*Analysis::Mappings::get ())
+{}
+
 tl::expected<NodeId, DuplicateNameError>
 NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
 {
