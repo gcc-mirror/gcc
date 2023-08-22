@@ -8429,23 +8429,10 @@ vectorizable_store (vec_info *vinfo,
   else if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) >= 3)
     return vectorizable_scan_store (vinfo, stmt_info, gsi, vec_stmt, ncopies);
 
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    DR_GROUP_STORE_COUNT (DR_GROUP_FIRST_ELEMENT (stmt_info))++;
-
   if (grouped_store)
     {
       /* FORNOW */
       gcc_assert (!loop || !nested_in_vect_loop_p (loop, stmt_info));
-
-      /* We vectorize all the stmts of the interleaving group when we
-	 reach the last stmt in the group.  */
-      if (DR_GROUP_STORE_COUNT (first_stmt_info)
-	  < DR_GROUP_SIZE (first_stmt_info)
-	  && !slp)
-	{
-	  *vec_stmt = NULL;
-	  return true;
-	}
 
       if (slp)
         {
@@ -12487,21 +12474,22 @@ vect_transform_stmt (vec_info *vinfo,
       break;
 
     case store_vec_info_type:
-      done = vectorizable_store (vinfo, stmt_info,
-				 gsi, &vec_stmt, slp_node, NULL);
-      gcc_assert (done);
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info) && !slp_node)
-	{
-	  /* In case of interleaving, the whole chain is vectorized when the
-	     last store in the chain is reached.  Store stmts before the last
-	     one are skipped, and there vec_stmt_info shouldn't be freed
-	     meanwhile.  */
-	  stmt_vec_info group_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
-	  if (DR_GROUP_STORE_COUNT (group_info) == DR_GROUP_SIZE (group_info))
-	    is_store = true;
-	}
+      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	  && !slp_node
+	  && (++DR_GROUP_STORE_COUNT (DR_GROUP_FIRST_ELEMENT (stmt_info))
+	      < DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info))))
+	/* In case of interleaving, the whole chain is vectorized when the
+	   last store in the chain is reached.  Store stmts before the last
+	   one are skipped, and there vec_stmt_info shouldn't be freed
+	   meanwhile.  */
+	;
       else
-	is_store = true;
+	{
+	  done = vectorizable_store (vinfo, stmt_info,
+				     gsi, &vec_stmt, slp_node, NULL);
+	  gcc_assert (done);
+	  is_store = true;
+	}
       break;
 
     case condition_vec_info_type:
