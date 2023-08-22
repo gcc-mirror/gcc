@@ -4448,8 +4448,11 @@ get_unconditional_internal_fn (internal_fn ifn)
 {
   switch (ifn)
     {
-#define CASE(NAME) case IFN_COND_##NAME: return IFN_##NAME;
-      FOR_EACH_COND_FN_PAIR(CASE)
+#define CASE(NAME)                                                             \
+    case IFN_COND_##NAME:                                                      \
+    case IFN_COND_LEN_##NAME:                                                  \
+      return IFN_##NAME;
+FOR_EACH_COND_FN_PAIR (CASE)
 #undef CASE
     default:
       return IFN_LAST;

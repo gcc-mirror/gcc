@@ -60,6 +60,12 @@ extern bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree, tree, tree);
 extern bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree, tree, tree, tree);
+extern bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
+			     code_helper, tree, tree, tree, tree, tree, tree,
+			     tree);
+extern bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
+			     code_helper, tree, tree, tree, tree, tree, tree,
+			     tree, tree);
 
 /* Functions that are needed by gimple-match but that are exported and used in
    other places in the compiler.  */
@@ -89,6 +95,8 @@ static bool gimple_resimplify2 (gimple_seq *, gimple_match_op *, tree (*)(tree))
 static bool gimple_resimplify3 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 static bool gimple_resimplify4 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 static bool gimple_resimplify5 (gimple_seq *, gimple_match_op *, tree (*)(tree));
+static bool gimple_resimplify6 (gimple_seq *, gimple_match_op *, tree (*)(tree));
+static bool gimple_resimplify7 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 
 /* Match and simplify the toplevel valueized operation THIS.
    Replaces THIS with a simplified and/or canonicalized result and
@@ -109,6 +117,10 @@ gimple_match_op::resimplify (gimple_seq *seq, tree (*valueize)(tree))
       return gimple_resimplify4 (seq, this, valueize);
     case 5:
       return gimple_resimplify5 (seq, this, valueize);
+    case 6:
+      return gimple_resimplify6 (seq, this, valueize);
+    case 7:
+      return gimple_resimplify7 (seq, this, valueize);
     default:
       gcc_unreachable ();
     }
@@ -146,7 +158,14 @@ convert_conditional_op (gimple_match_op *orig_op,
   if (ifn == IFN_LAST)
     return false;
   unsigned int num_ops = orig_op->num_ops;
-  new_op->set_op (as_combined_fn (ifn), orig_op->type, num_ops + 2);
+  unsigned int num_cond_ops = 2;
+  if (orig_op->cond.len)
+    {
+      /* Add the length and bias parameters.  */
+      ifn = get_len_internal_fn (ifn);
+      num_cond_ops = 4;
+    }
+  new_op->set_op (as_combined_fn (ifn), orig_op->type, num_ops + num_cond_ops);
   new_op->ops[0] = orig_op->cond.cond;
   for (unsigned int i = 0; i < num_ops; ++i)
     new_op->ops[i + 1] = orig_op->ops[i];
@@ -155,6 +174,11 @@ convert_conditional_op (gimple_match_op *orig_op,
     else_value = targetm.preferred_else_value (ifn, orig_op->type,
 					       num_ops, orig_op->ops);
   new_op->ops[num_ops + 1] = else_value;
+  if (orig_op->cond.len)
+    {
+      new_op->ops[num_ops + 2] = orig_op->cond.len;
+      new_op->ops[num_ops + 3] = orig_op->cond.bias;
+    }
   return true;
 }
 /* Helper for gimple_simplify valueizing OP using VALUEIZE and setting
@@ -219,7 +243,9 @@ build_call_internal (internal_fn fn, gimple_match_op *res_op)
 				     res_op->op_or_null (1),
 				     res_op->op_or_null (2),
 				     res_op->op_or_null (3),
-				     res_op->op_or_null (4));
+				     res_op->op_or_null (4),
+				     res_op->op_or_null (5),
+				     res_op->op_or_null (6));
 }
 
 /* RES_OP is the result of a simplification.  If it is conditional,
@@ -319,6 +345,7 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
 {
   code_helper op;
   tree_code code = conditional_internal_fn_code (ifn);
+  int len_index = internal_fn_len_index (ifn);
   if (code != ERROR_MARK)
     op = code;
   else
@@ -330,12 +357,19 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
     }
 
   unsigned int num_ops = res_op->num_ops;
+  /* num_cond_ops = 2 for COND_ADD (MASK and ELSE)
+     wheras num_cond_ops = 4 for COND_LEN_ADD (MASK, ELSE, LEN and BIAS).  */
+  unsigned int num_cond_ops = len_index < 0 ? 2 : 4;
+  tree else_value
+    = len_index < 0 ? res_op->ops[num_ops - 1] : res_op->ops[num_ops - 3];
+  tree len = len_index < 0 ? NULL_TREE : res_op->ops[num_ops - 2];
+  tree bias = len_index < 0 ? NULL_TREE : res_op->ops[num_ops - 1];
   gimple_match_op cond_op (gimple_match_cond (res_op->ops[0],
-					      res_op->ops[num_ops - 1]),
-			   op, res_op->type, num_ops - 2);
+					      else_value, len, bias),
+			   op, res_op->type, num_ops - num_cond_ops);
 
   memcpy (cond_op.ops, res_op->ops + 1, (num_ops - 1) * sizeof *cond_op.ops);
-  switch (num_ops - 2)
+  switch (num_ops - num_cond_ops)
     {
     case 1:
       if (!gimple_resimplify1 (seq, &cond_op, valueize))
@@ -717,7 +751,7 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
       /* ???  This way we can't simplify calls with side-effects.  */
       if (gimple_call_lhs (stmt) != NULL_TREE
 	  && gimple_call_num_args (stmt) >= 1
-	  && gimple_call_num_args (stmt) <= 5)
+	  && gimple_call_num_args (stmt) <= 7)
 	{
 	  combined_fn cfn;
 	  if (gimple_call_internal_p (stmt))
@@ -1134,6 +1168,83 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
 		       res_op->code, res_op->type,
 		       res_op->ops[0], res_op->ops[1], res_op->ops[2],
 		       res_op->ops[3], res_op->ops[4]))
+    {
+      *res_op = res_op2;
+      return true;
+    }
+
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
+
+  return canonicalized;
+}
+
+/* Helper that matches and simplifies the toplevel result from
+   a gimple_simplify run (where we don't want to build
+   a stmt in case it's used in in-place folding).  Replaces
+   RES_OP with a simplified and/or canonicalized result and
+   returns whether any change was made.  */
+
+static bool
+gimple_resimplify6 (gimple_seq *seq, gimple_match_op *res_op,
+		    tree (*valueize)(tree))
+{
+  /* No constant folding is defined for six-operand functions.  */
+
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
+  gimple_match_op res_op2 (*res_op);
+  if (gimple_simplify (&res_op2, seq, valueize,
+		       res_op->code, res_op->type,
+		       res_op->ops[0], res_op->ops[1], res_op->ops[2],
+		       res_op->ops[3], res_op->ops[4], res_op->ops[5]))
+    {
+      *res_op = res_op2;
+      return true;
+    }
+
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
+
+  return canonicalized;
+}
+
+/* Helper that matches and simplifies the toplevel result from
+   a gimple_simplify run (where we don't want to build
+   a stmt in case it's used in in-place folding).  Replaces
+   RES_OP with a simplified and/or canonicalized result and
+   returns whether any change was made.  */
+
+static bool
+gimple_resimplify7 (gimple_seq *seq, gimple_match_op *res_op,
+		    tree (*valueize)(tree))
+{
+  /* No constant folding is defined for seven-operand functions.  */
+
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
+  gimple_match_op res_op2 (*res_op);
+  if (gimple_simplify (&res_op2, seq, valueize,
+		       res_op->code, res_op->type,
+		       res_op->ops[0], res_op->ops[1], res_op->ops[2],
+		       res_op->ops[3], res_op->ops[4], res_op->ops[5],
+		       res_op->ops[6]))
     {
       *res_op = res_op2;
       return true;

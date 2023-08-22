@@ -4052,7 +4052,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
     }
   fprintf (stderr, "removed %u duplicate tails\n", rcnt);
 
-  for (unsigned n = 1; n <= 5; ++n)
+  for (unsigned n = 1; n <= 7; ++n)
     {
       bool has_kids_p = false;
 
