@@ -2735,7 +2735,7 @@ DEFHOOK
  insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
  compares in the conditional comparision are generated without error.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
- rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, int code, tree op0, tree op1),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx_code code, tree op0, tree op1),
  NULL)
 
 DEFHOOK
@@ -2752,7 +2752,7 @@ DEFHOOK
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
- rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, rtx_code cmp_code, tree op0, tree op1, rtx_code bit_code),
  NULL)
 
 /* Return a new value for loop unroll size.  */

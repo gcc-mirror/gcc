@@ -25666,7 +25666,7 @@ aarch64_asan_shadow_offset (void)
 
 static rtx
 aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
-			int code, tree treeop0, tree treeop1)
+			rtx_code code, tree treeop0, tree treeop1)
 {
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;
   rtx op0, op1;
@@ -25740,7 +25740,8 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
 
 static rtx
 aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
-		       int cmp_code, tree treeop0, tree treeop1, int bit_code)
+		       rtx_code cmp_code, tree treeop0, tree treeop1,
+		       rtx_code bit_code)
 {
   rtx op0, op1, target;
   machine_mode op_mode, cmp_mode, cc_mode = CCmode;
