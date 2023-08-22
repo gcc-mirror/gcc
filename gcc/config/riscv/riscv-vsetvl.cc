@@ -907,8 +907,8 @@ change_insn (function_info *ssa, insn_change change, insn_info *insn,
 		] UNSPEC_VPREDICATE)
 	    (plus:RVVM4DI (reg/v:RVVM4DI 104 v8 [orig:137 op1 ] [137])
 		(sign_extend:RVVM4DI (vec_duplicate:RVVM4SI (reg:SI 15 a5
-    [140])))) (unspec:RVVM4DI [ (const_int 0 [0]) ] UNSPEC_VUNDEF))) "rvv.c":8:12
-    2784 {pred_single_widen_addsvnx8di_scalar} (expr_list:REG_EQUIV
+    [140])))) (unspec:RVVM4DI [ (const_int 0 [0]) ] UNSPEC_VUNDEF)))
+    "rvv.c":8:12 2784 {pred_single_widen_addsvnx8di_scalar} (expr_list:REG_EQUIV
     (mem/c:RVVM4DI (reg:DI 10 a0 [142]) [1 <retval>+0 S[64, 64] A128])
 	(expr_list:REG_EQUAL (if_then_else:RVVM4DI (unspec:RVVMF8BI [
 			(const_vector:RVVMF8BI repeat [
@@ -2428,12 +2428,12 @@ vector_infos_manager::all_same_ratio_p (sbitmap bitdata) const
   sbitmap_iterator sbi;
 
   EXECUTE_IF_SET_IN_BITMAP (bitdata, 0, bb_index, sbi)
-  {
-    if (ratio == -1)
-      ratio = vector_exprs[bb_index]->get_ratio ();
-    else if (vector_exprs[bb_index]->get_ratio () != ratio)
-      return false;
-  }
+    {
+      if (ratio == -1)
+	ratio = vector_exprs[bb_index]->get_ratio ();
+      else if (vector_exprs[bb_index]->get_ratio () != ratio)
+	return false;
+    }
   return true;
 }
 
@@ -2473,10 +2473,10 @@ vector_infos_manager::all_same_avl_p (const basic_block cfg_bb,
   sbitmap_iterator sbi;
 
   EXECUTE_IF_SET_IN_BITMAP (bitdata, 0, bb_index, sbi)
-  {
-    if (vector_exprs[bb_index]->get_avl_info () != avl)
-      return false;
-  }
+    {
+      if (vector_exprs[bb_index]->get_avl_info () != avl)
+	return false;
+    }
   return true;
 }
 
@@ -3892,7 +3892,7 @@ pass_vsetvl::refine_vsetvls (void) const
   basic_block cfg_bb;
   FOR_EACH_BB_FN (cfg_bb, cfun)
     {
-      auto info = get_block_info(cfg_bb).local_dem;
+      auto info = get_block_info (cfg_bb).local_dem;
       insn_info *insn = info.get_insn ();
       if (!info.valid_p ())
 	continue;
@@ -3938,8 +3938,7 @@ pass_vsetvl::cleanup_vsetvls ()
   basic_block cfg_bb;
   FOR_EACH_BB_FN (cfg_bb, cfun)
     {
-      auto &info
-	= get_block_info(cfg_bb).reaching_out;
+      auto &info = get_block_info (cfg_bb).reaching_out;
       gcc_assert (m_vector_manager->expr_set_num (
 		    m_vector_manager->vector_del[cfg_bb->index])
 		  <= 1);
@@ -3951,9 +3950,7 @@ pass_vsetvl::cleanup_vsetvls ()
 		info.set_unknown ();
 	      else
 		{
-		  const auto dem
-		    = get_block_info(cfg_bb)
-			.local_dem;
+		  const auto dem = get_block_info (cfg_bb).local_dem;
 		  gcc_assert (dem == *m_vector_manager->vector_exprs[i]);
 		  insn_info *insn = dem.get_insn ();
 		  gcc_assert (insn && insn->rtl ());
@@ -4020,8 +4017,7 @@ pass_vsetvl::commit_vsetvls (void)
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       basic_block cfg_bb = bb->cfg_bb ();
-      const auto reaching_out
-	= get_block_info(cfg_bb).reaching_out;
+      const auto reaching_out = get_block_info (cfg_bb).reaching_out;
       if (!reaching_out.dirty_p ())
 	continue;
 
@@ -4035,14 +4031,14 @@ pass_vsetvl::commit_vsetvls (void)
 	  sbitmap avin = m_vector_manager->vector_avin[cfg_bb->index];
 	  bool available_p = false;
 	  EXECUTE_IF_SET_IN_BITMAP (avin, 0, bb_index, sbi)
-	  {
-	    if (m_vector_manager->vector_exprs[bb_index]->available_p (
-		  reaching_out))
-	      {
-		available_p = true;
-		break;
-	      }
-	  }
+	    {
+	      if (m_vector_manager->vector_exprs[bb_index]->available_p (
+		    reaching_out))
+		{
+		  available_p = true;
+		  break;
+		}
+	    }
 	  if (available_p)
 	    continue;
 	}
@@ -4263,7 +4259,8 @@ pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
 
       /* Local AVL compatibility checking is simpler than global, we only
 	 need to check the REGNO is same.  */
-      if (prev_dem.valid_or_dirty_p () && prev_dem.skip_avl_compatible_p (curr_dem)
+      if (prev_dem.valid_or_dirty_p ()
+	  && prev_dem.skip_avl_compatible_p (curr_dem)
 	  && local_avl_compatible_p (prev_avl, curr_avl))
 	{
 	  /* curr_dem and prev_dem is compatible!  */
@@ -4365,9 +4362,7 @@ pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
     vsetvl_rinsn = get_vsetvl_at_end (bb, &dem);
 
   /* No need to optimize if block doesn't have vsetvl instructions.  */
-  if (!dem.valid_or_dirty_p ()
-      || !vsetvl_rinsn
-      || !dem.get_avl_source ()
+  if (!dem.valid_or_dirty_p () || !vsetvl_rinsn || !dem.get_avl_source ()
       || !dem.has_avl_reg ())
     return false;
 
@@ -4655,8 +4650,7 @@ pass_vsetvl::compute_probabilities (void)
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       basic_block cfg_bb = bb->cfg_bb ();
-      auto &curr_prob
-	= get_block_info(cfg_bb).probability;
+      auto &curr_prob = get_block_info (cfg_bb).probability;
 
       /* GCC assume entry block (bb 0) are always so
 	 executed so set its probability as "always".  */
@@ -4669,8 +4663,7 @@ pass_vsetvl::compute_probabilities (void)
       gcc_assert (curr_prob.initialized_p ());
       FOR_EACH_EDGE (e, ei, cfg_bb->succs)
 	{
-	  auto &new_prob
-	    = get_block_info(e->dest).probability;
+	  auto &new_prob = get_block_info (e->dest).probability;
 	  if (!new_prob.initialized_p ())
 	    new_prob = curr_prob * e->probability;
 	  else if (new_prob == profile_probability::always ())
