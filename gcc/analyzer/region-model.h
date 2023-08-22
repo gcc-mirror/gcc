@@ -451,6 +451,13 @@ class region_model
 
   const svalue *get_store_value (const region *reg,
 				 region_model_context *ctxt) const;
+  const svalue *get_store_bytes (const region *base_reg,
+				 const byte_range &bytes,
+				 region_model_context *ctxt) const;
+  const svalue *scan_for_null_terminator (const region *reg,
+					  tree expr,
+					  const svalue **out_sval,
+					  region_model_context *ctxt) const;
 
   bool region_exists_p (const region *reg) const;
 
@@ -502,8 +509,10 @@ class region_model
 			       const svalue *sval_hint,
 			       region_model_context *ctxt) const;
 
-  void check_for_null_terminated_string_arg (const call_details &cd,
-					     unsigned idx);
+  const svalue *
+  check_for_null_terminated_string_arg (const call_details &cd,
+					unsigned idx,
+					const svalue **out_sval = nullptr);
 
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;

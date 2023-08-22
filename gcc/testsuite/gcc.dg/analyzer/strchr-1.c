@@ -29,5 +29,13 @@ void test_3 (const char *s, int c)
 void test_unterminated (int c)
 {
   char buf[3] = "abc";
-  strchr (buf, c); /* { dg-warning "passing pointer to unterminated string '&buf' as argument 1 of 'strchr'" } */
+  strchr (buf, c); /* { dg-warning "stack-based buffer over-read" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'strchr'..." "event" { target *-*-* } .-1 } */
+}
+
+void test_uninitialized (int c)
+{
+  char buf[16];
+  strchr (buf, c); /* { dg-warning "use of uninitialized value 'buf\\\[0\\\]'" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'strchr'..." "event" { target *-*-* } .-1 } */
 }

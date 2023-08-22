@@ -369,8 +369,19 @@ public:
   }
   void impl_call_pre (const call_details &cd) const final override
   {
-    cd.check_for_null_terminated_string_arg (0);
-    cd.set_any_lhs_with_defaults ();
+    if (const svalue *bytes_read = cd.check_for_null_terminated_string_arg (0))
+      {
+	region_model_manager *mgr = cd.get_manager ();
+	/* strlen is (bytes_read - 1).  */
+	const svalue *strlen_sval
+	  = mgr->get_or_create_binop (size_type_node,
+				      MINUS_EXPR,
+				      bytes_read,
+				      mgr->get_or_create_int_cst (size_type_node, 1));
+	cd.maybe_set_lhs (strlen_sval);
+      }
+    else
+      cd.set_any_lhs_with_defaults ();
   }
 };
 

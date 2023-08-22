@@ -3175,26 +3175,6 @@ region_model::set_value (tree lhs, tree rhs, region_model_context *ctxt)
   set_value (lhs_reg, rhs_sval, ctxt);
 }
 
-/* Look for the first 0 byte within STRING_CST.
-   If there is one, write its index to *OUT and return true.
-   Otherwise, return false.  */
-
-static bool
-get_strlen (tree string_cst, int *out)
-{
-  gcc_assert (TREE_CODE (string_cst) == STRING_CST);
-
-  if (const void *p = memchr (TREE_STRING_POINTER (string_cst),
-			      0,
-			      TREE_STRING_LENGTH (string_cst)))
-    {
-      *out = (const char *)p - TREE_STRING_POINTER (string_cst);
-      return true;
-    }
-  else
-    return false;
-}
-
 /* A bundle of information about a problematic argument at a callsite
    for use by pending_diagnostic subclasses for reporting and
    for deduplication.  */
@@ -3236,106 +3216,477 @@ inform_about_expected_null_terminated_string_arg (const call_arg_details &ad)
 	  ad.m_arg_idx + 1, ad.m_called_fndecl);
 }
 
-/* A subclass of pending_diagnostic for complaining about uses
-   of unterminated strings (thus accessing beyond the bounds
-   of a buffer).  */
+/* A binding of a specific svalue at a concrete byte range.  */
 
-class unterminated_string_arg
-: public pending_diagnostic_subclass<unterminated_string_arg>
+struct fragment
+{
+  fragment ()
+  : m_byte_range (0, 0), m_sval (nullptr)
+  {
+  }
+
+  fragment (const byte_range &bytes, const svalue *sval)
+    : m_byte_range (bytes), m_sval (sval)
+  {
+  }
+
+  static int cmp_ptrs (const void *p1, const void *p2)
+  {
+    const fragment *f1 = (const fragment *)p1;
+    const fragment *f2 = (const fragment *)p2;
+    return byte_range::cmp (f1->m_byte_range, f2->m_byte_range);
+  }
+
+  /* Determine if there is a zero terminator somewhere in the
+     bytes of this fragment, starting at START_READ_OFFSET (which
+     is absolute to the start of the cluster as a whole), and stopping
+     at the end of this fragment.
+
+     Return a tristate:
+     - true if there definitely is a zero byte, writing to *OUT_BYTES_READ
+     the number of bytes from that would be read, including the zero byte.
+     - false if there definitely isn't a zero byte
+     - unknown if we don't know.  */
+  tristate has_null_terminator (byte_offset_t start_read_offset,
+				byte_offset_t *out_bytes_read) const
+  {
+    byte_offset_t rel_start_read_offset
+      = start_read_offset - m_byte_range.get_start_byte_offset ();
+    gcc_assert (rel_start_read_offset >= 0);
+    byte_offset_t available_bytes
+      = (m_byte_range.get_next_byte_offset () - start_read_offset);
+    gcc_assert (available_bytes >= 0);
+
+    if (rel_start_read_offset > INT_MAX)
+      return tristate::TS_UNKNOWN;
+    HOST_WIDE_INT rel_start_read_offset_hwi = rel_start_read_offset.slow ();
+
+    if (available_bytes > INT_MAX)
+      return tristate::TS_UNKNOWN;
+    HOST_WIDE_INT available_bytes_hwi = available_bytes.slow ();
+
+    switch (m_sval->get_kind ())
+      {
+      case SK_CONSTANT:
+	{
+	  tree cst
+	    = as_a <const constant_svalue *> (m_sval)->get_constant ();
+	  switch (TREE_CODE (cst))
+	    {
+	    case STRING_CST:
+	      {
+		/* Look for the first 0 byte within STRING_CST
+		   from START_READ_OFFSET onwards.  */
+		const HOST_WIDE_INT num_bytes_to_search
+		  = std::min<HOST_WIDE_INT> ((TREE_STRING_LENGTH (cst)
+					      - rel_start_read_offset_hwi),
+					     available_bytes_hwi);
+		const char *start = (TREE_STRING_POINTER (cst)
+				     + rel_start_read_offset_hwi);
+		if (num_bytes_to_search >= 0)
+		  if (const void *p = memchr (start, 0,
+					      num_bytes_to_search))
+		    {
+		      *out_bytes_read = (const char *)p - start + 1;
+		      return tristate (true);
+		    }
+
+		*out_bytes_read = available_bytes;
+		return tristate (false);
+	      }
+	      break;
+	    case INTEGER_CST:
+	      if (rel_start_read_offset_hwi == 0
+		  && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (cst))))
+		{
+		  /* Model accesses to the initial byte of a 1-byte
+		     INTEGER_CST.  */
+		  if (zerop (cst))
+		    {
+		      *out_bytes_read = 1;
+		      return tristate (true);
+		    }
+		  else
+		    {
+		      *out_bytes_read = available_bytes;
+		      return tristate (false);
+		    }
+		}
+	      /* Treat any other access to an INTEGER_CST as unknown.  */
+	      return tristate::TS_UNKNOWN;
+
+	    default:
+	      gcc_unreachable ();
+	      break;
+	    }
+	}
+	break;
+      default:
+	// TODO: it may be possible to handle other cases here.
+	return tristate::TS_UNKNOWN;
+      }
+  }
+
+  byte_range m_byte_range;
+  const svalue *m_sval;
+};
+
+/* A frozen copy of a single base region's binding_cluster within a store,
+   optimized for traversal of the concrete parts in byte order.
+   This only captures concrete bindings, and is an implementation detail
+   of region_model::scan_for_null_terminator.  */
+
+class iterable_cluster
 {
 public:
-  unterminated_string_arg (const call_arg_details arg_details)
-  : m_arg_details (arg_details)
+  iterable_cluster (const binding_cluster *cluster)
   {
-    gcc_assert (m_arg_details.m_called_fndecl);
+    if (!cluster)
+      return;
+    for (auto iter : *cluster)
+      {
+	const binding_key *key = iter.first;
+	const svalue *sval = iter.second;
+
+	if (const concrete_binding *concrete_key
+	    = key->dyn_cast_concrete_binding ())
+	  {
+	    byte_range fragment_bytes (0, 0);
+	    if (concrete_key->get_byte_range (&fragment_bytes))
+	      m_fragments.safe_push (fragment (fragment_bytes, sval));
+	  }
+      }
+    m_fragments.qsort (fragment::cmp_ptrs);
   }
 
-  const char *get_kind () const final override
+  bool
+  get_fragment_for_byte (byte_offset_t byte, fragment *out_frag) const
   {
-    return "unterminated_string_arg";
-  }
-
-  bool operator== (const unterminated_string_arg &other) const
-  {
-    return m_arg_details == other.m_arg_details;
-  }
-
-  int get_controlling_option () const final override
-  {
-    return OPT_Wanalyzer_unterminated_string;
-  }
-
-  bool emit (rich_location *rich_loc, logger *) final override
-  {
-    auto_diagnostic_group d;
-    bool warned;
-    if (m_arg_details.m_arg_expr)
-      warned = warning_at (rich_loc, get_controlling_option (),
-			   "passing pointer to unterminated string %qE"
-			   " as argument %i of %qE",
-			   m_arg_details.m_arg_expr,
-			   m_arg_details.m_arg_idx + 1,
-			   m_arg_details.m_called_fndecl);
-    else
-      warned = warning_at (rich_loc, get_controlling_option (),
-			   "passing pointer to unterminated string"
-			   " as argument %i of %qE",
-			   m_arg_details.m_arg_idx + 1,
-			   m_arg_details.m_called_fndecl);
-    if (warned)
-      inform_about_expected_null_terminated_string_arg (m_arg_details);
-    return warned;
-  }
-
-  label_text describe_final_event (const evdesc::final_event &ev) final override
-  {
-    return ev.formatted_print
-      ("passing pointer to unterminated buffer as argument %i of %qE"
-       " would lead to read past the end of the buffer",
-       m_arg_details.m_arg_idx + 1,
-       m_arg_details.m_called_fndecl);
+    /* TODO: binary search rather than linear.  */
+    unsigned iter_idx;
+    for (iter_idx = 0; iter_idx < m_fragments.length (); iter_idx++)
+      {
+	if (m_fragments[iter_idx].m_byte_range.contains_p (byte))
+	{
+	  *out_frag = m_fragments[iter_idx];
+	  return true;
+	}
+      }
+    return false;
   }
 
 private:
-  const call_arg_details m_arg_details;
+  auto_vec<fragment> m_fragments;
 };
+
+/* Simulate reading the bytes at BYTES from BASE_REG.
+   Complain to CTXT about any issues with the read e.g. out-of-bounds.  */
+
+const svalue *
+region_model::get_store_bytes (const region *base_reg,
+			       const byte_range &bytes,
+			       region_model_context *ctxt) const
+{
+  const svalue *index_sval
+    = m_mgr->get_or_create_int_cst (size_type_node,
+				    bytes.get_start_byte_offset ());
+  const region *offset_reg = m_mgr->get_offset_region (base_reg,
+						       NULL_TREE,
+						       index_sval);
+  const svalue *byte_size_sval
+    = m_mgr->get_or_create_int_cst (size_type_node, bytes.m_size_in_bytes);
+  const region *read_reg = m_mgr->get_sized_region (offset_reg,
+						    NULL_TREE,
+						    byte_size_sval);
+
+  /* Simulate reading those bytes from the store.  */
+  const svalue *sval = get_store_value (read_reg, ctxt);
+  return sval;
+}
+
+static tree
+get_tree_for_byte_offset (tree ptr_expr, byte_offset_t byte_offset)
+{
+  gcc_assert (ptr_expr);
+  return fold_build2 (MEM_REF,
+		      char_type_node,
+		      ptr_expr, wide_int_to_tree (size_type_node, byte_offset));
+}
+
+/* Simulate a series of reads of REG until we find a 0 byte
+   (equivalent to calling strlen).
+
+   Complain to CTXT and return NULL if:
+   - the buffer pointed to isn't null-terminated
+   - the buffer pointed to has any uninitalized bytes before any 0-terminator
+   - any of the reads aren't within the bounds of the underlying base region
+
+   Otherwise, return a svalue for the number of bytes read (strlen + 1),
+   and, if OUT_SVAL is non-NULL, write to *OUT_SVAL with an svalue
+   representing the content of REG up to and including the terminator.
+
+   Algorithm
+   =========
+
+   Get offset for first byte to read.
+   Find the binding (if any) that contains it.
+   Find the size in bits of that binding.
+   Round to the nearest byte (which way???)
+     Or maybe give up if we have a partial binding there.
+   Get the svalue from the binding.
+   Determine the strlen (if any) of that svalue.
+     Does it have a 0-terminator within it?
+      If so, we have a partial read up to and including that terminator
+       Read those bytes from the store; add to the result in the correct place.
+       Finish
+      If not, we have a full read of that svalue
+       Read those bytes from the store; add to the result in the correct place.
+       Update read/write offsets
+       Continue
+      If unknown:
+       Result is unknown
+       Finish
+*/
+
+const svalue *
+region_model::scan_for_null_terminator (const region *reg,
+					tree expr,
+					const svalue **out_sval,
+					region_model_context *ctxt) const
+{
+  store_manager *store_mgr = m_mgr->get_store_manager ();
+
+  region_offset offset = reg->get_offset (m_mgr);
+  if (offset.symbolic_p ())
+    {
+      if (out_sval)
+	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+      return m_mgr->get_or_create_unknown_svalue (size_type_node);
+    }
+  byte_offset_t src_byte_offset;
+  if (!offset.get_concrete_byte_offset (&src_byte_offset))
+    {
+      if (out_sval)
+	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+      return m_mgr->get_or_create_unknown_svalue (size_type_node);
+    }
+  const byte_offset_t initial_src_byte_offset = src_byte_offset;
+  byte_offset_t dst_byte_offset = 0;
+
+  const region *base_reg = reg->get_base_region ();
+
+  if (const string_region *str_reg = base_reg->dyn_cast_string_region ())
+    {
+      tree string_cst = str_reg->get_string_cst ();
+      if (const void *p = memchr (TREE_STRING_POINTER (string_cst),
+				  0,
+				  TREE_STRING_LENGTH (string_cst)))
+	{
+	  size_t num_bytes_read
+	    = (const char *)p - TREE_STRING_POINTER (string_cst) + 1;
+	  /* Simulate the read.  */
+	  byte_range bytes_to_read (0, num_bytes_read);
+	  const svalue *sval = get_store_bytes (reg, bytes_to_read, ctxt);
+	  if (out_sval)
+	    *out_sval = sval;
+	  return m_mgr->get_or_create_int_cst (size_type_node,
+					       num_bytes_read);
+	}
+    }
+
+  const binding_cluster *cluster = m_store.get_cluster (base_reg);
+  iterable_cluster c (cluster);
+  binding_map result;
+
+  while (1)
+    {
+      fragment f;
+      if (c.get_fragment_for_byte (src_byte_offset, &f))
+	{
+	  byte_offset_t fragment_bytes_read;
+	  tristate is_terminated
+	    = f.has_null_terminator (src_byte_offset, &fragment_bytes_read);
+	  if (is_terminated.is_unknown ())
+	    {
+	      if (out_sval)
+		*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+	      return m_mgr->get_or_create_unknown_svalue (size_type_node);
+	    }
+
+	  /* Simulate reading those bytes from the store.  */
+	  byte_range bytes_to_read (src_byte_offset, fragment_bytes_read);
+	  const svalue *sval = get_store_bytes (base_reg, bytes_to_read, ctxt);
+	  check_for_poison (sval, expr, nullptr, ctxt);
+
+	  if (out_sval)
+	    {
+	      byte_range bytes_to_write (dst_byte_offset, fragment_bytes_read);
+	      const binding_key *key
+		= store_mgr->get_concrete_binding (bytes_to_write);
+	      result.put (key, sval);
+	    }
+
+	  src_byte_offset += fragment_bytes_read;
+	  dst_byte_offset += fragment_bytes_read;
+
+	  if (is_terminated.is_true ())
+	    {
+	      if (out_sval)
+		*out_sval = m_mgr->get_or_create_compound_svalue (NULL_TREE,
+								  result);
+	      return m_mgr->get_or_create_int_cst (size_type_node,
+						   dst_byte_offset);
+	    }
+	}
+      else
+	break;
+    }
+
+  /* No binding for this base_region, or no binding at src_byte_offset
+     (or a symbolic binding).  */
+
+  /* TODO: the various special-cases seen in
+     region_model::get_store_value.  */
+
+  /* Simulate reading from this byte, then give up.  */
+  byte_range bytes_to_read (src_byte_offset, 1);
+  const svalue *sval = get_store_bytes (base_reg, bytes_to_read, ctxt);
+  tree byte_expr
+    = get_tree_for_byte_offset (expr,
+				src_byte_offset - initial_src_byte_offset);
+  check_for_poison (sval, byte_expr, nullptr, ctxt);
+  if (base_reg->can_have_initial_svalue_p ())
+    {
+      if (out_sval)
+	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+      return m_mgr->get_or_create_unknown_svalue (size_type_node);
+    }
+  else
+    return nullptr;
+}
 
 /* Check that argument ARG_IDX (0-based) to the call described by CD
    is a pointer to a valid null-terminated string.
 
-   Complain if the buffer pointed to isn't null-terminated.
+   Simulate scanning through the buffer, reading until we find a 0 byte
+   (equivalent to calling strlen).
+
+   Complain and return NULL if:
+   - the buffer pointed to isn't null-terminated
+   - the buffer pointed to has any uninitalized bytes before any 0-terminator
+   - any of the reads aren't within the bounds of the underlying base region
+
+   Otherwise, return a svalue for the number of bytes read (strlen + 1),
+   and, if OUT_SVAL is non-NULL, write to *OUT_SVAL with an svalue
+   representing the content of the buffer up to and including the terminator.
 
    TODO: we should also complain if:
-   - the pointer is NULL (or could be)
-   - the buffer pointed to is uninitalized before any 0-terminator
-   - the 0-terminator is within the bounds of the underlying base region
+   - the pointer is NULL (or could be).  */
 
-   We're checking that the called function could validly iterate through
-   the buffer reading it until it finds a 0 byte (such as by calling
-   strlen, or equivalent code).  */
-
-void
+const svalue *
 region_model::check_for_null_terminated_string_arg (const call_details &cd,
-						    unsigned arg_idx)
+						    unsigned arg_idx,
+						    const svalue **out_sval)
 {
-  region_model_context *ctxt = cd.get_ctxt ();
+  class null_terminator_check_event : public custom_event
+  {
+  public:
+    null_terminator_check_event (const event_loc_info &loc_info,
+				 const call_arg_details &arg_details)
+    : custom_event (loc_info),
+      m_arg_details (arg_details)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const final override
+    {
+      if (m_arg_details.m_arg_expr)
+	return make_label_text (can_colorize,
+				"while looking for null terminator"
+				" for argument %i (%qE) of %qD...",
+				m_arg_details.m_arg_idx + 1,
+				m_arg_details.m_arg_expr,
+				m_arg_details.m_called_fndecl);
+      else
+	return make_label_text (can_colorize,
+				"while looking for null terminator"
+				" for argument %i of %qD...",
+				m_arg_details.m_arg_idx + 1,
+				m_arg_details.m_called_fndecl);
+    }
+
+  private:
+    const call_arg_details m_arg_details;
+  };
+
+  class null_terminator_check_decl_note
+    : public pending_note_subclass<null_terminator_check_decl_note>
+  {
+  public:
+    null_terminator_check_decl_note (const call_arg_details &arg_details)
+    : m_arg_details (arg_details)
+    {
+    }
+
+    const char *get_kind () const final override
+    {
+      return "null_terminator_check_decl_note";
+    }
+
+    void emit () const final override
+    {
+      inform_about_expected_null_terminated_string_arg (m_arg_details);
+    }
+
+    bool operator== (const null_terminator_check_decl_note &other) const
+    {
+      return m_arg_details == other.m_arg_details;
+    }
+
+  private:
+    const call_arg_details m_arg_details;
+  };
+
+  /* Subclass of decorated_region_model_context that
+     adds the above event and note to any saved diagnostics.  */
+  class annotating_ctxt : public annotating_context
+  {
+  public:
+    annotating_ctxt (const call_details &cd,
+		     unsigned arg_idx)
+    : annotating_context (cd.get_ctxt ()),
+      m_cd (cd),
+      m_arg_idx (arg_idx)
+    {
+    }
+    void add_annotations () final override
+    {
+      call_arg_details arg_details (m_cd, m_arg_idx);
+      event_loc_info loc_info (m_cd.get_location (),
+			       m_cd.get_model ()->get_current_function ()->decl,
+			       m_cd.get_model ()->get_stack_depth ());
+
+      add_event (make_unique<null_terminator_check_event> (loc_info,
+							   arg_details));
+      add_note (make_unique <null_terminator_check_decl_note> (arg_details));
+    }
+  private:
+    const call_details &m_cd;
+    unsigned m_arg_idx;
+  };
+
+  /* Use this ctxt below so that any diagnostics that get added
+     get annotated.  */
+  annotating_ctxt my_ctxt (cd, arg_idx);
 
   const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
   const region *buf_reg
-    = deref_rvalue (arg_sval, cd.get_arg_tree (arg_idx), ctxt);
+    = deref_rvalue (arg_sval, cd.get_arg_tree (arg_idx), &my_ctxt);
 
-  const svalue *contents_sval = get_store_value (buf_reg, ctxt);
-
-  if (tree cst = contents_sval->maybe_get_constant ())
-    if (TREE_CODE (cst) == STRING_CST)
-      {
-	int cst_strlen;
-	if (!get_strlen (cst, &cst_strlen))
-	  {
-	    call_arg_details arg_details (cd, arg_idx);
-	    ctxt->warn (make_unique<unterminated_string_arg> (arg_details));
-	  }
-      }
+  return scan_for_null_terminator (buf_reg,
+				   cd.get_arg_tree (arg_idx),
+				   out_sval,
+				   &my_ctxt);
 }
 
 /* Remove all bindings overlapping REG within the store.  */

@@ -399,6 +399,7 @@ public:
   { return this; }
 
   const bit_range &get_bit_range () const { return m_bit_range; }
+  bool get_byte_range (byte_range *out) const;
 
   bit_offset_t get_start_bit_offset () const
   {
@@ -854,6 +855,12 @@ public:
   {
     return get_concrete_binding (bits.get_start_bit_offset (),
 				 bits.m_size_in_bits);
+  }
+  const concrete_binding *
+  get_concrete_binding (const byte_range &bytes)
+  {
+    bit_range bits = bytes.as_bit_range ();
+    return get_concrete_binding (bits);
   }
   const symbolic_binding *
   get_symbolic_binding (const region *region);
