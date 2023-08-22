@@ -30,6 +30,7 @@ class call_details
 public:
   call_details (const gcall *call, region_model *model,
 		region_model_context *ctxt);
+  call_details (const call_details &cd, region_model_context *ctxt);
 
   region_model *get_model () const { return m_model; }
   region_model_manager *get_manager () const;
@@ -81,6 +82,35 @@ private:
   region_model_context *m_ctxt;
   tree m_lhs_type;
   const region *m_lhs_region;
+};
+
+/* A bundle of information about a problematic argument at a callsite
+   for use by pending_diagnostic subclasses for reporting and
+   for deduplication.  */
+
+struct call_arg_details
+{
+public:
+  call_arg_details (const call_details &cd, unsigned arg_idx)
+  : m_call (cd.get_call_stmt ()),
+    m_called_fndecl (cd.get_fndecl_for_call ()),
+    m_arg_idx (arg_idx),
+    m_arg_expr (cd.get_arg_tree (arg_idx))
+  {
+  }
+
+  bool operator== (const call_arg_details &other) const
+  {
+    return (m_call == other.m_call
+	    && m_called_fndecl == other.m_called_fndecl
+	    && m_arg_idx == other.m_arg_idx
+	    && pending_diagnostic::same_tree_p (m_arg_expr, other.m_arg_expr));
+  }
+
+  const gcall *m_call;
+  tree m_called_fndecl;
+  unsigned m_arg_idx; // 0-based
+  tree m_arg_expr;
 };
 
 } // namespace ana

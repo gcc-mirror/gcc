@@ -597,6 +597,8 @@ private:
 			    region_model_context *ctxt) const;
 
   void check_call_args (const call_details &cd) const;
+  void check_call_format_attr (const call_details &cd,
+			       tree format_attr) const;
   void check_external_function_for_access_attr (const gcall *call,
 						tree callee_fndecl,
 						region_model_context *ctxt) const;

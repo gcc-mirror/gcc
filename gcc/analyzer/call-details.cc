@@ -58,6 +58,16 @@ call_details::call_details (const gcall *call, region_model *model,
     }
 }
 
+/* call_details's ctor: copy CD, but override the context,
+   using CTXT instead.  */
+
+call_details::call_details (const call_details &cd,
+			    region_model_context *ctxt)
+{
+  *this = cd;
+  m_ctxt = ctxt;
+}
+
 /* Get the manager from m_model.  */
 
 region_model_manager *

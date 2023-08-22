@@ -1271,14 +1271,108 @@ region_model::on_stmt_pre (const gimple *stmt,
     }
 }
 
+/* Given a call CD with function attribute FORMAT_ATTR, check that the
+   format arg to the call is a valid null-terminated string.  */
+
+void
+region_model::check_call_format_attr (const call_details &cd,
+				      tree format_attr) const
+{
+  /* We assume that FORMAT_ATTR has already been validated.  */
+
+  /* arg0 of the attribute should be kind of format strings
+     that this function expects (e.g. "printf").  */
+  const tree arg0_tree_list = TREE_VALUE (format_attr);
+  if (!arg0_tree_list)
+    return;
+
+  /* arg1 of the attribute should be the 1-based parameter index
+     to treat as the format string.  */
+  const tree arg1_tree_list = TREE_CHAIN (arg0_tree_list);
+  if (!arg1_tree_list)
+    return;
+  const tree arg1_value = TREE_VALUE (arg1_tree_list);
+  if (!arg1_value)
+    return;
+
+  unsigned format_arg_idx = TREE_INT_CST_LOW (arg1_value) - 1;
+  if (cd.num_args () <= format_arg_idx)
+    return;
+
+  /* Subclass of annotating_context that
+     adds a note about the format attr to any saved diagnostics.  */
+  class annotating_ctxt : public annotating_context
+  {
+  public:
+    annotating_ctxt (const call_details &cd,
+		     unsigned fmt_param_idx)
+    : annotating_context (cd.get_ctxt ()),
+      m_cd (cd),
+      m_fmt_param_idx (fmt_param_idx)
+    {
+    }
+    void add_annotations () final override
+    {
+      class reason_format_attr
+	: public pending_note_subclass<reason_format_attr>
+      {
+      public:
+	reason_format_attr (const call_arg_details &arg_details)
+	  : m_arg_details (arg_details)
+	{
+	}
+
+	const char *get_kind () const final override
+	{
+	  return "reason_format_attr";
+	}
+
+	void emit () const final override
+	{
+	  inform (DECL_SOURCE_LOCATION (m_arg_details.m_called_fndecl),
+		  "parameter %i of %qD marked as a format string"
+		  " via %qs attribute",
+		  m_arg_details.m_arg_idx + 1, m_arg_details.m_called_fndecl,
+		  "format");
+	}
+
+	bool operator== (const reason_format_attr &other) const
+	{
+	  return m_arg_details == other.m_arg_details;
+	}
+
+      private:
+	call_arg_details m_arg_details;
+      };
+
+      call_arg_details arg_details (m_cd, m_fmt_param_idx);
+      add_note (make_unique<reason_format_attr> (arg_details));
+    }
+  private:
+    const call_details &m_cd;
+    unsigned m_fmt_param_idx;
+  };
+
+  annotating_ctxt my_ctxt (cd, format_arg_idx);
+  call_details my_cd (cd, &my_ctxt);
+  my_cd.check_for_null_terminated_string_arg (format_arg_idx);
+}
+
 /* Ensure that all arguments at the call described by CD are checked
-   for poisoned values, by calling get_rvalue on each argument.  */
+   for poisoned values, by calling get_rvalue on each argument.
+
+   Check that calls to functions with "format" attribute have valid
+   null-terminated strings for their format argument.  */
 
 void
 region_model::check_call_args (const call_details &cd) const
 {
   for (unsigned arg_idx = 0; arg_idx < cd.num_args (); arg_idx++)
     cd.get_arg_svalue (arg_idx);
+
+  /* Handle attribute "format".  */
+  if (tree format_attr = cd.lookup_function_attribute ("format"))
+    check_call_format_attr (cd, format_attr);
 }
 
 /* Update this model for an outcome of a call that returns a specific
@@ -3174,35 +3268,6 @@ region_model::set_value (tree lhs, tree rhs, region_model_context *ctxt)
   gcc_assert (rhs_sval);
   set_value (lhs_reg, rhs_sval, ctxt);
 }
-
-/* A bundle of information about a problematic argument at a callsite
-   for use by pending_diagnostic subclasses for reporting and
-   for deduplication.  */
-
-struct call_arg_details
-{
-public:
-  call_arg_details (const call_details &cd, unsigned arg_idx)
-  : m_call (cd.get_call_stmt ()),
-    m_called_fndecl (cd.get_fndecl_for_call ()),
-    m_arg_idx (arg_idx),
-    m_arg_expr (cd.get_arg_tree (arg_idx))
-  {
-  }
-
-  bool operator== (const call_arg_details &other) const
-  {
-    return (m_call == other.m_call
-	    && m_called_fndecl == other.m_called_fndecl
-	    && m_arg_idx == other.m_arg_idx
-	    && pending_diagnostic::same_tree_p (m_arg_expr, other.m_arg_expr));
-  }
-
-  const gcall *m_call;
-  tree m_called_fndecl;
-  unsigned m_arg_idx; // 0-based
-  tree m_arg_expr;
-};
 
 /* Issue a note specifying that a particular function parameter is expected
    to be a valid null-terminated string.  */
