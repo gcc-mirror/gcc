@@ -43,6 +43,9 @@ TopLevel::insert_or_error_out (const Identifier &identifier, const T &node,
 
   if (!result)
     {
+      // can we do something like check if the node id is the same? if it is the
+      // same, it's not an error, just the resolver running multiple times?
+
       rich_location rich_loc (line_table, loc);
       rich_loc.add_range (node_locations[result.error ().existing]);
 
@@ -54,6 +57,11 @@ TopLevel::insert_or_error_out (const Identifier &identifier, const T &node,
 void
 TopLevel::go (AST::Crate &crate)
 {
+  // we do not include builtin types in the top-level definition collector, as
+  // they are not used until `Late`. furthermore, we run this visitor multiple
+  // times in a row in a fixed-point fashion, so it would make the code
+  // responsible for this ugly and perfom a lot of error checking.
+
   for (auto &item : crate.items)
     item->accept_vis (*this);
 }
