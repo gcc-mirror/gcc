@@ -1343,7 +1343,7 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
     def __init__ (self, typename, val):
         valtype = self._recognize (val.type.template_argument(0))
         typename = strip_versioned_namespace(typename)
-        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
+        self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3', typename, 1)
         payload = val['_M_payload']
         if self.typename.startswith('std::experimental'):
             engaged = val['_M_engaged']
@@ -1375,7 +1375,6 @@ class StdVariantPrinter(SingleObjContainerPrinter):
     def __init__(self, typename, val):
         alternatives = get_template_arg_list(val.type)
         self.typename = strip_versioned_namespace(typename)
-        self.typename = "%s<%s>" % (self.typename, ', '.join([self._recognize(alt) for alt in alternatives]))
         self.index = val['_M_index']
         if self.index >= len(alternatives):
             self.contained_type = None
