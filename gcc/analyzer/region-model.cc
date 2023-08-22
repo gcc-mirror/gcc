@@ -1641,23 +1641,23 @@ check_external_function_for_access_attr (const gcall *call,
       if (access->mode == access_write_only
 	  || access->mode == access_read_write)
 	{
-	  /* Subclass of decorated_region_model_context that
+	  /* Subclass of annotating_context that
 	     adds a note about the attr access to any saved diagnostics.  */
-	  class annotating_ctxt : public note_adding_context
+	  class annotating_ctxt : public annotating_context
 	  {
 	  public:
 	    annotating_ctxt (tree callee_fndecl,
 			     const attr_access &access,
 			     region_model_context *ctxt)
-	    : note_adding_context (ctxt),
+	    : annotating_context (ctxt),
 	      m_callee_fndecl (callee_fndecl),
 	      m_access (access)
 	    {
 	    }
-	    std::unique_ptr<pending_note> make_note () final override
+	    void add_annotations () final override
 	    {
-	      return make_unique<reason_attr_access>
-		(m_callee_fndecl, m_access);
+	      add_note (make_unique<reason_attr_access>
+			(m_callee_fndecl, m_access));
 	    }
 	  private:
 	    tree m_callee_fndecl;

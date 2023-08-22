@@ -922,28 +922,28 @@ protected:
   region_model_context *m_inner;
 };
 
-/* Subclass of region_model_context_decorator that adds a note
-   when saving diagnostics.  */
+/* Subclass of region_model_context_decorator with a hook for adding
+   notes/events when saving diagnostics.  */
 
-class note_adding_context : public region_model_context_decorator
+class annotating_context : public region_model_context_decorator
 {
 public:
   bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
     if (m_inner->warn (std::move (d)))
       {
-	add_note (make_note ());
+	add_annotations ();
 	return true;
       }
     else
       return false;
   }
 
-  /* Hook to make the new note.  */
-  virtual std::unique_ptr<pending_note> make_note () = 0;
+  /* Hook to add new event(s)/note(s)  */
+  virtual void add_annotations () = 0;
 
 protected:
-  note_adding_context (region_model_context *inner)
+  annotating_context (region_model_context *inner)
   : region_model_context_decorator (inner)
   {
   }
