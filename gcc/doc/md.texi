@@ -5636,6 +5636,12 @@ has mode @var{m} and operands 0 and 1 have the mode appropriate for
 one element of @var{m}.  Operand 2 has the usual mask mode for vectors
 of mode @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
+@cindex @code{len_fold_extract_last_@var{m}} instruction pattern
+@item @code{len_fold_extract_last_@var{m}}
+Like @samp{fold_extract_last_@var{m}}, but takes an extra length operand as
+operand 4 and an extra bias operand as operand 5.  The last associated element
+is extracted should have the index i < len (operand 4) + bias (operand 5).
+
 @cindex @code{fold_left_plus_@var{m}} instruction pattern
 @item @code{fold_left_plus_@var{m}}
 Take scalar operand 1 and successively add each element from vector

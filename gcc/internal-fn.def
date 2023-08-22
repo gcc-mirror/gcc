@@ -312,6 +312,9 @@ DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 		       fold_extract_last, fold_extract)
 
+DEF_INTERNAL_OPTAB_FN (LEN_FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       len_fold_extract_last, fold_len_extract)
+
 DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
 		       fold_left_plus, fold_left)
 
