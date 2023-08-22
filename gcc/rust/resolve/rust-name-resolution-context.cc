@@ -44,6 +44,15 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
 }
 
 void
+NameResolutionContext::map_usage (NodeId usage, NodeId definition)
+{
+  auto inserted = resolved_nodes.emplace (usage, definition).second;
+
+  // is that valid?
+  rust_assert (inserted);
+}
+
+void
 NameResolutionContext::scoped (Rib rib, NodeId id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)

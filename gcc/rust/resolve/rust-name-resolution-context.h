@@ -19,7 +19,6 @@
 #ifndef RUST_NAME_RESOLVER_2_0_H
 #define RUST_NAME_RESOLVER_2_0_H
 
-#include "optional.h"
 #include "rust-forever-stack.h"
 #include "rust-hir-map.h"
 
@@ -179,6 +178,13 @@ public:
   ForeverStack<Namespace::Labels> labels;
 
   Analysis::Mappings &mappings;
+
+  // TODO: Rename
+  void map_usage (NodeId usage, NodeId definition);
+
+private:
+  /* Map of "usage" nodes which have been resolved to a "definition" node */
+  std::map<NodeId, NodeId> resolved_nodes;
 };
 
 } // namespace Resolver2_0
