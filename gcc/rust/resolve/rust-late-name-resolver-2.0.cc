@@ -20,6 +20,7 @@
 #include "rust-ast-full.h"
 #include "rust-late-name-resolver-2.0.h"
 #include "rust-default-resolver.h"
+#include "rust-path.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
 
@@ -121,11 +122,24 @@ Late::visit (AST::IdentifierExpr &expr)
 {
   // TODO: same thing as visit(PathInExpression) here?
 
+  tl::optional<NodeId> resolved = tl::nullopt;
   auto label = ctx.labels.get (expr.get_ident ());
   auto value = ctx.values.get (expr.get_ident ());
 
-  rust_debug ("[ARTHUR] label: %d", label ? *label : -1);
-  rust_debug ("[ARTHUR] value: %d", value ? *value : -1);
+  if (label)
+    resolved = label;
+  else if (value)
+    resolved = value;
+  // TODO: else emit error?
+
+  ctx.map_usage (expr.get_node_id (), *resolved);
+
+  // in the old resolver, resolutions are kept in the resolver, not the mappings
+  // :/ how do we deal with that?
+  // ctx.mappings.insert_resolved_name(expr, resolved);
+
+  // For empty types, do we perform a lookup in ctx.types or should the
+  // toplevel instead insert a name in ctx.values? (like it currently does)
 }
 
 void
@@ -136,11 +150,20 @@ Late::visit (AST::PathInExpression &expr)
   // do we emit it in `get<Namespace::Labels>`?
 
   auto label = ctx.labels.resolve_path (expr.get_segments ());
-
   auto value = ctx.values.resolve_path (expr.get_segments ());
+}
 
-  rust_debug ("[ARTHUR] label: %d", label ? *label : -1);
-  rust_debug ("[ARTHUR] value: %d", value ? *value : -1);
+void
+Late::visit (AST::TypePath &type)
+{
+  // should we add type path resolution in `ForeverStack` directly? Since it's
+  // quite more complicated.
+  // maybe we can overload `resolve_path<Namespace::Types>` to only do
+  // typepath-like path resolution? that sounds good
+
+  auto resolved = ctx.types.get (type.get_segments ().back ()->as_string ());
+
+  ctx.map_usage (type.get_node_id (), *resolved);
 }
 
 } // namespace Resolver2_0
