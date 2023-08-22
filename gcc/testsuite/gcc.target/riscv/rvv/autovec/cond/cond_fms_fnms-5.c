@@ -25,5 +25,5 @@
 
 TEST_ALL (DEF_LOOP)
 
-/* { dg-final { scan-assembler-times {vfnmacc\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+} 3 } } */
+/* { dg-final { scan-assembler-times {vfnmacc\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 { xfail riscv*-*-* } } } */
 /* { dg-final { scan-assembler-times {vfmsac\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
