@@ -22899,7 +22899,7 @@ ix86_invalid_conversion (const_tree fromtype, const_tree totype)
 	  || (TYPE_MODE (totype) == BFmode
 	      && TYPE_MODE (fromtype) == HImode))
 	warning (0, "%<__bfloat16%> is redefined from typedef %<short%> "
-		"to real %<__bf16%> since GCC V13, be careful of "
+		"to real %<__bf16%> since GCC 13.1, be careful of "
 		 "implicit conversion between %<__bf16%> and %<short%>; "
 		 "an explicit bitcast may be needed here");
     }
