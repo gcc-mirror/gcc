@@ -1,3 +1,118 @@
+2023-08-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-wredusum.c: New test.
+
+2023-08-21  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* gcc.dg/unroll-7.c: Remove xfail.
+
+2023-08-21  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/xtheadba.c: Quote unquoted #error message.
+	* gcc.target/riscv/xtheadbb.c: Ditto.
+	* gcc.target/riscv/xtheadbs.c: Ditto.
+	* gcc.target/riscv/xtheadcmo.c: Ditto.
+	* gcc.target/riscv/xtheadcondmov.c: Ditto.
+	* gcc.target/riscv/xtheadfmemidx.c: Ditto.
+	* gcc.target/riscv/xtheadfmv.c: Ditto.
+	* gcc.target/riscv/xtheadint.c: Ditto.
+	* gcc.target/riscv/xtheadmac.c: Ditto.
+	* gcc.target/riscv/xtheadmemidx.c: Ditto.
+	* gcc.target/riscv/xtheadmempair.c: Ditto.
+	* gcc.target/riscv/xtheadsync.c: Ditto.
+	* gcc.target/riscv/zawrs.c: Ditto.
+	* gcc.target/riscv/zvbb.c: Ditto.
+	* gcc.target/riscv/zvbc.c: Ditto.
+	* gcc.target/riscv/zvkg.c: Ditto.
+	* gcc.target/riscv/zvkned.c: Ditto.
+	* gcc.target/riscv/zvknha.c: Ditto.
+	* gcc.target/riscv/zvknhb.c: Ditto.
+	* gcc.target/riscv/zvksed.c: Ditto.
+	* gcc.target/riscv/zvksh.c: Ditto.
+	* gcc.target/riscv/zvkt.c: Ditto.
+
+2023-08-21  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/zvkn.c: Quote #error messages.
+	* gcc.target/riscv/zvkn-1.c: Ditto.
+	* gcc.target/riscv/zvknc.c: Ditto.
+	* gcc.target/riscv/zvknc-1.c: Ditto.
+	* gcc.target/riscv/zvknc-2.c: Ditto.
+	* gcc.target/riscv/zvkng.c: Ditto.
+	* gcc.target/riscv/zvkng-1.c: Ditto.
+	* gcc.target/riscv/zvkng-2.c: Ditto.
+	* gcc.target/riscv/zvks.c: Ditto.
+	* gcc.target/riscv/zvks-1.c: Ditto.
+	* gcc.target/riscv/zvksc.c: Ditto.
+	* gcc.target/riscv/zvksc-1.c: Ditto.
+	* gcc.target/riscv/zvksc-2.c: Ditto.
+	* gcc.target/riscv/zvksg.c: Ditto.
+	* gcc.target/riscv/zvksg-1.c: Ditto.
+	* gcc.target/riscv/zvksg-2.c: Ditto.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr87007-5.c: Update comment, adjust subtest.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	* lib/target-supports.exp: Add vect128, vect256 and vect512
+	effective targets.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Properly handle the
+	vect256 case.
+
+2023-08-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/vect/pr65947-7.c: Add target check aarch64*-*-* and scan vect
+	dump for pattern "optimizing condition reduction with FOLD_EXTRACT_LAST"
+	for targets that support vect_fold_extract_last.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-46.c: Use division instead of addition
+	to avoid reduction vectorization.
+
+2023-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-pr88464-2.c: Add -mgather to
+	options.
+	* gcc.target/i386/avx512f-pr88464-3.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-4.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-6.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-7.c: Ditto.
+	* gcc.target/i386/avx512f-pr88464-8.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-10.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-12.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-13.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-14.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-15.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-16.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-4.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-5.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-6.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-7.c: Ditto.
+	* gcc.target/i386/avx512vl-pr88464-8.c: Ditto.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111082
+	* gcc.dg/pr111082.c: New testcase.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111070
+	* gcc.dg/pr111070.c: New testcase.
+
+2023-08-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111002
+	* gcc.target/aarch64/sve/cond_convert_8.c: New test.
+
+2023-08-21  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/lto/20091013-1_2.c: Add -Wno-stringop-overread.
+
 2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc.dg/darwin-minversion-link.c: Account for macOS 13 and 14.

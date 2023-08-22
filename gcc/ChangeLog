@@ -1,3 +1,78 @@
+2023-08-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(vfwredusum_frm_obj): New declaration.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vfwredusum_frm): New intrinsic function def.
+
+2023-08-21  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.md (neg): Second operand must be a register.
+
+2023-08-21  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/bitmanip.md: Added bitmanip type to insns
+	that are missing types.
+
+2023-08-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/sync-ztso.md (atomic_load_ztso<mode>): Avoid extraenous
+	newline.
+
+2023-08-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/aarch64/falkor-tag-collision-avoidance.cc (dump_insn_list):
+	Fix format specifier.
+
+2023-08-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::union_nans): Return false if nothing
+	changed.
+	(range_tests_floats): New test.
+
+2023-08-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/111048
+	* fold-const.cc (valid_mask_for_fold_vec_perm_cst_p): Set arg_npatterns
+	correctly.
+	(fold_vec_perm_cst): Remove workaround and again call
+	valid_mask_fold_vec_perm_cst_p for both VLS and VLA vectors.
+	(test_fold_vec_perm_cst::test_nunits_min_4): Add test-case.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111082
+	* tree-vect-slp.cc (vectorize_slp_instance_root_stmt): Only
+	pun operations that can overflow.
+
+2023-08-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* lcm.cc (compute_antinout_edge): Export as global use.
+	(compute_earliest): Ditto.
+	(compute_rev_insert_delete): Ditto.
+	* lcm.h (compute_antinout_edge): Ditto.
+	(compute_earliest): Ditto.
+
+2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111070
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Check we have
+	an SSA name before checking SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+2023-08-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111002
+	* match.pd (view_convert(vec_cond(a,b,c))): New pattern.
+
+2023-08-21  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Detect
+	Alderlake-N.
+	* common/config/i386/i386-common.cc (alias_table): Support
+	-march=gracemont as an alias of -march=alderlake.
+
 2023-08-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_sse_extend): Use ops[1]

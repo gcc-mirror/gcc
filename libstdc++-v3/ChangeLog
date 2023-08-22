@@ -1,3 +1,8 @@
+2023-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/nested_exception/rethrow_if_nested-term.cc:
+	Call std::set_terminate before throwing the nested exception.
+
 2023-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR target/111060
