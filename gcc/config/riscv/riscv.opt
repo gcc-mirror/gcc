@@ -277,7 +277,7 @@ Always inline subword atomic operations.
 
 Enum
 Name(riscv_autovec_preference) Type(enum riscv_autovec_preference_enum)
-The RISC-V auto-vectorization preference:
+Valid arguments to -param=riscv-autovec-preference=:
 
 EnumValue
 Enum(riscv_autovec_preference) String(none) Value(NO_AUTOVEC)
@@ -294,7 +294,7 @@ Target RejectNegative Joined Enum(riscv_autovec_preference) Var(riscv_autovec_pr
 
 Enum
 Name(riscv_autovec_lmul) Type(enum riscv_autovec_lmul_enum)
-The RVV possible LMUL:
+The RVV possible LMUL (-param=riscv-autovec-lmul=):
 
 EnumValue
 Enum(riscv_autovec_lmul) String(m1) Value(RVV_M1)
