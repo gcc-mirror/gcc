@@ -21,6 +21,7 @@
 
 #include "optional.h"
 #include "rust-forever-stack.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -136,6 +137,8 @@ correct
 class NameResolutionContext
 {
 public:
+  NameResolutionContext ();
+
   /**
    * Insert a new value in the current rib.
    *
@@ -174,6 +177,8 @@ public:
   ForeverStack<Namespace::Types> types;
   ForeverStack<Namespace::Macros> macros;
   ForeverStack<Namespace::Labels> labels;
+
+  Analysis::Mappings &mappings;
 };
 
 } // namespace Resolver2_0
