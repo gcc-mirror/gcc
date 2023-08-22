@@ -420,6 +420,33 @@ kf_error::impl_call_pre (const call_details &cd) const
   model->check_for_null_terminated_string_arg (cd, fmt_arg_idx);
 }
 
+/* Handler for fopen.
+     FILE *fopen (const char *filename, const char *mode);
+   See e.g. https://en.cppreference.com/w/c/io/fopen
+   https://www.man7.org/linux/man-pages/man3/fopen.3.html
+   https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-170  */
+
+class kf_fopen : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_pointer_p (1));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.check_for_null_terminated_string_arg (0);
+    cd.check_for_null_terminated_string_arg (1);
+    cd.set_any_lhs_with_defaults ();
+
+    /* fopen's mode param is effectively a mini-DSL, but there are various
+       non-standard extensions, so we don't bother to check it.  */
+  }
+};
+
 /* Handler for "free", after sm-handling.
 
    If the ptr points to an underlying heap region, delete the region,
@@ -1422,6 +1449,7 @@ register_known_functions (known_function_manager &kfm)
 
   /* Known POSIX functions, and some non-standard extensions.  */
   {
+    kfm.add ("fopen", make_unique<kf_fopen> ());
     kfm.add ("putenv", make_unique<kf_putenv> ());
 
     register_known_fd_functions (kfm);
