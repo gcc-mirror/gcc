@@ -1187,7 +1187,7 @@ public:
   }
 };
 
-/* Handle the on_call_pre part of "strlen".  */
+/* Handler for "strlen" and for "__analyzer_get_strlen".  */
 
 class kf_strlen : public known_function
 {
@@ -1196,37 +1196,33 @@ public:
   {
     return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
   }
-  void impl_call_pre (const call_details &cd) const final override;
-};
-
-void
-kf_strlen::impl_call_pre (const call_details &cd) const
-{
-  region_model_context *ctxt = cd.get_ctxt ();
-  region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
-
-  const svalue *arg_sval = cd.get_arg_svalue (0);
-  const region *buf_reg
-    = model->deref_rvalue (arg_sval, cd.get_arg_tree (0), ctxt);
-  if (const string_region *str_reg
-      = buf_reg->dyn_cast_string_region ())
-    {
-      tree str_cst = str_reg->get_string_cst ();
-      /* TREE_STRING_LENGTH is sizeof, not strlen.  */
-      int sizeof_cst = TREE_STRING_LENGTH (str_cst);
-      int strlen_cst = sizeof_cst - 1;
-      if (cd.get_lhs_type ())
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    if (const svalue *bytes_read = cd.check_for_null_terminated_string_arg (0))
+      if (bytes_read->get_kind () != SK_UNKNOWN)
 	{
-	  tree t_cst = build_int_cst (cd.get_lhs_type (), strlen_cst);
-	  const svalue *result_sval
-	    = mgr->get_or_create_constant_svalue (t_cst);
-	  cd.maybe_set_lhs (result_sval);
+	  region_model_manager *mgr = cd.get_manager ();
+	  /* strlen is (bytes_read - 1).  */
+	  const svalue *one = mgr->get_or_create_int_cst (size_type_node, 1);
+	  const svalue *strlen_sval = mgr->get_or_create_binop (size_type_node,
+								MINUS_EXPR,
+								bytes_read,
+								one);
+	  cd.maybe_set_lhs (strlen_sval);
 	  return;
 	}
-    }
-  /* Otherwise a conjured value.  */
-  cd.set_any_lhs_with_defaults ();
+
+    /* Use a conjured svalue.  */
+    cd.set_any_lhs_with_defaults ();
+  }
+};
+
+/* Factory function, so that kf-analyzer.cc can use this class.  */
+
+std::unique_ptr<known_function>
+make_kf_strlen ()
+{
+  return make_unique<kf_strlen> ();
 }
 
 /* Handler for "strndup" and "__builtin_strndup".  */
@@ -1434,7 +1430,7 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (BUILT_IN_STRCPY_CHK, make_unique<kf_strcpy> (3));
     kfm.add (BUILT_IN_STRDUP, make_unique<kf_strdup> ());
     kfm.add (BUILT_IN_STRNDUP, make_unique<kf_strndup> ());
-    kfm.add (BUILT_IN_STRLEN, make_unique<kf_strlen> ());
+    kfm.add (BUILT_IN_STRLEN, make_kf_strlen ());
 
     register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);

@@ -64,6 +64,8 @@ private:
   known_function *m_combined_fns_arr[CFN_LAST];
 };
 
+extern std::unique_ptr<known_function> make_kf_strlen ();
+
 } // namespace ana
 
 #endif /* GCC_ANALYZER_KNOWN_FUNCTION_MANAGER_H */

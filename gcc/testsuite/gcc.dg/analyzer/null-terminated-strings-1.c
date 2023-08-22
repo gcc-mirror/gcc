@@ -129,12 +129,12 @@ char *test_dynamic_4 (const char *src)
 
 void test_symbolic_ptr (const char *ptr)
 {
-  __analyzer_describe (0, __analyzer_get_strlen (ptr)); /* { dg-warning "UNKNOWN" } */
+  __analyzer_describe (0, __analyzer_get_strlen (ptr)); /* { dg-warning "CONJURED" } */
 }
 
 void test_symbolic_offset (size_t idx)
 {
-  __analyzer_describe (0, __analyzer_get_strlen ("abc" + idx)); /* { dg-warning "UNKNOWN" } */
+  __analyzer_describe (0, __analyzer_get_strlen ("abc" + idx)); /* { dg-warning "CONJURED" } */
 }
 
 void test_casts (void)

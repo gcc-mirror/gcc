@@ -358,33 +358,6 @@ public:
   }
 };
 
-/* Handler for "__analyzer_get_strlen".  */
-
-class kf_analyzer_get_strlen : public known_function
-{
-public:
-  bool matches_call_types_p (const call_details &cd) const final override
-  {
-    return cd.num_args () == 1 && cd.arg_is_pointer_p (0);
-  }
-  void impl_call_pre (const call_details &cd) const final override
-  {
-    if (const svalue *bytes_read = cd.check_for_null_terminated_string_arg (0))
-      {
-	region_model_manager *mgr = cd.get_manager ();
-	/* strlen is (bytes_read - 1).  */
-	const svalue *strlen_sval
-	  = mgr->get_or_create_binop (size_type_node,
-				      MINUS_EXPR,
-				      bytes_read,
-				      mgr->get_or_create_int_cst (size_type_node, 1));
-	cd.maybe_set_lhs (strlen_sval);
-      }
-    else
-      cd.set_any_lhs_with_defaults ();
-  }
-};
-
 /* Populate KFM with instances of known functions used for debugging the
    analyzer and for writing DejaGnu tests, all with a "__analyzer_" prefix.  */
 
@@ -406,8 +379,7 @@ register_known_analyzer_functions (known_function_manager &kfm)
   kfm.add ("__analyzer_eval", make_unique<kf_analyzer_eval> ());
   kfm.add ("__analyzer_get_unknown_ptr",
 	   make_unique<kf_analyzer_get_unknown_ptr> ());
-  kfm.add ("__analyzer_get_strlen",
-	   make_unique<kf_analyzer_get_strlen> ());
+  kfm.add ("__analyzer_get_strlen", make_kf_strlen ());
 }
 
 } // namespace ana
