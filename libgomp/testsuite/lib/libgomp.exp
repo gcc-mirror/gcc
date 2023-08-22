@@ -377,6 +377,25 @@ proc offload_target_to_openacc_device_type { offload_target } {
     }
 }
 
+# Return 1 if certain nonstandard math functions are available
+# on the target: gamma, scalb, significand, and their float variants.
+proc check_effective_target_nonstandard_math_functions { } {
+    return [check_no_compiler_messages nonstandard_math_functions executable {
+      #include <math.h>
+      int main() {
+        float x = 42;
+        double y = 42;
+        x = gammaf (x);
+        x = __builtin_scalbf (x, 2.f);
+        x =__builtin_significandf (x);
+        y = gamma (y);
+        y = __builtin_scalb (y, 2.);
+        y =__builtin_significand (y);
+        return 0;
+      }
+    } "-lm" ]
+}
+
 # Return 1 if compiling for the specified offload target
 # Takes -foffload=... into account by checking OFFLOAD_TARGET_NAMES=
 # in the -v compiler output.
