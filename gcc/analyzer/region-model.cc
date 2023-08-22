@@ -5875,7 +5875,8 @@ noop_region_model_context::terminate_path ()
 void
 region_model_context_decorator::add_event (std::unique_ptr<checker_event> event)
 {
-  m_inner->add_event (std::move (event));
+  if (m_inner)
+    m_inner->add_event (std::move (event));
 }
 
 /* struct model_merger.  */

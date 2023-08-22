@@ -813,93 +813,118 @@ class region_model_context_decorator : public region_model_context
  public:
   bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    return m_inner->warn (std::move (d));
+    if (m_inner)
+      return m_inner->warn (std::move (d));
+    else
+      return false;
   }
 
   void add_note (std::unique_ptr<pending_note> pn) override
   {
-    m_inner->add_note (std::move (pn));
+    if (m_inner)
+      m_inner->add_note (std::move (pn));
   }
   void add_event (std::unique_ptr<checker_event> event) override;
 
   void on_svalue_leak (const svalue *sval) override
   {
-    m_inner->on_svalue_leak (sval);
+    if (m_inner)
+      m_inner->on_svalue_leak (sval);
   }
 
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) override
   {
-    m_inner->on_liveness_change (live_svalues, model);
+    if (m_inner)
+      m_inner->on_liveness_change (live_svalues, model);
   }
 
   logger *get_logger () override
   {
-    return m_inner->get_logger ();
+    if (m_inner)
+      return m_inner->get_logger ();
+    else
+      return nullptr;
   }
 
   void on_condition (const svalue *lhs,
 		     enum tree_code op,
 		     const svalue *rhs) override
   {
-    m_inner->on_condition (lhs, op, rhs);
+    if (m_inner)
+      m_inner->on_condition (lhs, op, rhs);
   }
 
   void on_bounded_ranges (const svalue &sval,
 			  const bounded_ranges &ranges) override
   {
-    m_inner->on_bounded_ranges (sval, ranges);
+    if (m_inner)
+      m_inner->on_bounded_ranges (sval, ranges);
   }
 
   void on_pop_frame (const frame_region *frame_reg) override
   {
-    m_inner->on_pop_frame (frame_reg);
+    if (m_inner)
+      m_inner->on_pop_frame (frame_reg);
   }
 
   void on_unknown_change (const svalue *sval, bool is_mutable) override
   {
-    m_inner->on_unknown_change (sval, is_mutable);
+    if (m_inner)
+      m_inner->on_unknown_change (sval, is_mutable);
   }
 
   void on_phi (const gphi *phi, tree rhs) override
   {
-    m_inner->on_phi (phi, rhs);
+    if (m_inner)
+      m_inner->on_phi (phi, rhs);
   }
 
   void on_unexpected_tree_code (tree t,
 				const dump_location_t &loc) override
   {
-    m_inner->on_unexpected_tree_code (t, loc);
+    if (m_inner)
+      m_inner->on_unexpected_tree_code (t, loc);
   }
 
   void on_escaped_function (tree fndecl) override
   {
-    m_inner->on_escaped_function (fndecl);
+    if (m_inner)
+      m_inner->on_escaped_function (fndecl);
   }
 
   uncertainty_t *get_uncertainty () override
   {
-    return m_inner->get_uncertainty ();
+    if (m_inner)
+      return m_inner->get_uncertainty ();
+    else
+      return nullptr;
   }
 
   void purge_state_involving (const svalue *sval) override
   {
-    m_inner->purge_state_involving (sval);
+    if (m_inner)
+      m_inner->purge_state_involving (sval);
   }
 
   void bifurcate (std::unique_ptr<custom_edge_info> info) override
   {
-    m_inner->bifurcate (std::move (info));
+    if (m_inner)
+      m_inner->bifurcate (std::move (info));
   }
 
   void terminate_path () override
   {
-    m_inner->terminate_path ();
+    if (m_inner)
+      m_inner->terminate_path ();
   }
 
   const extrinsic_state *get_ext_state () const override
   {
-    return m_inner->get_ext_state ();
+    if (m_inner)
+      return m_inner->get_ext_state ();
+    else
+      return nullptr;
   }
 
   bool get_state_map_by_name (const char *name,
@@ -909,20 +934,25 @@ class region_model_context_decorator : public region_model_context
 			      std::unique_ptr<sm_context> *out_sm_context)
     override
   {
-    return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx,
-					   out_sm_context);
+    if (m_inner)
+      return m_inner->get_state_map_by_name (name, out_smap, out_sm, out_sm_idx,
+					     out_sm_context);
+    else
+      return false;
   }
 
   const gimple *get_stmt () const override
   {
-    return m_inner->get_stmt ();
+    if (m_inner)
+      return m_inner->get_stmt ();
+    else
+      return nullptr;
   }
 
 protected:
   region_model_context_decorator (region_model_context *inner)
   : m_inner (inner)
   {
-    gcc_assert (m_inner);
   }
 
   region_model_context *m_inner;
@@ -936,13 +966,13 @@ class annotating_context : public region_model_context_decorator
 public:
   bool warn (std::unique_ptr<pending_diagnostic> d) override
   {
-    if (m_inner->warn (std::move (d)))
-      {
-	add_annotations ();
-	return true;
-      }
-    else
-      return false;
+    if (m_inner)
+      if (m_inner->warn (std::move (d)))
+	{
+	  add_annotations ();
+	  return true;
+	}
+    return false;
   }
 
   /* Hook to add new event(s)/note(s)  */
