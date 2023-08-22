@@ -1084,7 +1084,7 @@ infinities, NaNs and negative zeros are involved.
 ISO/IEC TS 18661-3:2015 defines C support for additional floating
 types @code{_Float@var{n}} and @code{_Float@var{n}x}, and GCC supports
 these type names; the set of types supported depends on the target
-architecture.  These types are not supported when compiling C++.
+architecture.
 Constants with these types use suffixes @code{f@var{n}} or
 @code{F@var{n}} and @code{f@var{n}x} or @code{F@var{n}x}.  These type
 names can be used together with @code{_Complex} to declare complex
