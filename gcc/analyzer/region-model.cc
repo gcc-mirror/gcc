@@ -5856,6 +5856,11 @@ noop_region_model_context::add_note (std::unique_ptr<pending_note>)
 }
 
 void
+noop_region_model_context::add_event (std::unique_ptr<checker_event>)
+{
+}
+
+void
 noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 {
 }
@@ -5863,6 +5868,14 @@ noop_region_model_context::bifurcate (std::unique_ptr<custom_edge_info>)
 void
 noop_region_model_context::terminate_path ()
 {
+}
+
+/* class region_model_context_decorator : public region_model_context.  */
+
+void
+region_model_context_decorator::add_event (std::unique_ptr<checker_event> event)
+{
+  m_inner->add_event (std::move (event));
 }
 
 /* struct model_merger.  */

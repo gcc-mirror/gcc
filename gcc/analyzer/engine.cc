@@ -150,6 +150,14 @@ impl_region_model_context::add_note (std::unique_ptr<pending_note> pn)
 }
 
 void
+impl_region_model_context::add_event (std::unique_ptr<checker_event> event)
+{
+  LOG_FUNC (get_logger ());
+  if (m_eg)
+    m_eg->get_diagnostic_manager ().add_event (std::move (event));
+}
+
+void
 impl_region_model_context::on_svalue_leak (const svalue *sval)
 
 {

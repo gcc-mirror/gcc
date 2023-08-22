@@ -627,6 +627,10 @@ class region_model_context
      pending diagnostic.  */
   virtual void add_note (std::unique_ptr<pending_note> pn) = 0;
 
+  /* Hook for clients to add an event to the last previously stored
+     pending diagnostic.  */
+  virtual void add_event (std::unique_ptr<checker_event> event) = 0;
+
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
      about leaks.  */
@@ -733,6 +737,7 @@ class noop_region_model_context : public region_model_context
 public:
   bool warn (std::unique_ptr<pending_diagnostic>) override { return false; }
   void add_note (std::unique_ptr<pending_note>) override;
+  void add_event (std::unique_ptr<checker_event>) override;
   void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) override {}
@@ -815,6 +820,7 @@ class region_model_context_decorator : public region_model_context
   {
     m_inner->add_note (std::move (pn));
   }
+  void add_event (std::unique_ptr<checker_event> event) override;
 
   void on_svalue_leak (const svalue *sval) override
   {

@@ -721,6 +721,15 @@ saved_diagnostic::add_note (std::unique_ptr<pending_note> pn)
   m_notes.safe_push (pn.release ());
 }
 
+/* Add EVENT to this diagnostic.  */
+
+void
+saved_diagnostic::add_event (std::unique_ptr<checker_event> event)
+{
+  gcc_assert (event);
+  m_saved_events.safe_push (event.release ());
+}
+
 /* Return a new json::object of the form
    {"sm": optional str,
     "enode": int,
@@ -890,6 +899,19 @@ saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
   return m_d->supercedes_p (*other.m_d);
 }
 
+/* Move any saved checker_events from this saved_diagnostic to
+   the end of DST_PATH.  */
+
+void
+saved_diagnostic::add_any_saved_events (checker_path &dst_path)
+{
+  for (auto &event : m_saved_events)
+    {
+      dst_path.add_event (std::unique_ptr<checker_event> (event));
+      event = nullptr;
+    }
+}
+
 /* Emit any pending notes owned by this diagnostic.  */
 
 void
@@ -1055,6 +1077,20 @@ diagnostic_manager::add_note (std::unique_ptr<pending_note> pn)
   gcc_assert (m_saved_diagnostics.length () > 0);
   saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
   sd->add_note (std::move (pn));
+}
+
+/* Add EVENT to the most recent saved_diagnostic.  */
+
+void
+diagnostic_manager::add_event (std::unique_ptr<checker_event> event)
+{
+  LOG_FUNC (get_logger ());
+  gcc_assert (event);
+
+  /* Get most recent saved_diagnostic.  */
+  gcc_assert (m_saved_diagnostics.length () > 0);
+  saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
+  sd->add_event (std::move (event));
 }
 
 /* Return a new json::object of the form
@@ -1308,7 +1344,7 @@ public:
       {
 	saved_diagnostic **slot = m_map.get (key);
 	gcc_assert (*slot);
-	const saved_diagnostic *sd = *slot;
+	saved_diagnostic *sd = *slot;
 	dm->emit_saved_diagnostic (eg, *sd);
       }
   }
@@ -1370,7 +1406,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
 
 void
 diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
-					   const saved_diagnostic &sd)
+					   saved_diagnostic &sd)
 {
   LOG_SCOPE (get_logger ());
   log ("sd[%i]: %qs at SN: %i",
@@ -1394,6 +1430,11 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   /* Now prune it to just cover the most pertinent events.  */
   prune_path (&emission_path, sd.m_sm, sd.m_sval, sd.m_state);
+
+  /* Add any saved events to the path, giving contextual information
+     about what the analyzer was simulating as the diagnostic was
+     generated.  These don't get pruned, as they are probably pertinent.  */
+  sd.add_any_saved_events (emission_path);
 
   /* Add a final event to the path, covering the diagnostic itself.
      We use the final enode from the epath, which might be different from
