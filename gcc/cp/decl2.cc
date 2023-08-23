@@ -1604,6 +1604,50 @@ cp_check_const_attributes (tree attributes)
     }
 }
 
+/* Copies hot or cold attributes to a function FN if present on the
+   encapsulating class, struct, or union TYPE.  */
+
+void
+maybe_propagate_warmth_attributes (tree fn, tree type)
+{
+  if (fn == NULL_TREE || type == NULL_TREE
+      || !(TREE_CODE (type) == RECORD_TYPE
+	   || TREE_CODE (type) == UNION_TYPE))
+    return;
+
+  tree has_cold_attr = lookup_attribute ("cold", TYPE_ATTRIBUTES (type));
+  tree has_hot_attr = lookup_attribute ("hot", TYPE_ATTRIBUTES (type));
+
+  if (has_cold_attr || has_hot_attr)
+    {
+      /* Transparently ignore the new warmth attribute if it
+	 conflicts with a present function attribute.  Otherwise
+	 decl_attribute would still honour the present attribute,
+	 but producing an undesired warning in the process.  */
+
+      if (has_cold_attr)
+	{
+	  if (lookup_attribute ("hot", DECL_ATTRIBUTES (fn)) == NULL)
+	    {
+	      tree cold_cons
+		= tree_cons (get_identifier ("cold"), NULL, NULL);
+
+	      decl_attributes (&fn, cold_cons, 0);
+	    }
+	}
+      else if (has_hot_attr)
+	{
+	  if (lookup_attribute ("cold", DECL_ATTRIBUTES (fn)) == NULL)
+	    {
+	      tree hot_cons
+		= tree_cons (get_identifier ("hot"), NULL, NULL);
+
+	      decl_attributes (&fn, hot_cons, 0);
+	    }
+	}
+    }
+}
+
 /* Return the last pushed declaration for the symbol DECL or NULL
    when no such declaration exists.  */
 

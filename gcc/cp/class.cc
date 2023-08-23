@@ -205,6 +205,7 @@ static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
 static bool type_maybe_constexpr_destructor (tree);
 static bool field_poverlapping_p (tree);
+static void propagate_class_warmth_attribute (tree);
 
 /* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
 
@@ -6289,6 +6290,12 @@ check_bases_and_members (tree t)
      allocating an array of this type.  */
   LANG_TYPE_CLASS_CHECK (t)->vec_new_uses_cookie
     = type_requires_array_cookie (t);
+
+  /* Classes marked hot or cold propagate the attribute to all members.  We
+     may do this now that methods are declared.  This does miss some lazily
+     declared special member functions (CLASSTYPE_LAZY_*), which are handled
+     in lazily_declare_fn later on.  */
+  propagate_class_warmth_attribute (t);
 }
 
 /* If T needs a pointer to its virtual function table, set TYPE_VFIELD
@@ -7767,6 +7774,28 @@ unreverse_member_declarations (tree t)
       DECL_CHAIN (TYPE_FIELDS (t)) = x;
       TYPE_FIELDS (t) = prev;
     }
+}
+
+/* Classes, structs or unions T marked with hotness attributes propagate
+   the attribute to all methods.  */
+
+void
+propagate_class_warmth_attribute (tree t)
+{
+  if (t == NULL_TREE
+      || !(TREE_CODE (t) == RECORD_TYPE
+	   || TREE_CODE (t) == UNION_TYPE))
+    return;
+
+  tree class_has_cold_attr
+    = lookup_attribute ("cold", TYPE_ATTRIBUTES (t));
+  tree class_has_hot_attr
+    = lookup_attribute ("hot", TYPE_ATTRIBUTES (t));
+
+  if (class_has_cold_attr || class_has_hot_attr)
+    for (tree f = TYPE_FIELDS (t); f; f = DECL_CHAIN (f))
+      if (TREE_CODE (f) == FUNCTION_DECL)
+	maybe_propagate_warmth_attributes (f, t);
 }
 
 tree

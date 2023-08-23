@@ -2874,7 +2874,10 @@ improving code locality of non-cold parts of program.  The paths leading
 to calls of cold functions within code are marked as unlikely by the branch
 prediction mechanism.  It is thus useful to mark functions used to handle
 unlikely conditions, such as @code{perror}, as cold to improve optimization
-of hot functions that do call marked functions in rare occasions.
+of hot functions that do call marked functions in rare occasions.  In C++,
+the @code{cold} attribute can be applied to types with the effect of being
+propagated to member functions.  See
+@ref{C++ Attributes}.
 
 When profile feedback is available, via @option{-fprofile-use}, cold functions
 are automatically detected and this attribute is ignored.
@@ -3293,7 +3296,9 @@ The @code{hot} attribute on a function is used to inform the compiler that
 the function is a hot spot of the compiled program.  The function is
 optimized more aggressively and on many targets it is placed into a special
 subsection of the text section so all hot functions appear close together,
-improving locality.
+improving locality.  In C++, the @code{hot} attribute can be applied to types
+with the effect of being propagated to member functions.  See
+@ref{C++ Attributes}.
 
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
@@ -25604,6 +25609,34 @@ control a resource, such as @code{std::lock_guard}.
 
 This attribute is also accepted in C, but it is unnecessary because C
 does not have constructors or destructors.
+
+@cindex @code{cold} type attribute
+@item cold
+
+In addition to functions and labels, GNU C++ allows the @code{cold}
+attribute to be used on C++ classes, structs, or unions.  Applying
+the @code{cold} attribute on a type has the effect of treating every
+member function of the type, including implicit special member
+functions, as cold.  If a member function is marked with the
+@code{hot} function attribute, the @code{hot} attribute takes
+precedence and the @code{cold} attribute is not propagated.
+
+For the effects of the @code{cold} attribute on functions, see
+@ref{Common Function Attributes}.
+
+@cindex @code{hot} type attribute
+@item hot
+
+In addition to functions and labels, GNU C++ allows the @code{hot}
+attribute to be used on C++ classes, structs, or unions.  Applying
+the @code{hot} attribute on a type has the effect of treating every
+member function of the type, including implicit special member
+functions, as hot.  If a member function is marked with the
+@code{cold} function attribute, the @code{cold} attribute takes
+precedence and the @code{hot} attribute is not propagated.
+
+For the effects of the @code{hot} attribute on functions, see
+@ref{Common Function Attributes}.
 
 @end table
 

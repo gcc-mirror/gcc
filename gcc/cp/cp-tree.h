@@ -7058,6 +7058,7 @@ extern int parm_index                           (tree);
 extern tree vtv_start_verification_constructor_init_function (void);
 extern tree vtv_finish_verification_constructor_init_function (tree);
 extern void cp_check_const_attributes (tree);
+extern void maybe_propagate_warmth_attributes (tree, tree);
 
 /* in error.cc */
 extern const char *type_as_string		(tree, int);
