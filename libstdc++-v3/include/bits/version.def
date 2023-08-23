@@ -1583,6 +1583,14 @@ ftms = {
 };
 
 ftms = {
+  name = ratio;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = to_string;
   values = {
     v = 202306;
