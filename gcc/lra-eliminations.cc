@@ -926,6 +926,18 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
       /* First see if the source is of the form (plus (...) CST).  */
       if (plus_src && poly_int_rtx_p (XEXP (plus_src, 1), &offset))
 	plus_cst_src = plus_src;
+      /* If we are doing initial offset computation, then utilize
+	 eqivalences to discover a constant for the second term
+	 of PLUS_SRC.  */
+      else if (plus_src && REG_P (XEXP (plus_src, 1)))
+	{
+	  int regno = REGNO (XEXP (plus_src, 1));
+	  if (regno < ira_reg_equiv_len
+	      && ira_reg_equiv[regno].constant != NULL_RTX
+	      && !replace_p
+	      && poly_int_rtx_p (ira_reg_equiv[regno].constant, &offset))
+	    plus_cst_src = plus_src;
+	}
       /* Check that the first operand of the PLUS is a hard reg or
 	 the lowpart subreg of one.  */
       if (plus_cst_src)
