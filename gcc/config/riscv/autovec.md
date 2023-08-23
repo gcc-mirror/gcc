@@ -552,12 +552,16 @@
 ;; - vfmerge.vf
 ;; -------------------------------------------------------------------------
 
-(define_expand "@vcond_mask_<mode><vm>"
-  [(match_operand:V 0 "register_operand")
-   (match_operand:<VM> 3 "register_operand")
-   (match_operand:V 1 "nonmemory_operand")
-   (match_operand:V 2 "register_operand")]
-  "TARGET_VECTOR"
+(define_insn_and_split "@vcond_mask_<mode><vm>"
+  [(set (match_operand:V 0 "register_operand")
+        (if_then_else:V
+          (match_operand:<VM> 3 "register_operand")
+          (match_operand:V 1 "nonmemory_operand")
+          (match_operand:V 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
   {
     /* The order of vcond_mask is opposite to pred_merge.  */
     std::swap (operands[1], operands[2]);
@@ -979,11 +983,14 @@
 ;; Includes:
 ;; - vfneg.v/vfabs.v
 ;; -------------------------------------------------------------------------------
-(define_expand "<optab><mode>2"
+(define_insn_and_split "<optab><mode>2"
   [(set (match_operand:VF 0 "register_operand")
     (any_float_unop_nofrm:VF
      (match_operand:VF 1 "register_operand")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
@@ -1496,6 +1503,80 @@
 {
   insn_code icode = code_for_pred_mulh (UNSPEC_VMULHU, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Conditional unary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vneg/vnot
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_int_unop:VI
+     (match_operand:VI 2 "register_operand"))
+   (match_operand:VI 3 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_int_unop:VI
+     (match_operand:VI 2 "register_operand"))
+   (match_operand:VI 3 "register_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_unop (<CODE>, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Conditional unary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfneg/vfabs
+;; -------------------------------------------------------------------------
+
+(define_expand "cond_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_unop_nofrm:VF
+     (match_operand:VF 2 "register_operand"))
+   (match_operand:VF 3 "register_operand")]
+  "TARGET_VECTOR"
+{
+  /* Normalize into cond_len_* operations.  */
+  emit_insn (gen_cond_len_<optab><mode> (operands[0], operands[1], operands[2],
+					 operands[3],
+					 gen_int_mode (GET_MODE_NUNITS (<MODE>mode), Pmode),
+					 const0_rtx));
+  DONE;
+})
+
+(define_expand "cond_len_<optab><mode>"
+  [(match_operand:VF 0 "register_operand")
+   (match_operand:<VM> 1 "vector_mask_operand")
+   (any_float_unop_nofrm:VF
+     (match_operand:VF 2 "register_operand"))
+   (match_operand:VF 3 "register_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_cond_len_unop (<CODE>, operands);
   DONE;
 })
 

@@ -184,6 +184,10 @@ enum insn_type
 {
   RVV_MISC_OP = 1,
   RVV_UNOP = 2,
+  RVV_UNOP_M = RVV_UNOP + 2,
+  RVV_UNOP_MU = RVV_UNOP + 2,
+  RVV_UNOP_TU = RVV_UNOP + 2,
+  RVV_UNOP_TUMU = RVV_UNOP + 2,
   RVV_BINOP = 3,
   RVV_BINOP_MU = RVV_BINOP + 2,
   RVV_BINOP_TU = RVV_BINOP + 2,
@@ -191,8 +195,6 @@ enum insn_type
   RVV_MERGE_OP = 4,
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
-  RVV_UNOP_MU = RVV_UNOP + 2,	  /* Likewise.  */
-  RVV_UNOP_M = RVV_UNOP + 2,	  /* Likewise.  */
   RVV_TERNOP = 5,
   RVV_TERNOP_MU = RVV_TERNOP + 1,
   RVV_TERNOP_TU = RVV_TERNOP + 1,
@@ -294,6 +296,7 @@ bool neg_simm5_p (rtx);
 bool has_vi_variant_p (rtx_code, rtx);
 void expand_vec_cmp (rtx, rtx_code, rtx, rtx);
 bool expand_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
+void expand_cond_len_unop (rtx_code, rtx *);
 void expand_cond_len_binop (rtx_code, rtx *);
 void expand_reduction (rtx_code, rtx *, rtx,
 		       reduction_type = reduction_type::UNORDERED);

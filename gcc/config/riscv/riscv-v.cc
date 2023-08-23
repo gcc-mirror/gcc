@@ -2992,7 +2992,9 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   emit_vlmax_cmp_insn (icode, ops);
 
   /* TARGET = MASK ? OP0 : OP1.  */
-  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op0, d->op1, mask));
+  /* swap op0 and op1 since the order is opposite to pred_merge.  */
+  rtx ops2[] = {d->target, d->op1, d->op0, mask};
+  emit_vlmax_merge_insn (code_for_pred_merge (vmode), riscv_vector::RVV_MERGE_OP, ops2);
   return true;
 }
 
@@ -3384,10 +3386,58 @@ needs_fp_rounding (rtx_code code, machine_mode mode)
 {
   if (!FLOAT_MODE_P (mode))
     return false;
-  return code != SMIN && code != SMAX;
+  return code != SMIN && code != SMAX && code != NEG && code != ABS;
 }
 
-/* Expand COND_LEN_*.  */
+/* Expand unary ops COND_LEN_*.  */
+void
+expand_cond_len_unop (rtx_code code, rtx *ops)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  rtx src = ops[2];
+  rtx merge = ops[3];
+  rtx len = ops[4];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+
+  poly_int64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+  bool is_vlmax_len
+    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
+  rtx cond_ops[] = {dest, mask, merge, src};
+  insn_code icode = code_for_pred (code, mode);
+
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      if (needs_fp_rounding (code, mode))
+	emit_nonvlmax_fp_tu_insn (icode, RVV_UNOP_TU, cond_ops, len);
+      else
+	emit_nonvlmax_tu_insn (icode, RVV_UNOP_TU, cond_ops, len);
+    }
+  else
+    {
+      if (is_vlmax_len)
+	{
+	  /* Use TAIL ANY, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_vlmax_masked_fp_mu_insn (icode, RVV_UNOP_MU, cond_ops);
+	  else
+	    emit_vlmax_masked_mu_insn (icode, RVV_UNOP_MU, cond_ops);
+	}
+      else
+	{
+	  /* Use TU, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_nonvlmax_fp_tumu_insn (icode, RVV_UNOP_TUMU, cond_ops, len);
+	  else
+	    emit_nonvlmax_tumu_insn (icode, RVV_UNOP_TUMU, cond_ops, len);
+	}
+    }
+}
+
+/* Expand binary ops COND_LEN_*.  */
 void
 expand_cond_len_binop (rtx_code code, rtx *ops)
 {
