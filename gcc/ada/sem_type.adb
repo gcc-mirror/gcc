@@ -2578,9 +2578,7 @@ package body Sem_Type is
          end if;
 
          loop
-            if Present (Interfaces (E))
-              and then not Is_Empty_Elmt_List (Interfaces (E))
-            then
+            if Present (Interfaces (E)) then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
                   AI := Node (Elmt);
