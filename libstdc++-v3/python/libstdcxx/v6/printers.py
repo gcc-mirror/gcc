@@ -2131,6 +2131,50 @@ class StdChronoTimeZoneRulePrinter:
         return 'time_zone rule {} from {} to {} starting on {}'.format(
                 self.val['name'], self.val['from'], self.val['to'], start)
 
+class StdLocalePrinter:
+    "Print a std::locale"
+
+    def __init__(self, typename, val):
+        self.val = val
+        self.typename = typename
+
+    def to_string(self):
+        names = self.val['_M_impl']['_M_names']
+        mod = ''
+        if names[0] == 0:
+            name = '*'
+        else:
+            cats = gdb.parse_and_eval(self.typename + '::_S_categories')
+            ncat = gdb.parse_and_eval(self.typename + '::_S_categories_size')
+            n = names[0].string();
+            cat = cats[0].string()
+            name = '{}={}'.format(cat, n)
+            cat_names = {cat: n}
+            i = 1
+            while i < ncat and names[i] != 0:
+                n = names[i].string()
+                cat = cats[i].string()
+                name = '{};{}={}'.format(name, cat, n)
+                cat_names[cat] = n
+                i = i + 1
+            uniq_names = set(cat_names.values())
+            if len(uniq_names) == 1:
+                name = n
+            elif len(uniq_names) == 2:
+                n1, n2 = (uniq_names)
+                name_list = list(cat_names.values())
+                other = None
+                if name_list.count(n1) == 1:
+                    name = n2
+                    other = n1
+                elif name_list.count(n2) == 1:
+                    name = n1
+                    other = n2
+                if other is not None:
+                    cat = next(c for c,n in cat_names.items() if n == other)
+                    mod = ' with "{}={}"'.format(cat, other)
+        return 'std::locale = "{}"{}'.format(name, mod)
+
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -2585,6 +2629,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add_container('std::', 'vector', StdVectorPrinter)
     # vector<bool>
+    libstdcxx_printer.add_version('std::', 'locale', StdLocalePrinter)
 
     if hasattr(gdb.Value, 'dynamic_type'):
         libstdcxx_printer.add_version('std::', 'error_code',
