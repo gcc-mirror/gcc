@@ -940,6 +940,7 @@ protected:
 class UseTree
 {
   location_t locus;
+  NodeId node_id;
 
 public:
   enum Kind
@@ -975,6 +976,7 @@ public:
   virtual Kind get_kind () const = 0;
 
   location_t get_locus () const { return locus; }
+  NodeId get_node_id () const { return node_id; }
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
@@ -982,7 +984,9 @@ protected:
   // Clone function implementation as pure virtual method
   virtual UseTree *clone_use_tree_impl () const = 0;
 
-  UseTree (location_t locus) : locus (locus) {}
+  UseTree (location_t locus)
+    : locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
 };
 
 // Use tree with a glob (wildcard) operator
@@ -1182,7 +1186,7 @@ public:
 
   Kind get_kind () const override { return Rebind; }
 
-  SimplePath get_path () const
+  const SimplePath &get_path () const
   {
     rust_assert (has_path ());
     return path;
