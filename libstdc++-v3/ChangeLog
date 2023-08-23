@@ -1,3 +1,39 @@
+2023-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Pres_type): Add _Pres_F.
+	(__formatter_fp::parse): Use _Pres_F for 'F'.
+	(__formatter_fp::format): Set __upper for _Pres_F.
+	* testsuite/std/format/functions/format.cc: Check formatting of
+	infinity and NaN for each presentation type.
+
+2023-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdata_file, leaps_file): Change type to
+	std::string_view.
+
+2023-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v4::to_string): Remove
+	unused parameter name.
+
+2023-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__cmp_cat::__unseq): Make ctor consteval.
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: Prune
+	excess errors caused by invalid consteval calls.
+
 2023-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
