@@ -2578,7 +2578,9 @@ package body Sem_Type is
          end if;
 
          loop
-            if Present (Interfaces (E)) then
+            if Is_Record_Type (E)
+              and then Present (Interfaces (E))
+            then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
                   AI := Node (Elmt);
