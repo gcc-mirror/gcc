@@ -2087,6 +2087,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (bit_and:c (convert? (cmp@0  @01 @02)) @3)
    (bit_and:c (convert? (icmp@4 @01 @02)) @5))
     (if (INTEGRAL_TYPE_P (type)
+	 && invert_tree_comparison (cmp, HONOR_NANS (@01)) == icmp
 	 /* The scalar version has to be canonicalized after vectorization
 	    because it makes unconditional loads conditional ones, which
 	    means we lose vectorization because the loads may trap.  */
@@ -2101,6 +2102,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (cond (cmp@0  @01 @02) @3 zerop)
    (cond (icmp@4 @01 @02) @5 zerop))
     (if (INTEGRAL_TYPE_P (type)
+	 && invert_tree_comparison (cmp, HONOR_NANS (@01)) == icmp
 	 /* The scalar version has to be canonicalized after vectorization
 	    because it makes unconditional loads conditional ones, which
 	    means we lose vectorization because the loads may trap.  */
@@ -2113,13 +2115,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_ior
    (bit_and:c (vec_cond:s (cmp@0 @6 @7) @4 @5) @2)
    (bit_and:c (vec_cond:s (icmp@1 @6 @7) @4 @5) @3))
-    (if (integer_zerop (@5))
+    (if (integer_zerop (@5)
+	 && invert_tree_comparison (cmp, HONOR_NANS (@6)) == icmp)
      (switch
       (if (integer_onep (@4))
        (bit_and (vec_cond @0 @2 @3) @4))
 	(if (integer_minus_onep (@4))
 	 (vec_cond @0 @2 @3)))
-    (if (integer_zerop (@4))
+    (if (integer_zerop (@4)
+	 && invert_tree_comparison (cmp, HONOR_NANS (@6)) == icmp)
      (switch
       (if (integer_onep (@5))
        (bit_and (vec_cond @0 @3 @2) @5))
@@ -2132,7 +2136,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_ior
    (vec_cond:s (cmp@0 @4 @5) @2 integer_zerop)
    (vec_cond:s (icmp@1 @4 @5) @3 integer_zerop))
-    (vec_cond @0 @2 @3)))
+  (if (invert_tree_comparison (cmp, HONOR_NANS (@4)) == icmp)
+   (vec_cond @0 @2 @3))))
 
 /* Transform X & -Y into X * Y when Y is { 0 or 1 }.  */
 (simplify
