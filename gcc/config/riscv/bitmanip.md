@@ -262,7 +262,7 @@
           (match_operand:DI 2 "const_int_operand")))]
   "TARGET_64BIT && TARGET_ZBB && ((INTVAL (operands[2]) & 0x3f) == 0x3f)"
   "<bitmanip_insn>w\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>di2"
