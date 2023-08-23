@@ -8920,8 +8920,169 @@ vectorizable_store (vec_info *vinfo,
       return true;
     }
 
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    {
+      gcc_assert (!slp && !grouped_store);
+      auto_vec<tree> vec_offsets;
+      for (j = 0; j < ncopies; j++)
+	{
+	  gimple *new_stmt;
+	  if (j == 0)
+	    {
+	      /* Since the store is not grouped, DR_GROUP_SIZE is 1, and
+		 DR_CHAIN is of size 1.  */
+	      gcc_assert (group_size == 1);
+	      op = vect_get_store_rhs (first_stmt_info);
+	      vect_get_vec_defs_for_operand (vinfo, first_stmt_info, ncopies,
+					     op, gvec_oprnds[0]);
+	      vec_oprnd = (*gvec_oprnds[0])[0];
+	      dr_chain.quick_push (vec_oprnd);
+	      if (mask)
+		{
+		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
+						 mask, &vec_masks,
+						 mask_vectype);
+		  vec_mask = vec_masks[0];
+		}
+
+	      /* We should have catched mismatched types earlier.  */
+	      gcc_assert (useless_type_conversion_p (vectype,
+						     TREE_TYPE (vec_oprnd)));
+	      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+		vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info,
+					     slp_node, &gs_info, &dataref_ptr,
+					     &vec_offsets);
+	      else
+		dataref_ptr
+		  = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
+					      NULL, offset, &dummy, gsi,
+					      &ptr_incr, false, bump);
+	    }
+	  else
+	    {
+	      gcc_assert (!LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo));
+	      vec_oprnd = (*gvec_oprnds[0])[j];
+	      dr_chain[0] = vec_oprnd;
+	      if (mask)
+		vec_mask = vec_masks[j];
+	      if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+		dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr,
+					       gsi, stmt_info, bump);
+	    }
+
+	  new_stmt = NULL;
+	  unsigned HOST_WIDE_INT align;
+	  tree final_mask = NULL_TREE;
+	  tree final_len = NULL_TREE;
+	  tree bias = NULL_TREE;
+	  if (loop_masks)
+	    final_mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
+					     ncopies, vectype, j);
+	  if (vec_mask)
+	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype, final_mask,
+					   vec_mask, gsi);
+
+	  if (gs_info.ifn != IFN_LAST)
+	    {
+	      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+		vec_offset = vec_offsets[j];
+	      tree scale = size_int (gs_info.scale);
+
+	      if (gs_info.ifn == IFN_MASK_LEN_SCATTER_STORE)
+		{
+		  if (loop_lens)
+		    final_len = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
+						   ncopies, vectype, j, 1);
+		  else
+		    final_len = build_int_cst (sizetype,
+					       TYPE_VECTOR_SUBPARTS (vectype));
+		  signed char biasval
+		    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+		  bias = build_int_cst (intQI_type_node, biasval);
+		  if (!final_mask)
+		    {
+		      mask_vectype = truth_type_for (vectype);
+		      final_mask = build_minus_one_cst (mask_vectype);
+		    }
+		}
+
+	      gcall *call;
+	      if (final_len && final_mask)
+		call = gimple_build_call_internal (IFN_MASK_LEN_SCATTER_STORE,
+						   7, dataref_ptr, vec_offset,
+						   scale, vec_oprnd, final_mask,
+						   final_len, bias);
+	      else if (final_mask)
+		call
+		  = gimple_build_call_internal (IFN_MASK_SCATTER_STORE, 5,
+						dataref_ptr, vec_offset, scale,
+						vec_oprnd, final_mask);
+	      else
+		call = gimple_build_call_internal (IFN_SCATTER_STORE, 4,
+						   dataref_ptr, vec_offset,
+						   scale, vec_oprnd);
+	      gimple_call_set_nothrow (call, true);
+	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
+	      new_stmt = call;
+	    }
+	  else
+	    {
+	      /* Emulated scatter.  */
+	      gcc_assert (!final_mask);
+	      unsigned HOST_WIDE_INT const_nunits = nunits.to_constant ();
+	      unsigned HOST_WIDE_INT const_offset_nunits
+		= TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype).to_constant ();
+	      vec<constructor_elt, va_gc> *ctor_elts;
+	      vec_alloc (ctor_elts, const_nunits);
+	      gimple_seq stmts = NULL;
+	      tree elt_type = TREE_TYPE (vectype);
+	      unsigned HOST_WIDE_INT elt_size
+		= tree_to_uhwi (TYPE_SIZE (elt_type));
+	      /* We support offset vectors with more elements
+		 than the data vector for now.  */
+	      unsigned HOST_WIDE_INT factor
+		= const_offset_nunits / const_nunits;
+	      vec_offset = vec_offsets[j / factor];
+	      unsigned elt_offset = (j % factor) * const_nunits;
+	      tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
+	      tree scale = size_int (gs_info.scale);
+	      align = get_object_alignment (DR_REF (first_dr_info->dr));
+	      tree ltype = build_aligned_type (TREE_TYPE (vectype), align);
+	      for (unsigned k = 0; k < const_nunits; ++k)
+		{
+		  /* Compute the offsetted pointer.  */
+		  tree boff = size_binop (MULT_EXPR, TYPE_SIZE (idx_type),
+					  bitsize_int (k + elt_offset));
+		  tree idx
+		    = gimple_build (&stmts, BIT_FIELD_REF, idx_type, vec_offset,
+				    TYPE_SIZE (idx_type), boff);
+		  idx = gimple_convert (&stmts, sizetype, idx);
+		  idx = gimple_build (&stmts, MULT_EXPR, sizetype, idx, scale);
+		  tree ptr
+		    = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (dataref_ptr),
+				    dataref_ptr, idx);
+		  ptr = gimple_convert (&stmts, ptr_type_node, ptr);
+		  /* Extract the element to be stored.  */
+		  tree elt
+		    = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype),
+				    vec_oprnd, TYPE_SIZE (elt_type),
+				    bitsize_int (k * elt_size));
+		  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+		  stmts = NULL;
+		  tree ref
+		    = build2 (MEM_REF, ltype, ptr, build_int_cst (ref_type, 0));
+		  new_stmt = gimple_build_assign (ref, elt);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		}
+	    }
+	  if (j == 0)
+	    *vec_stmt = new_stmt;
+	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	}
+      return true;
+    }
+
   auto_vec<tree> result_chain (group_size);
-  auto_vec<tree> vec_offsets;
   auto_vec<tree, 1> vec_oprnds;
   for (j = 0; j < ncopies; j++)
     {
@@ -8984,9 +9145,6 @@ vectorizable_store (vec_info *vinfo,
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr_info->dr));
 	      dataref_offset = build_int_cst (ref_type, 0);
 	    }
-	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info, slp_node,
-					 &gs_info, &dataref_ptr, &vec_offsets);
 	  else
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
@@ -9009,7 +9167,7 @@ vectorizable_store (vec_info *vinfo,
 	    vec_mask = vec_masks[j];
 	  if (dataref_offset)
 	    dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset, bump);
-	  else if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	  else
 	    dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
 	}
@@ -9036,104 +9194,6 @@ vectorizable_store (vec_info *vinfo,
 	  if (vec_mask)
 	    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype, final_mask,
 					   vec_mask, gsi);
-
-	  if (memory_access_type == VMAT_GATHER_SCATTER
-	      && gs_info.ifn != IFN_LAST)
-	    {
-	      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-		vec_offset = vec_offsets[vec_num * j + i];
-	      tree scale = size_int (gs_info.scale);
-
-	      if (gs_info.ifn == IFN_MASK_LEN_SCATTER_STORE)
-		{
-		  if (loop_lens)
-		    final_len = vect_get_loop_len (loop_vinfo, gsi, loop_lens,
-						   vec_num * ncopies, vectype,
-						   vec_num * j + i, 1);
-		  else
-		    final_len = build_int_cst (sizetype,
-					       TYPE_VECTOR_SUBPARTS (vectype));
-		  signed char biasval
-		    = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
-		  bias = build_int_cst (intQI_type_node, biasval);
-		  if (!final_mask)
-		    {
-		      mask_vectype = truth_type_for (vectype);
-		      final_mask = build_minus_one_cst (mask_vectype);
-		    }
-		}
-
-	      gcall *call;
-	      if (final_len && final_mask)
-		call = gimple_build_call_internal (IFN_MASK_LEN_SCATTER_STORE,
-						   7, dataref_ptr, vec_offset,
-						   scale, vec_oprnd, final_mask,
-						   final_len, bias);
-	      else if (final_mask)
-		call
-		  = gimple_build_call_internal (IFN_MASK_SCATTER_STORE, 5,
-						dataref_ptr, vec_offset, scale,
-						vec_oprnd, final_mask);
-	      else
-		call = gimple_build_call_internal (IFN_SCATTER_STORE, 4,
-						   dataref_ptr, vec_offset,
-						   scale, vec_oprnd);
-	      gimple_call_set_nothrow (call, true);
-	      vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
-	      new_stmt = call;
-	      break;
-	    }
-	  else if (memory_access_type == VMAT_GATHER_SCATTER)
-	    {
-	      /* Emulated scatter.  */
-	      gcc_assert (!final_mask);
-	      unsigned HOST_WIDE_INT const_nunits = nunits.to_constant ();
-	      unsigned HOST_WIDE_INT const_offset_nunits
-		= TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype).to_constant ();
-	      vec<constructor_elt, va_gc> *ctor_elts;
-	      vec_alloc (ctor_elts, const_nunits);
-	      gimple_seq stmts = NULL;
-	      tree elt_type = TREE_TYPE (vectype);
-	      unsigned HOST_WIDE_INT elt_size
-		= tree_to_uhwi (TYPE_SIZE (elt_type));
-	      /* We support offset vectors with more elements
-		 than the data vector for now.  */
-	      unsigned HOST_WIDE_INT factor
-		= const_offset_nunits / const_nunits;
-	      vec_offset = vec_offsets[j / factor];
-	      unsigned elt_offset = (j % factor) * const_nunits;
-	      tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
-	      tree scale = size_int (gs_info.scale);
-	      align = get_object_alignment (DR_REF (first_dr_info->dr));
-	      tree ltype = build_aligned_type (TREE_TYPE (vectype), align);
-	      for (unsigned k = 0; k < const_nunits; ++k)
-		{
-		  /* Compute the offsetted pointer.  */
-		  tree boff = size_binop (MULT_EXPR, TYPE_SIZE (idx_type),
-					  bitsize_int (k + elt_offset));
-		  tree idx
-		    = gimple_build (&stmts, BIT_FIELD_REF, idx_type, vec_offset,
-				    TYPE_SIZE (idx_type), boff);
-		  idx = gimple_convert (&stmts, sizetype, idx);
-		  idx = gimple_build (&stmts, MULT_EXPR, sizetype, idx, scale);
-		  tree ptr
-		    = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (dataref_ptr),
-				    dataref_ptr, idx);
-		  ptr = gimple_convert (&stmts, ptr_type_node, ptr);
-		  /* Extract the element to be stored.  */
-		  tree elt
-		    = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype),
-				    vec_oprnd, TYPE_SIZE (elt_type),
-				    bitsize_int (k * elt_size));
-		  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-		  stmts = NULL;
-		  tree ref
-		    = build2 (MEM_REF, ltype, ptr, build_int_cst (ref_type, 0));
-		  new_stmt = gimple_build_assign (ref, elt);
-		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-		}
-	      break;
-	    }
 
 	  if (i > 0)
 	    /* Bump the vector pointer.  */
