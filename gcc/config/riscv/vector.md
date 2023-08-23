@@ -1363,7 +1363,11 @@
   "TARGET_VECTOR"
   "vsetvli\tzero,zero,e%0,%m1,t%p2,m%p3"
   [(set_attr "type" "vsetvl")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "SI")
+   (set (attr "sew") (symbol_ref "INTVAL (operands[0])"))
+   (set (attr "vlmul") (symbol_ref "INTVAL (operands[1])"))
+   (set (attr "ta") (symbol_ref "INTVAL (operands[2])"))
+   (set (attr "ma") (symbol_ref "INTVAL (operands[3])"))])
 
 ;; vsetvl zero,rs1,vtype instruction.
 ;; The reason we need this pattern since we should avoid setting X0 register
