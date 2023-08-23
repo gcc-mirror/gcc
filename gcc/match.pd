@@ -9082,6 +9082,18 @@ and,
  (if (!TYPE_OVERFLOW_SANITIZED (type))
   (bit_and @0 @1)))
 
+/* `-a` is just `a` if the type is 1bit wide or when converting
+   to a 1bit type; similar to the above transformation of `(-x)&1`.
+   This is used mostly with the transformation of
+   `a ? ~b : b` into `(-a)^b`.
+   It also can show up with bitfields.  */
+(simplify
+ (convert? (negate @0))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) == 1
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))
+  (convert @0)))
+
 /* Optimize
    c1 = VEC_PERM_EXPR (a, a, mask)
    c2 = VEC_PERM_EXPR (b, b, mask)
