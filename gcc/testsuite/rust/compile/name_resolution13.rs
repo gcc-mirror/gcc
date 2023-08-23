@@ -1,4 +1,8 @@
-// { dg-additional-options "-frust-name-resolution-2.0 -frust-compile-until=lowering" }
+// { dg-options "-frust-name-resolution-2.0" }
+
+pub mod foo {
+    pub macro bar() {}
+}
 
 fn foo() {
     let b = 10;
