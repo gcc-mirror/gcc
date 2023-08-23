@@ -503,6 +503,7 @@ static const int cond_expr_maps[3][5] = {
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
 static const int arg1_arg4_map[] = { 2, 1, 4 };
+static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
 
 /* For most SLP statements, there is a one-to-one mapping between
@@ -543,11 +544,28 @@ vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
 	  case IFN_MASK_GATHER_LOAD:
 	    return arg1_arg4_map;
 
+	  case IFN_MASK_STORE:
+	    return arg3_arg2_map;
+
 	  default:
 	    break;
 	  }
     }
   return nullptr;
+}
+
+/* Return the SLP node child index for operand OP of STMT.  */
+
+int
+vect_slp_child_index_for_operand (const gimple *stmt, int op)
+{
+  const int *opmap = vect_get_operand_map (stmt);
+  if (!opmap)
+    return op;
+  for (int i = 1; i < 1 + opmap[0]; ++i)
+    if (opmap[i] == op)
+      return i - 1;
+  gcc_unreachable ();
 }
 
 /* Get the defs for the rhs of STMT (collect them in OPRNDS_INFO), check that
@@ -1003,8 +1021,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
           return false;
         }
 
+      gcall *call_stmt = dyn_cast <gcall *> (stmt);
       lhs = gimple_get_lhs (stmt);
-      if (lhs == NULL_TREE)
+      if (lhs == NULL_TREE
+	  && (!call_stmt
+	      || !gimple_call_internal_p (stmt)
+	      || !internal_store_fn_p (gimple_call_internal_fn (stmt))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1041,7 +1063,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
       gcc_assert (vectype);
 
-      gcall *call_stmt = dyn_cast <gcall *> (stmt);
       if (call_stmt)
 	{
 	  combined_fn cfn = gimple_call_combined_fn (call_stmt);
@@ -1054,6 +1075,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      || cfn == CFN_GATHER_LOAD
 	      || cfn == CFN_MASK_GATHER_LOAD)
 	    load_p = true;
+	  else if (cfn == CFN_MASK_STORE)
+	    rhs_code = CFN_MASK_STORE;
 	  else if ((internal_fn_p (cfn)
 		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
 		   || gimple_call_tail_p (call_stmt)
@@ -1212,7 +1235,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (call_stmt && first_stmt_code != CFN_MASK_LOAD)
+	  if (call_stmt
+	      && first_stmt_code != CFN_MASK_LOAD
+	      && first_stmt_code != CFN_MASK_STORE)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
 				       call_stmt))
@@ -1266,9 +1291,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       /* Grouped store or load.  */
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	{
-	  if (REFERENCE_CLASS_P (lhs))
+	  if (!load_p)
 	    {
 	      /* Store.  */
+	      gcc_assert (rhs_code == CFN_MASK_STORE
+			  || REFERENCE_CLASS_P (lhs));
 	      ;
 	    }
 	  else
@@ -9095,10 +9122,17 @@ vect_remove_slp_scalar_calls (vec_info *vinfo,
 	  || !PURE_SLP_STMT (stmt_info))
 	continue;
       lhs = gimple_call_lhs (stmt);
-      new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+      if (lhs)
+	new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+      else
+	{
+	  new_stmt = gimple_build_nop ();
+	  unlink_stmt_vdef (stmt_info->stmt);
+	}
       gsi = gsi_for_stmt (stmt);
       vinfo->replace_stmt (&gsi, stmt_info, new_stmt);
-      SSA_NAME_DEF_STMT (gimple_assign_lhs (new_stmt)) = new_stmt;
+      if (lhs)
+	SSA_NAME_DEF_STMT (lhs) = new_stmt;
     }
 }
 

@@ -3048,8 +3048,7 @@ can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info,
 	 like those created by build_mask_conversion.  */
       tree mask1 = gimple_call_arg (call1, 2);
       tree mask2 = gimple_call_arg (call2, 2);
-      if (!operand_equal_p (mask1, mask2, 0)
-          && (ifn == IFN_MASK_STORE || !allow_slp_p))
+      if (!operand_equal_p (mask1, mask2, 0) && !allow_slp_p)
 	{
 	  mask1 = strip_conversion (mask1);
 	  if (!mask1)
