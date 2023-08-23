@@ -1423,8 +1423,14 @@ static bool
 ge_sew_ratio_unavailable_p (const vector_insn_info &info1,
 			    const vector_insn_info &info2)
 {
-  if (!info2.demand_p (DEMAND_LMUL) && info2.demand_p (DEMAND_GE_SEW))
-    return info1.get_sew () < info2.get_sew ();
+  if (!info2.demand_p (DEMAND_LMUL))
+    {
+      if (info2.demand_p (DEMAND_GE_SEW))
+	return info1.get_sew () < info2.get_sew ();
+      /* Demand GE_SEW should be available for non-demand SEW.  */
+      else if (!info2.demand_p (DEMAND_SEW))
+	return false;
+    }
   return true;
 }
 
