@@ -189,22 +189,6 @@ Early::visit (AST::MacroInvocation &invoc)
 }
 
 void
-Early::visit (AST::UseDeclaration &use)
-{}
-
-void
-Early::visit (AST::UseTreeRebind &use)
-{}
-
-void
-Early::visit (AST::UseTreeList &use)
-{}
-
-void
-Early::visit (AST::UseTreeGlob &use)
-{}
-
-void
 Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 {
   auto mappings = Analysis::Mappings::get ();
