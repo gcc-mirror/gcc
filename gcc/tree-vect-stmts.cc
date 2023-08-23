@@ -8200,9 +8200,6 @@ vectorizable_store (vec_info *vinfo,
   stmt_vec_info first_stmt_info;
   bool grouped_store;
   unsigned int group_size, i;
-  vec<tree> oprnds = vNULL;
-  vec<tree> result_chain = vNULL;
-  vec<tree> vec_oprnds = vNULL;
   bool slp = (slp_node != NULL);
   unsigned int vec_num;
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
@@ -8591,6 +8588,7 @@ vectorizable_store (vec_info *vinfo,
 
       alias_off = build_int_cst (ref_type, 0);
       stmt_vec_info next_stmt_info = first_stmt_info;
+      auto_vec<tree> vec_oprnds (ncopies);
       for (g = 0; g < group_size; g++)
 	{
 	  running_off = offvar;
@@ -8672,16 +8670,13 @@ vectorizable_store (vec_info *vinfo,
 		}
 	    }
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
-	  vec_oprnds.release ();
+	  vec_oprnds.truncate(0);
 	  if (slp)
 	    break;
 	}
 
       return true;
     }
-
-  auto_vec<tree> dr_chain (group_size);
-  oprnds.create (group_size);
 
   gcc_assert (alignment_support_scheme);
   vec_loop_masks *loop_masks
@@ -8773,11 +8768,15 @@ vectorizable_store (vec_info *vinfo,
      STMT_VINFO_RELATED_STMT for the next copies.
   */
 
+  auto_vec<tree> dr_chain (group_size);
+  auto_vec<tree> result_chain (group_size);
   auto_vec<tree> vec_masks;
   tree vec_mask = NULL;
   auto_vec<tree> vec_offsets;
-  auto_vec<vec<tree> > gvec_oprnds;
-  gvec_oprnds.safe_grow_cleared (group_size, true);
+  auto_delete_vec<auto_vec<tree>> gvec_oprnds (group_size);
+  for (i = 0; i < group_size; i++)
+    gvec_oprnds.quick_push (new auto_vec<tree> (ncopies));
+  auto_vec<tree, 1> vec_oprnds;
   for (j = 0; j < ncopies; j++)
     {
       gimple *new_stmt;
@@ -8793,11 +8792,11 @@ vectorizable_store (vec_info *vinfo,
           else
             {
 	      /* For interleaved stores we collect vectorized defs for all the
-		 stores in the group in DR_CHAIN and OPRNDS. DR_CHAIN is then
-		 used as an input to vect_permute_store_chain().
+		 stores in the group in DR_CHAIN. DR_CHAIN is then used as an
+		 input to vect_permute_store_chain().
 
 		 If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN
-		 and OPRNDS are of size 1.  */
+		 is of size 1.  */
 	      stmt_vec_info next_stmt_info = first_stmt_info;
 	      for (i = 0; i < group_size; i++)
 		{
@@ -8807,11 +8806,10 @@ vectorizable_store (vec_info *vinfo,
 		     that there is no interleaving, DR_GROUP_SIZE is 1,
 		     and only one iteration of the loop will be executed.  */
 		  op = vect_get_store_rhs (next_stmt_info);
-		  vect_get_vec_defs_for_operand (vinfo, next_stmt_info,
-						 ncopies, op, &gvec_oprnds[i]);
-		  vec_oprnd = gvec_oprnds[i][0];
-		  dr_chain.quick_push (gvec_oprnds[i][0]);
-		  oprnds.quick_push (gvec_oprnds[i][0]);
+		  vect_get_vec_defs_for_operand (vinfo, next_stmt_info, ncopies,
+						 op, gvec_oprnds[i]);
+		  vec_oprnd = (*gvec_oprnds[i])[0];
+		  dr_chain.quick_push (vec_oprnd);
 		  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
 		}
 	      if (mask)
@@ -8853,16 +8851,13 @@ vectorizable_store (vec_info *vinfo,
       else
 	{
 	  gcc_assert (!LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo));  
-	  /* For interleaved stores we created vectorized defs for all the
-	     defs stored in OPRNDS in the previous iteration (previous copy).
-	     DR_CHAIN is then used as an input to vect_permute_store_chain().
-	     If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN and
-	     OPRNDS are of size 1.  */
+	  /* DR_CHAIN is then used as an input to vect_permute_store_chain().
+	     If the store is not grouped, DR_GROUP_SIZE is 1, and DR_CHAIN is
+	     of size 1.  */
 	  for (i = 0; i < group_size; i++)
 	    {
-	      vec_oprnd = gvec_oprnds[i][j];
-	      dr_chain[i] = gvec_oprnds[i][j];
-	      oprnds[i] = gvec_oprnds[i][j];
+	      vec_oprnd = (*gvec_oprnds[i])[j];
+	      dr_chain[i] = vec_oprnd;
 	    }
 	  if (mask)
 	    vec_mask = vec_masks[j];
@@ -8965,13 +8960,9 @@ vectorizable_store (vec_info *vinfo,
 	{
 	  new_stmt = NULL;
 	  if (grouped_store)
-	    {
-	      if (j == 0)
-		result_chain.create (group_size);
-	      /* Permute.  */
-	      vect_permute_store_chain (vinfo, dr_chain, group_size, stmt_info,
-					gsi, &result_chain);
-	    }
+	    /* Permute.  */
+	    vect_permute_store_chain (vinfo, dr_chain, group_size, stmt_info,
+				      gsi, &result_chain);
 
 	  stmt_vec_info next_stmt_info = first_stmt_info;
 	  for (i = 0; i < vec_num; i++)
@@ -9267,15 +9258,6 @@ vectorizable_store (vec_info *vinfo,
 	  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
 	}
     }
-
-  for (i = 0; i < group_size; ++i)
-    {
-      vec<tree> oprndsi = gvec_oprnds[i];
-      oprndsi.release ();
-    }
-  oprnds.release ();
-  result_chain.release ();
-  vec_oprnds.release ();
 
   return true;
 }
