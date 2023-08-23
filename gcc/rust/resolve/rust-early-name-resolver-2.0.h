@@ -50,10 +50,7 @@ public:
   void visit (AST::Module &) override;
 
   void visit (AST::MacroInvocation &) override;
-  void visit (AST::UseDeclaration &) override;
-  void visit (AST::UseTreeRebind &) override;
-  void visit (AST::UseTreeList &) override;
-  void visit (AST::UseTreeGlob &) override;
+
   void visit (AST::Function &) override;
   void visit (AST::StructStruct &) override;
 
