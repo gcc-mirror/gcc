@@ -333,7 +333,7 @@ ForeverStack<N>::find_starting_point (const std::vector<S> &segments,
 
   for (; !is_last (iterator, segments); iterator++)
     {
-      auto seg = *iterator;
+      auto &seg = *iterator;
       auto is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
 
