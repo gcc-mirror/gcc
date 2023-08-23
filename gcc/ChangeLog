@@ -1,3 +1,77 @@
+2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (change_insn): Clang format.
+	(vector_infos_manager::all_same_ratio_p): Ditto.
+	(vector_infos_manager::all_same_avl_p): Ditto.
+	(pass_vsetvl::refine_vsetvls): Ditto.
+	(pass_vsetvl::cleanup_vsetvls): Ditto.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	(pass_vsetvl::local_eliminate_vsetvl_insn): Ditto.
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Ditto.
+	(pass_vsetvl::compute_probabilities): Ditto.
+
+2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/t-riscv: Add riscv-vsetvl.def
+
+2023-08-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.opt: Add --param names
+	riscv-autovec-preference and riscv-autovec-lmul
+
+2023-08-22  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/t-linux: Add MULTIARCH_DIRNAME.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* tree-core.h (enum omp_clause_defaultmap_kind): Add
+	OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALL.
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle it.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+
+2023-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	* doc/extend.texi (_Float<n>): Drop obsolete sentence that the
+	types aren't supported in C++.
+
+2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add LEN_FOLD_EXTRACT_LAST pattern.
+	* internal-fn.cc (fold_len_extract_direct): Ditto.
+	(expand_fold_len_extract_optab_fn): Ditto.
+	(direct_fold_len_extract_optab_supported_p): Ditto.
+	* internal-fn.def (LEN_FOLD_EXTRACT_LAST): Ditto.
+	* optabs.def (OPTAB_D): Ditto.
+
+2023-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Do not bump
+	DR_GROUP_STORE_COUNT here.  Remove early out.
+	(vect_transform_stmt): Only call vectorizable_store on
+	the last element of an interleaving chain.
+
+2023-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94864
+	PR tree-optimization/94865
+	PR tree-optimization/93080
+	* match.pd (bit_insert @0 (BIT_FIELD_REF @1 ..) ..): New pattern
+	for vector insertion from vector extraction.
+
+2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Kewen.Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.cc (vect_verify_loop_lens): Add exists check.
+	(vectorizable_live_operation): Add live vectorization for length loop
+	control.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* doc/invoke.texi: Remove -Wanalyzer-unterminated-string.
+
 2023-08-22  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-vector-builtins-bases.cc

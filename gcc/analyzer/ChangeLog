@@ -1,3 +1,102 @@
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* kf-analyzer.cc (class kf_analyzer_get_strlen): Move to kf.cc.
+	(register_known_analyzer_functions): Use make_kf_strlen.
+	* kf.cc (class kf_strlen::impl_call_pre): Replace with
+	implementation of kf_analyzer_get_strlen from kf-analyzer.cc.
+	Handle "UNKNOWN" return from check_for_null_terminated_string_arg
+	by falling back to a conjured svalue.
+	(make_kf_strlen): New.
+	(register_known_functions): Use make_kf_strlen.
+	* known-function-manager.h (make_kf_strlen): New decl.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* call-details.cc (call_details::call_details): New ctor.
+	* call-details.h (call_details::call_details): New ctor decl.
+	(struct call_arg_details): Move here from region-model.cc.
+	* region-model.cc (region_model::check_call_format_attr): New.
+	(region_model::check_call_args): Call it.
+	(struct call_arg_details): Move it to call-details.h.
+	* region-model.h (region_model::check_call_format_attr): New decl.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (class kf_fopen): New.
+	(register_known_functions): Register it.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* analyzer.opt (Wanalyzer-unterminated-string): Delete.
+	* call-details.cc
+	(call_details::check_for_null_terminated_string_arg): Convert
+	return type from void to const svalue *.  Add param "out_sval".
+	* call-details.h
+	(call_details::check_for_null_terminated_string_arg): Likewise.
+	* kf-analyzer.cc (kf_analyzer_get_strlen::impl_call_pre): Wire up
+	to result of check_for_null_terminated_string_arg.
+	* region-model.cc (get_strlen): Delete.
+	(class unterminated_string_arg): Delete.
+	(struct fragment): New.
+	(class iterable_cluster): New.
+	(region_model::get_store_bytes): New.
+	(get_tree_for_byte_offset): New.
+	(region_model::scan_for_null_terminator): New.
+	(region_model::check_for_null_terminated_string_arg): Convert
+	return type from void to const svalue *.  Add param "out_sval".
+	Reimplement in terms of scan_for_null_terminator, dropping the
+	special-case for -Wanalyzer-unterminated-string.
+	* region-model.h (region_model::get_store_bytes): New decl.
+	(region_model::scan_for_null_terminator): New decl.
+	(region_model::check_for_null_terminated_string_arg): Convert
+	return type from void to const svalue *.  Add param "out_sval".
+	* store.cc (concrete_binding::get_byte_range): New.
+	* store.h (concrete_binding::get_byte_range): New decl.
+	(store_manager::get_concrete_binding): New overload.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model_context_decorator::add_event):
+	Handle m_inner being NULL.
+	* region-model.h (class region_model_context_decorator): Likewise.
+	(annotating_context::warn): Likewise.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (saved_diagnostic::add_event): New.
+	(saved_diagnostic::add_any_saved_events): New.
+	(diagnostic_manager::add_event): New.
+	(dedupe_winners::emit_best): New.
+	(diagnostic_manager::emit_saved_diagnostic): Make "sd" param
+	non-const.  Call saved_diagnostic::add_any_saved_events.
+	* diagnostic-manager.h (saved_diagnostic::add_event): New decl.
+	(saved_diagnostic::add_any_saved_events): New decl.
+	(saved_diagnostic::m_saved_events): New field.
+	(diagnostic_manager::add_event): New decl.
+	(diagnostic_manager::emit_saved_diagnostic): Make "sd" param
+	non-const.
+	* engine.cc (impl_region_model_context::add_event): New.
+	* exploded-graph.h (impl_region_model_context::add_event): New decl.
+	* region-model.cc
+	(noop_region_model_context::add_event): New.
+	(region_model_context_decorator::add_event): New.
+	* region-model.h (region_model_context::add_event): New vfunc.
+	(noop_region_model_context::add_event): New decl.
+	(region_model_context_decorator::add_event): New decl.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc
+	(class check_external_function_for_access_attr::annotating_ctxt):
+	Convert to an annotating_context.
+	* region-model.h (class note_adding_context): Rename to...
+	(class annotating_context): ...this, updating the "warn" method.
+	(note_adding_context::make_note): Replace with...
+	(annotating_context::add_annotations): ...this.
+
 2023-08-14  benjamin priour  <vultkayn@gcc.gnu.org>
 
 	PR analyzer/110543

@@ -1,3 +1,84 @@
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* gcc.dg/analyzer/null-terminated-strings-1.c: Update expected
+	results on symbolic values.
+	* gcc.dg/analyzer/strlen-1.c: New test.
+
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* g++.dg/cpp2a/concepts-friend11.C: Now works.  Add template.
+	* g++.dg/cpp2a/concepts-friend15.C: New test.
+	* g++.dg/cpp2a/concepts-friend11a.C: New file.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/defaultmap-1.f90: Update dg-error.
+	* c-c++-common/gomp/defaultmap-5.c: New test.
+	* c-c++-common/gomp/defaultmap-6.c: New test.
+	* gfortran.dg/gomp/defaultmap-10.f90: New test.
+	* gfortran.dg/gomp/defaultmap-9.f90: New test.
+
+2023-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/94864
+	PR tree-optimization/94865
+	PR tree-optimization/93080
+	* gcc.target/i386/pr94864.c: New testcase.
+	* gcc.target/i386/pr94865.c: Likewise.
+	* gcc.target/i386/avx512fp16-vmovsh-1a.c: XFAIL.
+	* gcc.dg/tree-ssa/forwprop-40.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-41.c: Likewise.
+
+2023-08-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49588
+	* gfortran.dg/data_vector_section.f90: New test.
+
+2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    Kewen.Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/live-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/live_run-1.c: New test.
+
+2023-08-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/invariant-ternlog-1.c: Only scan %rdx under
+	TARGET_64BIT.
+
+2023-08-22  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: Ditto.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* gcc.dg/analyzer/attr-format-1.c: New test.
+	* gcc.dg/analyzer/sprintf-1.c: Update expected results for
+	now-passing tests.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/fopen-1.c: New test.
+
+2023-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* gcc.dg/analyzer/error-1.c: Update expected results to reflect
+	reimplementation of unterminated string detection.  Add test
+	coverage for uninitialized buffers.
+	* gcc.dg/analyzer/null-terminated-strings-1.c: Likewise.
+	* gcc.dg/analyzer/putenv-1.c: Likewise.
+	* gcc.dg/analyzer/strchr-1.c: Likewise.
+	* gcc.dg/analyzer/strcpy-1.c: Likewise.
+	* gcc.dg/analyzer/strdup-1.c: Likewise.
+
 2023-08-22  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/base/float-point-wredusum.c: New test.

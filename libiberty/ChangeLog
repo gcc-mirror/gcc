@@ -1,3 +1,12 @@
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* cp-demangle.c (d_make_comp): Handle DEMANGLE_COMPONENT_FRIEND.
+	(d_count_templates_scopes): Likewise.
+	(d_print_comp_inner): Likewise.
+	(d_unqualified_name): Handle member-like friend mangling.
+	* testsuite/demangle-expected: Add test.
+
 2023-08-07  John Ericson  <git@JohnEricson.me>
 
 	* configure: Regenerate.

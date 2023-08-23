@@ -1,3 +1,27 @@
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (outer_template_args): Handle non-template argument.
+	* constraint.cc (maybe_substitute_reqs_for): Pass decl to it.
+	* cp-tree.h (outer_template_args): Adjust.
+
+2023-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109751
+	* cp-tree.h (member_like_constrained_friend_p): Declare.
+	* decl.cc (member_like_constrained_friend_p): New.
+	(function_requirements_equivalent_p): Check it.
+	(duplicate_decls): Check it.
+	(grokfndecl): Check friend template constraints.
+	* mangle.cc (decl_mangling_context): Check it.
+	(write_unqualified_name): Check it.
+	* pt.cc (uses_outer_template_parms_in_constraints): Fix for friends.
+	(tsubst_friend_function): Don't check satisfaction.
+
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_defaultmap): Parse
+	'all' as category.
+
 2023-08-15  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

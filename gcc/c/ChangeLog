@@ -1,3 +1,8 @@
+2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_defaultmap): Parse
+	'all' as category.
+
 2023-08-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR c/106537
