@@ -1030,7 +1030,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{LoongArch Options}
 @gccoptlist{-march=@var{cpu-type}  -mtune=@var{cpu-type} -mabi=@var{base-abi-type}
--mfpu=@var{fpu-type} -msoft-float -msingle-float -mdouble-float
+-mfpu=@var{fpu-type} -msimd=@var{simd-type}
+-msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
 -mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division
 -mcond-move-int  -mno-cond-move-int
 -mcond-move-float  -mno-cond-move-float
@@ -25997,6 +25998,21 @@ operations.
 Prevent the use of hardware floating-point instructions.
 @end table
 
+@opindex msimd
+@item -msimd=@var{simd-type}
+Enable generation of LoongArch SIMD instructions for vectorization
+and via builtin functions.  The value can be one of:
+@table @samp
+@item lasx
+Enable generating instructions from the 256-bit LoongArch Advanced
+SIMD Extension (LASX) and the 128-bit LoongArch SIMD Extension (LSX).
+@item lsx
+Enable generating instructions from the 128-bit LoongArch SIMD
+Extension (LSX).
+@item none
+No LoongArch SIMD instruction may be generated.
+@end table
+
 @opindex msoft-float
 @item -msoft-float
 Force @option{-mfpu=none} and prevents the use of floating-point
@@ -26014,6 +26030,19 @@ ABI.
 Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
+
+@opindex ml[a]sx
+@item -mlasx
+@itemx -mno-lasx
+@item -mlsx
+@itemx -mno-lsx
+Incrementally adjust the scope of the SIMD extensions (none / LSX / LASX)
+that can be used by the compiler for code generation.  Enabling LASX with
+@option{mlasx} automatically enables LSX, and diabling LSX with @option{mno-lsx}
+automatically disables LASX.  These driver-only options act upon the final
+@option{msimd} configuration state and make incremental chagnes in the order
+they appear on the GCC driver's command line, deriving the final / canonicalized
+@option{msimd} option that is passed to the compiler proper.
 
 @opindex mbranch-cost
 @item -mbranch-cost=@var{n}
@@ -26114,6 +26143,7 @@ kernels, executables linked with @option{-static} or @option{-static-pie}.
 @option{-mdirect-extern-access} is not compatible with @option{-fPIC} or
 @option{-fpic}.
 @end table
+
 
 @node M32C Options
 @subsection M32C Options

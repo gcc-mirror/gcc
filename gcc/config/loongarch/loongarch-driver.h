@@ -24,33 +24,37 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-str.h"
 
 extern const char*
-driver_set_m_flag (int argc, const char **argv);
+la_driver_init (int argc, const char **argv);
+
+extern const char*
+driver_set_m_parm (int argc, const char **argv);
+
+extern const char*
+driver_set_no_link (int argc, const char **argv);
 
 extern const char*
 driver_get_normalized_m_opts (int argc, const char **argv);
 
 #define EXTRA_SPEC_FUNCTIONS \
-  { "set_m_flag", driver_set_m_flag  }, \
+  { "driver_init", la_driver_init }, \
+  { "set_m_parm", driver_set_m_parm  }, \
+  { "set_no_link", driver_set_no_link }, \
   { "get_normalized_m_opts", driver_get_normalized_m_opts  },
 
 /* Pre-process ABI-related options.  */
 #define LA_SET_PARM_SPEC(NAME) \
-  " %{m" OPTSTR_##NAME  "=*: %:set_m_flag(" OPTSTR_##NAME "=%*)}" \
+  " %{m" OPTSTR_##NAME  "=*: %:set_m_parm(" OPTSTR_##NAME " %*)}" \
 
-#define LA_SET_FLAG_SPEC(NAME) \
-  " %{m" OPTSTR_##NAME  ": %:set_m_flag(" OPTSTR_##NAME ")}" \
-
-#define DRIVER_HANDLE_MACHINE_OPTIONS			      \
-  " %{c|S|E|nostdlib: %:set_m_flag(no_link)}"		      \
-  " %{nostartfiles: %{nodefaultlibs: %:set_m_flag(no_link)}}" \
-  LA_SET_PARM_SPEC (ABI_BASE)				      \
-  LA_SET_PARM_SPEC (ARCH)				      \
-  LA_SET_PARM_SPEC (TUNE)				      \
-  LA_SET_PARM_SPEC (ISA_EXT_FPU)			      \
-  LA_SET_PARM_SPEC (CMODEL)				      \
-  LA_SET_FLAG_SPEC (SOFT_FLOAT)				      \
-  LA_SET_FLAG_SPEC (SINGLE_FLOAT)			      \
-  LA_SET_FLAG_SPEC (DOUBLE_FLOAT)			      \
+#define DRIVER_HANDLE_MACHINE_OPTIONS \
+  " %:driver_init()" \
+  " %{c|S|E|nostdlib: %:set_no_link()}" \
+  " %{nostartfiles: %{nodefaultlibs: %:set_no_link()}}" \
+  LA_SET_PARM_SPEC (ABI_BASE) \
+  LA_SET_PARM_SPEC (ARCH) \
+  LA_SET_PARM_SPEC (TUNE) \
+  LA_SET_PARM_SPEC (ISA_EXT_FPU) \
+  LA_SET_PARM_SPEC (ISA_EXT_SIMD) \
+  LA_SET_PARM_SPEC (CMODEL) \
   " %:get_normalized_m_opts()"
 
 #define DRIVER_SELF_SPECS \

@@ -4891,43 +4891,46 @@ case "${target}" in
 		esac
 		;;
 
-	loongarch*-*-*)
-		supported_defaults="abi arch tune fpu"
+	loongarch*-*)
+		supported_defaults="abi arch tune fpu simd multilib-default"
 
 		# Local variables
 		unset \
-			abi_pattern      abi_default    \
-			abiext_pattern   abiext_default \
-			arch_pattern     arch_default   \
-			fpu_pattern      fpu_default    \
-			tune_pattern     tune_default   \
-			triplet_os       triplet_abi
+			abi_base	abi_ext \
+			arch_pattern	arch_default \
+			fpu_pattern	fpu_default \
+			triplet_os	triplet_abi \
+			strict_align_opt
+
+		# --with-abi is now obsolete, emit a warning if given.
+		case ${with_abi} in
+		"") ;;
+		*)
+			echo "warning: --with-abi= is now obsolete," \
+			"the default ABI is derived from your target" \
+			"triplet ${target}" 1>&2
+			;;
+		esac
 
 		# Infer ABI from the triplet.
 		case ${target} in
-		loongarch64-*-*-*f64)
-			abi_pattern="lp64d"
-			;;
-		loongarch64-*-*-*f32)
-			abi_pattern="lp64f"
-			;;
-		loongarch64-*-*-*sf)
-			abi_pattern="lp64s"
-			;;
-		loongarch64-*-*-*)
-			abi_pattern="lp64[dfs]"
-			abi_default="lp64d"
-			;;
+		loongarch64-*f64) abi_base="lp64d"; abi_ext="base" ;;
+		loongarch64-*f32) abi_base="lp64f"; abi_ext="base" ;;
+		loongarch64-*sf)  abi_base="lp64s"; abi_ext="base" ;;
+		loongarch64-*)    abi_base="lp64d"; abi_ext="base" ;;
 		*)
 			echo "Unsupported target ${target}." 1>&2
 			exit 1
 			;;
 		esac
 
-		abiext_pattern="*"
-		abiext_default="base"
-
 		# Get the canonical triplet (multiarch specifier).
+		case ${abi_base},${abi_ext} in
+		lp64d,base) triplet_abi="";;
+		lp64f,base) triplet_abi="f32";;
+		lp64s,base) triplet_abi="sf";;
+		esac
+
 		case ${target} in
 		  *-linux-gnu*)  triplet_os="linux-gnu";;
 		  *-linux-musl*) triplet_os="linux-musl";;
@@ -4936,20 +4939,17 @@ case "${target}" in
 			  exit 1
 			  ;;
 		esac
+		la_canonical_triplet="loongarch64-${triplet_os}${triplet_abi}"
+
 
 		# Perform initial sanity checks on --with-* options.
 		case ${with_arch} in
-		"" | loongarch64 | la464) ;; # OK, append here.
+		"" | abi-default | loongarch64 | la464) ;; # OK, append here.
 		native)
 			if test x${host} != x${target}; then
 				echo "--with-arch=native is illegal for cross-compiler." 1>&2
 				exit 1
 			fi
-			;;
-		"")
-			echo "Please set a default value for \${with_arch}" \
-			     "according to your target triplet \"${target}\"." 1>&2
-			exit 1
 			;;
 		*)
 			echo "Unknown arch in --with-arch=$with_arch" 1>&2
@@ -4957,21 +4957,6 @@ case "${target}" in
 			;;
 		esac
 
-		case ${with_abi} in
-		"" | lp64d | lp64f | lp64s) ;; # OK, append here.
-		*)
-			echo "Unsupported ABI given in --with-abi=$with_abi" 1>&2
-			exit 1
-			;;
-		esac
-
-		case ${with_abiext} in
-		"" | base) ;; # OK, append here.
-		*)
-			echo "Unsupported ABI extention type $with_abiext" 1>&2
-			exit 1
-			;;
-		esac
 
 		case ${with_fpu} in
 		"" | none | 32 | 64) ;; # OK, append here.
@@ -4985,73 +4970,41 @@ case "${target}" in
 			;;
 		esac
 
-
-		# Set default value for with_abi.
-		case ${with_abi} in
-		"")
-			if test x${abi_default} != x; then
-				with_abi=${abi_default}
-			else
-				with_abi=${abi_pattern}
-			fi
+		case ${with_simd} in
+		"" | none) ;;
+		lsx | lasx)  # OK, append here.
+			case ${with_fpu} in
+			64) ;;
+			"") with_fpu=64 ;;
+			*)
+				echo "--with-simd=${with_simd} conflicts with --with-fpu=${with_fpu}" 1>&2
+				exit 1
+				;;
+			esac
 			;;
 
 		*)
-			if echo "${with_abi}" | grep -E "^${abi_pattern}$" > /dev/null; then
-				: # OK
-			else
-				echo "Incompatible options:" \
-				"--with-abi=${with_abi} and --target=${target}." 1>&2
-				exit 1
-			fi
-			;;
-		esac
-
-		case ${with_abi} in
-		  "lp64d") triplet_abi="";;
-		  "lp64f") triplet_abi="f32";;
-		  "lp64s") triplet_abi="sf";;
-		esac
-		la_canonical_triplet="loongarch64-${triplet_os}${triplet_abi}"
-
-		# Set default value for with_abiext (internal)
-		case ${with_abiext} in
-		"")
-			if test x${abiext_default} != x; then
-				with_abiext=${abiext_default}
-			else
-				with_abiext=${abiext_pattern}
-			fi
-			;;
-
-		*)
-			if echo "${with_abiext}" | grep -E "^${abiext_pattern}$" > /dev/null; then
-				: # OK
-			else
-				echo "The ABI extension type \"${with_abiext}\"" \
-				"is incompatible with --target=${target}." 1>&2
-				exit 1
-			fi
-
+			echo "Unknown SIMD extension in --with-simd=$with_simd" 1>&2
+			exit 1
 			;;
 		esac
 
 		# Infer ISA-related default options from the ABI: pass 1
-		case ${with_abi}/${with_abiext} in
+		case ${abi_base}/${abi_ext} in
 		lp64*/base)
 			# architectures that support lp64* ABI
-			arch_pattern="native|loongarch64|la464"
+			arch_pattern="native|abi-default|loongarch64|la464"
 			# default architecture for lp64* ABI
-			arch_default="loongarch64"
+			arch_default="abi-default"
 			;;
 		*)
-			echo "Unsupported ABI type ${with_abi}/${with_abiext}." 1>&2
+			echo "Unsupported ABI type ${abi_base}/${abi_ext}." 1>&2
 			exit 1
 			;;
 		esac
 
 		# Infer ISA-related default options from the ABI: pass 2
-		case ${with_abi}/${with_abiext} in
+		case ${abi_base}/${abi_ext} in
 		lp64d/base)
 			fpu_pattern="64"
 			;;
@@ -5064,7 +5017,7 @@ case "${target}" in
 			fpu_default="none"
 			;;
 		*)
-			echo "Unsupported ABI type ${with_abi}/${with_abiext}." 1>&2
+			echo "Unsupported ABI type ${abi_base}/${abi_ext}." 1>&2
 			exit 1
 			;;
 		esac
@@ -5083,7 +5036,7 @@ case "${target}" in
 			if echo "${with_arch}" | grep -E "^${arch_pattern}$" > /dev/null; then
 				: # OK
 			else
-				echo "${with_abi}/${with_abiext} ABI cannot be implemented with" \
+				echo "${abi_base}/${abi_ext} ABI cannot be implemented with" \
 				"--with-arch=${with_arch}." 1>&2
 				exit 1
 			fi
@@ -5104,7 +5057,7 @@ case "${target}" in
 			if echo "${with_fpu}" | grep -E "^${fpu_pattern}$" > /dev/null; then
 				: # OK
 			else
-				echo "${with_abi}/${with_abiext} ABI cannot be implemented with" \
+				echo "${abi_base}/${abi_ext} ABI cannot be implemented with" \
 				"--with-fpu=${with_fpu}." 1>&2
 				exit 1
 			fi
@@ -5112,32 +5065,19 @@ case "${target}" in
 		esac
 
 
-		# Infer default with_tune from with_arch: pass 1
+		# Check default with_tune configuration using with_arch.
 		case ${with_arch} in
-		native)
-			tune_pattern="*"
-			tune_default="native"
-			;;
 		loongarch64)
-			tune_pattern="loongarch64|la464"
-			tune_default="la464"
+			tune_pattern="native|abi-default|loongarch64|la464"
 			;;
 		*)
 			# By default, $with_tune == $with_arch
-			tune_pattern="$with_arch"
+			tune_pattern="*"
 			;;
 		esac
 
-		## Set default value for with_tune.
 		case ${with_tune} in
-		"")
-			if test x${tune_default} != x; then
-				with_tune=${tune_default}
-			else
-				with_tune=${tune_pattern}
-			fi
-			;;
-
+		"") ;; # OK
 		*)
 			if echo "${with_tune}" | grep -E "^${tune_pattern}$" > /dev/null; then
 				: # OK
@@ -5149,13 +5089,53 @@ case "${target}" in
 			;;
 		esac
 
+		# Handle --with-multilib-default
+		if echo "${with_multilib_default}" \
+		| grep -E -e '[[:space:]]' -e '//' -e '/$' -e '^/' > /dev/null 2>&1; then
+			echo "Invalid argument to --with-multilib-default." 1>&2
+			exit 1
+		fi
+
+		if test x${with_multilib_default} = x; then
+			# Use -march=abi-default by default when building libraries.
+			with_multilib_default="/march=abi-default"
+		else
+			unset parse_state component
+			parse_state=arch
+			for component in $(echo "${with_multilib_default}" | tr '/' ' '); do
+				case ${parse_state},${component} in
+				arch,|arch,abi-default)
+					# ABI-default: use the ABI's default ARCH configuration for
+					# multilib library builds, unless otherwise specified
+					# in --with-multilib-list.
+					with_multilib_default="/march=abi-default" ;;
+				arch,fixed)
+					# Fixed: use the default gcc configuration for all multilib
+					# builds by default.
+					with_multilib_default="" ;;
+				arch,native|arch,loongarch64|arch,la464) # OK, append here.
+					with_multilib_default="/march=${component}" ;;
+				arch,*)
+					with_multilib_default="/march=abi-default"
+					with_multilib_default="${with_multilib_default}/${component}" ;;
+				opts,*)
+					with_multilib_default="${with_multilib_default}/${component}" ;;
+				esac
+
+				if test x${parse_state} = xarch; then
+					parse_state=opt;
+				fi
+			done
+			unset parse_state component
+		fi
+
 		# Handle --with-multilib-list.
 		if test x"${with_multilib_list}" = x \
 		   || test x"${with_multilib_list}" = xno \
 		   || test x"${with_multilib_list}" = xdefault \
 		   || test x"${enable_multilib}" != xyes; then
 
-			with_multilib_list="${with_abi}/${with_abiext}"
+			with_multilib_list="${abi_base}/${abi_ext}"
 		fi
 
 		# Check if the configured default ABI combination is included in
@@ -5171,25 +5151,21 @@ case "${target}" in
 		# ${with_multilib_list} should not contain whitespaces,
 		# consecutive commas or slashes.
 		if echo "${with_multilib_list}" \
-		| grep -E -e "[[:space:]]" -e '[,/][,/]' -e '[,/]$' -e '^[,/]' > /dev/null; then
+		| grep -E -e "[[:space:]]" -e '[,/][,/]' -e '[,/]$' -e '^[,/]' > /dev/null 2>&1; then
 			echo "Invalid argument to --with-multilib-list." 1>&2
 			exit 1
 		fi
 
-		unset component idx elem_abi_base elem_abi_ext elem_tmp
+		unset component elem_abi_base elem_abi_ext elem_tmp parse_state all_abis
 		for elem in $(echo "${with_multilib_list}" | tr ',' ' '); do
-			idx=0
-			while true; do
-				idx=$((idx + 1))
-				component=$(echo "${elem}" | awk -F'/' '{print $'"${idx}"'}')
+			unset elem_abi_base elem_abi_ext
+			parse_state="abi-base"
 
-				case ${idx} in
-				1)
-					# Component 1: Base ABI type
+			for component in $(echo "${elem}" | tr '/' ' '); do
+				if test x${parse_state} = x"abi-base"; then
+					# Base ABI type
 					case ${component} in
-					lp64d) elem_tmp="ABI_BASE_LP64D,";;
-					lp64f) elem_tmp="ABI_BASE_LP64F,";;
-					lp64s) elem_tmp="ABI_BASE_LP64S,";;
+					lp64d | lp64f | lp64s) elem_tmp="ABI_BASE_$(tr a-z A-Z <<< ${component}),";;
 					*)
 						echo "Unknown base ABI \"${component}\" in --with-multilib-list." 1>&2
 						exit 1
@@ -5198,57 +5174,111 @@ case "${target}" in
 					loongarch_multilib_list_c="${loongarch_multilib_list_c}${elem_tmp}"
 					loongarch_multilib_list_make="${loongarch_multilib_list_make}mabi=${component}"
 					elem_abi_base="${component}"
-					;;
 
-				2)
-					# Component 2: ABI extension type
+					parse_state="abi-ext"
+					continue
+				fi
+
+				if test x${parse_state} = x"abi-ext"; then
+					# ABI extension type
 					case ${component} in
-					"" | base)
-						component="base"
-						elem_tmp="ABI_EXT_BASE,"
-						;;
-					*)
-						echo "Unknown ABI extension \"${component}\" in --with-multilib-list." 1>&2
-						exit 1
+					base)
+						elem_abi_ext="base"
+						loongarch_multilib_list_c="${loongarch_multilib_list_c}ABI_EXT_BASE,"
+						loongarch_multilib_list_make="${loongarch_multilib_list_make}" # Add nothing for now.
+						parse_state="arch"
+						continue;
 						;;
 					esac
-					loongarch_multilib_list_c="${loongarch_multilib_list_c}${elem_tmp}"
+
+					# The default ABI extension is "base" if unspecified.
+					elem_abi_ext="base"
+					loongarch_multilib_list_c="${loongarch_multilib_list_c}ABI_EXT_BASE,"
 					loongarch_multilib_list_make="${loongarch_multilib_list_make}" # Add nothing for now.
-					elem_abi_ext="${component}"
-					;;
+					parse_state="arch"
+				fi
 
-				*)
-					# Component 3 and on: optional stuff
+				if test x${parse_state} = x"arch"; then
+					# -march option
 					case ${component} in
-					"")
-						# End of component list.
-						break
+					native | abi-default | loongarch64 | la464) # OK, append here.
+						# Append -march spec for each multilib variant.
+						loongarch_multilib_list_make="${loongarch_multilib_list_make}/march=${component}"
+						parse_state="opts"
+						continue
 						;;
-					*)
-						echo "Unknown ABI \"${elem}\" in --with-multilib-list." 1>&2
-						exit 1
+
+					default)
+						# "/default" is equivalent to --with-multilib-default=fixed
+						parse_state="opts"
+						continue
 						;;
 					esac
-					;;
-				esac
+
+					# If ARCH is unspecified for this multilib variant, use ${with_multllib_default}.
+					loongarch_multilib_list_make="${loongarch_multilib_list_make}${with_multilib_default}"
+					parse_state="opts"
+				fi
+
+				if test x${parse_state} = x"opts"; then
+					# Other compiler options for building libraries.
+					# (no static sanity check performed)
+					case ${component} in
+					*)
+						# Append other components as additional build options
+						# (without the prepending dash).
+						# Their validity should be examined by the compiler.
+						loongarch_multilib_list_make="${loongarch_multilib_list_make}/${component}"
+						;;
+					esac
+				fi
 			done
 
-			if test x${elem_abi_base} = x${with_abi} \
-			&& test x${elem_abi_ext} = x${with_abiext}; then
+			case ${parse_state} in
+			    "abi-ext")
+					elem_abi_ext="base"
+					loongarch_multilib_list_c="${loongarch_multilib_list_c}ABI_EXT_BASE,"
+					loongarch_multilib_list_make="${loongarch_multilib_list_make}" # Add nothing for now.
+					loongarch_multilib_list_make="${loongarch_multilib_list_make}${with_multilib_default}"
+					;;
+			    "arch")
+					# If ARCH is unspecified for this multilib variant, use ${with_multllib_default}.
+					loongarch_multilib_list_make="${loongarch_multilib_list_make}${with_multilib_default}"
+					;;
+			    "opts")
+					:
+					;;
+			esac
+
+			# Check for repeated configuration of the same multilib variant.
+			if echo "${elem_abi_base}/${elem_abi_ext}" \
+			 | grep -E "^(${all_abis%|})$" >/dev/null 2>&1; then
+				echo "Repeated multilib config of \"${elem_abi_base}/${elem_abi_ext}\" in --with-multilib-list."
+				exit 1
+			fi
+			all_abis="${all_abis}${elem_abi_base}/${elem_abi_ext}|"
+
+
+			# Check if the default ABI configuration of the GCC binary
+			# is included in the enabled multilib variants.
+			if test x${elem_abi_base} = x${abi_base} \
+			&& test x${elem_abi_ext} = x${abi_ext}; then
 				loongarch_multilib_list_sane=yes
 			fi
 			loongarch_multilib_list_make="${loongarch_multilib_list_make},"
 		done
+		unset component elem_abi_base elem_abi_ext elem_tmp parse_state all_abis
+
 
 		# Check if the default ABI combination is in the default list.
 		if test x${loongarch_multilib_list_sane} = xno; then
-			if test x${with_abiext} = xbase; then
-				with_abiext=""
+			if test x${abi_ext} = xbase; then
+				abi_ext=""
 			else
-				with_abiext="/${with_abiext}"
+				abi_ext="/${abi_ext}"
 			fi
 
-			echo "Default ABI combination (${with_abi}${with_abiext})" \
+			echo "Default ABI combination (${abi_base}${abi_ext})" \
 			"not found in --with-multilib-list." 1>&2
 			exit 1
 		fi
@@ -5739,32 +5769,35 @@ case ${target} in
 
 		# Let --with- flags initialize the enum variables from loongarch.opt.
 		# See macro definitions from loongarch-opts.h and loongarch-cpu.h.
-		case ${with_arch} in
-		native)		tm_defines="${tm_defines} DEFAULT_CPU_ARCH=CPU_NATIVE" ;;
-		la464)		tm_defines="${tm_defines} DEFAULT_CPU_ARCH=CPU_LA464" ;;
-		loongarch64)	tm_defines="${tm_defines} DEFAULT_CPU_ARCH=CPU_LOONGARCH64" ;;
-		esac
 
-		case ${with_tune} in
-		native)		tm_defines="${tm_defines} DEFAULT_CPU_TUNE=CPU_NATIVE" ;;
-		la464)		tm_defines="${tm_defines} DEFAULT_CPU_TUNE=CPU_LA464" ;;
-		loongarch64)	tm_defines="${tm_defines} DEFAULT_CPU_TUNE=CPU_LOONGARCH64" ;;
-		esac
+		# Architecture
+		tm_defines="${tm_defines} DEFAULT_CPU_ARCH=CPU_$(echo ${with_arch} | tr a-z- A-Z_)"
 
-		case ${with_abi} in
-		lp64d)     tm_defines="${tm_defines} DEFAULT_ABI_BASE=ABI_BASE_LP64D" ;;
-		lp64f)     tm_defines="${tm_defines} DEFAULT_ABI_BASE=ABI_BASE_LP64F" ;;
-		lp64s)     tm_defines="${tm_defines} DEFAULT_ABI_BASE=ABI_BASE_LP64S" ;;
-		esac
+		# Base ABI type
+		tm_defines="${tm_defines} DEFAULT_ABI_BASE=ABI_BASE_$(echo ${abi_base} | tr a-z- A-Z_)"
 
-		case ${with_abiext} in
+		# ABI Extension
+		case ${abi_ext} in
 		base)      tm_defines="${tm_defines} DEFAULT_ABI_EXT=ABI_EXT_BASE" ;;
 		esac
 
+		# Microarchitecture
+		if test x${with_tune} != x; then
+		  tm_defines="${tm_defines} DEFAULT_CPU_TUNE=CPU_$(echo ${with_tune} | tr a-z- A-Z_)"
+		fi
+
+		# FPU adjustment
 		case ${with_fpu} in
-		none)    tm_defines="$tm_defines DEFAULT_ISA_EXT_FPU=ISA_EXT_NOFPU" ;;
+		none)    tm_defines="$tm_defines DEFAULT_ISA_EXT_FPU=ISA_EXT_NONE" ;;
 		32)      tm_defines="$tm_defines DEFAULT_ISA_EXT_FPU=ISA_EXT_FPU32" ;;
 		64)      tm_defines="$tm_defines DEFAULT_ISA_EXT_FPU=ISA_EXT_FPU64" ;;
+		esac
+
+		# SIMD extensions
+		case ${with_simd} in
+		none)    tm_defines="$tm_defines DEFAULT_ISA_EXT_SIMD=ISA_EXT_NONE" ;;
+		lsx)     tm_defines="$tm_defines DEFAULT_ISA_EXT_SIMD=ISA_EXT_SIMD_LSX" ;;
+		lasx)    tm_defines="$tm_defines DEFAULT_ISA_EXT_SIMD=ISA_EXT_SIMD_LASX" ;;
 		esac
 
 		tmake_file="loongarch/t-loongarch $tmake_file"

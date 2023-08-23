@@ -61,8 +61,8 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   builtin_assert ("cpu=loongarch");
   builtin_define ("__loongarch__");
 
-  LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_ARCH", LARCH_ACTUAL_ARCH);
-  LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_TUNE", LARCH_ACTUAL_TUNE);
+  LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_ARCH", la_target.cpu_arch);
+  LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_TUNE", la_target.cpu_tune);
 
   /* Base architecture / ABI.  */
   if (TARGET_64BIT)
@@ -98,6 +98,21 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__loongarch_frlen=32");
   else
     builtin_define ("__loongarch_frlen=0");
+
+  if (ISA_HAS_LSX)
+    {
+      builtin_define ("__loongarch_simd");
+      builtin_define ("__loongarch_sx");
+
+      if (!ISA_HAS_LASX)
+	builtin_define ("__loongarch_simd_width=128");
+    }
+
+  if (ISA_HAS_LASX)
+    {
+      builtin_define ("__loongarch_asx");
+      builtin_define ("__loongarch_simd_width=256");
+    }
 
   /* Add support for FLOAT128_TYPE on the LoongArch architecture.  */
   builtin_define ("__FLOAT128_TYPE__");

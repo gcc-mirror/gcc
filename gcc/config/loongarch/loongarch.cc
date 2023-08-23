@@ -2555,7 +2555,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   if (flag_plt)
     {
-      switch (la_opt_cmodel)
+      switch (la_target.cmodel)
 	{
 	case CMODEL_NORMAL:
 	  insn = emit_call_insn (gen_call_value_internal (v0,
@@ -2597,7 +2597,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
     {
       rtx dest = gen_reg_rtx (Pmode);
 
-      switch (la_opt_cmodel)
+      switch (la_target.cmodel)
 	{
 	case CMODEL_NORMAL:
 	case CMODEL_MEDIUM:
@@ -6064,8 +6064,8 @@ loongarch_adjust_cost (rtx_insn *, int dep_type, rtx_insn *, int cost,
 static int
 loongarch_issue_rate (void)
 {
-  if ((unsigned long) LARCH_ACTUAL_TUNE < N_TUNE_TYPES)
-    return loongarch_cpu_issue_rate[LARCH_ACTUAL_TUNE];
+  if ((unsigned long) la_target.cpu_tune < N_TUNE_TYPES)
+    return loongarch_cpu_issue_rate[la_target.cpu_tune];
   else
     return 1;
 }
@@ -6076,8 +6076,8 @@ loongarch_issue_rate (void)
 static int
 loongarch_multipass_dfa_lookahead (void)
 {
-  if ((unsigned long) LARCH_ACTUAL_TUNE < N_ARCH_TYPES)
-    return loongarch_cpu_multipass_dfa_lookahead[LARCH_ACTUAL_TUNE];
+  if ((unsigned long) la_target.cpu_tune < N_ARCH_TYPES)
+    return loongarch_cpu_multipass_dfa_lookahead[la_target.cpu_tune];
   else
     return 0;
 }
@@ -6254,17 +6254,54 @@ loongarch_init_machine_status (void)
 }
 
 static void
-loongarch_option_override_internal (struct gcc_options *opts)
+loongarch_cpu_option_override (struct loongarch_target *target,
+			       struct gcc_options *opts,
+			       struct gcc_options *opts_set)
+{
+  /* alignments */
+  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+    opts->x_str_align_functions
+      = loongarch_cpu_align[target->cpu_tune].function;
+
+  if (opts->x_flag_align_labels && !opts->x_str_align_labels)
+    opts->x_str_align_labels = loongarch_cpu_align[target->cpu_tune].label;
+
+  /* Set up parameters to be used in prefetching algorithm.  */
+  int simultaneous_prefetches
+    = loongarch_cpu_cache[target->cpu_tune].simultaneous_prefetches;
+
+  SET_OPTION_IF_UNSET (opts, opts_set, param_simultaneous_prefetches,
+		       simultaneous_prefetches);
+
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_line_size,
+		       loongarch_cpu_cache[target->cpu_tune].l1d_line_size);
+
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l1_cache_size,
+		       loongarch_cpu_cache[target->cpu_tune].l1d_size);
+
+  SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
+		       loongarch_cpu_cache[target->cpu_tune].l2d_size);
+}
+
+static void
+loongarch_option_override_internal (struct gcc_options *opts,
+				    struct gcc_options *opts_set)
 {
   int i, regno, mode;
 
   if (flag_pic)
     g_switch_value = 0;
 
+  loongarch_init_target (&la_target,
+			 la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
+			 la_opt_simd, la_opt_abi_base, la_opt_abi_ext,
+			 la_opt_cmodel);
+
   /* Handle target-specific options: compute defaults/conflicts etc.  */
-  loongarch_config_target (&la_target, la_opt_switches,
-			   la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
-			   la_opt_abi_base, la_opt_abi_ext, la_opt_cmodel, 0);
+  loongarch_config_target (&la_target, NULL, 0);
+
+  loongarch_update_gcc_opt_status (&la_target, opts, opts_set);
+  loongarch_cpu_option_override (&la_target, opts, opts_set);
 
   if (TARGET_ABI_LP64)
     flag_pcc_struct_return = 0;
@@ -6273,32 +6310,12 @@ loongarch_option_override_internal (struct gcc_options *opts)
   if (optimize_size)
     loongarch_cost = &loongarch_rtx_cost_optimize_size;
   else
-    loongarch_cost = &loongarch_cpu_rtx_cost_data[LARCH_ACTUAL_TUNE];
+    loongarch_cost = &loongarch_cpu_rtx_cost_data[la_target.cpu_tune];
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
-
-  /* Set up parameters to be used in prefetching algorithm.  */
-  int simultaneous_prefetches
-    = loongarch_cpu_cache[LARCH_ACTUAL_TUNE].simultaneous_prefetches;
-
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_simultaneous_prefetches,
-		       simultaneous_prefetches);
-
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_l1_cache_line_size,
-		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l1d_line_size);
-
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_l1_cache_size,
-		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l1d_size);
-
-  SET_OPTION_IF_UNSET (opts, &global_options_set,
-		       param_l2_cache_size,
-		       loongarch_cpu_cache[LARCH_ACTUAL_TUNE].l2d_size);
 
 
   /* Enable sw prefetching at -O3 and higher.  */
@@ -6306,12 +6323,6 @@ loongarch_option_override_internal (struct gcc_options *opts)
       && (opts->x_optimize >= 3 || opts->x_flag_profile_use)
       && !opts->x_optimize_size)
     opts->x_flag_prefetch_loop_arrays = 1;
-
-  if (opts->x_flag_align_functions && !opts->x_str_align_functions)
-    opts->x_str_align_functions = loongarch_cpu_align[LARCH_ACTUAL_TUNE].function;
-
-  if (opts->x_flag_align_labels && !opts->x_str_align_labels)
-    opts->x_str_align_labels = loongarch_cpu_align[LARCH_ACTUAL_TUNE].label;
 
   if (TARGET_DIRECT_EXTERN_ACCESS && flag_shlib)
     error ("%qs cannot be used for compiling a shared library",
@@ -6382,7 +6393,7 @@ loongarch_option_override_internal (struct gcc_options *opts)
 static void
 loongarch_option_override (void)
 {
-  loongarch_option_override_internal (&global_options);
+  loongarch_option_override_internal (&global_options, &global_options_set);
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */

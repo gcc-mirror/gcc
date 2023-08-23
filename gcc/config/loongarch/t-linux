@@ -23,7 +23,37 @@ MULTILIB_DIRNAMES = base/lp64d base/lp64f base/lp64s
 # The GCC driver always gets all abi-related options on the command line.
 # (see loongarch-driver.c:driver_get_normalized_m_opts)
 comma=,
-MULTILIB_REQUIRED = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
+MULTILIB_REQUIRED = $(foreach mlib,$(subst $(comma), ,$(TM_MULTILIB_CONFIG)),\
+	$(firstword $(subst /, ,$(mlib))))
+
+SPECS = specs.install
+
+# temporary self_spec when building libraries (e.g. libgcc)
+gen_mlib_spec = $(if $(word 2,$1),\
+	%{$(firstword $1):$(patsubst %,-%,$(wordlist 2,$(words $1),$1))})
+
+# clean up the result of DRIVER_SELF_SPEC to avoid conflict
+lib_build_self_spec  = %<march=* %<mtune=* %<mcmodel=* %<mfpu=* %<msimd=*
+
+# append user-specified build options from --with-multilib-list
+lib_build_self_spec += $(foreach mlib,\
+	$(subst $(comma), ,$(TM_MULTILIB_CONFIG)),\
+	$(call gen_mlib_spec,$(subst /, ,$(mlib))))
+
+specs: specs.install
+	sed '/^*self_spec:$$/{ n;s/^$$/$(lib_build_self_spec)/g; }' $< > $@
+
+# Do some preparation before regression tests:
+# remove lib-build-specs / make symlinks for the toplevel multilib variant
+
+LA_DEFAULT_MULTISUBDIR = $(shell $(GCC_FOR_TARGET) --print-multi-dir)
+.PHONY: remove-lib-specs
+check check-host check-target $(CHECK_TARGETS) $(lang_checks): remove-lib-specs
+remove-lib-specs:
+	-mv -f specs.install specs 2>/dev/null
+	-mv $(LA_DEFAULT_MULTISUBDIR)/* ./
+	-mkdir -p ../$(target_noncanonical)/`dirname $(LA_DEFAULT_MULTISUBDIR)`
+	-$(LN_S) .. ../$(target_noncanonical)/$(LA_DEFAULT_MULTISUBDIR)
 
 # Multiarch
 ifneq ($(call if_multiarch,yes),yes)
