@@ -1,3 +1,9 @@
+2023-09-19  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memcpy2d): Adjust parameters to
+	avoid out-of-bounds array checks in CUDA runtime.
+	(GOMP_OFFLOAD_memcpy3d): Likewise.
+
 2023-09-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
