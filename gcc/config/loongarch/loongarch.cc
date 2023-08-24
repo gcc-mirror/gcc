@@ -4384,14 +4384,30 @@ loongarch_expand_conditional_move (rtx *operands)
   enum rtx_code code = GET_CODE (operands[1]);
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+  rtx op0_extend = op0;
+  rtx op1_extend = op1;
+
+  /* Record whether operands[2] and operands[3] modes are promoted to word_mode.  */
+  bool promote_p = false;
+  machine_mode mode = GET_MODE (operands[0]);
 
   if (FLOAT_MODE_P (GET_MODE (op1)))
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
+      if ((REGNO (op0) == REGNO (operands[2])
+	   || (REGNO (op1) == REGNO (operands[3]) && (op1 != const0_rtx)))
+	  && (GET_MODE_SIZE (GET_MODE (op0)) < word_mode))
+	{
+	  mode = word_mode;
+	  promote_p = true;
+	}
+
       loongarch_extend_comparands (code, &op0, &op1);
 
       op0 = force_reg (word_mode, op0);
+      op0_extend = op0;
+      op1_extend = force_reg (word_mode, op1);
 
       if (code == EQ || code == NE)
 	{
@@ -4418,23 +4434,52 @@ loongarch_expand_conditional_move (rtx *operands)
       && register_operand (operands[2], VOIDmode)
       && register_operand (operands[3], VOIDmode))
     {
-      machine_mode mode = GET_MODE (operands[0]);
+      rtx op2 = operands[2];
+      rtx op3 = operands[3];
+
+      if (promote_p)
+	{
+	  if (REGNO (XEXP (operands[1], 0)) == REGNO (operands[2]))
+	    op2 = op0_extend;
+	  else
+	    {
+	      loongarch_extend_comparands (code, &op2, &const0_rtx);
+	      op2 = force_reg (mode, op2);
+	    }
+
+	  if (REGNO (XEXP (operands[1], 1)) == REGNO (operands[3]))
+	    op3 = op1_extend;
+	  else
+	    {
+	      loongarch_extend_comparands (code, &op3, &const0_rtx);
+	      op3 = force_reg (mode, op3);
+	    }
+	}
+
       rtx temp = gen_reg_rtx (mode);
       rtx temp2 = gen_reg_rtx (mode);
 
       emit_insn (gen_rtx_SET (temp,
 			      gen_rtx_IF_THEN_ELSE (mode, cond,
-						    operands[2], const0_rtx)));
+						    op2, const0_rtx)));
 
       /* Flip the test for the second operand.  */
       cond = gen_rtx_fmt_ee ((code == EQ) ? NE : EQ, GET_MODE (op0), op0, op1);
 
       emit_insn (gen_rtx_SET (temp2,
 			      gen_rtx_IF_THEN_ELSE (mode, cond,
-						    operands[3], const0_rtx)));
+						    op3, const0_rtx)));
 
       /* Merge the two results, at least one is guaranteed to be zero.  */
-      emit_insn (gen_rtx_SET (operands[0], gen_rtx_IOR (mode, temp, temp2)));
+      if (promote_p)
+	{
+	  rtx temp3 = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (temp3, gen_rtx_IOR (mode, temp, temp2)));
+	  temp3 = gen_lowpart (GET_MODE (operands[0]), temp3);
+	  loongarch_emit_move (operands[0], temp3);
+	}
+      else
+	emit_insn (gen_rtx_SET (operands[0], gen_rtx_IOR (mode, temp, temp2)));
     }
   else
     emit_insn (gen_rtx_SET (operands[0],
