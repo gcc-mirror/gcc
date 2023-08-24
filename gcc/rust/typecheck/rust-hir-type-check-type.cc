@@ -17,10 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-type.h"
+#include "options.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-immutable-name-resolution-context.h"
+#include "rust-mapping-common.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
 
@@ -129,6 +132,8 @@ TypeCheckType::visit (HIR::TupleType &tuple)
 void
 TypeCheckType::visit (HIR::TypePath &path)
 {
+  rust_debug ("{ARTHUR}: Path visited: %s", path.as_string ().c_str ());
+
   // this can happen so we need to look up the root then resolve the
   // remaining segments if possible
   size_t offset = 0;
@@ -336,12 +341,21 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       bool is_root = *offset == 0;
       NodeId ast_node_id = seg->get_mappings ().get_nodeid ();
 
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
       // then lookup the reference_node_id
       NodeId ref_node_id = UNKNOWN_NODEID;
-      if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	{
-	  resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
-	}
+
+      // FIXME: HACK: ARTHUR: Remove this
+      if (flag_name_resolution_2_0)
+	// assign the ref_node_id if we've found something
+	nr_ctx.lookup (path.get_mappings ().get_nodeid ())
+	  .map ([&ref_node_id, &path] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
+      else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 
       // ref_node_id is the NodeId that the segments refers to.
       if (ref_node_id == UNKNOWN_NODEID)
@@ -349,7 +363,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  if (is_root)
 	    {
 	      rust_error_at (seg->get_locus (),
-			     "unknown reference for resolved name: %<%s%>",
+			     "unknown reference for resolved name: %qs",
 			     seg->get_ident_segment ().as_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
