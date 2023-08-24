@@ -6406,6 +6406,11 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
 		    vectype, 0, vect_body);
   record_stmt_cost (cost_vec, 1, vec_to_scalar, instance->root_stmts[0],
 		    vectype, 0, vect_body);
+
+  /* Since we replace all stmts of a possibly longer scalar reduction
+     chain account for the extra scalar stmts for that.  */
+  record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
+		    instance->root_stmts[0], 0, vect_body);
   return true;
 }
 
