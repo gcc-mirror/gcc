@@ -18,6 +18,7 @@
 
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
+#include "rust-immutable-name-resolution-context.h"
 #include "rust-unsafe-checker.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
@@ -658,6 +659,9 @@ Session::compile_crate (const char *filename)
 
   if (last_step == CompileOptions::CompileStep::TypeCheck)
     return;
+
+  // name resolution is done, we now freeze the name resolver for type checking
+  Resolver2_0::ImmutableNameResolutionContext::init (name_resolution_ctx);
 
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
