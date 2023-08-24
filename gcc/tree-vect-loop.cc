@@ -7494,8 +7494,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
 
       if (reduc_chain_length == 1
-	  && direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
-					     vectype_in, OPTIMIZE_FOR_SPEED))
+	  && (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST, vectype_in,
+					      OPTIMIZE_FOR_SPEED)
+	      || direct_internal_fn_supported_p (IFN_LEN_FOLD_EXTRACT_LAST,
+						 vectype_in,
+						 OPTIMIZE_FOR_SPEED)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
