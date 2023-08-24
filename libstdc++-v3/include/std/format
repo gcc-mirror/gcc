@@ -285,7 +285,8 @@ namespace __format
 	  for (int __i = 0; __i < __n && (__first + __i) != __last; ++__i)
 	    __buf[__i] = __first[__i];
 	  auto [__v, __ptr] = __format::__parse_integer(__buf, __buf + __n);
-	  return {__v, __first + (__ptr - __buf)};
+	  if (__ptr) [[likely]]
+	    return {__v, __first + (__ptr - __buf)};
 	}
       return {0, nullptr};
     }
