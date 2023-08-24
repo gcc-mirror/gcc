@@ -3679,9 +3679,41 @@ region_model::scan_for_null_terminator (const region *reg,
    - the buffer pointed to has any uninitalized bytes before any 0-terminator
    - any of the reads aren't within the bounds of the underlying base region
 
-   Otherwise, return a svalue for the number of bytes read (strlen + 1),
-   and, if OUT_SVAL is non-NULL, write to *OUT_SVAL with an svalue
-   representing the content of the buffer up to and including the terminator.
+   Otherwise, return a svalue for strlen of the buffer (*not* including
+   the null terminator).
+
+   TODO: we should also complain if:
+   - the pointer is NULL (or could be).  */
+
+void
+region_model::check_for_null_terminated_string_arg (const call_details &cd,
+						    unsigned arg_idx)
+{
+  check_for_null_terminated_string_arg (cd,
+					arg_idx,
+					false, /* include_terminator */
+					nullptr); // out_sval
+}
+
+
+/* Check that argument ARG_IDX (0-based) to the call described by CD
+   is a pointer to a valid null-terminated string.
+
+   Simulate scanning through the buffer, reading until we find a 0 byte
+   (equivalent to calling strlen).
+
+   Complain and return NULL if:
+   - the buffer pointed to isn't null-terminated
+   - the buffer pointed to has any uninitalized bytes before any 0-terminator
+   - any of the reads aren't within the bounds of the underlying base region
+
+   Otherwise, return a svalue.  This will be the number of bytes read
+   (including the null terminator) if INCLUDE_TERMINATOR is true, or strlen
+   of the buffer (not including the null terminator) if it is false.
+
+   Also, when returning an svalue, if OUT_SVAL is non-NULL, write to
+   *OUT_SVAL with an svalue representing the content of the buffer up to
+   and including the terminator.
 
    TODO: we should also complain if:
    - the pointer is NULL (or could be).  */
@@ -3689,6 +3721,7 @@ region_model::scan_for_null_terminator (const region *reg,
 const svalue *
 region_model::check_for_null_terminated_string_arg (const call_details &cd,
 						    unsigned arg_idx,
+						    bool include_terminator,
 						    const svalue **out_sval)
 {
   class null_terminator_check_event : public custom_event
@@ -3786,10 +3819,26 @@ region_model::check_for_null_terminated_string_arg (const call_details &cd,
   const region *buf_reg
     = deref_rvalue (arg_sval, cd.get_arg_tree (arg_idx), &my_ctxt);
 
-  return scan_for_null_terminator (buf_reg,
-				   cd.get_arg_tree (arg_idx),
-				   out_sval,
-				   &my_ctxt);
+  if (const svalue *num_bytes_read_sval
+      = scan_for_null_terminator (buf_reg,
+				  cd.get_arg_tree (arg_idx),
+				  out_sval,
+				  &my_ctxt))
+    {
+      if (include_terminator)
+	return num_bytes_read_sval;
+      else
+	{
+	  /* strlen is (bytes_read - 1).  */
+	  const svalue *one = m_mgr->get_or_create_int_cst (size_type_node, 1);
+	  return m_mgr->get_or_create_binop (size_type_node,
+					     MINUS_EXPR,
+					     num_bytes_read_sval,
+					     one);
+	}
+    }
+  else
+    return nullptr;
 }
 
 /* Remove all bindings overlapping REG within the store.  */

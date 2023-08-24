@@ -72,9 +72,12 @@ public:
 
   tree lookup_function_attribute (const char *attr_name) const;
 
+  void
+  check_for_null_terminated_string_arg (unsigned arg_idx) const;
   const svalue *
   check_for_null_terminated_string_arg (unsigned arg_idx,
-					const svalue **out_sval = nullptr) const;
+					bool include_terminator,
+					const svalue **out_sval) const;
 
 private:
   const gcall *m_call;

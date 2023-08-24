@@ -11108,6 +11108,7 @@ and of the following functions:
 @item @code{siglongjmp}
 @item @code{signal}
 @item @code{sigsetjmp}
+@item @code{strcat}
 @item @code{strchr}
 @item @code{strlen}
 @end itemize

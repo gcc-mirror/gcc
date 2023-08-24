@@ -386,13 +386,23 @@ call_details::lookup_function_attribute (const char *attr_name) const
   return lookup_attribute (attr_name, TYPE_ATTRIBUTES (allocfntype));
 }
 
+void
+call_details::check_for_null_terminated_string_arg (unsigned arg_idx) const
+{
+  check_for_null_terminated_string_arg (arg_idx, false, nullptr);
+}
+
 const svalue *
 call_details::
 check_for_null_terminated_string_arg (unsigned arg_idx,
+				      bool include_terminator,
 				      const svalue **out_sval) const
 {
   region_model *model = get_model ();
-  return model->check_for_null_terminated_string_arg (*this, arg_idx, out_sval);
+  return model->check_for_null_terminated_string_arg (*this,
+						      arg_idx,
+						      include_terminator,
+						      out_sval);
 }
 
 } // namespace ana

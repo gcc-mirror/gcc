@@ -519,10 +519,14 @@ class region_model
 			       const svalue *sval_hint,
 			       region_model_context *ctxt) const;
 
+  void
+  check_for_null_terminated_string_arg (const call_details &cd,
+					unsigned idx);
   const svalue *
   check_for_null_terminated_string_arg (const call_details &cd,
 					unsigned idx,
-					const svalue **out_sval = nullptr);
+					bool include_terminator,
+					const svalue **out_sval);
 
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
