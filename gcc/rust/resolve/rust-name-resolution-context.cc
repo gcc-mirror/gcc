@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-name-resolution-context.h"
+#include "optional.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -50,6 +52,17 @@ NameResolutionContext::map_usage (NodeId usage, NodeId definition)
 
   // is that valid?
   rust_assert (inserted);
+}
+
+tl::optional<NodeId>
+NameResolutionContext::lookup (NodeId usage)
+{
+  auto it = resolved_nodes.find (usage);
+
+  if (it == resolved_nodes.end ())
+    return tl::nullopt;
+
+  return it->second;
 }
 
 void
