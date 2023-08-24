@@ -31,11 +31,11 @@ subroutine collapse1
     do i = 1, 3
       do j = 4, 6
       end do
-      k = 4  ! { dg-error "loops not perfectly nested" }
+      k = 4
     end do
-  !$omp parallel do collapse(2)
+  !$omp parallel do collapse(2) ! { dg-error "not enough DO loops" }
     do i = 1, 3
-      do			! { dg-error "cannot be a DO WHILE or DO without loop control" }
+      do
       end do
     end do
   !$omp parallel do collapse(2)

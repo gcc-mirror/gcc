@@ -2237,6 +2237,9 @@ typedef struct gfc_namespace
   /* OpenMP requires. */
   unsigned omp_requires:6;
   unsigned omp_target_seen:1;
+
+  /* Set to 1 if this is an implicit OMP structured block.  */
+  unsigned omp_structured_block:1;
 }
 gfc_namespace;
 
