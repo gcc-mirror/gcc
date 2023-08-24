@@ -43,13 +43,14 @@ static void formalize_init_expr (gfc_expr *);
 
 /* Calculate the array element offset.  */
 
-static void
+static bool
 get_array_index (gfc_array_ref *ar, mpz_t *offset)
 {
   gfc_expr *e;
   int i;
   mpz_t delta;
   mpz_t tmp;
+  bool ok = true;
 
   mpz_init (tmp);
   mpz_set_si (*offset, 0);
@@ -59,13 +60,42 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
       e = gfc_copy_expr (ar->start[i]);
       gfc_simplify_expr (e, 1);
 
-      if ((gfc_is_constant_expr (ar->as->lower[i]) == 0)
-	  || (gfc_is_constant_expr (ar->as->upper[i]) == 0)
-	  || (gfc_is_constant_expr (e) == 0))
-	gfc_error ("non-constant array in DATA statement %L", &ar->where);
+      if (!gfc_is_constant_expr (ar->as->lower[i])
+	  || !gfc_is_constant_expr (ar->as->upper[i])
+	  || !gfc_is_constant_expr (e))
+	{
+	  gfc_error ("non-constant array in DATA statement %L", &ar->where);
+	  ok = false;
+	  break;
+	}
 
       mpz_set (tmp, e->value.integer);
       gfc_free_expr (e);
+
+      /* Overindexing is only allowed as a legacy extension.  */
+      if (mpz_cmp (tmp, ar->as->lower[i]->value.integer) < 0
+	  && !gfc_notify_std (GFC_STD_LEGACY,
+			      "Subscript at %L below array lower bound "
+			      "(%ld < %ld) in dimension %d", &ar->c_where[i],
+			      mpz_get_si (tmp),
+			      mpz_get_si (ar->as->lower[i]->value.integer),
+			      i+1))
+	{
+	  ok = false;
+	  break;
+	}
+      if (mpz_cmp (tmp, ar->as->upper[i]->value.integer) > 0
+	  && !gfc_notify_std (GFC_STD_LEGACY,
+			      "Subscript at %L above array upper bound "
+			      "(%ld > %ld) in dimension %d", &ar->c_where[i],
+			      mpz_get_si (tmp),
+			      mpz_get_si (ar->as->upper[i]->value.integer),
+			      i+1))
+	{
+	  ok = false;
+	  break;
+	}
+
       mpz_sub (tmp, tmp, ar->as->lower[i]->value.integer);
       mpz_mul (tmp, tmp, delta);
       mpz_add (*offset, tmp, *offset);
@@ -77,6 +107,8 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
     }
   mpz_clear (delta);
   mpz_clear (tmp);
+
+  return ok;
 }
 
 /* Find if there is a constructor which component is equal to COM.
@@ -298,7 +330,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	    }
 
 	  if (ref->u.ar.type == AR_ELEMENT)
-	    get_array_index (&ref->u.ar, &offset);
+	    {
+	      if (!get_array_index (&ref->u.ar, &offset))
+		goto abort;
+	    }
 	  else
 	    mpz_set (offset, index);
 

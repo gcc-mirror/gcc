@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=gnu" }
+! { dg-options "-std=gnu -w" }
 ! Checks the fix for PR32315, in which the bounds checks below were not being done.
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
