@@ -3310,27 +3310,10 @@ struct fragment
 	  switch (TREE_CODE (cst))
 	    {
 	    case STRING_CST:
-	      {
-		/* Look for the first 0 byte within STRING_CST
-		   from START_READ_OFFSET onwards.  */
-		const HOST_WIDE_INT num_bytes_to_search
-		  = std::min<HOST_WIDE_INT> ((TREE_STRING_LENGTH (cst)
-					      - rel_start_read_offset_hwi),
-					     available_bytes_hwi);
-		const char *start = (TREE_STRING_POINTER (cst)
-				     + rel_start_read_offset_hwi);
-		if (num_bytes_to_search >= 0)
-		  if (const void *p = memchr (start, 0,
-					      num_bytes_to_search))
-		    {
-		      *out_bytes_read = (const char *)p - start + 1;
-		      return tristate (true);
-		    }
-
-		*out_bytes_read = available_bytes;
-		return tristate (false);
-	      }
-	      break;
+	      return string_cst_has_null_terminator (cst,
+						     rel_start_read_offset_hwi,
+						     available_bytes_hwi,
+						     out_bytes_read);
 	    case INTEGER_CST:
 	      if (rel_start_read_offset_hwi == 0
 		  && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (cst))))
@@ -3357,10 +3340,53 @@ struct fragment
 	    }
 	}
 	break;
+
+      case SK_INITIAL:
+	{
+	  const initial_svalue *initial_sval = (const initial_svalue *)m_sval;
+	  const region *reg = initial_sval->get_region ();
+	  if (const string_region *string_reg = reg->dyn_cast_string_region ())
+	    {
+	      tree string_cst = string_reg->get_string_cst ();
+	      return string_cst_has_null_terminator (string_cst,
+						     rel_start_read_offset_hwi,
+						     available_bytes_hwi,
+						     out_bytes_read);
+	    }
+	  return tristate::TS_UNKNOWN;
+	}
+	break;
+
       default:
 	// TODO: it may be possible to handle other cases here.
 	return tristate::TS_UNKNOWN;
       }
+  }
+
+  static tristate
+  string_cst_has_null_terminator (tree string_cst,
+				  HOST_WIDE_INT rel_start_read_offset_hwi,
+				  HOST_WIDE_INT available_bytes_hwi,
+				  byte_offset_t *out_bytes_read)
+  {
+    /* Look for the first 0 byte within STRING_CST
+       from START_READ_OFFSET onwards.  */
+    const HOST_WIDE_INT num_bytes_to_search
+      = std::min<HOST_WIDE_INT> ((TREE_STRING_LENGTH (string_cst)
+				  - rel_start_read_offset_hwi),
+				 available_bytes_hwi);
+    const char *start = (TREE_STRING_POINTER (string_cst)
+			 + rel_start_read_offset_hwi);
+    if (num_bytes_to_search >= 0)
+      if (const void *p = memchr (start, 0,
+				  num_bytes_to_search))
+	{
+	  *out_bytes_read = (const char *)p - start + 1;
+	  return tristate (true);
+	}
+
+    *out_bytes_read = available_bytes_hwi;
+    return tristate (false);
   }
 
   byte_range m_byte_range;
