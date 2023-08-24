@@ -469,9 +469,6 @@ class region_model
 
   const svalue *get_capacity (const region *reg) const;
 
-  const svalue *get_string_size (const svalue *sval) const;
-  const svalue *get_string_size (const region *reg) const;
-
   bool replay_call_summary (call_summary_replay &r,
 			    const region_model &summary);
 
