@@ -3357,10 +3357,29 @@ struct fragment
 	}
 	break;
 
+      case SK_BITS_WITHIN:
+	{
+	  const bits_within_svalue *bits_within_sval
+	    = (const bits_within_svalue *)m_sval;
+	  byte_range bytes (0, 0);
+	  if (bits_within_sval->get_bits ().as_byte_range (&bytes))
+	    {
+	      const svalue *inner_sval = bits_within_sval->get_inner_svalue ();
+	      fragment f (byte_range
+			  (start_read_offset - bytes.get_start_bit_offset (),
+			   std::max<byte_size_t> (bytes.m_size_in_bytes,
+						  available_bytes)),
+			  inner_sval);
+	      return f.has_null_terminator (start_read_offset, out_bytes_read);
+	    }
+	}
+	break;
+
       default:
 	// TODO: it may be possible to handle other cases here.
-	return tristate::TS_UNKNOWN;
+	break;
       }
+    return tristate::TS_UNKNOWN;
   }
 
   static tristate
