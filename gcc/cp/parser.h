@@ -435,6 +435,9 @@ struct GTY(()) cp_parser {
      specification, if any, or UNKNOWN_LOCATION otherwise.  */
   location_t innermost_linkage_specification_location;
 
+  /* Pointer to state for parsing omp_loops.  Managed by
+     cp_parser_omp_for_loop in parser.cc and not used outside that file.  */
+  struct omp_for_parse_data * GTY((skip)) omp_for_parse_state;
 };
 
 /* In parser.cc  */
