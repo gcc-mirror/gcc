@@ -367,6 +367,10 @@ class region_model
   void purge_region (const region *reg);
   void fill_region (const region *reg, const svalue *sval);
   void zero_fill_region (const region *reg);
+  void write_bytes (const region *dest_reg,
+		    const svalue *num_bytes_sval,
+		    const svalue *sval,
+		    region_model_context *ctxt);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
   tristate eval_condition (const svalue *lhs,

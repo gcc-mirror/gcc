@@ -20,4 +20,5 @@ void test_1 (void)
   __analyzer_eval (result[3] == 'l'); /* { dg-warning "TRUE" } */
   __analyzer_eval (result[4] == 'o'); /* { dg-warning "TRUE" } */
   __analyzer_eval (result[5] == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (strlen (result) == 5); /* { dg-warning "TRUE" } */
 }

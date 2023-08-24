@@ -3460,6 +3460,13 @@ region_model::get_store_bytes (const region *base_reg,
 			       const byte_range &bytes,
 			       region_model_context *ctxt) const
 {
+  /* Shortcut reading all of a string_region.  */
+  if (bytes.get_start_byte_offset () == 0)
+    if (const string_region *string_reg = base_reg->dyn_cast_string_region ())
+      if (bytes.m_size_in_bytes
+	  == TREE_STRING_LENGTH (string_reg->get_string_cst ()))
+	return m_mgr->get_or_create_initial_value (base_reg);
+
   const svalue *index_sval
     = m_mgr->get_or_create_int_cst (size_type_node,
 				    bytes.get_start_byte_offset ());
@@ -3533,14 +3540,14 @@ region_model::scan_for_null_terminator (const region *reg,
   if (offset.symbolic_p ())
     {
       if (out_sval)
-	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+	*out_sval = get_store_value (reg, nullptr);
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
   byte_offset_t src_byte_offset;
   if (!offset.get_concrete_byte_offset (&src_byte_offset))
     {
       if (out_sval)
-	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+	*out_sval = get_store_value (reg, nullptr);
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
   const byte_offset_t initial_src_byte_offset = src_byte_offset;
@@ -3582,7 +3589,7 @@ region_model::scan_for_null_terminator (const region *reg,
 	  if (is_terminated.is_unknown ())
 	    {
 	      if (out_sval)
-		*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+		*out_sval = get_store_value (reg, nullptr);
 	      return m_mgr->get_or_create_unknown_svalue (size_type_node);
 	    }
 
@@ -3621,7 +3628,7 @@ region_model::scan_for_null_terminator (const region *reg,
   if (c.has_symbolic_bindings_p ())
     {
       if (out_sval)
-	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+	*out_sval = get_store_value (reg, nullptr);
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
 
@@ -3638,7 +3645,7 @@ region_model::scan_for_null_terminator (const region *reg,
   if (base_reg->can_have_initial_svalue_p ())
     {
       if (out_sval)
-	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+	*out_sval = get_store_value (reg, nullptr);
       return m_mgr->get_or_create_unknown_svalue (size_type_node);
     }
   else
@@ -3799,6 +3806,21 @@ void
 region_model::zero_fill_region (const region *reg)
 {
   m_store.zero_fill_region (m_mgr->get_store_manager(), reg);
+}
+
+/* Copy NUM_BYTES_SVAL of SVAL to DEST_REG.
+   Use CTXT to report any warnings associated with the copy
+   (e.g. out-of-bounds writes).  */
+
+void
+region_model::write_bytes (const region *dest_reg,
+			   const svalue *num_bytes_sval,
+			   const svalue *sval,
+			   region_model_context *ctxt)
+{
+  const region *sized_dest_reg
+    = m_mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
+  set_value (sized_dest_reg, sval, ctxt);
 }
 
 /* Mark REG as having unknown content.  */

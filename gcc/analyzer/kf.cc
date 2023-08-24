@@ -1135,29 +1135,25 @@ void
 kf_strcpy::impl_call_pre (const call_details &cd) const
 {
   region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
+  region_model_context *ctxt = cd.get_ctxt ();
 
   const svalue *dest_sval = cd.get_arg_svalue (0);
   const region *dest_reg = model->deref_rvalue (dest_sval, cd.get_arg_tree (0),
-					 cd.get_ctxt ());
-  const svalue *src_sval = cd.get_arg_svalue (1);
-  const region *src_reg = model->deref_rvalue (src_sval, cd.get_arg_tree (1),
-					cd.get_ctxt ());
-  const svalue *src_contents_sval = model->get_store_value (src_reg,
-							    cd.get_ctxt ());
-  cd.check_for_null_terminated_string_arg (1);
-
+						    ctxt);
+  /* strcpy returns the initial param.  */
   cd.maybe_set_lhs (dest_sval);
 
-  /* Try to get the string size if SRC_REG is a string_region.  */
-  const svalue *copied_bytes_sval = model->get_string_size (src_reg);
-  /* Otherwise, check if the contents of SRC_REG is a string.  */
-  if (copied_bytes_sval->get_kind () == SK_UNKNOWN)
-    copied_bytes_sval = model->get_string_size (src_contents_sval);
-
-  const region *sized_dest_reg
-    = mgr->get_sized_region (dest_reg, NULL_TREE, copied_bytes_sval);
-  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+  const svalue *bytes_to_copy;
+  if (const svalue *num_bytes_read_sval
+	= cd.check_for_null_terminated_string_arg (1, &bytes_to_copy))
+    {
+      model->write_bytes (dest_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+    }
+  else
+    {
+      if (cd.get_ctxt ())
+	cd.get_ctxt ()->terminate_path ();
+    }
 }
 
 /* Handler for "strdup" and "__builtin_strdup".  */
