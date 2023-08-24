@@ -3420,6 +3420,8 @@ public:
 	    if (concrete_key->get_byte_range (&fragment_bytes))
 	      m_fragments.safe_push (fragment (fragment_bytes, sval));
 	  }
+	else
+	  m_symbolic_bindings.safe_push (key);
       }
     m_fragments.qsort (fragment::cmp_ptrs);
   }
@@ -3440,8 +3442,14 @@ public:
     return false;
   }
 
+  bool has_symbolic_bindings_p () const
+  {
+    return !m_symbolic_bindings.is_empty ();
+  }
+
 private:
   auto_vec<fragment> m_fragments;
+  auto_vec<const binding_key *> m_symbolic_bindings;
 };
 
 /* Simulate reading the bytes at BYTES from BASE_REG.
@@ -3609,6 +3617,13 @@ region_model::scan_for_null_terminator (const region *reg,
 
   /* No binding for this base_region, or no binding at src_byte_offset
      (or a symbolic binding).  */
+
+  if (c.has_symbolic_bindings_p ())
+    {
+      if (out_sval)
+	*out_sval = m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+      return m_mgr->get_or_create_unknown_svalue (size_type_node);
+    }
 
   /* TODO: the various special-cases seen in
      region_model::get_store_value.  */

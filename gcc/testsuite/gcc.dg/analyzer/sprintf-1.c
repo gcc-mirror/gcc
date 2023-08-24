@@ -1,6 +1,8 @@
 /* See e.g. https://en.cppreference.com/w/c/io/fprintf
    and https://www.man7.org/linux/man-pages/man3/sprintf.3.html */
 
+#include "analyzer-decls.h"
+
 extern int
 sprintf(char* dst, const char* fmt, ...)
   __attribute__((__nothrow__));
@@ -63,4 +65,13 @@ test_fmt_not_terminated (char *dst)
   const char fmt[3] = "foo";
   return sprintf (dst, fmt); /* { dg-warning "stack-based buffer over-read" } */
   /* { dg-message "while looking for null terminator for argument 2 \\('&fmt'\\) of 'sprintf'..." "event" { target *-*-* } .-1 } */
+}
+
+void
+test_strlen_1 (void)
+{
+  char buf[10];
+  sprintf (buf, "msg: %s\n", "abc");
+  __analyzer_eval (__builtin_strlen (buf) == 8); /* { dg-warning "UNKNOWN" } */
+  // TODO: ideally would be TRUE  
 }
