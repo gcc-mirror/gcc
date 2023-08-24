@@ -1720,6 +1720,18 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
+(define_insn "*sse2_movq128_<mode>_1"
+  [(set (match_operand:VI8F_128 0 "register_operand" "=v")
+	(vec_merge:VI8F_128
+	  (match_operand:VI8F_128 1 "nonimmediate_operand" "vm")
+	  (match_operand:VI8F_128 2 "const0_operand")
+	  (const_int 1)))]
+  "TARGET_SSE2"
+  "%vmovq\t{%1, %0|%0, %q1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
 ;; Move a DI from a 32-bit register pair (e.g. %edx:%eax) to an xmm.
 ;; We'd rather avoid this entirely; if the 32-bit reg pair was loaded
 ;; from memory, we'd prefer to load the memory directly into the %xmm
