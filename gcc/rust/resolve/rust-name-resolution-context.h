@@ -19,6 +19,7 @@
 #ifndef RUST_NAME_RESOLVER_2_0_H
 #define RUST_NAME_RESOLVER_2_0_H
 
+#include "optional.h"
 #include "rust-forever-stack.h"
 #include "rust-hir-map.h"
 
@@ -180,7 +181,9 @@ public:
   Analysis::Mappings &mappings;
 
   // TODO: Rename
+  // TODO: Use newtype pattern for Usage and Definition
   void map_usage (NodeId usage, NodeId definition);
+  tl::optional<NodeId> lookup (NodeId usage);
 
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */
