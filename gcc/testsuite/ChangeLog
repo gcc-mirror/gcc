@@ -1,3 +1,50 @@
+2023-08-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/32986
+	* gfortran.dg/common_28.f90: New test.
+
+2023-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102983.c: Adjust output expectations.
+	* gcc.dg/pr110918.c: New.
+
+2023-08-23  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary_run-8.c: New test.
+
+2023-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/copy-headers-9.c: Update template.
+
+2023-08-23  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/110940
+	* gcc.c-torture/compile/pr110940.c: New test.
+
+2023-08-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_run-12.c:
+	Add vsetvli asm.
+
+2023-08-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/partial/live-1.c: Adapt test.
+
 2023-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

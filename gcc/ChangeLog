@@ -1,3 +1,114 @@
+2023-08-23  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* lra-eliminations.cc (eliminate_regs_in_insn): Use equivalences to
+	to help simplify code further.
+
+2023-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Tweak output.
+	* gimple-range-phi.cc (phi_group::phi_group): Remove unused members.
+	Initialize using a range instead of value and edge.
+	(phi_group::calculate_using_modifier): Use initializer value and
+	process for relations after trying for iteration convergence.
+	(phi_group::refine_using_relation): Use initializer range.
+	(phi_group::dump): Rework the dump output.
+	(phi_analyzer::process_phi): Allow multiple constant initilizers.
+	Dump groups immediately as created.
+	(phi_analyzer::dump): Tweak output.
+	* gimple-range-phi.h (phi_group::phi_group): Adjust prototype.
+	(phi_group::initial_value): Delete.
+	(phi_group::refine_using_relation): Adjust prototype.
+	(phi_group::m_initial_value): Delete.
+	(phi_group::m_initial_edge): Delete.
+	(phi_group::m_vr): Use int_range_max.
+	* tree-vrp.cc (execute_ranger_vrp): Don't dump phi groups.
+
+2023-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-phi.cc (phi_analyzer::operator[]): Return NULL if
+	no group was created.
+	(phi_analyzer::process_phi): Do not create groups of one phi node.
+
+2023-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* target.def (gen_ccmp_first, gen_ccmp_next): Use rtx_code for
+	CODE, CMP_CODE and BIT_CODE arguments.
+	* config/aarch64/aarch64.cc (aarch64_gen_ccmp_first): Likewise.
+	(aarch64_gen_ccmp_next): Likewise.
+	* doc/tm.texi: Regenerated.
+
+2023-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* coretypes.h (rtx_code): Add forward declaration.
+	* rtl.h (rtx_code): Make compatible with forward declaration.
+
+2023-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111010
+	* config/i386/i386.md (*concat<any_or_plus:mode><dwi>3_3):
+	Merge pattern from *concatditi3_3 and *concatsidi3_3 using
+	DWIH mode iterator.  Disable (=&r,m,m) alternative for
+	32-bit targets.
+	(*concat<any_or_plus:mode><dwi>3_3): Disable (=&r,m,m)
+	alternative for 32-bit targets.
+
+2023-08-23  Zhangjin Liao  <liaozhangjin@eswincomputing.com>
+
+	* config/riscv/bitmanip.md (*<bitmanip_optab>disi2_sext): Add a more
+	appropriate type attribute.
+
+2023-08-23  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_abs<mode>): New combine pattern.
+	(*copysign<mode>_neg): Ditto.
+	* config/riscv/autovec.md (@vcond_mask_<mode><vm>): Adjust.
+	(<optab><mode>2): Ditto.
+	(cond_<optab><mode>): New.
+	(cond_len_<optab><mode>): Ditto.
+	* config/riscv/riscv-protos.h (enum insn_type): New.
+	(expand_cond_len_unop): New helper func.
+	* config/riscv/riscv-v.cc (shuffle_merge_patterns): Adjust.
+	(expand_cond_len_unop): New helper func.
+
+2023-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ch.cc (enum ch_decision): Fix comment.
+	(should_duplicate_loop_header_p): Fix return value for static exits.
+	(ch_base::copy_headers): Improve handling of ch_possible_zero_cost.
+
+2023-08-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Move the handlings on
+	VMAT_GATHER_SCATTER in the final loop nest to its own loop,
+	and update the final nest accordingly.
+
+2023-08-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Move the handlings on
+	VMAT_LOAD_STORE_LANES in the final loop nest to its own loop,
+	and update the final nest accordingly.
+
+2023-08-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-stmts.cc (vectorizable_store): Remove vec oprnds,
+	adjust vec result_chain, vec_oprnd with auto_vec, and adjust
+	gvec_oprnds with auto_delete_vec.
+
+2023-08-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Fix potential ICE.
+
+2023-08-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (ge_sew_ratio_unavailable_p):
+	Fix fuse rule bug.
+	* config/riscv/riscv-vsetvl.def (DEF_SEW_LMUL_FUSE_RULE): Ditto.
+
+2023-08-23  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Add attribute.
+
 2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (change_insn): Clang format.

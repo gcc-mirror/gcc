@@ -1,3 +1,22 @@
+2023-08-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/replacement_memory_operators.h
+	(counter::scope): New, capture and reset counter count at construction and
+	restore it at destruction.
+	(counter::check_new): Add scope instantiation.
+	* testsuite/23_containers/unordered_map/96088.cc (main):
+	Add counter::scope instantiation.
+	* testsuite/23_containers/unordered_multimap/96088.cc (main): Likewise.
+	* testsuite/23_containers/unordered_multiset/96088.cc (main): Likewise.
+	* testsuite/23_containers/unordered_set/96088.cc (main): Likewise.
+	* testsuite/ext/malloc_allocator/deallocate_local.cc (main): Likewise.
+	* testsuite/ext/new_allocator/deallocate_local.cc (main): Likewise.
+	* testsuite/ext/throw_allocator/deallocate_local.cc (main): Likewise.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc (started): New global.
+	(operator new(size_t)): Check started.
+	(main): Set/Unset started.
+	* testsuite/17_intro/no_library_allocation.cc: New test case.
+
 2023-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/nested_exception/rethrow_if_nested-term.cc:

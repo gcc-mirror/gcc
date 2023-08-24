@@ -1,3 +1,10 @@
+2023-08-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/32986
+	* resolve.cc (is_non_constant_shape_array): Add forward declaration.
+	(resolve_common_vars): Diagnose automatic array object in COMMON.
+	(resolve_symbol): Prevent confusing follow-on error.
+
 2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_defaultmap_category):
