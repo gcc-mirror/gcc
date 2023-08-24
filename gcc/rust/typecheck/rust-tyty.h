@@ -450,6 +450,12 @@ public:
   bool is_equal (const TypeBoundPredicate &other) const;
 
 private:
+  struct mark_is_error
+  {
+  };
+
+  TypeBoundPredicate (mark_is_error);
+
   DefId reference;
   location_t locus;
   bool error_flag;
