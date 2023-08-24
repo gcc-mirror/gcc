@@ -19747,6 +19747,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case OMP_MASTER:
+    case OMP_STRUCTURED_BLOCK:
       omp_parallel_combined_clauses = NULL;
       /* FALLTHRU */
     case OMP_SECTION:

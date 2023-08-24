@@ -4300,6 +4300,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	}
       /* FALLTHRU */
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
@@ -14499,6 +14500,14 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gcc_assert (ctx);
       lower_omp_single (gsi_p, ctx);
       break;
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
+      /* We have already done error checking at this point, so these nodes
+	 can be completely removed and replaced with their body.  */
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp (gimple_omp_body_ptr (stmt), ctx);
+      gsi_replace_with_seq (gsi_p, gimple_omp_body (stmt), true);
+      break;
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
       ctx = maybe_lookup_ctx (stmt);
@@ -14886,6 +14895,7 @@ diagnose_sb_1 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
@@ -14949,6 +14959,7 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:

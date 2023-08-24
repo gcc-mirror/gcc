@@ -693,6 +693,7 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SCOPE:

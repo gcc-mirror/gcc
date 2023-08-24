@@ -468,6 +468,7 @@ The following table briefly describes the GIMPLE instruction set.
 @item @code{GIMPLE_OMP_SECTIONS_SWITCH}	@tab x			@tab x
 @item @code{GIMPLE_OMP_SINGLE}		@tab x			@tab x
 @item @code{GIMPLE_PHI}			@tab 			@tab x
+@item @code{GIMPLE_OMP_STRUCTURED_BLOCK} @tab x			@tab
 @item @code{GIMPLE_RESX}		@tab			@tab x
 @item @code{GIMPLE_RETURN}		@tab x			@tab x
 @item @code{GIMPLE_SWITCH}		@tab x			@tab x
@@ -1040,6 +1041,7 @@ Return a deep copy of statement @code{STMT}.
 * @code{GIMPLE_OMP_SECTION}::
 * @code{GIMPLE_OMP_SECTIONS}::
 * @code{GIMPLE_OMP_SINGLE}::
+* @code{GIMPLE_OMP_STRUCTURED_BLOCK}::
 * @code{GIMPLE_PHI}::
 * @code{GIMPLE_RESX}::
 * @code{GIMPLE_RETURN}::
@@ -2157,6 +2159,23 @@ Return a pointer to the clauses associated with @code{OMP_SINGLE} @code{G}.
 @deftypefn {GIMPLE function} void gimple_omp_single_set_clauses ( @
 gomp_single *g, tree clauses)
 Set @code{CLAUSES} to be the clauses associated with @code{OMP_SINGLE} @code{G}.
+@end deftypefn
+
+
+@node @code{GIMPLE_OMP_STRUCTURED_BLOCK}
+@subsection @code{GIMPLE_OMP_STRUCTURED_BLOCK}
+@cindex @code{GIMPLE_OMP_STRUCTURED_BLOCK}
+
+Like the GENERIC equivalent @code{OMP_STRUCTURED_BLOCK}, this GIMPLE
+statement does not correspond directly to an OpenMP directive, and
+exists only to permit error checking of transfers of control
+in/out of structured block sequences (the @code{diagnose_omp_blocks} pass
+in @file{omp-low.cc}).  All @code{GIMPLE_OMP_STRUCTURED_BLOCK}
+nodes are eliminated during OpenMP lowering.
+
+@deftypefn {GIMPLE function} gimple gimple_build_omp_structured_block (gimple_seq body)
+Build a @code{GIMPLE_OMP_STRUCTURED_BLOCK} statement.
+@code{BODY} is the sequence of statements in the structured block sequence.
 @end deftypefn
 
 

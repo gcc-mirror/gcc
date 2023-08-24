@@ -1708,6 +1708,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	           (s1, gimple_omp_sections_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_STRUCTURED_BLOCK:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_structured_block (s1);
+	  break;
+
 	case GIMPLE_OMP_SINGLE:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_single
@@ -4562,6 +4567,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SECTIONS:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:

@@ -3748,6 +3748,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma omp section");
       goto dump_omp_body;
 
+    case OMP_STRUCTURED_BLOCK:
+      pp_string (pp, "#pragma omp __structured_block");
+      goto dump_omp_body;
+
     case OMP_SCAN:
       if (OMP_SCAN_CLAUSES (node))
 	{

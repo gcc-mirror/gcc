@@ -1795,6 +1795,7 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
@@ -2540,6 +2541,7 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       break;
 
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
@@ -3050,6 +3052,7 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       /* FALLTHRU */
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_MASTER:

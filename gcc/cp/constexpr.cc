@@ -8155,6 +8155,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case OMP_SCAN:
     case OMP_SCOPE:
     case OMP_SECTION:
+    case OMP_STRUCTURED_BLOCK:
     case OMP_MASTER:
     case OMP_MASKED:
     case OMP_TASKGROUP:

@@ -717,6 +717,10 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	gsi_next (gsi);
       return;
 
+    case GIMPLE_OMP_STRUCTURED_BLOCK:
+      /* These are supposed to be removed already in OMP lowering.  */
+      gcc_unreachable ();
+
     case GIMPLE_NOP:
     case GIMPLE_ASM:
     case GIMPLE_ASSIGN:

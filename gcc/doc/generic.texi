@@ -2488,6 +2488,20 @@ In some cases, @code{OMP_CONTINUE} is placed right before
 occur right after the looping body, it will be emitted between
 @code{OMP_CONTINUE} and @code{OMP_RETURN}.
 
+@item OMP_STRUCTURED_BLOCK
+
+This is another statement that doesn't correspond to an OpenMP directive.
+It is used to mark sections of code in another directive that must
+be structured block sequences, in particular for sequences of intervening code
+in the body of an @code{OMP_FOR}.  It is not necessary to use this when the
+entire body of a directive is required to be a structured block sequence,
+since that is implicit in the representation of the corresponding node.
+
+This tree node is used only to allow error checking transfers of control
+in/out of the structured block sequence after gimplification.
+It has a single operand (@code{OMP_STRUCTURED_BLOCK_BODY}) that is
+the code within the structured block sequence.
+
 @item OMP_ATOMIC
 
 Represents @code{#pragma omp atomic}.

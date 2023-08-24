@@ -1038,6 +1038,21 @@ gimple_build_omp_section (gimple_seq body)
 }
 
 
+/* Build a GIMPLE_OMP_STRUCTURED_BLOCK statement.
+
+   BODY is the structured block sequence.  */
+
+gimple *
+gimple_build_omp_structured_block (gimple_seq body)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_STRUCTURED_BLOCK, 0);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_MASTER statement.
 
    BODY is the sequence of statements to be executed by just the master.  */

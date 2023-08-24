@@ -275,6 +275,11 @@ DEFGSCODE(GIMPLE_OMP_CRITICAL, "gimple_omp_critical", GSS_OMP_CRITICAL)
    unspecified by the standards.  */
 DEFGSCODE(GIMPLE_OMP_FOR, "gimple_omp_for", GSS_OMP_FOR)
 
+/* GIMPLE_STRUCTURED_BLOCK <BODY> is an internal construct used to assert
+   that BODY is a structured block sequence, with no other semantics.  It is
+   used to allow error-checking of intervening code in OMP_FOR constructs.  */
+DEFGSCODE(GIMPLE_OMP_STRUCTURED_BLOCK, "gimple_omp_structured_block", GSS_OMP)
+
 /* GIMPLE_OMP_MASTER <BODY> represents #pragma omp master.
    BODY is the sequence of statements to execute in the master section.  */
 DEFGSCODE(GIMPLE_OMP_MASTER, "gimple_omp_master", GSS_OMP)
