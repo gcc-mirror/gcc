@@ -428,24 +428,6 @@ ix86_check_avx512 (struct gcc_options *opts)
   return true;
 }
 
-/* Emit a warning when there is a conflict vector width in AVX10 options.  */
-static void
-ix86_check_avx10_vector_width (struct gcc_options *opts, bool avx10_max_512)
-{
-  if (avx10_max_512)
-    {
-      if (((opts->x_ix86_isa_flags2 | ~OPTION_MASK_ISA2_AVX10_512BIT)
-	   == ~OPTION_MASK_ISA2_AVX10_512BIT)
-	  && (opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_AVX10_512BIT))
-	warning (0, "The options used for AVX10 have conflict vector width, "
-		 "using the latter 512 as vector width");
-    }
-  else if (opts->x_ix86_isa_flags2 & opts->x_ix86_isa_flags2_explicit
-	   & OPTION_MASK_ISA2_AVX10_512BIT)
-    warning (0, "The options used for AVX10 have conflict vector width, "
-	     "using the latter 256 as vector width");
-}
-
 /* Implement TARGET_HANDLE_OPTION.  */
 
 bool
@@ -1433,7 +1415,6 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_mavx10_1_256:
-      ix86_check_avx10_vector_width (opts, false);
       opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX10_1_SET;
       opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_1_SET;
       opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX10_512BIT_SET;
@@ -1443,7 +1424,6 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_mavx10_1_512:
-      ix86_check_avx10_vector_width (opts, true);
       opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX10_1_SET;
       opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX10_1_SET;
       opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX10_512BIT_SET;
