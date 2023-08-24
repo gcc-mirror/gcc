@@ -1,3 +1,10 @@
+2023-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111010
+	* config/i386/i386.md (*concat<any_or_plus:mode><dwi>3_3):
+	Disable (=&r,m,m) alternative for 32-bit targets.
+	(*concat<any_or_plus:mode><dwi>3_4): Ditto.
+
 2023-08-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/t-riscv: Add riscv-vsetvl.def
