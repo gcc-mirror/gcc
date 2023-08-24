@@ -1826,6 +1826,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
 				      TyTy::BaseType **result)
 {
   // we turn this into a method call expr
+  // TODO: add implicit self argument (?)
   auto associated_predicate = TyTy::TypeBoundPredicate::error ();
   HIR::PathIdentSegment method_name
     = resolve_possible_fn_trait_call_method_name (*receiver_tyty,

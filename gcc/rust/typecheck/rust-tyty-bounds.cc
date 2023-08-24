@@ -310,6 +310,8 @@ TypeBoundPredicate::TypeBoundPredicate (
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
     error_flag (false), polarity (polarity)
 {
+  rust_assert (!trait_reference.get_trait_substs ().empty ());
+
   substitutions.clear ();
   for (const auto &p : trait_reference.get_trait_substs ())
     substitutions.push_back (p.clone ());
@@ -326,6 +328,8 @@ TypeBoundPredicate::TypeBoundPredicate (
     reference (reference), locus (locus), error_flag (false),
     polarity (polarity)
 {
+  rust_assert (!subst.empty ());
+
   substitutions.clear ();
   for (const auto &p : subst)
     substitutions.push_back (p.clone ());
@@ -334,6 +338,12 @@ TypeBoundPredicate::TypeBoundPredicate (
   SubstitutionArg placeholder_self (&get_substs ().front (), nullptr);
   used_arguments.get_mappings ().push_back (placeholder_self);
 }
+
+TypeBoundPredicate::TypeBoundPredicate (mark_is_error)
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
+    reference (UNKNOWN_DEFID), locus (UNDEF_LOCATION), error_flag (true),
+    polarity (BoundPolarity::RegularBound)
+{}
 
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
@@ -413,10 +423,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
 TypeBoundPredicate
 TypeBoundPredicate::error ()
 {
-  auto p = TypeBoundPredicate (UNKNOWN_DEFID, {}, BoundPolarity::RegularBound,
-			       UNDEF_LOCATION);
-  p.error_flag = true;
-  return p;
+  return TypeBoundPredicate (mark_is_error ());
 }
 
 std::string
