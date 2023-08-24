@@ -235,6 +235,7 @@ insert_check_and_trap (location_t loc, gimple_stmt_iterator *gsip,
   gsi_insert_before (gsip, cond, GSI_SAME_STMT);
 
   basic_block trp = create_empty_bb (chk);
+  trp->count = profile_count::zero ();
 
   gimple_stmt_iterator gsit = gsi_after_labels (trp);
   gcall *trap = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
