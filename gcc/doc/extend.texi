@@ -11925,10 +11925,29 @@ macros to replace them with the customary keywords.  It looks like this:
 @findex __extension__
 @opindex pedantic
 @option{-pedantic} and other options cause warnings for many GNU C extensions.
-You can
-prevent such warnings within one expression by writing
-@code{__extension__} before the expression.  @code{__extension__} has no
-effect aside from this.
+You can suppress such warnings using the keyword @code{__extension__}.
+Specifically:
+
+@itemize @bullet
+@item
+Writing @code{__extension__} before an expression prevents warnings
+about extensions within that expression.
+
+@item
+In C, writing:
+
+@smallexample
+[[__extension__ @dots{}]]
+@end smallexample
+
+suppresses warnings about using @samp{[[]]} attributes in C versions
+that predate C2X@.  Since the scope token @samp{::} is not a single
+lexing token in earlier versions of C, this construct also allows two colons
+to be used in place of @code{::}.  GCC does not check whether the two
+colons are immediately adjacent.
+@end itemize
+
+@code{__extension__} has no effect aside from this.
 
 @node Incomplete Enums
 @section Incomplete @code{enum} Types

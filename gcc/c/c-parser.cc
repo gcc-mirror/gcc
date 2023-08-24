@@ -5390,10 +5390,18 @@ c_parser_balanced_token_sequence (c_parser *parser)
      ( balanced-token-sequence[opt] )
 
    Keywords are accepted as identifiers for this purpose.
-*/
+
+   As an extension, we permit an attribute-specifier to be:
+
+     [ [ __extension__ attribute-list ] ]
+
+   Two colons are then accepted as a synonym for ::.  No attempt is made
+   to check whether the colons are immediately adjacent.  LOOSE_SCOPE_P
+   indicates whether this relaxation is in effect.  */
 
 static tree
-c_parser_std_attribute (c_parser *parser, bool for_tm)
+c_parser_std_attribute (c_parser *parser, bool for_tm,
+			bool loose_scope_p = false)
 {
   c_token *token = c_parser_peek_token (parser);
   tree ns, name, attribute;
@@ -5406,9 +5414,14 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
     }
   name = canonicalize_attr_name (token->value);
   c_parser_consume_token (parser);
-  if (c_parser_next_token_is (parser, CPP_SCOPE))
+  if (c_parser_next_token_is (parser, CPP_SCOPE)
+      || (loose_scope_p
+	  && c_parser_next_token_is (parser, CPP_COLON)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
     {
       ns = name;
+      if (c_parser_next_token_is (parser, CPP_COLON))
+	c_parser_consume_token (parser);
       c_parser_consume_token (parser);
       token = c_parser_peek_token (parser);
       if (token->type != CPP_NAME && token->type != CPP_KEYWORD)
@@ -5481,19 +5494,9 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
 }
 
 static tree
-c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
+c_parser_std_attribute_list (c_parser *parser, bool for_tm,
+			     bool loose_scope_p = false)
 {
-  location_t loc = c_parser_peek_token (parser)->location;
-  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
-    return NULL_TREE;
-  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
-    {
-      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
-      return NULL_TREE;
-    }
-  if (!for_tm)
-    pedwarn_c11 (loc, OPT_Wpedantic,
-		 "ISO C does not support %<[[]]%> attributes before C2X");
   tree attributes = NULL_TREE;
   while (true)
     {
@@ -5505,7 +5508,7 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 	  c_parser_consume_token (parser);
 	  continue;
 	}
-      tree attribute = c_parser_std_attribute (parser, for_tm);
+      tree attribute = c_parser_std_attribute (parser, for_tm, loose_scope_p);
       if (attribute != error_mark_node)
 	{
 	  TREE_CHAIN (attribute) = attributes;
@@ -5513,6 +5516,35 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 	}
       if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	break;
+    }
+  return attributes;
+}
+
+static tree
+c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
+    return NULL_TREE;
+  if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+      return NULL_TREE;
+    }
+  tree attributes;
+  if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
+    {
+      auto ext = disable_extension_diagnostics ();
+      c_parser_consume_token (parser);
+      attributes = c_parser_std_attribute_list (parser, for_tm, true);
+      restore_extension_diagnostics (ext);
+    }
+  else
+    {
+      if (!for_tm)
+	pedwarn_c11 (loc, OPT_Wpedantic,
+		     "ISO C does not support %<[[]]%> attributes before C2X");
+      attributes = c_parser_std_attribute_list (parser, for_tm);
     }
   c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
   c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
