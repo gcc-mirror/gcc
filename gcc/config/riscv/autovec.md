@@ -2127,6 +2127,30 @@
 })
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Extract active element
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vcompress.vm
+;; - vcpop.m
+;; - vslidedown.vx
+;; - vmv.x.s
+;; - vfmv.f.s
+;; -------------------------------------------------------------------------
+
+(define_expand "len_fold_extract_last_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:<VM> 2 "register_operand")
+   (match_operand:V 3 "register_operand")
+   (match_operand 4 "autovec_length_operand")
+   (match_operand 5 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_fold_extract_last (operands);
+    DONE;
+  })
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT] Average.
 ;; -------------------------------------------------------------------------
 ;; Implements the following "average" patterns:

@@ -417,7 +417,7 @@
 			  vialu,vshift,vicmp,vimul,vidiv,vsalu,\
 			  vext,viwalu,viwmul,vicalu,vnshift,\
 			  vimuladd,vimerge,vaalu,vsmul,vsshift,\
-			  vnclip,viminmax,viwmuladd,vmpop,vmffs,vmsfs,\
+			  vnclip,viminmax,viwmuladd,vmffs,vmsfs,\
 			  vmiota,vmidx,vfalu,vfmul,vfminmax,vfdiv,\
 			  vfwalu,vfwmul,vfsqrt,vfrecp,vfsgnj,vfcmp,\
 			  vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\

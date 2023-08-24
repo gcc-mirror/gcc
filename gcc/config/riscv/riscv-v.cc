@@ -197,30 +197,32 @@ public:
     if (m_needs_avl_p)
       {
 	rtx len = m_vl_op;
+	machine_mode mode
+	  = VECTOR_MODE_P (m_dest_mode) ? m_dest_mode : m_mask_mode;
 	if (m_vlmax_p)
 	  {
-	    if (riscv_v_ext_vls_mode_p (m_dest_mode))
+	    if (riscv_v_ext_vls_mode_p (mode))
 	      {
 		/* VLS modes always set VSETVL by
 		   "vsetvl zero, rs1/imm".  */
-		poly_uint64 nunits = GET_MODE_NUNITS (m_dest_mode);
+		poly_uint64 nunits = GET_MODE_NUNITS (mode);
 		len = gen_int_mode (nunits, Pmode);
 		if (!satisfies_constraint_K (len))
 		  len = force_reg (Pmode, len);
 		m_vlmax_p = false; /* It has became NONVLMAX now.  */
 	      }
-	    else if (const_vlmax_p (m_dest_mode))
+	    else if (const_vlmax_p (mode))
 	      {
 		/* Optimize VLS-VLMAX code gen, we can use vsetivli instead of
 		   the vsetvli to obtain the value of vlmax.  */
-		poly_uint64 nunits = GET_MODE_NUNITS (m_dest_mode);
+		poly_uint64 nunits = GET_MODE_NUNITS (mode);
 		len = gen_int_mode (nunits, Pmode);
 		m_vlmax_p = false; /* It has became NONVLMAX now.  */
 	      }
 	    else if (can_create_pseudo_p ())
 	      {
 		len = gen_reg_rtx (Pmode);
-		emit_vlmax_vsetvl (m_dest_mode, len);
+		emit_vlmax_vsetvl (mode, len);
 	      }
 	  }
 	add_input_operand (len, Pmode);
@@ -848,6 +850,28 @@ emit_nonvlmax_slide_tu_insn (unsigned icode, rtx *ops, rtx avl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a {NONVLMAX, TAIL_ANY, MASK_ANY} vsetvli
+   followed by a vslide insn (with real merge operand).  */
+void
+emit_nonvlmax_slide_insn (unsigned icode, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_SLIDE_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true,
+					  dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_ANY);
+  e.set_vl (avl);
+
+  e.emit_insn ((enum insn_code) icode, ops);
+}
 
 /* This function emits merge instruction.  */
 void
@@ -1111,6 +1135,25 @@ emit_scalar_move_insn (unsigned icode, rtx *ops, rtx len)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* Emit vcpop.m instruction.  */
+
+static void
+emit_cpop_insn (unsigned icode, rtx *ops, rtx len)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = GET_MODE (ops[1]);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_CPOP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ true,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ len ? false : true,
+					  dest_mode, mask_mode);
+
+  e.set_vl (len);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Emit vmv.v.x instruction with vlmax.  */
 
 static void
@@ -1225,6 +1268,25 @@ emit_vlmax_compress_insn (unsigned icode, rtx *ops)
 					  mask_mode);
 
   e.set_policy (TAIL_ANY);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
+/* Emit compress instruction.  */
+static void
+emit_nonvlmax_compress_insn (unsigned icode, rtx *ops, rtx avl)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode);
+  insn_expander<RVV_INSN_OPERANDS_MAX> e (RVV_COMPRESS_OP,
+					  /* HAS_DEST_P */ true,
+					  /* FULLY_UNMASKED_P */ false,
+					  /* USE_REAL_MERGE_P */ true,
+					  /* HAS_AVL_P */ true,
+					  /* VLMAX_P */ true, dest_mode,
+					  mask_mode);
+
+  e.set_policy (TAIL_ANY);
+  e.set_vl (avl);
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
@@ -3814,6 +3876,59 @@ expand_lanes_load_store (rtx *ops, bool is_load)
 	emit_insn (gen_pred_unit_strided_store (mode, mask, addr, reg, len,
 						get_avl_type_rtx (NONVLMAX)));
     }
+}
+
+/* Expand LEN_FOLD_EXTRACT_LAST.  */
+void
+expand_fold_extract_last (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx default_value = ops[1];
+  rtx mask = ops[2];
+  rtx anchor = gen_reg_rtx (Pmode);
+  rtx index = gen_reg_rtx (Pmode);
+  rtx vect = ops[3];
+  rtx else_label = gen_label_rtx ();
+  rtx end_label = gen_label_rtx ();
+  rtx len = ops[4];
+  poly_int64 value;
+  machine_mode mode = GET_MODE (vect);
+  machine_mode mask_mode = GET_MODE (mask);
+  rtx compress_vect = gen_reg_rtx (mode);
+  rtx slide_vect = gen_reg_rtx (mode);
+  insn_code icode;
+
+  if (poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode)))
+    len = NULL_RTX;
+
+  /* Calculate the number of 1-bit in mask. */
+  rtx cpop_ops[] = {anchor, mask};
+  emit_cpop_insn (code_for_pred_popcount (mask_mode, Pmode), cpop_ops, len);
+
+  riscv_expand_conditional_branch (else_label, EQ, anchor, const0_rtx);
+  emit_insn (gen_rtx_SET (index, gen_rtx_PLUS (Pmode, anchor, constm1_rtx)));
+  /* Compress the vector.  */
+  icode = code_for_pred_compress (mode);
+  rtx compress_ops[] = {compress_vect, RVV_VUNDEF (mode), vect, mask};
+  if (len)
+    emit_nonvlmax_compress_insn (icode, compress_ops, len);
+  else
+    emit_vlmax_compress_insn (icode, compress_ops);
+  /* Emit the slide down to index 0 in a new vector.  */
+  rtx slide_ops[] = {slide_vect, RVV_VUNDEF (mode), compress_vect, index};
+  icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, mode);
+  if (len)
+    emit_nonvlmax_slide_insn (icode, slide_ops, len);
+  else
+    emit_vlmax_slide_insn (icode, slide_ops);
+  /* Emit v(f)mv.[xf].s.  */
+  emit_insn (gen_pred_extract_first (mode, dst, slide_vect));
+
+  emit_jump_insn (gen_jump (end_label));
+  emit_barrier ();
+  emit_label (else_label);
+  emit_move_insn (dst, default_value);
+  emit_label (end_label);
 }
 
 } // namespace riscv_vector
