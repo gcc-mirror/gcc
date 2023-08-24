@@ -16,6 +16,18 @@ is_format_string_for(const char* str, Args&&... args)
   }
 }
 
+template<typename... Args>
+bool
+is_format_string_for(const wchar_t* str, Args&&... args)
+{
+  try {
+    (void) std::vformat(str, std::make_wformat_args(args...));
+    return true;
+  } catch (const std::format_error&) {
+    return false;
+  }
+}
+
 void
 test_no_args()
 {
@@ -124,8 +136,11 @@ test_format_spec()
 
   // Maximum integer value supported for widths and precisions is USHRT_MAX.
   VERIFY( is_format_string_for("{:65535}", 1) );
+  VERIFY( is_format_string_for(L"{:65535}", 1) );
   VERIFY( ! is_format_string_for("{:65536}", 1) );
+  VERIFY( ! is_format_string_for(L"{:65536}", 1) );
   VERIFY( ! is_format_string_for("{:9999999}", 1) );
+  VERIFY( ! is_format_string_for(L"{:9999999}", 1) );
 }
 
 void
