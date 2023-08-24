@@ -8789,7 +8789,8 @@ package body Sem_Ch6 is
                      and then Has_Controlling_Result (Subp_Id))
                    or else Has_Suffix (Ovr_E, 'P')
                    or else Is_RACW_Stub_Type
-                             (Find_Dispatching_Type (Subp_Id)));
+                             (Find_Dispatching_Type (Subp_Id))
+                   or else No (Overridden_Operation (Ovr_E)));
 
                if Present (Overridden_Operation (Ovr_E)) then
                   Ovr_E := Overridden_Operation (Ovr_E);
