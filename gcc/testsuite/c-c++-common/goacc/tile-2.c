@@ -3,8 +3,8 @@ int main ()
 #pragma acc parallel
   {
 #pragma acc loop tile (*,*)
-    for (int ix = 0; ix < 30; ix++)
-      ; /* { dg-error "not enough" } */
+    for (int ix = 0; ix < 30; ix++) /* { dg-error "not enough" "" { target c } } */
+      ; /* { dg-error "not enough" "" { target c++ } } */
 
 #pragma acc loop tile (*,*)
     for (int ix = 0; ix < 30; ix++)

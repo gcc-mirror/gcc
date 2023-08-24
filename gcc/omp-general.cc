@@ -3013,4 +3013,138 @@ omp_build_component_ref (tree obj, tree field)
   return ret;
 }
 
+/* Return true if NAME is the name of an omp_* runtime API call.  */
+bool
+omp_runtime_api_procname (const char *name)
+{
+  if (!startswith (name, "omp_"))
+    return false;
+
+  static const char *omp_runtime_apis[] =
+    {
+      /* This array has 3 sections.  First omp_* calls that don't
+	 have any suffixes.  */
+      "aligned_alloc",
+      "aligned_calloc",
+      "alloc",
+      "calloc",
+      "free",
+      "get_mapped_ptr",
+      "realloc",
+      "target_alloc",
+      "target_associate_ptr",
+      "target_disassociate_ptr",
+      "target_free",
+      "target_is_accessible",
+      "target_is_present",
+      "target_memcpy",
+      "target_memcpy_async",
+      "target_memcpy_rect",
+      "target_memcpy_rect_async",
+      NULL,
+      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
+	 DECL_NAME is always omp_* without tailing underscore.  */
+      "capture_affinity",
+      "destroy_allocator",
+      "destroy_lock",
+      "destroy_nest_lock",
+      "display_affinity",
+      "fulfill_event",
+      "get_active_level",
+      "get_affinity_format",
+      "get_cancellation",
+      "get_default_allocator",
+      "get_default_device",
+      "get_device_num",
+      "get_dynamic",
+      "get_initial_device",
+      "get_level",
+      "get_max_active_levels",
+      "get_max_task_priority",
+      "get_max_teams",
+      "get_max_threads",
+      "get_nested",
+      "get_num_devices",
+      "get_num_places",
+      "get_num_procs",
+      "get_num_teams",
+      "get_num_threads",
+      "get_partition_num_places",
+      "get_place_num",
+      "get_proc_bind",
+      "get_supported_active_levels",
+      "get_team_num",
+      "get_teams_thread_limit",
+      "get_thread_limit",
+      "get_thread_num",
+      "get_wtick",
+      "get_wtime",
+      "in_explicit_task",
+      "in_final",
+      "in_parallel",
+      "init_lock",
+      "init_nest_lock",
+      "is_initial_device",
+      "pause_resource",
+      "pause_resource_all",
+      "set_affinity_format",
+      "set_default_allocator",
+      "set_lock",
+      "set_nest_lock",
+      "test_lock",
+      "test_nest_lock",
+      "unset_lock",
+      "unset_nest_lock",
+      NULL,
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
+	 as DECL_NAME only omp_* and omp_*_8 appear.  */
+      "display_env",
+      "get_ancestor_thread_num",
+      "init_allocator",
+      "get_partition_place_nums",
+      "get_place_num_procs",
+      "get_place_proc_ids",
+      "get_schedule",
+      "get_team_size",
+      "set_default_device",
+      "set_dynamic",
+      "set_max_active_levels",
+      "set_nested",
+      "set_num_teams",
+      "set_num_threads",
+      "set_schedule",
+      "set_teams_thread_limit"
+    };
+
+  int mode = 0;
+  for (unsigned i = 0; i < ARRAY_SIZE (omp_runtime_apis); i++)
+    {
+      if (omp_runtime_apis[i] == NULL)
+	{
+	  mode++;
+	  continue;
+	}
+      size_t len = strlen (omp_runtime_apis[i]);
+      if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
+	  && (name[4 + len] == '\0'
+	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
+	return true;
+    }
+  return false;
+}
+
+/* Return true if FNDECL is an omp_* runtime API call.  */
+
+bool
+omp_runtime_api_call (const_tree fndecl)
+{
+  tree declname = DECL_NAME (fndecl);
+  if (!declname
+      || (DECL_CONTEXT (fndecl) != NULL_TREE
+	  && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+      || !TREE_PUBLIC (fndecl))
+    return false;
+  return omp_runtime_api_procname (IDENTIFIER_POINTER (declname));
+}
+
 #include "gt-omp-general.h"
