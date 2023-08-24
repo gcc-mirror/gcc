@@ -312,17 +312,10 @@
 
 ;; All 128bit vector modes
 (define_mode_iterator V_128
-  [V16QI V8HI V4SI V2DI V4SF (V2DF "TARGET_SSE2")])
-
-(define_mode_iterator V_128H
   [V16QI V8HI V8HF V8BF V4SI V2DI V4SF (V2DF "TARGET_SSE2")])
 
 ;; All 256bit vector modes
 (define_mode_iterator V_256
-  [V32QI V16HI V8SI V4DI V8SF V4DF])
-
-;; All 256bit vector modes including HF/BF vector modes
-(define_mode_iterator V_256H
   [V32QI V16HI V8SI V4DI V8SF V4DF V16HF V16BF])
 
 ;; All 128bit and 256bit vector modes
@@ -331,7 +324,7 @@
    V16HF V8HF V8SF V4SF V4DF V2DF])
 
 ;; All 512bit vector modes
-(define_mode_iterator V_512 [V64QI V32HI V16SI V8DI V16SF V8DF])
+(define_mode_iterator V_512 [V64QI V32HI V16SI V8DI V16SF V8DF V32HF V32BF])
 
 ;; All 256bit and 512bit vector modes
 (define_mode_iterator V_256_512
@@ -4610,21 +4603,6 @@
   "TARGET_AVX512FP16"
 {
   bool ok = ix86_expand_fp_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<mode><sseintvecmodelower>"
-  [(set (match_operand:VF_AVX512HFBFVL 0 "register_operand")
-	(if_then_else:VF_AVX512HFBFVL
-	  (match_operator 3 ""
-	    [(match_operand:<sseintvecmode> 4 "vector_operand")
-	     (match_operand:<sseintvecmode> 5 "vector_operand")])
-	  (match_operand:VF_AVX512HFBFVL 1 "general_operand")
-	  (match_operand:VF_AVX512HFBFVL 2 "general_operand")))]
-  "TARGET_AVX512FP16"
-{
-  bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
@@ -11369,20 +11347,6 @@
 })
 
 (define_expand "vec_set<mode>"
-  [(match_operand:V8BFH_128 0 "register_operand")
-   (match_operand:<ssescalarmode> 1 "register_operand")
-   (match_operand 2 "vec_setm_sse41_operand")]
-  "TARGET_SSE"
-{
-  if (CONST_INT_P (operands[2]))
-    ix86_expand_vector_set (false, operands[0], operands[1],
-			    INTVAL (operands[2]));
-  else
-    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
-  DONE;
-})
-
-(define_expand "vec_set<mode>"
   [(match_operand:V_256_512 0 "register_operand")
    (match_operand:<ssescalarmode> 1 "register_operand")
    (match_operand 2 "vec_setm_avx2_operand")]
@@ -11835,7 +11799,7 @@
 
 (define_expand "avx_vextractf128<mode>"
   [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
-   (match_operand:V_256H 1 "register_operand")
+   (match_operand:V_256 1 "register_operand")
    (match_operand:SI 2 "const_0_to_1_operand")]
   "TARGET_AVX"
 {
@@ -17276,21 +17240,6 @@
 	  (match_operand:VI8F_128 1 "general_operand")
 	  (match_operand:VI8F_128 2 "general_operand")))]
   "TARGET_SSE4_2"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcondu<mode><sseintvecmodelower>"
-  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
-	(if_then_else:VF_AVX512FP16VL
-	  (match_operator 3 ""
-	    [(match_operand:<sseintvecmode> 4 "vector_operand")
-	     (match_operand:<sseintvecmode> 5 "vector_operand")])
-	  (match_operand:VF_AVX512FP16VL 1 "general_operand")
-	  (match_operand:VF_AVX512FP16VL 2 "general_operand")))]
-  "TARGET_AVX512FP16"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
@@ -26834,8 +26783,8 @@
   "operands[2] = gen_lowpart (<ssehalfvecmode>mode, operands[0]);")
 
 (define_insn "avx_vbroadcastf128_<mode>"
-  [(set (match_operand:V_256H 0 "register_operand" "=x,x,x,v,v,v,v")
-	(vec_concat:V_256H
+  [(set (match_operand:V_256 0 "register_operand" "=x,x,x,v,v,v,v")
+	(vec_concat:V_256
 	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "m,0,?x,m,0,m,0")
 	  (match_dup 1)))]
   "TARGET_AVX"
@@ -27155,9 +27104,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*ssse3_palignr<mode>_perm"
-  [(set (match_operand:V_128H 0 "register_operand" "=x,Yw")
-      (vec_select:V_128H
-	(match_operand:V_128H 1 "register_operand" "0,Yw")
+  [(set (match_operand:V_128 0 "register_operand" "=x,Yw")
+      (vec_select:V_128
+	(match_operand:V_128 1 "register_operand" "0,Yw")
 	(match_parallel 2 "palignr_operand"
 	  [(match_operand 3 "const_int_operand")])))]
   "TARGET_SSSE3"
