@@ -1170,24 +1170,29 @@
 (define_expand "fnma<mode>4"
   [(parallel
     [(set (match_operand:VF 0 "register_operand")
-	  (fma:VF
-	    (neg:VF
-	      (match_operand:VF 1 "register_operand"))
-	    (match_operand:VF 2 "register_operand")
-	    (match_operand:VF 3 "register_operand")))
+	  (unspec:VF
+	    [(fma:VF
+	      (neg:VF
+		(match_operand:VF 1 "register_operand"))
+	      (match_operand:VF 2 "register_operand")
+	      (match_operand:VF 3 "register_operand"))
+	     (reg:SI FRM_REGNUM)] UNSPEC_VFFMA))
      (clobber (match_dup 4))])]
   "TARGET_VECTOR"
   {
     operands[4] = gen_reg_rtx (Pmode);
-  })
+  }
+  [(set (attr "frm_mode") (symbol_ref "riscv_vector::FRM_DYN"))])
 
 (define_insn_and_split "*fnma<VF:mode><P:mode>"
   [(set (match_operand:VF 0 "register_operand"     "=vr, vr, ?&vr")
-	(fma:VF
-	  (neg:VF
-	    (match_operand:VF 1 "register_operand" " %0, vr,   vr"))
-	  (match_operand:VF 2 "register_operand"   " vr, vr,   vr")
-	  (match_operand:VF 3 "register_operand"   " vr,  0,   vr")))
+	(unspec:VF
+	  [(fma:VF
+	    (neg:VF
+	      (match_operand:VF 1 "register_operand" " %0, vr,   vr"))
+	    (match_operand:VF 2 "register_operand"   " vr, vr,   vr")
+	    (match_operand:VF 3 "register_operand"   " vr,  0,   vr"))
+	   (reg:SI FRM_REGNUM)] UNSPEC_VFFMA))
    (clobber (match_operand:P 4 "register_operand" "=r,r,r"))]
   "TARGET_VECTOR"
   "#"
