@@ -104,6 +104,17 @@ CompilePatternCaseLabelExpr::visit (HIR::LiteralPattern &pattern)
   case_label_expr = build_case_label (lit, NULL_TREE, associated_case_label);
 }
 
+void
+CompilePatternCaseLabelExpr::visit (HIR::AltPattern &pattern)
+{
+  const auto &alts = pattern.get_alts ();
+  for (auto &alt_pattern : alts)
+    {
+      CompilePatternCaseLabelExpr::Compile (alt_pattern.get (),
+					    associated_case_label, ctx);
+    }
+}
+
 static tree
 compile_range_pattern_bound (HIR::RangePatternBound *bound,
 			     Analysis::NodeMapping mappings, location_t locus,

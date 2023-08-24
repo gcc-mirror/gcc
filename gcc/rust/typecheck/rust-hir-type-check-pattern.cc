@@ -473,8 +473,28 @@ TypeCheckPattern::typecheck_range_pattern_bound (
 void
 TypeCheckPattern::visit (HIR::AltPattern &pattern)
 {
-  rust_sorry_at (pattern.get_locus (),
-		 "type checking alternate patterns not supported");
+  const auto &alts = pattern.get_alts ();
+
+  // lub - taken from TypeCheckExpr::visit(ArrayExpr)
+  std::vector<TyTy::BaseType *> types;
+  for (auto &alt_pattern : alts)
+    {
+      types.push_back (TypeCheckPattern::Resolve (alt_pattern.get (), parent));
+    }
+
+  TyTy::BaseType *alt_pattern_type
+    = TyTy::TyVar::get_implicit_infer_var (pattern.get_locus ()).get_tyty ();
+
+  for (auto &type : types)
+    {
+      alt_pattern_type
+	= unify_site (pattern.get_pattern_mappings ().get_hirid (),
+		      TyTy::TyWithLocation (alt_pattern_type),
+		      TyTy::TyWithLocation (type, type->get_locus ()),
+		      pattern.get_locus ());
+    }
+
+  infered = alt_pattern_type;
 }
 
 TyTy::BaseType *

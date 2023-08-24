@@ -39,13 +39,7 @@ public:
   void visit (HIR::TupleStructPattern &pattern) override;
   void visit (HIR::WildcardPattern &pattern) override;
   void visit (HIR::RangePattern &pattern) override;
-
-  // unsupported
-  void visit (HIR::AltPattern &pattern) override
-  {
-    rust_sorry_at (pattern.get_locus (),
-		   "alternate pattern case labels not supported");
-  }
+  void visit (HIR::AltPattern &pattern) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::IdentifierPattern &) override {}
@@ -80,14 +74,8 @@ public:
   void visit (HIR::ReferencePattern &pattern) override;
   void visit (HIR::IdentifierPattern &) override;
 
-  // unsupported
-  void visit (HIR::AltPattern &pattern) override
-  {
-    rust_sorry_at (pattern.get_locus (),
-		   "alternate pattern bindings not supported");
-  }
-
   // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::AltPattern &) override {}
   void visit (HIR::LiteralPattern &) override {}
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
