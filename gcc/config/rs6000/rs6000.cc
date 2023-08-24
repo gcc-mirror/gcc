@@ -10299,6 +10299,31 @@ rs6000_emit_set_const (rtx dest, rtx source)
   return true;
 }
 
+/* Check if value C can be built by 2 instructions: one is 'li', another is
+   'rotldi'.
+
+   If so, *SHIFT is set to the shift operand of rotldi(rldicl), and *MASK
+   is set to the mask operand of rotldi(rldicl), and return true.
+   Return false otherwise.  */
+
+static bool
+can_be_built_by_li_and_rotldi (HOST_WIDE_INT c, int *shift,
+				   HOST_WIDE_INT *mask)
+{
+  /* If C or ~C contains at least 49 successive zeros, then C can be rotated
+     to/from a positive or negative value that 'li' is able to load.  */
+  int n;
+  if (can_be_rotated_to_lowbits (c, 15, &n)
+      || can_be_rotated_to_lowbits (~c, 15, &n))
+    {
+      *mask = HOST_WIDE_INT_M1;
+      *shift = HOST_BITS_PER_WIDE_INT - n;
+      return true;
+    }
+
+  return false;
+}
+
 /* Subroutine of rs6000_emit_set_const, handling PowerPC64 DImode.
    Output insns to set DEST equal to the constant C as a series of
    lis, ori and shl instructions.  */
@@ -10307,15 +10332,14 @@ static void
 rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
 {
   rtx temp;
+  int shift;
+  HOST_WIDE_INT mask;
   HOST_WIDE_INT ud1, ud2, ud3, ud4;
 
   ud1 = c & 0xffff;
-  c = c >> 16;
-  ud2 = c & 0xffff;
-  c = c >> 16;
-  ud3 = c & 0xffff;
-  c = c >> 16;
-  ud4 = c & 0xffff;
+  ud2 = (c >> 16) & 0xffff;
+  ud3 = (c >> 32) & 0xffff;
+  ud4 = (c >> 48) & 0xffff;
 
   if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000))
       || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
@@ -10345,6 +10369,17 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c)
       emit_move_insn (temp, GEN_INT (sext_hwi (ud1, 16)));
       emit_move_insn (dest, gen_rtx_XOR (DImode, temp,
 					 GEN_INT ((ud2 ^ 0xffff) << 16)));
+    }
+  else if (can_be_built_by_li_and_rotldi (c, &shift, &mask))
+    {
+      temp = !can_create_pseudo_p () ? dest : gen_reg_rtx (DImode);
+      unsigned HOST_WIDE_INT imm = (c | ~mask);
+      imm = (imm >> shift) | (imm << (HOST_BITS_PER_WIDE_INT - shift));
+
+      emit_move_insn (temp, GEN_INT (imm));
+      if (shift != 0)
+	temp = gen_rtx_ROTATE (DImode, temp, GEN_INT (shift));
+      emit_move_insn (dest, temp);
     }
   else if (ud3 == 0 && ud4 == 0)
     {
