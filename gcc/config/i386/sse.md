@@ -29955,8 +29955,8 @@
    (match_operand:<avx512fmaskmode> 3 "register_operand")]
   "TARGET_AVX512BF16"
 {
-  emit_insn (gen_avx512f_cvtne2ps2bf16_<mode>_mask(operands[0], operands[2],
-    operands[1], CONST0_RTX(<MODE>mode), operands[3]));
+  emit_insn (gen_avx512f_cvtne2ps2bf16_<mode>_mask(operands[0], operands[1],
+    operands[2], CONST0_RTX(<MODE>mode), operands[3]));
   DONE;
 })
 
