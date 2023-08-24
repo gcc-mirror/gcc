@@ -149,7 +149,6 @@
 #define bit_AVXNECONVERT	(1 << 5)
 #define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
-#define bit_AVX10	(1 << 19)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
@@ -159,11 +158,6 @@
 /* PT sub leaf (%eax == 0x14, %ecx == 0) */
 /* %ebx */
 #define bit_PTWRITE	(1 << 4)
-
-/* AVX10 sub leaf (%eax == 0x18) */
-/* %ebx */
-#define bit_AVX10_256	(1 << 17)
-#define bit_AVX10_512	(1 << 18)
 
 /* Keylocker leaf (%eax == 0x19) */
 /* %ebx */

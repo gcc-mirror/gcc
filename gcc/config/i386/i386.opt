@@ -1310,23 +1310,3 @@ Enable vectorization for gather instruction.
 mscatter
 Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
 Enable vectorization for scatter instruction.
-
-;; Only for implementation use
-mavx10-max-512bit
-Target Mask(ISA2_AVX10_512BIT) Var(ix86_isa_flags2) Undocumented Save
-Indicates 512 bit vector width support for AVX10.
-
-mavx10.1
-Target Mask(ISA2_AVX10_1) Var(ix86_isa_flags2) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1 built-in functions and code generation.
-
-mavx10.1-256
-Target RejectNegative
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1 built-in functions and code generation.
-
-mavx10.1-512
-Target RejectNegative
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1-512 built-in functions and code generation.
