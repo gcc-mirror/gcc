@@ -81,6 +81,7 @@ init_flow (struct function *the_fun)
     = ENTRY_BLOCK_PTR_FOR_FN (the_fun);
   the_fun->cfg->edge_flags_allocated = EDGE_ALL_FLAGS;
   the_fun->cfg->bb_flags_allocated = BB_ALL_FLAGS;
+  the_fun->cfg->full_profile = false;
 }
 
 /* Helper function for remove_edge and free_cffg.  Frees edge structure
