@@ -459,12 +459,14 @@
 ;; vect__13.182_33 = .FMA (vect__11.180_35, vect__8.176_40, vect__4.172_45);
 (define_insn_and_split "*double_widen_fma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-	(fma:VWEXTF
-	  (float_extend:VWEXTF
-	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-	  (float_extend:VWEXTF
-	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	(unspec:VWEXTF
+	  [(fma:VWEXTF
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	    (match_operand:VWEXTF 1 "register_operand"))
+	   (reg:SI FRM_REGNUM)] UNSPEC_VFFMA))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -475,16 +477,19 @@
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode") (symbol_ref "riscv_vector::FRM_DYN"))])
 
 ;; This helps to match ext + fma.
 (define_insn_and_split "*single_widen_fma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-	(fma:VWEXTF
-	  (float_extend:VWEXTF
-	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-	  (match_operand:VWEXTF 3 "register_operand")
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	(unspec:VWEXTF
+	  [(fma:VWEXTF
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	    (match_operand:VWEXTF 3 "register_operand")
+	    (match_operand:VWEXTF 1 "register_operand"))
+	   (reg:SI FRM_REGNUM)] UNSPEC_VFFMA))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -501,7 +506,8 @@
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")
+   (set (attr "frm_mode") (symbol_ref "riscv_vector::FRM_DYN"))])
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] VFWNMSAC
