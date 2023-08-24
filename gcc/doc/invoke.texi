@@ -926,7 +926,7 @@ Objective-C and Objective-C++ Dialects}.
 -iframework
 -image_base  -init  -install_name  -keep_private_externs
 -multi_module  -multiply_defined  -multiply_defined_unused
--noall_load   -no_dead_strip_inits_and_terms
+-noall_load   -no_dead_strip_inits_and_terms -nodefaultrpaths
 -nofixprebinding  -nomultidefs  -noprebind  -noseglinkedit
 -pagezero_size  -prebind  -prebind_all_twolevel_modules
 -private_bundle  -read_only_relocs  -sectalign
@@ -24483,6 +24483,14 @@ an executable when linking, using the Darwin @file{libtool} command.
 @item -force_cpusubtype_ALL
 This causes GCC's output file to have the @samp{ALL} subtype, instead of
 one controlled by the @option{-mcpu} or @option{-march} option.
+
+@opindex nodefaultrpaths
+@item -nodefaultrpaths
+Do not add default run paths for the compiler library directories to
+executables, modules or dynamic libraries. On macOS 10.5 and later,
+the embedded runpath is added by default unless the user adds
+@option{-nodefaultrpaths} to the link line. Run paths are needed
+(and therefore enforced) to build on macOS version 10.11 or later.
 
 @item -allowable_client  @var{client_name}
 @itemx -client_name

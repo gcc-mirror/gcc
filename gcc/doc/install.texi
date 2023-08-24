@@ -1856,6 +1856,12 @@ particularly useful if you intend to use several versions of GCC in
 parallel.  The default is @samp{yes} for @samp{libada}, and @samp{no} for
 the remaining libraries.
 
+@item --with-darwin-extra-rpath
+This is provided to allow distributions to add a single additional
+runpath on Darwin / macOS systems. This allows for cases where the
+installed GCC library directories are then symlinked to a common
+directory outside of the GCC installation.
+
 @item @anchor{WithAixSoname}--with-aix-soname=@samp{aix}, @samp{svr4} or @samp{both}
 Traditional AIX shared library versioning (versioned @code{Shared Object}
 files as members of unversioned @code{Archive Library} files named
