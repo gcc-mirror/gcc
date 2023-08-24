@@ -541,7 +541,6 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
   region_model *model = cd.get_model ();
-  region_model_manager *mgr = cd.get_manager ();
 
   const region *dest_reg
     = model->deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0), cd.get_ctxt ());
@@ -550,15 +549,10 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
 
   cd.maybe_set_lhs (dest_ptr_sval);
 
-  const region *sized_src_reg
-    = mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
-  const region *sized_dest_reg
-    = mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
-  const svalue *src_contents_sval
-    = model->get_store_value (sized_src_reg, cd.get_ctxt ());
-  model->check_for_poison (src_contents_sval, cd.get_arg_tree (1),
-			   sized_src_reg, cd.get_ctxt ());
-  model->set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
+  model->copy_bytes (dest_reg,
+		     src_reg, cd.get_arg_tree (1),
+		     num_bytes_sval,
+		     cd.get_ctxt ());
 }
 
 /* Handler for "memset" and "__builtin_memset".  */

@@ -3794,6 +3794,41 @@ region_model::write_bytes (const region *dest_reg,
   set_value (sized_dest_reg, sval, ctxt);
 }
 
+/* Read NUM_BYTES_SVAL from SRC_REG.
+   Use CTXT to report any warnings associated with the copy
+   (e.g. out-of-bounds reads, copying of uninitialized values, etc).  */
+
+const svalue *
+region_model::read_bytes (const region *src_reg,
+			  tree src_ptr_expr,
+			  const svalue *num_bytes_sval,
+			  region_model_context *ctxt) const
+{
+  const region *sized_src_reg
+    = m_mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
+  const svalue *src_contents_sval = get_store_value (sized_src_reg, ctxt);
+  check_for_poison (src_contents_sval, src_ptr_expr,
+		    sized_src_reg, ctxt);
+  return src_contents_sval;
+}
+
+/* Copy NUM_BYTES_SVAL bytes from SRC_REG to DEST_REG.
+   Use CTXT to report any warnings associated with the copy
+   (e.g. out-of-bounds reads/writes, copying of uninitialized values,
+   etc).  */
+
+void
+region_model::copy_bytes (const region *dest_reg,
+			  const region *src_reg,
+			  tree src_ptr_expr,
+			  const svalue *num_bytes_sval,
+			  region_model_context *ctxt)
+{
+  const svalue *data_sval
+    = read_bytes (src_reg, src_ptr_expr, num_bytes_sval, ctxt);
+  write_bytes (dest_reg, num_bytes_sval, data_sval, ctxt);
+}
+
 /* Mark REG as having unknown content.  */
 
 void

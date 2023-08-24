@@ -371,6 +371,15 @@ class region_model
 		    const svalue *num_bytes_sval,
 		    const svalue *sval,
 		    region_model_context *ctxt);
+  const svalue *read_bytes (const region *src_reg,
+			    tree src_ptr_expr,
+			    const svalue *num_bytes_sval,
+			    region_model_context *ctxt) const;
+  void copy_bytes (const region *dest_reg,
+		   const region *src_reg,
+		   tree src_ptr_expr,
+		   const svalue *num_bytes_sval,
+		   region_model_context *ctxt);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
   tristate eval_condition (const svalue *lhs,
