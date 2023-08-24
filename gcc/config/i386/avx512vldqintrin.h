@@ -673,6 +673,12 @@ _mm_maskz_andnot_ps (__mmask8 __U, __m128 __A, __m128 __B)
 						 (__mmask8) __U);
 }
 
+#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
+#pragma GCC push_options
+#pragma GCC target("avx512vl,avx512dq")
+#define __DISABLE_AVX512VLDQ__
+#endif /* __AVX512VLDQ__ */
+
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvtps_epi64 (__m128 __A)
@@ -1330,12 +1336,6 @@ _mm256_movepi64_mask (__m256i __A)
 {
   return (__mmask8) __builtin_ia32_cvtq2mask256 ((__v4di) __A);
 }
-
-#if !defined(__AVX512VL__) || !defined(__AVX512DQ__)
-#pragma GCC push_options
-#pragma GCC target("avx512vl,avx512dq")
-#define __DISABLE_AVX512VLDQ__
-#endif /* __AVX512VLDQ__ */
 
 #ifdef __OPTIMIZE__
 extern __inline __m128d
