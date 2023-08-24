@@ -200,7 +200,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
-@item Collapse of associated loops that are imperfectly nested loops @tab N @tab
+@item Collapse of associated loops that are imperfectly nested loops @tab Y @tab
 @item Clauses @code{if}, @code{nontemporal} and @code{order(concurrent)} in
       @code{simd} construct @tab Y @tab
 @item @code{atomic} constructs in @code{simd} @tab Y @tab
