@@ -7802,6 +7802,17 @@ vect_slp_function (function *fun)
 			     bbs[0]->loop_father->num, bb->index);
 	  split = true;
 	}
+      else if (!bbs.is_empty ()
+	       && bb->loop_father->header == bb
+	       && bb->loop_father->dont_vectorize)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "splitting region at dont-vectorize loop %d "
+			     "entry at bb%d\n",
+			     bb->loop_father->num, bb->index);
+	  split = true;
+	}
 
       if (split && !bbs.is_empty ())
 	{
@@ -7809,19 +7820,25 @@ vect_slp_function (function *fun)
 	  bbs.truncate (0);
 	}
 
-      /* We need to be able to insert at the head of the region which
-	 we cannot for region starting with a returns-twice call.  */
       if (bbs.is_empty ())
-	if (gcall *first = safe_dyn_cast <gcall *> (first_stmt (bb)))
-	  if (gimple_call_flags (first) & ECF_RETURNS_TWICE)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "skipping bb%d as start of region as it "
-				 "starts with returns-twice call\n",
-				 bb->index);
-	      continue;
-	    }
+	{
+	  /* We need to be able to insert at the head of the region which
+	     we cannot for region starting with a returns-twice call.  */
+	  if (gcall *first = safe_dyn_cast <gcall *> (first_stmt (bb)))
+	    if (gimple_call_flags (first) & ECF_RETURNS_TWICE)
+	      {
+		if (dump_enabled_p ())
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "skipping bb%d as start of region as it "
+				   "starts with returns-twice call\n",
+				   bb->index);
+		continue;
+	      }
+	  /* If the loop this BB belongs to is marked as not to be vectorized
+	     honor that also for BB vectorization.  */
+	  if (bb->loop_father->dont_vectorize)
+	    continue;
+	}
 
       bbs.safe_push (bb);
 
