@@ -693,11 +693,12 @@
   [ (V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
     (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI])
 
-(define_mode_iterator V48_AVX2
+(define_mode_iterator V48_128_256
   [V4SF V2DF
+   V4DI V2DI
    V8SF V4DF
-   (V4SI "TARGET_AVX2") (V2DI "TARGET_AVX2")
-   (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")])
+   V8SI V4SI])
+
 
 (define_mode_iterator VF4_128_8_256
   [V4DF V4SF])
@@ -22249,7 +22250,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_mode_attr ssefltmodesuffix
-  [(V2DI "pd") (V4DI "pd") (V4SI "ps") (V8SI "ps")])
+  [(V2DI "pd") (V4DI "pd") (V4SI "ps") (V8SI "ps")
+   (V2DF "pd") (V4DF "pd") (V4SF "ps") (V8SF "ps")])
 
 (define_mode_attr ssefltvecmode
   [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
@@ -27360,13 +27362,18 @@
    (set_attr "mode" "OI")])
 
 (define_insn "<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:V48_AVX2 0 "register_operand" "=x")
-	(unspec:V48_AVX2
+  [(set (match_operand:V48_128_256 0 "register_operand" "=x")
+	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 2 "register_operand" "x")
-	   (match_operand:V48_AVX2 1 "memory_operand" "m")]
+	   (match_operand:V48_128_256 1 "memory_operand" "m")]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX"
-  "v<sseintprefix>maskmov<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}"
+{
+  if (TARGET_AVX2)
+    return "v<sseintprefix>maskmov<ssemodesuffix>\t{%1, %2, %0|%0, %2, %1}";
+  else
+    return "vmaskmov<ssefltmodesuffix>\t{%1, %2, %0|%0, %2, %1}";
+}
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
@@ -27374,14 +27381,19 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:V48_AVX2 0 "memory_operand" "+m")
-	(unspec:V48_AVX2
+  [(set (match_operand:V48_128_256 0 "memory_operand" "+m")
+	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
-	   (match_operand:V48_AVX2 2 "register_operand" "x")
+	   (match_operand:V48_128_256 2 "register_operand" "x")
 	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX"
-  "v<sseintprefix>maskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+{
+  if (TARGET_AVX2)
+    return "v<sseintprefix>maskmov<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}";
+  else
+    return "vmaskmov<ssefltmodesuffix>\t{%2, %1, %0|%0, %1, %2}";
+}
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex")
@@ -27389,10 +27401,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "maskload<mode><sseintvecmodelower>"
-  [(set (match_operand:V48_AVX2 0 "register_operand")
-	(unspec:V48_AVX2
+  [(set (match_operand:V48_128_256 0 "register_operand")
+	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
-	   (match_operand:V48_AVX2 1 "memory_operand")]
+	   (match_operand:V48_128_256 1 "memory_operand")]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
 
@@ -27417,10 +27429,10 @@
   "TARGET_AVX512BW")
 
 (define_expand "maskstore<mode><sseintvecmodelower>"
-  [(set (match_operand:V48_AVX2 0 "memory_operand")
-	(unspec:V48_AVX2
+  [(set (match_operand:V48_128_256 0 "memory_operand")
+	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
-	   (match_operand:V48_AVX2 1 "register_operand")
+	   (match_operand:V48_128_256 1 "register_operand")
 	   (match_dup 0)]
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
