@@ -19,6 +19,7 @@
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-extern.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Compile {
@@ -149,12 +150,30 @@ CompileItem::visit (HIR::Function &function)
 	}
     }
 
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  bool ok = ctx->get_mappings ()->lookup_canonical_path (
-    function.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
+  Resolver::CanonicalPath canonical_path
+    = Resolver::CanonicalPath::create_empty ();
 
-  const std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      auto path = nr_ctx.values.to_canonical_path (
+	function.get_mappings ().get_nodeid ());
+
+      canonical_path = path.value ();
+    }
+  else
+    {
+      const Resolver::CanonicalPath *path = nullptr;
+      bool ok = ctx->get_mappings ()->lookup_canonical_path (
+	function.get_mappings ().get_nodeid (), &path);
+      rust_assert (ok);
+
+      canonical_path = *path;
+    }
+
+  const std::string asm_name = ctx->mangle_item (fntype, canonical_path);
 
   // items can be forward compiled which means we may not need to invoke this
   // code. We might also have already compiled this generic function as well.
@@ -181,7 +200,7 @@ CompileItem::visit (HIR::Function &function)
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),
 			function.get_outer_attrs (), function.get_locus (),
-			function.get_definition ().get (), canonical_path,
+			function.get_definition ().get (), &canonical_path,
 			fntype);
   reference = address_expression (fndecl, ref_locus);
 
