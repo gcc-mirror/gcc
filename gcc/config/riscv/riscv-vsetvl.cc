@@ -3720,6 +3720,8 @@ pass_vsetvl::compute_local_properties (void)
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       unsigned int curr_bb_idx = bb->index ();
+      if (curr_bb_idx == ENTRY_BLOCK || curr_bb_idx == EXIT_BLOCK)
+	continue;
       const auto local_dem
 	= m_vector_manager->vector_block_infos[curr_bb_idx].local_dem;
       const auto reaching_out
