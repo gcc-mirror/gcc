@@ -585,6 +585,8 @@ private:
   // FIXME: Documentation
   tl::optional<std::pair<Node &, std::string>> dfs (Node &starting_point,
 						    NodeId to_find);
+  // FIXME: Documentation
+  tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
 };
 
 } // namespace Resolver2_0
