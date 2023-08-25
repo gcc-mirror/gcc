@@ -761,28 +761,6 @@ emit_vlmax_fp_ternary_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
-/* This function emits a {NONVLMAX, TAIL_UNDISTURBED, MASK_ANY} vsetvli followed
- * by the ternary operation which always has a real merge operand.  */
-static void
-emit_nonvlmax_fp_ternary_tu_insn (unsigned icode, int op_num, rtx *ops, rtx vl)
-{
-  machine_mode dest_mode = GET_MODE (ops[0]);
-  machine_mode mask_mode = get_mask_mode (dest_mode);
-  insn_expander<RVV_INSN_OPERANDS_MAX> e (/*OP_NUM*/ op_num,
-					  /*HAS_DEST_P*/ true,
-					  /*FULLY_UNMASKED_P*/ false,
-					  /*USE_REAL_MERGE_P*/ true,
-					  /*HAS_AVL_P*/ true,
-					  /*VLMAX_P*/ false,
-					  /*DEST_MODE*/ dest_mode,
-					  /*MASK_MODE*/ mask_mode);
-  e.set_policy (TAIL_UNDISTURBED);
-  e.set_policy (MASK_ANY);
-  e.set_rounding_mode (FRM_DYN);
-  e.set_vl (vl);
-  e.emit_insn ((enum insn_code) icode, ops);
-}
-
 /* This function emits a {NONVLMAX, TAIL_ANY, MASK_ANY} vsetvli followed by the
  * actual operation.  */
 void
@@ -1208,8 +1186,8 @@ emit_vlmax_masked_gather_mu_insn (rtx target, rtx op, rtx sel, rtx mask)
     }
   else
     icode = code_for_pred_gather (data_mode);
-  rtx ops[] = {target, mask, target, op, sel};
-  emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, ops);
+  rtx ops[RVV_BINOP_MASK] = {target, mask, target, op, sel};
+  emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MASK, ops);
 }
 
 /* According to RVV ISA spec (16.5.1. Synthesizing vdecompress):
@@ -1856,6 +1834,14 @@ get_vlmul (machine_mode mode)
 	}
     }
   return mode_vtype_infos.vlmul[mode];
+}
+
+/* Return the VLMAX rtx of vector mode MODE.  */
+rtx
+get_vlmax_rtx (machine_mode mode)
+{
+  gcc_assert (riscv_v_ext_vector_mode_p (mode));
+  return gen_int_mode (GET_MODE_NUNITS (mode), Pmode);
 }
 
 /* Return the NF value of the corresponding mode.  */
@@ -3415,7 +3401,7 @@ expand_load_store (rtx *ops, bool is_load)
       if (is_load)
 	{
 	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
-	  emit_vlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M, m_ops);
+	  emit_vlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_MASK, m_ops);
 	}
       else
 	{
@@ -3432,7 +3418,7 @@ expand_load_store (rtx *ops, bool is_load)
       if (is_load)
 	{
 	  rtx m_ops[] = {ops[0], mask, RVV_VUNDEF (mode), ops[1]};
-	  emit_nonvlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_M,
+	  emit_nonvlmax_masked_insn (code_for_pred_mov (mode), RVV_UNOP_MASK,
 				     m_ops, len);
 	}
       else
@@ -3451,6 +3437,48 @@ needs_fp_rounding (rtx_code code, machine_mode mode)
   return code != SMIN && code != SMAX && code != NEG && code != ABS;
 }
 
+/* Subroutine to expand COND_LEN_* patterns.  */
+static void
+expand_cond_len_op (rtx_code code, unsigned icode, int num_ops, rtx *ops,
+		    rtx len)
+{
+  rtx dest = ops[0];
+  rtx mask = ops[1];
+  machine_mode mode = GET_MODE (dest);
+  machine_mode mask_mode = GET_MODE (mask);
+  poly_int64 value;
+  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
+  bool is_vlmax_len
+    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
+  if (is_dummy_mask)
+    {
+      /* Use TU, MASK ANY policy.  */
+      if (needs_fp_rounding (code, mode))
+	emit_nonvlmax_fp_tu_insn (icode, num_ops, ops, len);
+      else
+	emit_nonvlmax_tu_insn (icode, num_ops, ops, len);
+    }
+  else
+    {
+      if (is_vlmax_len)
+	{
+	  /* Use TAIL ANY, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_vlmax_masked_fp_mu_insn (icode, num_ops, ops);
+	  else
+	    emit_vlmax_masked_mu_insn (icode, num_ops, ops);
+	}
+      else
+	{
+	  /* Use TU, MU policy.  */
+	  if (needs_fp_rounding (code, mode))
+	    emit_nonvlmax_fp_tumu_insn (icode, num_ops, ops, len);
+	  else
+	    emit_nonvlmax_tumu_insn (icode, num_ops, ops, len);
+	}
+    }
+}
+
 /* Expand unary ops COND_LEN_*.  */
 void
 expand_cond_len_unop (rtx_code code, rtx *ops)
@@ -3460,43 +3488,11 @@ expand_cond_len_unop (rtx_code code, rtx *ops)
   rtx src = ops[2];
   rtx merge = ops[3];
   rtx len = ops[4];
+
   machine_mode mode = GET_MODE (dest);
-  machine_mode mask_mode = GET_MODE (mask);
-
-  poly_int64 value;
-  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
-  bool is_vlmax_len
-    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
-  rtx cond_ops[] = {dest, mask, merge, src};
   insn_code icode = code_for_pred (code, mode);
-
-  if (is_dummy_mask)
-    {
-      /* Use TU, MASK ANY policy.  */
-      if (needs_fp_rounding (code, mode))
-	emit_nonvlmax_fp_tu_insn (icode, RVV_UNOP_TU, cond_ops, len);
-      else
-	emit_nonvlmax_tu_insn (icode, RVV_UNOP_TU, cond_ops, len);
-    }
-  else
-    {
-      if (is_vlmax_len)
-	{
-	  /* Use TAIL ANY, MU policy.  */
-	  if (needs_fp_rounding (code, mode))
-	    emit_vlmax_masked_fp_mu_insn (icode, RVV_UNOP_MU, cond_ops);
-	  else
-	    emit_vlmax_masked_mu_insn (icode, RVV_UNOP_MU, cond_ops);
-	}
-      else
-	{
-	  /* Use TU, MU policy.  */
-	  if (needs_fp_rounding (code, mode))
-	    emit_nonvlmax_fp_tumu_insn (icode, RVV_UNOP_TUMU, cond_ops, len);
-	  else
-	    emit_nonvlmax_tumu_insn (icode, RVV_UNOP_TUMU, cond_ops, len);
-	}
-    }
+  rtx cond_ops[RVV_UNOP_MASK] = {dest, mask, merge, src};
+  expand_cond_len_op (code, icode, RVV_UNOP_MASK, cond_ops, len);
 }
 
 /* Expand binary ops COND_LEN_*.  */
@@ -3509,43 +3505,11 @@ expand_cond_len_binop (rtx_code code, rtx *ops)
   rtx src2 = ops[3];
   rtx merge = ops[4];
   rtx len = ops[5];
+
   machine_mode mode = GET_MODE (dest);
-  machine_mode mask_mode = GET_MODE (mask);
-
-  poly_int64 value;
-  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
-  bool is_vlmax_len
-    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
-  rtx cond_ops[] = {dest, mask, merge, src1, src2};
   insn_code icode = code_for_pred (code, mode);
-
-  if (is_dummy_mask)
-    {
-      /* Use TU, MASK ANY policy.  */
-      if (needs_fp_rounding (code, mode))
-	emit_nonvlmax_fp_tu_insn (icode, RVV_BINOP_TU, cond_ops, len);
-      else
-	emit_nonvlmax_tu_insn (icode, RVV_BINOP_TU, cond_ops, len);
-    }
-  else
-    {
-      if (is_vlmax_len)
-	{
-	  /* Use TAIL ANY, MU policy.  */
-	  if (needs_fp_rounding (code, mode))
-	    emit_vlmax_masked_fp_mu_insn (icode, RVV_BINOP_MU, cond_ops);
-	  else
-	    emit_vlmax_masked_mu_insn (icode, RVV_BINOP_MU, cond_ops);
-	}
-      else
-	{
-	  /* Use TU, MU policy.  */
-	  if (needs_fp_rounding (code, mode))
-	    emit_nonvlmax_fp_tumu_insn (icode, RVV_BINOP_TUMU, cond_ops, len);
-	  else
-	    emit_nonvlmax_tumu_insn (icode, RVV_BINOP_TUMU, cond_ops, len);
-	}
-    }
+  rtx cond_ops[RVV_BINOP_MASK] = {dest, mask, merge, src1, src2};
+  expand_cond_len_op (code, icode, RVV_BINOP_MASK, cond_ops, len);
 }
 
 /* Prepare insn_code for gather_load/scatter_store according to
@@ -3711,42 +3675,14 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
 {
   rtx dest = ops[0];
   rtx mask = ops[1];
+  rtx src1 = ops[2];
+  rtx src2 = ops[3];
+  rtx src3 = ops[4];
+  rtx merge = ops[5];
   rtx len = ops[6];
-  machine_mode mode = GET_MODE (dest);
-  machine_mode mask_mode = GET_MODE (mask);
 
-  poly_int64 value;
-  bool is_dummy_mask = rtx_equal_p (mask, CONSTM1_RTX (mask_mode));
-  bool is_vlmax_len
-    = poly_int_rtx_p (len, &value) && known_eq (value, GET_MODE_NUNITS (mode));
-
-  if (is_dummy_mask)
-    {
-      /* Use TU, MASK ANY policy.  */
-      if (FLOAT_MODE_P (mode))
-	emit_nonvlmax_fp_ternary_tu_insn (icode, RVV_TERNOP_TU, ops, len);
-      else
-	emit_nonvlmax_tu_insn (icode, RVV_TERNOP_TU, ops, len);
-    }
-  else
-    {
-      if (is_vlmax_len)
-	{
-	  /* Use TAIL ANY, MU policy.  */
-	  if (FLOAT_MODE_P (mode))
-	    emit_vlmax_masked_fp_mu_insn (icode, RVV_TERNOP_MU, ops);
-	  else
-	    emit_vlmax_masked_mu_insn (icode, RVV_TERNOP_MU, ops);
-	}
-      else
-	{
-	  /* Use TU, MU policy.  */
-	  if (FLOAT_MODE_P (mode))
-	    emit_nonvlmax_fp_tumu_insn (icode, RVV_TERNOP_TUMU, ops, len);
-	  else
-	    emit_nonvlmax_tumu_insn (icode, RVV_TERNOP_TUMU, ops, len);
-	}
-    }
+  rtx cond_ops[RVV_TERNOP_MASK] = {dest, mask, src1, src2, src3, merge};
+  expand_cond_len_op (UNSPEC, icode, RVV_TERNOP_MASK, cond_ops, len);
 }
 
 /* Expand reduction operations.  */
@@ -3852,7 +3788,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
 	{
 	  rtx m_ops[] = {reg, mask, RVV_VUNDEF (mode), addr};
 	  emit_vlmax_masked_insn (code_for_pred_unit_strided_load (mode),
-				  RVV_UNOP_M, m_ops);
+				  RVV_UNOP_MASK, m_ops);
 	}
       else
 	{
@@ -3870,7 +3806,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
 	{
 	  rtx m_ops[] = {reg, mask, RVV_VUNDEF (mode), addr};
 	  emit_nonvlmax_masked_insn (code_for_pred_unit_strided_load (mode),
-				     RVV_UNOP_M, m_ops, len);
+				     RVV_UNOP_MASK, m_ops, len);
 	}
       else
 	emit_insn (gen_pred_unit_strided_store (mode, mask, addr, reg, len,

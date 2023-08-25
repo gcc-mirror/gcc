@@ -181,25 +181,20 @@ namespace riscv_vector {
 #define RVV_VUNDEF(MODE)                                                       \
   gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
 		  UNSPEC_VUNDEF)
+
+/* The value means the number of operands for insn_expander.  */
 enum insn_type
 {
   RVV_MISC_OP = 1,
   RVV_UNOP = 2,
-  RVV_UNOP_M = RVV_UNOP + 2,
-  RVV_UNOP_MU = RVV_UNOP + 2,
-  RVV_UNOP_TU = RVV_UNOP + 2,
-  RVV_UNOP_TUMU = RVV_UNOP + 2,
+  RVV_UNOP_MASK = RVV_UNOP + 2,
   RVV_BINOP = 3,
-  RVV_BINOP_MU = RVV_BINOP + 2,
-  RVV_BINOP_TU = RVV_BINOP + 2,
-  RVV_BINOP_TUMU = RVV_BINOP + 2,
+  RVV_BINOP_MASK = RVV_BINOP + 2,
   RVV_MERGE_OP = 4,
   RVV_CMP_OP = 4,
   RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
   RVV_TERNOP = 5,
-  RVV_TERNOP_MU = RVV_TERNOP + 1,
-  RVV_TERNOP_TU = RVV_TERNOP + 1,
-  RVV_TERNOP_TUMU = RVV_TERNOP + 1,
+  RVV_TERNOP_MASK = RVV_TERNOP + 1,
   RVV_WIDEN_TERNOP = 4,
   RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
   RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
@@ -260,6 +255,7 @@ void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
 void emit_scalar_move_insn (unsigned, rtx *, rtx = 0);
 void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
+rtx get_vlmax_rtx (machine_mode);
 unsigned int get_ratio (machine_mode);
 unsigned int get_nf (machine_mode);
 machine_mode get_subpart_mode (machine_mode);

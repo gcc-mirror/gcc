@@ -971,9 +971,9 @@
   rtx mask = gen_reg_rtx (mask_mode);
   riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
 
-  rtx ops[] = {operands[0], mask, operands[1], operands[1]};
-  riscv_vector::emit_vlmax_masked_mu_insn (code_for_pred (NEG, <MODE>mode),
-					   riscv_vector::RVV_UNOP_MU, ops);
+  rtx ops[] = {operands[0], mask, operands[1], operands[1],
+               riscv_vector::get_vlmax_rtx (<MODE>mode)};
+  riscv_vector::expand_cond_len_unop (NEG, ops);
   DONE;
 })
 
