@@ -43,8 +43,7 @@ along with GCC; see the file COPYING3.  If not see
     -  Phase 2 - Emit vsetvl instructions within each basic block according to
        demand, compute and save ANTLOC && AVLOC of each block.
 
-    -  Phase 3 - Backward && forward demanded info propagation and fusion across
-       blocks.
+    -  Phase 3 - LCM Earliest-edge baseed VSETVL demand fusion.
 
     -  Phase 4 - Lazy code motion including: compute local properties,
        pre_edge_lcm and vsetvl insertion && delete edges for LCM results.
@@ -53,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
        used any more and VL operand of VSETVL instruction if it is not used by
        any non-debug instructions.
 
-    -  Phase 6 - Propagate AVL between vsetvl instructions.
+    -  Phase 6 - DF based post VSETVL optimizations.
 
     Implementation:
 
@@ -240,6 +239,21 @@ vsetvl_discard_result_insn_p (rtx_insn *rinsn)
 	  || INSN_CODE (rinsn) == CODE_FOR_vsetvl_discard_resultsi);
 }
 
+/* Return true if it is vsetvl zero, zero.  */
+static bool
+vsetvl_vtype_change_only_p (rtx_insn *rinsn)
+{
+  if (!vector_config_insn_p (rinsn))
+    return false;
+  return (INSN_CODE (rinsn) == CODE_FOR_vsetvl_vtype_change_only);
+}
+
+static bool
+after_or_same_p (const insn_info *insn1, const insn_info *insn2)
+{
+  return insn1->compare_with (insn2) >= 0;
+}
+
 static bool
 real_insn_and_same_bb_p (const insn_info *insn, const bb_info *bb)
 {
@@ -252,17 +266,6 @@ before_p (const insn_info *insn1, const insn_info *insn2)
   return insn1->compare_with (insn2) < 0;
 }
 
-static insn_info *
-find_reg_killed_by (const bb_info *bb, rtx x)
-{
-  if (!x || vlmax_avl_p (x) || !REG_P (x))
-    return nullptr;
-  for (insn_info *insn : bb->reverse_real_nondebug_insns ())
-    if (find_access (insn->defs (), REGNO (x)))
-      return insn;
-  return nullptr;
-}
-
 /* Helper function to get VL operand.  */
 static rtx
 get_vl (rtx_insn *rinsn)
@@ -273,35 +276,6 @@ get_vl (rtx_insn *rinsn)
       return recog_data.operand[get_attr_vl_op_idx (rinsn)];
     }
   return SET_DEST (XVECEXP (PATTERN (rinsn), 0, 0));
-}
-
-static bool
-has_vsetvl_killed_avl_p (const bb_info *bb, const vector_insn_info &info)
-{
-  if (info.dirty_with_killed_avl_p ())
-    {
-      rtx avl = info.get_avl ();
-      if (vlmax_avl_p (avl))
-	return find_reg_killed_by (bb, info.get_avl_reg_rtx ()) != nullptr;
-      for (const insn_info *insn : bb->reverse_real_nondebug_insns ())
-	{
-	  def_info *def = find_access (insn->defs (), REGNO (avl));
-	  if (def)
-	    {
-	      set_info *set = safe_dyn_cast<set_info *> (def);
-	      if (!set)
-		return false;
-
-	      rtx new_avl = gen_rtx_REG (GET_MODE (avl), REGNO (avl));
-	      gcc_assert (new_avl != avl);
-	      if (!info.compatible_avl_p (avl_info (new_avl, set)))
-		return false;
-
-	      return true;
-	    }
-	}
-    }
-  return false;
 }
 
 /* An "anticipatable occurrence" is one that is the first occurrence in the
@@ -335,7 +309,29 @@ anticipatable_occurrence_p (const bb_info *bb, const vector_insn_info dem)
       /* rs1 (avl) are not modified in the basic block prior to the VSETVL.  */
       rtx avl
 	= has_vl_op (insn->rtl ()) ? get_vl (insn->rtl ()) : dem.get_avl ();
-      if (!vlmax_avl_p (avl))
+      if (dem.dirty_p ())
+	{
+	  gcc_assert (!vsetvl_insn_p (insn->rtl ()));
+
+	  /* Earliest VSETVL will be inserted at the end of the block.  */
+	  for (const insn_info *i : bb->real_nondebug_insns ())
+	    {
+	      /* rs1 (avl) are not modified in the basic block prior to the
+		 VSETVL.  */
+	      if (find_access (i->defs (), REGNO (avl)))
+		return false;
+	      if (vlmax_avl_p (dem.get_avl ()))
+		{
+		  /* rd (avl) is not used between the start of the block and
+		     the occurrence. Note: Only for Dirty and VLMAX-avl.  */
+		  if (find_access (i->uses (), REGNO (avl)))
+		    return false;
+		}
+	    }
+
+	  return true;
+	}
+      else if (!vlmax_avl_p (avl))
 	{
 	  set_info *set = dem.get_avl_source ();
 	  /* If it's undefined, it's not anticipatable conservatively.  */
@@ -344,6 +340,14 @@ anticipatable_occurrence_p (const bb_info *bb, const vector_insn_info dem)
 	  if (real_insn_and_same_bb_p (set->insn (), bb)
 	      && before_p (set->insn (), insn))
 	    return false;
+	  for (insn_info *i = insn->prev_nondebug_insn ();
+	       real_insn_and_same_bb_p (i, bb); i = i->prev_nondebug_insn ())
+	    {
+	      /* rs1 (avl) are not modified in the basic block prior to the
+		 VSETVL.  */
+	      if (find_access (i->defs (), REGNO (avl)))
+		return false;
+	    }
 	}
     }
 
@@ -540,16 +544,6 @@ get_all_predecessors (basic_block cfg_bb)
 	}
     }
   return blocks;
-}
-
-/* Return true if there is an INSN in insns staying in the block BB.  */
-static bool
-any_set_in_bb_p (hash_set<set_info *> sets, const bb_info *bb)
-{
-  for (const set_info *set : sets)
-    if (set->bb ()->index () == bb->index ())
-      return true;
-  return false;
 }
 
 /* Helper function to get SEW operand. We always have SEW value for
@@ -1509,75 +1503,6 @@ support_relaxed_compatible_p (const vector_insn_info &info1,
   return false;
 }
 
-/* Return true if the block is worthwhile backward propagation.  */
-static bool
-backward_propagate_worthwhile_p (const basic_block cfg_bb,
-				 const vector_block_info block_info)
-{
-  if (loop_basic_block_p (cfg_bb))
-    {
-      if (block_info.reaching_out.valid_or_dirty_p ())
-	{
-	  if (block_info.local_dem.compatible_p (block_info.reaching_out))
-	    {
-	      /* Case 1 (Can backward propagate):
-		 ....
-		 bb0:
-		 ...
-		 for (int i = 0; i < n; i++)
-		   {
-		     vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-		     __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-		   }
-		 The local_dem is compatible with reaching_out. Such case is
-		 worthwhile backward propagation.  */
-	      return true;
-	    }
-	  else
-	    {
-	      if (support_relaxed_compatible_p (block_info.reaching_out,
-						block_info.local_dem))
-		return true;
-	      /* Case 2 (Don't backward propagate):
-		    ....
-		    bb0:
-		    ...
-		    for (int i = 0; i < n; i++)
-		      {
-			vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-			__riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-			vint16mf2_t v2 = __riscv_vle16_v_i16mf2 (in + i + 6, 8);
-			__riscv_vse16_v_i16mf2 (out + i + 6, v, 8);
-		      }
-		 The local_dem is incompatible with reaching_out.
-		 It makes no sense to backward propagate the local_dem since we
-		 can't avoid VSETVL inside the loop.  */
-	      return false;
-	    }
-	}
-      else
-	{
-	  gcc_assert (block_info.reaching_out.unknown_p ());
-	  /* Case 3 (Don't backward propagate):
-		....
-		bb0:
-		...
-		for (int i = 0; i < n; i++)
-		  {
-		    vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-		    __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-		    fn3 ();
-		  }
-	    The local_dem is VALID, but the reaching_out is UNKNOWN.
-	    It makes no sense to backward propagate the local_dem since we
-	    can't avoid VSETVL inside the loop.  */
-	  return false;
-	}
-    }
-
-  return true;
-}
-
 /* Count the number of REGNO in RINSN.  */
 static int
 count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
@@ -1588,6 +1513,93 @@ count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
     if (refers_to_regno_p (regno, recog_data.operand[i]))
       count++;
   return count;
+}
+
+/* Return TRUE if the demands can be fused.  */
+static bool
+demands_can_be_fused_p (const vector_insn_info &be_fused,
+			const vector_insn_info &to_fuse)
+{
+  return be_fused.compatible_p (to_fuse) && !be_fused.available_p (to_fuse);
+}
+
+/* Return true if we can fuse VSETVL demand info into predecessor of earliest
+ * edge.  */
+static bool
+earliest_pred_can_be_fused_p (const bb_info *earliest_pred,
+			      const vector_insn_info &earliest_info,
+			      const vector_insn_info &expr, rtx *vlmax_vl)
+{
+  rtx vl = NULL_RTX;
+  /* Backward VLMAX VL:
+       bb 3:
+	 vsetivli zero, 1 ... -> vsetvli t1, zero
+	 vmv.s.x
+       bb 5:
+	 vsetvli t1, zero ... -> to be elided.
+	 vlse16.v
+
+       We should forward "t1".  */
+  if (!earliest_info.has_avl_reg () && expr.has_avl_reg ())
+    {
+      rtx avl = expr.get_avl ();
+      const insn_info *last_insn = earliest_info.get_insn ();
+      if (vlmax_avl_p (avl))
+	vl = get_vl (expr.get_insn ()->rtl ());
+      /* To fuse demand on earlest edge, we make sure AVL/VL
+	 didn't change from the consume insn to the predecessor
+	 of the edge.  */
+      for (insn_info *i = earliest_pred->end_insn ()->prev_nondebug_insn ();
+	   real_insn_and_same_bb_p (i, earliest_pred)
+	   && after_or_same_p (i, last_insn);
+	   i = i->prev_nondebug_insn ())
+	{
+	  if (!vl && find_access (i->defs (), REGNO (avl)))
+	    return false;
+	  if (vl && find_access (i->defs (), REGNO (vl)))
+	    return false;
+	  if (vl && find_access (i->uses (), REGNO (vl)))
+	    return false;
+	}
+    }
+
+  if (vlmax_vl)
+    *vlmax_vl = vl;
+  return true;
+}
+
+/* Return true if the current VSETVL 1 is dominated by preceding VSETVL 2.
+
+   VSETVL 2 dominates VSETVL 1 should satisfy this following check:
+
+     - VSETVL 2 should have the RATIO (SEW/LMUL) with VSETVL 1.
+     - VSETVL 2 is user vsetvl (vsetvl VL, AVL)
+     - VSETVL 2 "VL" result is the "AVL" of VSETL1.  */
+static bool
+vsetvl_dominated_by_p (const basic_block cfg_bb,
+		       const vector_insn_info &vsetvl1,
+		       const vector_insn_info &vsetvl2, bool fuse_p)
+{
+  if (!vsetvl1.valid_or_dirty_p () || !vsetvl2.valid_or_dirty_p ())
+    return false;
+  if (!has_vl_op (vsetvl1.get_insn ()->rtl ())
+      || !vsetvl_insn_p (vsetvl2.get_insn ()->rtl ()))
+    return false;
+
+  hash_set<set_info *> sets
+    = get_all_sets (vsetvl1.get_avl_source (), true, false, false);
+  set_info *set = get_same_bb_set (sets, cfg_bb);
+
+  if (!vsetvl1.has_avl_reg () || vlmax_avl_p (vsetvl1.get_avl ())
+      || !vsetvl2.same_vlmax_p (vsetvl1) || !set
+      || set->insn () != vsetvl2.get_insn ())
+    return false;
+
+  if (fuse_p && vsetvl2.same_vtype_p (vsetvl1))
+    return false;
+  else if (!fuse_p && !vsetvl2.same_vtype_p (vsetvl1))
+    return false;
+  return true;
 }
 
 avl_info::avl_info (const avl_info &other)
@@ -1821,8 +1833,7 @@ vector_insn_info::parse_insn (rtx_insn *rinsn)
     return;
   if (optimize == 0 && !has_vtype_op (rinsn))
     return;
-  if (optimize > 0 && !vsetvl_insn_p (rinsn))
-    return;
+  gcc_assert (!vsetvl_discard_result_insn_p (rinsn));
   m_state = VALID;
   extract_insn_cached (rinsn);
   rtx avl = ::get_avl (rinsn);
@@ -2211,31 +2222,66 @@ vector_insn_info::fuse_mask_policy (const vector_insn_info &info1,
 }
 
 vector_insn_info
-vector_insn_info::merge (const vector_insn_info &merge_info,
-			 enum merge_type type) const
+vector_insn_info::local_merge (const vector_insn_info &merge_info) const
 {
-  if (!vsetvl_insn_p (get_insn ()->rtl ()))
+  if (!vsetvl_insn_p (get_insn ()->rtl ()) && *this != merge_info)
     gcc_assert (this->compatible_p (merge_info)
 		&& "Can't merge incompatible demanded infos");
 
   vector_insn_info new_info;
   new_info.set_valid ();
-  if (type == LOCAL_MERGE)
-    {
-      /* For local backward data flow, we always update INSN && AVL as the
-	 latest INSN and AVL so that we can keep track status of each INSN.  */
-      new_info.fuse_avl (merge_info, *this);
-    }
-  else
-    {
-      /* For global data flow, we should keep original INSN and AVL if they
-      valid since we should keep the life information of each block.
+  /* For local backward data flow, we always update INSN && AVL as the
+     latest INSN and AVL so that we can keep track status of each INSN.  */
+  new_info.fuse_avl (merge_info, *this);
+  new_info.fuse_sew_lmul (*this, merge_info);
+  new_info.fuse_tail_policy (*this, merge_info);
+  new_info.fuse_mask_policy (*this, merge_info);
+  return new_info;
+}
 
-      For example:
-	bb 0 -> bb 1.
-      We should keep INSN && AVL of bb 1 since we will eventually emit
-      vsetvl instruction according to INSN and AVL of bb 1.  */
-      new_info.fuse_avl (*this, merge_info);
+vector_insn_info
+vector_insn_info::global_merge (const vector_insn_info &merge_info,
+				unsigned int bb_index) const
+{
+  if (!vsetvl_insn_p (get_insn ()->rtl ()) && *this != merge_info)
+    gcc_assert (this->compatible_p (merge_info)
+		&& "Can't merge incompatible demanded infos");
+
+  vector_insn_info new_info;
+  new_info.set_valid ();
+
+  /* For global data flow, we should keep original INSN and AVL if they
+  valid since we should keep the life information of each block.
+
+  For example:
+    bb 0 -> bb 1.
+  We should keep INSN && AVL of bb 1 since we will eventually emit
+  vsetvl instruction according to INSN and AVL of bb 1.  */
+  new_info.fuse_avl (*this, merge_info);
+  /* Recompute the AVL source whose block index is equal to BB_INDEX.  */
+  if (new_info.get_avl_source ()
+      && new_info.get_avl_source ()->insn ()->is_phi ()
+      && new_info.get_avl_source ()->bb ()->index () != bb_index)
+    {
+      hash_set<set_info *> sets
+	= get_all_sets (new_info.get_avl_source (), true, true, true);
+      new_info.set_avl_source (nullptr);
+      bool can_find_set_p = false;
+      set_info *first_set = nullptr;
+      for (set_info *set : sets)
+	{
+	  if (!first_set)
+	    first_set = set;
+	  if (set->bb ()->index () == bb_index)
+	    {
+	      gcc_assert (!can_find_set_p);
+	      new_info.set_avl_source (set);
+	      can_find_set_p = true;
+	    }
+	}
+      if (!can_find_set_p && sets.elements () == 1
+	  && first_set->insn ()->is_real ())
+	new_info.set_avl_source (first_set);
     }
 
   new_info.fuse_sew_lmul (*this, merge_info);
@@ -2306,10 +2352,6 @@ vector_insn_info::dump (FILE *file) const
     fprintf (file, "UNKNOWN,");
   else if (empty_p ())
     fprintf (file, "EMPTY,");
-  else if (hard_empty_p ())
-    fprintf (file, "HARD_EMPTY,");
-  else if (dirty_with_killed_avl_p ())
-    fprintf (file, "DIRTY_WITH_KILLED_AVL,");
   else
     fprintf (file, "DIRTY,");
 
@@ -2352,6 +2394,9 @@ vector_infos_manager::vector_infos_manager ()
   vector_comp = nullptr;
   vector_avin = nullptr;
   vector_avout = nullptr;
+  vector_antin = nullptr;
+  vector_antout = nullptr;
+  vector_earliest = nullptr;
   vector_insn_infos.safe_grow (get_max_uid ());
   vector_block_infos.safe_grow (last_basic_block_for_fn (cfun));
   if (!optimize)
@@ -2406,21 +2451,6 @@ vector_infos_manager::get_all_available_exprs (
     if (info.available_p (*vector_exprs[i]))
       available_list.safe_push (i);
   return available_list;
-}
-
-bool
-vector_infos_manager::all_empty_predecessor_p (const basic_block cfg_bb) const
-{
-  hash_set<basic_block> pred_cfg_bbs = get_all_predecessors (cfg_bb);
-  for (const basic_block pred_cfg_bb : pred_cfg_bbs)
-    {
-      const auto &pred_block_info = vector_block_infos[pred_cfg_bb->index];
-      if (!pred_block_info.local_dem.valid_or_dirty_p ()
-	  && !pred_block_info.reaching_out.valid_or_dirty_p ())
-	continue;
-      return false;
-    }
-  return true;
 }
 
 bool
@@ -2486,6 +2516,45 @@ vector_infos_manager::all_same_avl_p (const basic_block cfg_bb,
   return true;
 }
 
+bool
+vector_infos_manager::earliest_fusion_worthwhile_p (
+  const basic_block cfg_bb) const
+{
+  edge e;
+  edge_iterator ei;
+  profile_probability prob = profile_probability::uninitialized ();
+  FOR_EACH_EDGE (e, ei, cfg_bb->succs)
+    {
+      if (prob == profile_probability::uninitialized ())
+	prob = vector_block_infos[e->dest->index].probability;
+      else if (prob == vector_block_infos[e->dest->index].probability)
+	continue;
+      else
+	/* We pick the highest probability among those incompatible VSETVL
+	   infos. When all incompatible VSTEVL infos have same probability, we
+	   don't pick any of them.  */
+	return true;
+    }
+  return false;
+}
+
+bool
+vector_infos_manager::vsetvl_dominated_by_all_preds_p (
+  const basic_block cfg_bb, const vector_insn_info &info) const
+{
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, cfg_bb->preds)
+    {
+      const auto &reaching_out = vector_block_infos[e->src->index].reaching_out;
+      if (e->src->index == cfg_bb->index && reaching_out.compatible_p (info))
+	continue;
+      if (!vsetvl_dominated_by_p (e->src, info, reaching_out, false))
+	return false;
+    }
+  return true;
+}
+
 size_t
 vector_infos_manager::expr_set_num (sbitmap bitdata) const
 {
@@ -2528,10 +2597,17 @@ vector_infos_manager::create_bitmap_vectors (void)
 				       vector_exprs.length ());
   vector_kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
 				      vector_exprs.length ());
+  vector_antin = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				       vector_exprs.length ());
+  vector_antout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+					vector_exprs.length ());
 
   bitmap_vector_ones (vector_transp, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (vector_antic, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (vector_comp, last_basic_block_for_fn (cfun));
+  vector_edge_list = create_edge_list ();
+  vector_earliest = sbitmap_vector_alloc (NUM_EDGES (vector_edge_list),
+					  vector_exprs.length ());
 }
 
 void
@@ -2555,6 +2631,12 @@ vector_infos_manager::free_bitmap_vectors (void)
     sbitmap_vector_free (vector_avin);
   if (vector_avout)
     sbitmap_vector_free (vector_avout);
+  if (vector_antin)
+    sbitmap_vector_free (vector_antin);
+  if (vector_antout)
+    sbitmap_vector_free (vector_antout);
+  if (vector_earliest)
+    sbitmap_vector_free (vector_earliest);
 
   vector_edge_list = nullptr;
   vector_kill = nullptr;
@@ -2565,6 +2647,9 @@ vector_infos_manager::free_bitmap_vectors (void)
   vector_comp = nullptr;
   vector_avin = nullptr;
   vector_avout = nullptr;
+  vector_antin = nullptr;
+  vector_antout = nullptr;
+  vector_earliest = nullptr;
 }
 
 void
@@ -2622,6 +2707,18 @@ vector_infos_manager::dump (FILE *file) const
 	fprintf (file, "(nil)\n");
       else
 	dump_bitmap_file (file, vector_kill[cfg_bb->index]);
+
+      fprintf (file, "<ANTIN>=");
+      if (vector_antin == nullptr)
+	fprintf (file, "(nil)\n");
+      else
+	dump_bitmap_file (file, vector_antin[cfg_bb->index]);
+
+      fprintf (file, "<ANTOUT>=");
+      if (vector_antout == nullptr)
+	fprintf (file, "(nil)\n");
+      else
+	dump_bitmap_file (file, vector_antout[cfg_bb->index]);
     }
 
   fprintf (file, "\n");
@@ -2649,17 +2746,36 @@ vector_infos_manager::dump (FILE *file) const
 	dump_bitmap_file (file, vector_del[cfg_bb->index]);
     }
 
-  fprintf (file, "\nGlobal LCM (Lazy code motion) INSERT info:\n");
   for (size_t i = 0; i < vector_exprs.length (); i++)
     {
       for (int ed = 0; ed < NUM_EDGES (vector_edge_list); ed++)
 	{
 	  edge eg = INDEX_EDGE (vector_edge_list, ed);
-	  if (bitmap_bit_p (vector_insert[ed], i))
-	    fprintf (dump_file,
-		     "INSERT edge %d from bb %d to bb %d for VSETVL "
-		     "expr[%ld]\n",
-		     ed, eg->src->index, eg->dest->index, i);
+	  if (vector_insert)
+	    {
+	      if (bitmap_bit_p (vector_insert[ed], i))
+		{
+		  fprintf (file,
+			   "\nGlobal LCM (Lazy code motion) INSERT info:\n");
+		  fprintf (file,
+			   "INSERT edge %d from <bb %d> to <bb %d> for VSETVL "
+			   "expr[%ld]\n",
+			   ed, eg->src->index, eg->dest->index, i);
+		}
+	    }
+	  else
+	    {
+	      if (bitmap_bit_p (vector_earliest[ed], i))
+		{
+		  fprintf (file,
+			   "\nGlobal LCM (Lazy code motion) EARLIEST info:\n");
+		  fprintf (
+		    file,
+		    "EARLIEST edge %d from <bb %d> to <bb %d> for VSETVL "
+		    "expr[%ld]\n",
+		    ed, eg->src->index, eg->dest->index, i);
+		}
+	    }
 	}
     }
 }
@@ -2688,6 +2804,7 @@ private:
   vector_block_info &get_block_info (const basic_block);
   vector_block_info &get_block_info (const bb_info *);
   void update_vector_info (const insn_info *, const vector_insn_info &);
+  void update_block_info (int, profile_probability, const vector_insn_info &);
 
   void simple_vsetvl (void) const;
   void lazy_vsetvl (void);
@@ -2702,13 +2819,8 @@ private:
   void emit_local_forward_vsetvls (const bb_info *);
 
   /* Phase 3.  */
-  enum fusion_type get_backward_fusion_type (const bb_info *,
-					     const vector_insn_info &);
-  bool hard_empty_block_p (const bb_info *, const vector_insn_info &) const;
-  bool backward_demand_fusion (void);
-  bool forward_demand_fusion (void);
-  bool cleanup_illegal_dirty_blocks (void);
-  void demand_fusion (void);
+  bool earliest_fusion (void);
+  void vsetvl_fusion (void);
 
   /* Phase 4.  */
   void prune_expressions (void);
@@ -2726,6 +2838,7 @@ private:
   void ssa_post_optimization (void) const;
 
   /* Phase 6.  */
+  bool cleanup_earliest_vsetvls (const basic_block) const;
   void df_post_optimization (void) const;
 
   void init (void);
@@ -2781,6 +2894,17 @@ pass_vsetvl::update_vector_info (const insn_info *i,
 				 const vector_insn_info &new_info)
 {
   m_vector_manager->vector_insn_infos[i->uid ()] = new_info;
+}
+
+void
+pass_vsetvl::update_block_info (int index, profile_probability prob,
+				const vector_insn_info &new_info)
+{
+  m_vector_manager->vector_block_infos[index].probability = prob;
+  if (m_vector_manager->vector_block_infos[index].local_dem
+      == m_vector_manager->vector_block_infos[index].reaching_out)
+    m_vector_manager->vector_block_infos[index].local_dem = new_info;
+  m_vector_manager->vector_block_infos[index].reaching_out = new_info;
 }
 
 /* Simple m_vsetvl_insert vsetvl for optimize == 0.  */
@@ -2839,7 +2963,7 @@ pass_vsetvl::compute_local_backward_infos (const bb_info *bb)
 		    && !reg_available_p (insn, change))
 		  && change.compatible_p (info))
 		{
-		  update_vector_info (insn, change.merge (info, LOCAL_MERGE));
+		  update_vector_info (insn, change.local_merge (info));
 		  /* Fix PR109399, we should update user vsetvl instruction
 		     if there is a change in demand fusion.  */
 		  if (vsetvl_insn_p (insn->rtl ()))
@@ -2957,699 +3081,6 @@ pass_vsetvl::emit_local_forward_vsetvls (const bb_info *bb)
   block_info.reaching_out = curr_info;
 }
 
-enum fusion_type
-pass_vsetvl::get_backward_fusion_type (const bb_info *bb,
-				       const vector_insn_info &prop)
-{
-  insn_info *insn = prop.get_insn ();
-
-  /* TODO: We don't backward propagate the explict VSETVL here
-     since we will change vsetvl and vsetvlmax intrinsics into
-     no side effects which can be optimized into optimal location
-     by GCC internal passes. We only need to support these backward
-     propagation if vsetvl intrinsics have side effects.  */
-  if (vsetvl_insn_p (insn->rtl ()))
-    return INVALID_FUSION;
-
-  gcc_assert (has_vtype_op (insn->rtl ()));
-  rtx reg = NULL_RTX;
-
-  /* Case 1: Don't need VL. Just let it backward propagate.  */
-  if (!prop.demand_p (DEMAND_AVL))
-    return VALID_AVL_FUSION;
-  else
-    {
-      /* Case 2: CONST_INT AVL, we don't need to check def.  */
-      if (prop.has_avl_imm ())
-	return VALID_AVL_FUSION;
-      else
-	{
-	  /* Case 3: REG AVL, we need to check the distance of def to make
-	     sure we won't backward propagate over the def.  */
-	  gcc_assert (prop.has_avl_reg ());
-	  if (vlmax_avl_p (prop.get_avl ()))
-	    /* Check VL operand for vsetvl vl,zero.  */
-	    reg = prop.get_avl_reg_rtx ();
-	  else
-	    /* Check AVL operand for vsetvl zero,avl.  */
-	    reg = prop.get_avl ();
-	}
-    }
-
-  gcc_assert (reg);
-  if (!prop.get_avl_source ()->insn ()->is_phi ()
-      && prop.get_avl_source ()->insn ()->bb () == insn->bb ())
-    return INVALID_FUSION;
-  hash_set<set_info *> sets
-    = get_all_sets (prop.get_avl_source (), true, true, true);
-  if (any_set_in_bb_p (sets, insn->bb ()))
-    return INVALID_FUSION;
-
-  if (vlmax_avl_p (prop.get_avl ()))
-    {
-      if (find_reg_killed_by (bb, reg))
-	return INVALID_FUSION;
-      else
-	return VALID_AVL_FUSION;
-    }
-
-  /* By default, we always enable backward fusion so that we can
-     gain more optimizations.  */
-  if (!find_reg_killed_by (bb, reg))
-    return VALID_AVL_FUSION;
-  return KILLED_AVL_FUSION;
-}
-
-/* We almost enable all cases in get_backward_fusion_type, this function
-   disable the backward fusion by changing dirty blocks into hard empty
-   blocks in forward dataflow. We can have more accurate optimization by
-   this method.  */
-bool
-pass_vsetvl::hard_empty_block_p (const bb_info *bb,
-				 const vector_insn_info &info) const
-{
-  if (!info.dirty_p () || !info.has_avl_reg ())
-    return false;
-
-  basic_block cfg_bb = bb->cfg_bb ();
-  sbitmap avin = m_vector_manager->vector_avin[cfg_bb->index];
-  set_info *set = info.get_avl_source ();
-  rtx avl = gen_rtx_REG (Pmode, set->regno ());
-  hash_set<set_info *> sets = get_all_sets (set, true, false, false);
-  hash_set<basic_block> pred_cfg_bbs = get_all_predecessors (cfg_bb);
-
-  if (find_reg_killed_by (bb, avl))
-    {
-      /* Condition 1:
-	 Dirty block with killed AVL means that the empty block (no RVV
-	 instructions) are polluted as Dirty blocks with the value of current
-	 AVL is killed. For example:
-	      bb 0:
-		...
-	      bb 1:
-		def a5
-	      bb 2:
-		RVV (use a5)
-	 In backward dataflow, we will polluted BB0 and BB1 as Dirt with AVL
-	 killed. since a5 is killed in BB1.
-	 In this case, let's take a look at this example:
-
-	      bb 3:        bb 4:
-		def3 a5       def4 a5
-	      bb 5:        bb 6:
-		def1 a5       def2 a5
-		    \         /
-		     \       /
-		      \     /
-		       \   /
-			bb 7:
-		    RVV (use a5)
-	 In thi case, we can polluted BB5 and BB6 as dirty if get-def
-	 of a5 from RVV instruction in BB7 is the def1 in BB5 and
-	 def2 BB6 so we can return false early here for HARD_EMPTY_BLOCK_P.
-	 However, we are not sure whether BB3 and BB4 can be
-	 polluted as Dirty with AVL killed so we can't return false
-	 for HARD_EMPTY_BLOCK_P here since it's too early which will
-	 potentially produce issues.  */
-      gcc_assert (info.dirty_with_killed_avl_p ());
-      if (info.get_avl_source ()
-	  && get_same_bb_set (sets, bb->cfg_bb ()) == info.get_avl_source ())
-	return false;
-    }
-
-  /* Condition 2:
-     Suppress the VL/VTYPE info backward propagation too early:
-			 ________
-			|   BB0  |
-			|________|
-			    |
-			____|____
-			|   BB1  |
-			|________|
-     In this case, suppose BB 1 has multiple predecessors, BB 0 is one
-     of them. BB1 has VL/VTYPE info (may be VALID or DIRTY) to backward
-     propagate.
-     The AVIN (available in) which is calculated by LCM is empty only
-     in these 2 circumstances:
-       1. all predecessors of BB1 are empty (not VALID
-	  and can not be polluted in backward fusion flow)
-       2. VL/VTYPE info of BB1 predecessors are conflict.
-
-     We keep it as dirty in 2nd circumstance and set it as HARD_EMPTY
-     (can not be polluted as DIRTY any more) in 1st circumstance.
-     We don't backward propagate in 1st circumstance since there is
-     no VALID RVV instruction and no polluted blocks (dirty blocks)
-     by backward propagation from other following blocks.
-     It's meaningless to keep it as Dirty anymore.
-
-     However, since we keep it as dirty in 2nd since there are VALID or
-     Dirty blocks in predecessors, we can still gain the benefits and
-     optimization opportunities. For example, in this case:
-	for (size_t i = 0; i < n; i++)
-	 {
-	   if (i != cond) {
-	     vint8mf8_t v = *(vint8mf8_t*)(in + i + 100);
-	     *(vint8mf8_t*)(out + i + 100) = v;
-	   } else {
-	     vbool1_t v = *(vbool1_t*)(in + i + 400);
-	     *(vbool1_t*)(out + i + 400) = v;
-	   }
-	 }
-     VL/VTYPE in if-else are conflict which will produce empty AVIN LCM result
-     but we can still keep dirty blocks if *(i != cond)* is very unlikely then
-     we can preset vsetvl (VL/VTYPE) info from else (static propability model).
-
-     We don't want to backward propagate VL/VTYPE information too early
-     which is not the optimal and may potentially produce issues.  */
-  if (bitmap_empty_p (avin))
-    {
-      bool hard_empty_p = true;
-      for (const basic_block pred_cfg_bb : pred_cfg_bbs)
-	{
-	  if (pred_cfg_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	    continue;
-	  sbitmap avout = m_vector_manager->vector_avout[pred_cfg_bb->index];
-	  if (!bitmap_empty_p (avout))
-	    {
-	      hard_empty_p = false;
-	      break;
-	    }
-	}
-      if (hard_empty_p)
-	return true;
-    }
-
-  edge e;
-  edge_iterator ei;
-  bool has_avl_killed_insn_p = false;
-  FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-    {
-      const auto block_info
-	= m_vector_manager->vector_block_infos[e->dest->index];
-      if (block_info.local_dem.dirty_with_killed_avl_p ())
-	{
-	  has_avl_killed_insn_p = true;
-	  break;
-	}
-    }
-  if (!has_avl_killed_insn_p)
-    return false;
-
-  bool any_set_in_bbs_p = false;
-  for (const basic_block pred_cfg_bb : pred_cfg_bbs)
-    {
-      insn_info *def_insn = extract_single_source (set);
-      if (def_insn)
-	{
-	  /* Condition 3:
-
-	    Case 1:                               Case 2:
-		bb 0:                                 bb 0:
-		  def a5 101                             ...
-		bb 1:                                 bb 1:
-		  ...                                    ...
-		bb 2:                                 bb 2:
-		  RVV 1 (use a5 with TAIL ANY)           ...
-		bb 3:                                 bb 3:
-		  def a5 101                             def a5 101
-		bb 4:                                 bb 4:
-		  ...                                    ...
-		bb 5:                                 bb 5:
-		  RVV 2 (use a5 with TU)                 RVV 1 (use a5)
-
-	    Case 1: We can pollute BB3,BB2,BB1,BB0 are all Dirt blocks
-	    with killed AVL so that we can merge TU demand info from RVV 2
-	    into RVV 1 and elide the vsevl instruction in BB5.
-
-	    TODO: We only optimize for single source def since multiple source
-	    def is quite complicated.
-
-	    Case 2: We only can pollute bb 3 as dirty and it has been accepted
-	    in Condition 2 and we can't pollute BB3,BB2,BB1,BB0 like case 1. */
-	  insn_info *last_killed_insn
-	    = find_reg_killed_by (crtl->ssa->bb (pred_cfg_bb), avl);
-	  if (!last_killed_insn || pred_cfg_bb == def_insn->bb ()->cfg_bb ())
-	    continue;
-	  if (source_equal_p (last_killed_insn, def_insn))
-	    {
-	      any_set_in_bbs_p = true;
-	      break;
-	    }
-	}
-      else
-	{
-	  /* Condition 4:
-
-	      bb 0:        bb 1:         bb 3:
-		def1 a5       def2 a5     ...
-		    \         /            /
-		     \       /            /
-		      \     /            /
-		       \   /            /
-			bb 4:          /
-			 |            /
-			 |           /
-			bb 5:       /
-			 |         /
-			 |        /
-			bb 6:    /
-			 |      /
-			 |     /
-			  bb 8:
-			RVV 1 (use a5)
-	  If we get-def (REAL) of a5 from RVV 1 instruction, we will get
-	  def1 from BB0 and def2 from BB1. So we will pollute BB6,BB5,BB4,
-	  BB0,BB1 with DIRTY and set BB3 as HARD_EMPTY so that we won't
-	  propagate AVL to BB3.  */
-	  if (any_set_in_bb_p (sets, crtl->ssa->bb (pred_cfg_bb)))
-	    {
-	      any_set_in_bbs_p = true;
-	      break;
-	    }
-	}
-    }
-  if (!any_set_in_bbs_p)
-    return true;
-  return false;
-}
-
-/* Compute global backward demanded info.  */
-bool
-pass_vsetvl::backward_demand_fusion (void)
-{
-  /* We compute global infos by backward propagation.
-     We want to have better performance in these following cases:
-
-	1. for (size_t i = 0; i < n; i++) {
-	     if (i != cond) {
-	       vint8mf8_t v = *(vint8mf8_t*)(in + i + 100);
-	       *(vint8mf8_t*)(out + i + 100) = v;
-	     } else {
-	       vbool1_t v = *(vbool1_t*)(in + i + 400);
-	       *(vbool1_t*)(out + i + 400) = v;
-	     }
-	   }
-
-	   Since we don't have any RVV instruction in the BEFORE blocks,
-	   LCM fails to optimize such case. We want to backward propagate
-	   them into empty blocks so that we could have better performance
-	   in LCM.
-
-	2. bb 0:
-	     vsetvl e8,mf8 (demand RATIO)
-	   bb 1:
-	     vsetvl e32,mf2 (demand SEW and LMUL)
-	   We backward propagate the first VSETVL into e32,mf2 so that we
-	   could be able to eliminate the second VSETVL in LCM.  */
-
-  bool changed_p = false;
-  for (const bb_info *bb : crtl->ssa->reverse_bbs ())
-    {
-      basic_block cfg_bb = bb->cfg_bb ();
-      const auto &curr_block_info
-	= m_vector_manager->vector_block_infos[cfg_bb->index];
-      const auto &prop = curr_block_info.local_dem;
-
-      /* If there is nothing to propagate, just skip it.  */
-      if (!prop.valid_or_dirty_p ())
-	continue;
-
-      if (!backward_propagate_worthwhile_p (cfg_bb, curr_block_info))
-	continue;
-
-      /* Fix PR108270:
-
-		bb 0 -> bb 1
-	 We don't need to backward fuse VL/VTYPE info from bb 1 to bb 0
-	 if bb 1 is not inside a loop and all predecessors of bb 0 are empty. */
-      if (m_vector_manager->all_empty_predecessor_p (cfg_bb))
-	continue;
-
-      edge e;
-      edge_iterator ei;
-      /* Backward propagate to each predecessor.  */
-      FOR_EACH_EDGE (e, ei, cfg_bb->preds)
-	{
-	  auto &block_info
-	    = m_vector_manager->vector_block_infos[e->src->index];
-
-	  /* We don't propagate through critical edges.  */
-	  if (e->flags & EDGE_COMPLEX)
-	    continue;
-	  if (e->src->index == ENTRY_BLOCK_PTR_FOR_FN (cfun)->index)
-	    continue;
-	  /* If prop is demand of vsetvl instruction and reaching doesn't demand
-	     AVL. We don't backward propagate since vsetvl instruction has no
-	     side effects.  */
-	  if (vsetvl_insn_p (prop.get_insn ()->rtl ())
-	      && propagate_avl_across_demands_p (prop, block_info.reaching_out))
-	    continue;
-
-	  if (block_info.reaching_out.unknown_p ())
-	    continue;
-	  else if (block_info.reaching_out.hard_empty_p ())
-	    continue;
-	  else if (block_info.reaching_out.empty_p ())
-	    {
-	      enum fusion_type type
-		= get_backward_fusion_type (crtl->ssa->bb (e->src), prop);
-	      if (type == INVALID_FUSION)
-		continue;
-
-	      block_info.reaching_out = prop;
-	      block_info.reaching_out.set_dirty (type);
-
-	      if (prop.has_avl_reg () && !vlmax_avl_p (prop.get_avl ()))
-		{
-		  hash_set<set_info *> sets
-		    = get_all_sets (prop.get_avl_source (), true, true, true);
-		  set_info *set = get_same_bb_set (sets, e->src);
-		  if (set)
-		    block_info.reaching_out.set_avl_info (
-		      avl_info (prop.get_avl (), set));
-		}
-
-	      block_info.local_dem = block_info.reaching_out;
-	      block_info.probability = curr_block_info.probability;
-	      changed_p = true;
-	    }
-	  else if (block_info.reaching_out.dirty_p ())
-	    {
-	      /* DIRTY -> DIRTY or VALID -> DIRTY.  */
-
-	      /* Forbidden this case fuse because it change the value of a5.
-		   bb 1: vsetvl zero, no_zero_avl
-			 ...
-			 use a5
-			 ...
-		   bb 2: vsetvl a5, zero
-		 =>
-		   bb 1: vsetvl a5, zero
-			 ...
-			 use a5
-			 ...
-		   bb 2:
-	      */
-	      if (block_info.reaching_out.demand_p (DEMAND_NONZERO_AVL)
-		  && vlmax_avl_p (prop.get_avl ()))
-		continue;
-	      vector_insn_info new_info;
-
-	      if (block_info.reaching_out.compatible_p (prop))
-		{
-		  if (block_info.reaching_out.available_p (prop))
-		    continue;
-		  new_info = block_info.reaching_out.merge (prop, GLOBAL_MERGE);
-		  new_info.set_dirty (
-		    block_info.reaching_out.dirty_with_killed_avl_p ());
-		  block_info.probability += curr_block_info.probability;
-		}
-	      else
-		{
-		  if (curr_block_info.probability > block_info.probability)
-		    {
-		      enum fusion_type type
-			= get_backward_fusion_type (crtl->ssa->bb (e->src),
-						    prop);
-		      if (type == INVALID_FUSION)
-			continue;
-		      new_info = prop;
-		      new_info.set_dirty (type);
-		      block_info.probability = curr_block_info.probability;
-		    }
-		  else
-		    continue;
-		}
-
-	      if (propagate_avl_across_demands_p (prop,
-						  block_info.reaching_out))
-		{
-		  rtx reg = new_info.get_avl_reg_rtx ();
-		  if (find_reg_killed_by (crtl->ssa->bb (e->src), reg))
-		    new_info.set_dirty (true);
-		}
-
-	      block_info.local_dem = new_info;
-	      block_info.reaching_out = new_info;
-	      changed_p = true;
-	    }
-	  else
-	    {
-	      /* We not only change the info during backward propagation,
-		 but also change the VSETVL instruction.  */
-	      gcc_assert (block_info.reaching_out.valid_p ());
-	      hash_set<set_info *> sets
-		= get_all_sets (prop.get_avl_source (), true, false, false);
-	      set_info *set = get_same_bb_set (sets, e->src);
-	      if (vsetvl_insn_p (block_info.reaching_out.get_insn ()->rtl ())
-		  && prop.has_avl_reg () && !vlmax_avl_p (prop.get_avl ()))
-		{
-		  if (!block_info.reaching_out.same_vlmax_p (prop))
-		    continue;
-		  if (block_info.reaching_out.same_vtype_p (prop))
-		    continue;
-		  if (!set)
-		    continue;
-		  if (set->insn () != block_info.reaching_out.get_insn ())
-		    continue;
-		}
-
-	      if (!block_info.reaching_out.compatible_p (prop))
-		continue;
-	      if (block_info.reaching_out.available_p (prop))
-		continue;
-
-	      vector_insn_info be_merged = block_info.reaching_out;
-	      if (block_info.local_dem == block_info.reaching_out)
-		be_merged = block_info.local_dem;
-	      vector_insn_info new_info = be_merged.merge (prop, GLOBAL_MERGE);
-
-	      if (curr_block_info.probability > block_info.probability)
-		block_info.probability = curr_block_info.probability;
-
-	      if (propagate_avl_across_demands_p (prop, block_info.reaching_out)
-		  && !reg_available_p (crtl->ssa->bb (e->src)->end_insn (),
-				       new_info))
-		continue;
-
-	      rtx vl = NULL_RTX;
-	      /* Backward VLMAX VL:
-		   bb 3:
-		     vsetivli zero, 1 ... -> vsetvli t1, zero
-		     vmv.s.x
-		   bb 5:
-		     vsetvli t1, zero ... -> to be elided.
-		     vlse16.v
-
-		   We should forward "t1".  */
-	      if (!block_info.reaching_out.has_avl_reg ()
-		  && vlmax_avl_p (new_info.get_avl ()))
-		vl = get_vl (prop.get_insn ()->rtl ());
-	      change_vsetvl_insn (new_info.get_insn (), new_info, vl);
-	      if (block_info.local_dem == block_info.reaching_out)
-		block_info.local_dem = new_info;
-	      block_info.reaching_out = new_info;
-	      changed_p = true;
-	    }
-	}
-    }
-  return changed_p;
-}
-
-/* Compute global forward demanded info.  */
-bool
-pass_vsetvl::forward_demand_fusion (void)
-{
-  /* Enhance the global information propagation especially
-     backward propagation miss the propagation.
-     Consider such case:
-
-			bb0
-			(TU)
-		       /   \
-		     bb1   bb2
-		     (TU)  (ANY)
-  existing edge -----> \    / (TU) <----- LCM create this edge.
-			bb3
-			(TU)
-
-     Base on the situation, LCM fails to eliminate the VSETVL instruction and
-     insert an edge from bb2 to bb3 since we can't backward propagate bb3 into
-     bb2. To avoid this confusing LCM result and non-optimal codegen, we should
-     forward propagate information from bb0 to bb2 which is friendly to LCM.  */
-  bool changed_p = false;
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      basic_block cfg_bb = bb->cfg_bb ();
-      const auto &prop
-	= m_vector_manager->vector_block_infos[cfg_bb->index].reaching_out;
-
-      /* If there is nothing to propagate, just skip it.  */
-      if (!prop.valid_or_dirty_p ())
-	continue;
-
-      if (cfg_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	continue;
-
-      if (vsetvl_insn_p (prop.get_insn ()->rtl ()))
-	continue;
-
-      edge e;
-      edge_iterator ei;
-      /* Forward propagate to each successor.  */
-      FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-	{
-	  auto &local_dem
-	    = m_vector_manager->vector_block_infos[e->dest->index].local_dem;
-	  auto &reaching_out
-	    = m_vector_manager->vector_block_infos[e->dest->index].reaching_out;
-
-	  /* It's quite obvious, we don't need to propagate itself.  */
-	  if (e->dest->index == cfg_bb->index)
-	    continue;
-	  /* We don't propagate through critical edges.  */
-	  if (e->flags & EDGE_COMPLEX)
-	    continue;
-	  if (e->dest->index == EXIT_BLOCK_PTR_FOR_FN (cfun)->index)
-	    continue;
-
-	  /* If there is nothing to propagate, just skip it.  */
-	  if (!local_dem.valid_or_dirty_p ())
-	    continue;
-	  if (local_dem.available_p (prop))
-	    continue;
-	  if (!local_dem.compatible_p (prop))
-	    continue;
-	  if (propagate_avl_across_demands_p (prop, local_dem))
-	    continue;
-
-	  vector_insn_info new_info = local_dem.merge (prop, GLOBAL_MERGE);
-	  new_info.set_insn (local_dem.get_insn ());
-	  if (local_dem.dirty_p ())
-	    {
-	      gcc_assert (local_dem == reaching_out);
-	      new_info.set_dirty (local_dem.dirty_with_killed_avl_p ());
-	      local_dem = new_info;
-	      reaching_out = local_dem;
-	    }
-	  else
-	    {
-	      if (reaching_out == local_dem)
-		reaching_out = new_info;
-	      local_dem = new_info;
-	      change_vsetvl_insn (local_dem.get_insn (), new_info);
-	    }
-	  auto &prob
-	    = m_vector_manager->vector_block_infos[e->dest->index].probability;
-	  auto &curr_prob
-	    = m_vector_manager->vector_block_infos[cfg_bb->index].probability;
-	  prob = curr_prob * e->probability;
-	  changed_p = true;
-	}
-    }
-  return changed_p;
-}
-
-void
-pass_vsetvl::demand_fusion (void)
-{
-  bool changed_p = true;
-  while (changed_p)
-    {
-      changed_p = false;
-      /* To optimize the case like this:
-	 void f2 (int8_t * restrict in, int8_t * restrict out, int n, int cond)
-	   {
-	     size_t vl = 101;
-
-	     for (size_t i = 0; i < n; i++)
-	       {
-		 vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i + 300, vl);
-		 __riscv_vse8_v_i8mf8 (out + i + 300, v, vl);
-	       }
-
-	     for (size_t i = 0; i < n; i++)
-	       {
-		 vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i, vl);
-		 __riscv_vse8_v_i8mf8 (out + i, v, vl);
-
-		 vint8mf8_t v2 = __riscv_vle8_v_i8mf8_tu (v, in + i + 100, vl);
-		 __riscv_vse8_v_i8mf8 (out + i + 100, v2, vl);
-	       }
-	   }
-
-	  bb 0: li a5, 101 (killed avl)
-	  ...
-	  bb 1: vsetvli zero, a5, ta
-	  ...
-	  bb 2: li a5, 101 (killed avl)
-	  ...
-	  bb 3: vsetvli zero, a3, tu
-
-	We want to fuse VSEVLI instructions on bb 1 and bb 3. However, there is
-	an AVL kill instruction in bb 2 that we can't backward fuse bb 3 or
-	forward bb 1 arbitrarily. We need available information of each block to
-	help for such cases.  */
-      changed_p |= backward_demand_fusion ();
-      changed_p |= forward_demand_fusion ();
-    }
-
-  changed_p = true;
-  while (changed_p)
-    {
-      changed_p = false;
-      prune_expressions ();
-      m_vector_manager->create_bitmap_vectors ();
-      compute_local_properties ();
-      compute_available (m_vector_manager->vector_comp,
-			 m_vector_manager->vector_kill,
-			 m_vector_manager->vector_avout,
-			 m_vector_manager->vector_avin);
-      changed_p |= cleanup_illegal_dirty_blocks ();
-      m_vector_manager->free_bitmap_vectors ();
-      if (!m_vector_manager->vector_exprs.is_empty ())
-	m_vector_manager->vector_exprs.release ();
-    }
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n\nDirty blocks list: ");
-      for (const bb_info *bb : crtl->ssa->bbs ())
-	if (m_vector_manager->vector_block_infos[bb->index ()]
-	      .reaching_out.dirty_p ())
-	  fprintf (dump_file, "%d ", bb->index ());
-      fprintf (dump_file, "\n\n");
-    }
-}
-
-/* Cleanup illegal dirty blocks.  */
-bool
-pass_vsetvl::cleanup_illegal_dirty_blocks (void)
-{
-  bool changed_p = false;
-  for (const bb_info *bb : crtl->ssa->bbs ())
-    {
-      basic_block cfg_bb = bb->cfg_bb ();
-      const auto &prop
-	= m_vector_manager->vector_block_infos[cfg_bb->index].reaching_out;
-
-      /* If there is nothing to cleanup, just skip it.  */
-      if (!prop.valid_or_dirty_p ())
-	continue;
-
-      if (hard_empty_block_p (bb, prop))
-	{
-	  m_vector_manager->vector_block_infos[cfg_bb->index].local_dem
-	    = vector_insn_info::get_hard_empty ();
-	  m_vector_manager->vector_block_infos[cfg_bb->index].reaching_out
-	    = vector_insn_info::get_hard_empty ();
-	  changed_p = true;
-	  continue;
-	}
-    }
-  return changed_p;
-}
-
 /* Assemble the candidates expressions for LCM.  */
 void
 pass_vsetvl::prune_expressions (void)
@@ -3730,57 +3161,35 @@ pass_vsetvl::compute_local_properties (void)
       /* Compute transparent.  */
       for (size_t i = 0; i < m_vector_manager->vector_exprs.length (); i++)
 	{
-	  const vector_insn_info *expr = m_vector_manager->vector_exprs[i];
-	  if (local_dem.real_dirty_p () || local_dem.valid_p ()
-	      || local_dem.unknown_p ()
-	      || has_vsetvl_killed_avl_p (bb, local_dem))
+	  const auto *expr = m_vector_manager->vector_exprs[i];
+	  if (local_dem.valid_or_dirty_p () || local_dem.unknown_p ())
 	    bitmap_clear_bit (m_vector_manager->vector_transp[curr_bb_idx], i);
-	  /* FIXME: Here we set the block as non-transparent (killed) if there
-	     is an instruction killed the value of AVL according to the
-	     definition of Local transparent. This is true for such following
-	     case:
-
-		bb 0 (Loop label):
-		  vsetvl zero, a5, e8, mf8
-		bb 1:
-		  def a5
-		bb 2:
-		  branch bb 0 (Loop label).
-
-	     In this case, we known there is a loop bb 0->bb 1->bb 2. According
-	     to LCM definition, it is correct when we set vsetvl zero, a5, e8,
-	     mf8 as non-transparent (killed) so that LCM will not hoist outside
-	     the bb 0.
-
-	     However, such conservative configuration will forbid optimization
-	     on some unlucky case. For example:
-
-		bb 0:
-		  li a5, 101
-		bb 1:
-		  vsetvl zero, a5, e8, mf8
-		bb 2:
-		  li a5, 101
-		bb 3:
-		  vsetvl zero, a5, e8, mf8.
-	     So we also relax def a5 as transparent to gain more optimizations
-	     as long as the all real def insn of avl do not come from this
-	     block. This configuration may be still missing some optimization
-	     opportunities.  */
-	  if (find_reg_killed_by (bb, expr->get_avl ()))
+	  else if (expr->has_avl_reg ())
 	    {
-	      hash_set<set_info *> sets
-		= get_all_sets (expr->get_avl_source (), true, false, false);
-	      if (any_set_in_bb_p (sets, bb))
-		bitmap_clear_bit (m_vector_manager->vector_transp[curr_bb_idx],
-				  i);
+	      rtx avl = vlmax_avl_p (expr->get_avl ())
+			  ? get_vl (expr->get_insn ()->rtl ())
+			  : expr->get_avl ();
+	      for (const insn_info *insn : bb->real_nondebug_insns ())
+		{
+		  if (find_access (insn->defs (), REGNO (avl)))
+		    {
+		      bitmap_clear_bit (
+			m_vector_manager->vector_transp[curr_bb_idx], i);
+		      break;
+		    }
+		  else if (vlmax_avl_p (expr->get_avl ())
+			   && find_access (insn->uses (), REGNO (avl)))
+		    {
+		      bitmap_clear_bit (
+			m_vector_manager->vector_transp[curr_bb_idx], i);
+		      break;
+		    }
+		}
 	    }
 	}
 
       /* Compute anticipatable occurrences.  */
-      if (local_dem.valid_p () || local_dem.real_dirty_p ()
-	  || (has_vsetvl_killed_avl_p (bb, local_dem)
-	      && vlmax_avl_p (local_dem.get_avl ())))
+      if (local_dem.valid_or_dirty_p ())
 	if (anticipatable_occurrence_p (bb, local_dem))
 	  bitmap_set_bit (m_vector_manager->vector_antic[curr_bb_idx],
 			  m_vector_manager->get_expr_id (local_dem));
@@ -3794,13 +3203,17 @@ pass_vsetvl::compute_local_properties (void)
 	    {
 	      const vector_insn_info *expr
 		= m_vector_manager->vector_exprs[available_list[i]];
-	      if (reaching_out.real_dirty_p ()
-		  || has_vsetvl_killed_avl_p (bb, reaching_out)
-		  || available_occurrence_p (bb, *expr))
+	      if (available_occurrence_p (bb, *expr))
 		bitmap_set_bit (m_vector_manager->vector_comp[curr_bb_idx],
 				available_list[i]);
 	    }
 	}
+
+      if (loop_basic_block_p (bb->cfg_bb ()) && local_dem.valid_or_dirty_p ()
+	  && reaching_out.valid_or_dirty_p ()
+	  && !local_dem.compatible_p (reaching_out))
+	bitmap_clear_bit (m_vector_manager->vector_antic[curr_bb_idx],
+			  m_vector_manager->get_expr_id (local_dem));
     }
 
   /* Compute kill for each basic block using:
@@ -3843,6 +3256,153 @@ pass_vsetvl::compute_local_properties (void)
 	    bitmap_clear (m_vector_manager->vector_antic[cfg_bb->index]);
 	    bitmap_clear (m_vector_manager->vector_transp[cfg_bb->index]);
 	  }
+    }
+}
+
+/* Fuse demand info for earliest edge.  */
+bool
+pass_vsetvl::earliest_fusion (void)
+{
+  bool changed_p = false;
+  for (int ed = 0; ed < NUM_EDGES (m_vector_manager->vector_edge_list); ed++)
+    {
+      for (size_t i = 0; i < m_vector_manager->vector_exprs.length (); i++)
+	{
+	  auto &expr = *m_vector_manager->vector_exprs[i];
+	  if (expr.empty_p ())
+	    continue;
+	  edge eg = INDEX_EDGE (m_vector_manager->vector_edge_list, ed);
+	  if (eg->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	      || eg->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	    break;
+	  if (bitmap_bit_p (m_vector_manager->vector_earliest[ed], i))
+	    {
+	      auto &src_block_info = get_block_info (eg->src);
+	      auto &dest_block_info = get_block_info (eg->dest);
+	      if (src_block_info.reaching_out.unknown_p ())
+		break;
+
+	      gcc_assert (!(eg->flags & EDGE_ABNORMAL));
+	      vector_insn_info new_info = vector_insn_info ();
+	      profile_probability prob = src_block_info.probability;
+
+	      if (src_block_info.reaching_out.empty_p ())
+		{
+		  if (src_block_info.probability
+			== profile_probability::uninitialized ()
+		      || vsetvl_insn_p (expr.get_insn ()->rtl ()))
+		    continue;
+		  new_info = expr.global_merge (expr, eg->src->index);
+		  new_info.set_dirty ();
+		  prob = dest_block_info.probability;
+		  update_block_info (eg->src->index, prob, new_info);
+		  changed_p = true;
+		}
+	      else if (src_block_info.reaching_out.dirty_p ())
+		{
+		  /* DIRTY -> DIRTY or VALID -> DIRTY.  */
+		  if (demands_can_be_fused_p (src_block_info.reaching_out,
+					      expr))
+		    {
+		      new_info = src_block_info.reaching_out.global_merge (
+			expr, eg->src->index);
+		      new_info.set_dirty ();
+		      prob += dest_block_info.probability;
+		    }
+		  else if (!src_block_info.reaching_out.compatible_p (expr)
+			   && !m_vector_manager->earliest_fusion_worthwhile_p (
+			     eg->src))
+		    {
+		      new_info.set_empty ();
+		      prob = profile_probability::uninitialized ();
+		    }
+		  else if (!src_block_info.reaching_out.compatible_p (expr)
+			   && dest_block_info.probability
+				> src_block_info.probability)
+		    {
+		      new_info = expr;
+		      new_info.set_dirty ();
+		      prob = dest_block_info.probability;
+		    }
+		  else
+		    continue;
+		  update_block_info (eg->src->index, prob, new_info);
+		  changed_p = true;
+		}
+	      else
+		{
+		  rtx vl = NULL_RTX;
+		  if (vsetvl_insn_p (
+			src_block_info.reaching_out.get_insn ()->rtl ())
+		      && vsetvl_dominated_by_p (eg->src, expr,
+						src_block_info.reaching_out,
+						true))
+		    ;
+		  else if (!demands_can_be_fused_p (src_block_info.reaching_out,
+						    expr))
+		    continue;
+		  else if (!earliest_pred_can_be_fused_p (
+			     crtl->ssa->bb (eg->src),
+			     src_block_info.reaching_out, expr, &vl))
+		    continue;
+
+		  vector_insn_info new_info
+		    = src_block_info.reaching_out.global_merge (expr,
+								eg->src->index);
+
+		  prob = std::max (dest_block_info.probability,
+				   src_block_info.probability);
+		  change_vsetvl_insn (new_info.get_insn (), new_info, vl);
+		  update_block_info (eg->src->index, prob, new_info);
+		  changed_p = true;
+		}
+	    }
+	}
+    }
+  return changed_p;
+}
+
+/* Fuse VSETVL demand info according LCM computed location.  */
+void
+pass_vsetvl::vsetvl_fusion (void)
+{
+  /* Fuse VSETVL demand info until VSETVL CFG fixed.  */
+  bool changed_p = true;
+  int fusion_no = 0;
+  while (changed_p)
+    {
+      changed_p = false;
+      fusion_no++;
+      prune_expressions ();
+      m_vector_manager->create_bitmap_vectors ();
+      compute_local_properties ();
+      /* Compute global availability.  */
+      compute_available (m_vector_manager->vector_comp,
+			 m_vector_manager->vector_kill,
+			 m_vector_manager->vector_avout,
+			 m_vector_manager->vector_avin);
+      /* Compute global anticipatability.  */
+      compute_antinout_edge (m_vector_manager->vector_antic,
+			     m_vector_manager->vector_transp,
+			     m_vector_manager->vector_antin,
+			     m_vector_manager->vector_antout);
+      /* Compute earliestness.  */
+      compute_earliest (m_vector_manager->vector_edge_list,
+			m_vector_manager->vector_exprs.length (),
+			m_vector_manager->vector_antin,
+			m_vector_manager->vector_antout,
+			m_vector_manager->vector_avout,
+			m_vector_manager->vector_kill,
+			m_vector_manager->vector_earliest);
+      changed_p |= earliest_fusion ();
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nEARLIEST fusion %d\n", fusion_no);
+	  m_vector_manager->dump (dump_file);
+	}
+      m_vector_manager->free_bitmap_vectors ();
+      if (!m_vector_manager->vector_exprs.is_empty ())
+	m_vector_manager->vector_exprs.release ();
     }
 }
 
@@ -4018,6 +3578,16 @@ pass_vsetvl::commit_vsetvls (void)
 	      gcc_assert (!(eg->flags & EDGE_ABNORMAL));
 	      need_commit = true;
 	      insert_insn_on_edge (rinsn, eg);
+
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "\nInsert vsetvl insn %d at edge %d from <bb %d> to "
+			   "<bb %d>:\n",
+			   INSN_UID (rinsn), ed, eg->src->index,
+			   eg->dest->index);
+		  print_rtl_single (dump_file, rinsn);
+		}
 	    }
 	}
     }
@@ -4028,28 +3598,6 @@ pass_vsetvl::commit_vsetvls (void)
       const auto reaching_out = get_block_info (cfg_bb).reaching_out;
       if (!reaching_out.dirty_p ())
 	continue;
-
-      if (reaching_out.dirty_with_killed_avl_p ())
-	{
-	  if (!has_vsetvl_killed_avl_p (bb, reaching_out))
-	    continue;
-
-	  unsigned int bb_index;
-	  sbitmap_iterator sbi;
-	  sbitmap avin = m_vector_manager->vector_avin[cfg_bb->index];
-	  bool available_p = false;
-	  EXECUTE_IF_SET_IN_BITMAP (avin, 0, bb_index, sbi)
-	    {
-	      if (m_vector_manager->vector_exprs[bb_index]->available_p (
-		    reaching_out))
-		{
-		  available_p = true;
-		  break;
-		}
-	    }
-	  if (available_p)
-	    continue;
-	}
 
       rtx new_pat;
       if (!reaching_out.demand_p (DEMAND_AVL))
@@ -4062,23 +3610,60 @@ pass_vsetvl::commit_vsetvls (void)
 	new_pat
 	  = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, reaching_out, NULL_RTX);
       else if (vlmax_avl_p (reaching_out.get_avl ()))
-	new_pat = gen_vsetvl_pat (VSETVL_NORMAL, reaching_out,
-				  reaching_out.get_avl_reg_rtx ());
+	{
+	  rtx vl = NULL_RTX;
+	  /* For user VSETVL VL, AVL. We need to use VL operand here, so we
+	     don't directly use get_avl_reg_rtx (). Instead, we use the VL
+	     of the INSN->RTL ().  */
+	  if (!reaching_out.get_avl_source ())
+	    {
+	      gcc_assert (vsetvl_insn_p (reaching_out.get_insn ()->rtl ()));
+	      vl = get_vl (reaching_out.get_insn ()->rtl ());
+	    }
+	  else
+	    vl = reaching_out.get_avl_reg_rtx ();
+	  new_pat = gen_vsetvl_pat (VSETVL_NORMAL, reaching_out, vl);
+	}
       else
 	new_pat
 	  = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, reaching_out, NULL_RTX);
 
-      start_sequence ();
-      emit_insn (new_pat);
-      rtx_insn *rinsn = get_insns ();
-      end_sequence ();
-      rtx_insn *new_insn = insert_insn_end_basic_block (rinsn, cfg_bb);
-      if (dump_file)
+      edge eg;
+      edge_iterator eg_iterator;
+      FOR_EACH_EDGE (eg, eg_iterator, cfg_bb->succs)
 	{
-	  fprintf (dump_file,
-		   "\nInsert vsetvl insn %d at the end of <bb %d>:\n",
-		   INSN_UID (new_insn), cfg_bb->index);
-	  print_rtl_single (dump_file, new_insn);
+	  /* We should not get an abnormal edge here.  */
+	  gcc_assert (!(eg->flags & EDGE_ABNORMAL));
+	  /* We failed to optimize this case in Phase 3 (earliest fusion):
+
+		bb 2: vsetvl a5, a3 ...
+		      goto bb 4
+		bb 3: vsetvl a5, a2 ...
+		      goto bb 4
+		bb 4: vsetvli zero, a5 ---> Redundant, should be elided.
+
+	     Since "a5" value can come from either bb 2 or bb 3, we can't make
+	     it optimized in Phase 3 which will make phase 3 so complicated.
+	     Now, we do post optimization here to elide the redundant VSETVL
+	     insn in bb4.   */
+	  if (m_vector_manager->vsetvl_dominated_by_all_preds_p (cfg_bb,
+								 reaching_out))
+	    continue;
+
+	  start_sequence ();
+	  emit_insn (copy_rtx (new_pat));
+	  rtx_insn *rinsn = get_insns ();
+	  end_sequence ();
+
+	  insert_insn_on_edge (rinsn, eg);
+	  need_commit = true;
+	  if (dump_file)
+	    {
+	      fprintf (dump_file,
+		       "\nInsert vsetvl insn %d from <bb %d> to <bb %d>:\n",
+		       INSN_UID (rinsn), cfg_bb->index, eg->dest->index);
+	      print_rtl_single (dump_file, rinsn);
+	    }
 	}
     }
 
@@ -4276,7 +3861,7 @@ pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
 	     compatible before merge.  */
 	  prev_dem.set_avl_info (curr_dem.get_avl_info ());
 	  /* Merge both and update into curr_vsetvl.  */
-	  prev_dem = curr_dem.merge (prev_dem, LOCAL_MERGE);
+	  prev_dem = curr_dem.local_merge (prev_dem);
 	  change_vsetvl_insn (curr_dem.get_insn (), prev_dem);
 	  /* Then we can drop prev_vsetvl.  */
 	  eliminate_insn (prev_vsetvl);
@@ -4303,8 +3888,11 @@ pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
    none exists or if a user RVV instruction is enountered
    prior to any vsetvl.  */
 static rtx_insn *
-get_first_vsetvl_before_rvv_insns (basic_block cfg_bb)
+get_first_vsetvl_before_rvv_insns (basic_block cfg_bb,
+				   enum vsetvl_type insn_type)
 {
+  gcc_assert (insn_type == VSETVL_DISCARD_RESULT
+	      || insn_type == VSETVL_VTYPE_CHANGE_ONLY);
   rtx_insn *rinsn;
   FOR_BB_INSNS (cfg_bb, rinsn)
     {
@@ -4315,7 +3903,11 @@ get_first_vsetvl_before_rvv_insns (basic_block cfg_bb)
       if (has_vtype_op (rinsn) || vsetvl_insn_p (rinsn))
 	return nullptr;
 
-      if (vsetvl_discard_result_insn_p (rinsn))
+      if (insn_type == VSETVL_DISCARD_RESULT
+	  && vsetvl_discard_result_insn_p (rinsn))
+	return rinsn;
+      if (insn_type == VSETVL_VTYPE_CHANGE_ONLY
+	  && vsetvl_vtype_change_only_p (rinsn))
 	return rinsn;
     }
   return nullptr;
@@ -4363,7 +3955,8 @@ pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
     {
       /* Optimize the local vsetvl.  */
       dem = block_info.local_dem;
-      vsetvl_rinsn = get_first_vsetvl_before_rvv_insns (cfg_bb);
+      vsetvl_rinsn
+	= get_first_vsetvl_before_rvv_insns (cfg_bb, VSETVL_DISCARD_RESULT);
     }
   if (!vsetvl_rinsn)
     /* Optimize the global vsetvl inserted by LCM.  */
@@ -4443,7 +4036,7 @@ pass_vsetvl::global_eliminate_vsetvl_insn (const bb_info *bb) const
 	     compatible before merge.  */
 	  curr_dem.set_avl_info (prev_dem.get_avl_info ());
 	  /* Merge both and update into curr_vsetvl.  */
-	  prev_dem = curr_dem.merge (prev_dem, LOCAL_MERGE);
+	  prev_dem = curr_dem.local_merge (prev_dem);
 	  change_vsetvl_insn (insn, prev_dem);
 	}
     }
@@ -4556,6 +4149,61 @@ has_no_uses (basic_block cfg_bb, rtx_insn *rinsn, int regno)
   return true;
 }
 
+/* For many reasons, we failed to elide the redundant vsetvls
+   in Phase 3 and Phase 4.
+
+     - VLMAX-AVL case: 'vlmax_avl<mode>' may locate at some unlucky
+       point which make us set ANTLOC as false for LCM in 'O1'.
+       We don't want to complicate phase 3 and phase 4 too much,
+       so we do the post optimization for redundant VSETVLs here.
+*/
+bool
+pass_vsetvl::cleanup_earliest_vsetvls (const basic_block cfg_bb) const
+{
+  bool is_earliest_p = false;
+  if (cfg_bb->index >= (int) m_vector_manager->vector_block_infos.length ())
+    is_earliest_p = true;
+
+  rtx_insn *rinsn
+    = get_first_vsetvl_before_rvv_insns (cfg_bb, VSETVL_VTYPE_CHANGE_ONLY);
+  if (!rinsn)
+    return is_earliest_p;
+
+  sbitmap avail;
+  if (is_earliest_p)
+    {
+      gcc_assert (single_succ_p (cfg_bb) && single_pred_p (cfg_bb));
+      const bb_info *pred_bb = crtl->ssa->bb (single_pred (cfg_bb));
+      gcc_assert (pred_bb->index ()
+		  < m_vector_manager->vector_block_infos.length ());
+      avail = m_vector_manager->vector_avout[pred_bb->index ()];
+    }
+  else
+    avail = m_vector_manager->vector_avin[cfg_bb->index];
+
+  if (!bitmap_empty_p (avail))
+    {
+      unsigned int bb_index;
+      sbitmap_iterator sbi;
+      vector_insn_info strictest_info = vector_insn_info ();
+      EXECUTE_IF_SET_IN_BITMAP (avail, 0, bb_index, sbi)
+	{
+	  const auto *expr = m_vector_manager->vector_exprs[bb_index];
+	  if (strictest_info.uninit_p ()
+	      || !expr->compatible_p (
+		static_cast<const vl_vtype_info &> (strictest_info)))
+	    strictest_info = *expr;
+	}
+      vector_insn_info info;
+      info.parse_insn (rinsn);
+      if (!strictest_info.same_vtype_p (info))
+	return is_earliest_p;
+      eliminate_insn (rinsn);
+    }
+
+  return is_earliest_p;
+}
+
 /* This function does the following post optimization base on dataflow
    analysis:
 
@@ -4575,6 +4223,8 @@ pass_vsetvl::df_post_optimization (void) const
   rtx_insn *rinsn;
   FOR_ALL_BB_FN (cfg_bb, cfun)
     {
+      if (cleanup_earliest_vsetvls (cfg_bb))
+	continue;
       FOR_BB_INSNS (cfg_bb, rinsn)
 	{
 	  if (NONDEBUG_INSN_P (rinsn) && vsetvl_insn_p (rinsn))
@@ -4717,9 +4367,7 @@ pass_vsetvl::lazy_vsetvl (void)
   /* Phase 3 - Propagate demanded info across blocks.  */
   if (dump_file)
     fprintf (dump_file, "\nPhase 3: Demands propagation across blocks\n");
-  demand_fusion ();
-  if (dump_file)
-    m_vector_manager->dump (dump_file);
+  vsetvl_fusion ();
 
   /* Phase 4 - Lazy code motion.  */
   if (dump_file)

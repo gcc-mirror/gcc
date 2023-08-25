@@ -11,6 +11,7 @@ void f(void *base, void *out, void *mask_in, size_t vl, size_t m, size_t n) {
       if ((i + j) % 2 == 0) {
         vint8mf8_t v0 = __riscv_vle8_v_i8mf8(base + i + j, 4);
         vint8mf8_t v1 = __riscv_vle8_v_i8mf8_tu(v0, base + i + j + 100, 4);
+        v1 = __riscv_vadd_vv_i8mf8 (v0,v1,4);
         __riscv_vse8_v_i8mf8 (out + i + j, v1, 4);
       } else {
         vint16mf4_t v0 = __riscv_vle16_v_i16mf4(base + i + j, 4);

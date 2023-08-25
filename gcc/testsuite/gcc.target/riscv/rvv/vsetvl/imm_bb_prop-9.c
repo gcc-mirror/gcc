@@ -14,6 +14,7 @@ void f(void *base, void *out, void *mask_in, size_t vl, size_t m, size_t n) {
         } else {
           vint8mf8_t v0 = __riscv_vle8_v_i8mf8(base + i + 300 + j, 4);
           vint8mf8_t v1 = __riscv_vle8_v_i8mf8_tu(v0, base + i + 300 + j, 4);
+          v1 = __riscv_vadd_vv_i8mf8 (v0,v1,4);
           __riscv_vse8_v_i8mf8 (out + i + 300, v1, 4);
         }
       }
