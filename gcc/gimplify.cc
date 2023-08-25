@@ -3663,7 +3663,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 
       case BUILT_IN_VA_START:
         {
-	  builtin_va_start_p = TRUE;
+	  builtin_va_start_p = true;
 	  if (call_expr_nargs (*expr_p) < 2)
 	    {
 	      error ("too few arguments to function %<va_start%>");

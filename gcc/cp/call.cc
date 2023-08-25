@@ -6058,7 +6058,7 @@ build_conditional_expr (const op_location_t &loc,
           if (complain & tf_error)
             {
               auto_diagnostic_group d;
-              op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
+	      op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, false);
               print_z_candidates (loc, candidates);
             }
 	  return error_mark_node;
@@ -7129,7 +7129,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		    /* ... Otherwise, report the more generic
 		       "no matching operator found" error */
 		    auto_diagnostic_group d;
-		    op_error (loc, code, code2, arg1, arg2, arg3, FALSE);
+		    op_error (loc, code, code2, arg1, arg2, arg3, false);
 		    print_z_candidates (loc, candidates);
 		  }
 	    }
@@ -7145,7 +7145,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	  if (complain & tf_error)
 	    {
 	      auto_diagnostic_group d;
-	      op_error (loc, code, code2, arg1, arg2, arg3, TRUE);
+	      op_error (loc, code, code2, arg1, arg2, arg3, true);
 	      print_z_candidates (loc, candidates);
 	    }
 	  result = error_mark_node;

@@ -415,7 +415,7 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
 	  tree fntype = TREE_TYPE (fnptrtype);
 
 	  if (lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (fntype)))
-	    gimple_call_set_nocf_check (call, TRUE);
+	    gimple_call_set_nocf_check (call, true);
 	}
     }
 
@@ -3187,7 +3187,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> &labels,
       tree elt = labels[i];
       tree low = CASE_LOW (elt);
       tree high = CASE_HIGH (elt);
-      bool remove_element = FALSE;
+      bool remove_element = false;
 
       if (low)
 	{
@@ -3211,7 +3211,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 		 into a simple (one-value) case.  */
 	      int cmp = tree_int_cst_compare (high, low);
 	      if (cmp < 0)
-		remove_element = TRUE;
+		remove_element = true;
 	      else if (cmp == 0)
 		high = NULL_TREE;
 	    }
@@ -3223,7 +3223,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 		   && tree_int_cst_compare (low, min_value) < 0)
 		  || (TREE_CODE (max_value) == INTEGER_CST
 		      && tree_int_cst_compare (low, max_value) > 0))
-		remove_element = TRUE;
+		remove_element = true;
 	      else
 		low = fold_convert (index_type, low);
 	    }
@@ -3234,7 +3234,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 		   && tree_int_cst_compare (high, min_value) < 0)
 		  || (TREE_CODE (max_value) == INTEGER_CST
 		      && tree_int_cst_compare (low, max_value) > 0))
-		remove_element = TRUE;
+		remove_element = true;
 	      else
 		{
 		  /* If the lower bound is less than the index type's
@@ -3269,7 +3269,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 	     is NULL, we do not remove the default case (it would
 	     be completely lost).  */
 	  if (default_casep)
-	    remove_element = TRUE;
+	    remove_element = true;
 	}
 
       if (remove_element)

@@ -5533,7 +5533,7 @@ set_collect_gcc_options (void)
   obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
 		sizeof ("COLLECT_GCC_OPTIONS=") - 1);
 
-  first_time = TRUE;
+  first_time = true;
   for (i = 0; (int) i < n_switches; i++)
     {
       const char *const *args;
@@ -5541,7 +5541,7 @@ set_collect_gcc_options (void)
       if (!first_time)
 	obstack_grow (&collect_obstack, " ", 1);
 
-      first_time = FALSE;
+      first_time = false;
 
       /* Ignore elided switches.  */
       if ((switches[i].live_cond
@@ -5579,7 +5579,7 @@ set_collect_gcc_options (void)
     {
       if (!first_time)
 	obstack_grow (&collect_obstack, " ", 1);
-      first_time = FALSE;
+      first_time = false;
 
       obstack_grow (&collect_obstack, "'-dumpdir' '", 12);
       const char *p, *q;
@@ -8332,7 +8332,7 @@ driver::build_multilib_strings () const
     obstack_1grow (&multilib_obstack, 0);
     multilib_reuse = XOBFINISH (&multilib_obstack, const char *);
 
-    need_space = FALSE;
+    need_space = false;
     for (size_t i = 0; i < ARRAY_SIZE (multilib_defaults_raw); i++)
       {
 	if (need_space)
@@ -8340,7 +8340,7 @@ driver::build_multilib_strings () const
 	obstack_grow (&multilib_obstack,
 		      multilib_defaults_raw[i],
 		      strlen (multilib_defaults_raw[i]));
-	need_space = TRUE;
+	need_space = true;
       }
 
     obstack_1grow (&multilib_obstack, 0);
@@ -10176,19 +10176,19 @@ print_multilib_info (void)
 	  /* If there are extra options, print them now.  */
 	  if (multilib_extra && *multilib_extra)
 	    {
-	      int print_at = TRUE;
+	      int print_at = true;
 	      const char *q;
 
 	      for (q = multilib_extra; *q != '\0'; q++)
 		{
 		  if (*q == ' ')
-		    print_at = TRUE;
+		    print_at = true;
 		  else
 		    {
 		      if (print_at)
 			putchar ('@');
 		      putchar (*q);
-		      print_at = FALSE;
+		      print_at = false;
 		    }
 		}
 	    }
