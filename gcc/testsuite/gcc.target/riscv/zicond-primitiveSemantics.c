@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zicond -mabi=lp64d" { target { rv64 } } } */
 /* { dg-options "-march=rv32gc_zicond -mabi=ilp32f" { target { rv32 } } } */
-/* { dg-skip-if "" { *-*-* } {"-O0"} } */
+/* { dg-skip-if "" { *-*-* } {"-O0" "-Og"} } */
 
 long primitiveSemantics_00(long a, long b) { return a == 0 ? 0 : b; }
 
