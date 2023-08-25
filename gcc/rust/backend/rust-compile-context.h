@@ -27,6 +27,7 @@
 #include "rust-hir-full.h"
 #include "rust-mangle.h"
 #include "rust-tree.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Compile {

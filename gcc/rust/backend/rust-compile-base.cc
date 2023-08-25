@@ -31,6 +31,7 @@
 #include "rust-type-util.h"
 #include "rust-compile-implitem.h"
 #include "rust-attribute-values.h"
+#include "rust-immutable-name-resolution-context.h"
 
 #include "fold-const.h"
 #include "stringpool.h"

@@ -2311,11 +2311,23 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   if (is_block_expr)
     {
       auto body_mappings = function_body->get_mappings ();
-      Resolver::Rib *rib = nullptr;
-      bool ok
-	= ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-					       &rib);
-      rust_assert (ok);
+      if (flag_name_resolution_2_0)
+	{
+	  auto nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+	  auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
+
+	  rust_assert (candidate.has_value ());
+	}
+      else
+	{
+	  Resolver::Rib *rib = nullptr;
+	  bool ok
+	    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
+						   &rib);
+	  rust_assert (ok);
+	}
     }
 
   tree enclosing_scope = NULL_TREE;
