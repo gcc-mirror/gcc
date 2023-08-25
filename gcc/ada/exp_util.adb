@@ -8399,65 +8399,73 @@ package body Exp_Util is
 
          Call := Unqual_Conv (Call);
 
+         --  We search for a formal with a matching suffix. We can't search
+         --  for the full name, because of the code at the end of Sem_Ch6.-
+         --  Create_Extra_Formals, which copies the Extra_Formals over to
+         --  the Alias of an instance, which will cause the formals to have
+         --  "incorrect" names. See also Exp_Ch6.Build_In_Place_Formal.
+
          if Is_Build_In_Place_Function_Call (Call) then
             declare
                Caller_Allocation_Val : constant Uint :=
                  UI_From_Int (BIP_Allocation_Form'Pos (Caller_Allocation));
+               Access_Suffix         : constant String :=
+                 BIP_Formal_Suffix (BIP_Object_Access);
+               Alloc_Suffix          : constant String :=
+                 BIP_Formal_Suffix (BIP_Alloc_Form);
 
-               Access_Nam : Name_Id := No_Name;
+               function Has_Suffix (Name, Suffix : String) return Boolean;
+               --  Return True if Name has suffix Suffix
+
+               ----------------
+               -- Has_Suffix --
+               ----------------
+
+               function Has_Suffix (Name, Suffix : String) return Boolean is
+                  Len : constant Natural := Suffix'Length;
+
+               begin
+                  return Name'Length > Len
+                    and then Name (Name'Last - Len + 1 .. Name'Last) = Suffix;
+               end Has_Suffix;
+
                Access_OK  : Boolean := False;
-               Actual     : Node_Id;
-               Alloc_Nam  : Name_Id := No_Name;
                Alloc_OK   : Boolean := True;
-               Formal     : Node_Id;
-               Func_Id    : Entity_Id;
                Param      : Node_Id;
 
             begin
                --  Examine all parameter associations of the function call
 
                Param := First (Parameter_Associations (Call));
+
                while Present (Param) loop
                   if Nkind (Param) = N_Parameter_Association
                     and then Nkind (Selector_Name (Param)) = N_Identifier
                   then
-                     Actual := Explicit_Actual_Parameter (Param);
-                     Formal := Selector_Name (Param);
+                     declare
+                        Actual : constant Node_Id
+                          := Explicit_Actual_Parameter (Param);
+                        Formal : constant Node_Id
+                          := Selector_Name (Param);
+                        Name   : constant String
+                          := Get_Name_String (Chars (Formal));
 
-                     --  Construct the names of formals BIPaccess and BIPalloc
-                     --  using the function name retrieved from an arbitrary
-                     --  formal.
+                     begin
+                        --  A nonnull BIPaccess has been found
 
-                     if Access_Nam = No_Name
-                       and then Alloc_Nam = No_Name
-                       and then Present (Entity (Formal))
-                     then
-                        Func_Id := Scope (Entity (Formal));
+                        if Has_Suffix (Name, Access_Suffix)
+                          and then Nkind (Actual) /= N_Null
+                        then
+                           Access_OK := True;
 
-                        Access_Nam :=
-                          New_External_Name (Chars (Func_Id),
-                            BIP_Formal_Suffix (BIP_Object_Access));
+                        --  A BIPalloc has been found
 
-                        Alloc_Nam :=
-                          New_External_Name (Chars (Func_Id),
-                            BIP_Formal_Suffix (BIP_Alloc_Form));
-                     end if;
-
-                     --  A nonnull BIPaccess has been found
-
-                     if Chars (Formal) = Access_Nam
-                       and then Nkind (Actual) /= N_Null
-                     then
-                        Access_OK := True;
-                     end if;
-
-                     --  A BIPalloc has been found
-
-                     if Chars (Formal) = Alloc_Nam
-                       and then Nkind (Actual) = N_Integer_Literal
-                     then
-                        Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
-                     end if;
+                        elsif Has_Suffix (Name, Alloc_Suffix)
+                          and then Nkind (Actual) = N_Integer_Literal
+                        then
+                           Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
+                        end if;
+                     end;
                   end if;
 
                   Next (Param);
@@ -8674,7 +8682,7 @@ package body Exp_Util is
             --  first parameter is the transient. Such a call appears as:
 
             --     It : Access_To_Constant_Reference_Type :=
-            --            Constant_Indexing (Tran_Id.all, ...)'reference;
+            --            Constant_Indexing (Trans_Id.all, ...)'reference;
 
             Stmt := First_Stmt;
             while Present (Stmt) loop
@@ -8759,7 +8767,7 @@ package body Exp_Util is
             --  first parameter is the transient. Such a call appears as:
 
             --     It : Access_To_CW_Iterator :=
-            --            Iterate (Tran_Id.all, ...)'reference;
+            --            Iterate (Trans_Id.all, ...)'reference;
 
             Stmt := First_Stmt;
             while Present (Stmt) loop
