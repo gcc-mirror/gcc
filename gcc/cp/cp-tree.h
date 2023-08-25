@@ -6727,6 +6727,7 @@ extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warni
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
 extern bool any_template_arguments_need_structural_equality_p (tree);
+extern void maybe_show_nonconverting_candidate	(tree, tree, tree, int);
 
 /* in class.cc */
 extern tree build_vfield_ref			(tree, tree);

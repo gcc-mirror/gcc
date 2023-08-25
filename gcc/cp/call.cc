@@ -8459,12 +8459,21 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 		if (pedwarn (loc, 0, "converting to %qT from initializer list "
 			     "would use explicit constructor %qD",
 			     totype, convfn))
-		  inform (loc, "in C++11 and above a default constructor "
-			  "can be explicit");
+		  {
+		    inform (DECL_SOURCE_LOCATION (convfn), "%qD declared here",
+			    convfn);
+		    inform (loc, "in C++11 and above a default constructor "
+			    "can be explicit");
+		  }
 	      }
 	    else
-	      error ("converting to %qT from initializer list would use "
-		     "explicit constructor %qD", totype, convfn);
+	      {
+		auto_diagnostic_group d;
+		error ("converting to %qT from initializer list would use "
+		       "explicit constructor %qD", totype, convfn);
+		inform (DECL_SOURCE_LOCATION (convfn), "%qD declared here",
+			convfn);
+	      }
 	  }
 
 	/* If we're initializing from {}, it's value-initialization.  */
@@ -14321,6 +14330,30 @@ is_list_ctor (tree decl)
     return false;
 
   return true;
+}
+
+/* We know that can_convert_arg_bad already said "no" when trying to convert
+   FROM to TO with ARG and FLAGS.  Try to figure out if it was because
+   an explicit conversion function was skipped when looking for a way to
+   perform the conversion.  At this point we've already printed an error.  */
+
+void
+maybe_show_nonconverting_candidate (tree to, tree from, tree arg, int flags)
+{
+  if (!(flags & LOOKUP_ONLYCONVERTING))
+    return;
+
+  conversion_obstack_sentinel cos;
+  conversion *c = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
+				       flags & ~LOOKUP_ONLYCONVERTING, tf_none);
+  if (c && !c->bad_p && c->user_conv_p)
+    /* Ay, the conversion would have worked in direct-init context.  */
+    for (; c; c = next_conversion (c))
+      if (c->kind == ck_user
+	  && DECL_P (c->cand->fn)
+	  && DECL_NONCONVERTING_P (c->cand->fn))
+	inform (DECL_SOURCE_LOCATION (c->cand->fn), "explicit conversion "
+		"function was not considered");
 }
 
 #include "gt-cp-call.h"
