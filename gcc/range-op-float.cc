@@ -2204,8 +2204,23 @@ class foperator_ltgt : public range_operator
 public:
   bool fold_range (irange &r, tree type,
 		   const frange &op1, const frange &op2,
-		   relation_trio rel = TRIO_VARYING) const final override
+		   relation_trio trio = TRIO_VARYING) const final override
   {
+    relation_kind rel = trio.op1_op2 ();
+
+    // VREL_EQ is really VREL_(UN)EQ because we could have a NAN in
+    // the operands, but since LTGT_EXPR is really a NE_EXPR without
+    // the NAN, VREL_EQ & LTGT_EXPR is an impossibility.
+    if (rel == VREL_EQ)
+      {
+	r = range_false (type);
+	return true;
+      }
+    // ...otherwise pretend we're trying to resolve a NE_EXPR and
+    // everything will "just work".
+    if (frelop_early_resolve (r, type, op1, op2, trio, VREL_NE))
+      return true;
+
     if (op1.known_isnan () || op2.known_isnan ())
       {
 	r = range_false (type);
@@ -2218,7 +2233,7 @@ public:
     if (op2.maybe_isnan ())
       op2_no_nan.clear_nan ();
     if (!range_op_handler (NE_EXPR).fold_range (r, type, op1_no_nan,
-						op2_no_nan, rel))
+						op2_no_nan, trio))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
