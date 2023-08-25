@@ -245,6 +245,9 @@ enum riscv_entity
 #define MASK_ZICOND   (1 << 2)
 #define TARGET_ZICOND ((riscv_zi_subext & MASK_ZICOND) != 0)
 
+#define MASK_ZFA   (1 << 0)
+#define TARGET_ZFA    ((riscv_zfa_subext & MASK_ZFA) != 0)
+
 #define MASK_ZFHMIN   (1 << 0)
 #define MASK_ZFH      (1 << 1)
 #define MASK_ZVFHMIN  (1 << 2)

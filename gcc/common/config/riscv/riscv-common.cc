@@ -123,6 +123,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
+
+  {"zfa", "f"},
+
   {"zvfhmin", "zve32f"},
   {"zvfh", "zve32f"},
   {"zvfh", "zfhmin"},
@@ -271,6 +274,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfhmin",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfa",     ISA_SPEC_CLASS_NONE, 0, 1},
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
 
@@ -1433,6 +1438,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
   {"zvfhmin",   &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
   {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
+
+  {"zfa",       &gcc_options::x_riscv_zfa_subext, MASK_ZFA},
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
 
