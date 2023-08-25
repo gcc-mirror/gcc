@@ -1,3 +1,94 @@
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* call-details.cc
+	(call_details::check_for_null_terminated_string_arg): Split into
+	overloads, one taking just an arg_idx, the other a new
+	"include_terminator" param.
+	* call-details.h: Likewise.
+	* kf.cc (class kf_strcat): New.
+	(kf_strcpy::impl_call_pre): Update for change to
+	check_for_null_terminated_string_arg.
+	(register_known_functions): Register kf_strcat.
+	* region-model.cc
+	(region_model::check_for_null_terminated_string_arg): Split into
+	overloads, one taking just an arg_idx, the other a new
+	"include_terminator" param.  When returning an svalue, handle
+	"include_terminator" being false by subtracting one.
+	* region-model.h
+	(region_model::check_for_null_terminated_string_arg): Split into
+	overloads, one taking just an arg_idx, the other a new
+	"include_terminator" param.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* region-model.cc (fragment::has_null_terminator): Handle
+	SK_BITS_WITHIN.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value): Simplify
+	INIT_VAL(ELEMENT_REG(STRING_REG), CONSTANT_SVAL) to
+	CONSTANT_SVAL(STRING[N]).
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* region-model.cc (fragment::has_null_terminator): Move STRING_CST
+	handling to fragment::string_cst_has_null_terminator; also use it to
+	handle INIT_VAL(STRING_REG).
+	(fragment::string_cst_has_null_terminator): New, from above.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (kf_memcpy_memmove::impl_call_pre): Reimplement using
+	region_model::copy_bytes.
+	* region-model.cc (region_model::read_bytes): New.
+	(region_model::copy_bytes): New.
+	* region-model.h (region_model::read_bytes): New decl.
+	(region_model::copy_bytes): New decl.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* region-model.cc (region_model::get_string_size): Delete both.
+	* region-model.h (region_model::get_string_size): Delete both
+	decls.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* kf.cc (kf_strcpy::impl_call_pre): Reimplement using
+	check_for_null_terminated_string_arg.
+	* region-model.cc (region_model::get_store_bytes): Shortcut
+	reading all of a string_region.
+	(region_model::scan_for_null_terminator): Use get_store_value for
+	the bytes rather than "unknown" when returning an unknown length.
+	(region_model::write_bytes): New.
+	* region-model.h (region_model::write_bytes): New decl.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* region-model.cc (iterable_cluster::iterable_cluster): Add
+	symbolic binding keys to m_symbolic_bindings.
+	(iterable_cluster::has_symbolic_bindings_p): New.
+	(iterable_cluster::m_symbolic_bindings): New field.
+	(region_model::scan_for_null_terminator): Treat clusters with
+	symbolic bindings as having unknown strlen.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (impl_path_context::impl_path_context): Add logger
+	param.
+	(impl_path_context::bifurcate): Add log message.
+	(impl_path_context::terminate_path): Likewise.
+	(impl_path_context::m_logger): New field.
+	(exploded_graph::process_node): Pass logger to path_ctxt ctor.
+
 2023-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

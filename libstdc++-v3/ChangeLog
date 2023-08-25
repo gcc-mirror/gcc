@@ -1,3 +1,53 @@
+2023-08-24  Paul Dreik  <gccpatches@pauldreik.se>
+
+	PR libstdc++/111102
+	* testsuite/std/format/string.cc: Check wide character format
+	strings with out-of-range widths.
+
+2023-08-24  Paul Dreik  <gccpatches@pauldreik.se>
+
+	PR libstdc++/111102
+	* include/std/format (__format::__parse_integer): Check for
+	non-null pointer.
+
+2023-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/functions/format_to.cc: Avoid warning for
+	unused variables.
+
+2023-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Add comment to #ifdef and fix indentation.
+	* include/std/ostream: Check __glibcxx_syncbuf instead of
+	__cplusplus and _GLIBCXX_HOSTED.
+	* include/std/thread: Add comment to #ifdef.
+
+2023-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (__cpp_lib_ratio): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/ratio (quecto, ronto, yocto, zepto)
+	(zetta, yotta, ronna, quetta): Define.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Adjust
+	dg-error line numbers.
+
+2023-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdLocalePrinter): New
+	printer class.
+	* testsuite/libstdc++-prettyprinters/locale.cc: New test.
+
+2023-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110944
+	* python/libstdcxx/v6/printers.py (StdExpOptionalPrinter): Do
+	not show template arguments.
+	(StdVariantPrinter): Likewise.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Adjust expected
+	output.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
 2023-08-23  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/util/replacement_memory_operators.h

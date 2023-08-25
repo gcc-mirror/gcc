@@ -1,3 +1,12 @@
+2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-parser.cc (c_parser_std_attribute): Conditionally allow
+	two colons to be used in place of ::.
+	(c_parser_std_attribute_list): New function, split out from...
+	(c_parser_std_attribute_specifier): ...here.  Allow the attribute-list
+	to start with __extension__.  When it does, also allow two colons
+	to be used in place of ::.
+
 2023-08-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_defaultmap): Parse

@@ -1,3 +1,438 @@
+2023-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/94866
+	* config/i386/sse.md (*sse2_movq128_<mode>_1): New insn pattern.
+
+2023-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* doc/invoke.texi (Static Analyzer Options): Add "strcat" to the
+	list of functions known to the analyzer.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111123
+	* tree-ssa-ccp.cc (pass_fold_builtins::execute): Do not
+	remove indirect clobbers here ...
+	* tree-outof-ssa.cc (rewrite_out_of_ssa): ... but here.
+	(remove_indirect_clobbers): New function.
+
+2023-08-24  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.h (struct control_flow_graph): New field full_profile.
+	* auto-profile.cc (afdo_annotate_cfg): Set full_profile to true.
+	* cfg.cc (init_flow): Set full_profile to false.
+	* graphite.cc (graphite_transform_loops): Set full_profile to false.
+	* lto-streamer-in.cc (input_cfg): Initialize full_profile flag.
+	* predict.cc (pass_profile::execute): Set full_profile to true.
+	* symtab-thunks.cc (expand_thunk): Set full_profile to true.
+	* tree-cfg.cc (gimple_verify_flow_info): Verify that profile is full
+	if full_profile is set.
+	* tree-inline.cc (initialize_cfun): Initialize full_profile.
+	(expand_call_inline): Combine full_profile.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Rename
+	load_p to ldst_p, fix mistakes and rely on
+	STMT_VINFO_DATA_REF.
+
+2023-08-24  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-harden-conditionals.cc (insert_check_and_trap): Set count
+	of newly build trap bb.
+
+2023-08-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_preferred_else_value): Remove it since
+	it forbid COND_LEN_FMS/COND_LEN_FNMS STMT fold.
+	(TARGET_PREFERRED_ELSE_VALUE): Ditto.
+
+2023-08-24  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* common/config/riscv/riscv-common.cc: Add -fsched-pressure.
+	* config/riscv/riscv.cc (riscv_option_override): Set sched
+	pressure algorithm.
+
+2023-08-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Allow vk operand.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111125
+	* tree-vect-slp.cc (vect_slp_function): Split at novector
+	loop entry, do not push blocks in novector loops.
+
+2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/extend.texi: Document the C [[__extension__ ...]] construct.
+
+2023-08-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* genmatch.cc (decision_tree::gen): Support
+	COND_LEN_FNMA/COND_LEN_FMS/COND_LEN_FNMS gimple fold.
+	* gimple-match-exports.cc (gimple_simplify): Ditto.
+	(gimple_resimplify6): New function.
+	(gimple_resimplify7): New function.
+	(gimple_match_op::resimplify): Support
+	COND_LEN_FNMA/COND_LEN_FMS/COND_LEN_FNMS gimple fold.
+	(convert_conditional_op): Ditto.
+	(build_call_internal): Ditto.
+	(try_conditional_simplification): Ditto.
+	(gimple_extract): Ditto.
+	* gimple-match.h (gimple_match_cond::gimple_match_cond): Ditto.
+	* internal-fn.cc (CASE): Ditto.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111115
+	* tree-vectorizer.h (vect_slp_child_index_for_operand): New.
+	* tree-vect-data-refs.cc (can_group_stmts_p): Also group
+	.MASK_STORE.
+	* tree-vect-slp.cc (arg3_arg2_map): New.
+	(vect_get_operand_map): Handle IFN_MASK_STORE.
+	(vect_slp_child_index_for_operand): New function.
+	(vect_build_slp_tree_1): Handle statements with no LHS,
+	masked store ifns.
+	(vect_remove_slp_scalar_calls): Likewise.
+	* tree-vect-stmts.cc (vect_check_store_rhs): Lookup the
+	SLP child corresponding to the ifn value index.
+	(vectorizable_store): Likewise for the mask index.  Support
+	masked stores.
+	(vectorizable_load): Lookup the SLP child corresponding to the
+	ifn mask index.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111125
+	* tree-vect-slp.cc (vectorizable_bb_reduc_epilogue): Account
+	for the remain_defs processing.
+
+2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc: Include ssa.h.
+	(aarch64_multiply_add_p): Require the second operand of an
+	Advanced SIMD subtraction to be a multiplication.  Assume that
+	such an operation won't be fused if the second operand is used
+	multiple times and if the first operand is also a multiplication.
+
+2023-08-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Apply
+	LEN_FOLD_EXTRACT_LAST.
+	* tree-vect-stmts.cc (vectorizable_condition): Ditto.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111128
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern):
+	Emit external shift operand inline if we promoted it with
+	another pattern stmt.
+
+2023-08-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Fix typo.
+
+2023-08-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc
+	(class binop_frm): Removed.
+	(class reverse_binop_frm): Ditto.
+	(class widen_binop_frm): Ditto.
+	(class vfmacc_frm): Ditto.
+	(class vfnmacc_frm): Ditto.
+	(class vfmsac_frm): Ditto.
+	(class vfnmsac_frm): Ditto.
+	(class vfmadd_frm): Ditto.
+	(class vfnmadd_frm): Ditto.
+	(class vfmsub_frm): Ditto.
+	(class vfnmsub_frm): Ditto.
+	(class vfwmacc_frm): Ditto.
+	(class vfwnmacc_frm): Ditto.
+	(class vfwmsac_frm): Ditto.
+	(class vfwnmsac_frm): Ditto.
+	(class unop_frm): Ditto.
+	(class vfrec7_frm): Ditto.
+	(class binop): Add frm_op_type template arg.
+	(class unop): Ditto.
+	(class widen_binop): Ditto.
+	(class widen_binop_fp): Ditto.
+	(class reverse_binop): Ditto.
+	(class vfmacc): Ditto.
+	(class vfnmsac): Ditto.
+	(class vfmadd): Ditto.
+	(class vfnmsub): Ditto.
+	(class vfnmacc): Ditto.
+	(class vfmsac): Ditto.
+	(class vfnmadd): Ditto.
+	(class vfmsub): Ditto.
+	(class vfwmacc): Ditto.
+	(class vfwnmacc): Ditto.
+	(class vfwmsac): Ditto.
+	(class vfwnmsac): Ditto.
+	(class float_misc): Ditto.
+
+2023-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111109
+	* match.pd (ior(cond,cond), ior(vec_cond,vec_cond)):
+	Add check to make sure cmp and icmp are inverse.
+
+2023-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/95929
+	* match.pd (convert?(-a)): New pattern
+	for 1bit integer types.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Add avx10_set and version and detect avx10.1.
+	(cpu_indicator_init): Handle avx10.1-512.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX10_512BIT_SET): New.
+	(OPTION_MASK_ISA2_AVX10_1_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_512BIT_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Modify for AVX10_1.
+	(ix86_handle_option): Handle -mavx10.1, -mavx10.1-256 and
+	-mavx10.1-512.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVX10_512BIT, FEATURE_AVX10_1 and
+	FEATURE_AVX10_512BIT.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	AVX10_512BIT, AVX10_1 and AVX10_1_512.
+	* config/i386/constraints.md (Yk): Add AVX10_1.
+	(Yv): Ditto.
+	(k): Ditto.
+	* config/i386/cpuid.h (bit_AVX10): New.
+	(bit_AVX10_256): Ditto.
+	(bit_AVX10_512): Ditto.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Define AVX10_512BIT and AVX10_1.
+	* config/i386/i386-isa.def
+	(AVX10_512BIT): Add DEF_PTA(AVX10_512BIT).
+	(AVX10_1): Add DEF_PTA(AVX10_1).
+	* config/i386/i386-options.cc (isa2_opts): Add -mavx10.1.
+	(ix86_valid_target_attribute_inner_p): Handle avx10-512bit, avx10.1
+	and avx10.1-512.
+	(ix86_option_override_internal): Enable AVX512{F,VL,BW,DQ,CD,BF16,
+	FP16,VBMI,VBMI2,VNNI,IFMA,BITALG,VPOPCNTDQ} features for avx10.1-512.
+	(ix86_valid_target_attribute_inner_p): Handle AVX10_1.
+	* config/i386/i386.cc (ix86_get_ssemov): Add AVX10_1.
+	(ix86_conditional_register_usage): Ditto.
+	(ix86_hard_regno_mode_ok): Ditto.
+	(ix86_rtx_costs): Ditto.
+	* config/i386/i386.h (VALID_MASK_AVX10_MODE): New macro.
+	* config/i386/i386.opt: Add option -mavx10.1, -mavx10.1-256 and
+	-mavx10.1-512.
+	* doc/extend.texi: Document avx10.1, avx10.1-256 and avx10.1-512.
+	* doc/invoke.texi: Document -mavx10.1, -mavx10.1-256 and -mavx10.1-512.
+	* doc/sourcebuild.texi: Document target avx10.1, avx10.1-256
+	and avx10.1-512.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(ix86_check_avx10): New function to check isa_flags and
+	isa_flags_explicit to emit warning when AVX10 is enabled
+	by "-m" option.
+	(ix86_check_avx512):  New function to check isa_flags and
+	isa_flags_explicit to emit warning when AVX512 is enabled
+	by "-m" option.
+	(ix86_handle_option): Do not change the flags when warning
+	is emitted.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Do not append -mno-avx10.1 for -march=native.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(ix86_check_avx10_vector_width): New function to check isa_flags
+	to emit a warning when there is a conflict in AVX10 options for
+	vector width.
+	(ix86_handle_option): Add check for avx10.1-256 and avx10.1-512.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Do not append -mno-avx10-max-512bit for -march=native.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512vldqintrin.h: Remove target attribute.
+	* config/i386/i386-builtin.def (BDESC):
+	Add OPTION_MASK_ISA2_AVX10_1.
+	* config/i386/i386-builtins.cc (def_builtin): Handle AVX10_1.
+	* config/i386/i386-expand.cc
+	(ix86_check_builtin_isa_match): Ditto.
+	(ix86_expand_sse2_mulvxdi3): Add TARGET_AVX10_1.
+	* config/i386/i386.md: Add new isa attribute avx10_1_or_avx512dq
+	and avx10_1_or_avx512vl.
+	* config/i386/sse.md: (VF2_AVX512VLDQ_AVX10_1): New.
+	(VF1_128_256VLDQ_AVX10_1): Ditto.
+	(VI8_AVX512VLDQ_AVX10_1): Ditto.
+	(<sse>_andnot<mode>3<mask_name>):
+	Add TARGET_AVX10_1 and change isa attr from avx512dq to
+	avx10_1_or_avx512dq.
+	(*andnot<mode>3): Add TARGET_AVX10_1 and change isa attr from
+	avx512vl to avx10_1_or_avx512vl.
+	(fix<fixunssuffix>_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>):
+	Change iterator to VF2_AVX512VLDQ_AVX10_1. Remove target check.
+	(fix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>):
+	Ditto.
+	(ufix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>):
+	Ditto.
+	(fix<fixunssuffix>_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>):
+	Change iterator to VF1_128_256VLDQ_AVX10_1. Remove target check.
+	(avx512dq_fix<fixunssuffix>_truncv2sfv2di2<mask_name>):
+	Add TARGET_AVX10_1.
+	(fix<fixunssuffix>_truncv2sfv2di2): Ditto.
+	(cond_mul<mode>): Change iterator to VI8_AVX10_1_AVX512DQVL.
+	Remove target check.
+	(avx512dq_mul<mode>3<mask_name>): Ditto.
+	(*avx512dq_mul<mode>3<mask_name>): Ditto.
+	(VI4F_BRCST32x2): Add TARGET_AVX512DQ and TARGET_AVX10_1.
+	(<mask_codefor>avx512dq_broadcast<mode><mask_name>):
+	Remove target check.
+	(VI8F_BRCST64x2): Add TARGET_AVX512DQ and TARGET_AVX10_1.
+	(<mask_codefor>avx512dq_broadcast<mode><mask_name>_1):
+	Remove target check.
+	* config/i386/subst.md (mask_mode512bit_condition): Add TARGET_AVX10_1.
+	(mask_avx512vl_condition): Ditto.
+	(mask): Ditto.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512vldqintrin.h: Remove target attribute.
+	* config/i386/i386-builtin.def (BDESC):
+	Add OPTION_MASK_ISA2_AVX10_1.
+	* config/i386/i386.cc (standard_sse_constant_opcode): Add TARGET_AVX10_1.
+	* config/i386/sse.md: (VI48_AVX512VL_AVX10_1): New.
+	(VI48_AVX512VLDQ_AVX10_1): Ditto.
+	(VF2_AVX512VL): Remove.
+	(VI8_256_512VLDQ_AVX10_1): Rename from VI8_256_512.
+	Add TARGET_AVX10_1.
+	(*<code><mode>3<mask_name>): Change isa attribute to
+	avx10_1_or_avx512dq. Add TARGET_AVX10_1.
+	(<code><mode>3): Add TARGET_AVX10_1. Change isa attr
+	to avx10_1_or_avx512vl.
+	(<mask_codefor>avx512dq_cvtps2qq<mode><mask_name><round_name>):
+	Change iterator to VI8_256_512VLDQ_AVX10_1. Remove target check.
+	(<mask_codefor>avx512dq_cvtps2qqv2di<mask_name>):
+	Add TARGET_AVX10_1.
+	(<mask_codefor>avx512dq_cvtps2uqq<mode><mask_name><round_name>):
+	Change iterator to VI8_256_512VLDQ_AVX10_1. Remove target check.
+	(<mask_codefor>avx512dq_cvtps2uqqv2di<mask_name>):
+	Add TARGET_AVX10_1.
+	(float<floatunssuffix><sseintvecmodelower><mode>2<mask_name><round_name>):
+	Change iterator to VF2_AVX512VLDQ_AVX10_1. Remove target check.
+	(float<floatunssuffix><sselongvecmodelower><mode>2<mask_name><round_name>):
+	Change iterator to VF1_128_256VLDQ_AVX10_1. Remove target check.
+	(float<floatunssuffix>v4div4sf2<mask_name>):
+	Add TARGET_AVX10_1.
+	(avx512dq_float<floatunssuffix>v2div2sf2): Ditto.
+	(*avx512dq_float<floatunssuffix>v2div2sf2): Ditto.
+	(float<floatunssuffix>v2div2sf2): Ditto.
+	(float<floatunssuffix>v2div2sf2_mask): Ditto.
+	(*float<floatunssuffix>v2div2sf2_mask): Ditto.
+	(*float<floatunssuffix>v2div2sf2_mask_1): Ditto.
+	(<avx512>_cvt<ssemodesuffix>2mask<mode>):
+	Change iterator to VI48_AVX512VLDQ_AVX10_1. Remove target check.
+	(<avx512>_cvtmask2<ssemodesuffix><mode>): Ditto.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>):
+	Change iterator to VI48_AVX512VL_AVX10_1. Remove target check.
+	Change when constraint is enabled.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512vldqintrin.h: Remove target attribute.
+	* config/i386/i386-builtin.def (BDESC):
+	Add OPTION_MASK_ISA2_AVX10_1.
+	* config/i386/sse.md (VF_AVX512VLDQ_AVX10_1): New.
+	(VFH_AVX512VLDQ_AVX10_1): Ditto.
+	(VF1_AVX512VLDQ_AVX10_1): Ditto.
+	(<mask_codefor>reducep<mode><mask_name><round_saeonly_name>):
+	Change iterator to VFH_AVX512VLDQ_AVX10_1. Remove target check.
+	(vec_pack<floatprefix>_float_<mode>): Change iterator to
+	VI8_AVX512VLDQ_AVX10_1. Remove target check.
+	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>): Change iterator to
+	VF1_AVX512VLDQ_AVX10_1. Remove target check.
+	(vec_unpack_<fixprefix>fix_trunc_hi_<mode>): Ditto.
+	(VI48F_256_DQVL_AVX10_1): Rename from VI48F_256_DQ.
+	(avx512vl_vextractf128<mode>): Change iterator to
+	VI48F_256_DQVL_AVX10_1. Remove target check.
+	(vec_extract_hi_<mode>_mask): Add TARGET_AVX10_1.
+	(vec_extract_hi_<mode>): Ditto.
+	(avx512vl_vinsert<mode>): Ditto.
+	(vec_set_lo_<mode><mask_name>): Ditto.
+	(vec_set_hi_<mode><mask_name>): Ditto.
+	(avx512dq_rangep<mode><mask_name><round_saeonly_name>): Change
+	iterator to VF_AVX512VLDQ_AVX10_1. Remove target check.
+	(avx512dq_fpclass<mode><mask_scalar_merge_name>): Change
+	iterator to VFH_AVX512VLDQ_AVX10_1. Remove target check.
+	* config/i386/subst.md (mask_avx512dq_condition): Add
+	TARGET_AVX10_1.
+	(mask_scalar_merge): Ditto.
+
+2023-08-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2023-08-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/111051
+	* config/i386/avx512vldqintrin.h: Push AVX2 when AVX2 is
+	disabled.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR debug/111080
+	* dwarf2out.cc (prune_unused_types_walk): Handle
+	DW_TAG_restrict_type, DW_TAG_shared_type, DW_TAG_atomic_type,
+	DW_TAG_immutable_type, DW_TAG_coarray_type, DW_TAG_unspecified_type
+	and DW_TAG_dynamic_type as to only output them when referenced.
+
+2023-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_invalid_conversion): Adjust GCC
+	V13 to GCC 13.1.
+
+2023-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	* common/config/i386/i386-common.cc (processor_names): Add new
+	member graniterapids-s and arrowlake-s.
+	* config/i386/i386-options.cc (processor_alias_table): Update
+	table with PROCESSOR_ARROWLAKE_S and
+	PROCESSOR_GRANITERAPIDS_D.
+	(m_GRANITERAPID_D): New macro.
+	(m_ARROWLAKE_S): Ditto.
+	(m_CORE_AVX512): Add m_GRANITERAPIDS_D.
+	(processor_cost_table): Add icelake_cost for
+	PROCESSOR_GRANITERAPIDS_D and alderlake_cost for
+	PROCESSOR_ARROWLAKE_S.
+	* config/i386/x86-tune.def: Hanlde m_ARROWLAKE_S same as
+	m_ARROWLAKE.
+	* config/i386/i386.h (enum processor_type): Add new member
+	PROCESSOR_GRANITERAPIDS_D and PROCESSOR_ARROWLAKE_S.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Handle
+	PROCESSOR_GRANITERAPIDS_D and PROCESSOR_ARROWLAKE_S
+
 2023-08-23  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
 
 	* lra-eliminations.cc (eliminate_regs_in_insn): Use equivalences to
