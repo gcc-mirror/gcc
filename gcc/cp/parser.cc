@@ -25892,6 +25892,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
       tree designator;
       tree initializer;
       bool clause_non_constant_p;
+      bool direct_p = false;
       location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
       /* Handle the C++20 syntax, '. id ='.  */
@@ -25914,6 +25915,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
 	    /* Consume the `='.  */
 	    cp_lexer_consume_token (parser->lexer);
+	  else
+	    direct_p = true;
 	}
       /* Also, if the next token is an identifier and the following one is a
 	 colon, we are looking at the GNU designated-initializer
@@ -25990,6 +25993,12 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
       /* If any clause is non-constant, so is the entire initializer.  */
       if (clause_non_constant_p && non_constant_p)
 	*non_constant_p = true;
+
+      if (TREE_CODE (initializer) == CONSTRUCTOR)
+	/* This uses |= rather than = because C_I_D_I could have been set in
+	   cp_parser_functional_cast so we must be careful not to clear the
+	   flag.  */
+	CONSTRUCTOR_IS_DIRECT_INIT (initializer) |= direct_p;
 
       /* If we have an ellipsis, this is an initializer pack
 	 expansion.  */
