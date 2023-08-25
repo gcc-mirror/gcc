@@ -258,6 +258,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__graniterapids");
       def_or_undef (parse_in, "__graniterapids__");
       break;
+    case PROCESSOR_GRANITERAPIDS_D:
+      def_or_undef (parse_in, "__graniterapids_d");
+      def_or_undef (parse_in, "__graniterapids_d__");
+      break;
     case PROCESSOR_ALDERLAKE:
       def_or_undef (parse_in, "__alderlake");
       def_or_undef (parse_in, "__alderlake__");
@@ -446,6 +450,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_GRANITERAPIDS:
       def_or_undef (parse_in, "__tune_graniterapids__");
+      break;
+    case PROCESSOR_GRANITERAPIDS_D:
+      def_or_undef (parse_in, "__tune_graniterapids_d__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:

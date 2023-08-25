@@ -54,7 +54,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     struct __unspec
     {
-      constexpr __unspec(__unspec*) noexcept { }
+      consteval __unspec(__unspec*) noexcept { }
     };
   }
 
