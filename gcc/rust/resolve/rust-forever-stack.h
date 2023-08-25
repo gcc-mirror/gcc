@@ -396,7 +396,10 @@ template <Namespace N> class ForeverStack
 {
 public:
   ForeverStack ()
-    : root (Node (Rib (Rib::Kind::Normal))), cursor_reference (root)
+    // FIXME: Is that valid? Do we use the root? If yes, we should give the
+    // crate's node id to ForeverStack's constructor
+    : root (Node (Rib (Rib::Kind::Normal), UNKNOWN_NODEID)),
+      cursor_reference (root)
   {
     rust_assert (root.is_root ());
     rust_assert (root.is_leaf ());
@@ -478,6 +481,12 @@ public:
   template <typename S>
   tl::optional<NodeId> resolve_path (const std::vector<S> &segments);
 
+  // FIXME: Documentation
+  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id);
+
+  // FIXME: Documentation
+  tl::optional<Rib &> to_rib (NodeId rib_id);
+
   std::string as_debug_string ();
 
 private:
@@ -509,8 +518,10 @@ private:
   class Node
   {
   public:
-    Node (Rib rib) : rib (rib) {}
-    Node (Rib rib, Node &parent) : rib (rib), parent (parent) {}
+    Node (Rib rib, NodeId id) : rib (rib), id (id) {}
+    Node (Rib rib, NodeId id, Node &parent)
+      : rib (rib), id (id), parent (parent)
+    {}
 
     bool is_root () const;
     bool is_leaf () const;
@@ -519,6 +530,8 @@ private:
 
     Rib rib; // this is the "value" of the node - the data it keeps.
     std::map<Link, Node, LinkCmp> children; // all the other nodes it links to
+
+    NodeId id; // The node id of the Node's scope
 
     tl::optional<Node &> parent; // `None` only if the node is a root
   };
@@ -566,6 +579,12 @@ private:
   tl::optional<Node &> resolve_segments (Node &starting_point,
 					 const std::vector<S> &segments,
 					 SegIterator<S> iterator);
+
+  /* Helper functions for forward resolution (to_canonical_path, to_rib...) */
+
+  // FIXME: Documentation
+  tl::optional<std::pair<Node &, std::string>> dfs (Node &starting_point,
+						    NodeId to_find);
 };
 
 } // namespace Resolver2_0

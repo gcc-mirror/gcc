@@ -66,8 +66,8 @@ ForeverStack<N>::push_inner (Rib rib, Link link)
   // the iterator and a boolean. If the value already exists, the iterator
   // points to it. Otherwise, it points to the newly emplaced value, so we can
   // just update our cursor().
-  auto emplace
-    = cursor ().children.emplace (std::make_pair (link, Node (rib, cursor ())));
+  auto emplace = cursor ().children.emplace (
+    std::make_pair (link, Node (rib, link.id, cursor ())));
 
   auto it = emplace.first;
   auto existed = !emplace.second;
@@ -449,6 +449,92 @@ ForeverStack<N>::resolve_path (const std::vector<S> &segments)
     .and_then ([&segments] (Node final_node) {
       return final_node.rib.get (segments.back ().as_string ());
     });
+}
+
+template <Namespace N>
+tl::optional<std::pair<typename ForeverStack<N>::Node &, std::string>>
+ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
+{
+  auto &values = starting_point.rib.get_values ();
+
+  for (auto &kv : values)
+    if (kv.second == to_find)
+      return {{starting_point, kv.first}};
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
+tl::optional<Resolver::CanonicalPath>
+ForeverStack<N>::to_canonical_path (NodeId id)
+{
+  // find the id in the current forever stack, starting from the root,
+  // performing either a BFS or DFS once the Node containing the ID is found, go
+  // back up to the root (parent().parent().parent()...) accumulate link
+  // segments reverse them that's your canonical path
+
+  return dfs (root, id).map ([this, id] (std::pair<Node &, std::string> tuple) {
+    auto containing_node = tuple.first;
+    auto name = tuple.second;
+
+    auto segments = std::vector<Resolver::CanonicalPath> ();
+
+    reverse_iter (containing_node, [&segments] (Node &current) {
+      if (current.is_root ())
+	return KeepGoing::No;
+
+      auto children = current.parent.value ().children;
+      const Link *outer_link = nullptr;
+
+      for (auto &kv : children)
+	{
+	  auto &link = kv.first;
+	  auto &child = kv.second;
+
+	  if (link.id == child.id)
+	    {
+	      outer_link = &link;
+	      break;
+	    }
+	}
+
+      rust_assert (outer_link);
+
+      outer_link->path.map ([&segments, outer_link] (Identifier path) {
+	segments.emplace (segments.begin (),
+			  Resolver::CanonicalPath::new_seg (outer_link->id,
+							    path.as_string ()));
+      });
+
+      return KeepGoing::Yes;
+    });
+
+    auto path = Resolver::CanonicalPath::create_empty ();
+    for (const auto &segment : segments)
+      path = path.append (segment);
+
+    // Finally, append the name
+    path = path.append (Resolver::CanonicalPath::new_seg (id, name));
+    rust_debug ("[ARTHUR] found path: %s. Size: %lu", path.get ().c_str (),
+		segments.size ());
+
+    return path;
+  });
+}
+
+template <Namespace N>
+tl::optional<Rib &>
+ForeverStack<N>::to_rib (NodeId rib_id)
+{
+  return tl::nullopt;
 }
 
 template <Namespace N>
