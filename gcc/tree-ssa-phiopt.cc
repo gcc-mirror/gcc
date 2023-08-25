@@ -496,7 +496,6 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 			tree arg0, tree arg1,
 			gimple_seq *seq)
 {
-  tree result;
   gimple_seq seq1 = NULL;
   enum tree_code comp_code = gimple_cond_code (comp_stmt);
   location_t loc = gimple_location (comp_stmt);
@@ -526,18 +525,29 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 
   if (op.resimplify (&seq1, follow_all_ssa_edges))
     {
-      /* Early we want only to allow some generated tree codes. */
-      if (!early_p
-	  || phiopt_early_allow (seq1, op))
+      bool allowed = !early_p || phiopt_early_allow (seq1, op);
+      tree result = maybe_push_res_to_seq (&op, &seq1);
+      if (dump_file && (dump_flags & TDF_FOLDING))
 	{
-	  result = maybe_push_res_to_seq (&op, &seq1);
+	  fprintf (dump_file, "\nphiopt match-simplify back:\n");
+	  if (seq1)
+	    print_gimple_seq (dump_file, seq1, 0, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (dump_file, "result: ");
 	  if (result)
-	    {
-	      if (loc != UNKNOWN_LOCATION)
-		annotate_all_with_location (seq1, loc);
-	      gimple_seq_add_seq_without_update (seq, seq1);
-	      return result;
-	    }
+	    print_generic_expr (dump_file, result);
+	  else
+	    fprintf (dump_file, " (none)");
+	  fprintf (dump_file, "\n");
+	  if (!allowed)
+	    fprintf (dump_file, "rejected because early\n");
+	}
+      /* Early we want only to allow some generated tree codes. */
+      if (allowed && result)
+	{
+	  if (loc != UNKNOWN_LOCATION)
+	    annotate_all_with_location (seq1, loc);
+	  gimple_seq_add_seq_without_update (seq, seq1);
+	  return result;
 	}
     }
   gimple_seq_discard (seq1);
@@ -569,18 +579,29 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 
   if (op1.resimplify (&seq1, follow_all_ssa_edges))
     {
-      /* Early we want only to allow some generated tree codes. */
-      if (!early_p
-	  || phiopt_early_allow (seq1, op1))
+      bool allowed = !early_p || phiopt_early_allow (seq1, op1);
+      tree result = maybe_push_res_to_seq (&op1, &seq1);
+      if (dump_file && (dump_flags & TDF_FOLDING))
 	{
-	  result = maybe_push_res_to_seq (&op1, &seq1);
+	  fprintf (dump_file, "\nphiopt match-simplify back:\n");
+	  if (seq1)
+	    print_gimple_seq (dump_file, seq1, 0, TDF_VOPS|TDF_MEMSYMS);
+	  fprintf (dump_file, "result: ");
 	  if (result)
-	    {
-	      if (loc != UNKNOWN_LOCATION)
-		annotate_all_with_location (seq1, loc);
-	      gimple_seq_add_seq_without_update (seq, seq1);
-	      return result;
-	    }
+	    print_generic_expr (dump_file, result);
+	  else
+	    fprintf (dump_file, " (none)");
+	  fprintf (dump_file, "\n");
+	  if (!allowed)
+	    fprintf (dump_file, "rejected because early\n");
+	}
+      /* Early we want only to allow some generated tree codes. */
+      if (allowed && result)
+	{
+	  if (loc != UNKNOWN_LOCATION)
+	    annotate_all_with_location (seq1, loc);
+	  gimple_seq_add_seq_without_update (seq, seq1);
+	  return result;
 	}
     }
   gimple_seq_discard (seq1);
@@ -852,6 +873,8 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (!result)
     return false;
+  if (dump_file && (dump_flags & TDF_FOLDING))
+    fprintf (dump_file, "accepted the phiopt match-simplify.\n");
 
   auto_bitmap exprs_maybe_dce;
 
@@ -877,11 +900,6 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 	  tree name = gimple_get_lhs (stmt);
 	  if (name && TREE_CODE (name) == SSA_NAME)
 	    bitmap_set_bit (exprs_maybe_dce, SSA_NAME_VERSION (name));
-	}
-      if (dump_file && (dump_flags & TDF_FOLDING))
-	{
-	  fprintf (dump_file, "Folded into the sequence:\n");
-	  print_gimple_seq (dump_file, seq, 0, TDF_VOPS|TDF_MEMSYMS);
 	}
     gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
   }
