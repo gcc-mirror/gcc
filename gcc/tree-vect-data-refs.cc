@@ -750,6 +750,7 @@ vect_slp_analyze_load_dependences (vec_info *vinfo, slp_tree node,
       data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
       ao_ref ref;
       bool ref_initialized_p = false;
+      hash_set<stmt_vec_info> grp_visited;
       for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
 	   gsi_stmt (gsi) != first_access_info->stmt; gsi_prev (&gsi))
 	{
@@ -782,26 +783,55 @@ vect_slp_analyze_load_dependences (vec_info *vinfo, slp_tree node,
 	      continue;
 	    }
 
-	  /* We are hoisting a load - this means we can use TBAA for
-	     disambiguation.  */
-	  if (!ref_initialized_p)
-	    ao_ref_init (&ref, DR_REF (dr_a));
-	  if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
+	  auto check_hoist = [&] (stmt_vec_info stmt_info) -> bool
 	    {
-	      /* If we couldn't record a (single) data reference for this
-		 stmt we have to give up now.  */
-	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
-	      if (!dr_b)
-		return false;
-	      ddr_p ddr = initialize_data_dependence_relation (dr_a,
-							       dr_b, vNULL);
-	      bool dependent
-		= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-	      free_dependence_relation (ddr);
-	      if (dependent)
+	      /* We are hoisting a load - this means we can use TBAA for
+		 disambiguation.  */
+	      if (!ref_initialized_p)
+		ao_ref_init (&ref, DR_REF (dr_a));
+	      if (stmt_may_clobber_ref_p_1 (stmt_info->stmt, &ref, true))
+		{
+		  /* If we couldn't record a (single) data reference for this
+		     stmt we have to give up now.  */
+		  data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
+		  if (!dr_b)
+		    return false;
+		  ddr_p ddr = initialize_data_dependence_relation (dr_a,
+								   dr_b, vNULL);
+		  bool dependent
+		    = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		  free_dependence_relation (ddr);
+		  if (dependent)
+		    return false;
+		}
+	      /* No dependence.  */
+	      return true;
+	    };
+	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	    {
+	      /* When we run into a store group we have to honor
+		 that earlier stores might be moved here.  We don't
+		 know exactly which and where to since we lack a
+		 back-mapping from DR to SLP node, so assume all
+		 earlier stores are sunk here.  It's enough to
+		 consider the last stmt of a group for this.
+		 ???  Both this and the fact that we disregard that
+		 the conflicting instance might be removed later
+		 is overly conservative.  */
+	      if (!grp_visited.add (DR_GROUP_FIRST_ELEMENT (stmt_info)))
+		for (auto store_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+		     store_info != NULL;
+		     store_info = DR_GROUP_NEXT_ELEMENT (store_info))
+		  if ((store_info == stmt_info
+		       || get_later_stmt (store_info, stmt_info) == stmt_info)
+		      && !check_hoist (store_info))
+		    return false;
+	    }
+	  else
+	    {
+	      if (!check_hoist (stmt_info))
 		return false;
 	    }
-	  /* No dependence.  */
 	}
     }
   return true;
