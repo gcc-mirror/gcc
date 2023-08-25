@@ -2453,8 +2453,13 @@ vect_dissolve_slp_only_groups (loop_vec_info loop_vinfo)
 		  DR_GROUP_FIRST_ELEMENT (vinfo) = vinfo;
 		  DR_GROUP_NEXT_ELEMENT (vinfo) = NULL;
 		  DR_GROUP_SIZE (vinfo) = 1;
-		  if (STMT_VINFO_STRIDED_P (first_element))
-		    DR_GROUP_GAP (vinfo) = 0;
+		  if (STMT_VINFO_STRIDED_P (first_element)
+		      /* We cannot handle stores with gaps.  */
+		      || DR_IS_WRITE (dr_info->dr))
+		    {
+		      STMT_VINFO_STRIDED_P (vinfo) = true;
+		      DR_GROUP_GAP (vinfo) = 0;
+		    }
 		  else
 		    DR_GROUP_GAP (vinfo) = group_size - 1;
 		  /* Duplicate and adjust alignment info, it needs to
