@@ -670,160 +670,138 @@ vect_slp_analyze_data_ref_dependence (vec_info *vinfo,
 }
 
 
-/* Analyze dependences involved in the transform of SLP NODE.  STORES
+/* Analyze dependences involved in the transform of a store SLP NODE.  */
+
+static bool
+vect_slp_analyze_store_dependences (vec_info *vinfo, slp_tree node)
+{
+  /* This walks over all stmts involved in the SLP store done
+     in NODE verifying we can sink them up to the last stmt in the
+     group.  */
+  stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
+  gcc_assert (DR_IS_WRITE (STMT_VINFO_DATA_REF (last_access_info)));
+
+  for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
+    {
+      stmt_vec_info access_info
+	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
+      if (access_info == last_access_info)
+	continue;
+      data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
+      ao_ref ref;
+      bool ref_initialized_p = false;
+      for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
+	   gsi_stmt (gsi) != last_access_info->stmt; gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (! gimple_vuse (stmt))
+	    continue;
+
+	  /* If we couldn't record a (single) data reference for this
+	     stmt we have to resort to the alias oracle.  */
+	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+	  data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
+	  if (!dr_b)
+	    {
+	      /* We are moving a store - this means
+		 we cannot use TBAA for disambiguation.  */
+	      if (!ref_initialized_p)
+		ao_ref_init (&ref, DR_REF (dr_a));
+	      if (stmt_may_clobber_ref_p_1 (stmt, &ref, false)
+		  || ref_maybe_used_by_stmt_p (stmt, &ref, false))
+		return false;
+	      continue;
+	    }
+
+	  gcc_assert (!gimple_visited_p (stmt));
+
+	  ddr_p ddr = initialize_data_dependence_relation (dr_a,
+							   dr_b, vNULL);
+	  bool dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+	  free_dependence_relation (ddr);
+	  if (dependent)
+	    return false;
+	}
+    }
+  return true;
+}
+
+/* Analyze dependences involved in the transform of a load SLP NODE.  STORES
    contain the vector of scalar stores of this instance if we are
    disambiguating the loads.  */
 
 static bool
-vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
+vect_slp_analyze_load_dependences (vec_info *vinfo, slp_tree node,
 				   vec<stmt_vec_info> stores,
 				   stmt_vec_info last_store_info)
 {
-  /* This walks over all stmts involved in the SLP load/store done
-     in NODE verifying we can sink them up to the last stmt in the
+  /* This walks over all stmts involved in the SLP load done
+     in NODE verifying we can hoist them up to the first stmt in the
      group.  */
-  if (DR_IS_WRITE (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))))
+  stmt_vec_info first_access_info = vect_find_first_scalar_stmt_in_slp (node);
+  gcc_assert (DR_IS_READ (STMT_VINFO_DATA_REF (first_access_info)));
+
+  for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
     {
-      stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
-      for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
+      stmt_vec_info access_info
+	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
+      if (access_info == first_access_info)
+	continue;
+      data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
+      ao_ref ref;
+      bool ref_initialized_p = false;
+      for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
+	   gsi_stmt (gsi) != first_access_info->stmt; gsi_prev (&gsi))
 	{
-	  stmt_vec_info access_info
-	    = vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
-	  if (access_info == last_access_info)
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (! gimple_vdef (stmt))
 	    continue;
-	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
-	  ao_ref ref;
-	  bool ref_initialized_p = false;
-	  for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
-	       gsi_stmt (gsi) != last_access_info->stmt; gsi_next (&gsi))
+
+	  stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+
+	  /* If we run into a store of this same instance (we've just
+	     marked those) then delay dependence checking until we run
+	     into the last store because this is where it will have
+	     been sunk to (and we verified that we can do that already).  */
+	  if (gimple_visited_p (stmt))
 	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      if (! gimple_vuse (stmt))
+	      if (stmt_info != last_store_info)
 		continue;
 
+	      for (stmt_vec_info &store_info : stores)
+		{
+		  data_reference *store_dr = STMT_VINFO_DATA_REF (store_info);
+		  ddr_p ddr = initialize_data_dependence_relation
+				(dr_a, store_dr, vNULL);
+		  bool dependent
+		    = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+		  free_dependence_relation (ddr);
+		  if (dependent)
+		    return false;
+		}
+	      continue;
+	    }
+
+	  /* We are hoisting a load - this means we can use TBAA for
+	     disambiguation.  */
+	  if (!ref_initialized_p)
+	    ao_ref_init (&ref, DR_REF (dr_a));
+	  if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
+	    {
 	      /* If we couldn't record a (single) data reference for this
-		 stmt we have to resort to the alias oracle.  */
-	      stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
+		 stmt we have to give up now.  */
 	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
 	      if (!dr_b)
-		{
-		  /* We are moving a store - this means
-		     we cannot use TBAA for disambiguation.  */
-		  if (!ref_initialized_p)
-		    ao_ref_init (&ref, DR_REF (dr_a));
-		  if (stmt_may_clobber_ref_p_1 (stmt, &ref, false)
-		      || ref_maybe_used_by_stmt_p (stmt, &ref, false))
-		    return false;
-		  continue;
-		}
-
-	      bool dependent = false;
-	      /* If we run into a store of this same instance (we've just
-		 marked those) then delay dependence checking until we run
-		 into the last store because this is where it will have
-		 been sunk to (and we verify if we can do that as well).  */
-	      if (gimple_visited_p (stmt))
-		{
-		  if (stmt_info != last_store_info)
-		    continue;
-
-		  for (stmt_vec_info &store_info : stores)
-		    {
-		      data_reference *store_dr
-			= STMT_VINFO_DATA_REF (store_info);
-		      ddr_p ddr = initialize_data_dependence_relation
-				    (dr_a, store_dr, vNULL);
-		      dependent
-			= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-		      free_dependence_relation (ddr);
-		      if (dependent)
-			break;
-		    }
-		}
-	      else
-		{
-		  ddr_p ddr = initialize_data_dependence_relation (dr_a,
-								   dr_b, vNULL);
-		  dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-		  free_dependence_relation (ddr);
-		}
+		return false;
+	      ddr_p ddr = initialize_data_dependence_relation (dr_a,
+							       dr_b, vNULL);
+	      bool dependent
+		= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
+	      free_dependence_relation (ddr);
 	      if (dependent)
 		return false;
 	    }
-	}
-    }
-  else /* DR_IS_READ */
-    {
-      stmt_vec_info first_access_info
-	= vect_find_first_scalar_stmt_in_slp (node);
-      for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
-	{
-	  stmt_vec_info access_info
-	    = vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
-	  if (access_info == first_access_info)
-	    continue;
-	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
-	  ao_ref ref;
-	  bool ref_initialized_p = false;
-	  for (gimple_stmt_iterator gsi = gsi_for_stmt (access_info->stmt);
-	       gsi_stmt (gsi) != first_access_info->stmt; gsi_prev (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      if (! gimple_vdef (stmt))
-		continue;
-
-	      /* If we couldn't record a (single) data reference for this
-		 stmt we have to resort to the alias oracle.  */
-	      stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
-	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
-
-	      /* We are hoisting a load - this means we can use
-		 TBAA for disambiguation.  */
-	      if (!ref_initialized_p)
-		ao_ref_init (&ref, DR_REF (dr_a));
-	      if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
-		{
-		  if (!dr_b)
-		    return false;
-		  /* Resort to dependence checking below.  */
-		}
-	      else
-		/* No dependence.  */
-		continue;
-
-	      bool dependent = false;
-	      /* If we run into a store of this same instance (we've just
-		 marked those) then delay dependence checking until we run
-		 into the last store because this is where it will have
-		 been sunk to (and we verify if we can do that as well).  */
-	      if (gimple_visited_p (stmt))
-		{
-		  if (stmt_info != last_store_info)
-		    continue;
-
-		  for (stmt_vec_info &store_info : stores)
-		    {
-		      data_reference *store_dr
-			= STMT_VINFO_DATA_REF (store_info);
-		      ddr_p ddr = initialize_data_dependence_relation
-				    (dr_a, store_dr, vNULL);
-		      dependent
-			= vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-		      free_dependence_relation (ddr);
-		      if (dependent)
-			break;
-		    }
-		}
-	      else
-		{
-		  ddr_p ddr = initialize_data_dependence_relation (dr_a,
-								   dr_b, vNULL);
-		  dependent = vect_slp_analyze_data_ref_dependence (vinfo, ddr);
-		  free_dependence_relation (ddr);
-		}
-	      if (dependent)
-		return false;
-	    }
+	  /* No dependence.  */
 	}
     }
   return true;
@@ -850,7 +828,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   stmt_vec_info last_store_info = NULL;
   if (store)
     {
-      if (! vect_slp_analyze_node_dependences (vinfo, store, vNULL, NULL))
+      if (! vect_slp_analyze_store_dependences (vinfo, store))
 	return false;
 
       /* Mark stores in this instance and remember the last one.  */
@@ -864,7 +842,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   /* Verify we can sink loads to the vectorized stmt insert location,
      special-casing stores of this instance.  */
   for (slp_tree &load : SLP_INSTANCE_LOADS (instance))
-    if (! vect_slp_analyze_node_dependences (vinfo, load,
+    if (! vect_slp_analyze_load_dependences (vinfo, load,
 					     store
 					     ? SLP_TREE_SCALAR_STMTS (store)
 					     : vNULL, last_store_info))
