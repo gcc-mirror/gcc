@@ -532,9 +532,27 @@ ForeverStack<N>::to_canonical_path (NodeId id)
 
 template <Namespace N>
 tl::optional<Rib &>
+ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
+{
+  if (starting_point.id == to_find)
+    return starting_point.rib;
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs_rib (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
+tl::optional<Rib &>
 ForeverStack<N>::to_rib (NodeId rib_id)
 {
-  return tl::nullopt;
+  return dfs_rib (root, rib_id);
 }
 
 template <Namespace N>
