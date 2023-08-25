@@ -1,3 +1,51 @@
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111070
+	* gcc.dg/pr111070.c: New testcase.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111039
+	* gcc.dg/pr111039.c: New testcase.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111019
+	* g++.dg/torture/pr111019.C: New testcase.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110702
+	* gcc.dg/torture/pr110702.c: New testcase.
+
+2023-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111109
+	* gcc.c-torture/execute/ieee/fp-cmp-cond-1.c: New test.
+
+2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR debug/111080
+	* gcc.dg/debug/dwarf2/pr111080.c: New testcase.
+
 2023-08-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
