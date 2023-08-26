@@ -1,3 +1,55 @@
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h (struct gfc_namespace): Add omp_structured_block bit.
+	* openmp.cc: Include omp-api.h.
+	(resolve_omp_clauses): Consolidate inscan reduction clause conflict
+	checking here.
+	(find_nested_loop_in_chain): New.
+	(find_nested_loop_in_block): New.
+	(gfc_resolve_omp_do_blocks): Set omp_current_do_collapse properly.
+	Handle imperfectly-nested loops when looking for nested omp scan.
+	Refactor to move inscan reduction clause conflict checking to
+	resolve_omp_clauses.
+	(gfc_resolve_do_iterator): Handle imperfectly-nested loops.
+	(struct icode_error_state): New.
+	(icode_code_error_callback): New.
+	(icode_expr_error_callback): New.
+	(diagnose_intervening_code_errors_1): New.
+	(diagnose_intervening_code_errors): New.
+	(make_structured_block): New.
+	(restructure_intervening_code): New.
+	(is_outer_iteration_variable): Do not assume loops are perfectly
+	nested.
+	(check_nested_loop_in_chain): New.
+	(check_nested_loop_in_block_state): New.
+	(check_nested_loop_in_block_symbol): New.
+	(check_nested_loop_in_block): New.
+	(expr_uses_intervening_var): New.
+	(is_intervening_var): New.
+	(expr_is_invariant): Do not assume loops are perfectly nested.
+	(resolve_omp_do): Handle imperfectly-nested loops.
+	* trans-stmt.cc (gfc_trans_block_construct): Generate
+	OMP_STRUCTURED_BLOCK if magic bit is set on block namespace.
+
+2023-08-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/35095
+	* data.cc (get_array_index): Add bounds-checking code and return error
+	status.  Overindexing will be allowed as an extension for -std=legacy
+	and generate an error in standard-conforming mode.
+	(gfc_assign_data_value): Use error status from get_array_index for
+	graceful error recovery.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* match.cc (gfc_match_equivalence): Rename TRUE/FALSE to true/false.
+	* module.cc (check_access): Ditto.
+	* primary.cc (match_real_constant): Ditto.
+	* trans-array.cc (gfc_trans_allocate_array_storage): Ditto.
+	(get_array_ctor_strlen): Ditto.
+	* trans-common.cc (find_equivalence): Ditto.
+	(add_equivalences): Ditto.
+
 2023-08-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/32986

@@ -1,3 +1,18 @@
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.h (c_omp_check_loop_binding_exprs): Declare.
+	* c-omp.cc: Include tree-iterator.h.
+	(find_binding_in_body): New.
+	(check_loop_binding_expr_r): New.
+	(LOCATION_OR): New.
+	(check_looop_binding_expr): New.
+	(c_omp_check_loop_binding_exprs): New.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-format.cc (read_any_format_width):
+	Rename TRUE/FALSE to true/false.
+
 2023-08-20  Martin Uecker  <uecker@tugraz.at>
 
 	* c-format.cc: Fix identation.

@@ -1,3 +1,133 @@
+2023-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/stack_save_restore_1.c: Robustify.
+	* gcc.target/riscv/stack_save_restore_2.c: Robustify.
+
+2023-08-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zicond-primitiveSemantics.c: Disable for -Og.
+
+2023-08-25  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zfa-fleq-fltq.c: New test.
+	* gcc.target/riscv/zfa-fli-zfh.c: New test.
+	* gcc.target/riscv/zfa-fli.c: New test.
+	* gcc.target/riscv/zfa-fmovh-fmovp.c: New test.
+	* gcc.target/riscv/zfa-fli-1.c: New test.
+	* gcc.target/riscv/zfa-fli-2.c: New test.
+	* gcc.target/riscv/zfa-fli-3.c: New test.
+	* gcc.target/riscv/zfa-fli-4.c: New test.
+	* gcc.target/riscv/zfa-fli-6.c: New test.
+	* gcc.target/riscv/zfa-fli-7.c: New test.
+	* gcc.target/riscv/zfa-fli-8.c: New test.
+	Co-authored-by: Tsukasa OI <research_trasio@irq.a4lg.com>
+	* gcc.target/riscv/zfa-fround.c: New file.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/gomp/collapse1.f90: Adjust expected errors.
+	* gfortran.dg/gomp/collapse2.f90: Likewise.
+	* gfortran.dg/gomp/imperfect-gotos.f90: New.
+	* gfortran.dg/gomp/imperfect-invalid-scope.f90: New.
+	* gfortran.dg/gomp/imperfect1.f90: New.
+	* gfortran.dg/gomp/imperfect2.f90: New.
+	* gfortran.dg/gomp/imperfect3.f90: New.
+	* gfortran.dg/gomp/imperfect4.f90: New.
+	* gfortran.dg/gomp/imperfect5.f90: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/imperfect-attributes.c: New.
+	* c-c++-common/gomp/imperfect-badloops.c: New.
+	* c-c++-common/gomp/imperfect-blocks.c: New.
+	* c-c++-common/gomp/imperfect-extension.c: New.
+	* c-c++-common/gomp/imperfect-gotos.c: New.
+	* c-c++-common/gomp/imperfect-invalid-scope.c: New.
+	* c-c++-common/gomp/imperfect-labels.c: New.
+	* c-c++-common/gomp/imperfect-legacy-syntax.c: New.
+	* c-c++-common/gomp/imperfect-pragmas.c: New.
+	* c-c++-common/gomp/imperfect1.c: New.
+	* c-c++-common/gomp/imperfect2.c: New.
+	* c-c++-common/gomp/imperfect3.c: New.
+	* c-c++-common/gomp/imperfect4.c: New.
+	* c-c++-common/gomp/imperfect5.c: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/goacc/tile-2.c: Adjust expected error patterns.
+	* g++.dg/gomp/attrs-imperfect1.C: New test.
+	* g++.dg/gomp/attrs-imperfect2.C: New test.
+	* g++.dg/gomp/attrs-imperfect3.C: New test.
+	* g++.dg/gomp/attrs-imperfect4.C: New test.
+	* g++.dg/gomp/attrs-imperfect5.C: New test.
+	* g++.dg/gomp/pr41967.C: Adjust expected error patterns.
+	* g++.dg/gomp/tpl-imperfect-gotos.C: New test.
+	* g++.dg/gomp/tpl-imperfect-invalid-scope.C: New test.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/goacc/collapse-1.c: Update for new C error behavior.
+	* c-c++-common/goacc/tile-2.c: Likewise.
+	* gcc.dg/gomp/collapse-1.c: Likewise.
+
+2023-08-25  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/gcse-const.c: New Test
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Remove test
+	for Jump.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-8.c: Ditto.
+
+2023-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-34.c: New test.
+
+2023-08-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/35095
+	* gfortran.dg/data_bounds_1.f90: Adjust options to disable warnings.
+	* gfortran.dg/data_bounds_2.f90: New test.
+
+2023-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/out-of-bounds-diagram-17.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-18.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-diagram-19.c: New test.
+
+2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111137
+	* gcc.dg/torture/pr111137.c: New testcase.
+
+2023-08-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-12.c: New test.
+
+2023-08-25  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/vector-abi-1.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-1.c: ...here.
+	* gcc.target/riscv/vector-abi-2.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-2.c: ...here.
+	* gcc.target/riscv/vector-abi-3.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-3.c: ...here.
+	* gcc.target/riscv/vector-abi-4.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-4.c: ...here.
+	* gcc.target/riscv/vector-abi-5.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-5.c: ...here.
+	* gcc.target/riscv/vector-abi-6.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-6.c: ...here.
+	* gcc.target/riscv/vector-abi-7.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-7.c: ...here.
+	* gcc.target/riscv/vector-abi-8.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-8.c: ...here.
+	* gcc.target/riscv/vector-abi-9.c: Moved to...
+	* gcc.target/riscv/rvv/base/vector-abi-9.c: ...here.
+
+2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/111127
+	* gcc.target/i386/pr111127.c: New test.
+
 2023-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/94866

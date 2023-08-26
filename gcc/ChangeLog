@@ -1,3 +1,203 @@
+2023-08-25  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/sync-rvwmo.md: updated types to "multi" or
+		"atomic" based on number of assembly lines generated
+	* config/riscv/sync-ztso.md: likewise
+	* config/riscv/sync.md: likewise
+
+2023-08-25  Jin Ma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc: Add zfa extension version, which depends on
+	the F extension.
+	* config/riscv/constraints.md (zfli): Constrain the floating point number that the
+	instructions FLI.H/S/D can load.
+	* config/riscv/iterators.md (ceil): New.
+	* config/riscv/riscv-opts.h (MASK_ZFA): New.
+	(TARGET_ZFA): New.
+	* config/riscv/riscv-protos.h (riscv_float_const_rtx_index_for_fli): New.
+	* config/riscv/riscv.cc (riscv_float_const_rtx_index_for_fli): New.
+	(riscv_cannot_force_const_mem): If instruction FLI.H/S/D can be used, memory is
+	not applicable.
+	(riscv_const_insns): Likewise.
+	(riscv_legitimize_const_move): Likewise.
+	(riscv_split_64bit_move_p): If instruction FLI.H/S/D can be used, no split is
+	required.
+	(riscv_split_doubleword_move): Likewise.
+	(riscv_output_move): Output the mov instructions in zfa extension.
+	(riscv_print_operand): Output the floating-point value of the FLI.H/S/D immediate
+	in assembly.
+	(riscv_secondary_memory_needed): Likewise.
+	* config/riscv/riscv.md (fminm<mode>3): New.
+	(fmaxm<mode>3): New.
+	(movsidf2_low_rv32): New.
+	(movsidf2_high_rv32): New.
+	(movdfsisi3_rv32): New.
+	(f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_zfa): New.
+	* config/riscv/riscv.opt: New.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* omp-api.h: New.
+	* omp-general.cc (omp_runtime_api_procname): New.
+	(omp_runtime_api_call): Moved here from omp-low.cc, and make
+	non-static.
+	* omp-general.h: Include omp-api.h.
+	* omp-low.cc (omp_runtime_api_call): Delete this copy.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/generic.texi (OpenMP): Document OMP_STRUCTURED_BLOCK.
+	* doc/gimple.texi (GIMPLE instruction set): Add
+	GIMPLE_OMP_STRUCTURED_BLOCK.
+	(GIMPLE_OMP_STRUCTURED_BLOCK): New subsection.
+	* gimple-low.cc (lower_stmt): Error on GIMPLE_OMP_STRUCTURED_BLOCK.
+	* gimple-pretty-print.cc (dump_gimple_omp_block): Handle
+	GIMPLE_OMP_STRUCTURED_BLOCK.
+	(pp_gimple_stmt_1): Likewise.
+	* gimple-walk.cc (walk_gimple_stmt): Likewise.
+	* gimple.cc (gimple_build_omp_structured_block): New.
+	* gimple.def (GIMPLE_OMP_STRUCTURED_BLOCK): New.
+	* gimple.h (gimple_build_omp_structured_block): Declare.
+	(gimple_has_substatements): Handle GIMPLE_OMP_STRUCTURED_BLOCK.
+	(CASE_GIMPLE_OMP): Likewise.
+	* gimplify.cc (is_gimple_stmt): Handle OMP_STRUCTURED_BLOCK.
+	(gimplify_expr): Likewise.
+	* omp-expand.cc (GIMPLE_OMP_STRUCTURED_BLOCK): Error on
+	GIMPLE_OMP_STRUCTURED_BLOCK.
+	* omp-low.cc (scan_omp_1_stmt): Handle GIMPLE_OMP_STRUCTURED_BLOCK.
+	(lower_omp_1): Likewise.
+	(diagnose_sb_1): Likewise.
+	(diagnose_sb_2): Likewise.
+	* tree-inline.cc (remap_gimple_stmt): Handle
+	GIMPLE_OMP_STRUCTURED_BLOCK.
+	(estimate_num_insns): Likewise.
+	* tree-nested.cc (convert_nonlocal_reference_stmt): Likewise.
+	(convert_local_reference_stmt): Likewise.
+	(convert_gimple_call): Likewise.
+	* tree-pretty-print.cc (dump_generic_node): Handle
+	OMP_STRUCTURED_BLOCK.
+	* tree.def (OMP_STRUCTURED_BLOCK): New.
+	* tree.h (OMP_STRUCTURED_BLOCK_BODY): New.
+
+2023-08-25  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Adjust const_int
+	cost. Add some comments about different constants handling.
+
+2023-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`a ? one_zero : one_zero`): Move
+	below detection of minmax.
+
+2023-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`a | C -> C`): New pattern.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* caller-save.cc (new_saved_hard_reg):
+	Rename TRUE/FALSE to true/false.
+	(setup_save_areas): Ditto.
+	* gcc.cc (set_collect_gcc_options): Ditto.
+	(driver::build_multilib_strings): Ditto.
+	(print_multilib_info): Ditto.
+	* genautomata.cc (gen_cpu_unit): Ditto.
+	(gen_query_cpu_unit): Ditto.
+	(gen_bypass): Ditto.
+	(gen_excl_set): Ditto.
+	(gen_presence_absence_set): Ditto.
+	(gen_presence_set): Ditto.
+	(gen_final_presence_set): Ditto.
+	(gen_absence_set): Ditto.
+	(gen_final_absence_set): Ditto.
+	(gen_automaton): Ditto.
+	(gen_regexp_repeat): Ditto.
+	(gen_regexp_allof): Ditto.
+	(gen_regexp_oneof): Ditto.
+	(gen_regexp_sequence): Ditto.
+	(process_decls): Ditto.
+	(reserv_sets_are_intersected): Ditto.
+	(initiate_excl_sets): Ditto.
+	(form_reserv_sets_list): Ditto.
+	(check_presence_pattern_sets): Ditto.
+	(check_absence_pattern_sets): Ditto.
+	(check_regexp_units_distribution): Ditto.
+	(check_unit_distributions_to_automata): Ditto.
+	(create_ainsns): Ditto.
+	(output_insn_code_cases): Ditto.
+	(output_internal_dead_lock_func): Ditto.
+	(form_important_insn_automata_lists): Ditto.
+	* gengtype-state.cc (read_state_files_list): Ditto.
+	* gengtype.cc (main): Ditto.
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_bounds):
+	Ditto.
+	* gimple.cc (gimple_build_call_from_tree): Ditto.
+	(preprocess_case_label_vec_for_gimple): Ditto.
+	* gimplify.cc (gimplify_call_expr): Ditto.
+	* ordered-hash-map-tests.cc (test_map_of_int_to_strings): Ditto.
+
+2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111137
+	* tree-vect-data-refs.cc (vect_slp_analyze_load_dependences):
+	Properly handle grouped stores from other SLP instances.
+
+2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_slp_analyze_store_dependences):
+	Split out from vect_slp_analyze_node_dependences, remove
+	dead code.
+	(vect_slp_analyze_load_dependences): Split out from
+	vect_slp_analyze_node_dependences, adjust comments.  Process
+	queued stores before any disambiguation.
+	(vect_slp_analyze_node_dependences): Remove.
+	(vect_slp_analyze_instance_dependence): Adjust.
+
+2023-08-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (frelop_early_resolve): Rewrite for better NAN
+	handling.
+	(operator_not_equal::fold_range): Adjust for relations.
+	(operator_lt::fold_range): Same.
+	(operator_gt::fold_range): Same.
+	(foperator_unordered_equal::fold_range): Same.
+	(foperator_unordered_lt::fold_range): Same.
+	(foperator_unordered_le::fold_range): Same.
+	(foperator_unordered_gt::fold_range): Same.
+	(foperator_unordered_ge::fold_range): Same.
+
+2023-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111136
+	* tree-vect-loop.cc (vect_dissolve_slp_only_groups): For
+	stores force STMT_VINFO_STRIDED_P and also duplicate that
+	to all elements.
+
+2023-08-25  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::compute_local_properties):
+	Add early continue.
+
+2023-08-25  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (vec_set<mode>): Removed.
+	(V_128H): Merge into ..
+	(V_128): .. this.
+	(V_256H): Merge into ..
+	(V_256): .. this.
+	(V_512): Add V32HF, V32BF.
+	(*ssse3_palignr<mode>_perm): Adjust mode iterator from V_128H
+	to V_128.
+	(vcond<mode><sseintvecmodelower>): Removed
+	(vcondu<mode><sseintvecmodelower>): Removed.
+	(avx_vbroadcastf128_<mode>): Refator from V_256H to V_256.
+
+2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/111127
+	* config/i386/sse.md (avx512f_cvtne2ps2bf16_<mode>_maskz):
+	Adjust paramter order.
+
 2023-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/94866

@@ -1,3 +1,8 @@
+2023-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc (class string_region_spatial_item): Remove
+	assumption that the string is written to the start of the cluster.
+
 2023-08-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105899

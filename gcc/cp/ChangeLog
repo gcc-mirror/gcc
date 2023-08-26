@@ -1,3 +1,55 @@
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cp-tree.h (cp_convert_omp_range_for): Adjust declaration.
+	* parser.cc (struct omp_for_parse_data): New.
+	(cp_parser_postfix_expression): Diagnose calls to OpenMP runtime
+	in intervening code.
+	(check_omp_intervening_code): New.
+	(cp_parser_statement_seq_opt): Special-case nested loops, blocks,
+	and other constructs for OpenMP loops.
+	(cp_parser_iteration_statement): Reject loops in intervening code.
+	(cp_parser_omp_for_loop_init): Expand comments and tweak the
+	interface slightly to better distinguish input/output parameters.
+	(cp_convert_omp_range_for): Likewise.
+	(cp_parser_omp_loop_nest): New, split from cp_parser_omp_for_loop
+	and largely rewritten.  Add more comments.
+	(insert_structured_blocks): New.
+	(find_structured_blocks): New.
+	(struct sit_data, substitute_in_tree_walker, substitute_in_tree):
+	New.
+	(fixup_blocks_walker): New.
+	(cp_parser_omp_for_loop): Rewrite to use recursive descent instead
+	of a loop.  Add logic to reshuffle the bits of code collected
+	during parsing so intervening code gets moved to the loop body.
+	(cp_parser_omp_loop): Remove call to finish_omp_for_block, which
+	is now redundant.
+	(cp_parser_omp_simd): Likewise.
+	(cp_parser_omp_for): Likewise.
+	(cp_parser_omp_distribute): Likewise.
+	(cp_parser_oacc_loop): Likewise.
+	(cp_parser_omp_taskloop): Likewise.
+	(cp_parser_pragma): Reject OpenMP pragmas in intervening code.
+	* parser.h (struct cp_parser): Add omp_for_parse_state field.
+	* pt.cc (tsubst_omp_for_iterator): Adjust call to
+	cp_convert_omp_range_for.
+	* semantics.cc (finish_omp_for): Try harder to preserve location
+	of loop variable init expression for use in diagnostics.
+	(struct fofb_data, finish_omp_for_block_walker): New.
+	(finish_omp_for_block): Allow variables to be bound in a BIND_EXPR
+	nested inside BIND instead of directly in BIND itself.
+
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* constexpr.cc (cxx_eval_constant_expression): Handle
+	OMP_STRUCTURED_BLOCK.
+	* pt.cc (tsubst_expr): Likewise.
+
+2023-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* call.cc (build_conditional_expr):
+	Rename TRUE/FALSE to true/false.
+	(build_new_op): Ditto.
+
 2023-08-22  Jason Merrill  <jason@redhat.com>
 
 	* pt.cc (outer_template_args): Handle non-template argument.

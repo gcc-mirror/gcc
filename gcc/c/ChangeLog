@@ -1,3 +1,22 @@
+2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (struct c_parser): Add omp_for_parse_state field.
+	(struct omp_for_parse_data): New.
+	(check_omp_intervening_code): New.
+	(add_structured_block_stmt): New.
+	(c_parser_compound_statement_nostart): Recognize intervening code,
+	nested loops, and other things that need special handling in
+	OpenMP loop constructs.
+	(c_parser_while_statement): Error on loop in intervening code.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_postfix_expression_after_primary): Error on calls to
+	the OpenMP runtime in intervening code.
+	(c_parser_pragma): Error on OpenMP pragmas in intervening code.
+	(c_parser_omp_loop_nest): New.
+	(c_parser_omp_for_loop): Rewrite to use recursive descent, calling
+	c_parser_omp_loop_nest to do the heavy lifting.
+
 2023-08-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-parser.cc (c_parser_std_attribute): Conditionally allow
