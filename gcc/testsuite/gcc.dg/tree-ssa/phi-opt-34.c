@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* Disable early phiopt1 as  early ccp1 does not export non-zero bits
    so at the point of phiopt1, we don't know that a is [0,1] range */
-/* { dg-options "-O1 -fdisable-tree-phiopt1 -fdump-tree-phiopt2-folding"} */
+/* { dg-options "-O1 -fdisable-tree-phiopt1 -fdump-tree-phiopt2-folding" } */
 
 unsigned f(unsigned a)
 {
