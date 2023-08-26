@@ -506,7 +506,7 @@
   ""
   "
 {
-  moxie_expand_epilogue ();
+  moxie_expand_epilogue (0);
   DONE;
 }
 ")
@@ -515,3 +515,36 @@
   [(return)]
   "reload_completed"
   "ret")
+
+(define_expand "eh_return"
+  [(use (match_operand 0 "register_operand"))]
+  ""
+{
+  rtx tmp, sa = EH_RETURN_STACKADJ_RTX, ra = operands[0];
+
+  /* Tricky bit: we write the address of the handler to which we will
+     be returning into someone else's stack frame, one word below the
+     stack address we wish to restore.  */
+  tmp = gen_rtx_PLUS (Pmode, arg_pointer_rtx, sa);
+  tmp = plus_constant (Pmode, tmp, 2*UNITS_PER_WORD);
+  tmp = gen_rtx_MEM (Pmode, tmp);
+  emit_move_insn (tmp, ra);
+
+  emit_jump_insn (gen_eh_return_internal ());
+  emit_barrier ();
+  DONE;
+})
+
+(define_insn_and_split "eh_return_internal"
+  [(eh_return)]
+  ""
+  "#"
+  "epilogue_completed"
+  [(const_int 0)]
+  "moxie_expand_epilogue (1); DONE;")
+
+(define_insn "eh_returner"
+  [(simple_return)]
+  ""
+  "add\\t$r12, $fp\\n\\tinc\\t$r12, 12\\n\\tmov\\t$sp, $r12\\n\\tld.l\\t$fp, ($fp)\\n\\tcmp\\t$fp, $r12\\n\\tbltu\\t.-6\\n\\tldo.l\\t$r12, -4($r12)\\n\\tjmp\\t$r12"
+  [(set_attr "length" "18")])
