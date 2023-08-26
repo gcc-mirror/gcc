@@ -1,3 +1,12 @@
+2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/111127
+	* config/i386/sse.md (avx512f_cvtne2ps2bf16_<mode>_maskz):
+	Adjust paramter order.
+
 2023-08-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

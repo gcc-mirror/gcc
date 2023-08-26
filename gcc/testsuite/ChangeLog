@@ -1,3 +1,11 @@
+2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/111127
+	* gcc.target/i386/pr111127.c: New test.
+
 2023-08-24  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
