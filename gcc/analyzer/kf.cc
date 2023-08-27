@@ -53,12 +53,16 @@ impl_call_pre (const call_details &cd) const
 
 /* Handler for "alloca".  */
 
-class kf_alloca : public known_function
+class kf_alloca : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return cd.num_args () == 1;
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_ALLOCA;
   }
   void impl_call_pre (const call_details &cd) const final override;
 };
@@ -322,7 +326,7 @@ public:
 
 /* Handler for "calloc".  */
 
-class kf_calloc : public known_function
+class kf_calloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -331,6 +335,11 @@ public:
 	    && cd.arg_is_size_p (0)
 	    && cd.arg_is_size_p (1));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_CALLOC;
+  }
+
   void impl_call_pre (const call_details &cd) const final override;
 };
 
@@ -462,12 +471,16 @@ public:
    all pointers to the region to the "freed" state together, regardless
    of casts.  */
 
-class kf_free : public known_function
+class kf_free : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return (cd.num_args () == 0 && cd.arg_is_pointer_p (0));
+    return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_FREE;
   }
   void impl_call_post (const call_details &cd) const final override;
 };
@@ -488,13 +501,17 @@ kf_free::impl_call_post (const call_details &cd) const
 
 /* Handle the on_call_pre part of "malloc".  */
 
-class kf_malloc : public known_function
+class kf_malloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1
 	    && cd.arg_is_size_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_MALLOC;
   }
   void impl_call_pre (const call_details &cd) const final override;
 };
@@ -520,9 +537,18 @@ kf_malloc::impl_call_pre (const call_details &cd) const
 /* TODO: complain about overlapping src and dest for the memcpy
    variants.  */
 
-class kf_memcpy_memmove : public known_function
+class kf_memcpy_memmove : public builtin_known_function
 {
 public:
+  enum kf_memcpy_memmove_variant
+  {
+    KF_MEMCPY,
+    KF_MEMCPY_CHK,
+    KF_MEMMOVE,
+    KF_MEMMOVE_CHK,
+  };
+  kf_memcpy_memmove (enum kf_memcpy_memmove_variant variant)
+    : m_variant (variant) {};
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 3
@@ -530,7 +556,25 @@ public:
 	    && cd.arg_is_pointer_p (1)
 	    && cd.arg_is_size_p (2));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    switch (m_variant)
+      {
+      case KF_MEMCPY:
+	return BUILT_IN_MEMCPY;
+      case KF_MEMCPY_CHK:
+	return BUILT_IN_MEMCPY_CHK;
+      case KF_MEMMOVE:
+	return BUILT_IN_MEMMOVE;
+      case KF_MEMMOVE_CHK:
+	return BUILT_IN_MEMMOVE_CHK;
+      default:
+	gcc_unreachable ();
+      }
+  }
   void impl_call_pre (const call_details &cd) const final override;
+private:
+  const enum kf_memcpy_memmove_variant m_variant;
 };
 
 void
@@ -557,15 +601,21 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
 
 /* Handler for "memset" and "__builtin_memset".  */
 
-class kf_memset : public known_function
+class kf_memset : public builtin_known_function
 {
 public:
+  kf_memset (bool chk_variant) : m_chk_variant (chk_variant) {}
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 3 && cd.arg_is_pointer_p (0));
   }
-
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_MEMSET_CHK : BUILT_IN_MEMSET;
+  }
   void impl_call_pre (const call_details &cd) const final override;
+private:
+  const bool m_chk_variant;
 };
 
 void
@@ -747,7 +797,7 @@ public:
    Each of these has a custom_edge_info subclass, which updates
    the region_model and sm-state of the destination state.  */
 
-class kf_realloc : public known_function
+class kf_realloc : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -756,6 +806,12 @@ public:
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_size_p (1));
   }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_REALLOC;
+  }
+
   void impl_call_post (const call_details &cd) const final override;
 };
 
@@ -968,7 +1024,7 @@ kf_realloc::impl_call_post (const call_details &cd) const
 
 /* Handler for "strchr" and "__builtin_strchr".  */
 
-class kf_strchr : public known_function
+class kf_strchr : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -978,6 +1034,11 @@ public:
   void impl_call_pre (const call_details &cd) const final override
   {
     cd.check_for_null_terminated_string_arg (0);
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRCHR;
   }
   void impl_call_post (const call_details &cd) const final override;
 };
@@ -1055,7 +1116,7 @@ kf_strchr::impl_call_post (const call_details &cd) const
      int sprintf(char *str, const char *format, ...);
 */
 
-class kf_sprintf : public known_function
+class kf_sprintf : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
@@ -1063,6 +1124,11 @@ public:
     return (cd.num_args () >= 2
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_pointer_p (1));
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_SPRINTF;
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -1108,15 +1174,22 @@ public:
 
 /* Handler for "strcat" and "__builtin_strcat_chk".  */
 
-class kf_strcat : public known_function
+class kf_strcat : public builtin_known_function
 {
 public:
-  kf_strcat (unsigned int num_args) : m_num_args (num_args) {}
+  kf_strcat (unsigned int num_args, bool chk_variant)
+    : m_num_args (num_args),
+      m_chk_variant (chk_variant) {}
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == m_num_args
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_pointer_p (1));
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_STRCAT_CHK : BUILT_IN_STRCAT;
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -1159,25 +1232,32 @@ public:
 
 private:
   unsigned int m_num_args;
+  const bool m_chk_variant;
 };
 
 /* Handler for "strcpy" and "__builtin_strcpy_chk".  */
 
-class kf_strcpy : public known_function
+class kf_strcpy : public builtin_known_function
 {
 public:
-  kf_strcpy (unsigned int num_args) : m_num_args (num_args) {}
+  kf_strcpy (unsigned int num_args, bool chk_variant)
+    : m_num_args (num_args),
+      m_chk_variant (chk_variant) {}
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == m_num_args
 	    && cd.arg_is_pointer_p (0)
 	    && cd.arg_is_pointer_p (1));
   }
-
+  enum built_in_function builtin_code () const final override
+  {
+    return m_chk_variant ? BUILT_IN_STRCPY_CHK : BUILT_IN_STRCPY;
+  }
   void impl_call_pre (const call_details &cd) const final override;
 
 private:
   unsigned int m_num_args;
+  const bool m_chk_variant;
 };
 
 void
@@ -1207,12 +1287,16 @@ kf_strcpy::impl_call_pre (const call_details &cd) const
 
 /* Handler for "strdup" and "__builtin_strdup".  */
 
-class kf_strdup : public known_function
+class kf_strdup : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRDUP;
   }
   void impl_call_pre (const call_details &cd) const final override
   {
@@ -1234,13 +1318,18 @@ public:
 
 /* Handler for "strlen" and for "__analyzer_get_strlen".  */
 
-class kf_strlen : public known_function
+class kf_strlen : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 1 && cd.arg_is_pointer_p (0));
   }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRLEN;
+  }
+
   void impl_call_pre (const call_details &cd) const final override
   {
     if (const svalue *strlen_sval
@@ -1266,12 +1355,16 @@ make_kf_strlen ()
 
 /* Handler for "strndup" and "__builtin_strndup".  */
 
-class kf_strndup : public known_function
+class kf_strndup : public builtin_known_function
 {
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
     return (cd.num_args () == 2 && cd.arg_is_pointer_p (0));
+  }
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_STRNDUP;
   }
   void impl_call_pre (const call_details &cd) const final override
   {
@@ -1445,44 +1538,73 @@ register_known_functions (known_function_manager &kfm)
     kfm.add (IFN_UBSAN_BOUNDS, make_unique<kf_ubsan_bounds> ());
   }
 
-  /* Built-ins the analyzer has known_functions for.  */
+  /* GCC built-ins that do not correspond to a function
+     in the standard library.  */
   {
-    kfm.add (BUILT_IN_ALLOCA, make_unique<kf_alloca> ());
-    kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, make_unique<kf_alloca> ());
-    kfm.add (BUILT_IN_CALLOC, make_unique<kf_calloc> ());
     kfm.add (BUILT_IN_EXPECT, make_unique<kf_expect> ());
     kfm.add (BUILT_IN_EXPECT_WITH_PROBABILITY, make_unique<kf_expect> ());
-    kfm.add (BUILT_IN_FREE, make_unique<kf_free> ());
-    kfm.add (BUILT_IN_MALLOC, make_unique<kf_malloc> ());
-    kfm.add (BUILT_IN_MEMCPY, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMCPY_CHK, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMMOVE, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMMOVE_CHK, make_unique<kf_memcpy_memmove> ());
-    kfm.add (BUILT_IN_MEMSET, make_unique<kf_memset> ());
-    kfm.add (BUILT_IN_MEMSET_CHK, make_unique<kf_memset> ());
-    kfm.add (BUILT_IN_REALLOC, make_unique<kf_realloc> ());
-    kfm.add (BUILT_IN_SPRINTF, make_unique<kf_sprintf> ());
+    kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, make_unique<kf_alloca> ());
     kfm.add (BUILT_IN_STACK_RESTORE, make_unique<kf_stack_restore> ());
     kfm.add (BUILT_IN_STACK_SAVE, make_unique<kf_stack_save> ());
-    kfm.add (BUILT_IN_STRCAT, make_unique<kf_strcat> (2));
-    kfm.add (BUILT_IN_STRCAT_CHK, make_unique<kf_strcat> (3));
-    kfm.add (BUILT_IN_STRCHR, make_unique<kf_strchr> ());
-    kfm.add (BUILT_IN_STRCPY, make_unique<kf_strcpy> (2));
-    kfm.add (BUILT_IN_STRCPY_CHK, make_unique<kf_strcpy> (3));
-    kfm.add (BUILT_IN_STRDUP, make_unique<kf_strdup> ());
-    kfm.add (BUILT_IN_STRNDUP, make_unique<kf_strndup> ());
-    kfm.add (BUILT_IN_STRLEN, make_kf_strlen ());
 
     register_atomic_builtins (kfm);
     register_varargs_builtins (kfm);
   }
 
-  /* Known builtins and C standard library functions.  */
+  /* Known builtins and C standard library functions
+     the analyzer has known functions for.  */
   {
-    kfm.add ("memset", make_unique<kf_memset> ());
-    kfm.add ("strcat", make_unique<kf_strcat> (2));
+    kfm.add ("alloca", make_unique<kf_alloca> ());
+    kfm.add ("__builtin_alloca", make_unique<kf_alloca> ());
+    kfm.add ("calloc", make_unique<kf_calloc> ());
+    kfm.add ("__builtin_calloc", make_unique<kf_calloc> ());
+    kfm.add ("free", make_unique<kf_free> ());
+    kfm.add ("__builtin_free", make_unique<kf_free> ());
+    kfm.add ("malloc", make_unique<kf_malloc> ());
+    kfm.add ("__builtin_malloc", make_unique<kf_malloc> ());
+    kfm.add ("memcpy",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMCPY));
+    kfm.add ("__builtin_memcpy",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMCPY));
+    kfm.add ("__memcpy_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMCPY_CHK));
+    kfm.add ("__builtin___memcpy_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMCPY_CHK));
+    kfm.add ("memmove",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMMOVE));
+    kfm.add ("__builtin_memmove",
+	      make_unique<kf_memcpy_memmove> (kf_memcpy_memmove::KF_MEMMOVE));
+    kfm.add ("__memmove_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMMOVE_CHK));
+    kfm.add ("__builtin___memmove_chk", make_unique<kf_memcpy_memmove>
+			      (kf_memcpy_memmove::KF_MEMMOVE_CHK));
+    kfm.add ("memset", make_unique<kf_memset> (false));
+    kfm.add ("__builtin_memset", make_unique<kf_memset> (false));
+    kfm.add ("__memset_chk", make_unique<kf_memset> (true));
+    kfm.add ("__builtin___memset_chk", make_unique<kf_memset> (true));
+    kfm.add ("realloc", make_unique<kf_realloc> ());
+    kfm.add ("__builtin_realloc", make_unique<kf_realloc> ());
+    kfm.add ("sprintf", make_unique<kf_sprintf> ());
+    kfm.add ("__builtin_sprintf", make_unique<kf_sprintf> ());
+    kfm.add ("strchr", make_unique<kf_strchr> ());
+    kfm.add ("__builtin_strchr", make_unique<kf_strchr> ());
+    kfm.add ("strcpy", make_unique<kf_strcpy> (2, false));
+    kfm.add ("__builtin_strcpy", make_unique<kf_strcpy> (2, false));
+    kfm.add ("__strcpy_chk", make_unique<kf_strcpy> (3, true));
+    kfm.add ("__builtin___strcpy_chk", make_unique<kf_strcpy> (3, true));
+    kfm.add ("strcat", make_unique<kf_strcat> (2, false));
+    kfm.add ("__builtin_strcat", make_unique<kf_strcat> (2, false));
+    kfm.add ("__strcat_chk", make_unique<kf_strcat> (3, true));
+    kfm.add ("__builtin___strcat_chk", make_unique<kf_strcat> (3, true));
     kfm.add ("strdup", make_unique<kf_strdup> ());
+    kfm.add ("__builtin_strdup", make_unique<kf_strdup> ());
     kfm.add ("strndup", make_unique<kf_strndup> ());
+    kfm.add ("__builtin_strndup", make_unique<kf_strndup> ());
+    kfm.add ("strlen", make_unique<kf_strlen> ());
+    kfm.add ("__builtin_strlen", make_unique<kf_strlen> ());
+
+    register_atomic_builtins (kfm);
+    register_varargs_builtins (kfm);
   }
 
   /* Known POSIX functions, and some non-standard extensions.  */

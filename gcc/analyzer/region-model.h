@@ -528,6 +528,10 @@ class region_model
 					bool include_terminator,
 					const svalue **out_sval);
 
+  const builtin_known_function *
+  get_builtin_kf (const gcall *call,
+		  region_model_context *ctxt = NULL) const;
+
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;

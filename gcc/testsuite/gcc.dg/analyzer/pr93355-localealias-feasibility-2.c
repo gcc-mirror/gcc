@@ -6,7 +6,6 @@
 
 #include "analyzer-decls.h"
 
-#define NULL ((void *) 0)
 #define PATH_SEPARATOR ':'
 #define LOCALE_ALIAS_PATH "value for LOCALE_ALIAS_PATH"
 

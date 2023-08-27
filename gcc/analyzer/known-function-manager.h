@@ -54,6 +54,8 @@ private:
   DISABLE_COPY_AND_ASSIGN (known_function_manager);
 
   const known_function *get_normal_builtin (enum built_in_function name) const;
+  const known_function *
+  get_normal_builtin (const builtin_known_function *builtin_kf) const;
   const known_function *get_by_identifier (tree identifier) const;
 
   /* Map from identifier to known_function instance.

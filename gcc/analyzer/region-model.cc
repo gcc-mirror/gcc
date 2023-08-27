@@ -1514,6 +1514,62 @@ region_model::get_known_function (enum internal_fn ifn) const
   return known_fn_mgr->get_internal_fn (ifn);
 }
 
+/* Get any builtin_known_function for CALL and emit any warning to CTXT
+   if not NULL.
+
+   The call must match all assumptions made by the known_function (such as
+   e.g. "argument 1's type must be a pointer type").
+
+   Return NULL if no builtin_known_function is found, or it does
+   not match the assumption(s).
+
+   Internally calls get_known_function to find a known_function and cast it
+   to a builtin_known_function.
+
+   For instance, calloc is a C builtin, defined in gcc/builtins.def
+   by the DEF_LIB_BUILTIN macro. Such builtins are recognized by the
+   analyzer by their name, so that even in C++ or if the user redeclares
+   them but mismatch their signature, they are still recognized as builtins.
+
+   Cases when a supposed builtin is not flagged as one by the FE:
+
+    The C++ FE does not recognize calloc as a builtin if it has not been
+    included from a standard header, but the C FE does. Hence in C++ if
+    CALL comes from a calloc and stdlib is not included,
+    gcc/tree.h:fndecl_built_in_p (CALL) would be false.
+
+    In C code, a __SIZE_TYPE__ calloc (__SIZE_TYPE__, __SIZE_TYPE__) user
+    declaration has obviously a mismatching signature from the standard, and
+    its function_decl tree won't be unified by
+    gcc/c-decl.cc:match_builtin_function_types.
+
+   Yet in both cases the analyzer should treat the calls as a builtin calloc
+   so that extra attributes unspecified by the standard but added by GCC
+   (e.g. sprintf attributes in gcc/builtins.def), useful for the detection of
+   dangerous behavior, are indeed processed.
+
+   Therefore for those cases when a "builtin flag" is not added by the FE,
+   builtins' kf are derived from builtin_known_function, whose method
+   builtin_known_function::builtin_decl returns the builtin's
+   function_decl tree as defined in gcc/builtins.def, with all the extra
+   attributes.  */
+
+const builtin_known_function *
+region_model::get_builtin_kf (const gcall *call,
+			       region_model_context *ctxt /* = NULL */) const
+{
+  region_model *mut_this = const_cast <region_model *> (this);
+  tree callee_fndecl = mut_this->get_fndecl_for_call (call, ctxt);
+  if (! callee_fndecl)
+    return NULL;
+
+  call_details cd (call, mut_this, ctxt);
+  if (const known_function *kf = get_known_function (callee_fndecl, cd))
+    return kf->dyn_cast_builtin_kf ();
+
+  return NULL;
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 

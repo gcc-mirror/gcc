@@ -128,6 +128,10 @@ struct interesting_t;
 
 class feasible_node;
 
+class known_function;
+  class builtin_known_function;
+  class internal_known_function;
+
 /* Forward decls of functions.  */
 
 extern void dump_tree (pretty_printer *pp, tree t);
@@ -279,6 +283,24 @@ public:
   {
     return;
   }
+
+  virtual const builtin_known_function *
+  dyn_cast_builtin_kf () const { return NULL; }
+};
+
+/* Subclass of known_function for builtin functions.  */
+
+class builtin_known_function : public known_function
+{
+public:
+  virtual enum built_in_function builtin_code () const = 0;
+  tree builtin_decl () const {
+    gcc_assert (builtin_code () < END_BUILTINS);
+    return builtin_info[builtin_code ()].decl;
+  }
+
+  const builtin_known_function *
+  dyn_cast_builtin_kf () const final override { return this; }
 };
 
 /* Subclass of known_function for IFN_* functions.  */
