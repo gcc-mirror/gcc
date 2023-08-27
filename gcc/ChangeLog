@@ -1,3 +1,14 @@
+2023-08-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (len_fold_extract_last_<mode>): New pattern.
+	* config/riscv/riscv-protos.h (enum insn_type): New enum.
+	(expand_fold_extract_last): New function.
+	* config/riscv/riscv-v.cc (emit_nonvlmax_slide_insn): Ditto.
+	(emit_cpop_insn): Ditto.
+	(emit_nonvlmax_compress_insn): Ditto.
+	(expand_fold_extract_last): Ditto.
+	* config/riscv/vector.md: Fix vcpop.m ratio demand.
+
 2023-08-25  Edwin Lu  <ewlu@rivosinc.com>
 
 	* config/riscv/sync-rvwmo.md: updated types to "multi" or
