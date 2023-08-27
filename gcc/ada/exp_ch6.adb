@@ -5424,9 +5424,13 @@ package body Exp_Ch6 is
       --  object, then no need to copy/readjust/finalize, we can initialize it
       --  in place. However, if the call returns on the secondary stack, then
       --  we need the expansion because we'll be renaming the temporary as the
-      --  (permanent) object.
+      --  (permanent) object. We also apply it in the case of the expression of
+      --  a delta aggregate, since it is used only to initialize a temporary.
 
-      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
+      if Nkind (Par) in N_Object_Declaration | N_Delta_Aggregate
+        and then Expression (Par) = N
+        and then not Use_Sec_Stack
+      then
          return;
       end if;
 
