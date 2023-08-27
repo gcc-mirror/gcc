@@ -258,6 +258,45 @@ name_needs_quotes (const char *name)
   return 0;
 }
 
+DEBUG_FUNCTION void
+dump_machopic_symref_flags (FILE *dump, rtx sym_ref)
+{
+  unsigned long flags = SYMBOL_REF_FLAGS (sym_ref);
+
+  fprintf (dump, "flags: %08lx %c%c%c%c%c%c%c",
+	   flags,
+	   (MACHO_SYMBOL_STATIC_P (sym_ref) ? 's' : '-'),
+	   (MACHO_SYMBOL_INDIRECTION_P (sym_ref) ? 'I' : '-'),
+	   (MACHO_SYMBOL_LINKER_VIS_P (sym_ref) ? 'l' : '-'),
+	   (MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref) ? 'h' : '-'),
+	   (MACHO_SYMBOL_DEFINED_P (sym_ref) ? 'd' : '-'),
+	   (MACHO_SYMBOL_MUST_INDIRECT_P (sym_ref) ? 'i' : '-'),
+	   (MACHO_SYMBOL_VARIABLE_P (sym_ref) ? 'v' : '-'));
+
+#if (DARWIN_X86)
+  fprintf (dump, "%c%c%c%c",
+	 (SYMBOL_REF_STUBVAR_P (sym_ref) ? 'S' : '-'),
+	 (SYMBOL_REF_DLLEXPORT_P (sym_ref) ? 'X' : '-'),
+	 (SYMBOL_REF_DLLIMPORT_P (sym_ref) ? 'I' : '-'),
+	 (SYMBOL_REF_FAR_ADDR_P (sym_ref) ? 'F' : '-'));
+#endif
+
+  fprintf (dump, "%c%c%c%03u%c%c%c\n",
+	   (SYMBOL_REF_ANCHOR_P (sym_ref) ? 'a' : '-'),
+	   (SYMBOL_REF_HAS_BLOCK_INFO_P (sym_ref) ? 'b' : '-'),
+	   (SYMBOL_REF_EXTERNAL_P (sym_ref) ? 'e' : '-'),
+	   (unsigned)SYMBOL_REF_TLS_MODEL (sym_ref),
+	   (SYMBOL_REF_SMALL_P (sym_ref) ? 'm' : '-'),
+	   (SYMBOL_REF_LOCAL_P (sym_ref) ? 'l' : '-'),
+	   (SYMBOL_REF_FUNCTION_P (sym_ref) ? 'f' : '-'));
+}
+
+DEBUG_FUNCTION void
+debug_machopic_symref_flags (rtx sym_ref)
+{
+  dump_machopic_symref_flags (stderr, sym_ref);
+}
+
 /* Return true if SYM_REF can be used without an indirection.  */
 int
 machopic_symbol_defined_p (rtx sym_ref)
