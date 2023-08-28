@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized-raw" } */
+/* { dg-options "-O2 --param logical-op-non-short-circuit=1 -fdump-tree-optimized-raw" } */
 
 /* PR tree-optimization/95929 */
 
