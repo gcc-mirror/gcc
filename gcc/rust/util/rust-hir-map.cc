@@ -978,6 +978,7 @@ Mappings::lookup_derive_proc_macros (CrateNum num)
   auto it = procmacrosDeriveMappings.find (num);
   if (it == procmacrosDeriveMappings.end ())
     return tl::nullopt;
+
   return it->second;
 }
 
@@ -987,6 +988,7 @@ Mappings::lookup_bang_proc_macros (CrateNum num)
   auto it = procmacrosBangMappings.find (num);
   if (it == procmacrosBangMappings.end ())
     return tl::nullopt;
+
   return it->second;
 }
 
@@ -996,6 +998,7 @@ Mappings::lookup_attribute_proc_macros (CrateNum num)
   auto it = procmacrosAttributeMappings.find (num);
   if (it == procmacrosAttributeMappings.end ())
     return tl::nullopt;
+
   return it->second;
 }
 
