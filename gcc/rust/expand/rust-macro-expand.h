@@ -33,7 +33,7 @@
 #include "rust-token-converter.h"
 #include "rust-ast-collector.h"
 #include "rust-system.h"
-#include "libproc_macro/proc_macro.h"
+#include "libproc_macro_internal/proc_macro.h"
 
 // Provides objects and method prototypes for macro expansion
 

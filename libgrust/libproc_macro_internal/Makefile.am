@@ -47,7 +47,8 @@ AM_MAKEFLAGS = \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)"
 
-TARGETLIB = ./libproc_macro.a
+
+TARGETLIB = ./libproc_macro_internal.a
 LIBOBJS = @LIBOBJS@
 objext = @OBJEXT@
 

@@ -104,7 +104,7 @@ AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
 
-AC_CONFIG_FILES(AC_FOREACH([DIR], [libproc_macro], [DIR/Makefile ]),
+AC_CONFIG_FILES(AC_FOREACH([DIR], [libproc_macro_internal], [DIR/Makefile ]),
  [ cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF

@@ -17,7 +17,7 @@
 #ifndef RUST_PROC_MACRO_H
 #define RUST_PROC_MACRO_H
 
-#include "libproc_macro/proc_macro.h"
+#include "libproc_macro_internal/proc_macro.h"
 
 namespace Rust {
 /**

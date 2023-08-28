@@ -88,7 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = libproc_macro
+subdir = libproc_macro_internal
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/cet.m4 \
@@ -308,7 +308,7 @@ AM_MAKEFLAGS = \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)"
 
-TARGETLIB = ./libproc_macro.a
+TARGETLIB = ./libproc_macro_internal.a
 objext = @OBJEXT@
 REQUIRED_OFILES = \
 	./proc_macro.$(objext) \
@@ -334,9 +334,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign libproc_macro/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign libproc_macro_internal/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign libproc_macro/Makefile
+	  $(AUTOMAKE) --foreign libproc_macro_internal/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
