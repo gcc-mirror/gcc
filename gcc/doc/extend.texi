@@ -21607,9 +21607,9 @@ Returns the value that is currently set in the @samp{tp} register.
 @enddefbuiltin
 
 @defbuiltin{void __builtin_riscv_pause (void)}
-Generates the @code{pause} (hint) machine instruction.  This implies the
-Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
-change architectural state.
+Generates the @code{pause} (hint) machine instruction.  If the target implements
+the Zihintpause extension, it indicates that the current hart should be
+temporarily paused or slowed down.
 @enddefbuiltin
 
 @node RISC-V Vector Intrinsics
