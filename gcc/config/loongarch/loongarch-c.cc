@@ -64,6 +64,9 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_ARCH", la_target.cpu_arch);
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_TUNE", la_target.cpu_tune);
 
+  LARCH_CPP_SET_PROCESSOR ("__loongarch_arch", la_target.cpu_arch);
+  LARCH_CPP_SET_PROCESSOR ("__loongarch_tune", la_target.cpu_tune);
+
   /* Base architecture / ABI.  */
   if (TARGET_64BIT)
     {
