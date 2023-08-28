@@ -75,9 +75,8 @@ void
 TopLevel::visit (AST::ExternCrate &crate)
 {
   CrateNum num;
-  if (!Analysis::Mappings::get ()->lookup_crate_name (
-	crate.get_referenced_crate (), num))
-    rust_unreachable ();
+  rust_assert (Analysis::Mappings::get ()->lookup_crate_name (
+    crate.get_referenced_crate (), num));
 
   auto attribute_macros
     = Analysis::Mappings::get ()->lookup_attribute_proc_macros (num);
