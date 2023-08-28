@@ -71,6 +71,23 @@ TopLevel::visit (AST::Module &module)
 	      module.get_name ());
 }
 
+template <typename PROC_MACRO>
+static void
+insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
+{
+  for (auto &macro : macros)
+    {
+      auto res = ctx.macros.insert (macro.get_name (), macro.get_node_id ());
+
+      if (!res)
+	{
+	  rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
+			 "macro %qs defined multiple times",
+			 macro.get_name ().c_str ());
+	}
+    }
+}
+
 void
 TopLevel::visit (AST::ExternCrate &crate)
 {
@@ -88,40 +105,11 @@ TopLevel::visit (AST::ExternCrate &crate)
 
   auto sub_visitor = [&] () {
     if (derive_macros.has_value ())
-      for (auto &derive : derive_macros.value ())
-	{
-	  auto res = ctx.macros.insert (derive.get_trait_name (),
-					derive.get_node_id ());
-	  if (!res)
-	    {
-	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			     "macro %qs defined multiple times",
-			     derive.get_trait_name ().c_str ());
-	    }
-	}
+      insert_macros (derive_macros.value (), ctx);
     if (attribute_macros.has_value ())
-      for (auto &attribute : attribute_macros.value ())
-	{
-	  auto res = ctx.macros.insert (attribute.get_name (),
-					attribute.get_node_id ());
-	  if (!res)
-	    {
-	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			     "macro %qs defined multiple times",
-			     attribute.get_name ().c_str ());
-	    }
-	}
+      insert_macros (attribute_macros.value (), ctx);
     if (bang_macros.has_value ())
-      for (auto &bang : bang_macros.value ())
-	{
-	  auto res = ctx.macros.insert (bang.get_name (), bang.get_node_id ());
-	  if (!res)
-	    {
-	      rust_error_at (UNKNOWN_LOCATION, ErrorCode::E0428,
-			     "macro %qs defined multiple times",
-			     bang.get_name ().c_str ());
-	    }
-	}
+      insert_macros (bang_macros.value (), ctx);
   };
 
   if (crate.has_as_clause ())
