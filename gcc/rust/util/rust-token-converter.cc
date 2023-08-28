@@ -16,7 +16,6 @@
 
 #include "rust-lex.h"
 #include "rust-token-converter.h"
-#include "libproc_macro/proc_macro.h"
 #include "bi-map.h"
 #include "line-map.h"
 

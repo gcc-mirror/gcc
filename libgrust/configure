@@ -15910,7 +15910,7 @@ esac
 
 
 
-ac_config_files="$ac_config_files libproc_macro/Makefile"
+ac_config_files="$ac_config_files libproc_macro_internal/Makefile"
 
 
 
@@ -17037,7 +17037,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "libproc_macro/Makefile") CONFIG_FILES="$CONFIG_FILES libproc_macro/Makefile" ;;
+    "libproc_macro_internal/Makefile") CONFIG_FILES="$CONFIG_FILES libproc_macro_internal/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -18370,7 +18370,7 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 _LT_EOF
 
  ;;
-    "libproc_macro/Makefile":F)  cat > vpsed$$ << \_EOF
+    "libproc_macro_internal/Makefile":F)  cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

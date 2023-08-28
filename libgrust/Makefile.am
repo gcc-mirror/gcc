@@ -11,7 +11,7 @@ TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 GCC_DIR = $(TOP_GCCDIR)/gcc
 RUST_SRC = $(GCC_DIR)/rust
 
-SUBDIRS = libproc_macro
+SUBDIRS = libproc_macro_internal
 
 RUST_BUILDDIR := $(shell pwd)
 

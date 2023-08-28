@@ -19,7 +19,7 @@
 
 #include <vector>
 #include "rust-token.h"
-#include "libproc_macro/proc_macro.h"
+#include "libproc_macro_internal/proc_macro.h"
 
 namespace Rust {
 
