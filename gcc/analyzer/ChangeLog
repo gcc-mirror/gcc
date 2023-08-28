@@ -1,3 +1,37 @@
+2023-08-27  benjamin priour  <vultkayn@gcc.gnu.org>
+
+	PR analyzer/96395
+	* analyzer.h (class known_function): Add virtual casts
+	to builtin_known_function.
+	(class builtin_known_function): New subclass of known_function
+	for builtins.
+	* kf.cc (class kf_alloca): Now derived from
+	builtin_known_function.
+	(class kf_calloc): Likewise.
+	(class kf_free): Likewise.
+	(class kf_malloc): Likewise.
+	(class kf_memcpy_memmove): Likewise.
+	(class kf_memset): Likewise.
+	(class kf_realloc): Likewise.
+	(class kf_strchr): Likewise.
+	(class kf_sprintf): Likewise.
+	(class kf_strcat): Likewise.
+	(class kf_strcpy): Likewise.
+	(class kf_strdup): Likewise.
+	(class kf_strlen): Likewise.
+	(class kf_strndup): Likewise.
+	(register_known_functions): Builtins are now registered as
+	known_functions by name rather than by their BUILTIN_CODE.
+	* known-function-manager.cc (get_normal_builtin): New overload.
+	* known-function-manager.h: New overload declaration.
+	* region-model.cc (region_model::get_builtin_kf): New function.
+	* region-model.h (class region_model): Add declaration of
+	get_builtin_kf.
+	* sm-fd.cc: For called recognized as builtins, use the
+	attributes of that builtin as defined in gcc/builtins.def
+	rather than the user's.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Likewise.
+
 2023-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* access-diagram.cc (class string_region_spatial_item): Remove
