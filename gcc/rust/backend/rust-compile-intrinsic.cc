@@ -315,13 +315,14 @@ compile_intrinsic_function (Context *ctx, TyTy::FnType *fntype)
 }
 
 static void
-enter_intrinsic_block (Context *ctx, tree fndecl)
+enter_intrinsic_block (Context *ctx, tree fndecl,
+		       const std::vector<Bvariable *> &vars = {})
 {
   tree enclosing_scope = NULL_TREE;
   location_t start_location = UNDEF_LOCATION;
   location_t end_location = UNDEF_LOCATION;
 
-  auto block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+  auto block = ctx->get_backend ()->block (fndecl, enclosing_scope, vars,
 					   start_location, end_location);
 
   ctx->push_block (block);
@@ -1010,7 +1011,19 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 
-  enter_intrinsic_block (ctx, fndecl);
+  // result temporary
+  tree dst_type = TREE_TYPE (DECL_RESULT (fndecl));
+  rust_assert (TYPE_SIZE_UNIT (template_parameter_type)
+	       == TYPE_SIZE_UNIT (dst_type));
+
+  tree tmp_stmt = error_mark_node;
+  Bvariable *bvar
+    = ctx->get_backend ()->temporary_variable (fndecl, NULL_TREE, dst_type,
+					       NULL_TREE,
+					       true /*address_is_taken*/,
+					       UNDEF_LOCATION, &tmp_stmt);
+
+  enter_intrinsic_block (ctx, fndecl, {bvar});
 
   // BUILTIN size_of FN BODY BEGIN
 
@@ -1021,20 +1034,20 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
   // call memset with 0x01 and size of the thing see
   // https://github.com/Rust-GCC/gccrs/issues/1899
 
-  tree dst = DECL_RESULT (fndecl);
+  tree dst = bvar->get_tree (BUILTINS_LOCATION);
+  tree dst_addr = build_fold_addr_expr_loc (BUILTINS_LOCATION, dst);
   tree constant_byte = build_int_cst (integer_type_node, 0x01);
   tree size_expr = TYPE_SIZE_UNIT (template_parameter_type);
 
   tree memset_call = build_call_expr_loc (BUILTINS_LOCATION, memset_builtin, 3,
-					  dst, constant_byte, size_expr);
+					  dst_addr, constant_byte, size_expr);
   TREE_READONLY (memset_call) = 0;
   TREE_SIDE_EFFECTS (memset_call) = 1;
 
   ctx->add_statement (memset_call);
 
   auto return_statement
-    = ctx->get_backend ()->return_statement (fndecl, DECL_RESULT (fndecl),
-					     UNDEF_LOCATION);
+    = ctx->get_backend ()->return_statement (fndecl, dst, UNDEF_LOCATION);
   ctx->add_statement (return_statement);
   // BUILTIN size_of FN BODY END
 
