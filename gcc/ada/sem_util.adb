@@ -22580,7 +22580,9 @@ package body Sem_Util is
                      Ityp : Entity_Id;
 
                   begin
-                     if Is_Array_Type (Comp_Type) then
+                     if Present (Comp_Type)
+                       and then Is_Array_Type (Comp_Type)
+                     then
                         Indx := First_Index (Comp_Type);
 
                         while Present (Indx) loop
