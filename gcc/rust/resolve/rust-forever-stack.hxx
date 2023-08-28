@@ -100,9 +100,9 @@ ForeverStack<N>::pop ()
 }
 
 static tl::expected<NodeId, DuplicateNameError>
-insert_inner (Rib &rib, std::string name, NodeId node, bool can_shadow)
+insert_inner (Rib &rib, std::string name, Rib::Definition definition)
 {
-  return rib.insert (name, node, can_shadow);
+  return rib.insert (name, definition);
 }
 
 template <Namespace N>
@@ -115,7 +115,8 @@ ForeverStack<N>::insert (Identifier name, NodeId node)
   // pass, we might end up in a situation where it is okay to re-add new names.
   // Do we just ignore that here? Do we keep track of if the Rib is new or not?
   // should our cursor have info on the current node like "is it newly pushed"?
-  return insert_inner (innermost_rib, name.as_string (), node, false);
+  return insert_inner (innermost_rib, name.as_string (),
+		       Rib::Definition::NonShadowable (node));
 }
 
 template <Namespace N>
@@ -126,7 +127,8 @@ ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
 
   // inserting in the root of the crate is never a shadowing operation, even for
   // macros
-  return insert_inner (root_rib, name.as_string (), node, false);
+  return insert_inner (root_rib, name.as_string (),
+		       Rib::Definition::NonShadowable (node));
 }
 
 // Specialization for Macros and Labels - where we are allowed to shadow
@@ -135,14 +137,16 @@ template <>
 inline tl::expected<NodeId, DuplicateNameError>
 ForeverStack<Namespace::Macros>::insert (Identifier name, NodeId node)
 {
-  return insert_inner (peek (), name.as_string (), node, true);
+  return insert_inner (peek (), name.as_string (),
+		       Rib::Definition::Shadowable (node));
 }
 
 template <>
 inline tl::expected<NodeId, DuplicateNameError>
 ForeverStack<Namespace::Labels>::insert (Identifier name, NodeId node)
 {
-  return insert_inner (peek (), name.as_string (), node, true);
+  return insert_inner (peek (), name.as_string (),
+		       Rib::Definition::Shadowable (node));
 }
 
 template <Namespace N>
@@ -455,10 +459,10 @@ template <Namespace N>
 tl::optional<std::pair<typename ForeverStack<N>::Node &, std::string>>
 ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
-  auto &values = starting_point.rib.get_values ();
+  auto values = starting_point.rib.get_values ();
 
   for (auto &kv : values)
-    if (kv.second == to_find)
+    if (kv.second.id == to_find)
       return {{starting_point, kv.first}};
 
   for (auto &child : starting_point.children)
@@ -568,7 +572,7 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
   stream << next << "rib: {\n";
 
   for (const auto &kv : rib.get_values ())
-    stream << next_next << kv.first << ": " << kv.second << "\n";
+    stream << next_next << kv.first << ": " << kv.second.id << "\n";
 
   stream << next << "},\n";
 }
