@@ -3272,6 +3272,10 @@ pass_vsetvl::earliest_fusion (void)
 	  if (expr.empty_p ())
 	    continue;
 	  edge eg = INDEX_EDGE (m_vector_manager->vector_edge_list, ed);
+	  /* If it is the edge that we never reach, skip its possible PRE
+	     fusion conservatively.  */
+	  if (eg->probability == profile_probability::never ())
+	    break;
 	  if (eg->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	      || eg->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    break;
@@ -4359,7 +4363,14 @@ pass_vsetvl::compute_probabilities (void)
       FOR_EACH_EDGE (e, ei, cfg_bb->succs)
 	{
 	  auto &new_prob = get_block_info (e->dest).probability;
-	  if (!new_prob.initialized_p ())
+	  /* Normally, the edge probability should be initialized.
+	     However, some special testing code which is written in
+	     GIMPLE IR style force the edge probility uninitialized,
+	     we conservatively set it as never so that it will not
+	     affect PRE (Phase 3 && Phse 4).  */
+	  if (!e->probability.initialized_p ())
+	    new_prob = profile_probability::never ();
+	  else if (!new_prob.initialized_p ())
 	    new_prob = curr_prob * e->probability;
 	  else if (new_prob == profile_probability::always ())
 	    continue;
