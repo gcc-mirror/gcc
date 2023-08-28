@@ -1,3 +1,20 @@
+2023-08-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/102109
+	PR fortran/102112
+	PR fortran/102190
+	PR fortran/102532
+	PR fortran/109948
+	PR fortran/99326
+	* gfortran.dg/associate_54.f90 : Cope with extra error.
+	* gfortran.dg/pr102109.f90 : New test.
+	* gfortran.dg/pr102112.f90 : New test.
+	* gfortran.dg/pr102190.f90 : New test.
+	* gfortran.dg/pr102532.f90 : New test.
+	* gfortran.dg/pr109948.f90 : New test.
+	* gfortran.dg/pr99326.f90 : New test.
+
 2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
