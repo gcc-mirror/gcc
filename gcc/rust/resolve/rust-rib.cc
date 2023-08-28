@@ -17,9 +17,26 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-rib.h"
+#include "rust-name-resolution-context.h"
 
 namespace Rust {
 namespace Resolver2_0 {
+
+Rib::Definition::Definition (NodeId id, bool shadowable)
+  : id (id), shadowable (shadowable)
+{}
+
+Rib::Definition
+Rib::Definition::Shadowable (NodeId id)
+{
+  return Definition (id, true);
+}
+
+Rib::Definition
+Rib::Definition::NonShadowable (NodeId id)
+{
+  return Definition (id, false);
+}
 
 DuplicateNameError::DuplicateNameError (std::string name, NodeId existing)
   : name (name), existing (existing)
@@ -31,20 +48,23 @@ Rib::Rib (Kind kind, std::string identifier, NodeId id)
   : Rib (kind, {{identifier, id}})
 {}
 
-Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> values)
-  : kind (kind), values (std::move (values))
-{}
+Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> to_insert)
+  : kind (kind)
+{
+  for (auto &value : to_insert)
+    values.insert ({value.first, Definition::NonShadowable (value.second)});
+}
 
 tl::expected<NodeId, DuplicateNameError>
-Rib::insert (std::string name, NodeId id, bool can_shadow)
+Rib::insert (std::string name, Definition def)
 {
-  auto res = values.insert ({name, id});
-  auto inserted_id = res.first->second;
+  auto res = values.insert ({name, def});
+  auto inserted_id = res.first->second.id;
   auto existed = !res.second;
 
   // if we couldn't insert, the element already exists - exit with an error,
   // unless shadowing is allowed
-  if (existed && !can_shadow)
+  if (existed && !def.shadowable)
     return tl::make_unexpected (DuplicateNameError (name, inserted_id));
 
   // return the NodeId
@@ -59,10 +79,10 @@ Rib::get (const std::string &name)
   if (it == values.end ())
     return {};
 
-  return it->second;
+  return it->second.id;
 }
 
-const std::unordered_map<std::string, NodeId> &
+const std::unordered_map<std::string, Rib::Definition> &
 Rib::get_values () const
 {
   return values;

@@ -18,8 +18,10 @@
 
 #include "optional.h"
 #include "rust-ast-full.h"
+#include "rust-hir-map.h"
 #include "rust-late-name-resolver-2.0.h"
 #include "rust-default-resolver.h"
+#include "rust-name-resolution-context.h"
 #include "rust-path.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
@@ -29,41 +31,75 @@ namespace Resolver2_0 {
 
 Late::Late (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
 
+static NodeId
+next_node_id ()
+{
+  return Analysis::Mappings::get ()->get_next_node_id ();
+};
+
+static HirId
+next_hir_id ()
+{
+  return Analysis::Mappings::get ()->get_next_hir_id ();
+};
+
 void
 Late::setup_builtin_types ()
 {
-  auto next_id = [this] () { return ctx.mappings.get_next_hir_id (); };
+  // access the global type context to setup the TyTys
+  auto &ty_ctx = *Resolver::TypeCheckContext::get ();
 
-  static const std::pair<std::string, TyTy::BaseType *> builtins[] = {
-    {"u8", new TyTy::UintType (next_id (), TyTy::UintType::U8)},
-    {"u16", new TyTy::UintType (next_id (), TyTy::UintType::U16)},
-    {"u32", new TyTy::UintType (next_id (), TyTy::UintType::U32)},
-    {"u64", new TyTy::UintType (next_id (), TyTy::UintType::U64)},
-    {"u128", new TyTy::UintType (next_id (), TyTy::UintType::U128)},
-    {"i8", new TyTy::IntType (next_id (), TyTy::IntType::I8)},
-    {"i16", new TyTy::IntType (next_id (), TyTy::IntType::I16)},
-    {"i32", new TyTy::IntType (next_id (), TyTy::IntType::I32)},
-    {"i64", new TyTy::IntType (next_id (), TyTy::IntType::I64)},
-    {"i128", new TyTy::IntType (next_id (), TyTy::IntType::I128)},
-    {"f32", new TyTy::FloatType (next_id (), TyTy::FloatType::F32)},
-    {"f64", new TyTy::FloatType (next_id (), TyTy::FloatType::F64)},
-    {"usize", new TyTy::USizeType (next_id ())},
-    {"isize", new TyTy::ISizeType (next_id ())},
-    // missing char, str, never, ()
-    // does name resolution play a part for this? or is it all at typechecking?
-    // yeah it seems to be name resolution as well, which makes sense
+  // Late builtin type struct helper
+  struct LType
+  {
+    std::string name;
+    NodeId node_id;
+    NodeId hir_id;
+    TyTy::BaseType *type;
+
+    explicit LType (std::string name, TyTy::BaseType *type)
+      : name (name), node_id (next_node_id ()), hir_id (type->get_ref ()),
+	type (type)
+    {}
+  };
+
+  static const LType builtins[] = {
+    {LType ("u8", new TyTy::UintType (next_hir_id (), TyTy::UintType::U8))},
+    {LType ("u16", new TyTy::UintType (next_hir_id (), TyTy::UintType::U16))},
+    {LType ("u32", new TyTy::UintType (next_hir_id (), TyTy::UintType::U32))},
+    {LType ("u64", new TyTy::UintType (next_hir_id (), TyTy::UintType::U64))},
+    {LType ("u128", new TyTy::UintType (next_hir_id (), TyTy::UintType::U128))},
+    {LType ("i8", new TyTy::IntType (next_hir_id (), TyTy::IntType::I8))},
+    {LType ("i16", new TyTy::IntType (next_hir_id (), TyTy::IntType::I16))},
+    {LType ("i32", new TyTy::IntType (next_hir_id (), TyTy::IntType::I32))},
+    {LType ("i64", new TyTy::IntType (next_hir_id (), TyTy::IntType::I64))},
+    {LType ("i128", new TyTy::IntType (next_hir_id (), TyTy::IntType::I128))},
+    {LType ("f32", new TyTy::FloatType (next_hir_id (), TyTy::FloatType::F32))},
+    {LType ("f64", new TyTy::FloatType (next_hir_id (), TyTy::FloatType::F64))},
+    {LType ("usize", new TyTy::USizeType (next_hir_id ()))},
+    {LType ("isize", new TyTy::ISizeType (next_hir_id ()))},
+    {LType ("char", new TyTy::CharType (next_hir_id ()))},
+    {LType ("str", new TyTy::StrType (next_hir_id ()))},
+    {LType ("!", new TyTy::NeverType (next_hir_id ()))},
+
+    // the unit type `()` does not play a part in name-resolution - so we only
+    // insert it in the type context...
   };
 
   for (const auto &builtin : builtins)
     {
       // we should be able to use `insert_at_root` or `insert` here, since we're
       // at the root :) hopefully!
-      auto ok
-	= ctx.types.insert (builtin.first, builtin.second->get_ref ()
-			    /* FIXME: Invalid! This returns an *HirId* */);
-
+      auto ok = ctx.types.insert (builtin.name, builtin.node_id);
       rust_assert (ok);
+
+      ctx.mappings.insert_node_to_hir (builtin.node_id, builtin.hir_id);
+      ty_ctx.insert_builtin (builtin.hir_id, builtin.node_id, builtin.type);
     }
+
+  // ...here!
+  auto *unit_type = TyTy::TupleType::get_unit_type (next_hir_id ());
+  ty_ctx.insert_builtin (unit_type->get_ref (), next_node_id (), unit_type);
 }
 
 void
