@@ -3285,12 +3285,46 @@ pass_vsetvl::earliest_fusion (void)
 	      gcc_assert (!(eg->flags & EDGE_ABNORMAL));
 	      vector_insn_info new_info = vector_insn_info ();
 	      profile_probability prob = src_block_info.probability;
+	      /* We don't fuse user vsetvl into EMPTY or
+		 DIRTY (EMPTY but polluted) block for these
+		 following reasons:
+
+		- The user vsetvl instruction is configured as
+		  no side effects that the previous passes
+		  (GSCE, Loop-invariant, ..., etc)
+		  should be able to do a good job on optimization
+		  of user explicit vsetvls so we don't need to
+		  PRE optimization (The user vsetvls should be
+		  on the optimal local already before this pass)
+		  again for user vsetvls in VSETVL PASS here
+		  (Phase 3 && Phase 4).
+
+		- Allowing user vsetvls be optimized in PRE
+		  optimization here (Phase 3 && Phase 4) will
+		  complicate the codes so much so we prefer user
+		  vsetvls be optimized in post-optimization
+		  (Phase 5 && Phase 6).  */
+	      if (vsetvl_insn_p (expr.get_insn ()->rtl ()))
+		{
+		  if (src_block_info.reaching_out.empty_p ())
+		    continue;
+		  else if (src_block_info.reaching_out.dirty_p ()
+			   && !src_block_info.reaching_out.compatible_p (expr))
+		    {
+		      new_info.set_empty ();
+		      /* Update probability as uninitialized status so that
+			 we won't try to fuse any demand info into such EMPTY
+			 block any more.  */
+		      prob = profile_probability::uninitialized ();
+		      update_block_info (eg->src->index, prob, new_info);
+		      continue;
+		    }
+		}
 
 	      if (src_block_info.reaching_out.empty_p ())
 		{
 		  if (src_block_info.probability
-			== profile_probability::uninitialized ()
-		      || vsetvl_insn_p (expr.get_insn ()->rtl ()))
+		      == profile_probability::uninitialized ())
 		    continue;
 		  new_info = expr.global_merge (expr, eg->src->index);
 		  new_info.set_dirty ();
