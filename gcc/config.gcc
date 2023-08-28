@@ -4892,7 +4892,7 @@ case "${target}" in
 		;;
 
 	loongarch*-*)
-		supported_defaults="abi arch tune fpu simd multilib-default"
+		supported_defaults="abi arch tune fpu simd multilib-default strict-align-lib"
 
 		# Local variables
 		unset \
@@ -5089,6 +5089,17 @@ case "${target}" in
 			;;
 		esac
 
+		# Build libraries with -mstrict-align if --with-strict-align-lib is given.
+		case ${with_strict_align_lib} in
+		yes) strict_align_opt="/mstrict-align" ;;
+		""|no)  ;;
+		*)
+			echo "Unknown option: --with-strict-align-lib=${with_strict_align_lib}" 1>&2
+			exit 1
+			;;
+		esac
+
+
 		# Handle --with-multilib-default
 		if echo "${with_multilib_default}" \
 		| grep -E -e '[[:space:]]' -e '//' -e '/$' -e '^/' > /dev/null 2>&1; then
@@ -5249,6 +5260,9 @@ case "${target}" in
 					:
 					;;
 			esac
+
+			# Use mstrict-align for building libraries if --with-strict-align-lib is given.
+			loongarch_multilib_list_make="${loongarch_multilib_list_make}${strict_align_opt}"
 
 			# Check for repeated configuration of the same multilib variant.
 			if echo "${elem_abi_base}/${elem_abi_ext}" \

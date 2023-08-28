@@ -1416,6 +1416,10 @@ Multiple @var{option}s may appear consecutively while @var{arch} may only
 appear in the beginning or be omitted (which means @option{-march=abi-default}
 is applied when building the libraries).
 
+@item --with-strict-align-lib
+On LoongArch targets, build all enabled multilibs with @option{-mstrict-align}
+(Not enabled by default).
+
 @item --with-multilib-generator=@var{config}
 Specify what multilibs to build.  @var{config} is a semicolon separated list of
 values, possibly consisting of a single value.  Currently only implemented
