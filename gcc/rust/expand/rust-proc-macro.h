@@ -70,7 +70,7 @@ public:
   CustomDeriveProcMacro (ProcMacro::CustomDerive macro);
   CustomDeriveProcMacro () = default;
 
-  const std::string &get_trait_name () const { return trait_name; }
+  const std::string &get_name () const { return trait_name; }
 
   NodeId get_node_id () const { return node_id; }
 
