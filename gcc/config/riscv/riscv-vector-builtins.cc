@@ -3471,7 +3471,14 @@ function_expander::function_expander (const function_instance &instance,
     exp (exp_in), target (target_in), opno (0)
 {
   if (!function_returns_void_p ())
-    create_output_operand (&m_ops[opno++], target, TYPE_MODE (TREE_TYPE (exp)));
+    {
+      if (target != NULL_RTX && MEM_P (target))
+	/* Since there is no intrinsic where target is a mem operand, it
+	   should be converted to reg if it is a mem operand.  */
+	target = force_reg (GET_MODE (target), target);
+      create_output_operand (&m_ops[opno++], target,
+			     TYPE_MODE (TREE_TYPE (exp)));
+    }
 }
 
 /* Take argument ARGNO from EXP's argument list and convert it into

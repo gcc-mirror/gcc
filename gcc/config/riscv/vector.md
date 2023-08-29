@@ -1450,69 +1450,61 @@
 ;; - 15.1 Vector Mask-Register Logical Instructions
 ;; -------------------------------------------------------------------------------
 
-;; vle.v/vse.v/vmv.v.v/vmv.v.x/vmv.v.i/vfmv.v.f.
-;; For vle.v/vmv.v.v/vmv.v.x/vmv.v.i/vfmv.v.f, we may need merge and mask operand.
+;; vle.v/vse.v/vmv.v.v.
+;; For vle.v/vmv.v.v, we may need merge and mask operand.
 ;; For vse.v, we don't need merge operand, so it should always match "vu".
 ;; constraint alternative 0 ~ 1 match vle.v.
 ;; constraint alternative 2 match vse.v.
 ;; constraint alternative 3 match vmv.v.v.
-;; constraint alternative 4 match vmv.v.i.
-;; For vmv.v.i, we allow 2 following cases:
-;;    1. (const_vector:RVVMF8QI repeat [
-;;                (const_int:QI N)]), -15 <= N < 16.
-;;    2. (const_vector:RVVMF2SF repeat [
-;;                (const_double:SF 0.0 [0x0.0p+0])]).
 
-;; We add "MEM_P (operands[0]) || MEM_P (operands[3]) || CONST_VECTOR_P (operands[1])" here to
-;; make sure we don't want CSE to generate the following pattern:
-;; (insn 17 8 19 2 (set (reg:RVVMF4HI 134 [ _1 ])
-;;       (if_then_else:RVVMF4HI (unspec:RVVM1BI [
-;;                   (reg/v:RVVM1BI 137 [ mask ])
-;;                   (reg:DI 151)
-;;                   (const_int 0 [0]) repeated x3
-;;                   (reg:SI 66 vl)
-;;                   (reg:SI 67 vtype)
-;;               ] UNSPEC_VPREDICATE)
-;;           (const_vector:RVVMF4HI repeat [
-;;                   (const_int 0 [0])
-;;               ])
-;;           (reg/v:RVVMF4HI 140 [ merge ]))) "rvv.c":8:12 608 {pred_movvnx1hi}
-;;    (expr_list:REG_DEAD (reg:DI 151)
-;;       (expr_list:REG_DEAD (reg/v:RVVMF4HI 140 [ merge ])
-;;           (expr_list:REG_DEAD (reg/v:RVVM1BI 137 [ mask ])
-;;               (nil)))))
-;; Since both vmv.v.v and vmv.v.i doesn't have mask operand.
-(define_insn_and_split "@pred_mov<mode>"
-  [(set (match_operand:V_VLS 0 "nonimmediate_operand"  "=vr,    vr,    vd,     m,    vr,    vr,    vr,    vr")
+;; If operand 3 is a const_vector, then it is left to pred_braordcast patterns.
+(define_expand "@pred_mov<mode>"
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand")
     (if_then_else:V_VLS
       (unspec:<VM>
-        [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm, vmWc1,   Wc1,   Wc1,   Wc1,   Wc1")
-         (match_operand 4 "vector_length_operand"    "   rK,    rK,    rK,    rK,    rK,    rK,    rK,    rK")
-         (match_operand 5 "const_int_operand"        "    i,     i,     i,     i,     i,     i,     i,     i")
-         (match_operand 6 "const_int_operand"        "    i,     i,     i,     i,     i,     i,     i,     i")
-         (match_operand 7 "const_int_operand"        "    i,     i,     i,     i,     i,     i,     i,     i")
+        [(match_operand:<VM> 1 "vector_mask_operand")
+         (match_operand 4 "vector_length_operand")
+         (match_operand 5 "const_int_operand")
+         (match_operand 6 "const_int_operand")
+         (match_operand 7 "const_int_operand")
          (reg:SI VL_REGNUM)
          (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-      (match_operand:V_VLS 3 "vector_move_operand"   "    m,     m,     m,    vr,    vr,    vr, viWc0, viWc0")
-      (match_operand:V_VLS 2 "vector_merge_operand"  "    0,    vu,    vu,    vu,    vu,     0,    vu,     0")))]
-  "TARGET_VECTOR && (MEM_P (operands[0]) || MEM_P (operands[3])
-   || CONST_VECTOR_P (operands[1]))"
+      (match_operand:V_VLS 3 "vector_move_operand")
+      (match_operand:V_VLS 2 "vector_merge_operand")))]
+  "TARGET_VECTOR"
+  {})
+
+;; vle.v/vse.v,vmv.v.v
+(define_insn_and_split "*pred_mov<mode>"
+  [(set (match_operand:V_VLS 0 "nonimmediate_operand"            "=vr,    vr,    vd,     m,    vr,    vr")
+    (if_then_else:V_VLS
+      (unspec:<VM>
+        [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1,   Wc1,    vm, vmWc1,   Wc1,   Wc1")
+         (match_operand 4 "vector_length_operand"              "   rK,    rK,    rK,    rK,    rK,    rK")
+         (match_operand 5 "const_int_operand"                  "    i,     i,     i,     i,     i,     i")
+         (match_operand 6 "const_int_operand"                  "    i,     i,     i,     i,     i,     i")
+         (match_operand 7 "const_int_operand"                  "    i,     i,     i,     i,     i,     i")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (match_operand:V_VLS 3 "reg_or_mem_operand"              "    m,     m,     m,    vr,    vr,    vr")
+      (match_operand:V_VLS 2 "vector_merge_operand"            "    0,    vu,    vu,    vu,    vu,     0")))]
+  "(TARGET_VECTOR
+    && (register_operand (operands[0], <MODE>mode)
+        || register_operand (operands[3], <MODE>mode)))"
   "@
    vle<sew>.v\t%0,%3%p1
    vle<sew>.v\t%0,%3
    vle<sew>.v\t%0,%3,%1.t
    vse<sew>.v\t%3,%0%p1
    vmv.v.v\t%0,%3
-   vmv.v.v\t%0,%3
-   vmv.v.i\t%0,%v3
-   vmv.v.i\t%0,%v3"
+   vmv.v.v\t%0,%3"
   "&& register_operand (operands[0], <MODE>mode)
    && register_operand (operands[3], <MODE>mode)
    && satisfies_constraint_vu (operands[2])
    && INTVAL (operands[7]) == riscv_vector::VLMAX"
   [(set (match_dup 0) (match_dup 3))]
   ""
-  [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov,vimov,vimov")
+  [(set_attr "type" "vlde,vlde,vlde,vste,vimov,vimov")
    (set_attr "mode" "<MODE>")])
 
 ;; Dedicated pattern for vse.v instruction since we can't reuse pred_mov pattern to include
@@ -1895,6 +1887,26 @@
   "TARGET_VECTOR"
   "vmv.s.x\t%0,zero"
   [(set_attr "type" "vimovxv,vimovxv")
+   (set_attr "mode" "<MODE>")])
+
+;; Because (vec_duplicate imm) will be converted to (const_vector imm),
+;; This pattern is used to handle this case.
+(define_insn "*pred_broadcast<mode>_imm"
+  [(set (match_operand:V_VLS 0 "register_operand"                     "=vr,    vr")
+    (if_then_else:V_VLS
+      (unspec:<VM>
+        [(match_operand:<VM> 1 "vector_all_trues_mask_operand"      "  Wc1,   Wc1")
+         (match_operand 4 "vector_length_operand"                   "   rK,    rK")
+         (match_operand 5 "const_int_operand"                       "    i,     i")
+         (match_operand 6 "const_int_operand"                       "    i,     i")
+         (match_operand 7 "const_int_operand"                       "    i,     i")
+         (reg:SI VL_REGNUM)
+         (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+      (match_operand:V_VLS 3 "vector_const_int_or_double_0_operand" "viWc0, viWc0")
+      (match_operand:V_VLS 2 "vector_merge_operand"                 "   vu,     0")))]
+  "TARGET_VECTOR"
+  "vmv.v.i\t%0,%v3"
+  [(set_attr "type" "vimov,vimov")
    (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------------
