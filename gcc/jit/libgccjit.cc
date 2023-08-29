@@ -537,6 +537,21 @@ gcc_jit_type_get_volatile (gcc_jit_type *type)
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::type::get_restrict method, in
+   jit-recording.cc.  */
+
+gcc_jit_type *
+gcc_jit_type_get_restrict (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+  RETURN_NULL_IF_FAIL (type->is_pointer (), NULL, NULL, "not a pointer type");
+
+  return (gcc_jit_type *)type->get_restrict ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::type::get_size method, in
    jit-recording.cc.  */
 

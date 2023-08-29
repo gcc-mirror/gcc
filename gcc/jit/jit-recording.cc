@@ -2267,6 +2267,19 @@ recording::type::get_const ()
   return result;
 }
 
+/* Given a type T, get the type restrict T.
+
+   Implements the post-error-checking part of
+   gcc_jit_type_get_restrict.  */
+
+recording::type *
+recording::type::get_restrict ()
+{
+  recording::type *result = new memento_of_get_restrict (this);
+  m_ctxt->record (result);
+  return result;
+}
+
 /* Given a type T, get the type volatile T.
 
    Implements the post-error-checking part of
@@ -2956,6 +2969,40 @@ recording::memento_of_get_volatile::write_reproducer (reproducer &r)
   const char *id = r.make_identifier (this, "type");
   r.write ("  gcc_jit_type *%s =\n"
 	   "    gcc_jit_type_get_volatile (%s);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type));
+}
+
+/* The implementation of class gcc::jit::recording::memento_of_get_restrict.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_get_restrict.  */
+
+void
+recording::memento_of_get_restrict::replay_into (replayer *)
+{
+  set_playback_obj (m_other_type->playback_type ()->get_restrict ());
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of get_restrict, prepending "restrict ".  */
+
+recording::string *
+recording::memento_of_get_restrict::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "restrict %s", m_other_type->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for restrict
+   types.  */
+
+void
+recording::memento_of_get_restrict::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_restrict (%s);\n",
 	   id,
 	   r.get_identifier_as_type (m_other_type));
 }

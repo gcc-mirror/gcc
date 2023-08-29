@@ -271,3 +271,8 @@ LIBGCCJIT_ABI_24 {
     gcc_jit_lvalue_set_alignment;
     gcc_jit_lvalue_get_alignment;
 } LIBGCCJIT_ABI_23;
+
+LIBGCCJIT_ABI_25 {
+  global:
+    gcc_jit_type_get_restrict;
+} LIBGCCJIT_ABI_24;

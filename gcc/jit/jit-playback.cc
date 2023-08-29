@@ -3393,7 +3393,7 @@ if (t) \
   NAME_TYPE (complex_float_type_node, "complex float");
   NAME_TYPE (complex_double_type_node, "complex double");
   NAME_TYPE (complex_long_double_type_node, "complex long double");
-  
+
   m_const_char_ptr = build_pointer_type(
     build_qualified_type (char_type_node, TYPE_QUAL_CONST));
 

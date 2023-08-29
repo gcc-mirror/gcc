@@ -630,6 +630,15 @@ gcc_jit_type_get_const (gcc_jit_type *type);
 extern gcc_jit_type *
 gcc_jit_type_get_volatile (gcc_jit_type *type);
 
+#define LIBGCCJIT_HAVE_gcc_jit_type_get_restrict
+
+/* Given type "T", get type "restrict T".
+   This API entrypoint was added in LIBGCCJIT_ABI_25; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_restrict  */
+extern gcc_jit_type *
+gcc_jit_type_get_restrict (gcc_jit_type *type);
+
 #define LIBGCCJIT_HAVE_SIZED_INTEGERS
 
 /* Given types LTYPE and RTYPE, return non-zero if they are compatible.
