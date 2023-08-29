@@ -1029,37 +1029,34 @@ Mappings::insert_attribute_proc_macro_def (NodeId id, AttributeProcMacro macro)
   procmacroAttributeMappings[id] = macro;
 }
 
-bool
-Mappings::lookup_derive_proc_macro_def (NodeId id, CustomDeriveProcMacro &macro)
+tl::optional<CustomDeriveProcMacro &>
+Mappings::lookup_derive_proc_macro_def (NodeId id)
 {
   auto it = procmacroDeriveMappings.find (id);
   if (it == procmacroDeriveMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  macro = it->second;
-  return true;
+  return it->second;
 }
 
-bool
-Mappings::lookup_bang_proc_macro_def (NodeId id, BangProcMacro &macro)
+tl::optional<BangProcMacro &>
+Mappings::lookup_bang_proc_macro_def (NodeId id)
 {
   auto it = procmacroBangMappings.find (id);
   if (it == procmacroBangMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  macro = it->second;
-  return true;
+  return it->second;
 }
 
-bool
-Mappings::lookup_attribute_proc_macro_def (NodeId id, AttributeProcMacro &macro)
+tl::optional<AttributeProcMacro &>
+Mappings::lookup_attribute_proc_macro_def (NodeId id)
 {
   auto it = procmacroAttributeMappings.find (id);
   if (it == procmacroAttributeMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  macro = it->second;
-  return true;
+  return it->second;
 }
 
 void

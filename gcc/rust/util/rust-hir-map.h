@@ -306,9 +306,11 @@ public:
   void insert_bang_proc_macro_def (NodeId id, BangProcMacro macro);
   void insert_attribute_proc_macro_def (NodeId id, AttributeProcMacro macro);
 
-  bool lookup_derive_proc_macro_def (NodeId id, CustomDeriveProcMacro &macro);
-  bool lookup_bang_proc_macro_def (NodeId id, BangProcMacro &macro);
-  bool lookup_attribute_proc_macro_def (NodeId id, AttributeProcMacro &macro);
+  tl::optional<CustomDeriveProcMacro &>
+  lookup_derive_proc_macro_def (NodeId id);
+  tl::optional<BangProcMacro &> lookup_bang_proc_macro_def (NodeId id);
+  tl::optional<AttributeProcMacro &>
+  lookup_attribute_proc_macro_def (NodeId id);
 
   tl::optional<CustomDeriveProcMacro &>
   lookup_derive_proc_macro_invocation (AST::SimplePath &invoc);
