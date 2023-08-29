@@ -11647,7 +11647,7 @@ arc_split_mov_const (rtx *operands)
     }
 
   /* 3. Check if we can just shift by 16 to fit into the u6 of LSL16.  */
-  if (TARGET_BARREL_SHIFTER && TARGET_V2
+  if (TARGET_SWAP && TARGET_V2
       && ((ival & ~0x3f0000) == 0))
     {
       shimm = (ival >> 16) & 0x3f;

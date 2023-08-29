@@ -5991,7 +5991,7 @@ archs4x, archs4xd"
   [(set (match_operand:SI 0 "register_operand"            "=r")
 	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
 		   (const_int 16)))]
-  "TARGET_BARREL_SHIFTER && TARGET_V2"
+  "TARGET_SWAP && TARGET_V2"
   "lsl16\\t%0,%1"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "false")
