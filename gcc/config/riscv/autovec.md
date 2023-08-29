@@ -46,17 +46,6 @@
   DONE;
 })
 
-(define_expand "movmisalign<mode>"
-  [(set (match_operand:V 0 "nonimmediate_operand")
-	(match_operand:V 1 "general_operand"))]
-  "TARGET_VECTOR"
-  {
-    /* Equivalent to a normal move for our purpooses.  */
-    emit_move_insn (operands[0], operands[1]);
-    DONE;
-  }
-)
-
 ;; =========================================================================
 ;; == Gather Load
 ;; =========================================================================
