@@ -366,6 +366,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
+static void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec riscv_attribute_table[] =
@@ -2115,6 +2116,28 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
     {
       base = riscv_force_temporary (dest, base);
       riscv_emit_move (dest, riscv_add_offset (NULL, base, INTVAL (offset)));
+      return;
+    }
+
+  /* Handle below format.
+     (const:DI
+       (plus:DI
+	 (symbol_ref:DI ("ic") [flags 0x2] <var_decl 0x7fe57740be10 ic>) <- op_0
+	 (const_poly_int:DI [16, 16]) // <- op_1
+     ))
+   */
+  rtx src_op_0 = XEXP (src, 0);
+
+  if (GET_CODE (src) == CONST && GET_CODE (src_op_0) == PLUS
+    && CONST_POLY_INT_P (XEXP (src_op_0, 1)))
+    {
+      rtx dest_tmp = gen_reg_rtx (mode);
+      rtx tmp = gen_reg_rtx (mode);
+
+      riscv_emit_move (dest, XEXP (src_op_0, 0));
+      riscv_legitimize_poly_move (mode, dest_tmp, tmp, XEXP (src_op_0, 1));
+
+      emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, dest, dest_tmp)));
       return;
     }
 
