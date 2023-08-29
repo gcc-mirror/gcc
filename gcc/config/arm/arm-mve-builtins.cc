@@ -132,7 +132,7 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     0, \
     MODE },
 #include "arm-mve-builtins.def"
-  { "", NUM_VECTOR_TYPES, TYPE_bool, 0, 0, false, false, false,
+  { "", NUM_VECTOR_TYPES, TYPE_bool, 0, 0, false, false, false, false,
     0, VOIDmode }
 };
 
