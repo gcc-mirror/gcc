@@ -177,6 +177,8 @@ Early::visit (AST::UseTreeGlob &use)
 void
 Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 {
+  auto mappings = Analysis::Mappings::get ();
+
   for (auto &attr : attrs)
     {
       auto name = attr.get_path ().get_segments ().at (0).get_segment_name ();
@@ -192,7 +194,16 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		  // FIXME: Change to proper error message
 		  rust_error_at (trait.get ().get_locus (),
 				 "could not resolve trait");
+		  continue;
 		}
+
+	      auto pm_def
+		= mappings->lookup_derive_proc_macro_def (definition.value ());
+
+	      rust_assert (pm_def.has_value ());
+
+	      mappings->insert_derive_proc_macro_invocation (trait,
+							     pm_def.value ());
 	    }
 	}
       else if (Analysis::BuiltinAttributeMappings::get ()
@@ -207,6 +218,13 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 			     "could not resolve attribute macro invocation");
 	      return;
 	    }
+	  auto pm_def
+	    = mappings->lookup_attribute_proc_macro_def (definition.value ());
+
+	  rust_assert (pm_def.has_value ());
+
+	  mappings->insert_attribute_proc_macro_invocation (attr.get_path (),
+							    pm_def.value ());
 	}
     }
 }
