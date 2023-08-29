@@ -3,6 +3,8 @@
    Based on https://github.com/libguestfs/libguestfs/blob/f19fd566f6387ce7e4d82409528c9dde374d25e0/df/main.c#L404
    which is GPLv2 or later.  */
 
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+
 typedef __SIZE_TYPE__ size_t;
 typedef __builtin_va_list va_list;
 

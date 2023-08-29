@@ -1301,17 +1301,27 @@ public:
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
     region_model_manager *mgr = cd.get_manager ();
-    cd.check_for_null_terminated_string_arg (0);
-    /* Ideally we'd get the size here, and simulate copying the bytes.  */
-    const region *new_reg
-      = model->get_or_create_region_for_heap_alloc (NULL, cd.get_ctxt ());
-    model->mark_region_as_unknown (new_reg, NULL);
-    if (cd.get_lhs_type ())
+    const svalue *bytes_to_copy;
+    if (const svalue *num_bytes_read_sval
+	= cd.check_for_null_terminated_string_arg (0, true, &bytes_to_copy))
       {
-	const svalue *ptr_sval
-	  = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
-	cd.maybe_set_lhs (ptr_sval);
+	const region *new_reg
+	  = model->get_or_create_region_for_heap_alloc (num_bytes_read_sval,
+							ctxt);
+	model->write_bytes (new_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+	if (cd.get_lhs_type ())
+	  {
+	    const svalue *ptr_sval
+	      = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	    cd.maybe_set_lhs (ptr_sval);
+	  }
+      }
+    else
+      {
+	if (ctxt)
+	  ctxt->terminate_path ();
       }
   }
 };
