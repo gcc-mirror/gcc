@@ -2290,6 +2290,32 @@ vector_insn_info::global_merge (const vector_insn_info &merge_info,
   return new_info;
 }
 
+/* Wrapper helps to return the AVL or VL operand for the
+   vector_insn_info. Return AVL if the AVL is not VLMAX.
+   Otherwise, return the VL operand.  */
+rtx
+vector_insn_info::get_avl_or_vl_reg (void) const
+{
+  gcc_assert (has_avl_reg ());
+  if (!vlmax_avl_p (get_avl ()))
+    return get_avl ();
+
+  if (has_vl_op (get_insn ()->rtl ()) || vsetvl_insn_p (get_insn ()->rtl ()))
+    return ::get_vl (get_insn ()->rtl ());
+
+  if (get_avl_source ())
+    return get_avl_reg_rtx ();
+
+  /* A DIRTY (polluted EMPTY) block if:
+       - get_insn is scalar move (no AVL or VL operand).
+       - get_avl_source is null (no def in the current DIRTY block).
+     Then we trace the previous insn which must be the insn
+     already inserted in Phase 2 to get the VL operand for VLMAX.  */
+  rtx_insn *prev_rinsn = PREV_INSN (get_insn ()->rtl ());
+  gcc_assert (prev_rinsn && vsetvl_insn_p (prev_rinsn));
+  return ::get_vl (prev_rinsn);
+}
+
 bool
 vector_insn_info::update_fault_first_load_avl (insn_info *insn)
 {
@@ -3166,19 +3192,17 @@ pass_vsetvl::compute_local_properties (void)
 	    bitmap_clear_bit (m_vector_manager->vector_transp[curr_bb_idx], i);
 	  else if (expr->has_avl_reg ())
 	    {
-	      rtx avl = vlmax_avl_p (expr->get_avl ())
-			  ? get_vl (expr->get_insn ()->rtl ())
-			  : expr->get_avl ();
+	      rtx reg = expr->get_avl_or_vl_reg ();
 	      for (const insn_info *insn : bb->real_nondebug_insns ())
 		{
-		  if (find_access (insn->defs (), REGNO (avl)))
+		  if (find_access (insn->defs (), REGNO (reg)))
 		    {
 		      bitmap_clear_bit (
 			m_vector_manager->vector_transp[curr_bb_idx], i);
 		      break;
 		    }
 		  else if (vlmax_avl_p (expr->get_avl ())
-			   && find_access (insn->uses (), REGNO (avl)))
+			   && find_access (insn->uses (), REGNO (reg)))
 		    {
 		      bitmap_clear_bit (
 			m_vector_manager->vector_transp[curr_bb_idx], i);
@@ -3649,17 +3673,7 @@ pass_vsetvl::commit_vsetvls (void)
 	  = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, reaching_out, NULL_RTX);
       else if (vlmax_avl_p (reaching_out.get_avl ()))
 	{
-	  rtx vl = NULL_RTX;
-	  /* For user VSETVL VL, AVL. We need to use VL operand here, so we
-	     don't directly use get_avl_reg_rtx (). Instead, we use the VL
-	     of the INSN->RTL ().  */
-	  if (!reaching_out.get_avl_source ())
-	    {
-	      gcc_assert (vsetvl_insn_p (reaching_out.get_insn ()->rtl ()));
-	      vl = get_vl (reaching_out.get_insn ()->rtl ());
-	    }
-	  else
-	    vl = reaching_out.get_avl_reg_rtx ();
+	  rtx vl = reaching_out.get_avl_or_vl_reg ();
 	  new_pat = gen_vsetvl_pat (VSETVL_NORMAL, reaching_out, vl);
 	}
       else

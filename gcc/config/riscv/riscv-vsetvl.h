@@ -335,6 +335,7 @@ public:
 
   rtl_ssa::insn_info *get_insn () const { return m_insn; }
   const bool *get_demands (void) const { return m_demands; }
+  rtx get_avl_or_vl_reg (void) const;
   rtx get_avl_reg_rtx (void) const
   {
     return gen_rtx_REG (Pmode, get_avl_source ()->regno ());
