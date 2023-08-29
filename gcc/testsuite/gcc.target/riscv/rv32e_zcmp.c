@@ -254,3 +254,16 @@ foo (void)
   f1 ();
   f2 ();
 }
+
+/*
+**test_popretz:
+**	cm.push	{ra}, -16
+**	call	f1
+**	cm.popretz	{ra}, 16
+*/
+long
+test_popretz ()
+{
+  f1 ();
+  return 0;
+}

@@ -426,6 +426,7 @@ typedef enum
   PUSH_IDX = 0,
   POP_IDX,
   POPRET_IDX,
+  POPRETZ_IDX,
   ZCMP_OP_NUM
 } riscv_zcmp_op_t;
 
@@ -6264,30 +6265,31 @@ riscv_emit_stack_tie (void)
 /*zcmp multi push and pop code_for_push_pop function ptr array  */
 static const code_for_push_pop_t code_for_push_pop[ZCMP_MAX_GRP_SLOTS][ZCMP_OP_NUM]
   = {{code_for_gpr_multi_push_up_to_ra, code_for_gpr_multi_pop_up_to_ra,
-      code_for_gpr_multi_popret_up_to_ra},
+      code_for_gpr_multi_popret_up_to_ra, code_for_gpr_multi_popretz_up_to_ra},
      {code_for_gpr_multi_push_up_to_s0, code_for_gpr_multi_pop_up_to_s0,
-      code_for_gpr_multi_popret_up_to_s0},
+      code_for_gpr_multi_popret_up_to_s0, code_for_gpr_multi_popretz_up_to_s0},
      {code_for_gpr_multi_push_up_to_s1, code_for_gpr_multi_pop_up_to_s1,
-      code_for_gpr_multi_popret_up_to_s1},
+      code_for_gpr_multi_popret_up_to_s1, code_for_gpr_multi_popretz_up_to_s1},
      {code_for_gpr_multi_push_up_to_s2, code_for_gpr_multi_pop_up_to_s2,
-      code_for_gpr_multi_popret_up_to_s2},
+      code_for_gpr_multi_popret_up_to_s2, code_for_gpr_multi_popretz_up_to_s2},
      {code_for_gpr_multi_push_up_to_s3, code_for_gpr_multi_pop_up_to_s3,
-      code_for_gpr_multi_popret_up_to_s3},
+      code_for_gpr_multi_popret_up_to_s3, code_for_gpr_multi_popretz_up_to_s3},
      {code_for_gpr_multi_push_up_to_s4, code_for_gpr_multi_pop_up_to_s4,
-      code_for_gpr_multi_popret_up_to_s4},
+      code_for_gpr_multi_popret_up_to_s4, code_for_gpr_multi_popretz_up_to_s4},
      {code_for_gpr_multi_push_up_to_s5, code_for_gpr_multi_pop_up_to_s5,
-      code_for_gpr_multi_popret_up_to_s5},
+      code_for_gpr_multi_popret_up_to_s5, code_for_gpr_multi_popretz_up_to_s5},
      {code_for_gpr_multi_push_up_to_s6, code_for_gpr_multi_pop_up_to_s6,
-      code_for_gpr_multi_popret_up_to_s6},
+      code_for_gpr_multi_popret_up_to_s6, code_for_gpr_multi_popretz_up_to_s6},
      {code_for_gpr_multi_push_up_to_s7, code_for_gpr_multi_pop_up_to_s7,
-      code_for_gpr_multi_popret_up_to_s7},
+      code_for_gpr_multi_popret_up_to_s7, code_for_gpr_multi_popretz_up_to_s7},
      {code_for_gpr_multi_push_up_to_s8, code_for_gpr_multi_pop_up_to_s8,
-      code_for_gpr_multi_popret_up_to_s8},
+      code_for_gpr_multi_popret_up_to_s8, code_for_gpr_multi_popretz_up_to_s8},
      {code_for_gpr_multi_push_up_to_s9, code_for_gpr_multi_pop_up_to_s9,
-      code_for_gpr_multi_popret_up_to_s9},
-     {nullptr, nullptr, nullptr},
+      code_for_gpr_multi_popret_up_to_s9, code_for_gpr_multi_popretz_up_to_s9},
+     {nullptr, nullptr, nullptr, nullptr},
      {code_for_gpr_multi_push_up_to_s11, code_for_gpr_multi_pop_up_to_s11,
-      code_for_gpr_multi_popret_up_to_s11}};
+      code_for_gpr_multi_popret_up_to_s11,
+      code_for_gpr_multi_popretz_up_to_s11}};
 
 static rtx
 riscv_gen_multi_push_pop_insn (riscv_zcmp_op_t op, HOST_WIDE_INT adj_size,
@@ -6498,6 +6500,78 @@ riscv_adjust_libcall_cfi_epilogue ()
       }
 
   return dwarf;
+}
+
+/* return true if popretz pattern can be matched.
+   set (reg 10 a0) (const_int 0)
+   use (reg 10 a0)
+   NOTE_INSN_EPILOGUE_BEG  */
+static rtx_insn *
+riscv_zcmp_can_use_popretz (void)
+{
+  rtx_insn *insn = NULL, *use = NULL, *clear = NULL;
+
+  /* sequence stack for NOTE_INSN_EPILOGUE_BEG*/
+  struct sequence_stack *outer_seq = get_current_sequence ()->next;
+  if (!outer_seq)
+    return NULL;
+  insn = outer_seq->first;
+  if (!insn || !NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_EPILOGUE_BEG)
+    return NULL;
+
+  /* sequence stack for the insn before NOTE_INSN_EPILOGUE_BEG*/
+  outer_seq = outer_seq->next;
+  if (outer_seq)
+    insn = outer_seq->last;
+
+  /* skip notes  */
+  while (insn && NOTE_P (insn))
+    {
+      insn = PREV_INSN (insn);
+    }
+  use = insn;
+
+  /* match use (reg 10 a0)  */
+  if (use == NULL || !INSN_P (use) || GET_CODE (PATTERN (use)) != USE
+      || !REG_P (XEXP (PATTERN (use), 0))
+      || REGNO (XEXP (PATTERN (use), 0)) != A0_REGNUM)
+    return NULL;
+
+  /* match set (reg 10 a0) (const_int 0 [0])  */
+  clear = PREV_INSN (use);
+  if (clear != NULL && INSN_P (clear) && GET_CODE (PATTERN (clear)) == SET
+      && REG_P (SET_DEST (PATTERN (clear)))
+      && REGNO (SET_DEST (PATTERN (clear))) == A0_REGNUM
+      && SET_SRC (PATTERN (clear)) == const0_rtx)
+    return clear;
+
+  return NULL;
+}
+
+static void
+riscv_gen_multi_pop_insn (bool use_multi_pop_normal, unsigned mask,
+			  unsigned multipop_size)
+{
+  rtx insn;
+  unsigned regs_count = riscv_multi_push_regs_count (mask);
+
+  if (!use_multi_pop_normal)
+    insn = emit_insn (
+      riscv_gen_multi_push_pop_insn (POP_IDX, multipop_size, regs_count));
+  else if (rtx_insn *clear_a0_insn = riscv_zcmp_can_use_popretz ())
+    {
+      delete_insn (NEXT_INSN (clear_a0_insn));
+      delete_insn (clear_a0_insn);
+      insn = emit_jump_insn (
+	riscv_gen_multi_push_pop_insn (POPRETZ_IDX, multipop_size, regs_count));
+    }
+  else
+    insn = emit_jump_insn (
+      riscv_gen_multi_push_pop_insn (POPRET_IDX, multipop_size, regs_count));
+
+  rtx dwarf = riscv_adjust_multi_pop_cfi_epilogue (multipop_size);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = dwarf;
 }
 
 /* Expand an "epilogue", "sibcall_epilogue", or "eh_return_internal" pattern;
@@ -6724,18 +6798,8 @@ riscv_expand_epilogue (int style)
       /* Undo the above fib.  */
       frame->mask = mask;
       frame->fmask = fmask;
-      unsigned regs_count = riscv_multi_push_regs_count (frame->mask);
-      if (use_multi_pop_normal)
-	insn = emit_jump_insn (riscv_gen_multi_push_pop_insn (POPRET_IDX,
-							      multipop_size,
-							      regs_count));
-      else
-	insn = emit_insn (
-	  riscv_gen_multi_push_pop_insn (POP_IDX, multipop_size, regs_count));
-
-      rtx dwarf = riscv_adjust_multi_pop_cfi_epilogue (multipop_size);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      REG_NOTES (insn) = dwarf;
+      riscv_gen_multi_pop_insn (use_multi_pop_normal, frame->mask,
+				multipop_size);
       if (use_multi_pop_normal)
 	return;
     }

@@ -131,6 +131,7 @@
    (T1_REGNUM			6)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
+   (A0_REGNUM			10)
    (S2_REGNUM			18)
    (S3_REGNUM			19)
    (S4_REGNUM			20)
