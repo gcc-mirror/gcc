@@ -1036,6 +1036,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;

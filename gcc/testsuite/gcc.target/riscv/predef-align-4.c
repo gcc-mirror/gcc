@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-mriscv-attribute -mno-strict-align" } */
-int foo()
-{
+/* { dg-options "-mtune=rocket" } */
 
-/* Default mcpu is rocket which has slow_unaligned_access=true.  */
+int main() {
+
+/* rocket default is cpu tune param unaligned access slow */
 #if !defined(__riscv_unaligned_slow)
 #error "__riscv_unaligned_slow is not set"
 #endif
@@ -12,6 +12,5 @@ int foo()
 #error "__riscv_unaligned_avoid or __riscv_unaligned_fast is unexpectedly set"
 #endif
 
-return 0;
+  return 0;
 }
-/* { dg-final { scan-assembler ".attribute unaligned_access, 1" } } */

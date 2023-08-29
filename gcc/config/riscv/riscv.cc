@@ -248,6 +248,9 @@ struct riscv_tune_info {
 /* Whether unaligned accesses execute very slowly.  */
 bool riscv_slow_unaligned_access_p;
 
+/* Whether user explicitly passed -mstrict-align.  */
+bool riscv_user_wants_strict_align;
+
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
 
@@ -7180,6 +7183,12 @@ riscv_option_override (void)
      -m[no-]strict-align is left unspecified, heed -mtune's advice.  */
   riscv_slow_unaligned_access_p = (cpu->tune_param->slow_unaligned_access
 				   || TARGET_STRICT_ALIGN);
+
+  /* Make a note if user explicity passed -mstrict-align for later
+     builtin macro generation.  Can't use target_flags_explicitly since
+     it is set even for -mno-strict-align.  */
+  riscv_user_wants_strict_align = TARGET_STRICT_ALIGN;
+
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
     target_flags |= MASK_STRICT_ALIGN;
