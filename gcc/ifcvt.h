@@ -40,6 +40,22 @@ struct ce_if_block
   int pass;				/* Pass number.  */
 };
 
+struct noce_multiple_sets_info
+{
+  /* A list of indices to instructions that we need to rewire into this
+     instruction when we replace them with temporary conditional moves.  */
+  auto_vec<int> rewired_src;
+  /* The true targets for a conditional move.  */
+  rtx target;
+  /* The temporaries introduced to allow us to not consider register
+     overlap.  */
+  rtx temporary;
+  /* The insns we've emitted.  */
+  rtx_insn *unmodified_insn;
+  /* True if a simple move can be used instead of a conditional move.  */
+  bool need_cmov;
+};
+
 /* Used by noce_process_if_block to communicate with its subroutines.
 
    The subroutines know that A and B may be evaluated freely.  They
