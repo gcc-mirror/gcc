@@ -1077,9 +1077,11 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
 			     expr.get_method_name ().get_segment ());
   if (candidates.empty ())
     {
+      rich_location richloc (line_table, expr.get_method_name ().get_locus ());
+      richloc.add_fixit_replace ("method not found");
       rust_error_at (
-	expr.get_method_name ().get_locus (),
-	"failed to resolve method for %<%s%>",
+	richloc, ErrorCode::E0599,
+	"no method named %qs found in the current scope",
 	expr.get_method_name ().get_segment ().as_string ().c_str ());
       return;
     }

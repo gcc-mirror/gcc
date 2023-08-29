@@ -14,5 +14,5 @@ impl Foo for u16 {
 fn main() {
     let a: u16 = 123;
     a.foo();
-    // { dg-error "failed to resolve method for .foo." "" { target *-*-* } .-1 }
+    // { dg-error "no method named .foo. found in the current scope" "" { target *-*-* } .-1 }
 }
