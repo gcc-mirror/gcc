@@ -104,12 +104,25 @@ TopLevel::visit (AST::ExternCrate &crate)
     = Analysis::Mappings::get ()->lookup_derive_proc_macros (num);
 
   auto sub_visitor = [&] () {
+    // TODO: Find a way to keep this part clean without the double dispatch.
     if (derive_macros.has_value ())
-      insert_macros (derive_macros.value (), ctx);
+      {
+	insert_macros (derive_macros.value (), ctx);
+	for (auto &macro : derive_macros.value ())
+	  Analysis::Mappings::get ()->insert_derive_proc_macro_def (macro);
+      }
     if (attribute_macros.has_value ())
-      insert_macros (attribute_macros.value (), ctx);
+      {
+	insert_macros (attribute_macros.value (), ctx);
+	for (auto &macro : attribute_macros.value ())
+	  Analysis::Mappings::get ()->insert_attribute_proc_macro_def (macro);
+      }
     if (bang_macros.has_value ())
-      insert_macros (bang_macros.value (), ctx);
+      {
+	insert_macros (bang_macros.value (), ctx);
+	for (auto &macro : bang_macros.value ())
+	  Analysis::Mappings::get ()->insert_bang_proc_macro_def (macro);
+      }
   };
 
   if (crate.has_as_clause ())
