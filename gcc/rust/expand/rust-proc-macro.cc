@@ -16,6 +16,7 @@
 
 #include "rust-diagnostics.h"
 #include "rust-proc-macro.h"
+#include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-token-converter.h"
 #include "rust-attributes.h"
@@ -68,7 +69,7 @@ ProcMacro::TokenStream
 tokenstream_from_string (std::string &data, bool &lex_error)
 {
   // FIXME: Insert location pointing to call site in tokens
-  Lexer lex (data, nullptr);
+  Lexer lex (data, Session::get_instance ().linemap);
 
   std::vector<const_TokenPtr> tokens;
   TokenPtr ptr;
