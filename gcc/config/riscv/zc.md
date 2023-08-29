@@ -1433,3 +1433,25 @@
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s11}, %0"
 )
+
+;; ZCMP mv
+(define_insn "*mva01s<X:mode>"
+  [(set (match_operand:X 0 "a0a1_reg_operand" "=r")
+        (match_operand:X 1 "zcmp_mv_sreg_operand" "r"))
+   (set (match_operand:X 2 "a0a1_reg_operand" "=r")
+        (match_operand:X 3 "zcmp_mv_sreg_operand" "r"))]
+  "TARGET_ZCMP
+   && (REGNO (operands[2]) != REGNO (operands[0]))"
+  { return (REGNO (operands[0]) == A0_REGNUM)?"cm.mva01s\t%1,%3":"cm.mva01s\t%3,%1"; }
+  [(set_attr "mode" "<X:MODE>")])
+
+(define_insn "*mvsa01<X:mode>"
+  [(set (match_operand:X 0 "zcmp_mv_sreg_operand" "=r")
+        (match_operand:X 1 "a0a1_reg_operand" "r"))
+   (set (match_operand:X 2 "zcmp_mv_sreg_operand" "=r")
+        (match_operand:X 3 "a0a1_reg_operand" "r"))]
+  "TARGET_ZCMP
+   && (REGNO (operands[0]) != REGNO (operands[2]))
+   && (REGNO (operands[1]) != REGNO (operands[3]))"
+  { return (REGNO (operands[1]) == A0_REGNUM)?"cm.mvsa01\t%0,%2":"cm.mvsa01\t%2,%0"; }
+  [(set_attr "mode" "<X:MODE>")])
