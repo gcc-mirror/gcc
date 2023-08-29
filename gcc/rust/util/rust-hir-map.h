@@ -310,19 +310,18 @@ public:
   bool lookup_bang_proc_macro_def (NodeId id, BangProcMacro &macro);
   bool lookup_attribute_proc_macro_def (NodeId id, AttributeProcMacro &macro);
 
+  tl::optional<CustomDeriveProcMacro &>
+  lookup_derive_proc_macro_invocation (AST::SimplePath &invoc);
+  tl::optional<BangProcMacro &>
+  lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id);
+  tl::optional<AttributeProcMacro &>
+  lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc);
   void insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
 					    CustomDeriveProcMacro def);
-
-  bool lookup_derive_proc_macro_invocation (AST::SimplePath &invoc,
-					    CustomDeriveProcMacro &def);
   void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
 					  BangProcMacro def);
-  bool lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id,
-					  BangProcMacro &def);
   void insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
 					       AttributeProcMacro def);
-  bool lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc,
-					       AttributeProcMacro &def);
 
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);

@@ -1072,16 +1072,14 @@ Mappings::insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
   procmacroDeriveInvocations[invoc.get_node_id ()] = def;
 }
 
-bool
-Mappings::lookup_derive_proc_macro_invocation (AST::SimplePath &invoc,
-					       CustomDeriveProcMacro &def)
+tl::optional<CustomDeriveProcMacro &>
+Mappings::lookup_derive_proc_macro_invocation (AST::SimplePath &invoc)
 {
   auto it = procmacroDeriveInvocations.find (invoc.get_node_id ());
   if (it == procmacroDeriveInvocations.end ())
-    return false;
+    return tl::nullopt;
 
-  def = it->second;
-  return true;
+  return it->second;
 }
 
 void
@@ -1094,16 +1092,14 @@ Mappings::insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
   procmacroBangInvocations[invoc.get_macro_node_id ()] = def;
 }
 
-bool
-Mappings::lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
-					     BangProcMacro &def)
+tl::optional<BangProcMacro &>
+Mappings::lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc)
 {
   auto it = procmacroBangInvocations.find (invoc.get_macro_node_id ());
   if (it == procmacroBangInvocations.end ())
-    return false;
+    return tl::nullopt;
 
-  def = it->second;
-  return true;
+  return it->second;
 }
 
 void
@@ -1116,16 +1112,14 @@ Mappings::insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
   procmacroAttributeInvocations[invoc.get_node_id ()] = def;
 }
 
-bool
-Mappings::lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc,
-						  AttributeProcMacro &def)
+tl::optional<AttributeProcMacro &>
+Mappings::lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc)
 {
   auto it = procmacroAttributeInvocations.find (invoc.get_node_id ());
   if (it == procmacroAttributeInvocations.end ())
-    return false;
+    return tl::nullopt;
 
-  def = it->second;
-  return true;
+  return it->second;
 }
 
 void
