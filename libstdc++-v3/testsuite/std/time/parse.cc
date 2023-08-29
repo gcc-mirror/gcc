@@ -251,6 +251,18 @@ test_errors()
   is >> parse("%H:%M %3y", y); // 61min is out of range but not needed
   VERIFY( is.eof() && ! is.fail() );
   VERIFY( y == 2010y );
+
+  is.clear();
+  is.str("328 00");
+  is >> parse("%3C %y", y); // 328 is out of range for %C (PR libstdc++/111162)
+  VERIFY( is.fail() );
+  VERIFY( y == 2010y );
+
+  is.clear();
+  is.str("-328 00");
+  is >> parse("%3C %y", y); // -328 is out of range for %C
+  VERIFY( is.fail() );
+  VERIFY( y == 2010y );
 }
 
 void

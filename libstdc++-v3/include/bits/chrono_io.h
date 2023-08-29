@@ -3171,7 +3171,14 @@ namespace __detail
 		    {
 		      auto __v = __read_signed(__num ? __num : 2);
 		      if (!__is_failed(__err))
-			__century = __v * 100;
+			{
+			  int __cmin = (int)year::min() / 100;
+			  int __cmax = (int)year::max() / 100;
+			  if (__cmin <= __v && __v <= __cmax)
+			    __century = __v * 100;
+			  else
+			    __century = -2; // This prevents guessing century.
+			}
 		    }
 		  else if (__mod == 'E')
 		    {
