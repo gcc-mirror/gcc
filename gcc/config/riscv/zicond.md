@@ -62,3 +62,34 @@
   "TARGET_ZICOND && rtx_equal_p (operands[1], operands[3])"
   "czero.nez\t%0,%2,%1"
 )
+
+;; Combine creates this form in some cases (particularly the coremark
+;; CRC loop.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
+			       (const_int 1)
+			       (match_operand 2 "immediate_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND && TARGET_ZBS"
+  [(set (match_dup 4) (zero_extract:X (match_dup 1) (const_int 1) (match_dup 2)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 4) (const_int 0))
+				      (const_int 0)
+				      (match_dup 3)))])
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
+			       (const_int 1)
+			       (match_operand 2 "immediate_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND && !TARGET_ZBS && (UINTVAL (operands[2]) < 11)"
+  [(set (match_dup 4) (and:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 4) (const_int 0))
+				      (const_int 0)
+				      (match_dup 3)))]
+{
+  operands[2] = GEN_INT (1 << UINTVAL(operands[2]));
+})
