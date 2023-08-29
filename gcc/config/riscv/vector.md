@@ -878,13 +878,15 @@
   [(set (match_operand:V 0 "register_operand" "=vr")
 	(unspec:V [(reg:SI X0_REGNUM)] UNSPEC_VUNDEF))]
   "TARGET_VECTOR"
-  "")
+  ""
+  [(set_attr "type" "vector")])
 
 (define_insn "@vundefined<mode>"
   [(set (match_operand:VB 0 "register_operand" "=vr")
 	(unspec:VB [(reg:SI X0_REGNUM)] UNSPEC_VUNDEF))]
   "TARGET_VECTOR"
-  "")
+  ""
+  [(set_attr "type" "vector")])
 
 (define_expand "@vreinterpret<mode>"
   [(set (match_operand:V 0 "register_operand")
@@ -935,7 +937,8 @@
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P [(match_operand:P 1 "const_int_operand" "i")] UNSPEC_VLMAX))]
   "TARGET_VECTOR"
-  "")
+  ""
+  [(set_attr "type" "vector")])
 
 ;; Set VXRM
 (define_insn "vxrmsi"
@@ -1135,7 +1138,9 @@
 				     riscv_vector::RVV_UNOP, operands, operands[2]);
     }
   DONE;
-})
+}
+[(set_attr "type" "vector")]
+)
 
 (define_insn_and_split "*mov<VB:mode><P:mode>_lra"
   [(set (match_operand:VB 0 "reg_or_mem_operand" "=vr, m,vr")
@@ -1155,7 +1160,9 @@
 				     riscv_vector::RVV_UNOP, operands, operands[2]);
     }
   DONE;
-})
+}
+[(set_attr "type" "vector")]
+)
 
 ;; Define tuple modes data movement.
 ;; operands[2] is used to save the offset of each subpart.

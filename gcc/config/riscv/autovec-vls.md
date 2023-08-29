@@ -68,6 +68,7 @@
       }
     DONE;
   }
+  [(set_attr "type" "vmov")]
 )
 
 (define_insn_and_split "*mov<mode>"
@@ -89,6 +90,7 @@
     gcc_assert (ok_p);
     DONE;
   }
+  [(set_attr "type" "vmov")]
 )
 
 (define_expand "mov<mode>"
@@ -130,7 +132,9 @@
 					riscv_vector::RVV_UNOP, operands, operands[2]);
     }
   DONE;
-})
+}
+  [(set_attr "type" "vmov")]
+)
 
 (define_insn "*mov<mode>_vls"
   [(set (match_operand:VLS 0 "register_operand" "=vr")
@@ -157,6 +161,7 @@
                                    riscv_vector::RVV_UNOP, operands);
     DONE;
   }
+  [(set_attr "type" "vector")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -180,7 +185,9 @@
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
 				 riscv_vector::RVV_BINOP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")]
+)
 
 ;; -------------------------------------------------------------------------------
 ;; ---- [INT] Unary operations
@@ -201,4 +208,6 @@
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
   DONE;
-})
+}
+[(set_attr "type" "vector")]
+)
