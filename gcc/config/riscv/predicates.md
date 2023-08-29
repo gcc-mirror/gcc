@@ -69,6 +69,102 @@
   (ior (match_operand 0 "const_0_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "stack_push_up_to_ra_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 1)")))
+
+(define_predicate "stack_push_up_to_s0_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 2)")))
+
+(define_predicate "stack_push_up_to_s1_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 3)")))
+
+(define_predicate "stack_push_up_to_s2_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 4)")))
+
+(define_predicate "stack_push_up_to_s3_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 5)")))
+
+(define_predicate "stack_push_up_to_s4_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 6)")))
+
+(define_predicate "stack_push_up_to_s5_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 7)")))
+
+(define_predicate "stack_push_up_to_s6_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 8)")))
+
+(define_predicate "stack_push_up_to_s7_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 9)")))
+
+(define_predicate "stack_push_up_to_s8_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 10)")))
+
+(define_predicate "stack_push_up_to_s9_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 11)")))
+
+(define_predicate "stack_push_up_to_s11_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op) * -1, 13)")))
+
+(define_predicate "stack_pop_up_to_ra_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 1)")))
+
+(define_predicate "stack_pop_up_to_s0_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 2)")))
+
+(define_predicate "stack_pop_up_to_s1_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 3)")))
+
+(define_predicate "stack_pop_up_to_s2_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 4)")))
+
+(define_predicate "stack_pop_up_to_s3_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 5)")))
+
+(define_predicate "stack_pop_up_to_s4_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 6)")))
+
+(define_predicate "stack_pop_up_to_s5_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 7)")))
+
+(define_predicate "stack_pop_up_to_s6_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 8)")))
+
+(define_predicate "stack_pop_up_to_s7_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 9)")))
+
+(define_predicate "stack_pop_up_to_s8_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 10)")))
+
+(define_predicate "stack_pop_up_to_s9_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 11)")))
+
+(define_predicate "stack_pop_up_to_s11_operand"
+  (and (match_code "const_int")
+       (match_test "riscv_zcmp_valid_stack_adj_bytes_p (INTVAL (op), 13)")))
+
 ;; Only use branch-on-bit sequences when the mask is not an ANDI immediate.
 (define_predicate "branch_on_bit_operand"
   (and (match_code "const_int")

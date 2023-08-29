@@ -125,6 +125,21 @@
 (define_mode_attr shiftm1 [(SI "const_si_mask_operand") (DI "const_di_mask_operand")])
 (define_mode_attr shiftm1p [(SI "DsS") (DI "DsD")])
 
+; zcmp mode attribute
+(define_mode_attr slot0_offset  [(SI "-4")  (DI "-8")])
+(define_mode_attr slot1_offset  [(SI "-8")  (DI "-16")])
+(define_mode_attr slot2_offset  [(SI "-12") (DI "-24")])
+(define_mode_attr slot3_offset  [(SI "-16") (DI "-32")])
+(define_mode_attr slot4_offset  [(SI "-20") (DI "-40")])
+(define_mode_attr slot5_offset  [(SI "-24") (DI "-48")])
+(define_mode_attr slot6_offset  [(SI "-28") (DI "-56")])
+(define_mode_attr slot7_offset  [(SI "-32") (DI "-64")])
+(define_mode_attr slot8_offset  [(SI "-36") (DI "-72")])
+(define_mode_attr slot9_offset  [(SI "-40") (DI "-80")])
+(define_mode_attr slot10_offset [(SI "-44") (DI "-88")])
+(define_mode_attr slot11_offset [(SI "-48") (DI "-96")])
+(define_mode_attr slot12_offset [(SI "-52") (DI "-104")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------

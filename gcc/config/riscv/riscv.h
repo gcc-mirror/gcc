@@ -420,6 +420,29 @@ ASM_MISA_SPEC
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
   gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
 
+#define RETURN_ADDR_MASK (1 << RETURN_ADDR_REGNUM)
+#define S0_MASK (1 << S0_REGNUM)
+#define S1_MASK (1 << S1_REGNUM)
+#define S2_MASK (1 << S2_REGNUM)
+#define S3_MASK (1 << S3_REGNUM)
+#define S4_MASK (1 << S4_REGNUM)
+#define S5_MASK (1 << S5_REGNUM)
+#define S6_MASK (1 << S6_REGNUM)
+#define S7_MASK (1 << S7_REGNUM)
+#define S8_MASK (1 << S8_REGNUM)
+#define S9_MASK (1 << S9_REGNUM)
+#define S10_MASK (1 << S10_REGNUM)
+#define S11_MASK (1 << S11_REGNUM)
+
+#define MULTI_PUSH_GPR_MASK                                                    \
+  (RETURN_ADDR_MASK | S0_MASK | S1_MASK | S2_MASK | S3_MASK | S4_MASK          \
+   | S5_MASK | S6_MASK | S7_MASK | S8_MASK | S9_MASK | S10_MASK | S11_MASK)
+#define ZCMP_MAX_SPIMM 3
+#define ZCMP_SP_INC_STEP 16
+#define ZCMP_INVALID_S0S10_SREGS_COUNTS 11
+#define ZCMP_S0S11_SREGS_COUNTS 12
+#define ZCMP_MAX_GRP_SLOTS 13
+
 #define MCOUNT_NAME "_mcount"
 
 #define NO_PROFILE_COUNTERS 1
@@ -654,6 +677,8 @@ enum reg_class
 #define CALLEE_SAVED_REG_NUMBER(REGNO)			\
   ((REGNO) >= 8 && (REGNO) <= 9 ? (REGNO) - 8 :		\
    (REGNO) >= 18 && (REGNO) <= 27 ? (REGNO) - 16 : -1)
+
+#define CALLEE_SAVED_FREG_NUMBER(REGNO) CALLEE_SAVED_REG_NUMBER (REGNO - 32)
 
 #define LIBCALL_VALUE(MODE) \
   riscv_function_value (NULL_TREE, NULL_TREE, MODE)
