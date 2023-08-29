@@ -1003,30 +1003,30 @@ Mappings::lookup_attribute_proc_macros (CrateNum num)
 }
 
 void
-Mappings::insert_derive_proc_macro_def (NodeId id, CustomDeriveProcMacro macro)
+Mappings::insert_derive_proc_macro_def (CustomDeriveProcMacro macro)
 {
-  auto it = procmacroDeriveMappings.find (id);
+  auto it = procmacroDeriveMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroDeriveMappings.end ());
 
-  procmacroDeriveMappings[id] = macro;
+  procmacroDeriveMappings[macro.get_node_id ()] = macro;
 }
 
 void
-Mappings::insert_bang_proc_macro_def (NodeId id, BangProcMacro macro)
+Mappings::insert_bang_proc_macro_def (BangProcMacro macro)
 {
-  auto it = procmacroBangMappings.find (id);
+  auto it = procmacroBangMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroBangMappings.end ());
 
-  procmacroBangMappings[id] = macro;
+  procmacroBangMappings[macro.get_node_id ()] = macro;
 }
 
 void
-Mappings::insert_attribute_proc_macro_def (NodeId id, AttributeProcMacro macro)
+Mappings::insert_attribute_proc_macro_def (AttributeProcMacro macro)
 {
-  auto it = procmacroAttributeMappings.find (id);
+  auto it = procmacroAttributeMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroAttributeMappings.end ());
 
-  procmacroAttributeMappings[id] = macro;
+  procmacroAttributeMappings[macro.get_node_id ()] = macro;
 }
 
 tl::optional<CustomDeriveProcMacro &>

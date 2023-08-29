@@ -302,9 +302,9 @@ public:
   tl::optional<std::vector<AttributeProcMacro> &>
   lookup_attribute_proc_macros (CrateNum num);
 
-  void insert_derive_proc_macro_def (NodeId id, CustomDeriveProcMacro macro);
-  void insert_bang_proc_macro_def (NodeId id, BangProcMacro macro);
-  void insert_attribute_proc_macro_def (NodeId id, AttributeProcMacro macro);
+  void insert_derive_proc_macro_def (CustomDeriveProcMacro macro);
+  void insert_bang_proc_macro_def (BangProcMacro macro);
+  void insert_attribute_proc_macro_def (AttributeProcMacro macro);
 
   tl::optional<CustomDeriveProcMacro &>
   lookup_derive_proc_macro_def (NodeId id);
