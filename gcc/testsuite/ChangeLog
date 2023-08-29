@@ -1,3 +1,96 @@
+2023-08-28  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/builtin_pause.c: Removed.
+	* gcc.target/riscv/zihintpause-1.c: New test when the 'Zihintpause'
+	extension is enabled.
+	* gcc.target/riscv/zihintpause-2.c: Likewise.
+	* gcc.target/riscv/zihintpause-noarch.c: New test when the 'Zihintpause'
+	extension is disabled.
+
+2023-08-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/111215
+	* gcc.dg/tree-ssa/cond-bool-2.c: Add
+	`--param logical-op-non-short-circuit=1` to the options.
+
+2023-08-28  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/cmpbit-3.c: New test.
+	* gcc.dg/pr87009.c: Update test.
+
+2023-08-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/slt-sign-extend.c: New test.
+
+2023-08-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vxrm-8.c: Adapt tests.
+	* gcc.target/riscv/rvv/base/vxrm-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-9.c: Ditto.
+
+2023-08-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: Adapt test.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-102.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-14.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-27.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-28.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-29.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-30.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-35.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-36.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-46.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-48.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-50.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-51.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-6.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c:
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-69.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-70.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-72.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-76.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-77.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-82.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-83.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-89.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-93.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-94.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-95.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-96.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/ffload-5.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-45.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-9.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-10.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-7.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-16.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-23.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-4.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-103.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-13.c: New test.
+
 2023-08-27  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/base/spill-11.c: Adjust expected output.

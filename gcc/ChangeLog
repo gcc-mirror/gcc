@@ -1,3 +1,316 @@
+2023-08-28  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* doc/extend.texi: Fix the description of __builtin_riscv_pause.
+
+2023-08-28  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Implement the 'Zihintpause' extension, version 2.0.
+	(riscv_ext_flag_table) Add 'Zihintpause' handling.
+	* config/riscv/riscv-builtins.cc: Remove availability predicate
+	"always" and add "hint_pause".
+	(riscv_builtins) : Add "pause" extension.
+	* config/riscv/riscv-opts.h (MASK_ZIHINTPAUSE, TARGET_ZIHINTPAUSE): New.
+	* config/riscv/riscv.md (riscv_pause): Adjust output based on
+	TARGET_ZIHINTPAUSE.
+
+2023-08-28  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (`(X & ~Y) | (~X & Y)`): Use bitwise_inverted_equal_p
+	instead of specifically checking for ~X.
+
+2023-08-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111146
+	* match.pd (`(x | y) & ~x`, `(x & y) | ~x`): Remove
+	redundant pattern.
+
+2023-08-28  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (gimple_simplify_phiopt): Add dump information
+	when resimplify returns true.
+	(match_simplify_replacement): Print only if accepted the match-and-simplify
+	result rather than the full sequence.
+
+2023-08-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::earliest_fusion): Skip
+	never probability.
+	(pass_vsetvl::compute_probabilities): Fix unitialized probability.
+
+2023-08-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::earliest_fusion): Fix bug.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vmullbq_poly)
+	(vmulltq_poly): New.
+	* config/arm/arm-mve-builtins-base.def (vmullbq_poly)
+	(vmulltq_poly): New.
+	* config/arm/arm-mve-builtins-base.h (vmullbq_poly)
+	(vmulltq_poly): New.
+	* config/arm/arm_mve.h (vmulltq_poly): Remove.
+	(vmullbq_poly): Remove.
+	(vmullbq_poly_m): Remove.
+	(vmulltq_poly_m): Remove.
+	(vmullbq_poly_x): Remove.
+	(vmulltq_poly_x): Remove.
+	(vmulltq_poly_p8): Remove.
+	(vmullbq_poly_p8): Remove.
+	(vmulltq_poly_p16): Remove.
+	(vmullbq_poly_p16): Remove.
+	(vmullbq_poly_m_p8): Remove.
+	(vmullbq_poly_m_p16): Remove.
+	(vmulltq_poly_m_p8): Remove.
+	(vmulltq_poly_m_p16): Remove.
+	(vmullbq_poly_x_p8): Remove.
+	(vmullbq_poly_x_p16): Remove.
+	(vmulltq_poly_x_p8): Remove.
+	(vmulltq_poly_x_p16): Remove.
+	(__arm_vmulltq_poly_p8): Remove.
+	(__arm_vmullbq_poly_p8): Remove.
+	(__arm_vmulltq_poly_p16): Remove.
+	(__arm_vmullbq_poly_p16): Remove.
+	(__arm_vmullbq_poly_m_p8): Remove.
+	(__arm_vmullbq_poly_m_p16): Remove.
+	(__arm_vmulltq_poly_m_p8): Remove.
+	(__arm_vmulltq_poly_m_p16): Remove.
+	(__arm_vmullbq_poly_x_p8): Remove.
+	(__arm_vmullbq_poly_x_p16): Remove.
+	(__arm_vmulltq_poly_x_p8): Remove.
+	(__arm_vmulltq_poly_x_p16): Remove.
+	(__arm_vmulltq_poly): Remove.
+	(__arm_vmullbq_poly): Remove.
+	(__arm_vmullbq_poly_m): Remove.
+	(__arm_vmulltq_poly_m): Remove.
+	(__arm_vmullbq_poly_x): Remove.
+	(__arm_vmulltq_poly_x): Remove.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_mve_function_exact_insn_vmull_poly): New.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_widen_poly): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_widen_poly): New.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (parse_element_type): Add
+	support for 'U' and 'p' format specifiers.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins.cc (type_suffixes): Handle poly_p
+	field..
+	(TYPES_poly_8_16): New.
+	(poly_8_16): New.
+	* config/arm/arm-mve-builtins.def (p8): New type suffix.
+	(p16): Likewise.
+	* config/arm/arm-mve-builtins.h (enum type_class_index): Add
+	TYPE_poly.
+	(struct type_suffix_info): Add poly_p field.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (vmullbq_int, vmulltq_int):
+	New.
+	* config/arm/arm-mve-builtins-base.def (vmullbq_int, vmulltq_int):
+	New.
+	* config/arm/arm-mve-builtins-base.h (vmullbq_int, vmulltq_int):
+	New.
+	* config/arm/arm_mve.h (vmulltq_int): Remove.
+	(vmullbq_int): Remove.
+	(vmullbq_int_m): Remove.
+	(vmulltq_int_m): Remove.
+	(vmullbq_int_x): Remove.
+	(vmulltq_int_x): Remove.
+	(vmulltq_int_u8): Remove.
+	(vmullbq_int_u8): Remove.
+	(vmulltq_int_s8): Remove.
+	(vmullbq_int_s8): Remove.
+	(vmulltq_int_u16): Remove.
+	(vmullbq_int_u16): Remove.
+	(vmulltq_int_s16): Remove.
+	(vmullbq_int_s16): Remove.
+	(vmulltq_int_u32): Remove.
+	(vmullbq_int_u32): Remove.
+	(vmulltq_int_s32): Remove.
+	(vmullbq_int_s32): Remove.
+	(vmullbq_int_m_s8): Remove.
+	(vmullbq_int_m_s32): Remove.
+	(vmullbq_int_m_s16): Remove.
+	(vmullbq_int_m_u8): Remove.
+	(vmullbq_int_m_u32): Remove.
+	(vmullbq_int_m_u16): Remove.
+	(vmulltq_int_m_s8): Remove.
+	(vmulltq_int_m_s32): Remove.
+	(vmulltq_int_m_s16): Remove.
+	(vmulltq_int_m_u8): Remove.
+	(vmulltq_int_m_u32): Remove.
+	(vmulltq_int_m_u16): Remove.
+	(vmullbq_int_x_s8): Remove.
+	(vmullbq_int_x_s16): Remove.
+	(vmullbq_int_x_s32): Remove.
+	(vmullbq_int_x_u8): Remove.
+	(vmullbq_int_x_u16): Remove.
+	(vmullbq_int_x_u32): Remove.
+	(vmulltq_int_x_s8): Remove.
+	(vmulltq_int_x_s16): Remove.
+	(vmulltq_int_x_s32): Remove.
+	(vmulltq_int_x_u8): Remove.
+	(vmulltq_int_x_u16): Remove.
+	(vmulltq_int_x_u32): Remove.
+	(__arm_vmulltq_int_u8): Remove.
+	(__arm_vmullbq_int_u8): Remove.
+	(__arm_vmulltq_int_s8): Remove.
+	(__arm_vmullbq_int_s8): Remove.
+	(__arm_vmulltq_int_u16): Remove.
+	(__arm_vmullbq_int_u16): Remove.
+	(__arm_vmulltq_int_s16): Remove.
+	(__arm_vmullbq_int_s16): Remove.
+	(__arm_vmulltq_int_u32): Remove.
+	(__arm_vmullbq_int_u32): Remove.
+	(__arm_vmulltq_int_s32): Remove.
+	(__arm_vmullbq_int_s32): Remove.
+	(__arm_vmullbq_int_m_s8): Remove.
+	(__arm_vmullbq_int_m_s32): Remove.
+	(__arm_vmullbq_int_m_s16): Remove.
+	(__arm_vmullbq_int_m_u8): Remove.
+	(__arm_vmullbq_int_m_u32): Remove.
+	(__arm_vmullbq_int_m_u16): Remove.
+	(__arm_vmulltq_int_m_s8): Remove.
+	(__arm_vmulltq_int_m_s32): Remove.
+	(__arm_vmulltq_int_m_s16): Remove.
+	(__arm_vmulltq_int_m_u8): Remove.
+	(__arm_vmulltq_int_m_u32): Remove.
+	(__arm_vmulltq_int_m_u16): Remove.
+	(__arm_vmullbq_int_x_s8): Remove.
+	(__arm_vmullbq_int_x_s16): Remove.
+	(__arm_vmullbq_int_x_s32): Remove.
+	(__arm_vmullbq_int_x_u8): Remove.
+	(__arm_vmullbq_int_x_u16): Remove.
+	(__arm_vmullbq_int_x_u32): Remove.
+	(__arm_vmulltq_int_x_s8): Remove.
+	(__arm_vmulltq_int_x_s16): Remove.
+	(__arm_vmulltq_int_x_s32): Remove.
+	(__arm_vmulltq_int_x_u8): Remove.
+	(__arm_vmulltq_int_x_u16): Remove.
+	(__arm_vmulltq_int_x_u32): Remove.
+	(__arm_vmulltq_int): Remove.
+	(__arm_vmullbq_int): Remove.
+	(__arm_vmullbq_int_m): Remove.
+	(__arm_vmulltq_int_m): Remove.
+	(__arm_vmullbq_int_x): Remove.
+	(__arm_vmulltq_int_x): Remove.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_widen): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_widen): New.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_mve_function_exact_insn_vmull): New.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (mve_insn): Add vmullb, vmullt.
+	(isu): Add VMULLBQ_INT_S, VMULLBQ_INT_U, VMULLTQ_INT_S,
+	VMULLTQ_INT_U.
+	(supf): Add VMULLBQ_POLY_P, VMULLTQ_POLY_P, VMULLBQ_POLY_M_P,
+	VMULLTQ_POLY_M_P.
+	(VMULLBQ_INT, VMULLTQ_INT, VMULLBQ_INT_M, VMULLTQ_INT_M): Delete.
+	(VMULLxQ_INT, VMULLxQ_POLY, VMULLxQ_INT_M, VMULLxQ_POLY_M): New.
+	* config/arm/mve.md (mve_vmullbq_int_<supf><mode>)
+	(mve_vmulltq_int_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_int_<supf><mode>) ... this.
+	(mve_vmulltq_poly_p<mode>, mve_vmullbq_poly_p<mode>): Merge into ...
+	(@mve_<mve_insn>q_poly_<supf><mode>): ... this.
+	(mve_vmullbq_int_m_<supf><mode>, mve_vmulltq_int_m_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_int_m_<supf><mode>): ... this.
+	(mve_vmullbq_poly_m_p<mode>, mve_vmulltq_poly_m_p<mode>): Merge into ...
+	(@mve_<mve_insn>q_poly_m_<supf><mode>): ... this.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (parse_element_type):
+	Remove dead check.
+
+2023-08-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_acca_int32): Fix loop bound.
+	(binary_acca_int64): Likewise.
+
+2023-08-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (fold_range): Handle relations.
+
+2023-08-28  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_conditional_move):
+	Optimize the function implementation.
+
+2023-08-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/111119
+	* config/i386/sse.md (V48_AVX2): Rename to ..
+	(V48_128_256): .. this.
+	(ssefltmodesuffix): Extend to V4SF/V8SF/V2DF/V4DF.
+	(<avx_avx2>_maskload<ssemodesuffix><avxsizesuffix>): Change
+	V48_AVX2 to V48_128_256, also generate vmaskmov{ps,pd} for
+	integral modes when TARGET_AVX2 is not available.
+	(<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>): Ditto.
+	(maskload<mode><sseintvecmodelower>): Change V48_AVX2 to
+	V48_128_256.
+	(maskstore<mode><sseintvecmodelower>): Ditto.
+
+2023-08-28  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vsetvl_vtype_change_only_p):
+	New function.
+	(after_or_same_p): Ditto.
+	(find_reg_killed_by): Delete.
+	(has_vsetvl_killed_avl_p): Ditto.
+	(anticipatable_occurrence_p): Refactor.
+	(any_set_in_bb_p): Delete.
+	(count_regno_occurrences): Ditto.
+	(backward_propagate_worthwhile_p): Ditto.
+	(demands_can_be_fused_p): Ditto.
+	(earliest_pred_can_be_fused_p): New function.
+	(vsetvl_dominated_by_p): Ditto.
+	(vector_insn_info::parse_insn): Refactor.
+	(vector_insn_info::merge): Refactor.
+	(vector_insn_info::dump): Refactor.
+	(vector_infos_manager::vector_infos_manager): Refactor.
+	(vector_infos_manager::all_empty_predecessor_p): Delete.
+	(vector_infos_manager::all_same_avl_p): Ditto.
+	(vector_infos_manager::create_bitmap_vectors): Refactor.
+	(vector_infos_manager::free_bitmap_vectors): Refactor.
+	(vector_infos_manager::dump): Refactor.
+	(pass_vsetvl::update_block_info): New function.
+	(enum fusion_type): Ditto.
+	(pass_vsetvl::get_backward_fusion_type): Delete.
+	(pass_vsetvl::hard_empty_block_p): Ditto.
+	(pass_vsetvl::backward_demand_fusion): Ditto.
+	(pass_vsetvl::forward_demand_fusion): Ditto.
+	(pass_vsetvl::demand_fusion): Ditto.
+	(pass_vsetvl::cleanup_illegal_dirty_blocks): Ditto.
+	(pass_vsetvl::compute_local_properties): Ditto.
+	(pass_vsetvl::earliest_fusion): New function.
+	(pass_vsetvl::vsetvl_fusion): Ditto.
+	(pass_vsetvl::commit_vsetvls): Refactor.
+	(get_first_vsetvl_before_rvv_insns): Ditto.
+	(pass_vsetvl::global_eliminate_vsetvl_insn): Ditto.
+	(pass_vsetvl::cleanup_earliest_vsetvls): New function.
+	(pass_vsetvl::df_post_optimization): Refactor.
+	(pass_vsetvl::lazy_vsetvl): Ditto.
+	* config/riscv/riscv-vsetvl.h: Ditto.
+
 2023-08-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/autovec.md (len_fold_extract_last_<mode>): New pattern.
