@@ -25,6 +25,6 @@ DECL_FUNC (h, 2, __builtin_nanf16 ("0"))
 DECL_FUNC (s, 2, __builtin_nanf ("0"))
 DECL_FUNC (d, 2, __builtin_nan ("0"))
 
-/* { dg-final { scan-assembler-times "fli\\.h\tfa0,nan\n" 2 } } */
-/* { dg-final { scan-assembler-times "fli\\.s\tfa0,nan\n" 2 } } */
-/* { dg-final { scan-assembler-times "fli\\.d\tfa0,nan\n" 2 } } */
+/* { dg-final { scan-assembler-times "fli\\.h\tfa\[0-9\],nan\n" 2 } } */
+/* { dg-final { scan-assembler-times "fli\\.s\tfa\[0-9\],nan\n" 2 } } */
+/* { dg-final { scan-assembler-times "fli\\.d\tfa\[0-9\],nan\n" 2 } } */

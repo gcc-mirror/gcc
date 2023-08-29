@@ -869,7 +869,7 @@ riscv_float_const_rtx_index_for_fli (rtx x)
   if (!TARGET_ZFA
       || !CONST_DOUBLE_P(x)
       || mode == VOIDmode
-      || (mode == HFmode && !TARGET_ZFH)
+      || (mode == HFmode && !(TARGET_ZFH || TARGET_ZVFH))
       || (mode == SFmode && !TARGET_HARD_FLOAT)
       || (mode == DFmode && !TARGET_DOUBLE_FLOAT))
     return -1;

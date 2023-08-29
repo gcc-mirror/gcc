@@ -36,4 +36,4 @@ DECL_FUNC (h, 5, -__builtin_nanf16 (""))
 DECL_FUNC (s, 5, -__builtin_nanf (""))
 DECL_FUNC (d, 5, -__builtin_nan (""))
 
-/* { dg-final { scan-assembler-not "fli\\.\[hsd]\tfa0,nan\n" } } */
+/* { dg-final { scan-assembler-not "fli\\.\[hsd]\tfa\[0-9\],nan\n" } } */
