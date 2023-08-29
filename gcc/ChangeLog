@@ -1,3 +1,8 @@
+2023-08-28  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): For vfmv.f.s/vmv.x.s
+	intruction replace null avl with (const_int 0).
+
 2023-08-25  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
