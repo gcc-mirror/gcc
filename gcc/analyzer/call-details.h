@@ -79,6 +79,11 @@ public:
 					bool include_terminator,
 					const svalue **out_sval) const;
 
+  void
+  complain_about_overlap (unsigned arg_idx_a,
+			  unsigned arg_idx_b,
+			  const svalue *num_bytes_read_sval) const;
+
 private:
   const gcall *m_call;
   region_model *m_model;

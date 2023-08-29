@@ -534,8 +534,6 @@ kf_malloc::impl_call_pre (const call_details &cd) const
 
 /* Handler for "memcpy" and "__builtin_memcpy",
    "memmove", and "__builtin_memmove".  */
-/* TODO: complain about overlapping src and dest for the memcpy
-   variants.  */
 
 class kf_memcpy_memmove : public builtin_known_function
 {
@@ -592,7 +590,22 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
     = model->deref_rvalue (src_ptr_sval, cd.get_arg_tree (1), cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_ptr_sval);
+  /* Check for overlap.  */
+  switch (m_variant)
+    {
+    case KF_MEMCPY:
+    case KF_MEMCPY_CHK:
+      cd.complain_about_overlap (0, 1, num_bytes_sval);
+      break;
 
+    case KF_MEMMOVE:
+    case KF_MEMMOVE_CHK:
+      /* It's OK for memmove's arguments to overlap.  */
+      break;
+
+    default:
+	gcc_unreachable ();
+    }
   model->copy_bytes (dest_reg,
 		     src_reg, cd.get_arg_tree (1),
 		     num_bytes_sval,
@@ -1221,6 +1234,7 @@ public:
       }
 
     cd.maybe_set_lhs (dest_sval);
+    cd.complain_about_overlap (0, 1, num_src_bytes_read_sval);
 
     const region *offset_reg
       = mgr->get_offset_region (dest_reg, NULL_TREE, dst_strlen_sval);
@@ -1276,6 +1290,7 @@ kf_strcpy::impl_call_pre (const call_details &cd) const
   if (const svalue *num_bytes_read_sval
       = cd.check_for_null_terminated_string_arg (1, true, &bytes_to_copy))
     {
+      cd.complain_about_overlap (0, 1, num_bytes_read_sval);
       model->write_bytes (dest_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
     }
   else

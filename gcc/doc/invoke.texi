@@ -474,6 +474,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-null-argument
 -Wno-analyzer-null-dereference
 -Wno-analyzer-out-of-bounds
+-Wno-analyzer-overlapping-buffers
 -Wno-analyzer-possible-null-argument
 -Wno-analyzer-possible-null-dereference
 -Wno-analyzer-putenv-of-auto-var
@@ -10319,6 +10320,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-null-argument
 -Wanalyzer-null-dereference
 -Wanalyzer-out-of-bounds
+-Wanalyzer-overlapping-buffers
 -Wanalyzer-possible-null-argument
 -Wanalyzer-possible-null-dereference
 -Wanalyzer-putenv-of-auto-var
@@ -10663,6 +10665,24 @@ apart; which one is before or after in memory, the relative sizes
 involved, the direction of the access (read vs write), and, in some
 cases, the values of data involved.  This diagram can be suppressed
 using @option{-fdiagnostics-text-art-charset=none}.
+
+@opindex Wanalyzer-overlapping-buffers
+@opindex Wno-analyzer-overlapping-buffers
+@item -Wno-analyzer-overlapping-buffers
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-overlapping-buffers} to disable it.
+
+This diagnostic warns for paths through the code in which overlapping
+buffers are passed to an API for which the behavior on such buffers
+is undefined.
+
+Specifically, the diagnostic occurs on calls to the following functions
+@itemize @bullet
+@item @code{memcpy}
+@item @code{strcat}
+@item @code{strcpy}
+@end itemize
+for cases where the buffers are known to overlap.
 
 @opindex Wanalyzer-possible-null-argument
 @opindex Wno-analyzer-possible-null-argument
