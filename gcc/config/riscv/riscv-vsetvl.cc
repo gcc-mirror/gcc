@@ -649,7 +649,7 @@ gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info,
       && fault_first_load_p (info.get_insn ()->rtl ()))
     new_info.set_avl_info (
       avl_info (get_avl (info.get_insn ()->rtl ()), nullptr));
-  if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
+  if (vsetvl_insn_p (rinsn))
     {
       rtx dest = get_vl (rinsn);
       new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, vl ? vl : dest);
