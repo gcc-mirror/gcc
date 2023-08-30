@@ -2767,7 +2767,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      else if (TARGET_ZICOND
+      else if (TARGET_ZICOND_LIKE
 	       && outer_code == SET
 	       && ((GET_CODE (XEXP (x, 1)) == REG
 		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
@@ -3864,7 +3864,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 							  cond, cons, alt)));
       return true;
     }
-  else if (TARGET_ZICOND
+  else if (TARGET_ZICOND_LIKE
 	   && GET_MODE_CLASS (mode) == MODE_INT)
     {
       /* The comparison must be comparing WORD_MODE objects.   We must
