@@ -9109,6 +9109,8 @@ riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 #define TARGET_ASM_FILE_START riscv_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START riscv_va_start
