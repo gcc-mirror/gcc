@@ -2441,6 +2441,7 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_LEN_LOAD_LANES:
     case IFN_LEN_LOAD:
     case IFN_MASK_LEN_LOAD:
       if (op_p == gimple_call_arg_ptr (call, 0))
@@ -2449,6 +2450,7 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
 
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
+    case IFN_MASK_LEN_STORE_LANES:
     case IFN_LEN_STORE:
     case IFN_MASK_LEN_STORE:
       {
@@ -7573,6 +7575,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     case IFN_MASK_STORE:
     case IFN_MASK_LOAD_LANES:
     case IFN_MASK_STORE_LANES:
+    case IFN_MASK_LEN_LOAD_LANES:
+    case IFN_MASK_LEN_STORE_LANES:
     case IFN_LEN_LOAD:
     case IFN_LEN_STORE:
     case IFN_MASK_LEN_LOAD:
