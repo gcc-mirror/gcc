@@ -1,3 +1,11 @@
+2023-08-29  Marek Polacek  <polacek@redhat.com>
+
+	* call.cc (convert_like_internal): Show where the conversion function
+	was declared.
+	(maybe_show_nonconverting_candidate): New.
+	* cp-tree.h (maybe_show_nonconverting_candidate): Declare.
+	* typeck.cc (convert_for_assignment): Call it.
+
 2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* cp-tree.h (cp_convert_omp_range_for): Adjust declaration.

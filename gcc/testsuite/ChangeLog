@@ -1,3 +1,109 @@
+2023-08-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* gcc.target/riscv/zicond-xor-01.c: New test.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2023-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99860
+	* c-c++-common/analyzer/overlapping-buffers.c: New test.
+
+2023-08-29  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/diagnostic/explicit.C: New test.
+
+2023-08-29  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zfa-fli-7.c: Change fa0 to fa\[0-9\] to avoid
+	assigning register numbers that are non-zero.
+	* gcc.target/riscv/zfa-fli-8.c: Ditto.
+	* gcc.target/riscv/zfa-fli-5.c: New test.
+
+2023-08-29  Edwin Lu  <ewlu@rivosinc.com>
+	    Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/attribute-1.c: Check for
+	__riscv_unaligned_slow or __riscv_unaligned_fast
+	* gcc.target/riscv/attribute-4.c: Check for
+	__riscv_unaligned_avoid
+	* gcc.target/riscv/attribute-5.c: Check for
+	__riscv_unaligned_slow or __riscv_unaligned_fast
+	* gcc.target/riscv/predef-align-1.c: New test.
+	* gcc.target/riscv/predef-align-2.c: New test.
+	* gcc.target/riscv/predef-align-3.c: New test.
+	* gcc.target/riscv/predef-align-4.c: New test.
+	* gcc.target/riscv/predef-align-5.c: New test.
+	* gcc.target/riscv/predef-align-6.c: New test.
+
+2023-08-29  Guillaume Gomez  <guillaume1.gomez@gmail.com>
+
+	* jit.dg/test-restrict.c: Add test for __restrict__ attribute.
+	* jit.dg/all-non-failing-tests.h: Add test-restrict.c to the list.
+
+2023-08-29  Carl Love  <cel@us.ibm.com>
+
+	PR target/93448
+	* gcc.target/powerpc/pr93448.c: New test case.
+
+2023-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105899
+	* c-c++-common/analyzer/pr99193-2.c: Add
+	-Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/strdup-1.c: Include "analyzer-decls.h".
+	(test_concrete_strlen): New.
+	(test_symbolic_strlen): New.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-31.c: New test for a stub unprivileged
+	extension 'Zcb' with some implications.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-30.c: New test for a stub
+	vendor extension 'XVentanaCondOps'.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/predef-29.c: New test for a stub privileged
+	extension 'Smstateen' with some implications.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/pr102957-2.c: New test case using the 'Zk'
+	extension to continue testing whether we can use valid two-letter
+	extensions.
+
+2023-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	PR middle-end/111209
+	* gcc.target/i386/pr79173-12.c: New test.
+
+2023-08-29  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111147
+	* gcc.dg/tree-ssa/cmpbit-4.c: New test.
+
+2023-08-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/no-scevccp-outer-12.c: Add riscv xfail.
+
+2023-08-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vlmax_switch_vtype-16.c: Fix ASM check.
+
+2023-08-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110943
+	* gcc.target/riscv/rvv/base/zvfhmin-intrinsic.c: Adjust.
+	* gcc.target/riscv/rvv/base/pr110943.c: New test.
+
+2023-08-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend.c: New test.
+
 2023-08-28  Tsukasa OI  <research_trasio@irq.a4lg.com>
 
 	* gcc.target/riscv/builtin_pause.c: Removed.

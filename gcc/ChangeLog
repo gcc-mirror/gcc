@@ -1,3 +1,138 @@
+2023-08-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/riscv/zicond.md: New splitters to rewrite single bit
+	sign extension as the condition to a czero in the desired form.
+
+2023-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99860
+	* doc/invoke.texi: Add -Wanalyzer-overlapping-buffers.
+
+2023-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99860
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/ranges.o.
+
+2023-08-29  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_float_const_rtx_index_for_fli):
+	zvfh can generate zfa extended instruction fli.h, just like zfh.
+
+2023-08-29  Edwin Lu  <ewlu@rivosinc.com>
+	    Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Generate
+	__riscv_unaligned_avoid with value 1 or
+	__riscv_unaligned_slow with value 1 or
+	__riscv_unaligned_fast with value 1
+	* config/riscv/riscv.cc (riscv_option_override): Define
+	riscv_user_wants_strict_align. Set
+	riscv_user_wants_strict_align to TARGET_STRICT_ALIGN
+	* config/riscv/riscv.h: Declare riscv_user_wants_strict_align
+
+2023-08-29  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/autovec-vls.md: Update types
+	* config/riscv/riscv.md: Add vector placeholder type
+	* config/riscv/vector.md: Update types
+
+2023-08-29  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/dfp.md (UNSPEC_DQUAN): New unspec.
+	(dfp_dqua_<mode>, dfp_dquai_<mode>): New define_insn.
+	* config/rs6000/rs6000-builtins.def (__builtin_dfp_dqua,
+	__builtin_dfp_dquai, __builtin_dfp_dquaq, __builtin_dfp_dquaqi):
+	New buit-in definitions.
+	* config/rs6000/rs6000-overload.def (__builtin_dfp_quantize): New
+	overloaded definition.
+	* doc/extend.texi: Add documentation for __builtin_dfp_quantize.
+
+2023-08-29  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_legitimize_poly_move): New declaration.
+	(riscv_legitimize_const_move): Handle ref plus const poly.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_implied_info): Add implications from unprivileged extensions.
+	(riscv_ext_version_table): Add stub support for all unprivileged
+	extensions supported by Binutils as well as 'Zce', 'Zcmp', 'Zcmt'.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Add stub support for all vendor extensions supported by Binutils.
+
+2023-08-29  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_implied_info): Add implications from privileged extensions.
+	(riscv_ext_version_table): Add stub support for all privileged
+	extensions supported by Binutils.
+
+2023-08-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec.md: Adjust
+	* config/riscv/riscv-protos.h (RVV_VUNDEF): Clean.
+	(get_vlmax_rtx): Exported.
+	* config/riscv/riscv-v.cc (emit_nonvlmax_fp_ternary_tu_insn): Deleted.
+	(emit_vlmax_masked_gather_mu_insn): Adjust.
+	(get_vlmax_rtx): New func.
+	(expand_load_store): Adjust.
+	(expand_cond_len_unop): Call expand_cond_len_op.
+	(expand_cond_len_op): New subroutine.
+	(expand_cond_len_binop): Call expand_cond_len_op.
+	(expand_cond_len_ternop): Call expand_cond_len_op.
+	(expand_lanes_load_store): Adjust.
+
+2023-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79173
+	PR middle-end/111209
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Match also
+	just 2 limb uaddc/usubc with 0 carry-in on lower limb and ignored
+	carry-out on higher limb.  Don't match it though if it could be
+	matched later on 4 argument addition/subtraction.
+
+2023-08-29  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111147
+	* match.pd (`(x | y) & (~x ^ y)`) Use bitwise_inverted_equal_p
+	instead of matching bit_not.
+
+2023-08-29  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins.cc (type_suffixes): Add missing
+	initializer.
+
+2023-08-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (vector_insn_info::get_avl_or_vl_reg): New function.
+	(pass_vsetvl::compute_local_properties): Fix bug.
+	(pass_vsetvl::commit_vsetvls): Ditto.
+	* config/riscv/riscv-vsetvl.h: New function.
+
+2023-08-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/110943
+	* config/riscv/predicates.md (vector_const_int_or_double_0_operand):
+	New predicate.
+	* config/riscv/riscv-vector-builtins.cc (function_expander::function_expander):
+	force_reg mem target operand.
+	* config/riscv/vector.md (@pred_mov<mode>): Wrapper.
+	(*pred_mov<mode>): Remove imm -> reg pattern.
+	(*pred_broadcast<mode>_imm): Add imm -> reg pattern.
+
+2023-08-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* common/config/loongarch/loongarch-common.cc:
+	Enable '-free' on O2 and above.
+	* doc/invoke.texi: Modify the description information
+	of the '-free' compilation option and add the LoongArch
+	description.
+
 2023-08-28  Tsukasa OI  <research_trasio@irq.a4lg.com>
 
 	* doc/extend.texi: Fix the description of __builtin_riscv_pause.
