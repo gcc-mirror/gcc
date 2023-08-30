@@ -22,6 +22,7 @@
 #define RUST_DIAGNOSTICS_H
 
 #include "rust-linemap.h"
+#include "util/optional.h"
 
 // This macro is used to specify the position of format string & it's
 // arguments within the function's paramter list.

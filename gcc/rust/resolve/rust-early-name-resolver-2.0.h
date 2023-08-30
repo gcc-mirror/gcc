@@ -28,8 +28,6 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-using ResolveError = std::function<void ()>;
-
 class Early : public DefaultResolver
 {
   using DefaultResolver::visit;
@@ -39,7 +37,7 @@ public:
 
   void go (AST::Crate &crate);
 
-  const std::vector<ResolveError> &get_macro_resolve_errors () const
+  const std::vector<Error> &get_macro_resolve_errors () const
   {
     return macro_resolve_errors;
   }
@@ -83,9 +81,9 @@ private:
   };
 
   TextualScope textual_scope;
-  std::vector<ResolveError> macro_resolve_errors;
+  std::vector<Error> macro_resolve_errors;
 
-  void collect_error (ResolveError e) { macro_resolve_errors.push_back (e); }
+  void collect_error (Error e) { macro_resolve_errors.push_back (e); }
 };
 
 } // namespace Resolver2_0
