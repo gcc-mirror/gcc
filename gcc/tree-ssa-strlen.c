@@ -3231,7 +3231,8 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
       && !integer_zerop (len))
     {
       maybe_warn_overflow (stmt, len, ptr_qry, olddsi, false, true);
-      adjust_last_stmt (olddsi, stmt, false, ptr_qry);
+      if (tree_fits_uhwi_p (len))
+	adjust_last_stmt (olddsi, stmt, false, ptr_qry);
     }
 
   int idx = get_stridx (src);
