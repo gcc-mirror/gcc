@@ -3828,6 +3828,7 @@ bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 /* interface.cc -- FIXME: some of these should be in symbol.cc */
 void gfc_free_interface (gfc_interface *);
+void gfc_drop_interface_elements_before (gfc_interface **, gfc_interface *);
 bool gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 bool gfc_compare_types (gfc_typespec *, gfc_typespec *);
 bool gfc_check_dummy_characteristics (gfc_symbol *, gfc_symbol *,
@@ -3847,7 +3848,7 @@ void gfc_free_formal_arglist (gfc_formal_arglist *);
 bool gfc_extend_assign (gfc_code *, gfc_namespace *);
 bool gfc_check_new_interface (gfc_interface *, gfc_symbol *, locus);
 bool gfc_add_interface (gfc_symbol *);
-gfc_interface *gfc_current_interface_head (void);
+gfc_interface *&gfc_current_interface_head (void);
 void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
 bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
