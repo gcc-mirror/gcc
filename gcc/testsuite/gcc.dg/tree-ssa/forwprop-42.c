@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-cddce1" } */
 
-typedef unsigned long v2di __attribute__((vector_size(16)));
+typedef __UINT64_TYPE__ v2di __attribute__((vector_size(16)));
 
 v2di g;
 void test (v2di *v)
