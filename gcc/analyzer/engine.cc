@@ -115,10 +115,12 @@ impl_region_model_context (program_state *state,
 }
 
 bool
-impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
+impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d,
+				 const stmt_finder *custom_finder)
 {
   LOG_FUNC (get_logger ());
-  if (m_stmt == NULL && m_stmt_finder == NULL)
+  auto curr_stmt_finder = custom_finder ? custom_finder : m_stmt_finder;
+  if (m_stmt == NULL && curr_stmt_finder == NULL)
     {
       if (get_logger ())
 	get_logger ()->log ("rejecting diagnostic: no stmt");
@@ -129,7 +131,7 @@ impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
       bool terminate_path = d->terminate_path_p ();
       if (m_eg->get_diagnostic_manager ().add_diagnostic
 	  (m_enode_for_diag, m_enode_for_diag->get_supernode (),
-	   m_stmt, m_stmt_finder, std::move (d)))
+	   m_stmt, curr_stmt_finder, std::move (d)))
 	{
 	  if (m_path_ctxt
 	      && terminate_path
