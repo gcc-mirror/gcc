@@ -655,7 +655,7 @@ gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info,
     new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, vl);
   else
     {
-      if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
+      if (vsetvl_insn_p (rinsn))
 	new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, get_vl (rinsn));
       else if (INSN_CODE (rinsn) == CODE_FOR_vsetvl_vtype_change_only)
 	new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, new_info, NULL_RTX);
