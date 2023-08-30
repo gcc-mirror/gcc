@@ -4687,12 +4687,13 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		    }
 		  else if ((BYTES_BIG_ENDIAN ? start_gap : end_gap) > 0)
 		    {
-		      const unsigned HOST_WIDE_INT imask
-			= (HOST_WIDE_INT_1U << info->bitsize) - 1;
+		      wide_int imask
+			= wi::mask (info->bitsize, false,
+				    TYPE_PRECISION (TREE_TYPE (tem)));
 		      tem = gimple_build (&seq, loc,
 					  BIT_AND_EXPR, TREE_TYPE (tem), tem,
-					  build_int_cst (TREE_TYPE (tem),
-							 imask));
+					  wide_int_to_tree (TREE_TYPE (tem),
+							    imask));
 		    }
 		  const HOST_WIDE_INT shift
 		    = (BYTES_BIG_ENDIAN ? end_gap : start_gap);
