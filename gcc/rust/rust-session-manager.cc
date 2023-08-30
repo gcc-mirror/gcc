@@ -874,7 +874,7 @@ Session::expansion (AST::Crate &crate)
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
   MacroExpander expander (crate, cfg, *this);
-  std::vector<Resolver2_0::ResolveError> macro_errors;
+  std::vector<Error> macro_errors;
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
@@ -903,7 +903,7 @@ Session::expansion (AST::Crate &crate)
 
   // Fixed point reached: Emit unresolved macros error
   for (auto &error : macro_errors)
-    error ();
+    error.emit ();
 
   if (iterations == cfg.recursion_limit)
     {
