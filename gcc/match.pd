@@ -8993,10 +8993,10 @@ and,
 
 
 /* Merge
-   c = VEC_PERM_EXPR <a, b, VCST0>;
-   d = VEC_PERM_EXPR <c, c, VCST1>;
+     c = VEC_PERM_EXPR <a, b, VCST0>;
+     d = VEC_PERM_EXPR <c, c, VCST1>;
    to
-   d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
+     d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
 
 (simplify
  (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @0 VECTOR_CST@4)
@@ -9037,6 +9037,141 @@ and,
      }
      (if (op0)
       (vec_perm @1 @2 { op0; })))))))
+
+/* Merge
+     c = VEC_PERM_EXPR <a, b, VCST0>;
+     d = VEC_PERM_EXPR <x, c, VCST1>;
+   to
+     d = VEC_PERM_EXPR <x, {a,b}, NEW_VCST>;
+   when all elements from a or b are replaced by the later
+   permutation.  */
+
+(simplify
+ (vec_perm @5 (vec_perm@0 @1 @2 VECTOR_CST@3) VECTOR_CST@4)
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+  (with
+   {
+     machine_mode result_mode = TYPE_MODE (type);
+     machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+     vec_perm_builder builder0;
+     vec_perm_builder builder1;
+     vec_perm_builder builder2 (nelts, nelts, 2);
+   }
+   (if (tree_to_vec_perm_builder (&builder0, @3)
+	&& tree_to_vec_perm_builder (&builder1, @4))
+    (with
+     {
+       vec_perm_indices sel0 (builder0, 2, nelts);
+       vec_perm_indices sel1 (builder1, 2, nelts);
+       bool use_1 = false, use_2 = false;
+
+       for (int i = 0; i < nelts; i++)
+         {
+	   if (known_lt ((poly_uint64)sel1[i], sel1.nelts_per_input ()))
+	     builder2.quick_push (sel1[i]);
+	   else
+	     {
+	       poly_uint64 j = sel0[(sel1[i] - sel1.nelts_per_input ())
+				    .to_constant ()];
+	       if (known_lt (j, sel0.nelts_per_input ()))
+	         use_1 = true;
+	       else
+	         {
+		   use_2 = true;
+		   j -= sel0.nelts_per_input ();
+		 }
+	       builder2.quick_push (j + sel1.nelts_per_input ());
+	     }
+	 }
+     }
+     (if (use_1 ^ use_2)
+      (with
+       {
+	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 tree op0 = NULL_TREE;
+	 /* If the new VEC_PERM_EXPR can't be handled but both
+	    original VEC_PERM_EXPRs can, punt.
+	    If one or both of the original VEC_PERM_EXPRs can't be
+	    handled and the new one can't be either, don't increase
+	    number of VEC_PERM_EXPRs that can't be handled.  */
+	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+	     || (single_use (@0)
+		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
+		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
+		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
+	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+       }
+       (if (op0)
+	(switch
+	 (if (use_1)
+	  (vec_perm @5 @1 { op0; }))
+	 (if (use_2)
+	  (vec_perm @5 @2 { op0; })))))))))))
+
+/* And the case with swapped outer permute sources.  */
+
+(simplify
+ (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @5 VECTOR_CST@4)
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+  (with
+   {
+     machine_mode result_mode = TYPE_MODE (type);
+     machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+     vec_perm_builder builder0;
+     vec_perm_builder builder1;
+     vec_perm_builder builder2 (nelts, nelts, 2);
+   }
+   (if (tree_to_vec_perm_builder (&builder0, @3)
+	&& tree_to_vec_perm_builder (&builder1, @4))
+    (with
+     {
+       vec_perm_indices sel0 (builder0, 2, nelts);
+       vec_perm_indices sel1 (builder1, 2, nelts);
+       bool use_1 = false, use_2 = false;
+
+       for (int i = 0; i < nelts; i++)
+         {
+	   if (known_ge ((poly_uint64)sel1[i], sel1.nelts_per_input ()))
+	     builder2.quick_push (sel1[i]);
+	   else
+	     {
+	       poly_uint64 j = sel0[sel1[i].to_constant ()];
+	       if (known_lt (j, sel0.nelts_per_input ()))
+	         use_1 = true;
+	       else
+	         {
+		   use_2 = true;
+		   j -= sel0.nelts_per_input ();
+		 }
+	       builder2.quick_push (j);
+	     }
+	 }
+     }
+     (if (use_1 ^ use_2)
+      (with
+       {
+	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 tree op0 = NULL_TREE;
+	 /* If the new VEC_PERM_EXPR can't be handled but both
+	    original VEC_PERM_EXPRs can, punt.
+	    If one or both of the original VEC_PERM_EXPRs can't be
+	    handled and the new one can't be either, don't increase
+	    number of VEC_PERM_EXPRs that can't be handled.  */
+	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+	     || (single_use (@0)
+		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
+		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
+		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
+	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+       }
+       (if (op0)
+	(switch
+	 (if (use_1)
+	  (vec_perm @1 @5 { op0; }))
+	 (if (use_2)
+	  (vec_perm @2 @5 { op0; })))))))))))
 
 
 /* Match count trailing zeroes for simplify_count_trailing_zeroes in fwprop.
