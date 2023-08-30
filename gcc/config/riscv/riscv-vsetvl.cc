@@ -2300,18 +2300,26 @@ vector_insn_info::get_avl_or_vl_reg (void) const
   if (!vlmax_avl_p (get_avl ()))
     return get_avl ();
 
-  if (has_vl_op (get_insn ()->rtl ()) || vsetvl_insn_p (get_insn ()->rtl ()))
-    return ::get_vl (get_insn ()->rtl ());
-
   if (get_avl_source ())
     return get_avl_reg_rtx ();
+
+  rtx_insn *rinsn = get_insn ()->rtl ();
+  if (has_vl_op (rinsn) || vsetvl_insn_p (rinsn))
+    {
+      rtx vl = ::get_vl (rinsn);
+      /* For VLMAX, we should make sure we get the
+	 REG to emit 'vsetvl VL,zero' since the 'VL'
+	 should be the REG according to RVV ISA.  */
+      if (REG_P (vl))
+	return vl;
+    }
 
   /* A DIRTY (polluted EMPTY) block if:
        - get_insn is scalar move (no AVL or VL operand).
        - get_avl_source is null (no def in the current DIRTY block).
      Then we trace the previous insn which must be the insn
      already inserted in Phase 2 to get the VL operand for VLMAX.  */
-  rtx_insn *prev_rinsn = PREV_INSN (get_insn ()->rtl ());
+  rtx_insn *prev_rinsn = PREV_INSN (rinsn);
   gcc_assert (prev_rinsn && vsetvl_insn_p (prev_rinsn));
   return ::get_vl (prev_rinsn);
 }
