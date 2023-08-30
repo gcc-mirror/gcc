@@ -2750,16 +2750,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			       & (bitpos / BITS_PER_UNIT))); }))))
 
 (match min_value
- INTEGER_CST
- (if ((INTEGRAL_TYPE_P (type)
-       || POINTER_TYPE_P(type))
-      && wi::eq_p (wi::to_wide (t), wi::min_value (type)))))
+ uniform_integer_cst_p
+ (with {
+   tree int_cst = uniform_integer_cst_p (t);
+   tree inner_type = TREE_TYPE (int_cst);
+  }
+  (if ((INTEGRAL_TYPE_P (inner_type)
+        || POINTER_TYPE_P (inner_type))
+       && wi::eq_p (wi::to_wide (int_cst), wi::min_value (inner_type))))))
 
 (match max_value
- INTEGER_CST
- (if ((INTEGRAL_TYPE_P (type)
-       || POINTER_TYPE_P(type))
-      && wi::eq_p (wi::to_wide (t), wi::max_value (type)))))
+ uniform_integer_cst_p
+ (with {
+   tree int_cst = uniform_integer_cst_p (t);
+   tree itype = TREE_TYPE (int_cst);
+  }
+ (if ((INTEGRAL_TYPE_P (itype)
+       || POINTER_TYPE_P (itype))
+      && wi::eq_p (wi::to_wide (int_cst), wi::max_value (itype))))))
 
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
