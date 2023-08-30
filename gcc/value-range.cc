@@ -314,6 +314,18 @@ add_vrange (const vrange &v, inchash::hash &hstate,
 } //namespace inchash
 
 bool
+irange::nonnegative_p () const
+{
+  return wi::ge_p (lower_bound (), 0, TYPE_SIGN (type ()));
+}
+
+bool
+irange::nonpositive_p () const
+{
+  return wi::le_p (upper_bound (), 0, TYPE_SIGN (type ()));
+}
+
+bool
 irange::supports_type_p (const_tree type) const
 {
   return supports_p (type);

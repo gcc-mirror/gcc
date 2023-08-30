@@ -377,6 +377,22 @@ range_op_handler::op1_op2_relation (const vrange &lhs,
     }
 }
 
+bool
+range_op_handler::overflow_free_p (const vrange &lh,
+				   const vrange &rh,
+				   relation_trio rel) const
+{
+  gcc_checking_assert (m_operator);
+  switch (dispatch_kind (lh, lh, rh))
+    {
+      case RO_III:
+	return m_operator->overflow_free_p(as_a <irange> (lh),
+					   as_a <irange> (rh),
+					   rel);
+      default:
+	return false;
+    }
+}
 
 // Update the known bitmasks in R when applying the operation CODE to
 // LH and RH.
@@ -702,6 +718,13 @@ range_operator::op1_op2_relation_effect (irange &lhs_range ATTRIBUTE_UNUSED,
 				       const irange &op1_range ATTRIBUTE_UNUSED,
 				       const irange &op2_range ATTRIBUTE_UNUSED,
 				       relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return false;
+}
+
+bool
+range_operator::overflow_free_p (const irange &, const irange &,
+				 relation_trio) const
 {
   return false;
 }
@@ -4362,6 +4385,107 @@ range_op_table::initialize_integral_ops ()
   set (OP_WIDEN_PLUS_SIGNED, op_widen_plus_signed);
   set (OP_WIDEN_PLUS_UNSIGNED, op_widen_plus_unsigned);
 
+}
+
+bool
+operator_plus::overflow_free_p (const irange &lh, const irange &rh,
+				relation_trio) const
+{
+  if (lh.undefined_p () || rh.undefined_p ())
+    return false;
+
+  tree type = lh.type ();
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    return true;
+
+  wi::overflow_type ovf;
+  signop sgn = TYPE_SIGN (type);
+  wide_int wmax0 = lh.upper_bound ();
+  wide_int wmax1 = rh.upper_bound ();
+  wi::add (wmax0, wmax1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  if (TYPE_UNSIGNED (type))
+    return true;
+
+  wide_int wmin0 = lh.lower_bound ();
+  wide_int wmin1 = rh.lower_bound ();
+  wi::add (wmin0, wmin1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  return true;
+}
+
+bool
+operator_minus::overflow_free_p (const irange &lh, const irange &rh,
+				 relation_trio) const
+{
+  if (lh.undefined_p () || rh.undefined_p ())
+    return false;
+
+  tree type = lh.type ();
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    return true;
+
+  wi::overflow_type ovf;
+  signop sgn = TYPE_SIGN (type);
+  wide_int wmin0 = lh.lower_bound ();
+  wide_int wmax1 = rh.upper_bound ();
+  wi::sub (wmin0, wmax1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  if (TYPE_UNSIGNED (type))
+    return true;
+
+  wide_int wmax0 = lh.upper_bound ();
+  wide_int wmin1 = rh.lower_bound ();
+  wi::sub (wmax0, wmin1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  return true;
+}
+
+bool
+operator_mult::overflow_free_p (const irange &lh, const irange &rh,
+				relation_trio) const
+{
+  if (lh.undefined_p () || rh.undefined_p ())
+    return false;
+
+  tree type = lh.type ();
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    return true;
+
+  wi::overflow_type ovf;
+  signop sgn = TYPE_SIGN (type);
+  wide_int wmax0 = lh.upper_bound ();
+  wide_int wmax1 = rh.upper_bound ();
+  wi::mul (wmax0, wmax1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  if (TYPE_UNSIGNED (type))
+    return true;
+
+  wide_int wmin0 = lh.lower_bound ();
+  wide_int wmin1 = rh.lower_bound ();
+  wi::mul (wmin0, wmin1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  wi::mul (wmin0, wmax1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  wi::mul (wmax0, wmin1, sgn, &ovf);
+  if (ovf != wi::OVF_NONE)
+    return false;
+
+  return true;
 }
 
 #if CHECKING_P
