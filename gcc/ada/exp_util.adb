@@ -3324,7 +3324,13 @@ package body Exp_Util is
                   --  if it has invariants of its own or inherits class-wide
                   --  invariants from parent or interface types.
 
-                  pragma Assert (Present (Proc_Id));
+                  --  However, given that the invariant procedure is built by
+                  --  the expander, it is not available compiling generic units
+                  --  or when the sources have errors, since expansion is then
+                  --  disabled.
+
+                  pragma Assert (Present (Proc_Id)
+                    or else not Expander_Active);
 
                   --  Generate:
                   --    <Comp_Typ>Invariant (T (_object).<Comp_Id>);
@@ -3333,7 +3339,9 @@ package body Exp_Util is
                   --  assertions are disabled or Assertion_Policy Ignore is in
                   --  effect.
 
-                  if not Has_Null_Body (Proc_Id) then
+                  if Present (Proc_Id)
+                    and then not Has_Null_Body (Proc_Id)
+                  then
                      Append_New_To (Comp_Checks,
                        Make_Procedure_Call_Statement (Loc,
                          Name                   =>
