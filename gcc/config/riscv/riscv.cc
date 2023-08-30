@@ -8581,8 +8581,8 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	    }
 
 	  rtx ops[] = {target, CONST0_RTX (mode)};
-	  riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode),
-					 riscv_vector::RVV_UNOP, ops, vl);
+	  riscv_vector::emit_vlmax_insn_lra (code_for_pred_mov (mode),
+					      riscv_vector::UNARY_OP, ops, vl);
 
 	  SET_HARD_REG_BIT (zeroed_hardregs, regno);
 	}

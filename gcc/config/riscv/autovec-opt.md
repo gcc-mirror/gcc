@@ -45,7 +45,7 @@
     insn_code icode = code_for_pred_vf2 (<CODE>, <MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ops[] = {tmp, operands[4]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops);
 
     emit_insn (gen_pred (MULT, <MODE>mode, operands[0], operands[1], operands[2],
 			 operands[3], tmp, operands[5], operands[6],
@@ -138,7 +138,7 @@
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_not (<CODE>, <MODE>mode);
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_MASK_OP, operands);
     DONE;
   }
   [(set_attr "type" "vmalu")
@@ -165,7 +165,7 @@
   [(const_int 0)]
   {
     insn_code icode = code_for_pred_n (<CODE>, <MODE>mode);
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_MASK_OP, operands);
     DONE;
   }
   [(set_attr "type" "vmalu")
@@ -202,8 +202,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_widen_mul_plus (<CODE>, <MODE>mode),
-					   riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_plus (<CODE>, <MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP, operands);
     DONE;
   }
   [(set_attr "type" "viwmuladd")
@@ -226,7 +226,7 @@
     insn_code icode = code_for_pred_vf2 (<CODE>, <MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ext_ops[] = {tmp, operands[2]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
     rtx dst = expand_ternary_op (<MODE>mode, fma_optab, tmp, operands[3],
 				 operands[1], operands[0], 0);
@@ -301,8 +301,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_widen_mul_plussu (<MODE>mode),
-					   riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_plussu (<MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP, operands);
     DONE;
   }
   [(set_attr "type" "viwmuladd")
@@ -324,8 +324,8 @@
   [(const_int 0)]
   {
     rtx ops[] = {operands[0], operands[1], operands[3], operands[2]};
-    riscv_vector::emit_vlmax_ternary_insn (code_for_pred_widen_mul_plussu (<MODE>mode),
-					   riscv_vector::RVV_WIDEN_TERNOP, ops);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_plussu (<MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP, ops);
     DONE;
   }
   [(set_attr "type" "viwmuladd")
@@ -352,7 +352,7 @@
   [(const_int 0)]
 {
   insn_code icode = code_for_pred_narrow (<any_shiftrt:CODE>, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
 }
  [(set_attr "type" "vnshift")
@@ -371,7 +371,7 @@
 {
   operands[2] = gen_lowpart (Pmode, operands[2]);
   insn_code icode = code_for_pred_narrow_scalar (<any_shiftrt:CODE>, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_BINOP, operands);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
   DONE;
 }
  [(set_attr "type" "vnshift")
@@ -435,7 +435,7 @@
     insn_code icode = code_for_pred_extend (<MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ops[] = {tmp, operands[4]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops);
 
     emit_insn (gen_pred (MULT, <MODE>mode, operands[0], operands[1], operands[2],
                         operands[3], tmp, operands[5], operands[6],
@@ -470,8 +470,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_widen_mul (PLUS, <MODE>mode),
-					      riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul (PLUS, <MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, operands);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
@@ -493,7 +493,7 @@
     insn_code icode = code_for_pred_extend (<MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ext_ops[] = {tmp, operands[2]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
     rtx dst = expand_ternary_op (<MODE>mode, fma_optab, tmp, operands[3],
 				 operands[1], operands[0], 0);
@@ -529,8 +529,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_widen_mul_neg (PLUS, <MODE>mode),
-					      riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_neg (PLUS, <MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, operands);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
@@ -553,7 +553,7 @@
     insn_code icode = code_for_pred_extend (<MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ext_ops[] = {tmp, operands[2]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
     rtx dst = expand_ternary_op (<MODE>mode, fnma_optab, tmp, operands[3],
 				 operands[1], operands[0], 0);
@@ -589,8 +589,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_widen_mul (MINUS, <MODE>mode),
-					      riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul (MINUS, <MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, operands);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
@@ -613,7 +613,7 @@
     insn_code icode = code_for_pred_extend (<MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ext_ops[] = {tmp, operands[2]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
     rtx dst = expand_ternary_op (<MODE>mode, fms_optab, tmp, operands[3],
 				 operands[1], operands[0], 0);
@@ -650,8 +650,8 @@
   "&& 1"
   [(const_int 0)]
   {
-    riscv_vector::emit_vlmax_fp_ternary_insn (code_for_pred_widen_mul_neg (MINUS, <MODE>mode),
-					      riscv_vector::RVV_WIDEN_TERNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_widen_mul_neg (MINUS, <MODE>mode),
+				    riscv_vector::WIDEN_TERNARY_OP_FRM_DYN, operands);
     DONE;
   }
   [(set_attr "type" "vfwmuladd")
@@ -675,7 +675,7 @@
     insn_code icode = code_for_pred_extend (<MODE>mode);
     rtx tmp = gen_reg_rtx (<MODE>mode);
     rtx ext_ops[] = {tmp, operands[2]};
-    riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ext_ops);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ext_ops);
 
     rtx dst = expand_ternary_op (<MODE>mode, fnms_optab, tmp, operands[3],
 				 operands[1], operands[0], 0);
@@ -720,6 +720,6 @@
   [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred_ncopysign (<MODE>mode),
-                                 riscv_vector::RVV_BINOP, operands);
+                                  riscv_vector::BINARY_OP, operands);
   DONE;
 })

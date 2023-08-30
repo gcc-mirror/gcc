@@ -184,29 +184,166 @@ namespace riscv_vector {
   gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
 		  UNSPEC_VUNDEF)
 
-/* The value means the number of operands for insn_expander.  */
-enum insn_type
+/* These flags describe how to pass the operands to a rvv insn pattern.
+   e.g.:
+     If a insn has this flags:
+       HAS_DEST_P | HAS_MASK_P | USE_VUNDEF_MERGE_P
+	 | TU_POLICY_P | BINARY_OP_P | FRM_DYN_P
+     that means:
+       operands[0] is the dest operand
+       operands[1] is the mask operand
+       operands[2] is the merge operand
+       operands[3] and operands[4] is the two operand to do the operation.
+       operands[5] is the vl operand
+       operands[6] is the tail policy operand
+       operands[7] is the mask policy operands
+       operands[8] is the rounding mode operands
+
+     Then you can call `emit_vlmax_insn (flags, icode, ops)` to emit a insn.
+     and ops[0] is the dest operand (operands[0]), ops[1] is the mask
+     operand (operands[1]), ops[2] and ops[3] is the two
+     operands (operands[3], operands[4]) to do the operation. Other operands
+     will be created by emit_vlmax_insn according to the flags information.
+*/
+enum insn_flags : unsigned int
 {
-  RVV_MISC_OP = 1,
-  RVV_UNOP = 2,
-  RVV_UNOP_MASK = RVV_UNOP + 2,
-  RVV_BINOP = 3,
-  RVV_BINOP_MASK = RVV_BINOP + 2,
-  RVV_MERGE_OP = 4,
-  RVV_CMP_OP = 4,
-  RVV_CMP_MU_OP = RVV_CMP_OP + 2, /* +2 means mask and maskoff operand.  */
-  RVV_TERNOP = 5,
-  RVV_TERNOP_MASK = RVV_TERNOP + 1,
-  RVV_WIDEN_TERNOP = 4,
-  RVV_SCALAR_MOV_OP = 4, /* +1 for VUNDEF according to vector.md.  */
-  RVV_SLIDE_OP = 4,      /* Dest, VUNDEF, source and offset.  */
-  RVV_COMPRESS_OP = 4,
-  RVV_GATHER_M_OP = 5,
-  RVV_SCATTER_M_OP = 4,
-  RVV_REDUCTION_OP = 3,
-  RVV_REDUCTION_TU_OP = RVV_REDUCTION_OP + 2,
-  RVV_CPOP = 2,
+  /* flags for dest, mask, merge operands.  */
+  /* Means INSN has dest operand. False for STORE insn.  */
+  HAS_DEST_P = 1 << 0,
+  /* Means INSN has mask operand.  */
+  HAS_MASK_P = 1 << 1,
+  /* Means using ALL_TRUES for mask operand.  */
+  USE_ALL_TRUES_MASK_P = 1 << 2,
+  /* Means using ONE_TRUE for mask operand.  */
+  USE_ONE_TRUE_MASK_P = 1 << 3,
+  /* Means INSN has merge operand.  */
+  HAS_MERGE_P = 1 << 4,
+  /* Means using VUNDEF for merge operand.  */
+  USE_VUNDEF_MERGE_P = 1 << 5,
+
+  /* flags for tail policy and mask plicy operands.  */
+  /* Means the tail policy is TAIL_UNDISTURBED.  */
+  TU_POLICY_P = 1 << 6,
+  /* Means the tail policy is default (return by get_prefer_tail_policy).  */
+  TDEFAULT_POLICY_P = 1 << 7,
+  /* Means the mask policy is MASK_UNDISTURBED.  */
+  MU_POLICY_P = 1 << 8,
+  /* Means the mask policy is default (return by get_prefer_mask_policy).  */
+  MDEFAULT_POLICY_P = 1 << 9,
+
+  /* flags for the number operands to do the operation.  */
+  /* Means INSN need zero operand to do the operation. e.g. vid.v */
+  NULLARY_OP_P = 1 << 10,
+  /* Means INSN need one operand to do the operation.  */
+  UNARY_OP_P = 1 << 11,
+  /* Means INSN need two operands to do the operation.  */
+  BINARY_OP_P = 1 << 12,
+  /* Means INSN need two operands to do the operation.  */
+  TERNARY_OP_P = 1 << 13,
+
+  /* flags for get mask mode from the index number. default from dest operand.  */
+  MASK_MODE_FROM_OP1_P = 1 << 14,
+
+  /* flags for the floating-point rounding mode.  */
+  /* Means INSN has FRM operand and the value is FRM_DYN.  */
+  FRM_DYN_P = 1 << 15,
 };
+
+enum insn_type : unsigned int
+{
+  /* some flags macros.  */
+  /* For non-mask insn with tama.  */
+  __NORMAL_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		| USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P,
+  /* For non-mask insn with ta, without mask policy operand.  */
+  __NORMAL_OP_TA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P,
+  /* For non-mask insn with ta, without mask operand and mask policy operand. */
+  __NORMAL_OP_TA2
+  = HAS_DEST_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P,
+  /* For non-mask insn with ma, without tail policy operand.  */
+  __NORMAL_OP_MA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | MDEFAULT_POLICY_P,
+  /* For mask insn with tama.  */
+  __MASK_OP_TAMA = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P
+		   | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P,
+  /* For mask insn with tamu.  */
+  __MASK_OP_TAMU
+  = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | TDEFAULT_POLICY_P | MU_POLICY_P,
+  /* For mask insn with tuma.  */
+  __MASK_OP_TUMA = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | TU_POLICY_P | MDEFAULT_POLICY_P,
+  /* For mask insn with mu.  */
+  __MASK_OP_MU = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | MU_POLICY_P,
+  /* For mask insn with ta, without mask policy operand.  */
+  __MASK_OP_TA = HAS_DEST_P | HAS_MASK_P | HAS_MERGE_P | USE_VUNDEF_MERGE_P
+		 | TDEFAULT_POLICY_P,
+
+  /* Nullary operator. e.g. vid.v  */
+  NULLARY_OP = __NORMAL_OP | NULLARY_OP_P,
+
+  /* Unary operator.  */
+  UNARY_OP = __NORMAL_OP | UNARY_OP_P,
+  UNARY_OP_TAMA = __MASK_OP_TAMA | UNARY_OP_P,
+  UNARY_OP_TAMU = __MASK_OP_TAMU | UNARY_OP_P,
+  UNARY_OP_FRM_DYN = UNARY_OP | FRM_DYN_P,
+
+  /* Binary operator.  */
+  BINARY_OP = __NORMAL_OP | BINARY_OP_P,
+  BINARY_OP_TAMA = __MASK_OP_TAMA | BINARY_OP_P,
+  BINARY_OP_TAMU = __MASK_OP_TAMU | BINARY_OP_P,
+  BINARY_OP_TUMA = __MASK_OP_TUMA | BINARY_OP_P,
+  BINARY_OP_FRM_DYN = BINARY_OP | FRM_DYN_P,
+
+  /* Ternary operator. Always have real merge operand.  */
+  TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+	       | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P | TERNARY_OP_P,
+  TERNARY_OP_FRM_DYN = TERNARY_OP | FRM_DYN_P,
+
+  /* For vwmacc, no merge operand.  */
+  WIDEN_TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P
+		     | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P | TERNARY_OP_P,
+  WIDEN_TERNARY_OP_FRM_DYN = WIDEN_TERNARY_OP | FRM_DYN_P,
+
+  /* For vmerge, no mask operand, no mask policy operand.  */
+  MERGE_OP = __NORMAL_OP_TA2 | TERNARY_OP_P,
+
+  /* For vm<compare>, no tail policy operand.  */
+  COMPARE_OP = __NORMAL_OP_MA | TERNARY_OP_P,
+  COMPARE_OP_MU = __MASK_OP_MU | TERNARY_OP_P,
+
+  /* For scatter insn: no dest operand, no merge operand, no tail and mask
+     policy operands.  */
+  SCATTER_OP_M = HAS_MASK_P | TERNARY_OP_P,
+
+  /* For vcpop.m, no merge operand, no tail and mask policy operands.  */
+  CPOP_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | UNARY_OP_P
+	    | MASK_MODE_FROM_OP1_P,
+
+  /* For mask instrunctions, no tail and mask policy operands.  */
+  UNARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		  | USE_VUNDEF_MERGE_P | UNARY_OP_P,
+  BINARY_MASK_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | BINARY_OP_P,
+
+  /* For vcompress.vm */
+  COMPRESS_OP = __NORMAL_OP_TA2 | BINARY_OP_P,
+  /* has merge operand but use ta.  */
+  COMPRESS_OP_MERGE
+  = HAS_DEST_P | HAS_MERGE_P | TDEFAULT_POLICY_P | BINARY_OP_P,
+
+  /* For vreduce, no mask policy operand. */
+  REDUCE_OP = __NORMAL_OP_TA | BINARY_OP_P | MASK_MODE_FROM_OP1_P,
+  REDUCE_OP_FRM_DYN = REDUCE_OP | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+  REDUCE_OP_M_FRM_DYN
+  = __MASK_OP_TA | BINARY_OP_P | FRM_DYN_P | MASK_MODE_FROM_OP1_P,
+
+  /* For vmv.s.x/vfmv.s.f.  */
+  SCALAR_MOVE_OP = HAS_DEST_P | HAS_MASK_P | USE_ONE_TRUE_MASK_P | HAS_MERGE_P
+		   | USE_VUNDEF_MERGE_P | TDEFAULT_POLICY_P | MDEFAULT_POLICY_P
+		   | UNARY_OP_P,
+};
+
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -243,19 +380,9 @@ bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx);
 void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_hard_vlmax_vsetvl (machine_mode, rtx);
-void emit_vlmax_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_fp_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_ternary_insn (unsigned, int, rtx *, rtx = 0);
-void emit_vlmax_fp_ternary_insn (unsigned, int, rtx *, rtx = 0);
-void emit_nonvlmax_insn (unsigned, int, rtx *, rtx);
-void emit_vlmax_slide_insn (unsigned, rtx *);
-void emit_nonvlmax_slide_tu_insn (unsigned, rtx *, rtx);
-void emit_vlmax_merge_insn (unsigned, int, rtx *);
-void emit_vlmax_cmp_insn (unsigned, rtx *);
-void emit_vlmax_cmp_mu_insn (unsigned, rtx *);
-void emit_vlmax_masked_mu_insn (unsigned, int, rtx *);
-void emit_scalar_move_insn (unsigned, rtx *, rtx = 0);
-void emit_nonvlmax_integer_move_insn (unsigned, rtx *, rtx);
+void emit_vlmax_insn (unsigned, unsigned, rtx *);
+void emit_nonvlmax_insn (unsigned, unsigned, rtx *, rtx);
+void emit_vlmax_insn_lra (unsigned, unsigned, rtx *, rtx);
 enum vlmul_type get_vlmul (machine_mode);
 rtx get_vlmax_rtx (machine_mode);
 unsigned int get_ratio (machine_mode);

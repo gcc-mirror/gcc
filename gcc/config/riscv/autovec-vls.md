@@ -129,7 +129,7 @@
       emit_move_insn (operands[2], gen_int_mode (GET_MODE_NUNITS (<VLS_AVL_REG:MODE>mode),
 						 Pmode));
       riscv_vector::emit_nonvlmax_insn (code_for_pred_mov (<VLS_AVL_REG:MODE>mode),
-					riscv_vector::RVV_UNOP, operands, operands[2]);
+					 riscv_vector::UNARY_OP, operands, operands[2]);
     }
   DONE;
 }
@@ -158,7 +158,7 @@
     operands[1] = gen_lowpart (mode, operands[1]);
     if (MEM_P (operands[0]) && !register_operand (operands[1], mode))
       operands[1] = force_reg (mode, operands[1]);
-    riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::RVV_UNOP, operands);
+    riscv_vector::emit_vlmax_insn (code_for_pred_mov (mode), riscv_vector::UNARY_OP, operands);
     DONE;
   }
 )
@@ -177,7 +177,7 @@
   [(const_int 0)]
   {
     riscv_vector::emit_vlmax_insn (code_for_pred_broadcast (<MODE>mode),
-                                   riscv_vector::RVV_UNOP, operands);
+                                   riscv_vector::UNARY_OP, operands);
     DONE;
   }
   [(set_attr "type" "vector")]
@@ -202,7 +202,7 @@
   [(const_int 0)]
 {
   riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
-				 riscv_vector::RVV_BINOP, operands);
+				  riscv_vector::BINARY_OP, operands);
   DONE;
 }
 [(set_attr "type" "vector")]
@@ -225,7 +225,7 @@
   [(const_int 0)]
 {
   insn_code icode = code_for_pred (<CODE>, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
 }
 [(set_attr "type" "vector")]
