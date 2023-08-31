@@ -351,11 +351,10 @@ public:
   // be put into a unique section if possible; this is intended to
   // permit the linker to garbage collect the variable if it is not
   // referenced.  LOCATION is where the variable was defined.
-  virtual Bvariable *
-  global_variable (const std::string &name, const std::string &asm_name,
-		   tree btype, bool is_external, bool is_hidden,
-		   bool in_unique_section, location_t location)
-    = 0;
+  Bvariable *global_variable (const std::string &name,
+			      const std::string &asm_name, tree btype,
+			      bool is_external, bool is_hidden,
+			      bool in_unique_section, location_t location);
 
   // A global variable will 1) be initialized to zero, or 2) be
   // initialized to a constant value, or 3) be initialized in the init
@@ -363,7 +362,7 @@ public:
   // global_variable_set_init to set the initial value.  If this is
   // not called, the backend should initialize a global variable to 0.
   // The init function may then assign a value to it.
-  virtual void global_variable_set_init (Bvariable *, tree) = 0;
+  void global_variable_set_init (Bvariable *, tree);
 
   // Create a local variable.  The frontend will create the local
   // variables first, and then create the block which contains them.
@@ -377,23 +376,18 @@ public:
   // the function, as otherwise the variable would be on the heap).
   // LOCATION is where the variable is defined.  For each local variable
   // the frontend will call init_statement to set the initial value.
-  virtual Bvariable *local_variable (tree function, const std::string &name,
-				     tree type, Bvariable *decl_var,
-				     location_t location)
-    = 0;
+  Bvariable *local_variable (tree function, const std::string &name, tree type,
+			     Bvariable *decl_var, location_t location);
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
-  virtual Bvariable *parameter_variable (tree function, const std::string &name,
-					 tree type, location_t location)
-    = 0;
+  Bvariable *parameter_variable (tree function, const std::string &name,
+				 tree type, location_t location);
 
   // Create a static chain parameter.  This is the closure parameter.
-  virtual Bvariable *static_chain_variable (tree function,
-					    const std::string &name, tree type,
-					    location_t location)
-    = 0;
+  Bvariable *static_chain_variable (tree function, const std::string &name,
+				    tree type, location_t location);
 
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are
@@ -406,10 +400,9 @@ public:
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
-  virtual Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
-					 tree init, bool address_is_taken,
-					 location_t location, tree *pstatement)
-    = 0;
+  Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
+				 tree init, bool address_is_taken,
+				 location_t location, tree *pstatement);
 
   // Labels.
 
@@ -496,6 +489,10 @@ protected:
   tree fill_in_fields (tree, const std::vector<typed_identifier> &);
 
   tree fill_in_array (tree, tree, tree);
+
+  tree non_zero_size_type (tree);
+
+  tree convert_tree (tree, tree, location_t);
 };
 
 class Gcc_backend : public Backend
@@ -595,26 +592,6 @@ public:
 
   void block_add_statements (tree, const std::vector<tree> &);
 
-  // Variables.
-
-  Bvariable *global_variable (const std::string &var_name,
-			      const std::string &asm_name, tree type,
-			      bool is_external, bool is_hidden,
-			      bool in_unique_section, location_t location);
-
-  void global_variable_set_init (Bvariable *, tree);
-
-  Bvariable *local_variable (tree, const std::string &, tree, Bvariable *,
-			     location_t);
-
-  Bvariable *parameter_variable (tree, const std::string &, tree, location_t);
-
-  Bvariable *static_chain_variable (tree, const std::string &, tree,
-				    location_t);
-
-  Bvariable *temporary_variable (tree, tree, tree, tree, bool, location_t,
-				 tree *);
-
   // Functions.
 
   tree function (tree fntype, const std::string &name,
@@ -632,11 +609,6 @@ public:
 				 const std::vector<Bvariable *> &);
 
   void write_export_data (const char *bytes, unsigned int size);
-
-private:
-  tree non_zero_size_type (tree);
-
-  tree convert_tree (tree, tree, location_t);
 };
 
 #endif // RUST_BACKEND_H

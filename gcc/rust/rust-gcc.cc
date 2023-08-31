@@ -1951,7 +1951,7 @@ tree rust_non_zero_struct;
 // Return a type corresponding to TYPE with non-zero size.
 
 tree
-Gcc_backend::non_zero_size_type (tree type)
+Backend::non_zero_size_type (tree type)
 {
   if (int_size_in_bytes (type) != 0)
     return type;
@@ -2010,7 +2010,7 @@ Gcc_backend::non_zero_size_type (tree type)
 // representations.  Make sure this does not confuse the middle-end.
 
 tree
-Gcc_backend::convert_tree (tree type_tree, tree expr_tree, location_t location)
+Backend::convert_tree (tree type_tree, tree expr_tree, location_t location)
 {
   if (type_tree == TREE_TYPE (expr_tree))
     return expr_tree;
@@ -2041,10 +2041,10 @@ Gcc_backend::convert_tree (tree type_tree, tree expr_tree, location_t location)
 // Make a global variable.
 
 Bvariable *
-Gcc_backend::global_variable (const std::string &var_name,
-			      const std::string &asm_name, tree type_tree,
-			      bool is_external, bool is_hidden,
-			      bool in_unique_section, location_t location)
+Backend::global_variable (const std::string &var_name,
+			  const std::string &asm_name, tree type_tree,
+			  bool is_external, bool is_hidden,
+			  bool in_unique_section, location_t location)
 {
   if (type_tree == error_mark_node)
     return Bvariable::error_variable ();
@@ -2083,7 +2083,7 @@ Gcc_backend::global_variable (const std::string &var_name,
 // Set the initial value of a global variable.
 
 void
-Gcc_backend::global_variable_set_init (Bvariable *var, tree expr_tree)
+Backend::global_variable_set_init (Bvariable *var, tree expr_tree)
 {
   if (expr_tree == error_mark_node)
     return;
@@ -2107,9 +2107,8 @@ Gcc_backend::global_variable_set_init (Bvariable *var, tree expr_tree)
 // Make a local variable.
 
 Bvariable *
-Gcc_backend::local_variable (tree function, const std::string &name,
-			     tree type_tree, Bvariable *decl_var,
-			     location_t location)
+Backend::local_variable (tree function, const std::string &name, tree type_tree,
+			 Bvariable *decl_var, location_t location)
 {
   if (type_tree == error_mark_node)
     return Bvariable::error_variable ();
@@ -2129,8 +2128,8 @@ Gcc_backend::local_variable (tree function, const std::string &name,
 // Make a function parameter variable.
 
 Bvariable *
-Gcc_backend::parameter_variable (tree function, const std::string &name,
-				 tree type_tree, location_t location)
+Backend::parameter_variable (tree function, const std::string &name,
+			     tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
     return Bvariable::error_variable ();
@@ -2146,8 +2145,8 @@ Gcc_backend::parameter_variable (tree function, const std::string &name,
 // Make a static chain variable.
 
 Bvariable *
-Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
-				    tree type_tree, location_t location)
+Backend::static_chain_variable (tree fndecl, const std::string &name,
+				tree type_tree, location_t location)
 {
   if (type_tree == error_mark_node)
     return Bvariable::error_variable ();
@@ -2178,9 +2177,9 @@ Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
 // Make a temporary variable.
 
 Bvariable *
-Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
-				 tree init_tree, bool is_address_taken,
-				 location_t location, tree *pstatement)
+Backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
+			     tree init_tree, bool is_address_taken,
+			     location_t location, tree *pstatement)
 {
   gcc_assert (fndecl != NULL_TREE);
   if (type_tree == error_mark_node || init_tree == error_mark_node
