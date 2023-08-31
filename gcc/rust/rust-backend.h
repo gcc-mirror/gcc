@@ -184,97 +184,81 @@ public:
   tree boolean_constant_expression (bool val);
 
   // Return an expression for the real part of BCOMPLEX.
-  virtual tree real_part_expression (tree bcomplex, location_t) = 0;
+  tree real_part_expression (tree bcomplex, location_t);
 
   // Return an expression for the imaginary part of BCOMPLEX.
-  virtual tree imag_part_expression (tree bcomplex, location_t) = 0;
+  tree imag_part_expression (tree bcomplex, location_t);
 
   // Return an expression for the complex number (BREAL, BIMAG).
-  virtual tree complex_expression (tree breal, tree bimag, location_t) = 0;
+  tree complex_expression (tree breal, tree bimag, location_t);
 
   // Return an expression that converts EXPR to TYPE.
-  virtual tree convert_expression (tree type, tree expr, location_t) = 0;
+  tree convert_expression (tree type, tree expr, location_t);
 
   // Return an expression for the field at INDEX in BSTRUCT.
-  virtual tree struct_field_expression (tree bstruct, size_t index, location_t)
-    = 0;
+  tree struct_field_expression (tree bstruct, size_t index, location_t);
 
   // Create an expression that executes BSTAT before BEXPR.
-  virtual tree compound_expression (tree bstat, tree bexpr, location_t) = 0;
+  tree compound_expression (tree bstat, tree bexpr, location_t);
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
   // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
-  virtual tree conditional_expression (tree function, tree btype,
-				       tree condition, tree then_expr,
-				       tree else_expr, location_t)
-    = 0;
+  tree conditional_expression (tree function, tree btype, tree condition,
+			       tree then_expr, tree else_expr, location_t);
 
   // Return an expression for the negation operation OP EXPR.
   // Supported values of OP are enumerated in NegationOperator.
-  virtual tree negation_expression (NegationOperator op, tree expr, location_t)
-    = 0;
+  tree negation_expression (NegationOperator op, tree expr, location_t);
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
-  virtual tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-						 tree left, tree right,
-						 location_t loc)
-    = 0;
+  tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+					 tree left, tree right, location_t loc);
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
   // This function adds overflow checking and returns a list of statements to
   // add to the current function context. The `receiver` variable refers to the
   // variable which will contain the result of that operation.
-  virtual tree
-  arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
-					    tree left, tree right,
-					    location_t loc, Bvariable *receiver)
-    = 0;
+  tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
+						 tree left, tree right,
+						 location_t loc,
+						 Bvariable *receiver);
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ComparisonOperator.
-  virtual tree comparison_expression (ComparisonOperator op, tree left,
-				      tree right, location_t loc)
-    = 0;
+  tree comparison_expression (ComparisonOperator op, tree left, tree right,
+			      location_t loc);
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in LazyBooleanOperator.
-  virtual tree lazy_boolean_expression (LazyBooleanOperator op, tree left,
-					tree right, location_t)
-    = 0;
+  tree lazy_boolean_expression (LazyBooleanOperator op, tree left, tree right,
+				location_t);
 
   // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
   // backend representation a of struct.  VALS must be in the same order as the
   // corresponding fields in BTYPE.
-  virtual tree constructor_expression (tree btype, bool is_variant,
-				       const std::vector<tree> &vals, int,
-				       location_t)
-    = 0;
+  tree constructor_expression (tree btype, bool is_variant,
+			       const std::vector<tree> &vals, int, location_t);
 
   // Return an expression that constructs an array of BTYPE with INDEXES and
   // VALS.  INDEXES and VALS must have the same amount of elements. Each index
   // in INDEXES must be in the same order as the corresponding value in VALS.
-  virtual tree
-  array_constructor_expression (tree btype,
-				const std::vector<unsigned long> &indexes,
-				const std::vector<tree> &vals, location_t)
-    = 0;
+  tree array_constructor_expression (tree btype,
+				     const std::vector<unsigned long> &indexes,
+				     const std::vector<tree> &vals, location_t);
 
-  virtual tree array_initializer (tree, tree, tree, tree, tree, tree *,
-				  location_t)
-    = 0;
+  tree array_initializer (tree, tree, tree, tree, tree, tree *, location_t);
 
   // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
   // fixed-length array, not a slice.
-  virtual tree array_index_expression (tree array, tree index, location_t) = 0;
+  tree array_index_expression (tree array, tree index, location_t);
 
   // Create an expression for a call to FN with ARGS, taking place within
   // caller CALLER.
-  virtual tree call_expression (tree fn, const std::vector<tree> &args,
-				tree static_chain, location_t)
-    = 0;
+  tree call_expression (tree fn, const std::vector<tree> &args,
+			tree static_chain, location_t);
 
   // Statements.
 
@@ -490,51 +474,6 @@ class Gcc_backend : public Backend
 {
 public:
   Gcc_backend ();
-
-  // Expressions.
-
-  tree real_part_expression (tree bcomplex, location_t);
-
-  tree imag_part_expression (tree bcomplex, location_t);
-
-  tree complex_expression (tree breal, tree bimag, location_t);
-
-  tree convert_expression (tree type, tree expr, location_t);
-
-  tree struct_field_expression (tree, size_t, location_t);
-
-  tree compound_expression (tree, tree, location_t);
-
-  tree conditional_expression (tree, tree, tree, tree, tree, location_t);
-
-  tree negation_expression (NegationOperator op, tree expr, location_t);
-
-  tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-					 tree left, tree right, location_t);
-
-  tree arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
-						 tree left, tree right,
-						 location_t,
-						 Bvariable *receiver);
-
-  tree comparison_expression (ComparisonOperator op, tree left, tree right,
-			      location_t);
-
-  tree lazy_boolean_expression (LazyBooleanOperator op, tree left, tree right,
-				location_t);
-
-  tree constructor_expression (tree, bool, const std::vector<tree> &, int,
-			       location_t);
-
-  tree array_constructor_expression (tree, const std::vector<unsigned long> &,
-				     const std::vector<tree> &, location_t);
-
-  tree array_initializer (tree, tree, tree, tree, tree, tree *, location_t);
-
-  tree array_index_expression (tree array, tree index, location_t);
-
-  tree call_expression (tree fn, const std::vector<tree> &args,
-			tree static_chain, location_t);
 };
 
 #endif // RUST_BACKEND_H
