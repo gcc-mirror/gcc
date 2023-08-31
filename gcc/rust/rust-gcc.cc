@@ -340,7 +340,7 @@ Gcc_backend::get_identifier_node (const std::string &str)
 }
 
 tree
-Gcc_backend::wchar_type ()
+Backend::wchar_type ()
 {
   tree wchar = make_unsigned_type (32);
   TYPE_STRING_FLAG (wchar) = 1;
@@ -350,13 +350,13 @@ Gcc_backend::wchar_type ()
 // Get an unnamed integer type.
 
 int
-Gcc_backend::get_pointer_size ()
+Backend::get_pointer_size ()
 {
   return POINTER_SIZE;
 }
 
 tree
-Gcc_backend::raw_str_type ()
+Backend::raw_str_type ()
 {
   tree char_ptr = build_pointer_type (char_type_node);
   tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
@@ -364,7 +364,7 @@ Gcc_backend::raw_str_type ()
 }
 
 tree
-Gcc_backend::integer_type (bool is_unsigned, int bits)
+Backend::integer_type (bool is_unsigned, int bits)
 {
   tree type;
   if (is_unsigned)
@@ -399,7 +399,7 @@ Gcc_backend::integer_type (bool is_unsigned, int bits)
 // Get an unnamed float type.
 
 tree
-Gcc_backend::float_type (int bits)
+Backend::float_type (int bits)
 {
   tree type;
   if (bits == FLOAT_TYPE_SIZE)
@@ -420,7 +420,7 @@ Gcc_backend::float_type (int bits)
 // Get an unnamed complex type.
 
 tree
-Gcc_backend::complex_type (int bits)
+Backend::complex_type (int bits)
 {
   tree type;
   if (bits == FLOAT_TYPE_SIZE * 2)
@@ -442,7 +442,7 @@ Gcc_backend::complex_type (int bits)
 // Get a pointer type.
 
 tree
-Gcc_backend::pointer_type (tree to_type)
+Backend::pointer_type (tree to_type)
 {
   if (to_type == error_mark_node)
     return error_mark_node;
@@ -453,7 +453,7 @@ Gcc_backend::pointer_type (tree to_type)
 // Get a reference type.
 
 tree
-Gcc_backend::reference_type (tree to_type)
+Backend::reference_type (tree to_type)
 {
   if (to_type == error_mark_node)
     return error_mark_node;
@@ -464,7 +464,7 @@ Gcc_backend::reference_type (tree to_type)
 // Get immutable type
 
 tree
-Gcc_backend::immutable_type (tree base)
+Backend::immutable_type (tree base)
 {
   if (base == error_mark_node)
     return error_mark_node;
@@ -475,10 +475,10 @@ Gcc_backend::immutable_type (tree base)
 // Make a function type.
 
 tree
-Gcc_backend::function_type (const typed_identifier &receiver,
-			    const std::vector<typed_identifier> &parameters,
-			    const std::vector<typed_identifier> &results,
-			    tree result_struct, location_t)
+Backend::function_type (const typed_identifier &receiver,
+			const std::vector<typed_identifier> &parameters,
+			const std::vector<typed_identifier> &results,
+			tree result_struct, location_t)
 {
   tree args = NULL_TREE;
   tree *pp = &args;
@@ -526,10 +526,10 @@ Gcc_backend::function_type (const typed_identifier &receiver,
 }
 
 tree
-Gcc_backend::function_type_varadic (
-  const typed_identifier &receiver,
-  const std::vector<typed_identifier> &parameters,
-  const std::vector<typed_identifier> &results, tree result_struct, location_t)
+Backend::function_type_varadic (const typed_identifier &receiver,
+				const std::vector<typed_identifier> &parameters,
+				const std::vector<typed_identifier> &results,
+				tree result_struct, location_t)
 {
   size_t n = parameters.size () + (receiver.type != NULL_TREE ? 1 : 0);
   tree *args = XALLOCAVEC (tree, n);
@@ -574,9 +574,9 @@ Gcc_backend::function_type_varadic (
 }
 
 tree
-Gcc_backend::function_ptr_type (tree result_type,
-				const std::vector<tree> &parameters,
-				location_t /* locus */)
+Backend::function_ptr_type (tree result_type,
+			    const std::vector<tree> &parameters,
+			    location_t /* locus */)
 {
   tree args = NULL_TREE;
   tree *pp = &args;
@@ -606,7 +606,7 @@ Gcc_backend::function_ptr_type (tree result_type,
 // Make a struct type.
 
 tree
-Gcc_backend::struct_type (const std::vector<typed_identifier> &fields)
+Backend::struct_type (const std::vector<typed_identifier> &fields)
 {
   return fill_in_fields (make_node (RECORD_TYPE), fields);
 }
@@ -614,7 +614,7 @@ Gcc_backend::struct_type (const std::vector<typed_identifier> &fields)
 // Make a union type.
 
 tree
-Gcc_backend::union_type (const std::vector<typed_identifier> &fields)
+Backend::union_type (const std::vector<typed_identifier> &fields)
 {
   return fill_in_fields (make_node (UNION_TYPE), fields);
 }
@@ -622,8 +622,7 @@ Gcc_backend::union_type (const std::vector<typed_identifier> &fields)
 // Fill in the fields of a struct or union type.
 
 tree
-Gcc_backend::fill_in_fields (tree fill,
-			     const std::vector<typed_identifier> &fields)
+Backend::fill_in_fields (tree fill, const std::vector<typed_identifier> &fields)
 {
   tree field_trees = NULL_TREE;
   tree *pp = &field_trees;
@@ -654,7 +653,7 @@ Gcc_backend::fill_in_fields (tree fill,
 // Make an array type.
 
 tree
-Gcc_backend::array_type (tree element_type, tree length)
+Backend::array_type (tree element_type, tree length)
 {
   return fill_in_array (make_node (ARRAY_TYPE), element_type, length);
 }
@@ -662,7 +661,7 @@ Gcc_backend::array_type (tree element_type, tree length)
 // Fill in an array type.
 
 tree
-Gcc_backend::fill_in_array (tree fill, tree element_type, tree length_tree)
+Backend::fill_in_array (tree fill, tree element_type, tree length_tree)
 {
   if (element_type == error_mark_node || length_tree == error_mark_node)
     return error_mark_node;
@@ -694,8 +693,7 @@ Gcc_backend::fill_in_array (tree fill, tree element_type, tree length_tree)
 // Return a named version of a type.
 
 tree
-Gcc_backend::named_type (const std::string &name, tree type,
-			 location_t location)
+Backend::named_type (const std::string &name, tree type, location_t location)
 {
   if (type == error_mark_node)
     return error_mark_node;
@@ -725,7 +723,7 @@ Gcc_backend::named_type (const std::string &name, tree type,
 // Return the size of a type.
 
 int64_t
-Gcc_backend::type_size (tree t)
+Backend::type_size (tree t)
 {
   if (t == error_mark_node)
     return 1;
@@ -743,7 +741,7 @@ Gcc_backend::type_size (tree t)
 // Return the alignment of a type.
 
 int64_t
-Gcc_backend::type_alignment (tree t)
+Backend::type_alignment (tree t)
 {
   if (t == error_mark_node)
     return 1;
@@ -753,7 +751,7 @@ Gcc_backend::type_alignment (tree t)
 // Return the alignment of a struct field of type BTYPE.
 
 int64_t
-Gcc_backend::type_field_alignment (tree t)
+Backend::type_field_alignment (tree t)
 {
   if (t == error_mark_node)
     return 1;
@@ -763,7 +761,7 @@ Gcc_backend::type_field_alignment (tree t)
 // Return the offset of a field in a struct.
 
 int64_t
-Gcc_backend::type_field_offset (tree struct_tree, size_t index)
+Backend::type_field_offset (tree struct_tree, size_t index)
 {
   if (struct_tree == error_mark_node)
     return 0;
