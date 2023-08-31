@@ -1,3 +1,29 @@
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110914
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_memcpy): Don't call
+	adjust_last_stmt unless len is known constant.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111015
+	* gimple-ssa-store-merging.cc
+	(imm_store_chain_info::output_merged_store): Use wi::mask and
+	wide_int_to_tree instead of unsigned HOST_WIDE_INT shift and
+	build_int_cst to build BIT_AND_EXPR mask.
+
+2023-08-30  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/109725
+	* config/riscv/riscv.cc (riscv_print_operand): Calculate
+	memmodel only when it is valid.
+
 2023-08-28  Li Xu  <xuli1@eswincomputing.com>
 
 	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): For vfmv.f.s/vmv.x.s

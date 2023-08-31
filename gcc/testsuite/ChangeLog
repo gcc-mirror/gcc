@@ -1,3 +1,19 @@
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110914
+	* gcc.c-torture/execute/pr110914.c: New test.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111015
+	* gcc.dg/pr111015.c: New test.
+
 2023-08-28  Li Xu  <xuli1@eswincomputing.com>
 
 	* gcc.target/riscv/rvv/base/scalar_move-10.c: New test.
