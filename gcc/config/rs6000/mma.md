@@ -293,8 +293,8 @@
 })
 
 (define_insn_and_split "*movoo"
-  [(set (match_operand:OO 0 "nonimmediate_operand" "=wa,m,wa")
-	(match_operand:OO 1 "input_operand" "m,wa,wa"))]
+  [(set (match_operand:OO 0 "nonimmediate_operand" "=wa,ZwO,wa")
+	(match_operand:OO 1 "input_operand" "ZwO,wa,wa"))]
   "TARGET_MMA
    && (gpc_reg_operand (operands[0], OOmode)
        || gpc_reg_operand (operands[1], OOmode))"
@@ -340,8 +340,8 @@
 })
 
 (define_insn_and_split "*movxo"
-  [(set (match_operand:XO 0 "nonimmediate_operand" "=d,m,d")
-	(match_operand:XO 1 "input_operand" "m,d,d"))]
+  [(set (match_operand:XO 0 "nonimmediate_operand" "=d,ZwO,d")
+	(match_operand:XO 1 "input_operand" "ZwO,d,d"))]
   "TARGET_MMA
    && (gpc_reg_operand (operands[0], XOmode)
        || gpc_reg_operand (operands[1], XOmode))"
