@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file should be included last.  */
 #include "target-def.h"
+#include "riscv-vector-costs.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -9058,6 +9059,17 @@ riscv_frame_pointer_required (void)
   return riscv_save_frame_pointer && !crtl->is_leaf;
 }
 
+/* Implement targetm.vectorize.create_costs.  */
+
+static vector_costs *
+riscv_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
+{
+  if (TARGET_VECTOR)
+    return new riscv_vector::costs (vinfo, costing_for_scalar);
+  /* Default vector costs.  */
+  return new vector_costs (vinfo, costing_for_scalar);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -9364,6 +9376,9 @@ riscv_frame_pointer_required (void)
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED riscv_frame_pointer_required
+
+#undef TARGET_VECTORIZE_CREATE_COSTS
+#define TARGET_VECTORIZE_CREATE_COSTS riscv_vectorize_create_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
