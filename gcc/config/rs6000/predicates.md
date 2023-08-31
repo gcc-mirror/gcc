@@ -913,7 +913,7 @@
 (define_predicate "vsx_quad_dform_memory_operand"
   (match_code "mem")
 {
-  if (!TARGET_P9_VECTOR || !MEM_P (op) || GET_MODE_SIZE (mode) != 16)
+  if (!TARGET_P9_VECTOR)
     return false;
 
   return quad_address_p (XEXP (op, 0), mode, false);
