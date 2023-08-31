@@ -2297,9 +2297,9 @@ Backend::label_address (tree label, location_t location)
 // Declare or define a new function.
 
 tree
-Gcc_backend::function (tree functype, const std::string &name,
-		       const std::string &asm_name, unsigned int flags,
-		       location_t location)
+Backend::function (tree functype, const std::string &name,
+		   const std::string &asm_name, unsigned int flags,
+		   location_t location)
 {
   if (functype != error_mark_node)
     {
@@ -2342,8 +2342,8 @@ Gcc_backend::function (tree functype, const std::string &name,
 //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
 
 tree
-Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
-				       tree defer_tree, location_t location)
+Backend::function_defer_statement (tree function, tree undefer_tree,
+				   tree defer_tree, location_t location)
 {
   if (undefer_tree == error_mark_node || defer_tree == error_mark_node
       || function == error_mark_node)
@@ -2355,7 +2355,7 @@ Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
     push_cfun (DECL_STRUCT_FUNCTION (function));
 
   tree stmt_list = NULL;
-  tree label = Gcc_backend::label (function, "", location);
+  tree label = Backend::label (function, "", location);
   tree label_def = label_definition_statement (label);
   append_to_statement_list (label_def, &stmt_list);
 
@@ -2375,8 +2375,8 @@ Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
 // This will only be called for a function definition.
 
 bool
-Gcc_backend::function_set_parameters (
-  tree function, const std::vector<Bvariable *> &param_vars)
+Backend::function_set_parameters (tree function,
+				  const std::vector<Bvariable *> &param_vars)
 {
   if (function == error_mark_node)
     return false;
@@ -2400,7 +2400,7 @@ Gcc_backend::function_set_parameters (
 // emit early debugging information.
 
 void
-Gcc_backend::write_global_definitions (
+Backend::write_global_definitions (
   const std::vector<tree> &type_decls, const std::vector<tree> &constant_decls,
   const std::vector<tree> &function_decls,
   const std::vector<Bvariable *> &variable_decls)
@@ -2471,7 +2471,7 @@ Gcc_backend::write_global_definitions (
 }
 
 void
-Gcc_backend::write_export_data (const char *bytes, unsigned int size)
+Backend::write_export_data (const char *bytes, unsigned int size)
 {
   rust_write_export_data (bytes, size);
 }
