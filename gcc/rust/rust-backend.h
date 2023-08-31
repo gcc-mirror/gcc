@@ -449,41 +449,35 @@ public:
   // string, is the name that should be used in the symbol table; this
   // will be non-empty if a magic extern comment is used.  FLAGS is
   // bit flags described above.
-  virtual tree function (tree fntype, const std::string &name,
-			 const std::string &asm_name, unsigned int flags,
-			 location_t)
-    = 0;
+  tree function (tree fntype, const std::string &name,
+		 const std::string &asm_name, unsigned int flags, location_t);
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
   //   finish:
   //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
-  virtual tree function_defer_statement (tree function, tree undefer,
-					 tree check_defer, location_t)
-    = 0;
+  tree function_defer_statement (tree function, tree undefer, tree check_defer,
+				 location_t);
 
   // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
   // This will only be called for a function definition.  Returns true on
   // success, false on failure.
-  virtual bool
-  function_set_parameters (tree function,
-			   const std::vector<Bvariable *> &param_vars)
-    = 0;
+  bool function_set_parameters (tree function,
+				const std::vector<Bvariable *> &param_vars);
 
   // Utility.
 
   // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
   // FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
-  virtual void
+  void
   write_global_definitions (const std::vector<tree> &type_decls,
 			    const std::vector<tree> &constant_decls,
 			    const std::vector<tree> &function_decls,
-			    const std::vector<Bvariable *> &variable_decls)
-    = 0;
+			    const std::vector<Bvariable *> &variable_decls);
 
   // Write SIZE bytes of export data from BYTES to the proper
   // section in the output object file.
-  virtual void write_export_data (const char *bytes, unsigned int size) = 0;
+  void write_export_data (const char *bytes, unsigned int size);
 
 protected:
   tree fill_in_fields (tree, const std::vector<typed_identifier> &);
@@ -573,24 +567,6 @@ public:
 	      location_t);
 
   void block_add_statements (tree, const std::vector<tree> &);
-
-  // Functions.
-
-  tree function (tree fntype, const std::string &name,
-		 const std::string &asm_name, unsigned int flags, location_t);
-
-  tree function_defer_statement (tree function, tree undefer, tree defer,
-				 location_t);
-
-  bool function_set_parameters (tree function,
-				const std::vector<Bvariable *> &);
-
-  void write_global_definitions (const std::vector<tree> &,
-				 const std::vector<tree> &,
-				 const std::vector<tree> &,
-				 const std::vector<Bvariable *> &);
-
-  void write_export_data (const char *bytes, unsigned int size);
 };
 
 #endif // RUST_BACKEND_H
