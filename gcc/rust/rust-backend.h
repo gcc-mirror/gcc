@@ -416,20 +416,20 @@ public:
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.
-  virtual tree label (tree, const std::string &name, location_t) = 0;
+  tree label (tree, const std::string &name, location_t);
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
   // defined.
-  virtual tree label_definition_statement (tree) = 0;
+  tree label_definition_statement (tree);
 
   // Create a goto statement to a label.
-  virtual tree goto_statement (tree, location_t) = 0;
+  tree goto_statement (tree, location_t);
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
   // recover.
-  virtual tree label_address (tree, location_t) = 0;
+  tree label_address (tree, location_t);
 
   // Functions.
 
@@ -619,16 +619,6 @@ public:
 
   Bvariable *temporary_variable (tree, tree, tree, tree, bool, location_t,
 				 tree *);
-
-  // Labels.
-
-  tree label (tree, const std::string &name, location_t);
-
-  tree label_definition_statement (tree);
-
-  tree goto_statement (tree, location_t);
-
-  tree label_address (tree, location_t);
 
   // Functions.
 
