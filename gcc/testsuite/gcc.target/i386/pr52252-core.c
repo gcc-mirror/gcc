@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mssse3 -mtune=corei7" } */
+/* { dg-options "-O2 -ftree-vectorize -mssse3 -mtune=corei7 -mprefer-vector-width=128" } */
 #define byte unsigned char
 
 void
