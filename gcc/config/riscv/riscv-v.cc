@@ -2173,7 +2173,7 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	   full vectors for wider elements.
 	 - full_size / 8:
 	   Try using 64-bit containers for all element types.  */
-      static const int rvv_factors[] = {1, 2, 4, 8};
+      static const int rvv_factors[] = {1, 2, 4, 8, 16, 32, 64};
       for (unsigned int i = 0; i < sizeof (rvv_factors) / sizeof (int); i++)
 	{
 	  poly_uint64 units;
@@ -2183,12 +2183,8 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	    modes->safe_push (mode);
 	}
     }
-  unsigned int flag = 0;
   if (TARGET_VECTOR_VLS)
     {
-      /* Enable VECT_COMPARE_COSTS between VLA modes VLS modes for scalable
-	 auto-vectorization.  */
-      flag |= VECT_COMPARE_COSTS;
       /* Push all VLSmodes according to TARGET_MIN_VLEN.  */
       unsigned int i = 0;
       unsigned int base_size = TARGET_MIN_VLEN * riscv_autovec_lmul / 8;
@@ -2201,7 +2197,8 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	  size = base_size / (1U << i);
 	}
     }
-  return flag;
+  /* Enable LOOP_VINFO comparison in COST model.  */
+  return VECT_COMPARE_COSTS;
 }
 
 /* If the given VECTOR_MODE is an RVV mode,  first get the largest number
