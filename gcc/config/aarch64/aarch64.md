@@ -1170,9 +1170,27 @@
 {
   int i;
 
+  /* Generate a PARALLEL that contains all of the register results.
+     The offsets are somewhat arbitrary, since we don't know the
+     actual return type.  The main thing we need to avoid is having
+     overlapping byte ranges, since those might give the impression
+     that two registers are known to have data in common.  */
+  rtvec rets = rtvec_alloc (XVECLEN (operands[2], 0));
+  poly_int64 offset = 0;
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx reg = SET_SRC (XVECEXP (operands[2], 0, i));
+      gcc_assert (REG_P (reg));
+      rtx offset_rtx = gen_int_mode (offset, Pmode);
+      rtx piece = gen_rtx_EXPR_LIST (VOIDmode, reg, offset_rtx);
+      RTVEC_ELT (rets, i) = piece;
+      offset += GET_MODE_SIZE (GET_MODE (reg));
+    }
+  rtx ret = gen_rtx_PARALLEL (VOIDmode, rets);
+
   /* Untyped calls always use the default ABI.  It's only possible to use
      ABI variants if we know the type of the target function.  */
-  emit_call_insn (gen_call (operands[0], const0_rtx, const0_rtx));
+  emit_call_insn (gen_call_value (ret, operands[0], const0_rtx, const0_rtx));
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
