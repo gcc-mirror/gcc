@@ -157,7 +157,7 @@ DEF_SECTION (machopic_picsymbol_stub3_section, SECTION_NO_ANCHOR,
 
 /* Exception-related.  */
 DEF_SECTION (darwin_exception_section, SECTION_NO_ANCHOR,
-	     ".section __DATA,__gcc_except_tab", 0)
+	     ".section __TEXT,__gcc_except_tab", 0)
 DEF_SECTION (darwin_eh_frame_section, SECTION_NO_ANCHOR,
 	     ".section " EH_FRAME_SECTION_NAME ",__eh_frame"
 	     EH_FRAME_SECTION_ATTR, 0)
