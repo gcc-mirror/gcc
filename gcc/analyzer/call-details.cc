@@ -295,6 +295,17 @@ call_details::get_arg_svalue (unsigned idx) const
   return m_model->get_rvalue (arg, m_ctxt);
 }
 
+/* If argument IDX's svalue at the callsite is of pointer type,
+   return the region it points to.
+   Otherwise return NULL.  */
+
+const region *
+call_details::deref_ptr_arg (unsigned idx) const
+{
+  const svalue *ptr_sval = get_arg_svalue (idx);
+  return m_model->deref_rvalue (ptr_sval, get_arg_tree (idx), m_ctxt);
+}
+
 /* Attempt to get the string literal for argument IDX, or return NULL
    otherwise.
    For use when implementing "__analyzer_*" functions that take

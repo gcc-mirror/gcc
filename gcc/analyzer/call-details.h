@@ -61,6 +61,7 @@ public:
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
+  const region *deref_ptr_arg (unsigned idx) const;
   const char *get_arg_string_literal (unsigned idx) const;
 
   tree get_fndecl_for_call () const;

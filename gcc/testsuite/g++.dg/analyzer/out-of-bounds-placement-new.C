@@ -14,6 +14,6 @@ struct int_and_addr {
 
 int test (int_container ic)
 {
-  int_and_addr *iaddr = new (ic.addr ()) int_and_addr;
+  int_and_addr *iaddr = new (ic.addr ()) int_and_addr; /* { dg-warning "stack-based buffer overflow" } */
   return iaddr->i;
 }

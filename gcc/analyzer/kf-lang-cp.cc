@@ -35,6 +35,38 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+/* Return true if CALL is a non-allocating operator new or operator new []
+   that contains no user-defined args, i.e. having any signature of:
+
+    - void* operator new (std::size_t count, void* ptr);
+    - void* operator new[] (std::size_t count, void* ptr);
+
+   See https://en.cppreference.com/w/cpp/memory/new/operator_new.  */
+
+bool is_placement_new_p (const gcall *call)
+{
+  gcc_assert (call);
+  tree fndecl = gimple_call_fndecl (call);
+
+  if (!fndecl || TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
+    /* Give up on overloaded operator new.  */
+    return false;
+
+  if (!is_named_call_p (fndecl, "operator new", call, 2)
+      && !is_named_call_p (fndecl, "operator new []", call, 2))
+    return false;
+
+  /* We must distinguish between an allocating non-throwing new
+    and a non-allocating new.
+
+    The former might have one of the following signatures :
+    void* operator new (std::size_t count, const std::nothrow_t& tag);
+    void* operator new[] (std::size_t count, const std::nothrow_t& tag);
+    Whereas a placement new would take a pointer.  */
+  tree arg1_type = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+  return TREE_CODE (TREE_VALUE (arg1_type)) == POINTER_TYPE;
+}
+
 namespace ana {
 
 /* Implementations of specific functions.  */
@@ -46,7 +78,11 @@ class kf_operator_new : public known_function
 public:
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return cd.num_args () == 1;
+    return (cd.num_args () == 1
+      && cd.arg_is_size_p (0))
+      || (cd.num_args () == 2
+      && cd.arg_is_size_p (0)
+      && POINTER_TYPE_P (cd.get_arg_type (1)));
   }
 
   void impl_call_pre (const call_details &cd) const final override
@@ -54,28 +90,74 @@ public:
     region_model *model = cd.get_model ();
     region_model_manager *mgr = cd.get_manager ();
     const svalue *size_sval = cd.get_arg_svalue (0);
-    const region *new_reg
-      = model->get_or_create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
-    if (cd.get_lhs_type ())
+    region_model_context *ctxt = cd.get_ctxt ();
+    const gcall *call = cd.get_call_stmt ();
+
+    /* If the call was actually a placement new, check that accessing
+       the buffer lhs is placed into does not result in out-of-bounds.  */
+    if (is_placement_new_p (call))
       {
-	const svalue *ptr_sval
-	  = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
-	cd.maybe_set_lhs (ptr_sval);
+	const region *ptr_reg = cd.deref_ptr_arg (1);
+	if (ptr_reg && cd.get_lhs_type ())
+	  {
+	    const svalue *num_bytes_sval = cd.get_arg_svalue (0);
+	    const region *sized_new_reg
+		= mgr->get_sized_region (ptr_reg,
+					 cd.get_lhs_type (),
+					 num_bytes_sval);
+	    model->check_region_for_write (sized_new_reg,
+					   nullptr,
+					   ctxt);
+	    const svalue *ptr_sval
+	      = mgr->get_ptr_svalue (cd.get_lhs_type (), sized_new_reg);
+	    cd.maybe_set_lhs (ptr_sval);
+	  }
+      }
+    /* If the call is an allocating new, then create a heap allocated
+       region.  */
+    else
+      {
+	const region *new_reg
+	  = model->get_or_create_region_for_heap_alloc (size_sval, ctxt);
+	if (cd.get_lhs_type ())
+	  {
+	    const svalue *ptr_sval
+	      = mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	    cd.maybe_set_lhs (ptr_sval);
+	  }
+      }
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    tree callee_fndecl = cd.get_fndecl_for_call ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    /* If the call is guaranteed to return nonnull
+       then add a nonnull constraint to the allocated region.  */
+    if (!TREE_NOTHROW (callee_fndecl) && flag_exceptions)
+      {
+	const svalue *null_sval
+	  = mgr->get_or_create_null_ptr (cd.get_lhs_type ());
+	const svalue *result
+	  = model->get_store_value (cd.get_lhs_region (), ctxt);
+	model->add_constraint (result, NE_EXPR, null_sval, ctxt);
       }
   }
 };
 
-/* Handler for "operator delete", both the sized and unsized variants
-   (2 arguments and 1 argument respectively), and for "operator delete []"  */
+/* Handler for "operator delete" and for "operator delete []",
+   both the sized and unsized variants
+   (2 arguments and 1 argument respectively).  */
 
 class kf_operator_delete : public known_function
 {
 public:
-  kf_operator_delete (unsigned num_args) : m_num_args (num_args) {}
-
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return cd.num_args () == m_num_args;
+    return cd.num_args () == 1 or cd.num_args () == 2;
   }
 
   void impl_call_post (const call_details &cd) const final override
@@ -86,12 +168,11 @@ public:
       {
 	/* If the ptr points to an underlying heap region, delete it,
 	   poisoning pointers.  */
-	model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+	model->unbind_region_and_descendents (freed_reg,
+					      POISON_KIND_DELETED);
       }
   }
 
-private:
-  unsigned m_num_args;
 };
 
 /* Populate KFM with instances of known functions relating to C++.  */
@@ -101,9 +182,8 @@ register_known_functions_lang_cp (known_function_manager &kfm)
 {
   kfm.add ("operator new", make_unique<kf_operator_new> ());
   kfm.add ("operator new []", make_unique<kf_operator_new> ());
-  kfm.add ("operator delete", make_unique<kf_operator_delete> (1));
-  kfm.add ("operator delete", make_unique<kf_operator_delete> (2));
-  kfm.add ("operator delete []", make_unique<kf_operator_delete> (1));
+  kfm.add ("operator delete", make_unique<kf_operator_delete> ());
+  kfm.add ("operator delete []", make_unique<kf_operator_delete> ());
 }
 
 } // namespace ana

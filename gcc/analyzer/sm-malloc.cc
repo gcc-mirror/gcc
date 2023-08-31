@@ -759,7 +759,7 @@ public:
     override
   {
     if (change.m_old_state == m_sm.get_start_state ()
-	&& unchecked_p (change.m_new_state))
+	&& (unchecked_p (change.m_new_state) || nonnull_p (change.m_new_state)))
       // TODO: verify that it's the allocation stmt, not a copy
       return label_text::borrow ("allocated here");
     if (unchecked_p (change.m_old_state)
@@ -1178,6 +1178,21 @@ public:
   label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("dereference of NULL %qE", ev.m_expr);
+  }
+
+  /* Implementation of pending_diagnostic::supercedes_p for
+     null-deref.
+
+     We want null-deref to supercede use-of-unitialized-value,
+     so that if we have these at the same stmt, we don't emit
+     a use-of-uninitialized, just the null-deref.  */
+
+  bool supercedes_p (const pending_diagnostic &other) const final override
+  {
+    if (other.use_of_uninit_p ())
+      return true;
+
+    return false;
   }
 };
 
@@ -1915,12 +1930,20 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    return true;
 	  }
 
-	if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	  on_allocator_call (sm_ctxt, call, &m_scalar_delete);
-	else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	  on_allocator_call (sm_ctxt, call, &m_vector_delete);
-	else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
-		 || is_named_call_p (callee_fndecl, "operator delete", call, 2))
+	if (!is_placement_new_p (call))
+	  {
+	    bool returns_nonnull = !TREE_NOTHROW (callee_fndecl)
+				   && flag_exceptions;
+	    if (is_named_call_p (callee_fndecl, "operator new"))
+	      on_allocator_call (sm_ctxt, call,
+				 &m_scalar_delete, returns_nonnull);
+	    else if (is_named_call_p (callee_fndecl, "operator new []"))
+	      on_allocator_call (sm_ctxt, call,
+				 &m_vector_delete, returns_nonnull);
+	  }
+
+	if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+	    || is_named_call_p (callee_fndecl, "operator delete", call, 2))
 	  {
 	    on_deallocator_call (sm_ctxt, node, call,
 				 &m_scalar_delete.m_deallocator, 0);
