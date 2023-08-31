@@ -5261,6 +5261,37 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (convert @c0))))))))
 #endif
 
+(for cnd (cond vec_cond)
+ /* (a != b) ? (a - b) : 0 -> (a - b) */
+ (simplify
+  (cnd (ne:c @0 @1) (minus@2 @0 @1) integer_zerop)
+  @2)
+ /* (a != b) ? (a ^ b) : 0 -> (a ^ b) */
+ (simplify
+  (cnd (ne:c @0 @1) (bit_xor:c@2 @0 @1) integer_zerop)
+  @2)
+ /* (a != b) ? (a & b) : a -> (a & b) */
+ /* (a != b) ? (a | b) : a -> (a | b) */
+ /* (a != b) ? min(a,b) : a -> min(a,b) */
+ /* (a != b) ? max(a,b) : a -> max(a,b) */
+ (for op (bit_and bit_ior min max)
+  (simplify
+   (cnd (ne:c @0 @1) (op:c@2 @0 @1) @0)
+   @2))
+ /* (a != b) ? (a * b) : (a * a) -> (a * b) */
+ /* (a != b) ? (a + b) : (a + a) -> (a + b) */
+ (for op (mult plus)
+  (simplify
+   (cnd (ne:c @0 @1) (op@2 @0 @1) (op @0 @0))
+   (if (ANY_INTEGRAL_TYPE_P (type))
+    @2)))
+ /* (a != b) ? (a + b) : (2 * a) -> (a + b) */
+ (simplify
+  (cnd (ne:c @0 @1) (plus@2 @0 @1) (mult @0 uniform_integer_cst_p@3))
+  (if (wi::to_wide (uniform_integer_cst_p (@3)) == 2)
+   @2))
+)
+
 /* These was part of minmax phiopt.  */
 /* Optimize (a CMP b) ? minmax<a, c> : minmax<b, c>
    to minmax<min/max<a, b>, c> */
