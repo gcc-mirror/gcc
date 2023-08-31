@@ -781,7 +781,7 @@ Backend::type_field_offset (tree struct_tree, size_t index)
 // Return the zero value for a type.
 
 tree
-Gcc_backend::zero_expression (tree t)
+Backend::zero_expression (tree t)
 {
   tree ret;
   if (t == error_mark_node)
@@ -794,7 +794,7 @@ Gcc_backend::zero_expression (tree t)
 // An expression that references a variable.
 
 tree
-Gcc_backend::var_expression (Bvariable *var, location_t location)
+Backend::var_expression (Bvariable *var, location_t location)
 {
   return var->get_tree (location);
 }
@@ -803,7 +803,7 @@ Gcc_backend::var_expression (Bvariable *var, location_t location)
 // This function does not release the memory of @val
 
 tree
-Gcc_backend::integer_constant_expression (tree t, mpz_t val)
+Backend::integer_constant_expression (tree t, mpz_t val)
 {
   if (t == error_mark_node)
     return error_mark_node;
@@ -815,7 +815,7 @@ Gcc_backend::integer_constant_expression (tree t, mpz_t val)
 // Return a typed value as a constant floating-point number.
 
 tree
-Gcc_backend::float_constant_expression (tree t, mpfr_t val)
+Backend::float_constant_expression (tree t, mpfr_t val)
 {
   tree ret;
   if (t == error_mark_node)
@@ -832,7 +832,7 @@ Gcc_backend::float_constant_expression (tree t, mpfr_t val)
 // Return a typed real and imaginary value as a constant complex number.
 
 tree
-Gcc_backend::complex_constant_expression (tree t, mpc_t val)
+Backend::complex_constant_expression (tree t, mpc_t val)
 {
   tree ret;
   if (t == error_mark_node)
@@ -856,7 +856,7 @@ Gcc_backend::complex_constant_expression (tree t, mpc_t val)
 // Make a constant string expression.
 
 tree
-Gcc_backend::string_constant_expression (const std::string &val)
+Backend::string_constant_expression (const std::string &val)
 {
   tree index_type = build_index_type (size_int (val.length ()));
   tree const_char_type = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
@@ -869,13 +869,13 @@ Gcc_backend::string_constant_expression (const std::string &val)
 }
 
 tree
-Gcc_backend::wchar_constant_expression (wchar_t c)
+Backend::wchar_constant_expression (wchar_t c)
 {
   return build_int_cst (wchar_type (), c);
 }
 
 tree
-Gcc_backend::char_constant_expression (char c)
+Backend::char_constant_expression (char c)
 {
   return build_int_cst (char_type_node, c);
 }
@@ -883,7 +883,7 @@ Gcc_backend::char_constant_expression (char c)
 // Make a constant boolean expression.
 
 tree
-Gcc_backend::boolean_constant_expression (bool val)
+Backend::boolean_constant_expression (bool val)
 {
   return val ? boolean_true_node : boolean_false_node;
 }
