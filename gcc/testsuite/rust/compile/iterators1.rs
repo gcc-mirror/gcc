@@ -264,7 +264,7 @@ macro_rules! impl_uint {
                 }
 
                 pub fn overflowing_add(self, rhs: Self) -> (Self, bool) {
-                    let (a, b) = unsafe { intrinsics::add_with_overflow(self as i32, rhs as i32) };
+                    let (a, b) = unsafe { intrinsics::add_with_overflow(self as $ty, rhs as $ty) };
                     (a as Self, b)
                 }
             }
