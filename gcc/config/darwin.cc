@@ -2232,6 +2232,7 @@ darwin_emit_except_table_label (FILE *file)
 {
   char section_start_label[30];
 
+  fputs ("\t.p2align\t2\n", file);
   ASM_GENERATE_INTERNAL_LABEL (section_start_label, "GCC_except_table",
 			       except_table_label_num++);
   ASM_OUTPUT_LABEL (file, section_start_label);
