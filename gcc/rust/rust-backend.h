@@ -326,16 +326,15 @@ public:
   // the initial curly brace.  END_LOCATION is the location of the end
   // of the block, more or less the location of the final curly brace.
   // The statements will be added after the block is created.
-  virtual tree block (tree function, tree enclosing,
-		      const std::vector<Bvariable *> &vars,
-		      location_t start_location, location_t end_location)
-    = 0;
+  tree block (tree function, tree enclosing,
+	      const std::vector<Bvariable *> &vars, location_t start_location,
+	      location_t end_location);
 
   // Add the statements to a block.  The block is created first.  Then
   // the statements are created.  Then the statements are added to the
   // block.  This will called exactly once per block.  The vector may
   // be empty if there are no statements.
-  virtual void block_add_statements (tree, const std::vector<tree> &) = 0;
+  void block_add_statements (tree, const std::vector<tree> &);
 
   // Variables.
 
@@ -536,13 +535,6 @@ public:
 
   tree call_expression (tree fn, const std::vector<tree> &args,
 			tree static_chain, location_t);
-
-  // Blocks.
-
-  tree block (tree, tree, const std::vector<Bvariable *> &, location_t,
-	      location_t);
-
-  void block_add_statements (tree, const std::vector<tree> &);
 };
 
 #endif // RUST_BACKEND_H
