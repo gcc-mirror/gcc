@@ -79,7 +79,9 @@ enum riscv_autovec_lmul_enum {
   RVV_M1 = 1,
   RVV_M2 = 2,
   RVV_M4 = 4,
-  RVV_M8 = 8
+  RVV_M8 = 8,
+  /* For dynamic LMUL, we compare COST start with LMUL8.  */
+  RVV_DYNAMIC = RVV_M8
 };
 
 enum riscv_multilib_select_kind {

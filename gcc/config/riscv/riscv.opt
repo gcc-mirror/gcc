@@ -311,6 +311,9 @@ Enum(riscv_autovec_lmul) String(m4) Value(RVV_M4)
 EnumValue
 Enum(riscv_autovec_lmul) String(m8) Value(RVV_M8)
 
+EnumValue
+Enum(riscv_autovec_lmul) String(dynamic) Value(RVV_DYNAMIC)
+
 -param=riscv-autovec-lmul=
 Target RejectNegative Joined Enum(riscv_autovec_lmul) Var(riscv_autovec_lmul) Init(RVV_M1)
 -param=riscv-autovec-lmul=<string>	Set the RVV LMUL of auto-vectorization in the RISC-V port.
