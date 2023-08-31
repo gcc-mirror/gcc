@@ -71,33 +71,33 @@ public:
   // Types.
 
   // Get the wchar type
-  virtual tree wchar_type () = 0;
+  tree wchar_type ();
 
   // Get the Host pointer size in bits
-  virtual int get_pointer_size () = 0;
+  int get_pointer_size ();
 
   // Get the raw str type const char*
-  virtual tree raw_str_type () = 0;
+  tree raw_str_type ();
 
   // Get an unnamed integer type with the given signedness and number
   // of bits.
-  virtual tree integer_type (bool is_unsigned, int bits) = 0;
+  tree integer_type (bool is_unsigned, int bits);
 
   // Get an unnamed floating point type with the given number of bits
   // (32 or 64).
-  virtual tree float_type (int bits) = 0;
+  tree float_type (int bits);
 
   // Get an unnamed complex type with the given number of bits (64 or 128).
-  virtual tree complex_type (int bits) = 0;
+  tree complex_type (int bits);
 
   // Get a pointer type.
-  virtual tree pointer_type (tree to_type) = 0;
+  tree pointer_type (tree to_type);
 
   // Get a reference type.
-  virtual tree reference_type (tree to_type) = 0;
+  tree reference_type (tree to_type);
 
   // make type immutable
-  virtual tree immutable_type (tree base) = 0;
+  tree immutable_type (tree base);
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
@@ -108,54 +108,49 @@ public:
   // one result, RESULT_STRUCT is a struct type to hold the results,
   // and RESULTS may be ignored; if there are zero or one results,
   // RESULT_STRUCT is NULL.
-  virtual tree function_type (const typed_identifier &receiver,
+  tree function_type (const typed_identifier &receiver,
+		      const std::vector<typed_identifier> &parameters,
+		      const std::vector<typed_identifier> &results,
+		      tree result_struct, location_t location);
+
+  tree function_type_varadic (const typed_identifier &receiver,
 			      const std::vector<typed_identifier> &parameters,
 			      const std::vector<typed_identifier> &results,
-			      tree result_struct, location_t location)
-    = 0;
+			      tree result_struct, location_t location);
 
-  virtual tree
-  function_type_varadic (const typed_identifier &receiver,
-			 const std::vector<typed_identifier> &parameters,
-			 const std::vector<typed_identifier> &results,
-			 tree result_struct, location_t location)
-    = 0;
-
-  virtual tree function_ptr_type (tree result,
-				  const std::vector<tree> &praameters,
-				  location_t location)
-    = 0;
+  tree function_ptr_type (tree result, const std::vector<tree> &praameters,
+			  location_t location);
 
   // Get a struct type.
-  virtual tree struct_type (const std::vector<typed_identifier> &fields) = 0;
+  tree struct_type (const std::vector<typed_identifier> &fields);
 
   // Get a union type.
-  virtual tree union_type (const std::vector<typed_identifier> &fields) = 0;
+  tree union_type (const std::vector<typed_identifier> &fields);
 
   // Get an array type.
-  virtual tree array_type (tree element_type, tree length) = 0;
+  tree array_type (tree element_type, tree length);
 
   // Return a named version of a type.  The location is the location
   // of the type definition.  This will not be called for a type
   // created via placeholder_pointer_type, placeholder_struct_type, or
   // placeholder_array_type..  (It may be called for a pointer,
   // struct, or array type in a case like "type P *byte; type Q P".)
-  virtual tree named_type (const std::string &name, tree, location_t) = 0;
+  tree named_type (const std::string &name, tree, location_t);
 
   // Return the size of a type.
-  virtual int64_t type_size (tree) = 0;
+  int64_t type_size (tree);
 
   // Return the alignment of a type.
-  virtual int64_t type_alignment (tree) = 0;
+  int64_t type_alignment (tree);
 
   // Return the alignment of a struct field of this type.  This is
   // normally the same as type_alignment, but not always.
-  virtual int64_t type_field_alignment (tree) = 0;
+  int64_t type_field_alignment (tree);
 
   // Return the offset of field INDEX in a struct type.  INDEX is the
   // entry in the FIELDS std::vector parameter of struct_type or
   // set_placeholder_struct_type.
-  virtual int64_t type_field_offset (tree, size_t index) = 0;
+  int64_t type_field_offset (tree, size_t index);
 
   // Expressions.
 
@@ -496,6 +491,11 @@ public:
   // Write SIZE bytes of export data from BYTES to the proper
   // section in the output object file.
   virtual void write_export_data (const char *bytes, unsigned int size) = 0;
+
+protected:
+  tree fill_in_fields (tree, const std::vector<typed_identifier> &);
+
+  tree fill_in_array (tree, tree, tree);
 };
 
 class Gcc_backend : public Backend
@@ -507,54 +507,6 @@ public:
   void debug (Bvariable *t);
 
   tree get_identifier_node (const std::string &str);
-
-  // Types.
-
-  tree wchar_type ();
-
-  int get_pointer_size ();
-
-  tree raw_str_type ();
-
-  tree integer_type (bool, int);
-
-  tree float_type (int);
-
-  tree complex_type (int);
-
-  tree pointer_type (tree);
-
-  tree reference_type (tree);
-
-  tree immutable_type (tree);
-
-  tree function_type (const typed_identifier &,
-		      const std::vector<typed_identifier> &,
-		      const std::vector<typed_identifier> &, tree,
-		      const location_t);
-
-  tree function_type_varadic (const typed_identifier &,
-			      const std::vector<typed_identifier> &,
-			      const std::vector<typed_identifier> &, tree,
-			      const location_t);
-
-  tree function_ptr_type (tree, const std::vector<tree> &, location_t);
-
-  tree struct_type (const std::vector<typed_identifier> &);
-
-  tree union_type (const std::vector<typed_identifier> &);
-
-  tree array_type (tree, tree);
-
-  tree named_type (const std::string &, tree, location_t);
-
-  int64_t type_size (tree);
-
-  int64_t type_alignment (tree);
-
-  int64_t type_field_alignment (tree);
-
-  int64_t type_field_offset (tree, size_t index);
 
   // Expressions.
 
@@ -697,10 +649,6 @@ public:
   void write_export_data (const char *bytes, unsigned int size);
 
 private:
-  tree fill_in_fields (tree, const std::vector<typed_identifier> &);
-
-  tree fill_in_array (tree, tree, tree);
-
   tree non_zero_size_type (tree);
 
   tree convert_tree (tree, tree, location_t);
