@@ -2243,8 +2243,7 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
 // Make a label.
 
 tree
-Gcc_backend::label (tree func_tree, const std::string &name,
-		    location_t location)
+Backend::label (tree func_tree, const std::string &name, location_t location)
 {
   tree decl;
   if (name.empty ())
@@ -2270,7 +2269,7 @@ Gcc_backend::label (tree func_tree, const std::string &name,
 // Make a statement which defines a label.
 
 tree
-Gcc_backend::label_definition_statement (tree label)
+Backend::label_definition_statement (tree label)
 {
   return fold_build1_loc (DECL_SOURCE_LOCATION (label), LABEL_EXPR,
 			  void_type_node, label);
@@ -2279,7 +2278,7 @@ Gcc_backend::label_definition_statement (tree label)
 // Make a goto statement.
 
 tree
-Gcc_backend::goto_statement (tree label, location_t location)
+Backend::goto_statement (tree label, location_t location)
 {
   return fold_build1_loc (location, GOTO_EXPR, void_type_node, label);
 }
@@ -2287,7 +2286,7 @@ Gcc_backend::goto_statement (tree label, location_t location)
 // Get the address of a label.
 
 tree
-Gcc_backend::label_address (tree label, location_t location)
+Backend::label_address (tree label, location_t location)
 {
   TREE_USED (label) = 1;
   TREE_ADDRESSABLE (label) = 1;
