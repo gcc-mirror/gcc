@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_VSETVL_H
 #define GCC_RISCV_VSETVL_H
 
-#define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
-
 namespace riscv_vector {
 
 /* Classification of vsetvl instruction.  */

@@ -5246,8 +5246,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	else if (code == CONST_INT)
 	  {
 	    /* Tail && Mask policy.  */
-	    bool agnostic_p = UINTVAL (op) & 0x1;
-	    asm_fprintf (file, "%s", agnostic_p ? "a" : "u");
+	    asm_fprintf (file, "%s", IS_AGNOSTIC (UINTVAL (op)) ? "a" : "u");
 	  }
 	else
 	  output_operand_lossage ("invalid vector constant");

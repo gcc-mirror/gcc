@@ -139,11 +139,11 @@ public:
     /* LMUL.  */
     e.add_input_operand (Pmode, gen_int_mode (get_vlmul (mode), Pmode));
 
-    /* TA.  */
-    e.add_input_operand (Pmode, gen_int_mode (1, Pmode));
+    /* TAIL_ANY.  */
+    e.add_input_operand (Pmode, gen_int_mode (get_prefer_tail_policy (), Pmode));
 
-    /* MU.  */
-    e.add_input_operand (Pmode, gen_int_mode (0, Pmode));
+    /* MASK_ANY.  */
+    e.add_input_operand (Pmode, gen_int_mode (get_prefer_mask_policy (), Pmode));
     return e.generate_insn (code_for_vsetvl_no_side_effects (Pmode));
   }
 };

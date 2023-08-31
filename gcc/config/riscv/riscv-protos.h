@@ -406,6 +406,9 @@ enum mask_policy
   MASK_ANY = 2,
 };
 
+/* Return true if VALUE is agnostic or any policy.  */
+#define IS_AGNOSTIC(VALUE) (bool) (VALUE & 0x1 || (VALUE >> 1 & 0x1))
+
 enum class reduction_type
 {
   UNORDERED,

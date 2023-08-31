@@ -1672,9 +1672,11 @@ static rtx
 gen_no_side_effects_vsetvl_rtx (machine_mode vmode, rtx vl, rtx avl)
 {
   unsigned int sew = get_sew (vmode);
+  rtx tail_policy = gen_int_mode (get_prefer_tail_policy (), Pmode);
+  rtx mask_policy = gen_int_mode (get_prefer_mask_policy (), Pmode);
   return gen_vsetvl_no_side_effects (Pmode, vl, avl, gen_int_mode (sew, Pmode),
 				     gen_int_mode (get_vlmul (vmode), Pmode),
-				     const0_rtx, const0_rtx);
+				     tail_policy, mask_policy);
 }
 
 /* GET VL * 2 rtx.  */
