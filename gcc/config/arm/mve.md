@@ -839,8 +839,8 @@
 ])
 
 ;;
-;; [vcaddq_rot90_s, vcadd_rot90_u]
-;; [vcaddq_rot270_s, vcadd_rot270_u]
+;; [vcaddq_rot90_s, vcaddq_rot90_u]
+;; [vcaddq_rot270_s, vcaddq_rot270_u]
 ;; [vhcaddq_rot90_s]
 ;; [vhcaddq_rot270_s]
 ;;
