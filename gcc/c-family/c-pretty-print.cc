@@ -33,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "options.h"
 #include "internal-fn.h"
+#include "function.h"
+#include "basic-block.h"
+#include "gimple.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -1380,12 +1383,14 @@ c_pretty_printer::primary_expression (tree e)
 	  else
 	    primary_expression (var);
 	}
-      else
+      else if (gimple_assign_single_p (SSA_NAME_DEF_STMT (e)))
 	{
 	  /* Print only the right side of the GIMPLE assignment.  */
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (e);
 	  pp_gimple_stmt_1 (this, def_stmt, 0, TDF_RHS_ONLY);
 	}
+      else
+	expression (e);
       break;
 
     default:
