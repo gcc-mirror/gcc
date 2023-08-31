@@ -252,6 +252,13 @@ test_errors()
   VERIFY( is.eof() && ! is.fail() );
   VERIFY( y == 2010y );
 
+  min = -1min;
+  is.clear();
+  is.str("25:59");
+  is >> parse("%H:%M", min); // 25h is out of range and needed
+  VERIFY( is.fail() );
+  VERIFY( min == -1min );
+
   is.clear();
   is.str("328 00");
   is >> parse("%3C %y", y); // 328 is out of range for %C (PR libstdc++/111162)
