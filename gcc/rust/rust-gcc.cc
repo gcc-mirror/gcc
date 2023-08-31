@@ -322,19 +322,19 @@ Gcc_backend::Gcc_backend ()
 }
 
 void
-Gcc_backend::debug (tree t)
+Backend::debug (tree t)
 {
   debug_tree (t);
 };
 
 void
-Gcc_backend::debug (Bvariable *t)
+Backend::debug (Bvariable *t)
 {
   debug_tree (t->get_decl ());
 };
 
 tree
-Gcc_backend::get_identifier_node (const std::string &str)
+Backend::get_identifier_node (const std::string &str)
 {
   return get_identifier_with_length (str.data (), str.length ());
 }

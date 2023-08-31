@@ -63,10 +63,10 @@ public:
   };
 
   // debug
-  virtual void debug (tree) = 0;
-  virtual void debug (Bvariable *) = 0;
+  void debug (tree);
+  void debug (Bvariable *);
 
-  virtual tree get_identifier_node (const std::string &str) = 0;
+  tree get_identifier_node (const std::string &str);
 
   // Types.
 
@@ -502,11 +502,6 @@ class Gcc_backend : public Backend
 {
 public:
   Gcc_backend ();
-
-  void debug (tree t);
-  void debug (Bvariable *t);
-
-  tree get_identifier_node (const std::string &str);
 
   // Expressions.
 
