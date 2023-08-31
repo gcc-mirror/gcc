@@ -1827,8 +1827,8 @@
 })
 
 (define_insn_and_split "*movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,w,*f,*f,*r,*m,*r,*z")
-	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,*m,*f,*f,*z,*r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,w,*f,f,*r,*m,*r,*z")
+	(match_operand:SI 1 "move_operand" "r,Yd,w,rJ,*r*J,m,*f,*f,*z,*r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))"
   { return loongarch_output_move (operands[0], operands[1]); }
