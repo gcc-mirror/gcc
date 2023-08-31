@@ -1635,6 +1635,9 @@ namespace std::chrono
     // TODO cache this function's result?
 
 #ifndef _AIX
+    // Repeat the preprocessor condition used by filesystem::read_symlink,
+    // to avoid a dependency on src/c++17/fs_ops.o if it won't work anyway.
+#if defined(_GLIBCXX_HAVE_READLINK) && defined(_GLIBCXX_HAVE_SYS_STAT_H)
     error_code ec;
     // This should be a symlink to e.g. /usr/share/zoneinfo/Europe/London
     auto path = filesystem::read_symlink("/etc/localtime", ec);
@@ -1653,6 +1656,7 @@ namespace std::chrono
 	      return tz;
 	  }
       }
+#endif
     // Otherwise, look for a file naming the time zone.
     string_view files[] {
       "/etc/timezone",    // Debian derivates
