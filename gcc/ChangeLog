@@ -1,3 +1,23 @@
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110914
+	* tree-ssa-strlen.c (strlen_pass::handle_builtin_memcpy): Don't call
+	adjust_last_stmt unless len is known constant.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111015
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Use wi::mask and
+	wide_int_to_tree instead of unsigned HOST_WIDE_INT shift and
+	build_int_cst to build BIT_AND_EXPR mask.
+
 2023-08-16  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/i386.opt: Add new option mgather.
