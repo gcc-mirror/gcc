@@ -1410,6 +1410,42 @@
 })
 
 ;; -------------------------------------------------------------------------
+;; This extracts a bit (via QImode) from a bitmask vector.
+;; -------------------------------------------------------------------------
+(define_expand "vec_extract<mode>qi"
+  [(set (match_operand:QI	  0 "register_operand")
+     (vec_select:QI
+       (match_operand:VB	  1 "register_operand")
+       (parallel
+	 [(match_operand	  2 "nonmemory_operand")])))]
+  "TARGET_VECTOR"
+{
+  /* Create an empty byte vector and set it to one under mask.  */
+  machine_mode qimode = riscv_vector::get_vector_mode
+      (QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
+
+  rtx tmp1 = gen_reg_rtx (qimode);
+  emit_move_insn (tmp1, gen_const_vec_duplicate (qimode, GEN_INT (0)));
+  rtx ones = gen_const_vec_duplicate (qimode, GEN_INT (1));
+
+  rtx ops1[] = {tmp1, tmp1, ones, operands[1]};
+  riscv_vector::emit_vlmax_insn (code_for_pred_merge (qimode),
+				 riscv_vector::MERGE_OP, ops1);
+
+  /* Slide down the requested byte element.  */
+  rtx tmp2 = gen_reg_rtx (qimode);
+
+  rtx ops2[] = {tmp2, tmp1, operands[2]};
+  riscv_vector::emit_vlmax_insn
+    (code_for_pred_slide (UNSPEC_VSLIDEDOWN, qimode),
+     riscv_vector::BINARY_OP, ops2);
+
+  /* Extract it.  */
+  emit_insn (gen_pred_extract_first (qimode, operands[0], tmp2));
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP] Binary operations
 ;; -------------------------------------------------------------------------
 ;; Includes:
