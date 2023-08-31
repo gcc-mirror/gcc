@@ -1867,9 +1867,9 @@ Backend::statement_list (const std::vector<tree> &statements)
 // the Bblock.
 
 tree
-Gcc_backend::block (tree fndecl, tree enclosing,
-		    const std::vector<Bvariable *> &vars,
-		    location_t start_location, location_t)
+Backend::block (tree fndecl, tree enclosing,
+		const std::vector<Bvariable *> &vars, location_t start_location,
+		location_t)
 {
   tree block_tree = make_node (BLOCK);
   if (enclosing == NULL)
@@ -1928,8 +1928,8 @@ Gcc_backend::block (tree fndecl, tree enclosing,
 // Add statements to a block.
 
 void
-Gcc_backend::block_add_statements (tree bind_tree,
-				   const std::vector<tree> &statements)
+Backend::block_add_statements (tree bind_tree,
+			       const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
   for (std::vector<tree>::const_iterator p = statements.begin ();
