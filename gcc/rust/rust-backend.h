@@ -157,31 +157,31 @@ public:
   // Return an expression for a zero value of the given type.  This is
   // used for cases such as local variable initialization and
   // converting nil to other types.
-  virtual tree zero_expression (tree) = 0;
+  tree zero_expression (tree);
 
   // Create a reference to a variable.
-  virtual tree var_expression (Bvariable *var, location_t) = 0;
+  tree var_expression (Bvariable *var, location_t);
 
   // Return an expression for the multi-precision integer VAL in BTYPE.
-  virtual tree integer_constant_expression (tree btype, mpz_t val) = 0;
+  tree integer_constant_expression (tree btype, mpz_t val);
 
   // Return an expression for the floating point value VAL in BTYPE.
-  virtual tree float_constant_expression (tree btype, mpfr_t val) = 0;
+  tree float_constant_expression (tree btype, mpfr_t val);
 
   // Return an expression for the complex value VAL in BTYPE.
-  virtual tree complex_constant_expression (tree btype, mpc_t val) = 0;
+  tree complex_constant_expression (tree btype, mpc_t val);
 
   // Return an expression for the string value VAL.
-  virtual tree string_constant_expression (const std::string &val) = 0;
+  tree string_constant_expression (const std::string &val);
 
   // Get a char literal
-  virtual tree char_constant_expression (char c) = 0;
+  tree char_constant_expression (char c);
 
   // Get a char literal
-  virtual tree wchar_constant_expression (wchar_t c) = 0;
+  tree wchar_constant_expression (wchar_t c);
 
   // Return an expression for the boolean value VAL.
-  virtual tree boolean_constant_expression (bool val) = 0;
+  tree boolean_constant_expression (bool val);
 
   // Return an expression for the real part of BCOMPLEX.
   virtual tree real_part_expression (tree bcomplex, location_t) = 0;
@@ -501,24 +501,6 @@ public:
   Gcc_backend ();
 
   // Expressions.
-
-  tree zero_expression (tree);
-
-  tree var_expression (Bvariable *var, location_t);
-
-  tree integer_constant_expression (tree type, mpz_t val);
-
-  tree float_constant_expression (tree type, mpfr_t val);
-
-  tree complex_constant_expression (tree type, mpc_t val);
-
-  tree string_constant_expression (const std::string &val);
-
-  tree wchar_constant_expression (wchar_t c);
-
-  tree char_constant_expression (char c);
-
-  tree boolean_constant_expression (bool val);
 
   tree real_part_expression (tree bcomplex, location_t);
 
