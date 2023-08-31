@@ -1654,7 +1654,7 @@ register_known_functions (known_function_manager &kfm)
        like this:
 	 extern int *___errno(void) __attribute__((__const__));
 	 #define errno (*(___errno()))
-       and OS X like this:
+       and macOS like this:
 	 extern int * __error(void);
 	 #define errno (*__error())
        and similarly __errno for newlib.

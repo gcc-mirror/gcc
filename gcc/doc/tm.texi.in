@@ -4012,7 +4012,7 @@ macro, a reasonable default is used.
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
 and the method arguments all at once to the method-lookup library function.
-This is the usual setting when targeting Darwin/Mac OS X systems, which have
+This is the usual setting when targeting Darwin / macOS systems, which have
 the NeXT runtime installed.
 
 If the macro is set to 0, the "GNU" Objective-C message sending convention

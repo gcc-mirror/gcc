@@ -44,7 +44,7 @@ Plugins are loaded with
 
 Where @var{name} is the plugin name and @var{ext} is the platform-specific
 dynamic library extension. It should be @code{dll} on Windows/MinGW,
-@code{dylib} on Darwin/Mac OS X, and @code{so} on all other platforms.
+@code{dylib} on Darwin/macOS, and @code{so} on all other platforms.
 The plugin arguments are parsed by GCC and passed to respective
 plugins as key-value pairs. Multiple plugins can be invoked by
 specifying multiple @option{-fplugin} arguments.

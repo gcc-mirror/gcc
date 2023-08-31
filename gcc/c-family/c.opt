@@ -1988,7 +1988,7 @@ Implement resolution of DR 150 for matching of template template arguments.
 
 fnext-runtime
 ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime)
-Generate code for NeXT (Apple Mac OS X) runtime environment.
+Generate code for NeXT (Apple macOS) runtime environment.
 
 fnil-receivers
 ObjC ObjC++ Var(flag_nil_receivers) Init(1)

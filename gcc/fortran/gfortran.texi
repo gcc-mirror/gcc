@@ -978,7 +978,7 @@ low level file descriptor corresponding to an open Fortran unit. Then,
 using e.g. the @code{ISO_C_BINDING} feature, one can call the
 underlying system call to flush dirty data to stable storage, such as
 @code{fsync} on POSIX, @code{_commit} on MingW, or @code{fcntl(fd,
-F_FULLSYNC, 0)} on Mac OS X. The following example shows how to call
+F_FULLSYNC, 0)} on macOS. The following example shows how to call
 fsync:
 
 @smallexample

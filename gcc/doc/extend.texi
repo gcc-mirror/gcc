@@ -24178,7 +24178,7 @@ attribute, do change the value of preprocessor macros like
 
 The following pragmas are available for all architectures running the
 Darwin operating system.  These are useful for compatibility with other
-Mac OS compilers.
+macOS compilers.
 
 @table @code
 @cindex pragma, mark
@@ -25376,7 +25376,7 @@ compiled separately.
 @end table
 
 G++ implements the Borland model on targets where the linker supports it,
-including ELF targets (such as GNU/Linux), Mac OS X and Microsoft Windows.
+including ELF targets (such as GNU/Linux), macOS and Microsoft Windows.
 Otherwise G++ implements neither automatic model.
 
 You have the following options for dealing with template instantiations:

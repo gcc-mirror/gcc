@@ -4837,7 +4837,7 @@ Use @var{class-name} as the name of the class to instantiate for each
 literal string specified with the syntax @code{@@"@dots{}"}.  The default
 class name is @code{NXConstantString} if the GNU runtime is being used, and
 @code{NSConstantString} if the NeXT runtime is being used (see below).  On
-Darwin (macOS, MacOS X) platforms, the @option{-fconstant-cfstrings} option, if
+Darwin / macOS platforms, the @option{-fconstant-cfstrings} option, if
 also present, overrides the @option{-fconstant-string-class} setting and cause
 @code{@@"@dots{}"} literals to be laid out as constant CoreFoundation strings.
 Note that @option{-fconstant-cfstrings} is an alias for the target-specific
@@ -4851,7 +4851,7 @@ runtime.  This is the default for most types of systems.
 @opindex fnext-runtime
 @item -fnext-runtime
 Generate output compatible with the NeXT runtime.  This is the default
-for NeXT-based systems, including Darwin and Mac OS X@.  The macro
+for NeXT-based systems, including Darwin / macOS.  The macro
 @code{__NEXT_RUNTIME__} is predefined if (and only if) this option is
 used.
 
@@ -11486,7 +11486,7 @@ possible.
 Produce debugging information in DWARF format (if that is supported).
 The value of @var{version} may be either 2, 3, 4 or 5; the default
 version for most targets is 5 (with the exception of VxWorks, TPF and
-Darwin/Mac OS X, which default to version 2, and AIX, which defaults
+Darwin / macOS, which default to version 2, and AIX, which defaults
 to version 4).
 
 Note that with DWARF Version 2, some ports require and always
@@ -30069,7 +30069,7 @@ the same as @option{-mbig}.
 
 @opindex mdynamic-no-pic
 @item -mdynamic-no-pic
-On Darwin and Mac OS X systems, compile code so that it is not
+On Darwin / macOS systems, compile code so that it is not
 relocatable, but that its external references are relocatable.  The
 resulting code is suitable for applications, but not shared
 libraries.

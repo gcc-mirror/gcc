@@ -440,7 +440,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	}
     }
 
-  /* We will need to know the OS X version we're trying to build for here
+  /* We will need to know the macOS version we're trying to build for here
      so that we can figure out the mechanism and source for the sysroot to
      be used.  */
   if (!seen_version_min)

@@ -1,4 +1,4 @@
-/* Target definitions for Darwin (Mac OS X) systems.
+/* Target definitions for Darwin (macOS) systems.
    Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CONFIG_DARWIN_H
 
 /* The definitions in this file are common to all processor types
-   running Darwin, which is the kernel for Mac OS X.  Darwin is
+   running Darwin, which is the kernel for macOS.  Darwin is
    basically a BSD user layer laid over a Mach kernel, then evolved
    for many years (at NeXT) in parallel with other Unix systems.  So
    while the runtime is a somewhat idiosyncratic Mach-based thing,

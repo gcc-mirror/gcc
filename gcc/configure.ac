@@ -4325,7 +4325,7 @@ case "$target_os" in
       gcc_cv_as_mmacosx_version_min,
       [-mmacosx-version-min=10.1], [.text],,
       [AC_DEFINE(HAVE_AS_MMACOSX_VERSION_MIN_OPTION, 1,
-	[Define if your Mac OS X assembler supports the -mmacos-version-min option.])])
+	[Define if your macOS assembler supports the -mmacos-version-min option.])])
     ;;
 esac
 
@@ -4762,7 +4762,7 @@ foo:	nop
           gcc_cv_as_mllvm_x86_pad_for_align,
           [-mllvm -x86-pad-for-align=false], [.text],,
           [AC_DEFINE(HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN, 1,
-	    [Define if your Mac OS X assembler supports -mllvm -x86-pad-for-align=false.])])
+	    [Define if your macOS assembler supports -mllvm -x86-pad-for-align=false.])])
        ;;
     esac
 
