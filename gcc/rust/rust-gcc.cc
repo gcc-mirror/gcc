@@ -891,7 +891,7 @@ Backend::boolean_constant_expression (bool val)
 // Return the real part of a complex expression.
 
 tree
-Gcc_backend::real_part_expression (tree complex_tree, location_t location)
+Backend::real_part_expression (tree complex_tree, location_t location)
 {
   if (complex_tree == error_mark_node)
     return error_mark_node;
@@ -905,7 +905,7 @@ Gcc_backend::real_part_expression (tree complex_tree, location_t location)
 // Return the imaginary part of a complex expression.
 
 tree
-Gcc_backend::imag_part_expression (tree complex_tree, location_t location)
+Backend::imag_part_expression (tree complex_tree, location_t location)
 {
   if (complex_tree == error_mark_node)
     return error_mark_node;
@@ -919,8 +919,8 @@ Gcc_backend::imag_part_expression (tree complex_tree, location_t location)
 // Make a complex expression given its real and imaginary parts.
 
 tree
-Gcc_backend::complex_expression (tree real_tree, tree imag_tree,
-				 location_t location)
+Backend::complex_expression (tree real_tree, tree imag_tree,
+			     location_t location)
 {
   if (real_tree == error_mark_node || imag_tree == error_mark_node)
     return error_mark_node;
@@ -936,8 +936,8 @@ Gcc_backend::complex_expression (tree real_tree, tree imag_tree,
 // An expression that converts an expression to a different type.
 
 tree
-Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
-				 location_t location)
+Backend::convert_expression (tree type_tree, tree expr_tree,
+			     location_t location)
 {
   if (type_tree == error_mark_node || expr_tree == error_mark_node
       || TREE_TYPE (expr_tree) == error_mark_node)
@@ -970,8 +970,8 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
 // Return an expression for the field at INDEX in BSTRUCT.
 
 tree
-Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
-				      location_t location)
+Backend::struct_field_expression (tree struct_tree, size_t index,
+				  location_t location)
 {
   if (struct_tree == error_mark_node
       || TREE_TYPE (struct_tree) == error_mark_node)
@@ -1002,7 +1002,7 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
 // Return an expression that executes BSTAT before BEXPR.
 
 tree
-Gcc_backend::compound_expression (tree stat, tree expr, location_t location)
+Backend::compound_expression (tree stat, tree expr, location_t location)
 {
   if (stat == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -1015,9 +1015,9 @@ Gcc_backend::compound_expression (tree stat, tree expr, location_t location)
 // ELSE_EXPR otherwise.
 
 tree
-Gcc_backend::conditional_expression (tree, tree type_tree, tree cond_expr,
-				     tree then_expr, tree else_expr,
-				     location_t location)
+Backend::conditional_expression (tree, tree type_tree, tree cond_expr,
+				 tree then_expr, tree else_expr,
+				 location_t location)
 {
   if (type_tree == error_mark_node || cond_expr == error_mark_node
       || then_expr == error_mark_node || else_expr == error_mark_node)
@@ -1127,8 +1127,8 @@ is_floating_point (tree t)
 
 // Return an expression for the negation operation OP EXPR.
 tree
-Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
-				  location_t location)
+Backend::negation_expression (NegationOperator op, tree expr_tree,
+			      location_t location)
 {
   /* Check if the expression is an error, in which case we return an error
      expression. */
@@ -1163,9 +1163,9 @@ Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
 }
 
 tree
-Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-					       tree left, tree right,
-					       location_t location)
+Backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+					   tree left, tree right,
+					   location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1265,7 +1265,7 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
 // Return an expression for the arithmetic or logical operation LEFT OP RIGHT
 // with overflow checking when possible
 tree
-Gcc_backend::arithmetic_or_logical_expression_checked (
+Backend::arithmetic_or_logical_expression_checked (
   ArithmeticOrLogicalOperator op, tree left, tree right, location_t location,
   Bvariable *receiver_var)
 {
@@ -1314,8 +1314,8 @@ Gcc_backend::arithmetic_or_logical_expression_checked (
 
 // Return an expression for the comparison operation LEFT OP RIGHT.
 tree
-Gcc_backend::comparison_expression (ComparisonOperator op, tree left_tree,
-				    tree right_tree, location_t location)
+Backend::comparison_expression (ComparisonOperator op, tree left_tree,
+				tree right_tree, location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1334,8 +1334,8 @@ Gcc_backend::comparison_expression (ComparisonOperator op, tree left_tree,
 
 // Return an expression for the lazy boolean operation LEFT OP RIGHT.
 tree
-Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
-				      tree right_tree, location_t location)
+Backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
+				  tree right_tree, location_t location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */
@@ -1356,9 +1356,9 @@ Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
 // Return an expression that constructs BTYPE with VALS.
 
 tree
-Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
-				     const std::vector<tree> &vals,
-				     int union_index, location_t location)
+Backend::constructor_expression (tree type_tree, bool is_variant,
+				 const std::vector<tree> &vals, int union_index,
+				 location_t location)
 {
   if (type_tree == error_mark_node)
     return error_mark_node;
@@ -1468,7 +1468,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 }
 
 tree
-Gcc_backend::array_constructor_expression (
+Backend::array_constructor_expression (
   tree type_tree, const std::vector<unsigned long> &indexes,
   const std::vector<tree> &vals, location_t location)
 {
@@ -1522,9 +1522,9 @@ Gcc_backend::array_constructor_expression (
 // Build insns to create an array, initialize all elements of the array to
 // value, and return it
 tree
-Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
-				tree length, tree value, tree *tmp,
-				location_t locus)
+Backend::array_initializer (tree fndecl, tree block, tree array_type,
+			    tree length, tree value, tree *tmp,
+			    location_t locus)
 {
   std::vector<tree> stmts;
 
@@ -1592,8 +1592,8 @@ Gcc_backend::array_initializer (tree fndecl, tree block, tree array_type,
 // Return an expression representing ARRAY[INDEX]
 
 tree
-Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
-				     location_t location)
+Backend::array_index_expression (tree array_tree, tree index_tree,
+				 location_t location)
 {
   if (array_tree == error_mark_node || TREE_TYPE (array_tree) == error_mark_node
       || index_tree == error_mark_node)
@@ -1615,8 +1615,8 @@ Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
 
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
-Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
-			      tree chain_expr, location_t location)
+Backend::call_expression (tree fn, const std::vector<tree> &fn_args,
+			  tree chain_expr, location_t location)
 {
   if (fn == error_mark_node || TREE_TYPE (fn) == error_mark_node)
     return error_mark_node;
