@@ -1,3 +1,20 @@
+2023-08-30  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* engine.cc (impl_region_model_context::warn): New optional
+	parameter.
+	* exploded-graph.h (class impl_region_model_context): Likewise.
+	* region-model.cc (region_model::pop_frame): New callback
+	feature for region_model::pop_frame.
+	* region-model.h (struct append_regions_cb_data): Likewise.
+	(class region_model): Likewise.
+	(class region_model_context): New optional parameter.
+	(class region_model_context_decorator): Likewise.
+
+2023-08-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* region-model.cc: Define INCLUDE_ALGORITHM.
+
 2023-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99860

@@ -1,3 +1,169 @@
+2023-08-30  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* config/pru/predicates.md (const_0_operand): New predicate.
+	(pru_cstore_comparison_operator): Ditto.
+	* config/pru/pru.md (cstore<mode>4): New pattern.
+	(cstoredi4): Ditto.
+
+2023-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111228
+	* match.pd ((vec_perm (vec_perm ..) @5 ..) -> (vec_perm @x @5 ..)):
+	New simplifications.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (movmisalign<mode>): Delete.
+
+2023-08-30  Die Li  <lidie@eswincomputing.com>
+	    Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/peephole.md: New pattern.
+	* config/riscv/predicates.md (a0a1_reg_operand): New predicate.
+	(zcmp_mv_sreg_operand): New predicate.
+	* config/riscv/riscv.md: New predicate.
+	* config/riscv/zc.md (*mva01s<X:mode>): New pattern.
+	(*mvsa01<X:mode>): New pattern.
+
+2023-08-30  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc
+	(riscv_zcmp_can_use_popretz): true if popretz can be used
+	(riscv_gen_multi_pop_insn): interface to generate cm.pop[ret][z]
+	(riscv_expand_epilogue): expand cm.pop[ret][z] in epilogue
+	* config/riscv/riscv.md: define A0_REGNUM
+	* config/riscv/zc.md
+	(@gpr_multi_popretz_up_to_ra_<mode>): md for popretz ra
+	(@gpr_multi_popretz_up_to_s0_<mode>): md for popretz ra, s0
+	(@gpr_multi_popretz_up_to_s1_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s2_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s3_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s4_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s5_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s6_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s7_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s8_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s9_<mode>): likewise
+	(@gpr_multi_popretz_up_to_s11_<mode>): likewise
+
+2023-08-30  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/iterators.md
+	(slot0_offset): slot 0 offset in stack GPRs area in bytes
+	(slot1_offset): slot 1 offset in stack GPRs area in bytes
+	(slot2_offset): likewise
+	(slot3_offset): likewise
+	(slot4_offset): likewise
+	(slot5_offset): likewise
+	(slot6_offset): likewise
+	(slot7_offset): likewise
+	(slot8_offset): likewise
+	(slot9_offset): likewise
+	(slot10_offset): likewise
+	(slot11_offset): likewise
+	(slot12_offset): likewise
+	* config/riscv/predicates.md
+	(stack_push_up_to_ra_operand): predicates of stack adjust pushing ra
+	(stack_push_up_to_s0_operand): predicates of stack adjust pushing ra, s0
+	(stack_push_up_to_s1_operand): likewise
+	(stack_push_up_to_s2_operand): likewise
+	(stack_push_up_to_s3_operand): likewise
+	(stack_push_up_to_s4_operand): likewise
+	(stack_push_up_to_s5_operand): likewise
+	(stack_push_up_to_s6_operand): likewise
+	(stack_push_up_to_s7_operand): likewise
+	(stack_push_up_to_s8_operand): likewise
+	(stack_push_up_to_s9_operand): likewise
+	(stack_push_up_to_s11_operand): likewise
+	(stack_pop_up_to_ra_operand): predicates of stack adjust poping ra
+	(stack_pop_up_to_s0_operand): predicates of stack adjust poping ra, s0
+	(stack_pop_up_to_s1_operand): likewise
+	(stack_pop_up_to_s2_operand): likewise
+	(stack_pop_up_to_s3_operand): likewise
+	(stack_pop_up_to_s4_operand): likewise
+	(stack_pop_up_to_s5_operand): likewise
+	(stack_pop_up_to_s6_operand): likewise
+	(stack_pop_up_to_s7_operand): likewise
+	(stack_pop_up_to_s8_operand): likewise
+	(stack_pop_up_to_s9_operand): likewise
+	(stack_pop_up_to_s11_operand): likewise
+	* config/riscv/riscv-protos.h
+	(riscv_zcmp_valid_stack_adj_bytes_p):declaration
+	* config/riscv/riscv.cc (struct riscv_frame_info): comment change
+	(riscv_avoid_multi_push): helper function of riscv_use_multi_push
+	(riscv_use_multi_push): true if multi push is used
+	(riscv_multi_push_sregs_count): num of sregs in multi-push
+	(riscv_multi_push_regs_count): num of regs in multi-push
+	(riscv_16bytes_align): align to 16 bytes
+	(riscv_stack_align): moved to a better place
+	(riscv_save_libcall_count): no functional change
+	(riscv_compute_frame_info): add zcmp frame info
+	(riscv_for_each_saved_reg): save or restore fprs in specified slot for zcmp
+	(riscv_adjust_multi_push_cfi_prologue): adjust cfi for cm.push
+	(riscv_gen_multi_push_pop_insn): gen function for multi push and pop
+	(get_multi_push_fpr_mask): get mask for the fprs pushed by cm.push
+	(riscv_expand_prologue): allocate stack by cm.push
+	(riscv_adjust_multi_pop_cfi_epilogue): adjust cfi for cm.pop[ret]
+	(riscv_expand_epilogue): allocate stack by cm.pop[ret]
+	(zcmp_base_adj): calculate stack adjustment base size
+	(zcmp_additional_adj): calculate stack adjustment additional size
+	(riscv_zcmp_valid_stack_adj_bytes_p): check if stack adjustment valid
+	* config/riscv/riscv.h (RETURN_ADDR_MASK): mask of ra
+	(S0_MASK): likewise
+	(S1_MASK): likewise
+	(S2_MASK): likewise
+	(S3_MASK): likewise
+	(S4_MASK): likewise
+	(S5_MASK): likewise
+	(S6_MASK): likewise
+	(S7_MASK): likewise
+	(S8_MASK): likewise
+	(S9_MASK): likewise
+	(S10_MASK): likewise
+	(S11_MASK): likewise
+	(MULTI_PUSH_GPR_MASK): GPR_MASK that cm.push can cover at most
+	(ZCMP_MAX_SPIMM): max spimm value
+	(ZCMP_SP_INC_STEP): zcmp sp increment step
+	(ZCMP_INVALID_S0S10_SREGS_COUNTS): num of s0-s10
+	(ZCMP_S0S11_SREGS_COUNTS): num of s0-s11
+	(ZCMP_MAX_GRP_SLOTS): max slots of pushing and poping in zcmp
+	(CALLEE_SAVED_FREG_NUMBER): get x of fsx(fs0 ~ fs11)
+	* config/riscv/riscv.md: include zc.md
+	* config/riscv/zc.md: New file. machine description for zcmp
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110914
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_memcpy): Don't call
+	adjust_last_stmt unless len is known constant.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111015
+	* gimple-ssa-store-merging.cc
+	(imm_store_chain_info::output_merged_store): Use wi::mask and
+	wide_int_to_tree instead of unsigned HOST_WIDE_INT shift and
+	build_int_cst to build BIT_AND_EXPR mask.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Add MASK_LEN_ variant.
+	(call_may_clobber_ref_p_1): Ditto.
+	* tree-ssa-loop-ivopts.cc (get_mem_type_for_internal_fn): Ditto.
+	(get_alias_ptr_type_for_ptr_address): Ditto.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(vector_insn_info::get_avl_or_vl_reg): Fix bug.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec-vls.md (movmisalign<mode>): New pattern.
+	* config/riscv/riscv.cc (riscv_support_vector_misalignment): Support
+	VLS misalign.
+
 2023-08-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* config/riscv/zicond.md: New splitters to rewrite single bit

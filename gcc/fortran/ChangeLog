@@ -1,3 +1,20 @@
+2023-08-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	* gfortran.h (gfc_drop_interface_elements_before): New prototype.
+	(gfc_current_interface_head): Return a reference to the pointer.
+	* interface.cc (gfc_current_interface_head): Ditto.
+	(free_interface_elements_until): New function, generalizing
+	gfc_free_interface.
+	(gfc_free_interface): Use free_interface_elements_until.
+	(gfc_drop_interface_elements_before): New function.
+	* parse.cc
+	(current_interface_ptr, previous_interface_head): New static variables.
+	(current_interface_valid_p, get_current_interface_ptr): New functions.
+	(decode_statement): Initialize previous_interface_head.
+	(reject_statement): Restore current interface pointer to point to
+	previous_interface_head.
+
 2023-08-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/92586

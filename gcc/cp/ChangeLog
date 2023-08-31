@@ -1,3 +1,14 @@
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91319
+	* parser.cc (cp_parser_initializer_list): Set CONSTRUCTOR_IS_DIRECT_INIT
+	when the designated initializer is of the .x{} form.
+
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111173
+	* decl.cc (grokdeclarator): Disallow constinit on functions.
+
 2023-08-29  Marek Polacek  <polacek@redhat.com>
 
 	* call.cc (convert_like_internal): Show where the conversion function

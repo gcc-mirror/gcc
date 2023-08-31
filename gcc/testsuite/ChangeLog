@@ -1,3 +1,112 @@
+2023-08-30  Eric Feng  <ef2648@columbia.edu>
+
+	PR analyzer/107646
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Implements reference
+	count checking for PyObjects.
+	* gcc.dg/plugin/cpython-plugin-test-2.c: Moved to...
+	* gcc.dg/plugin/cpython-plugin-test-PyList_Append.c: ...here
+	(and added more tests).
+	* gcc.dg/plugin/cpython-plugin-test-1.c: Moved to...
+	* gcc.dg/plugin/cpython-plugin-test-no-Python-h.c: ...here (and
+	added more tests).
+	* gcc.dg/plugin/plugin.exp: New tests.
+	* gcc.dg/plugin/cpython-plugin-test-PyList_New.c: New test.
+	* gcc.dg/plugin/cpython-plugin-test-PyLong_FromLong.c: New test.
+
+2023-08-30  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106562
+	* gcc.target/pru/pr106562-10.c: New test.
+	* gcc.target/pru/pr106562-11.c: New test.
+	* gcc.target/pru/pr106562-5.c: New test.
+	* gcc.target/pru/pr106562-6.c: New test.
+	* gcc.target/pru/pr106562-7.c: New test.
+	* gcc.target/pru/pr106562-8.c: New test.
+	* gcc.target/pru/pr106562-9.c: New test.
+
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91319
+	* g++.dg/cpp2a/desig30.C: New test.
+
+2023-08-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/111173
+	* g++.dg/cpp2a/constinit19.C: New test.
+
+2023-08-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-42.c: Use __UINT64_TYPE__ instead
+	of unsigned long.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-reduc-7.c: Add RVV.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/slp-26.c: Adapt for RVV.
+
+2023-08-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48776
+	* gfortran.dg/interface_procedure_1.f90: New test.
+
+2023-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111228
+	* gcc.dg/tree-ssa/forwprop-42.c: New testcase.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/vect-double-reduc-5.c: Add riscv.
+	* gcc.dg/vect/vect-outer-4e.c: Ditto.
+	* gcc.dg/vect/vect-outer-4f.c: Ditto.
+	* gcc.dg/vect/vect-outer-4g.c: Ditto.
+	* gcc.dg/vect/vect-outer-4k.c: Ditto.
+	* gcc.dg/vect/vect-outer-4l.c: Ditto.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.dg/vect/pr88598-1.c: Add riscv_vector.
+	* gcc.dg/vect/pr88598-2.c: Ditto.
+	* gcc.dg/vect/pr88598-3.c: Ditto.
+
+2023-08-30  Die Li  <lidie@eswincomputing.com>
+	    Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/cm_mv_rv32.c: New test.
+
+2023-08-30  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: add testcase for cm.popretz in rv32e
+	* gcc.target/riscv/rv32i_zcmp.c: add testcase for cm.popretz in rv32i
+
+2023-08-30  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_zcmp.c: New test.
+	* gcc.target/riscv/rv32i_zcmp.c: New test.
+	* gcc.target/riscv/zcmp_push_fpr.c: New test.
+	* gcc.target/riscv/zcmp_stack_alignment.c: New test.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110914
+	* gcc.c-torture/execute/pr110914.c: New test.
+
+2023-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/111015
+	* gcc.dg/pr111015.c: New test.
+
+2023-08-30  Tsukasa OI  <research_trasio@irq.a4lg.com>
+
+	* gcc.target/riscv/arch-24.c: Test RV32I+Zcf instead.
+
+2023-08-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vls/misalign-1.c: New test.
+
 2023-08-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* gcc.target/riscv/zicond-xor-01.c: New test.
