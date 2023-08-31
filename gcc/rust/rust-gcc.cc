@@ -1695,7 +1695,7 @@ Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
 // Variable initialization.
 
 tree
-Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
+Backend::init_statement (tree, Bvariable *var, tree init_tree)
 {
   tree var_tree = var->get_decl ();
   if (var_tree == error_mark_node || init_tree == error_mark_node)
@@ -1727,7 +1727,7 @@ Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
 // Assignment.
 
 tree
-Gcc_backend::assignment_statement (tree lhs, tree rhs, location_t location)
+Backend::assignment_statement (tree lhs, tree rhs, location_t location)
 {
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
@@ -1752,7 +1752,7 @@ Gcc_backend::assignment_statement (tree lhs, tree rhs, location_t location)
 // Return.
 
 tree
-Gcc_backend::return_statement (tree fntree, tree val, location_t location)
+Backend::return_statement (tree fntree, tree val, location_t location)
 {
   if (fntree == error_mark_node)
     return error_mark_node;
@@ -1776,9 +1776,8 @@ Gcc_backend::return_statement (tree fntree, tree val, location_t location)
 //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
 
 tree
-Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
-					  tree finally_stmt,
-					  location_t location)
+Backend::exception_handler_statement (tree try_stmt, tree except_stmt,
+				      tree finally_stmt, location_t location)
 {
   if (try_stmt == error_mark_node || except_stmt == error_mark_node
       || finally_stmt == error_mark_node)
@@ -1797,8 +1796,8 @@ Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
 // If.
 
 tree
-Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
-			   location_t location)
+Backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
+		       location_t location)
 {
   if (cond_tree == error_mark_node || then_tree == error_mark_node
       || else_tree == error_mark_node)
@@ -1811,13 +1810,13 @@ Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
 // Loops
 
 tree
-Gcc_backend::loop_expression (tree body, location_t locus)
+Backend::loop_expression (tree body, location_t locus)
 {
   return fold_build1_loc (locus, LOOP_EXPR, void_type_node, body);
 }
 
 tree
-Gcc_backend::exit_expression (tree cond_tree, location_t locus)
+Backend::exit_expression (tree cond_tree, location_t locus)
 {
   return fold_build1_loc (locus, EXIT_EXPR, void_type_node, cond_tree);
 }
@@ -1825,7 +1824,7 @@ Gcc_backend::exit_expression (tree cond_tree, location_t locus)
 // Pair of statements.
 
 tree
-Gcc_backend::compound_statement (tree s1, tree s2)
+Backend::compound_statement (tree s1, tree s2)
 {
   tree stmt_list = NULL_TREE;
   tree t = s1;
@@ -1848,7 +1847,7 @@ Gcc_backend::compound_statement (tree s1, tree s2)
 // List of statements.
 
 tree
-Gcc_backend::statement_list (const std::vector<tree> &statements)
+Backend::statement_list (const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
   for (std::vector<tree>::const_iterator p = statements.begin ();

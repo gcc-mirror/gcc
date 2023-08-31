@@ -281,40 +281,38 @@ public:
   // Create a variable initialization statement in the specified
   // function.  This initializes a local variable at the point in the
   // program flow where it is declared.
-  virtual tree init_statement (tree, Bvariable *var, tree init) = 0;
+  tree init_statement (tree, Bvariable *var, tree init);
 
   // Create an assignment statement within the specified function.
-  virtual tree assignment_statement (tree lhs, tree rhs, location_t) = 0;
+  tree assignment_statement (tree lhs, tree rhs, location_t);
 
   // Create return statement for an decl for a value (can be NULL_TREE) at a
   // location
-  virtual tree return_statement (tree fndecl, tree val, location_t) = 0;
+  tree return_statement (tree fndecl, tree val, location_t);
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
-  virtual tree if_statement (tree, tree condition, tree then_block,
-			     tree else_block, location_t)
-    = 0;
+  tree if_statement (tree, tree condition, tree then_block, tree else_block,
+		     location_t);
 
   // infinite loop expressions
-  virtual tree loop_expression (tree body, location_t) = 0;
+  tree loop_expression (tree body, location_t);
 
   // exit expressions
-  virtual tree exit_expression (tree condition, location_t) = 0;
+  tree exit_expression (tree condition, location_t);
 
   // Create a single statement from two statements.
-  virtual tree compound_statement (tree, tree) = 0;
+  tree compound_statement (tree, tree);
 
   // Create a single statement from a list of statements.
-  virtual tree statement_list (const std::vector<tree> &) = 0;
+  tree statement_list (const std::vector<tree> &);
 
   // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if
   // an exception occurs. EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and
   // if not NULL, it will always be executed.  This is used for handling defers
   // in Go functions.  In C++, the resulting code is of this form:
   //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
-  virtual tree exception_handler_statement (tree bstat, tree except_stmt,
-					    tree finally_stmt, location_t)
-    = 0;
+  tree exception_handler_statement (tree bstat, tree except_stmt,
+				    tree finally_stmt, location_t);
 
   // Blocks.
 
@@ -538,28 +536,6 @@ public:
 
   tree call_expression (tree fn, const std::vector<tree> &args,
 			tree static_chain, location_t);
-
-  // Statements.
-
-  tree init_statement (tree, Bvariable *var, tree init);
-
-  tree assignment_statement (tree lhs, tree rhs, location_t);
-
-  tree return_statement (tree fndecl, tree val, location_t locus);
-
-  tree if_statement (tree, tree condition, tree then_block, tree else_block,
-		     location_t);
-
-  tree compound_statement (tree, tree);
-
-  tree statement_list (const std::vector<tree> &);
-
-  tree exception_handler_statement (tree bstat, tree except_stmt,
-				    tree finally_stmt, location_t);
-
-  tree loop_expression (tree body, location_t);
-
-  tree exit_expression (tree condition, location_t);
 
   // Blocks.
 
