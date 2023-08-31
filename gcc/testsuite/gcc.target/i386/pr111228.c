@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-cddce1" } */
+/* { dg-additional-options "-msse2" { target sse2 } } */
 
 typedef __UINT64_TYPE__ v2di __attribute__((vector_size(16)));
 
@@ -14,4 +15,4 @@ void test (v2di *v)
   g = res;
 }
 
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <\[^>\]*, { 0, 3 }>" 1 "cddce1" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <\[^>\]*, { 0, 3 }>" 1 "cddce1" { target sse2 } } } */
