@@ -598,7 +598,25 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
-  enter_intrinsic_block (ctx, fndecl);
+  rust_assert (fntype->get_num_substitutions () == 1);
+  auto &param_mapping = fntype->get_substs ().at (0);
+  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
+  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  tree template_parameter_type
+    = TyTyResolveCompile::compile (ctx, resolved_tyty);
+
+  // this should match y as well or we can take it from the TyTy structure
+  tree tmp_stmt = error_mark_node;
+  Bvariable *result_variable = ctx->get_backend ()->temporary_variable (
+    fndecl, NULL_TREE, template_parameter_type, NULL_TREE,
+    true /*address_is_taken*/, UNDEF_LOCATION, &tmp_stmt);
+  Bvariable *bool_variable
+    = ctx->get_backend ()->temporary_variable (fndecl, NULL_TREE,
+					       boolean_type_node, NULL_TREE,
+					       true /*address_is_taken*/,
+					       UNDEF_LOCATION, &tmp_stmt);
+
+  enter_intrinsic_block (ctx, fndecl, {result_variable, bool_variable});
 
   // BUILTIN op_with_overflow FN BODY BEGIN
   auto x = ctx->get_backend ()->var_expression (x_param, UNDEF_LOCATION);
@@ -628,24 +646,20 @@ op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op)
     }
   rust_assert (overflow_builtin != error_mark_node);
 
-  // this should match y as well or we can take it from the TyTy structure
-  tree overflow_op_type = TREE_TYPE (x);
-  tree tmp_stmt = error_mark_node;
-  Bvariable *bvar
-    = ctx->get_backend ()->temporary_variable (fndecl, NULL_TREE,
-					       overflow_op_type, NULL_TREE,
-					       true /*address_is_taken*/,
-					       UNDEF_LOCATION, &tmp_stmt);
-  ctx->add_statement (tmp_stmt);
-
-  tree result_decl = bvar->get_tree (UNDEF_LOCATION);
+  tree bool_decl = bool_variable->get_tree (BUILTINS_LOCATION);
+  tree result_decl = result_variable->get_tree (BUILTINS_LOCATION);
   tree result_ref = build_fold_addr_expr_loc (BUILTINS_LOCATION, result_decl);
 
-  tree did_overflow_node
-    = build_call_expr_loc (BUILTINS_LOCATION, overflow_builtin, 3, x, y,
-			   result_ref);
+  tree builtin_call = build_call_expr_loc (BUILTINS_LOCATION, overflow_builtin,
+					   3, x, y, result_ref);
 
-  std::vector<tree> vals = {result_decl, did_overflow_node};
+  tree overflow_assignment
+    = ctx->get_backend ()->assignment_statement (bool_decl, builtin_call,
+						 BUILTINS_LOCATION);
+
+  ctx->add_statement (overflow_assignment);
+
+  std::vector<tree> vals = {result_decl, bool_decl};
   tree tuple_type = TREE_TYPE (DECL_RESULT (fndecl));
   tree result_expr
     = ctx->get_backend ()->constructor_expression (tuple_type, false, vals, -1,
