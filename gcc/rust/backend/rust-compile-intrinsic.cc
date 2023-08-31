@@ -1017,6 +1017,10 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
 
   auto fndecl = compile_intrinsic_function (ctx, fntype);
 
+  // Most intrinsic functions are pure - not `uninit_handler`
+  TREE_READONLY (fndecl) = 0;
+  TREE_SIDE_EFFECTS (fndecl) = 1;
+
   // get the template parameter type tree fn uninit<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
@@ -1055,9 +1059,6 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
 
   tree memset_call = build_call_expr_loc (BUILTINS_LOCATION, memset_builtin, 3,
 					  dst_addr, constant_byte, size_expr);
-  TREE_READONLY (memset_call) = 0;
-  TREE_SIDE_EFFECTS (memset_call) = 1;
-
   ctx->add_statement (memset_call);
 
   auto return_statement
