@@ -3912,6 +3912,7 @@ variable is not set.
 * GOMP_STACKSIZE::          Set default thread stack size
 * GOMP_SPINCOUNT::          Set the busy-wait spin count
 * GOMP_RTEMS_THREAD_POOLS:: Set the RTEMS specific thread pools
+* GOMP_REVERSE_OFFLOAD_THREADS:: Set the maximum number of host threads
 @end menu
 
 
@@ -4673,6 +4674,22 @@ one thread pool available.  Since no priority is specified for this scheduler
 instance, the worker thread inherits the priority of the OpenMP primary thread
 that created it.  In the scheduler instance @code{WRK1} there are three thread
 pools available and their worker threads run at priority four.
+@end table
+
+
+
+@node GOMP_REVERSE_OFFLOAD_THREADS
+@section @env{GOMP_REVERSE_OFFLOAD_THREADS} -- Set the maximum number of host threads
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}
+Set the maximum number of threads that may be used to run reverse offload
+code sections (host code nested within offload regions, declared using
+@code{#pragma omp target device(ancestor:1)}).  The value should be a non-zero
+positive integer.  The default is 8 threads.
+
+The threads are created on demand, up to the maximum number given, and are
+destroyed when no reverse offload requests remain.
 @end table
 
 

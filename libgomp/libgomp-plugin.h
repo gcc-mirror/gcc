@@ -150,7 +150,7 @@ extern void GOMP_PLUGIN_fatal (const char *, ...)
 	__attribute__ ((noreturn, format (printf, 1, 2)));
 
 extern void GOMP_PLUGIN_target_rev (uint64_t, uint64_t, uint64_t, uint64_t,
-				    uint64_t, int, struct goacc_asyncqueue *);
+				    uint64_t, int, volatile int *, bool);
 
 /* Prototypes for functions implemented by libgomp plugins.  */
 extern const char *GOMP_OFFLOAD_get_name (void);

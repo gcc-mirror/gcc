@@ -25,20 +25,41 @@
 
 /* This file contains defines and type definitions shared between the
    nvptx target's libgomp.a and the plugin-nvptx.c, but that is only
-   needef for this target.  */
+   needed for this target.  */
 
 #ifndef LIBGOMP_NVPTX_H
 #define LIBGOMP_NVPTX_H 1
 
 #define GOMP_REV_OFFLOAD_VAR __gomp_rev_offload_var
+#define REV_OFFLOAD_QUEUE_SIZE 1024
 
 struct rev_offload {
-  uint64_t fn;
-  uint64_t mapnum;
-  uint64_t addrs;
-  uint64_t sizes;
-  uint64_t kinds;
-  int32_t dev_num;
+  /* The target can grab a slot by incrementing "next_slot".
+     Each host thread may claim some slots for processing.
+     When the host processing is completed "consumed" indicates that the
+     corresponding slots in the ring-buffer "queue" are available for reuse.
+
+     Note that "next_slot" is an index, and "consumed"/"claimed" are counters,
+     so beware of the fence-posts.  */
+  unsigned int next_slot;
+  unsigned int consumed;
+  unsigned int claimed;
+
+  struct rev_req {
+    /* The target writes an address to "signal" as the last item, which
+       indicates to the host that the record is completely written.  The target
+       must not assume that it still owns the slot, after that.  The signal
+       address is then used by the host to communicate that the reverse-offload
+       kernel has completed execution.  */
+    volatile int *signal;
+
+    uint64_t fn;
+    uint64_t mapnum;
+    uint64_t addrs;
+    uint64_t sizes;
+    uint64_t kinds;
+    int32_t dev_num;
+  } queue[REV_OFFLOAD_QUEUE_SIZE];
 };
 
 #if (__SIZEOF_SHORT__ != 2 \

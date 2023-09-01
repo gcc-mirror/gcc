@@ -122,19 +122,38 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 	   <= (index - 1024))
       asm ("s_sleep 64");
 
-  unsigned int slot = index % 1024;
-  data->queue[slot].value_u64[0] = (uint64_t) fn;
-  data->queue[slot].value_u64[1] = (uint64_t) mapnum;
-  data->queue[slot].value_u64[2] = (uint64_t) hostaddrs;
-  data->queue[slot].value_u64[3] = (uint64_t) sizes;
-  data->queue[slot].value_u64[4] = (uint64_t) kinds;
-  data->queue[slot].value_u64[5] = (uint64_t) GOMP_ADDITIONAL_ICVS.device_num;
+  /* In theory, it should be enough to write "written" with __ATOMIC_RELEASE,
+     and have the rest of the data flushed to memory automatically, but some
+     devices (gfx908) seem to have a race condition where the flushed data
+     arrives after the atomic data, and the host does the wrong thing.
+     If we just write everything atomically in the correct order then we're
+     safe.  */
 
-  data->queue[slot].type = 4; /* Reverse offload.  */
+  unsigned int slot = index % 1024;
+  __atomic_store_n (&data->queue[slot].value_u64[0], (uint64_t) fn,
+		    __ATOMIC_RELAXED);
+  __atomic_store_n (&data->queue[slot].value_u64[1], (uint64_t) mapnum,
+		    __ATOMIC_RELAXED);
+  __atomic_store_n (&data->queue[slot].value_u64[2], (uint64_t) hostaddrs,
+		    __ATOMIC_RELAXED);
+  __atomic_store_n (&data->queue[slot].value_u64[3], (uint64_t) sizes,
+		    __ATOMIC_RELAXED);
+  __atomic_store_n (&data->queue[slot].value_u64[4], (uint64_t) kinds,
+		    __ATOMIC_RELAXED);
+  __atomic_store_n (&data->queue[slot].value_u64[5],
+		    (uint64_t) GOMP_ADDITIONAL_ICVS.device_num,
+		    __ATOMIC_RELAXED);
+
+  volatile int signal = 0;
+  __atomic_store_n (&data->queue[slot].value_u64[6], (uint64_t) &signal,
+		    __ATOMIC_RELAXED);
+
+  __atomic_store_n (&data->queue[slot].type, 4 /* Reverse offload.  */,
+		    __ATOMIC_RELAXED);
   __atomic_store_n (&data->queue[slot].written, 1, __ATOMIC_RELEASE);
 
-  /* Spinlock while the host catches up.  */
-  while (__atomic_load_n (&data->queue[slot].written, __ATOMIC_ACQUIRE) != 0)
+  /* Spinlock while the host runs the kernel.  */
+  while (__atomic_load_n (&signal, __ATOMIC_ACQUIRE) == 0)
     asm ("s_sleep 64");
 }
 

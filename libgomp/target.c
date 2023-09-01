@@ -3671,16 +3671,18 @@ gomp_map_cdata_lookup (struct cpy_data *d, uint64_t *devaddrs,
 				    tgt_start, tgt_end);
 }
 
-/* Handle reverse offload.  This is called by the device plugins for a
-   reverse offload; it is not called if the outer target runs on the host.
+/* Handle reverse offload.  This is called by the host worker thread to
+   execute a single reverse offload request; it is not called if the outer
+   target runs on the host.
    The mapping is simplified device-affecting constructs (except for target
    with device(ancestor:1)) must not be encountered; in particular not
    target (enter/exit) data.  */
 
-void
-gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
-		 uint64_t sizes_ptr, uint64_t kinds_ptr, int dev_num,
-		 struct goacc_asyncqueue *aq)
+static void
+gomp_target_rev_internal (uint64_t fn_ptr, uint64_t mapnum,
+			  uint64_t devaddrs_ptr, uint64_t sizes_ptr,
+			  uint64_t kinds_ptr, struct gomp_device_descr *devicep,
+			  struct goacc_asyncqueue *aq)
 {
   /* Return early if there is no offload code.  */
   if (sizeof (OFFLOAD_PLUGINS) == sizeof (""))
@@ -3697,7 +3699,6 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
   unsigned short *kinds;
   const bool short_mapkind = true;
   const int typemask = short_mapkind ? 0xff : 0x7;
-  struct gomp_device_descr *devicep = resolve_device (dev_num, false);
 
   reverse_splay_tree_key n;
   struct reverse_splay_tree_key_s k;
@@ -4106,6 +4107,134 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
       free (sizes);
       free (kinds);
     }
+}
+
+static struct target_rev_queue_s
+{
+  uint64_t fn_ptr;
+  uint64_t mapnum;
+  uint64_t devaddrs_ptr;
+  uint64_t sizes_ptr;
+  uint64_t kinds_ptr;
+  struct gomp_device_descr *devicep;
+
+  volatile int *signal;
+  bool use_aq;
+
+  struct target_rev_queue_s *next;
+} *target_rev_queue_head = NULL, *target_rev_queue_last = NULL;
+static gomp_mutex_t target_rev_queue_lock = 0;
+static int target_rev_thread_count = 0;
+
+static void *
+gomp_target_rev_worker_thread (void *)
+{
+  struct target_rev_queue_s *rev_kernel = NULL;
+  struct goacc_asyncqueue *aq = NULL;
+  struct gomp_device_descr *aq_devicep;
+
+  while (1)
+    {
+      gomp_mutex_lock (&target_rev_queue_lock);
+
+      /* Take a reverse-offload kernel request from the queue.  */
+      rev_kernel = target_rev_queue_head;
+      if (rev_kernel)
+	{
+	  target_rev_queue_head = rev_kernel->next;
+	  if (target_rev_queue_head == NULL)
+	    target_rev_queue_last = NULL;
+	}
+
+      if (rev_kernel == NULL)
+	{
+	  target_rev_thread_count--;
+	  gomp_mutex_unlock (&target_rev_queue_lock);
+	  break;
+	}
+      gomp_mutex_unlock (&target_rev_queue_lock);
+
+      /* Ensure we have a suitable device queue for the memory transfers.  */
+      if (rev_kernel->use_aq)
+	{
+	  if (aq && aq_devicep != rev_kernel->devicep)
+	    {
+	      aq_devicep->openacc.async.destruct_func (aq);
+	      aq = NULL;
+	    }
+
+	  if (!aq)
+	    {
+	      aq_devicep = rev_kernel->devicep;
+	      aq = aq_devicep->openacc.async.construct_func (aq_devicep->target_id);
+	    }
+	}
+
+      /* Run the kernel on the host.  */
+      gomp_target_rev_internal (rev_kernel->fn_ptr, rev_kernel->mapnum,
+				rev_kernel->devaddrs_ptr, rev_kernel->sizes_ptr,
+				rev_kernel->kinds_ptr, rev_kernel->devicep, aq);
+
+      /* Signal the device that the reverse-offload is completed.  */
+      int one = 1;
+      gomp_copy_host2dev (rev_kernel->devicep, aq, (void*)rev_kernel->signal,
+			  &one, sizeof (one), false, NULL);
+
+      /* We're done with this request.  */
+      free (rev_kernel);
+
+      /* Loop around and see if another request is waiting.  */
+    }
+
+  if (aq)
+    aq_devicep->openacc.async.destruct_func (aq);
+
+  return NULL;
+}
+
+void
+gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
+		 uint64_t sizes_ptr, uint64_t kinds_ptr, int dev_num,
+		 volatile int *signal, bool use_aq)
+{
+  struct gomp_device_descr *devicep = resolve_device (dev_num, false);
+
+  /* Create a new queue node.  */
+  struct target_rev_queue_s *newreq = gomp_malloc (sizeof (*newreq));
+  newreq->fn_ptr = fn_ptr;
+  newreq->mapnum = mapnum;
+  newreq->devaddrs_ptr = devaddrs_ptr;
+  newreq->sizes_ptr = sizes_ptr;
+  newreq->kinds_ptr = kinds_ptr;
+  newreq->devicep = devicep;
+  newreq->signal = signal;
+  newreq->use_aq = use_aq;
+  newreq->next = NULL;
+
+  gomp_mutex_lock (&target_rev_queue_lock);
+
+  /* Enqueue the reverse-offload request.  */
+  if (target_rev_queue_last)
+    {
+      target_rev_queue_last->next = newreq;
+      target_rev_queue_last = newreq;
+    }
+  else
+    target_rev_queue_last = target_rev_queue_head = newreq;
+
+  /* Launch a new thread to process the request asynchronously.
+     If the thread pool limit has been reached then an existing thread will
+     pick up the job when it is ready.  */
+  if (target_rev_thread_count < gomp_reverse_offload_threads)
+    {
+      target_rev_thread_count++;
+      gomp_mutex_unlock (&target_rev_queue_lock);
+
+      pthread_t t;
+      pthread_create (&t, NULL, gomp_target_rev_worker_thread, NULL);
+    }
+  else
+    gomp_mutex_unlock (&target_rev_queue_lock);
 }
 
 /* Host fallback for GOMP_target_data{,_ext} routines.  */

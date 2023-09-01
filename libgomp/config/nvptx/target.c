@@ -101,7 +101,6 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 		 void **hostaddrs, size_t *sizes, unsigned short *kinds,
 		 unsigned int flags, void **depend, void **args)
 {
-  static int lock = 0;  /* == gomp_mutex_t lock; gomp_mutex_init (&lock); */
   (void) flags;
   (void) depend;
   (void) args;
@@ -111,43 +110,57 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
       || GOMP_REV_OFFLOAD_VAR == NULL)
     return;
 
-  gomp_mutex_lock (&lock);
+  /* Reserve one slot. */
+  unsigned int index = __atomic_fetch_add (&GOMP_REV_OFFLOAD_VAR->next_slot,
+					   1, __ATOMIC_ACQUIRE);
 
-  GOMP_REV_OFFLOAD_VAR->mapnum = mapnum;
-  GOMP_REV_OFFLOAD_VAR->addrs = (uint64_t) hostaddrs;
-  GOMP_REV_OFFLOAD_VAR->sizes = (uint64_t) sizes;
-  GOMP_REV_OFFLOAD_VAR->kinds = (uint64_t) kinds;
-  GOMP_REV_OFFLOAD_VAR->dev_num = GOMP_ADDITIONAL_ICVS.device_num;
+  if ((unsigned int) (index + 1) < GOMP_REV_OFFLOAD_VAR->consumed)
+    abort ();  /* Overflow.  */
 
-  /* Set 'fn' to trigger processing on the host; wait for completion,
-     which is flagged by setting 'fn' back to 0 on the host.  */
-  uint64_t addr_struct_fn = (uint64_t) &GOMP_REV_OFFLOAD_VAR->fn;
+  /* Spinlock while the host catches up.  */
+  if (index >= REV_OFFLOAD_QUEUE_SIZE)
+    while (__atomic_load_n (&GOMP_REV_OFFLOAD_VAR->consumed, __ATOMIC_ACQUIRE)
+	   <= (index - REV_OFFLOAD_QUEUE_SIZE))
+      ; /* spin  */
+
+  unsigned int slot = index % REV_OFFLOAD_QUEUE_SIZE;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].fn = (uint64_t) fn;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].mapnum = mapnum;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].addrs = (uint64_t) hostaddrs;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].sizes = (uint64_t) sizes;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].kinds = (uint64_t) kinds;
+  GOMP_REV_OFFLOAD_VAR->queue[slot].dev_num = GOMP_ADDITIONAL_ICVS.device_num;
+
+  /* Set 'signal' to trigger processing on the host; the slot is now consumed
+     by the host, so we should not touch it again.  */
+  volatile int signal = 0;
+  uint64_t addr_struct_signal = (uint64_t) &GOMP_REV_OFFLOAD_VAR->queue[slot].signal;
 #if __PTX_SM__ >= 700
   asm volatile ("st.global.release.sys.u64 [%0], %1;"
-		: : "r"(addr_struct_fn), "r" (fn) : "memory");
+		: : "r"(addr_struct_signal), "r" (&signal) : "memory");
 #else
   __sync_synchronize ();  /* membar.sys */
   asm volatile ("st.volatile.global.u64 [%0], %1;"
-		: : "r"(addr_struct_fn), "r" (fn) : "memory");
+		: : "r"(addr_struct_signal), "r" (&signal) : "memory");
 #endif
 
+  /* The host signals completion by writing a non-zero value to the 'signal'
+     variable.  */
 #if __PTX_SM__ >= 700
-  uint64_t fn2;
+  uint64_t signal2;
   do
     {
       asm volatile ("ld.acquire.sys.global.u64 %0, [%1];"
-		    : "=r" (fn2) : "r" (addr_struct_fn) : "memory");
+		    : "=r" (signal2) : "r" (&signal) : "memory");
     }
-  while (fn2 != 0);
+  while (signal2 == 0);
 #else
   /* ld.global.u64 %r64,[__gomp_rev_offload_var];
      ld.u64 %r36,[%r64];
      membar.sys;  */
-  while (__atomic_load_n (&GOMP_REV_OFFLOAD_VAR->fn, __ATOMIC_ACQUIRE) != 0)
+  while (__atomic_load_n (&signal, __ATOMIC_ACQUIRE) == 0)
     ;  /* spin  */
 #endif
-
-  gomp_mutex_unlock (&lock);
 }
 
 void

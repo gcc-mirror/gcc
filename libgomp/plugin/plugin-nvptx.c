@@ -1979,9 +1979,10 @@ nvptx_goacc_asyncqueue_construct (unsigned int flags)
 }
 
 struct goacc_asyncqueue *
-GOMP_OFFLOAD_openacc_async_construct (int device __attribute__((unused)))
+GOMP_OFFLOAD_openacc_async_construct (int device)
 {
-  return nvptx_goacc_asyncqueue_construct (CU_STREAM_DEFAULT);
+  nvptx_attach_host_thread_to_device (device);
+  return nvptx_goacc_asyncqueue_construct (CU_STREAM_NON_BLOCKING);
 }
 
 static bool
@@ -2855,17 +2856,68 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 	else if (r != CUDA_ERROR_NOT_READY)
 	  GOMP_PLUGIN_fatal ("cuStreamQuery error: %s", cuda_error (r));
 
-	if (__atomic_load_n (&ptx_dev->rev_data->fn, __ATOMIC_ACQUIRE) != 0)
+	struct rev_offload *rev_metadata = ptx_dev->rev_data;
+
+	/* Claim a portion of the ring buffer to process on this iteration.
+	   Don't mark them as consumed until all the data has been read out.  */
+	unsigned int consumed = __atomic_load_n (&rev_metadata->consumed,
+						 __ATOMIC_ACQUIRE);
+	unsigned int from = __atomic_load_n (&rev_metadata->claimed,
+						__ATOMIC_RELAXED);
+	unsigned int to = __atomic_load_n (&rev_metadata->next_slot,
+					   __ATOMIC_RELAXED);
+
+	if (consumed > to)
 	  {
-	    struct rev_offload *rev_data = ptx_dev->rev_data;
+	    /* Overflow happens when we exceed UINTMAX requests.  */
+	    GOMP_PLUGIN_fatal ("NVPTX reverse offload buffer overflowed.\n");
+	  }
+
+	to = MIN(to, consumed + REV_OFFLOAD_QUEUE_SIZE / 2);
+	if (to <= from)
+	  /* Nothing to do; poll again.  */
+	  goto poll_again;
+
+	if (!__atomic_compare_exchange_n (&rev_metadata->claimed, &from, to,
+					  false,
+					  __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+	  /* Collision with another thread ... go around again.  */
+	  goto poll_again;
+
+	unsigned int index;
+	for (index = from; index < to; index++)
+	  {
+	    int slot = index % REV_OFFLOAD_QUEUE_SIZE;
+
+	    /* Wait while the target finishes filling in the slot.  */
+	    while (__atomic_load_n (&ptx_dev->rev_data->queue[slot].signal,
+				    __ATOMIC_ACQUIRE) == 0)
+	      ; /* spin  */
+
+	    /* Pass the request to libgomp; this will queue the request and
+	       return right away, without waiting for the kernel to run.  */
+	    struct rev_req *rev_data = &ptx_dev->rev_data->queue[slot];
 	    GOMP_PLUGIN_target_rev (rev_data->fn, rev_data->mapnum,
 				    rev_data->addrs, rev_data->sizes,
 				    rev_data->kinds, rev_data->dev_num,
-				    reverse_offload_aq);
-	    if (!nvptx_goacc_asyncqueue_synchronize (reverse_offload_aq))
-	      exit (EXIT_FAILURE);
-	    __atomic_store_n (&rev_data->fn, 0, __ATOMIC_RELEASE);
+				    rev_data->signal, true);
+
+	    /* Ensure that the slot doesn't trigger early, when reused.  */
+	    __atomic_store_n (&rev_data->signal, 0, __ATOMIC_RELEASE);
 	  }
+
+	/* The data is now consumed so release the slots for reuse.  */
+	unsigned int consumed_so_far = from;
+	while (!__atomic_compare_exchange_n (&rev_metadata->consumed,
+					    &consumed_so_far, to, false,
+					    __ATOMIC_RELEASE, __ATOMIC_RELAXED))
+	  {
+	    /* Another thread didn't consume all it claimed yet.... */
+	    consumed_so_far = from;
+	    usleep (1);
+	  }
+
+poll_again:
 	usleep (1);
       }
   else
