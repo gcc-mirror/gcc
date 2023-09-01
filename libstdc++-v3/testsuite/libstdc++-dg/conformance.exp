@@ -108,7 +108,8 @@ set tests [lsort $tests]
 # Main loop.
 global DEFAULT_CXXFLAGS
 global PCH_CXXFLAGS
-dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+# Modified version of dg-runtest
+v3-dg-runtest $tests "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
 
 # Finally run simd tests with extra SIMD-relevant flags
 global DEFAULT_VECTCFLAGS

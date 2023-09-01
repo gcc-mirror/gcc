@@ -44,6 +44,21 @@ proc load_gcc_lib { filename } {
     set loaded_libs($filename) ""
 }
 
+#
+# search_for -- looks for a string match in a file
+#
+proc search_for { file pattern } {
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	if [string match "*$pattern*" $cur_line] then {
+	    close $fd
+	    return 1
+	}
+    }
+    close $fd
+    return 0
+}
+
 # system routines
 load_lib dg.exp
 load_lib libgloss.exp
@@ -459,6 +474,98 @@ if { [info procs saved-dg-test] == [list] } {
 	}
     }
 }
+
+# Find the minimum standard required by a test, if higher than the default_std.
+proc v3-minimum-std { test default_std max_std } {
+    for {set s $default_std} {$s <= $max_std} {incr s 3} {
+	if [search_for $test "\{ dg-do * \{ target c++$s"] {
+	    return $s
+	} elseif [search_for $test "\{ dg-require-effective-target c++$s"] {
+	    return $s
+	}
+    }
+    # TODO: replace all c++2a with c++20 and remove this case.
+    if [search_for $test "\{ dg-do * \{ target c++2a"] {
+	return 20
+    }
+    return $default_std
+}
+
+# Allow v3_std_list to be set in configuration files, e.g., ~/.dejagnurc
+if ![info exists v3_std_list] {
+    set v3_std_list { }
+}
+# Allow v3_std_list to be set from the environment.
+if [info exists env(GLIBCXX_TESTSUITE_STDS)] {
+    set v3_std_list [split $env(GLIBCXX_TESTSUITE_STDS) ","]
+}
+
+# Modified dg-runtest that runs tests in multiple standard modes,
+# unless they specifically specify one standard.
+proc v3-dg-runtest { testcases flags default-extra-flags } {
+    global runtests
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+	}
+
+	# If the testcase specifies a standard, use that one.
+	# If not, run it under several standards, allowing GNU extensions
+	# unless strict_std is requested.
+	if ![search_for $test "// \{ dg-*options*-std=*++"] {
+	    if [search_for $test "{ dg-add-options strict_std }"] {
+		set std_prefix "-std=c++"
+	    } else {
+		set std_prefix "-std=gnu++"
+	    }
+
+	    # See above for the initial value of this list.
+	    global v3_std_list
+	    if { [llength $v3_std_list] > 0 } {
+		set std_list $v3_std_list
+	    } else {
+		# If the test requires a newer C++ version than which
+		# is tested by default, use that C++ version for that
+		# single test.
+		# These should be adjusted whenever the default -std is
+		# updated or newer C++ effective target is added.
+		set default_std 17
+		set max_std 26
+		set min_std [v3-minimum-std $test $default_std $max_std]
+		if { $min_std > $default_std } {
+		    set std_list $min_std
+		    if { $min_std != $max_std } {
+			# Also test the latest version.
+			lappend std_list "$max_std"
+		    }
+		} else {
+		    # Only run each test once with the default -std option.
+		    # This avoids increasing the run time for most testers.
+		    # Libstdc++ developers can override this with v3_std_list.
+		    set std_list $default_std
+		}
+	    }
+	    set option_list { }
+	    foreach x $std_list {
+		if { $x eq "impcx" } then { set x "26 -fimplicit-constexpr" }
+		lappend option_list "${std_prefix}$x"
+	    }
+	} else {
+	    verbose "using -std option specified in [file tail $test]" 2
+	    set option_list { "" }
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	}
+    }
+}
+
 
 # True if the library supports wchar_t.
 set v3-wchar_t 0

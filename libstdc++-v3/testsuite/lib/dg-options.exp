@@ -352,6 +352,13 @@ proc add_options_for_using-deprecated { flags } {
     return "$flags -U_GLIBCXX_USE_DEPRECATED -D_GLIBCXX_USE_DEPRECATED=1"
 }
 
+# Add options for strict -std=c++NN dialects.
+# This is a dummy option that does nothing, but it causes v3-dg-runtest
+# to alter its behaviour.
+proc add_options_for_strict_std { flags } {
+    return $flags
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {
