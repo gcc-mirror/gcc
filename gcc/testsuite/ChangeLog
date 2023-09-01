@@ -1,3 +1,86 @@
+2023-08-31  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110915
+	* gcc.dg/pr110915-1.c: New test.
+	* gcc.dg/pr110915-10.c: New test.
+	* gcc.dg/pr110915-11.c: New test.
+	* gcc.dg/pr110915-12.c: New test.
+	* gcc.dg/pr110915-2.c: New test.
+	* gcc.dg/pr110915-3.c: New test.
+	* gcc.dg/pr110915-4.c: New test.
+	* gcc.dg/pr110915-5.c: New test.
+	* gcc.dg/pr110915-6.c: New test.
+	* gcc.dg/pr110915-7.c: New test.
+	* gcc.dg/pr110915-8.c: New test.
+	* gcc.dg/pr110915-9.c: New test.
+
+2023-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-4.c: New test.
+
+2023-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-3.c: New test.
+
+2023-08-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR testsuite/111228
+	* gcc.target/powerpc/fold-vec-logical-ors-char.c: Update instruction
+	counts to match the number of associated vec_* built-in calls.
+	* gcc.target/powerpc/fold-vec-logical-ors-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-ors-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-ors-short.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-char.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-logical-other-short.c: Likewise.
+
+2023-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-2.c: New test.
+
+2023-08-31  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/float-point-frm-autovec-1.c: New test.
+
+2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111253
+	* gcc.dg/Wfree-nonheap-object-7.c: New testcase.
+
+2023-08-31  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/110411
+	* gcc.target/powerpc/pr110411-1.c: New testcase.
+	* gcc.target/powerpc/pr110411-2.c: New testcase.
+
+2023-08-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-171.c: Adjust.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-173.c: Adjust.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-24.c: New test.
+
+2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-42.c: Move ...
+	* gcc.target/i386/pr111228.c: ... here.  Enable SSE2.
+
+2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr52252-atom.c: Add -mprefer-vector-width=128.
+	* gcc.target/i386/pr52252-core.c: Likewise.
+
+2023-08-31  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/96762
+	* gcc.target/powerpc/pr96762.c: New.
+
+2023-08-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111234
+	* gcc.target/riscv/rvv/vsetvl/pr111234.c: New test.
+
 2023-08-30  Eric Feng  <ef2648@columbia.edu>
 
 	PR analyzer/107646

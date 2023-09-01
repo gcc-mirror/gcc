@@ -1,3 +1,13 @@
+2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* c.opt: Change spelling to macOS.
+
+2023-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111253
+	* c-pretty-print.cc (c_pretty_printer::primary_expression):
+	Only dump gimple_assign_single_p SSA def RHS.
+
 2023-08-25  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-common.h (c_omp_check_loop_binding_exprs): Declare.
