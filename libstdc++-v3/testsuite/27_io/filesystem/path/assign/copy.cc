@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-options "-Wno-self-move" }
 
 // Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
