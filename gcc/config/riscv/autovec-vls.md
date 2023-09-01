@@ -208,6 +208,30 @@
 [(set_attr "type" "vector")]
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [FP] Binary operations
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfadd.vv/vfsub.vv/vfmul.vv/vfdiv.vv
+;; - vfadd.vf/vfsub.vf/vfmul.vf/vfdiv.vf
+;; -------------------------------------------------------------------------
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSF 0 "register_operand")
+    (any_float_binop:VLSF
+     (match_operand:VLSF 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSF 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::BINARY_OP_FRM_DYN, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
+)
+
 ;; -------------------------------------------------------------------------------
 ;; ---- [INT] Unary operations
 ;; -------------------------------------------------------------------------------
