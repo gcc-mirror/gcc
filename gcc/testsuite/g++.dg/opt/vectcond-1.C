@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ccp1 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-ccp1 -fdump-tree-optimized -Wno-psabi" } */
 /* This is the vector version of these optimizations. */
 /* PR tree-optimization/19832 */
 
