@@ -1093,10 +1093,10 @@ types.
 As an extension, GNU C and GNU C++ support additional floating
 types, which are not supported by all targets.
 @itemize @bullet
-@item @code{__float128} is available on i386, x86_64, IA-64, and
-hppa HP-UX, as well as on PowerPC GNU/Linux targets that enable
+@item @code{__float128} is available on i386, x86_64, IA-64, LoongArch
+and hppa HP-UX, as well as on PowerPC GNU/Linux targets that enable
 the vector scalar (VSX) instruction set.  @code{__float128} supports
-the 128-bit floating type.  On i386, x86_64, PowerPC, and IA-64
+the 128-bit floating type.  On i386, x86_64, PowerPC, LoongArch and IA-64,
 other than HP-UX, @code{__float128} is an alias for @code{_Float128}.
 On hppa and IA-64 HP-UX, @code{__float128} is an alias for @code{long
 double}.
@@ -16655,6 +16655,20 @@ function you need to include @code{larchintrin.h}.
 
     void __syscall (imm0_32767)
     void __break (imm0_32767)
+@end smallexample
+
+Additional built-in functions are available for LoongArch family
+processors to efficiently use 128-bit floating-point (__float128)
+values.
+
+The following are the basic built-in functions supported.
+@smallexample
+__float128 __builtin_fabsq (__float128);
+__float128 __builtin_copysignq (__float128, __float128);
+__float128 __builtin_infq (void);
+__float128 __builtin_huge_valq (void);
+__float128 __builtin_nanq (void);
+__float128 __builtin_nansq (void);
 @end smallexample
 
 @node MIPS DSP Built-in Functions
