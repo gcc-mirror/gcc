@@ -20,6 +20,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-extern.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace HIR {
@@ -722,12 +723,12 @@ ASTLoweringBase::handle_outer_attributes (const ItemWrapper &item)
 	  continue;
 	}
 
-      bool is_lang_item = str_path.compare ("lang") == 0
+      bool is_lang_item = str_path == Values::Attributes::LANG
 			  && attr.has_attr_input ()
 			  && attr.get_attr_input ().get_attr_input_type ()
 			       == AST::AttrInput::AttrInputType::LITERAL;
 
-      bool is_doc_item = str_path.compare ("doc") == 0;
+      bool is_doc_item = str_path == Values::Attributes::DOC;
 
       if (is_doc_item)
 	handle_doc_item_attribute (item, attr);
@@ -967,7 +968,7 @@ ASTLoweringBase::lower_macro_definition (AST::MacroRulesDefinition &def)
 {
   auto is_export = false;
   for (const auto &attr : def.get_outer_attrs ())
-    if (attr.get_path ().as_string () == "macro_export")
+    if (attr.get_path ().as_string () == Values::Attributes::MACRO_EXPORT)
       is_export = true;
 
   if (is_export)

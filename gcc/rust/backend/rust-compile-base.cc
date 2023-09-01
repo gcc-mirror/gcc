@@ -30,6 +30,7 @@
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
 #include "rust-compile-implitem.h"
+#include "rust-attribute-values.h"
 
 #include "fold-const.h"
 #include "stringpool.h"
@@ -42,7 +43,9 @@ namespace Compile {
 
 bool inline should_mangle_item (const tree fndecl)
 {
-  return lookup_attribute ("no_mangle", DECL_ATTRIBUTES (fndecl)) == NULL_TREE;
+  return lookup_attribute (Values::Attributes::NO_MANGLE,
+			   DECL_ATTRIBUTES (fndecl))
+	 == NULL_TREE;
 }
 
 void
@@ -69,15 +72,17 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
   // is it inline?
   for (const auto &attr : attrs)
     {
-      bool is_inline = attr.get_path ().as_string ().compare ("inline") == 0;
+      bool is_inline
+	= attr.get_path ().as_string () == Values::Attributes::INLINE;
       bool is_must_use
-	= attr.get_path ().as_string ().compare ("must_use") == 0;
-      bool is_cold = attr.get_path ().as_string ().compare ("cold") == 0;
+	= attr.get_path ().as_string () == Values::Attributes::MUST_USE;
+      bool is_cold = attr.get_path ().as_string () == Values::Attributes::COLD;
       bool is_link_section
-	= attr.get_path ().as_string ().compare ("link_section") == 0;
-      bool no_mangle = attr.get_path ().as_string ().compare ("no_mangle") == 0;
+	= attr.get_path ().as_string () == Values::Attributes::LINK_SECTION;
+      bool no_mangle
+	= attr.get_path ().as_string () == Values::Attributes::NO_MANGLE;
       bool is_deprecated
-	= attr.get_path ().as_string ().compare ("deprecated") == 0;
+	= attr.get_path ().as_string () == Values::Attributes::DEPRECATED;
 
       if (is_inline)
 	{
@@ -113,7 +118,7 @@ HIRCompileBase::handle_cold_attribute_on_fndecl (tree fndecl,
   // simple #[cold]
   if (!attr.has_attr_input ())
     {
-      tree cold = get_identifier ("cold");
+      tree cold = get_identifier (Values::Attributes::COLD);
       // this will get handled by the GCC backend later
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (cold, NULL_TREE, DECL_ATTRIBUTES (fndecl));
@@ -160,8 +165,9 @@ HIRCompileBase::handle_no_mangle_attribute_on_fndecl (
       return;
     }
 
-  DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("no_mangle"), NULL_TREE,
-					DECL_ATTRIBUTES (fndecl));
+  DECL_ATTRIBUTES (fndecl)
+    = tree_cons (get_identifier (Values::Attributes::NO_MANGLE), NULL_TREE,
+		 DECL_ATTRIBUTES (fndecl));
 }
 
 void
@@ -223,7 +229,7 @@ HIRCompileBase::handle_deprecated_attribute_on_fndecl (
     {
       tree attr_list = build_tree_list (NULL_TREE, value);
       DECL_ATTRIBUTES (fndecl)
-	= tree_cons (get_identifier ("deprecated"), attr_list,
+	= tree_cons (get_identifier (Values::Attributes::DEPRECATED), attr_list,
 		     DECL_ATTRIBUTES (fndecl));
     }
 }

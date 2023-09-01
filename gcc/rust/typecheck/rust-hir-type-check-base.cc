@@ -21,6 +21,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Resolver {
@@ -291,7 +292,7 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 
   for (const auto &attr : attrs)
     {
-      bool is_repr = attr.get_path ().as_string ().compare ("repr") == 0;
+      bool is_repr = attr.get_path ().as_string () == Values::Attributes::REPR;
       if (is_repr)
 	{
 	  const AST::AttrInput &input = attr.get_attr_input ();

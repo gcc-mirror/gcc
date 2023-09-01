@@ -21,6 +21,7 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Privacy {
@@ -43,8 +44,9 @@ find_proc_macro_attribute (const AST::AttrVec &outer_attrs)
       if (segments.size () != 1)
 	continue;
       auto name = segments.at (0).get_segment_name ();
-      if (name == "proc_macro" || name == "proc_macro_attribute"
-	  || name == "proc_macro_derive")
+      if (name == Values::Attributes::PROC_MACRO
+	  || name == Values::Attributes::PROC_MACRO_ATTRIBUTE
+	  || name == Values::Attributes::PROC_MACRO_DERIVE)
 	return name;
     }
 

@@ -19,6 +19,7 @@
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-ast-full.h"
 #include "rust-hir-map.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -137,7 +138,7 @@ static bool
 is_macro_export (AST::MacroRulesDefinition &def)
 {
   for (const auto &attr : def.get_outer_attrs ())
-    if (attr.get_path ().as_string () == "macro_export")
+    if (attr.get_path ().as_string () == Values::Attributes::MACRO_EXPORT)
       return true;
 
   return false;

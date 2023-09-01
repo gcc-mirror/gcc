@@ -20,6 +20,7 @@
 #include "rust-ast-full.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-builtins.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Resolver {
@@ -29,7 +30,7 @@ static bool
 is_macro_use_module (const AST::Module &mod)
 {
   for (const auto &attr : mod.get_outer_attrs ())
-    if (attr.get_path ().as_string () == "macro_use")
+    if (attr.get_path ().as_string () == Values::Attributes::MACRO_USE)
       return true;
 
   return false;
@@ -973,7 +974,8 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   bool is_builtin
     = std::any_of (outer_attrs.begin (), outer_attrs.end (),
 		   [] (AST::Attribute attr) {
-		     return attr.get_path () == "rustc_builtin_macro";
+		     return attr.get_path ()
+			    == Values::Attributes::RUSTC_BUILTIN_MACRO;
 		   });
 
   if (is_builtin)

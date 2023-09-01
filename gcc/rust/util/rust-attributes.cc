@@ -23,39 +23,42 @@
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
 #include "rust-unicode.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Analysis {
 
+using Attrs = Values::Attributes;
+
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
 static const BuiltinAttrDefinition __definitions[]
-  = {{"inline", CODE_GENERATION},
-     {"cold", CODE_GENERATION},
-     {"cfg", EXPANSION},
-     {"cfg_attr", EXPANSION},
-     {"deprecated", STATIC_ANALYSIS},
-     {"allow", STATIC_ANALYSIS},
-     {"allow_internal_unstable", STATIC_ANALYSIS},
-     {"doc", HIR_LOWERING},
-     {"must_use", STATIC_ANALYSIS},
-     {"lang", HIR_LOWERING},
-     {"link_section", CODE_GENERATION},
-     {"no_mangle", CODE_GENERATION},
-     {"repr", CODE_GENERATION},
-     {"rustc_builtin_macro", EXPANSION},
-     {"path", EXPANSION},
-     {"macro_use", NAME_RESOLUTION},
-     {"macro_export", NAME_RESOLUTION},
-     {"proc_macro", EXPANSION},
-     {"proc_macro_derive", EXPANSION},
-     {"proc_macro_attribute", EXPANSION},
+  = {{Attrs::INLINE, CODE_GENERATION},
+     {Attrs::COLD, CODE_GENERATION},
+     {Attrs::CFG, EXPANSION},
+     {Attrs::CFG_ATTR, EXPANSION},
+     {Attrs::DEPRECATED, STATIC_ANALYSIS},
+     {Attrs::ALLOW, STATIC_ANALYSIS},
+     {Attrs::ALLOW_INTERNAL_UNSTABLE, STATIC_ANALYSIS},
+     {Attrs::DOC, HIR_LOWERING},
+     {Attrs::MUST_USE, STATIC_ANALYSIS},
+     {Attrs::LANG, HIR_LOWERING},
+     {Attrs::LINK_SECTION, CODE_GENERATION},
+     {Attrs::NO_MANGLE, CODE_GENERATION},
+     {Attrs::REPR, CODE_GENERATION},
+     {Attrs::RUSTC_BUILTIN_MACRO, EXPANSION},
+     {Attrs::PATH, EXPANSION},
+     {Attrs::MACRO_USE, NAME_RESOLUTION},
+     {Attrs::MACRO_EXPORT, NAME_RESOLUTION},
+     {Attrs::PROC_MACRO, EXPANSION},
+     {Attrs::PROC_MACRO_DERIVE, EXPANSION},
+     {Attrs::PROC_MACRO_ATTRIBUTE, EXPANSION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
-     {"target_feature", CODE_GENERATION},
+     {Attrs::TARGET_FEATURE, CODE_GENERATION},
      // From now on, these are reserved by the compiler and gated through
      // #![feature(rustc_attrs)]
-     {"rustc_inherit_overflow_checks", CODE_GENERATION},
-     {"stable", STATIC_ANALYSIS}};
+     {Attrs::RUSTC_INHERIT_OVERFLOW_CHECKS, CODE_GENERATION},
+     {Attrs::STABLE, STATIC_ANALYSIS}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
@@ -207,8 +210,8 @@ is_proc_macro_type (const AST::Attribute &attribute)
     return false;
 
   auto name = result.name;
-  return name == "proc_macro" || name == "proc_macro_derive"
-	 || name == "proc_macro_attribute";
+  return name == Attrs::PROC_MACRO || name == Attrs::PROC_MACRO_DERIVE
+	 || name == Attrs::PROC_MACRO_ATTRIBUTE;
 }
 
 // Emit an error when one encountered attribute is either #[proc_macro],
@@ -256,7 +259,7 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   // TODO: Add checks here for each builtin attribute
   // TODO: Have an enum of builtins as well, switching on strings is annoying
   // and costly
-  if (result.name == "doc")
+  if (result.name == Attrs::DOC)
     check_doc_attribute (attribute);
 }
 
@@ -648,7 +651,7 @@ AttributeChecker::visit (AST::Function &fun)
 
       auto name = result.name.c_str ();
 
-      if (result.name == "proc_macro_derive")
+      if (result.name == Attrs::PROC_MACRO_DERIVE)
 	{
 	  if (!attribute.has_attr_input ())
 	    {
@@ -661,8 +664,8 @@ AttributeChecker::visit (AST::Function &fun)
 	    }
 	  check_crate_type (name, attribute);
 	}
-      else if (result.name == "proc_macro"
-	       || result.name == "proc_macro_attribute")
+      else if (result.name == Attrs::PROC_MACRO
+	       || result.name == Attrs::PROC_MACRO_ATTRIBUTE)
 	{
 	  check_crate_type (name, attribute);
 	}

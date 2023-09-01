@@ -45,6 +45,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-expand-visitor.h"
 #include "rust-unicode.h"
+#include "rust-attribute-values.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -807,8 +808,8 @@ Session::injection (AST::Crate &crate)
     {
       // create "macro use" attribute for use on extern crate item to enable
       // loading macros from it
-      AST::Attribute attr (AST::SimplePath::from_str ("macro_use",
-						      UNDEF_LOCATION),
+      AST::Attribute attr (AST::SimplePath::from_str (
+			     Values::Attributes::MACRO_USE, UNDEF_LOCATION),
 			   nullptr);
 
       // create "extern crate" item with the name

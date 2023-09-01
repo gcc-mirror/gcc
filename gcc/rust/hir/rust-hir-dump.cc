@@ -23,6 +23,7 @@
 #include "rust-hir-type.h"
 #include "rust-hir.h"
 #include <string>
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace HIR {
@@ -633,7 +634,7 @@ void
 Dump::visit (AST::Attribute &attribute)
 {
   // Special, no begin/end as this is called by do_inner_attrs.
-  put_field ("path", attribute.get_path ().as_string ());
+  put_field (Values::Attributes::PATH, attribute.get_path ().as_string ());
 
   std::string str = "none";
   if (attribute.has_attr_input ())

@@ -22,6 +22,7 @@
 #include "rust-hir-full.h"
 #include "rust-macro-builtins.h"
 #include "rust-mapping-common.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Analysis {
@@ -872,7 +873,8 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   bool should_be_builtin
     = std::any_of (outer_attrs.begin (), outer_attrs.end (),
 		   [] (AST::Attribute attr) {
-		     return attr.get_path () == "rustc_builtin_macro";
+		     return attr.get_path ()
+			    == Values::Attributes::RUSTC_BUILTIN_MACRO;
 		   });
   if (should_be_builtin)
     {
