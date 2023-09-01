@@ -3854,10 +3854,21 @@ darwin_function_section (tree decl, enum node_frequency freq,
   if (decl && DECL_SECTION_NAME (decl) != NULL)
     return get_named_section (decl, NULL, 0);
 
-  /* We always put unlikely executed stuff in the cold section.  */
+  /* We always put unlikely executed stuff in the cold section; we have to put
+     this ahead of the global init section, since partitioning within a section
+     breaks some assumptions made in the DWARF handling.  */
   if (freq == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return (use_coal) ? darwin_sections[text_cold_coal_section]
 		      : darwin_sections[text_cold_section];
+
+  /* Intercept functions in global init; these are placed in separate sections.
+     FIXME: there should be some neater way to do this, FIXME we should be able
+     to partition within a section.  */
+  if (DECL_NAME (decl)
+      && (startswith (IDENTIFIER_POINTER (DECL_NAME (decl)), "_GLOBAL__sub_I")
+	  || startswith (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			 "__static_initialization_and_destruction")))
+    return  darwin_sections[static_init_section];
 
   /* If we have LTO *and* feedback information, then let LTO handle
      the function ordering, it makes a better job (for normal, hot,
