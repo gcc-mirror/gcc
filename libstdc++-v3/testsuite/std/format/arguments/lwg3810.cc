@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // LWG 3810. CTAD for std::basic_format_args
