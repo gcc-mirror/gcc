@@ -633,22 +633,28 @@
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
 
-(define_expand "<optab><v_quad_trunc><mode>2"
+(define_insn_and_split "<optab><v_quad_trunc><mode>2"
   [(set (match_operand:VQEXTI 0 "register_operand")
     (any_extend:VQEXTI
      (match_operand:<V_QUAD_TRUNC> 1 "register_operand")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_vf4 (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
   DONE;
 })
 
-(define_expand "<optab><v_oct_trunc><mode>2"
+(define_insn_and_split "<optab><v_oct_trunc><mode>2"
   [(set (match_operand:VOEXTI 0 "register_operand")
     (any_extend:VOEXTI
      (match_operand:<V_OCT_TRUNC> 1 "register_operand")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   insn_code icode = code_for_pred_vf8 (<CODE>, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, operands);
@@ -687,13 +693,8 @@
   "TARGET_VECTOR"
 {
   rtx half = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
-  rtx opshalf[] = {half, operands[1]};
-  insn_code icode = code_for_pred_trunc (<MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, opshalf);
-
-  rtx ops[] = {operands[0], half};
-  icode = code_for_pred_trunc (<V_DOUBLE_TRUNC>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops);
+  emit_insn (gen_trunc<mode><v_double_trunc>2 (half, operands[1]));
+  emit_insn (gen_trunc<v_double_trunc><v_quad_trunc>2 (operands[0], half));
   DONE;
 })
 
@@ -707,19 +708,9 @@
      (match_operand:VOEXTI 1 "register_operand")))]
   "TARGET_VECTOR"
 {
-  rtx half = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
-  rtx opshalf[] = {half, operands[1]};
-  insn_code icode = code_for_pred_trunc (<MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, opshalf);
-
   rtx quarter = gen_reg_rtx (<V_QUAD_TRUNC>mode);
-  rtx opsquarter[] = {quarter, half};
-  icode = code_for_pred_trunc (<V_DOUBLE_TRUNC>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, opsquarter);
-
-  rtx ops[] = {operands[0], quarter};
-  icode = code_for_pred_trunc (<V_QUAD_TRUNC>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops);
+  emit_insn (gen_trunc<mode><v_quad_trunc>2 (quarter, operands[1]));
+  emit_insn (gen_trunc<v_quad_trunc><v_oct_trunc>2 (operands[0], quarter));
   DONE;
 })
 
