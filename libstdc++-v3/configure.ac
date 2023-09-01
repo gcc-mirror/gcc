@@ -325,10 +325,6 @@ else
     CANADIAN=no
   fi
 
-  if test $CANADIAN = no; then
-    GLIBCXX_CHECK_LINKER_FEATURES
-  fi
-
   # Construct crosses by hand, eliminating bits that need ld...
   # GLIBCXX_CHECK_MATH_SUPPORT
 
