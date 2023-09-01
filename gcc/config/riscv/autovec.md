@@ -1587,7 +1587,8 @@
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_unop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_unop (icode, operands);
   DONE;
 })
 
@@ -1624,7 +1625,8 @@
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_unop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_unop (icode, operands);
   DONE;
 })
 
@@ -1663,7 +1665,8 @@
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_binop (icode, operands);
   DONE;
 })
 
@@ -1703,7 +1706,8 @@
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_binop (icode, operands);
   DONE;
 })
 
@@ -1743,7 +1747,8 @@
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_binop (icode, operands);
   DONE;
 })
 
@@ -1781,7 +1786,8 @@
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_cond_len_binop (<CODE>, operands);
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::expand_cond_len_binop (icode, operands);
   DONE;
 })
 

@@ -245,6 +245,12 @@ public:
 	   always Pmode.  */
 	if (mode == VOIDmode)
 	  mode = Pmode;
+	else
+	  /* Early assertion ensures same mode since maybe_legitimize_operand
+	     will check this.  */
+	  gcc_assert (GET_MODE (ops[opno]) == VOIDmode
+		      || GET_MODE (ops[opno]) == mode);
+
 	add_input_operand (ops[opno], mode);
       }
 
@@ -291,6 +297,7 @@ public:
     if (m_insn_flags & FRM_DYN_P)
       add_rounding_mode_operand (FRM_DYN);
 
+    gcc_assert (insn_data[(int) icode].n_operands == m_opno);
     expand (icode, any_mem_p);
   }
 
@@ -2948,17 +2955,20 @@ expand_load_store (rtx *ops, bool is_load)
 
 /* Return true if the operation is the floating-point operation need FRM.  */
 static bool
-needs_fp_rounding (rtx_code code, machine_mode mode)
+needs_fp_rounding (unsigned icode, machine_mode mode)
 {
   if (!FLOAT_MODE_P (mode))
     return false;
-  return code != SMIN && code != SMAX && code != NEG && code != ABS;
+
+  return icode != maybe_code_for_pred (SMIN, mode)
+	 && icode != maybe_code_for_pred (SMAX, mode)
+	 && icode != maybe_code_for_pred (NEG, mode)
+	 && icode != maybe_code_for_pred (ABS, mode);
 }
 
 /* Subroutine to expand COND_LEN_* patterns.  */
 static void
-expand_cond_len_op (rtx_code code, unsigned icode, insn_flags op_type, rtx *ops,
-		    rtx len)
+expand_cond_len_op (unsigned icode, insn_flags op_type, rtx *ops, rtx len)
 {
   rtx dest = ops[0];
   rtx mask = ops[1];
@@ -2977,7 +2987,7 @@ expand_cond_len_op (rtx_code code, unsigned icode, insn_flags op_type, rtx *ops,
   else
     insn_flags |= TU_POLICY_P | MU_POLICY_P;
 
-  if (needs_fp_rounding (code, mode))
+  if (needs_fp_rounding (icode, mode))
     insn_flags |= FRM_DYN_P;
 
   if (is_vlmax_len)
@@ -2988,7 +2998,7 @@ expand_cond_len_op (rtx_code code, unsigned icode, insn_flags op_type, rtx *ops,
 
 /* Expand unary ops COND_LEN_*.  */
 void
-expand_cond_len_unop (rtx_code code, rtx *ops)
+expand_cond_len_unop (unsigned icode, rtx *ops)
 {
   rtx dest = ops[0];
   rtx mask = ops[1];
@@ -2996,15 +3006,13 @@ expand_cond_len_unop (rtx_code code, rtx *ops)
   rtx merge = ops[3];
   rtx len = ops[4];
 
-  machine_mode mode = GET_MODE (dest);
-  insn_code icode = code_for_pred (code, mode);
   rtx cond_ops[] = {dest, mask, merge, src};
-  expand_cond_len_op (code, icode, UNARY_OP_P, cond_ops, len);
+  expand_cond_len_op (icode, UNARY_OP_P, cond_ops, len);
 }
 
 /* Expand binary ops COND_LEN_*.  */
 void
-expand_cond_len_binop (rtx_code code, rtx *ops)
+expand_cond_len_binop (unsigned icode, rtx *ops)
 {
   rtx dest = ops[0];
   rtx mask = ops[1];
@@ -3013,10 +3021,8 @@ expand_cond_len_binop (rtx_code code, rtx *ops)
   rtx merge = ops[4];
   rtx len = ops[5];
 
-  machine_mode mode = GET_MODE (dest);
-  insn_code icode = code_for_pred (code, mode);
   rtx cond_ops[] = {dest, mask, merge, src1, src2};
-  expand_cond_len_op (code, icode, BINARY_OP_P, cond_ops, len);
+  expand_cond_len_op (icode, BINARY_OP_P, cond_ops, len);
 }
 
 /* Prepare insn_code for gather_load/scatter_store according to
@@ -3188,7 +3194,7 @@ expand_cond_len_ternop (unsigned icode, rtx *ops)
   rtx len = ops[6];
 
   rtx cond_ops[] = {dest, mask, src1, src2, src3, merge};
-  expand_cond_len_op (UNSPEC, icode, TERNARY_OP_P, cond_ops, len);
+  expand_cond_len_op (icode, TERNARY_OP_P, cond_ops, len);
 }
 
 /* Expand reduction operations.  */
