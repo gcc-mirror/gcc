@@ -1,4 +1,4 @@
-FROM debian:11 AS gcc-builder
+FROM debian:12 AS gcc-builder
 
 RUN apt-get update; \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
