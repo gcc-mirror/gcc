@@ -82,8 +82,8 @@ GOMP_PLUGIN_fatal (const char *msg, ...)
 void
 GOMP_PLUGIN_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 			uint64_t sizes_ptr, uint64_t kinds_ptr, int dev_num,
-			struct goacc_asyncqueue *aq)
+			volatile int *signal, bool use_aq)
 {
   gomp_target_rev (fn_ptr, mapnum, devaddrs_ptr, sizes_ptr, kinds_ptr, dev_num,
-		   aq);
+		   signal, use_aq);
 }

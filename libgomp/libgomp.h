@@ -613,6 +613,7 @@ extern struct gomp_offload_icv_list *gomp_offload_icv_list;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
+extern int gomp_reverse_offload_threads;
 
 enum gomp_task_kind
 {
@@ -1136,7 +1137,7 @@ extern bool gomp_page_locked_host_unregister_dev (struct gomp_device_descr *,
 						  void *, size_t,
 						  struct goacc_asyncqueue *);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
-			     int, struct goacc_asyncqueue *);
+			     int, volatile int *, bool);
 extern bool gomp_page_locked_host_alloc (void **, size_t);
 extern void gomp_page_locked_host_free (void *);
 
