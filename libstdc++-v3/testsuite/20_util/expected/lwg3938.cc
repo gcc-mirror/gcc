@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 
 // LWG 3938. Cannot use std::expected monadic ops with move-only error_type
