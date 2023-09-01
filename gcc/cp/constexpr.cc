@@ -3381,6 +3381,61 @@ ok:
     }
 }
 
+/* *TP was not deemed constant by reduced_constant_expression_p.  Explain
+   why and suggest what could be done about it.  */
+
+static tree
+verify_constant_explain_r (tree *tp, int *walk_subtrees, void *)
+{
+  bool ref_p = false;
+
+  /* No need to look into types or unevaluated operands.  */
+  if (TYPE_P (*tp) || unevaluated_p (TREE_CODE (*tp)))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (*tp))
+    {
+    CASE_CONVERT:
+      if (TREE_CODE (TREE_OPERAND (*tp, 0)) != ADDR_EXPR)
+	break;
+      ref_p = TYPE_REF_P (TREE_TYPE (*tp));
+      *tp = TREE_OPERAND (*tp, 0);
+      gcc_fallthrough ();
+    case ADDR_EXPR:
+      {
+	tree op = TREE_OPERAND (*tp, 0);
+	if (VAR_P (op)
+	    && DECL_DECLARED_CONSTEXPR_P (op)
+	    && !TREE_STATIC (op)
+	    /* ??? We should also say something about temporaries.  */
+	    && !DECL_ARTIFICIAL (op))
+	  {
+	    if (ref_p)
+	      inform (location_of (*tp), "reference to %qD is not a constant "
+		      "expression", op);
+	    else
+	      inform (location_of (*tp), "pointer to %qD is not a constant "
+		      "expression", op);
+	    const location_t op_loc = DECL_SOURCE_LOCATION (op);
+	    rich_location richloc (line_table, op_loc);
+	    richloc.add_fixit_insert_before (op_loc, "static ");
+	    inform (&richloc,
+		    "address of non-static constexpr variable %qD may differ on "
+		    "each invocation of the enclosing function; add %<static%> "
+		    "to give it a constant address", op);
+	  }
+	break;
+      }
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
 /* Some expressions may have constant operands but are not constant
    themselves, such as 1/0.  Call this function to check for that
    condition.
@@ -3398,7 +3453,13 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
       && t != void_node)
     {
       if (!allow_non_constant)
-	error ("%q+E is not a constant expression", t);
+	{
+	  auto_diagnostic_group d;
+	  error_at (cp_expr_loc_or_input_loc (t),
+		    "%q+E is not a constant expression", t);
+	  cp_walk_tree_without_duplicates (&t, verify_constant_explain_r,
+					   nullptr);
+	}
       *non_constant_p = true;
     }
   if (TREE_OVERFLOW_P (t))
