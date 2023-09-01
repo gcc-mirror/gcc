@@ -742,13 +742,8 @@
   "TARGET_VECTOR && (TARGET_ZVFHMIN || TARGET_ZVFH)"
 {
   rtx dblw = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
-  insn_code icode = code_for_pred_extend (<V_DOUBLE_TRUNC>mode);
-  rtx ops1[] = {dblw, operands[1]};
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops1);
-
-  icode = code_for_pred_extend (<MODE>mode);
-  rtx ops2[] = {operands[0], dblw};
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, ops2);
+  emit_insn (gen_extend<v_quad_trunc><v_double_trunc>2 (dblw, operands[1]));
+  emit_insn (gen_extend<v_double_trunc><mode>2 (operands[0], dblw));
   DONE;
 })
 
@@ -791,9 +786,7 @@
   insn_code icode = code_for_pred_rod_trunc (<MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP, opshalf);
 
-  rtx ops[] = {operands[0], half};
-  icode = code_for_pred_trunc (<V_DOUBLE_TRUNC>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP_FRM_DYN, ops);
+  emit_insn (gen_trunc<v_double_trunc><v_quad_trunc>2 (operands[0], half));
   DONE;
 })
 

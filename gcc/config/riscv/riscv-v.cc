@@ -2963,7 +2963,9 @@ needs_fp_rounding (unsigned icode, machine_mode mode)
   return icode != maybe_code_for_pred (SMIN, mode)
 	 && icode != maybe_code_for_pred (SMAX, mode)
 	 && icode != maybe_code_for_pred (NEG, mode)
-	 && icode != maybe_code_for_pred (ABS, mode);
+	 && icode != maybe_code_for_pred (ABS, mode)
+	 /* narrower-FP -> FP */
+	 && icode != maybe_code_for_pred_extend (mode);
 }
 
 /* Subroutine to expand COND_LEN_* patterns.  */
