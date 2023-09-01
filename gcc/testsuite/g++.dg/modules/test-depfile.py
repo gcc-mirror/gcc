@@ -28,6 +28,11 @@ class Input(Token):
         self.path = path
 
 
+class OrderInput(Token):
+    def __init__(self, path):
+        self.path = path
+
+
 class Colon(Token):
     pass
 
@@ -89,6 +94,10 @@ def validate_depfile(depfile, expect_input=None):
             if word.endswith(':'):
                 tokenized.append(word[:-1])
                 word = word[-1]
+            # Detect `:` at the end of a word.
+            if word.endswith(':|'):
+                tokenized.append(word[:-2])
+                word = word[-2]
 
             # Add word to the tokenized set.
             tokenized.append(word)
@@ -104,6 +113,8 @@ def validate_depfile(depfile, expect_input=None):
                 kind = 'dependency'
             elif token == '+=':
                 kind = 'append'
+            elif token == ':|':
+                kind = 'order-only'
         if line == ['']:
             kind = 'empty'
 
@@ -118,6 +129,15 @@ def validate_depfile(depfile, expect_input=None):
                     after_colon = True
                 elif after_colon:
                     line_parse.append(Input(token))
+                else:
+                    line_parse.append(Output(token))
+        elif kind == 'order-only':
+            after_op = False
+            for token in line:
+                if token == ':|':
+                    after_op = True
+                elif after_op:
+                    line_parse.append(OrderInput(token))
                 else:
                     line_parse.append(Output(token))
         elif kind == 'append':

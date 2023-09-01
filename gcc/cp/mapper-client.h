@@ -55,6 +55,7 @@ public:
 
 public:
   static module_client *open_module_client (location_t loc, const char *option,
+					    class mkdeps *,
 					    void (*set_repo) (const char *),
 					    char const *);
   static void close_module_client (location_t loc, module_client *);
