@@ -3254,7 +3254,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
    variables.  */
 
 static tree
-bot_replace (tree* t, int* walk_subtrees, void* data_)
+bot_replace (tree* t, int */*walk_subtrees*/, void* data_)
 {
   bot_data &data = *(bot_data*)data_;
   splay_tree target_remap = data.target_remap;
@@ -3283,27 +3283,6 @@ bot_replace (tree* t, int* walk_subtrees, void* data_)
       *t = convert_to_base (TREE_OPERAND (*t, 0), basetype,
 			    /*check_access=*/false, /*nonnull=*/true,
 			    tf_warning_or_error);
-    }
-  else if (cxx_dialect >= cxx20
-	   && (TREE_CODE (*t) == CALL_EXPR
-	       || TREE_CODE (*t) == AGGR_INIT_EXPR)
-	   && !in_immediate_context ())
-    {
-      /* Expand immediate invocations.  */
-      if (tree fndecl = cp_get_callee_fndecl_nofold (*t))
-	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
-	  {
-	    /* Make in_immediate_context true within the args.  */
-	    in_consteval_if_p_temp_override ito;
-	    in_consteval_if_p = true;
-	    int nargs = call_expr_nargs (*t);
-	    for (int i = 0; i < nargs; ++i)
-	      cp_walk_tree (&get_nth_callarg (*t, i), bot_replace, data_, NULL);
-	    *t = cxx_constant_value (*t);
-	    if (*t == error_mark_node)
-	      return error_mark_node;
-	    *walk_subtrees = 0;
-	  }
     }
 
   return NULL_TREE;

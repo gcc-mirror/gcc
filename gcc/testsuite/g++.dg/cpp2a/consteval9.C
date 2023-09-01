@@ -15,10 +15,11 @@ void qux ()
   int a = bar (N);	// { dg-message "in 'constexpr' expansion of 'bar\\(2\\)'" }
 }
 
+// This function is not instantiated so NDR.
 template <int N>
 void quux ()
 {
-  int a = bar (5);	// { dg-message "in 'constexpr' expansion of 'bar\\(5\\)'" }
+  int a = bar (5);
 }
 
 void

@@ -10434,6 +10434,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       fn = build_addr_func (fn, complain);
       if (fn == error_mark_node)
 	return error_mark_node;
+
+      /* We're actually invoking the function.  (Immediate functions get an
+	 & when invoking it even though the user didn't use &.)  */
+      ADDR_EXPR_DENOTES_CALL_P (fn) = true;
     }
 
   tree call = build_cxx_call (fn, nargs, argarray, complain|decltype_flag);
@@ -10451,41 +10455,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (TREE_CODE (c) == CALL_EXPR)
 	suppress_warning (c /* Suppress all warnings.  */);
     }
-  if (TREE_CODE (fn) == ADDR_EXPR)
-    {
-      tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (immediate_invocation_p (fndecl))
-	{
-	  tree obj_arg = NULL_TREE;
-	  /* Undo convert_from_reference called by build_cxx_call.  */
-	  if (REFERENCE_REF_P (call))
-	    call = TREE_OPERAND (call, 0);
-	  if (DECL_CONSTRUCTOR_P (fndecl))
-	    obj_arg = cand->first_arg ? cand->first_arg : (*args)[0];
-	  if (obj_arg && is_dummy_object (obj_arg))
-	    {
-	      call = build_cplus_new (DECL_CONTEXT (fndecl), call, complain);
-	      obj_arg = NULL_TREE;
-	    }
-	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
-	    {
-	      tree addr = TREE_OPERAND (obj_arg, 0);
-	      STRIP_NOPS (addr);
-	      if (TREE_CODE (addr) == ADDR_EXPR)
-		{
-		  tree typeo = TREE_TYPE (obj_arg);
-		  tree typei = TREE_TYPE (TREE_OPERAND (addr, 0));
-		  if (same_type_ignoring_top_level_qualifiers_p (typeo, typei))
-		    obj_arg = TREE_OPERAND (addr, 0);
-		}
-	    }
-	  call = cxx_constant_value (call, obj_arg, complain);
-	  if (obj_arg && !error_operand_p (call))
-	    call = cp_build_init_expr (obj_arg, call);
-	  call = convert_from_reference (call);
-	}
-    }
+
   return call;
 }
 
