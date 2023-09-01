@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
 #include "rust-token.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 
@@ -28,7 +29,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
   AST::Attribute path_attr = AST::Attribute::create_empty ();
   for (const auto &attr : inner_attrs)
     {
-      if (attr.get_path ().as_string () == "path")
+      if (attr.get_path ().as_string () == Values::Attributes::PATH)
 	{
 	  path_attr = attr;
 	  break;
@@ -48,7 +49,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
 
   for (const auto &attr : outer_attrs)
     {
-      if (attr.get_path ().as_string () == "path")
+      if (attr.get_path ().as_string () == Values::Attributes::PATH)
 	{
 	  path_attr = attr;
 	  break;

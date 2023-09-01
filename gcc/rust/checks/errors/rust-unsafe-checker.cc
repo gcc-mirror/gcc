@@ -21,6 +21,7 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace HIR {
@@ -186,7 +187,8 @@ check_target_attr (HIR::Function *fn, location_t locus)
   if (std::any_of (fn->get_outer_attrs ().begin (),
 		   fn->get_outer_attrs ().end (),
 		   [] (const AST::Attribute &attr) {
-		     return attr.get_path ().as_string () == "target_feature";
+		     return attr.get_path ().as_string ()
+			    == Values::Attributes::TARGET_FEATURE;
 		   }))
     rust_error_at (locus,
 		   "call to function with %<#[target_feature]%> requires "

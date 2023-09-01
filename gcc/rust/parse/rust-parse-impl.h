@@ -26,6 +26,7 @@
 #include "rust-diagnostics.h"
 #include "rust-make-unique.h"
 #include "rust-dir-owner.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 // Left binding powers of operations.
@@ -490,7 +491,7 @@ Parser<ManagedTokenSource>::parse_doc_comment ()
 {
   const_TokenPtr token = lexer.peek_token ();
   location_t locus = token->get_locus ();
-  AST::SimplePathSegment segment ("doc", locus);
+  AST::SimplePathSegment segment (Values::Attributes::DOC, locus);
   std::vector<AST::SimplePathSegment> segments;
   segments.push_back (std::move (segment));
   AST::SimplePath attr_path (std::move (segments), false, locus);

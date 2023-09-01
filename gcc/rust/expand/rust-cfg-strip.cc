@@ -19,6 +19,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-ast-full.h"
 #include "rust-session-manager.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 
@@ -33,7 +34,8 @@ fails_cfg (const AST::AttrVec &attrs)
 
   for (const auto &attr : attrs)
     {
-      if (attr.get_path () == "cfg" && !attr.check_cfg_predicate (session))
+      if (attr.get_path () == Values::Attributes::CFG
+	  && !attr.check_cfg_predicate (session))
 	return true;
     }
   return false;
@@ -51,7 +53,7 @@ fails_cfg_with_expand (AST::AttrVec &attrs)
   // TODO: maybe have something that strips cfg attributes that evaluate true?
   for (auto &attr : attrs)
     {
-      if (attr.get_path () == "cfg")
+      if (attr.get_path () == Values::Attributes::CFG)
 	{
 	  if (!attr.is_parsed_to_meta_item ())
 	    attr.parse_attr_to_meta_item ();
@@ -96,7 +98,7 @@ expand_cfg_attrs (AST::AttrVec &attrs)
   for (std::size_t i = 0; i < attrs.size (); i++)
     {
       auto &attr = attrs[i];
-      if (attr.get_path () == "cfg_attr")
+      if (attr.get_path () == Values::Attributes::CFG_ATTR)
 	{
 	  if (!attr.is_parsed_to_meta_item ())
 	    attr.parse_attr_to_meta_item ();

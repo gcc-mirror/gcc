@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-parse.h"
 #include "rust-operators.h"
 #include "rust-dir-owner.h"
+#include "rust-attribute-values.h"
 
 /* Compilation unit used for various AST-related functions that would make
  * the headers too long if they were defined inline and don't receive any
@@ -4271,7 +4272,8 @@ Attribute::check_cfg_predicate (const Session &session) const
   /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
    * cfg_attr path */
   if (!has_attr_input ()
-      || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
+      || (path.as_string () != Values::Attributes::CFG
+	  && path.as_string () != Values::Attributes::CFG_ATTR))
     {
       // DEBUG message
       rust_debug (
@@ -4293,7 +4295,7 @@ Attribute::check_cfg_predicate (const Session &session) const
 std::vector<Attribute>
 Attribute::separate_cfg_attrs () const
 {
-  if (!has_attr_input () || path.as_string () != "cfg_attr")
+  if (!has_attr_input () || path.as_string () != Values::Attributes::CFG_ATTR)
     return {};
 
   // assume that it has already been parsed

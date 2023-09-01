@@ -29,6 +29,7 @@
 #include "rust-macro.h"
 #include "rust-parse.h"
 #include "rust-session-manager.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 
