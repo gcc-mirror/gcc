@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++23 -Wnonnull -O0 -Wno-unused-result" }
+// { dg-options "-Wnonnull -O0 -Wno-unused-result" }
 // { dg-do compile { target c++23 } }
 
 #include <string>
