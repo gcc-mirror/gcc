@@ -98,6 +98,8 @@ DEF_SECTION (mod_init_section, 0, ".mod_init_func", 0)
 DEF_SECTION (mod_term_section, 0, ".mod_term_func", 0)
 DEF_SECTION (constructor_section, 0, ".constructor", 0)
 DEF_SECTION (destructor_section, 0, ".destructor", 0)
+DEF_SECTION (static_init_section, SECTION_CODE,
+	     ".section\t__TEXT,__StaticInit,regular,pure_instructions", 0)
 
 /* Objective-C ABI=0 (Original version) sections.  */
 DEF_SECTION (objc_class_section, 0, ".objc_class", 1)

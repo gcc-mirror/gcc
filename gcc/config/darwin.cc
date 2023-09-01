@@ -3893,6 +3893,14 @@ darwin_function_section (tree decl, enum node_frequency freq,
   if (decl && DECL_SECTION_NAME (decl) != NULL)
     return get_named_section (decl, NULL, 0);
 
+  /* Intercept functions in global init; these are placed in separate sections.
+     FIXME: there should be some neater way to do this.  */
+  if (DECL_NAME (decl)
+      && (startswith (IDENTIFIER_POINTER (DECL_NAME (decl)), "_GLOBAL__sub_I")
+	  || startswith (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			 "__static_initialization_and_destruction")))
+    return  darwin_sections[static_init_section];
+
   /* We always put unlikely executed stuff in the cold section.  */
   if (freq == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return (use_coal) ? darwin_sections[text_cold_coal_section]
