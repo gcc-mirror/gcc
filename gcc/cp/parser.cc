@@ -2393,7 +2393,7 @@ static tree cp_parser_c_for
 static tree cp_parser_range_for
   (cp_parser *, tree, tree, tree, bool, unsigned short, bool, bool);
 static void do_range_for_auto_deduction
-  (tree, tree, tree, unsigned int);
+  (tree, tree, cp_decomp *);
 static tree cp_parser_perform_range_for_lookup
   (tree, tree *, tree *);
 static tree cp_parser_range_for_member_function
@@ -13854,8 +13854,7 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
   tree stmt, range_expr;
   auto_vec <cxx_binding *, 16> bindings;
   auto_vec <tree, 16> names;
-  tree decomp_first_name = NULL_TREE;
-  unsigned int decomp_cnt = 0;
+  cp_decomp decomp_d, *decomp = NULL;
 
   /* Get the range declaration momentarily out of the way so that
      the range expression doesn't clash with it. */
@@ -13872,9 +13871,11 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 	    {
 	      tree d = range_decl;
 	      range_decl = TREE_OPERAND (v, 0);
-	      decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
-	      decomp_first_name = d;
-	      for (unsigned int i = 0; i < decomp_cnt; i++, d = DECL_CHAIN (d))
+	      decomp = &decomp_d;
+	      decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	      decomp->decl = d;
+	      for (unsigned int i = 0; i < decomp->count;
+		   i++, d = DECL_CHAIN (d))
 		{
 		  tree name = DECL_NAME (d);
 		  names.safe_push (name);
@@ -13928,15 +13929,13 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       if (!type_dependent_expression_p (range_expr)
 	  /* do_auto_deduction doesn't mess with template init-lists.  */
 	  && !BRACE_ENCLOSED_INITIALIZER_P (range_expr))
-	do_range_for_auto_deduction (range_decl, range_expr, decomp_first_name,
-				     decomp_cnt);
+	do_range_for_auto_deduction (range_decl, range_expr, decomp);
     }
   else
     {
       stmt = begin_for_stmt (scope, init);
-      stmt = cp_convert_range_for (stmt, range_decl, range_expr,
-				   decomp_first_name, decomp_cnt, ivdep,
-				   unroll, novector);
+      stmt = cp_convert_range_for (stmt, range_decl, range_expr, decomp,
+				   ivdep, unroll, novector);
     }
   return stmt;
 }
@@ -13968,8 +13967,7 @@ build_range_temp (tree range_expr)
    a shortcut version of cp_convert_range_for.  */
 
 static void
-do_range_for_auto_deduction (tree decl, tree range_expr,
-			     tree decomp_first_name, unsigned int decomp_cnt)
+do_range_for_auto_deduction (tree decl, tree range_expr, cp_decomp *decomp)
 {
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
   if (auto_node)
@@ -13990,7 +13988,7 @@ do_range_for_auto_deduction (tree decl, tree range_expr,
 						tf_warning_or_error,
 						adc_variable_type);
 	  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
-	    cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
+	    cp_finish_decomp (decl, decomp);
 	}
     }
 }
@@ -14113,8 +14111,8 @@ warn_for_range_copy (tree decl, tree expr)
 
 tree
 cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
-		      tree decomp_first_name, unsigned int decomp_cnt,
-		      bool ivdep, unsigned short unroll, bool novector)
+		      cp_decomp *decomp, bool ivdep, unsigned short unroll,
+		      bool novector)
 {
   tree begin, end;
   tree iter_type, begin_expr, end_expr;
@@ -14182,17 +14180,14 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 				     tf_warning_or_error);
   finish_for_expr (expression, statement);
 
-  if (VAR_P (range_decl) && DECL_DECOMPOSITION_P (range_decl))
-    cp_maybe_mangle_decomp (range_decl, decomp_first_name, decomp_cnt);
-
   /* The declaration is initialized with *__begin inside the loop body.  */
   tree deref_begin = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
 					   NULL_TREE, tf_warning_or_error);
   cp_finish_decl (range_decl, deref_begin,
 		  /*is_constant_init*/false, NULL_TREE,
-		  LOOKUP_ONLYCONVERTING);
+		  LOOKUP_ONLYCONVERTING, decomp);
   if (VAR_P (range_decl) && DECL_DECOMPOSITION_P (range_decl))
-    cp_finish_decomp (range_decl, decomp_first_name, decomp_cnt);
+    cp_finish_decomp (range_decl, decomp);
 
   warn_for_range_copy (range_decl, deref_begin);
 
@@ -15890,18 +15885,20 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
-	  cp_maybe_mangle_decomp (decl, prev, v.length ());
+	  cp_decomp decomp = { prev, v.length () };
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
-			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT));
-	  cp_finish_decomp (decl, prev, v.length ());
+			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
+			  &decomp);
+	  cp_finish_decomp (decl, &decomp);
 	}
     }
   else if (decl != error_mark_node)
     {
       *maybe_range_for_decl = prev;
+      cp_decomp decomp = { prev, v.length () };
       /* Ensure DECL_VALUE_EXPR is created for all the decls but
 	 the underlying DECL.  */
-      cp_finish_decomp (decl, prev, v.length ());
+      cp_finish_decomp (decl, &decomp);
     }
 
   if (pushed_scope)
@@ -43521,8 +43518,7 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  tree d = decl;
-	  tree decomp_first_name = NULL_TREE;
-	  unsigned decomp_cnt = 0;
+	  cp_decomp decomp_d, *decomp = NULL;
 	  if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
 	    {
 	      tree v = DECL_VALUE_EXPR (decl);
@@ -43531,11 +43527,12 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 		  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
 		{
 		  d = TREE_OPERAND (v, 0);
-		  decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
-		  decomp_first_name = decl;
+		  decomp = &decomp_d;
+		  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+		  decomp->decl = decl;
 		}
 	    }
-	  do_range_for_auto_deduction (d, init, decomp_first_name, decomp_cnt);
+	  do_range_for_auto_deduction (d, init, decomp);
 	}
       cond = global_namespace;
       incr = NULL_TREE;
@@ -43626,8 +43623,7 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
   decl = begin;
   /* Defer popping sl here.  */
 
-  tree decomp_first_name = NULL_TREE;
-  unsigned decomp_cnt = 0;
+  cp_decomp decomp_d, *decomp = NULL;
   if (orig_decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (orig_decl))
     {
       tree v = DECL_VALUE_EXPR (orig_decl);
@@ -43637,8 +43633,9 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	{
 	  tree d = orig_decl;
 	  orig_decl = TREE_OPERAND (v, 0);
-	  decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
-	  decomp_first_name = d;
+	  decomp = &decomp_d;
+	  decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	  decomp->decl = d;
 	}
     }
 
@@ -43651,10 +43648,10 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	{
 	  TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
 						     t, auto_node);
-	  if (decomp_first_name)
+	  if (decomp)
 	    {
 	      ++processing_template_decl;
-	      cp_finish_decomp (orig_decl, decomp_first_name, decomp_cnt);
+	      cp_finish_decomp (orig_decl, decomp);
 	      --processing_template_decl;
 	      if (!processing_template_decl)
 		clear_has_value_expr = true;
@@ -43670,7 +43667,8 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
      the whole loop nest.  The remaining elements are decls of derived
      decomposition variables that are bound inside the loop body.  This
      structure is further mangled by finish_omp_for into the form required
-     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */
+     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */\
+  unsigned decomp_cnt = decomp ? decomp->count : 0;
   tree v = make_tree_vec (decomp_cnt + 3);
   TREE_VEC_ELT (v, 0) = range_temp_decl;
   TREE_VEC_ELT (v, 1) = end;
@@ -43686,13 +43684,13 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 	     name but the DECL_VALUE_EXPR will be dependent.  Hide those
 	     from folding of other loop initializers e.g. for warning
 	     purposes until cp_finish_omp_range_for.  */
-	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name)
-			       || (TREE_TYPE (decomp_first_name)
+	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp->decl)
+			       || (TREE_TYPE (decomp->decl)
 				   == error_mark_node));
-	  DECL_HAS_VALUE_EXPR_P (decomp_first_name) = 0;
+	  DECL_HAS_VALUE_EXPR_P (decomp->decl) = 0;
 	}
-      TREE_VEC_ELT (v, i + 3) = decomp_first_name;
-      decomp_first_name = DECL_CHAIN (decomp_first_name);
+      TREE_VEC_ELT (v, i + 3) = decomp->decl;
+      decomp->decl = DECL_CHAIN (decomp->decl);
     }
   orig_decl = tree_cons (NULL_TREE, NULL_TREE, v);
 }
@@ -43706,27 +43704,26 @@ cp_finish_omp_range_for (tree orig, tree begin)
   gcc_assert (TREE_CODE (orig) == TREE_LIST
 	      && TREE_CODE (TREE_CHAIN (orig)) == TREE_VEC);
   tree decl = TREE_VEC_ELT (TREE_CHAIN (orig), 2);
-  tree decomp_first_name = NULL_TREE;
-  unsigned int decomp_cnt = 0;
+  cp_decomp decomp_d, *decomp = NULL;
 
   if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
     {
-      decomp_first_name = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
-      decomp_cnt = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
+      decomp = &decomp_d;
+      decomp_d.decl = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
+      decomp_d.count = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
       if (TREE_PUBLIC (TREE_CHAIN (orig)))
 	{
 	  /* Undo temporary clearing of DECL_HAS_VALUE_EXPR_P done
 	     by cp_convert_omp_range_for above.  */
 	  TREE_PUBLIC (TREE_CHAIN (orig)) = 0;
-	  tree d = decomp_first_name;
-	  for (unsigned i = 0; i < decomp_cnt; i++)
+	  tree d = decomp_d.decl;
+	  for (unsigned i = 0; i < decomp_d.count; i++)
 	    {
 	      if (TREE_TYPE (d) != error_mark_node)
 		DECL_HAS_VALUE_EXPR_P (d) = 1;
 	      d = DECL_CHAIN (d);
 	    }
 	}
-      cp_maybe_mangle_decomp (decl, decomp_first_name, decomp_cnt);
     }
 
   /* The declaration is initialized with *__begin inside the loop body.  */
@@ -43734,9 +43731,9 @@ cp_finish_omp_range_for (tree orig, tree begin)
 		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
 					NULL_TREE, tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
-		  LOOKUP_ONLYCONVERTING);
+		  LOOKUP_ONLYCONVERTING, decomp);
   if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
-    cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
+    cp_finish_decomp (decl, decomp);
 }
 
 /* Return true if next tokens contain a standard attribute that contains

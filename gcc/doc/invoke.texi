@@ -3017,6 +3017,9 @@ in C++14 and up.
 Version 18, which first appeard in G++ 13, fixes manglings of lambdas
 that have additional context.
 
+Version 19, which first appeard in G++ 14, fixes manglings of structured
+bindings to include ABI tags.
+
 See also @option{-Wabi}.
 
 @opindex fabi-compat-version

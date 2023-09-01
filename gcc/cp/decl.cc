@@ -911,15 +911,16 @@ static GTY((deletable)) vec<tree, va_gc> *local_entities;
    generally very few of these in any particular function.  */
 
 void
-determine_local_discriminator (tree decl)
+determine_local_discriminator (tree decl, tree name)
 {
   auto_cond_timevar tv (TV_NAME_LOOKUP);
   retrofit_lang_decl (decl);
   tree ctx = DECL_CONTEXT (decl);
-  tree name = (TREE_CODE (decl) == TYPE_DECL
-	       && TYPE_UNNAMED_P (TREE_TYPE (decl))
-	       ? NULL_TREE : DECL_NAME (decl));
   size_t nelts = vec_safe_length (local_entities);
+  if (name == NULL_TREE)
+    name = (TREE_CODE (decl) == TYPE_DECL
+	    && TYPE_UNNAMED_P (TREE_TYPE (decl))
+	    ? NULL_TREE : DECL_NAME (decl));
   for (size_t i = 0; i < nelts; i += 2)
     {
       tree *pair = &(*local_entities)[i];
@@ -6417,8 +6418,9 @@ layout_var_decl (tree decl)
 void
 maybe_commonize_var (tree decl)
 {
-  /* Don't mess with __FUNCTION__ and similar.  */
-  if (DECL_ARTIFICIAL (decl))
+  /* Don't mess with __FUNCTION__ and similar.  But do handle structured
+     bindings.  */
+  if (DECL_ARTIFICIAL (decl) && !DECL_DECOMPOSITION_P (decl))
     return;
 
   /* Static data in a function with comdat linkage also has comdat
@@ -8212,6 +8214,8 @@ omp_declare_variant_finalize (tree decl, tree attr)
     }
 }
 
+static void cp_maybe_mangle_decomp (tree, cp_decomp *);
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -8221,11 +8225,14 @@ omp_declare_variant_finalize (tree decl, tree attr)
    true, then INIT is an integral constant expression.
 
    FLAGS is LOOKUP_ONLYCONVERTING if the = init syntax was used, else 0
-   if the (init) syntax was used.  */
+   if the (init) syntax was used.
+
+   DECOMP is first identifier's DECL and identifier count in a structured
+   bindings, nullptr if not a structured binding.  */
 
 void
 cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
-		tree asmspec_tree, int flags)
+		tree asmspec_tree, int flags, cp_decomp *decomp)
 {
   vec<tree, va_gc> *cleanups = NULL;
   const char *asmspec = NULL;
@@ -8599,6 +8606,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		    "static or thread storage duration");
 	  return;
 	}
+
+      if (decomp)
+	cp_maybe_mangle_decomp (decl, decomp);
 
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
@@ -9070,18 +9080,37 @@ lookup_decomp_type (tree v)
 /* Mangle a decomposition declaration if needed.  Arguments like
    in cp_finish_decomp.  */
 
-void
-cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
+static void
+cp_maybe_mangle_decomp (tree decl, cp_decomp *decomp)
 {
   if (!processing_template_decl
       && !error_operand_p (decl)
       && TREE_STATIC (decl))
     {
       auto_vec<tree, 16> v;
-      v.safe_grow (count, true);
-      tree d = first;
-      for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
-	v[count - i - 1] = d;
+      v.safe_grow (decomp->count, true);
+      tree d = decomp->decl;
+      for (unsigned int i = 0; i < decomp->count; i++, d = DECL_CHAIN (d))
+	v[decomp->count - i - 1] = d;
+      if (DECL_FUNCTION_SCOPE_P (decl))
+	{
+	  size_t sz = 3;
+	  for (unsigned int i = 0; i < decomp->count; ++i)
+	    sz += IDENTIFIER_LENGTH (DECL_NAME (v[i])) + 1;
+	  char *name = XALLOCAVEC (char, sz);
+	  name[0] = 'D';
+	  name[1] = 'C';
+	  char *p = name + 2;
+	  for (unsigned int i = 0; i < decomp->count; ++i)
+	    {
+	      size_t len = IDENTIFIER_LENGTH (DECL_NAME (v[i]));
+	      *p++ = ' ';
+	      memcpy (p, IDENTIFIER_POINTER (DECL_NAME (v[i])), len);
+	      p += len;
+	    }
+	  *p = '\0';
+	  determine_local_discriminator (decl, get_identifier (name));
+	}
       SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
       maybe_apply_pragma_weak (decl);
     }
@@ -9093,8 +9122,10 @@ cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
    those decls.  */
 
 void
-cp_finish_decomp (tree decl, tree first, unsigned int count)
+cp_finish_decomp (tree decl, cp_decomp *decomp)
 {
+  tree first = decomp->decl;
+  unsigned count = decomp->count;
   if (error_operand_p (decl))
     {
      error_out:
