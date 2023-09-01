@@ -860,7 +860,7 @@ read_original_directory (cpp_reader *pfile)
    Maybe it should also reset state, such that you could call
    cpp_start_read with a new filename to restart processing.  */
 void
-cpp_finish (cpp_reader *pfile, FILE *deps_stream)
+cpp_finish (struct cpp_reader *pfile, FILE *deps_stream, FILE *fdeps_stream)
 {
   /* Warn about unused macros before popping the final buffer.  */
   if (CPP_OPTION (pfile, warn_unused_macros))
@@ -874,8 +874,15 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (deps_stream)
-    deps_write (pfile, deps_stream, 72);
+  cpp_fdeps_format fdeps_format = CPP_OPTION (pfile, deps.fdeps_format);
+  if (fdeps_format == FDEPS_FMT_P1689R5 && fdeps_stream)
+    deps_write_p1689r5 (pfile->deps, fdeps_stream);
+
+  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE
+      && deps_stream)
+    {
+      deps_write (pfile, deps_stream, 72);
+    }
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))

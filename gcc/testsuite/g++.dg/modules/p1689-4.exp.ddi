@@ -1,0 +1,14 @@
+{
+    "rules": [
+        {
+            "primary-output": "p1689-4.o",
+            "requires": []
+                {
+                    "logical-name": "foo"
+                }
+            ]
+        }
+    ],
+    "version": 0,
+    "revision": 0
+}

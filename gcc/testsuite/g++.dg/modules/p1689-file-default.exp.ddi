@@ -1,0 +1,27 @@
+{
+    "rules": [
+        {
+            "primary-output": "p1689-file-default.o",
+            "provides": [
+                {
+                    "logical-name": "foo",
+                    "is-interface": true
+                }
+            ],
+            "requires": [
+                "__P1689_unordered__",
+                {
+                    "logical-name": "bar"
+                },
+                {
+                    "logical-name": "foo:part1"
+                },
+                {
+                    "logical-name": "foo:part2"
+                }
+            ]
+        }
+    ],
+    "version": 0,
+    "revision": 0
+}

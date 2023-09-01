@@ -19834,7 +19834,8 @@ preprocessed_module (cpp_reader *reader)
 		  && (module->is_interface () || module->is_partition ()))
 		deps_add_module_target (deps, module->get_flatname (),
 					maybe_add_cmi_prefix (module->filename),
-					module->is_header());
+					module->is_header (),
+					module->is_exported ());
 	      else
 		deps_add_module_dep (deps, module->get_flatname ());
 	    }

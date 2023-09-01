@@ -2830,6 +2830,33 @@ is @option{-fpermitted-flt-eval-methods=c11}.  The default when in a GNU
 dialect (@option{-std=gnu11} or similar) is
 @option{-fpermitted-flt-eval-methods=ts-18661-3}.
 
+@opindex fdeps-
+The @samp{-fdeps-*} options are used to extract structured dependency
+information for a source.  This involves determining what resources provided by
+other source files will be required to compile the source as well as what
+resources are provided by the source.  This information can be used to add
+required dependencies between compilation rules of dependent sources based on
+their contents rather than requiring such information be reflected within the
+build tools as well.
+
+@opindex fdeps-file
+@item -fdeps-file=@var{file}
+Where to write structured dependency information.
+
+@opindex fdeps-format
+@item -fdeps-format=@var{format}
+The format to use for structured dependency information. @samp{p1689r5} is the
+only supported format right now.  Note that when this argument is specified, the
+output of @samp{-MF} is stripped of some information (namely C++ modules) so
+that it does not use extended makefile syntax not understood by most tools.
+
+@opindex fdeps-target
+@item -fdeps-target=@var{file}
+Analogous to @option{-MT} but for structured dependency information.  This
+indicates the target which will ultimately need any required resources and
+provide any resources extracted from the source that may be required by other
+sources.
+
 @opindex fplan9-extensions
 @item -fplan9-extensions
 Accept some non-standard constructs used in Plan 9 code.

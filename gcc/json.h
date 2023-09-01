@@ -30,6 +30,9 @@ along with GCC; see the file COPYING3.  If not see
    Supports creating a DOM-like tree of json::value *, and then dumping
    json::value * to text.  */
 
+/* TODO: `libcpp/mkdeps.cc` wants JSON writing support for p1689r5 output;
+   extract this code and move to libiberty.  */
+
 namespace json
 {
 

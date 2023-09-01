@@ -302,6 +302,9 @@ typedef CPPCHAR_SIGNED_T cppchar_signed_t;
 /* Style of header dependencies to generate.  */
 enum cpp_deps_style { DEPS_NONE = 0, DEPS_USER, DEPS_SYSTEM };
 
+/* Structured format of module dependencies to generate.  */
+enum cpp_fdeps_format { FDEPS_FMT_NONE = 0, FDEPS_FMT_P1689R5 };
+
 /* The possible normalization levels, from most restrictive to least.  */
 enum cpp_normalize_level {
   /* In NFKC.  */
@@ -588,6 +591,9 @@ struct cpp_options
   {
     /* Style of header dependencies to generate.  */
     enum cpp_deps_style style;
+
+    /* Structured format of module dependencies to generate.  */
+    enum cpp_fdeps_format fdeps_format;
 
     /* Assume missing files are generated files.  */
     bool missing_files;
@@ -1112,9 +1118,9 @@ extern void cpp_post_options (cpp_reader *);
 extern void cpp_init_iconv (cpp_reader *);
 
 /* Call this to finish preprocessing.  If you requested dependency
-   generation, pass an open stream to write the information to,
-   otherwise NULL.  It is your responsibility to close the stream.  */
-extern void cpp_finish (cpp_reader *, FILE *deps_stream);
+   generation, pass open stream(s) to write the information to,
+   otherwise NULL.  It is your responsibility to close the stream(s).  */
+extern void cpp_finish (cpp_reader *, FILE *deps_stream, FILE *fdeps_stream = NULL);
 
 /* Call this to release the handle at the end of preprocessing.  Any
    use of the handle after this function returns is invalid.  */
