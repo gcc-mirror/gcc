@@ -1,8 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
-#define vector __attribute__((vector_size(sizeof(unsigned)*2)))
+/* { dg-options "-O2 -fdump-tree-optimized -Wno-psabi" } */
 
 #include <limits.h>
+
+#define vector __attribute__((vector_size(sizeof(unsigned)*2)))
 
 vector signed or1(vector unsigned x, vector unsigned y)
 {
