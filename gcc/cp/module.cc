@@ -18968,6 +18968,9 @@ module_state::do_import (cpp_reader *reader, bool outermost)
       dump () && dump ("CMI is %s", file);
       if (note_module_cmi_yes || inform_cmi_p)
 	inform (loc, "reading CMI %qs", file);
+      /* Add the CMI file to the dependency tracking. */
+      if (cpp_get_deps (reader))
+	deps_add_dep (cpp_get_deps (reader), file);
       fd = open (file, O_RDONLY | O_CLOEXEC | O_BINARY);
       e = errno;
     }

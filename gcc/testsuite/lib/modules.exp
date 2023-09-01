@@ -69,3 +69,32 @@ proc run-check-p1689-valid { depfile template } {
 
     clean-p1689 $testcase
 }
+
+proc run-check-module-dep { depfile flag expected } {
+    global srcdir subdir
+    # Extract the test file name from the arguments.
+    set testcase [file rootname [file tail $depfile]]
+
+    verbose "Verifying dependencies for $testcase in $srcdir/$subdir" 2
+    set testcase [remote_download host $testcase]
+
+    set pytest_script "test-depfile.py"
+    if { ![check_effective_target_recent_python3] } {
+      unsupported "$pytest_script python3 is missing"
+      return
+    }
+
+    verbose "running script test-depfile.py" 1
+    spawn -noecho python3 $srcdir/$subdir/$pytest_script --all --depfile $depfile $flag $expected
+
+    expect {
+      -re "ERROR: (\[^\r\n\]*)" {
+       fail $expect_out(0,string)
+       exp_continue
+      }
+    }
+}
+
+proc run-check-module-dep-expect-input { depfile expected } {
+    run-check-module-dep $depfile "--expect-input" $expected
+}
