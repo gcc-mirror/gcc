@@ -522,10 +522,6 @@ ssa_name_has_boolean_range (tree op)
 {
   gcc_assert (TREE_CODE (op) == SSA_NAME);
 
-  /* Boolean types always have a range [0..1].  */
-  if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE)
-    return true;
-
   /* An integral type with a single bit of precision.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))
       && TYPE_UNSIGNED (TREE_TYPE (op))
