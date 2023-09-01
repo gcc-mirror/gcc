@@ -477,8 +477,8 @@ pyobj_refcnt_checker (const region_model *model,
   if (!ctxt)
     return;
 
-  auto region_to_refcnt = hash_map<const region *, int> ();
-  auto seen_regions = hash_set<const region *> ();
+  hash_map<const region *, int> region_to_refcnt;
+  hash_set<const region *> seen_regions;
 
   count_pyobj_references (model, region_to_refcnt, retval, seen_regions);
   check_refcnts (model, old_model, retval, ctxt, region_to_refcnt);
@@ -561,7 +561,7 @@ public:
     if (!ctxt)
       return;
     region_model *model = cd.get_model ();
-    auto region_to_refcnt = hash_map<const region *, int> ();
+    hash_map<const region *, int> region_to_refcnt;
     count_all_references(model, region_to_refcnt);
     dump_refcnt_info(region_to_refcnt, model, ctxt);
   }
