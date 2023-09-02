@@ -53,9 +53,10 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
   if (pattern_ty->get_kind () != TyTy::TypeKind::ADT)
     {
-      rust_error_at (pattern.get_locus (),
-		     "expected tuple struct/variant, found: %s",
-		     pattern_ty->get_name ().c_str ());
+      rust_error_at (
+	pattern.get_locus (), ErrorCode::E0532,
+	"expected tuple struct or tuple variant, found function %qs",
+	pattern_ty->get_name ().c_str ());
       return;
     }
 
