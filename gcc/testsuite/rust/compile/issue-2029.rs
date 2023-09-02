@@ -6,7 +6,7 @@ fn foo(_: usize) -> Foo {
 fn main() {
     match Foo(true) {
         foo(x)
-        // { dg-error "expected tuple struct/variant, found" "" { target *-*-* } .-1 }
+        // { dg-error "expected tuple struct or tuple variant, found function " "" { target *-*-* } .-1 }
         => ()
     }
 }
