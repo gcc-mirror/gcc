@@ -232,6 +232,29 @@
 [(set_attr "type" "vector")]
 )
 
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vfmin.vv/vfmax.vv
+;; - vfmin.vf/vfmax.vf
+;; - fmax/fmaxf in math.h
+;; -------------------------------------------------------------------------
+(define_insn_and_split "<optab><mode>3"
+  [(set (match_operand:VLSF 0 "register_operand")
+    (any_float_binop_nofrm:VLSF
+     (match_operand:VLSF 1 "<binop_rhs1_predicate>")
+     (match_operand:VLSF 2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (code_for_pred (<CODE>, <MODE>mode),
+				 riscv_vector::BINARY_OP, operands);
+  DONE;
+}
+[(set_attr "type" "vector")]
+)
+
 ;; -------------------------------------------------------------------------------
 ;; ---- [INT] Unary operations
 ;; -------------------------------------------------------------------------------
