@@ -120,7 +120,7 @@ struct constexpr_global_ctx
 /* In constexpr.cc */
 /* Representation of entries in the constexpr function definition table.  */
 
-struct GTY ((for_user)) constexpr_fundef
+struct GTY ((for_user)) rust_constexpr_fundef
 {
   tree decl;
   tree body;
@@ -132,10 +132,10 @@ struct GTY ((for_user)) constexpr_fundef
  along with the bindings of parameters to their arguments, for
  the purpose of compile time evaluation.  */
 
-struct GTY ((for_user)) constexpr_call
+struct GTY ((for_user)) rust_constexpr_call
 {
   /* Description of the constexpr function definition.  */
-  constexpr_fundef *fundef;
+  rust_constexpr_fundef *fundef;
   /* Parameter bindings environment.  A TREE_VEC of arguments.  */
   tree bindings;
   /* Result of the call.
@@ -150,10 +150,10 @@ struct GTY ((for_user)) constexpr_call
   bool manifestly_const_eval;
 };
 
-struct rust_constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
+struct rust_constexpr_call_hasher : ggc_ptr_hash<rust_constexpr_call>
 {
-  static hashval_t hash (constexpr_call *);
-  static bool equal (constexpr_call *, constexpr_call *);
+  static hashval_t hash (rust_constexpr_call *);
+  static bool equal (rust_constexpr_call *, rust_constexpr_call *);
 };
 
 enum constexpr_switch_state
@@ -175,7 +175,7 @@ struct constexpr_ctx
      cxx_eval_outermost_constant_expr invocation.  */
   constexpr_global_ctx *global;
   /* The innermost call we're evaluating.  */
-  constexpr_call *call;
+  rust_constexpr_call *call;
   /* SAVE_EXPRs and TARGET_EXPR_SLOT vars of TARGET_EXPRs that we've seen
      within the current LOOP_EXPR.  NULL if we aren't inside a loop.  */
   vec<tree> *save_exprs;
@@ -201,10 +201,11 @@ struct constexpr_ctx
   bool manifestly_const_eval;
 };
 
-struct rust_constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
+struct rust_constexpr_fundef_hasher : ggc_ptr_hash<rust_constexpr_fundef>
 {
-  static hashval_t hash (const constexpr_fundef *);
-  static bool equal (const constexpr_fundef *, const constexpr_fundef *);
+  static hashval_t hash (const rust_constexpr_fundef *);
+  static bool equal (const rust_constexpr_fundef *,
+		     const rust_constexpr_fundef *);
 };
 
 /* This table holds all constexpr function definitions seen in
@@ -218,8 +219,8 @@ static GTY (())
    same constexpr function.  */
 
 inline bool
-rust_constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
-				     const constexpr_fundef *rhs)
+rust_constexpr_fundef_hasher::equal (const rust_constexpr_fundef *lhs,
+				     const rust_constexpr_fundef *rhs)
 {
   return lhs->decl == rhs->decl;
 }
@@ -228,20 +229,20 @@ rust_constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
    Return a hash value for the entry pointed to by Q.  */
 
 inline hashval_t
-rust_constexpr_fundef_hasher::hash (const constexpr_fundef *fundef)
+rust_constexpr_fundef_hasher::hash (const rust_constexpr_fundef *fundef)
 {
   return DECL_UID (fundef->decl);
 }
 
 /* Return a previously saved definition of function FUN.   */
 
-constexpr_fundef *
+rust_constexpr_fundef *
 retrieve_constexpr_fundef (tree fun)
 {
   if (constexpr_fundef_table == NULL)
     return NULL;
 
-  constexpr_fundef fundef = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
+  rust_constexpr_fundef fundef = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   return constexpr_fundef_table->find (&fundef);
 }
 
@@ -349,7 +350,7 @@ static GTY (()) hash_table<rust_constexpr_call_hasher> *constexpr_call_table;
 /* Compute a hash value for a constexpr call representation.  */
 
 inline hashval_t
-rust_constexpr_call_hasher::hash (constexpr_call *info)
+rust_constexpr_call_hasher::hash (rust_constexpr_call *info)
 {
   return info->hash;
 }
@@ -359,7 +360,8 @@ rust_constexpr_call_hasher::hash (constexpr_call *info)
    Otherwise, return false.  */
 
 bool
-rust_constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
+rust_constexpr_call_hasher::equal (rust_constexpr_call *lhs,
+				   rust_constexpr_call *rhs)
 {
   if (lhs == rhs)
     return true;
@@ -401,7 +403,7 @@ static GTY (()) decl_tree_map *fundef_copies_table;
    is parms, TYPE is result.  */
 
 static tree
-get_fundef_copy (constexpr_fundef *fundef)
+get_fundef_copy (rust_constexpr_fundef *fundef)
 {
   tree copy;
   bool existed;
@@ -3366,7 +3368,8 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
 {
   location_t loc = EXPR_LOCATION (t);
   tree fun = get_function_named_in_call (t);
-  constexpr_call new_call = {NULL, NULL, NULL, 0, ctx->manifestly_const_eval};
+  rust_constexpr_call new_call
+    = {NULL, NULL, NULL, 0, ctx->manifestly_const_eval};
   int depth_ok;
 
   if (fun == NULL_TREE)
@@ -3460,7 +3463,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
   depth_ok = push_cx_call_context (t);
 
   tree result = NULL_TREE;
-  constexpr_call *entry = NULL;
+  rust_constexpr_call *entry = NULL;
   if (depth_ok && !non_constant_args && ctx->strict)
     {
       new_call.hash = rust_constexpr_fundef_hasher::hash (new_call.fundef);
@@ -3470,7 +3473,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
-      constexpr_call **slot
+      rust_constexpr_call **slot
 	= constexpr_call_table->find_slot (&new_call, INSERT);
       entry = *slot;
       if (entry == NULL)
@@ -3480,7 +3483,7 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    {
 	      /* We need to keep a pointer to the entry, not just the slot, as
 		 the slot can move during evaluation of the body.  */
-	      *slot = entry = ggc_alloc<constexpr_call> ();
+	      *slot = entry = ggc_alloc<rust_constexpr_call> ();
 	      *entry = new_call;
 	      fb.preserve ();
 	    }
@@ -4579,18 +4582,18 @@ explain_invalid_constexpr_fn (tree fun)
    function.  Register it in the hash table.  */
 
 void
-register_constexpr_fundef (const constexpr_fundef &value)
+register_constexpr_fundef (const rust_constexpr_fundef &value)
 {
   /* Create the constexpr function table if necessary.  */
   if (constexpr_fundef_table == NULL)
     constexpr_fundef_table
       = hash_table<rust_constexpr_fundef_hasher>::create_ggc (101);
 
-  constexpr_fundef **slot = constexpr_fundef_table->find_slot (
-    const_cast<constexpr_fundef *> (&value), INSERT);
+  rust_constexpr_fundef **slot = constexpr_fundef_table->find_slot (
+    const_cast<rust_constexpr_fundef *> (&value), INSERT);
 
   gcc_assert (*slot == NULL);
-  *slot = ggc_alloc<constexpr_fundef> ();
+  *slot = ggc_alloc<rust_constexpr_fundef> ();
   **slot = value;
 }
 
@@ -4603,7 +4606,7 @@ maybe_save_constexpr_fundef (tree fun)
 {
   // FIXME
 
-  constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
+  rust_constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   bool clear_ctx = false;
   if (DECL_RESULT (fun) && DECL_CONTEXT (DECL_RESULT (fun)) == NULL_TREE)
     {
@@ -5601,10 +5604,10 @@ is_std_allocator_allocate (tree fndecl)
   return decl_in_std_namespace_p (decl);
 }
 
-/* Overload for the above taking constexpr_call*.  */
+/* Overload for the above taking rust_constexpr_call*.  */
 
 static inline bool
-is_std_allocator_allocate (const constexpr_call *call)
+is_std_allocator_allocate (const rust_constexpr_call *call)
 {
   return (call && call->fundef
 	  && is_std_allocator_allocate (call->fundef->decl));
