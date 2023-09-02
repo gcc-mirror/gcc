@@ -1,3 +1,150 @@
+2023-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/31059
+	* gfortran.dg/bounds_check_fail_5.f90: New test.
+
+2023-09-01  benjamin priour  <priour.be@gmail.com>
+
+	PR analyzer/105948
+	PR analyzer/94355
+	* g++.dg/analyzer/out-of-bounds-placement-new.C: Added a directive.
+	* g++.dg/analyzer/placement-new.C: Added tests.
+	* g++.dg/analyzer/new-2.C: New test.
+	* g++.dg/analyzer/noexcept-new.C: New test.
+	* g++.dg/analyzer/placement-new-size.C: New test.
+
+2023-09-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/111264
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Make declarations
+	C++11-compatible.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/pr110879.C: Moved to...
+	* g++.dg/opt/pr110879.C: ...here.
+
+2023-09-01  Vladimir Palevich  <palevichva@gmail.com>
+
+	PR libstdc++/110879
+	* g++.dg/pr110879.C: New test.
+
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* g++.dg/cpp2a/decomp8.C: New test.
+	* g++.dg/cpp2a/decomp9.C: New test.
+	* g++.dg/abi/macro0.C: Expect __GXX_ABI_VERSION 1019 rather than
+	1018.
+
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19832
+	* g++.dg/opt/vectcond-1.C: Add -Wno-psabi to dg-options.
+
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/110915
+	* gcc.dg/pr110915-1.c: Add -Wno-psabi to dg-options.  Move vector
+	macro definition after limits.h inclusion.
+	* gcc.dg/pr110915-2.c: Likewise.
+	* gcc.dg/pr110915-3.c: Likewise.
+	* gcc.dg/pr110915-4.c: Likewise.
+	* gcc.dg/pr110915-5.c: Likewise.
+	* gcc.dg/pr110915-6.c: Likewise.
+	* gcc.dg/pr110915-7.c: Likewise.
+	* gcc.dg/pr110915-8.c: Likewise.
+	* gcc.dg/pr110915-9.c: Likewise.
+	* gcc.dg/pr110915-10.c: Likewise.
+	* gcc.dg/pr110915-11.c: Likewise.
+	* gcc.dg/pr110915-12.c: Likewise.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv32-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int-rv64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2int_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv32-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float-rv64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2float_run-2.c: New test.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv32-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv32-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float-rv64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_float2float_run-2.c: New test.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/narrow-3.c: Adjust.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-2.h: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int_run-2.c: New test.
+
+2023-09-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/live-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/live_run-2.c: New test.
+
+2023-09-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/vect-outer-4c-big-array.c: Adjust regex pattern.
+	* gcc.dg/vect/vect-reduc-dot-s16a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-s8a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u16a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1b-big-array.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-1c-big-array.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-2a.c: Ditto.
+	* gcc.dg/vect/vect-reduc-pattern-2b-big-array.c: Ditto.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Ditto.
+
+2023-09-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/def.h:
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-add-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-add-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-add-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-div-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-div-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-div-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-mul-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-mul-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-mul-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sub-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sub-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls/floating-point-sub-3.c: New test.
+
+2023-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/19832
+	* g++.dg/opt/vectcond-1.C: New test.
+	* gcc.dg/tree-ssa/phi-opt-same-1.c: New test.
+
 2023-08-31  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/110915

@@ -1,3 +1,27 @@
+2023-09-01  benjamin priour  <priour.be@gmail.com>
+
+	PR analyzer/105948
+	PR analyzer/94355
+	* analyzer.h (is_placement_new_p): New declaration.
+	* call-details.cc
+	(call_details::deref_ptr_arg): New function.
+	Dereference the argument at given index if possible.
+	* call-details.h: Declaration of the above function.
+	* kf-lang-cp.cc (is_placement_new_p): Returns true if the gcall
+	is recognized as a placement new.
+	(kf_operator_delete::impl_call_post): Unbinding a region and its
+	descendents now poisons with POISON_KIND_DELETED.
+	(register_known_functions_lang_cp): Known function "operator
+	delete" is now registered only once independently of its number of
+	arguments.
+	* region-model.cc (region_model::eval_condition): Now
+	recursively calls itself if any of the operand is wrapped in a
+	cast.
+	* sm-malloc.cc (malloc_state_machine::on_stmt):
+	Add placement new recognition.
+	* svalue.cc (poison_kind_to_str): Wording for the new PK.
+	* svalue.h (enum poison_kind): Add value POISON_KIND_DELETED.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* kf.cc: Change spelling to macOS.

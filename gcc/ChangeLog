@@ -1,3 +1,91 @@
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* common.opt (fabi-version=): Document version 19.
+	* doc/invoke.texi (-fabi-version=): Likewise.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_<optab><mode><vconvert>):
+	New combine pattern.
+	(*cond_<float_cvt><vconvert><mode>): Ditto.
+	(*cond_<optab><vnconvert><mode>): Ditto.
+	(*cond_<float_cvt><vnconvert><mode>): Ditto.
+	(*cond_<optab><mode><vnconvert>): Ditto.
+	(*cond_<float_cvt><mode><vnconvert>2): Ditto.
+	* config/riscv/autovec.md (<optab><mode><vconvert>2): Adjust.
+	(<float_cvt><vconvert><mode>2): Adjust.
+	(<optab><vnconvert><mode>2): Adjust.
+	(<float_cvt><vnconvert><mode>2): Adjust.
+	(<optab><mode><vnconvert>2): Adjust.
+	(<float_cvt><mode><vnconvert>2): Adjust.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Add INT->FP extend.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_extend<v_double_trunc><mode>):
+	New combine pattern.
+	(*cond_trunc<mode><v_double_trunc>): Ditto.
+	* config/riscv/autovec.md: Adjust.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Add FP extend.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec-opt.md (*cond_<optab><v_double_trunc><mode>):
+	New combine pattern.
+	(*cond_<optab><v_quad_trunc><mode>): Ditto.
+	(*cond_<optab><v_oct_trunc><mode>): Ditto.
+	(*cond_trunc<mode><v_double_trunc>): Ditto.
+	* config/riscv/autovec.md (<optab><v_quad_trunc><mode>2): Adjust.
+	(<optab><v_oct_trunc><mode>2): Ditto.
+
+2023-09-01  Lehua Ding  <lehua.ding@rivai.ai>
+
+	* config/riscv/autovec.md: Adjust.
+	* config/riscv/riscv-protos.h (expand_cond_len_unop): Ditto.
+	(expand_cond_len_binop): Ditto.
+	* config/riscv/riscv-v.cc (needs_fp_rounding): Ditto.
+	(expand_cond_len_op): Ditto.
+	(expand_cond_len_unop): Ditto.
+	(expand_cond_len_binop): Ditto.
+	(expand_cond_len_ternop): Ditto.
+
+2023-09-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Enable
+	VECT_COMPARE_COSTS by default.
+
+2023-09-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (vec_extract<mode>qi): New expander.
+
+2023-09-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum riscv_autovec_lmul_enum): Add
+	dynamic enum.
+	* config/riscv/riscv.opt: Add dynamic compile option.
+
+2023-09-01  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-vls.md (<optab><mode>3): New pattern for
+	vls floating-point autovec.
+	* config/riscv/vector-iterators.md: New iterator for
+	floating-point V and VLS.
+	* config/riscv/vector.md: Add VLS to floating-point binop.
+
+2023-09-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/19832
+	* match.pd: Add pattern to optimize
+	`(a != b) ? a OP b : c`.
+
+2023-09-01  Lulu Cheng  <chenglulu@loongson.cn>
+	    Guo Jie  <guojie@loongson.cn>
+
+	PR target/110484
+	* config/loongarch/loongarch.cc (loongarch_emit_stack_tie): Use the
+	frame_pointer_needed to determine whether to use the $fp register.
+
 2023-08-31  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/110915

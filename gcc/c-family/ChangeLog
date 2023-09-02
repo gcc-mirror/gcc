@@ -1,3 +1,8 @@
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* c-opts.cc (c_common_post_options): Change latest_abi_version to 19.
+
 2023-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* c.opt: Change spelling to macOS.

@@ -1,3 +1,80 @@
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Adjust
+	expected errors.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc:
+	Likewise.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/91067.cc: Add
+	-Wno-self-move to options.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Likewise.
+
+2023-09-01  Vladimir Palevich  <palevichva@gmail.com>
+
+	PR libstdc++/110879
+	* include/bits/vector.tcc (_M_realloc_insert): End guard
+	lifetime just before assignment to class members.
+	(_M_default_append): Likewise.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (fs::absolute) [FILESYSTEM_IS_WINDOWS]:
+	Use __resize_and_overwrite to fill buffer.
+	(fs::read_symlink) [HAVE_READLINK]: Likewise.
+	* src/filesystem/ops-common.h (get_temp_directory_from_env)
+	[FILESYSTEM_IS_WINDOWS]: Likewise.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111077
+	* include/bits/atomic_base.h (__atomic_impl::__compare_exchange):
+	Add _AtomicRef non-type template parameter and use a loop if it
+	is true.
+	(__atomic_impl::compare_exchange_weak): Add _AtomicRef NTTP.
+	(__atomic_impl::compare_exchange_strong): Likewise.
+	(atomic_ref::compare_exchange_weak): Use true for NTTP.
+	(atomic_ref::compare_exchange_strong): Use true for NTTP.
+	* testsuite/29_atomics/atomic_ref/compare_exchange_padding.cc:
+	Fix test to not rely on atomic_ref::load() to return an object
+	with padding preserved.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/path/108636.cc: Add dg-require for
+	filesystem support.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdb::current_zone): Check configure macros
+	for POSIX readlink before using filesystem::read_symlink.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Default to yes.
+	* configure: Regenerate.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (_Parser::operator()): Set failbit
+	early if invalid values are read when _M_need & _TimeOfDay is
+	non-zero.
+	* testsuite/std/time/parse.cc: Check that "25:59" cannot be
+	parsed for "%H:%M".
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111162
+	* include/bits/chrono_io.h (_Parser::Operator()): Check %C
+	values are in range of year::min() to year::max().
+	* testsuite/std/time/parse.cc: Check out of range centuries.
+
+2023-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Sink::_M_reset): Change second
+	argument from iterator to offset.
+
 2023-08-24  Paul Dreik  <gccpatches@pauldreik.se>
 
 	PR libstdc++/111102

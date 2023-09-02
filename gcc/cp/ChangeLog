@@ -1,3 +1,53 @@
+2023-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111069
+	* cp-tree.h (determine_local_discriminator): Add NAME argument with
+	NULL_TREE default.
+	(struct cp_decomp): New type.
+	(cp_finish_decl): Add DECOMP argument defaulted to nullptr.
+	(cp_maybe_mangle_decomp): Remove declaration.
+	(cp_finish_decomp): Add cp_decomp * argument, remove tree and unsigned
+	args.
+	(cp_convert_range_for): Likewise.
+	* decl.cc (determine_local_discriminator): Add NAME argument, use it
+	if non-NULL, otherwise compute it the old way.
+	(maybe_commonize_var): Don't return early for structured bindings.
+	(cp_finish_decl): Add DECOMP argument, if non-NULL, call
+	cp_maybe_mangle_decomp.
+	(cp_maybe_mangle_decomp): Make it static with a forward declaration.
+	Call determine_local_discriminator.  Replace FIRST and COUNT arguments
+	with DECOMP argument.
+	(cp_finish_decomp): Replace FIRST and COUNT arguments with DECOMP
+	argument.
+	* mangle.cc (find_decomp_unqualified_name): Remove.
+	(write_unqualified_name): Don't call find_decomp_unqualified_name.
+	(mangle_decomp): Handle mangling of static function/block scope
+	structured bindings.  Don't call decl_mangling_context twice.  Call
+	check_abi_tags, call write_abi_tags for abi version >= 19 and emit
+	-Wabi warnings if needed.
+	(write_guarded_var_name): Handle structured bindings.
+	(mangle_ref_init_variable): Use write_guarded_var_name.
+	* parser.cc (cp_parser_range_for): Adjust do_range_for_auto_deduction
+	and cp_convert_range_for callers.
+	(do_range_for_auto_deduction): Replace DECOMP_FIRST_NAME and
+	DECOMP_CNT arguments with DECOMP.  Adjust cp_finish_decomp caller.
+	(cp_convert_range_for): Replace DECOMP_FIRST_NAME and
+	DECOMP_CNT arguments with DECOMP.  Don't call cp_maybe_mangle_decomp,
+	adjust cp_finish_decl and cp_finish_decomp callers.
+	(cp_parser_decomposition_declaration): Don't call
+	cp_maybe_mangle_decomp, adjust cp_finish_decl and cp_finish_decomp
+	callers.
+	(cp_convert_omp_range_for): Adjust do_range_for_auto_deduction
+	and cp_finish_decomp callers.
+	(cp_finish_omp_range_for): Don't call cp_maybe_mangle_decomp,
+	adjust cp_finish_decl and cp_finish_decomp callers.
+	* pt.cc (tsubst_omp_for_iterator): Adjust tsubst_decomp_names
+	caller.
+	(tsubst_decomp_names): Replace FIRST and CNT arguments with DECOMP.
+	(tsubst_expr): Don't call cp_maybe_mangle_decomp, adjust
+	tsubst_decomp_names, cp_finish_decl, cp_finish_decomp and
+	cp_convert_range_for callers.
+
 2023-08-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91319
