@@ -444,7 +444,18 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
 void
 TypeCheckExpr::visit (HIR::IfExpr &expr)
 {
-  TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+  TyTy::BaseType *bool_ty = nullptr;
+  bool ok = context->lookup_builtin ("bool", &bool_ty);
+  rust_assert (ok);
+
+  TyTy::BaseType *cond_type
+    = TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+
+  unify_site (expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (bool_ty),
+	      TyTy::TyWithLocation (cond_type,
+				    expr.get_if_condition ()->get_locus ()),
+	      expr.get_locus ());
+
   TypeCheckExpr::Resolve (expr.get_if_block ().get ());
 
   infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
@@ -453,7 +464,18 @@ TypeCheckExpr::visit (HIR::IfExpr &expr)
 void
 TypeCheckExpr::visit (HIR::IfExprConseqElse &expr)
 {
-  TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+  TyTy::BaseType *bool_ty = nullptr;
+  bool ok = context->lookup_builtin ("bool", &bool_ty);
+  rust_assert (ok);
+
+  TyTy::BaseType *cond_type
+    = TypeCheckExpr::Resolve (expr.get_if_condition ().get ());
+
+  unify_site (expr.get_mappings ().get_hirid (), TyTy::TyWithLocation (bool_ty),
+	      TyTy::TyWithLocation (cond_type,
+				    expr.get_if_condition ()->get_locus ()),
+	      expr.get_locus ());
+
   auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ().get ());
   auto else_blk_resolved
     = TypeCheckExpr::Resolve (expr.get_else_block ().get ());
