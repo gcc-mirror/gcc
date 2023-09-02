@@ -357,7 +357,7 @@
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 
-;; Likewise, but for XLEN-sized quantities.
+;; Likewise, but for GRLEN-sized quantities.
 (define_mode_iterator X [(SI "!TARGET_64BIT") (DI "TARGET_64BIT")])
 
 ;; 64-bit modes for which we provide move patterns.
@@ -2733,11 +2733,15 @@
   [(set_attr "type" "branch")])
 
 
+;; Branches operate on GRLEN-sized quantities, but for LoongArch64 we accept
+;; QImode values so we can force zero-extension.
+(define_mode_iterator BR [(QI "TARGET_64BIT") SI (DI "TARGET_64BIT")])
+
 (define_expand "cbranch<mode>4"
   [(set (pc)
 	(if_then_else (match_operator 0 "comparison_operator"
-			[(match_operand:GPR 1 "register_operand")
-			 (match_operand:GPR 2 "nonmemory_operand")])
+			[(match_operand:BR 1 "register_operand")
+			 (match_operand:BR 2 "nonmemory_operand")])
 		      (label_ref (match_operand 3 ""))
 		      (pc)))]
   ""

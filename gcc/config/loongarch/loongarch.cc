@@ -4225,11 +4225,21 @@ loongarch_allocate_fcc (machine_mode mode)
 static void
 loongarch_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
 {
-  /* Comparisons consider all XLEN bits, so extend sub-XLEN values.  */
+  /* Comparisons consider all GRLEN bits, so extend sub-GRLEN values.  */
   if (GET_MODE_SIZE (word_mode) > GET_MODE_SIZE (GET_MODE (*op0)))
     {
-      /* TODO: checkout It is more profitable to zero-extend QImode values.  */
-      if (unsigned_condition (code) == code && GET_MODE (*op0) == QImode)
+      /* It is more profitable to zero-extend QImode values.  But not if the
+	 first operand has already been sign-extended, and the second one is
+	 is a constant or has already been sign-extended also.  */
+      if (unsigned_condition (code) == code
+	  && (GET_MODE (*op0) == QImode
+	      && ! (GET_CODE (*op0) == SUBREG
+		    && SUBREG_PROMOTED_VAR_P (*op0)
+		    && SUBREG_PROMOTED_SIGNED_P (*op0)
+		    && (CONST_INT_P (*op1)
+			|| (GET_CODE (*op1) == SUBREG
+			    && SUBREG_PROMOTED_VAR_P (*op1)
+			    && SUBREG_PROMOTED_SIGNED_P (*op1))))))
 	{
 	  *op0 = gen_rtx_ZERO_EXTEND (word_mode, *op0);
 	  if (CONST_INT_P (*op1))
