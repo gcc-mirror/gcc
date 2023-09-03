@@ -3916,6 +3916,11 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 				  gen_rtx_IF_THEN_ELSE (mode, cond,
 							CONST0_RTX (mode),
 							alt)));
+	  /* CONS might not fit into a signed 12 bit immediate suitable
+	     for an addi instruction.  If that's the case, force it
+	     into a register.  */
+	  if (!SMALL_OPERAND (INTVAL (cons)))
+	    cons = force_reg (mode, cons);
 	  riscv_emit_binary (PLUS, dest, dest, cons);
 	  return true;
 	}
@@ -3939,11 +3944,13 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  rtx temp1 = gen_reg_rtx (mode);
 	  rtx temp2 = gen_int_mode (-1 * INTVAL (cons), mode);
 
-	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
-	     for an addi instruction.  If that's the case, force it into
-	     a register.  */
+	  /* TEMP2 and/or CONS might not fit into a signed 12 bit immediate
+	     suitable for an addi instruction.  If that's the case, force it
+	     into a register.  */
 	  if (!SMALL_OPERAND (INTVAL (temp2)))
 	    temp2 = force_reg (mode, temp2);
+	  if (!SMALL_OPERAND (INTVAL (cons)))
+	    cons = force_reg (mode, cons);
 
 	  riscv_emit_binary (PLUS, temp1, alt, temp2);
 	  emit_insn (gen_rtx_SET (dest,
@@ -3985,11 +3992,13 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  rtx temp1 = gen_reg_rtx (mode);
 	  rtx temp2 = gen_int_mode (-1 * INTVAL (alt), mode);
 
-	  /* TEMP2 might not fit into a signed 12 bit immediate suitable
-	     for an addi instruction.  If that's the case, force it into
-	     a register.  */
+	  /* TEMP2 and/or ALT might not fit into a signed 12 bit immediate
+	     suitable for an addi instruction.  If that's the case, force it
+	     into a register.  */
 	  if (!SMALL_OPERAND (INTVAL (temp2)))
 	    temp2 = force_reg (mode, temp2);
+	  if (!SMALL_OPERAND (INTVAL (alt)))
+	    alt = force_reg (mode, alt);
 
 	  riscv_emit_binary (PLUS, temp1, cons, temp2);
 	  emit_insn (gen_rtx_SET (dest,
