@@ -166,7 +166,12 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
     }
 
   if (!valid)
-    rust_error_at (locus, "definition is private in this context");
+    {
+      rich_location richloc (line_table, locus);
+      richloc.add_fixit_replace ("item is private");
+      rust_error_at (richloc, ErrorCode::E0603,
+		     "definition is private in this context");
+    }
 }
 
 void
