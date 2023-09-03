@@ -3864,7 +3864,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  maxmin (max min)
  (simplify
   (minmax (bit_not:s@2 @0) (bit_not:s@3 @1))
-  (bit_not (maxmin @0 @1))))
+  (bit_not (maxmin @0 @1)))
+/* ~MAX(~X, Y) --> MIN(X, ~Y) */
+/* ~MIN(~X, Y) --> MAX(X, ~Y) */
+ (simplify
+  (bit_not (minmax:cs (bit_not @0) @1))
+  (maxmin @0 (bit_not @1))))
 
 /* MIN (X, Y) == X -> X <= Y  */
 (for minmax (min min max max)
