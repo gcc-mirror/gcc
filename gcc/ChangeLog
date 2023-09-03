@@ -1,3 +1,19 @@
+2023-09-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* tree-diagnostic.cc (tree_diagnostics_defaults): Delete allocated
+	pointer before overwriting it.
+
+2023-09-02  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* config/loongarch/loongarch-builtins.cc (loongarch_init_builtins):
+	Associate the __float128 type to float128_type_node so that it can
+	be recognized by the compiler.
+	* config/loongarch/loongarch-c.cc (loongarch_cpu_cpp_builtins):
+	Add the flag "FLOAT128_TYPE" to gcc and associate a function
+	with the suffix "q" to "f128".
+	* doc/extend.texi:Added support for 128-bit floating-point functions on
+	the LoongArch architecture.
+
 2023-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/111069

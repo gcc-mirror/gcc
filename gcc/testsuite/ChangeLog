@@ -1,3 +1,7 @@
+2023-09-02  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/math-float-128.c: New test.
+
 2023-09-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/31059
