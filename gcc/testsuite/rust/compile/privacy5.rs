@@ -5,7 +5,7 @@ mod orange {
         pub struct Baz;
     }
 
-    fn brown() {
+    fn brown() {// E0603
         let _ = green::Foo; // { dg-error "definition is private in this context" }
         let _ = green::Bar;
         let _ = green::Baz;
