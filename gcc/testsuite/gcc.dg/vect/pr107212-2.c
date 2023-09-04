@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include "tree-vect.h"
 
 int sum_1 = 0;

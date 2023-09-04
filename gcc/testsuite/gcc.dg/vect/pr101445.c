@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include "tree-vect.h"
 
 int a[35] = { 1, 1, 3 };

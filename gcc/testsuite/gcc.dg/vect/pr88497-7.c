@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target avx512f_runtime } */
 /* { dg-options "-O2 -mavx512f -ffast-math -fdump-tree-reassoc1" } */
 

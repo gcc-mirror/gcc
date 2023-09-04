@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 typedef struct {
     unsigned long a;
     unsigned long b;

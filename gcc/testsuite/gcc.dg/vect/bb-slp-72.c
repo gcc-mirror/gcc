@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include "tree-vect.h"
 
 double x[2], y[2], z[2], w[2];

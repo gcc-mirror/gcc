@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-require-effective-target vsx_hw { target { powerpc*-*-* } } } */
 /* { dg-require-effective-target sse2_runtime { target { i?86-*-* x86_64-*-* } } } */

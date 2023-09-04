@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-mavx2" { target avx2 } } */
 
 #include "tree-vect.h"
