@@ -1008,27 +1008,35 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   auto cli_extern_crate = extern_crates.find (crate_name);
 
   std::pair<std::unique_ptr<Import::Stream>, std::vector<ProcMacro::Procmacro>>
-    s;
+    package_result;
   if (cli_extern_crate != extern_crates.end ())
     {
       auto path = cli_extern_crate->second;
-      s = Import::try_package_in_directory (path, locus);
+      package_result = Import::try_package_in_directory (path, locus);
     }
   else
     {
-      s = Import::open_package (import_name, locus, relative_import_path);
+      package_result
+	= Import::open_package (import_name, locus, relative_import_path);
     }
-  if (s.first == NULL && s.second.empty ())
+
+  auto stream = std::move (package_result.first);
+  auto proc_macros = std::move (package_result.second);
+
+  if (stream == NULL	       // No stream and
+      && proc_macros.empty ()) // no proc macros
     {
       rust_error_at (locus, "failed to locate crate %<%s%>",
 		     import_name.c_str ());
       return UNKNOWN_NODEID;
     }
 
-  auto extern_crate = s.first == nullptr
-			? Imports::ExternCrate (crate_name, s.second)
-			: Imports::ExternCrate (*s.first);
-  if (s.first != nullptr)
+  auto extern_crate
+    = stream == nullptr
+	? Imports::ExternCrate (crate_name,
+				proc_macros) // Import proc macros
+	: Imports::ExternCrate (*stream);    // Import from stream
+  if (stream != nullptr)
     {
       bool ok = extern_crate.load (locus);
       if (!ok)
