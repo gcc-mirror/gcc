@@ -18471,7 +18471,6 @@ These built-in functions are available for the Nvidia PTX target:
 
 @defbuiltin{unsigned int __builtin_nvptx_brev (unsigned int @var{x})}
 Reverse the bit order of a 32-bit unsigned integer.
-Disable global interrupt.
 @enddefbuiltin
 
 @defbuiltin{unsigned long long __builtin_nvptx_brevll (unsigned long long @var{x})}
