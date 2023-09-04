@@ -959,6 +959,86 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #endif
    ))))
 
+#if GIMPLE
+(for div (trunc_div exact_div)
+ /* Simplify (X + M*N) / N -> X / N + M.  */
+ (simplify
+  (div (plus:c@4 @0 (mult:c@3 @1 @2)) @2)
+  (with {value_range vr0, vr1, vr2, vr3, vr4;}
+  (if (INTEGRAL_TYPE_P (type)
+       && get_range_query (cfun)->range_of_expr (vr1, @1)
+       && get_range_query (cfun)->range_of_expr (vr2, @2)
+       /* "N*M" doesn't overflow.  */
+       && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
+       && get_range_query (cfun)->range_of_expr (vr0, @0)
+       && get_range_query (cfun)->range_of_expr (vr3, @3)
+       /* "X+(N*M)" doesn't overflow.  */
+       && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr3)
+       && get_range_query (cfun)->range_of_expr (vr4, @4)
+       /* "X+N*M" is not with opposite sign as "X".  */
+       && (TYPE_UNSIGNED (type)
+	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
+	   || (vr0.nonpositive_p () && vr4.nonpositive_p ())))
+  (plus (div @0 @2) @1))))
+
+ /* Simplify (X - M*N) / N -> X / N - M.  */
+ (simplify
+  (div (minus@4 @0 (mult:c@3 @1 @2)) @2)
+  (with {value_range vr0, vr1, vr2, vr3, vr4;}
+  (if (INTEGRAL_TYPE_P (type)
+       && get_range_query (cfun)->range_of_expr (vr1, @1)
+       && get_range_query (cfun)->range_of_expr (vr2, @2)
+       /* "N * M" doesn't overflow.  */
+       && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
+       && get_range_query (cfun)->range_of_expr (vr0, @0)
+       && get_range_query (cfun)->range_of_expr (vr3, @3)
+       /* "X - (N*M)" doesn't overflow.  */
+       && range_op_handler (MINUS_EXPR).overflow_free_p (vr0, vr3)
+       && get_range_query (cfun)->range_of_expr (vr4, @4)
+       /* "X-N*M" is not with opposite sign as "X".  */
+       && (TYPE_UNSIGNED (type)
+	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
+	   || (vr0.nonpositive_p () && vr4.nonpositive_p ())))
+  (minus (div @0 @2) @1)))))
+
+/* Simplify
+   (X + C) / N -> X / N + C / N where C is multiple of N.
+   (X + C) >> N -> X >> N + C>>N if low N bits of C is 0.  */
+(for op (trunc_div exact_div rshift)
+ (simplify
+  (op (plus@3 @0 INTEGER_CST@1) INTEGER_CST@2)
+   (with
+    {
+      wide_int c = wi::to_wide (@1);
+      wide_int n = wi::to_wide (@2);
+      bool shift = op == RSHIFT_EXPR;
+#define plus_op1(v) (shift ? wi::rshift (v, n, TYPE_SIGN (type)) \
+			   : wi::div_trunc (v, n, TYPE_SIGN (type)))
+#define exact_mod(v) (shift ? wi::ctz (v) >= n.to_shwi () \
+			    : wi::multiple_of_p (v, n, TYPE_SIGN (type)))
+      value_range vr0, vr1, vr3;
+    }
+    (if (INTEGRAL_TYPE_P (type)
+	 && get_range_query (cfun)->range_of_expr (vr0, @0))
+     (if (exact_mod (c)
+	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  /* "X+C" doesn't overflow.  */
+	  && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr1)
+	  && get_range_query (cfun)->range_of_expr (vr3, @3)
+	  /* "X+C" and "X" are not of opposite sign.  */
+	  && (TYPE_UNSIGNED (type)
+	      || (vr0.nonnegative_p () && vr3.nonnegative_p ())
+	      || (vr0.nonpositive_p () && vr3.nonpositive_p ())))
+       (plus (op @0 @2) { wide_int_to_tree (type, plus_op1 (c)); })
+       (if (TYPE_UNSIGNED (type) && c.sign_mask () < 0
+	    && exact_mod (-c)
+	    /* unsigned "X-(-C)" doesn't underflow.  */
+	    && wi::geu_p (vr0.lower_bound (), -c))
+	 (plus (op @0 @2) { wide_int_to_tree (type, -plus_op1 (-c)); })))))))
+#undef plus_op1
+#undef exact_mod
+#endif
+
 (for op (negate abs)
  /* Simplify cos(-x) and cos(|x|) -> cos(x).  Similarly for cosh.  */
  (for coss (COS COSH)
