@@ -110,6 +110,18 @@ protected:
   static void handle_inline_attribute_on_fndecl (tree fndecl,
 						 const AST::Attribute &attr);
 
+  static void
+  handle_proc_macro_attribute_on_fndecl (tree fndecl,
+					 const AST::Attribute &attr);
+
+  static void
+  handle_proc_macro_attribute_attribute_on_fndecl (tree fndecl,
+						   const AST::Attribute &attr);
+
+  static void
+  handle_proc_macro_derive_attribute_on_fndecl (tree fndecl,
+						const AST::Attribute &attr);
+
   static void handle_cold_attribute_on_fndecl (tree fndecl,
 					       const AST::Attribute &attr);
 
