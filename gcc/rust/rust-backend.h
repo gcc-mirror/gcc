@@ -43,7 +43,7 @@ class Bvariable;
 class Backend
 {
 public:
-  virtual ~Backend () {}
+  Backend ();
 
   // Name/type/location.  Used for function parameters, struct fields,
   // interface methods.
@@ -464,12 +464,6 @@ protected:
   tree non_zero_size_type (tree);
 
   tree convert_tree (tree, tree, location_t);
-};
-
-class Gcc_backend : public Backend
-{
-public:
-  Gcc_backend ();
 };
 
 #endif // RUST_BACKEND_H
